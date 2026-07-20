@@ -1,0 +1,491 @@
+├── .cta.json
+├── .cursorrules
+├── .dockerignore
+├── .env.example
+├── .env.production
+├── .gitignore
+├── .vscode
+│  └── settings.json
+├── A11Y.md
+├── biome.json
+├── package.json
+├── project.tree
+├── public
+│  ├── apple-icon.png
+│  ├── favicon.ico
+│  ├── icon.png
+│  ├── logo192.png
+│  ├── logo512.png
+│  ├── manifest.json
+│  ├── qeet-logo-on-dark.svg
+│  ├── qeet-logo-on-light.svg
+│  └── robots.txt
+├── README.md
+├── src
+│  ├── components
+│  │  ├── confirm-dialog.tsx
+│  │  ├── data-table
+│  │  │  ├── bulk-bar.tsx
+│  │  │  ├── index.ts
+│  │  │  ├── list-toolbar.tsx
+│  │  │  ├── selection.tsx
+│  │  │  └── sort-header.tsx
+│  │  ├── logo-field.tsx
+│  │  ├── page-header.tsx
+│  │  └── step-up-dialog.tsx
+│  ├── config
+│  │  ├── navigation-state.ts
+│  │  ├── navigation.test.ts
+│  │  └── navigation.tsx
+│  ├── env.ts
+│  ├── features
+│  │  ├── access-control
+│  │  │  ├── capability-model.test.ts
+│  │  │  ├── capability-model.ts
+│  │  │  ├── capability-provider.tsx
+│  │  │  └── components
+│  │  │    ├── access-boundary.tsx
+│  │  │    ├── access-mode-indicator.tsx
+│  │  │    └── read-only-notice.tsx
+│  │  ├── activity
+│  │  │  ├── activity-provider.tsx
+│  │  │  ├── activity-service.ts
+│  │  │  ├── activity-store.test.ts
+│  │  │  ├── activity-store.ts
+│  │  │  ├── activity-stream.test.ts
+│  │  │  ├── activity-stream.ts
+│  │  │  ├── components
+│  │  │  │  ├── activity-timeline.tsx
+│  │  │  │  ├── event-card.tsx
+│  │  │  │  ├── event-details-drawer.tsx
+│  │  │  │  ├── live-indicator.tsx
+│  │  │  │  └── severity-badge.tsx
+│  │  │  ├── filter-manager.test.ts
+│  │  │  ├── filter-manager.ts
+│  │  │  ├── subscription-manager.ts
+│  │  │  └── types.ts
+│  │  ├── auth
+│  │  │  └── components
+│  │  │    ├── auth-background.tsx
+│  │  │    ├── Beams.tsx
+│  │  │    ├── brand-hero.tsx
+│  │  │    ├── signin-form.tsx
+│  │  │    └── signup-form.tsx
+│  │  ├── authorization
+│  │  │  └── components
+│  │  │    ├── canvas
+│  │  │    │  └── policy-canvas.tsx
+│  │  │    ├── code-preview
+│  │  │    │  └── code-preview.tsx
+│  │  │    ├── condition-builder
+│  │  │    │  └── condition-tree.tsx
+│  │  │    ├── explain
+│  │  │    │  └── decision-explain.tsx
+│  │  │    ├── graph
+│  │  │    │  ├── authz-flow.tsx
+│  │  │    │  ├── layout.ts
+│  │  │    │  ├── nodes.tsx
+│  │  │    │  ├── relationship-graph.tsx
+│  │  │    │  └── role-hierarchy-graph.tsx
+│  │  │    └── shared
+│  │  │      ├── client-only.tsx
+│  │  │      ├── coming-soon.tsx
+│  │  │      ├── decision-badge.tsx
+│  │  │      └── monaco-panel.tsx
+│  │  ├── compliance
+│  │  │  └── evidence-page.tsx
+│  │  ├── copilot
+│  │  │  ├── ai
+│  │  │  │  ├── ai-provider.ts
+│  │  │  │  ├── backend-provider.ts
+│  │  │  │  ├── prompt-builder.ts
+│  │  │  │  ├── streaming-client.ts
+│  │  │  │  ├── unconfigured-provider.ts
+│  │  │  │  └── use-active-provider.ts
+│  │  │  ├── components
+│  │  │  │  ├── conversation
+│  │  │  │  │  ├── code-block.tsx
+│  │  │  │  │  ├── composer.tsx
+│  │  │  │  │  ├── empty-state.tsx
+│  │  │  │  │  ├── message-actions.tsx
+│  │  │  │  │  ├── message-item.tsx
+│  │  │  │  │  └── message-list.tsx
+│  │  │  │  ├── copilot-header.tsx
+│  │  │  │  ├── copilot-launcher.tsx
+│  │  │  │  ├── copilot-trigger.tsx
+│  │  │  │  ├── copilot-workspace.tsx
+│  │  │  │  ├── execution
+│  │  │  │  │  ├── execution-timeline.tsx
+│  │  │  │  │  └── tool-call-card.tsx
+│  │  │  │  ├── history
+│  │  │  │  │  └── history-panel.tsx
+│  │  │  │  ├── markdown-message
+│  │  │  │  │  └── markdown-message.tsx
+│  │  │  │  └── suggestions
+│  │  │  │    └── suggested-actions.tsx
+│  │  │  ├── context
+│  │  │  │  ├── context-registry.ts
+│  │  │  │  ├── context-types.ts
+│  │  │  │  └── use-console-context.ts
+│  │  │  ├── copilot-provider.tsx
+│  │  │  ├── hooks
+│  │  │  │  └── use-copilot-chat.ts
+│  │  │  ├── index.ts
+│  │  │  ├── store
+│  │  │  │  ├── conversation-store.ts
+│  │  │  │  ├── secrets-store.ts
+│  │  │  │  └── workspace-store.ts
+│  │  │  ├── suggestions
+│  │  │  │  ├── route-suggestions.ts
+│  │  │  │  └── suggestion-engine.ts
+│  │  │  ├── tools
+│  │  │  │  ├── definitions
+│  │  │  │  │  ├── audit.tools.ts
+│  │  │  │  │  ├── authz.tools.ts
+│  │  │  │  │  ├── codegen.tools.ts
+│  │  │  │  │  ├── credentials.tools.ts
+│  │  │  │  │  ├── org.tools.ts
+│  │  │  │  │  ├── role.tools.ts
+│  │  │  │  │  └── user.tools.ts
+│  │  │  │  ├── execution-engine.ts
+│  │  │  │  ├── index.ts
+│  │  │  │  ├── tool-registry.ts
+│  │  │  │  └── tool-types.ts
+│  │  │  └── types.ts
+│  │  ├── dashboard
+│  │  │  ├── components
+│  │  │  │  ├── app-sidebar.tsx
+│  │  │  │  ├── command-palette-launcher.tsx
+│  │  │  │  ├── console-header.tsx
+│  │  │  │  ├── dashboard-activity.tsx
+│  │  │  │  ├── dashboard-charts.tsx
+│  │  │  │  ├── dashboard-metrics.tsx
+│  │  │  │  ├── dashboard-overview.tsx
+│  │  │  │  ├── dashboard-panel.tsx
+│  │  │  │  ├── dynamic-breadcrumb.tsx
+│  │  │  │  ├── header-user.tsx
+│  │  │  │  ├── impersonation-banner.tsx
+│  │  │  │  ├── language-switcher.tsx
+│  │  │  │  ├── nav-main.tsx
+│  │  │  │  ├── notifications-inbox.tsx
+│  │  │  │  ├── onboarding-checklist.tsx
+│  │  │  │  ├── passkey-prompt-card.tsx
+│  │  │  │  ├── shortcuts-dialog.tsx
+│  │  │  │  ├── team-switcher.tsx
+│  │  │  │  └── theme-toggle.tsx
+│  │  │  ├── dashboard-model.test.ts
+│  │  │  ├── dashboard-model.ts
+│  │  │  └── use-dashboard-activity.ts
+│  │  ├── search
+│  │  │  ├── components
+│  │  │  │  ├── preview-pane.tsx
+│  │  │  │  ├── quick-actions.tsx
+│  │  │  │  ├── result-groups.tsx
+│  │  │  │  ├── result-row.tsx
+│  │  │  │  └── universal-search.tsx
+│  │  │  ├── index.ts
+│  │  │  ├── keyboard.ts
+│  │  │  ├── ranking.test.ts
+│  │  │  ├── ranking.ts
+│  │  │  ├── registry
+│  │  │  │  ├── command-source.tsx
+│  │  │  │  ├── navigation-source.tsx
+│  │  │  │  ├── resource-source.ts
+│  │  │  │  └── types.ts
+│  │  │  ├── search-provider.tsx
+│  │  │  └── store
+│  │  │    ├── favorites-store.test.ts
+│  │  │    ├── favorites-store.ts
+│  │  │    ├── recent-store.test.ts
+│  │  │    └── recent-store.ts
+│  │  └── timeline
+│  │    ├── components
+│  │    │  ├── identity-timeline.tsx
+│  │    │  ├── timeline-details-drawer.tsx
+│  │    │  ├── timeline-filters.tsx
+│  │    │  └── timeline-item.tsx
+│  │    ├── grouping.test.ts
+│  │    ├── grouping.ts
+│  │    ├── index.ts
+│  │    ├── timeline-provider.tsx
+│  │    ├── timeline-service.ts
+│  │    ├── timeline-store.test.ts
+│  │    ├── timeline-store.ts
+│  │    └── use-identity-timeline.ts
+│  ├── i18n
+│  │  ├── index.ts
+│  │  ├── locales
+│  │  │  ├── de
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── en
+│  │  │  │  ├── account.json
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── authFlow.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── compliance.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── developer.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── groups.json
+│  │  │  │  ├── invitations.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── organizations.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── security.json
+│  │  │  │  ├── settings.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── es
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── fr
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── hi
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── ja
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── pt
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  └── zh
+│  │  │    ├── auth.json
+│  │  │    ├── common.json
+│  │  │    ├── consent.json
+│  │  │    ├── dashboard.json
+│  │  │    ├── device.json
+│  │  │    ├── oidc.json
+│  │  │    ├── rbac.json
+│  │  │    ├── saml.json
+│  │  │    ├── signingKeys.json
+│  │  │    └── users.json
+│  │  └── README.md
+│  ├── integrations
+│  │  └── tanstack-query
+│  │    ├── devtools.tsx
+│  │    └── root-provider.tsx
+│  ├── lib
+│  │  ├── access-check.ts
+│  │  ├── admin-portal.ts
+│  │  ├── agents.ts
+│  │  ├── analytics.ts
+│  │  ├── anomalies.ts
+│  │  ├── api.ts
+│  │  ├── audit-anomalies.ts
+│  │  ├── auth-hooks.ts
+│  │  ├── auth-policy.ts
+│  │  ├── auth.ts
+│  │  ├── authz-abac.ts
+│  │  ├── authz-audit.ts
+│  │  ├── authz-codegen.ts
+│  │  ├── authz-rbac.ts
+│  │  ├── authz-simulate.ts
+│  │  ├── authz-store.ts
+│  │  ├── authz-templates.ts
+│  │  ├── billing.ts
+│  │  ├── bots.ts
+│  │  ├── copilot.ts
+│  │  ├── credentials.ts
+│  │  ├── device-auth.ts
+│  │  ├── domains.ts
+│  │  ├── email-templates.ts
+│  │  ├── export.ts
+│  │  ├── ip-allowlist.ts
+│  │  ├── ldap.ts
+│  │  ├── list-view.ts
+│  │  ├── log-sinks.ts
+│  │  ├── mfa.ts
+│  │  ├── notifications.ts
+│  │  ├── oauth-grants.ts
+│  │  ├── oidc-clients.ts
+│  │  ├── passkeys.ts
+│  │  ├── rbac-groups.ts
+│  │  ├── relationships.ts
+│  │  ├── retention.ts
+│  │  ├── saml-idp.ts
+│  │  ├── saml.ts
+│  │  ├── scim.ts
+│  │  ├── secrets.ts
+│  │  ├── shortcuts.ts
+│  │  ├── signing-keys.ts
+│  │  ├── social-identities.ts
+│  │  ├── sso.ts
+│  │  └── users.ts
+│  ├── router.tsx
+│  ├── routes
+│  │  ├── __root.tsx
+│  │  ├── _app
+│  │  │  ├── $.tsx
+│  │  │  ├── activity.tsx
+│  │  │  ├── analytics.tsx
+│  │  │  ├── auth
+│  │  │  │  ├── api
+│  │  │  │  │  ├── consent-grants.tsx
+│  │  │  │  │  ├── keys.tsx
+│  │  │  │  │  ├── machine-identities.tsx
+│  │  │  │  │  ├── secrets.tsx
+│  │  │  │  │  ├── signing-keys.tsx
+│  │  │  │  │  └── tokens.tsx
+│  │  │  │  ├── connections
+│  │  │  │  │  ├── index.tsx
+│  │  │  │  │  ├── ldap.tsx
+│  │  │  │  │  ├── oidc
+│  │  │  │  │  │  ├── $clientId.tsx
+│  │  │  │  │  │  └── index.tsx
+│  │  │  │  │  ├── saml-idp.tsx
+│  │  │  │  │  ├── saml.tsx
+│  │  │  │  │  └── scim.tsx
+│  │  │  │  ├── login-methods
+│  │  │  │  │  ├── magic-links.tsx
+│  │  │  │  │  ├── passkeys.tsx
+│  │  │  │  │  ├── password.tsx
+│  │  │  │  │  └── passwordless.tsx
+│  │  │  │  ├── mfa
+│  │  │  │  │  ├── recovery-codes.tsx
+│  │  │  │  │  ├── sms-email.tsx
+│  │  │  │  │  └── totp.tsx
+│  │  │  │  └── social.tsx
+│  │  │  ├── authorization
+│  │  │  │  ├── abac.tsx
+│  │  │  │  ├── access-tester.tsx
+│  │  │  │  ├── assistant.tsx
+│  │  │  │  ├── audit.tsx
+│  │  │  │  ├── builder.tsx
+│  │  │  │  ├── explorer.tsx
+│  │  │  │  ├── index.tsx
+│  │  │  │  ├── permissions.tsx
+│  │  │  │  ├── rbac.tsx
+│  │  │  │  ├── rebac.tsx
+│  │  │  │  ├── resources.tsx
+│  │  │  │  ├── roles.tsx
+│  │  │  │  ├── settings.tsx
+│  │  │  │  ├── simulator.tsx
+│  │  │  │  ├── templates.tsx
+│  │  │  │  └── versions.tsx
+│  │  │  ├── developer
+│  │  │  │  ├── agents.tsx
+│  │  │  │  ├── auth-hooks.tsx
+│  │  │  │  ├── bots.tsx
+│  │  │  │  ├── credentials.tsx
+│  │  │  │  ├── infrastructure.tsx
+│  │  │  │  └── webhooks
+│  │  │  │    ├── $id.tsx
+│  │  │  │    └── index.tsx
+│  │  │  ├── groups
+│  │  │  │  ├── $groupId.tsx
+│  │  │  │  └── index.tsx
+│  │  │  ├── index.tsx
+│  │  │  ├── invitations.tsx
+│  │  │  ├── organizations
+│  │  │  │  ├── domains.tsx
+│  │  │  │  ├── members.tsx
+│  │  │  │  └── tenants.tsx
+│  │  │  ├── security
+│  │  │  │  ├── audit-intelligence.tsx
+│  │  │  │  ├── audit-logs.tsx
+│  │  │  │  ├── compliance
+│  │  │  │  │  ├── gdpr.tsx
+│  │  │  │  │  ├── iso27001.tsx
+│  │  │  │  │  ├── retention.tsx
+│  │  │  │  │  └── soc2.tsx
+│  │  │  │  ├── device-authorizations.tsx
+│  │  │  │  ├── index.tsx
+│  │  │  │  ├── log-streaming.tsx
+│  │  │  │  ├── rate-limits.tsx
+│  │  │  │  ├── sessions.tsx
+│  │  │  │  └── threats
+│  │  │  │    ├── anomalies.tsx
+│  │  │  │    ├── bots.tsx
+│  │  │  │    ├── ip-allowlist.tsx
+│  │  │  │    ├── rate-limits.tsx
+│  │  │  │    └── risk-settings.tsx
+│  │  │  ├── settings
+│  │  │  │  ├── billing.tsx
+│  │  │  │  ├── branding.tsx
+│  │  │  │  └── workspace
+│  │  │  │    ├── domains.tsx
+│  │  │  │    ├── email-templates.tsx
+│  │  │  │    ├── general.tsx
+│  │  │  │    └── security-policy.tsx
+│  │  │  └── users
+│  │  │    ├── $userId_.timeline.tsx
+│  │  │    ├── $userId.tsx
+│  │  │    ├── deleted.tsx
+│  │  │    ├── import.tsx
+│  │  │    ├── index.tsx
+│  │  │    ├── invitations.tsx
+│  │  │    └── sessions.tsx
+│  │  ├── _app.tsx
+│  │  ├── _auth
+│  │  │  ├── forgot-password.tsx
+│  │  │  ├── invite.accept.tsx
+│  │  │  ├── magic.tsx
+│  │  │  ├── sign-in.tsx
+│  │  │  ├── sign-up.tsx
+│  │  │  └── sso.callback.tsx
+│  │  ├── _auth.tsx
+│  │  ├── account
+│  │  │  ├── data.tsx
+│  │  │  ├── profile.tsx
+│  │  │  ├── security.tsx
+│  │  │  └── sessions.tsx
+│  │  └── account.tsx
+│  ├── routeTree.gen.ts
+│  └── styles.css
+├── tsconfig.json
+├── vercel.json
+├── vite.config.ts
+└── vitest.config.ts
