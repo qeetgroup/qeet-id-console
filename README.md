@@ -109,21 +109,75 @@ Validate at 375, 768, 1024, 1440, and 1600 pixels in both themes.
 
 ## Development
 
-Run commands from the repository root:
+Prerequisites: [Bun](https://bun.sh) `1.3+` and a running Qeet ID backend
+([`qeet-id-server`](https://github.com/qeetgroup/qeet-id-server), local default `:4001`).
 
 ```bash
 bun install
-bun run dev:console
-bun run --filter '@qeet-id/console' typecheck
-bun run --filter '@qeet-id/console' test
-bun run --filter '@qeet-id/console' build
-bun run lint
+cp .env.example .env.local     # set VITE_API_URL if not using the default
+bun run dev                    # Vite dev server
 ```
 
-The local TanStack devtools launcher is hidden by default so it never competes with operator UI. Opt in only when debugging:
+Other scripts:
 
 ```bash
-VITE_ENABLE_DEVTOOLS=true bun run dev:console
+bun run build       # production build (Vite + Nitro)
+bun run typecheck   # tsc --noEmit
+bun run test        # vitest
+bun run lint        # biome
 ```
 
-The API defaults to `http://localhost:4001`; override it with `VITE_API_URL`.
+The TanStack devtools launcher is hidden by default so it never competes with operator UI —
+opt in only when debugging:
+
+```bash
+VITE_ENABLE_DEVTOOLS=true bun run dev
+```
+
+## Configuration
+
+`VITE_*` values are exposed to the browser (inlined at build time); `SERVER_URL` is server-only.
+Schema lives in `src/env.ts`. The app appends `/v1/...` to the API base itself.
+
+| Variable | Scope | Dev | Prod |
+|---|---|---|---|
+| `VITE_API_URL` | client | `http://localhost:4001` | `https://api.id.qeet.in` |
+| `SERVER_URL` | server (SSR) | falls back to `VITE_API_URL` | `https://api.id.qeet.in` |
+| `VITE_APP_TITLE` | client | `Qeet ID Admin` | `Qeet ID Admin` |
+
+## Deployment (Vercel)
+
+Deployed as a **TanStack Start** project on Vercel. It is SSR via Nitro, so the build emits
+Vercel's Build Output API (`.vercel/output`) — the dashboard's "Output Directory" field is
+ignored, and no framework config is needed. [`vercel.json`](vercel.json) only pins the Bun
+install/build commands:
+
+```json
+{ "installCommand": "bun install --frozen-lockfile", "buildCommand": "bun run build" }
+```
+
+**Steps**
+
+1. Import `qeetgroup/qeet-id-console` in Vercel — the Framework Preset auto-detects **TanStack Start**.
+2. Environment variables (Production + Preview):
+   ```
+   VITE_API_URL=https://api.id.qeet.in
+   SERVER_URL=https://api.id.qeet.in
+   VITE_APP_TITLE=Qeet ID Admin
+   ```
+3. Deploy.
+4. Add the custom domain **`console.id.qeet.in`** → create the CNAME Vercel provides in GoDaddy
+   (`console.id` → `cname.vercel-dns.com`). That host is already in the backend's `ALLOWED_ORIGINS`.
+
+`@qeetrix/ui` resolves from the public npm registry, so a standalone install needs no monorepo.
+
+## Related repositories
+
+| Repo | Role |
+|---|---|
+| [`qeet-id-server`](https://github.com/qeetgroup/qeet-id-server) | Backend API (Go) — auth, OIDC, WebAuthn |
+| [`qeet-id-login`](https://github.com/qeetgroup/qeet-id-login) | Hosted login — `login.id.qeet.in` |
+| [`qeet-id-website`](https://github.com/qeetgroup/qeet-id-website) | Marketing site — `id.qeet.in` |
+| `qeet-id-deploy` | Backend infrastructure + CD (Terraform) |
+
+Part of the [Qeet Group](https://github.com/qeetgroup) suite; built on the shared `@qeetrix/ui` design system.
