@@ -111,7 +111,7 @@ export function useCheckout() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { plan_code: string; currency: string }): Promise<CheckoutResult> => {
+    mutationFn: async (body: { plan_code: string; currency: string; country?: string }): Promise<CheckoutResult> => {
       const base = `${window.location.origin}/settings/billing`;
       return api<CheckoutResult>(`/v1/tenants/${tenantId}/billing/checkout`, {
         method: "POST",

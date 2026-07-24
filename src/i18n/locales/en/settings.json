@@ -51,6 +51,7 @@
   },
   "billing": {
     "description": "Your subscription plan, billed in your chosen currency. Invoices are generated each period.",
+    "country": "Country",
     "currency": "Currency",
     "currentPlan": {
       "title": "Current plan",
