@@ -119,6 +119,40 @@ const PLANS = [
   },
 ];
 
+// Billing countries offered at checkout. Country selects the payment provider
+// (backend PAYMENT_COUNTRY_ROUTES); currency is what's charged.
+const COUNTRIES: { code: string; name: string }[] = [
+  { code: "IN", name: "India" },
+  { code: "US", name: "United States" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "CA", name: "Canada" },
+  { code: "AU", name: "Australia" },
+  { code: "DE", name: "Germany" },
+  { code: "FR", name: "France" },
+  { code: "ES", name: "Spain" },
+  { code: "IT", name: "Italy" },
+  { code: "NL", name: "Netherlands" },
+  { code: "IE", name: "Ireland" },
+  { code: "SE", name: "Sweden" },
+  { code: "JP", name: "Japan" },
+  { code: "SG", name: "Singapore" },
+  { code: "AE", name: "United Arab Emirates" },
+  { code: "BR", name: "Brazil" },
+  { code: "ZA", name: "South Africa" },
+];
+
+// Sensible default country for a currency, so the two selectors stay in sync
+// until the admin overrides the country.
+const CURRENCY_COUNTRY: Record<string, string> = {
+  USD: "US",
+  EUR: "DE",
+  GBP: "GB",
+  INR: "IN",
+  JPY: "JP",
+  AUD: "AU",
+  CAD: "CA",
+};
+
 function BillingPage() {
   const { t } = useTranslation("settings");
   const [confirmDialog, openConfirm] = useConfirmDialog();
@@ -142,6 +176,11 @@ function BillingPage() {
   const activeCurrency =
     currency ?? sub?.currency ?? (currencies.includes("USD") ? "USD" : currencies[0]) ?? "USD";
 
+  // Country selects the payment provider; defaults to the active currency's home
+  // country until the admin picks one explicitly.
+  const [country, setCountry] = useState<string | null>(null);
+  const activeCountry = country ?? CURRENCY_COUNTRY[activeCurrency] ?? "US";
+
   return (
     <div className="flex min-w-0 flex-col gap-6">
       {confirmDialog}
@@ -149,20 +188,37 @@ function BillingPage() {
         description={t("billing.description")}
         actions={
           currencies.length > 0 ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{t("billing.currency")}</span>
-              <Select value={activeCurrency} onValueChange={setCurrency}>
-                <SelectTrigger className="w-27.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {currencies.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{t("billing.country")}</span>
+                <Select value={activeCountry} onValueChange={setCountry}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{t("billing.currency")}</span>
+                <Select value={activeCurrency} onValueChange={setCurrency}>
+                  <SelectTrigger className="w-27.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           ) : undefined
         }
@@ -228,6 +284,13 @@ function BillingPage() {
           {PLANS.map((plan) => {
             const isCurrent = sub?.plan_code === plan.code && !sub?.cancel_at_period_end;
             const isEnterprise = plan.code === "enterprise";
+            // Price shown in the selected currency, from the API; fall back to the
+            // static label when the plan isn't priced in that currency.
+            const priceMinor = apiPlans.find((p) => p.code === plan.code)?.prices?.[activeCurrency];
+            const displayPrice =
+              isEnterprise || priceMinor === undefined
+                ? plan.price
+                : formatMoney(priceMinor, activeCurrency);
 
             return (
               <Card
@@ -278,13 +341,13 @@ function BillingPage() {
                           plan.featured && "text-primary",
                         )}
                       >
-                        {plan.price}
+                        {displayPrice}
                       </span>
-                      {plan.price !== "Custom" && (
+                      {!isEnterprise && (
                         <span className="text-xs text-muted-foreground">{plan.period}</span>
                       )}
                     </div>
-                    {plan.price === "Custom" && (
+                    {isEnterprise && (
                       <p className="text-xs text-muted-foreground capitalize">{plan.period}</p>
                     )}
                     <p className="mt-1 text-xs text-muted-foreground">{plan.mau}</p>
@@ -324,6 +387,7 @@ function BillingPage() {
                         checkoutM.mutate({
                           plan_code: plan.code,
                           currency: activeCurrency,
+                          country: activeCountry,
                         })
                       }
                     >
