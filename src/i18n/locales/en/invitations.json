@@ -28,6 +28,7 @@
     }
   },
   "table": {
+    "resend": "Resend",
     "revoke": "Revoke"
   },
   "confirm": {
@@ -52,6 +53,7 @@
   },
   "toast": {
     "sent": "Invitation sent",
+    "resent": "Invitation resent",
     "revoked": "Invitation revoked"
   }
 }

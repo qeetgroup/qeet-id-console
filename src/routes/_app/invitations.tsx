@@ -36,7 +36,7 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2Icon, MailIcon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
+import { Loader2Icon, MailIcon, PlusIcon, RefreshCwIcon, SendIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -98,6 +98,14 @@ function InvitationsPage() {
     mutationFn: (id: string) => api<void>(`/v1/invites/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["invites"] }),
     meta: { successMessage: t("toast.revoked") },
+  });
+
+  // Resend rotates the token + expiry server-side and re-sends the email; a
+  // fresh link is issued, so the invite returns to pending and its expiry moves.
+  const resendM = useMutation({
+    mutationFn: (id: string) => api<{ token: string }>(`/v1/invites/${id}/resend`, { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["invites"] }),
+    meta: { successMessage: t("toast.resent") },
   });
 
   const roleName = (id?: string | null) => rolesQ.data?.items.find((r) => r.id === id)?.name ?? "—";
@@ -256,23 +264,41 @@ function InvitationsPage() {
                     )}
                     {canWriteUsers ? (
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={inv.status !== "pending" || revokeM.isPending}
-                          onClick={() =>
-                            openConfirm({
-                              title: t("confirm.revokeTitle", {
-                                email: inv.email,
-                              }),
-                              variant: "destructive",
-                              confirmLabel: t("confirm.revokeLabel"),
-                              onConfirm: () => revokeM.mutate(inv.id),
-                            })
-                          }
-                        >
-                          <Trash2Icon /> {t("table.revoke")}
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={
+                              (inv.status !== "pending" && inv.status !== "expired") ||
+                              resendM.isPending
+                            }
+                            onClick={() => resendM.mutate(inv.id)}
+                          >
+                            {resendM.isPending && resendM.variables === inv.id ? (
+                              <Loader2Icon className="animate-spin" />
+                            ) : (
+                              <SendIcon />
+                            )}
+                            {t("table.resend")}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={inv.status !== "pending" || revokeM.isPending}
+                            onClick={() =>
+                              openConfirm({
+                                title: t("confirm.revokeTitle", {
+                                  email: inv.email,
+                                }),
+                                variant: "destructive",
+                                confirmLabel: t("confirm.revokeLabel"),
+                                onConfirm: () => revokeM.mutate(inv.id),
+                              })
+                            }
+                          >
+                            <Trash2Icon /> {t("table.revoke")}
+                          </Button>
+                        </div>
                       </TableCell>
                     ) : null}
                   </TableRow>

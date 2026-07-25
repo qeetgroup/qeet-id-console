@@ -211,11 +211,14 @@ type SignupInput = {
 
 // Signup is now tenant-less: the response carries the new user + a token pair
 // but NO tenant. The user creates their first workspace from the dashboard.
-type SignupResponse = TokenPair & {
+export type SignupResponse = TokenPair & {
   user: User;
 };
 
-export function useSignup() {
+// useSignup persists the new tenant-less session, then either runs a caller
+// supplied onSuccess (e.g. to kick off email OTP verification) or, by default,
+// navigates straight to the dashboard.
+export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (in_: SignupInput) =>
@@ -225,13 +228,41 @@ export function useSignup() {
         anonymous: true,
       }),
     onSuccess: (res) => {
-      // Tenant-less session; clear any stale tenant id first.
+      // Tenant-less session; clear any stale tenant id first. Tokens are set
+      // here so the follow-up email-verification calls are authenticated.
       tokenStore.clear();
       tokenStore.set(res.access_token);
       tokenStore.setRefresh(res.refresh_token);
       tokenStore.setUserId(res.user_id);
-      navigate({ to: "/" });
+      if (opts?.onSuccess) {
+        opts.onSuccess(res);
+      } else {
+        navigate({ to: "/" });
+      }
     },
+  });
+}
+
+// Email OTP verification (self-service, uses the just-issued signup token).
+// StartEmail sends a 6-digit code to the address on file; ConfirmEmail marks
+// the email verified. Both are backed by /v1/users/{id}/verify/email/*.
+export function useStartEmailVerification() {
+  return useMutation({
+    mutationFn: (userId: string) =>
+      api<{ message: string }>(`/v1/users/${userId}/verify/email/start`, {
+        method: "POST",
+        body: {},
+      }),
+  });
+}
+
+export function useConfirmEmailVerification() {
+  return useMutation({
+    mutationFn: (in_: { userId: string; code: string }) =>
+      api<{ message: string }>(`/v1/users/${in_.userId}/verify/email/confirm`, {
+        method: "POST",
+        body: { code: in_.code },
+      }),
   });
 }
 
