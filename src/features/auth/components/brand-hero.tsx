@@ -27,7 +27,7 @@ export function BrandHero({ className, ...props }: React.ComponentProps<"div">) 
         </g>
         <g fill="#ffffff" textAnchor="middle" style={{ fontFamily: "var(--font-display)" }}>
           <text x="400" y="500" fontSize="92" fontWeight="700" letterSpacing="-2">
-            Q.E.E.T ID
+            QEET ID
           </text>
           <text
             x="400"
@@ -37,7 +37,7 @@ export function BrandHero({ className, ...props }: React.ComponentProps<"div">) 
             fillOpacity="0.85"
             style={{ fontFamily: "var(--font-ui)" }}
           >
-            Admin Console
+            Console
           </text>
         </g>
       </svg>

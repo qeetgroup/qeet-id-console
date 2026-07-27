@@ -10,6 +10,7 @@ import {
   FieldLabel,
   FieldSeparator,
   Input,
+  PasswordInput,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { Apple, Github, Google, Microsoft } from "@thesvg/react";
@@ -75,7 +76,7 @@ export function LoginForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
                 <p className="text-balance text-muted-foreground">
-                  Login to your Qeet ID admin account
+                  Login to your Qeet ID console
                 </p>
               </div>
 
@@ -116,7 +117,7 @@ export function LoginForm({
                       Forgot your password?
                     </Link>
                   </div>
-                  <Input id="password" name="password" type="password" required />
+                  <PasswordInput id="password" name="password" required />
                 </Field>
               )}
 

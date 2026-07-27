@@ -10,6 +10,7 @@ import {
   FieldLabel,
   FieldSeparator,
   Input,
+  PasswordInput,
   PasswordStrengthMeter,
   scorePassword,
 } from "@qeetrix/ui";
@@ -71,8 +72,7 @@ export function SignupForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create your account</h1>
                 <p className="text-sm text-balance text-muted-foreground">
-                  We&apos;ll set up a personal workspace for you automatically. You can rename it or
-                  create more later.
+                  You&apos;ll set up your first workspace right after verifying your email.
                 </p>
               </div>
 
@@ -95,30 +95,26 @@ export function SignupForm({
                 </FieldDescription>
               </Field>
 
-              <Field className="grid grid-cols-2 gap-4">
-                <Field>
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    minLength={8}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    aria-describedby="password-strength"
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="confirm_password">Confirm</FieldLabel>
-                  <Input
-                    id="confirm_password"
-                    name="confirm_password"
-                    type="password"
-                    minLength={8}
-                    required
-                  />
-                </Field>
+              <Field>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <PasswordInput
+                  id="password"
+                  name="password"
+                  minLength={8}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  aria-describedby="password-strength"
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="confirm_password">Confirm password</FieldLabel>
+                <PasswordInput
+                  id="confirm_password"
+                  name="confirm_password"
+                  minLength={8}
+                  required
+                />
               </Field>
               {password.length > 0 && (
                 <PasswordStrengthMeter
