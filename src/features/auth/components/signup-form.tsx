@@ -8,21 +8,18 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
   Input,
   PasswordInput,
   PasswordStrengthMeter,
   scorePassword,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import { Loader2Icon } from "lucide-react";
 import type * as React from "react";
 import { useState } from "react";
 
-import { socialStartUrl, usePlatformSocialProviders } from "@/lib/auth";
-
 import { BrandHero } from "./brand-hero";
+import { SocialButtons } from "./social-buttons";
 
 export type SignupFormValues = {
   email: string;
@@ -46,10 +43,6 @@ export function SignupForm({
   const [mismatch, setMismatch] = useState(false);
   const [password, setPassword] = useState("");
   const passwordScore = scorePassword(password);
-
-  // Platform social login: enable a provider button only when it's configured.
-  const socialProviders = usePlatformSocialProviders();
-  const googleEnabled = socialProviders.data?.providers?.includes("google") ?? false;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -151,35 +144,7 @@ export function SignupForm({
                 </Button>
               </Field>
 
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Or continue with
-              </FieldSeparator>
-
-              <Field className="grid grid-cols-4 gap-4">
-                <Button variant="outline" type="button" disabled>
-                  <Apple className="invert dark:invert-0" />
-                  <span className="sr-only">Sign up with Apple</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  type="button"
-                  disabled={!googleEnabled}
-                  onClick={() => {
-                    if (googleEnabled) window.location.href = socialStartUrl("google");
-                  }}
-                >
-                  <Google />
-                  <span className="sr-only">Sign up with Google</span>
-                </Button>
-                <Button variant="outline" type="button" disabled>
-                  <Github className="dark:invert" />
-                  <span className="sr-only">Sign up with GitHub</span>
-                </Button>
-                <Button variant="outline" type="button" disabled>
-                  <Microsoft />
-                  <span className="sr-only">Sign up with Microsoft</span>
-                </Button>
-              </Field>
+              <SocialButtons verb="Sign up" />
 
               <FieldDescription className="text-center">
                 Already have an account? <Link to="/sign-in">Sign in</Link>
