@@ -84,7 +84,7 @@ function ProfilePage() {
 
   const saveM = useMutation({
     mutationFn: (body: { display_name?: string; avatar_url?: string }) =>
-      api<unknown>(`/v1/users/${me.data?.id}`, { method: "PATCH", body }),
+      api<unknown>(`/v1/me`, { method: "PATCH", body }),
     onSuccess: () => {
       setAvatar(undefined); // fall back to the freshly-fetched server value
       void me.refetch();

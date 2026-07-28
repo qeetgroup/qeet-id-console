@@ -55,9 +55,9 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+        <CardContent className="grid p-0 md:min-h-160 md:grid-cols-2">
           <form
-            className="p-6 md:p-8"
+            className="flex flex-col justify-center p-6 md:p-8"
             onSubmit={(e) => {
               e.preventDefault();
               if (ssoHit) {
@@ -75,9 +75,7 @@ export function LoginForm({
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
-                <p className="text-balance text-muted-foreground">
-                  Login to your Qeet ID console
-                </p>
+                <p className="text-balance text-muted-foreground">Login to your Qeet ID console</p>
               </div>
 
               <Field>
@@ -117,7 +115,12 @@ export function LoginForm({
                       Forgot your password?
                     </Link>
                   </div>
-                  <PasswordInput id="password" name="password" required />
+                  <PasswordInput
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                  />
                 </Field>
               )}
 

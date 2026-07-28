@@ -48,9 +48,9 @@ export function SignupForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+        <CardContent className="grid p-0 md:min-h-160 md:grid-cols-2">
           <form
-            className="p-6 md:p-8"
+            className="flex flex-col justify-center p-6 md:p-8"
             onSubmit={(e) => {
               e.preventDefault();
               const data = new FormData(e.currentTarget);
@@ -90,9 +90,6 @@ export function SignupForm({
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input id="email" name="email" type="email" placeholder="jane@acme.test" required />
-                <FieldDescription>
-                  We&apos;ll use this for sign-in and notifications.
-                </FieldDescription>
               </Field>
 
               <Field>
@@ -100,6 +97,7 @@ export function SignupForm({
                 <PasswordInput
                   id="password"
                   name="password"
+                  placeholder="At least 8 characters"
                   minLength={8}
                   required
                   value={password}
@@ -112,6 +110,7 @@ export function SignupForm({
                 <PasswordInput
                   id="confirm_password"
                   name="confirm_password"
+                  placeholder="Re-enter your password"
                   minLength={8}
                   required
                 />
@@ -127,7 +126,6 @@ export function SignupForm({
                   }
                 />
               )}
-              <FieldDescription>At least 8 characters.</FieldDescription>
 
               {mismatch && (
                 <Field>

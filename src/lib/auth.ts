@@ -393,7 +393,10 @@ export function useMe() {
   const userId = tokenStore.getUserId();
   return useQuery({
     queryKey: ["me", userId],
-    queryFn: () => api<Me>(`/v1/users/${userId}`),
+    // Self endpoint: resolves to the caller from the token, so it works even for
+    // a tenant-less user (fresh signup) — unlike /v1/users/{id}, which is the
+    // tenant-admin route and 403s ("tenant scope required") without a workspace.
+    queryFn: () => api<Me>(`/v1/me`),
     enabled: !!userId,
     staleTime: 60_000,
   });
