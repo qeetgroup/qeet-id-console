@@ -18,6 +18,7 @@ import { BuildingIcon, Loader2Icon } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 
+import { socialStartUrl, usePlatformSocialProviders } from "@/lib/auth";
 import { useSSODiscovery } from "@/lib/sso";
 
 import { BrandHero } from "./brand-hero";
@@ -51,6 +52,10 @@ export function LoginForm({
 
   const sso = useSSODiscovery(debouncedEmail);
   const ssoHit = sso.data;
+
+  // Platform social login: enable a provider button only when it's configured.
+  const socialProviders = usePlatformSocialProviders();
+  const googleEnabled = socialProviders.data?.providers?.includes("google") ?? false;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -150,7 +155,14 @@ export function LoginForm({
                   <Apple className="invert dark:invert-0" />
                   <span className="sr-only">Login with Apple</span>
                 </Button>
-                <Button variant="outline" type="button" disabled>
+                <Button
+                  variant="outline"
+                  type="button"
+                  disabled={!googleEnabled}
+                  onClick={() => {
+                    if (googleEnabled) window.location.href = socialStartUrl("google");
+                  }}
+                >
                   <Google />
                   <span className="sr-only">Login with Google</span>
                 </Button>

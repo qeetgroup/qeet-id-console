@@ -20,6 +20,8 @@ import { Loader2Icon } from "lucide-react";
 import type * as React from "react";
 import { useState } from "react";
 
+import { socialStartUrl, usePlatformSocialProviders } from "@/lib/auth";
+
 import { BrandHero } from "./brand-hero";
 
 export type SignupFormValues = {
@@ -44,6 +46,10 @@ export function SignupForm({
   const [mismatch, setMismatch] = useState(false);
   const [password, setPassword] = useState("");
   const passwordScore = scorePassword(password);
+
+  // Platform social login: enable a provider button only when it's configured.
+  const socialProviders = usePlatformSocialProviders();
+  const googleEnabled = socialProviders.data?.providers?.includes("google") ?? false;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -154,7 +160,14 @@ export function SignupForm({
                   <Apple className="invert dark:invert-0" />
                   <span className="sr-only">Sign up with Apple</span>
                 </Button>
-                <Button variant="outline" type="button" disabled>
+                <Button
+                  variant="outline"
+                  type="button"
+                  disabled={!googleEnabled}
+                  onClick={() => {
+                    if (googleEnabled) window.location.href = socialStartUrl("google");
+                  }}
+                >
                   <Google />
                   <span className="sr-only">Sign up with Google</span>
                 </Button>

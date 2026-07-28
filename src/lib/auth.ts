@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useSyncExternalStore } from "react";
 
-import { api, tokenStore } from "./api";
+import { api, API_BASE_URL, tokenStore } from "./api";
 
 type TokenPair = {
   access_token: string;
@@ -296,6 +296,51 @@ export async function switchToTenant(tenantId: string): Promise<void> {
   tokenStore.setRefresh(res.refresh_token);
   tokenStore.setTenantId(res.tenant_id);
   if (typeof window !== "undefined") window.location.assign("/");
+}
+
+// ---------------------------------------------------------------------------
+// Platform social login (the console's own Qeet ID accounts, tenant-less)
+// ---------------------------------------------------------------------------
+
+/** Which platform-level social providers are configured (e.g. ["google"]). */
+export function usePlatformSocialProviders() {
+  return useQuery({
+    queryKey: ["social", "platform-providers"],
+    queryFn: () =>
+      api<{ providers: string[] }>("/v1/social/platform/providers", { anonymous: true }),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Full backend URL to begin a platform social login (browser redirect). */
+export function socialStartUrl(provider: string): string {
+  return `${API_BASE_URL}/v1/social/${provider}/start`;
+}
+
+/**
+ * Trade the one-time social login code (delivered to /sign-in?social_code=…
+ * after the provider redirect) for a Qeet session. Tenant-less, like signup —
+ * the user creates their first organization from the dashboard.
+ */
+export function useConsumeSocialCode() {
+  const navigate = useNavigate();
+  return useMutation({
+    mutationFn: (code: string) =>
+      api<TokenPair & { tenant_id?: string }>("/v1/social/exchange", {
+        method: "POST",
+        body: { code },
+        anonymous: true,
+      }),
+    onSuccess: (pair) => {
+      tokenStore.clear();
+      tokenStore.set(pair.access_token);
+      tokenStore.setRefresh(pair.refresh_token);
+      if (pair.tenant_id) tokenStore.setTenantId(pair.tenant_id);
+      tokenStore.setUserId(pair.user_id);
+      navigate({ to: "/" });
+    },
+    meta: { silent: true },
+  });
 }
 
 export function useLogout() {
