@@ -146,3 +146,49 @@ export function useCancelSubscription() {
     meta: { successMessage: "Subscription will cancel at period end" },
   });
 }
+
+// ---------------------------------------------------------------------------
+// Signup / create-organization checkout
+// ---------------------------------------------------------------------------
+
+export type BillingInterval = "month" | "year";
+
+/**
+ * The plan code for a tier at a billing interval. Free and Enterprise have no
+ * annual variant (Free is free; Enterprise is contact-sales), so they always
+ * map to the base code; the paid tiers get a "<tier>_year" code.
+ */
+export function planCodeForTier(tier: string, interval: BillingInterval): string {
+  return interval === "year" && tier !== "free" && tier !== "enterprise" ? `${tier}_year` : tier;
+}
+
+/**
+ * Start a paid checkout for a plan chosen during signup, BEFORE any org exists.
+ * The org spec rides along and the organization is created only when the payment
+ * completes — so an abandoned payment never leaves a dangling org. Returns a
+ * hosted-checkout URL (Razorpay / dev sandbox) to redirect the payer to.
+ */
+export function startSignupCheckout(input: {
+  orgName: string;
+  orgSlug: string;
+  region: string;
+  planCode: string;
+  currency: string;
+  country?: string;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<CheckoutResult> {
+  return api<CheckoutResult>("/v1/signup/checkout", {
+    method: "POST",
+    body: {
+      org_name: input.orgName,
+      org_slug: input.orgSlug,
+      region: input.region,
+      plan_code: input.planCode,
+      currency: input.currency,
+      country: input.country,
+      success_url: input.successUrl,
+      cancel_url: input.cancelUrl,
+    },
+  });
+}

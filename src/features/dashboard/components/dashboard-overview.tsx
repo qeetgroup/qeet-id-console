@@ -378,7 +378,7 @@ const workspaceFoundations = [
   },
 ] as const;
 
-export function NoWorkspaceOnboarding() {
+export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
   const { t } = useTranslation("dashboard");
 
   return (
@@ -397,9 +397,9 @@ export function NoWorkspaceOnboarding() {
           {t("noWorkspace.description")}
         </p>
         <div className="mt-7 flex flex-wrap items-center gap-3">
-          <Link to="/organizations/tenants" className={buttonVariants({ size: "lg" })}>
+          <Button size="lg" onClick={onStart}>
             <PlusIcon /> {t("noWorkspace.cta")}
-          </Link>
+          </Button>
           <Link to="/account/security" className={buttonVariants({ variant: "ghost", size: "lg" })}>
             Review account security <ArrowRightIcon />
           </Link>
