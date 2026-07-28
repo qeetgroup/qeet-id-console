@@ -112,7 +112,7 @@ function DashboardHeading({
                       Telemetry updated <TimeSince value={generatedAt} className="font-medium" />
                     </span>
                   ) : (
-                    <span>Awaiting workspace telemetry</span>
+                    <span>Awaiting organization telemetry</span>
                   )}
                 </>
               )}
@@ -311,7 +311,7 @@ export function DashboardOverview() {
             <div className="min-w-0">
               <h2 className="font-heading text-base font-semibold">Your operator view is scoped</h2>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Workspace analytics are not part of your role. Available navigation and actions are
+                Organization analytics are not part of your role. Available navigation and actions are
                 tailored to your effective permissions.
               </p>
             </div>
@@ -364,7 +364,7 @@ const workspaceFoundations = [
   {
     icon: ShieldCheckIcon,
     title: "Tenant boundary",
-    description: "Isolate identities, policies, and administrators from every other workspace.",
+    description: "Isolate identities, policies, and administrators from every other organization.",
   },
   {
     icon: KeyRoundIcon,
@@ -388,7 +388,7 @@ export function NoWorkspaceOnboarding() {
           <QeetLogoMark size={28} title="Qeet" />
         </span>
         <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-          Workspace initialization
+          Organization initialization
         </p>
         <h1 className="mt-2 max-w-xl text-balance font-heading text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
           {t("noWorkspace.title")}
@@ -414,7 +414,7 @@ export function NoWorkspaceOnboarding() {
         <div className="relative">
           <div className="flex items-center gap-2 text-xs font-semibold text-sidebar-foreground/80">
             <Building2Icon className="size-4 text-sidebar-primary" />
-            What a workspace establishes
+            What an organization establishes
           </div>
           <ol className="mt-8 space-y-7">
             {workspaceFoundations.map(({ icon: Icon, title, description }, index) => (

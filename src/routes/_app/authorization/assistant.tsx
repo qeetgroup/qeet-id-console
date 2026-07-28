@@ -47,7 +47,7 @@ function AssistantPage() {
               <ComingSoon
                 icon={SparklesIcon}
                 title="Connect an AI provider to enable the assistant"
-                description="The UI is ready. Once an LLM provider (e.g. the Claude API) is configured for this workspace, prompts here will generate complete policies, explain existing ones, and recommend least-privilege changes."
+                description="The UI is ready. Once an LLM provider (e.g. the Claude API) is configured for this organization, prompts here will generate complete policies, explain existing ones, and recommend least-privilege changes."
                 note="no AI provider configured for this tenant"
               />
             </div>

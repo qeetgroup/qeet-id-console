@@ -37,10 +37,10 @@
   },
   "invite": {
     "invalidTitle": "Invalid invite link",
-    "invalidDescription": "This link is missing its token. Ask your workspace admin to resend the invite.",
+    "invalidDescription": "This link is missing its token. Ask your organization admin to resend the invite.",
     "backToSignIn": "Back to sign in",
     "acceptTitle": "Accept your invite",
-    "acceptDescription": "Set a password to finish joining the workspace — you'll be signed in afterwards.",
+    "acceptDescription": "Set a password to finish joining the organization — you'll be signed in afterwards.",
     "displayNameLabel": "Display name",
     "displayNamePlaceholder": "How you'd like to be addressed",
     "passwordLabel": "Password",

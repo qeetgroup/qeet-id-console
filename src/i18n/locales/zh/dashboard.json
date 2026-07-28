@@ -1,6 +1,6 @@
 {
   "title": "概览",
-  "subtitle": "一目了然地查看此工作区的身份健康状况。",
+  "subtitle": "一目了然地查看此组织的身份健康状况。",
   "systemsOk": "所有系统正常运行",
   "range7d": "过去 7 天",
   "range14d": "过去 14 天",
@@ -21,7 +21,7 @@
   "quickActions": {
     "heading": "快速操作",
     "inviteLabel": "邀请用户",
-    "inviteDesc": "将团队成员添加到此工作区",
+    "inviteDesc": "将团队成员添加到此组织",
     "apiKeyLabel": "创建 API 密钥",
     "apiKeyDesc": "为应用程序颁发凭据",
     "threatsLabel": "查看威胁",
@@ -63,14 +63,14 @@
   },
   "activity": {
     "title": "近期活动",
-    "description": "此工作区最近 5 个事件",
+    "description": "此组织最近 5 个事件",
     "viewAll": "查看全部",
     "emptyTitle": "暂无活动",
-    "emptyDescription": "用户与您的工作区交互后，事件将显示在此处。"
+    "emptyDescription": "用户与您的组织交互后，事件将显示在此处。"
   },
   "noWorkspace": {
-    "title": "创建您的第一个工作区",
-    "description": "您的账户尚未与工作区关联。创建一个工作区以开始管理用户、配置身份验证并邀请团队成员 — 您将成为其所有者。",
-    "cta": "创建工作区"
+    "title": "创建您的第一个组织",
+    "description": "您的账户尚未与组织关联。创建一个组织以开始管理用户、配置身份验证并邀请团队成员 — 您将成为其所有者。",
+    "cta": "创建组织"
   }
 }

@@ -50,7 +50,7 @@ const COMMANDS: CommandDef[] = [
   {
     id: "cmd.navigate.dashboard",
     title: "Open Dashboard",
-    subtitle: "Go to the workspace overview",
+    subtitle: "Go to the organization overview",
     keywords: ["home", "overview", "main"],
     icon: <LayoutDashboardIcon className="size-4" />,
     run: ({ navigate }) => navigate("/"),
@@ -58,7 +58,7 @@ const COMMANDS: CommandDef[] = [
   {
     id: "cmd.create.user",
     title: "Create User",
-    subtitle: "Invite a new user to this workspace",
+    subtitle: "Invite a new user to this organization",
     keywords: ["invite", "add user", "new user", "onboard"],
     icon: <UserPlusIcon className="size-4" />,
     capability: "user.write",
@@ -93,7 +93,7 @@ const COMMANDS: CommandDef[] = [
   {
     id: "cmd.navigate.users",
     title: "Manage Users",
-    subtitle: "View and manage all workspace users",
+    subtitle: "View and manage all organization users",
     keywords: ["users list", "all users", "user management"],
     icon: <UsersIcon className="size-4" />,
     capability: "user.read",
@@ -102,7 +102,7 @@ const COMMANDS: CommandDef[] = [
   {
     id: "cmd.navigate.invitations",
     title: "Invite User",
-    subtitle: "Send a workspace invitation",
+    subtitle: "Send an organization invitation",
     keywords: ["send invite", "invitation", "onboard"],
     icon: <MailIcon className="size-4" />,
     capability: "user.write",
@@ -208,7 +208,7 @@ const COMMANDS: CommandDef[] = [
   {
     id: "cmd.navigate.analytics",
     title: "Analytics",
-    subtitle: "Workspace usage metrics and trends",
+    subtitle: "Organization usage metrics and trends",
     keywords: ["metrics", "stats", "analytics", "charts"],
     icon: <BarChart3Icon className="size-4" />,
     capability: "analytics.read",
@@ -224,13 +224,13 @@ const COMMANDS: CommandDef[] = [
     run: ({ navigate }) => navigate("/settings/branding"),
   },
   {
-    id: "cmd.navigate.workspace-settings",
-    title: "Workspace Settings",
+    id: "cmd.navigate.organization-settings",
+    title: "Organization Settings",
     subtitle: "General, domains, security policy",
-    keywords: ["settings", "workspace", "general", "config"],
+    keywords: ["settings", "organization", "general", "config"],
     icon: <Settings2Icon className="size-4" />,
     capability: "tenant.read",
-    run: ({ navigate }) => navigate("/settings/workspace/general"),
+    run: ({ navigate }) => navigate("/settings/organization/general"),
   },
   {
     id: "cmd.navigate.policy-builder",

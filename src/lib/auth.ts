@@ -57,7 +57,7 @@ export function useLogin() {
       // via useCompleteMfaLogin.
       if (isMfaChallenge(res)) return;
 
-      // Clear prior session so a tenant-less/different user doesn't inherit a stale workspace.
+      // Clear prior session so a tenant-less/different user doesn't inherit a stale organization.
       tokenStore.clear();
       tokenStore.set(res.access_token);
       tokenStore.setRefresh(res.refresh_token);
@@ -101,7 +101,7 @@ export function useCompleteMfaLogin() {
 }
 
 /**
- * Accept a workspace invite: exchange the emailed token + a chosen password for
+ * Accept an organization invite: exchange the emailed token + a chosen password for
  * a session (the backend creates/sets up the user and grants the invited role),
  * then land on the dashboard. Anonymous like login — there's no session yet.
  */
@@ -210,7 +210,7 @@ type SignupInput = {
 };
 
 // Signup is now tenant-less: the response carries the new user + a token pair
-// but NO tenant. The user creates their first workspace from the dashboard.
+// but NO tenant. The user creates their first organization from the dashboard.
 export type SignupResponse = TokenPair & {
   user: User;
 };
@@ -266,7 +266,7 @@ export function useConfirmEmailVerification() {
   });
 }
 
-// Switch workspace: mint a token scoped to a tenant the user belongs to, persist it, reload.
+// Switch organization: mint a token scoped to a tenant the user belongs to, persist it, reload.
 export async function switchToTenant(tenantId: string): Promise<void> {
   const res = await api<TokenPair & { tenant_id: string }>("/v1/auth/switch-tenant", {
     method: "POST",
@@ -395,7 +395,7 @@ export function useMe() {
     queryKey: ["me", userId],
     // Self endpoint: resolves to the caller from the token, so it works even for
     // a tenant-less user (fresh signup) — unlike /v1/users/{id}, which is the
-    // tenant-admin route and 403s ("tenant scope required") without a workspace.
+    // tenant-admin route and 403s ("tenant scope required") without an organization.
     queryFn: () => api<Me>(`/v1/me`),
     enabled: !!userId,
     staleTime: 60_000,

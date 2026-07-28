@@ -103,7 +103,8 @@ function InvitationsPage() {
   // Resend rotates the token + expiry server-side and re-sends the email; a
   // fresh link is issued, so the invite returns to pending and its expiry moves.
   const resendM = useMutation({
-    mutationFn: (id: string) => api<{ token: string }>(`/v1/invites/${id}/resend`, { method: "POST" }),
+    mutationFn: (id: string) =>
+      api<{ token: string }>(`/v1/invites/${id}/resend`, { method: "POST" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["invites"] }),
     meta: { successMessage: t("toast.resent") },
   });
@@ -336,7 +337,7 @@ function CreateInviteSheet({
 }: CreateInviteSheetProps) {
   const { t } = useTranslation("invitations");
 
-  // Which workspace the invitee joins. Defaults to the current one; admins who
+  // Which organization the invitee joins. Defaults to the current one; admins who
   // belong to several can target another. Roles are tenant-scoped, so the role
   // list (and its default) follow this selection.
   const [tenantId, setTenantId] = useState<string>(currentTenantId ?? "");
@@ -346,7 +347,7 @@ function CreateInviteSheet({
     if (open) setTenantId(currentTenantId ?? "");
   }, [open, currentTenantId]);
 
-  // Workspaces the caller belongs to (scoped server-side).
+  // Organizations the caller belongs to (scoped server-side).
   const tenantsQ = useQuery({
     queryKey: ["tenants", "invite-picker"],
     queryFn: () => api<{ items: { id: string; name: string }[] }>("/v1/tenants"),
@@ -361,7 +362,7 @@ function CreateInviteSheet({
   });
   const roles = rolesQ.data?.items ?? [];
 
-  // Default to a "member"-type role for the selected workspace so the accepted
+  // Default to a "member"-type role for the selected organization so the accepted
   // user becomes a visible member (the members list is role-based).
   useEffect(() => {
     const rs = rolesQ.data?.items ?? [];

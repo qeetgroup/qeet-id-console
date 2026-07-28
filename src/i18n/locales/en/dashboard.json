@@ -1,6 +1,6 @@
 {
   "title": "Overview",
-  "subtitle": "Identity health for this workspace at a glance.",
+  "subtitle": "Identity health for this organization at a glance.",
   "systemsOk": "All systems operational",
   "range7d": "Last 7 days",
   "range14d": "Last 14 days",
@@ -21,7 +21,7 @@
   "quickActions": {
     "heading": "Quick Actions",
     "inviteLabel": "Invite user",
-    "inviteDesc": "Add a teammate to this workspace",
+    "inviteDesc": "Add a teammate to this organization",
     "apiKeyLabel": "Create API key",
     "apiKeyDesc": "Issue credentials for an app",
     "threatsLabel": "Review threats",
@@ -63,15 +63,15 @@
   },
   "activity": {
     "title": "Recent Activity",
-    "description": "Last 5 events in this workspace",
+    "description": "Last 5 events in this organization",
     "viewAll": "View all",
     "emptyTitle": "No activity yet",
-    "emptyDescription": "Events will appear here as users interact with your workspace."
+    "emptyDescription": "Events will appear here as users interact with your organization."
   },
   "noWorkspace": {
-    "title": "Create your first workspace",
-    "description": "Your account isn't tied to a workspace yet. Create one to start managing users, configuring auth, and inviting teammates — you'll be its owner.",
-    "cta": "Create workspace"
+    "title": "Create your first organization",
+    "description": "Your account isn't tied to an organization yet. Create one to start managing users, configuring auth, and inviting teammates — you'll be its owner.",
+    "cta": "Create organization"
   },
   "analytics": {
     "description": "Product analytics across tenants, applications, and authentication methods.",

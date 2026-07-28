@@ -12,33 +12,33 @@ import { useCapabilities } from "../capability-provider";
 
 const MODE_DETAILS = {
   setup: {
-    label: "Workspace setup required",
-    description: "Create or select a workspace to load operator permissions.",
+    label: "Organization setup required",
+    description: "Create or select an organization to load operator permissions.",
     icon: Building2Icon,
   },
   full: {
     label: "Full console access",
-    description: "All console capabilities are available in this workspace.",
+    description: "All console capabilities are available in this organization.",
     icon: ShieldCheckIcon,
   },
   "read-only": {
     label: "Read-only console access",
-    description: "You can inspect workspace data but cannot change it.",
+    description: "You can inspect organization data but cannot change it.",
     icon: EyeIcon,
   },
   restricted: {
     label: "Limited console access",
-    description: "The console only shows areas granted to your workspace role.",
+    description: "The console only shows areas granted to your organization role.",
     icon: SlidersHorizontalIcon,
   },
   none: {
     label: "No management access",
-    description: "This workspace has not granted management capabilities to your account.",
+    description: "This organization has not granted management capabilities to your account.",
     icon: LockKeyholeIcon,
   },
   unknown: {
     label: "Access status unavailable",
-    description: "The console could not verify workspace permissions.",
+    description: "The console could not verify organization permissions.",
     icon: CircleAlertIcon,
   },
 } as const;
@@ -51,7 +51,7 @@ export function AccessModeIndicator() {
       <div className="flex items-center gap-2 px-2.5 py-2" role="status" aria-live="polite">
         <Skeleton className="size-3.5 shrink-0 rounded" />
         <Skeleton className="h-3 w-36 group-data-[collapsible=icon]:hidden" />
-        <span className="sr-only">Checking workspace access</span>
+        <span className="sr-only">Checking organization access</span>
       </div>
     );
   }

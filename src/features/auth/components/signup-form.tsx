@@ -72,7 +72,7 @@ export function SignupForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create your account</h1>
                 <p className="text-sm text-balance text-muted-foreground">
-                  You&apos;ll set up your first workspace right after verifying your email.
+                  You&apos;ll set up your first organization right after verifying your email.
                 </p>
               </div>
 

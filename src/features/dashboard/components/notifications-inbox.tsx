@@ -184,7 +184,7 @@ function EmptyState() {
       <InboxIcon className="size-7 text-muted-foreground" />
       <p className="text-sm font-medium">You&apos;re all caught up</p>
       <p className="text-xs text-muted-foreground">
-        New activity in your workspace will show up here.
+        New activity in your organization will show up here.
       </p>
     </div>
   );

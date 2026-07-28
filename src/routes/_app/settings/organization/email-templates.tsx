@@ -28,7 +28,7 @@ import {
   useUpsertEmailTemplate,
 } from "@/lib/email-templates";
 
-export const Route = createFileRoute("/_app/settings/workspace/email-templates")({
+export const Route = createFileRoute("/_app/settings/organization/email-templates")({
   component: EmailTemplatesPage,
 });
 

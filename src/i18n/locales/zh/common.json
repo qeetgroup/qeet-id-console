@@ -30,7 +30,7 @@
     "expires": "到期时间",
     "issued": "颁发时间",
     "type": "类型",
-    "tenant": "工作区"
+    "tenant": "组织"
   },
   "states": {
     "loading": "加载中…",

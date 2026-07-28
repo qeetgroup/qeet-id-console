@@ -404,7 +404,7 @@ function CreateTenantSheet({ open, onOpenChange, onCreated }: CreateTenantSheetP
     onSuccess: (res) => {
       onCreated();
       onOpenChange(false);
-      // Now owner of this workspace; persist the scoped token and switch in.
+      // Now owner of this organization; persist the scoped token and switch in.
       if (res.access_token && res.refresh_token) {
         tokenStore.set(res.access_token);
         tokenStore.setRefresh(res.refresh_token);
@@ -412,7 +412,7 @@ function CreateTenantSheet({ open, onOpenChange, onCreated }: CreateTenantSheetP
       tokenStore.setTenantId(res.tenant_id);
       window.location.assign("/");
     },
-    meta: { successMessage: "Workspace created" },
+    meta: { successMessage: "Organization created" },
   });
 
   return (

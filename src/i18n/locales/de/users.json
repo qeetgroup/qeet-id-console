@@ -1,6 +1,6 @@
 {
   "list": {
-    "description": "Alle Personen, die Zugang zu diesem Arbeitsbereich haben. Laden Sie Mitglieder hier direkt ein oder erstellen Sie sie.",
+    "description": "Alle Personen, die Zugang zu diesem Organisation haben. Laden Sie Mitglieder hier direkt ein oder erstellen Sie sie.",
     "import": "Importieren",
     "newUser": "Neuer Benutzer",
     "membersTitle": "Mitglieder",

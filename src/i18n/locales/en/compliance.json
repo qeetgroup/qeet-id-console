@@ -1,11 +1,11 @@
 {
   "soc2": {
     "title": "SOC 2",
-    "description": "AICPA Trust Service Criteria — evidence generated from this workspace's live configuration and audit trail."
+    "description": "AICPA Trust Service Criteria — evidence generated from this organization's live configuration and audit trail."
   },
   "iso27001": {
     "title": "ISO 27001",
-    "description": "ISO/IEC 27001:2022 Annex A controls — evidence generated from this workspace's live configuration and audit trail."
+    "description": "ISO/IEC 27001:2022 Annex A controls — evidence generated from this organization's live configuration and audit trail."
   },
   "gdpr": {
     "description": "GDPR Article 17 (right-to-erasure) requests. Each request enters a 30-day grace window before the background purge job redacts PII while preserving audit references.",
@@ -50,7 +50,7 @@
     "generate": "Generate evidence",
     "generating": "Generating...",
     "emptyTitle": "No evidence runs yet",
-    "emptyDescription": "Click \"Generate evidence\" to run a live control check against this workspace's configuration and audit trail.",
+    "emptyDescription": "Click \"Generate evidence\" to run a live control check against this organization's configuration and audit trail.",
     "stats": {
       "passing": "Controls passing",
       "failing": "Failing",

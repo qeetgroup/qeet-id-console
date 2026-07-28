@@ -52,7 +52,7 @@ export type NavGroup = {
 
 export const navGroups: NavGroup[] = [
   {
-    label: "Workspace",
+    label: "Organization",
     items: [
       {
         title: "Overview",
@@ -445,29 +445,29 @@ export const navGroups: NavGroup[] = [
     label: "Administration",
     items: [
       {
-        title: "Workspace",
-        url: "/settings/workspace/general",
+        title: "Organization",
+        url: "/settings/organization/general",
         icon: <Settings2Icon />,
         requiredPermission: "tenant.read",
         items: [
           {
             title: "General",
-            url: "/settings/workspace/general",
+            url: "/settings/organization/general",
             requiredPermission: "tenant.read",
           },
           {
             title: "Security policy",
-            url: "/settings/workspace/security-policy",
+            url: "/settings/organization/security-policy",
             requiredPermission: "policy.read",
           },
           {
             title: "Domains",
-            url: "/settings/workspace/domains",
+            url: "/settings/organization/domains",
             requiredPermission: "tenant.read",
           },
           {
             title: "Email templates",
-            url: "/settings/workspace/email-templates",
+            url: "/settings/organization/email-templates",
             requiredPermission: "branding.write",
           },
         ],

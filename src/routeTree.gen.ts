@@ -98,10 +98,10 @@ import { Route as AppSecurityThreatsBotsRouteImport } from './routes/_app/securi
 import { Route as AppSecurityThreatsIpAllowlistRouteImport } from './routes/_app/security/threats/ip-allowlist'
 import { Route as AppSecurityThreatsRateLimitsRouteImport } from './routes/_app/security/threats/rate-limits'
 import { Route as AppSecurityThreatsRiskSettingsRouteImport } from './routes/_app/security/threats/risk-settings'
-import { Route as AppSettingsWorkspaceDomainsRouteImport } from './routes/_app/settings/workspace/domains'
-import { Route as AppSettingsWorkspaceEmailTemplatesRouteImport } from './routes/_app/settings/workspace/email-templates'
-import { Route as AppSettingsWorkspaceGeneralRouteImport } from './routes/_app/settings/workspace/general'
-import { Route as AppSettingsWorkspaceSecurityPolicyRouteImport } from './routes/_app/settings/workspace/security-policy'
+import { Route as AppSettingsOrganizationDomainsRouteImport } from './routes/_app/settings/organization/domains'
+import { Route as AppSettingsOrganizationEmailTemplatesRouteImport } from './routes/_app/settings/organization/email-templates'
+import { Route as AppSettingsOrganizationGeneralRouteImport } from './routes/_app/settings/organization/general'
+import { Route as AppSettingsOrganizationSecurityPolicyRouteImport } from './routes/_app/settings/organization/security-policy'
 import { Route as AppUsersUserIdTimelineRouteImport } from './routes/_app/users/$userId_.timeline'
 import { Route as AppAuthConnectionsOidcIndexRouteImport } from './routes/_app/auth/connections/oidc/index'
 import { Route as AppAuthConnectionsOidcClientIdRouteImport } from './routes/_app/auth/connections/oidc/$clientId'
@@ -576,28 +576,28 @@ const AppSecurityThreatsRiskSettingsRoute =
     path: '/security/threats/risk-settings',
     getParentRoute: () => AppRoute,
   } as any)
-const AppSettingsWorkspaceDomainsRoute =
-  AppSettingsWorkspaceDomainsRouteImport.update({
-    id: '/settings/workspace/domains',
-    path: '/settings/workspace/domains',
+const AppSettingsOrganizationDomainsRoute =
+  AppSettingsOrganizationDomainsRouteImport.update({
+    id: '/settings/organization/domains',
+    path: '/settings/organization/domains',
     getParentRoute: () => AppRoute,
   } as any)
-const AppSettingsWorkspaceEmailTemplatesRoute =
-  AppSettingsWorkspaceEmailTemplatesRouteImport.update({
-    id: '/settings/workspace/email-templates',
-    path: '/settings/workspace/email-templates',
+const AppSettingsOrganizationEmailTemplatesRoute =
+  AppSettingsOrganizationEmailTemplatesRouteImport.update({
+    id: '/settings/organization/email-templates',
+    path: '/settings/organization/email-templates',
     getParentRoute: () => AppRoute,
   } as any)
-const AppSettingsWorkspaceGeneralRoute =
-  AppSettingsWorkspaceGeneralRouteImport.update({
-    id: '/settings/workspace/general',
-    path: '/settings/workspace/general',
+const AppSettingsOrganizationGeneralRoute =
+  AppSettingsOrganizationGeneralRouteImport.update({
+    id: '/settings/organization/general',
+    path: '/settings/organization/general',
     getParentRoute: () => AppRoute,
   } as any)
-const AppSettingsWorkspaceSecurityPolicyRoute =
-  AppSettingsWorkspaceSecurityPolicyRouteImport.update({
-    id: '/settings/workspace/security-policy',
-    path: '/settings/workspace/security-policy',
+const AppSettingsOrganizationSecurityPolicyRoute =
+  AppSettingsOrganizationSecurityPolicyRouteImport.update({
+    id: '/settings/organization/security-policy',
+    path: '/settings/organization/security-policy',
     getParentRoute: () => AppRoute,
   } as any)
 const AppUsersUserIdTimelineRoute = AppUsersUserIdTimelineRouteImport.update({
@@ -704,10 +704,10 @@ export interface FileRoutesByFullPath {
   '/security/threats/ip-allowlist': typeof AppSecurityThreatsIpAllowlistRoute
   '/security/threats/rate-limits': typeof AppSecurityThreatsRateLimitsRoute
   '/security/threats/risk-settings': typeof AppSecurityThreatsRiskSettingsRoute
-  '/settings/workspace/domains': typeof AppSettingsWorkspaceDomainsRoute
-  '/settings/workspace/email-templates': typeof AppSettingsWorkspaceEmailTemplatesRoute
-  '/settings/workspace/general': typeof AppSettingsWorkspaceGeneralRoute
-  '/settings/workspace/security-policy': typeof AppSettingsWorkspaceSecurityPolicyRoute
+  '/settings/organization/domains': typeof AppSettingsOrganizationDomainsRoute
+  '/settings/organization/email-templates': typeof AppSettingsOrganizationEmailTemplatesRoute
+  '/settings/organization/general': typeof AppSettingsOrganizationGeneralRoute
+  '/settings/organization/security-policy': typeof AppSettingsOrganizationSecurityPolicyRoute
   '/users/$userId/timeline': typeof AppUsersUserIdTimelineRoute
   '/auth/connections/': typeof AppAuthConnectionsIndexRoute
   '/developer/webhooks/': typeof AppDeveloperWebhooksIndexRoute
@@ -800,10 +800,10 @@ export interface FileRoutesByTo {
   '/security/threats/ip-allowlist': typeof AppSecurityThreatsIpAllowlistRoute
   '/security/threats/rate-limits': typeof AppSecurityThreatsRateLimitsRoute
   '/security/threats/risk-settings': typeof AppSecurityThreatsRiskSettingsRoute
-  '/settings/workspace/domains': typeof AppSettingsWorkspaceDomainsRoute
-  '/settings/workspace/email-templates': typeof AppSettingsWorkspaceEmailTemplatesRoute
-  '/settings/workspace/general': typeof AppSettingsWorkspaceGeneralRoute
-  '/settings/workspace/security-policy': typeof AppSettingsWorkspaceSecurityPolicyRoute
+  '/settings/organization/domains': typeof AppSettingsOrganizationDomainsRoute
+  '/settings/organization/email-templates': typeof AppSettingsOrganizationEmailTemplatesRoute
+  '/settings/organization/general': typeof AppSettingsOrganizationGeneralRoute
+  '/settings/organization/security-policy': typeof AppSettingsOrganizationSecurityPolicyRoute
   '/users/$userId/timeline': typeof AppUsersUserIdTimelineRoute
   '/auth/connections': typeof AppAuthConnectionsIndexRoute
   '/developer/webhooks': typeof AppDeveloperWebhooksIndexRoute
@@ -899,10 +899,10 @@ export interface FileRoutesById {
   '/_app/security/threats/ip-allowlist': typeof AppSecurityThreatsIpAllowlistRoute
   '/_app/security/threats/rate-limits': typeof AppSecurityThreatsRateLimitsRoute
   '/_app/security/threats/risk-settings': typeof AppSecurityThreatsRiskSettingsRoute
-  '/_app/settings/workspace/domains': typeof AppSettingsWorkspaceDomainsRoute
-  '/_app/settings/workspace/email-templates': typeof AppSettingsWorkspaceEmailTemplatesRoute
-  '/_app/settings/workspace/general': typeof AppSettingsWorkspaceGeneralRoute
-  '/_app/settings/workspace/security-policy': typeof AppSettingsWorkspaceSecurityPolicyRoute
+  '/_app/settings/organization/domains': typeof AppSettingsOrganizationDomainsRoute
+  '/_app/settings/organization/email-templates': typeof AppSettingsOrganizationEmailTemplatesRoute
+  '/_app/settings/organization/general': typeof AppSettingsOrganizationGeneralRoute
+  '/_app/settings/organization/security-policy': typeof AppSettingsOrganizationSecurityPolicyRoute
   '/_app/users/$userId_/timeline': typeof AppUsersUserIdTimelineRoute
   '/_app/auth/connections/': typeof AppAuthConnectionsIndexRoute
   '/_app/developer/webhooks/': typeof AppDeveloperWebhooksIndexRoute
@@ -997,10 +997,10 @@ export interface FileRouteTypes {
     | '/security/threats/ip-allowlist'
     | '/security/threats/rate-limits'
     | '/security/threats/risk-settings'
-    | '/settings/workspace/domains'
-    | '/settings/workspace/email-templates'
-    | '/settings/workspace/general'
-    | '/settings/workspace/security-policy'
+    | '/settings/organization/domains'
+    | '/settings/organization/email-templates'
+    | '/settings/organization/general'
+    | '/settings/organization/security-policy'
     | '/users/$userId/timeline'
     | '/auth/connections/'
     | '/developer/webhooks/'
@@ -1093,10 +1093,10 @@ export interface FileRouteTypes {
     | '/security/threats/ip-allowlist'
     | '/security/threats/rate-limits'
     | '/security/threats/risk-settings'
-    | '/settings/workspace/domains'
-    | '/settings/workspace/email-templates'
-    | '/settings/workspace/general'
-    | '/settings/workspace/security-policy'
+    | '/settings/organization/domains'
+    | '/settings/organization/email-templates'
+    | '/settings/organization/general'
+    | '/settings/organization/security-policy'
     | '/users/$userId/timeline'
     | '/auth/connections'
     | '/developer/webhooks'
@@ -1191,10 +1191,10 @@ export interface FileRouteTypes {
     | '/_app/security/threats/ip-allowlist'
     | '/_app/security/threats/rate-limits'
     | '/_app/security/threats/risk-settings'
-    | '/_app/settings/workspace/domains'
-    | '/_app/settings/workspace/email-templates'
-    | '/_app/settings/workspace/general'
-    | '/_app/settings/workspace/security-policy'
+    | '/_app/settings/organization/domains'
+    | '/_app/settings/organization/email-templates'
+    | '/_app/settings/organization/general'
+    | '/_app/settings/organization/security-policy'
     | '/_app/users/$userId_/timeline'
     | '/_app/auth/connections/'
     | '/_app/developer/webhooks/'
@@ -1833,32 +1833,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSecurityThreatsRiskSettingsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/settings/workspace/domains': {
-      id: '/_app/settings/workspace/domains'
-      path: '/settings/workspace/domains'
-      fullPath: '/settings/workspace/domains'
-      preLoaderRoute: typeof AppSettingsWorkspaceDomainsRouteImport
+    '/_app/settings/organization/domains': {
+      id: '/_app/settings/organization/domains'
+      path: '/settings/organization/domains'
+      fullPath: '/settings/organization/domains'
+      preLoaderRoute: typeof AppSettingsOrganizationDomainsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/settings/workspace/email-templates': {
-      id: '/_app/settings/workspace/email-templates'
-      path: '/settings/workspace/email-templates'
-      fullPath: '/settings/workspace/email-templates'
-      preLoaderRoute: typeof AppSettingsWorkspaceEmailTemplatesRouteImport
+    '/_app/settings/organization/email-templates': {
+      id: '/_app/settings/organization/email-templates'
+      path: '/settings/organization/email-templates'
+      fullPath: '/settings/organization/email-templates'
+      preLoaderRoute: typeof AppSettingsOrganizationEmailTemplatesRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/settings/workspace/general': {
-      id: '/_app/settings/workspace/general'
-      path: '/settings/workspace/general'
-      fullPath: '/settings/workspace/general'
-      preLoaderRoute: typeof AppSettingsWorkspaceGeneralRouteImport
+    '/_app/settings/organization/general': {
+      id: '/_app/settings/organization/general'
+      path: '/settings/organization/general'
+      fullPath: '/settings/organization/general'
+      preLoaderRoute: typeof AppSettingsOrganizationGeneralRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/settings/workspace/security-policy': {
-      id: '/_app/settings/workspace/security-policy'
-      path: '/settings/workspace/security-policy'
-      fullPath: '/settings/workspace/security-policy'
-      preLoaderRoute: typeof AppSettingsWorkspaceSecurityPolicyRouteImport
+    '/_app/settings/organization/security-policy': {
+      id: '/_app/settings/organization/security-policy'
+      path: '/settings/organization/security-policy'
+      fullPath: '/settings/organization/security-policy'
+      preLoaderRoute: typeof AppSettingsOrganizationSecurityPolicyRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/users/$userId_/timeline': {
@@ -1960,10 +1960,10 @@ interface AppRouteChildren {
   AppSecurityThreatsIpAllowlistRoute: typeof AppSecurityThreatsIpAllowlistRoute
   AppSecurityThreatsRateLimitsRoute: typeof AppSecurityThreatsRateLimitsRoute
   AppSecurityThreatsRiskSettingsRoute: typeof AppSecurityThreatsRiskSettingsRoute
-  AppSettingsWorkspaceDomainsRoute: typeof AppSettingsWorkspaceDomainsRoute
-  AppSettingsWorkspaceEmailTemplatesRoute: typeof AppSettingsWorkspaceEmailTemplatesRoute
-  AppSettingsWorkspaceGeneralRoute: typeof AppSettingsWorkspaceGeneralRoute
-  AppSettingsWorkspaceSecurityPolicyRoute: typeof AppSettingsWorkspaceSecurityPolicyRoute
+  AppSettingsOrganizationDomainsRoute: typeof AppSettingsOrganizationDomainsRoute
+  AppSettingsOrganizationEmailTemplatesRoute: typeof AppSettingsOrganizationEmailTemplatesRoute
+  AppSettingsOrganizationGeneralRoute: typeof AppSettingsOrganizationGeneralRoute
+  AppSettingsOrganizationSecurityPolicyRoute: typeof AppSettingsOrganizationSecurityPolicyRoute
   AppUsersUserIdTimelineRoute: typeof AppUsersUserIdTimelineRoute
   AppAuthConnectionsIndexRoute: typeof AppAuthConnectionsIndexRoute
   AppDeveloperWebhooksIndexRoute: typeof AppDeveloperWebhooksIndexRoute
@@ -2046,12 +2046,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppSecurityThreatsIpAllowlistRoute: AppSecurityThreatsIpAllowlistRoute,
   AppSecurityThreatsRateLimitsRoute: AppSecurityThreatsRateLimitsRoute,
   AppSecurityThreatsRiskSettingsRoute: AppSecurityThreatsRiskSettingsRoute,
-  AppSettingsWorkspaceDomainsRoute: AppSettingsWorkspaceDomainsRoute,
-  AppSettingsWorkspaceEmailTemplatesRoute:
-    AppSettingsWorkspaceEmailTemplatesRoute,
-  AppSettingsWorkspaceGeneralRoute: AppSettingsWorkspaceGeneralRoute,
-  AppSettingsWorkspaceSecurityPolicyRoute:
-    AppSettingsWorkspaceSecurityPolicyRoute,
+  AppSettingsOrganizationDomainsRoute: AppSettingsOrganizationDomainsRoute,
+  AppSettingsOrganizationEmailTemplatesRoute:
+    AppSettingsOrganizationEmailTemplatesRoute,
+  AppSettingsOrganizationGeneralRoute: AppSettingsOrganizationGeneralRoute,
+  AppSettingsOrganizationSecurityPolicyRoute:
+    AppSettingsOrganizationSecurityPolicyRoute,
   AppUsersUserIdTimelineRoute: AppUsersUserIdTimelineRoute,
   AppAuthConnectionsIndexRoute: AppAuthConnectionsIndexRoute,
   AppDeveloperWebhooksIndexRoute: AppDeveloperWebhooksIndexRoute,

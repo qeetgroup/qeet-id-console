@@ -50,11 +50,11 @@ describe("console navigation state", () => {
 
     expect(accessModel?.items?.map((item) => item.title)).toEqual(["ABAC"]);
     expect(
-      visible.find((group) => group.label === "Workspace")?.items.map((item) => item.title),
+      visible.find((group) => group.label === "Organization")?.items.map((item) => item.title),
     ).toEqual(["Overview"]);
   });
 
-  it("limits unresolved access navigation to overview and workspace selection", () => {
+  it("limits unresolved access navigation to overview and organization selection", () => {
     const visiblePaths = safeNavigation(navGroups).flatMap((group) =>
       group.items.flatMap((item) => [item.url, ...(item.items?.map((child) => child.url) ?? [])]),
     );

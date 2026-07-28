@@ -63,9 +63,9 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
       }),
   },
   {
-    id: "workspace-hr-profiles",
+    id: "organization-hr-profiles",
     name: "HR can view employee profiles",
-    vendor: "Google Workspace",
+    vendor: "Google Organization",
     category: "SaaS",
     description: "Allow the HR department to read employee profile resources.",
     tags: ["abac", "department", "read"],

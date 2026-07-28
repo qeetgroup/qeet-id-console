@@ -1,6 +1,6 @@
 {
   "title": "Visão geral",
-  "subtitle": "Saúde de identidade deste espaço de trabalho em um relance.",
+  "subtitle": "Saúde de identidade deste organização em um relance.",
   "systemsOk": "Todos os sistemas operacionais",
   "range7d": "Últimos 7 dias",
   "range14d": "Últimos 14 dias",
@@ -63,14 +63,14 @@
   },
   "activity": {
     "title": "Atividade recente",
-    "description": "Últimos 5 eventos neste espaço de trabalho",
+    "description": "Últimos 5 eventos neste organização",
     "viewAll": "Ver tudo",
     "emptyTitle": "Nenhuma atividade ainda",
-    "emptyDescription": "Os eventos aparecerão aqui à medida que os usuários interagirem com seu espaço de trabalho."
+    "emptyDescription": "Os eventos aparecerão aqui à medida que os usuários interagirem com seu organização."
   },
   "noWorkspace": {
-    "title": "Crie seu primeiro espaço de trabalho",
-    "description": "Sua conta ainda não está vinculada a um espaço de trabalho. Crie um para começar a gerenciar usuários, configurar autenticação e convidar colegas — você será o proprietário.",
-    "cta": "Criar espaço de trabalho"
+    "title": "Crie sua primeira organização",
+    "description": "Sua conta ainda não está vinculada a uma organização. Crie um para começar a gerenciar usuários, configurar autenticação e convidar colegas — você será o proprietário.",
+    "cta": "Criar organização"
   }
 }

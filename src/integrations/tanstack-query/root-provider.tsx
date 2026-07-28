@@ -31,7 +31,7 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
   if (error.status === 401 || error.status === 400 || error.status === 422) return;
   if (error.status === 403) {
     toast.error("This action is no longer available", {
-      description: "Your workspace access may have changed. The console is refreshing it now.",
+      description: "Your organization access may have changed. The console is refreshing it now.",
     });
     return;
   }

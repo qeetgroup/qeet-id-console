@@ -1,6 +1,6 @@
 {
   "list": {
-    "description": "拥有此工作区访问权限的所有人。在此处直接邀请或创建成员。",
+    "description": "拥有此组织访问权限的所有人。在此处直接邀请或创建成员。",
     "import": "导入",
     "newUser": "新建用户",
     "membersTitle": "成员",

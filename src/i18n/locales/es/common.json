@@ -30,7 +30,7 @@
     "expires": "Expira",
     "issued": "Emitido",
     "type": "Tipo",
-    "tenant": "Espacio de trabajo"
+    "tenant": "Organización"
   },
   "states": {
     "loading": "Cargando…",

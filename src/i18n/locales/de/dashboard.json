@@ -1,6 +1,6 @@
 {
   "title": "Übersicht",
-  "subtitle": "Identitätszustand dieses Arbeitsbereichs auf einen Blick.",
+  "subtitle": "Identitätszustand dieses Organisation auf einen Blick.",
   "systemsOk": "Alle Systeme betriebsbereit",
   "range7d": "Letzte 7 Tage",
   "range14d": "Letzte 14 Tage",
@@ -21,7 +21,7 @@
   "quickActions": {
     "heading": "Schnellaktionen",
     "inviteLabel": "Nutzer einladen",
-    "inviteDesc": "Teammitglied zu diesem Arbeitsbereich hinzufügen",
+    "inviteDesc": "Teammitglied zu diesem Organisation hinzufügen",
     "apiKeyLabel": "API-Schlüssel erstellen",
     "apiKeyDesc": "Anmeldedaten für eine App ausstellen",
     "threatsLabel": "Bedrohungen prüfen",
@@ -63,14 +63,14 @@
   },
   "activity": {
     "title": "Letzte Aktivitäten",
-    "description": "Letzte 5 Ereignisse in diesem Arbeitsbereich",
+    "description": "Letzte 5 Ereignisse in diesem Organisation",
     "viewAll": "Alle anzeigen",
     "emptyTitle": "Noch keine Aktivität",
-    "emptyDescription": "Ereignisse erscheinen hier, sobald Nutzer mit Ihrem Arbeitsbereich interagieren."
+    "emptyDescription": "Ereignisse erscheinen hier, sobald Nutzer mit Ihrem Organisation interagieren."
   },
   "noWorkspace": {
-    "title": "Erstellen Sie Ihren ersten Arbeitsbereich",
-    "description": "Ihr Konto ist noch nicht mit einem Arbeitsbereich verknüpft. Erstellen Sie einen, um mit der Verwaltung von Nutzern, der Konfiguration der Authentifizierung und der Einladung von Teammitgliedern zu beginnen — Sie werden dessen Eigentümer.",
-    "cta": "Arbeitsbereich erstellen"
+    "title": "Erstellen Sie Ihre erste Organisation",
+    "description": "Ihr Konto ist noch nicht mit einer Organisation verknüpft. Erstellen Sie einen, um mit der Verwaltung von Nutzern, der Konfiguration der Authentifizierung und der Einladung von Teammitgliedern zu beginnen — Sie werden dessen Eigentümer.",
+    "cta": "Organisation erstellen"
   }
 }
