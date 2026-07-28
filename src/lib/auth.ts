@@ -193,13 +193,33 @@ export function useConsumeSamlCode() {
  */
 export function useForgotPassword() {
   return useMutation({
+    // In dev (SERVICE_ENV=dev) the backend returns dev_reset_token so the reset
+    // link is usable without a real email provider; prod omits it.
     mutationFn: (in_: { email: string }) =>
-      api<void>("/v1/auth/forgot-password", {
+      api<{ message: string; dev_reset_token?: string }>("/v1/auth/forgot-password", {
         method: "POST",
         body: in_,
         anonymous: true,
       }),
     meta: { silent: true },
+  });
+}
+
+/**
+ * Complete a password reset: exchange the emailed token + a new password, then
+ * send the user to sign-in. Anonymous — there's no session yet.
+ */
+export function useResetPassword() {
+  const navigate = useNavigate();
+  return useMutation({
+    mutationFn: (in_: { token: string; new_password: string }) =>
+      api<{ message: string }>("/v1/auth/reset-password", {
+        method: "POST",
+        body: in_,
+        anonymous: true,
+      }),
+    onSuccess: () => navigate({ to: "/sign-in" }),
+    meta: { successMessage: "Password reset — sign in with your new password" },
   });
 }
 

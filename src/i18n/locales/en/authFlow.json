@@ -20,7 +20,19 @@
     "successText": "If an account exists for that email, we've sent a one-time reset link. The link expires in 60 minutes.",
     "successResend": "Didn't get it? Check spam, or",
     "successResendLink": "try again",
-    "successBackBtn": "Back to sign in"
+    "successBackBtn": "Back to sign in",
+    "devLinkTitle": "Dev mode — reset link",
+    "devLinkText": "Email isn't sent locally. Use this link to set a new password.",
+    "devLinkButton": "Open reset link",
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Choose a new password for your account. This signs out your other sessions.",
+      "passwordLabel": "New password",
+      "confirmLabel": "Confirm new password",
+      "submitBtn": "Reset password",
+      "submittingBtn": "Resetting…",
+      "mismatch": "Passwords don't match."
+    }
   },
   "magic": {
     "missingTitle": "Missing token",

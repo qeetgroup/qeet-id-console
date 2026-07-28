@@ -100,16 +100,16 @@
     "description": "Export or delete your personal data.",
     "export": {
       "title": "Export your data",
-      "description": "We'll prepare a JSON / CSV archive of everything we store about your account and email you a one-time download link.",
-      "button": "Request export"
+      "description": "Download a JSON archive of the personal data we hold about your account — profile, sessions, passkeys, and organization roles.",
+      "button": "Download my data"
     },
     "delete": {
       "title": "Delete your account",
-      "description": "Removes your account and personal data after a 30-day grace period. Audit-log references are kept (with PII redacted) so administrators can still verify historical events.",
+      "description": "Permanently erases your personal data (email, name, phone) and sign-in credentials, and signs you out right away. Audit-log references are kept with PII redacted so administrators can still verify historical events. This can't be undone.",
       "button": "Delete my account",
       "confirm": {
-        "title": "Schedule account for deletion?",
-        "description": "You can cancel within 30 days by signing back in.",
+        "title": "Delete your account?",
+        "description": "This permanently erases your personal data and signs you out immediately. It can't be undone.",
         "label": "Delete my account"
       }
     }

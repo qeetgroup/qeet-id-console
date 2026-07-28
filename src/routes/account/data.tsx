@@ -5,7 +5,7 @@ import { DownloadIcon, Trash2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/components/confirm-dialog";
-import { ApiError, api } from "@/lib/api";
+import { api, tokenStore } from "@/lib/api";
 
 export const Route = createFileRoute("/account/data")({ component: DataPage });
 
@@ -13,41 +13,35 @@ function DataPage() {
   const { t } = useTranslation("account");
   const [confirmDialog, openConfirm] = useConfirmDialog();
 
-  // Both endpoints below are part of the GDPR roadmap (§B9 data export
-  // and §B10 self-service erasure). They aren't deployed yet — these
-  // mutations are 404-tolerant so the buttons stay visible and the user
-  // gets a friendly message until the backend lands.
+  // Self-service data export (§B9) and account erasure (§B10). Export returns
+  // the user's portable data synchronously and downloads it as a JSON file.
+  // Delete purges PII + credentials immediately (audit refs kept, redacted),
+  // then — since the session is revoked server-side — drops the local session
+  // and sends the user to sign-up.
 
   const exportM = useMutation({
-    mutationFn: () =>
-      api<{ download_url?: string }>("/v1/account/export", {
-        method: "POST",
-      }).catch((err) => {
-        if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
-          throw new ApiError(
-            err.status,
-            "endpoint_unavailable",
-            "Data export isn't enabled yet. We'll email you a download link as soon as it ships.",
-          );
-        }
-        throw err;
-      }),
-    meta: { successMessage: "We'll email a download link when it's ready" },
+    mutationFn: async () => {
+      const data = await api<Record<string, unknown>>("/v1/account/export", { method: "POST" });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qeet-id-account-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    },
+    meta: { successMessage: "Your data has been downloaded" },
   });
 
   const deleteM = useMutation({
-    mutationFn: () =>
-      api<void>("/v1/account/delete", { method: "POST" }).catch((err) => {
-        if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
-          throw new ApiError(
-            err.status,
-            "endpoint_unavailable",
-            "Self-service deletion isn't enabled yet. Contact support@qeet.in for now.",
-          );
-        }
-        throw err;
-      }),
-    meta: { successMessage: "Account scheduled for deletion" },
+    mutationFn: () => api<void>("/v1/account/delete", { method: "POST" }),
+    onSuccess: () => {
+      tokenStore.clear();
+      window.location.assign("/sign-up");
+    },
+    meta: { successMessage: "Account deleted" },
   });
 
   return (
