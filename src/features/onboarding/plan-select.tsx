@@ -270,17 +270,6 @@ export function PlanSelect({
                       {busy && <Loader2Icon className="animate-spin" />}
                       {isCurrent ? "Current plan" : label}
                     </Button>
-                    {meta.contactSales && (
-                      <p className="text-center text-[11px] text-muted-foreground">
-                        or email{" "}
-                        <a
-                          href={`mailto:${SALES_EMAIL}`}
-                          className="underline underline-offset-2 hover:text-foreground"
-                        >
-                          {SALES_EMAIL}
-                        </a>
-                      </p>
-                    )}
                   </div>
                 </CardContent>
               </Card>
