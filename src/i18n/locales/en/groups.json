@@ -54,7 +54,7 @@
   },
   "members": {
     "title": "Members — {{groupName}}",
-    "description": "Search your workspace users to add them to this group.",
+    "description": "Search your organization users to add them to this group.",
     "searchPlaceholder": "Search users by name or email…",
     "loadingUsers": "Loading users…",
     "noMatch": "No matching users.",

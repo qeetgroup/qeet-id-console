@@ -32,8 +32,8 @@ export type AccessResolution = "resolving" | "ready" | "error";
 export type AccessMode = "setup" | "full" | "read-only" | "restricted" | "none" | "unknown";
 
 const CAPABILITY_LABELS: Record<Capability, string> = {
-  "tenant.read": "View workspace settings",
-  "tenant.write": "Manage workspace settings",
+  "tenant.read": "View organization settings",
+  "tenant.write": "Manage organization settings",
   "user.read": "View users",
   "user.write": "Manage users",
   "role.read": "View roles and permissions",
@@ -50,13 +50,13 @@ const CAPABILITY_LABELS: Record<Capability, string> = {
   "webhook.write": "Manage webhooks",
   "secret.read": "View secrets metadata",
   "secret.write": "Manage secrets",
-  "branding.write": "Manage workspace branding",
+  "branding.write": "Manage organization branding",
   "gdpr.write": "Manage privacy requests",
   "audit.read": "View audit and security events",
   "audit.write": "Manage audit investigations",
   "billing.read": "View billing",
   "billing.write": "Manage billing",
-  "analytics.read": "View workspace analytics",
+  "analytics.read": "View organization analytics",
 };
 
 export function createCapabilitySet(items: readonly string[] | undefined): CapabilitySet {

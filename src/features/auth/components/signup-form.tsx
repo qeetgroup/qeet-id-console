@@ -8,18 +8,18 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
   Input,
+  PasswordInput,
   PasswordStrengthMeter,
   scorePassword,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import { Loader2Icon } from "lucide-react";
 import type * as React from "react";
 import { useState } from "react";
 
 import { BrandHero } from "./brand-hero";
+import { SocialButtons } from "./social-buttons";
 
 export type SignupFormValues = {
   email: string;
@@ -47,9 +47,9 @@ export function SignupForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+        <CardContent className="grid p-0 md:min-h-160 md:grid-cols-2">
           <form
-            className="p-6 md:p-8"
+            className="flex flex-col justify-center p-6 md:p-8"
             onSubmit={(e) => {
               e.preventDefault();
               const data = new FormData(e.currentTarget);
@@ -71,8 +71,7 @@ export function SignupForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create your account</h1>
                 <p className="text-sm text-balance text-muted-foreground">
-                  We&apos;ll set up a personal workspace for you automatically. You can rename it or
-                  create more later.
+                  You&apos;ll set up your first organization right after verifying your email.
                 </p>
               </div>
 
@@ -90,35 +89,30 @@ export function SignupForm({
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input id="email" name="email" type="email" placeholder="jane@acme.test" required />
-                <FieldDescription>
-                  We&apos;ll use this for sign-in and notifications.
-                </FieldDescription>
               </Field>
 
-              <Field className="grid grid-cols-2 gap-4">
-                <Field>
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    minLength={8}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    aria-describedby="password-strength"
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="confirm_password">Confirm</FieldLabel>
-                  <Input
-                    id="confirm_password"
-                    name="confirm_password"
-                    type="password"
-                    minLength={8}
-                    required
-                  />
-                </Field>
+              <Field>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <PasswordInput
+                  id="password"
+                  name="password"
+                  placeholder="At least 8 characters"
+                  minLength={8}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  aria-describedby="password-strength"
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="confirm_password">Confirm password</FieldLabel>
+                <PasswordInput
+                  id="confirm_password"
+                  name="confirm_password"
+                  placeholder="Re-enter your password"
+                  minLength={8}
+                  required
+                />
               </Field>
               {password.length > 0 && (
                 <PasswordStrengthMeter
@@ -131,7 +125,6 @@ export function SignupForm({
                   }
                 />
               )}
-              <FieldDescription>At least 8 characters.</FieldDescription>
 
               {mismatch && (
                 <Field>
@@ -151,28 +144,7 @@ export function SignupForm({
                 </Button>
               </Field>
 
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Or continue with
-              </FieldSeparator>
-
-              <Field className="grid grid-cols-4 gap-4">
-                <Button variant="outline" type="button" disabled>
-                  <Apple className="invert dark:invert-0" />
-                  <span className="sr-only">Sign up with Apple</span>
-                </Button>
-                <Button variant="outline" type="button" disabled>
-                  <Google />
-                  <span className="sr-only">Sign up with Google</span>
-                </Button>
-                <Button variant="outline" type="button" disabled>
-                  <Github className="dark:invert" />
-                  <span className="sr-only">Sign up with GitHub</span>
-                </Button>
-                <Button variant="outline" type="button" disabled>
-                  <Microsoft />
-                  <span className="sr-only">Sign up with Microsoft</span>
-                </Button>
-              </Field>
+              <SocialButtons verb="Sign up" />
 
               <FieldDescription className="text-center">
                 Already have an account? <Link to="/sign-in">Sign in</Link>

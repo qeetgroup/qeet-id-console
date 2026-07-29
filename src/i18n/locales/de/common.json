@@ -30,7 +30,7 @@
     "expires": "Läuft ab",
     "issued": "Ausgestellt",
     "type": "Typ",
-    "tenant": "Arbeitsbereich"
+    "tenant": "Organisation"
   },
   "states": {
     "loading": "Wird geladen…",

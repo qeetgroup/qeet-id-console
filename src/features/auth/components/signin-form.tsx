@@ -8,11 +8,10 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
   Input,
+  PasswordInput,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import { BuildingIcon, Loader2Icon } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
@@ -20,6 +19,7 @@ import { useEffect, useState } from "react";
 import { useSSODiscovery } from "@/lib/sso";
 
 import { BrandHero } from "./brand-hero";
+import { SocialButtons } from "./social-buttons";
 
 export type LoginFormValues = {
   email: string;
@@ -54,9 +54,9 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+        <CardContent className="grid p-0 md:min-h-160 md:grid-cols-2">
           <form
-            className="p-6 md:p-8"
+            className="flex flex-col justify-center p-6 md:p-8"
             onSubmit={(e) => {
               e.preventDefault();
               if (ssoHit) {
@@ -74,9 +74,7 @@ export function LoginForm({
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
-                <p className="text-balance text-muted-foreground">
-                  Login to your Qeet ID admin account
-                </p>
+                <p className="text-balance text-muted-foreground">Login to your Qeet ID console</p>
               </div>
 
               <Field>
@@ -116,7 +114,12 @@ export function LoginForm({
                       Forgot your password?
                     </Link>
                   </div>
-                  <Input id="password" name="password" type="password" required />
+                  <PasswordInput
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                  />
                 </Field>
               )}
 
@@ -137,28 +140,7 @@ export function LoginForm({
                 </Button>
               </Field>
 
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Or continue with
-              </FieldSeparator>
-
-              <Field className="grid grid-cols-4 gap-4">
-                <Button variant="outline" type="button" disabled>
-                  <Apple className="invert dark:invert-0" />
-                  <span className="sr-only">Login with Apple</span>
-                </Button>
-                <Button variant="outline" type="button" disabled>
-                  <Google />
-                  <span className="sr-only">Login with Google</span>
-                </Button>
-                <Button variant="outline" type="button" disabled>
-                  <Github className="dark:invert" />
-                  <span className="sr-only">Login with GitHub</span>
-                </Button>
-                <Button variant="outline" type="button" disabled>
-                  <Microsoft />
-                  <span className="sr-only">Login with Microsoft</span>
-                </Button>
-              </Field>
+              <SocialButtons verb="Login" />
 
               <FieldDescription className="text-center">
                 Don&apos;t have an account? <Link to="/sign-up">Sign up</Link>

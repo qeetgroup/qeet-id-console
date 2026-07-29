@@ -1,6 +1,6 @@
 {
   "list": {
-    "description": "Everyone who has access to this workspace. Invite or create members directly here.",
+    "description": "Everyone who has access to this organization. Invite or create members directly here.",
     "import": "Import",
     "newUser": "New user",
     "membersTitle": "Members",

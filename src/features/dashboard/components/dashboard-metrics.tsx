@@ -108,7 +108,7 @@ export function DashboardMetricRail({
   loading: boolean;
 }) {
   return (
-    <section className="dashboard-metric-rail" aria-label="Workspace performance indicators">
+    <section className="dashboard-metric-rail" aria-label="Organization performance indicators">
       {loading
         ? METRIC_SKELETON_IDS.map((id) => <MetricSkeleton key={id} />)
         : metrics.map((metric) => <Metric key={metric.id} metric={metric} />)}

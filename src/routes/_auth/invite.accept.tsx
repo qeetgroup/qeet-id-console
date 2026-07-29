@@ -11,6 +11,7 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  PasswordInput,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
@@ -79,9 +80,8 @@ function AcceptInvitePage() {
             </Field>
             <Field>
               <FieldLabel htmlFor="password">{t("invite.passwordLabel")}</FieldLabel>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 required
                 minLength={8}
                 value={password}

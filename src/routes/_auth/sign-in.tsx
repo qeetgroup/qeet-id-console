@@ -14,7 +14,12 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { LoginForm } from "@/features/auth/components/signin-form";
-import { isMfaChallenge, useCompleteMfaLogin, useLogin } from "@/lib/auth";
+import {
+  isMfaChallenge,
+  useCompleteMfaLogin,
+  useConsumeSocialCode,
+  useLogin,
+} from "@/lib/auth";
 
 export const Route = createFileRoute("/_auth/sign-in")({
   component: SignInPage,
@@ -23,6 +28,35 @@ export const Route = createFileRoute("/_auth/sign-in")({
 function SignInPage() {
   const login = useLogin();
   const mfa = useCompleteMfaLogin();
+  const social = useConsumeSocialCode();
+
+  // Returning from a platform social login: the provider callback bounced the
+  // browser here with a one-time code to exchange for a session.
+  const [socialCode, setSocialCode] = useState<string | null>(null);
+  const socialFired = useRef(false);
+  useEffect(() => {
+    if (socialFired.current) return;
+    const code = new URLSearchParams(window.location.search).get("social_code");
+    if (!code) return;
+    socialFired.current = true;
+    setSocialCode(code);
+    social.mutate(code);
+  }, [social]);
+
+  if (socialCode) {
+    return (
+      <div className="grid min-h-[50vh] place-items-center">
+        <div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
+          <Loader2Icon className="size-6 animate-spin" />
+          <p className="text-sm">
+            {social.isError
+              ? (social.error?.message ?? "Couldn't complete sign-in. Please try again.")
+              : "Signing you in…"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // After a correct password, an MFA-enrolled account returns a challenge
   // instead of tokens; show the second-factor step.

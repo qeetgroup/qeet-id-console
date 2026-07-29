@@ -22,8 +22,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           className="flex h-10 items-center gap-3 overflow-hidden rounded-lg px-1.5 outline-none ring-sidebar-ring focus-visible:ring-2"
           aria-label="Qeet ID overview"
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/8 ring-1 ring-white/10">
-            <QeetLogoMark variant="on-dark" size={22} title="Qeet" />
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-black/5 ring-1 ring-black/10 dark:bg-white/8 dark:ring-white/10">
+            {/* No forced variant → the mark is theme-adaptive (correct on the
+                light sidebar in light mode and the dark sidebar in dark mode). */}
+            <QeetLogoMark size={22} title="Qeet" />
           </span>
           <span className="min-w-0 leading-tight group-data-[collapsible=icon]:hidden">
             <span className="block truncate font-heading text-sm font-semibold tracking-tight">

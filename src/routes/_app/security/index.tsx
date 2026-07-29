@@ -76,7 +76,7 @@ function SecurityOverviewPage() {
           <PageState
             icon={ShieldIcon}
             title="No security areas are available"
-            description="Your workspace role does not include security or audit visibility. Ask a workspace administrator if you need access."
+            description="Your organization role does not include security or audit visibility. Ask an organization administrator if you need access."
             actions={
               <Link to="/" className={buttonVariants()}>
                 Go to overview

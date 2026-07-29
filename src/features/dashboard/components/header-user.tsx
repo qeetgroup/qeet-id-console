@@ -85,9 +85,9 @@ export function HeaderUser() {
             <UserIcon />
             My account
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/settings/workspace/general" />}>
+          <DropdownMenuItem render={<Link to="/settings/organization/general" />}>
             <BadgeCheckIcon />
-            Workspace settings
+            Organization settings
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link to="/auth/mfa/totp" />}>
             <ShieldCheckIcon />

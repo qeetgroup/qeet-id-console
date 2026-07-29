@@ -24,15 +24,20 @@ export const API_BASE_URL =
 
 export class ApiError extends Error {
   status: number;
+  /** Stable machine code from the API (e.g. "mfa.code_invalid") — branch/localize on this. */
   code: string;
-  details?: unknown;
+  /** Developer-facing context from the API's `detail` field, when present. */
+  detail?: string;
+  /** True when the API marks the failure as safe to retry (e.g. session refresh). */
+  retryable: boolean;
 
-  constructor(status: number, code: string, message: string, details?: unknown) {
+  constructor(status: number, code: string, message: string, detail?: string, retryable = false) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
-    this.details = details;
+    this.detail = detail;
+    this.retryable = retryable;
   }
 }
 
@@ -182,14 +187,15 @@ export async function api<T = unknown>(path: string, opts: RequestOpts = {}): Pr
   if (!res.ok) {
     const err = (
       data as {
-        error?: { code?: string; message?: string; details?: unknown };
+        error?: { code?: string; message?: string; detail?: string; retryable?: boolean };
       } | null
     )?.error;
     throw new ApiError(
       res.status,
       err?.code ?? `http_${res.status}`,
       err?.message ?? res.statusText ?? "Request failed",
-      err?.details,
+      err?.detail,
+      err?.retryable ?? false,
     );
   }
 

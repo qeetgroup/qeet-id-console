@@ -104,7 +104,7 @@ export function NavMain({ groups }: { groups: NavGroup[] }) {
 }
 
 const NAV_SKELETON_GROUPS = [
-  { id: "workspace", rows: ["overview", "activity", "analytics"] },
+  { id: "organization", rows: ["overview", "activity", "analytics"] },
   { id: "directory", rows: ["users", "organizations", "groups", "invites"] },
   { id: "access", rows: ["authentication", "authorization", "security"] },
   { id: "operations", rows: ["developer", "settings", "billing", "audit"] },
@@ -130,7 +130,7 @@ export function NavMainSkeleton() {
           </SidebarMenu>
         </SidebarGroup>
       ))}
-      <span className="sr-only">Checking workspace access</span>
+      <span className="sr-only">Checking organization access</span>
     </div>
   );
 }

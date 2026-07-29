@@ -17,6 +17,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckIcon, CopyIcon, FingerprintIcon, Loader2Icon, ShieldCheckIcon } from "lucide-react";
+import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -43,6 +44,28 @@ function MfaTotpPage() {
   const [enrollment, setEnrollment] = useState<EnrollStart | null>(null);
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [code, setCode] = useState("");
+  // Scannable QR rendered client-side from the otpauth:// provisioning URL the
+  // backend returns — nothing secret leaves the browser beyond that same URL.
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const url = enrollment?.provisioning_url;
+    if (!url) {
+      setQrDataUrl(null);
+      return;
+    }
+    let cancelled = false;
+    QRCode.toDataURL(url, { margin: 1, width: 336, errorCorrectionLevel: "M" })
+      .then((dataUrl: string) => {
+        if (!cancelled) setQrDataUrl(dataUrl);
+      })
+      .catch(() => {
+        // Fall back silently — the copyable URL + secret below still work.
+        if (!cancelled) setQrDataUrl(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enrollment?.provisioning_url]);
   // Focus the OTP input when the enrolling stage becomes active.
   // Replaces autoFocus (flagged by jsx-a11y/no-autofocus) with an explicit
   // effect so focus transfers after the card animation settles.
@@ -144,6 +167,30 @@ function MfaTotpPage() {
           </CardHeader>
           <CardContent>
             <FieldGroup>
+              <Field>
+                <FieldLabel>Scan with your authenticator app</FieldLabel>
+                <div className="flex flex-col items-center gap-4 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:justify-center">
+                  <div className="shrink-0 rounded-lg border bg-white p-3">
+                    {qrDataUrl ? (
+                      <img
+                        src={qrDataUrl}
+                        alt="TOTP enrollment QR code"
+                        width={168}
+                        height={168}
+                        className="block size-42"
+                      />
+                    ) : (
+                      <div className="flex size-42 items-center justify-center">
+                        <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="max-w-xs text-sm text-muted-foreground">
+                    Open Google Authenticator, 1Password, Authy, or similar and scan this code.
+                    Can&apos;t scan? Enter the setup key below manually.
+                  </p>
+                </div>
+              </Field>
               <Field>
                 <FieldLabel>{t("mfa.totp.enrolling.uriLabel")}</FieldLabel>
                 <CopyableSecret value={enrollment.provisioning_url} size="sm" />

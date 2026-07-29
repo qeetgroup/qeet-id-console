@@ -52,8 +52,8 @@
       "delete": "Delete"
     },
     "create": {
-      "title": "New workspace",
-      "description": "You'll become the owner of this workspace and switch into it once it's created.",
+      "title": "New organization",
+      "description": "You'll become the owner of this organization and switch into it once it's created.",
       "name": "Name",
       "slug": "Slug",
       "slugHelp": "Lowercase letters, numbers, dashes. Used in URLs.",
@@ -81,7 +81,7 @@
     },
     "toast": {
       "deleted": "Tenant deleted",
-      "created": "Workspace created",
+      "created": "Organization created",
       "updated": "Tenant updated"
     }
   },

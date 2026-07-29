@@ -1,6 +1,6 @@
 {
   "overview": {
-    "description": "Your workspace's security posture at a glance. Jump into any area below.",
+    "description": "Your organization's security posture at a glance. Jump into any area below.",
     "sections": {
       "threatProtection": {
         "title": "Threat Protection",
@@ -8,7 +8,7 @@
       },
       "sessions": {
         "title": "Sessions",
-        "description": "Active sessions across the workspace — revoke any you don't recognise."
+        "description": "Active sessions across the organization — revoke any you don't recognise."
       },
       "deviceAuthorizations": {
         "title": "Device Authorizations",

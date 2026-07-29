@@ -30,7 +30,7 @@
     "expires": "Expire",
     "issued": "Émis",
     "type": "Type",
-    "tenant": "Espace de travail"
+    "tenant": "Organisation"
   },
   "states": {
     "loading": "Chargement…",

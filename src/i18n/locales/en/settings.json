@@ -111,7 +111,7 @@
   },
   "workspace": {
     "general": {
-      "description": "The display name, plan, and region for this workspace. The slug is immutable.",
+      "description": "The display name, plan, and region for this organization. The slug is immutable.",
       "profile": {
         "title": "Profile",
         "description": "Visible to members of this tenant.",

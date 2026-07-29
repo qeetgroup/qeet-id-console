@@ -20,7 +20,19 @@
     "successText": "If an account exists for that email, we've sent a one-time reset link. The link expires in 60 minutes.",
     "successResend": "Didn't get it? Check spam, or",
     "successResendLink": "try again",
-    "successBackBtn": "Back to sign in"
+    "successBackBtn": "Back to sign in",
+    "devLinkTitle": "Dev mode — reset link",
+    "devLinkText": "Email isn't sent locally. Use this link to set a new password.",
+    "devLinkButton": "Open reset link",
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Choose a new password for your account. This signs out your other sessions.",
+      "passwordLabel": "New password",
+      "confirmLabel": "Confirm new password",
+      "submitBtn": "Reset password",
+      "submittingBtn": "Resetting…",
+      "mismatch": "Passwords don't match."
+    }
   },
   "magic": {
     "missingTitle": "Missing token",
@@ -37,10 +49,10 @@
   },
   "invite": {
     "invalidTitle": "Invalid invite link",
-    "invalidDescription": "This link is missing its token. Ask your workspace admin to resend the invite.",
+    "invalidDescription": "This link is missing its token. Ask your organization admin to resend the invite.",
     "backToSignIn": "Back to sign in",
     "acceptTitle": "Accept your invite",
-    "acceptDescription": "Set a password to finish joining the workspace — you'll be signed in afterwards.",
+    "acceptDescription": "Set a password to finish joining the organization — you'll be signed in afterwards.",
     "displayNameLabel": "Display name",
     "displayNamePlaceholder": "How you'd like to be addressed",
     "passwordLabel": "Password",

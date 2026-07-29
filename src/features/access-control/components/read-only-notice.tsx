@@ -3,7 +3,7 @@ import { EyeIcon } from "lucide-react";
 
 export function ReadOnlyNotice({
   title = "Read-only access",
-  description = "You can inspect and export this data, but your workspace role cannot change it.",
+  description = "You can inspect and export this data, but your organization role cannot change it.",
 }: {
   title?: string;
   description?: string;

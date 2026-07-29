@@ -12,7 +12,7 @@ import { useCapabilities } from "../capability-provider";
 function AccessLoadingState() {
   return (
     <div className="flex min-w-0 flex-col gap-6" role="status" aria-live="polite" aria-busy="true">
-      <span className="sr-only">Checking workspace access</span>
+      <span className="sr-only">Checking organization access</span>
       <div className="flex items-end justify-between gap-4 border-b border-border/70 pb-5">
         <div className="space-y-3">
           <Skeleton className="h-8 w-56 max-w-[70vw]" />
@@ -57,8 +57,8 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
         <PageState
           code="—"
           icon={ShieldAlertIcon}
-          title="Workspace access could not be verified"
-          description="The console could not confirm your permissions. Retry the check, switch workspaces, or use the account menu to sign out."
+          title="Organization access could not be verified"
+          description="The console could not confirm your permissions. Retry the check, switch organizations, or use the account menu to sign out."
           actions={
             <Button onClick={access.retry}>
               <RefreshCwIcon /> Retry access check
@@ -78,7 +78,7 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
           title="You don’t have access to this page"
           description={
             <>
-              This workspace requires <strong>{capabilityLabel(required)}</strong>.
+              This organization requires <strong>{capabilityLabel(required)}</strong>.
               <span className="mt-1 block font-mono text-xs">{required}</span>
             </>
           }

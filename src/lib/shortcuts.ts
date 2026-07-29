@@ -29,7 +29,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { keys: ["g", "t"], description: "Tenants", path: "/organizations/tenants" },
       { keys: ["g", "w"], description: "Webhooks", path: "/developer/webhooks" },
       { keys: ["g", "a"], description: "Audit logs", path: "/security/audit-logs" },
-      { keys: ["g", "s"], description: "Workspace settings", path: "/settings/workspace/general" },
+      { keys: ["g", "s"], description: "Organization settings", path: "/settings/organization/general" },
     ],
   },
 ];
@@ -42,7 +42,7 @@ const GO_TO: Record<string, string> = {
   t: "/organizations/tenants",
   w: "/developer/webhooks",
   a: "/security/audit-logs",
-  s: "/settings/workspace/general",
+  s: "/settings/organization/general",
 };
 
 function isTypingTarget(el: EventTarget | null): boolean {

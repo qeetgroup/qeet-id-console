@@ -1,6 +1,6 @@
 {
   "title": "Vue d'ensemble",
-  "subtitle": "L'état de santé de l'identité de cet espace de travail en un coup d'œil.",
+  "subtitle": "L'état de santé de l'identité de cet organisation en un coup d'œil.",
   "systemsOk": "Tous les systèmes opérationnels",
   "range7d": "7 derniers jours",
   "range14d": "14 derniers jours",
@@ -63,14 +63,14 @@
   },
   "activity": {
     "title": "Activité récente",
-    "description": "5 derniers événements dans cet espace de travail",
+    "description": "5 derniers événements dans cet organisation",
     "viewAll": "Tout voir",
     "emptyTitle": "Aucune activité pour l'instant",
-    "emptyDescription": "Les événements apparaîtront ici au fur et à mesure que les utilisateurs interagissent avec votre espace de travail."
+    "emptyDescription": "Les événements apparaîtront ici au fur et à mesure que les utilisateurs interagissent avec votre organisation."
   },
   "noWorkspace": {
-    "title": "Créez votre premier espace de travail",
-    "description": "Votre compte n'est pas encore lié à un espace de travail. Créez-en un pour commencer à gérer les utilisateurs, configurer l'authentification et inviter des coéquipiers — vous en serez le propriétaire.",
-    "cta": "Créer un espace de travail"
+    "title": "Créez votre première organisation",
+    "description": "Votre compte n'est pas encore lié à une organisation. Créez-en un pour commencer à gérer les utilisateurs, configurer l'authentification et inviter des coéquipiers — vous en serez le propriétaire.",
+    "cta": "Créer une organisation"
   }
 }

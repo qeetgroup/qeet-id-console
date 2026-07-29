@@ -57,6 +57,7 @@ import { useTranslation } from "react-i18next";
 import { ListToolbar, SortHeader } from "@/components/data-table";
 import { PageHeader } from "@/components/page-header";
 import { type ApiError, api, tokenStore } from "@/lib/api";
+import { CreateOrgFlow } from "@/features/onboarding/create-org-flow";
 import { switchToTenant } from "@/lib/auth";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
 import { useListView } from "@/lib/list-view";
@@ -388,109 +389,24 @@ type CreateTenantSheetProps = {
   onCreated: () => void;
 };
 
-type CreateTenantResponse = {
-  tenant: Tenant;
-  tenant_id: string;
-  access_token?: string;
-  refresh_token?: string;
-};
-
-function CreateTenantSheet({ open, onOpenChange, onCreated }: CreateTenantSheetProps) {
+// Creating an additional organization runs the same plan → name → pay flow as
+// first-run onboarding (CreateOrgFlow), so a paid org actually charges through
+// Razorpay instead of just setting a plan label. Plans are stacked to fit the
+// sheet's width; the flow persists the new tenant-scoped token and reloads into
+// the freshly-created org.
+function CreateTenantSheet({ open, onOpenChange }: CreateTenantSheetProps) {
   const { t } = useTranslation("organizations");
-  const [plan, setPlan] = useState("free");
-  const createM = useMutation({
-    mutationFn: (body: { slug: string; name: string; plan: string; region: string }) =>
-      api<CreateTenantResponse>("/v1/tenants", { method: "POST", body }),
-    onSuccess: (res) => {
-      onCreated();
-      onOpenChange(false);
-      // Now owner of this workspace; persist the scoped token and switch in.
-      if (res.access_token && res.refresh_token) {
-        tokenStore.set(res.access_token);
-        tokenStore.setRefresh(res.refresh_token);
-      }
-      tokenStore.setTenantId(res.tenant_id);
-      window.location.assign("/");
-    },
-    meta: { successMessage: "Workspace created" },
-  });
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <form
-          className="flex h-full flex-col"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const data = new FormData(e.currentTarget);
-            createM.mutate({
-              slug: String(data.get("slug") ?? "").trim(),
-              name: String(data.get("name") ?? "").trim(),
-              plan,
-              region: String(data.get("region") ?? "us-east-1").trim(),
-            });
-          }}
-        >
-          <SheetHeader>
-            <SheetTitle>{t("tenants.create.title")}</SheetTitle>
-            <SheetDescription>{t("tenants.create.description")}</SheetDescription>
-          </SheetHeader>
-          <div className="flex-1 overflow-y-auto p-4">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="name">{t("tenants.create.name")}</FieldLabel>
-                <Input id="name" name="name" placeholder="Acme Corp" required />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="slug">{t("tenants.create.slug")}</FieldLabel>
-                <Input
-                  id="slug"
-                  name="slug"
-                  pattern="[a-z0-9-]+"
-                  minLength={2}
-                  maxLength={64}
-                  placeholder="acme"
-                  required
-                />
-                <FieldDescription>{t("tenants.create.slugHelp")}</FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel>{t("tenants.create.plan")}</FieldLabel>
-                <Select value={plan} onValueChange={(v) => v && setPlan(v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">{t("tenants.filters.plan.free")}</SelectItem>
-                    <SelectItem value="starter">{t("tenants.filters.plan.starter")}</SelectItem>
-                    <SelectItem value="pro">{t("tenants.filters.plan.pro")}</SelectItem>
-                    <SelectItem value="enterprise">
-                      {t("tenants.filters.plan.enterprise")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="region">{t("tenants.create.region")}</FieldLabel>
-                <Input id="region" name="region" defaultValue="us-east-1" />
-              </Field>
-              {createM.error && (
-                <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
-                </Field>
-              )}
-            </FieldGroup>
-          </div>
-          <SheetFooter className="flex-row justify-end gap-2 border-t">
-            <SheetClose render={<Button type="button" variant="outline" />}>
-              {t("tenants.create.cancel")}
-            </SheetClose>
-            <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
-              {createM.isPending ? t("tenants.create.submitting") : t("tenants.create.submit")}
-            </Button>
-          </SheetFooter>
-        </form>
+      <SheetContent side="right" className="flex w-full flex-col sm:max-w-xl">
+        <SheetHeader>
+          <SheetTitle>{t("tenants.create.title")}</SheetTitle>
+          <SheetDescription>{t("tenants.create.description")}</SheetDescription>
+        </SheetHeader>
+        <div className="flex-1 overflow-y-auto p-4">
+          <CreateOrgFlow planStacked onCancel={() => onOpenChange(false)} />
+        </div>
       </SheetContent>
     </Sheet>
   );

@@ -1,5 +1,5 @@
 // Enterprise Live Activity Center — evolved from the original /activity route.
-// Keeps the same route path and "Workspace → Activity" nav entry (navigation.tsx untouched).
+// Keeps the same route path and "Organization → Activity" nav entry (navigation.tsx untouched).
 // Now features: real-time SSE stream, filter bar, search, date-grouped timeline,
 // event details drawer, pause/resume, and unread counter.
 
@@ -176,7 +176,7 @@ function ActivityPage() {
             title="Activity not available"
             description={
               <>
-                You don't have permission to view the activity feed. Contact your workspace admin to
+                You don't have permission to view the activity feed. Contact your organization admin to
                 request the <code className="font-mono">audit.read</code> capability.
               </>
             }

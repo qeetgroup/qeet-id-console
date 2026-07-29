@@ -190,7 +190,7 @@ function useSteps(): Step[] {
 }
 
 /**
- * OnboardingChecklist nudges a fresh workspace through the five most
+ * OnboardingChecklist nudges a fresh organization through the five most
  * common first-day tasks. It introspects existing API queries to mark
  * steps done — no backend coordination required. Auto-hides once
  * every step is complete; the user can also dismiss it explicitly
@@ -229,7 +229,7 @@ export function OnboardingChecklist() {
               <PartyPopperIcon className="size-4" />
             </span>
             <div>
-              <CardTitle className="text-base">Workspace fully set up</CardTitle>
+              <CardTitle className="text-base">Organization fully set up</CardTitle>
               <CardDescription>Every control-plane setup task is complete.</CardDescription>
             </div>
           </div>
@@ -245,14 +245,14 @@ export function OnboardingChecklist() {
     <Card className="border-border/80 bg-card/80 shadow-none hover:shadow-none">
       <CardHeader className="flex flex-row items-start justify-between">
         <div>
-          <CardTitle className="text-sm font-semibold">Workspace readiness</CardTitle>
+          <CardTitle className="text-sm font-semibold">Organization readiness</CardTitle>
           <CardDescription>
             {stillLoading ? "Checking your setup…" : `${doneCount} of ${total} steps complete.`}
           </CardDescription>
           <div
             className="mt-3 h-1.5 w-48 max-w-full overflow-hidden rounded-full bg-muted"
             role="progressbar"
-            aria-label="Workspace setup progress"
+            aria-label="Organization setup progress"
             aria-valuemin={0}
             aria-valuemax={total}
             aria-valuenow={doneCount}

@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useSyncExternalStore } from "react";
 
-import { api, tokenStore } from "./api";
+import { api, API_BASE_URL, tokenStore } from "./api";
 
 type TokenPair = {
   access_token: string;
@@ -57,7 +57,7 @@ export function useLogin() {
       // via useCompleteMfaLogin.
       if (isMfaChallenge(res)) return;
 
-      // Clear prior session so a tenant-less/different user doesn't inherit a stale workspace.
+      // Clear prior session so a tenant-less/different user doesn't inherit a stale organization.
       tokenStore.clear();
       tokenStore.set(res.access_token);
       tokenStore.setRefresh(res.refresh_token);
@@ -101,7 +101,7 @@ export function useCompleteMfaLogin() {
 }
 
 /**
- * Accept a workspace invite: exchange the emailed token + a chosen password for
+ * Accept an organization invite: exchange the emailed token + a chosen password for
  * a session (the backend creates/sets up the user and grants the invited role),
  * then land on the dashboard. Anonymous like login — there's no session yet.
  */
@@ -193,13 +193,33 @@ export function useConsumeSamlCode() {
  */
 export function useForgotPassword() {
   return useMutation({
+    // In dev (SERVICE_ENV=dev) the backend returns dev_reset_token so the reset
+    // link is usable without a real email provider; prod omits it.
     mutationFn: (in_: { email: string }) =>
-      api<void>("/v1/auth/forgot-password", {
+      api<{ message: string; dev_reset_token?: string }>("/v1/auth/forgot-password", {
         method: "POST",
         body: in_,
         anonymous: true,
       }),
     meta: { silent: true },
+  });
+}
+
+/**
+ * Complete a password reset: exchange the emailed token + a new password, then
+ * send the user to sign-in. Anonymous — there's no session yet.
+ */
+export function useResetPassword() {
+  const navigate = useNavigate();
+  return useMutation({
+    mutationFn: (in_: { token: string; new_password: string }) =>
+      api<{ message: string }>("/v1/auth/reset-password", {
+        method: "POST",
+        body: in_,
+        anonymous: true,
+      }),
+    onSuccess: () => navigate({ to: "/sign-in" }),
+    meta: { successMessage: "Password reset — sign in with your new password" },
   });
 }
 
@@ -210,7 +230,7 @@ type SignupInput = {
 };
 
 // Signup is now tenant-less: the response carries the new user + a token pair
-// but NO tenant. The user creates their first workspace from the dashboard.
+// but NO tenant. The user creates their first organization from the dashboard.
 export type SignupResponse = TokenPair & {
   user: User;
 };
@@ -266,7 +286,7 @@ export function useConfirmEmailVerification() {
   });
 }
 
-// Switch workspace: mint a token scoped to a tenant the user belongs to, persist it, reload.
+// Switch organization: mint a token scoped to a tenant the user belongs to, persist it, reload.
 export async function switchToTenant(tenantId: string): Promise<void> {
   const res = await api<TokenPair & { tenant_id: string }>("/v1/auth/switch-tenant", {
     method: "POST",
@@ -276,6 +296,51 @@ export async function switchToTenant(tenantId: string): Promise<void> {
   tokenStore.setRefresh(res.refresh_token);
   tokenStore.setTenantId(res.tenant_id);
   if (typeof window !== "undefined") window.location.assign("/");
+}
+
+// ---------------------------------------------------------------------------
+// Platform social login (the console's own Qeet ID accounts, tenant-less)
+// ---------------------------------------------------------------------------
+
+/** Which platform-level social providers are configured (e.g. ["google"]). */
+export function usePlatformSocialProviders() {
+  return useQuery({
+    queryKey: ["social", "platform-providers"],
+    queryFn: () =>
+      api<{ providers: string[] }>("/v1/social/platform/providers", { anonymous: true }),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Full backend URL to begin a platform social login (browser redirect). */
+export function socialStartUrl(provider: string): string {
+  return `${API_BASE_URL}/v1/social/${provider}/start`;
+}
+
+/**
+ * Trade the one-time social login code (delivered to /sign-in?social_code=…
+ * after the provider redirect) for a Qeet session. Tenant-less, like signup —
+ * the user creates their first organization from the dashboard.
+ */
+export function useConsumeSocialCode() {
+  const navigate = useNavigate();
+  return useMutation({
+    mutationFn: (code: string) =>
+      api<TokenPair & { tenant_id?: string }>("/v1/social/exchange", {
+        method: "POST",
+        body: { code },
+        anonymous: true,
+      }),
+    onSuccess: (pair) => {
+      tokenStore.clear();
+      tokenStore.set(pair.access_token);
+      tokenStore.setRefresh(pair.refresh_token);
+      if (pair.tenant_id) tokenStore.setTenantId(pair.tenant_id);
+      tokenStore.setUserId(pair.user_id);
+      navigate({ to: "/" });
+    },
+    meta: { silent: true },
+  });
 }
 
 export function useLogout() {
@@ -393,7 +458,10 @@ export function useMe() {
   const userId = tokenStore.getUserId();
   return useQuery({
     queryKey: ["me", userId],
-    queryFn: () => api<Me>(`/v1/users/${userId}`),
+    // Self endpoint: resolves to the caller from the token, so it works even for
+    // a tenant-less user (fresh signup) — unlike /v1/users/{id}, which is the
+    // tenant-admin route and 403s ("tenant scope required") without an organization.
+    queryFn: () => api<Me>(`/v1/me`),
     enabled: !!userId,
     staleTime: 60_000,
   });

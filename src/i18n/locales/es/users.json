@@ -1,6 +1,6 @@
 {
   "list": {
-    "description": "Todos los que tienen acceso a este espacio de trabajo. Invite o cree miembros directamente aquí.",
+    "description": "Todos los que tienen acceso a este organización. Invite o cree miembros directamente aquí.",
     "import": "Importar",
     "newUser": "Nuevo usuario",
     "membersTitle": "Miembros",

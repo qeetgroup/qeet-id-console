@@ -45,7 +45,7 @@ function SettingsPage() {
           icon={ShieldIcon}
           title="Security policy"
           detail="IP allow/deny lists, session limits, and MFA enforcement."
-          to="/settings/workspace/security-policy"
+          to="/settings/organization/security-policy"
           badge="tenant policy"
         />
         <LinkCard

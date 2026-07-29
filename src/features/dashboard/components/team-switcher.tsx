@@ -77,7 +77,7 @@ export function TeamSwitcher() {
                 </>
               ) : (
                 <>
-                  <span className="truncate font-medium">No workspace</span>
+                  <span className="truncate font-medium">No organization</span>
                   <span className="truncate text-[10px] text-sidebar-foreground/55">
                     Create a tenant boundary
                   </span>
@@ -94,11 +94,11 @@ export function TeamSwitcher() {
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Workspaces
+                Organizations
               </DropdownMenuLabel>
               {tenants.length === 0 && !tenantsQ.isLoading ? (
                 <DropdownMenuItem disabled className="gap-2 p-2">
-                  <span className="text-sm text-muted-foreground">No workspaces yet</span>
+                  <span className="text-sm text-muted-foreground">No organizations yet</span>
                 </DropdownMenuItem>
               ) : (
                 tenants.slice(0, 9).map((t) => {
@@ -118,7 +118,7 @@ export function TeamSwitcher() {
                       <span className="truncate">{t.name}</span>
                       {isActive && (
                         <CheckIcon
-                          aria-label="Current workspace"
+                          aria-label="Current organization"
                           className="ms-auto size-4 text-emerald-600 dark:text-emerald-400"
                         />
                       )}
@@ -133,7 +133,7 @@ export function TeamSwitcher() {
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <PlusIcon className="size-4" />
                 </div>
-                <div className="font-medium text-muted-foreground">Add workspace</div>
+                <div className="font-medium text-muted-foreground">Add organization</div>
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

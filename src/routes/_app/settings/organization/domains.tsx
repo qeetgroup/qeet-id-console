@@ -24,7 +24,7 @@ import { PageHeader } from "@/components/page-header";
 import { type ApiError, api } from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
 
-export const Route = createFileRoute("/_app/settings/workspace/domains")({
+export const Route = createFileRoute("/_app/settings/organization/domains")({
   component: DomainsPage,
 });
 

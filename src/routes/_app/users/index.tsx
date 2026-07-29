@@ -603,7 +603,7 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
   const [roleId, setRoleId] = useState("");
 
   // Default to a "member"-type role (else the least-privileged/last one) so a
-  // created user is a workspace member out of the box.
+  // created user is an organization member out of the box.
   useEffect(() => {
     if (!roleId && roles.length > 0) {
       const member = roles.find((r) => /member/i.test(r.name));
@@ -690,7 +690,7 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
                   </SelectContent>
                 </Select>
                 <FieldDescription>
-                  Grants workspace membership — without a role the user won&apos;t appear in the
+                  Grants organization membership — without a role the user won&apos;t appear in the
                   members list.
                 </FieldDescription>
               </Field>

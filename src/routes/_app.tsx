@@ -86,7 +86,7 @@ function ConsoleFrame() {
       {COPILOT_ENABLED ? (
         <CopilotProvider>
           {/* Docked mode renders as an in-flow flex sibling here, so opening the
-              Copilot reflows the workspace instead of covering it. */}
+              Copilot reflows the organization instead of covering it. */}
           <CopilotWorkspace />
           <CopilotLauncher />
         </CopilotProvider>
