@@ -11,10 +11,11 @@ import { CommandPaletteLauncher } from "@/features/dashboard/components/command-
 import { ConsoleHeader } from "@/features/dashboard/components/console-header";
 import { ImpersonationBanner } from "@/features/dashboard/components/impersonation-banner";
 import { ShortcutsDialog } from "@/features/dashboard/components/shortcuts-dialog";
-import { isAuthenticated } from "@/lib/auth";
+import { isAuthenticated, useIdleLogout } from "@/lib/auth";
 import { useGlobalShortcuts } from "@/lib/shortcuts";
 
 const COPILOT_ENABLED = env.VITE_COPILOT_ENABLED !== "false";
+const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 export const Route = createFileRoute("/_app")({ component: AppLayout });
 
@@ -42,6 +43,7 @@ function AppLayout() {
 function ConsoleFrame() {
   const navigate = useNavigate();
   const access = useCapabilities();
+  useIdleLogout(IDLE_TIMEOUT_MS);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 

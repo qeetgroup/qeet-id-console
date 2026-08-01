@@ -4,7 +4,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
 import { api, API_BASE_URL, tokenStore } from "./api";
 
@@ -354,6 +354,36 @@ export function useLogout() {
       navigate({ to: "/sign-in" });
     },
   });
+}
+
+const IDLE_EVENTS = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click"] as const;
+
+/**
+ * Logs the user out after `timeoutMs` of inactivity (no mouse/keyboard/touch).
+ * Mount in any component that only renders while the user is authenticated.
+ */
+export function useIdleLogout(timeoutMs: number) {
+  const logout = useLogout();
+  // Keep a stable ref so the event-listener closure always calls the current mutate.
+  const mutateRef = useRef(logout.mutate);
+  mutateRef.current = logout.mutate;
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => mutateRef.current(), timeoutMs);
+    };
+
+    IDLE_EVENTS.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+
+    return () => {
+      clearTimeout(timer);
+      IDLE_EVENTS.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [timeoutMs]);
 }
 
 /** Returns the current tenant id stashed in localStorage. */
