@@ -64,7 +64,10 @@ export function useCheckoutReturn(): { finalizing: boolean } {
       }
 
       const current = tokenStore.getTenantId();
-      for (let attempt = 0; attempt < 10; attempt++) {
+      // Poll for up to ~45s (webhook + provisioning can lag well past 10s). A
+      // gentle ramp keeps early checks snappy without hammering the API late.
+      const MAX_ATTEMPTS = 30;
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
         const res = await api<{ items: TenantListItem[] }>("/v1/tenants").catch(() => null);
         const items = res?.items ?? [];
         const newest = [...items].sort((a, b) =>
@@ -74,12 +77,16 @@ export function useCheckoutReturn(): { finalizing: boolean } {
           await switchToTenant(newest.id); // persists a scoped token + reloads into the org
           return;
         }
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, attempt < 10 ? 1000 : 2000));
       }
-      // Payment confirmation is taking longer than expected (webhook lag) — drop
-      // the finalizing state; the new org will appear on the next load.
+      // Still not provisioned — payment succeeded but the org hasn't appeared yet.
+      // Tell the user explicitly (don't silently drop) so a paid signup that's
+      // finalizing doesn't look like nothing happened; it'll appear on reload.
       setFinalizing(false);
       window.history.replaceState({}, "", window.location.pathname);
+      toast.message(
+        "Payment received — we're finishing your organization setup. This can take a moment; refresh shortly or contact support if it doesn't appear.",
+      );
     })();
   }, []);
 

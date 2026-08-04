@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/page-header";
 import type { Capability } from "@/features/access-control/capability-model";
 import { useCapabilities } from "@/features/access-control/capability-provider";
+import { useTenantId } from "@/lib/auth";
 
 export const Route = createFileRoute("/_app/security/")({
   component: SecurityOverviewPage,
@@ -65,6 +66,7 @@ const SECTIONS: { key: string; to: string; icon: LucideIcon; requiredPermission:
 function SecurityOverviewPage() {
   const { t } = useTranslation("security");
   const access = useCapabilities();
+  const hasOrg = !!useTenantId();
   const sections = SECTIONS.filter((section) => access.can(section.requiredPermission));
 
   return (
@@ -75,11 +77,15 @@ function SecurityOverviewPage() {
         <section className="enterprise-panel">
           <PageState
             icon={ShieldIcon}
-            title="No security areas are available"
-            description="Your organization role does not include security or audit visibility. Ask an organization administrator if you need access."
+            title={hasOrg ? "No security areas are available" : "Create an organization first"}
+            description={
+              hasOrg
+                ? "Your organization role does not include security or audit visibility. Ask an organization administrator if you need access."
+                : "Organization security and audit tools appear once you create or join an organization. Your personal account security lives under Account → Security."
+            }
             actions={
               <Link to="/" className={buttonVariants()}>
-                Go to overview
+                Go to {hasOrg ? "overview" : "setup"}
               </Link>
             }
           />

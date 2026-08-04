@@ -431,6 +431,9 @@ export const navGroups: NavGroup[] = [
         title: "Bots & automations",
         url: "/developer/bots",
         icon: <BotIcon />,
+        // Gate like every other Developer item so it doesn't leak into an
+        // org-less user's sidebar (unpermissioned items always render).
+        requiredPermission: "apikey.read",
       },
       {
         title: "Infrastructure",

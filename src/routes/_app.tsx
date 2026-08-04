@@ -10,6 +10,7 @@ import { AppSidebar } from "@/features/dashboard/components/app-sidebar";
 import { CommandPaletteLauncher } from "@/features/dashboard/components/command-palette-launcher";
 import { ConsoleHeader } from "@/features/dashboard/components/console-header";
 import { ImpersonationBanner } from "@/features/dashboard/components/impersonation-banner";
+import { VerifyEmailBanner } from "@/features/dashboard/components/verify-email-banner";
 import { ShortcutsDialog } from "@/features/dashboard/components/shortcuts-dialog";
 import { isAuthenticated, useIdleLogout } from "@/lib/auth";
 import { useGlobalShortcuts } from "@/lib/shortcuts";
@@ -74,6 +75,7 @@ function ConsoleFrame() {
       <AppSidebar />
       <div className="console-workspace">
         <ImpersonationBanner />
+        <VerifyEmailBanner />
         <ConsoleHeader
           onOpenPalette={() => setPaletteOpen(true)}
           onOpenShortcuts={() => setShortcutsOpen(true)}

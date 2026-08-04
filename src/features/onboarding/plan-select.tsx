@@ -24,13 +24,7 @@ import {
   usePlans,
 } from "@/lib/billing";
 
-import {
-  CURRENCY_COUNTRY,
-  SALES_EMAIL,
-  type Tier,
-  TIER_META,
-  TIER_ORDER,
-} from "./plan-catalog";
+import { CURRENCY_COUNTRY, SALES_EMAIL, type Tier, TIER_META, TIER_ORDER } from "./plan-catalog";
 
 export interface PlanSelection {
   tier: Tier;
@@ -87,7 +81,9 @@ export function PlanSelect({
   const [interval, setInterval] = useState<BillingInterval>("month");
   const [currency, setCurrency] = useState<string | null>(null);
   const activeCurrency =
-    currency ?? (currencies.includes("INR") ? "INR" : currencies.includes("USD") ? "USD" : currencies[0]) ?? "USD";
+    currency ??
+    (currencies.includes("INR") ? "INR" : currencies.includes("USD") ? "USD" : currencies[0]) ??
+    "USD";
   const country = CURRENCY_COUNTRY[activeCurrency] ?? "US";
 
   // Best-case annual saving across the paid tiers, for the toggle hint.
@@ -206,12 +202,18 @@ export function PlanSelect({
                     <CardTitle className="text-base font-semibold">{plan.name}</CardTitle>
                     <div className="flex flex-col items-end gap-1">
                       {meta.badge && (
-                        <Badge variant={meta.featured ? "default" : "secondary"} className="text-[10px]">
+                        <Badge
+                          variant={meta.featured ? "default" : "secondary"}
+                          className="text-[10px]"
+                        >
                           {meta.badge}
                         </Badge>
                       )}
                       {isCurrent && (
-                        <Badge variant="outline" className="border-primary/40 text-[10px] text-primary">
+                        <Badge
+                          variant="outline"
+                          className="border-primary/40 text-[10px] text-primary"
+                        >
                           Current
                         </Badge>
                       )}
@@ -264,7 +266,22 @@ export function PlanSelect({
                       className="w-full"
                       disabled={isCurrent || busy || !!busyTier}
                       onClick={() =>
-                        onSelect({ tier, planCode, interval, currency: activeCurrency, country })
+                        // Enterprise is contact-sales, not self-serve: the server
+                        // won't provision a paid/enterprise org via POST /v1/tenants.
+                        tier === "enterprise"
+                          ? window.open(
+                              `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(
+                                "Qeet ID Enterprise enquiry",
+                              )}`,
+                              "_self",
+                            )
+                          : onSelect({
+                              tier,
+                              planCode,
+                              interval,
+                              currency: activeCurrency,
+                              country,
+                            })
                       }
                     >
                       {busy && <Loader2Icon className="animate-spin" />}

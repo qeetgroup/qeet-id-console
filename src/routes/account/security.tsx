@@ -6,6 +6,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Field,
+  FieldDescription,
+  FieldLabel,
+  Input,
   StatusPill,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -13,12 +17,16 @@ import {
   FingerprintIcon,
   KeyRoundIcon,
   LinkIcon,
-  RefreshCwIcon,
+  Loader2Icon,
   ShieldCheckIcon,
   Trash2Icon,
 } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
+import { ApiError } from "@/lib/api";
+import { socialStartUrl, useChangePassword, usePlatformSocialProviders } from "@/lib/auth";
 import { usePasskeys } from "@/lib/passkeys";
 import { useSocialIdentities, useUnlinkIdentity } from "@/lib/social-identities";
 
@@ -38,6 +46,34 @@ function SecurityPage() {
   const identities = identitiesQ.data?.items ?? [];
   const unlink = useUnlinkIdentity();
 
+  // Providers the user can still link: configured on the platform and not
+  // already linked. "Linking" = signing in with that provider using the same
+  // email, which the callback attaches to this account (findOrCreateUser).
+  const providersQ = usePlatformSocialProviders();
+  const linkedProviders = new Set(identities.map((i) => i.provider.toLowerCase()));
+  const linkable = (providersQ.data?.providers ?? []).filter(
+    (p) => !linkedProviders.has(p.toLowerCase()),
+  );
+
+  const changePassword = useChangePassword();
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+
+  const submitPassword = () => {
+    changePassword.mutate(
+      { current_password: current, new_password: next },
+      {
+        onSuccess: () => {
+          toast.success("Your password has been updated.");
+          setCurrent("");
+          setNext("");
+        },
+        onError: (err) =>
+          toast.error(err instanceof ApiError ? err.message : "Could not update your password."),
+      },
+    );
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {/* Password */}
@@ -53,12 +89,51 @@ function SecurityPage() {
           <CardDescription>{t("security.password.description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Link
-            to="/forgot-password"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              submitPassword();
+            }}
+            className="grid max-w-sm gap-3"
           >
-            <RefreshCwIcon /> {t("security.password.reset")}
-          </Link>
+            <Field>
+              <FieldLabel htmlFor="current-password">Current password</FieldLabel>
+              <Input
+                id="current-password"
+                type="password"
+                autoComplete="current-password"
+                value={current}
+                onChange={(e) => setCurrent(e.target.value)}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="new-password">New password</FieldLabel>
+              <Input
+                id="new-password"
+                type="password"
+                autoComplete="new-password"
+                value={next}
+                onChange={(e) => setNext(e.target.value)}
+              />
+              <FieldDescription>At least 8 characters.</FieldDescription>
+            </Field>
+            <div className="flex items-center gap-2">
+              <Button
+                type="submit"
+                size="sm"
+                disabled={changePassword.isPending || !current || next.length < 8}
+              >
+                {changePassword.isPending && <Loader2Icon className="animate-spin" />}
+                {t("security.password.reset", { defaultValue: "Update password" })}
+              </Button>
+              <Link
+                to="/forgot-password"
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
+                Forgot password?
+              </Link>
+            </div>
+          </form>
         </CardContent>
       </Card>
 
@@ -119,7 +194,7 @@ function SecurityPage() {
           </div>
           <CardDescription>{t("security.connected.description")}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {identities.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("security.connected.empty")}</p>
           ) : (
@@ -149,6 +224,27 @@ function SecurityPage() {
                 </li>
               ))}
             </ul>
+          )}
+
+          {linkable.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 border-t pt-4">
+              <span className="text-xs text-muted-foreground">
+                {t("security.connected.linkPrompt", { defaultValue: "Link a provider:" })}
+              </span>
+              {linkable.map((p) => (
+                <Button
+                  key={p}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    window.location.href = socialStartUrl(p);
+                  }}
+                >
+                  <LinkIcon /> {titleCase(p)}
+                </Button>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

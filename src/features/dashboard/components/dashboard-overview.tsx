@@ -2,6 +2,11 @@ import {
   Badge,
   Button,
   buttonVariants,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Select,
   SelectContent,
   SelectItem,
@@ -19,6 +24,8 @@ import {
   Building2Icon,
   GaugeIcon,
   KeyRoundIcon,
+  Loader2Icon,
+  MailIcon,
   PlusIcon,
   RefreshCwIcon,
   RepeatIcon,
@@ -33,6 +40,7 @@ import { useTranslation } from "react-i18next";
 
 import { useCapabilities } from "@/features/access-control/capability-provider";
 import { formatShortDate, useAnalyticsOverview } from "@/lib/analytics";
+import { useAcceptInvitation, useMyInvitations } from "@/lib/auth";
 
 import {
   authMethodColor,
@@ -311,8 +319,8 @@ export function DashboardOverview() {
             <div className="min-w-0">
               <h2 className="font-heading text-base font-semibold">Your operator view is scoped</h2>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Organization analytics are not part of your role. Available navigation and actions are
-                tailored to your effective permissions.
+                Organization analytics are not part of your role. Available navigation and actions
+                are tailored to your effective permissions.
               </p>
             </div>
           </div>
@@ -380,68 +388,116 @@ const workspaceFoundations = [
 
 export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
   const { t } = useTranslation("dashboard");
+  const invitesQ = useMyInvitations();
+  const accept = useAcceptInvitation();
+  const invites = invitesQ.data?.items ?? [];
 
   return (
-    <section className="enterprise-panel grid min-h-136 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
-      <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">
-        <span className="grid size-12 place-items-center rounded-xl bg-primary/10 ring-1 ring-primary/15">
-          <QeetLogoMark size={28} title="Qeet" />
-        </span>
-        <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-          Organization initialization
-        </p>
-        <h1 className="mt-2 max-w-xl text-balance font-heading text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-          {t("noWorkspace.title")}
-        </h1>
-        <p className="mt-4 max-w-xl text-pretty text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-          {t("noWorkspace.description")}
-        </p>
-        <div className="mt-7 flex flex-wrap items-center gap-3">
-          <Button size="lg" onClick={onStart}>
-            <PlusIcon /> {t("noWorkspace.cta")}
-          </Button>
-          <Link to="/account/security" className={buttonVariants({ variant: "ghost", size: "lg" })}>
-            Review account security <ArrowRightIcon />
-          </Link>
-        </div>
-      </div>
-
-      <aside className="relative m-3 overflow-hidden rounded-xl bg-sidebar p-6 text-sidebar-foreground ring-1 ring-white/10 sm:m-4 sm:p-8 lg:m-5 lg:p-9">
-        <div
-          className="absolute -inset-e-20 -top-20 size-60 rounded-full bg-sidebar-primary/10 blur-3xl"
-          aria-hidden="true"
-        />
-        <div className="relative">
-          <div className="flex items-center gap-2 text-xs font-semibold text-sidebar-foreground/80">
-            <Building2Icon className="size-4 text-sidebar-primary" />
-            What an organization establishes
-          </div>
-          <ol className="mt-8 space-y-7">
-            {workspaceFoundations.map(({ icon: Icon, title, description }, index) => (
-              <li key={title} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
-                <span className="grid size-8 place-items-center rounded-lg bg-white/6 text-sidebar-primary ring-1 ring-white/10">
-                  <Icon className="size-4" />
-                </span>
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-mono text-[10px] text-sidebar-foreground/35">
-                      0{index + 1}
-                    </span>
-                    <h2 className="text-sm font-semibold">{title}</h2>
-                  </div>
-                  <p className="mt-1.5 text-xs leading-5 text-sidebar-foreground/58">
-                    {description}
+    <div className="flex flex-col gap-4">
+      {invites.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <MailIcon className="size-5 text-primary" />
+              <CardTitle className="text-base">
+                {t("invites.title", { defaultValue: "You've been invited" })}
+              </CardTitle>
+            </div>
+            <CardDescription>
+              {t("invites.description", {
+                defaultValue: "Accept an invitation to join an existing organization.",
+              })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y">
+            {invites.map((inv) => (
+              <div
+                key={inv.id}
+                className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{inv.tenant_name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {t("invites.invitedAs", {
+                      defaultValue: "Invited as {{email}}",
+                      email: inv.email,
+                    })}
                   </p>
                 </div>
-              </li>
+                <Button size="sm" disabled={accept.isPending} onClick={() => accept.mutate(inv.id)}>
+                  {accept.isPending && <Loader2Icon className="animate-spin" />}
+                  {t("invites.accept", { defaultValue: "Accept & join" })}
+                </Button>
+              </div>
             ))}
-          </ol>
-          <div className="mt-9 flex items-center gap-2 border-t border-white/10 pt-5 text-[11px] text-sidebar-foreground/45">
-            <ShieldCheckIcon className="size-3.5" />
-            Built for least privilege from the first operator session
+          </CardContent>
+        </Card>
+      )}
+
+      <section className="enterprise-panel grid min-h-136 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
+        <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">
+          <span className="grid size-12 place-items-center rounded-xl bg-primary/10 ring-1 ring-primary/15">
+            <QeetLogoMark size={28} title="Qeet" />
+          </span>
+          <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+            Organization initialization
+          </p>
+          <h1 className="mt-2 max-w-xl text-balance font-heading text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
+            {t("noWorkspace.title")}
+          </h1>
+          <p className="mt-4 max-w-xl text-pretty text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+            {t("noWorkspace.description")}
+          </p>
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Button size="lg" onClick={onStart}>
+              <PlusIcon /> {t("noWorkspace.cta")}
+            </Button>
+            <Link
+              to="/account/security"
+              className={buttonVariants({ variant: "ghost", size: "lg" })}
+            >
+              Review account security <ArrowRightIcon />
+            </Link>
           </div>
         </div>
-      </aside>
-    </section>
+
+        <aside className="relative m-3 overflow-hidden rounded-xl bg-sidebar p-6 text-sidebar-foreground ring-1 ring-white/10 sm:m-4 sm:p-8 lg:m-5 lg:p-9">
+          <div
+            className="absolute -inset-e-20 -top-20 size-60 rounded-full bg-sidebar-primary/10 blur-3xl"
+            aria-hidden="true"
+          />
+          <div className="relative">
+            <div className="flex items-center gap-2 text-xs font-semibold text-sidebar-foreground/80">
+              <Building2Icon className="size-4 text-sidebar-primary" />
+              What an organization establishes
+            </div>
+            <ol className="mt-8 space-y-7">
+              {workspaceFoundations.map(({ icon: Icon, title, description }, index) => (
+                <li key={title} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
+                  <span className="grid size-8 place-items-center rounded-lg bg-white/6 text-sidebar-primary ring-1 ring-white/10">
+                    <Icon className="size-4" />
+                  </span>
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-mono text-[10px] text-sidebar-foreground/35">
+                        0{index + 1}
+                      </span>
+                      <h2 className="text-sm font-semibold">{title}</h2>
+                    </div>
+                    <p className="mt-1.5 text-xs leading-5 text-sidebar-foreground/58">
+                      {description}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-9 flex items-center gap-2 border-t border-white/10 pt-5 text-[11px] text-sidebar-foreground/45">
+              <ShieldCheckIcon className="size-3.5" />
+              Built for least privilege from the first operator session
+            </div>
+          </div>
+        </aside>
+      </section>
+    </div>
   );
 }

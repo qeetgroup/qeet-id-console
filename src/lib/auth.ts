@@ -130,6 +130,49 @@ export function useAcceptInvite() {
     },
   });
 }
+/** A pending invitation addressed to the signed-in user's email. */
+export interface ReceivedInvite {
+  id: string;
+  tenant_id: string;
+  tenant_name: string;
+  tenant_slug: string;
+  email: string;
+  role_id?: string | null;
+  expires_at: string;
+  created_at: string;
+}
+
+/**
+ * Pending invitations addressed to the current user's email. Lets an org-less
+ * user discover invites in-app instead of depending on the original email link.
+ */
+export function useMyInvitations() {
+  return useQuery({
+    queryKey: ["invites", "mine"],
+    queryFn: () => api<{ items: ReceivedInvite[] }>("/v1/me/invites"),
+  });
+}
+
+/**
+ * Accept a pending invitation with the *existing* signed-in account (no new
+ * user, no password) and switch into the newly-joined organization.
+ */
+export function useAcceptInvitation() {
+  return useMutation({
+    mutationFn: (inviteId: string) =>
+      api<TokenPair & { tenant_id?: string }>(`/v1/me/invites/${inviteId}/accept`, {
+        method: "POST",
+        body: {},
+      }),
+    onSuccess: (pair) => {
+      tokenStore.set(pair.access_token);
+      tokenStore.setRefresh(pair.refresh_token);
+      if (pair.tenant_id) tokenStore.setTenantId(pair.tenant_id);
+      if (typeof window !== "undefined") window.location.assign("/");
+    },
+  });
+}
+
 /**
  * Consume a magic-link token and exchange it for a Qeet ID session.
  * Called by the public /magic landing page. On success the access /
@@ -273,6 +316,38 @@ export function useStartEmailVerification() {
         method: "POST",
         body: {},
       }),
+  });
+}
+
+/**
+ * Email-change flow: send a code to a *new* address, then confirm it to swap the
+ * login email. Backed by `POST /v1/me/email/change/{start,confirm}`.
+ */
+export function useStartEmailChange() {
+  return useMutation({
+    mutationFn: (email: string) =>
+      api<{ message: string }>("/v1/me/email/change/start", { method: "POST", body: { email } }),
+  });
+}
+
+export function useConfirmEmailChange() {
+  return useMutation({
+    mutationFn: (code: string) =>
+      api<{ message: string; email: string }>("/v1/me/email/change/confirm", {
+        method: "POST",
+        body: { code },
+      }),
+  });
+}
+
+/**
+ * Change the signed-in user's password by re-proving the current one. Backed by
+ * `POST /v1/auth/password`; tenant-independent, so it works before any org.
+ */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (in_: { current_password: string; new_password: string }) =>
+      api<{ message: string }>("/v1/auth/password", { method: "POST", body: in_ }),
   });
 }
 
@@ -475,7 +550,9 @@ type Me = {
   email: string;
   display_name?: string | null;
   avatar_url?: string | null;
+  email_verified_at?: string | null;
   status: string;
+  metadata?: Record<string, unknown> | null;
 };
 
 /**

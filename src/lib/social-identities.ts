@@ -1,10 +1,11 @@
 // Connected-account (social identity) self-service data layer. Lists the
 // external identities linked to the current user and unlinks them. Backed by
-// GET /v1/users/{userID}/social/identities and DELETE /v1/social/identities/{id}.
+// the self-service, tenant-independent GET /v1/me/social/identities and
+// DELETE /v1/me/social/identities/{id} — so this works before joining any org.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ApiError, api, tokenStore } from "./api";
+import { ApiError, api } from "./api";
 
 export interface SocialIdentity {
   id: string;
@@ -15,17 +16,15 @@ export interface SocialIdentity {
 
 const KEY = ["social-identities"];
 
-// useSocialIdentities lists the current user's linked social accounts. There is
-// no "me" variant of the endpoint, so we scope by the persisted user id; the
-// list returns [] gracefully when the endpoint is absent so the card still
-// renders its empty state.
+// useSocialIdentities lists the current user's linked social accounts via the
+// self endpoint (resolves the caller from the token, no tenant needed). Returns
+// [] gracefully when the endpoint is absent so the card still renders empty.
 export function useSocialIdentities() {
-  const userId = tokenStore.getUserId();
   return useQuery({
-    queryKey: [...KEY, userId],
+    queryKey: KEY,
     queryFn: async (): Promise<{ items: SocialIdentity[] }> => {
       try {
-        return await api<{ items: SocialIdentity[] }>(`/v1/users/${userId}/social/identities`);
+        return await api<{ items: SocialIdentity[] }>(`/v1/me/social/identities`);
       } catch (err) {
         if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
           return { items: [] };
@@ -33,7 +32,6 @@ export function useSocialIdentities() {
         throw err;
       }
     },
-    enabled: !!userId,
     staleTime: 60_000,
     meta: { silent: true },
     retry: false,
@@ -43,7 +41,7 @@ export function useSocialIdentities() {
 export function useUnlinkIdentity() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/social/identities/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => api<void>(`/v1/me/social/identities/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   });
 }

@@ -5,6 +5,7 @@ import { LockKeyholeIcon, RefreshCwIcon, ShieldAlertIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 
+import { useTenantId } from "@/lib/auth";
 import { getRequiredCapabilityForPath } from "@/config/navigation";
 import { capabilityLabel } from "../capability-model";
 import { useCapabilities } from "../capability-provider";
@@ -39,6 +40,7 @@ function focusStateHeading(root: HTMLDivElement | null) {
 export function AccessBoundary({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const access = useCapabilities();
+  const hasOrg = !!useTenantId();
   const stateRef = useRef<HTMLDivElement>(null);
   const required = getRequiredCapabilityForPath(pathname);
   const denied = access.state === "ready" && required !== undefined && !access.can(required);
@@ -70,24 +72,41 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
   }
 
   if (denied && required) {
+    // An org-less user is denied because there's no organization yet — not
+    // because of a role. Say so, and point them at onboarding instead of
+    // implying an admin must grant them a capability.
     return (
       <div ref={stateRef}>
-        <PageState
-          code="403"
-          icon={LockKeyholeIcon}
-          title="You don’t have access to this page"
-          description={
-            <>
-              This organization requires <strong>{capabilityLabel(required)}</strong>.
-              <span className="mt-1 block font-mono text-xs">{required}</span>
-            </>
-          }
-          actions={
-            <Link to="/" className={buttonVariants()}>
-              Go to overview
-            </Link>
-          }
-        />
+        {hasOrg ? (
+          <PageState
+            code="403"
+            icon={LockKeyholeIcon}
+            title="You don’t have access to this page"
+            description={
+              <>
+                This organization requires <strong>{capabilityLabel(required)}</strong>.
+                <span className="mt-1 block font-mono text-xs">{required}</span>
+              </>
+            }
+            actions={
+              <Link to="/" className={buttonVariants()}>
+                Go to overview
+              </Link>
+            }
+          />
+        ) : (
+          <PageState
+            code="—"
+            icon={LockKeyholeIcon}
+            title="Create an organization to continue"
+            description="This page belongs to an organization. Create or join one first, then you’ll have access."
+            actions={
+              <Link to="/" className={buttonVariants()}>
+                Go to setup
+              </Link>
+            }
+          />
+        )}
       </div>
     );
   }

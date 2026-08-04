@@ -71,6 +71,15 @@ function parseUA(ua: string | null | undefined): {
   return { kind, label: os ? `${browser} on ${os}` : browser };
 }
 
+// Loopback addresses (local dev, or a reverse proxy that didn't forward the
+// client IP) read as noise like "::1" — show a friendly label instead.
+function formatIp(ip: string | null | undefined): string {
+  if (!ip) return "—";
+  const v = ip.trim().replace(/^::ffff:/i, ""); // unwrap IPv4-mapped IPv6
+  if (v === "::1" || v === "127.0.0.1" || v === "0.0.0.0") return "Localhost";
+  return v;
+}
+
 function DeviceIcon({ kind }: { kind: DeviceKind }) {
   if (kind === "mobile") return <SmartphoneIcon className="size-4" />;
   if (kind === "tablet") return <TabletIcon className="size-4" />;
@@ -233,26 +242,23 @@ function SessionsPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <DeviceIcon kind={device.kind} />
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">
-                              {device.label}
-                              {isCurrent && (
-                                <span className="ml-2 rounded-full bg-emerald-500/15 px-1.5 py-px text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                                  {t("sessions.active.thisDevice")}
-                                </span>
-                              )}
-                            </span>
-                            <span
-                              className="max-w-md truncate text-xs text-muted-foreground"
-                              title={s.user_agent ?? ""}
-                            >
-                              {s.user_agent ?? "—"}
-                            </span>
-                          </div>
+                          <span
+                            className="text-sm font-medium"
+                            // Keep the raw UA on hover for support, but don't
+                            // surface the noisy string as visible text.
+                            title={s.user_agent ?? ""}
+                          >
+                            {device.label}
+                            {isCurrent && (
+                              <span className="ml-2 rounded-full bg-emerald-500/15 px-1.5 py-px text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                                {t("sessions.active.thisDevice")}
+                              </span>
+                            )}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">
-                        {s.ip ?? "—"}
+                        {formatIp(s.ip)}
                       </TableCell>
                       <TableCell>
                         <TimeSince value={s.created_at} />
