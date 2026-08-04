@@ -107,12 +107,6 @@ function SecurityPage() {
           >
             {t("security.mfa.smsEmail")}
           </Link>
-          <Link
-            to="/auth/mfa/recovery-codes"
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
-          >
-            {t("security.mfa.recoveryCodes")}
-          </Link>
         </CardContent>
       </Card>
 

@@ -84,7 +84,6 @@ import { Route as AppAuthLoginMethodsMagicLinksRouteImport } from './routes/_app
 import { Route as AppAuthLoginMethodsPasskeysRouteImport } from './routes/_app/auth/login-methods/passkeys'
 import { Route as AppAuthLoginMethodsPasswordRouteImport } from './routes/_app/auth/login-methods/password'
 import { Route as AppAuthLoginMethodsPasswordlessRouteImport } from './routes/_app/auth/login-methods/passwordless'
-import { Route as AppAuthMfaRecoveryCodesRouteImport } from './routes/_app/auth/mfa/recovery-codes'
 import { Route as AppAuthMfaSmsEmailRouteImport } from './routes/_app/auth/mfa/sms-email'
 import { Route as AppAuthMfaTotpRouteImport } from './routes/_app/auth/mfa/totp'
 import { Route as AppDeveloperWebhooksIndexRouteImport } from './routes/_app/developer/webhooks/index'
@@ -497,11 +496,6 @@ const AppAuthLoginMethodsPasswordlessRoute =
     path: '/auth/login-methods/passwordless',
     getParentRoute: () => AppRoute,
   } as any)
-const AppAuthMfaRecoveryCodesRoute = AppAuthMfaRecoveryCodesRouteImport.update({
-  id: '/auth/mfa/recovery-codes',
-  path: '/auth/mfa/recovery-codes',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAuthMfaSmsEmailRoute = AppAuthMfaSmsEmailRouteImport.update({
   id: '/auth/mfa/sms-email',
   path: '/auth/mfa/sms-email',
@@ -691,7 +685,6 @@ export interface FileRoutesByFullPath {
   '/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
   '/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
   '/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/auth/mfa/recovery-codes': typeof AppAuthMfaRecoveryCodesRoute
   '/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AppAuthMfaTotpRoute
   '/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
@@ -787,7 +780,6 @@ export interface FileRoutesByTo {
   '/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
   '/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
   '/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/auth/mfa/recovery-codes': typeof AppAuthMfaRecoveryCodesRoute
   '/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AppAuthMfaTotpRoute
   '/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
@@ -886,7 +878,6 @@ export interface FileRoutesById {
   '/_app/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
   '/_app/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
   '/_app/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/_app/auth/mfa/recovery-codes': typeof AppAuthMfaRecoveryCodesRoute
   '/_app/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
   '/_app/auth/mfa/totp': typeof AppAuthMfaTotpRoute
   '/_app/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
@@ -984,7 +975,6 @@ export interface FileRouteTypes {
     | '/auth/login-methods/passkeys'
     | '/auth/login-methods/password'
     | '/auth/login-methods/passwordless'
-    | '/auth/mfa/recovery-codes'
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
@@ -1080,7 +1070,6 @@ export interface FileRouteTypes {
     | '/auth/login-methods/passkeys'
     | '/auth/login-methods/password'
     | '/auth/login-methods/passwordless'
-    | '/auth/mfa/recovery-codes'
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
@@ -1178,7 +1167,6 @@ export interface FileRouteTypes {
     | '/_app/auth/login-methods/passkeys'
     | '/_app/auth/login-methods/password'
     | '/_app/auth/login-methods/passwordless'
-    | '/_app/auth/mfa/recovery-codes'
     | '/_app/auth/mfa/sms-email'
     | '/_app/auth/mfa/totp'
     | '/_app/developer/webhooks/$id'
@@ -1735,13 +1723,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthLoginMethodsPasswordlessRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/auth/mfa/recovery-codes': {
-      id: '/_app/auth/mfa/recovery-codes'
-      path: '/auth/mfa/recovery-codes'
-      fullPath: '/auth/mfa/recovery-codes'
-      preLoaderRoute: typeof AppAuthMfaRecoveryCodesRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/auth/mfa/sms-email': {
       id: '/_app/auth/mfa/sms-email'
       path: '/auth/mfa/sms-email'
@@ -1947,7 +1928,6 @@ interface AppRouteChildren {
   AppAuthLoginMethodsPasskeysRoute: typeof AppAuthLoginMethodsPasskeysRoute
   AppAuthLoginMethodsPasswordRoute: typeof AppAuthLoginMethodsPasswordRoute
   AppAuthLoginMethodsPasswordlessRoute: typeof AppAuthLoginMethodsPasswordlessRoute
-  AppAuthMfaRecoveryCodesRoute: typeof AppAuthMfaRecoveryCodesRoute
   AppAuthMfaSmsEmailRoute: typeof AppAuthMfaSmsEmailRoute
   AppAuthMfaTotpRoute: typeof AppAuthMfaTotpRoute
   AppDeveloperWebhooksIdRoute: typeof AppDeveloperWebhooksIdRoute
@@ -2033,7 +2013,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppAuthLoginMethodsPasskeysRoute: AppAuthLoginMethodsPasskeysRoute,
   AppAuthLoginMethodsPasswordRoute: AppAuthLoginMethodsPasswordRoute,
   AppAuthLoginMethodsPasswordlessRoute: AppAuthLoginMethodsPasswordlessRoute,
-  AppAuthMfaRecoveryCodesRoute: AppAuthMfaRecoveryCodesRoute,
   AppAuthMfaSmsEmailRoute: AppAuthMfaSmsEmailRoute,
   AppAuthMfaTotpRoute: AppAuthMfaTotpRoute,
   AppDeveloperWebhooksIdRoute: AppDeveloperWebhooksIdRoute,

@@ -169,13 +169,12 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        title: "Multi-factor auth",
+        title: "Multi-factor",
         url: "/auth/mfa/totp",
         icon: <FingerprintIcon />,
         items: [
           { title: "TOTP", url: "/auth/mfa/totp" },
           { title: "SMS / email", url: "/auth/mfa/sms-email" },
-          { title: "Recovery codes", url: "/auth/mfa/recovery-codes" },
         ],
       },
       {
