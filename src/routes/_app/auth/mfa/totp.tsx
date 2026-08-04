@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
   CopyableSecret,
+  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -14,7 +15,7 @@ import {
   FieldLabel,
   OTPInput,
 } from "@qeetrix/ui";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckIcon, CopyIcon, FingerprintIcon, Loader2Icon, ShieldCheckIcon } from "lucide-react";
 import QRCode from "qrcode";
@@ -26,7 +27,7 @@ import { useConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { StepUpDialog } from "@/components/step-up-dialog";
 import { ApiError, api } from "@/lib/api";
-import { isStepUpRequired } from "@/lib/mfa";
+import { isStepUpRequired, useTotpStatus } from "@/lib/mfa";
 
 export const Route = createFileRoute("/_app/auth/mfa/totp")({
   component: MfaTotpPage,
@@ -39,6 +40,8 @@ type Stage = "idle" | "enrolling" | "confirmed";
 
 function MfaTotpPage() {
   const { t } = useTranslation("auth");
+  const qc = useQueryClient();
+  const statusQ = useTotpStatus();
   const [confirmDialog, openConfirm] = useConfirmDialog();
   const [stage, setStage] = useState<Stage>("idle");
   const [enrollment, setEnrollment] = useState<EnrollStart | null>(null);
@@ -88,6 +91,9 @@ function MfaTotpPage() {
     onSuccess: (res) => {
       setEnrollment(res);
       setStage("enrolling");
+      // enroll/start rotated the secret and cleared confirmed_at server-side;
+      // drop the cached status so a cancel back to idle reflects reality.
+      void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
     },
   });
 
@@ -100,6 +106,8 @@ function MfaTotpPage() {
     onSuccess: (res) => {
       setRecoveryCodes(res.recovery_codes);
       setStage("confirmed");
+      void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
+      void qc.invalidateQueries({ queryKey: ["mfa", "recovery-codes"] });
     },
   });
 
@@ -111,6 +119,9 @@ function MfaTotpPage() {
       setStage("idle");
       setEnrollment(null);
       setRecoveryCodes(null);
+      setCode("");
+      void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
+      void qc.invalidateQueries({ queryKey: ["mfa", "recovery-codes"] });
     },
     // silent: a 403 step_up_required opens the step-up dialog instead of a
     // dead-end toast (QID-17); success/other errors are toasted below.
@@ -134,29 +145,98 @@ function MfaTotpPage() {
       <PageHeader description={t("mfa.totp.description")} />
 
       {stage === "idle" && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">{t("mfa.totp.idle.title")}</CardTitle>
-                <CardDescription>{t("mfa.totp.idle.subtitle")}</CardDescription>
-              </div>
-              <FingerprintIcon className="size-6 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>{t("mfa.totp.idle.bullet1")}</li>
-              <li>{t("mfa.totp.idle.bullet2")}</li>
-              <li>{t("mfa.totp.idle.bullet3")}</li>
-            </ul>
-            {startM.error && <FieldError>{(startM.error as ApiError).message}</FieldError>}
-            <Button onClick={() => startM.mutate()} disabled={startM.isPending}>
-              {startM.isPending && <Loader2Icon className="animate-spin" />}
-              {startM.isPending ? t("mfa.totp.idle.generatingBtn") : t("mfa.totp.idle.beginBtn")}
-            </Button>
-          </CardContent>
-        </Card>
+        <DataState
+          isLoading={statusQ.isLoading}
+          isError={statusQ.isError}
+          error={statusQ.error}
+          isEmpty={false}
+          skeletonRows={2}
+        >
+          {statusQ.data?.enrolled ? (
+            // Already enrolled — reflect the server state instead of re-offering
+            // enrollment. Re-running start would rotate the secret and break the
+            // user's existing authenticator, so replacing is gated by a confirm.
+            <Card className="border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">
+                      {t("mfa.totp.active.title")}{" "}
+                      <Badge variant="success" className="ml-2">
+                        {t("mfa.totp.active.activeBadge")}
+                      </Badge>
+                    </CardTitle>
+                    <CardDescription>{t("mfa.totp.active.subtitle")}</CardDescription>
+                  </div>
+                  <ShieldCheckIcon className="size-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">{t("mfa.totp.active.manageHint")}</p>
+                {startM.error && <FieldError>{(startM.error as ApiError).message}</FieldError>}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      openConfirm({
+                        title: t("mfa.totp.active.replaceConfirmTitle"),
+                        description: t("mfa.totp.active.replaceConfirmDescription"),
+                        confirmLabel: t("mfa.totp.active.replaceConfirmLabel"),
+                        onConfirm: () => startM.mutate(),
+                      })
+                    }
+                    disabled={startM.isPending}
+                  >
+                    {startM.isPending && <Loader2Icon className="animate-spin" />}
+                    <FingerprintIcon /> {t("mfa.totp.active.replaceBtn")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      openConfirm({
+                        title: t("mfa.totp.confirmed.disableConfirmTitle"),
+                        description: t("mfa.totp.confirmed.disableConfirmDescription"),
+                        variant: "destructive",
+                        confirmLabel: t("mfa.totp.confirmed.disableConfirmLabel"),
+                        onConfirm: disableTotp,
+                      })
+                    }
+                    disabled={disableM.isPending}
+                  >
+                    {disableM.isPending && <Loader2Icon className="animate-spin" />}
+                    {t("mfa.totp.active.disableBtn")}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">{t("mfa.totp.idle.title")}</CardTitle>
+                    <CardDescription>{t("mfa.totp.idle.subtitle")}</CardDescription>
+                  </div>
+                  <FingerprintIcon className="size-6 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>{t("mfa.totp.idle.bullet1")}</li>
+                  <li>{t("mfa.totp.idle.bullet2")}</li>
+                  <li>{t("mfa.totp.idle.bullet3")}</li>
+                </ul>
+                {startM.error && <FieldError>{(startM.error as ApiError).message}</FieldError>}
+                <Button onClick={() => startM.mutate()} disabled={startM.isPending}>
+                  {startM.isPending && <Loader2Icon className="animate-spin" />}
+                  {startM.isPending
+                    ? t("mfa.totp.idle.generatingBtn")
+                    : t("mfa.totp.idle.beginBtn")}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </DataState>
       )}
 
       {stage === "enrolling" && enrollment && (
