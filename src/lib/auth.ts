@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
-import { api, API_BASE_URL, tokenStore } from "./api";
+import { ApiError, api, API_BASE_URL, tokenStore } from "./api";
 
 type TokenPair = {
   access_token: string;
@@ -149,7 +149,31 @@ export interface ReceivedInvite {
 export function useMyInvitations() {
   return useQuery({
     queryKey: ["invites", "mine"],
-    queryFn: () => api<{ items: ReceivedInvite[] }>("/v1/me/invites"),
+    // Degrade gracefully if the endpoint isn't deployed yet — this renders on the
+    // pre-org landing screen, so a 404/501 must not throw a red error toast.
+    queryFn: async (): Promise<{ items: ReceivedInvite[] }> => {
+      try {
+        return await api<{ items: ReceivedInvite[] }>("/v1/me/invites");
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
+          return { items: [] };
+        }
+        throw err;
+      }
+    },
+    meta: { silent: true },
+    retry: false,
+  });
+}
+
+/** Decline (dismiss) a pending invitation addressed to me. */
+export function useDeclineInvitation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (inviteId: string) =>
+      api<{ message: string }>(`/v1/me/invites/${inviteId}/decline`, { method: "POST", body: {} }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["invites", "mine"] }),
+    meta: { silent: true },
   });
 }
 
@@ -340,9 +364,29 @@ export function useConfirmEmailChange() {
   });
 }
 
+/** Whether the current account has a password set (vs social/passkey-only). */
+export function usePasswordStatus() {
+  return useQuery({
+    queryKey: ["auth", "password-status"],
+    queryFn: async (): Promise<{ has_password: boolean }> => {
+      try {
+        return await api<{ has_password: boolean }>("/v1/auth/password");
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
+          return { has_password: true }; // assume password until proven otherwise
+        }
+        throw err;
+      }
+    },
+    meta: { silent: true },
+    staleTime: 60_000,
+  });
+}
+
 /**
- * Change the signed-in user's password by re-proving the current one. Backed by
- * `POST /v1/auth/password`; tenant-independent, so it works before any org.
+ * Change (or set) the signed-in user's password. Backed by `POST /v1/auth/password`;
+ * `current_password` is only required when the account already has one — a
+ * social/passkey account may set one by leaving it empty. Tenant-independent.
  */
 export function useChangePassword() {
   return useMutation({

@@ -37,10 +37,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { useCapabilities } from "@/features/access-control/capability-provider";
+import { ApiError } from "@/lib/api";
 import { formatShortDate, useAnalyticsOverview } from "@/lib/analytics";
-import { useAcceptInvitation, useMyInvitations } from "@/lib/auth";
+import { useAcceptInvitation, useDeclineInvitation, useMyInvitations } from "@/lib/auth";
 
 import {
   authMethodColor,
@@ -390,7 +392,21 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
   const { t } = useTranslation("dashboard");
   const invitesQ = useMyInvitations();
   const accept = useAcceptInvitation();
+  const decline = useDeclineInvitation();
   const invites = invitesQ.data?.items ?? [];
+  const inviteBusy = accept.isPending || decline.isPending;
+
+  const acceptInvite = (id: string) =>
+    accept.mutate(id, {
+      onError: (err) =>
+        toast.error(err instanceof ApiError ? err.message : "Couldn't accept the invitation."),
+    });
+  const declineInvite = (id: string) =>
+    decline.mutate(id, {
+      onSuccess: () => toast.message("Invitation dismissed."),
+      onError: (err) =>
+        toast.error(err instanceof ApiError ? err.message : "Couldn't decline the invitation."),
+    });
 
   return (
     <div className="flex flex-col gap-4">
@@ -424,10 +440,20 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
                     })}
                   </p>
                 </div>
-                <Button size="sm" disabled={accept.isPending} onClick={() => accept.mutate(inv.id)}>
-                  {accept.isPending && <Loader2Icon className="animate-spin" />}
-                  {t("invites.accept", { defaultValue: "Accept & join" })}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={inviteBusy}
+                    onClick={() => declineInvite(inv.id)}
+                  >
+                    {t("invites.decline", { defaultValue: "Decline" })}
+                  </Button>
+                  <Button size="sm" disabled={inviteBusy} onClick={() => acceptInvite(inv.id)}>
+                    {accept.isPending && <Loader2Icon className="animate-spin" />}
+                    {t("invites.accept", { defaultValue: "Accept & join" })}
+                  </Button>
+                </div>
               </div>
             ))}
           </CardContent>

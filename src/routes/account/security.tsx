@@ -28,7 +28,12 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ApiError } from "@/lib/api";
-import { startSocialLink, useChangePassword, usePlatformSocialProviders } from "@/lib/auth";
+import {
+  startSocialLink,
+  useChangePassword,
+  usePasswordStatus,
+  usePlatformSocialProviders,
+} from "@/lib/auth";
 import { usePasskeys } from "@/lib/passkeys";
 import { useSocialIdentities, useUnlinkIdentity } from "@/lib/social-identities";
 
@@ -93,18 +98,21 @@ function SecurityPage() {
     window.history.replaceState({}, "", window.location.pathname);
   }, [refetchIdentities]);
 
+  const pwStatus = usePasswordStatus();
+  const hasPassword = pwStatus.data?.has_password ?? true;
   const changePassword = useChangePassword();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
 
   const submitPassword = () => {
     changePassword.mutate(
-      { current_password: current, new_password: next },
+      { current_password: hasPassword ? current : "", new_password: next },
       {
         onSuccess: () => {
-          toast.success("Your password has been updated.");
+          toast.success(hasPassword ? "Your password has been updated." : "Password set.");
           setCurrent("");
           setNext("");
+          void pwStatus.refetch();
         },
         onError: (err) =>
           toast.error(err instanceof ApiError ? err.message : "Could not update your password."),
@@ -122,9 +130,15 @@ function SecurityPage() {
               <KeyRoundIcon className="size-5 text-muted-foreground" />
               <CardTitle className="text-base">{t("security.password.title")}</CardTitle>
             </div>
-            <StatusPill status="active" />
+            <StatusPill status={hasPassword ? "active" : "pending"} dot={false}>
+              {hasPassword ? "Set" : "Not set"}
+            </StatusPill>
           </div>
-          <CardDescription>{t("security.password.description")}</CardDescription>
+          <CardDescription>
+            {hasPassword
+              ? t("security.password.description")
+              : "Your account signs in with a social provider or passkey. Add a password as a backup way to sign in."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -134,16 +148,18 @@ function SecurityPage() {
             }}
             className="grid max-w-sm gap-3"
           >
-            <Field>
-              <FieldLabel htmlFor="current-password">Current password</FieldLabel>
-              <Input
-                id="current-password"
-                type="password"
-                autoComplete="current-password"
-                value={current}
-                onChange={(e) => setCurrent(e.target.value)}
-              />
-            </Field>
+            {hasPassword && (
+              <Field>
+                <FieldLabel htmlFor="current-password">Current password</FieldLabel>
+                <Input
+                  id="current-password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={current}
+                  onChange={(e) => setCurrent(e.target.value)}
+                />
+              </Field>
+            )}
             <Field>
               <FieldLabel htmlFor="new-password">New password</FieldLabel>
               <Input
@@ -159,10 +175,12 @@ function SecurityPage() {
               <Button
                 type="submit"
                 size="sm"
-                disabled={changePassword.isPending || !current || next.length < 8}
+                disabled={changePassword.isPending || next.length < 8 || (hasPassword && !current)}
               >
                 {changePassword.isPending && <Loader2Icon className="animate-spin" />}
-                {t("security.password.reset", { defaultValue: "Update password" })}
+                {hasPassword
+                  ? t("security.password.reset", { defaultValue: "Update password" })
+                  : "Set a password"}
               </Button>
               <Link
                 to="/forgot-password"
