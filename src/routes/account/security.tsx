@@ -12,6 +12,7 @@ import {
   Input,
   StatusPill,
 } from "@qeetrix/ui";
+import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   FingerprintIcon,
@@ -21,12 +22,13 @@ import {
   ShieldCheckIcon,
   Trash2Icon,
 } from "lucide-react";
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ApiError } from "@/lib/api";
-import { socialStartUrl, useChangePassword, usePlatformSocialProviders } from "@/lib/auth";
+import { startSocialLink, useChangePassword, usePlatformSocialProviders } from "@/lib/auth";
 import { usePasskeys } from "@/lib/passkeys";
 import { useSocialIdentities, useUnlinkIdentity } from "@/lib/social-identities";
 
@@ -38,6 +40,19 @@ function titleCase(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+// Brand marks for the social providers (same set as the sign-in screen). Falls
+// back to a generic link glyph for anything without a dedicated icon.
+const PROVIDER_ICONS: Record<string, ReactNode> = {
+  google: <Google />,
+  microsoft: <Microsoft />,
+  github: <Github className="dark:invert" />,
+  apple: <Apple className="invert dark:invert-0" />,
+};
+
+function providerIcon(provider: string): ReactNode {
+  return PROVIDER_ICONS[provider] ?? <LinkIcon />;
+}
+
 function SecurityPage() {
   const { t } = useTranslation("account");
   const passkeysQ = usePasskeys();
@@ -46,14 +61,37 @@ function SecurityPage() {
   const identities = identitiesQ.data?.items ?? [];
   const unlink = useUnlinkIdentity();
 
-  // Providers the user can still link: configured on the platform and not
-  // already linked. "Linking" = signing in with that provider using the same
-  // email, which the callback attaches to this account (findOrCreateUser).
+  // One row per provider: every configured platform provider, plus any already
+  // linked (in case a provider was later unconfigured). Each row shows Unlink
+  // when linked, or Link otherwise — so a linked provider always has an unlink
+  // action. "Linking" = signing in with that provider using the same email,
+  // which the callback attaches to this account (findOrCreateUser).
   const providersQ = usePlatformSocialProviders();
-  const linkedProviders = new Set(identities.map((i) => i.provider.toLowerCase()));
-  const linkable = (providersQ.data?.providers ?? []).filter(
-    (p) => !linkedProviders.has(p.toLowerCase()),
-  );
+  const linkedByProvider = new Map(identities.map((i) => [i.provider.toLowerCase(), i]));
+  const providerRows = [
+    ...new Set([
+      ...(providersQ.data?.providers ?? []).map((p) => p.toLowerCase()),
+      ...identities.map((i) => i.provider.toLowerCase()),
+    ]),
+  ];
+
+  // Returning from a link ceremony: the provider callback bounced back here with
+  // ?linked=<provider> (success) or ?link_error=already_linked. Surface it,
+  // refresh the connected list, and strip the query so a reload won't re-toast.
+  const refetchIdentities = identitiesQ.refetch;
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const linked = params.get("linked");
+    const linkError = params.get("link_error");
+    if (!linked && !linkError) return;
+    if (linked) {
+      toast.success(`${titleCase(linked)} connected.`);
+      void refetchIdentities();
+    } else if (linkError === "already_linked") {
+      toast.error("That account is already linked to a different Qeet ID.");
+    }
+    window.history.replaceState({}, "", window.location.pathname);
+  }, [refetchIdentities]);
 
   const changePassword = useChangePassword();
   const [current, setCurrent] = useState("");
@@ -194,57 +232,65 @@ function SecurityPage() {
           </div>
           <CardDescription>{t("security.connected.description")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {identities.length === 0 ? (
+        <CardContent>
+          {providerRows.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("security.connected.empty")}</p>
           ) : (
             <ul className="divide-y">
-              {identities.map((idn) => (
-                <li
-                  key={idn.id}
-                  className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">{titleCase(idn.provider)}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {idn.email ?? "—"}{" "}
-                      {t("security.connected.linkedAt", {
-                        date: new Date(idn.linked_at).toLocaleDateString(),
-                      })}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={unlink.isPending}
-                    onClick={() => unlink.mutate(idn.id)}
+              {providerRows.map((provider) => {
+                const linked = linkedByProvider.get(provider);
+                return (
+                  <li
+                    key={provider}
+                    className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
                   >
-                    <Trash2Icon /> {t("security.connected.unlink")}
-                  </Button>
-                </li>
-              ))}
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-md border bg-background [&_svg]:size-4">
+                        {providerIcon(provider)}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">{titleCase(provider)}</p>
+                        {linked ? (
+                          <p className="truncate text-xs text-muted-foreground">
+                            {linked.email ?? "—"}{" "}
+                            {t("security.connected.linkedAt", {
+                              date: new Date(linked.linked_at).toLocaleDateString(),
+                            })}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            {t("security.connected.notConnected", {
+                              defaultValue: "Not connected",
+                            })}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {linked ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={unlink.isPending}
+                        onClick={() => unlink.mutate(linked.id)}
+                      >
+                        <Trash2Icon /> {t("security.connected.unlink")}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          void startSocialLink(provider);
+                        }}
+                      >
+                        {t("security.connected.link", { defaultValue: "Link" })}
+                      </Button>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
-          )}
-
-          {linkable.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 border-t pt-4">
-              <span className="text-xs text-muted-foreground">
-                {t("security.connected.linkPrompt", { defaultValue: "Link a provider:" })}
-              </span>
-              {linkable.map((p) => (
-                <Button
-                  key={p}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    window.location.href = socialStartUrl(p);
-                  }}
-                >
-                  <LinkIcon /> {titleCase(p)}
-                </Button>
-              ))}
-            </div>
           )}
         </CardContent>
       </Card>

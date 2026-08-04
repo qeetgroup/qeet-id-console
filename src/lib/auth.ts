@@ -393,6 +393,23 @@ export function socialStartUrl(provider: string): string {
 }
 
 /**
+ * Begin linking a social provider to the *current* signed-in account. Unlike
+ * login, this is authenticated: the server stashes our identity in the OAuth
+ * state (so the callback attaches the provider to us, never creating/switching
+ * an account) and returns the provider authorize URL to hand the browser to.
+ * The provider callback returns to /account/security.
+ */
+export async function startSocialLink(provider: string): Promise<void> {
+  const res = await api<{ authorize_url: string }>(`/v1/social/${provider}/link/start`, {
+    method: "POST",
+    body: {},
+  });
+  if (typeof window !== "undefined" && res.authorize_url) {
+    window.location.href = res.authorize_url;
+  }
+}
+
+/**
  * Trade the one-time social login code (delivered to /sign-in?social_code=…
  * after the provider redirect) for a Qeet session. Tenant-less, like signup —
  * the user creates their first organization from the dashboard.
