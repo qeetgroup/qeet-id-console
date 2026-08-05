@@ -28,6 +28,25 @@ declare module "@tanstack/react-query" {
 function reportError(error: unknown, meta?: Record<string, unknown>) {
   if (meta?.silent) return;
   if (!(error instanceof ApiError)) return;
+  // Plan-entitlement errors: a numeric cap reached (plan_limit) or a locked
+  // feature (upgrade_required). Show an actionable "Upgrade" toast instead of a
+  // generic error. Keyed on the stable code so it's independent of HTTP status
+  // (the backend uses 402) and never masked by the 403 branch below.
+  if (error.code === "billing.plan_limit" || error.code === "billing.upgrade_required") {
+    const atLimit = error.code === "billing.plan_limit";
+    toast.error(atLimit ? "Plan limit reached" : "Upgrade to unlock this", {
+      description: atLimit
+        ? "You've reached your plan's limit. Upgrade to add more."
+        : "This feature isn't included in your plan. Upgrade to unlock it.",
+      action: {
+        label: "Upgrade",
+        onClick: () => {
+          window.location.href = "/settings/billing";
+        },
+      },
+    });
+    return;
+  }
   if (error.status === 401 || error.status === 400 || error.status === 422) return;
   if (error.status === 403) {
     toast.error("This action is no longer available", {

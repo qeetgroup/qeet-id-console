@@ -13,8 +13,8 @@ import { unconfiguredProvider } from "./unconfigured-provider";
 
 export function useActiveProvider(): AIProvider {
   const status = useCopilotStatus();
-  return useMemo(
-    () => (status.data?.configured ? backendProvider : unconfiguredProvider),
-    [status.data?.configured],
-  );
+  // Prefer `available` (server configured AND plan includes copilot); fall back
+  // to `configured` for older servers that don't send `available`.
+  const usable = status.data?.available ?? status.data?.configured;
+  return useMemo(() => (usable ? backendProvider : unconfiguredProvider), [usable]);
 }

@@ -10,6 +10,10 @@ import { api } from "./api";
 
 export interface CopilotStatus {
   configured: boolean;
+  // available folds in the plan gate: true only when the server is configured
+  // AND the tenant's plan includes the AI copilot. Older servers omit it, so
+  // consumers fall back to `configured`.
+  available?: boolean;
   provider?: string;
   model?: string;
 }

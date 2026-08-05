@@ -421,23 +421,20 @@ type EditTenantSheetProps = {
 type UpdateBody = {
   name?: string;
   status?: "active" | "suspended";
-  plan?: "free" | "starter" | "pro" | "enterprise";
   region?: string;
 };
 
 function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps) {
   const { t } = useTranslation("organizations");
-  const [plan, setPlan] = useState<string>(tenant?.plan ?? "free");
   const [status, setStatus] = useState<string>(
     tenant?.status === "suspended" ? "suspended" : "active",
   );
 
   // Reset selects when the editing target changes — without this the sheet
-  // would keep the previous tenant's plan/status on the second open.
+  // would keep the previous tenant's status on the second open.
   const lastId = useState<string | null>(null);
   if (tenant && tenant.id !== lastId[0]) {
     lastId[1](tenant.id);
-    setPlan(tenant.plan);
     setStatus(tenant.status === "suspended" ? "suspended" : "active");
   }
 
@@ -460,7 +457,6 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
               updateM.mutate({
                 name: String(data.get("name") ?? "").trim(),
                 region: String(data.get("region") ?? "").trim(),
-                plan: plan as UpdateBody["plan"],
                 status: status as UpdateBody["status"],
               });
             }}
@@ -489,19 +485,12 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
                 </Field>
                 <Field>
                   <FieldLabel>{t("tenants.edit.plan")}</FieldLabel>
-                  <Select value={plan} onValueChange={(v) => v && setPlan(v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="free">{t("tenants.filters.plan.free")}</SelectItem>
-                      <SelectItem value="starter">{t("tenants.filters.plan.starter")}</SelectItem>
-                      <SelectItem value="pro">{t("tenants.filters.plan.pro")}</SelectItem>
-                      <SelectItem value="enterprise">
-                        {t("tenants.filters.plan.enterprise")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    value={(tenant.plan ?? "free").replace(/^./, (c) => c.toUpperCase())}
+                    readOnly
+                    disabled
+                  />
+                  <FieldDescription>Plan changes are made through billing.</FieldDescription>
                 </Field>
                 <Field>
                   <FieldLabel>{t("tenants.edit.status")}</FieldLabel>

@@ -51,7 +51,9 @@ import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
+import { FeatureGate } from "@/features/billing/components/upgrade-gate";
 import type { ApiError } from "@/lib/api";
+import { useEntitlements } from "@/lib/billing";
 import {
   type SamlConnection,
   samlLoginUrl,
@@ -82,6 +84,7 @@ function SamlPage() {
     .filter(Boolean)
     .sort()
     .at(-1);
+  const ssoLocked = useEntitlements().data?.features.sso === false;
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -89,136 +92,144 @@ function SamlPage() {
       <PageHeader
         description={t("samlSp.description")}
         actions={
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <PlusIcon className="mr-2 size-4" />
-            {t("samlSp.newButton")}
-          </Button>
+          ssoLocked ? undefined : (
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <PlusIcon className="mr-2 size-4" />
+              {t("samlSp.newButton")}
+            </Button>
+          )
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardDescription>{t("samlSp.stats.active")}</CardDescription>
-            <WorkflowIcon className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold tracking-tight">{active}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{t("samlSp.stats.total")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold tracking-tight">{items.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>{t("samlSp.stats.lastLogin")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold tracking-tight">
-              {lastLogin ? <TimeSince value={lastLogin} /> : t("samlSp.stats.never")}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <FeatureGate
+        feature="sso"
+        title="Enterprise SSO (SAML) is a paid feature"
+        description="Let your team sign in through your own identity provider (Okta, Entra ID, Google Workspace…). Upgrade to Pro to configure SAML connections."
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardDescription>{t("samlSp.stats.active")}</CardDescription>
+              <WorkflowIcon className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold tracking-tight">{active}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardDescription>{t("samlSp.stats.total")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold tracking-tight">{items.length}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardDescription>{t("samlSp.stats.lastLogin")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold tracking-tight">
+                {lastLogin ? <TimeSince value={lastLogin} /> : t("samlSp.stats.never")}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("samlSp.list.title")}</CardTitle>
-          <CardDescription>{t("samlSp.list.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <DataState
-            isLoading={listQ.isLoading}
-            isError={listQ.isError}
-            error={listQ.error}
-            isEmpty={items.length === 0}
-            emptyIcon={WorkflowIcon}
-            emptyTitle={t("samlSp.list.empty")}
-            skeletonRows={3}
-          >
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("samlSp.columns.name")}</TableHead>
-                  <TableHead>{t("samlSp.columns.idpEntityId")}</TableHead>
-                  <TableHead>{t("samlSp.columns.status")}</TableHead>
-                  <TableHead>{t("samlSp.columns.lastLogin")}</TableHead>
-                  <TableHead className="text-right">{t("samlSp.columns.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell className="max-w-65 truncate font-mono text-xs text-muted-foreground">
-                      {c.idp_entity_id}
-                    </TableCell>
-                    <TableCell>
-                      <StatusPill status={c.status} />
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {c.last_login_at ? <TimeSince value={c.last_login_at} /> : "—"}
-                    </TableCell>
-                    <TableCell className="text-right whitespace-nowrap">
-                      <ValidateConnection id={c.id} />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open(samlLoginUrl(c.id), "_blank", "noopener")}
-                        disabled={c.status === "disabled"}
-                        title={t("samlSp.testSsoTitle")}
-                      >
-                        <ExternalLinkIcon /> {t("samlSp.testSso")}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open(samlMetadataUrl(c.id), "_blank", "noopener")}
-                        title={t("samlSp.metadataTitle")}
-                      >
-                        <DownloadIcon /> {t("samlSp.metadata")}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          updateM.mutate({
-                            id: c.id,
-                            status: c.status === "active" ? "disabled" : "active",
-                          })
-                        }
-                        disabled={updateM.isPending}
-                      >
-                        {c.status === "active" ? t("samlSp.disable") : t("samlSp.enable")}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          openConfirm({
-                            title: t("samlSp.confirm.title", { name: c.name }),
-                            variant: "destructive",
-                            confirmLabel: t("samlSp.confirm.label"),
-                            onConfirm: () => deleteM.mutate(c.id),
-                          })
-                        }
-                        disabled={deleteM.isPending}
-                      >
-                        <Trash2Icon /> {t("samlSp.deleteBtn")}
-                      </Button>
-                    </TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("samlSp.list.title")}</CardTitle>
+            <CardDescription>{t("samlSp.list.description")}</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <DataState
+              isLoading={listQ.isLoading}
+              isError={listQ.isError}
+              error={listQ.error}
+              isEmpty={items.length === 0}
+              emptyIcon={WorkflowIcon}
+              emptyTitle={t("samlSp.list.empty")}
+              skeletonRows={3}
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("samlSp.columns.name")}</TableHead>
+                    <TableHead>{t("samlSp.columns.idpEntityId")}</TableHead>
+                    <TableHead>{t("samlSp.columns.status")}</TableHead>
+                    <TableHead>{t("samlSp.columns.lastLogin")}</TableHead>
+                    <TableHead className="text-right">{t("samlSp.columns.actions")}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </DataState>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {items.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell className="max-w-65 truncate font-mono text-xs text-muted-foreground">
+                        {c.idp_entity_id}
+                      </TableCell>
+                      <TableCell>
+                        <StatusPill status={c.status} />
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {c.last_login_at ? <TimeSince value={c.last_login_at} /> : "—"}
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        <ValidateConnection id={c.id} />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(samlLoginUrl(c.id), "_blank", "noopener")}
+                          disabled={c.status === "disabled"}
+                          title={t("samlSp.testSsoTitle")}
+                        >
+                          <ExternalLinkIcon /> {t("samlSp.testSso")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(samlMetadataUrl(c.id), "_blank", "noopener")}
+                          title={t("samlSp.metadataTitle")}
+                        >
+                          <DownloadIcon /> {t("samlSp.metadata")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            updateM.mutate({
+                              id: c.id,
+                              status: c.status === "active" ? "disabled" : "active",
+                            })
+                          }
+                          disabled={updateM.isPending}
+                        >
+                          {c.status === "active" ? t("samlSp.disable") : t("samlSp.enable")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            openConfirm({
+                              title: t("samlSp.confirm.title", { name: c.name }),
+                              variant: "destructive",
+                              confirmLabel: t("samlSp.confirm.label"),
+                              onConfirm: () => deleteM.mutate(c.id),
+                            })
+                          }
+                          disabled={deleteM.isPending}
+                        >
+                          <Trash2Icon /> {t("samlSp.deleteBtn")}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DataState>
+          </CardContent>
+        </Card>
+      </FeatureGate>
 
       <CreateConnectionSheet open={creating} onOpenChange={setCreating} />
     </div>

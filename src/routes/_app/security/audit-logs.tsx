@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { api } from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
+import { useEntitlements } from "@/lib/billing";
 
 // URL-driven filter state — the audit-logs view bookmarks any filter
 // combination as `/_app/security/audit-logs?action=user.create` so
@@ -224,6 +225,10 @@ function AuditLogsPage() {
   const hasFilters = Object.values(filters).some(Boolean);
   const [searchDraft, setSearchDraft] = useState(filters.q);
   const itemCount = auditQ.data?.items?.length ?? 0;
+  // Audit export is a paid feature. The log VIEW stays available on every plan;
+  // only the export control is gated (export is client-side, so there's nothing
+  // to enforce server-side — hiding the button is the honest gate).
+  const canExport = useEntitlements().data?.features.audit_export !== false;
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -231,28 +236,30 @@ function AuditLogsPage() {
         description={t("auditLogs.description")}
         actions={
           <>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button variant="outline" size="sm" disabled={!!exporting}>
-                    {exporting ? <Loader2Icon className="animate-spin" /> : <DownloadIcon />}
-                    {exporting
-                      ? t("auditLogs.exporting", {
-                          format: exporting.toUpperCase(),
-                        })
-                      : t("auditLogs.export")}
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end" sideOffset={4} className="min-w-36">
-                <DropdownMenuItem onClick={() => exportAll("csv")}>
-                  {t("auditLogs.exportCsv")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => exportAll("json")}>
-                  {t("auditLogs.exportJson")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {canExport && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="outline" size="sm" disabled={!!exporting}>
+                      {exporting ? <Loader2Icon className="animate-spin" /> : <DownloadIcon />}
+                      {exporting
+                        ? t("auditLogs.exporting", {
+                            format: exporting.toUpperCase(),
+                          })
+                        : t("auditLogs.export")}
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end" sideOffset={4} className="min-w-36">
+                  <DropdownMenuItem onClick={() => exportAll("csv")}>
+                    {t("auditLogs.exportCsv")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => exportAll("json")}>
+                    {t("auditLogs.exportJson")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Button
               variant="outline"
               size="sm"

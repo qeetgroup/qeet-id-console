@@ -20,11 +20,13 @@ import { Loader2Icon, PlayIcon, PlusIcon, SlidersHorizontalIcon, Trash2Icon } fr
 import { useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
+import { FeatureGate } from "@/features/billing/components/upgrade-gate";
 import { CodePreview } from "@/features/authorization/components/code-preview/code-preview";
 import { ConditionTree } from "@/features/authorization/components/condition-builder/condition-tree";
 import { DecisionExplain } from "@/features/authorization/components/explain/decision-explain";
 import { MonacoPanel } from "@/features/authorization/components/shared/monaco-panel";
 import type { ApiError } from "@/lib/api";
+import { useEntitlements } from "@/lib/billing";
 import {
   type AbacPolicy,
   type CondNode,
@@ -104,87 +106,96 @@ function AbacPage() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const policies = policiesQ.data?.items ?? [];
   const deleteM = useDeleteAbacPolicy();
+  const abacLocked = useEntitlements().data?.features.abac === false;
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <PageHeader
         description="Author attribute-based policies with a no-code condition builder. Deny wins; policies are ordered by priority."
         actions={
-          <Button size="sm" onClick={() => setDraft(newDraft())}>
-            <PlusIcon /> New policy
-          </Button>
+          abacLocked ? undefined : (
+            <Button size="sm" onClick={() => setDraft(newDraft())}>
+              <PlusIcon /> New policy
+            </Button>
+          )
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
-        <Card className="min-w-0">
-          <CardHeader>
-            <CardTitle className="text-base">Policies</CardTitle>
-            <CardDescription>
-              {policies.length} attribute polic{policies.length === 1 ? "y" : "ies"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataState
-              isLoading={policiesQ.isLoading}
-              isError={policiesQ.isError}
-              error={policiesQ.error}
-              isEmpty={policies.length === 0}
-              emptyIcon={SlidersHorizontalIcon}
-              emptyTitle="No ABAC policies yet"
-              emptyDescription="Create your first attribute-based policy."
-              skeletonRows={4}
-            >
-              <ul className="divide-y">
-                {policies.map((p) => (
-                  <li key={p.id} className="flex items-start justify-between gap-2 p-3">
-                    <button
-                      type="button"
-                      className="min-w-0 flex-1 text-left"
-                      onClick={() => setDraft(draftFromPolicy(p))}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Badge variant={p.effect === "deny" ? "destructive" : "success"}>
-                          {p.effect}
-                        </Badge>
-                        <span className="truncate text-sm font-medium">{p.name}</span>
-                        {!p.enabled && <Badge variant="muted">disabled</Badge>}
-                      </div>
-                      <p className="truncate font-mono text-xs text-muted-foreground">
-                        {p.resource_type}:{p.action} · priority {p.priority}
-                      </p>
-                    </button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`Delete ${p.name}`}
-                      disabled={deleteM.isPending}
-                      onClick={() => deleteM.mutate(p.id)}
-                    >
-                      <Trash2Icon />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </DataState>
-          </CardContent>
-        </Card>
-
-        {draft ? (
-          <PolicyEditor
-            key={draft.id ?? "new"}
-            draft={draft}
-            onChange={setDraft}
-            onClose={() => setDraft(null)}
-          />
-        ) : (
-          <Card className="flex min-h-[400px] items-center justify-center">
-            <CardContent className="text-center text-sm text-muted-foreground">
-              Select a policy to edit, or create a new one.
+      <FeatureGate
+        feature="abac"
+        title="ABAC is a Pro feature"
+        description="Author attribute-based access policies with a no-code condition builder. Upgrade to Pro to use ABAC."
+      >
+        <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
+          <Card className="min-w-0">
+            <CardHeader>
+              <CardTitle className="text-base">Policies</CardTitle>
+              <CardDescription>
+                {policies.length} attribute polic{policies.length === 1 ? "y" : "ies"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <DataState
+                isLoading={policiesQ.isLoading}
+                isError={policiesQ.isError}
+                error={policiesQ.error}
+                isEmpty={policies.length === 0}
+                emptyIcon={SlidersHorizontalIcon}
+                emptyTitle="No ABAC policies yet"
+                emptyDescription="Create your first attribute-based policy."
+                skeletonRows={4}
+              >
+                <ul className="divide-y">
+                  {policies.map((p) => (
+                    <li key={p.id} className="flex items-start justify-between gap-2 p-3">
+                      <button
+                        type="button"
+                        className="min-w-0 flex-1 text-left"
+                        onClick={() => setDraft(draftFromPolicy(p))}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Badge variant={p.effect === "deny" ? "destructive" : "success"}>
+                            {p.effect}
+                          </Badge>
+                          <span className="truncate text-sm font-medium">{p.name}</span>
+                          {!p.enabled && <Badge variant="muted">disabled</Badge>}
+                        </div>
+                        <p className="truncate font-mono text-xs text-muted-foreground">
+                          {p.resource_type}:{p.action} · priority {p.priority}
+                        </p>
+                      </button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Delete ${p.name}`}
+                        disabled={deleteM.isPending}
+                        onClick={() => deleteM.mutate(p.id)}
+                      >
+                        <Trash2Icon />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </DataState>
             </CardContent>
           </Card>
-        )}
-      </div>
+
+          {draft ? (
+            <PolicyEditor
+              key={draft.id ?? "new"}
+              draft={draft}
+              onChange={setDraft}
+              onClose={() => setDraft(null)}
+            />
+          ) : (
+            <Card className="flex min-h-[400px] items-center justify-center">
+              <CardContent className="text-center text-sm text-muted-foreground">
+                Select a policy to edit, or create a new one.
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </FeatureGate>
     </div>
   );
 }

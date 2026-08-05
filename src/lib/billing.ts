@@ -41,6 +41,27 @@ export interface Invoice {
   issued_at: string;
 }
 
+/**
+ * Entitlements is the tenant's resolved plan capability set — the source of
+ * truth for UI gating (mirrors the server's operations/entitlements catalog).
+ * `features` are booleans (locked → Upgrade); `limits` are numeric caps where
+ * -1 means unlimited.
+ */
+export interface Entitlements {
+  plan: string;
+  features: Record<string, boolean>;
+  limits: Record<string, number>;
+}
+
+export function useEntitlements() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["billing", "entitlements", tenantId],
+    enabled: !!tenantId,
+    queryFn: () => api<Entitlements>(`/v1/tenants/${tenantId}/entitlements`),
+  });
+}
+
 /** Format integer minor units in the given ISO currency, for any currency. */
 export function formatMoney(amountMinor: number, currency: string): string {
   try {
@@ -111,7 +132,11 @@ export function useCheckout() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { plan_code: string; currency: string; country?: string }): Promise<CheckoutResult> => {
+    mutationFn: async (body: {
+      plan_code: string;
+      currency: string;
+      country?: string;
+    }): Promise<CheckoutResult> => {
       const base = `${window.location.origin}/settings/billing`;
       return api<CheckoutResult>(`/v1/tenants/${tenantId}/billing/checkout`, {
         method: "POST",

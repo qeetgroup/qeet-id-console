@@ -41,7 +41,9 @@ import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
+import { FeatureGate } from "@/features/billing/components/upgrade-gate";
 import type { ApiError } from "@/lib/api";
+import { useEntitlements } from "@/lib/billing";
 import {
   type LdapConnection,
   useCreateLdapConnection,
@@ -65,6 +67,7 @@ function LdapPage() {
   const [creating, setCreating] = useState(false);
 
   const items = listQ.data?.items ?? [];
+  const ldapLocked = useEntitlements().data?.features.ldap === false;
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -72,97 +75,105 @@ function LdapPage() {
       <PageHeader
         description={t("ldap.description")}
         actions={
-          <Button size="sm" onClick={() => setCreating(true)}>
-            <PlusIcon className="mr-2 size-4" />
-            {t("ldap.newButton")}
-          </Button>
+          ldapLocked ? undefined : (
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <PlusIcon className="mr-2 size-4" />
+              {t("ldap.newButton")}
+            </Button>
+          )
         }
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("ldap.list.title")}</CardTitle>
-          <CardDescription>{t("ldap.list.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <DataState
-            isLoading={listQ.isLoading}
-            isError={listQ.isError}
-            error={listQ.error}
-            isEmpty={items.length === 0}
-            emptyIcon={ServerIcon}
-            emptyTitle={t("ldap.list.empty")}
-            skeletonRows={3}
-          >
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("ldap.columns.name")}</TableHead>
-                  <TableHead>{t("ldap.columns.server")}</TableHead>
-                  <TableHead>{t("ldap.columns.status")}</TableHead>
-                  <TableHead>{t("ldap.columns.lastLogin")}</TableHead>
-                  <TableHead className="text-right">{t("ldap.columns.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell className="max-w-65 truncate font-mono text-xs text-muted-foreground">
-                      {c.server_url}
-                    </TableCell>
-                    <TableCell>
-                      <StatusPill status={c.status} />
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {c.last_login_at ? <TimeSince value={c.last_login_at} /> : "—"}
-                    </TableCell>
-                    <TableCell className="text-right whitespace-nowrap">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => testM.mutate(c.id)}
-                        disabled={testM.isPending}
-                        title={t("ldap.testTitle")}
-                      >
-                        <PlugIcon /> {t("ldap.testBtn")}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          updateM.mutate({
-                            id: c.id,
-                            status: c.status === "active" ? "disabled" : "active",
-                          })
-                        }
-                        disabled={updateM.isPending}
-                      >
-                        {c.status === "active" ? t("ldap.disable") : t("ldap.enable")}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          openConfirm({
-                            title: t("ldap.confirm.title", { name: c.name }),
-                            variant: "destructive",
-                            confirmLabel: t("ldap.confirm.label"),
-                            onConfirm: () => deleteM.mutate(c.id),
-                          })
-                        }
-                        disabled={deleteM.isPending}
-                      >
-                        <Trash2Icon /> {t("ldap.deleteBtn")}
-                      </Button>
-                    </TableCell>
+      <FeatureGate
+        feature="ldap"
+        title="LDAP / Active Directory sync is an Enterprise feature"
+        description="Authenticate and sync users against your on-prem LDAP or Active Directory. Upgrade to Enterprise to connect a directory."
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("ldap.list.title")}</CardTitle>
+            <CardDescription>{t("ldap.list.description")}</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <DataState
+              isLoading={listQ.isLoading}
+              isError={listQ.isError}
+              error={listQ.error}
+              isEmpty={items.length === 0}
+              emptyIcon={ServerIcon}
+              emptyTitle={t("ldap.list.empty")}
+              skeletonRows={3}
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("ldap.columns.name")}</TableHead>
+                    <TableHead>{t("ldap.columns.server")}</TableHead>
+                    <TableHead>{t("ldap.columns.status")}</TableHead>
+                    <TableHead>{t("ldap.columns.lastLogin")}</TableHead>
+                    <TableHead className="text-right">{t("ldap.columns.actions")}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </DataState>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {items.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell className="max-w-65 truncate font-mono text-xs text-muted-foreground">
+                        {c.server_url}
+                      </TableCell>
+                      <TableCell>
+                        <StatusPill status={c.status} />
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {c.last_login_at ? <TimeSince value={c.last_login_at} /> : "—"}
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => testM.mutate(c.id)}
+                          disabled={testM.isPending}
+                          title={t("ldap.testTitle")}
+                        >
+                          <PlugIcon /> {t("ldap.testBtn")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            updateM.mutate({
+                              id: c.id,
+                              status: c.status === "active" ? "disabled" : "active",
+                            })
+                          }
+                          disabled={updateM.isPending}
+                        >
+                          {c.status === "active" ? t("ldap.disable") : t("ldap.enable")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            openConfirm({
+                              title: t("ldap.confirm.title", { name: c.name }),
+                              variant: "destructive",
+                              confirmLabel: t("ldap.confirm.label"),
+                              onConfirm: () => deleteM.mutate(c.id),
+                            })
+                          }
+                          disabled={deleteM.isPending}
+                        >
+                          <Trash2Icon /> {t("ldap.deleteBtn")}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DataState>
+          </CardContent>
+        </Card>
+      </FeatureGate>
 
       <CreateConnectionSheet open={creating} onOpenChange={setCreating} />
     </div>

@@ -20,7 +20,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -62,7 +62,9 @@ function WorkspaceGeneralPage() {
   }, [tenantQ.data]);
 
   const saveM = useMutation({
-    mutationFn: (body: { name?: string; plan?: string; region?: string; status?: string }) =>
+    // plan is intentionally omitted — it's changed through billing, not here
+    // (the backend no longer accepts plan on PATCH /v1/tenants).
+    mutationFn: (body: { name?: string; region?: string; status?: string }) =>
       api<Tenant>(`/v1/tenants/${tenantId}`, { method: "PATCH", body }),
     onSuccess: () => {
       setSavedAt(new Date());
@@ -89,7 +91,6 @@ function WorkspaceGeneralPage() {
             e.preventDefault();
             saveM.mutate({
               name: draft.name,
-              plan: draft.plan,
               region: draft.region,
               status: draft.status,
             });
@@ -123,25 +124,18 @@ function WorkspaceGeneralPage() {
                     <Field className="grid grid-cols-2 gap-4">
                       <Field>
                         <FieldLabel>{t("workspace.general.profile.plan")}</FieldLabel>
-                        <Select
-                          value={draft.plan ?? "free"}
-                          onValueChange={(v) => setDraft((d) => ({ ...d, plan: v ?? "free" }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="free">
-                              {t("workspace.general.profile.plans.free")}
-                            </SelectItem>
-                            <SelectItem value="pro">
-                              {t("workspace.general.profile.plans.pro")}
-                            </SelectItem>
-                            <SelectItem value="enterprise">
-                              {t("workspace.general.profile.plans.enterprise")}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Input
+                          value={(draft.plan ?? "free").replace(/^./, (c) => c.toUpperCase())}
+                          readOnly
+                          disabled
+                        />
+                        <FieldDescription>
+                          Manage your plan in{" "}
+                          <Link to="/settings/billing" className="underline">
+                            billing
+                          </Link>
+                          .
+                        </FieldDescription>
                       </Field>
                       <Field>
                         <FieldLabel htmlFor="region">
