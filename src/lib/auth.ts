@@ -431,9 +431,13 @@ export function usePlatformSocialProviders() {
   });
 }
 
-/** Full backend URL to begin a platform social login (browser redirect). */
-export function socialStartUrl(provider: string): string {
-  return `${API_BASE_URL}/v1/social/${provider}/start`;
+/**
+ * Full backend URL to begin a platform social ceremony (browser redirect).
+ * intent="signup" permits just-in-time account creation; "login" (default)
+ * requires an existing account, so signing in never silently creates one.
+ */
+export function socialStartUrl(provider: string, intent: "login" | "signup" = "login"): string {
+  return `${API_BASE_URL}/v1/social/${provider}/start?intent=${intent}`;
 }
 
 /**

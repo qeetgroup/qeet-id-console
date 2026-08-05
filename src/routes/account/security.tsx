@@ -31,6 +31,8 @@ import { ApiError } from "@/lib/api";
 import {
   startSocialLink,
   useChangePassword,
+  useForgotPassword,
+  useMe,
   usePasswordStatus,
   usePlatformSocialProviders,
 } from "@/lib/auth";
@@ -103,6 +105,21 @@ function SecurityPage() {
   const changePassword = useChangePassword();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
+
+  // "Forgot password?" for an already-signed-in user: email a reset link to
+  // their own address instead of routing to the /forgot-password page (which
+  // lives under the unauthenticated layout and bounces them to the dashboard).
+  const me = useMe();
+  const forgot = useForgotPassword();
+  const emailResetLink = () =>
+    forgot.mutate(
+      { email: me.data?.email ?? "" },
+      {
+        onSuccess: () => toast.success("We've emailed you a password reset link."),
+        onError: (err) =>
+          toast.error(err instanceof ApiError ? err.message : "Couldn't send the reset link."),
+      },
+    );
 
   const submitPassword = () => {
     changePassword.mutate(
@@ -182,12 +199,18 @@ function SecurityPage() {
                   ? t("security.password.reset", { defaultValue: "Update password" })
                   : "Set a password"}
               </Button>
-              <Link
-                to="/forgot-password"
-                className={buttonVariants({ variant: "ghost", size: "sm" })}
-              >
-                Forgot password?
-              </Link>
+              {hasPassword && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={forgot.isPending || !me.data?.email}
+                  onClick={emailResetLink}
+                >
+                  {forgot.isPending && <Loader2Icon className="animate-spin" />}
+                  Forgot password?
+                </Button>
+              )}
             </div>
           </form>
         </CardContent>
