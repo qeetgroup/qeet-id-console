@@ -14,10 +14,13 @@ export function UpgradeGate({
   icon: Icon = LockIcon,
   title,
   description,
+  plan,
 }: {
   icon?: LucideIcon;
   title: string;
   description: string;
+  /** Recommended tier to preselect on the billing page (in-context deep-link). */
+  plan?: string;
 }) {
   return (
     <Card className="border-dashed">
@@ -29,13 +32,32 @@ export function UpgradeGate({
           <p className="text-sm font-medium">{title}</p>
           <p className="mx-auto max-w-md text-sm text-muted-foreground">{description}</p>
         </div>
-        <Link to="/settings/billing" className={buttonVariants({ size: "sm" })}>
+        <Link
+          to="/settings/billing"
+          search={plan ? { plan } : {}}
+          className={buttonVariants({ size: "sm" })}
+        >
           Upgrade plan
         </Link>
       </CardContent>
     </Card>
   );
 }
+
+// Which tier first unlocks each gated feature — used to deep-link the Upgrade CTA
+// straight to the right plan (mirrors the server entitlements catalog).
+const FEATURE_PLAN: Record<string, string> = {
+  sms_mfa: "starter",
+  custom_branding: "starter",
+  custom_domain: "starter",
+  webhooks: "starter",
+  sso: "pro",
+  audit_export: "pro",
+  ai_copilot: "pro",
+  abac: "pro",
+  scim: "enterprise",
+  ldap: "enterprise",
+};
 
 /**
  * FeatureGate renders its children only when the current tenant's plan includes
@@ -56,7 +78,7 @@ export function FeatureGate({
 }) {
   const { data, isPending } = useEntitlements();
   if (!isPending && data && data.features[feature] === false) {
-    return <UpgradeGate title={title} description={description} />;
+    return <UpgradeGate title={title} description={description} plan={FEATURE_PLAN[feature]} />;
   }
   return <>{children}</>;
 }

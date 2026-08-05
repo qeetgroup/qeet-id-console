@@ -13,7 +13,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CopyableSecret,
   DataState,
   Field,
   FieldDescription,
@@ -47,6 +46,7 @@ import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/components/page-header";
+import { OidcQuickstart } from "@/features/oidc/components/oidc-quickstart";
 import type { ApiError } from "@/lib/api";
 import {
   type OidcClient,
@@ -95,21 +95,14 @@ function OidcPage() {
       />
 
       {revealed && (
-        <Card className="border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/20">
-          <CardHeader>
-            <CardTitle className="text-base">
-              {t("credentials.title", { name: revealed.client.name })}
-            </CardTitle>
-            <CardDescription>{t("credentials.description")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <CopyableSecret value={revealed.client.client_id} label="client_id=" size="sm" />
-            <CopyableSecret value={revealed.secret} label="client_secret=" size="sm" />
+        <div className="flex flex-col gap-2">
+          <OidcQuickstart client={revealed.client} secret={revealed.secret || undefined} />
+          <div>
             <Button variant="ghost" size="sm" onClick={() => setRevealed(null)}>
               {t("common:actions.dismiss")}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       <Card>
@@ -196,9 +189,7 @@ function OidcPage() {
       <CreateOidcSheet
         open={creating}
         onOpenChange={setCreating}
-        onCreated={(client, secret) => {
-          if (secret) setRevealed({ client, secret });
-        }}
+        onCreated={(client, secret) => setRevealed({ client, secret })}
       />
 
       <AlertDialog

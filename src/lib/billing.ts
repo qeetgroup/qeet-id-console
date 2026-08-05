@@ -28,6 +28,7 @@ export interface Subscription {
   current_period_start: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  trial_end: string | null;
 }
 
 export interface Invoice {
@@ -59,6 +60,65 @@ export function useEntitlements() {
     queryKey: ["billing", "entitlements", tenantId],
     enabled: !!tenantId,
     queryFn: () => api<Entitlements>(`/v1/tenants/${tenantId}/entitlements`),
+  });
+}
+
+/**
+ * Current consumption per resource (seats/apps/api_keys/custom_roles), for the
+ * billing usage-vs-limits display. Separate from useEntitlements so the count
+ * queries only run on the billing page, not on every gated page load.
+ */
+export function useUsage() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["billing", "usage", tenantId],
+    enabled: !!tenantId,
+    queryFn: () =>
+      api<{ usage: Record<string, number> }>(`/v1/tenants/${tenantId}/entitlements/usage`),
+  });
+}
+
+/** A tenant's billing & tax details, carried onto invoices. */
+export interface BillingProfile {
+  legal_name: string;
+  billing_email: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  tax_id_type: "none" | "gstin" | "vat";
+  tax_id: string;
+}
+
+/** Start a no-card trial of a paid tier. Eligible only when the org has no subscription yet. */
+export function useStartTrial() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { plan_code: string; currency: string }) =>
+      api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
+  });
+}
+
+export function useBillingProfile() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["billing", "profile", tenantId],
+    enabled: !!tenantId,
+    queryFn: () => api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`),
+  });
+}
+
+export function useSaveBillingProfile() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: BillingProfile) =>
+      api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing", "profile", tenantId] }),
   });
 }
 

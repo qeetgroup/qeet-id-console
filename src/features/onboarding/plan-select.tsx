@@ -16,6 +16,7 @@ import {
 import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { ContactSalesDialog } from "@/features/billing/components/contact-sales-dialog";
 import {
   type BillingInterval,
   formatMoney,
@@ -24,7 +25,7 @@ import {
   usePlans,
 } from "@/lib/billing";
 
-import { CURRENCY_COUNTRY, SALES_EMAIL, type Tier, TIER_META, TIER_ORDER } from "./plan-catalog";
+import { CURRENCY_COUNTRY, type Tier, TIER_META, TIER_ORDER } from "./plan-catalog";
 
 export interface PlanSelection {
   tier: Tier;
@@ -80,6 +81,7 @@ export function PlanSelect({
 
   const [interval, setInterval] = useState<BillingInterval>("month");
   const [currency, setCurrency] = useState<string | null>(null);
+  const [salesOpen, setSalesOpen] = useState(false);
   const activeCurrency =
     currency ??
     (currencies.includes("INR") ? "INR" : currencies.includes("USD") ? "USD" : currencies[0]) ??
@@ -269,12 +271,7 @@ export function PlanSelect({
                         // Enterprise is contact-sales, not self-serve: the server
                         // won't provision a paid/enterprise org via POST /v1/tenants.
                         tier === "enterprise"
-                          ? window.open(
-                              `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(
-                                "Qeet ID Enterprise enquiry",
-                              )}`,
-                              "_self",
-                            )
+                          ? setSalesOpen(true)
                           : onSelect({
                               tier,
                               planCode,
@@ -294,6 +291,7 @@ export function PlanSelect({
           })}
         </div>
       </DataState>
+      <ContactSalesDialog open={salesOpen} onOpenChange={setSalesOpen} source="onboarding" />
     </div>
   );
 }

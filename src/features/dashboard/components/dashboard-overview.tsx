@@ -40,6 +40,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useCapabilities } from "@/features/access-control/capability-provider";
+import { useApplyOnboardingProfile } from "@/features/onboarding/use-apply-onboarding-profile";
 import { ApiError } from "@/lib/api";
 import { formatShortDate, useAnalyticsOverview } from "@/lib/analytics";
 import { useAcceptInvitation, useDeclineInvitation, useMyInvitations } from "@/lib/auth";
@@ -153,6 +154,7 @@ function DashboardHeading({
 
 export function DashboardOverview() {
   const { t } = useTranslation("dashboard");
+  useApplyOnboardingProfile(); // persist creation-time segmentation on first load
   const access = useCapabilities();
   const canViewAnalytics = access.can("analytics.read");
   const canViewAudit = access.can("audit.read");
