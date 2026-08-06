@@ -29,7 +29,6 @@ import { Route as AppAuthSocialRouteImport } from './routes/_app/auth/social'
 import { Route as AppAuthorizationIndexRouteImport } from './routes/_app/authorization/index'
 import { Route as AppAuthorizationAbacRouteImport } from './routes/_app/authorization/abac'
 import { Route as AppAuthorizationAccessTesterRouteImport } from './routes/_app/authorization/access-tester'
-import { Route as AppAuthorizationAssistantRouteImport } from './routes/_app/authorization/assistant'
 import { Route as AppAuthorizationAuditRouteImport } from './routes/_app/authorization/audit'
 import { Route as AppAuthorizationBuilderRouteImport } from './routes/_app/authorization/builder'
 import { Route as AppAuthorizationExplorerRouteImport } from './routes/_app/authorization/explorer'
@@ -50,7 +49,6 @@ import { Route as AppDeveloperInfrastructureRouteImport } from './routes/_app/de
 import { Route as AppGroupsIndexRouteImport } from './routes/_app/groups/index'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups/$groupId'
 import { Route as AppOrganizationsDomainsRouteImport } from './routes/_app/organizations/domains'
-import { Route as AppOrganizationsMembersRouteImport } from './routes/_app/organizations/members'
 import { Route as AppOrganizationsTenantsRouteImport } from './routes/_app/organizations/tenants'
 import { Route as AppSecurityIndexRouteImport } from './routes/_app/security/index'
 import { Route as AppSecurityAuditIntelligenceRouteImport } from './routes/_app/security/audit-intelligence'
@@ -204,12 +202,6 @@ const AppAuthorizationAccessTesterRoute =
     path: '/authorization/access-tester',
     getParentRoute: () => AppRoute,
   } as any)
-const AppAuthorizationAssistantRoute =
-  AppAuthorizationAssistantRouteImport.update({
-    id: '/authorization/assistant',
-    path: '/authorization/assistant',
-    getParentRoute: () => AppRoute,
-  } as any)
 const AppAuthorizationAuditRoute = AppAuthorizationAuditRouteImport.update({
   id: '/authorization/audit',
   path: '/authorization/audit',
@@ -316,11 +308,6 @@ const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
 const AppOrganizationsDomainsRoute = AppOrganizationsDomainsRouteImport.update({
   id: '/organizations/domains',
   path: '/organizations/domains',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOrganizationsMembersRoute = AppOrganizationsMembersRouteImport.update({
-  id: '/organizations/members',
-  path: '/organizations/members',
   getParentRoute: () => AppRoute,
 } as any)
 const AppOrganizationsTenantsRoute = AppOrganizationsTenantsRouteImport.update({
@@ -630,7 +617,6 @@ export interface FileRoutesByFullPath {
   '/auth/social': typeof AppAuthSocialRoute
   '/authorization/abac': typeof AppAuthorizationAbacRoute
   '/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/authorization/assistant': typeof AppAuthorizationAssistantRoute
   '/authorization/audit': typeof AppAuthorizationAuditRoute
   '/authorization/builder': typeof AppAuthorizationBuilderRoute
   '/authorization/explorer': typeof AppAuthorizationExplorerRoute
@@ -650,7 +636,6 @@ export interface FileRoutesByFullPath {
   '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/organizations/domains': typeof AppOrganizationsDomainsRoute
-  '/organizations/members': typeof AppOrganizationsMembersRoute
   '/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -725,7 +710,6 @@ export interface FileRoutesByTo {
   '/auth/social': typeof AppAuthSocialRoute
   '/authorization/abac': typeof AppAuthorizationAbacRoute
   '/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/authorization/assistant': typeof AppAuthorizationAssistantRoute
   '/authorization/audit': typeof AppAuthorizationAuditRoute
   '/authorization/builder': typeof AppAuthorizationBuilderRoute
   '/authorization/explorer': typeof AppAuthorizationExplorerRoute
@@ -745,7 +729,6 @@ export interface FileRoutesByTo {
   '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/organizations/domains': typeof AppOrganizationsDomainsRoute
-  '/organizations/members': typeof AppOrganizationsMembersRoute
   '/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -823,7 +806,6 @@ export interface FileRoutesById {
   '/_app/auth/social': typeof AppAuthSocialRoute
   '/_app/authorization/abac': typeof AppAuthorizationAbacRoute
   '/_app/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/_app/authorization/assistant': typeof AppAuthorizationAssistantRoute
   '/_app/authorization/audit': typeof AppAuthorizationAuditRoute
   '/_app/authorization/builder': typeof AppAuthorizationBuilderRoute
   '/_app/authorization/explorer': typeof AppAuthorizationExplorerRoute
@@ -843,7 +825,6 @@ export interface FileRoutesById {
   '/_app/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/_app/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/organizations/domains': typeof AppOrganizationsDomainsRoute
-  '/_app/organizations/members': typeof AppOrganizationsMembersRoute
   '/_app/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/_app/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/_app/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -920,7 +901,6 @@ export interface FileRouteTypes {
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
-    | '/authorization/assistant'
     | '/authorization/audit'
     | '/authorization/builder'
     | '/authorization/explorer'
@@ -940,7 +920,6 @@ export interface FileRouteTypes {
     | '/developer/infrastructure'
     | '/groups/$groupId'
     | '/organizations/domains'
-    | '/organizations/members'
     | '/organizations/tenants'
     | '/security/audit-intelligence'
     | '/security/audit-logs'
@@ -1015,7 +994,6 @@ export interface FileRouteTypes {
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
-    | '/authorization/assistant'
     | '/authorization/audit'
     | '/authorization/builder'
     | '/authorization/explorer'
@@ -1035,7 +1013,6 @@ export interface FileRouteTypes {
     | '/developer/infrastructure'
     | '/groups/$groupId'
     | '/organizations/domains'
-    | '/organizations/members'
     | '/organizations/tenants'
     | '/security/audit-intelligence'
     | '/security/audit-logs'
@@ -1112,7 +1089,6 @@ export interface FileRouteTypes {
     | '/_app/auth/social'
     | '/_app/authorization/abac'
     | '/_app/authorization/access-tester'
-    | '/_app/authorization/assistant'
     | '/_app/authorization/audit'
     | '/_app/authorization/builder'
     | '/_app/authorization/explorer'
@@ -1132,7 +1108,6 @@ export interface FileRouteTypes {
     | '/_app/developer/infrastructure'
     | '/_app/groups/$groupId'
     | '/_app/organizations/domains'
-    | '/_app/organizations/members'
     | '/_app/organizations/tenants'
     | '/_app/security/audit-intelligence'
     | '/_app/security/audit-logs'
@@ -1338,13 +1313,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthorizationAccessTesterRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/authorization/assistant': {
-      id: '/_app/authorization/assistant'
-      path: '/authorization/assistant'
-      fullPath: '/authorization/assistant'
-      preLoaderRoute: typeof AppAuthorizationAssistantRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/authorization/audit': {
       id: '/_app/authorization/audit'
       path: '/authorization/audit'
@@ -1483,13 +1451,6 @@ declare module '@tanstack/react-router' {
       path: '/organizations/domains'
       fullPath: '/organizations/domains'
       preLoaderRoute: typeof AppOrganizationsDomainsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/organizations/members': {
-      id: '/_app/organizations/members'
-      path: '/organizations/members'
-      fullPath: '/organizations/members'
-      preLoaderRoute: typeof AppOrganizationsMembersRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/organizations/tenants': {
@@ -1875,7 +1836,6 @@ interface AppRouteChildren {
   AppAuthSocialRoute: typeof AppAuthSocialRoute
   AppAuthorizationAbacRoute: typeof AppAuthorizationAbacRoute
   AppAuthorizationAccessTesterRoute: typeof AppAuthorizationAccessTesterRoute
-  AppAuthorizationAssistantRoute: typeof AppAuthorizationAssistantRoute
   AppAuthorizationAuditRoute: typeof AppAuthorizationAuditRoute
   AppAuthorizationBuilderRoute: typeof AppAuthorizationBuilderRoute
   AppAuthorizationExplorerRoute: typeof AppAuthorizationExplorerRoute
@@ -1895,7 +1855,6 @@ interface AppRouteChildren {
   AppDeveloperInfrastructureRoute: typeof AppDeveloperInfrastructureRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppOrganizationsDomainsRoute: typeof AppOrganizationsDomainsRoute
-  AppOrganizationsMembersRoute: typeof AppOrganizationsMembersRoute
   AppOrganizationsTenantsRoute: typeof AppOrganizationsTenantsRoute
   AppSecurityAuditIntelligenceRoute: typeof AppSecurityAuditIntelligenceRoute
   AppSecurityAuditLogsRoute: typeof AppSecurityAuditLogsRoute
@@ -1960,7 +1919,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppAuthSocialRoute: AppAuthSocialRoute,
   AppAuthorizationAbacRoute: AppAuthorizationAbacRoute,
   AppAuthorizationAccessTesterRoute: AppAuthorizationAccessTesterRoute,
-  AppAuthorizationAssistantRoute: AppAuthorizationAssistantRoute,
   AppAuthorizationAuditRoute: AppAuthorizationAuditRoute,
   AppAuthorizationBuilderRoute: AppAuthorizationBuilderRoute,
   AppAuthorizationExplorerRoute: AppAuthorizationExplorerRoute,
@@ -1980,7 +1938,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppDeveloperInfrastructureRoute: AppDeveloperInfrastructureRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppOrganizationsDomainsRoute: AppOrganizationsDomainsRoute,
-  AppOrganizationsMembersRoute: AppOrganizationsMembersRoute,
   AppOrganizationsTenantsRoute: AppOrganizationsTenantsRoute,
   AppSecurityAuditIntelligenceRoute: AppSecurityAuditIntelligenceRoute,
   AppSecurityAuditLogsRoute: AppSecurityAuditLogsRoute,

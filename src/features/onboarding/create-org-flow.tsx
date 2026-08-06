@@ -1,5 +1,6 @@
 import {
   Button,
+  cn,
   Field,
   FieldDescription,
   FieldError,
@@ -11,7 +12,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  cn,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { LogoField } from "@/components/logo-field";
 import { type ApiError, api, tokenStore } from "@/lib/api";
 import { startSignupCheckout } from "@/lib/billing";
+import { REGIONS } from "@/lib/regions";
 
 import {
   type OnboardingProfile,
@@ -38,12 +39,6 @@ type CreateTenantResponse = {
   access_token?: string;
   refresh_token?: string;
 };
-
-const REGIONS = [
-  { value: "ap-south-1", label: "Asia Pacific (Mumbai)" },
-  { value: "us-east-1", label: "US East (N. Virginia)" },
-  { value: "eu-west-1", label: "Europe (Ireland)" },
-];
 
 interface CreateOrgFlowProps {
   /**

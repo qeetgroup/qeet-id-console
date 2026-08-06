@@ -37,6 +37,8 @@ import {
 type ActivityContextValue = {
   /** Merged live + historical events (newest-first, filtered). */
   filteredEvents: ActivityEvent[];
+  /** Merged live + historical events before filtering — used to populate facet options. */
+  allEvents: ActivityEvent[];
   /** Events grouped by date bucket: Today / Yesterday / This Week / Older. */
   groups: DateGroup[];
   /** Count of live events added since the last markAllRead(). */
@@ -150,6 +152,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ActivityContextValue>(
     () => ({
       filteredEvents,
+      allEvents,
       groups,
       unreadCount,
       paused,
@@ -171,6 +174,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     }),
     [
       filteredEvents,
+      allEvents,
       groups,
       unreadCount,
       paused,

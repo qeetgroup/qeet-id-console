@@ -29,6 +29,7 @@ import { LogoField } from "@/components/logo-field";
 import { PageHeader } from "@/components/page-header";
 import { type ApiError, api } from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
+import { REGIONS } from "@/lib/regions";
 
 export const Route = createFileRoute("/_app/settings/organization/general")({
   component: WorkspaceGeneralPage,
@@ -152,11 +153,21 @@ function WorkspaceGeneralPage() {
                         <FieldLabel htmlFor="region">
                           {t("workspace.general.profile.region")}
                         </FieldLabel>
-                        <Input
-                          id="region"
+                        <Select
                           value={draft.region ?? ""}
-                          onChange={(e) => setDraft((d) => ({ ...d, region: e.target.value }))}
-                        />
+                          onValueChange={(v) => v && setDraft((d) => ({ ...d, region: v }))}
+                        >
+                          <SelectTrigger id="region">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {REGIONS.map((r) => (
+                              <SelectItem key={r.value} value={r.value}>
+                                {r.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </Field>
                     </Field>
                     <Field>

@@ -84,7 +84,6 @@ export const navGroups: NavGroup[] = [
         items: [
           { title: "All Users", url: "/users", requiredPermission: "user.read" },
           { title: "Invitations", url: "/invitations", requiredPermission: "user.read" },
-          { title: "Sessions", url: "/users/sessions", requiredPermission: "user.read" },
           { title: "Deleted", url: "/users/deleted", requiredPermission: "user.read" },
         ],
       },
@@ -94,7 +93,8 @@ export const navGroups: NavGroup[] = [
         icon: <Building2Icon />,
         items: [
           { title: "Tenants", url: "/organizations/tenants" },
-          { title: "Members", url: "/organizations/members", requiredPermission: "user.read" },
+          // "Members" was an alias that redirected to /users (All Users) — the
+          // same end-user directory — so it's removed to avoid the duplicate.
           { title: "Domains", url: "/organizations/domains", requiredPermission: "tenant.read" },
         ],
       },
@@ -289,12 +289,6 @@ export const navGroups: NavGroup[] = [
         requiredPermission: "audit.read",
       },
       {
-        title: "AI assistant",
-        url: "/authorization/assistant",
-        icon: <SparklesIcon />,
-        requiredPermission: "policy.read",
-      },
-      {
         title: "Settings",
         url: "/authorization/settings",
         icon: <Settings2Icon />,
@@ -340,18 +334,13 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        title: "Sessions & devices",
-        url: "/security/sessions",
+        // Personal "Sessions" lives in the account/profile area
+        // (/account/sessions), so it's intentionally not duplicated in the
+        // sidebar — this entry is just device authorizations now.
+        title: "Device authorizations",
+        url: "/security/device-authorizations",
         icon: <MonitorSmartphoneIcon />,
-        requiredPermission: "user.read",
-        items: [
-          { title: "Sessions", url: "/security/sessions", requiredPermission: "user.read" },
-          {
-            title: "Device authorizations",
-            url: "/security/device-authorizations",
-            requiredPermission: "connection.read",
-          },
-        ],
+        requiredPermission: "connection.read",
       },
       {
         title: "Rate limit policies",

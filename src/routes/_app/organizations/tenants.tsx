@@ -55,12 +55,14 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ListToolbar, SortHeader } from "@/components/data-table";
+import { LogoField } from "@/components/logo-field";
 import { PageHeader } from "@/components/page-header";
-import { type ApiError, api, tokenStore } from "@/lib/api";
 import { CreateOrgFlow } from "@/features/onboarding/create-org-flow";
+import { type ApiError, api, tokenStore } from "@/lib/api";
 import { switchToTenant } from "@/lib/auth";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
 import { useListView } from "@/lib/list-view";
+import { REGIONS } from "@/lib/regions";
 
 export const Route = createFileRoute("/_app/organizations/tenants")({
   component: TenantsPage,
@@ -73,6 +75,7 @@ type Tenant = {
   status: "active" | "suspended" | "deleted";
   plan: string;
   region: string;
+  logo_url: string;
   created_at: string;
 };
 
@@ -422,6 +425,7 @@ type UpdateBody = {
   name?: string;
   status?: "active" | "suspended";
   region?: string;
+  logo_url?: string;
 };
 
 function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps) {
@@ -429,13 +433,17 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
   const [status, setStatus] = useState<string>(
     tenant?.status === "suspended" ? "suspended" : "active",
   );
+  const [region, setRegion] = useState<string>(tenant?.region ?? "");
+  const [logo, setLogo] = useState<string>(tenant?.logo_url ?? "");
 
-  // Reset selects when the editing target changes — without this the sheet
-  // would keep the previous tenant's status on the second open.
+  // Reset fields when the editing target changes — without this the sheet
+  // would keep the previous tenant's status/region/logo on the second open.
   const lastId = useState<string | null>(null);
   if (tenant && tenant.id !== lastId[0]) {
     lastId[1](tenant.id);
     setStatus(tenant.status === "suspended" ? "suspended" : "active");
+    setRegion(tenant.region ?? "");
+    setLogo(tenant.logo_url ?? "");
   }
 
   const updateM = useMutation({
@@ -456,8 +464,9 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
               const data = new FormData(e.currentTarget);
               updateM.mutate({
                 name: String(data.get("name") ?? "").trim(),
-                region: String(data.get("region") ?? "").trim(),
+                region,
                 status: status as UpdateBody["status"],
+                logo_url: logo,
               });
             }}
           >
@@ -476,6 +485,14 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
                     required
                     minLength={1}
                     maxLength={200}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Logo</FieldLabel>
+                  <LogoField
+                    value={logo}
+                    onChange={setLogo}
+                    hint="Shown across the console. Leave empty to use an initials avatar."
                   />
                 </Field>
                 <Field>
@@ -507,12 +524,18 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="edit-region">{t("tenants.edit.region")}</FieldLabel>
-                  <Input
-                    id="edit-region"
-                    name="region"
-                    defaultValue={tenant.region}
-                    maxLength={64}
-                  />
+                  <Select value={region} onValueChange={(v) => v && setRegion(v)}>
+                    <SelectTrigger id="edit-region">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REGIONS.map((r) => (
+                        <SelectItem key={r.value} value={r.value}>
+                          {r.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
                 {updateM.error && (
                   <Field>

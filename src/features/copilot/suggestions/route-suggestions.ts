@@ -317,35 +317,4 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
       },
     ],
   },
-
-  // ── AI Copilot landing page ────────────────────────────────────────────────
-  "/authorization/assistant": {
-    suggestions: [
-      {
-        type: "prompt",
-        label: "Simulate an authorization check",
-        text: "Simulate whether a user with the Editor role can delete a document resource.",
-        requiredCapability: "role.read",
-      },
-      {
-        type: "prompt",
-        label: "Explain my authorization model",
-        text: "Explain the current tenant's authorization model (roles, policies, groups) in plain English.",
-        requiredCapability: "role.read",
-      },
-      {
-        type: "prompt",
-        label: "Find over-privileged users",
-        text: "Identify any users who appear to have more permissions than their role requires.",
-        requiredCapability: "audit.read",
-      },
-      {
-        type: "tool",
-        toolName: "generate_terraform",
-        label: "Export roles as Terraform",
-        prefillInput: { resource_type: "role" },
-        requiredCapability: "connection.read",
-      },
-    ],
-  },
 };
