@@ -63,7 +63,6 @@ import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 import { Route as AppUsersDeletedRouteImport } from './routes/_app/users/deleted'
 import { Route as AppUsersImportRouteImport } from './routes/_app/users/import'
-import { Route as AppUsersInvitationsRouteImport } from './routes/_app/users/invitations'
 import { Route as AppUsersSessionsRouteImport } from './routes/_app/users/sessions'
 import { Route as AuthInviteAcceptRouteImport } from './routes/_auth/invite.accept'
 import { Route as AuthSsoCallbackRouteImport } from './routes/_auth/sso.callback'
@@ -382,11 +381,6 @@ const AppUsersImportRoute = AppUsersImportRouteImport.update({
   path: '/users/import',
   getParentRoute: () => AppRoute,
 } as any)
-const AppUsersInvitationsRoute = AppUsersInvitationsRouteImport.update({
-  id: '/users/invitations',
-  path: '/users/invitations',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppUsersSessionsRoute = AppUsersSessionsRouteImport.update({
   id: '/users/sessions',
   path: '/users/sessions',
@@ -648,7 +642,6 @@ export interface FileRoutesByFullPath {
   '/users/$userId': typeof AppUsersUserIdRoute
   '/users/deleted': typeof AppUsersDeletedRoute
   '/users/import': typeof AppUsersImportRoute
-  '/users/invitations': typeof AppUsersInvitationsRoute
   '/users/sessions': typeof AppUsersSessionsRoute
   '/invite/accept': typeof AuthInviteAcceptRoute
   '/sso/callback': typeof AuthSsoCallbackRoute
@@ -741,7 +734,6 @@ export interface FileRoutesByTo {
   '/users/$userId': typeof AppUsersUserIdRoute
   '/users/deleted': typeof AppUsersDeletedRoute
   '/users/import': typeof AppUsersImportRoute
-  '/users/invitations': typeof AppUsersInvitationsRoute
   '/users/sessions': typeof AppUsersSessionsRoute
   '/invite/accept': typeof AuthInviteAcceptRoute
   '/sso/callback': typeof AuthSsoCallbackRoute
@@ -837,7 +829,6 @@ export interface FileRoutesById {
   '/_app/users/$userId': typeof AppUsersUserIdRoute
   '/_app/users/deleted': typeof AppUsersDeletedRoute
   '/_app/users/import': typeof AppUsersImportRoute
-  '/_app/users/invitations': typeof AppUsersInvitationsRoute
   '/_app/users/sessions': typeof AppUsersSessionsRoute
   '/_auth/invite/accept': typeof AuthInviteAcceptRoute
   '/_auth/sso/callback': typeof AuthSsoCallbackRoute
@@ -932,7 +923,6 @@ export interface FileRouteTypes {
     | '/users/$userId'
     | '/users/deleted'
     | '/users/import'
-    | '/users/invitations'
     | '/users/sessions'
     | '/invite/accept'
     | '/sso/callback'
@@ -1025,7 +1015,6 @@ export interface FileRouteTypes {
     | '/users/$userId'
     | '/users/deleted'
     | '/users/import'
-    | '/users/invitations'
     | '/users/sessions'
     | '/invite/accept'
     | '/sso/callback'
@@ -1120,7 +1109,6 @@ export interface FileRouteTypes {
     | '/_app/users/$userId'
     | '/_app/users/deleted'
     | '/_app/users/import'
-    | '/_app/users/invitations'
     | '/_app/users/sessions'
     | '/_auth/invite/accept'
     | '/_auth/sso/callback'
@@ -1551,13 +1539,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUsersImportRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/users/invitations': {
-      id: '/_app/users/invitations'
-      path: '/users/invitations'
-      fullPath: '/users/invitations'
-      preLoaderRoute: typeof AppUsersInvitationsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/users/sessions': {
       id: '/_app/users/sessions'
       path: '/users/sessions'
@@ -1867,7 +1848,6 @@ interface AppRouteChildren {
   AppUsersUserIdRoute: typeof AppUsersUserIdRoute
   AppUsersDeletedRoute: typeof AppUsersDeletedRoute
   AppUsersImportRoute: typeof AppUsersImportRoute
-  AppUsersInvitationsRoute: typeof AppUsersInvitationsRoute
   AppUsersSessionsRoute: typeof AppUsersSessionsRoute
   AppAuthorizationIndexRoute: typeof AppAuthorizationIndexRoute
   AppGroupsIndexRoute: typeof AppGroupsIndexRoute
@@ -1950,7 +1930,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppUsersUserIdRoute: AppUsersUserIdRoute,
   AppUsersDeletedRoute: AppUsersDeletedRoute,
   AppUsersImportRoute: AppUsersImportRoute,
-  AppUsersInvitationsRoute: AppUsersInvitationsRoute,
   AppUsersSessionsRoute: AppUsersSessionsRoute,
   AppAuthorizationIndexRoute: AppAuthorizationIndexRoute,
   AppGroupsIndexRoute: AppGroupsIndexRoute,

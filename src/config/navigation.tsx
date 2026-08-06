@@ -1,26 +1,37 @@
 import {
   ActivityIcon,
+  AppWindowIcon,
   BadgeCheckIcon,
   BlocksIcon,
   BotIcon,
+  BoxesIcon,
   Building2Icon,
   ChartColumnIcon,
+  CpuIcon,
   CreditCardIcon,
+  FileKey2Icon,
   FingerprintIcon,
   FlaskConicalIcon,
   GaugeIcon,
+  GlobeIcon,
+  HandshakeIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
   LockKeyholeIcon,
   LogInIcon,
+  MailIcon,
   MonitorSmartphoneIcon,
+  NetworkIcon,
   PaletteIcon,
   ScrollTextIcon,
   ServerCogIcon,
   Settings2Icon,
+  ShapesIcon,
+  Share2Icon,
   ShieldAlertIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  TicketIcon,
   UsersIcon,
   UsersRoundIcon,
   WebhookIcon,
@@ -52,13 +63,9 @@ export type NavGroup = {
 
 export const navGroups: NavGroup[] = [
   {
-    label: "Organization",
+    label: "Overview",
     items: [
-      {
-        title: "Overview",
-        url: "/",
-        icon: <LayoutDashboardIcon />,
-      },
+      { title: "Dashboard", url: "/", icon: <LayoutDashboardIcon /> },
       {
         title: "Activity",
         url: "/activity",
@@ -82,7 +89,7 @@ export const navGroups: NavGroup[] = [
         icon: <UsersIcon />,
         requiredPermission: "user.read",
         items: [
-          { title: "All Users", url: "/users", requiredPermission: "user.read" },
+          { title: "All users", url: "/users", requiredPermission: "user.read" },
           { title: "Invitations", url: "/invitations", requiredPermission: "user.read" },
           { title: "Deleted", url: "/users/deleted", requiredPermission: "user.read" },
         ],
@@ -93,9 +100,11 @@ export const navGroups: NavGroup[] = [
         icon: <Building2Icon />,
         items: [
           { title: "Tenants", url: "/organizations/tenants" },
-          // "Members" was an alias that redirected to /users (All Users) — the
-          // same end-user directory — so it's removed to avoid the duplicate.
-          { title: "Domains", url: "/organizations/domains", requiredPermission: "tenant.read" },
+          {
+            title: "Domain verification",
+            url: "/organizations/domains",
+            requiredPermission: "tenant.read",
+          },
         ],
       },
       {
@@ -104,13 +113,53 @@ export const navGroups: NavGroup[] = [
         icon: <UsersRoundIcon />,
         requiredPermission: "group.read",
       },
+      {
+        // SCIM / LDAP are directory-sync connections, so they live under
+        // Directory rather than buried in the auth-connections catalogue.
+        title: "Directories",
+        url: "/auth/connections/scim",
+        icon: <NetworkIcon />,
+        requiredPermission: "connection.read",
+        items: [
+          { title: "SCIM", url: "/auth/connections/scim", requiredPermission: "connection.read" },
+          {
+            title: "LDAP / AD",
+            url: "/auth/connections/ldap",
+            requiredPermission: "connection.read",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    label: "Applications",
+    items: [
+      {
+        // The OIDC/OAuth client registry — your registered relying-party apps.
+        title: "Applications",
+        url: "/auth/connections/oidc",
+        icon: <AppWindowIcon />,
+        requiredPermission: "connection.read",
+      },
+      {
+        title: "Machine apps",
+        url: "/auth/api/machine-identities",
+        icon: <CpuIcon />,
+        requiredPermission: "apikey.read",
+      },
+      {
+        title: "OAuth grants",
+        url: "/auth/api/consent-grants",
+        icon: <HandshakeIcon />,
+        requiredPermission: "connection.read",
+      },
     ],
   },
   {
     label: "Authentication",
     items: [
       {
-        title: "Login methods",
+        title: "Sign-in",
         url: "/auth/login-methods/password",
         icon: <LogInIcon />,
         requiredPermission: "policy.read",
@@ -134,42 +183,29 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        title: "Connections",
-        url: "/auth/connections",
+        // Single catalogue page — individual providers (Google, Microsoft,
+        // Apple, GitHub, …) are configured within it, not as nav entries.
+        title: "Social",
+        url: "/auth/social",
+        icon: <Share2Icon />,
+        requiredPermission: "connection.read",
+      },
+      {
+        title: "SSO",
+        url: "/auth/connections/saml",
         icon: <WorkflowIcon />,
         requiredPermission: "connection.read",
         items: [
-          { title: "Catalogue", url: "/auth/connections", requiredPermission: "connection.read" },
-          { title: "Social providers", url: "/auth/social", requiredPermission: "connection.read" },
-          {
-            title: "SAML 2.0",
-            url: "/auth/connections/saml",
-            requiredPermission: "connection.read",
-          },
+          { title: "SAML", url: "/auth/connections/saml", requiredPermission: "connection.read" },
           {
             title: "SAML IdP",
             url: "/auth/connections/saml-idp",
             requiredPermission: "connection.read",
           },
-          {
-            title: "OIDC / OAuth 2.0",
-            url: "/auth/connections/oidc",
-            requiredPermission: "connection.read",
-          },
-          {
-            title: "SCIM provisioning",
-            url: "/auth/connections/scim",
-            requiredPermission: "connection.read",
-          },
-          {
-            title: "LDAP / AD",
-            url: "/auth/connections/ldap",
-            requiredPermission: "connection.read",
-          },
         ],
       },
       {
-        title: "Multi-factor",
+        title: "MFA",
         url: "/auth/mfa/totp",
         icon: <FingerprintIcon />,
         items: [
@@ -178,34 +214,12 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        title: "API access",
-        url: "/auth/api/keys",
-        icon: <KeyRoundIcon />,
-        requiredPermission: "apikey.read",
-        items: [
-          { title: "API keys", url: "/auth/api/keys", requiredPermission: "apikey.read" },
-          {
-            title: "Machine identities",
-            url: "/auth/api/machine-identities",
-            requiredPermission: "apikey.read",
-          },
-          {
-            title: "Access tokens",
-            url: "/auth/api/tokens",
-            requiredPermission: "connection.read",
-          },
-          {
-            title: "Consent grants",
-            url: "/auth/api/consent-grants",
-            requiredPermission: "connection.read",
-          },
-          {
-            title: "Signing keys",
-            url: "/auth/api/signing-keys",
-            requiredPermission: "connection.read",
-          },
-          { title: "Secrets", url: "/auth/api/secrets", requiredPermission: "secret.read" },
-        ],
+        // Personal sessions live in the account/profile area; this is the
+        // OAuth device-authorization surface.
+        title: "Devices",
+        url: "/security/device-authorizations",
+        icon: <MonitorSmartphoneIcon />,
+        requiredPermission: "connection.read",
       },
     ],
   },
@@ -219,74 +233,63 @@ export const navGroups: NavGroup[] = [
         requiredPermission: "role.read",
       },
       {
-        title: "Access model",
+        title: "Roles",
         url: "/authorization/roles",
         icon: <ShieldCheckIcon />,
         requiredPermission: "role.read",
+      },
+      {
+        title: "Permissions",
+        url: "/authorization/permissions",
+        icon: <KeyRoundIcon />,
+        requiredPermission: "role.read",
+      },
+      {
+        title: "Resources",
+        url: "/authorization/resources",
+        icon: <ShapesIcon />,
+        requiredPermission: "role.read",
+      },
+      {
+        title: "Models",
+        url: "/authorization/rbac",
+        icon: <BoxesIcon />,
+        requiredPermission: "role.read",
         items: [
-          { title: "Roles", url: "/authorization/roles", requiredPermission: "role.read" },
-          {
-            title: "Permissions",
-            url: "/authorization/permissions",
-            requiredPermission: "role.read",
-          },
-          { title: "Resources", url: "/authorization/resources", requiredPermission: "role.read" },
           { title: "RBAC", url: "/authorization/rbac", requiredPermission: "role.read" },
           { title: "ABAC", url: "/authorization/abac", requiredPermission: "policy.read" },
           { title: "ReBAC", url: "/authorization/rebac", requiredPermission: "role.read" },
         ],
       },
       {
-        title: "Policy lifecycle",
+        title: "Policies",
         url: "/authorization/builder",
         icon: <BlocksIcon />,
         requiredPermission: "policy.read",
         items: [
-          {
-            title: "Policy builder",
-            url: "/authorization/builder",
-            requiredPermission: "policy.read",
-          },
+          { title: "Builder", url: "/authorization/builder", requiredPermission: "policy.read" },
           {
             title: "Templates",
             url: "/authorization/templates",
             requiredPermission: "policy.read",
           },
-          {
-            title: "Version history",
-            url: "/authorization/versions",
-            requiredPermission: "policy.read",
-          },
+          { title: "Versions", url: "/authorization/versions", requiredPermission: "policy.read" },
         ],
       },
       {
-        title: "Decision tools",
+        title: "Testing",
         url: "/authorization/simulator",
         icon: <FlaskConicalIcon />,
         requiredPermission: "role.read",
         items: [
-          {
-            title: "Policy simulator",
-            url: "/authorization/simulator",
-            requiredPermission: "role.read",
-          },
-          {
-            title: "Decision explorer",
-            url: "/authorization/explorer",
-            requiredPermission: "role.read",
-          },
+          { title: "Simulator", url: "/authorization/simulator", requiredPermission: "role.read" },
+          { title: "Explorer", url: "/authorization/explorer", requiredPermission: "role.read" },
           {
             title: "Access tester",
             url: "/authorization/access-tester",
             requiredPermission: "role.read",
           },
         ],
-      },
-      {
-        title: "Audit",
-        url: "/authorization/audit",
-        icon: <ScrollTextIcon />,
-        requiredPermission: "audit.read",
       },
       {
         title: "Settings",
@@ -301,50 +304,32 @@ export const navGroups: NavGroup[] = [
     items: [
       { title: "Overview", url: "/security", icon: <ShieldCheckIcon /> },
       {
-        title: "Threat protection",
+        title: "Threats",
         url: "/security/threats/bots",
         icon: <ShieldAlertIcon />,
         requiredPermission: "policy.read",
         items: [
-          {
-            title: "Bot detection",
-            url: "/security/threats/bots",
-            requiredPermission: "policy.read",
-          },
+          { title: "Bots", url: "/security/threats/bots", requiredPermission: "policy.read" },
           {
             title: "Anomalies",
             url: "/security/threats/anomalies",
             requiredPermission: "audit.read",
           },
           {
-            title: "Risk settings",
+            title: "Risk",
             url: "/security/threats/risk-settings",
             requiredPermission: "policy.read",
           },
           {
-            title: "Threat rate limits",
-            url: "/security/threats/rate-limits",
-            requiredPermission: "policy.read",
-          },
-          {
-            title: "IP allowlist",
+            title: "IP rules",
             url: "/security/threats/ip-allowlist",
             requiredPermission: "policy.read",
           },
         ],
       },
       {
-        // Personal "Sessions" lives in the account/profile area
-        // (/account/sessions), so it's intentionally not duplicated in the
-        // sidebar — this entry is just device authorizations now.
-        title: "Device authorizations",
-        url: "/security/device-authorizations",
-        icon: <MonitorSmartphoneIcon />,
-        requiredPermission: "connection.read",
-      },
-      {
-        title: "Rate limit policies",
-        url: "/security/rate-limits",
+        title: "Rate limits",
+        url: "/security/threats/rate-limits",
         icon: <GaugeIcon />,
         requiredPermission: "policy.read",
       },
@@ -356,12 +341,12 @@ export const navGroups: NavGroup[] = [
         items: [
           { title: "Audit logs", url: "/security/audit-logs", requiredPermission: "audit.read" },
           {
-            title: "Audit intelligence",
+            title: "Intelligence",
             url: "/security/audit-intelligence",
             requiredPermission: "audit.read",
           },
           {
-            title: "Log streaming",
+            title: "Log streams",
             url: "/security/log-streaming",
             requiredPermission: "audit.read",
           },
@@ -381,7 +366,7 @@ export const navGroups: NavGroup[] = [
             requiredPermission: "audit.read",
           },
           {
-            title: "Data retention",
+            title: "Retention",
             url: "/security/compliance/retention",
             requiredPermission: "policy.read",
           },
@@ -392,6 +377,30 @@ export const navGroups: NavGroup[] = [
   {
     label: "Developer",
     items: [
+      {
+        title: "API keys",
+        url: "/auth/api/keys",
+        icon: <KeyRoundIcon />,
+        requiredPermission: "apikey.read",
+      },
+      {
+        title: "Tokens",
+        url: "/auth/api/tokens",
+        icon: <TicketIcon />,
+        requiredPermission: "connection.read",
+      },
+      {
+        title: "Signing keys",
+        url: "/auth/api/signing-keys",
+        icon: <FileKey2Icon />,
+        requiredPermission: "connection.read",
+      },
+      {
+        title: "Secrets",
+        url: "/auth/api/secrets",
+        icon: <LockKeyholeIcon />,
+        requiredPermission: "secret.read",
+      },
       {
         title: "Webhooks",
         url: "/developer/webhooks",
@@ -405,23 +414,21 @@ export const navGroups: NavGroup[] = [
         requiredPermission: "connection.read",
       },
       {
-        title: "Agent governance",
+        title: "Agents",
         url: "/developer/agents",
         icon: <SparklesIcon />,
         requiredPermission: "apikey.read",
       },
       {
-        title: "Verifiable credentials",
+        title: "Credentials",
         url: "/developer/credentials",
         icon: <BadgeCheckIcon />,
         requiredPermission: "apikey.read",
       },
       {
-        title: "Bots & automations",
+        title: "Bots",
         url: "/developer/bots",
         icon: <BotIcon />,
-        // Gate like every other Developer item so it doesn't leak into an
-        // org-less user's sidebar (unpermissioned items always render).
         requiredPermission: "apikey.read",
       },
       {
@@ -433,35 +440,19 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "Administration",
+    label: "Settings",
     items: [
       {
-        title: "Organization",
+        title: "General",
         url: "/settings/organization/general",
         icon: <Settings2Icon />,
         requiredPermission: "tenant.read",
-        items: [
-          {
-            title: "General",
-            url: "/settings/organization/general",
-            requiredPermission: "tenant.read",
-          },
-          {
-            title: "Security policy",
-            url: "/settings/organization/security-policy",
-            requiredPermission: "policy.read",
-          },
-          {
-            title: "Domains",
-            url: "/settings/organization/domains",
-            requiredPermission: "tenant.read",
-          },
-          {
-            title: "Email templates",
-            url: "/settings/organization/email-templates",
-            requiredPermission: "branding.write",
-          },
-        ],
+      },
+      {
+        title: "Domains",
+        url: "/settings/organization/domains",
+        icon: <GlobeIcon />,
+        requiredPermission: "tenant.read",
       },
       {
         title: "Branding",
@@ -470,7 +461,19 @@ export const navGroups: NavGroup[] = [
         requiredPermission: "branding.write",
       },
       {
-        title: "Billing & plan",
+        title: "Emails",
+        url: "/settings/organization/email-templates",
+        icon: <MailIcon />,
+        requiredPermission: "branding.write",
+      },
+      {
+        title: "Security",
+        url: "/settings/organization/security-policy",
+        icon: <ShieldCheckIcon />,
+        requiredPermission: "policy.read",
+      },
+      {
+        title: "Billing",
         url: "/settings/billing",
         icon: <CreditCardIcon />,
         requiredPermission: "billing.read",

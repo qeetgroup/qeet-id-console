@@ -46,12 +46,12 @@ describe("console navigation state", () => {
       (permission) => permission === undefined || permission === "policy.read",
     );
     const authorization = visible.find((group) => group.label === "Authorization");
-    const accessModel = authorization?.items.find((item) => item.title === "Access model");
+    const models = authorization?.items.find((item) => item.title === "Models");
 
-    expect(accessModel?.items?.map((item) => item.title)).toEqual(["ABAC"]);
+    expect(models?.items?.map((item) => item.title)).toEqual(["ABAC"]);
     expect(
-      visible.find((group) => group.label === "Organization")?.items.map((item) => item.title),
-    ).toEqual(["Overview"]);
+      visible.find((group) => group.label === "Overview")?.items.map((item) => item.title),
+    ).toEqual(["Dashboard"]);
   });
 
   it("limits unresolved access navigation to overview and organization selection", () => {
