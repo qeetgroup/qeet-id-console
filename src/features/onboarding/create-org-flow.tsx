@@ -18,6 +18,7 @@ import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { LogoField } from "@/components/logo-field";
 import { type ApiError, api, tokenStore } from "@/lib/api";
 import { startSignupCheckout } from "@/lib/billing";
 
@@ -75,11 +76,17 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [region, setRegion] = useState("ap-south-1");
+  const [logo, setLogo] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const createM = useMutation({
-    mutationFn: (body: { slug: string; name: string; plan: string; region: string }) =>
-      api<CreateTenantResponse>("/v1/tenants", { method: "POST", body }),
+    mutationFn: (body: {
+      slug: string;
+      name: string;
+      plan: string;
+      region: string;
+      logo_url?: string;
+    }) => api<CreateTenantResponse>("/v1/tenants", { method: "POST", body }),
     // Own UX (redirect / inline error / toast) — skip the global error toast so
     // a "slug taken" doesn't double up with the inline message.
     meta: { silent: true },
@@ -103,10 +110,10 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
     const isPaid = selection.tier !== "free" && selection.tier !== "enterprise";
     const origin = window.location.origin;
 
-    // Stash the segmentation so it's applied to the org's metadata on first
+    // Stash the segmentation (+ logo) so it's applied to the org on first
     // dashboard load — uniform for free (created inline) and paid (provisioned
     // after checkout). See useApplyOnboardingProfile.
-    stashOnboardingProfile(profile);
+    stashOnboardingProfile({ ...profile, logo_url: logo || undefined });
 
     try {
       // Paid plans: DON'T create the org yet. Stage a checkout that carries the
@@ -139,6 +146,7 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
         name: name.trim(),
         plan: selection.tier,
         region,
+        logo_url: logo || undefined,
       });
       if (res.access_token && res.refresh_token) {
         tokenStore.set(res.access_token);
@@ -343,6 +351,15 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
               ))}
             </SelectContent>
           </Select>
+        </Field>
+
+        <Field>
+          <FieldLabel>Logo</FieldLabel>
+          <LogoField
+            value={logo}
+            onChange={setLogo}
+            hint="Optional — we'll use an initials avatar if you skip it."
+          />
         </Field>
 
         {error && (

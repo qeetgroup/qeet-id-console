@@ -25,6 +25,7 @@ import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { LogoField } from "@/components/logo-field";
 import { PageHeader } from "@/components/page-header";
 import { type ApiError, api } from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
@@ -40,6 +41,7 @@ type Tenant = {
   status: "active" | "suspended" | "deleted";
   plan: string;
   region: string;
+  logo_url: string;
   metadata: Record<string, unknown>;
   created_at: string;
 };
@@ -64,7 +66,7 @@ function WorkspaceGeneralPage() {
   const saveM = useMutation({
     // plan is intentionally omitted — it's changed through billing, not here
     // (the backend no longer accepts plan on PATCH /v1/tenants).
-    mutationFn: (body: { name?: string; region?: string; status?: string }) =>
+    mutationFn: (body: { name?: string; region?: string; status?: string; logo_url?: string }) =>
       api<Tenant>(`/v1/tenants/${tenantId}`, { method: "PATCH", body }),
     onSuccess: () => {
       setSavedAt(new Date());
@@ -93,6 +95,7 @@ function WorkspaceGeneralPage() {
               name: draft.name,
               region: draft.region,
               status: draft.status,
+              logo_url: draft.logo_url ?? "",
             });
           }}
         >
@@ -119,6 +122,14 @@ function WorkspaceGeneralPage() {
                         value={draft.name ?? ""}
                         onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
                         required
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Logo</FieldLabel>
+                      <LogoField
+                        value={draft.logo_url ?? ""}
+                        onChange={(v) => setDraft((d) => ({ ...d, logo_url: v }))}
+                        hint="Shown across the console. Leave empty to use an initials avatar."
                       />
                     </Field>
                     <Field className="grid grid-cols-2 gap-4">

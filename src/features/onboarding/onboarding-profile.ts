@@ -8,6 +8,9 @@ export interface OnboardingProfile {
   use_case?: string;
   team_size?: string;
   role?: string;
+  // Optional org logo captured at creation; applied to the tenant on first load
+  // for the paid path (the free path sends it in the create body directly).
+  logo_url?: string;
 }
 
 export const USE_CASES: { value: string; label: string }[] = [

@@ -26,6 +26,7 @@ type Tenant = {
   name: string;
   plan: string;
   region: string;
+  logo_url?: string;
 };
 
 // GET /v1/tenants is scoped to the caller; clicking one switches via switchToTenant().
@@ -59,8 +60,14 @@ export function TeamSwitcher() {
               />
             }
           >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/18%)]">
-              {active ? initialOf(active.name) : <Building2Icon className="size-4" />}
+            <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/18%)]">
+              {active?.logo_url ? (
+                <img src={active.logo_url} alt="" className="size-full object-cover" />
+              ) : active ? (
+                initialOf(active.name)
+              ) : (
+                <Building2Icon className="size-4" />
+              )}
             </div>
             <div className="grid flex-1 text-start text-sm leading-tight">
               {tenantsQ.isLoading ? (
@@ -112,8 +119,12 @@ export function TeamSwitcher() {
                       className={cn("gap-2 p-2", isActive && "bg-accent/40")}
                       aria-current={isActive ? "true" : undefined}
                     >
-                      <div className="flex size-6 items-center justify-center rounded-md border text-xs font-semibold">
-                        {initialOf(t.name)}
+                      <div className="flex size-6 items-center justify-center overflow-hidden rounded-md border text-xs font-semibold">
+                        {t.logo_url ? (
+                          <img src={t.logo_url} alt="" className="size-full object-cover" />
+                        ) : (
+                          initialOf(t.name)
+                        )}
                       </div>
                       <span className="truncate">{t.name}</span>
                       {isActive && (

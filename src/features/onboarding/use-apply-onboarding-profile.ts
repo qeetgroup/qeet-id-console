@@ -12,7 +12,7 @@ import { useTenantId } from "@/lib/auth";
 
 import { clearStashedProfile, readStashedProfile } from "./onboarding-profile";
 
-type TenantRec = { id: string; metadata?: Record<string, unknown> | null };
+type TenantRec = { id: string; logo_url?: string; metadata?: Record<string, unknown> | null };
 
 export function useApplyOnboardingProfile() {
   const tenantId = useTenantId();
@@ -34,10 +34,12 @@ export function useApplyOnboardingProfile() {
           clearStashedProfile();
           return;
         }
-        await api(`/v1/tenants/${tenantId}`, {
-          method: "PATCH",
-          body: { metadata: { ...meta, onboarding: profile } },
-        });
+        // Segmentation goes into metadata.onboarding; the logo is a top-level
+        // column, applied only when the org doesn't already have one.
+        const { logo_url, ...segmentation } = profile;
+        const body: Record<string, unknown> = { metadata: { ...meta, onboarding: segmentation } };
+        if (logo_url && !tenant.logo_url) body.logo_url = logo_url;
+        await api(`/v1/tenants/${tenantId}`, { method: "PATCH", body });
         clearStashedProfile();
         qc.invalidateQueries({ queryKey: ["tenant", tenantId] });
         qc.invalidateQueries({ queryKey: ["tenants"] });
