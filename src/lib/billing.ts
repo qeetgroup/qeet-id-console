@@ -35,7 +35,12 @@ export interface Invoice {
   id: string;
   plan_code: string;
   currency: string;
-  amount_minor: number;
+  amount_minor: number; // total charged (taxable + tax)
+  taxable_amount_minor: number;
+  tax_amount_minor: number;
+  tax_rate_bps: number;
+  tax_type: string; // none | gst_cgst_sgst | gst_igst | gst_zero_rated | vat_reverse_charge
+  place_of_supply: string;
   status: string;
   period_start: string;
   period_end: string;

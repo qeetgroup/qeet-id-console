@@ -784,6 +784,7 @@ function BillingPage() {
                     <TableHead>{t("billing.invoices.columns.issued")}</TableHead>
                     <TableHead>{t("billing.invoices.columns.period")}</TableHead>
                     <TableHead>{t("billing.invoices.columns.plan")}</TableHead>
+                    <TableHead>Tax</TableHead>
                     <TableHead>{t("billing.invoices.columns.amount")}</TableHead>
                     <TableHead>{t("billing.invoices.columns.status")}</TableHead>
                   </TableRow>
@@ -800,6 +801,22 @@ function BillingPage() {
                         <TimeSince value={inv.period_end} />
                       </TableCell>
                       <TableCell className="capitalize">{inv.plan_code}</TableCell>
+                      <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                        {inv.tax_amount_minor > 0 ? (
+                          <>
+                            {formatMoney(inv.tax_amount_minor, inv.currency)}{" "}
+                            <span className="text-[10px]">
+                              ({(inv.tax_rate_bps / 100).toFixed(0)}%)
+                            </span>
+                          </>
+                        ) : inv.tax_type === "gst_zero_rated" ? (
+                          "Zero-rated"
+                        ) : inv.tax_type === "vat_reverse_charge" ? (
+                          "Reverse charge"
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
                       <TableCell className="font-medium">
                         {formatMoney(inv.amount_minor, inv.currency)}
                       </TableCell>
