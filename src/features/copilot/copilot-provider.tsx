@@ -75,17 +75,22 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
       {children}
       <AlertDialog open={!!pending} onOpenChange={(open) => !open && settle(false)}>
         {req ? (
-          <AlertDialogContent>
+          <AlertDialogContent className="max-h-[calc(100dvh-2rem)] max-w-[calc(100%-2rem)] overflow-y-auto sm:max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle>{req.title}</AlertDialogTitle>
               <AlertDialogDescription>{req.body}</AlertDialogDescription>
             </AlertDialogHeader>
             {req.affected.length > 0 ? (
-              <ul className="flex flex-col gap-1.5 rounded-md border bg-muted/30 p-3 text-sm">
+              <ul className="flex min-w-0 flex-col gap-1.5 rounded-md border bg-muted/30 p-3 text-sm">
                 {req.affected.map((item) => (
-                  <li key={`${item.label}:${item.value}`} className="flex justify-between gap-4">
-                    <span className="text-muted-foreground">{item.label}</span>
-                    <span className="truncate font-medium">{item.value}</span>
+                  <li
+                    key={`${item.label}:${item.value}`}
+                    className="flex min-w-0 items-center justify-between gap-4"
+                  >
+                    <span className="shrink-0 text-muted-foreground">{item.label}</span>
+                    <span className="min-w-0 truncate font-medium" title={item.value}>
+                      {item.value}
+                    </span>
                   </li>
                 ))}
               </ul>
