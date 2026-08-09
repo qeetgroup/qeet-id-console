@@ -27,7 +27,7 @@ import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/components/confirm-dialog";
 import { useCapabilities } from "@/features/access-control/capability-provider";
 import { ReadOnlyNotice } from "@/features/access-control/components/read-only-notice";
-import { useRegisterContext } from "@/features/copilot/context/context-registry";
+import { useRegisterContext } from "@/features/qeetai/context/context-registry";
 import { api } from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
 import { useResetUserMfa } from "@/lib/users";
@@ -75,10 +75,10 @@ function UserDetailPage() {
     queryFn: () => api<User>(`/v1/users/${userId}`),
   });
 
-  // Publish the current user as the copilot's selection context. The email
+  // Publish the current user as the qeetai's selection context. The email
   // label is filled once the query resolves; the id is always available from
   // the URL param. Memoized so useRegisterContext sees a stable reference.
-  const copilotCtx = useMemo(
+  const qeetaiCtx = useMemo(
     () => ({
       selection: {
         kind: "user" as const,
@@ -88,7 +88,7 @@ function UserDetailPage() {
     }),
     [userId, userQ.data?.email],
   );
-  useRegisterContext(pathname, copilotCtx);
+  useRegisterContext(pathname, qeetaiCtx);
 
   // Recent audit events authored by this user. Filtered server-side via
   // the actor_user_id parameter the audit list endpoint already accepts.
@@ -103,7 +103,7 @@ function UserDetailPage() {
 
   // Admin account-recovery: clear the user's MFA so they can re-enroll. Gated
   // server-side on user.write; audited as mfa.admin_reset. Extracted to
-  // lib/users.ts so the copilot reset_user_mfa tool shares the same hook.
+  // lib/users.ts so the qeetai reset_user_mfa tool shares the same hook.
   const resetMfa = useResetUserMfa();
 
   return (

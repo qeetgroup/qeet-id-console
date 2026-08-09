@@ -1,7 +1,7 @@
 import { Button, Separator, SidebarTrigger } from "@qeetrix/ui";
 import { KeyboardIcon, SearchIcon } from "lucide-react";
 
-import { CopilotTrigger } from "@/features/copilot";
+import { QeetAITrigger } from "@/features/qeetai";
 
 import { DynamicBreadcrumb } from "./dynamic-breadcrumb";
 import { HeaderUser } from "./header-user";
@@ -64,7 +64,7 @@ export function ConsoleHeader({
         >
           <KeyboardIcon />
         </Button>
-        <CopilotTrigger />
+        <QeetAITrigger />
         <NotificationsInbox />
         <div className="hidden xl:block">
           <LanguageSwitcher />

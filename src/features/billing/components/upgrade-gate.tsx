@@ -53,7 +53,7 @@ const FEATURE_PLAN: Record<string, string> = {
   webhooks: "starter",
   sso: "pro",
   audit_export: "pro",
-  ai_copilot: "pro",
+  ai_qeetai: "pro",
   abac: "pro",
   scim: "enterprise",
   ldap: "enterprise",

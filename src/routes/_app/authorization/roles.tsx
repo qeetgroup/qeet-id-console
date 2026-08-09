@@ -35,7 +35,7 @@ import { useMemo, useState } from "react";
 
 import { ListToolbar, SortHeader } from "@/components/data-table";
 import { PageHeader } from "@/components/page-header";
-import { useRegisterContext } from "@/features/copilot/context/context-registry";
+import { useRegisterContext } from "@/features/qeetai/context/context-registry";
 import type { ApiError } from "@/lib/api";
 import {
   type Permission,
@@ -67,17 +67,17 @@ function RolesPage() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Role | null>(null);
 
-  // Publish the currently-viewed role as the copilot's selection context so
+  // Publish the currently-viewed role as the qeetai's selection context so
   // suggestions like "Grant permission to this role" are auto-prefilled.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const copilotCtx = useMemo(
+  const qeetaiCtx = useMemo(
     () =>
       editing
         ? { selection: { kind: "role" as const, id: editing.id, label: editing.name } }
         : {},
     [editing],
   );
-  useRegisterContext(pathname, copilotCtx);
+  useRegisterContext(pathname, qeetaiCtx);
 
   const items = rolesQ.data?.items ?? [];
   const lv = useListView(items, {

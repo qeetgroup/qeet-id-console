@@ -1,5 +1,5 @@
 // Command registry: executable admin commands with capability gating.
-// Self-contained — no imports from features/copilot/* (the copilot registry
+// Self-contained — no imports from features/qeetai/* (the qeetai registry
 // reconciliation is a future task tracked in the spec §15).
 
 import {

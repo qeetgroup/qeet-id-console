@@ -327,7 +327,7 @@ const PLANS = [
       "Enterprise SSO — SAML & OIDC (no SSO tax)",
       "RBAC + ABAC & advanced threat protection",
       "Audit export · 90-day retention",
-      "AI Copilot",
+      "Qeet AI",
       "Priority + chat support, 24h SLA",
       "99.95% uptime SLA",
     ],
@@ -570,7 +570,7 @@ function BillingPage() {
               <div>
                 <CardTitle className="text-base">Try Pro free for 14 days</CardTitle>
                 <CardDescription>
-                  No card required — full Pro features (SSO, ABAC, audit export, AI Copilot).
+                  No card required — full Pro features (SSO, ABAC, audit export, Qeet AI).
                   Reverts to Free when the trial ends unless you upgrade.
                 </CardDescription>
               </div>

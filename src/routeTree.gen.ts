@@ -59,6 +59,7 @@ import { Route as AppSecurityRateLimitsRouteImport } from './routes/_app/securit
 import { Route as AppSecuritySessionsRouteImport } from './routes/_app/security/sessions'
 import { Route as AppSettingsBillingRouteImport } from './routes/_app/settings/billing'
 import { Route as AppSettingsBrandingRouteImport } from './routes/_app/settings/branding'
+import { Route as AppSettingsQeetAiRouteImport } from './routes/_app/settings/qeet-ai'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 import { Route as AppUsersDeletedRouteImport } from './routes/_app/users/deleted'
@@ -361,6 +362,11 @@ const AppSettingsBrandingRoute = AppSettingsBrandingRouteImport.update({
   path: '/settings/branding',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsQeetAiRoute = AppSettingsQeetAiRouteImport.update({
+  id: '/settings/qeet-ai',
+  path: '/settings/qeet-ai',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
@@ -639,6 +645,7 @@ export interface FileRoutesByFullPath {
   '/security/sessions': typeof AppSecuritySessionsRoute
   '/settings/billing': typeof AppSettingsBillingRoute
   '/settings/branding': typeof AppSettingsBrandingRoute
+  '/settings/qeet-ai': typeof AppSettingsQeetAiRoute
   '/users/$userId': typeof AppUsersUserIdRoute
   '/users/deleted': typeof AppUsersDeletedRoute
   '/users/import': typeof AppUsersImportRoute
@@ -731,6 +738,7 @@ export interface FileRoutesByTo {
   '/security/sessions': typeof AppSecuritySessionsRoute
   '/settings/billing': typeof AppSettingsBillingRoute
   '/settings/branding': typeof AppSettingsBrandingRoute
+  '/settings/qeet-ai': typeof AppSettingsQeetAiRoute
   '/users/$userId': typeof AppUsersUserIdRoute
   '/users/deleted': typeof AppUsersDeletedRoute
   '/users/import': typeof AppUsersImportRoute
@@ -826,6 +834,7 @@ export interface FileRoutesById {
   '/_app/security/sessions': typeof AppSecuritySessionsRoute
   '/_app/settings/billing': typeof AppSettingsBillingRoute
   '/_app/settings/branding': typeof AppSettingsBrandingRoute
+  '/_app/settings/qeet-ai': typeof AppSettingsQeetAiRoute
   '/_app/users/$userId': typeof AppUsersUserIdRoute
   '/_app/users/deleted': typeof AppUsersDeletedRoute
   '/_app/users/import': typeof AppUsersImportRoute
@@ -920,6 +929,7 @@ export interface FileRouteTypes {
     | '/security/sessions'
     | '/settings/billing'
     | '/settings/branding'
+    | '/settings/qeet-ai'
     | '/users/$userId'
     | '/users/deleted'
     | '/users/import'
@@ -1012,6 +1022,7 @@ export interface FileRouteTypes {
     | '/security/sessions'
     | '/settings/billing'
     | '/settings/branding'
+    | '/settings/qeet-ai'
     | '/users/$userId'
     | '/users/deleted'
     | '/users/import'
@@ -1106,6 +1117,7 @@ export interface FileRouteTypes {
     | '/_app/security/sessions'
     | '/_app/settings/billing'
     | '/_app/settings/branding'
+    | '/_app/settings/qeet-ai'
     | '/_app/users/$userId'
     | '/_app/users/deleted'
     | '/_app/users/import'
@@ -1511,6 +1523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsBrandingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/qeet-ai': {
+      id: '/_app/settings/qeet-ai'
+      path: '/settings/qeet-ai'
+      fullPath: '/settings/qeet-ai'
+      preLoaderRoute: typeof AppSettingsQeetAiRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/users/': {
       id: '/_app/users/'
       path: '/users'
@@ -1845,6 +1864,7 @@ interface AppRouteChildren {
   AppSecuritySessionsRoute: typeof AppSecuritySessionsRoute
   AppSettingsBillingRoute: typeof AppSettingsBillingRoute
   AppSettingsBrandingRoute: typeof AppSettingsBrandingRoute
+  AppSettingsQeetAiRoute: typeof AppSettingsQeetAiRoute
   AppUsersUserIdRoute: typeof AppUsersUserIdRoute
   AppUsersDeletedRoute: typeof AppUsersDeletedRoute
   AppUsersImportRoute: typeof AppUsersImportRoute
@@ -1927,6 +1947,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSecuritySessionsRoute: AppSecuritySessionsRoute,
   AppSettingsBillingRoute: AppSettingsBillingRoute,
   AppSettingsBrandingRoute: AppSettingsBrandingRoute,
+  AppSettingsQeetAiRoute: AppSettingsQeetAiRoute,
   AppUsersUserIdRoute: AppUsersUserIdRoute,
   AppUsersDeletedRoute: AppUsersDeletedRoute,
   AppUsersImportRoute: AppUsersImportRoute,

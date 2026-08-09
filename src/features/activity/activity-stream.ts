@@ -1,7 +1,7 @@
 // SSE activity stream client. Mirrors the proven pattern from
-// features/copilot/ai/streaming-client.ts but for GET-based SSE,
+// features/qeetai/ai/streaming-client.ts but for GET-based SSE,
 // with reconnect + exponential backoff and Last-Event-ID replay.
-// Do NOT import from features/copilot — this is a standalone client.
+// Do NOT import from features/qeetai — this is a standalone client.
 
 import { API_BASE_URL, tokenStore } from "@/lib/api";
 

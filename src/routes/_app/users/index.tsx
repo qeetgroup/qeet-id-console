@@ -611,7 +611,7 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
     }
   }, [roles, roleId]);
 
-  // Extracted to lib/users.ts so the copilot create_user tool shares the same hook.
+  // Extracted to lib/users.ts so the qeetai create_user tool shares the same hook.
   const createM = useCreateUser();
 
   return (
@@ -736,7 +736,7 @@ function EditUserSheet({ user, isSelf, onOpenChange, onSaved }: EditUserSheetPro
     setStatus(user.status === "suspended" ? "suspended" : "active");
   }
 
-  // Extracted to lib/users.ts so the copilot update_user tool shares the same hook.
+  // Extracted to lib/users.ts so the qeetai update_user tool shares the same hook.
   const updateM = useUpdateUser();
 
   return (

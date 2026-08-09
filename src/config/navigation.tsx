@@ -478,6 +478,12 @@ export const navGroups: NavGroup[] = [
         icon: <CreditCardIcon />,
         requiredPermission: "billing.read",
       },
+      {
+        title: "Qeet AI",
+        url: "/settings/qeet-ai",
+        icon: <SparklesIcon />,
+        requiredPermission: "secret.read",
+      },
     ],
   },
 ];
