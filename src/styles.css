@@ -251,6 +251,79 @@ body {
     var(--sidebar);
 }
 
+/* Two-pane sidebar: icon rail (section switcher) + section panel. */
+.console-rail-logo {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0.7rem;
+  background: color-mix(in oklab, var(--sidebar-foreground) 5%, transparent);
+  outline: none;
+}
+
+.console-rail-logo:focus-visible {
+  outline: 2px solid var(--sidebar-ring);
+  outline-offset: 2px;
+}
+
+.console-rail-btn {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0.7rem;
+  color: color-mix(in oklab, var(--sidebar-foreground) 60%, transparent);
+  transition:
+    color 160ms var(--ease-decelerate),
+    background-color 160ms var(--ease-decelerate),
+    box-shadow 160ms var(--ease-decelerate),
+    transform 120ms var(--ease-sharp);
+}
+
+.console-rail-btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.console-rail-btn:hover {
+  color: var(--sidebar-foreground);
+  background: color-mix(in oklab, var(--sidebar-foreground) 7%, transparent);
+}
+
+.console-rail-btn:active {
+  transform: scale(0.94);
+}
+
+.console-rail-btn:focus-visible {
+  outline: 2px solid var(--sidebar-ring);
+  outline-offset: 2px;
+}
+
+.console-rail-btn[data-active] {
+  color: var(--sidebar-accent-foreground);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--sidebar-primary) 22%, var(--sidebar-accent)),
+    var(--sidebar-accent)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--sidebar-primary) 30%, transparent);
+}
+
+.console-panel-title {
+  display: flex;
+  align-items: center;
+  height: 1.75rem;
+  padding-inline: 0.5rem;
+  color: color-mix(in oklab, var(--sidebar-foreground) 45%, transparent);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
 .console-nav-item {
   position: relative;
   min-height: 2.25rem;

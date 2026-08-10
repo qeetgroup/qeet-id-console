@@ -2,8 +2,6 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -82,54 +80,38 @@ function NavMenuItem({ item, pathname }: { item: NavItem; pathname: string }) {
   );
 }
 
-export function NavMain({ groups }: { groups: NavGroup[] }) {
+/**
+ * Renders one group's items — the body of the two-pane sidebar's section panel.
+ * The rail (in AppSidebar) selects which group lands here, so only a single
+ * group is ever visible at once, which is what keeps the panel short.
+ */
+export function SectionNav({ group }: { group: NavGroup }) {
   const { pathname } = useLocation();
 
   return (
-    <>
-      {groups.map((group) => (
-        <SidebarGroup key={group.label} className="py-1.5">
-          <SidebarGroupLabel className="h-7 px-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/45">
-            {group.label}
-          </SidebarGroupLabel>
-          <SidebarMenu className="gap-0.5">
-            {group.items.map((item) => (
-              <NavMenuItem key={item.title} item={item} pathname={pathname} />
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+    <SidebarMenu className="gap-0.5">
+      {group.items.map((item) => (
+        <NavMenuItem key={item.title} item={item} pathname={pathname} />
       ))}
-    </>
+    </SidebarMenu>
   );
 }
 
-const NAV_SKELETON_GROUPS = [
-  { id: "organization", rows: ["overview", "activity", "analytics"] },
-  { id: "directory", rows: ["users", "organizations", "groups", "invites"] },
-  { id: "access", rows: ["authentication", "authorization", "security"] },
-  { id: "operations", rows: ["developer", "settings", "billing", "audit"] },
-] as const;
+const SECTION_SKELETON_ROWS = ["one", "two", "three", "four", "five"] as const;
 
-export function NavMainSkeleton() {
+export function SectionNavSkeleton() {
   return (
     <div role="status" aria-live="polite" aria-label="Checking available console sections">
-      {NAV_SKELETON_GROUPS.map((group) => (
-        <SidebarGroup key={group.id} className="py-1.5">
-          <SidebarGroupLabel className="h-7 px-2">
-            <span className="h-2 w-16 animate-pulse rounded bg-sidebar-foreground/10" />
-          </SidebarGroupLabel>
-          <SidebarMenu className="gap-0.5">
-            {group.rows.map((row) => (
-              <SidebarMenuItem key={row}>
-                <div className="flex h-8 items-center gap-2 rounded-md px-2" aria-hidden="true">
-                  <Skeleton className="size-4 shrink-0 rounded-sm bg-sidebar-foreground/10" />
-                  <Skeleton className="h-3 w-28 max-w-[70%] bg-sidebar-foreground/10 group-data-[collapsible=icon]:hidden" />
-                </div>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
-      ))}
+      <SidebarMenu className="gap-0.5">
+        {SECTION_SKELETON_ROWS.map((row) => (
+          <SidebarMenuItem key={row}>
+            <div className="flex h-8 items-center gap-2 rounded-md px-2" aria-hidden="true">
+              <Skeleton className="size-4 shrink-0 rounded-sm bg-sidebar-foreground/10" />
+              <Skeleton className="h-3 w-28 max-w-[70%] bg-sidebar-foreground/10" />
+            </div>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
       <span className="sr-only">Checking organization access</span>
     </div>
   );

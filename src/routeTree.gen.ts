@@ -48,7 +48,6 @@ import { Route as AppDeveloperCredentialsRouteImport } from './routes/_app/devel
 import { Route as AppDeveloperInfrastructureRouteImport } from './routes/_app/developer/infrastructure'
 import { Route as AppGroupsIndexRouteImport } from './routes/_app/groups/index'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups/$groupId'
-import { Route as AppOrganizationsDomainsRouteImport } from './routes/_app/organizations/domains'
 import { Route as AppOrganizationsTenantsRouteImport } from './routes/_app/organizations/tenants'
 import { Route as AppSecurityIndexRouteImport } from './routes/_app/security/index'
 import { Route as AppSecurityAuditIntelligenceRouteImport } from './routes/_app/security/audit-intelligence'
@@ -303,11 +302,6 @@ const AppGroupsIndexRoute = AppGroupsIndexRouteImport.update({
 const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
   id: '/groups/$groupId',
   path: '/groups/$groupId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOrganizationsDomainsRoute = AppOrganizationsDomainsRouteImport.update({
-  id: '/organizations/domains',
-  path: '/organizations/domains',
   getParentRoute: () => AppRoute,
 } as any)
 const AppOrganizationsTenantsRoute = AppOrganizationsTenantsRouteImport.update({
@@ -635,7 +629,6 @@ export interface FileRoutesByFullPath {
   '/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/organizations/domains': typeof AppOrganizationsDomainsRoute
   '/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -728,7 +721,6 @@ export interface FileRoutesByTo {
   '/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/organizations/domains': typeof AppOrganizationsDomainsRoute
   '/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -824,7 +816,6 @@ export interface FileRoutesById {
   '/_app/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/_app/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/_app/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/_app/organizations/domains': typeof AppOrganizationsDomainsRoute
   '/_app/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/_app/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/_app/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -919,7 +910,6 @@ export interface FileRouteTypes {
     | '/developer/credentials'
     | '/developer/infrastructure'
     | '/groups/$groupId'
-    | '/organizations/domains'
     | '/organizations/tenants'
     | '/security/audit-intelligence'
     | '/security/audit-logs'
@@ -1012,7 +1002,6 @@ export interface FileRouteTypes {
     | '/developer/credentials'
     | '/developer/infrastructure'
     | '/groups/$groupId'
-    | '/organizations/domains'
     | '/organizations/tenants'
     | '/security/audit-intelligence'
     | '/security/audit-logs'
@@ -1107,7 +1096,6 @@ export interface FileRouteTypes {
     | '/_app/developer/credentials'
     | '/_app/developer/infrastructure'
     | '/_app/groups/$groupId'
-    | '/_app/organizations/domains'
     | '/_app/organizations/tenants'
     | '/_app/security/audit-intelligence'
     | '/_app/security/audit-logs'
@@ -1444,13 +1432,6 @@ declare module '@tanstack/react-router' {
       path: '/groups/$groupId'
       fullPath: '/groups/$groupId'
       preLoaderRoute: typeof AppGroupsGroupIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/organizations/domains': {
-      id: '/_app/organizations/domains'
-      path: '/organizations/domains'
-      fullPath: '/organizations/domains'
-      preLoaderRoute: typeof AppOrganizationsDomainsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/organizations/tenants': {
@@ -1854,7 +1835,6 @@ interface AppRouteChildren {
   AppDeveloperCredentialsRoute: typeof AppDeveloperCredentialsRoute
   AppDeveloperInfrastructureRoute: typeof AppDeveloperInfrastructureRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
-  AppOrganizationsDomainsRoute: typeof AppOrganizationsDomainsRoute
   AppOrganizationsTenantsRoute: typeof AppOrganizationsTenantsRoute
   AppSecurityAuditIntelligenceRoute: typeof AppSecurityAuditIntelligenceRoute
   AppSecurityAuditLogsRoute: typeof AppSecurityAuditLogsRoute
@@ -1937,7 +1917,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppDeveloperCredentialsRoute: AppDeveloperCredentialsRoute,
   AppDeveloperInfrastructureRoute: AppDeveloperInfrastructureRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
-  AppOrganizationsDomainsRoute: AppOrganizationsDomainsRoute,
   AppOrganizationsTenantsRoute: AppOrganizationsTenantsRoute,
   AppSecurityAuditIntelligenceRoute: AppSecurityAuditIntelligenceRoute,
   AppSecurityAuditLogsRoute: AppSecurityAuditLogsRoute,

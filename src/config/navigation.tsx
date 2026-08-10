@@ -7,6 +7,7 @@ import {
   BoxesIcon,
   Building2Icon,
   ChartColumnIcon,
+  Code2Icon,
   CpuIcon,
   CreditCardIcon,
   FileKey2Icon,
@@ -58,12 +59,15 @@ export type NavItem = {
 
 export type NavGroup = {
   label: string;
+  /** Rail icon for the two-pane sidebar switcher; required for every group. */
+  icon: ReactNode;
   items: NavItem[];
 };
 
 export const navGroups: NavGroup[] = [
   {
     label: "Overview",
+    icon: <LayoutDashboardIcon />,
     items: [
       { title: "Dashboard", url: "/", icon: <LayoutDashboardIcon /> },
       {
@@ -82,6 +86,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Directory",
+    icon: <UsersIcon />,
     items: [
       {
         title: "Users",
@@ -95,17 +100,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        // Domain verification moved into Settings › Domains (tabbed with the
+        // custom login domain), so Organizations is now a single destination.
         title: "Organizations",
         url: "/organizations/tenants",
         icon: <Building2Icon />,
-        items: [
-          { title: "Tenants", url: "/organizations/tenants" },
-          {
-            title: "Domain verification",
-            url: "/organizations/domains",
-            requiredPermission: "tenant.read",
-          },
-        ],
       },
       {
         title: "Groups",
@@ -133,6 +132,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Applications",
+    icon: <AppWindowIcon />,
     items: [
       {
         // The OIDC/OAuth client registry — your registered relying-party apps.
@@ -157,6 +157,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Authentication",
+    icon: <FingerprintIcon />,
     items: [
       {
         title: "Sign-in",
@@ -225,6 +226,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Authorization",
+    icon: <KeyRoundIcon />,
     items: [
       {
         title: "Overview",
@@ -301,6 +303,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Security",
+    icon: <ShieldCheckIcon />,
     items: [
       { title: "Overview", url: "/security", icon: <ShieldCheckIcon /> },
       {
@@ -376,6 +379,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Developer",
+    icon: <Code2Icon />,
     items: [
       {
         title: "API keys",
@@ -441,6 +445,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Settings",
+    icon: <Settings2Icon />,
     items: [
       {
         title: "General",
@@ -525,6 +530,28 @@ export function getRequiredCapabilityForPath(pathname: string): Capability | und
   return destinations()
     .filter((item) => pathMatchesBranch(normalized, item.url))
     .sort((a, b) => b.url.length - a.url.length)[0]?.requiredPermission;
+}
+
+/**
+ * Resolves which group the two-pane rail should highlight for a route, using the
+ * longest matching destination so `/authorization/roles/42` selects Authorization
+ * rather than a shorter-prefixed sibling. Returns undefined for unmapped routes.
+ */
+export function findNavGroupForPath(groups: NavGroup[], pathname: string): string | undefined {
+  const normalized = normalizePathname(pathname);
+  let bestLabel: string | undefined;
+  let bestLength = -1;
+  for (const group of groups) {
+    for (const item of group.items) {
+      for (const dest of [item, ...(item.items ?? [])]) {
+        if (pathMatchesBranch(normalized, dest.url) && dest.url.length > bestLength) {
+          bestLabel = group.label;
+          bestLength = dest.url.length;
+        }
+      }
+    }
+  }
+  return bestLabel;
 }
 
 export function filterNavigation(
