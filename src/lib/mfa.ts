@@ -5,6 +5,23 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "./api";
 
+// ---- TOTP ----
+
+export interface TotpStatus {
+  /** True once the account has a *confirmed* TOTP factor. */
+  enrolled: boolean;
+}
+
+// Lets the TOTP screen render an "active" state on load instead of always
+// re-offering enrollment: re-running enroll/start rotates the secret and clears
+// confirmation server-side, so a stale prompt could break a working factor.
+export function useTotpStatus() {
+  return useQuery({
+    queryKey: ["mfa", "totp"],
+    queryFn: () => api<TotpStatus>("/v1/mfa/totp"),
+  });
+}
+
 // ---- Recovery codes ----
 
 export interface RecoveryStatus {

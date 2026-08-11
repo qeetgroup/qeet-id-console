@@ -16,6 +16,9 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppSplatRouteImport } from './routes/_app/$'
 import { Route as AppActivityRouteImport } from './routes/_app/activity'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
+import { Route as AppApplicationsRouteImport } from './routes/_app/applications'
+import { Route as AppAuthenticationRouteImport } from './routes/_app/authentication'
+import { Route as AppDirectoryRouteImport } from './routes/_app/directory'
 import { Route as AppInvitationsRouteImport } from './routes/_app/invitations'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthMagicRouteImport } from './routes/_auth/magic'
@@ -29,7 +32,6 @@ import { Route as AppAuthSocialRouteImport } from './routes/_app/auth/social'
 import { Route as AppAuthorizationIndexRouteImport } from './routes/_app/authorization/index'
 import { Route as AppAuthorizationAbacRouteImport } from './routes/_app/authorization/abac'
 import { Route as AppAuthorizationAccessTesterRouteImport } from './routes/_app/authorization/access-tester'
-import { Route as AppAuthorizationAssistantRouteImport } from './routes/_app/authorization/assistant'
 import { Route as AppAuthorizationAuditRouteImport } from './routes/_app/authorization/audit'
 import { Route as AppAuthorizationBuilderRouteImport } from './routes/_app/authorization/builder'
 import { Route as AppAuthorizationExplorerRouteImport } from './routes/_app/authorization/explorer'
@@ -42,6 +44,7 @@ import { Route as AppAuthorizationSettingsRouteImport } from './routes/_app/auth
 import { Route as AppAuthorizationSimulatorRouteImport } from './routes/_app/authorization/simulator'
 import { Route as AppAuthorizationTemplatesRouteImport } from './routes/_app/authorization/templates'
 import { Route as AppAuthorizationVersionsRouteImport } from './routes/_app/authorization/versions'
+import { Route as AppDeveloperIndexRouteImport } from './routes/_app/developer/index'
 import { Route as AppDeveloperAgentsRouteImport } from './routes/_app/developer/agents'
 import { Route as AppDeveloperAuthHooksRouteImport } from './routes/_app/developer/auth-hooks'
 import { Route as AppDeveloperBotsRouteImport } from './routes/_app/developer/bots'
@@ -49,8 +52,6 @@ import { Route as AppDeveloperCredentialsRouteImport } from './routes/_app/devel
 import { Route as AppDeveloperInfrastructureRouteImport } from './routes/_app/developer/infrastructure'
 import { Route as AppGroupsIndexRouteImport } from './routes/_app/groups/index'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups/$groupId'
-import { Route as AppOrganizationsDomainsRouteImport } from './routes/_app/organizations/domains'
-import { Route as AppOrganizationsMembersRouteImport } from './routes/_app/organizations/members'
 import { Route as AppOrganizationsTenantsRouteImport } from './routes/_app/organizations/tenants'
 import { Route as AppSecurityIndexRouteImport } from './routes/_app/security/index'
 import { Route as AppSecurityAuditIntelligenceRouteImport } from './routes/_app/security/audit-intelligence'
@@ -59,13 +60,14 @@ import { Route as AppSecurityDeviceAuthorizationsRouteImport } from './routes/_a
 import { Route as AppSecurityLogStreamingRouteImport } from './routes/_app/security/log-streaming'
 import { Route as AppSecurityRateLimitsRouteImport } from './routes/_app/security/rate-limits'
 import { Route as AppSecuritySessionsRouteImport } from './routes/_app/security/sessions'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppSettingsBillingRouteImport } from './routes/_app/settings/billing'
 import { Route as AppSettingsBrandingRouteImport } from './routes/_app/settings/branding'
+import { Route as AppSettingsQeetAiRouteImport } from './routes/_app/settings/qeet-ai'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 import { Route as AppUsersDeletedRouteImport } from './routes/_app/users/deleted'
 import { Route as AppUsersImportRouteImport } from './routes/_app/users/import'
-import { Route as AppUsersInvitationsRouteImport } from './routes/_app/users/invitations'
 import { Route as AppUsersSessionsRouteImport } from './routes/_app/users/sessions'
 import { Route as AuthInviteAcceptRouteImport } from './routes/_auth/invite.accept'
 import { Route as AuthSsoCallbackRouteImport } from './routes/_auth/sso.callback'
@@ -84,7 +86,6 @@ import { Route as AppAuthLoginMethodsMagicLinksRouteImport } from './routes/_app
 import { Route as AppAuthLoginMethodsPasskeysRouteImport } from './routes/_app/auth/login-methods/passkeys'
 import { Route as AppAuthLoginMethodsPasswordRouteImport } from './routes/_app/auth/login-methods/password'
 import { Route as AppAuthLoginMethodsPasswordlessRouteImport } from './routes/_app/auth/login-methods/passwordless'
-import { Route as AppAuthMfaRecoveryCodesRouteImport } from './routes/_app/auth/mfa/recovery-codes'
 import { Route as AppAuthMfaSmsEmailRouteImport } from './routes/_app/auth/mfa/sms-email'
 import { Route as AppAuthMfaTotpRouteImport } from './routes/_app/auth/mfa/totp'
 import { Route as AppDeveloperWebhooksIndexRouteImport } from './routes/_app/developer/webhooks/index'
@@ -137,6 +138,21 @@ const AppActivityRoute = AppActivityRouteImport.update({
 const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppApplicationsRoute = AppApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuthenticationRoute = AppAuthenticationRouteImport.update({
+  id: '/authentication',
+  path: '/authentication',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDirectoryRoute = AppDirectoryRouteImport.update({
+  id: '/directory',
+  path: '/directory',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInvitationsRoute = AppInvitationsRouteImport.update({
@@ -203,12 +219,6 @@ const AppAuthorizationAccessTesterRoute =
   AppAuthorizationAccessTesterRouteImport.update({
     id: '/authorization/access-tester',
     path: '/authorization/access-tester',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppAuthorizationAssistantRoute =
-  AppAuthorizationAssistantRouteImport.update({
-    id: '/authorization/assistant',
-    path: '/authorization/assistant',
     getParentRoute: () => AppRoute,
   } as any)
 const AppAuthorizationAuditRoute = AppAuthorizationAuditRouteImport.update({
@@ -278,6 +288,11 @@ const AppAuthorizationVersionsRoute =
     path: '/authorization/versions',
     getParentRoute: () => AppRoute,
   } as any)
+const AppDeveloperIndexRoute = AppDeveloperIndexRouteImport.update({
+  id: '/developer/',
+  path: '/developer/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDeveloperAgentsRoute = AppDeveloperAgentsRouteImport.update({
   id: '/developer/agents',
   path: '/developer/agents',
@@ -312,16 +327,6 @@ const AppGroupsIndexRoute = AppGroupsIndexRouteImport.update({
 const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
   id: '/groups/$groupId',
   path: '/groups/$groupId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOrganizationsDomainsRoute = AppOrganizationsDomainsRouteImport.update({
-  id: '/organizations/domains',
-  path: '/organizations/domains',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOrganizationsMembersRoute = AppOrganizationsMembersRouteImport.update({
-  id: '/organizations/members',
-  path: '/organizations/members',
   getParentRoute: () => AppRoute,
 } as any)
 const AppOrganizationsTenantsRoute = AppOrganizationsTenantsRouteImport.update({
@@ -366,6 +371,11 @@ const AppSecuritySessionsRoute = AppSecuritySessionsRouteImport.update({
   path: '/security/sessions',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsBillingRoute = AppSettingsBillingRouteImport.update({
   id: '/settings/billing',
   path: '/settings/billing',
@@ -374,6 +384,11 @@ const AppSettingsBillingRoute = AppSettingsBillingRouteImport.update({
 const AppSettingsBrandingRoute = AppSettingsBrandingRouteImport.update({
   id: '/settings/branding',
   path: '/settings/branding',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsQeetAiRoute = AppSettingsQeetAiRouteImport.update({
+  id: '/settings/qeet-ai',
+  path: '/settings/qeet-ai',
   getParentRoute: () => AppRoute,
 } as any)
 const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
@@ -394,11 +409,6 @@ const AppUsersDeletedRoute = AppUsersDeletedRouteImport.update({
 const AppUsersImportRoute = AppUsersImportRouteImport.update({
   id: '/users/import',
   path: '/users/import',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppUsersInvitationsRoute = AppUsersInvitationsRouteImport.update({
-  id: '/users/invitations',
-  path: '/users/invitations',
   getParentRoute: () => AppRoute,
 } as any)
 const AppUsersSessionsRoute = AppUsersSessionsRouteImport.update({
@@ -497,11 +507,6 @@ const AppAuthLoginMethodsPasswordlessRoute =
     path: '/auth/login-methods/passwordless',
     getParentRoute: () => AppRoute,
   } as any)
-const AppAuthMfaRecoveryCodesRoute = AppAuthMfaRecoveryCodesRouteImport.update({
-  id: '/auth/mfa/recovery-codes',
-  path: '/auth/mfa/recovery-codes',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAuthMfaSmsEmailRoute = AppAuthMfaSmsEmailRouteImport.update({
   id: '/auth/mfa/sms-email',
   path: '/auth/mfa/sms-email',
@@ -624,6 +629,9 @@ export interface FileRoutesByFullPath {
   '/$': typeof AppSplatRoute
   '/activity': typeof AppActivityRoute
   '/analytics': typeof AppAnalyticsRoute
+  '/applications': typeof AppApplicationsRoute
+  '/authentication': typeof AppAuthenticationRoute
+  '/directory': typeof AppDirectoryRoute
   '/invitations': typeof AppInvitationsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/magic': typeof AuthMagicRoute
@@ -636,7 +644,6 @@ export interface FileRoutesByFullPath {
   '/auth/social': typeof AppAuthSocialRoute
   '/authorization/abac': typeof AppAuthorizationAbacRoute
   '/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/authorization/assistant': typeof AppAuthorizationAssistantRoute
   '/authorization/audit': typeof AppAuthorizationAuditRoute
   '/authorization/builder': typeof AppAuthorizationBuilderRoute
   '/authorization/explorer': typeof AppAuthorizationExplorerRoute
@@ -655,8 +662,6 @@ export interface FileRoutesByFullPath {
   '/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/organizations/domains': typeof AppOrganizationsDomainsRoute
-  '/organizations/members': typeof AppOrganizationsMembersRoute
   '/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -666,16 +671,18 @@ export interface FileRoutesByFullPath {
   '/security/sessions': typeof AppSecuritySessionsRoute
   '/settings/billing': typeof AppSettingsBillingRoute
   '/settings/branding': typeof AppSettingsBrandingRoute
+  '/settings/qeet-ai': typeof AppSettingsQeetAiRoute
   '/users/$userId': typeof AppUsersUserIdRoute
   '/users/deleted': typeof AppUsersDeletedRoute
   '/users/import': typeof AppUsersImportRoute
-  '/users/invitations': typeof AppUsersInvitationsRoute
   '/users/sessions': typeof AppUsersSessionsRoute
   '/invite/accept': typeof AuthInviteAcceptRoute
   '/sso/callback': typeof AuthSsoCallbackRoute
   '/authorization/': typeof AppAuthorizationIndexRoute
+  '/developer/': typeof AppDeveloperIndexRoute
   '/groups/': typeof AppGroupsIndexRoute
   '/security/': typeof AppSecurityIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
   '/users/': typeof AppUsersIndexRoute
   '/auth/api/consent-grants': typeof AppAuthApiConsentGrantsRoute
   '/auth/api/keys': typeof AppAuthApiKeysRoute
@@ -691,7 +698,6 @@ export interface FileRoutesByFullPath {
   '/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
   '/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
   '/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/auth/mfa/recovery-codes': typeof AppAuthMfaRecoveryCodesRoute
   '/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AppAuthMfaTotpRoute
   '/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
@@ -720,6 +726,9 @@ export interface FileRoutesByTo {
   '/$': typeof AppSplatRoute
   '/activity': typeof AppActivityRoute
   '/analytics': typeof AppAnalyticsRoute
+  '/applications': typeof AppApplicationsRoute
+  '/authentication': typeof AppAuthenticationRoute
+  '/directory': typeof AppDirectoryRoute
   '/invitations': typeof AppInvitationsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/magic': typeof AuthMagicRoute
@@ -732,7 +741,6 @@ export interface FileRoutesByTo {
   '/auth/social': typeof AppAuthSocialRoute
   '/authorization/abac': typeof AppAuthorizationAbacRoute
   '/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/authorization/assistant': typeof AppAuthorizationAssistantRoute
   '/authorization/audit': typeof AppAuthorizationAuditRoute
   '/authorization/builder': typeof AppAuthorizationBuilderRoute
   '/authorization/explorer': typeof AppAuthorizationExplorerRoute
@@ -751,8 +759,6 @@ export interface FileRoutesByTo {
   '/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/organizations/domains': typeof AppOrganizationsDomainsRoute
-  '/organizations/members': typeof AppOrganizationsMembersRoute
   '/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -762,16 +768,18 @@ export interface FileRoutesByTo {
   '/security/sessions': typeof AppSecuritySessionsRoute
   '/settings/billing': typeof AppSettingsBillingRoute
   '/settings/branding': typeof AppSettingsBrandingRoute
+  '/settings/qeet-ai': typeof AppSettingsQeetAiRoute
   '/users/$userId': typeof AppUsersUserIdRoute
   '/users/deleted': typeof AppUsersDeletedRoute
   '/users/import': typeof AppUsersImportRoute
-  '/users/invitations': typeof AppUsersInvitationsRoute
   '/users/sessions': typeof AppUsersSessionsRoute
   '/invite/accept': typeof AuthInviteAcceptRoute
   '/sso/callback': typeof AuthSsoCallbackRoute
   '/authorization': typeof AppAuthorizationIndexRoute
+  '/developer': typeof AppDeveloperIndexRoute
   '/groups': typeof AppGroupsIndexRoute
   '/security': typeof AppSecurityIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
   '/users': typeof AppUsersIndexRoute
   '/auth/api/consent-grants': typeof AppAuthApiConsentGrantsRoute
   '/auth/api/keys': typeof AppAuthApiKeysRoute
@@ -787,7 +795,6 @@ export interface FileRoutesByTo {
   '/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
   '/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
   '/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/auth/mfa/recovery-codes': typeof AppAuthMfaRecoveryCodesRoute
   '/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AppAuthMfaTotpRoute
   '/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
@@ -818,6 +825,9 @@ export interface FileRoutesById {
   '/_app/$': typeof AppSplatRoute
   '/_app/activity': typeof AppActivityRoute
   '/_app/analytics': typeof AppAnalyticsRoute
+  '/_app/applications': typeof AppApplicationsRoute
+  '/_app/authentication': typeof AppAuthenticationRoute
+  '/_app/directory': typeof AppDirectoryRoute
   '/_app/invitations': typeof AppInvitationsRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/magic': typeof AuthMagicRoute
@@ -831,7 +841,6 @@ export interface FileRoutesById {
   '/_app/auth/social': typeof AppAuthSocialRoute
   '/_app/authorization/abac': typeof AppAuthorizationAbacRoute
   '/_app/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/_app/authorization/assistant': typeof AppAuthorizationAssistantRoute
   '/_app/authorization/audit': typeof AppAuthorizationAuditRoute
   '/_app/authorization/builder': typeof AppAuthorizationBuilderRoute
   '/_app/authorization/explorer': typeof AppAuthorizationExplorerRoute
@@ -850,8 +859,6 @@ export interface FileRoutesById {
   '/_app/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/_app/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
   '/_app/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/_app/organizations/domains': typeof AppOrganizationsDomainsRoute
-  '/_app/organizations/members': typeof AppOrganizationsMembersRoute
   '/_app/organizations/tenants': typeof AppOrganizationsTenantsRoute
   '/_app/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
   '/_app/security/audit-logs': typeof AppSecurityAuditLogsRoute
@@ -861,16 +868,18 @@ export interface FileRoutesById {
   '/_app/security/sessions': typeof AppSecuritySessionsRoute
   '/_app/settings/billing': typeof AppSettingsBillingRoute
   '/_app/settings/branding': typeof AppSettingsBrandingRoute
+  '/_app/settings/qeet-ai': typeof AppSettingsQeetAiRoute
   '/_app/users/$userId': typeof AppUsersUserIdRoute
   '/_app/users/deleted': typeof AppUsersDeletedRoute
   '/_app/users/import': typeof AppUsersImportRoute
-  '/_app/users/invitations': typeof AppUsersInvitationsRoute
   '/_app/users/sessions': typeof AppUsersSessionsRoute
   '/_auth/invite/accept': typeof AuthInviteAcceptRoute
   '/_auth/sso/callback': typeof AuthSsoCallbackRoute
   '/_app/authorization/': typeof AppAuthorizationIndexRoute
+  '/_app/developer/': typeof AppDeveloperIndexRoute
   '/_app/groups/': typeof AppGroupsIndexRoute
   '/_app/security/': typeof AppSecurityIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
   '/_app/auth/api/consent-grants': typeof AppAuthApiConsentGrantsRoute
   '/_app/auth/api/keys': typeof AppAuthApiKeysRoute
@@ -886,7 +895,6 @@ export interface FileRoutesById {
   '/_app/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
   '/_app/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
   '/_app/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/_app/auth/mfa/recovery-codes': typeof AppAuthMfaRecoveryCodesRoute
   '/_app/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
   '/_app/auth/mfa/totp': typeof AppAuthMfaTotpRoute
   '/_app/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
@@ -917,6 +925,9 @@ export interface FileRouteTypes {
     | '/$'
     | '/activity'
     | '/analytics'
+    | '/applications'
+    | '/authentication'
+    | '/directory'
     | '/invitations'
     | '/forgot-password'
     | '/magic'
@@ -929,7 +940,6 @@ export interface FileRouteTypes {
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
-    | '/authorization/assistant'
     | '/authorization/audit'
     | '/authorization/builder'
     | '/authorization/explorer'
@@ -948,8 +958,6 @@ export interface FileRouteTypes {
     | '/developer/credentials'
     | '/developer/infrastructure'
     | '/groups/$groupId'
-    | '/organizations/domains'
-    | '/organizations/members'
     | '/organizations/tenants'
     | '/security/audit-intelligence'
     | '/security/audit-logs'
@@ -959,16 +967,18 @@ export interface FileRouteTypes {
     | '/security/sessions'
     | '/settings/billing'
     | '/settings/branding'
+    | '/settings/qeet-ai'
     | '/users/$userId'
     | '/users/deleted'
     | '/users/import'
-    | '/users/invitations'
     | '/users/sessions'
     | '/invite/accept'
     | '/sso/callback'
     | '/authorization/'
+    | '/developer/'
     | '/groups/'
     | '/security/'
+    | '/settings/'
     | '/users/'
     | '/auth/api/consent-grants'
     | '/auth/api/keys'
@@ -984,7 +994,6 @@ export interface FileRouteTypes {
     | '/auth/login-methods/passkeys'
     | '/auth/login-methods/password'
     | '/auth/login-methods/passwordless'
-    | '/auth/mfa/recovery-codes'
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
@@ -1013,6 +1022,9 @@ export interface FileRouteTypes {
     | '/$'
     | '/activity'
     | '/analytics'
+    | '/applications'
+    | '/authentication'
+    | '/directory'
     | '/invitations'
     | '/forgot-password'
     | '/magic'
@@ -1025,7 +1037,6 @@ export interface FileRouteTypes {
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
-    | '/authorization/assistant'
     | '/authorization/audit'
     | '/authorization/builder'
     | '/authorization/explorer'
@@ -1044,8 +1055,6 @@ export interface FileRouteTypes {
     | '/developer/credentials'
     | '/developer/infrastructure'
     | '/groups/$groupId'
-    | '/organizations/domains'
-    | '/organizations/members'
     | '/organizations/tenants'
     | '/security/audit-intelligence'
     | '/security/audit-logs'
@@ -1055,16 +1064,18 @@ export interface FileRouteTypes {
     | '/security/sessions'
     | '/settings/billing'
     | '/settings/branding'
+    | '/settings/qeet-ai'
     | '/users/$userId'
     | '/users/deleted'
     | '/users/import'
-    | '/users/invitations'
     | '/users/sessions'
     | '/invite/accept'
     | '/sso/callback'
     | '/authorization'
+    | '/developer'
     | '/groups'
     | '/security'
+    | '/settings'
     | '/users'
     | '/auth/api/consent-grants'
     | '/auth/api/keys'
@@ -1080,7 +1091,6 @@ export interface FileRouteTypes {
     | '/auth/login-methods/passkeys'
     | '/auth/login-methods/password'
     | '/auth/login-methods/passwordless'
-    | '/auth/mfa/recovery-codes'
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
@@ -1110,6 +1120,9 @@ export interface FileRouteTypes {
     | '/_app/$'
     | '/_app/activity'
     | '/_app/analytics'
+    | '/_app/applications'
+    | '/_app/authentication'
+    | '/_app/directory'
     | '/_app/invitations'
     | '/_auth/forgot-password'
     | '/_auth/magic'
@@ -1123,7 +1136,6 @@ export interface FileRouteTypes {
     | '/_app/auth/social'
     | '/_app/authorization/abac'
     | '/_app/authorization/access-tester'
-    | '/_app/authorization/assistant'
     | '/_app/authorization/audit'
     | '/_app/authorization/builder'
     | '/_app/authorization/explorer'
@@ -1142,8 +1154,6 @@ export interface FileRouteTypes {
     | '/_app/developer/credentials'
     | '/_app/developer/infrastructure'
     | '/_app/groups/$groupId'
-    | '/_app/organizations/domains'
-    | '/_app/organizations/members'
     | '/_app/organizations/tenants'
     | '/_app/security/audit-intelligence'
     | '/_app/security/audit-logs'
@@ -1153,16 +1163,18 @@ export interface FileRouteTypes {
     | '/_app/security/sessions'
     | '/_app/settings/billing'
     | '/_app/settings/branding'
+    | '/_app/settings/qeet-ai'
     | '/_app/users/$userId'
     | '/_app/users/deleted'
     | '/_app/users/import'
-    | '/_app/users/invitations'
     | '/_app/users/sessions'
     | '/_auth/invite/accept'
     | '/_auth/sso/callback'
     | '/_app/authorization/'
+    | '/_app/developer/'
     | '/_app/groups/'
     | '/_app/security/'
+    | '/_app/settings/'
     | '/_app/users/'
     | '/_app/auth/api/consent-grants'
     | '/_app/auth/api/keys'
@@ -1178,7 +1190,6 @@ export interface FileRouteTypes {
     | '/_app/auth/login-methods/passkeys'
     | '/_app/auth/login-methods/password'
     | '/_app/auth/login-methods/passwordless'
-    | '/_app/auth/mfa/recovery-codes'
     | '/_app/auth/mfa/sms-email'
     | '/_app/auth/mfa/totp'
     | '/_app/developer/webhooks/$id'
@@ -1257,6 +1268,27 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/applications': {
+      id: '/_app/applications'
+      path: '/applications'
+      fullPath: '/applications'
+      preLoaderRoute: typeof AppApplicationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/authentication': {
+      id: '/_app/authentication'
+      path: '/authentication'
+      fullPath: '/authentication'
+      preLoaderRoute: typeof AppAuthenticationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/directory': {
+      id: '/_app/directory'
+      path: '/directory'
+      fullPath: '/directory'
+      preLoaderRoute: typeof AppDirectoryRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/invitations': {
@@ -1350,13 +1382,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthorizationAccessTesterRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/authorization/assistant': {
-      id: '/_app/authorization/assistant'
-      path: '/authorization/assistant'
-      fullPath: '/authorization/assistant'
-      preLoaderRoute: typeof AppAuthorizationAssistantRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/authorization/audit': {
       id: '/_app/authorization/audit'
       path: '/authorization/audit'
@@ -1441,6 +1466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuthorizationVersionsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/developer/': {
+      id: '/_app/developer/'
+      path: '/developer'
+      fullPath: '/developer/'
+      preLoaderRoute: typeof AppDeveloperIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/developer/agents': {
       id: '/_app/developer/agents'
       path: '/developer/agents'
@@ -1488,20 +1520,6 @@ declare module '@tanstack/react-router' {
       path: '/groups/$groupId'
       fullPath: '/groups/$groupId'
       preLoaderRoute: typeof AppGroupsGroupIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/organizations/domains': {
-      id: '/_app/organizations/domains'
-      path: '/organizations/domains'
-      fullPath: '/organizations/domains'
-      preLoaderRoute: typeof AppOrganizationsDomainsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/organizations/members': {
-      id: '/_app/organizations/members'
-      path: '/organizations/members'
-      fullPath: '/organizations/members'
-      preLoaderRoute: typeof AppOrganizationsMembersRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/organizations/tenants': {
@@ -1560,6 +1578,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSecuritySessionsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/billing': {
       id: '/_app/settings/billing'
       path: '/settings/billing'
@@ -1572,6 +1597,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/branding'
       fullPath: '/settings/branding'
       preLoaderRoute: typeof AppSettingsBrandingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/qeet-ai': {
+      id: '/_app/settings/qeet-ai'
+      path: '/settings/qeet-ai'
+      fullPath: '/settings/qeet-ai'
+      preLoaderRoute: typeof AppSettingsQeetAiRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/users/': {
@@ -1600,13 +1632,6 @@ declare module '@tanstack/react-router' {
       path: '/users/import'
       fullPath: '/users/import'
       preLoaderRoute: typeof AppUsersImportRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/users/invitations': {
-      id: '/_app/users/invitations'
-      path: '/users/invitations'
-      fullPath: '/users/invitations'
-      preLoaderRoute: typeof AppUsersInvitationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/users/sessions': {
@@ -1733,13 +1758,6 @@ declare module '@tanstack/react-router' {
       path: '/auth/login-methods/passwordless'
       fullPath: '/auth/login-methods/passwordless'
       preLoaderRoute: typeof AppAuthLoginMethodsPasswordlessRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/auth/mfa/recovery-codes': {
-      id: '/_app/auth/mfa/recovery-codes'
-      path: '/auth/mfa/recovery-codes'
-      fullPath: '/auth/mfa/recovery-codes'
-      preLoaderRoute: typeof AppAuthMfaRecoveryCodesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/auth/mfa/sms-email': {
@@ -1889,12 +1907,14 @@ interface AppRouteChildren {
   AppSplatRoute: typeof AppSplatRoute
   AppActivityRoute: typeof AppActivityRoute
   AppAnalyticsRoute: typeof AppAnalyticsRoute
+  AppApplicationsRoute: typeof AppApplicationsRoute
+  AppAuthenticationRoute: typeof AppAuthenticationRoute
+  AppDirectoryRoute: typeof AppDirectoryRoute
   AppInvitationsRoute: typeof AppInvitationsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAuthSocialRoute: typeof AppAuthSocialRoute
   AppAuthorizationAbacRoute: typeof AppAuthorizationAbacRoute
   AppAuthorizationAccessTesterRoute: typeof AppAuthorizationAccessTesterRoute
-  AppAuthorizationAssistantRoute: typeof AppAuthorizationAssistantRoute
   AppAuthorizationAuditRoute: typeof AppAuthorizationAuditRoute
   AppAuthorizationBuilderRoute: typeof AppAuthorizationBuilderRoute
   AppAuthorizationExplorerRoute: typeof AppAuthorizationExplorerRoute
@@ -1913,8 +1933,6 @@ interface AppRouteChildren {
   AppDeveloperCredentialsRoute: typeof AppDeveloperCredentialsRoute
   AppDeveloperInfrastructureRoute: typeof AppDeveloperInfrastructureRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
-  AppOrganizationsDomainsRoute: typeof AppOrganizationsDomainsRoute
-  AppOrganizationsMembersRoute: typeof AppOrganizationsMembersRoute
   AppOrganizationsTenantsRoute: typeof AppOrganizationsTenantsRoute
   AppSecurityAuditIntelligenceRoute: typeof AppSecurityAuditIntelligenceRoute
   AppSecurityAuditLogsRoute: typeof AppSecurityAuditLogsRoute
@@ -1924,14 +1942,16 @@ interface AppRouteChildren {
   AppSecuritySessionsRoute: typeof AppSecuritySessionsRoute
   AppSettingsBillingRoute: typeof AppSettingsBillingRoute
   AppSettingsBrandingRoute: typeof AppSettingsBrandingRoute
+  AppSettingsQeetAiRoute: typeof AppSettingsQeetAiRoute
   AppUsersUserIdRoute: typeof AppUsersUserIdRoute
   AppUsersDeletedRoute: typeof AppUsersDeletedRoute
   AppUsersImportRoute: typeof AppUsersImportRoute
-  AppUsersInvitationsRoute: typeof AppUsersInvitationsRoute
   AppUsersSessionsRoute: typeof AppUsersSessionsRoute
   AppAuthorizationIndexRoute: typeof AppAuthorizationIndexRoute
+  AppDeveloperIndexRoute: typeof AppDeveloperIndexRoute
   AppGroupsIndexRoute: typeof AppGroupsIndexRoute
   AppSecurityIndexRoute: typeof AppSecurityIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
   AppAuthApiConsentGrantsRoute: typeof AppAuthApiConsentGrantsRoute
   AppAuthApiKeysRoute: typeof AppAuthApiKeysRoute
@@ -1947,7 +1967,6 @@ interface AppRouteChildren {
   AppAuthLoginMethodsPasskeysRoute: typeof AppAuthLoginMethodsPasskeysRoute
   AppAuthLoginMethodsPasswordRoute: typeof AppAuthLoginMethodsPasswordRoute
   AppAuthLoginMethodsPasswordlessRoute: typeof AppAuthLoginMethodsPasswordlessRoute
-  AppAuthMfaRecoveryCodesRoute: typeof AppAuthMfaRecoveryCodesRoute
   AppAuthMfaSmsEmailRoute: typeof AppAuthMfaSmsEmailRoute
   AppAuthMfaTotpRoute: typeof AppAuthMfaTotpRoute
   AppDeveloperWebhooksIdRoute: typeof AppDeveloperWebhooksIdRoute
@@ -1975,12 +1994,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppSplatRoute: AppSplatRoute,
   AppActivityRoute: AppActivityRoute,
   AppAnalyticsRoute: AppAnalyticsRoute,
+  AppApplicationsRoute: AppApplicationsRoute,
+  AppAuthenticationRoute: AppAuthenticationRoute,
+  AppDirectoryRoute: AppDirectoryRoute,
   AppInvitationsRoute: AppInvitationsRoute,
   AppIndexRoute: AppIndexRoute,
   AppAuthSocialRoute: AppAuthSocialRoute,
   AppAuthorizationAbacRoute: AppAuthorizationAbacRoute,
   AppAuthorizationAccessTesterRoute: AppAuthorizationAccessTesterRoute,
-  AppAuthorizationAssistantRoute: AppAuthorizationAssistantRoute,
   AppAuthorizationAuditRoute: AppAuthorizationAuditRoute,
   AppAuthorizationBuilderRoute: AppAuthorizationBuilderRoute,
   AppAuthorizationExplorerRoute: AppAuthorizationExplorerRoute,
@@ -1999,8 +2020,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppDeveloperCredentialsRoute: AppDeveloperCredentialsRoute,
   AppDeveloperInfrastructureRoute: AppDeveloperInfrastructureRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
-  AppOrganizationsDomainsRoute: AppOrganizationsDomainsRoute,
-  AppOrganizationsMembersRoute: AppOrganizationsMembersRoute,
   AppOrganizationsTenantsRoute: AppOrganizationsTenantsRoute,
   AppSecurityAuditIntelligenceRoute: AppSecurityAuditIntelligenceRoute,
   AppSecurityAuditLogsRoute: AppSecurityAuditLogsRoute,
@@ -2010,14 +2029,16 @@ const AppRouteChildren: AppRouteChildren = {
   AppSecuritySessionsRoute: AppSecuritySessionsRoute,
   AppSettingsBillingRoute: AppSettingsBillingRoute,
   AppSettingsBrandingRoute: AppSettingsBrandingRoute,
+  AppSettingsQeetAiRoute: AppSettingsQeetAiRoute,
   AppUsersUserIdRoute: AppUsersUserIdRoute,
   AppUsersDeletedRoute: AppUsersDeletedRoute,
   AppUsersImportRoute: AppUsersImportRoute,
-  AppUsersInvitationsRoute: AppUsersInvitationsRoute,
   AppUsersSessionsRoute: AppUsersSessionsRoute,
   AppAuthorizationIndexRoute: AppAuthorizationIndexRoute,
+  AppDeveloperIndexRoute: AppDeveloperIndexRoute,
   AppGroupsIndexRoute: AppGroupsIndexRoute,
   AppSecurityIndexRoute: AppSecurityIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
   AppUsersIndexRoute: AppUsersIndexRoute,
   AppAuthApiConsentGrantsRoute: AppAuthApiConsentGrantsRoute,
   AppAuthApiKeysRoute: AppAuthApiKeysRoute,
@@ -2033,7 +2054,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppAuthLoginMethodsPasskeysRoute: AppAuthLoginMethodsPasskeysRoute,
   AppAuthLoginMethodsPasswordRoute: AppAuthLoginMethodsPasswordRoute,
   AppAuthLoginMethodsPasswordlessRoute: AppAuthLoginMethodsPasswordlessRoute,
-  AppAuthMfaRecoveryCodesRoute: AppAuthMfaRecoveryCodesRoute,
   AppAuthMfaSmsEmailRoute: AppAuthMfaSmsEmailRoute,
   AppAuthMfaTotpRoute: AppAuthMfaTotpRoute,
   AppDeveloperWebhooksIdRoute: AppDeveloperWebhooksIdRoute,

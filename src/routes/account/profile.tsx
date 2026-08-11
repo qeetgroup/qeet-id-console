@@ -13,6 +13,11 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Skeleton,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
@@ -21,8 +26,11 @@ import { Loader2Icon, UploadIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { api } from "@/lib/api";
-import { useMe } from "@/lib/auth";
+import { toast } from "sonner";
+
+import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
+import { ApiError, api } from "@/lib/api";
+import { useConfirmEmailChange, useMe, useStartEmailChange } from "@/lib/auth";
 
 export const Route = createFileRoute("/account/profile")({
   component: ProfilePage,
@@ -64,13 +72,48 @@ async function fileToAvatarDataUrl(file: File, size = AVATAR_PX): Promise<string
 }
 
 function ProfilePage() {
-  const { t } = useTranslation("account");
+  const { t, i18n } = useTranslation("account");
   const me = useMe();
   const fileRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState({ display_name: "" });
+  // Pending locale pick; undefined = show the persisted server value. Kept as a
+  // draft (not hydrated-once) so it never desyncs from the refetched profile.
+  const [localeDraft, setLocaleDraft] = useState<SupportedLanguage | undefined>(undefined);
   // undefined = unchanged · string = newly picked · "" = removed
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Email-change flow state: idle → "code" (after a code is sent to the new address).
+  const startEmail = useStartEmailChange();
+  const confirmEmail = useConfirmEmailChange();
+  const [emailStep, setEmailStep] = useState<"idle" | "code">("idle");
+  const [newEmail, setNewEmail] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+
+  const sendEmailCode = () => {
+    startEmail.mutate(newEmail.trim(), {
+      onSuccess: () => {
+        setEmailStep("code");
+        toast.success("Verification code sent to your new email.");
+      },
+      onError: (err) =>
+        toast.error(err instanceof ApiError ? err.message : "Could not start the email change."),
+    });
+  };
+
+  const confirmEmailChange = () => {
+    confirmEmail.mutate(emailCode, {
+      onSuccess: () => {
+        toast.success("Your email address has been updated.");
+        setEmailStep("idle");
+        setNewEmail("");
+        setEmailCode("");
+        void me.refetch();
+      },
+      onError: (err) =>
+        toast.error(err instanceof ApiError ? err.message : "That code is incorrect or expired."),
+    });
+  };
 
   // Hydrate the form once `me` resolves, then leave it alone so the
   // user's edits aren't blown away by background refetches.
@@ -82,11 +125,22 @@ function ProfilePage() {
     }
   }, [me.data, hydratedRef]);
 
+  // The persisted locale (from the profile), falling back to the active UI
+  // language. A pending pick (localeDraft) overrides it until the save lands.
+  const savedLocale = SUPPORTED_LANGUAGES.includes(me.data?.metadata?.locale as SupportedLanguage)
+    ? (me.data?.metadata?.locale as SupportedLanguage)
+    : undefined;
+  const effectiveLocale: SupportedLanguage =
+    localeDraft ?? savedLocale ?? (i18n.resolvedLanguage as SupportedLanguage) ?? "en";
+
   const saveM = useMutation({
-    mutationFn: (body: { display_name?: string; avatar_url?: string }) =>
+    mutationFn: (body: { display_name?: string; avatar_url?: string; locale?: string }) =>
       api<unknown>(`/v1/me`, { method: "PATCH", body }),
-    onSuccess: () => {
+    onSuccess: (_data, body) => {
       setAvatar(undefined); // fall back to the freshly-fetched server value
+      setLocaleDraft(undefined); // the refetched profile is now the source of truth
+      // Apply the chosen language immediately so the UI reflects the save.
+      if (body.locale) void i18n.changeLanguage(body.locale);
       void me.refetch();
     },
     meta: { successMessage: t("profile.toast.updated") },
@@ -138,6 +192,7 @@ function ProfilePage() {
                 saveM.mutate({
                   display_name: draft.display_name.trim() || undefined,
                   ...(avatar !== undefined ? { avatar_url: avatar } : {}),
+                  locale: effectiveLocale,
                 });
               }}
             >
@@ -199,8 +254,112 @@ function ProfilePage() {
 
                 <Field>
                   <FieldLabel htmlFor="email">{t("profile.email")}</FieldLabel>
-                  <Input id="email" value={me.data?.email ?? ""} disabled />
+                  {emailStep === "idle" ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Input
+                        id="email"
+                        className="max-w-xs"
+                        value={me.data?.email ?? ""}
+                        disabled
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setNewEmail("");
+                          setEmailStep("code");
+                        }}
+                      >
+                        {t("profile.emailChange", { defaultValue: "Change" })}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid max-w-sm gap-2 rounded-md border bg-muted/30 p-3">
+                      <Input
+                        type="email"
+                        autoComplete="email"
+                        placeholder={t("profile.emailNewPlaceholder", {
+                          defaultValue: "new@email.com",
+                        })}
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={sendEmailCode}
+                          disabled={startEmail.isPending || !newEmail.includes("@")}
+                        >
+                          {startEmail.isPending && <Loader2Icon className="animate-spin" />}
+                          {startEmail.isSuccess
+                            ? t("profile.emailResend", { defaultValue: "Resend code" })
+                            : t("profile.emailSend", { defaultValue: "Send code" })}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEmailStep("idle");
+                            setEmailCode("");
+                            startEmail.reset();
+                          }}
+                        >
+                          {t("cancel", { defaultValue: "Cancel", ns: "common" })}
+                        </Button>
+                      </div>
+                      {startEmail.isSuccess && (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            inputMode="numeric"
+                            placeholder="6-digit code"
+                            className="max-w-32"
+                            value={emailCode}
+                            onChange={(e) => setEmailCode(e.target.value)}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={confirmEmailChange}
+                            disabled={confirmEmail.isPending || emailCode.length < 6}
+                          >
+                            {confirmEmail.isPending && <Loader2Icon className="animate-spin" />}
+                            {t("profile.emailConfirm", { defaultValue: "Confirm" })}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <FieldDescription>{t("profile.emailHelp")}</FieldDescription>
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="locale">
+                    {t("profile.language", { defaultValue: "Language" })}
+                  </FieldLabel>
+                  <Select
+                    value={effectiveLocale}
+                    onValueChange={(v) => v && setLocaleDraft(v as SupportedLanguage)}
+                  >
+                    <SelectTrigger id="locale" className="w-full sm:w-64">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SUPPORTED_LANGUAGES.map((lng) => (
+                        <SelectItem key={lng} value={lng}>
+                          {LANGUAGE_LABELS[lng]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>
+                    {t("profile.languageHelp", {
+                      defaultValue: "Your preferred language for the console.",
+                    })}
+                  </FieldDescription>
                 </Field>
 
                 <Field>

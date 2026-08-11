@@ -4,9 +4,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
-import { api, API_BASE_URL, tokenStore } from "./api";
+import { ApiError, api, API_BASE_URL, tokenStore } from "./api";
 
 type TokenPair = {
   access_token: string;
@@ -130,6 +130,73 @@ export function useAcceptInvite() {
     },
   });
 }
+/** A pending invitation addressed to the signed-in user's email. */
+export interface ReceivedInvite {
+  id: string;
+  tenant_id: string;
+  tenant_name: string;
+  tenant_slug: string;
+  email: string;
+  role_id?: string | null;
+  expires_at: string;
+  created_at: string;
+}
+
+/**
+ * Pending invitations addressed to the current user's email. Lets an org-less
+ * user discover invites in-app instead of depending on the original email link.
+ */
+export function useMyInvitations() {
+  return useQuery({
+    queryKey: ["invites", "mine"],
+    // Degrade gracefully if the endpoint isn't deployed yet — this renders on the
+    // pre-org landing screen, so a 404/501 must not throw a red error toast.
+    queryFn: async (): Promise<{ items: ReceivedInvite[] }> => {
+      try {
+        return await api<{ items: ReceivedInvite[] }>("/v1/me/invites");
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
+          return { items: [] };
+        }
+        throw err;
+      }
+    },
+    meta: { silent: true },
+    retry: false,
+  });
+}
+
+/** Decline (dismiss) a pending invitation addressed to me. */
+export function useDeclineInvitation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (inviteId: string) =>
+      api<{ message: string }>(`/v1/me/invites/${inviteId}/decline`, { method: "POST", body: {} }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["invites", "mine"] }),
+    meta: { silent: true },
+  });
+}
+
+/**
+ * Accept a pending invitation with the *existing* signed-in account (no new
+ * user, no password) and switch into the newly-joined organization.
+ */
+export function useAcceptInvitation() {
+  return useMutation({
+    mutationFn: (inviteId: string) =>
+      api<TokenPair & { tenant_id?: string }>(`/v1/me/invites/${inviteId}/accept`, {
+        method: "POST",
+        body: {},
+      }),
+    onSuccess: (pair) => {
+      tokenStore.set(pair.access_token);
+      tokenStore.setRefresh(pair.refresh_token);
+      if (pair.tenant_id) tokenStore.setTenantId(pair.tenant_id);
+      if (typeof window !== "undefined") window.location.assign("/");
+    },
+  });
+}
+
 /**
  * Consume a magic-link token and exchange it for a Qeet ID session.
  * Called by the public /magic landing page. On success the access /
@@ -276,6 +343,58 @@ export function useStartEmailVerification() {
   });
 }
 
+/**
+ * Email-change flow: send a code to a *new* address, then confirm it to swap the
+ * login email. Backed by `POST /v1/me/email/change/{start,confirm}`.
+ */
+export function useStartEmailChange() {
+  return useMutation({
+    mutationFn: (email: string) =>
+      api<{ message: string }>("/v1/me/email/change/start", { method: "POST", body: { email } }),
+  });
+}
+
+export function useConfirmEmailChange() {
+  return useMutation({
+    mutationFn: (code: string) =>
+      api<{ message: string; email: string }>("/v1/me/email/change/confirm", {
+        method: "POST",
+        body: { code },
+      }),
+  });
+}
+
+/** Whether the current account has a password set (vs social/passkey-only). */
+export function usePasswordStatus() {
+  return useQuery({
+    queryKey: ["auth", "password-status"],
+    queryFn: async (): Promise<{ has_password: boolean }> => {
+      try {
+        return await api<{ has_password: boolean }>("/v1/auth/password");
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
+          return { has_password: true }; // assume password until proven otherwise
+        }
+        throw err;
+      }
+    },
+    meta: { silent: true },
+    staleTime: 60_000,
+  });
+}
+
+/**
+ * Change (or set) the signed-in user's password. Backed by `POST /v1/auth/password`;
+ * `current_password` is only required when the account already has one — a
+ * social/passkey account may set one by leaving it empty. Tenant-independent.
+ */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (in_: { current_password: string; new_password: string }) =>
+      api<{ message: string }>("/v1/auth/password", { method: "POST", body: in_ }),
+  });
+}
+
 export function useConfirmEmailVerification() {
   return useMutation({
     mutationFn: (in_: { userId: string; code: string }) =>
@@ -312,9 +431,30 @@ export function usePlatformSocialProviders() {
   });
 }
 
-/** Full backend URL to begin a platform social login (browser redirect). */
-export function socialStartUrl(provider: string): string {
-  return `${API_BASE_URL}/v1/social/${provider}/start`;
+/**
+ * Full backend URL to begin a platform social ceremony (browser redirect).
+ * intent="signup" permits just-in-time account creation; "login" (default)
+ * requires an existing account, so signing in never silently creates one.
+ */
+export function socialStartUrl(provider: string, intent: "login" | "signup" = "login"): string {
+  return `${API_BASE_URL}/v1/social/${provider}/start?intent=${intent}`;
+}
+
+/**
+ * Begin linking a social provider to the *current* signed-in account. Unlike
+ * login, this is authenticated: the server stashes our identity in the OAuth
+ * state (so the callback attaches the provider to us, never creating/switching
+ * an account) and returns the provider authorize URL to hand the browser to.
+ * The provider callback returns to /account/security.
+ */
+export async function startSocialLink(provider: string): Promise<void> {
+  const res = await api<{ authorize_url: string }>(`/v1/social/${provider}/link/start`, {
+    method: "POST",
+    body: {},
+  });
+  if (typeof window !== "undefined" && res.authorize_url) {
+    window.location.href = res.authorize_url;
+  }
 }
 
 /**
@@ -354,6 +494,36 @@ export function useLogout() {
       navigate({ to: "/sign-in" });
     },
   });
+}
+
+const IDLE_EVENTS = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click"] as const;
+
+/**
+ * Logs the user out after `timeoutMs` of inactivity (no mouse/keyboard/touch).
+ * Mount in any component that only renders while the user is authenticated.
+ */
+export function useIdleLogout(timeoutMs: number) {
+  const logout = useLogout();
+  // Keep a stable ref so the event-listener closure always calls the current mutate.
+  const mutateRef = useRef(logout.mutate);
+  mutateRef.current = logout.mutate;
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => mutateRef.current(), timeoutMs);
+    };
+
+    IDLE_EVENTS.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+
+    return () => {
+      clearTimeout(timer);
+      IDLE_EVENTS.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [timeoutMs]);
 }
 
 /** Returns the current tenant id stashed in localStorage. */
@@ -445,7 +615,9 @@ type Me = {
   email: string;
   display_name?: string | null;
   avatar_url?: string | null;
+  email_verified_at?: string | null;
   status: string;
+  metadata?: Record<string, unknown> | null;
 };
 
 /**

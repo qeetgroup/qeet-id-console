@@ -1,5 +1,6 @@
 import {
   Button,
+  buttonVariants,
   Card,
   CardContent,
   CardDescription,
@@ -18,6 +19,7 @@ import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ApiError } from "@/lib/api";
 import { useAcceptInvite } from "@/lib/auth";
 
 export const Route = createFileRoute("/_auth/invite/accept")({
@@ -90,7 +92,23 @@ function AcceptInvitePage() {
               />
               <FieldDescription>{t("invite.passwordHelp")}</FieldDescription>
             </Field>
-            {accept.error && <FieldError>{accept.error.message}</FieldError>}
+            {accept.error &&
+              (accept.error instanceof ApiError && accept.error.code === "invite.account_exists" ? (
+                <Field>
+                  <FieldDescription>
+                    You already have a Qeet ID with this email. Sign in, then accept this invitation
+                    from your dashboard.
+                  </FieldDescription>
+                  <Link
+                    to="/sign-in"
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
+                  >
+                    Sign in to accept
+                  </Link>
+                </Field>
+              ) : (
+                <FieldError>{accept.error.message}</FieldError>
+              ))}
             <Field>
               <Button type="submit" disabled={accept.isPending || password.length < 8}>
                 {accept.isPending && <Loader2Icon className="animate-spin" />}

@@ -19,9 +19,15 @@ import { useCallback, useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { useCapabilities } from "@/features/access-control/capability-provider";
 import { ActivityProvider, useActivity } from "@/features/activity/activity-provider";
+import {
+  ActivityTimeRange,
+  type DateRange,
+  presetToRange,
+} from "@/features/activity/components/activity-time-range";
 import { ActivityTimeline } from "@/features/activity/components/activity-timeline";
 import { EventDetailsDrawer } from "@/features/activity/components/event-details-drawer";
 import { LiveIndicator } from "@/features/activity/components/live-indicator";
+import { extractFilterOptions } from "@/features/activity/filter-manager";
 import type { ActivityEvent, ActivityFilters, Severity } from "@/features/activity/types";
 
 export const Route = createFileRoute("/_app/activity")({
@@ -29,31 +35,29 @@ export const Route = createFileRoute("/_app/activity")({
 });
 
 // ---------------------------------------------------------------------------
-// FilterBar field definitions (static; options driven by current event set)
+// FilterBar field definitions
+// Severity is a fixed catalog; the other facets are populated from live data so
+// operators pick from real values instead of typing blind. Every option field
+// is locked to the `is` operator — the only relation the filter engine applies
+// (see filter-manager) — so no misleading "is not" / "contains" is offered.
 // ---------------------------------------------------------------------------
 
+// Most-severe-first — the order operators triage by.
 const SEVERITY_OPTIONS: { label: string; value: string }[] = [
-  { label: "Info", value: "info" },
-  { label: "Success", value: "success" },
-  { label: "Warning", value: "warning" },
-  { label: "Error", value: "error" },
   { label: "Critical", value: "critical" },
+  { label: "Error", value: "error" },
+  { label: "Warning", value: "warning" },
+  { label: "Success", value: "success" },
+  { label: "Info", value: "info" },
 ];
 
-const FILTER_FIELDS: FilterField[] = [
-  {
-    key: "severity",
-    label: "Severity",
-    options: SEVERITY_OPTIONS,
-  },
-  { key: "category", label: "Category" },
-  { key: "type", label: "Event type" },
-  { key: "actor", label: "Actor" },
-  { key: "source", label: "Source" },
-  { key: "status", label: "Status" },
-  { key: "from", label: "From date" },
-  { key: "to", label: "To date" },
-];
+// Prettifies a raw facet value for display (e.g. "past_due" → "Past due").
+// Dotted event-type identifiers (e.g. "user.login") stay verbatim so they
+// remain recognizable to developers.
+function prettify(v: string): string {
+  if (v.includes(".")) return v;
+  return v.charAt(0).toUpperCase() + v.slice(1).replace(/[_-]/g, " ");
+}
 
 // ---------------------------------------------------------------------------
 // Inner page (requires ActivityProvider)
@@ -65,6 +69,7 @@ function ActivityPage() {
 
   const {
     filteredEvents,
+    allEvents,
     groups,
     unreadCount,
     paused,
@@ -87,6 +92,51 @@ function ActivityPage() {
 
   const [selectedEvent, setSelectedEvent] = useState<ActivityEvent | null>(null);
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
+  const [preset, setPreset] = useState("all");
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+
+  // Facet options come from the full (unfiltered) event set, so selecting one
+  // value never removes the rest from the picker. They grow as history loads
+  // and live events arrive. Severity is always the fixed catalog; status and
+  // source only appear once the data actually carries them.
+  const facetOptions = useMemo(() => extractFilterOptions(allEvents), [allEvents]);
+  const filterFields = useMemo<FilterField[]>(() => {
+    const asOptions = (values: string[]) => values.map((v) => ({ label: prettify(v), value: v }));
+    const fields: FilterField[] = [
+      { key: "severity", label: "Severity", options: SEVERITY_OPTIONS, operators: ["is"] },
+      {
+        key: "category",
+        label: "Category",
+        options: asOptions(facetOptions.categories),
+        operators: ["is"],
+      },
+      {
+        key: "type",
+        label: "Event type",
+        options: asOptions(facetOptions.types),
+        operators: ["is"],
+      },
+    ];
+    if (facetOptions.statuses.length > 0) {
+      fields.push({
+        key: "status",
+        label: "Status",
+        options: asOptions(facetOptions.statuses),
+        operators: ["is"],
+      });
+    }
+    if (facetOptions.sources.length > 0) {
+      fields.push({
+        key: "source",
+        label: "Source",
+        options: asOptions(facetOptions.sources),
+        operators: ["is"],
+      });
+    }
+    // Actor is a free-text substring match on name or id.
+    fields.push({ key: "actor", label: "Actor", operators: ["contains"] });
+    return fields;
+  }, [facetOptions]);
 
   // Derive prev/next for drawer navigation
   const selectedIndex = useMemo(
@@ -103,6 +153,8 @@ function ActivityPage() {
   const handleActiveFiltersChange = useCallback(
     (next: ActiveFilter[]) => {
       setActiveFilters(next);
+      // Time window (from/to) is owned by the ActivityTimeRange control, not
+      // the FilterBar — so it's deliberately left out of this patch.
       const patch: Partial<ActivityFilters> = {
         severity: [],
         category: [],
@@ -110,8 +162,6 @@ function ActivityPage() {
         actor: "",
         source: "",
         status: "",
-        from: "",
-        to: "",
       };
       for (const f of next) {
         switch (f.field) {
@@ -133,12 +183,6 @@ function ActivityPage() {
           case "status":
             patch.status = f.value;
             break;
-          case "from":
-            patch.from = f.value;
-            break;
-          case "to":
-            patch.to = f.value;
-            break;
         }
       }
       setFilters(patch);
@@ -153,8 +197,26 @@ function ActivityPage() {
     [setFilters],
   );
 
+  const handlePresetChange = useCallback(
+    (p: string) => {
+      setPreset(p);
+      setFilters(presetToRange(p, customRange));
+    },
+    [customRange, setFilters],
+  );
+
+  const handleCustomRangeChange = useCallback(
+    (range: DateRange | undefined) => {
+      setCustomRange(range);
+      setFilters(presetToRange("custom", range));
+    },
+    [setFilters],
+  );
+
   const handleResetFilters = useCallback(() => {
     setActiveFilters([]);
+    setPreset("all");
+    setCustomRange(undefined);
     resetFilters();
   }, [resetFilters]);
 
@@ -176,8 +238,8 @@ function ActivityPage() {
             title="Activity not available"
             description={
               <>
-                You don't have permission to view the activity feed. Contact your organization admin to
-                request the <code className="font-mono">audit.read</code> capability.
+                You don't have permission to view the activity feed. Contact your organization admin
+                to request the <code className="font-mono">audit.read</code> capability.
               </>
             }
           />
@@ -212,8 +274,15 @@ function ActivityPage() {
 
       {/* Controls bar */}
       <div className="enterprise-panel flex flex-col gap-3 p-3">
-        {/* Search + pause toggle */}
+        {/* Time range + search + live controls */}
         <div className="flex flex-wrap items-center gap-2">
+          <ActivityTimeRange
+            preset={preset}
+            customRange={customRange}
+            onPresetChange={handlePresetChange}
+            onCustomRangeChange={handleCustomRangeChange}
+          />
+
           <div className="relative min-w-48 flex-1">
             <SearchIcon
               className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
@@ -253,23 +322,26 @@ function ActivityPage() {
               Mark all read
             </Button>
           )}
+        </div>
 
-          {(activeFilters.length > 0 || filters.q) && (
+        <Separator />
+
+        {/* Faceted filter bar — options populated from live data */}
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterBar
+            className="flex-1"
+            fields={filterFields}
+            value={activeFilters}
+            onValueChange={handleActiveFiltersChange}
+            addLabel="Add filter"
+          />
+
+          {(activeFilters.length > 0 || filters.q || preset !== "all") && (
             <Button variant="ghost" size="sm" onClick={handleResetFilters}>
               Clear all
             </Button>
           )}
         </div>
-
-        <Separator />
-
-        {/* Faceted filter bar */}
-        <FilterBar
-          fields={FILTER_FIELDS}
-          value={activeFilters}
-          onValueChange={handleActiveFiltersChange}
-          addLabel="Add filter"
-        />
       </div>
 
       {/* Timeline */}

@@ -23,6 +23,7 @@ import {
 import { useState } from "react";
 
 import { useCapabilities } from "@/features/access-control/capability-provider";
+import { CHECKLIST_INTRO, CHECKLIST_ORDER } from "@/features/onboarding/onboarding-profile";
 import * as apiClient from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
 
@@ -189,18 +190,45 @@ function useSteps(): Step[] {
   ];
 }
 
+// Sort steps by the segmentation-tailored order for the tenant's use case;
+// unlisted steps keep their default position after the listed ones.
+function tailor(steps: Step[], useCase?: string): Step[] {
+  const order = useCase ? CHECKLIST_ORDER[useCase] : undefined;
+  if (!order) return steps;
+  const rank = (id: string) => {
+    const i = order.indexOf(id);
+    return i < 0 ? order.length : i;
+  };
+  return [...steps].sort((a, b) => rank(a.id) - rank(b.id));
+}
+
 /**
  * OnboardingChecklist nudges a fresh organization through the five most
  * common first-day tasks. It introspects existing API queries to mark
  * steps done — no backend coordination required. Auto-hides once
  * every step is complete; the user can also dismiss it explicitly
  * (state persisted in localStorage so it doesn't reappear on refresh).
+ * Step order + intro are tailored to the segmentation captured at org creation.
  */
 export function OnboardingChecklist() {
   const [dismissed, setDismissed] = useState(
     () => typeof window !== "undefined" && localStorage.getItem(DISMISS_KEY) === "1",
   );
-  const steps = useSteps();
+  const tenantId = useTenantId();
+  const tenantQ = useQuery({
+    queryKey: ["tenant", tenantId],
+    queryFn: () =>
+      apiClient.api<{ metadata?: { onboarding?: { use_case?: string } } | null }>(
+        `/v1/tenants/${tenantId}`,
+      ),
+    enabled: !!tenantId,
+    staleTime: 60_000,
+    meta: { silent: true },
+    retry: false,
+  });
+  const useCase = tenantQ.data?.metadata?.onboarding?.use_case;
+  const intro = useCase ? CHECKLIST_INTRO[useCase] : undefined;
+  const steps = tailor(useSteps(), useCase);
 
   if (dismissed) return null;
   if (steps.length === 0) return null;
@@ -247,8 +275,14 @@ export function OnboardingChecklist() {
         <div>
           <CardTitle className="text-sm font-semibold">Organization readiness</CardTitle>
           <CardDescription>
-            {stillLoading ? "Checking your setup…" : `${doneCount} of ${total} steps complete.`}
+            {intro ??
+              (stillLoading ? "Checking your setup…" : `${doneCount} of ${total} steps complete.`)}
           </CardDescription>
+          {intro && (
+            <CardDescription className="text-xs">
+              {stillLoading ? "Checking your setup…" : `${doneCount} of ${total} steps complete.`}
+            </CardDescription>
+          )}
           <div
             className="mt-3 h-1.5 w-48 max-w-full overflow-hidden rounded-full bg-muted"
             role="progressbar"

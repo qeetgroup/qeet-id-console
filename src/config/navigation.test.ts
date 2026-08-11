@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   filterNavigation,
+  findNavGroupForPath,
   getRequiredCapabilityForPath,
   navGroups,
   safeNavigation,
@@ -46,12 +47,21 @@ describe("console navigation state", () => {
       (permission) => permission === undefined || permission === "policy.read",
     );
     const authorization = visible.find((group) => group.label === "Authorization");
-    const accessModel = authorization?.items.find((item) => item.title === "Access model");
+    const models = authorization?.items.find((item) => item.title === "Models");
 
-    expect(accessModel?.items?.map((item) => item.title)).toEqual(["ABAC"]);
+    expect(models?.items?.map((item) => item.title)).toEqual(["ABAC"]);
     expect(
-      visible.find((group) => group.label === "Organization")?.items.map((item) => item.title),
-    ).toEqual(["Overview"]);
+      visible.find((group) => group.label === "Overview")?.items.map((item) => item.title),
+    ).toEqual(["Dashboard"]);
+  });
+
+  it("resolves the rail's active group by longest matching destination", () => {
+    expect(findNavGroupForPath(navGroups, "/")).toBe("Overview");
+    expect(findNavGroupForPath(navGroups, "/authorization/roles/42")).toBe("Authorization");
+    expect(findNavGroupForPath(navGroups, "/security/audit-logs")).toBe("Security");
+    // SCIM lives under Directory even though /auth/connections/oidc is Applications.
+    expect(findNavGroupForPath(navGroups, "/auth/connections/scim")).toBe("Directory");
+    expect(findNavGroupForPath(navGroups, "/unmapped-route")).toBeUndefined();
   });
 
   it("limits unresolved access navigation to overview and organization selection", () => {

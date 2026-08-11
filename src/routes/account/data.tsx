@@ -1,17 +1,32 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Field,
+  FieldLabel,
+  Input,
+} from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { DownloadIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { useConfirmDialog } from "@/components/confirm-dialog";
-import { api, tokenStore } from "@/lib/api";
+import { ApiError, api, tokenStore } from "@/lib/api";
+import { usePasswordStatus } from "@/lib/auth";
 
 export const Route = createFileRoute("/account/data")({ component: DataPage });
 
 function DataPage() {
   const { t } = useTranslation("account");
   const [confirmDialog, openConfirm] = useConfirmDialog();
+  const hasPassword = usePasswordStatus().data?.has_password ?? true;
+  const [password, setPassword] = useState("");
 
   // Self-service data export (§B9) and account erasure (§B10). Export returns
   // the user's portable data synchronously and downloads it as a JSON file.
@@ -36,12 +51,18 @@ function DataPage() {
   });
 
   const deleteM = useMutation({
-    mutationFn: () => api<void>("/v1/account/delete", { method: "POST" }),
+    mutationFn: () =>
+      api<void>("/v1/account/delete", {
+        method: "POST",
+        body: hasPassword ? { password } : {},
+      }),
     onSuccess: () => {
       tokenStore.clear();
       window.location.assign("/sign-up");
     },
-    meta: { successMessage: "Account deleted" },
+    onError: (err) =>
+      toast.error(err instanceof ApiError ? err.message : "Could not delete your account."),
+    meta: { silent: true },
   });
 
   return (
@@ -70,10 +91,22 @@ function DataPage() {
           </div>
           <CardDescription>{t("data.delete.description")}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-3">
+          {hasPassword && (
+            <Field className="max-w-xs">
+              <FieldLabel htmlFor="delete-password">Confirm your password</FieldLabel>
+              <Input
+                id="delete-password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Field>
+          )}
           <Button
             variant="outline"
-            className="border-rose-500/40 text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30"
+            className="w-fit border-rose-500/40 text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30"
             onClick={() =>
               openConfirm({
                 title: t("data.delete.confirm.title"),
@@ -83,7 +116,7 @@ function DataPage() {
                 onConfirm: () => deleteM.mutate(),
               })
             }
-            disabled={deleteM.isPending}
+            disabled={deleteM.isPending || (hasPassword && !password)}
           >
             <Trash2Icon /> {t("data.delete.button")}
           </Button>

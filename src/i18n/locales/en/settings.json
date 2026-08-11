@@ -145,6 +145,11 @@
     },
     "domains": {
       "description": "Bring your own domain for hosted login pages (e.g. auth.acme.com). The DNS + TLS provisioning wizard isn't built yet — for now we just store the hostname against the tenant's branding record.",
+      "overview": "Prove ownership of domains your members use, and — on paid plans — serve the hosted login from your own URL.",
+      "tabs": {
+        "verified": "Verified domains",
+        "custom": "Custom login domain"
+      },
       "pendingBanner": {
         "title": "DNS + TLS automation pending.",
         "description": "Saving here only persists the hostname. The 4-step DNS-verification + ACM-provisioning wizard is on the Phase 3 admin spec — see documents/IMPLEMENTATION-STATUS.md. Today you must front qeet-id with your own reverse proxy."

@@ -29,7 +29,15 @@ const GRID_COLS: Record<number, string> = {
  * Renders nothing at all when no providers are configured, so the auth forms
  * show only what actually works.
  */
-export function SocialButtons({ verb = "Continue" }: { verb?: string }) {
+export function SocialButtons({
+  verb = "Continue",
+  intent = "login",
+}: {
+  verb?: string;
+  // "signup" permits just-in-time account creation; "login" (default) requires
+  // an existing account.
+  intent?: "login" | "signup";
+}) {
   const q = usePlatformSocialProviders();
   const configured = q.data?.providers ?? [];
   const items = CATALOG.filter((p) => configured.includes(p.id));
@@ -47,7 +55,7 @@ export function SocialButtons({ verb = "Continue" }: { verb?: string }) {
             variant="outline"
             type="button"
             onClick={() => {
-              window.location.href = socialStartUrl(p.id);
+              window.location.href = socialStartUrl(p.id, intent);
             }}
           >
             {p.icon}

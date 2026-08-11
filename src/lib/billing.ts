@@ -28,17 +28,103 @@ export interface Subscription {
   current_period_start: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  trial_end: string | null;
 }
 
 export interface Invoice {
   id: string;
   plan_code: string;
   currency: string;
-  amount_minor: number;
+  amount_minor: number; // total charged (taxable + tax)
+  taxable_amount_minor: number;
+  tax_amount_minor: number;
+  tax_rate_bps: number;
+  tax_type: string; // none | gst_cgst_sgst | gst_igst | gst_zero_rated | vat_reverse_charge
+  place_of_supply: string;
   status: string;
   period_start: string;
   period_end: string;
   issued_at: string;
+}
+
+/**
+ * Entitlements is the tenant's resolved plan capability set — the source of
+ * truth for UI gating (mirrors the server's operations/entitlements catalog).
+ * `features` are booleans (locked → Upgrade); `limits` are numeric caps where
+ * -1 means unlimited.
+ */
+export interface Entitlements {
+  plan: string;
+  features: Record<string, boolean>;
+  limits: Record<string, number>;
+}
+
+export function useEntitlements() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["billing", "entitlements", tenantId],
+    enabled: !!tenantId,
+    queryFn: () => api<Entitlements>(`/v1/tenants/${tenantId}/entitlements`),
+  });
+}
+
+/**
+ * Current consumption per resource (seats/apps/api_keys/custom_roles), for the
+ * billing usage-vs-limits display. Separate from useEntitlements so the count
+ * queries only run on the billing page, not on every gated page load.
+ */
+export function useUsage() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["billing", "usage", tenantId],
+    enabled: !!tenantId,
+    queryFn: () =>
+      api<{ usage: Record<string, number> }>(`/v1/tenants/${tenantId}/entitlements/usage`),
+  });
+}
+
+/** A tenant's billing & tax details, carried onto invoices. */
+export interface BillingProfile {
+  legal_name: string;
+  billing_email: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  tax_id_type: "none" | "gstin" | "vat";
+  tax_id: string;
+}
+
+/** Start a no-card trial of a paid tier. Eligible only when the org has no subscription yet. */
+export function useStartTrial() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { plan_code: string; currency: string }) =>
+      api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
+  });
+}
+
+export function useBillingProfile() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["billing", "profile", tenantId],
+    enabled: !!tenantId,
+    queryFn: () => api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`),
+  });
+}
+
+export function useSaveBillingProfile() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: BillingProfile) =>
+      api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing", "profile", tenantId] }),
+  });
 }
 
 /** Format integer minor units in the given ISO currency, for any currency. */
@@ -111,7 +197,11 @@ export function useCheckout() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { plan_code: string; currency: string; country?: string }): Promise<CheckoutResult> => {
+    mutationFn: async (body: {
+      plan_code: string;
+      currency: string;
+      country?: string;
+    }): Promise<CheckoutResult> => {
       const base = `${window.location.origin}/settings/billing`;
       return api<CheckoutResult>(`/v1/tenants/${tenantId}/billing/checkout`, {
         method: "POST",

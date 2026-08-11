@@ -7,16 +7,27 @@ import {
   CardHeader,
   CardTitle,
   CopyableSecret,
+  DataState,
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
   OTPInput,
+  StatusPill,
 } from "@qeetrix/ui";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckIcon, CopyIcon, FingerprintIcon, Loader2Icon, ShieldCheckIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CopyIcon,
+  DownloadIcon,
+  FingerprintIcon,
+  KeyRoundIcon,
+  Loader2Icon,
+  RefreshCwIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,7 +37,12 @@ import { useConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { StepUpDialog } from "@/components/step-up-dialog";
 import { ApiError, api } from "@/lib/api";
-import { isStepUpRequired } from "@/lib/mfa";
+import {
+  isStepUpRequired,
+  useRecoveryStatus,
+  useRegenerateRecoveryCodes,
+  useTotpStatus,
+} from "@/lib/mfa";
 
 export const Route = createFileRoute("/_app/auth/mfa/totp")({
   component: MfaTotpPage,
@@ -39,8 +55,13 @@ type Stage = "idle" | "enrolling" | "confirmed";
 
 function MfaTotpPage() {
   const { t } = useTranslation("auth");
+  const qc = useQueryClient();
+  const statusQ = useTotpStatus();
+  const recoveryQ = useRecoveryStatus();
+  const regenM = useRegenerateRecoveryCodes();
   const [confirmDialog, openConfirm] = useConfirmDialog();
   const [stage, setStage] = useState<Stage>("idle");
+  const [copied, setCopied] = useState(false);
   const [enrollment, setEnrollment] = useState<EnrollStart | null>(null);
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [code, setCode] = useState("");
@@ -88,6 +109,9 @@ function MfaTotpPage() {
     onSuccess: (res) => {
       setEnrollment(res);
       setStage("enrolling");
+      // enroll/start rotated the secret and cleared confirmed_at server-side;
+      // drop the cached status so a cancel back to idle reflects reality.
+      void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
     },
   });
 
@@ -100,10 +124,16 @@ function MfaTotpPage() {
     onSuccess: (res) => {
       setRecoveryCodes(res.recovery_codes);
       setStage("confirmed");
+      void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
+      void qc.invalidateQueries({ queryKey: ["mfa", "recovery-codes"] });
     },
   });
 
+  // Both "disable" and "regenerate recovery codes" are RequireRecentMFA-gated,
+  // so a single step-up dialog serves both — we track which action triggered it
+  // to retry the right one (and label the prompt) after re-verification.
   const [stepUpOpen, setStepUpOpen] = useState(false);
+  const [stepUpAction, setStepUpAction] = useState<"disable" | "regenerate">("disable");
 
   const disableM = useMutation({
     mutationFn: () => api<void>("/v1/mfa/totp", { method: "DELETE" }),
@@ -111,6 +141,9 @@ function MfaTotpPage() {
       setStage("idle");
       setEnrollment(null);
       setRecoveryCodes(null);
+      setCode("");
+      void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
+      void qc.invalidateQueries({ queryKey: ["mfa", "recovery-codes"] });
     },
     // silent: a 403 step_up_required opens the step-up dialog instead of a
     // dead-end toast (QID-17); success/other errors are toasted below.
@@ -122,11 +155,46 @@ function MfaTotpPage() {
     disableM.mutate(undefined, {
       onSuccess: () => toast.success(t("mfa.totp.toastDisabled")),
       onError: (err) => {
-        if (isStepUpRequired(err)) setStepUpOpen(true);
-        else toast.error(err instanceof ApiError ? err.message : t("mfa.totp.toastError"));
+        if (isStepUpRequired(err)) {
+          setStepUpAction("disable");
+          setStepUpOpen(true);
+        } else {
+          toast.error(err instanceof ApiError ? err.message : t("mfa.totp.toastError"));
+        }
       },
     });
   }
+
+  // Regenerating recovery codes is also RequireRecentMFA-gated (QID-17).
+  function regenerate() {
+    regenM.mutate(undefined, {
+      onSuccess: () => toast.success(t("mfa.totp.recovery.toastSuccess")),
+      onError: (err) => {
+        if (isStepUpRequired(err)) {
+          setStepUpAction("regenerate");
+          setStepUpOpen(true);
+        } else {
+          toast.error(err instanceof ApiError ? err.message : t("mfa.totp.recovery.toastError"));
+        }
+      },
+    });
+  }
+
+  const copyAll = (codes: string[]) => {
+    void navigator.clipboard?.writeText(codes.join("\n"));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
+  };
+
+  const download = (codes: string[]) => {
+    const blob = new Blob([`${codes.join("\n")}\n`], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "qeet-id-recovery-codes.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -134,29 +202,179 @@ function MfaTotpPage() {
       <PageHeader description={t("mfa.totp.description")} />
 
       {stage === "idle" && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">{t("mfa.totp.idle.title")}</CardTitle>
-                <CardDescription>{t("mfa.totp.idle.subtitle")}</CardDescription>
-              </div>
-              <FingerprintIcon className="size-6 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>{t("mfa.totp.idle.bullet1")}</li>
-              <li>{t("mfa.totp.idle.bullet2")}</li>
-              <li>{t("mfa.totp.idle.bullet3")}</li>
-            </ul>
-            {startM.error && <FieldError>{(startM.error as ApiError).message}</FieldError>}
-            <Button onClick={() => startM.mutate()} disabled={startM.isPending}>
-              {startM.isPending && <Loader2Icon className="animate-spin" />}
-              {startM.isPending ? t("mfa.totp.idle.generatingBtn") : t("mfa.totp.idle.beginBtn")}
-            </Button>
-          </CardContent>
-        </Card>
+        <DataState
+          isLoading={statusQ.isLoading}
+          isError={statusQ.isError}
+          error={statusQ.error}
+          isEmpty={false}
+          skeletonRows={2}
+        >
+          {statusQ.data?.enrolled ? (
+            // Already enrolled — reflect the server state instead of re-offering
+            // enrollment. Re-running start would rotate the secret and break the
+            // user's existing authenticator, so replacing is gated by a confirm.
+            // Recovery codes are managed inline here (not a separate tab) since
+            // they exist only to back this factor and are wiped when it's removed.
+            <>
+              <Card className="border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/20">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">
+                        {t("mfa.totp.active.title")}{" "}
+                        <Badge variant="success" className="ml-2">
+                          {t("mfa.totp.active.activeBadge")}
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription>{t("mfa.totp.active.subtitle")}</CardDescription>
+                    </div>
+                    <ShieldCheckIcon className="size-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">{t("mfa.totp.active.manageHint")}</p>
+                  {startM.error && <FieldError>{(startM.error as ApiError).message}</FieldError>}
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        openConfirm({
+                          title: t("mfa.totp.active.replaceConfirmTitle"),
+                          description: t("mfa.totp.active.replaceConfirmDescription"),
+                          confirmLabel: t("mfa.totp.active.replaceConfirmLabel"),
+                          onConfirm: () => startM.mutate(),
+                        })
+                      }
+                      disabled={startM.isPending}
+                    >
+                      {startM.isPending && <Loader2Icon className="animate-spin" />}
+                      <FingerprintIcon /> {t("mfa.totp.active.replaceBtn")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        openConfirm({
+                          title: t("mfa.totp.confirmed.disableConfirmTitle"),
+                          description: t("mfa.totp.confirmed.disableConfirmDescription"),
+                          variant: "destructive",
+                          confirmLabel: t("mfa.totp.confirmed.disableConfirmLabel"),
+                          onConfirm: disableTotp,
+                        })
+                      }
+                      disabled={disableM.isPending}
+                    >
+                      {disableM.isPending && <Loader2Icon className="animate-spin" />}
+                      {t("mfa.totp.active.disableBtn")}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">{t("mfa.totp.recovery.title")}</CardTitle>
+                      <CardDescription>{t("mfa.totp.recovery.description")}</CardDescription>
+                    </div>
+                    <KeyRoundIcon className="size-5 text-muted-foreground" />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {recoveryQ.data && (
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl font-semibold tracking-tight">
+                        {recoveryQ.data.remaining}
+                        <span className="text-base font-normal text-muted-foreground">
+                          {" "}
+                          / {recoveryQ.data.total || 10}
+                        </span>
+                      </div>
+                      <StatusPill kind={recoveryQ.data.remaining <= 3 ? "warning" : "success"}>
+                        {recoveryQ.data.remaining <= 3
+                          ? t("mfa.totp.recovery.low")
+                          : t("mfa.totp.recovery.healthy")}
+                      </StatusPill>
+                    </div>
+                  )}
+                  {regenM.data?.recovery_codes && regenM.data.recovery_codes.length > 0 && (
+                    <div className="space-y-3 rounded-md border border-primary p-4">
+                      <p className="text-sm text-muted-foreground">
+                        {t("mfa.totp.recovery.freshDescription")}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 font-mono text-sm">
+                        {regenM.data.recovery_codes.map((rc) => (
+                          <code
+                            key={rc}
+                            className="rounded-md border bg-background px-3 py-2 text-center"
+                          >
+                            {rc}
+                          </code>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyAll(regenM.data?.recovery_codes ?? [])}
+                        >
+                          {copied ? <CheckIcon /> : <CopyIcon />}
+                          {copied
+                            ? t("mfa.totp.recovery.copiedBtn")
+                            : t("mfa.totp.recovery.copyAllBtn")}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => download(regenM.data?.recovery_codes ?? [])}
+                        >
+                          <DownloadIcon /> {t("mfa.totp.recovery.downloadBtn")}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={regenerate}
+                    disabled={regenM.isPending}
+                  >
+                    <RefreshCwIcon className={regenM.isPending ? "animate-spin" : ""} />
+                    {(recoveryQ.data?.total ?? 0) > 0
+                      ? t("mfa.totp.recovery.regenerateBtn")
+                      : t("mfa.totp.recovery.generateBtn")}
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">{t("mfa.totp.idle.title")}</CardTitle>
+                    <CardDescription>{t("mfa.totp.idle.subtitle")}</CardDescription>
+                  </div>
+                  <FingerprintIcon className="size-6 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>{t("mfa.totp.idle.bullet1")}</li>
+                  <li>{t("mfa.totp.idle.bullet2")}</li>
+                  <li>{t("mfa.totp.idle.bullet3")}</li>
+                </ul>
+                {startM.error && <FieldError>{(startM.error as ApiError).message}</FieldError>}
+                <Button onClick={() => startM.mutate()} disabled={startM.isPending}>
+                  {startM.isPending && <Loader2Icon className="animate-spin" />}
+                  {startM.isPending
+                    ? t("mfa.totp.idle.generatingBtn")
+                    : t("mfa.totp.idle.beginBtn")}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </DataState>
       )}
 
       {stage === "enrolling" && enrollment && (
@@ -323,8 +541,12 @@ function MfaTotpPage() {
       <StepUpDialog
         open={stepUpOpen}
         onOpenChange={setStepUpOpen}
-        actionLabel={t("mfa.totp.stepUpLabel")}
-        onVerified={disableTotp}
+        actionLabel={
+          stepUpAction === "regenerate"
+            ? t("mfa.totp.recovery.stepUpLabel")
+            : t("mfa.totp.stepUpLabel")
+        }
+        onVerified={stepUpAction === "regenerate" ? regenerate : disableTotp}
       />
     </div>
   );

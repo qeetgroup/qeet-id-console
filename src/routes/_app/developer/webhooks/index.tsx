@@ -45,8 +45,10 @@ import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/components/confirm-dialog";
 import { ListToolbar, SortHeader } from "@/components/data-table";
 import { PageHeader } from "@/components/page-header";
+import { FeatureGate } from "@/features/billing/components/upgrade-gate";
 import { type ApiError, api } from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
+import { useEntitlements } from "@/lib/billing";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
 import { useListView } from "@/lib/list-view";
 
@@ -132,6 +134,8 @@ function WebhooksPage() {
     meta: { successMessage: t("webhooks.toast.testQueued") },
   });
 
+  const webhooksLocked = useEntitlements().data?.features.webhooks === false;
+
   return (
     <div className="flex min-w-0 flex-col gap-4">
       {confirmDialog}
@@ -148,163 +152,173 @@ function WebhooksPage() {
               <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
               {t("webhooks.refresh")}
             </Button>
-            <Button size="sm" onClick={() => setCreating(true)}>
-              <PlusIcon /> {t("webhooks.new")}
-            </Button>
+            {!webhooksLocked && (
+              <Button size="sm" onClick={() => setCreating(true)}>
+                <PlusIcon /> {t("webhooks.new")}
+              </Button>
+            )}
           </>
         }
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("webhooks.list.title")}</CardTitle>
-          <CardDescription>
-            {t("webhooks.list.count", {
-              shown: rows.length,
-              total: items.length,
-            })}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ListToolbar
-            search={lv.search}
-            onSearchChange={lv.setSearch}
-            searchPlaceholder={t("webhooks.list.searchPlaceholder")}
-            filters={[
-              {
-                id: "status",
-                label: t("webhooks.list.filters.status.label"),
-                value: lv.filters.status ?? "",
-                options: [
-                  {
-                    label: t("webhooks.list.filters.status.active"),
-                    value: "active",
-                  },
-                  {
-                    label: t("webhooks.list.filters.status.disabled"),
-                    value: "disabled",
-                  },
-                ],
-                onChange: (v) => lv.setFilter("status", v),
-              },
-            ]}
-            columns={[
-              { id: "events", label: t("webhooks.list.columns.events") },
-              { id: "created", label: t("webhooks.list.columns.created") },
-            ]}
-            isColumnVisible={lv.isVisible}
-            onToggleColumn={lv.toggleColumn}
-            density={lv.density}
-            onDensityChange={lv.setDensity}
-            onExport={(fmt) =>
-              fmt === "csv"
-                ? exportToCsv("webhooks", rows, webhookCsvColumns)
-                : exportToJson("webhooks", rows)
-            }
-            exportDisabled={rows.length === 0}
-            hasActiveFilters={lv.hasActiveFilters}
-            onClear={lv.clear}
-          />
-          <DataState
-            isLoading={listQ.isLoading}
-            isError={listQ.isError}
-            error={listQ.error}
-            isEmpty={rows.length === 0}
-            emptyIcon={WebhookIcon}
-            emptyTitle={
-              lv.hasActiveFilters ? t("webhooks.list.emptyFiltered") : t("webhooks.list.empty")
-            }
-            skeletonRows={3}
-          >
-            {listQ.data && (
-              <Table className={denseCls}>
-                <TableHeader>
-                  <TableRow>
-                    <SortHeader columnKey="url" sort={lv.sort} onToggle={lv.toggleSort}>
-                      {t("webhooks.list.columns.url")}
-                    </SortHeader>
-                    {lv.isVisible("events") && (
-                      <TableHead>{t("webhooks.list.columns.events")}</TableHead>
-                    )}
-                    <TableHead>{t("webhooks.list.columns.status")}</TableHead>
-                    {lv.isVisible("created") && (
-                      <SortHeader columnKey="created" sort={lv.sort} onToggle={lv.toggleSort}>
-                        {t("webhooks.list.columns.created")}
+      <FeatureGate
+        feature="webhooks"
+        title="Webhooks are a paid feature"
+        description="Receive signed HTTP callbacks for events like user.created and session.revoked. Upgrade to Starter to create webhook subscriptions."
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("webhooks.list.title")}</CardTitle>
+            <CardDescription>
+              {t("webhooks.list.count", {
+                shown: rows.length,
+                total: items.length,
+              })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <ListToolbar
+              search={lv.search}
+              onSearchChange={lv.setSearch}
+              searchPlaceholder={t("webhooks.list.searchPlaceholder")}
+              filters={[
+                {
+                  id: "status",
+                  label: t("webhooks.list.filters.status.label"),
+                  value: lv.filters.status ?? "",
+                  options: [
+                    {
+                      label: t("webhooks.list.filters.status.active"),
+                      value: "active",
+                    },
+                    {
+                      label: t("webhooks.list.filters.status.disabled"),
+                      value: "disabled",
+                    },
+                  ],
+                  onChange: (v) => lv.setFilter("status", v),
+                },
+              ]}
+              columns={[
+                { id: "events", label: t("webhooks.list.columns.events") },
+                { id: "created", label: t("webhooks.list.columns.created") },
+              ]}
+              isColumnVisible={lv.isVisible}
+              onToggleColumn={lv.toggleColumn}
+              density={lv.density}
+              onDensityChange={lv.setDensity}
+              onExport={(fmt) =>
+                fmt === "csv"
+                  ? exportToCsv("webhooks", rows, webhookCsvColumns)
+                  : exportToJson("webhooks", rows)
+              }
+              exportDisabled={rows.length === 0}
+              hasActiveFilters={lv.hasActiveFilters}
+              onClear={lv.clear}
+            />
+            <DataState
+              isLoading={listQ.isLoading}
+              isError={listQ.isError}
+              error={listQ.error}
+              isEmpty={rows.length === 0}
+              emptyIcon={WebhookIcon}
+              emptyTitle={
+                lv.hasActiveFilters ? t("webhooks.list.emptyFiltered") : t("webhooks.list.empty")
+              }
+              skeletonRows={3}
+            >
+              {listQ.data && (
+                <Table className={denseCls}>
+                  <TableHeader>
+                    <TableRow>
+                      <SortHeader columnKey="url" sort={lv.sort} onToggle={lv.toggleSort}>
+                        {t("webhooks.list.columns.url")}
                       </SortHeader>
-                    )}
-                    <TableHead className="text-right">
-                      {t("webhooks.list.columns.actions")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((w) => (
-                    <TableRow key={w.id}>
-                      <TableCell className="font-mono text-xs">
-                        <Link
-                          to="/developer/webhooks/$id"
-                          params={{ id: w.id }}
-                          className="hover:underline"
-                        >
-                          {w.url}
-                        </Link>
-                      </TableCell>
                       {lv.isVisible("events") && (
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {w.events.slice(0, 3).map((e) => (
-                              <Badge key={e} variant="muted">
-                                {e}
-                              </Badge>
-                            ))}
-                            {w.events.length > 3 && (
-                              <Badge variant="muted">+{w.events.length - 3}</Badge>
-                            )}
-                          </div>
-                        </TableCell>
+                        <TableHead>{t("webhooks.list.columns.events")}</TableHead>
                       )}
-                      <TableCell>
-                        <StatusPill status={w.disabled_at ? "disabled" : "active"} />
-                      </TableCell>
+                      <TableHead>{t("webhooks.list.columns.status")}</TableHead>
                       {lv.isVisible("created") && (
-                        <TableCell>
-                          <TimeSince value={w.created_at} />
-                        </TableCell>
+                        <SortHeader columnKey="created" sort={lv.sort} onToggle={lv.toggleSort}>
+                          {t("webhooks.list.columns.created")}
+                        </SortHeader>
                       )}
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => testM.mutate(w.id)}
-                          disabled={!!w.disabled_at || testM.isPending}
-                        >
-                          <PlayIcon /> {t("webhooks.table.test")}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            openConfirm({
-                              title: t("webhooks.confirm.disableTitle"),
-                              description: t("webhooks.confirm.disableDescription", { url: w.url }),
-                              variant: "destructive",
-                              confirmLabel: t("webhooks.confirm.disableLabel"),
-                              onConfirm: () => disableM.mutate(w.id),
-                            })
-                          }
-                          disabled={!!w.disabled_at || disableM.isPending}
-                        >
-                          <Trash2Icon /> {t("webhooks.table.disable")}
-                        </Button>
-                      </TableCell>
+                      <TableHead className="text-right">
+                        {t("webhooks.list.columns.actions")}
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </DataState>
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((w) => (
+                      <TableRow key={w.id}>
+                        <TableCell className="font-mono text-xs">
+                          <Link
+                            to="/developer/webhooks/$id"
+                            params={{ id: w.id }}
+                            className="hover:underline"
+                          >
+                            {w.url}
+                          </Link>
+                        </TableCell>
+                        {lv.isVisible("events") && (
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {w.events.slice(0, 3).map((e) => (
+                                <Badge key={e} variant="muted">
+                                  {e}
+                                </Badge>
+                              ))}
+                              {w.events.length > 3 && (
+                                <Badge variant="muted">+{w.events.length - 3}</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <StatusPill status={w.disabled_at ? "disabled" : "active"} />
+                        </TableCell>
+                        {lv.isVisible("created") && (
+                          <TableCell>
+                            <TimeSince value={w.created_at} />
+                          </TableCell>
+                        )}
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => testM.mutate(w.id)}
+                            disabled={!!w.disabled_at || testM.isPending}
+                          >
+                            <PlayIcon /> {t("webhooks.table.test")}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              openConfirm({
+                                title: t("webhooks.confirm.disableTitle"),
+                                description: t("webhooks.confirm.disableDescription", {
+                                  url: w.url,
+                                }),
+                                variant: "destructive",
+                                confirmLabel: t("webhooks.confirm.disableLabel"),
+                                onConfirm: () => disableM.mutate(w.id),
+                              })
+                            }
+                            disabled={!!w.disabled_at || disableM.isPending}
+                          >
+                            <Trash2Icon /> {t("webhooks.table.disable")}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </DataState>
+          </CardContent>
+        </Card>
+      </FeatureGate>
 
       <CreateWebhookSheet
         open={creating}

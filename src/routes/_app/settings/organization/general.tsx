@@ -20,14 +20,16 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { LogoField } from "@/components/logo-field";
 import { PageHeader } from "@/components/page-header";
 import { type ApiError, api } from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
+import { REGIONS } from "@/lib/regions";
 
 export const Route = createFileRoute("/_app/settings/organization/general")({
   component: WorkspaceGeneralPage,
@@ -40,6 +42,7 @@ type Tenant = {
   status: "active" | "suspended" | "deleted";
   plan: string;
   region: string;
+  logo_url: string;
   metadata: Record<string, unknown>;
   created_at: string;
 };
@@ -62,7 +65,9 @@ function WorkspaceGeneralPage() {
   }, [tenantQ.data]);
 
   const saveM = useMutation({
-    mutationFn: (body: { name?: string; plan?: string; region?: string; status?: string }) =>
+    // plan is intentionally omitted — it's changed through billing, not here
+    // (the backend no longer accepts plan on PATCH /v1/tenants).
+    mutationFn: (body: { name?: string; region?: string; status?: string; logo_url?: string }) =>
       api<Tenant>(`/v1/tenants/${tenantId}`, { method: "PATCH", body }),
     onSuccess: () => {
       setSavedAt(new Date());
@@ -89,9 +94,9 @@ function WorkspaceGeneralPage() {
             e.preventDefault();
             saveM.mutate({
               name: draft.name,
-              plan: draft.plan,
               region: draft.region,
               status: draft.status,
+              logo_url: draft.logo_url ?? "",
             });
           }}
         >
@@ -120,38 +125,49 @@ function WorkspaceGeneralPage() {
                         required
                       />
                     </Field>
+                    <Field>
+                      <FieldLabel>Logo</FieldLabel>
+                      <LogoField
+                        value={draft.logo_url ?? ""}
+                        onChange={(v) => setDraft((d) => ({ ...d, logo_url: v }))}
+                        hint="Shown across the console. Leave empty to use an initials avatar."
+                      />
+                    </Field>
                     <Field className="grid grid-cols-2 gap-4">
                       <Field>
                         <FieldLabel>{t("workspace.general.profile.plan")}</FieldLabel>
-                        <Select
-                          value={draft.plan ?? "free"}
-                          onValueChange={(v) => setDraft((d) => ({ ...d, plan: v ?? "free" }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="free">
-                              {t("workspace.general.profile.plans.free")}
-                            </SelectItem>
-                            <SelectItem value="pro">
-                              {t("workspace.general.profile.plans.pro")}
-                            </SelectItem>
-                            <SelectItem value="enterprise">
-                              {t("workspace.general.profile.plans.enterprise")}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Input
+                          value={(draft.plan ?? "free").replace(/^./, (c) => c.toUpperCase())}
+                          readOnly
+                          disabled
+                        />
+                        <FieldDescription>
+                          Manage your plan in{" "}
+                          <Link to="/settings/billing" className="underline">
+                            billing
+                          </Link>
+                          .
+                        </FieldDescription>
                       </Field>
                       <Field>
                         <FieldLabel htmlFor="region">
                           {t("workspace.general.profile.region")}
                         </FieldLabel>
-                        <Input
-                          id="region"
+                        <Select
                           value={draft.region ?? ""}
-                          onChange={(e) => setDraft((d) => ({ ...d, region: e.target.value }))}
-                        />
+                          onValueChange={(v) => v && setDraft((d) => ({ ...d, region: v }))}
+                        >
+                          <SelectTrigger id="region">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {REGIONS.map((r) => (
+                              <SelectItem key={r.value} value={r.value}>
+                                {r.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </Field>
                     </Field>
                     <Field>

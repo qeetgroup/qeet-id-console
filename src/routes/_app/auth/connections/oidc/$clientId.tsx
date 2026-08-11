@@ -30,6 +30,7 @@ import { ArrowLeftIcon, KeySquareIcon, Loader2Icon, RefreshCwIcon, Trash2Icon } 
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
+import { OidcQuickstart } from "@/features/oidc/components/oidc-quickstart";
 import type { ApiError } from "@/lib/api";
 import {
   type OidcClient,
@@ -256,6 +257,10 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
             </Button>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="lg:col-span-3">
+        <OidcQuickstart client={client} />
       </div>
 
       <AlertDialog

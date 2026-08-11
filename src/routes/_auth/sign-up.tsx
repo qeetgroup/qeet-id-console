@@ -43,7 +43,9 @@ function SignupPage() {
         email={pending.email}
         isLoading={confirmVerify.isPending}
         isResending={startVerify.isPending}
-        errorMessage={confirmVerify.error?.message}
+        // Surface send failures too — otherwise a failed initial/resend code
+        // send leaves the user staring at an OTP box with no code and no error.
+        errorMessage={confirmVerify.error?.message ?? startVerify.error?.message}
         onResend={() => startVerify.mutate(pending.userId)}
         onSubmit={(code) =>
           confirmVerify.mutate(

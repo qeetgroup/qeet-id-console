@@ -89,7 +89,7 @@
       "title": "Create an agent",
       "description": "The secret is shown once. Scopes are space-separated; token lifetime is clamped to 60–3600s. You’re recorded as the agent’s sponsor — its accountable human owner — and can transfer that later if it changes hands.",
       "name": "Name",
-      "namePlaceholder": "support-copilot",
+      "namePlaceholder": "support-assistant",
       "scopes": "Scopes",
       "scopesPlaceholder": "tickets:read kb:read",
       "ttl": "Token TTL (s)",

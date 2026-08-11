@@ -23,7 +23,7 @@ import {
   UserIcon,
 } from "lucide-react";
 
-import { useLogout, useMe } from "@/lib/auth";
+import { useLogout, useMe, useTenantId } from "@/lib/auth";
 
 function initials(name: string) {
   return name
@@ -38,6 +38,9 @@ function initials(name: string) {
 export function HeaderUser() {
   const meQ = useMe();
   const logout = useLogout();
+  // Org-scoped destinations 403 without a selected organization. Hide them for
+  // an org-less user so the menu never dead-ends (they see only self-service).
+  const hasOrg = !!useTenantId();
 
   const name = meQ.data?.display_name || meQ.data?.email?.split("@")[0] || "—";
   const email = meQ.data?.email ?? "";
@@ -85,22 +88,26 @@ export function HeaderUser() {
             <UserIcon />
             My account
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/settings/organization/general" />}>
-            <BadgeCheckIcon />
-            Organization settings
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/auth/mfa/totp" />}>
+          <DropdownMenuItem render={<Link to="/account/security" />}>
             <ShieldCheckIcon />
             Security & MFA
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/auth/api/keys" />}>
-            <KeyRoundIcon />
-            API Keys
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link to="/settings/billing" />}>
-            <CreditCardIcon />
-            Billing
-          </DropdownMenuItem>
+          {hasOrg && (
+            <>
+              <DropdownMenuItem render={<Link to="/settings/organization/general" />}>
+                <BadgeCheckIcon />
+                Organization settings
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/auth/api/keys" />}>
+                <KeyRoundIcon />
+                API Keys
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/settings/billing" />}>
+                <CreditCardIcon />
+                Billing
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem

@@ -1,7 +1,7 @@
 import { Button, Separator, SidebarTrigger } from "@qeetrix/ui";
 import { KeyboardIcon, SearchIcon } from "lucide-react";
 
-import { CopilotTrigger } from "@/features/copilot";
+import { QeetAITrigger } from "@/features/qeetai";
 
 import { DynamicBreadcrumb } from "./dynamic-breadcrumb";
 import { HeaderUser } from "./header-user";
@@ -40,7 +40,7 @@ export function ConsoleHeader({
       >
         <SearchIcon className="size-4 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">Search the control plane</span>
-        <kbd className="console-keycap">⌘K</kbd>
+        <kbd className="console-keycap">⌘ + K</kbd>
       </button>
 
       <div className="ms-auto flex shrink-0 items-center gap-0.5">
@@ -64,7 +64,7 @@ export function ConsoleHeader({
         >
           <KeyboardIcon />
         </Button>
-        <CopilotTrigger />
+        <QeetAITrigger />
         <NotificationsInbox />
         <div className="hidden xl:block">
           <LanguageSwitcher />

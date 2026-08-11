@@ -5,16 +5,18 @@ import { useCallback, useEffect, useState } from "react";
 import { env } from "@/env";
 import { CapabilityProvider, useCapabilities } from "@/features/access-control/capability-provider";
 import { AccessBoundary } from "@/features/access-control/components/access-boundary";
-import { CopilotLauncher, CopilotProvider, CopilotWorkspace } from "@/features/copilot";
 import { AppSidebar } from "@/features/dashboard/components/app-sidebar";
 import { CommandPaletteLauncher } from "@/features/dashboard/components/command-palette-launcher";
 import { ConsoleHeader } from "@/features/dashboard/components/console-header";
 import { ImpersonationBanner } from "@/features/dashboard/components/impersonation-banner";
 import { ShortcutsDialog } from "@/features/dashboard/components/shortcuts-dialog";
-import { isAuthenticated } from "@/lib/auth";
+import { VerifyEmailBanner } from "@/features/dashboard/components/verify-email-banner";
+import { QeetAILauncher, QeetAIRuntimeProvider, QeetAIWorkspace } from "@/features/qeetai";
+import { isAuthenticated, useIdleLogout } from "@/lib/auth";
 import { useGlobalShortcuts } from "@/lib/shortcuts";
 
-const COPILOT_ENABLED = env.VITE_COPILOT_ENABLED !== "false";
+const QEETAI_ENABLED = env.VITE_QEETAI_ENABLED !== "false";
+const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 export const Route = createFileRoute("/_app")({ component: AppLayout });
 
@@ -42,6 +44,7 @@ function AppLayout() {
 function ConsoleFrame() {
   const navigate = useNavigate();
   const access = useCapabilities();
+  useIdleLogout(IDLE_TIMEOUT_MS);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
@@ -56,7 +59,9 @@ function ConsoleFrame() {
       className="console-shell"
       style={
         {
-          "--sidebar-width": "17.5rem",
+          // Two-pane sidebar: 4rem icon rail + ~15rem section panel. Collapsed
+          // state falls back to just the rail (--sidebar-width-icon).
+          "--sidebar-width": "19rem",
           "--sidebar-width-icon": "4rem",
         } as React.CSSProperties
       }
@@ -72,6 +77,7 @@ function ConsoleFrame() {
       <AppSidebar />
       <div className="console-workspace">
         <ImpersonationBanner />
+        <VerifyEmailBanner />
         <ConsoleHeader
           onOpenPalette={() => setPaletteOpen(true)}
           onOpenShortcuts={() => setShortcutsOpen(true)}
@@ -83,13 +89,13 @@ function ConsoleFrame() {
           </AccessBoundary>
         </main>
       </div>
-      {COPILOT_ENABLED ? (
-        <CopilotProvider>
+      {QEETAI_ENABLED ? (
+        <QeetAIRuntimeProvider>
           {/* Docked mode renders as an in-flow flex sibling here, so opening the
-              Copilot reflows the organization instead of covering it. */}
-          <CopilotWorkspace />
-          <CopilotLauncher />
-        </CopilotProvider>
+              QeetAI reflows the organization instead of covering it. */}
+          <QeetAIWorkspace />
+          <QeetAILauncher />
+        </QeetAIRuntimeProvider>
       ) : null}
       <CommandPaletteLauncher open={paletteOpen} onOpenChange={setPaletteOpen} />
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />

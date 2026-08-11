@@ -1,5 +1,6 @@
 import {
   Button,
+  cn,
   Field,
   FieldDescription,
   FieldError,
@@ -11,16 +12,24 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  cn,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { LogoField } from "@/components/logo-field";
 import { type ApiError, api, tokenStore } from "@/lib/api";
 import { startSignupCheckout } from "@/lib/billing";
+import { REGIONS } from "@/lib/regions";
 
+import {
+  type OnboardingProfile,
+  ROLES,
+  stashOnboardingProfile,
+  TEAM_SIZES,
+  USE_CASES,
+} from "./onboarding-profile";
 import { slugify } from "./plan-catalog";
 import { PlanSelect, type PlanSelection } from "./plan-select";
 
@@ -30,12 +39,6 @@ type CreateTenantResponse = {
   access_token?: string;
   refresh_token?: string;
 };
-
-const REGIONS = [
-  { value: "ap-south-1", label: "Asia Pacific (Mumbai)" },
-  { value: "us-east-1", label: "US East (N. Virginia)" },
-  { value: "eu-west-1", label: "Europe (Ireland)" },
-];
 
 interface CreateOrgFlowProps {
   /**
@@ -61,17 +64,24 @@ interface CreateOrgFlowProps {
 export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: CreateOrgFlowProps) {
   const done = onDone ?? (() => window.location.assign("/"));
 
-  const [step, setStep] = useState<"plan" | "name">("plan");
+  const [step, setStep] = useState<"plan" | "profile" | "name">("plan");
   const [selection, setSelection] = useState<PlanSelection | null>(null);
+  const [profile, setProfile] = useState<OnboardingProfile>({});
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [region, setRegion] = useState("ap-south-1");
+  const [logo, setLogo] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const createM = useMutation({
-    mutationFn: (body: { slug: string; name: string; plan: string; region: string }) =>
-      api<CreateTenantResponse>("/v1/tenants", { method: "POST", body }),
+    mutationFn: (body: {
+      slug: string;
+      name: string;
+      plan: string;
+      region: string;
+      logo_url?: string;
+    }) => api<CreateTenantResponse>("/v1/tenants", { method: "POST", body }),
     // Own UX (redirect / inline error / toast) — skip the global error toast so
     // a "slug taken" doesn't double up with the inline message.
     meta: { silent: true },
@@ -84,7 +94,7 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
   function pickPlan(sel: PlanSelection) {
     setSelection(sel);
     setError(null);
-    setStep("name");
+    setStep("profile");
   }
 
   async function submit(e: React.FormEvent) {
@@ -94,6 +104,11 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
 
     const isPaid = selection.tier !== "free" && selection.tier !== "enterprise";
     const origin = window.location.origin;
+
+    // Stash the segmentation (+ logo) so it's applied to the org on first
+    // dashboard load — uniform for free (created inline) and paid (provisioned
+    // after checkout). See useApplyOnboardingProfile.
+    stashOnboardingProfile({ ...profile, logo_url: logo || undefined });
 
     try {
       // Paid plans: DON'T create the org yet. Stage a checkout that carries the
@@ -126,6 +141,7 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
         name: name.trim(),
         plan: selection.tier,
         region,
+        logo_url: logo || undefined,
       });
       if (res.access_token && res.refresh_token) {
         tokenStore.set(res.access_token);
@@ -150,7 +166,11 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
           onSelect={pickPlan}
           stacked={planStacked}
           ctaLabel={(tier) =>
-            tier === "enterprise" ? "Contact sales" : tier === "free" ? "Choose Free" : "Choose plan"
+            tier === "enterprise"
+              ? "Contact sales"
+              : tier === "free"
+                ? "Choose Free"
+                : "Choose plan"
           }
         />
         {onCancel && (
@@ -164,6 +184,95 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
     );
   }
 
+  if (step === "profile") {
+    return (
+      <form
+        className={cn("mx-auto w-full max-w-md", className)}
+        onSubmit={(e) => {
+          e.preventDefault();
+          setStep("name");
+        }}
+      >
+        <FieldGroup>
+          <button
+            type="button"
+            className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+            onClick={() => setStep("plan")}
+          >
+            <ArrowLeftIcon className="size-3.5" /> Choose a different plan
+          </button>
+          <div>
+            <h2 className="text-base font-semibold">Tell us about your project</h2>
+            <p className="text-sm text-muted-foreground">
+              This tailors your setup checklist — optional, and you can change it later.
+            </p>
+          </div>
+
+          <Field>
+            <FieldLabel>What are you building?</FieldLabel>
+            <Select
+              value={profile.use_case ?? ""}
+              onValueChange={(v) => setProfile((p) => ({ ...p, use_case: v || undefined }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select…" />
+              </SelectTrigger>
+              <SelectContent>
+                {USE_CASES.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <FieldLabel>How big is your team?</FieldLabel>
+            <Select
+              value={profile.team_size ?? ""}
+              onValueChange={(v) => setProfile((p) => ({ ...p, team_size: v || undefined }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select…" />
+              </SelectTrigger>
+              <SelectContent>
+                {TEAM_SIZES.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <FieldLabel>Your role</FieldLabel>
+            <Select
+              value={profile.role ?? ""}
+              onValueChange={(v) => setProfile((p) => ({ ...p, role: v || undefined }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select…" />
+              </SelectTrigger>
+              <SelectContent>
+                {ROLES.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <Button type="submit">Continue</Button>
+          </Field>
+        </FieldGroup>
+      </form>
+    );
+  }
+
   const isFree = selection?.tier === "free";
   const isEnterprise = selection?.tier === "enterprise";
   const submitLabel = isFree
@@ -172,7 +281,9 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
       ? "Create & contact sales"
       : "Continue to payment";
   const cycleLabel = selection?.interval === "year" ? "Yearly" : "Monthly";
-  const tierName = selection ? selection.tier.charAt(0).toUpperCase() + selection.tier.slice(1) : "";
+  const tierName = selection
+    ? selection.tier.charAt(0).toUpperCase() + selection.tier.slice(1)
+    : "";
 
   return (
     <form className={cn("mx-auto w-full max-w-md", className)} onSubmit={submit}>
@@ -180,7 +291,7 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
         <button
           type="button"
           className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => setStep("plan")}
+          onClick={() => setStep("profile")}
           disabled={busy}
         >
           <ArrowLeftIcon className="size-3.5" />
@@ -235,6 +346,15 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
               ))}
             </SelectContent>
           </Select>
+        </Field>
+
+        <Field>
+          <FieldLabel>Logo</FieldLabel>
+          <LogoField
+            value={logo}
+            onChange={setLogo}
+            hint="Optional — we'll use an initials avatar if you skip it."
+          />
         </Field>
 
         {error && (

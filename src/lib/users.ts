@@ -1,7 +1,7 @@
 // User CRUD data layer — thin React Query hooks over the existing
 // /v1/users/* endpoints. Extracted from routes/_app/users/index.tsx and
 // routes/_app/users/$userId.tsx so that both the route pages (UI path) and
-// the copilot tools (tool-call path) share one authenticated hook.
+// the qeetai tools (tool-call path) share one authenticated hook.
 //
 // Tool run() functions call api() directly; these hooks are the UI layer.
 // Follow the house pattern: useMutation + api() + onSuccess invalidate + meta.
@@ -95,7 +95,7 @@ export function useUpdateUser() {
 
 /**
  * Set a user's status to "active" or "suspended" (PATCH /v1/users/{id}).
- * Used by the copilot's disable_user / enable_user tools.
+ * Used by the qeetai's disable_user / enable_user tools.
  */
 export function useSetUserStatus() {
   const qc = useQueryClient();

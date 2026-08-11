@@ -12,14 +12,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { LoginForm } from "@/features/auth/components/signin-form";
-import {
-  isMfaChallenge,
-  useCompleteMfaLogin,
-  useConsumeSocialCode,
-  useLogin,
-} from "@/lib/auth";
+import { isMfaChallenge, useCompleteMfaLogin, useConsumeSocialCode, useLogin } from "@/lib/auth";
 
 export const Route = createFileRoute("/_auth/sign-in")({
   component: SignInPage,
@@ -42,6 +38,16 @@ function SignInPage() {
     setSocialCode(code);
     social.mutate(code);
   }, [social]);
+
+  // Returning from a social sign-in that had no matching account: the provider
+  // authenticated, but we don't create accounts on sign-in — tell the user to
+  // sign up first, then strip the param so a reload won't re-toast.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("social_error") !== "no_account") return;
+    toast.error("No account uses that provider yet. Sign up first, then sign in.");
+    window.history.replaceState({}, "", window.location.pathname);
+  }, []);
 
   if (socialCode) {
     return (

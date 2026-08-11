@@ -144,7 +144,7 @@ export function SignupForm({
                 </Button>
               </Field>
 
-              <SocialButtons verb="Sign up" />
+              <SocialButtons verb="Sign up" intent="signup" />
 
               <FieldDescription className="text-center">
                 Already have an account? <Link to="/sign-in">Sign in</Link>
