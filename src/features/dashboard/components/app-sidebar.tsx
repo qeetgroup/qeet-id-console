@@ -96,11 +96,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         {/* Panel: only the active section's items. Hidden when collapsed to the rail. */}
         <div className="console-panel flex min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
           <div className="console-panel-head p-3 pb-2">
-            <div className="mb-2 px-1 leading-tight">
-              <div className="font-heading text-sm font-semibold tracking-tight">Qeet ID</div>
-              <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-sidebar-foreground/45">
+            <div className="mb-2 flex items-center gap-1.5 px-1 leading-tight">
+              <span className="font-heading text-sm font-semibold tracking-tight">Qeet ID</span>
+              <span className="text-sm text-sidebar-foreground/30">—</span>
+              <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-sidebar-foreground/45">
                 Control plane
-              </div>
+              </span>
             </div>
             <TeamSwitcher />
           </div>

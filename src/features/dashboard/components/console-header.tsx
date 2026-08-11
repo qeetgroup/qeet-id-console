@@ -40,7 +40,7 @@ export function ConsoleHeader({
       >
         <SearchIcon className="size-4 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">Search the control plane</span>
-        <kbd className="console-keycap">⌘K</kbd>
+        <kbd className="console-keycap">⌘ + K</kbd>
       </button>
 
       <div className="ms-auto flex shrink-0 items-center gap-0.5">

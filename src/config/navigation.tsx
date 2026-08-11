@@ -53,6 +53,8 @@ export type NavItem = {
   title: string;
   url: string;
   icon?: ReactNode;
+  /** One-line summary shown on section overview cards. */
+  description?: string;
   requiredPermission?: Capability;
   items?: NavSubItem[];
 };
@@ -88,10 +90,12 @@ export const navGroups: NavGroup[] = [
     label: "Directory",
     icon: <UsersIcon />,
     items: [
+      { title: "Overview", url: "/directory", icon: <GaugeIcon /> },
       {
         title: "Users",
         url: "/users",
         icon: <UsersIcon />,
+        description: "People with access to your organization.",
         requiredPermission: "user.read",
         items: [
           { title: "All users", url: "/users", requiredPermission: "user.read" },
@@ -105,11 +109,13 @@ export const navGroups: NavGroup[] = [
         title: "Organizations",
         url: "/organizations/tenants",
         icon: <Building2Icon />,
+        description: "Tenant boundaries, plans and regions.",
       },
       {
         title: "Groups",
         url: "/groups",
         icon: <UsersRoundIcon />,
+        description: "Bundle users to grant access together.",
         requiredPermission: "group.read",
       },
       {
@@ -118,6 +124,7 @@ export const navGroups: NavGroup[] = [
         title: "Directories",
         url: "/auth/connections/scim",
         icon: <NetworkIcon />,
+        description: "SCIM and LDAP / AD directory-sync connections.",
         requiredPermission: "connection.read",
         items: [
           { title: "SCIM", url: "/auth/connections/scim", requiredPermission: "connection.read" },
@@ -134,23 +141,27 @@ export const navGroups: NavGroup[] = [
     label: "Applications",
     icon: <AppWindowIcon />,
     items: [
+      { title: "Overview", url: "/applications", icon: <GaugeIcon /> },
       {
         // The OIDC/OAuth client registry — your registered relying-party apps.
         title: "Applications",
         url: "/auth/connections/oidc",
         icon: <AppWindowIcon />,
+        description: "Your registered OIDC / OAuth relying-party apps.",
         requiredPermission: "connection.read",
       },
       {
         title: "Machine apps",
         url: "/auth/api/machine-identities",
         icon: <CpuIcon />,
+        description: "Non-interactive service and machine identities.",
         requiredPermission: "apikey.read",
       },
       {
         title: "OAuth grants",
         url: "/auth/api/consent-grants",
         icon: <HandshakeIcon />,
+        description: "Consents users have granted to your apps.",
         requiredPermission: "connection.read",
       },
     ],
@@ -159,10 +170,12 @@ export const navGroups: NavGroup[] = [
     label: "Authentication",
     icon: <FingerprintIcon />,
     items: [
+      { title: "Overview", url: "/authentication", icon: <GaugeIcon /> },
       {
         title: "Sign-in",
         url: "/auth/login-methods/password",
         icon: <LogInIcon />,
+        description: "Password, passwordless, passkeys and magic links.",
         requiredPermission: "policy.read",
         items: [
           {
@@ -189,12 +202,14 @@ export const navGroups: NavGroup[] = [
         title: "Social",
         url: "/auth/social",
         icon: <Share2Icon />,
+        description: "Google, Microsoft, Apple, GitHub and more.",
         requiredPermission: "connection.read",
       },
       {
         title: "SSO",
         url: "/auth/connections/saml",
         icon: <WorkflowIcon />,
+        description: "SAML connections and Qeet ID as an IdP.",
         requiredPermission: "connection.read",
         items: [
           { title: "SAML", url: "/auth/connections/saml", requiredPermission: "connection.read" },
@@ -209,6 +224,7 @@ export const navGroups: NavGroup[] = [
         title: "MFA",
         url: "/auth/mfa/totp",
         icon: <FingerprintIcon />,
+        description: "TOTP and SMS / email second factors.",
         items: [
           { title: "TOTP", url: "/auth/mfa/totp" },
           { title: "SMS / email", url: "/auth/mfa/sms-email" },
@@ -220,6 +236,7 @@ export const navGroups: NavGroup[] = [
         title: "Devices",
         url: "/security/device-authorizations",
         icon: <MonitorSmartphoneIcon />,
+        description: "OAuth device-authorization requests.",
         requiredPermission: "connection.read",
       },
     ],
@@ -381,64 +398,75 @@ export const navGroups: NavGroup[] = [
     label: "Developer",
     icon: <Code2Icon />,
     items: [
+      { title: "Overview", url: "/developer", icon: <GaugeIcon /> },
       {
         title: "API keys",
         url: "/auth/api/keys",
         icon: <KeyRoundIcon />,
+        description: "Programmatic access keys for the API.",
         requiredPermission: "apikey.read",
       },
       {
         title: "Tokens",
         url: "/auth/api/tokens",
         icon: <TicketIcon />,
+        description: "Issued access and refresh tokens.",
         requiredPermission: "connection.read",
       },
       {
         title: "Signing keys",
         url: "/auth/api/signing-keys",
         icon: <FileKey2Icon />,
+        description: "JWKS keys that sign your tokens.",
         requiredPermission: "connection.read",
       },
       {
         title: "Secrets",
         url: "/auth/api/secrets",
         icon: <LockKeyholeIcon />,
+        description: "Encrypted secrets for integrations.",
         requiredPermission: "secret.read",
       },
       {
         title: "Webhooks",
         url: "/developer/webhooks",
         icon: <WebhookIcon />,
+        description: "Subscribe endpoints to Qeet ID events.",
         requiredPermission: "webhook.read",
       },
       {
         title: "Auth hooks",
         url: "/developer/auth-hooks",
         icon: <ZapIcon />,
+        description: "Run custom logic in the auth pipeline.",
         requiredPermission: "connection.read",
       },
       {
         title: "Agents",
         url: "/developer/agents",
         icon: <SparklesIcon />,
+        description: "AI agent identities and credentials.",
         requiredPermission: "apikey.read",
       },
       {
         title: "Credentials",
         url: "/developer/credentials",
         icon: <BadgeCheckIcon />,
+        description: "Verifiable credential issuance.",
         requiredPermission: "apikey.read",
       },
       {
         title: "Bots",
         url: "/developer/bots",
         icon: <BotIcon />,
+        description: "Automated bot identities.",
         requiredPermission: "apikey.read",
       },
       {
         title: "Infrastructure",
         url: "/developer/infrastructure",
         icon: <ServerCogIcon />,
+        description: "Runtime, regions and system health.",
         requiredPermission: "audit.read",
       },
     ],
@@ -447,46 +475,54 @@ export const navGroups: NavGroup[] = [
     label: "Settings",
     icon: <Settings2Icon />,
     items: [
+      { title: "Overview", url: "/settings", icon: <GaugeIcon /> },
       {
         title: "General",
         url: "/settings/organization/general",
         icon: <Settings2Icon />,
+        description: "Organization name, profile and defaults.",
         requiredPermission: "tenant.read",
       },
       {
         title: "Domains",
         url: "/settings/organization/domains",
         icon: <GlobeIcon />,
+        description: "Verified domains and the custom login URL.",
         requiredPermission: "tenant.read",
       },
       {
         title: "Branding",
         url: "/settings/branding",
         icon: <PaletteIcon />,
+        description: "Logo, colors and hosted-page theme.",
         requiredPermission: "branding.write",
       },
       {
         title: "Emails",
         url: "/settings/organization/email-templates",
         icon: <MailIcon />,
+        description: "Customize transactional email templates.",
         requiredPermission: "branding.write",
       },
       {
         title: "Security",
         url: "/settings/organization/security-policy",
         icon: <ShieldCheckIcon />,
+        description: "Org-wide security and session policy.",
         requiredPermission: "policy.read",
       },
       {
         title: "Billing",
         url: "/settings/billing",
         icon: <CreditCardIcon />,
+        description: "Plan, usage, invoices and payment.",
         requiredPermission: "billing.read",
       },
       {
         title: "Qeet AI",
         url: "/settings/qeet-ai",
         icon: <SparklesIcon />,
+        description: "Bring your own AI provider key.",
         requiredPermission: "secret.read",
       },
     ],
