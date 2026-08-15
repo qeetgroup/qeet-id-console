@@ -99,16 +99,21 @@ export const EMPTY_OVERVIEW: AnalyticsOverview = {
 };
 
 /**
- * Fetches the dashboard overview for the current tenant. Stale-time is
- * 60s — KPI cards don't need to be real-time, and the dashboard already
- * polls activity-feed components individually for fresher signals.
+ * Fetches the dashboard overview for the current tenant. The overview is
+ * computed live server-side, so we refetch on every mount and on window focus
+ * — returning to the dashboard after changing something elsewhere (e.g. MFA
+ * enrolment, a new user) shows fresh KPIs rather than a stale cache. Stale-time
+ * stays short so a background focus also re-pulls.
  */
 export function useAnalyticsOverview(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["analytics", "overview", tenantId],
     enabled: !!tenantId && enabled,
-    staleTime: 60_000,
+    staleTime: 15_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000, // keep an open dashboard current without a manual reload
     queryFn: async (): Promise<AnalyticsOverview> => {
       try {
         return await api<AnalyticsOverview>(`/v1/tenants/${tenantId}/analytics/overview`);

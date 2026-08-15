@@ -16,12 +16,15 @@ export type ActivityHistoryPage = {
 
 const HISTORY_LIMIT = 50;
 
-function buildQuery(
+/** Builds the /v1/activity query string for a filter set + cursor. Exported so
+ *  the export loop (activity-export.ts) sends exactly the same predicates. */
+export function buildActivityQuery(
   filters: ActivityFilters,
   cursor: string,
+  limit = HISTORY_LIMIT,
 ): Record<string, string | number | undefined> {
   return {
-    limit: HISTORY_LIMIT,
+    limit,
     cursor: cursor || undefined,
     types: filters.types.join(",") || undefined,
     severity: filters.severity.join(",") || undefined,
@@ -32,30 +35,40 @@ function buildQuery(
     to: filters.to || undefined,
     source: filters.source || undefined,
     status: filters.status || undefined,
+    ip: filters.ip || undefined,
   };
 }
 
 /**
+ * Fetches one page of history from GET /v1/activity. Treats 404 (not deployed)
+ * and network errors as empty pages so the page degrades gracefully while the
+ * backend is being rolled out. Shared by the infinite query and the exporter.
+ */
+export async function fetchActivityPage(
+  filters: ActivityFilters,
+  cursor: string,
+  limit = HISTORY_LIMIT,
+): Promise<ActivityHistoryPage> {
+  try {
+    return await api<ActivityHistoryPage>("/v1/activity", {
+      query: buildActivityQuery(filters, cursor, limit),
+    });
+  } catch (err) {
+    const status = (err as { status?: number }).status;
+    if (!status || status === 404 || status === 503) {
+      return { events: [], next_cursor: undefined };
+    }
+    throw err;
+  }
+}
+
+/**
  * Loads paginated historical activity events from GET /v1/activity.
- * Returns empty pages on 404/network errors (graceful degradation while
- * the backend is being deployed in parallel).
  */
 export function useActivityHistory(filters: ActivityFilters, enabled = true) {
   return useInfiniteQuery({
     queryKey: ["activity-history", filters] as const,
-    queryFn: async ({ pageParam }: { pageParam: string }) => {
-      const query = buildQuery(filters, pageParam);
-      try {
-        return await api<ActivityHistoryPage>("/v1/activity", { query });
-      } catch (err) {
-        // Treat 404 (not deployed) and network errors as empty pages
-        const status = (err as { status?: number }).status;
-        if (!status || status === 404 || status === 503) {
-          return { events: [], next_cursor: undefined };
-        }
-        throw err;
-      }
-    },
+    queryFn: ({ pageParam }: { pageParam: string }) => fetchActivityPage(filters, pageParam),
     initialPageParam: "",
     getNextPageParam: (page: ActivityHistoryPage) => page.next_cursor ?? undefined,
     enabled,

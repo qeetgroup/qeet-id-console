@@ -91,6 +91,8 @@ export function TimelineProvider({ userId, children }: { userId: string; childre
       to: filters.to,
       source: "",
       status: "",
+      ip: "",
+      resource: "",
     }),
     [filters],
   );

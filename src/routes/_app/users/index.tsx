@@ -1,19 +1,12 @@
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  Avatar,
+  AvatarFallback,
   Badge,
   Button,
   buttonVariants,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  cn,
   DataState,
   Field,
   FieldDescription,
@@ -21,7 +14,6 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
-  Pagination,
   Select,
   SelectContent,
   SelectItem,
@@ -42,22 +34,24 @@ import {
   TableHeader,
   TableRow,
   TimeSince,
+  TooltipProvider,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  KeyRoundIcon,
+  CheckCircle2Icon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   Loader2Icon,
-  PencilIcon,
   PlusIcon,
   RefreshCwIcon,
-  Trash2Icon,
+  ShieldAlertIcon,
+  ShieldCheckIcon,
   UploadCloudIcon,
   UserIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Trans, useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/components/confirm-dialog";
 import {
@@ -70,26 +64,30 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { useCapabilities } from "@/features/access-control/capability-provider";
 import { ReadOnlyNotice } from "@/features/access-control/components/read-only-notice";
+import { BulkActions } from "@/features/users-list/bulk-actions";
+import { MoreFilters, SaveView } from "@/features/users-list/filter-extras";
+import { initials, primaryRole } from "@/features/users-list/helpers";
+import { UserPreviewDrawer } from "@/features/users-list/user-preview-drawer";
+import { type RowActionHandlers, UserRowActions } from "@/features/users-list/user-row-actions";
+import { type KpiFilter, UsersKpis } from "@/features/users-list/users-kpis";
 import { type ApiError, api, tokenStore } from "@/lib/api";
 import { useTenantId } from "@/lib/auth";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
 import { useListView } from "@/lib/list-view";
 import { useRoles } from "@/lib/rbac-groups";
-import { useCreateUser, useDeleteUser, useUpdateUser } from "@/lib/users";
+import { useRevokeAllUserSessions } from "@/lib/user360";
+import {
+  type User,
+  useCreateUser,
+  useDeleteUser,
+  useResetUserMfa,
+  useSetUserStatus,
+  useUpdateUser,
+  useUserStats,
+  useUserTrends,
+} from "@/lib/users";
 
 export const Route = createFileRoute("/_app/users/")({ component: UsersPage });
-
-type User = {
-  id: string;
-  tenant_id: string;
-  email: string;
-  display_name?: string | null;
-  phone?: string | null;
-  status: "active" | "invited" | "suspended" | "deleted";
-  email_verified_at?: string | null;
-  roles?: string[] | null;
-  created_at: string;
-};
 
 type UsersResponse = { items: User[]; next_cursor?: string };
 
@@ -99,9 +97,13 @@ const userCsvColumns: CsvColumn<User>[] = [
   { header: "display_name", value: (u) => u.display_name },
   { header: "phone", value: (u) => u.phone },
   { header: "status", value: (u) => u.status },
-  { header: "email_verified_at", value: (u) => u.email_verified_at },
+  { header: "roles", value: (u) => (u.roles ?? []).join("|") },
+  { header: "mfa_enabled", value: (u) => String(u.mfa_enabled ?? "") },
+  { header: "last_seen_at", value: (u) => u.last_seen_at },
   { header: "created_at", value: (u) => u.created_at },
 ];
+
+const PAGE_SIZES = [25, 50, 100];
 
 function UsersPage() {
   const [confirmDialog, openConfirm] = useConfirmDialog();
@@ -112,43 +114,52 @@ function UsersPage() {
   const tenantId = useTenantId();
   const currentUserId = tokenStore.getUserId();
   const qc = useQueryClient();
-  const statusOptions = [
-    { label: t("status.active"), value: "active" },
-    { label: t("status.invited"), value: "invited" },
-    { label: t("status.suspended"), value: "suspended" },
-    { label: t("status.deleted"), value: "deleted" },
-  ];
+  const rolesQ = useRoles();
+
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
   const [settingPassword, setSettingPassword] = useState<User | null>(null);
-  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
+  const [previewUser, setPreviewUser] = useState<User | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-  const [bulkProgress, setBulkProgress] = useState<{
-    done: number;
-    total: number;
-  } | null>(null);
-  // Cursor stack lets us pop back to the previous page without re-walking
-  // from the start, while the API itself is forward-only (next_cursor).
-  const [cursorStack, setCursorStack] = useState<string[]>([]);
-  const currentCursor = cursorStack[cursorStack.length - 1];
+  const [roleFilter, setRoleFilter] = useState("");
+  const [emailFilter, setEmailFilter] = useState("");
+  const [pageSize, setPageSize] = useState(50);
+  // Offset (page-number) paging so the console can jump to any page.
+  const [page, setPage] = useState(0);
 
   const usersQ = useQuery({
-    queryKey: ["users", tenantId, currentCursor ?? ""],
+    queryKey: ["users", tenantId, pageSize, page],
     queryFn: () =>
       api<UsersResponse>("/v1/users", {
-        query: currentCursor ? { cursor: currentCursor } : undefined,
+        query: { limit: pageSize, offset: page * pageSize },
       }),
     enabled: !!tenantId,
   });
+  const statsQ = useUserStats();
+  const trendsQ = useUserTrends();
 
   const items = usersQ.data?.items ?? [];
-  const lv = useListView(items, {
-    searchFields: (u) => [u.email, u.display_name, u.phone],
-    filterFields: { status: (u) => u.status },
-    sortFields: {
-      email: (u) => u.email,
-      name: (u) => u.display_name ?? "",
+
+  // Role is an array per user, which useListView's equality filter can't express,
+  // so pre-filter by role membership before the client search/sort/facets run.
+  const preFiltered = useMemo(() => {
+    let list = items;
+    if (roleFilter) list = list.filter((u) => (u.roles ?? []).includes(roleFilter));
+    if (emailFilter === "verified") list = list.filter((u) => !!u.email_verified_at);
+    else if (emailFilter === "unverified") list = list.filter((u) => !u.email_verified_at);
+    return list;
+  }, [items, roleFilter, emailFilter]);
+
+  const lv = useListView(preFiltered, {
+    searchFields: (u) => [u.email, u.display_name, u.phone, u.id],
+    filterFields: {
       status: (u) => u.status,
+      mfa: (u) => (u.mfa_enabled ? "enabled" : "disabled"),
+    },
+    sortFields: {
+      name: (u) => u.display_name ?? u.email,
+      status: (u) => u.status,
+      lastSeen: (u) => u.last_seen_at ?? "",
       created: (u) => u.created_at,
     },
   });
@@ -156,435 +167,558 @@ function UsersPage() {
   const selectableIds = canWriteUsers
     ? rows.filter((u) => u.id !== currentUserId).map((u) => u.id)
     : [];
+  const selectedUsers = items.filter((u) => selectedIds.has(u.id));
 
   useEffect(() => {
     if (!canWriteUsers) {
       setEditing(null);
       setSettingPassword(null);
-      setConfirmingDelete(null);
       setSelectedIds(new Set());
     }
     if (!canCreateUsers) setCreating(false);
   }, [canCreateUsers, canWriteUsers]);
 
-  // Bulk delete fans out N single deletes (capped concurrency) since the
-  // backend has no bulk endpoint; allSettled surfaces partial successes.
-  const bulkDeleteM = useMutation({
-    mutationFn: async (ids: string[]): Promise<{ ok: number; failed: number }> => {
-      setBulkProgress({ done: 0, total: ids.length });
-      const CONCURRENCY = 5;
-      let done = 0;
-      let ok = 0;
-      let failed = 0;
-      const queue = [...ids];
-      async function worker() {
-        for (;;) {
-          const id = queue.shift();
-          if (!id) return;
-          try {
-            await api<void>(`/v1/users/${id}`, { method: "DELETE" });
-            ok++;
-          } catch {
-            failed++;
-          }
-          done++;
-          setBulkProgress({ done, total: ids.length });
-        }
-      }
-      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, ids.length) }, worker));
-      return { ok, failed };
-    },
-    onSettled: () => {
-      setBulkProgress(null);
-      setSelectedIds(new Set());
-      qc.invalidateQueries({ queryKey: ["users"] });
-    },
-    meta: { silent: true }, // we toast manually with combined ok/failed
-  });
-
+  // Page-level mutation hooks shared by the ⋯ row menu (via rowHandlers).
+  const resetMfa = useResetUserMfa();
+  const revokeAll = useRevokeAllUserSessions();
+  const setStatus = useSetUserStatus();
   const deleteM = useDeleteUser();
 
-  function runBulkDelete() {
-    const ids = Array.from(selectedIds);
-    if (!ids.length) return;
-    openConfirm({
-      title: t("bulk.confirm", { count: ids.length }),
-      variant: "destructive",
-      confirmLabel: "Delete",
-      onConfirm: () =>
-        bulkDeleteM.mutate(ids, {
-          onSuccess: (res) => {
-            if (res.failed === 0) {
-              toast.success(t("bulk.deletedOk", { count: res.ok }));
-            } else if (res.ok === 0) {
-              toast.error(t("bulk.deletedFail", { count: res.failed }));
-            } else {
-              toast.warning(t("bulk.deletedPartial", { ok: res.ok, failed: res.failed }));
-            }
-          },
-        }),
-    });
+  function afterMutation() {
+    qc.invalidateQueries({ queryKey: ["users"] });
+    qc.invalidateQueries({ queryKey: ["user-stats"] });
   }
 
+  const rowHandlers: RowActionHandlers = {
+    onEdit: setEditing,
+    onSetPassword: setSettingPassword,
+    onResetMfa: (u) =>
+      openConfirm({
+        title: t("detail.resetMfaConfirmTitle"),
+        description: t("detail.resetMfaConfirmDescription"),
+        variant: "destructive",
+        confirmLabel: t("detail.resetMfaConfirmLabel"),
+        onConfirm: () => resetMfa.mutate(u.id, { onSuccess: afterMutation }),
+      }),
+    onRevokeSessions: (u) =>
+      openConfirm({
+        title: t("detail.revokeAllTitle"),
+        description: t("detail.revokeAllDescription"),
+        variant: "destructive",
+        confirmLabel: t("detail.revokeAllConfirm"),
+        onConfirm: () => revokeAll.mutate(u.id),
+      }),
+    onToggleSuspend: (u) => {
+      if (u.status === "suspended") {
+        setStatus.mutate({ userId: u.id, status: "active" }, { onSuccess: afterMutation });
+        return;
+      }
+      openConfirm({
+        title: t("detail.suspendTitle"),
+        description: t("detail.suspendDescription"),
+        variant: "destructive",
+        confirmLabel: t("detail.suspendConfirm"),
+        onConfirm: () =>
+          setStatus.mutate({ userId: u.id, status: "suspended" }, { onSuccess: afterMutation }),
+      });
+    },
+    onDelete: (u) =>
+      openConfirm({
+        title: t("detail.deleteTitle"),
+        description: t("detail.deleteDescription", { email: u.email }),
+        variant: "destructive",
+        confirmLabel: t("detail.deleteConfirm"),
+        onConfirm: () => deleteM.mutate(u.id, { onSuccess: afterMutation }),
+      }),
+  };
+
+  const statusOptions = [
+    { label: t("status.active"), value: "active" },
+    { label: t("status.invited"), value: "invited" },
+    { label: t("status.suspended"), value: "suspended" },
+    { label: t("status.deleted"), value: "deleted" },
+  ];
+  const roleOptions = (rolesQ.data?.items ?? []).map((r) => ({ label: r.name, value: r.name }));
+  const mfaOptions = [
+    { label: t("security.mfaOn"), value: "enabled" },
+    { label: t("security.mfaOff"), value: "disabled" },
+  ];
+
+  const hasActiveFilters = lv.hasActiveFilters || roleFilter !== "" || emailFilter !== "";
   const denseCls = lv.density === "compact" ? "[&_td]:py-1.5 [&_th]:py-2" : undefined;
 
+  // Numbered paging over the known total ("Showing 1–50 of 1,284").
+  const total = statsQ.data?.total;
+  const totalPages = total !== undefined ? Math.max(1, Math.ceil(total / pageSize)) : undefined;
+  const rangeStart = items.length ? page * pageSize + 1 : 0;
+  const rangeEnd = page * pageSize + items.length;
+  const hasPrev = page > 0;
+  const hasNext = totalPages !== undefined ? page + 1 < totalPages : items.length === pageSize;
+
+  function goToPage(next: number) {
+    setPage(Math.max(0, next));
+    setSelectedIds(new Set());
+  }
+  function changePageSize(next: number) {
+    setPageSize(next);
+    setPage(0);
+    setSelectedIds(new Set());
+  }
+  // KPI card → table filter (client-side over the current page, matching the
+  // existing facet behaviour).
+  function handleKpiFilter(f: KpiFilter) {
+    setPage(0);
+    setRoleFilter("");
+    lv.setSearch("");
+    if (f === "all") {
+      lv.setFilter("status", "");
+      lv.setFilter("mfa", "");
+    } else if (f === "active") {
+      lv.setFilter("mfa", "");
+      lv.setFilter("status", "active");
+    } else if (f === "suspended") {
+      lv.setFilter("mfa", "");
+      lv.setFilter("status", "suspended");
+    } else if (f === "mfa_enabled") {
+      lv.setFilter("status", "");
+      lv.setFilter("mfa", "enabled");
+    } else if (f === "mfa_missing") {
+      lv.setFilter("status", "");
+      lv.setFilter("mfa", "disabled");
+    }
+  }
+
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      {confirmDialog}
-      <PageHeader
-        description={t("list.description")}
-        actions={
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => usersQ.refetch()}
-              disabled={usersQ.isFetching}
-            >
-              <RefreshCwIcon className={usersQ.isFetching ? "animate-spin" : ""} />
-              {t("common:actions.refresh")}
-            </Button>
-            {canWriteUsers ? (
-              <Link
-                to="/users/import"
-                className={buttonVariants({ variant: "outline", size: "sm" })}
-              >
-                <UploadCloudIcon /> {t("list.import")}
-              </Link>
-            ) : null}
-            {canCreateUsers ? (
-              <Button size="sm" onClick={() => setCreating(true)}>
-                <PlusIcon /> {t("list.newUser")}
-              </Button>
-            ) : null}
-          </>
-        }
-      />
-
-      {!canWriteUsers ? <ReadOnlyNotice /> : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("list.membersTitle")}</CardTitle>
-          <CardDescription>
-            {t("list.membersSubtitle", {
-              shown: rows.length,
-              total: items.length,
-              count: items.length,
-            })}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ListToolbar
-            search={lv.search}
-            onSearchChange={lv.setSearch}
-            searchPlaceholder={t("list.searchPlaceholder")}
-            filters={[
-              {
-                id: "status",
-                label: t("table.status"),
-                value: lv.filters.status ?? "",
-                options: statusOptions,
-                onChange: (v) => lv.setFilter("status", v),
-              },
-            ]}
-            columns={[
-              { id: "name", label: t("table.name") },
-              { id: "verified", label: t("table.emailVerified") },
-              { id: "created", label: t("table.created") },
-            ]}
-            isColumnVisible={lv.isVisible}
-            onToggleColumn={lv.toggleColumn}
-            density={lv.density}
-            onDensityChange={lv.setDensity}
-            onExport={(fmt) =>
-              fmt === "csv"
-                ? exportToCsv("users", rows, userCsvColumns)
-                : exportToJson("users", rows)
-            }
-            exportDisabled={rows.length === 0}
-            hasActiveFilters={lv.hasActiveFilters}
-            onClear={lv.clear}
-          />
-
-          {canWriteUsers && selectedIds.size > 0 && (
-            <BulkBar
-              count={selectedIds.size}
-              progress={bulkProgress}
-              disabled={bulkDeleteM.isPending}
-              onClear={() => setSelectedIds(new Set())}
-            >
+    <TooltipProvider>
+      <div className="flex min-w-0 flex-col gap-4">
+        {confirmDialog}
+        <PageHeader
+          description={t("list.description")}
+          actions={
+            <>
               <Button
-                variant="destructive"
+                variant="outline"
                 size="sm"
-                onClick={runBulkDelete}
-                disabled={bulkDeleteM.isPending}
+                onClick={() => {
+                  usersQ.refetch();
+                  statsQ.refetch();
+                }}
+                disabled={usersQ.isFetching}
               >
-                {bulkDeleteM.isPending ? <Loader2Icon className="animate-spin" /> : <Trash2Icon />}
-                {t("list.bulkDelete", { count: selectedIds.size })}
+                <RefreshCwIcon className={usersQ.isFetching ? "animate-spin" : ""} />
+                {t("common:actions.refresh")}
               </Button>
-            </BulkBar>
-          )}
+              {canWriteUsers ? (
+                <Link
+                  to="/users/import"
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  <UploadCloudIcon /> {t("list.import")}
+                </Link>
+              ) : null}
+              {canCreateUsers ? (
+                <Button size="sm" onClick={() => setCreating(true)}>
+                  <PlusIcon /> {t("list.newUser")}
+                </Button>
+              ) : null}
+            </>
+          }
+        />
 
-          <DataState
-            isLoading={usersQ.isLoading}
-            isError={usersQ.isError}
-            error={usersQ.error}
-            isEmpty={rows.length === 0}
-            emptyIcon={UserIcon}
-            emptyTitle={lv.hasActiveFilters ? t("list.emptyTitleFiltered") : t("list.emptyTitle")}
-            emptyDescription={
-              lv.hasActiveFilters ? t("list.emptyDescriptionFiltered") : t("list.emptyDescription")
-            }
-          >
-            <Table className={denseCls}>
-              <TableHeader>
-                <TableRow>
-                  {canWriteUsers ? (
-                    <TableHead className="w-8">
-                      <MasterCheckbox
-                        selectableIds={selectableIds}
-                        selectedIds={selectedIds}
-                        onChange={setSelectedIds}
-                        label={t("list.selectAll")}
-                      />
-                    </TableHead>
-                  ) : null}
-                  <SortHeader columnKey="email" sort={lv.sort} onToggle={lv.toggleSort}>
-                    {t("table.email")}
-                  </SortHeader>
-                  {lv.isVisible("name") && (
+        <UsersKpis
+          stats={statsQ.data}
+          trends={trendsQ.data}
+          loading={statsQ.isLoading}
+          onFilter={handleKpiFilter}
+        />
+
+        {!canWriteUsers ? <ReadOnlyNotice /> : null}
+
+        <Card>
+          <CardContent className="p-0">
+            <ListToolbar
+              search={lv.search}
+              onSearchChange={lv.setSearch}
+              searchPlaceholder={t("list.searchPlaceholder")}
+              filters={[
+                {
+                  id: "status",
+                  label: t("table.status"),
+                  value: lv.filters.status ?? "",
+                  options: statusOptions,
+                  onChange: (v) => lv.setFilter("status", v),
+                },
+                {
+                  id: "role",
+                  label: t("table.role"),
+                  value: roleFilter,
+                  options: roleOptions,
+                  onChange: setRoleFilter,
+                },
+                {
+                  id: "mfa",
+                  label: t("filters.mfa"),
+                  value: lv.filters.mfa ?? "",
+                  options: mfaOptions,
+                  onChange: (v) => lv.setFilter("mfa", v),
+                },
+              ]}
+              density={lv.density}
+              onDensityChange={lv.setDensity}
+              onExport={(fmt) =>
+                fmt === "csv"
+                  ? exportToCsv("users", rows, userCsvColumns)
+                  : exportToJson("users", rows)
+              }
+              exportDisabled={rows.length === 0}
+              hasActiveFilters={hasActiveFilters}
+              onClear={() => {
+                lv.clear();
+                setRoleFilter("");
+                setEmailFilter("");
+              }}
+            >
+              <MoreFilters
+                emailVerified={emailFilter}
+                onEmailVerified={(v) => {
+                  setEmailFilter(v);
+                  setPage(0);
+                }}
+                activeCount={emailFilter ? 1 : 0}
+              />
+              <SaveView
+                current={{
+                  search: lv.search,
+                  status: lv.filters.status ?? "",
+                  role: roleFilter,
+                  mfa: lv.filters.mfa ?? "",
+                  emailVerified: emailFilter,
+                }}
+                onApply={(v) => {
+                  lv.setSearch(v.search);
+                  lv.setFilter("status", v.status);
+                  lv.setFilter("mfa", v.mfa);
+                  setRoleFilter(v.role);
+                  setEmailFilter(v.emailVerified);
+                  setPage(0);
+                }}
+              />
+            </ListToolbar>
+
+            {canWriteUsers && selectedIds.size > 0 && (
+              <BulkBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())}>
+                <BulkActions
+                  selectedUsers={selectedUsers}
+                  tenantId={tenantId}
+                  onDone={() => setSelectedIds(new Set())}
+                />
+              </BulkBar>
+            )}
+
+            <DataState
+              isLoading={usersQ.isLoading}
+              isError={usersQ.isError}
+              error={usersQ.error}
+              isEmpty={rows.length === 0}
+              emptyIcon={UserIcon}
+              emptyTitle={hasActiveFilters ? t("list.emptyTitleFiltered") : t("list.emptyTitle")}
+              emptyDescription={
+                hasActiveFilters ? t("list.emptyDescriptionFiltered") : t("list.emptyDescription")
+              }
+            >
+              <Table className={denseCls}>
+                <TableHeader>
+                  <TableRow>
+                    {canWriteUsers ? (
+                      <TableHead className="w-8">
+                        <MasterCheckbox
+                          selectableIds={selectableIds}
+                          selectedIds={selectedIds}
+                          onChange={setSelectedIds}
+                          label={t("list.selectAll")}
+                        />
+                      </TableHead>
+                    ) : null}
                     <SortHeader columnKey="name" sort={lv.sort} onToggle={lv.toggleSort}>
-                      {t("table.name")}
+                      {t("table.user")}
                     </SortHeader>
-                  )}
-                  <TableHead>{t("table.role")}</TableHead>
-                  <SortHeader columnKey="status" sort={lv.sort} onToggle={lv.toggleSort}>
-                    {t("table.status")}
-                  </SortHeader>
-                  {lv.isVisible("verified") && <TableHead>{t("table.emailVerified")}</TableHead>}
-                  {lv.isVisible("created") && (
+                    <TableHead>{t("table.access")}</TableHead>
+                    <SortHeader columnKey="status" sort={lv.sort} onToggle={lv.toggleSort}>
+                      {t("table.status")}
+                    </SortHeader>
+                    <TableHead>{t("table.security")}</TableHead>
+                    <SortHeader columnKey="lastSeen" sort={lv.sort} onToggle={lv.toggleSort}>
+                      {t("table.lastSeen")}
+                    </SortHeader>
                     <SortHeader columnKey="created" sort={lv.sort} onToggle={lv.toggleSort}>
                       {t("table.created")}
                     </SortHeader>
-                  )}
-                  {canWriteUsers ? (
-                    <TableHead className="text-right">{t("table.actions")}</TableHead>
-                  ) : null}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((u) => {
-                  const isSelf = u.id === currentUserId;
-                  const isSelected = selectedIds.has(u.id);
-                  return (
-                    <TableRow key={u.id} className={isSelected ? "bg-muted/40" : undefined}>
-                      {canWriteUsers ? (
-                        <TableCell>
-                          <RowCheckbox
-                            id={u.id}
-                            checked={isSelected}
-                            disabled={isSelf}
-                            label={t("list.selectOne", { email: u.email })}
-                            onChange={(id, checked) =>
-                              setSelectedIds((prev) => {
-                                const next = new Set(prev);
-                                if (checked) next.add(id);
-                                else next.delete(id);
-                                return next;
-                              })
-                            }
-                          />
-                        </TableCell>
-                      ) : null}
-                      <TableCell className="font-medium">
-                        <Link
-                          to="/users/$userId"
-                          params={{ userId: u.id }}
-                          className="hover:underline"
-                        >
-                          {u.email}
-                        </Link>
-                        {isSelf && (
-                          <Badge variant="muted" className="ml-2">
-                            {t("list.you")}
-                          </Badge>
+                    <TableHead className="w-10 text-right">
+                      <span className="sr-only">{t("table.actions")}</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((u) => {
+                    const isSelf = u.id === currentUserId;
+                    const isSelected = selectedIds.has(u.id);
+                    const name = u.display_name || u.email;
+                    const role = primaryRole(u.roles);
+                    return (
+                      <TableRow
+                        key={u.id}
+                        onClick={() => setPreviewUser(u)}
+                        className={cn(
+                          "cursor-pointer transition-colors hover:bg-muted/40",
+                          isSelected && "bg-muted/40",
                         )}
-                      </TableCell>
-                      {lv.isVisible("name") && (
-                        <TableCell className="text-muted-foreground">
-                          {u.display_name ?? "—"}
-                        </TableCell>
-                      )}
-                      <TableCell>
-                        {u.roles && u.roles.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {u.roles.map((r) => (
-                              <Badge key={r} variant="secondary">
-                                {r}
-                              </Badge>
-                            ))}
+                      >
+                        {canWriteUsers ? (
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <RowCheckbox
+                              id={u.id}
+                              checked={isSelected}
+                              disabled={isSelf}
+                              label={t("list.selectOne", { email: u.email })}
+                              onChange={(id, checked) =>
+                                setSelectedIds((prev) => {
+                                  const next = new Set(prev);
+                                  if (checked) next.add(id);
+                                  else next.delete(id);
+                                  return next;
+                                })
+                              }
+                            />
+                          </TableCell>
+                        ) : null}
+
+                        {/* USER — identity first */}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="size-8 rounded-lg">
+                              <AvatarFallback className="rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
+                                {initials(name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <Link
+                                  to="/users/$userId"
+                                  params={{ userId: u.id }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="truncate font-medium hover:underline"
+                                >
+                                  {name}
+                                </Link>
+                                {isSelf && <Badge variant="muted">{t("list.you")}</Badge>}
+                              </div>
+                              <div className="truncate text-xs text-muted-foreground">
+                                {u.email}
+                              </div>
+                            </div>
                           </div>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <StatusPill status={u.status} />
-                      </TableCell>
-                      {lv.isVisible("verified") && (
+                        </TableCell>
+
+                        {/* ACCESS */}
                         <TableCell>
-                          {u.email_verified_at ? (
-                            <TimeSince value={u.email_verified_at} />
+                          {role ? (
+                            <div className="min-w-0">
+                              <div className="font-medium capitalize">{role}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {t("access.rolesGroups", {
+                                  roles: u.roles?.length ?? 0,
+                                  groups: u.groups_count ?? 0,
+                                })}
+                              </div>
+                            </div>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-muted-foreground">{t("access.noAccess")}</span>
                           )}
                         </TableCell>
-                      )}
-                      {lv.isVisible("created") && (
+
+                        {/* STATUS */}
                         <TableCell>
+                          <StatusPill status={u.status} dot />
+                        </TableCell>
+
+                        {/* SECURITY */}
+                        <TableCell>
+                          <SecurityCell user={u} />
+                        </TableCell>
+
+                        {/* LAST SEEN */}
+                        <TableCell className="text-sm text-muted-foreground">
+                          {u.last_seen_at ? (
+                            <TimeSince value={u.last_seen_at} />
+                          ) : (
+                            <span>{t("preview.never")}</span>
+                          )}
+                        </TableCell>
+
+                        {/* CREATED */}
+                        <TableCell className="text-sm text-muted-foreground">
                           <TimeSince value={u.created_at} />
                         </TableCell>
-                      )}
-                      {canWriteUsers ? (
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={t("table.editUser")}
-                              onClick={() => setEditing(u)}
-                            >
-                              <PencilIcon />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={t("table.setPassword")}
-                              onClick={() => setSettingPassword(u)}
-                            >
-                              <KeyRoundIcon />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={t("table.deleteUser")}
-                              disabled={isSelf}
-                              title={isSelf ? t("table.deleteSelf") : t("table.deleteUser")}
-                              onClick={() => setConfirmingDelete(u.id)}
-                            >
-                              <Trash2Icon className="text-destructive" />
-                            </Button>
-                          </div>
+
+                        {/* ACTIONS */}
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          <UserRowActions
+                            user={u}
+                            canWrite={canWriteUsers}
+                            isSelf={isSelf}
+                            handlers={rowHandlers}
+                          />
                         </TableCell>
-                      ) : null}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-            {(cursorStack.length > 0 || !!usersQ.data?.next_cursor) && (
-              <Pagination
-                hasPrev={cursorStack.length > 0}
-                hasNext={!!usersQ.data?.next_cursor}
-                onFirst={() => {
-                  setCursorStack([]);
-                  setSelectedIds(new Set());
-                }}
-                onNext={() => {
-                  const next = usersQ.data?.next_cursor;
-                  if (next) {
-                    setCursorStack((s) => [...s, next]);
-                    setSelectedIds(new Set());
-                  }
-                }}
-                itemsOnPage={rows.length}
-                pageSize={50}
-                loading={usersQ.isFetching}
-              />
-            )}
-          </DataState>
-        </CardContent>
-      </Card>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
 
-      {canCreateUsers ? (
-        <CreateUserSheet
-          open={creating}
-          onOpenChange={setCreating}
-          tenantId={tenantId}
-          onCreated={() => qc.invalidateQueries({ queryKey: ["users"] })}
-        />
-      ) : null}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+                <span className="text-sm text-muted-foreground">
+                  {total !== undefined
+                    ? t("pagination.showing", {
+                        start: rangeStart,
+                        end: rangeEnd,
+                        total: total.toLocaleString(),
+                      })
+                    : t("pagination.showingSimple", { start: rangeStart, end: rangeEnd })}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={String(pageSize)}
+                    onValueChange={(v) => v && changePageSize(Number(v))}
+                  >
+                    <SelectTrigger className="w-32" aria-label={t("pagination.pageSize")}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZES.map((n) => (
+                        <SelectItem key={n} value={String(n)}>
+                          {t("pagination.perPage", { n })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={!hasPrev || usersQ.isFetching}
+                      aria-label={t("pagination.prev")}
+                      onClick={() => goToPage(page - 1)}
+                    >
+                      <ChevronLeftIcon className="size-4" />
+                    </Button>
+                    {totalPages !== undefined
+                      ? pageWindow(page + 1, totalPages).map((p, i) =>
+                          p === "…" ? (
+                            <span
+                              // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis markers are positional
+                              key={`ellipsis-${i}`}
+                              className="px-1.5 text-sm text-muted-foreground"
+                            >
+                              …
+                            </span>
+                          ) : (
+                            <Button
+                              key={p}
+                              variant={p === page + 1 ? "default" : "outline"}
+                              size="icon"
+                              className="min-w-9"
+                              disabled={usersQ.isFetching}
+                              onClick={() => goToPage(p - 1)}
+                            >
+                              {p}
+                            </Button>
+                          ),
+                        )
+                      : null}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={!hasNext || usersQ.isFetching}
+                      aria-label={t("pagination.next")}
+                      onClick={() => goToPage(page + 1)}
+                    >
+                      <ChevronRightIcon className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </DataState>
+          </CardContent>
+        </Card>
 
-      {canWriteUsers ? (
-        <>
-          <EditUserSheet
-            user={editing}
-            isSelf={!!editing && editing.id === currentUserId}
-            onOpenChange={(o) => !o && setEditing(null)}
-            onSaved={() => {
-              setEditing(null);
-              qc.invalidateQueries({ queryKey: ["users"] });
-            }}
+        <UserPreviewDrawer user={previewUser} onClose={() => setPreviewUser(null)} />
+
+        {canCreateUsers ? (
+          <CreateUserSheet
+            open={creating}
+            onOpenChange={setCreating}
+            tenantId={tenantId}
+            onCreated={afterMutation}
           />
+        ) : null}
 
-          <SetPasswordSheet
-            user={settingPassword}
-            onOpenChange={(o) => !o && setSettingPassword(null)}
-            onSaved={() => setSettingPassword(null)}
-          />
-        </>
-      ) : null}
+        {canWriteUsers ? (
+          <>
+            <EditUserSheet
+              user={editing}
+              isSelf={!!editing && editing.id === currentUserId}
+              onOpenChange={(o) => !o && setEditing(null)}
+              onSaved={() => {
+                setEditing(null);
+                afterMutation();
+              }}
+            />
 
-      {canWriteUsers ? (
-        <AlertDialog
-          open={!!confirmingDelete}
-          onOpenChange={(o) => {
-            if (!o && !deleteM.isPending) setConfirmingDelete(null);
-          }}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t("delete.title")}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {(() => {
-                  const target = items.find((u) => u.id === confirmingDelete);
-                  return target ? (
-                    <Trans
-                      t={t}
-                      i18nKey="delete.descriptionNamed"
-                      values={{ email: target.email }}
-                      components={{
-                        strong: <span className="font-medium text-foreground" />,
-                      }}
-                    />
-                  ) : (
-                    t("delete.descriptionFallback")
-                  );
-                })()}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteM.isPending}>
-                {t("common:actions.cancel")}
-              </AlertDialogCancel>
-              <Button
-                variant="destructive"
-                disabled={deleteM.isPending}
-                onClick={() =>
-                  confirmingDelete &&
-                  deleteM.mutate(confirmingDelete, {
-                    onSuccess: () => setConfirmingDelete(null),
-                  })
-                }
-              >
-                {deleteM.isPending && <Loader2Icon className="animate-spin" />}
-                {deleteM.isPending ? t("common:actions.deleting") : t("common:actions.delete")}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      ) : null}
+            <SetPasswordSheet
+              user={settingPassword}
+              onOpenChange={(o) => !o && setSettingPassword(null)}
+              onSaved={() => setSettingPassword(null)}
+            />
+          </>
+        ) : null}
+      </div>
+    </TooltipProvider>
+  );
+}
+
+// Numbered-pager window: 1 … (n-1) n (n+1) … N, collapsing far pages to "…".
+function pageWindow(current: number, totalPages: number): (number | "…")[] {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+  const out: (number | "…")[] = [1];
+  if (current > 4) out.push("…");
+  const start = Math.max(2, current - 1);
+  const end = Math.min(totalPages - 1, current + 1);
+  for (let i = start; i <= end; i++) out.push(i);
+  if (current < totalPages - 3) out.push("…");
+  out.push(totalPages);
+  return out;
+}
+
+function SecurityCell({ user }: { user: User }) {
+  const { t } = useTranslation("users");
+  return (
+    <div className="flex flex-col gap-0.5 text-xs">
+      <span className="inline-flex items-center gap-1">
+        {user.email_verified_at ? (
+          <CheckCircle2Icon className="size-3.5 text-success" aria-hidden="true" />
+        ) : (
+          <ShieldAlertIcon className="size-3.5 text-warning" aria-hidden="true" />
+        )}
+        {t("security.email")}
+      </span>
+      <span className="inline-flex items-center gap-1">
+        {user.mfa_enabled ? (
+          <ShieldCheckIcon className="size-3.5 text-success" aria-hidden="true" />
+        ) : (
+          <ShieldAlertIcon className="size-3.5 text-warning" aria-hidden="true" />
+        )}
+        {user.mfa_enabled ? t("security.mfaOn") : t("security.mfaOff")}
+      </span>
     </div>
   );
 }
@@ -880,15 +1014,7 @@ function SetPasswordSheet({ user, onOpenChange, onSaved }: SetPasswordSheetProps
             <SheetHeader>
               <SheetTitle>{t("setPassword.title")}</SheetTitle>
               <SheetDescription>
-                <Trans
-                  t={t}
-                  i18nKey="setPassword.description"
-                  values={{ email: user.email }}
-                  components={{
-                    strong: <span className="font-medium text-foreground" />,
-                    path: <span className="font-mono text-xs" />,
-                  }}
-                />
+                {t("setPassword.descriptionPlain", { email: user.email })}
               </SheetDescription>
             </SheetHeader>
 

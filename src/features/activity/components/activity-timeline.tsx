@@ -2,32 +2,32 @@
 // grouped by date bucket. Renders live events first, then history pages
 // on demand via an IntersectionObserver sentinel.
 
-import {
-  Button,
-  cn,
-  EmptyState,
-  ScrollArea,
-  Separator,
-  Skeleton,
-  usePrefersReducedMotion,
-} from "@qeetrix/ui";
+import { Button, cn, EmptyState, ScrollArea, Skeleton, usePrefersReducedMotion } from "@qeetrix/ui";
 import { ActivityIcon, RefreshCwIcon, WifiOffIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import type { ActivitySearch } from "../activity-search";
 import type { ActivityEvent, ConnectionStatus, DateGroup } from "../types";
-import { EventCard } from "./event-card";
+import { ActivityEventRow, ActivityRowHeader } from "./activity-event-row";
 
 // ---------------------------------------------------------------------------
 // Date-group header
 // ---------------------------------------------------------------------------
 
-function GroupHeader({ label }: { label: string }) {
+function GroupHeader({ label, date }: { label: string; date?: string }) {
+  const dateStr = date
+    ? new Date(date).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-3 bg-background/90 px-1 py-2 backdrop-blur-sm">
+    <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border/50 bg-card/95 px-3 py-2 backdrop-blur-sm lg:px-4">
       <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
+        {dateStr && <span className="text-muted-foreground/70"> • {dateStr}</span>}
       </span>
-      <Separator className="flex-1" />
     </div>
   );
 }
@@ -76,6 +76,8 @@ type ActivityTimelineProps = {
   onLoadMore: () => void;
   /** Called when an event is selected (opens the details drawer). */
   onSelectEvent: (event: ActivityEvent) => void;
+  /** Apply a filter patch from a row's Investigate menu. */
+  onFilter?: (patch: Partial<ActivitySearch>) => void;
   /** The currently selected event (for aria-selected highlight). */
   selectedEventId?: string | null;
   /** True when the history fetch failed with a non-graceful error. */
@@ -84,6 +86,8 @@ type ActivityTimelineProps = {
   onRetryHistory?: () => void;
   /** Restart the SSE stream after it has given up. */
   onRetryStream?: () => void;
+  /** Hide the "All events loaded" end marker (the route renders a pager instead). */
+  hideEndMarker?: boolean;
 };
 
 /**
@@ -108,10 +112,12 @@ export function ActivityTimeline({
   hasNextPage,
   onLoadMore,
   onSelectEvent,
+  onFilter,
   selectedEventId,
   isError = false,
   onRetryHistory,
   onRetryStream,
+  hideEndMarker = false,
 }: ActivityTimelineProps) {
   const reducedMotion = usePrefersReducedMotion();
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -213,81 +219,75 @@ export function ActivityTimeline({
   }
 
   return (
-    <ScrollArea className="flex-1">
-      {/*
-        APG Feed pattern: role="feed" manages aria-posinset/setsize per article.
-        aria-live must NOT be on the same element — the Feed role is not a live
-        region. Critical-event announcements are handled by the assertive
-        visually-hidden region in activity.tsx.
-      */}
-      <div
-        role="feed"
-        aria-label="Activity event feed"
-        aria-busy={status === "reconnecting"}
-        className="flex flex-col gap-1 px-1 pb-6"
-      >
-        {groups.map((group) => (
-          <section key={group.label} aria-label={`${group.label} events`}>
-            <GroupHeader label={group.label} />
-            <div
-              className={cn(
-                "flex flex-col gap-2",
-                reducedMotion ? "" : "motion-safe:transition-all",
-              )}
-            >
-              {group.events.map((event, index) => {
-                const isNew = newEventIds.has(event.id);
-                const isSelected = event.id === selectedEventId;
-                const groupEvents = group.events;
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Column header (wide viewports only; decorative) */}
+      <ActivityRowHeader />
+      <ScrollArea className="flex-1">
+        {/*
+          APG Feed pattern: role="feed" manages aria-posinset/setsize per article.
+          aria-live must NOT be on the same element — the Feed role is not a live
+          region. Critical-event announcements are handled by the assertive
+          visually-hidden region in activity.tsx.
+        */}
+        <div
+          role="feed"
+          aria-label="Activity event feed"
+          aria-busy={status === "reconnecting"}
+          className="flex flex-col pb-6"
+        >
+          {groups.map((group) => (
+            <section key={group.label} aria-label={`${group.label} events`}>
+              <GroupHeader label={group.label} date={group.events[0]?.at} />
+              <div className={reducedMotion ? "" : "motion-safe:transition-all"}>
+                {group.events.map((event, index) => {
+                  const isNew = newEventIds.has(event.id);
+                  const isSelected = event.id === selectedEventId;
 
-                return (
-                  <div
-                    key={event.id}
-                    className={cn(
-                      "transition-colors duration-300",
-                      isNew && !reducedMotion && "motion-safe:animate-in motion-safe:fade-in-0",
-                    )}
-                    // Stagger new events slightly so they don't all pop in at once
-                    style={
-                      isNew && !reducedMotion
-                        ? {
-                            animationDelay: `${Math.min(index * 40, 400)}ms`,
-                          }
-                        : undefined
-                    }
-                  >
-                    <EventCard
-                      event={event}
-                      isNew={isNew}
-                      isSelected={isSelected}
-                      onClick={() => onSelectEvent(event)}
-                    />
-                    {/* Subtle separator between events (not after last in group) */}
-                    {index < groupEvents.length - 1 && <Separator className="mx-4 opacity-40" />}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        ))}
-
-        {/* Infinite scroll sentinel */}
-        {hasNextPage && (
-          <div ref={sentinelRef} className="py-2" aria-hidden="true">
-            {isFetchingNextPage && (
-              <div className="px-1">
-                <EventSkeletons />
+                  return (
+                    <div
+                      key={event.id}
+                      className={cn(
+                        isNew && !reducedMotion && "motion-safe:animate-in motion-safe:fade-in-0",
+                      )}
+                      // Stagger new events slightly so they don't all pop in at once
+                      style={
+                        isNew && !reducedMotion
+                          ? { animationDelay: `${Math.min(index * 40, 400)}ms` }
+                          : undefined
+                      }
+                    >
+                      <ActivityEventRow
+                        event={event}
+                        isNew={isNew}
+                        isSelected={isSelected}
+                        onSelect={() => onSelectEvent(event)}
+                        onFilter={onFilter}
+                      />
+                    </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        )}
+            </section>
+          ))}
 
-        {!hasNextPage && groups.length > 0 && (
-          <p className="py-4 text-center text-[11px] text-muted-foreground" aria-live="polite">
-            All events loaded
-          </p>
-        )}
-      </div>
-    </ScrollArea>
+          {/* Infinite scroll sentinel */}
+          {hasNextPage && (
+            <div ref={sentinelRef} className="py-2" aria-hidden="true">
+              {isFetchingNextPage && (
+                <div className="px-1">
+                  <EventSkeletons />
+                </div>
+              )}
+            </div>
+          )}
+
+          {!hasNextPage && groups.length > 0 && !hideEndMarker && (
+            <p className="py-4 text-center text-[11px] text-muted-foreground" aria-live="polite">
+              All events loaded
+            </p>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }

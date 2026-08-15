@@ -10,6 +10,8 @@ export function matchesFilters(event: ActivityEvent, filters: ActivityFilters): 
   if (filters.category.length > 0 && !filters.category.includes(event.category)) return false;
   if (filters.status && event.status !== filters.status) return false;
   if (filters.source && event.source !== filters.source) return false;
+  if (filters.ip && event.ip !== filters.ip) return false;
+  if (filters.resource && event.target?.type !== filters.resource) return false;
   if (filters.actor) {
     const q = filters.actor.toLowerCase();
     const actorMatch =
@@ -41,7 +43,9 @@ function hasActiveFilters(filters: ActivityFilters): boolean {
     !!filters.from ||
     !!filters.to ||
     !!filters.source ||
-    !!filters.status
+    !!filters.status ||
+    !!filters.ip ||
+    !!filters.resource
   );
 }
 
@@ -97,12 +101,18 @@ export function extractFilterOptions(events: ActivityEvent[]): {
   severities: Severity[];
   sources: string[];
   statuses: string[];
+  /** Distinct actors (id → best label), for the "All actors" facet. */
+  actors: { value: string; label: string }[];
+  /** Distinct resource types (event.target.type), for the "All resources" facet. */
+  resources: string[];
 } {
   const types = new Set<string>();
   const categories = new Set<string>();
   const severities = new Set<Severity>();
   const sources = new Set<string>();
   const statuses = new Set<string>();
+  const actors = new Map<string, string>(); // id → label
+  const resources = new Set<string>();
 
   for (const e of events) {
     types.add(e.type);
@@ -110,6 +120,11 @@ export function extractFilterOptions(events: ActivityEvent[]): {
     severities.add(e.severity);
     if (e.source) sources.add(e.source);
     if (e.status) statuses.add(e.status);
+    if (e.actor?.id) {
+      const label = e.actor.name ?? actors.get(e.actor.id) ?? e.actor.id;
+      actors.set(e.actor.id, label);
+    }
+    if (e.target?.type) resources.add(e.target.type);
   }
 
   return {
@@ -118,5 +133,9 @@ export function extractFilterOptions(events: ActivityEvent[]): {
     severities: Array.from(severities),
     sources: Array.from(sources).sort(),
     statuses: Array.from(statuses).sort(),
+    actors: Array.from(actors, ([value, label]) => ({ value, label })).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    ),
+    resources: Array.from(resources).sort(),
   };
 }

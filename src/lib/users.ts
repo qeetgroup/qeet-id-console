@@ -6,7 +6,7 @@
 // Tool run() functions call api() directly; these hooks are the UI layer.
 // Follow the house pattern: useMutation + api() + onSuccess invalidate + meta.
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "./api";
 import { useTenantId } from "./auth";
@@ -27,6 +27,51 @@ export interface User {
   roles?: string[] | null;
   created_at: string;
   updated_at?: string;
+  // List-only enrichment (populated by GET /v1/users; absent on single fetches).
+  mfa_enabled?: boolean;
+  groups_count?: number;
+  last_seen_at?: string | null;
+  last_seen_ip?: string | null;
+}
+
+/** Tenant-wide member counts for the Users KPI cards (GET /v1/users/stats). */
+export interface UserStats {
+  total: number;
+  active: number;
+  suspended: number;
+  invited: number;
+  mfa_enabled: number;
+  mfa_missing: number;
+  /** Members created in the last 30 days — the Total card's delta baseline. */
+  new_last_30d: number;
+}
+
+/** 30-day daily series (oldest → newest) for the KPI sparklines. */
+export interface UserTrends {
+  total: number[];
+  mfa_enabled: number[];
+}
+
+/** Directory summary counts. */
+export function useUserStats() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["user-stats", tenantId],
+    queryFn: () => api<UserStats>("/v1/users/stats"),
+    enabled: !!tenantId,
+    staleTime: 30_000,
+  });
+}
+
+/** 30-day trend series for the KPI sparklines. */
+export function useUserTrends() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["user-trends", tenantId],
+    queryFn: () => api<UserTrends>("/v1/users/trends"),
+    enabled: !!tenantId,
+    staleTime: 60_000,
+  });
 }
 
 export interface CreateUserInput {

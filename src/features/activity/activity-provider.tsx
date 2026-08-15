@@ -78,7 +78,18 @@ const ActivityContext = createContext<ActivityContextValue | null>(null);
 // Provider
 // ---------------------------------------------------------------------------
 
-export function ActivityProvider({ children }: { children: ReactNode }) {
+export function ActivityProvider({
+  children,
+  filters: controlledFilters,
+  onFiltersChange,
+}: {
+  children: ReactNode;
+  /** When provided the provider is controlled (URL-driven); internal state is
+   *  bypassed. Omit for uncontrolled use (e.g. the dashboard widget). */
+  filters?: ActivityFilters;
+  /** Called with a filter patch when a context consumer mutates filters. */
+  onFiltersChange?: (patch: Partial<ActivityFilters>) => void;
+}) {
   const access = useCapabilities();
   const canRead = access.can("audit.read");
 
@@ -88,8 +99,11 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
   const paused = useStore(activityStore, (s) => s.paused);
   const status = useStore(activityStore, (s) => s.status);
 
-  // Filters — local state (not persisted; too ephemeral)
-  const [filters, setFiltersState] = useState<ActivityFilters>(DEFAULT_FILTERS);
+  // Filters — controlled by the URL when `controlledFilters` is provided,
+  // otherwise held in local state (uncontrolled fallback).
+  const isControlled = controlledFilters !== undefined;
+  const [internalFilters, setFiltersState] = useState<ActivityFilters>(DEFAULT_FILTERS);
+  const filters = controlledFilters ?? internalFilters;
 
   // Track IDs that were already in the store when this provider mounted
   // so we can highlight events that arrived after navigation.
@@ -137,10 +151,22 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
   }, [liveEvents]);
 
   const setFilters = useCallback(
-    (patch: Partial<ActivityFilters>) => setFiltersState((prev) => ({ ...prev, ...patch })),
-    [],
+    (patch: Partial<ActivityFilters>) => {
+      if (isControlled) {
+        onFiltersChange?.(patch);
+      } else {
+        setFiltersState((prev) => ({ ...prev, ...patch }));
+      }
+    },
+    [isControlled, onFiltersChange],
   );
-  const resetFilters = useCallback(() => setFiltersState(DEFAULT_FILTERS), []);
+  const resetFilters = useCallback(() => {
+    if (isControlled) {
+      onFiltersChange?.(DEFAULT_FILTERS);
+    } else {
+      setFiltersState(DEFAULT_FILTERS);
+    }
+  }, [isControlled, onFiltersChange]);
   const fetchNextPage = useCallback(() => {
     void history.fetchNextPage();
   }, [history.fetchNextPage]);

@@ -1,18 +1,11 @@
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   DataState,
   Field,
   FieldDescription,
@@ -40,349 +33,321 @@ import {
   TableHeader,
   TableRow,
   TimeSince,
+  TooltipProvider,
 } from "@qeetrix/ui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import {
-  Building2Icon,
-  Loader2Icon,
-  PencilIcon,
-  PlusIcon,
-  RefreshCwIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Building2Icon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useConfirmDialog } from "@/components/confirm-dialog";
 import { ListToolbar, SortHeader } from "@/components/data-table";
 import { LogoField } from "@/components/logo-field";
 import { PageHeader } from "@/components/page-header";
+import { useCapabilities } from "@/features/access-control/capability-provider";
+import { type OrgActionHandlers, OrgRowActions } from "@/features/orgs-list/org-row-actions";
+import { OrgPreviewDrawer } from "@/features/orgs-list/org-preview-drawer";
+import { type OrgKpiFilter, OrgsKpis } from "@/features/orgs-list/orgs-kpis";
+import { initials } from "@/features/users-list/helpers";
 import { CreateOrgFlow } from "@/features/onboarding/create-org-flow";
 import { type ApiError, api, tokenStore } from "@/lib/api";
-import { switchToTenant } from "@/lib/auth";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
 import { useListView } from "@/lib/list-view";
+import { type Org, useDeleteOrg, useOrgs, useUpdateOrg } from "@/lib/orgs";
 import { REGIONS } from "@/lib/regions";
 
 export const Route = createFileRoute("/_app/organizations/tenants")({
   component: TenantsPage,
 });
 
-type Tenant = {
-  id: string;
-  slug: string;
-  name: string;
-  status: "active" | "suspended" | "deleted";
-  plan: string;
-  region: string;
-  logo_url: string;
-  created_at: string;
-};
-
-const tenantCsvColumns: CsvColumn<Tenant>[] = [
-  { header: "id", value: (row) => row.id },
-  { header: "name", value: (row) => row.name },
-  { header: "slug", value: (row) => row.slug },
-  { header: "plan", value: (row) => row.plan },
-  { header: "region", value: (row) => row.region },
-  { header: "status", value: (row) => row.status },
-  { header: "created_at", value: (row) => row.created_at },
+const orgCsvColumns: CsvColumn<Org>[] = [
+  { header: "id", value: (o) => o.id },
+  { header: "name", value: (o) => o.name },
+  { header: "slug", value: (o) => o.slug },
+  { header: "plan", value: (o) => o.plan },
+  { header: "region", value: (o) => o.region },
+  { header: "status", value: (o) => o.status },
+  { header: "member_count", value: (o) => String(o.member_count ?? "") },
+  { header: "created_at", value: (o) => o.created_at },
 ];
 
 function TenantsPage() {
   const { t } = useTranslation("organizations");
   const qc = useQueryClient();
   const currentTenantId = tokenStore.getTenantId();
+  const access = useCapabilities();
+  const canWrite = access.can("tenant.write");
+  const [confirmDialog, openConfirm] = useConfirmDialog();
   const [creating, setCreating] = useState(false);
-  const [editing, setEditing] = useState<Tenant | null>(null);
-  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Org | null>(null);
+  const [previewOrg, setPreviewOrg] = useState<Org | null>(null);
 
-  const listQ = useQuery({
-    queryKey: ["tenants"],
-    queryFn: () => api<{ items: Tenant[] }>("/v1/tenants"),
-  });
-
+  const listQ = useOrgs();
   const items = listQ.data?.items ?? [];
+  const updateOrg = useUpdateOrg();
+  const deleteOrg = useDeleteOrg();
+
   const lv = useListView(items, {
-    searchFields: (row) => [row.name, row.slug, row.region],
-    filterFields: { status: (row) => row.status, plan: (row) => row.plan },
+    searchFields: (o) => [o.name, o.slug, o.region, o.id],
+    filterFields: {
+      status: (o) => o.status,
+      plan: (o) => o.plan,
+      region: (o) => o.region,
+    },
     sortFields: {
-      name: (row) => row.name,
-      plan: (row) => row.plan,
-      created: (row) => row.created_at,
+      name: (o) => o.name,
+      plan: (o) => o.plan,
+      members: (o) => o.member_count ?? 0,
+      created: (o) => o.created_at,
     },
   });
   const rows = lv.view;
   const denseCls = lv.density === "compact" ? "[&_td]:py-1.5 [&_th]:py-2" : undefined;
 
-  const deleteM = useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/tenants/${id}`, { method: "DELETE" }),
-    onSuccess: () => {
-      setConfirmingDelete(null);
-      qc.invalidateQueries({ queryKey: ["tenants"] });
+  const rowHandlers: OrgActionHandlers = {
+    onEdit: setEditing,
+    onToggleSuspend: (o) => {
+      if (o.status === "suspended") {
+        updateOrg.mutate({ id: o.id, body: { status: "active" } });
+        return;
+      }
+      openConfirm({
+        title: t("suspend.title"),
+        description: t("suspend.description", { name: o.name }),
+        variant: "destructive",
+        confirmLabel: t("rowActions.suspend"),
+        onConfirm: () => updateOrg.mutate({ id: o.id, body: { status: "suspended" } }),
+      });
     },
-    meta: { successMessage: "Tenant deleted" },
-  });
+    onDelete: (o) =>
+      openConfirm({
+        title: t("tenants.delete.title"),
+        description: t("delete.description", { name: o.name, slug: o.slug }),
+        variant: "destructive",
+        confirmLabel: t("tenants.delete.delete"),
+        onConfirm: () => deleteOrg.mutate(o.id),
+      }),
+  };
+
+  function handleKpiFilter(f: OrgKpiFilter) {
+    lv.setSearch("");
+    lv.setFilter("status", f === "all" ? "" : f);
+  }
+
+  const regionOptions = REGIONS.map((r) => ({ label: r.label, value: r.value }));
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader
-        description={t("tenants.description")}
-        actions={
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => listQ.refetch()}
-              disabled={listQ.isFetching}
-            >
-              <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
-              {t("tenants.refresh")}
-            </Button>
-            <Button size="sm" onClick={() => setCreating(true)}>
-              <PlusIcon /> {t("tenants.new")}
-            </Button>
-          </>
-        }
-      />
+    <TooltipProvider>
+      <div className="flex min-w-0 flex-col gap-4">
+        {confirmDialog}
+        <PageHeader
+          description={t("tenants.description")}
+          actions={
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => listQ.refetch()}
+                disabled={listQ.isFetching}
+              >
+                <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
+                {t("tenants.refresh")}
+              </Button>
+              <Button size="sm" onClick={() => setCreating(true)}>
+                <PlusIcon /> {t("tenants.new")}
+              </Button>
+            </>
+          }
+        />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("tenants.list.title")}</CardTitle>
-          <CardDescription>
-            {t("tenants.list.count", {
-              shown: rows.length,
-              total: items.length,
-            })}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ListToolbar
-            search={lv.search}
-            onSearchChange={lv.setSearch}
-            searchPlaceholder={t("tenants.list.searchPlaceholder")}
-            filters={[
-              {
-                id: "status",
-                label: t("tenants.filters.status.label"),
-                value: lv.filters.status ?? "",
-                options: [
-                  {
-                    label: t("tenants.filters.status.active"),
-                    value: "active",
-                  },
-                  {
-                    label: t("tenants.filters.status.suspended"),
-                    value: "suspended",
-                  },
-                  {
-                    label: t("tenants.filters.status.deleted"),
-                    value: "deleted",
-                  },
-                ],
-                onChange: (v) => lv.setFilter("status", v),
-              },
-              {
-                id: "plan",
-                label: t("tenants.filters.plan.label"),
-                value: lv.filters.plan ?? "",
-                options: [
-                  { label: t("tenants.filters.plan.free"), value: "free" },
-                  {
-                    label: t("tenants.filters.plan.starter"),
-                    value: "starter",
-                  },
-                  { label: t("tenants.filters.plan.pro"), value: "pro" },
-                  {
-                    label: t("tenants.filters.plan.enterprise"),
-                    value: "enterprise",
-                  },
-                ],
-                onChange: (v) => lv.setFilter("plan", v),
-              },
-            ]}
-            columns={[
-              { id: "slug", label: t("tenants.columns.slug") },
-              { id: "plan", label: t("tenants.columns.plan") },
-              { id: "region", label: t("tenants.columns.region") },
-              { id: "created", label: t("tenants.columns.created") },
-            ]}
-            isColumnVisible={lv.isVisible}
-            onToggleColumn={lv.toggleColumn}
-            density={lv.density}
-            onDensityChange={lv.setDensity}
-            onExport={(fmt) =>
-              fmt === "csv"
-                ? exportToCsv("tenants", rows, tenantCsvColumns)
-                : exportToJson("tenants", rows)
-            }
-            exportDisabled={rows.length === 0}
-            hasActiveFilters={lv.hasActiveFilters}
-            onClear={lv.clear}
-          />
-          <DataState
-            isLoading={listQ.isLoading}
-            isError={listQ.isError}
-            error={listQ.error}
-            isEmpty={rows.length === 0}
-            emptyIcon={Building2Icon}
-            emptyTitle={
-              lv.hasActiveFilters ? t("tenants.list.emptyFiltered") : t("tenants.list.empty")
-            }
-            skeletonRows={3}
-          >
-            <Table className={denseCls}>
-              <TableHeader>
-                <TableRow>
-                  <SortHeader columnKey="name" sort={lv.sort} onToggle={lv.toggleSort}>
-                    {t("tenants.columns.name")}
-                  </SortHeader>
-                  {lv.isVisible("slug") && <TableHead>{t("tenants.columns.slug")}</TableHead>}
-                  {lv.isVisible("plan") && (
+        <OrgsKpis orgs={items} loading={listQ.isLoading} onFilter={handleKpiFilter} />
+
+        <Card>
+          <CardContent className="p-0">
+            <ListToolbar
+              search={lv.search}
+              onSearchChange={lv.setSearch}
+              searchPlaceholder={t("tenants.list.searchPlaceholder")}
+              filters={[
+                {
+                  id: "status",
+                  label: t("tenants.filters.status.label"),
+                  value: lv.filters.status ?? "",
+                  options: [
+                    { label: t("tenants.filters.status.active"), value: "active" },
+                    { label: t("tenants.filters.status.suspended"), value: "suspended" },
+                    { label: t("tenants.filters.status.deleted"), value: "deleted" },
+                  ],
+                  onChange: (v) => lv.setFilter("status", v),
+                },
+                {
+                  id: "plan",
+                  label: t("tenants.filters.plan.label"),
+                  value: lv.filters.plan ?? "",
+                  options: [
+                    { label: t("tenants.filters.plan.free"), value: "free" },
+                    { label: t("tenants.filters.plan.starter"), value: "starter" },
+                    { label: t("tenants.filters.plan.pro"), value: "pro" },
+                    { label: t("tenants.filters.plan.enterprise"), value: "enterprise" },
+                  ],
+                  onChange: (v) => lv.setFilter("plan", v),
+                },
+                {
+                  id: "region",
+                  label: t("tenants.columns.region"),
+                  value: lv.filters.region ?? "",
+                  options: regionOptions,
+                  onChange: (v) => lv.setFilter("region", v),
+                },
+              ]}
+              density={lv.density}
+              onDensityChange={lv.setDensity}
+              onExport={(fmt) =>
+                fmt === "csv"
+                  ? exportToCsv("organizations", rows, orgCsvColumns)
+                  : exportToJson("organizations", rows)
+              }
+              exportDisabled={rows.length === 0}
+              hasActiveFilters={lv.hasActiveFilters}
+              onClear={lv.clear}
+            />
+            <DataState
+              isLoading={listQ.isLoading}
+              isError={listQ.isError}
+              error={listQ.error}
+              isEmpty={rows.length === 0}
+              emptyIcon={Building2Icon}
+              emptyTitle={
+                lv.hasActiveFilters ? t("tenants.list.emptyFiltered") : t("tenants.list.empty")
+              }
+              skeletonRows={3}
+            >
+              <Table className={denseCls}>
+                <TableHeader>
+                  <TableRow>
+                    <SortHeader columnKey="name" sort={lv.sort} onToggle={lv.toggleSort}>
+                      {t("table.organization")}
+                    </SortHeader>
                     <SortHeader columnKey="plan" sort={lv.sort} onToggle={lv.toggleSort}>
                       {t("tenants.columns.plan")}
                     </SortHeader>
-                  )}
-                  {lv.isVisible("region") && <TableHead>{t("tenants.columns.region")}</TableHead>}
-                  <TableHead>{t("tenants.columns.status")}</TableHead>
-                  {lv.isVisible("created") && (
+                    <TableHead>{t("tenants.columns.region")}</TableHead>
+                    <SortHeader columnKey="members" sort={lv.sort} onToggle={lv.toggleSort}>
+                      {t("table.members")}
+                    </SortHeader>
+                    <TableHead>{t("tenants.columns.status")}</TableHead>
                     <SortHeader columnKey="created" sort={lv.sort} onToggle={lv.toggleSort}>
                       {t("tenants.columns.created")}
                     </SortHeader>
-                  )}
-                  <TableHead className="text-right">{t("tenants.columns.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-medium">
-                      {row.name}
-                      {row.id === currentTenantId && (
-                        <Badge variant="muted" className="ml-2">
-                          {t("tenants.table.current")}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    {lv.isVisible("slug") && (
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {row.slug}
-                      </TableCell>
-                    )}
-                    {lv.isVisible("plan") && (
-                      <TableCell>
-                        <Badge variant="muted">{row.plan}</Badge>
-                      </TableCell>
-                    )}
-                    {lv.isVisible("region") && (
-                      <TableCell className="text-muted-foreground">{row.region}</TableCell>
-                    )}
-                    <TableCell>
-                      <StatusPill status={row.status} />
-                    </TableCell>
-                    {lv.isVisible("created") && (
-                      <TableCell>
-                        <TimeSince value={row.created_at} />
-                      </TableCell>
-                    )}
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={row.id === currentTenantId}
-                          onClick={() => void switchToTenant(row.id)}
-                        >
-                          {t("tenants.table.switch")}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={t("tenants.table.editLabel")}
-                          onClick={() => setEditing(row)}
-                        >
-                          <PencilIcon />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={t("tenants.table.deleteLabel")}
-                          disabled={row.id === currentTenantId}
-                          title={
-                            row.id === currentTenantId
-                              ? t("tenants.table.deleteSelfTitle")
-                              : t("tenants.table.deleteLabel")
-                          }
-                          onClick={() => setConfirmingDelete(row.id)}
-                        >
-                          <Trash2Icon className="text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    <TableHead className="w-10 text-right">
+                      <span className="sr-only">{t("tenants.columns.actions")}</span>
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </DataState>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((org) => {
+                    const isCurrent = org.id === currentTenantId;
+                    return (
+                      <TableRow
+                        key={org.id}
+                        onClick={() => setPreviewOrg(org)}
+                        className="cursor-pointer transition-colors hover:bg-muted/40"
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="size-8 rounded-lg">
+                              {org.logo_url ? (
+                                <AvatarImage src={org.logo_url} alt={org.name} />
+                              ) : null}
+                              <AvatarFallback className="rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
+                                {initials(org.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <Link
+                                  to="/organizations/$orgId"
+                                  params={{ orgId: org.id }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="truncate font-medium hover:underline"
+                                >
+                                  {org.name}
+                                </Link>
+                                {isCurrent && (
+                                  <Badge variant="muted">{t("tenants.table.current")}</Badge>
+                                )}
+                              </div>
+                              <div className="truncate font-mono text-xs text-muted-foreground">
+                                {org.slug}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="muted" className="capitalize">
+                            {org.plan}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{org.region || "—"}</TableCell>
+                        <TableCell>
+                          <div className="font-medium tabular-nums">{org.member_count ?? 0}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {t("table.withMfa", { n: org.mfa_enabled_count ?? 0 })}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <StatusPill status={org.status} dot />
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          <TimeSince value={org.created_at} />
+                        </TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                          <OrgRowActions
+                            org={org}
+                            isCurrent={isCurrent}
+                            canWrite={canWrite}
+                            handlers={rowHandlers}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              <div className="border-t px-4 py-3 text-sm text-muted-foreground">
+                {t("tenants.list.count", {
+                  shown: rows.length,
+                  total: items.length,
+                  count: items.length,
+                })}
+              </div>
+            </DataState>
+          </CardContent>
+        </Card>
 
-      <CreateTenantSheet
-        open={creating}
-        onOpenChange={setCreating}
-        onCreated={() => qc.invalidateQueries({ queryKey: ["tenants"] })}
-      />
+        <OrgPreviewDrawer
+          org={previewOrg}
+          isCurrent={previewOrg?.id === currentTenantId}
+          onClose={() => setPreviewOrg(null)}
+        />
 
-      <EditTenantSheet
-        tenant={editing}
-        onOpenChange={(o) => !o && setEditing(null)}
-        onSaved={() => {
-          setEditing(null);
-          qc.invalidateQueries({ queryKey: ["tenants"] });
-        }}
-      />
+        <CreateTenantSheet
+          open={creating}
+          onOpenChange={setCreating}
+          onCreated={() => qc.invalidateQueries({ queryKey: ["tenants"] })}
+        />
 
-      <AlertDialog
-        open={!!confirmingDelete}
-        onOpenChange={(o) => {
-          if (!o && !deleteM.isPending) setConfirmingDelete(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("tenants.delete.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {(() => {
-                const target = listQ.data?.items?.find((item) => item.id === confirmingDelete);
-                return target ? (
-                  <>
-                    {t("tenants.delete.descriptionPrefix")}{" "}
-                    <span className="font-medium text-foreground">{target.name}</span> (
-                    <span className="font-mono text-xs">{target.slug}</span>)
-                    {t("tenants.delete.descriptionSuffix")}
-                  </>
-                ) : (
-                  t("tenants.delete.descriptionFallback")
-                );
-              })()}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteM.isPending}>
-              {t("tenants.delete.cancel")}
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              disabled={deleteM.isPending}
-              onClick={() => confirmingDelete && deleteM.mutate(confirmingDelete)}
-            >
-              {deleteM.isPending && <Loader2Icon className="animate-spin" />}
-              {deleteM.isPending ? t("tenants.delete.deleting") : t("tenants.delete.delete")}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+        <EditTenantSheet
+          tenant={editing}
+          onOpenChange={(o) => !o && setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            qc.invalidateQueries({ queryKey: ["tenants"] });
+          }}
+        />
+      </div>
+    </TooltipProvider>
   );
 }
 
@@ -394,12 +359,9 @@ type CreateTenantSheetProps = {
 
 // Creating an additional organization runs the same plan → name → pay flow as
 // first-run onboarding (CreateOrgFlow), so a paid org actually charges through
-// Razorpay instead of just setting a plan label. Plans are stacked to fit the
-// sheet's width; the flow persists the new tenant-scoped token and reloads into
-// the freshly-created org.
+// Razorpay instead of just setting a plan label.
 function CreateTenantSheet({ open, onOpenChange }: CreateTenantSheetProps) {
   const { t } = useTranslation("organizations");
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex w-full flex-col sm:max-w-xl">
@@ -416,7 +378,7 @@ function CreateTenantSheet({ open, onOpenChange }: CreateTenantSheetProps) {
 }
 
 type EditTenantSheetProps = {
-  tenant: Tenant | null;
+  tenant: Org | null;
   onOpenChange: (o: boolean) => void;
   onSaved: () => void;
 };
@@ -436,8 +398,6 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
   const [region, setRegion] = useState<string>(tenant?.region ?? "");
   const [logo, setLogo] = useState<string>(tenant?.logo_url ?? "");
 
-  // Reset fields when the editing target changes — without this the sheet
-  // would keep the previous tenant's status/region/logo on the second open.
   const lastId = useState<string | null>(null);
   if (tenant && tenant.id !== lastId[0]) {
     lastId[1](tenant.id);
@@ -448,7 +408,7 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
 
   const updateM = useMutation({
     mutationFn: (body: UpdateBody) =>
-      api<Tenant>(`/v1/tenants/${tenant!.id}`, { method: "PATCH", body }),
+      api<Org>(`/v1/tenants/${tenant!.id}`, { method: "PATCH", body }),
     onSuccess: onSaved,
     meta: { successMessage: "Tenant updated" },
   });

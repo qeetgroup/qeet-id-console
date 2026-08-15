@@ -85,6 +85,96 @@
       "updated": "Tenant updated"
     }
   },
+  "kpi": {
+    "total": "Organizations",
+    "active": "Active",
+    "suspended": "Suspended",
+    "members": "Members",
+    "mfaMembers": "MFA-enabled members",
+    "ofTotal": "{{pct}}% of total"
+  },
+  "table": {
+    "organization": "Organization",
+    "members": "Members",
+    "withMfa": "{{n}} with MFA"
+  },
+  "rowActions": {
+    "open": "Open organization",
+    "edit": "Edit organization",
+    "suspend": "Suspend",
+    "activate": "Reactivate",
+    "delete": "Delete organization"
+  },
+  "preview": {
+    "copyId": "Copy organization ID",
+    "plan": "Plan",
+    "region": "Region",
+    "members": "Members",
+    "mfaMembers": "MFA-enabled members",
+    "created": "Created",
+    "switchHint": "Switch to this organization to view members, activity, and billing.",
+    "open": "Open Org 360"
+  },
+  "suspend": {
+    "title": "Suspend this organization?",
+    "description": "Members of {{name}} won’t be able to sign in until it’s reactivated."
+  },
+  "delete": {
+    "description": "This soft-deletes {{name}} ({{slug}}). Audit history is preserved."
+  },
+  "detail": {
+    "back": "Back to organizations",
+    "notFound": "Organization not found, or you don’t have access to it.",
+    "actions": "Actions",
+    "orgId": "Org ID",
+    "tabs": {
+      "overview": "Overview",
+      "members": "Members",
+      "security": "Security",
+      "billing": "Billing",
+      "activity": "Activity"
+    },
+    "switchGateTitle": "Switch to view this organization",
+    "switchGateDesc": "Members, security, billing and activity for {{name}} are only available while it’s your active organization.",
+    "identity": "Identity",
+    "updated": "Last updated",
+    "membersSummary": "Members",
+    "membersSummaryDesc": "Directory size and MFA coverage.",
+    "mau": "Monthly active",
+    "mfaAdoption": "MFA adoption",
+    "overviewSwitchHint": "Switch to this organization for live analytics (active users, MFA adoption).",
+    "membersDesc": "People who belong to this organization.",
+    "membersEmpty": "No members found.",
+    "memberCols": { "user": "User", "roles": "Roles", "mfa": "MFA" },
+    "on": "On",
+    "off": "Off",
+    "manageMembers": "Manage members",
+    "loginMethods": "Login methods",
+    "loginMethodsDesc": "Authentication methods enabled for this organization.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "password": "Password",
+    "passkeys": "Passkeys",
+    "magicLink": "Magic link",
+    "otpEmail": "Email OTP",
+    "otpSms": "SMS OTP",
+    "selfReg": "Self-registration",
+    "passwordPolicy": "Password policy",
+    "minLength": "Minimum length",
+    "reqUpper": "Require uppercase",
+    "reqNumber": "Require number",
+    "reqSymbol": "Require symbol",
+    "subscription": "Subscription",
+    "noSubscription": "No active subscription.",
+    "amount": "Amount",
+    "renews": "Renews",
+    "invoices": "Invoices",
+    "noInvoices": "No invoices yet.",
+    "invoiceCols": { "date": "Date", "amount": "Amount" },
+    "activityDesc": "Recent audit events across this organization.",
+    "activityEmpty": "No activity recorded.",
+    "auditCols": { "action": "Action", "resource": "Resource", "ip": "IP", "when": "When" }
+  },
   "domains": {
     "description": "Prove ownership of your email domains to enable organization SSO and just-in-time provisioning. Add a DNS TXT record, then verify.",
     "add": "Add domain",
