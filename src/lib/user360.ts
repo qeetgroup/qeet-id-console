@@ -118,16 +118,17 @@ export function useUserSessions(userId: string, enabled = true) {
   return useQuery({
     queryKey: USER360_KEYS.sessions(userId),
     queryFn: () => api<{ items: UserSession[] }>(`/v1/users/${userId}/sessions`),
-    enabled,
+    enabled: enabled && !!userId,
     staleTime: 15_000,
   });
 }
 
 /** Access summary — organization, roles, groups, applications, policies. */
-export function useUserAccess(userId: string) {
+export function useUserAccess(userId: string, enabled = true) {
   return useQuery({
     queryKey: USER360_KEYS.access(userId),
     queryFn: () => api<AccessSummary>(`/v1/users/${userId}/access`),
+    enabled: enabled && !!userId,
     staleTime: 30_000,
   });
 }
@@ -153,7 +154,7 @@ export function useUserPermissions(userId: string) {
         throw err;
       }
     },
-    enabled: !!tenantId,
+    enabled: !!tenantId && !!userId,
     staleTime: 30_000,
   });
 }
@@ -172,6 +173,7 @@ export function useUserSocialIdentities(userId: string) {
         throw err;
       }
     },
+    enabled: !!userId,
     staleTime: 60_000,
   });
 }
@@ -194,7 +196,7 @@ export function useUserRecentActivity(userId: string, limit = 6, enabled = true)
         throw err;
       }
     },
-    enabled,
+    enabled: enabled && !!userId,
     staleTime: 15_000,
   });
 }

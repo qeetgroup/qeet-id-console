@@ -41,8 +41,8 @@ import { toast } from "sonner";
 
 import { useCapabilities } from "@/features/access-control/capability-provider";
 import { useApplyOnboardingProfile } from "@/features/onboarding/use-apply-onboarding-profile";
-import { ApiError } from "@/lib/api";
 import { formatShortDate, useAnalyticsOverview } from "@/lib/analytics";
+import { ApiError } from "@/lib/api";
 import { useAcceptInvitation, useDeclineInvitation, useMyInvitations } from "@/lib/auth";
 
 import {
@@ -59,6 +59,14 @@ import {
   LoginMethodMixPanel,
   MfaAdoptionPanel,
 } from "./dashboard-charts";
+import {
+  AttentionRequiredPanel,
+  EnterpriseOverviewPanel,
+  IdentityHealthPanel,
+  PlanUsagePanel,
+  SecurityPosturePanel,
+  SessionOverviewPanel,
+} from "./dashboard-insights";
 import {
   type DashboardMetric,
   DashboardMetricRail,
@@ -158,6 +166,8 @@ export function DashboardOverview() {
   const access = useCapabilities();
   const canViewAnalytics = access.can("analytics.read");
   const canViewAudit = access.can("audit.read");
+  const canViewConnections = access.can("connection.read");
+  const canViewBilling = access.can("billing.read");
   const canInvite = access.canAll(["user.read", "user.write", "role.read"]);
   const analytics = useAnalyticsOverview(canViewAnalytics);
   const [range, setRange] = useState<DashboardRange>("14d");
@@ -334,6 +344,26 @@ export function DashboardOverview() {
         </section>
       )}
 
+      {canViewAnalytics ? (
+        <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-12">
+          <AttentionRequiredPanel
+            className="xl:col-span-5"
+            overview={overview}
+            loading={analytics.isLoading}
+          />
+          <IdentityHealthPanel
+            className="xl:col-span-4"
+            overview={overview}
+            loading={analytics.isLoading}
+          />
+          <SessionOverviewPanel
+            className="xl:col-span-3"
+            overview={overview}
+            loading={analytics.isLoading}
+          />
+        </div>
+      ) : null}
+
       <div className="grid gap-3">
         <OnboardingChecklist />
         <PasskeyPromptCard />
@@ -368,6 +398,20 @@ export function DashboardOverview() {
         {canViewAudit ? <RecentActivityPanel className="xl:col-span-8" /> : null}
         <OperatorActionsPanel className="xl:col-span-4" />
       </div>
+
+      {canViewAnalytics || canViewConnections || canViewBilling ? (
+        <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-12">
+          {canViewAnalytics ? (
+            <SecurityPosturePanel
+              className="xl:col-span-4"
+              overview={overview}
+              loading={analytics.isLoading}
+            />
+          ) : null}
+          {canViewConnections ? <EnterpriseOverviewPanel className="xl:col-span-4" /> : null}
+          {canViewBilling ? <PlanUsagePanel className="xl:col-span-4" /> : null}
+        </div>
+      ) : null}
     </div>
   );
 }
