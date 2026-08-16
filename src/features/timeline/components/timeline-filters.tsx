@@ -1,17 +1,35 @@
-// Timeline filter bar — category chips + severity chips + search input + date range.
+// Timeline filter bar — a compact, dropdown-driven control surface.
+// Primary row: full-text search + time-range preset. Secondary row: Category
+// and Severity multi-select dropdowns. Active selections render as removable
+// chips so the applied filter set is always legible without reopening menus.
 // Capability-aware: requires audit.read + user.read to be interactive.
 
-import { Badge, Chip, ChipGroup, cn, Input, Separator } from "@qeetrix/ui";
-import { SearchIcon, XIcon } from "lucide-react";
-import { useCallback } from "react";
+import {
+  Button,
+  cn,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+  Input,
+} from "@qeetrix/ui";
+import { ChevronDownIcon, ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
+import { useCallback, useState } from "react";
 
 import { useCapabilities } from "@/features/access-control/capability-provider";
+import {
+  ActivityTimeRange,
+  type DateRange,
+  presetToRange,
+  TIME_PRESETS,
+} from "@/features/activity/components/activity-time-range";
 import type { Severity } from "@/features/activity/types";
 import { useTimeline } from "../timeline-provider";
-import type { TimelineFilters as TimelineFiltersState } from "../timeline-store";
 
 // ---------------------------------------------------------------------------
-// Constants
+// Options
 // ---------------------------------------------------------------------------
 
 const CATEGORY_OPTIONS = [
@@ -29,22 +47,78 @@ const CATEGORY_OPTIONS = [
   { value: "administration", label: "Administration" },
 ] as const;
 
-const SEVERITY_OPTIONS: { value: Severity; label: string }[] = [
-  { value: "info", label: "Info" },
-  { value: "success", label: "Success" },
-  { value: "warning", label: "Warning" },
-  { value: "error", label: "Error" },
-  { value: "critical", label: "Critical" },
+const SEVERITY_OPTIONS: { value: Severity; label: string; dot: string }[] = [
+  { value: "info", label: "Info", dot: "bg-info" },
+  { value: "success", label: "Success", dot: "bg-success" },
+  { value: "warning", label: "Warning", dot: "bg-warning" },
+  { value: "error", label: "Error", dot: "bg-destructive" },
+  { value: "critical", label: "Critical", dot: "bg-destructive" },
 ];
 
-const SEVERITY_CLASS: Record<Severity, string> = {
-  info: "data-[selected]:bg-info data-[selected]:text-info-foreground",
-  success: "data-[selected]:bg-success data-[selected]:text-success-foreground",
-  warning: "data-[selected]:bg-warning data-[selected]:text-warning-foreground",
-  error: "data-[selected]:bg-destructive data-[selected]:text-destructive-foreground",
-  critical:
-    "data-[selected]:bg-destructive data-[selected]:text-destructive-foreground data-[selected]:ring-2 data-[selected]:ring-destructive/30",
-};
+const CATEGORY_LABEL: Record<string, string> = Object.fromEntries(
+  CATEGORY_OPTIONS.map((o) => [o.value, o.label]),
+);
+const SEVERITY_LABEL: Record<string, string> = Object.fromEntries(
+  SEVERITY_OPTIONS.map((o) => [o.value, o.label]),
+);
+const PRESET_LABEL: Record<string, string> = Object.fromEntries(
+  TIME_PRESETS.map((p) => [p.value, p.label]),
+);
+
+// ---------------------------------------------------------------------------
+// Dropdown + chip primitives
+// ---------------------------------------------------------------------------
+
+function FilterDropdown({
+  label,
+  heading,
+  count,
+  disabled,
+  children,
+}: {
+  label: string;
+  heading: string;
+  count: number;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="outline" size="sm" disabled={disabled} className="gap-1.5">
+            {label}
+            {count > 0 && (
+              <span className="grid min-w-4 place-items-center rounded bg-primary/15 px-1 text-[10px] font-semibold tabular-nums text-primary">
+                {count}
+              </span>
+            )}
+            <ChevronDownIcon className="size-3.5 opacity-60" aria-hidden="true" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="start" className="min-w-52">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{heading}</DropdownMenuLabel>
+          {children}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function ActiveChip({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onRemove}
+      className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 py-0.5 pe-1.5 ps-2.5 text-xs text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <span className="truncate">{label}</span>
+      <XIcon className="size-3 text-muted-foreground" aria-hidden="true" />
+    </button>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // TimelineFilters
@@ -56,6 +130,11 @@ export function TimelineFilters() {
 
   const { filters, setFilters, resetFilters } = useTimeline();
 
+  // Local UI state for the time-range control; the resolved { from, to } window
+  // lives in the shared filter store.
+  const [preset, setPreset] = useState("all");
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+
   const hasActiveFilters =
     filters.category.length > 0 ||
     filters.severity.length > 0 ||
@@ -63,48 +142,81 @@ export function TimelineFilters() {
     !!filters.from ||
     !!filters.to;
 
-  const handleCategoryChange = useCallback(
-    (value: string | string[]) => {
-      const next = Array.isArray(value) ? value : [value];
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setFilters({ q: e.target.value }),
+    [setFilters],
+  );
+
+  const toggleCategory = useCallback(
+    (value: string) => {
+      const next = filters.category.includes(value)
+        ? filters.category.filter((v) => v !== value)
+        : [...filters.category, value];
       setFilters({ category: next });
     },
-    [setFilters],
+    [filters.category, setFilters],
   );
 
-  const handleSeverityChange = useCallback(
-    (value: string | string[]) => {
-      const next = (Array.isArray(value) ? value : [value]) as Severity[];
+  const toggleSeverity = useCallback(
+    (value: Severity) => {
+      const next = filters.severity.includes(value)
+        ? filters.severity.filter((v) => v !== value)
+        : [...filters.severity, value];
       setFilters({ severity: next });
     },
-    [setFilters],
+    [filters.severity, setFilters],
   );
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFilters({ q: e.target.value });
+  const handlePresetChange = useCallback(
+    (next: string) => {
+      setPreset(next);
+      if (next !== "custom") {
+        setCustomRange(undefined);
+        setFilters(presetToRange(next));
+      }
     },
     [setFilters],
   );
 
-  const handleDateChange = useCallback(
-    (field: "from" | "to") => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFilters({ [field]: e.target.value } as Partial<TimelineFiltersState>);
+  const handleCustomRangeChange = useCallback(
+    (range: DateRange | undefined) => {
+      setCustomRange(range);
+      setFilters(presetToRange("custom", range));
     },
     [setFilters],
   );
+
+  const clearDate = useCallback(() => {
+    setPreset("all");
+    setCustomRange(undefined);
+    setFilters({ from: "", to: "" });
+  }, [setFilters]);
+
+  const handleClearAll = useCallback(() => {
+    setPreset("all");
+    setCustomRange(undefined);
+    resetFilters();
+  }, [resetFilters]);
+
+  const dateChipLabel =
+    preset !== "all" && preset !== "custom"
+      ? PRESET_LABEL[preset]
+      : preset === "custom"
+        ? "Custom range"
+        : "Date range";
 
   return (
     <fieldset className="m-0 flex flex-col gap-3 border-0 p-0" aria-label="Timeline filters">
-      {/* Search + date range row */}
+      {/* Primary row: search + time range */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-44 flex-1">
+        <div className="relative min-w-52 flex-1">
           <SearchIcon
             className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
           <Input
             type="search"
-            placeholder="Search events…"
+            placeholder="Search events, users, IPs, event IDs…"
             value={filters.q}
             onChange={handleSearchChange}
             disabled={disabled}
@@ -113,41 +225,63 @@ export function TimelineFilters() {
           />
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="timeline-from" className="sr-only">
-            From date
-          </label>
-          <Input
-            id="timeline-from"
-            type="date"
-            value={filters.from}
-            onChange={handleDateChange("from")}
-            disabled={disabled}
-            className="h-9 w-36 text-xs"
-            aria-label="Filter events from date"
-          />
-          <span className="text-xs text-muted-foreground" aria-hidden="true">
-            —
-          </span>
-          <label htmlFor="timeline-to" className="sr-only">
-            To date
-          </label>
-          <Input
-            id="timeline-to"
-            type="date"
-            value={filters.to}
-            onChange={handleDateChange("to")}
-            disabled={disabled}
-            className="h-9 w-36 text-xs"
-            aria-label="Filter events to date"
+        <div className={cn(disabled && "pointer-events-none opacity-60")}>
+          <ActivityTimeRange
+            preset={preset}
+            customRange={customRange}
+            onPresetChange={handlePresetChange}
+            onCustomRangeChange={handleCustomRangeChange}
           />
         </div>
+      </div>
+
+      {/* Secondary row: dropdown facets */}
+      <div className="flex flex-wrap items-center gap-2">
+        <ListFilterIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
+
+        <FilterDropdown
+          label="Category"
+          heading="Filter by category"
+          count={filters.category.length}
+          disabled={disabled}
+        >
+          {CATEGORY_OPTIONS.map((opt) => (
+            <DropdownMenuCheckboxItem
+              key={opt.value}
+              checked={filters.category.includes(opt.value)}
+              onCheckedChange={() => toggleCategory(opt.value)}
+            >
+              {opt.label}
+            </DropdownMenuCheckboxItem>
+          ))}
+        </FilterDropdown>
+
+        <FilterDropdown
+          label="Severity"
+          heading="Filter by severity"
+          count={filters.severity.length}
+          disabled={disabled}
+        >
+          {SEVERITY_OPTIONS.map((opt) => (
+            <DropdownMenuCheckboxItem
+              key={opt.value}
+              checked={filters.severity.includes(opt.value)}
+              onCheckedChange={() => toggleSeverity(opt.value)}
+            >
+              <span
+                className={cn("mr-2 inline-block size-2 rounded-full", opt.dot)}
+                aria-hidden="true"
+              />
+              {opt.label}
+            </DropdownMenuCheckboxItem>
+          ))}
+        </FilterDropdown>
 
         {hasActiveFilters && (
           <button
             type="button"
-            onClick={resetFilters}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={handleClearAll}
+            className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Clear all timeline filters"
           >
             <XIcon className="size-3" aria-hidden="true" />
@@ -156,66 +290,36 @@ export function TimelineFilters() {
         )}
       </div>
 
-      <Separator />
-
-      {/* Category chips */}
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Category
-        </span>
-        <ChipGroup
-          value={filters.category}
-          onValueChange={handleCategoryChange}
-          multiple
-          disabled={disabled}
-          size="sm"
-          aria-label="Filter by category"
-        >
-          {CATEGORY_OPTIONS.map((opt) => (
-            <Chip key={opt.value} value={opt.value}>
-              {opt.label}
-            </Chip>
-          ))}
-        </ChipGroup>
-      </div>
-
-      {/* Severity chips */}
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Severity
-        </span>
-        <ChipGroup
-          value={filters.severity}
-          onValueChange={handleSeverityChange}
-          multiple
-          disabled={disabled}
-          size="sm"
-          aria-label="Filter by severity"
-        >
-          {SEVERITY_OPTIONS.map((opt) => (
-            <Chip key={opt.value} value={opt.value} className={cn(SEVERITY_CLASS[opt.value])}>
-              {opt.label}
-            </Chip>
-          ))}
-        </ChipGroup>
-      </div>
-
-      {/* Active filter count badge */}
+      {/* Active-filter chips */}
       {hasActiveFilters && (
-        <div className="flex items-center gap-1.5" aria-live="polite" aria-atomic="true">
-          <Badge variant="muted" className="text-[10px]">
-            {[
-              filters.category.length > 0 &&
-                `${filters.category.length} categor${filters.category.length === 1 ? "y" : "ies"}`,
-              filters.severity.length > 0 &&
-                `${filters.severity.length} severit${filters.severity.length === 1 ? "y" : "ies"}`,
-              filters.q && "search",
-              (filters.from || filters.to) && "date range",
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </Badge>
-        </div>
+        <ul className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+          {filters.category.map((value) => (
+            <li key={`cat-${value}`}>
+              <ActiveChip
+                label={`Category: ${CATEGORY_LABEL[value] ?? value}`}
+                onRemove={() => toggleCategory(value)}
+              />
+            </li>
+          ))}
+          {filters.severity.map((value) => (
+            <li key={`sev-${value}`}>
+              <ActiveChip
+                label={`Severity: ${SEVERITY_LABEL[value] ?? value}`}
+                onRemove={() => toggleSeverity(value)}
+              />
+            </li>
+          ))}
+          {filters.q && (
+            <li>
+              <ActiveChip label={`“${filters.q}”`} onRemove={() => setFilters({ q: "" })} />
+            </li>
+          )}
+          {(filters.from || filters.to) && (
+            <li>
+              <ActiveChip label={dateChipLabel} onRemove={clearDate} />
+            </li>
+          )}
+        </ul>
       )}
     </fieldset>
   );

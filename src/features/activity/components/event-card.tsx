@@ -64,7 +64,7 @@ const SEVERITY_ICON_CLASS: Record<Severity, string> = {
   info: "text-info",
 };
 
-function getCategoryIcon(category: string): typeof ActivityIcon {
+export function getCategoryIcon(category: string): typeof ActivityIcon {
   const key = category.toLowerCase().replace(/[^a-z-]/g, "");
   return CATEGORY_ICONS[key] ?? ActivityIcon;
 }

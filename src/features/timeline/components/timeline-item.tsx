@@ -1,9 +1,17 @@
-// TimelineItem — one row of the identity timeline.
-// Composes the @qeetrix/ui Timeline primitives (TimelineItem, TimelineIndicator,
-// TimelineContent) with the reused compact EventCard from the activity feature.
+// TimelineItem — one row of the identity timeline. A dense, columned card:
+// category icon + human title + tags on the left, Actor and Location columns in
+// the middle, and the outcome badge + timestamp + a ⋮ actions menu on the right.
+// The card is a single button (opens the details drawer); the ⋮ menu is a
+// sibling so we never nest interactive controls.
+//
+// REUSE: category icon + severity/result helpers from the activity feature.
 
 import {
   cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   TimelineContent,
   TimelineIndicator,
   TimeSince,
@@ -12,22 +20,112 @@ import {
   TooltipTrigger,
   TimelineItem as UITimelineItem,
 } from "@qeetrix/ui";
-import { ChevronRightIcon } from "lucide-react";
+import {
+  ClipboardIcon,
+  FileJsonIcon,
+  GlobeIcon,
+  MonitorIcon,
+  MoreVerticalIcon,
+  UserIcon,
+} from "lucide-react";
+import { toast } from "sonner";
 
-import { EventCard } from "@/features/activity/components/event-card";
-import type { ActivityEvent, Severity } from "@/features/activity/types";
+import { getCategoryIcon } from "@/features/activity/components/event-card";
+import { ResultBadge } from "@/features/activity/components/result-badge";
+import { type EventResult, eventResult, formatEventTitle } from "@/features/activity/event-labels";
+import { formatIp } from "@/features/activity/format";
+import type { ActivityEvent } from "@/features/activity/types";
 
 // ---------------------------------------------------------------------------
-// Severity → dot color
+// Result → connector node colour + icon-chip tone
 // ---------------------------------------------------------------------------
 
-const SEVERITY_DOT_CLASS: Record<Severity, string> = {
-  critical: "bg-destructive ring-destructive/40",
-  error: "bg-destructive ring-destructive/30",
-  warning: "bg-warning ring-warning/30",
-  success: "bg-success ring-success/30",
-  info: "bg-muted-foreground/50 ring-border",
+const RESULT_NODE: Record<EventResult, string> = {
+  Success: "bg-success ring-success/25",
+  Failed: "bg-destructive ring-destructive/25",
+  Blocked: "bg-warning ring-warning/25",
+  Warning: "bg-warning ring-warning/25",
+  Info: "bg-info ring-info/25",
 };
+
+/** Icon chips stay neutral except for outcomes that warrant attention. */
+function iconTone(result: EventResult): string {
+  if (result === "Failed") return "bg-destructive/10 text-destructive ring-destructive/15";
+  if (result === "Blocked" || result === "Warning")
+    return "bg-warning/10 text-warning ring-warning/15";
+  return "bg-muted text-muted-foreground ring-foreground/6";
+}
+
+// ---------------------------------------------------------------------------
+// Meta column (Actor / Location)
+// ---------------------------------------------------------------------------
+
+function MetaColumn({
+  label,
+  icon: Icon,
+  value,
+  sub,
+}: {
+  label: string;
+  icon: typeof UserIcon;
+  value?: string;
+  sub?: string;
+}) {
+  return (
+    <div className="hidden w-36 shrink-0 flex-col justify-center lg:flex xl:w-44">
+      <span className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+        <Icon className="size-3" aria-hidden="true" />
+        {label}
+      </span>
+      <span className="mt-0.5 truncate text-xs font-medium text-foreground">{value ?? "—"}</span>
+      {sub ? <span className="truncate text-[11px] text-muted-foreground">{sub}</span> : null}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Row actions menu (⋮)
+// ---------------------------------------------------------------------------
+
+function copy(text: string, what: string) {
+  void navigator.clipboard.writeText(text);
+  toast.success(`Copied ${what}`);
+}
+
+function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () => void }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            aria-label="Event actions"
+            className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/item:opacity-100 data-popup-open:opacity-100"
+          >
+            <MoreVerticalIcon className="size-4" aria-hidden="true" />
+          </button>
+        }
+      />
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={onOpen}>View details</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => copy(event.id, "event ID")}>
+          <ClipboardIcon className="size-3.5" aria-hidden="true" />
+          Copy event ID
+        </DropdownMenuItem>
+        {event.request_id ? (
+          <DropdownMenuItem onClick={() => copy(event.request_id ?? "", "request ID")}>
+            <ClipboardIcon className="size-3.5" aria-hidden="true" />
+            Copy request ID
+          </DropdownMenuItem>
+        ) : null}
+        <DropdownMenuItem onClick={() => copy(JSON.stringify(event, null, 2), "event JSON")}>
+          <FileJsonIcon className="size-3.5" aria-hidden="true" />
+          Copy JSON
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // TimelineItem
@@ -38,18 +136,10 @@ type TimelineItemProps = {
   isSelected?: boolean;
   isCurrent?: boolean;
   onClick: (event: ActivityEvent) => void;
-  /** Aria position in the list for APG Feed pattern. */
   posInSet?: number;
   setSize?: number;
 };
 
-/**
- * One row in the identity timeline: a severity-colored dot on the connector
- * rail + the compact EventCard + a relative timestamp tooltip.
- *
- * Keyboard-accessible: the item focuses the inner EventCard button.
- * aria-current="true" is set on the selected item.
- */
 export function TimelineItem({
   event,
   isSelected = false,
@@ -58,19 +148,22 @@ export function TimelineItem({
   posInSet,
   setSize,
 }: TimelineItemProps) {
-  const dotClass = SEVERITY_DOT_CLASS[event.severity];
+  const result = eventResult(event);
+  const CategoryIcon = getCategoryIcon(event.category);
+  const title = formatEventTitle(event);
+  const actorName = event.actor?.name ?? event.actor?.id ?? "System";
+  const actorSub = event.actor?.type;
+  const locationValue = event.location ?? (event.ip ? formatIp(event.ip) : undefined);
+  const locationSub = event.device ?? event.browser ?? event.source ?? undefined;
 
   return (
     <UITimelineItem
-      className={cn(
-        "group/item relative pb-3",
-        isSelected && "rounded-md bg-muted/40 ring-1 ring-ring/40",
-      )}
+      className="group/item relative pb-2"
       aria-current={isCurrent ? "true" : undefined}
       aria-posinset={posInSet}
       aria-setsize={setSize}
     >
-      {/* Severity dot — replaces the default bg-primary dot */}
+      {/* Connector node — coloured by outcome */}
       <TimelineIndicator>
         <Tooltip>
           <TooltipTrigger
@@ -78,54 +171,106 @@ export function TimelineItem({
               <span
                 role="img"
                 className={cn(
-                  "z-10 mt-0.5 size-2.5 rounded-full ring-4 ring-background",
-                  dotClass,
-                  "transition-all duration-150 group-hover/item:scale-125",
+                  "z-10 mt-3.5 size-2.5 rounded-full ring-4 ring-background transition-transform duration-150 group-hover/item:scale-125",
+                  RESULT_NODE[result],
                 )}
-                aria-label={`Severity: ${event.severity}`}
+                aria-label={`Outcome: ${result}`}
               />
             }
           />
-          <TooltipContent className="capitalize">{event.severity}</TooltipContent>
+          <TooltipContent>{result}</TooltipContent>
         </Tooltip>
       </TimelineIndicator>
 
       <TimelineContent className="min-w-0 flex-1">
-        {/* Compact event card — reused from activity feature */}
-        <EventCard event={event} compact isSelected={isSelected} onClick={() => onClick(event)} />
-
-        {/* Exact timestamp below card (relative shown inside EventCard) */}
-        <div className="mt-0.5 flex items-center justify-end gap-1.5 px-4 pb-0.5">
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <time
-                  dateTime={event.at}
-                  className="text-[10px] text-muted-foreground tabular-nums"
-                >
-                  <TimeSince value={event.at} />
-                </time>
-              }
-            />
-            <TooltipContent>
-              {new Date(event.at).toLocaleString(undefined, {
-                dateStyle: "medium",
-                timeStyle: "long",
-              })}
-            </TooltipContent>
-          </Tooltip>
-
-          {/* Quick-open affordance */}
+        <div
+          className={cn(
+            "flex items-stretch gap-1 rounded-lg border border-transparent transition-colors duration-150",
+            "hover:border-border/70 hover:bg-muted/40",
+            isSelected && "border-ring/40 bg-muted/50 ring-1 ring-ring/25",
+          )}
+        >
           <button
             type="button"
-            className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground opacity-0 underline-offset-2 transition-opacity hover:text-foreground hover:underline focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring group-hover/item:opacity-100"
             onClick={() => onClick(event)}
-            aria-label={`Open details for ${event.title}`}
-            tabIndex={-1}
+            aria-label={`${title}, ${result} — open details`}
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
           >
-            Details
-            <ChevronRightIcon className="size-3" aria-hidden="true" />
+            {/* Category icon */}
+            <span
+              className={cn(
+                "grid size-9 shrink-0 place-items-center rounded-lg ring-1 [&_svg]:size-4",
+                iconTone(result),
+              )}
+              aria-hidden="true"
+            >
+              <CategoryIcon />
+            </span>
+
+            {/* Title + description + tags */}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-foreground">{title}</span>
+              {event.description ? (
+                <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                  {event.description}
+                </span>
+              ) : null}
+              <span className="mt-1 flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
+                  {event.category}
+                </span>
+                {event.source ? (
+                  <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    {event.source}
+                  </span>
+                ) : null}
+                {/* Compact meta for < lg where the columns are hidden */}
+                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground lg:hidden">
+                  <UserIcon className="size-3" aria-hidden="true" />
+                  {actorName}
+                  {locationValue ? <span className="text-muted-foreground/50">·</span> : null}
+                  {locationValue}
+                </span>
+              </span>
+            </span>
+
+            {/* Actor + Location columns (lg+) */}
+            <MetaColumn label="Actor" icon={UserIcon} value={actorName} sub={actorSub} />
+            <MetaColumn
+              label="Location"
+              icon={locationValue ? GlobeIcon : MonitorIcon}
+              value={locationValue}
+              sub={locationSub}
+            />
+
+            {/* Outcome + time */}
+            <span className="flex w-24 shrink-0 flex-col items-end gap-1">
+              <ResultBadge event={event} />
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <time
+                      dateTime={event.at}
+                      className="text-[11px] text-muted-foreground tabular-nums"
+                    >
+                      <TimeSince value={event.at} />
+                    </time>
+                  }
+                />
+                <TooltipContent>
+                  {new Date(event.at).toLocaleString(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "long",
+                  })}
+                </TooltipContent>
+              </Tooltip>
+            </span>
           </button>
+
+          {/* Row actions (sibling of the card button) */}
+          <div className="flex items-center pe-1.5">
+            <RowActionsMenu event={event} onOpen={() => onClick(event)} />
+          </div>
         </div>
       </TimelineContent>
     </UITimelineItem>

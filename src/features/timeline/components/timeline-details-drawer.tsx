@@ -41,7 +41,9 @@ import {
 import { type ReactNode, useCallback } from "react";
 
 import { useCapabilities } from "@/features/access-control/capability-provider";
+import { ResultBadge } from "@/features/activity/components/result-badge";
 import { SeverityBadge } from "@/features/activity/components/severity-badge";
+import { formatEventTitle } from "@/features/activity/event-labels";
 import type { ActivityEvent } from "@/features/activity/types";
 import { useResetUserMfa, useSetUserStatus } from "@/lib/users";
 
@@ -88,6 +90,65 @@ function SectionHeading({ children }: { children: ReactNode }) {
       {children}
     </h3>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Changes — before → after diff extracted from event metadata
+// ---------------------------------------------------------------------------
+
+interface FieldChange {
+  field: string;
+  before: unknown;
+  after: unknown;
+}
+
+function humanizeField(field: string): string {
+  return field.replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatChangeValue(value: unknown): string {
+  if (value == null || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Enabled" : "Disabled";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+/**
+ * Pull a before → after list out of common audit-metadata shapes:
+ *   • metadata.changes = { field: { from, to } | [old, new] }
+ *   • metadata.before / metadata.after = { field: value }
+ * Returns only fields that actually changed. Empty → the section is hidden.
+ */
+function extractChanges(metadata: Record<string, unknown> | undefined): FieldChange[] {
+  if (!metadata) return [];
+  const out: FieldChange[] = [];
+
+  const changes = metadata.changes;
+  if (changes && typeof changes === "object" && !Array.isArray(changes)) {
+    for (const [field, raw] of Object.entries(changes)) {
+      if (Array.isArray(raw) && raw.length >= 2) {
+        out.push({ field, before: raw[0], after: raw[1] });
+      } else if (raw && typeof raw === "object") {
+        const v = raw as Record<string, unknown>;
+        const before = v.from ?? v.old ?? v.before ?? v.previous;
+        const after = v.to ?? v.new ?? v.after ?? v.current;
+        if (before !== undefined || after !== undefined) out.push({ field, before, after });
+      }
+    }
+  }
+
+  const before = metadata.before;
+  const after = metadata.after;
+  if (before && after && typeof before === "object" && typeof after === "object") {
+    const b = before as Record<string, unknown>;
+    const a = after as Record<string, unknown>;
+    for (const field of new Set([...Object.keys(b), ...Object.keys(a)])) {
+      if (JSON.stringify(b[field]) !== JSON.stringify(a[field]))
+        out.push({ field, before: b[field], after: a[field] });
+    }
+  }
+
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -160,6 +221,9 @@ export function TimelineDetailsDrawer({
   const sessionId =
     typeof event?.metadata?.session_id === "string" ? event.metadata.session_id : null;
 
+  // Before → after field changes, when the event carries them.
+  const changes = extractChanges(event?.metadata);
+
   return (
     <Sheet open={!!event} onOpenChange={handleOpenChange}>
       <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-lg">
@@ -169,13 +233,16 @@ export function TimelineDetailsDrawer({
             <SheetHeader className="border-b border-border/60 p-4">
               <div className="flex items-start gap-3 pr-8">
                 <div className="min-w-0 flex-1">
-                  <SheetTitle className="text-sm">{event.title}</SheetTitle>
-                  <SheetDescription className="mt-0.5 text-xs">
+                  <SheetTitle className="text-sm">{formatEventTitle(event)}</SheetTitle>
+                  {event.description ? (
+                    <p className="mt-0.5 text-xs text-muted-foreground">{event.description}</p>
+                  ) : null}
+                  <SheetDescription className="mt-0.5 text-xs capitalize">
                     {event.category} ·{" "}
                     <TimeSince value={event.at} className="inline tabular-nums" />
                   </SheetDescription>
                 </div>
-                <SeverityBadge severity={event.severity} />
+                <ResultBadge event={event} />
               </div>
 
               {/* Prev / next navigation */}
@@ -219,7 +286,15 @@ export function TimelineDetailsDrawer({
                     <DetailRow label="Type">
                       <Badge variant="muted">{event.type}</Badge>
                     </DetailRow>
-                    <DetailRow label="Category">{event.category}</DetailRow>
+                    <DetailRow label="Category">
+                      <span className="capitalize">{event.category}</span>
+                    </DetailRow>
+                    <DetailRow label="Result">
+                      <ResultBadge event={event} />
+                    </DetailRow>
+                    <DetailRow label="Severity">
+                      <SeverityBadge severity={event.severity} />
+                    </DetailRow>
                     <DetailRow label="Timestamp">
                       <time dateTime={event.at}>
                         {new Date(event.at).toLocaleString(undefined, {
@@ -244,21 +319,66 @@ export function TimelineDetailsDrawer({
                   </dl>
                 </section>
 
-                {/* Correlation / trace ID — extended over EventDetailsDrawer */}
-                {correlationId && (
+                {/* Changes — before → after diff from the event payload */}
+                {changes.length > 0 && (
                   <>
                     <Separator />
-                    <section aria-label="Correlation">
-                      <SectionHeading>Correlation</SectionHeading>
+                    <section aria-label="Changes">
+                      <SectionHeading>Changes</SectionHeading>
                       <dl className="flex flex-col gap-2.5">
-                        <DetailRow label="Trace / Corr. ID">
-                          <span className="flex items-center gap-1.5">
-                            <span className="max-w-48 truncate font-mono text-[10px]">
-                              {correlationId}
+                        {changes.map((change) => (
+                          <div
+                            key={change.field}
+                            className="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3"
+                          >
+                            <dt className="text-xs font-medium text-muted-foreground">
+                              {humanizeField(change.field)}
+                            </dt>
+                            <dd className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs">
+                              <Badge variant="outline" className="max-w-40 truncate line-through">
+                                {formatChangeValue(change.before)}
+                              </Badge>
+                              <span aria-hidden="true" className="text-muted-foreground">
+                                →
+                              </span>
+                              <Badge variant="success" className="max-w-40 truncate">
+                                {formatChangeValue(change.after)}
+                              </Badge>
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </section>
+                  </>
+                )}
+
+                {/* Correlation / tracing — request + trace IDs for investigation */}
+                {(event.request_id || correlationId) && (
+                  <>
+                    <Separator />
+                    <section aria-label="Correlation and tracing">
+                      <SectionHeading>Correlation &amp; tracing</SectionHeading>
+                      <dl className="flex flex-col gap-2.5">
+                        {event.request_id && (
+                          <DetailRow label="Request ID">
+                            <span className="flex items-center gap-1.5">
+                              <span className="max-w-48 truncate font-mono text-[10px]">
+                                {event.request_id}
+                              </span>
+                              <CopyButton text={event.request_id} label="Copy request ID" />
                             </span>
-                            <CopyButton text={correlationId} label="Copy correlation ID" />
-                          </span>
-                        </DetailRow>
+                          </DetailRow>
+                        )}
+                        {correlationId && (
+                          <DetailRow label="Trace / Corr. ID">
+                            <span className="flex items-center gap-1.5">
+                              <span className="max-w-48 truncate font-mono text-[10px]">
+                                {correlationId}
+                              </span>
+                              <CopyButton text={correlationId} label="Copy correlation ID" />
+                            </span>
+                          </DetailRow>
+                        )}
                       </dl>
                     </section>
                   </>

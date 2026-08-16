@@ -12,7 +12,9 @@ import { useCapabilities } from "@/features/access-control/capability-provider";
 import type { ActivityEvent } from "@/features/activity/types";
 import { IdentityTimeline } from "@/features/timeline/components/identity-timeline";
 import { TimelineDetailsDrawer } from "@/features/timeline/components/timeline-details-drawer";
+import { TimelineExportMenu } from "@/features/timeline/components/timeline-export-menu";
 import { TimelineFilters } from "@/features/timeline/components/timeline-filters";
+import { TimelineSummaryStrip } from "@/features/timeline/components/timeline-summary-strip";
 import { TimelineProvider, useTimeline } from "@/features/timeline/timeline-provider";
 
 export const Route = createFileRoute("/_app/users/$userId_/timeline")({
@@ -31,6 +33,8 @@ function TimelinePage() {
   const {
     events,
     groups,
+    filters,
+    setFilters,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
@@ -104,15 +108,24 @@ function TimelinePage() {
         title="Identity Timeline"
         description="Chronological view of this user's lifecycle — authentication, access changes, security events, and more."
         actions={
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <ClockIcon className="size-3.5" aria-hidden="true" />
-            <span>
+          <div className="flex items-center gap-2">
+            <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:inline-flex">
+              <ClockIcon className="size-3.5" aria-hidden="true" />
               {isLoading
                 ? "Loading…"
-                : `${events.length} event${events.length === 1 ? "" : "s"}${hasNextPage ? "+" : ""}`}
+                : `${events.length} event${events.length === 1 ? "" : "s"}${hasNextPage ? "+" : ""} loaded`}
             </span>
+            <TimelineExportMenu events={events} userId={userId} disabled={isLoading} />
           </div>
         }
+      />
+
+      {/* Identity summary — computed from loaded events; cards toggle category */}
+      <TimelineSummaryStrip
+        events={events}
+        loading={isLoading}
+        activeCategories={filters.category}
+        onSelectCategories={(categories) => setFilters({ category: categories })}
       />
 
       {/* Filter panel */}
