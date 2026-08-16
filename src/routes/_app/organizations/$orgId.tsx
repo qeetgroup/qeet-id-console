@@ -46,13 +46,14 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { useCapabilities } from "@/features/access-control/capability-provider";
-import { CopyId } from "@/features/user360/shared";
-import { initials } from "@/features/users-list/helpers";
-import { useAnalyticsOverview } from "@/lib/analytics";
-import { switchToTenant, useTenantId } from "@/lib/auth";
-import { formatMoney, useInvoices, useSubscription } from "@/lib/billing";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { useCapabilities } from "@/platform/security/capability-provider";
+import { CopyId } from "@/modules/users/shared";
+import { initials } from "@/modules/users/helpers";
+import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
+import { useTenantId } from "@/platform/auth/session";
+import { switchToTenant } from "@/modules/authentication";
+import { formatMoney, useInvoices, useSubscription } from "@/modules/billing/api/billing";
 import {
   type Org,
   useDeleteOrg,
@@ -61,7 +62,7 @@ import {
   useOrgAuthPolicy,
   useOrgMembers,
   useUpdateOrg,
-} from "@/lib/orgs";
+} from "@/modules/organizations/api/orgs";
 
 const TABS = ["overview", "members", "security", "billing", "activity"] as const;
 type OrgTab = (typeof TABS)[number];

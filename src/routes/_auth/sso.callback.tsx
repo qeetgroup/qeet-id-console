@@ -4,9 +4,9 @@ import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, ShieldXIcon } from "l
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BrandHero } from "@/features/auth/components/brand-hero";
-import { ApiError } from "@/lib/api";
-import { useConsumeSamlCode } from "@/lib/auth";
+import { BrandHero } from "@/modules/authentication/components/brand-hero";
+import { ApiError } from "@/platform/api/client";
+import { useConsumeSamlCode } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_auth/sso/callback")({
   component: SsoCallbackPage,

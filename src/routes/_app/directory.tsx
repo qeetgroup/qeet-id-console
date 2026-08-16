@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { SectionOverview } from "@/features/dashboard/components/section-overview";
+import { SectionOverview } from "@/modules/dashboard/components/section-overview";
 
 export const Route = createFileRoute("/_app/directory")({
   component: DirectoryOverview,

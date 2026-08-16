@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.4/schema.json",
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -16,6 +16,13 @@
       "tailwindDirectives": true
     }
   },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "off"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -23,7 +30,8 @@
       "suspicious": {
         "noArrayIndexKey": "warn",
         "noAssignInExpressions": "warn",
-        "useIterableCallbackReturn": "warn"
+        "useIterableCallbackReturn": "warn",
+        "noImportCycles": "error"
       },
       "correctness": {
         "useExhaustiveDependencies": "warn"
@@ -38,6 +46,85 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["src/shared/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/modules/**",
+                      "@/platform/**",
+                      "@/routes/**",
+                      "@/app/**",
+                      "@/lib/**",
+                      "@/config/**",
+                      "@/components/**",
+                      "@/integrations/**"
+                    ],
+                    "message": "shared/ is the lowest layer: import only @/shared, @/i18n, or external packages."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/platform/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/modules/**", "@/routes/**", "@/app/**", "@/lib/**"],
+                    "message": "platform/ may depend only on @/platform, @/shared, @/i18n (never features, routes, app, or the retired @/lib)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/modules/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/routes/**", "@/app/**"],
+                    "message": "features/ must not import routes or app."
+                  },
+                  {
+                    "group": ["@/modules/*/**"],
+                    "message": "Import another feature via its public barrel (@/features/<name>), never its internals. Use a relative path for your own feature."
+                  },
+                  {
+                    "group": ["@/lib/**"],
+                    "message": "@/lib is retired — import from the feature/platform/shared home."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "files": {
     "includes": [
       "**",

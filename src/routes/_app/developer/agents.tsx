@@ -28,8 +28,8 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type Agent,
   useAgents,
@@ -39,10 +39,13 @@ import {
   useKillAllAgents,
   useSetAgentDisabled,
   useTransferSponsor,
-} from "@/lib/agents";
-import { type ApiError, api } from "@/lib/api";
-import { useMe, useTenantId } from "@/lib/auth";
-import { useReviewShadowAIClient, useShadowAICandidates } from "@/lib/oidc-clients";
+} from "@/modules/developer/api/agents";
+import { type ApiError, api } from "@/platform/api/client";
+import { useMe, useTenantId } from "@/platform/auth/session";
+import {
+  useReviewShadowAIClient,
+  useShadowAICandidates,
+} from "@/modules/authentication/api/oidc-clients";
 
 export const Route = createFileRoute("/_app/developer/agents")({
   component: AgentsPage,

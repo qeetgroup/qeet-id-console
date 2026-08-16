@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { ConstructionIcon } from "lucide-react";
-import { navGroups } from "@/config/navigation";
+import { navGroups } from "@/platform/config/navigation";
 
 export const Route = createFileRoute("/_app/$")({
   component: PlaceholderPage,

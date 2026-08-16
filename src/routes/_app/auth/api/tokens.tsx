@@ -19,9 +19,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { KeyRoundIcon, Trash2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { useOAuthGrants, useRevokeOAuthGrant } from "@/lib/oauth-grants";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { useOAuthGrants, useRevokeOAuthGrant } from "@/modules/authentication/api/oauth-grants";
 
 export const Route = createFileRoute("/_app/auth/api/tokens")({
   component: TokensPage,

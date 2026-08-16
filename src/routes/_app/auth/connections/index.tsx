@@ -22,8 +22,8 @@ import { KeyRoundIcon, LinkIcon, Loader2Icon, ShieldCheckIcon, Trash2Icon } from
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type AdminPortalCapability,
   type AdminPortalLink,
@@ -31,8 +31,8 @@ import {
   useAdminPortalLinks,
   useGenerateAdminPortalLink,
   useRevokeAdminPortalLink,
-} from "@/lib/admin-portal";
-import type { ApiError } from "@/lib/api";
+} from "@/modules/authentication/api/admin-portal";
+import type { ApiError } from "@/platform/api/client";
 
 export const Route = createFileRoute("/_app/auth/connections/")({
   component: ConnectionsPage,

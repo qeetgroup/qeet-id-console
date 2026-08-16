@@ -33,16 +33,16 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { StepUpDialog } from "@/components/step-up-dialog";
-import { ApiError, api } from "@/lib/api";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { StepUpDialog } from "@/platform/security/step-up-dialog";
+import { ApiError, api } from "@/platform/api/client";
 import {
   isStepUpRequired,
   useRecoveryStatus,
   useRegenerateRecoveryCodes,
   useTotpStatus,
-} from "@/lib/mfa";
+} from "@/modules/authentication/api/mfa";
 
 export const Route = createFileRoute("/_app/auth/mfa/totp")({
   component: MfaTotpPage,

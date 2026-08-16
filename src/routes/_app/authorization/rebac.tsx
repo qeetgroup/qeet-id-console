@@ -16,18 +16,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Loader2Icon, NetworkIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { RelationshipGraph } from "@/features/authorization/components/graph/relationship-graph";
-import { DecisionBadge } from "@/features/authorization/components/shared/decision-badge";
-import type { ApiError } from "@/lib/api";
-import { useRebacSimulate } from "@/lib/authz-simulate";
-import { pushDecision } from "@/lib/authz-store";
+import { PageHeader } from "@/platform/components/page-header";
+import { RelationshipGraph } from "@/modules/authorization/components/graph/relationship-graph";
+import { DecisionBadge } from "@/modules/authorization/components/shared/decision-badge";
+import type { ApiError } from "@/platform/api/client";
+import { useRebacSimulate } from "@/modules/authorization/api/simulate";
+import { pushDecision } from "@/modules/authorization/store/authz-store";
 import {
   useDeleteTuple,
   useRelationGraph,
   useRelationTuples,
   useWriteTuple,
-} from "@/lib/relationships";
+} from "@/modules/authorization/api/relationships";
 
 export const Route = createFileRoute("/_app/authorization/rebac")({
   component: RebacPage,

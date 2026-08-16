@@ -33,18 +33,18 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { FeatureGate } from "@/features/billing/components/upgrade-gate";
-import { type ApiError, api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
+import { type ApiError, api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 import {
   type TenantDomain,
   useAddDomain,
   useDomains,
   useRemoveDomain,
   useVerifyDomain,
-} from "@/lib/domains";
+} from "@/modules/organizations/api/domains";
 
 export const Route = createFileRoute("/_app/settings/organization/domains")({
   component: DomainsPage,

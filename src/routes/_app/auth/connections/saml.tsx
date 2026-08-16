@@ -49,11 +49,11 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { FeatureGate } from "@/features/billing/components/upgrade-gate";
-import type { ApiError } from "@/lib/api";
-import { useEntitlements } from "@/lib/billing";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
+import type { ApiError } from "@/platform/api/client";
+import { useEntitlements } from "@/modules/billing/api/billing";
 import {
   type SamlConnection,
   samlLoginUrl,
@@ -63,7 +63,7 @@ import {
   useSamlConnections,
   useTestSamlConnection,
   useUpdateSamlConnection,
-} from "@/lib/saml";
+} from "@/modules/authentication/api/saml";
 
 export const Route = createFileRoute("/_app/auth/connections/saml")({
   component: SamlPage,

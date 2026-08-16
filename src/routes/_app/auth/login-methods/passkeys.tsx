@@ -19,10 +19,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { FingerprintIcon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
+import { api } from "@/platform/api/client";
+import { normalizeError } from "@/platform/errors/normalize-error";
+import { userMessageForCode } from "@/platform/errors/user-message";
+import { PageHeader } from "@/platform/components/page-header";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 
 export const Route = createFileRoute("/_app/auth/login-methods/passkeys")({
   component: PasskeysPage,
@@ -73,7 +76,13 @@ function PasskeysPage() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["passkeys"] }),
-    onError: (e) => window.alert((e as Error).message),
+    // Own the error toast (silences the global handler) with user-safe copy —
+    // covers both ApiError and WebAuthn browser errors without leaking raw text.
+    meta: { silent: true },
+    onError: (e) => {
+      const appError = normalizeError(e);
+      toast.error(userMessageForCode(appError.code, appError.kind));
+    },
   });
 
   return (

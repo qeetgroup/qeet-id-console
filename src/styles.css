@@ -68,11 +68,11 @@
   --info-foreground: oklch(0.37 0.095 240);
 
   /* Data visualization */
-  --chart-1: oklch(0.61 0.18 43);   /* Qeet orange */
-  --chart-2: oklch(0.56 0.15 239);  /* Information blue */
+  --chart-1: oklch(0.61 0.18 43); /* Qeet orange */
+  --chart-2: oklch(0.56 0.15 239); /* Information blue */
   --chart-3: oklch(0.55 0.125 162); /* Success green */
-  --chart-4: oklch(0.61 0.13 82);   /* Warning amber */
-  --chart-5: oklch(0.54 0.18 292);  /* Analytical purple */
+  --chart-4: oklch(0.61 0.13 82); /* Warning amber */
+  --chart-5: oklch(0.54 0.18 292); /* Analytical purple */
 
   /* Shape + elevation */
   --radius: 0.6rem;
@@ -81,8 +81,7 @@
   --radius-lg: 0.9rem;
   --radius-xl: 1.1rem;
 
-  --shadow-xs:
-    0 1px 2px color-mix(in oklab, var(--foreground) 5%, transparent);
+  --shadow-xs: 0 1px 2px color-mix(in oklab, var(--foreground) 5%, transparent);
   --shadow-sm:
     0 1px 2px color-mix(in oklab, var(--foreground) 5%, transparent),
     0 5px 14px -12px color-mix(in oklab, var(--foreground) 20%, transparent);
@@ -179,15 +178,9 @@
   --sidebar-ring: oklch(0.75 0.155 48);
 
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 20%);
-  --shadow-sm:
-    0 1px 2px rgb(0 0 0 / 22%),
-    0 5px 14px -12px rgb(0 0 0 / 42%);
-  --shadow-md:
-    0 1px 2px rgb(0 0 0 / 24%),
-    0 14px 32px -26px rgb(0 0 0 / 50%);
-  --shadow-lg:
-    0 1px 2px rgb(0 0 0 / 28%),
-    0 22px 48px -34px rgb(0 0 0 / 58%);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 22%), 0 5px 14px -12px rgb(0 0 0 / 42%);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 24%), 0 14px 32px -26px rgb(0 0 0 / 50%);
+  --shadow-lg: 0 1px 2px rgb(0 0 0 / 28%), 0 22px 48px -34px rgb(0 0 0 / 58%);
 }
 
 html {

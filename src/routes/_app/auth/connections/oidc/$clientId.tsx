@@ -30,15 +30,15 @@ import { ArrowLeftIcon, KeySquareIcon, Loader2Icon, RefreshCwIcon, Trash2Icon } 
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { OidcQuickstart } from "@/features/oidc/components/oidc-quickstart";
-import type { ApiError } from "@/lib/api";
+import { OidcQuickstart } from "@/modules/authentication/components/oidc-quickstart";
+import type { ApiError } from "@/platform/api/client";
 import {
   type OidcClient,
   useDeleteOidcClient,
   useOidcClients,
   useRotateClientSecret,
   useUpdateOidcClient,
-} from "@/lib/oidc-clients";
+} from "@/modules/authentication/api/oidc-clients";
 
 export const Route = createFileRoute("/_app/auth/connections/oidc/$clientId")({
   component: OidcClientDetailPage,

@@ -11,13 +11,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SearchCodeIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { DecisionExplain } from "@/features/authorization/components/explain/decision-explain";
+import { PageHeader } from "@/platform/components/page-header";
+import { DecisionExplain } from "@/modules/authorization/components/explain/decision-explain";
 import {
   DecisionBadge,
   ENGINE_LABELS,
-} from "@/features/authorization/components/shared/decision-badge";
-import { clearHistory, useDecisionHistory } from "@/lib/authz-store";
+} from "@/modules/authorization/components/shared/decision-badge";
+import { clearHistory, useDecisionHistory } from "@/modules/authorization/store/authz-store";
 
 export const Route = createFileRoute("/_app/authorization/explorer")({
   component: ExplorerPage,

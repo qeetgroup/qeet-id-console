@@ -29,8 +29,9 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
-import { ApiError, api } from "@/lib/api";
-import { useConfirmEmailChange, useMe, useStartEmailChange } from "@/lib/auth";
+import { ApiError, api } from "@/platform/api/client";
+import { useMe } from "@/platform/auth/session";
+import { useConfirmEmailChange, useStartEmailChange } from "@/modules/authentication";
 
 export const Route = createFileRoute("/account/profile")({
   component: ProfilePage,

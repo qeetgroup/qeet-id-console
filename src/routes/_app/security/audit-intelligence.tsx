@@ -35,8 +35,8 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import type { ApiError } from "@/lib/api";
+import { PageHeader } from "@/platform/components/page-header";
+import type { ApiError } from "@/platform/api/client";
 import {
   type AnomalyReason,
   useAuditAnomalies,
@@ -45,7 +45,7 @@ import {
   useResolveAuditAnomaly,
   useUpdateAuditAnomalySettings,
   useVerifyAuditChain,
-} from "@/lib/audit-anomalies";
+} from "@/modules/security/api/audit-anomalies";
 
 export const Route = createFileRoute("/_app/security/audit-intelligence")({
   component: AuditIntelligencePage,

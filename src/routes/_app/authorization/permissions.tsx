@@ -12,8 +12,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AlertTriangleIcon, KeyRoundIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { groupPermissionsByResource, usePermissions, wildcardPermissions } from "@/lib/authz-rbac";
+import { PageHeader } from "@/platform/components/page-header";
+import {
+  groupPermissionsByResource,
+  usePermissions,
+  wildcardPermissions,
+} from "@/modules/authorization/api/rbac";
 
 export const Route = createFileRoute("/_app/authorization/permissions")({
   component: PermissionsPage,

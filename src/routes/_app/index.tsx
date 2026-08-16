@@ -5,10 +5,10 @@ import { useState } from "react";
 import {
   DashboardOverview,
   NoWorkspaceOnboarding,
-} from "@/features/dashboard/components/dashboard-overview";
-import { OrgOnboarding } from "@/features/onboarding/org-onboarding";
-import { useCheckoutReturn } from "@/features/onboarding/use-checkout-return";
-import { useTenantId } from "@/lib/auth";
+} from "@/modules/dashboard/components/dashboard-overview";
+import { OrgOnboarding } from "@/modules/onboarding/org-onboarding";
+import { useCheckoutReturn } from "@/modules/onboarding/use-checkout-return";
+import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/")({ component: DashboardPage });
 

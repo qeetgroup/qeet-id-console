@@ -4,9 +4,9 @@ import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, MailIcon } from "luci
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BrandHero } from "@/features/auth/components/brand-hero";
-import { ApiError } from "@/lib/api";
-import { useConsumeMagicLink } from "@/lib/auth";
+import { BrandHero } from "@/modules/authentication/components/brand-hero";
+import { ApiError } from "@/platform/api/client";
+import { useConsumeMagicLink } from "@/modules/authentication";
 
 interface MagicSearch {
   token?: string;

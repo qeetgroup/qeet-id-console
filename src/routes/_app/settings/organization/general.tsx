@@ -25,11 +25,11 @@ import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { LogoField } from "@/components/logo-field";
-import { PageHeader } from "@/components/page-header";
-import { type ApiError, api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
-import { REGIONS } from "@/lib/regions";
+import { LogoField } from "@/shared/components/logo-field";
+import { PageHeader } from "@/platform/components/page-header";
+import { type ApiError, api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { REGIONS } from "@/shared/data/regions";
 
 export const Route = createFileRoute("/_app/settings/organization/general")({
   component: WorkspaceGeneralPage,

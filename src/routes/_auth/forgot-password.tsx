@@ -16,8 +16,8 @@ import { CheckCircle2Icon, Loader2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BrandHero } from "@/features/auth/components/brand-hero";
-import { useForgotPassword, useResetPassword } from "@/lib/auth";
+import { BrandHero } from "@/modules/authentication/components/brand-hero";
+import { useForgotPassword, useResetPassword } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
   component: ForgotPasswordPage,
@@ -129,9 +129,7 @@ function ResetPanel({ token }: { token: string }) {
       <FieldGroup>
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-bold">{t("forgotPassword.reset.title")}</h1>
-          <p className="text-balance text-muted-foreground">
-            {t("forgotPassword.reset.subtitle")}
-          </p>
+          <p className="text-balance text-muted-foreground">{t("forgotPassword.reset.subtitle")}</p>
         </div>
 
         <Field>

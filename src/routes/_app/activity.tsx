@@ -33,10 +33,10 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { useCapabilities } from "@/features/access-control/capability-provider";
-import { useActivityExport } from "@/features/activity/activity-export";
-import { ActivityProvider, useActivity } from "@/features/activity/activity-provider";
+import { PageHeader } from "@/platform/components/page-header";
+import { useCapabilities } from "@/platform/security/capability-provider";
+import { useActivityExport } from "@/modules/activity/activity-export";
+import { ActivityProvider, useActivity } from "@/modules/activity/activity-provider";
 import {
   type ActivitySearch,
   arrayToCsv,
@@ -45,27 +45,27 @@ import {
   searchToFilters,
   severityToOutcome,
   validateActivitySearch,
-} from "@/features/activity/activity-search";
-import { useActivitySummary } from "@/features/activity/activity-summary-service";
-import { ActivityModeToggle } from "@/features/activity/components/activity-mode-toggle";
-import { ActivityPagination } from "@/features/activity/components/activity-pagination";
-import { ActivitySavedViews } from "@/features/activity/components/activity-saved-views";
-import { ActivitySummaryStrip } from "@/features/activity/components/activity-summary-strip";
+} from "@/modules/activity/activity-search";
+import { useActivitySummary } from "@/modules/activity/activity-summary-service";
+import { ActivityModeToggle } from "@/modules/activity/components/activity-mode-toggle";
+import { ActivityPagination } from "@/modules/activity/components/activity-pagination";
+import { ActivitySavedViews } from "@/modules/activity/components/activity-saved-views";
+import { ActivitySummaryStrip } from "@/modules/activity/components/activity-summary-strip";
 import {
   ActivityTimeRange,
   type DateRange,
-} from "@/features/activity/components/activity-time-range";
-import { ActivityTimeline } from "@/features/activity/components/activity-timeline";
-import { EventDetailsDrawer } from "@/features/activity/components/event-details-drawer";
-import { LiveIndicator } from "@/features/activity/components/live-indicator";
-import { extractFilterOptions, groupByDate } from "@/features/activity/filter-manager";
+} from "@/modules/activity/components/activity-time-range";
+import { ActivityTimeline } from "@/modules/activity/components/activity-timeline";
+import { EventDetailsDrawer } from "@/modules/activity/components/event-details-drawer";
+import { LiveIndicator } from "@/modules/activity/components/live-indicator";
+import { extractFilterOptions, groupByDate } from "@/modules/activity/filter-manager";
 import {
   ALL_EVENTS_VIEW_ID,
   hydrateSavedViews,
   type SavedView,
-} from "@/features/activity/saved-views";
-import type { ActivityFilters, ActivityMode, Outcome } from "@/features/activity/types";
-import { useEntitlements } from "@/lib/billing";
+} from "@/modules/activity/saved-views";
+import type { ActivityFilters, ActivityMode, Outcome } from "@/modules/activity/types";
+import { useEntitlements } from "@/modules/billing/api/billing";
 
 export const Route = createFileRoute("/_app/activity")({
   component: ActivityRouteComponent,

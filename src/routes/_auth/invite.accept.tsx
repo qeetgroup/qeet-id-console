@@ -19,8 +19,8 @@ import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ApiError } from "@/lib/api";
-import { useAcceptInvite } from "@/lib/auth";
+import { ApiError } from "@/platform/api/client";
+import { useAcceptInvite } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_auth/invite/accept")({
   component: AcceptInvitePage,

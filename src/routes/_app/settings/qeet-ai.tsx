@@ -34,8 +34,10 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import type { ApiError } from "@/lib/api";
+import { PageHeader } from "@/platform/components/page-header";
+import type { ApiError } from "@/platform/errors/api-error";
+import { normalizeError } from "@/platform/errors/normalize-error";
+import { userMessageForCode } from "@/platform/errors/user-message";
 import {
   deleteQeetAIProviderConfig,
   QEETAI_PROVIDER_CONFIG_KEY,
@@ -44,7 +46,7 @@ import {
   setQeetAIProviderConfig,
   testQeetAIProviderConfig,
   useQeetAIProviderConfig,
-} from "@/lib/qeetai";
+} from "@/modules/qeetai/api/qeetai";
 
 export const Route = createFileRoute("/_app/settings/qeet-ai")({
   component: QeetAISettingsPage,
@@ -298,7 +300,12 @@ function QeetAISettingsPage() {
               {actionError && (
                 <Card className="border-destructive">
                   <CardContent className="p-4">
-                    <FieldError>{actionError.message}</FieldError>
+                    <FieldError>
+                      {userMessageForCode(
+                        normalizeError(actionError).code,
+                        normalizeError(actionError).kind,
+                      )}
+                    </FieldError>
                   </CardContent>
                 </Card>
               )}

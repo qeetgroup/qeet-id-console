@@ -1,0 +1,110 @@
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import { ApiError } from "@/platform/errors/api-error";
+import { normalizeError } from "@/platform/errors/normalize-error";
+import { userMessageForCode } from "@/platform/errors/user-message";
+
+// Per-mutation overrides go on the `meta` object. `silent: true` opts out
+// of both the success toast and the error toast (e.g. background polls
+// where a toast would be noisy). `successMessage` overrides the default
+// "Saved" string; `successDescription` adds a second line.
+interface MutationMeta {
+  silent?: boolean;
+  successMessage?: string;
+  successDescription?: string;
+}
+
+declare module "@tanstack/react-query" {
+  interface Register {
+    mutationMeta: MutationMeta;
+    queryMeta: { silent?: boolean };
+  }
+}
+
+// Surface backend errors via a single toast handler. 401 is excluded because
+// api.ts already redirects to /sign-in after a failed refresh, and 400/422
+// is excluded so form validation can render inline messages without a
+// duplicate toast. Individual mutations can opt out by setting
+// `meta: { silent: true }`.
+function reportError(error: unknown, meta?: Record<string, unknown>) {
+  if (meta?.silent) return;
+  if (!(error instanceof ApiError)) return;
+  // Plan-entitlement errors: a numeric cap reached (plan_limit) or a locked
+  // feature (upgrade_required). Show an actionable "Upgrade" toast instead of a
+  // generic error. Keyed on the stable code so it's independent of HTTP status
+  // (the backend uses 402) and never masked by the 403 branch below.
+  if (error.code === "billing.plan_limit" || error.code === "billing.upgrade_required") {
+    const atLimit = error.code === "billing.plan_limit";
+    toast.error(atLimit ? "Plan limit reached" : "Upgrade to unlock this", {
+      description: atLimit
+        ? "You've reached your plan's limit. Upgrade to add more."
+        : "This feature isn't included in your plan. Upgrade to unlock it.",
+      action: {
+        label: "Upgrade",
+        onClick: () => {
+          window.location.href = "/settings/billing";
+        },
+      },
+    });
+    return;
+  }
+  if (error.status === 401 || error.status === 400 || error.status === 422) return;
+  // Step-up is handled at the call site by useSensitiveAction (open dialog +
+  // retry). Don't fire the misleading generic 403 toast for it.
+  if (error.code === "step_up_required") return;
+  if (error.status === 403) {
+    toast.error("This action is no longer available", {
+      description: "Your organization access may have changed. The console is refreshing it now.",
+    });
+    return;
+  }
+  // Leak stop: never surface the raw backend message. Map the stable code to
+  // curated, user-safe copy (generic fallback for unknown codes).
+  const appError = normalizeError(error);
+  toast.error(userMessageForCode(appError.code, appError.kind));
+}
+
+// Success-side toast: emitted for every mutation that doesn't opt out.
+// Default message is intentionally generic ("Saved"); screens that want
+// a better word ("Created user", "Revoked session") set
+// `meta: { successMessage: "..." }` on the useMutation call.
+function reportSuccess(meta?: MutationMeta) {
+  if (meta?.silent) return;
+  toast.success(meta?.successMessage ?? "Saved", {
+    description: meta?.successDescription,
+  });
+}
+
+export function getContext() {
+  let queryClient: QueryClient;
+  const refreshCapabilities = (error: unknown, sourceQueryKey?: readonly unknown[]) => {
+    if (!(error instanceof ApiError) || error.status !== 403) return;
+    if (sourceQueryKey?.[0] === "effective-permissions") return;
+    queueMicrotask(() => {
+      void queryClient.invalidateQueries({ queryKey: ["effective-permissions"] });
+    });
+  };
+
+  queryClient = new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error, query) => {
+        reportError(error, query.meta);
+        refreshCapabilities(error, query.queryKey);
+      },
+    }),
+    mutationCache: new MutationCache({
+      onError: (error, _vars, _ctx, mutation) => {
+        reportError(error, mutation.meta);
+        refreshCapabilities(error);
+      },
+      onSuccess: (_data, _vars, _ctx, mutation) =>
+        reportSuccess(mutation.meta as MutationMeta | undefined),
+    }),
+  });
+
+  return {
+    queryClient,
+  };
+}
+export default function TanstackQueryProvider() {}

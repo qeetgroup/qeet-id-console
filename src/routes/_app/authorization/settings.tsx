@@ -2,7 +2,7 @@ import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GaugeIcon, LayersIcon, ShieldIcon } from "lucide-react";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/platform/components/page-header";
 
 export const Route = createFileRoute("/_app/authorization/settings")({
   component: SettingsPage,

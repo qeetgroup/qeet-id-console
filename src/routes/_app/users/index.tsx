@@ -53,29 +53,29 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import {
   BulkBar,
   ListToolbar,
   MasterCheckbox,
   RowCheckbox,
   SortHeader,
-} from "@/components/data-table";
-import { PageHeader } from "@/components/page-header";
-import { useCapabilities } from "@/features/access-control/capability-provider";
-import { ReadOnlyNotice } from "@/features/access-control/components/read-only-notice";
-import { BulkActions } from "@/features/users-list/bulk-actions";
-import { MoreFilters, SaveView } from "@/features/users-list/filter-extras";
-import { initials, primaryRole } from "@/features/users-list/helpers";
-import { UserPreviewDrawer } from "@/features/users-list/user-preview-drawer";
-import { type RowActionHandlers, UserRowActions } from "@/features/users-list/user-row-actions";
-import { type KpiFilter, UsersKpis } from "@/features/users-list/users-kpis";
-import { type ApiError, api, tokenStore } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
-import { useListView } from "@/lib/list-view";
-import { useRoles } from "@/lib/rbac-groups";
-import { useRevokeAllUserSessions } from "@/lib/user360";
+} from "@/shared/components/data-table";
+import { PageHeader } from "@/platform/components/page-header";
+import { useCapabilities } from "@/platform/security/capability-provider";
+import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
+import { BulkActions } from "@/modules/users/bulk-actions";
+import { MoreFilters, SaveView } from "@/modules/users/filter-extras";
+import { initials, primaryRole } from "@/modules/users/helpers";
+import { UserPreviewDrawer } from "@/modules/users/user-preview-drawer";
+import { type RowActionHandlers, UserRowActions } from "@/modules/users/user-row-actions";
+import { type KpiFilter, UsersKpis } from "@/modules/users/users-kpis";
+import { type ApiError, api, tokenStore } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/export";
+import { useListView } from "@/shared/hooks/use-list-view";
+import { useRoles } from "@/modules/authorization/api/rbac-groups";
+import { useRevokeAllUserSessions } from "@/modules/users/api/user360";
 import {
   type User,
   useCreateUser,
@@ -85,7 +85,7 @@ import {
   useUpdateUser,
   useUserStats,
   useUserTrends,
-} from "@/lib/users";
+} from "@/modules/users/api/users";
 
 export const Route = createFileRoute("/_app/users/")({ component: UsersPage });
 

@@ -13,9 +13,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRightIcon } from "lucide-react";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { setBuilderDoc } from "@/lib/authz-store";
-import { POLICY_TEMPLATES, type PolicyTemplate, TEMPLATE_CATEGORIES } from "@/lib/authz-templates";
+import { PageHeader } from "@/platform/components/page-header";
+import { setBuilderDoc } from "@/modules/authorization/store/authz-store";
+import {
+  POLICY_TEMPLATES,
+  type PolicyTemplate,
+  TEMPLATE_CATEGORIES,
+} from "@/modules/authorization/utils/templates";
 
 export const Route = createFileRoute("/_app/authorization/templates")({
   component: TemplatesPage,

@@ -23,13 +23,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { FlaskConicalIcon, Loader2Icon, PlayIcon } from "lucide-react";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { DecisionExplain } from "@/features/authorization/components/explain/decision-explain";
+import { PageHeader } from "@/platform/components/page-header";
+import { DecisionExplain } from "@/modules/authorization/components/explain/decision-explain";
 import {
   DecisionBadge,
   ENGINE_DESCRIPTIONS,
-} from "@/features/authorization/components/shared/decision-badge";
-import { MonacoPanel } from "@/features/authorization/components/shared/monaco-panel";
+} from "@/modules/authorization/components/shared/decision-badge";
+import { MonacoPanel } from "@/modules/authorization/components/shared/monaco-panel";
 import {
   BATCH_CAP,
   type DecisionRecord,
@@ -39,8 +39,8 @@ import {
   useBatchSimulate,
   useRbacSimulate,
   useRebacSimulate,
-} from "@/lib/authz-simulate";
-import { pushDecision } from "@/lib/authz-store";
+} from "@/modules/authorization/api/simulate";
+import { pushDecision } from "@/modules/authorization/store/authz-store";
 
 export const Route = createFileRoute("/_app/authorization/simulator")({
   component: SimulatorPage,

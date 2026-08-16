@@ -33,10 +33,10 @@ import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { Loader2Icon, PlusIcon, RefreshCwIcon, ShieldCheckIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { ListToolbar, SortHeader } from "@/components/data-table";
-import { PageHeader } from "@/components/page-header";
-import { useRegisterContext } from "@/features/qeetai/context/context-registry";
-import type { ApiError } from "@/lib/api";
+import { ListToolbar, SortHeader } from "@/shared/components/data-table";
+import { PageHeader } from "@/platform/components/page-header";
+import { useRegisterContext } from "@/modules/qeetai/context/context-registry";
+import type { ApiError } from "@/platform/api/client";
 import {
   type Permission,
   type Role,
@@ -46,9 +46,9 @@ import {
   useRevokePermission,
   useRolePermissions,
   useRoles,
-} from "@/lib/authz-rbac";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
-import { useListView } from "@/lib/list-view";
+} from "@/modules/authorization/api/rbac";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/export";
+import { useListView } from "@/shared/hooks/use-list-view";
 
 export const Route = createFileRoute("/_app/authorization/roles")({
   component: RolesPage,
@@ -72,9 +72,7 @@ function RolesPage() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qeetaiCtx = useMemo(
     () =>
-      editing
-        ? { selection: { kind: "role" as const, id: editing.id, label: editing.name } }
-        : {},
+      editing ? { selection: { kind: "role" as const, id: editing.id, label: editing.name } } : {},
     [editing],
   );
   useRegisterContext(pathname, qeetaiCtx);

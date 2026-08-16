@@ -34,8 +34,12 @@ import {
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { type RotateKeyResult, useRotateKey, useSigningKeys } from "@/lib/signing-keys";
+import { PageHeader } from "@/platform/components/page-header";
+import {
+  type RotateKeyResult,
+  useRotateKey,
+  useSigningKeys,
+} from "@/modules/developer/api/signing-keys";
 
 export const Route = createFileRoute("/_app/auth/api/signing-keys")({
   component: SigningKeysPage,

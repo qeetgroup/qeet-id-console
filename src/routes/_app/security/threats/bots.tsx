@@ -23,8 +23,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BotIcon, RefreshCwIcon, ShieldOffIcon, ZapIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { type BotSettings, useBotOverview, useBotSettings, useUpdateBotSettings } from "@/lib/bots";
+import { PageHeader } from "@/platform/components/page-header";
+import {
+  type BotSettings,
+  useBotOverview,
+  useBotSettings,
+  useUpdateBotSettings,
+} from "@/modules/security/api/bots";
 
 export const Route = createFileRoute("/_app/security/threats/bots")({
   component: BotsPage,

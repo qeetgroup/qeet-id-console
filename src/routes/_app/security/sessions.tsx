@@ -20,9 +20,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MonitorSmartphoneIcon, RefreshCwIcon, ShieldIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
 
 export const Route = createFileRoute("/_app/security/sessions")({
   component: SessionsPage,

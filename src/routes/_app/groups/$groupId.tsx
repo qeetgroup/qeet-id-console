@@ -36,15 +36,15 @@ import { ArrowLeftIcon, FolderIcon, Loader2Icon, ShieldCheckIcon, UsersIcon } fr
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { ApiError, api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
+import { ApiError, api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 import {
   type GroupRole,
   useGrantGroupRole,
   useGroupRoles,
   useRevokeGroupRole,
   useRoles,
-} from "@/lib/rbac-groups";
+} from "@/modules/authorization/api/rbac-groups";
 
 export const Route = createFileRoute("/_app/groups/$groupId")({
   component: GroupDetailPage,

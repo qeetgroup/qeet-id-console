@@ -42,8 +42,8 @@ import { Loader2Icon, PencilIcon, PlusIcon, ServerIcon, Trash2Icon } from "lucid
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import type { ApiError } from "@/lib/api";
+import { PageHeader } from "@/platform/components/page-header";
+import type { ApiError } from "@/platform/api/client";
 import {
   idpMetadataUrl,
   type SamlProvider,
@@ -51,7 +51,7 @@ import {
   useDeleteSamlProvider,
   useSamlProviders,
   useUpdateSamlProvider,
-} from "@/lib/saml-idp";
+} from "@/modules/authentication/api/saml-idp";
 
 export const Route = createFileRoute("/_app/auth/connections/saml-idp")({
   component: SamlIdpPage,

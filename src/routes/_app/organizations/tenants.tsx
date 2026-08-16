@@ -41,21 +41,21 @@ import { Building2Icon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-reac
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { ListToolbar, SortHeader } from "@/components/data-table";
-import { LogoField } from "@/components/logo-field";
-import { PageHeader } from "@/components/page-header";
-import { useCapabilities } from "@/features/access-control/capability-provider";
-import { type OrgActionHandlers, OrgRowActions } from "@/features/orgs-list/org-row-actions";
-import { OrgPreviewDrawer } from "@/features/orgs-list/org-preview-drawer";
-import { type OrgKpiFilter, OrgsKpis } from "@/features/orgs-list/orgs-kpis";
-import { initials } from "@/features/users-list/helpers";
-import { CreateOrgFlow } from "@/features/onboarding/create-org-flow";
-import { type ApiError, api, tokenStore } from "@/lib/api";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
-import { useListView } from "@/lib/list-view";
-import { type Org, useDeleteOrg, useOrgs, useUpdateOrg } from "@/lib/orgs";
-import { REGIONS } from "@/lib/regions";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { ListToolbar, SortHeader } from "@/shared/components/data-table";
+import { LogoField } from "@/shared/components/logo-field";
+import { PageHeader } from "@/platform/components/page-header";
+import { useCapabilities } from "@/platform/security/capability-provider";
+import { type OrgActionHandlers, OrgRowActions } from "@/modules/organizations/org-row-actions";
+import { OrgPreviewDrawer } from "@/modules/organizations/org-preview-drawer";
+import { type OrgKpiFilter, OrgsKpis } from "@/modules/organizations/orgs-kpis";
+import { initials } from "@/modules/users/helpers";
+import { CreateOrgFlow } from "@/modules/onboarding/create-org-flow";
+import { type ApiError, api, tokenStore } from "@/platform/api/client";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/export";
+import { useListView } from "@/shared/hooks/use-list-view";
+import { type Org, useDeleteOrg, useOrgs, useUpdateOrg } from "@/modules/organizations/api/orgs";
+import { REGIONS } from "@/shared/data/regions";
 
 export const Route = createFileRoute("/_app/organizations/tenants")({
   component: TenantsPage,

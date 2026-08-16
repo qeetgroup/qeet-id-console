@@ -5,22 +5,22 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useCapabilities } from "@/features/access-control/capability-provider";
-import { useRegisterContext } from "@/features/qeetai/context/context-registry";
-import { ActivityTab } from "@/features/user360/activity-tab";
-import { OverviewTab } from "@/features/user360/overview-tab";
+import { useCapabilities } from "@/platform/security/capability-provider";
+import { useRegisterContext } from "@/modules/qeetai/context/context-registry";
+import { ActivityTab } from "@/modules/users/activity-tab";
+import { OverviewTab } from "@/modules/users/overview-tab";
 import {
   AccessTab,
   DeveloperTab,
   IdentitiesTab,
   SecurityTab,
   SessionsTab,
-} from "@/features/user360/tab-panels";
-import { isUser360Tab, USER360_TABS, type User360Tab } from "@/features/user360/tabs";
-import { UserDetailHeader } from "@/features/user360/user-detail-header";
-import { deriveUserRisk } from "@/features/user360/utils";
-import { useAnomalies } from "@/lib/anomalies";
-import { api } from "@/lib/api";
+} from "@/modules/users/tab-panels";
+import { isUser360Tab, USER360_TABS, type User360Tab } from "@/modules/users/tabs";
+import { UserDetailHeader } from "@/modules/users/user-detail-header";
+import { deriveUserRisk } from "@/modules/users/utils";
+import { useAnomalies } from "@/modules/security/api/anomalies";
+import { api } from "@/platform/api/client";
 import {
   type UserDetail,
   useUserAccess,
@@ -28,7 +28,7 @@ import {
   useUserRecentActivity,
   useUserSecurity,
   useUserSessions,
-} from "@/lib/user360";
+} from "@/modules/users/api/user360";
 
 export const Route = createFileRoute("/_app/users/$userId")({
   // tab is optional so existing `<Link to="/users/$userId">` call sites need not

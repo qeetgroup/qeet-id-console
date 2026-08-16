@@ -8,9 +8,10 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint --diagnostic-level=error .",
+    "lint:boundaries": "biome lint --diagnostic-level=error ./src",
     "format": "biome format --write .",
     "check": "biome check --diagnostic-level=error .",
     "generate:tree": "struct -i node_modules -i .output -i .tanstack -i .nitro -i dist -i bun.lock -o project.tree ."

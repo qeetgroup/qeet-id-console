@@ -24,16 +24,16 @@ import { Loader2Icon, RadioTowerIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import type { ApiError } from "@/lib/api";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import type { ApiError } from "@/platform/api/client";
 import {
   type SinkType,
   useCreateLogSink,
   useDeleteLogSink,
   useLogSinks,
   useToggleLogSink,
-} from "@/lib/log-sinks";
+} from "@/modules/security/api/log-sinks";
 
 export const Route = createFileRoute("/_app/security/log-streaming")({
   component: LogStreamingPage,

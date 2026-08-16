@@ -23,8 +23,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-import { PageHeader } from "@/components/page-header";
-import { useAnalyticsOverview } from "@/lib/analytics";
+import { PageHeader } from "@/platform/components/page-header";
+import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
 
 export const Route = createFileRoute("/_app/analytics")({
   component: AnalyticsPage,

@@ -22,9 +22,9 @@ import { ArrowLeftIcon, FileUpIcon, Loader2Icon, UploadCloudIcon, XIcon } from "
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/users/import")({
   component: ImportUsersPage,

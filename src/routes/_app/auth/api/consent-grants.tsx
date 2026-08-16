@@ -27,8 +27,12 @@ import { KeyRoundIcon, Loader2Icon, RefreshCwIcon, Trash2Icon } from "lucide-rea
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { type OAuthGrant, useOAuthGrants, useRevokeOAuthGrant } from "@/lib/oauth-grants";
+import { PageHeader } from "@/platform/components/page-header";
+import {
+  type OAuthGrant,
+  useOAuthGrants,
+  useRevokeOAuthGrant,
+} from "@/modules/authentication/api/oauth-grants";
 
 export const Route = createFileRoute("/_app/auth/api/consent-grants")({
   component: ConsentGrantsPage,

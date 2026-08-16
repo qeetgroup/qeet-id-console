@@ -28,10 +28,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
-import { useEntitlements } from "@/lib/billing";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { useEntitlements } from "@/modules/billing/api/billing";
 
 // URL-driven filter state — the audit-logs view bookmarks any filter
 // combination as `/_app/security/audit-logs?action=user.create` so

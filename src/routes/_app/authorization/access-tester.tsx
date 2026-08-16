@@ -17,9 +17,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2Icon, Loader2Icon, ShieldCheckIcon, XCircleIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { type ExplainPath, useExplainCheck } from "@/lib/access-check";
-import type { ApiError } from "@/lib/api";
+import { PageHeader } from "@/platform/components/page-header";
+import { type ExplainPath, useExplainCheck } from "@/modules/authorization/api/access-check";
+import type { ApiError } from "@/platform/api/client";
 
 export const Route = createFileRoute("/_app/authorization/access-tester")({
   component: AccessCheckPage,

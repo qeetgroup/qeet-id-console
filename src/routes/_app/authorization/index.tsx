@@ -26,11 +26,11 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { ComingSoon } from "@/features/authorization/components/shared/coming-soon";
-import { useAbacPolicies } from "@/lib/authz-abac";
-import { isAuthzEvent, useAuditEvents } from "@/lib/authz-audit";
-import { usePermissions, useRoles, wildcardPermissions } from "@/lib/authz-rbac";
+import { PageHeader } from "@/platform/components/page-header";
+import { ComingSoon } from "@/modules/authorization/components/shared/coming-soon";
+import { useAbacPolicies } from "@/modules/authorization/api/abac";
+import { isAuthzEvent, useAuditEvents } from "@/modules/authorization/api/audit";
+import { usePermissions, useRoles, wildcardPermissions } from "@/modules/authorization/api/rbac";
 
 export const Route = createFileRoute("/_app/authorization/")({
   component: DashboardPage,

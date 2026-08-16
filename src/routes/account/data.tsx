@@ -16,9 +16,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { ApiError, api, tokenStore } from "@/lib/api";
-import { usePasswordStatus } from "@/lib/auth";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { ApiError, api, tokenStore } from "@/platform/api/client";
+import { usePasswordStatus } from "@/modules/authentication";
 
 export const Route = createFileRoute("/account/data")({ component: DataPage });
 

@@ -24,10 +24,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { HistoryIcon, RotateCcwIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { ComingSoon } from "@/features/authorization/components/shared/coming-soon";
-import { useAbacPolicies } from "@/lib/authz-abac";
-import { toVersionTimeline, useAuditEvents } from "@/lib/authz-audit";
+import { PageHeader } from "@/platform/components/page-header";
+import { ComingSoon } from "@/modules/authorization/components/shared/coming-soon";
+import { useAbacPolicies } from "@/modules/authorization/api/abac";
+import { toVersionTimeline, useAuditEvents } from "@/modules/authorization/api/audit";
 
 export const Route = createFileRoute("/_app/authorization/versions")({
   component: VersionsPage,

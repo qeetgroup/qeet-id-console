@@ -45,15 +45,15 @@ import { Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon, WorkflowIcon } from "
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { OidcQuickstart } from "@/features/oidc/components/oidc-quickstart";
-import type { ApiError } from "@/lib/api";
+import { PageHeader } from "@/platform/components/page-header";
+import { OidcQuickstart } from "@/modules/authentication/components/oidc-quickstart";
+import type { ApiError } from "@/platform/api/client";
 import {
   type OidcClient,
   useCreateOidcClient,
   useDeleteOidcClient,
   useOidcClients,
-} from "@/lib/oidc-clients";
+} from "@/modules/authentication/api/oidc-clients";
 
 export const Route = createFileRoute("/_app/auth/connections/oidc/")({
   component: OidcPage,

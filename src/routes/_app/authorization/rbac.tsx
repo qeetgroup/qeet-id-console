@@ -12,9 +12,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ShieldCheckIcon } from "lucide-react";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { RoleHierarchyGraph } from "@/features/authorization/components/graph/role-hierarchy-graph";
-import { useRolePermissions, useRoles } from "@/lib/authz-rbac";
+import { PageHeader } from "@/platform/components/page-header";
+import { RoleHierarchyGraph } from "@/modules/authorization/components/graph/role-hierarchy-graph";
+import { useRolePermissions, useRoles } from "@/modules/authorization/api/rbac";
 
 export const Route = createFileRoute("/_app/authorization/rbac")({
   component: RbacPage,

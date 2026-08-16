@@ -21,8 +21,8 @@ import { MonitorIcon, MonitorSmartphoneIcon, SmartphoneIcon, TabletIcon } from "
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { api, tokenStore } from "@/lib/api";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { api, tokenStore } from "@/platform/api/client";
 
 export const Route = createFileRoute("/account/sessions")({
   component: SessionsPage,

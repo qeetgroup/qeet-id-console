@@ -4,7 +4,7 @@ import { DatabaseIcon, MonitorSmartphoneIcon, ShieldCheckIcon, UserIcon } from "
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import { isAuthenticated, useMe } from "@/lib/auth";
+import { isAuthenticated, useMe } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/account")({ component: AccountLayout });
 

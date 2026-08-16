@@ -7,15 +7,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeftIcon, ClockIcon, ShieldIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { useCapabilities } from "@/features/access-control/capability-provider";
-import type { ActivityEvent } from "@/features/activity/types";
-import { IdentityTimeline } from "@/features/timeline/components/identity-timeline";
-import { TimelineDetailsDrawer } from "@/features/timeline/components/timeline-details-drawer";
-import { TimelineExportMenu } from "@/features/timeline/components/timeline-export-menu";
-import { TimelineFilters } from "@/features/timeline/components/timeline-filters";
-import { TimelineSummaryStrip } from "@/features/timeline/components/timeline-summary-strip";
-import { TimelineProvider, useTimeline } from "@/features/timeline/timeline-provider";
+import { PageHeader } from "@/platform/components/page-header";
+import { useCapabilities } from "@/platform/security/capability-provider";
+import type { ActivityEvent } from "@/modules/activity/types";
+import { IdentityTimeline } from "@/modules/timeline/components/identity-timeline";
+import { TimelineDetailsDrawer } from "@/modules/timeline/components/timeline-details-drawer";
+import { TimelineExportMenu } from "@/modules/timeline/components/timeline-export-menu";
+import { TimelineFilters } from "@/modules/timeline/components/timeline-filters";
+import { TimelineSummaryStrip } from "@/modules/timeline/components/timeline-summary-strip";
+import { TimelineProvider, useTimeline } from "@/modules/timeline/timeline-provider";
 
 export const Route = createFileRoute("/_app/users/$userId_/timeline")({
   component: TimelinePageWrapper,

@@ -25,9 +25,9 @@ import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { type ApiError, api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
+import { PageHeader } from "@/platform/components/page-header";
+import { type ApiError, api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/settings/organization/security-policy")({
   component: PoliciesPage,
