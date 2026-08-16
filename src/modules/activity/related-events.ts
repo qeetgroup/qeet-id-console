@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 
-import type { RelatedEventsResponse } from "./types";
+import type { RelatedEventsResponse } from "./activity.types";
 
 const EMPTY: RelatedEventsResponse["related"] = { by_request_id: [], by_actor: [] };
 

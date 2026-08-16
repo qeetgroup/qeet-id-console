@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 
-import type { ActivityFilters, ActivitySummary } from "./types";
+import type { ActivityFilters, ActivitySummary } from "./activity.types";
 
 const LIVE_REFETCH_MS = 30_000;
 

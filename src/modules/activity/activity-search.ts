@@ -11,7 +11,7 @@
 // would thrash the query cache).
 
 import { type DateRange, presetToRange, TIME_PRESETS } from "./components/activity-time-range";
-import type { ActivityFilters, ActivityMode, Outcome, Severity } from "./types";
+import type { ActivityFilters, ActivityMode, Outcome, Severity } from "./activity.types";
 
 export type DrawerTab = "overview" | "raw" | "related";
 

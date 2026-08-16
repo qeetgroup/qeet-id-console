@@ -3,7 +3,7 @@
 
 import { Badge, cn, Highlight, StatusPill } from "@qeetrix/ui";
 
-import type { SearchItem } from "../registry/types";
+import type { SearchItem } from "../registry/registry.types";
 
 interface ResultRowProps {
   item: SearchItem;

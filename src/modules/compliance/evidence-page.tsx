@@ -37,7 +37,7 @@ import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/platform/components/page-header";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
-import { exportToJson } from "@/shared/utils/export";
+import { exportToJson } from "@/shared/utils/data-export";
 
 // --------------------------------------------------------------------------
 // Domain types (mirror the Go EvidenceRun / ControlResult structs)

@@ -7,7 +7,7 @@ import { ActivityIcon, RefreshCwIcon, WifiOffIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import type { ActivitySearch } from "../activity-search";
-import type { ActivityEvent, ConnectionStatus, DateGroup } from "../types";
+import type { ActivityEvent, ConnectionStatus, DateGroup } from "../activity.types";
 import { ActivityEventRow, ActivityRowHeader } from "./activity-event-row";
 
 // ---------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 
 import { Store, useStore } from "@tanstack/react-store";
 
-import type { PolicyDoc } from "../utils/codegen";
+import type { PolicyDoc } from "../utils/policy-codegen";
 import type { DecisionRecord } from "../api/simulate";
 
 interface AuthzState {

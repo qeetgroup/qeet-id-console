@@ -28,3 +28,10 @@ export function primaryRole(roles?: string[] | null): string | null {
 export function shortId(id: string, head = 10): string {
   return id.length > head ? `${id.slice(0, head)}…` : id;
 }
+
+/** "6607bc8c-e084-…-4d285f1bfc61" → "6607bc8c…bfc61" (keeps head + tail). */
+export function truncateId(id: string, head = 8, tail = 5): string {
+  if (!id) return "";
+  if (id.length <= head + tail + 1) return id;
+  return `${id.slice(0, head)}…${id.slice(-tail)}`;
+}

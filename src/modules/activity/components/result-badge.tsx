@@ -5,7 +5,7 @@
 import { Badge, cn } from "@qeetrix/ui";
 
 import { type EventResult, eventResult } from "../event-labels";
-import type { ActivityEvent } from "../types";
+import type { ActivityEvent } from "../activity.types";
 
 type BadgeVariant = "success" | "warning" | "destructive" | "muted";
 

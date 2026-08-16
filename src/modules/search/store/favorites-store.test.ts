@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { SearchItem } from "../registry/types";
+import type { SearchItem } from "../registry/registry.types";
 import { favoritesActions, favoritesStore } from "./favorites-store";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

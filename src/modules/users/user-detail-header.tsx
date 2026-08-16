@@ -34,7 +34,7 @@ import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { useDeleteUser, useResetUserMfa, useSetUserStatus } from "./api/users";
 import { useRevokeAllUserSessions, useSendPasswordReset } from "./api/user360";
-import { CopyId } from "./shared";
+import { CopyId } from "./user-detail-fields";
 
 export interface HeaderUser {
   id: string;

@@ -8,7 +8,7 @@ import {
   toEvalTree,
   toJson,
   toYamlDoc,
-} from "../../utils/codegen";
+} from "../../utils/policy-codegen";
 import { MonacoPanel } from "../shared/monaco-panel";
 
 type View = "json" | "yaml" | "dsl" | "tree";

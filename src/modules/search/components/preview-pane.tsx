@@ -5,7 +5,7 @@
 import { Badge, cn, Separator, StatusPill } from "@qeetrix/ui";
 import { StarIcon } from "lucide-react";
 
-import type { SearchContext, SearchItem } from "../registry/types";
+import type { SearchContext, SearchItem } from "../registry/registry.types";
 import { QuickActions } from "./quick-actions";
 
 interface PreviewPaneProps {

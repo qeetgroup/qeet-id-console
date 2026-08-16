@@ -34,9 +34,9 @@ import {
   type PolicyDoc,
   toAbacInput,
   toJson,
-} from "@/modules/authorization/utils/codegen";
+} from "@/modules/authorization/utils/policy-codegen";
 import { setBuilderDoc, useBuilderDoc } from "@/modules/authorization/store/authz-store";
-import { downloadBlob } from "@/shared/utils/export";
+import { downloadBlob } from "@/shared/utils/data-export";
 
 export const Route = createFileRoute("/_app/authorization/builder")({
   component: BuilderPage,

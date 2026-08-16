@@ -29,7 +29,7 @@ import type { ReactNode } from "react";
 
 import type { Capability } from "@/platform/security/capability-model";
 
-import type { SearchContext, SearchItem, SearchSource } from "./types";
+import type { SearchContext, SearchItem, SearchSource } from "./registry.types";
 
 interface CommandDef {
   id: string;

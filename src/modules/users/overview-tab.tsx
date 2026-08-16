@@ -33,9 +33,9 @@ import type {
 } from "./api/user360";
 import { DangerZone } from "./danger-zone";
 import { SecurityPosture } from "./posture-tiles";
-import { CountRow, InfoRow } from "./shared";
+import { CountRow, InfoRow } from "./user-detail-fields";
 import type { User360Tab } from "./tabs";
-import type { UserRisk } from "./utils";
+import type { UserRisk } from "./user-risk";
 
 const SEVERITY_DOT: Record<string, string> = {
   info: "bg-info",

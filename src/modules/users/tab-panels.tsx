@@ -44,8 +44,8 @@ import {
   useUserSessions,
   useUserSocialIdentities,
 } from "./api/user360";
-import { CopyId, InfoRow } from "./shared";
-import { parseUserAgent } from "./utils";
+import { CopyId, InfoRow } from "./user-detail-fields";
+import { parseUserAgent } from "./user-agent";
 
 // ── Security tab ─────────────────────────────────────────────────────────────
 

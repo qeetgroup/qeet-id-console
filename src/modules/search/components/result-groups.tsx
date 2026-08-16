@@ -1,7 +1,7 @@
 // ResultGroups: renders the grouped list of search results inside the listbox.
 // Categories appear as sticky headers; items are rendered via ResultRow.
 
-import type { SearchItem, SearchResultGroup } from "../registry/types";
+import type { SearchItem, SearchResultGroup } from "../registry/registry.types";
 import { ResultRow } from "./result-row";
 
 interface ResultGroupsProps {

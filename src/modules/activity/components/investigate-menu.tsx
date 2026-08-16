@@ -27,7 +27,7 @@ import type { ReactElement } from "react";
 import { toast } from "sonner";
 
 import type { ActivitySearch } from "../activity-search";
-import type { ActivityEvent } from "../types";
+import type { ActivityEvent } from "../activity.types";
 
 type InvestigateMenuProps = {
   event: ActivityEvent;

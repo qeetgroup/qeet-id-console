@@ -47,7 +47,7 @@ import {
   useRolePermissions,
   useRoles,
 } from "@/modules/authorization/api/rbac";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/export";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
 
 export const Route = createFileRoute("/_app/authorization/roles")({

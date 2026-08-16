@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { applyFilters, groupByDate, matchesFilters } from "./filter-manager";
-import type { ActivityEvent, ActivityFilters } from "./types";
-import { DEFAULT_FILTERS } from "./types";
+import { applyFilters, groupByDate, matchesFilters } from "./activity-filters";
+import type { ActivityEvent, ActivityFilters } from "./activity.types";
+import { DEFAULT_FILTERS } from "./activity.types";
 
 // ---------------------------------------------------------------------------
 // Helpers

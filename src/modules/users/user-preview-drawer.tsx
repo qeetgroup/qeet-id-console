@@ -27,8 +27,9 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRightIcon, CheckCircle2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { CopyId } from "./shared";
-import { deriveUserRisk, parseUserAgent } from "./utils";
+import { CopyId } from "./user-detail-fields";
+import { parseUserAgent } from "./user-agent";
+import { deriveUserRisk } from "./user-risk";
 import { useAnomalies } from "@/modules/security";
 import {
   useUserAccess,
@@ -37,7 +38,7 @@ import {
   useUserSessions,
 } from "./api/user360";
 import type { User } from "./api/users";
-import { initials, primaryRole } from "./helpers";
+import { initials, primaryRole } from "./user-display";
 
 function formatDateTime(iso?: string | null): string {
   if (!iso) return "—";

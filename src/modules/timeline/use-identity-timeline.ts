@@ -6,7 +6,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { fetchTimelinePage } from "./timeline-service";
+import { fetchTimelinePage } from "./timeline-history";
 import type { TimelineFilters } from "./timeline-store";
 
 const DEBOUNCE_MS = 400;

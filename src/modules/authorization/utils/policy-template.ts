@@ -3,7 +3,7 @@
 // persistable PolicyDoc that writes via the live ABAC endpoints on save.
 
 import { type CondNode, nid, type Operator } from "../api/abac";
-import type { PolicyDoc } from "./codegen";
+import type { PolicyDoc } from "./policy-codegen";
 
 function leaf(attr: string, op: Operator, value = ""): CondNode {
   return { id: nid("leaf"), kind: "leaf", attr, op, value };

@@ -19,7 +19,7 @@ import {
   POLICY_TEMPLATES,
   type PolicyTemplate,
   TEMPLATE_CATEGORIES,
-} from "@/modules/authorization/utils/templates";
+} from "@/modules/authorization/utils/policy-template";
 
 export const Route = createFileRoute("/_app/authorization/templates")({
   component: TemplatesPage,

@@ -18,17 +18,17 @@ import {
 } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
-import { useActivityHistory } from "./activity-service";
+import { useActivityHistory } from "./activity-history";
 import { activityActions, activityStore, initActivityPrefs } from "./activity-store";
-import { applyFilters, groupByDate } from "./filter-manager";
-import { acquireSubscription, restartStream } from "./subscription-manager";
+import { applyFilters, groupByDate } from "./activity-filters";
+import { acquireSubscription, restartStream } from "./activity-subscription";
 import {
   type ActivityEvent,
   type ActivityFilters,
   type ConnectionStatus,
   type DateGroup,
   DEFAULT_FILTERS,
-} from "./types";
+} from "./activity.types";
 
 // ---------------------------------------------------------------------------
 // Context contract

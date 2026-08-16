@@ -46,7 +46,7 @@ import {
   severityToOutcome,
   validateActivitySearch,
 } from "@/modules/activity/activity-search";
-import { useActivitySummary } from "@/modules/activity/activity-summary-service";
+import { useActivitySummary } from "@/modules/activity/activity-summary";
 import { ActivityModeToggle } from "@/modules/activity/components/activity-mode-toggle";
 import { ActivityPagination } from "@/modules/activity/components/activity-pagination";
 import { ActivitySavedViews } from "@/modules/activity/components/activity-saved-views";
@@ -58,13 +58,13 @@ import {
 import { ActivityTimeline } from "@/modules/activity/components/activity-timeline";
 import { EventDetailsDrawer } from "@/modules/activity/components/event-details-drawer";
 import { LiveIndicator } from "@/modules/activity/components/live-indicator";
-import { extractFilterOptions, groupByDate } from "@/modules/activity/filter-manager";
+import { extractFilterOptions, groupByDate } from "@/modules/activity/activity-filters";
 import {
   ALL_EVENTS_VIEW_ID,
   hydrateSavedViews,
   type SavedView,
 } from "@/modules/activity/saved-views";
-import type { ActivityFilters, ActivityMode, Outcome } from "@/modules/activity/types";
+import type { ActivityFilters, ActivityMode, Outcome } from "@/modules/activity/activity.types";
 import { useEntitlements } from "@/modules/billing/api/billing";
 
 export const Route = createFileRoute("/_app/activity")({

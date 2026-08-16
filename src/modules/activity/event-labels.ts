@@ -4,7 +4,7 @@
 // separators, map known events to human titles, and derive a real *outcome*
 // (Success / Failed / Blocked) that is distinct from log severity.
 
-import type { Severity } from "./types";
+import type { Severity } from "./activity.types";
 
 /** Canonicalize an event type: lowercase, unify `_`/`.`/whitespace to dots. */
 function normalizeType(type: string): string {

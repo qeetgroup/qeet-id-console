@@ -19,9 +19,10 @@
 │  │  ├── 0006-qeet-ai-tool-execution-model.md
 │  │  ├── 0007-opt-in-runtime-schemas.md
 │  │  └── 0008-telemetry-redaction-and-correlation.md
-│  └── architecture
-│    ├── current-state.md
-│    └── target-architecture.md
+│  ├── architecture
+│  │  ├── current-state.md
+│  │  └── target-architecture.md
+│  └── engineering-standards.md
 ├── package.json
 ├── project.tree
 ├── public
@@ -37,19 +38,125 @@
 ├── README.md
 ├── SECURITY.md
 ├── src
-│  ├── features
+│  ├── i18n
+│  │  ├── index.ts
+│  │  ├── locales
+│  │  │  ├── de
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── en
+│  │  │  │  ├── account.json
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── authFlow.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── compliance.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── developer.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── groups.json
+│  │  │  │  ├── invitations.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── organizations.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── security.json
+│  │  │  │  ├── settings.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── es
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── fr
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── hi
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── ja
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  ├── pt
+│  │  │  │  ├── auth.json
+│  │  │  │  ├── common.json
+│  │  │  │  ├── consent.json
+│  │  │  │  ├── dashboard.json
+│  │  │  │  ├── device.json
+│  │  │  │  ├── oidc.json
+│  │  │  │  ├── rbac.json
+│  │  │  │  ├── saml.json
+│  │  │  │  ├── signingKeys.json
+│  │  │  │  └── users.json
+│  │  │  └── zh
+│  │  │    ├── auth.json
+│  │  │    ├── common.json
+│  │  │    ├── consent.json
+│  │  │    ├── dashboard.json
+│  │  │    ├── device.json
+│  │  │    ├── oidc.json
+│  │  │    ├── rbac.json
+│  │  │    ├── saml.json
+│  │  │    ├── signingKeys.json
+│  │  │    └── users.json
+│  │  └── README.md
+│  ├── integrations
+│  │  └── tanstack-query
+│  │    └── devtools.tsx
+│  ├── modules
 │  │  ├── activity
 │  │  │  ├── activity-export.ts
+│  │  │  ├── activity-filters.ts
+│  │  │  ├── activity-history.ts
 │  │  │  ├── activity-provider.tsx
-│  │  │  ├── activity-related-service.ts
 │  │  │  ├── activity-search.test.ts
 │  │  │  ├── activity-search.ts
-│  │  │  ├── activity-service.ts
 │  │  │  ├── activity-store.test.ts
 │  │  │  ├── activity-store.ts
 │  │  │  ├── activity-stream.test.ts
 │  │  │  ├── activity-stream.ts
-│  │  │  ├── activity-summary-service.ts
+│  │  │  ├── activity-subscription.ts
+│  │  │  ├── activity-summary.ts
+│  │  │  ├── activity.types.ts
 │  │  │  ├── components
 │  │  │  │  ├── activity-event-row.tsx
 │  │  │  │  ├── activity-mode-toggle.tsx
@@ -69,28 +176,16 @@
 │  │  │  ├── event-labels.test.ts
 │  │  │  ├── event-labels.ts
 │  │  │  ├── filter-manager.test.ts
-│  │  │  ├── filter-manager.ts
-│  │  │  ├── format.ts
 │  │  │  ├── index.ts
+│  │  │  ├── ip-format.ts
+│  │  │  ├── related-events.ts
 │  │  │  ├── saved-views.test.ts
-│  │  │  ├── saved-views.ts
-│  │  │  ├── subscription-manager.ts
-│  │  │  └── types.ts
-│  │  ├── auth
-│  │  │  ├── api
-│  │  │  │  └── flows.ts
-│  │  │  ├── components
-│  │  │  │  ├── auth-background.tsx
-│  │  │  │  ├── Beams.tsx
-│  │  │  │  ├── brand-hero.tsx
-│  │  │  │  ├── signin-form.tsx
-│  │  │  │  ├── signup-form.tsx
-│  │  │  │  └── social-buttons.tsx
-│  │  │  └── index.ts
+│  │  │  └── saved-views.ts
 │  │  ├── authentication
 │  │  │  ├── api
 │  │  │  │  ├── admin-portal.ts
 │  │  │  │  ├── auth-policy.ts
+│  │  │  │  ├── flows.ts
 │  │  │  │  ├── ldap.ts
 │  │  │  │  ├── mfa.ts
 │  │  │  │  ├── oauth-grants.ts
@@ -102,7 +197,13 @@
 │  │  │  │  ├── social-identities.ts
 │  │  │  │  └── sso.ts
 │  │  │  ├── components
-│  │  │  │  └── oidc-quickstart.tsx
+│  │  │  │  ├── auth-background.tsx
+│  │  │  │  ├── Beams.tsx
+│  │  │  │  ├── brand-hero.tsx
+│  │  │  │  ├── oidc-quickstart.tsx
+│  │  │  │  ├── signin-form.tsx
+│  │  │  │  ├── signup-form.tsx
+│  │  │  │  └── social-buttons.tsx
 │  │  │  └── index.ts
 │  │  ├── authorization
 │  │  │  ├── api
@@ -134,11 +235,11 @@
 │  │  │  │    ├── decision-badge.tsx
 │  │  │  │    └── monaco-panel.tsx
 │  │  │  ├── index.ts
-│  │  │  ├── lib
-│  │  │  │  ├── codegen.ts
-│  │  │  │  └── templates.ts
-│  │  │  └── store
-│  │  │    └── authz-store.ts
+│  │  │  ├── store
+│  │  │  │  └── authz-store.ts
+│  │  │  └── utils
+│  │  │    ├── policy-codegen.ts
+│  │  │    └── policy-template.ts
 │  │  ├── billing
 │  │  │  ├── api
 │  │  │  │  └── billing.ts
@@ -247,6 +348,7 @@
 │  │  │  │  └── use-qeetai-chat.ts
 │  │  │  ├── index.ts
 │  │  │  ├── qeetai-provider.tsx
+│  │  │  ├── qeetai.types.ts
 │  │  │  ├── redact.ts
 │  │  │  ├── store
 │  │  │  │  ├── conversation-store.test.ts
@@ -256,21 +358,20 @@
 │  │  │  ├── suggestions
 │  │  │  │  ├── route-suggestions.ts
 │  │  │  │  └── suggestion-engine.ts
-│  │  │  ├── tools
-│  │  │  │  ├── definitions
-│  │  │  │  │  ├── audit.tools.ts
-│  │  │  │  │  ├── authz.tools.ts
-│  │  │  │  │  ├── codegen.tools.ts
-│  │  │  │  │  ├── credentials.tools.ts
-│  │  │  │  │  ├── org.tools.ts
-│  │  │  │  │  ├── role.tools.ts
-│  │  │  │  │  └── user.tools.ts
-│  │  │  │  ├── execution-engine.test.ts
-│  │  │  │  ├── execution-engine.ts
-│  │  │  │  ├── index.ts
-│  │  │  │  ├── tool-registry.ts
-│  │  │  │  └── tool-types.ts
-│  │  │  └── types.ts
+│  │  │  └── tools
+│  │  │    ├── definitions
+│  │  │    │  ├── audit.tools.ts
+│  │  │    │  ├── authz.tools.ts
+│  │  │    │  ├── codegen.tools.ts
+│  │  │    │  ├── credentials.tools.ts
+│  │  │    │  ├── org.tools.ts
+│  │  │    │  ├── role.tools.ts
+│  │  │    │  └── user.tools.ts
+│  │  │    ├── execution-engine.test.ts
+│  │  │    ├── execution-engine.ts
+│  │  │    ├── index.ts
+│  │  │    ├── tool-registry.ts
+│  │  │    └── tool-types.ts
 │  │  ├── search
 │  │  │  ├── components
 │  │  │  │  ├── preview-pane.tsx
@@ -285,8 +386,8 @@
 │  │  │  ├── registry
 │  │  │  │  ├── command-source.tsx
 │  │  │  │  ├── navigation-source.tsx
-│  │  │  │  ├── resource-source.ts
-│  │  │  │  └── types.ts
+│  │  │  │  ├── registry.types.ts
+│  │  │  │  └── resource-source.ts
 │  │  │  ├── search-provider.tsx
 │  │  │  └── store
 │  │  │    ├── favorites-store.test.ts
@@ -314,15 +415,13 @@
 │  │  │  ├── grouping.ts
 │  │  │  ├── index.ts
 │  │  │  ├── timeline-export.ts
+│  │  │  ├── timeline-history.ts
 │  │  │  ├── timeline-provider.tsx
-│  │  │  ├── timeline-service.ts
 │  │  │  ├── timeline-store.test.ts
 │  │  │  ├── timeline-store.ts
 │  │  │  ├── timeline-summary.test.ts
 │  │  │  ├── timeline-summary.ts
 │  │  │  └── use-identity-timeline.ts
-│  │  ├── user360
-│  │  │  └── api
 │  │  └── users
 │  │    ├── activity-tab.tsx
 │  │    ├── api
@@ -331,122 +430,19 @@
 │  │    ├── bulk-actions.tsx
 │  │    ├── danger-zone.tsx
 │  │    ├── filter-extras.tsx
-│  │    ├── helpers.ts
 │  │    ├── index.ts
 │  │    ├── overview-tab.tsx
 │  │    ├── posture-tiles.tsx
-│  │    ├── shared.tsx
 │  │    ├── tab-panels.tsx
 │  │    ├── tabs.ts
+│  │    ├── user-agent.ts
+│  │    ├── user-detail-fields.tsx
 │  │    ├── user-detail-header.tsx
+│  │    ├── user-display.ts
 │  │    ├── user-preview-drawer.tsx
+│  │    ├── user-risk.ts
 │  │    ├── user-row-actions.tsx
-│  │    ├── users-kpis.tsx
-│  │    └── utils.ts
-│  ├── i18n
-│  │  ├── index.ts
-│  │  ├── locales
-│  │  │  ├── de
-│  │  │  │  ├── auth.json
-│  │  │  │  ├── common.json
-│  │  │  │  ├── consent.json
-│  │  │  │  ├── dashboard.json
-│  │  │  │  ├── device.json
-│  │  │  │  ├── oidc.json
-│  │  │  │  ├── rbac.json
-│  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
-│  │  │  │  └── users.json
-│  │  │  ├── en
-│  │  │  │  ├── account.json
-│  │  │  │  ├── auth.json
-│  │  │  │  ├── authFlow.json
-│  │  │  │  ├── common.json
-│  │  │  │  ├── compliance.json
-│  │  │  │  ├── consent.json
-│  │  │  │  ├── dashboard.json
-│  │  │  │  ├── developer.json
-│  │  │  │  ├── device.json
-│  │  │  │  ├── groups.json
-│  │  │  │  ├── invitations.json
-│  │  │  │  ├── oidc.json
-│  │  │  │  ├── organizations.json
-│  │  │  │  ├── rbac.json
-│  │  │  │  ├── saml.json
-│  │  │  │  ├── security.json
-│  │  │  │  ├── settings.json
-│  │  │  │  ├── signingKeys.json
-│  │  │  │  └── users.json
-│  │  │  ├── es
-│  │  │  │  ├── auth.json
-│  │  │  │  ├── common.json
-│  │  │  │  ├── consent.json
-│  │  │  │  ├── dashboard.json
-│  │  │  │  ├── device.json
-│  │  │  │  ├── oidc.json
-│  │  │  │  ├── rbac.json
-│  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
-│  │  │  │  └── users.json
-│  │  │  ├── fr
-│  │  │  │  ├── auth.json
-│  │  │  │  ├── common.json
-│  │  │  │  ├── consent.json
-│  │  │  │  ├── dashboard.json
-│  │  │  │  ├── device.json
-│  │  │  │  ├── oidc.json
-│  │  │  │  ├── rbac.json
-│  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
-│  │  │  │  └── users.json
-│  │  │  ├── hi
-│  │  │  │  ├── auth.json
-│  │  │  │  ├── common.json
-│  │  │  │  ├── consent.json
-│  │  │  │  ├── dashboard.json
-│  │  │  │  ├── device.json
-│  │  │  │  ├── oidc.json
-│  │  │  │  ├── rbac.json
-│  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
-│  │  │  │  └── users.json
-│  │  │  ├── ja
-│  │  │  │  ├── auth.json
-│  │  │  │  ├── common.json
-│  │  │  │  ├── consent.json
-│  │  │  │  ├── dashboard.json
-│  │  │  │  ├── device.json
-│  │  │  │  ├── oidc.json
-│  │  │  │  ├── rbac.json
-│  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
-│  │  │  │  └── users.json
-│  │  │  ├── pt
-│  │  │  │  ├── auth.json
-│  │  │  │  ├── common.json
-│  │  │  │  ├── consent.json
-│  │  │  │  ├── dashboard.json
-│  │  │  │  ├── device.json
-│  │  │  │  ├── oidc.json
-│  │  │  │  ├── rbac.json
-│  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
-│  │  │  │  └── users.json
-│  │  │  └── zh
-│  │  │    ├── auth.json
-│  │  │    ├── common.json
-│  │  │    ├── consent.json
-│  │  │    ├── dashboard.json
-│  │  │    ├── device.json
-│  │  │    ├── oidc.json
-│  │  │    ├── rbac.json
-│  │  │    ├── saml.json
-│  │  │    ├── signingKeys.json
-│  │  │    └── users.json
-│  │  └── README.md
-│  ├── integrations
-│  │  └── tanstack-query
-│  │    └── devtools.tsx
+│  │    └── users-kpis.tsx
 │  ├── platform
 │  │  ├── api
 │  │  │  ├── client.test.ts
@@ -632,8 +628,8 @@
 │  │  ├── hooks
 │  │  │  ├── use-list-view.ts
 │  │  │  └── use-shortcuts.ts
-│  │  └── lib
-│  │    └── export.ts
+│  │  └── utils
+│  │    └── data-export.ts
 │  └── styles.css
 ├── tsconfig.json
 ├── vercel.json

@@ -6,7 +6,7 @@
 
 import { Store } from "@tanstack/react-store";
 
-import type { SearchItem, SearchItemKind } from "../registry/types";
+import type { SearchItem, SearchItemKind } from "../registry/registry.types";
 
 const STORE_KEY = "qeetid.search.recent";
 const MAX_ENTRIES = 50;

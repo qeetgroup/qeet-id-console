@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import type { ActivityEvent, Severity } from "../types";
+import type { ActivityEvent, Severity } from "../activity.types";
 import { SeverityBadge } from "./severity-badge";
 
 // ---------------------------------------------------------------------------

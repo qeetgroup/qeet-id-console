@@ -47,7 +47,7 @@ import { useCapabilities } from "@/platform/security/capability-provider";
 import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
 import { type ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/export";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
 
 export const Route = createFileRoute("/_app/invitations")({

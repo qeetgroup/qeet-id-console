@@ -30,7 +30,7 @@ import { toast } from "sonner";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { api } from "@/platform/api/client";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/export";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useRoles } from "@/modules/authorization";
 import type { User } from "./api/users";
 

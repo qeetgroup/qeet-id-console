@@ -6,7 +6,7 @@ import {
   activityActions,
   activityStore,
 } from "./activity-store";
-import type { ActivityEvent } from "./types";
+import type { ActivityEvent } from "./activity.types";
 
 // ---------------------------------------------------------------------------
 // Helpers

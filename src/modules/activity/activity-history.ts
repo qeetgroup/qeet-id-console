@@ -7,7 +7,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 
-import type { ActivityEvent, ActivityFilters } from "./types";
+import type { ActivityEvent, ActivityFilters } from "./activity.types";
 
 export type ActivityHistoryPage = {
   events: ActivityEvent[];

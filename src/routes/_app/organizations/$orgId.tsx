@@ -48,8 +48,8 @@ import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { useCapabilities } from "@/platform/security/capability-provider";
-import { CopyId } from "@/modules/users/shared";
-import { initials } from "@/modules/users/helpers";
+import { CopyId } from "@/modules/users/user-detail-fields";
+import { initials } from "@/modules/users/user-display";
 import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
 import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";

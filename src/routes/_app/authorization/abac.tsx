@@ -39,7 +39,7 @@ import {
   useDeleteAbacPolicy,
   useUpdateAbacPolicy,
 } from "@/modules/authorization/api/abac";
-import type { PolicyDoc } from "@/modules/authorization/utils/codegen";
+import type { PolicyDoc } from "@/modules/authorization/utils/policy-codegen";
 import { type DecisionRecord, useAbacSimulate } from "@/modules/authorization/api/simulate";
 import { pushDecision } from "@/modules/authorization/store/authz-store";
 

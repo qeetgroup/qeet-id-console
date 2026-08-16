@@ -12,7 +12,7 @@
 import { Button, cn } from "@qeetrix/ui";
 import { ArrowUpIcon } from "lucide-react";
 
-import type { ActivityMode } from "../types";
+import type { ActivityMode } from "../activity.types";
 
 const MODES: { value: ActivityMode; label: string }[] = [
   { value: "live", label: "Live" },

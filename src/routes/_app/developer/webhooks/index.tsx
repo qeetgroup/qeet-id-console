@@ -49,7 +49,7 @@ import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
 import { type ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { useEntitlements } from "@/modules/billing/api/billing";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/export";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
 
 export const Route = createFileRoute("/_app/developer/webhooks/")({

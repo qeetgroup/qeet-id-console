@@ -3,7 +3,7 @@
 import { Tooltip, TooltipContent, TooltipTrigger, useCopyToClipboard } from "@qeetrix/ui";
 import { CheckIcon, CopyIcon } from "lucide-react";
 
-import { truncateId } from "./utils";
+import { truncateId } from "./user-display";
 
 /**
  * A copyable identifier — shows the id (optionally truncated, monospace) with a

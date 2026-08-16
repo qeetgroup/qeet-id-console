@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 import type { SecuritySummary } from "./api/user360";
-import type { UserRisk } from "./utils";
+import type { UserRisk } from "./user-risk";
 
 type Tone = "success" | "warning" | "danger" | "neutral";
 

@@ -18,7 +18,7 @@ import {
 } from "@/modules/users/tab-panels";
 import { isUser360Tab, USER360_TABS, type User360Tab } from "@/modules/users/tabs";
 import { UserDetailHeader } from "@/modules/users/user-detail-header";
-import { deriveUserRisk } from "@/modules/users/utils";
+import { deriveUserRisk } from "@/modules/users/user-risk";
 import { useAnomalies } from "@/modules/security/api/anomalies";
 import { api } from "@/platform/api/client";
 import {

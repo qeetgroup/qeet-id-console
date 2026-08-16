@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { countLeaves } from "../../api/abac";
-import type { PolicyDoc } from "../../utils/codegen";
+import type { PolicyDoc } from "../../utils/policy-codegen";
 import { ClientOnly } from "../shared/client-only";
 
 export type BlockKind = "rbac" | "abac" | "rebac" | "decision";

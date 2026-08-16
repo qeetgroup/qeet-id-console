@@ -6,7 +6,7 @@ import type { NavGroup } from "@/platform/config/navigation";
 import { navGroups } from "@/platform/config/navigation";
 import type { Capability } from "@/platform/security/capability-model";
 
-import type { SearchContext, SearchItem, SearchSource } from "./types";
+import type { SearchContext, SearchItem, SearchSource } from "./registry.types";
 
 /**
  * Flatten a capability-filtered nav tree into SearchItem[].

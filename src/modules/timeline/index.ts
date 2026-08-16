@@ -7,8 +7,8 @@ export { TimelineFilters as TimelineFilterBar } from "./components/timeline-filt
 export { TimelineItem } from "./components/timeline-item";
 export { groupTimelineByDate } from "./grouping";
 export { TimelineProvider, useTimeline } from "./timeline-provider";
-export type { TimelinePage } from "./timeline-service";
-export { buildTimelineQuery, fetchTimelinePage, TIMELINE_LIMIT } from "./timeline-service";
+export type { TimelinePage } from "./timeline-history";
+export { buildTimelineQuery, fetchTimelinePage, TIMELINE_LIMIT } from "./timeline-history";
 export {
   DEFAULT_TIMELINE_FILTERS,
   type TimelineFilters,

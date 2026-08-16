@@ -1,6 +1,6 @@
 import { Badge, cn, StatusPill } from "@qeetrix/ui";
 
-import type { Severity } from "../types";
+import type { Severity } from "../activity.types";
 
 type BadgeVariant = "destructive" | "warning" | "success" | "muted";
 

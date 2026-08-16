@@ -8,8 +8,8 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-import { fetchActivityPage } from "./activity-service";
-import type { ActivityEvent, ActivityFilters } from "./types";
+import { fetchActivityPage } from "./activity-history";
+import type { ActivityEvent, ActivityFilters } from "./activity.types";
 
 export type ExportFormat = "csv" | "json" | "ndjson";
 
