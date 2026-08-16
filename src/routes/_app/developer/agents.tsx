@@ -14,6 +14,7 @@ import {
   Input,
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRightLeftIcon,
@@ -28,8 +29,8 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type Agent,
   useAgents,
@@ -39,10 +40,13 @@ import {
   useKillAllAgents,
   useSetAgentDisabled,
   useTransferSponsor,
-} from "@/lib/agents";
-import { type ApiError, api } from "@/lib/api";
-import { useMe, useTenantId } from "@/lib/auth";
-import { useReviewShadowAIClient, useShadowAICandidates } from "@/lib/oidc-clients";
+} from "@/modules/developer/api/agents";
+import { api } from "@/platform/api/client";
+import { useMe, useTenantId } from "@/platform/auth/session";
+import {
+  useReviewShadowAIClient,
+  useShadowAICandidates,
+} from "@/modules/authentication/api/oidc-clients";
 
 export const Route = createFileRoute("/_app/developer/agents")({
   component: AgentsPage,
@@ -137,7 +141,7 @@ function AgentsPage() {
               </Button>
             </div>
             {createM.error && (
-              <p className="text-destructive text-sm">{(createM.error as ApiError).message}</p>
+              <p className="text-destructive text-sm">{errorMessage(createM.error)}</p>
             )}
           </form>
 
@@ -331,7 +335,7 @@ function SponsorTransferCard() {
             </p>
           )}
           {transferM.error && (
-            <p className="mt-2 text-destructive text-sm">{(transferM.error as ApiError).message}</p>
+            <p className="mt-2 text-destructive text-sm">{errorMessage(transferM.error)}</p>
           )}
         </CardContent>
       </Card>

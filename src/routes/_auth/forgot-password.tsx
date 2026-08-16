@@ -16,8 +16,8 @@ import { CheckCircle2Icon, Loader2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BrandHero } from "@/features/auth/components/brand-hero";
-import { useForgotPassword, useResetPassword } from "@/lib/auth";
+import { BrandHero } from "@/modules/authentication/components/brand-hero";
+import { useForgotPassword, useResetPassword } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_auth/forgot-password")({
   component: ForgotPasswordPage,
@@ -47,7 +47,7 @@ function ForgotPasswordPage() {
 }
 
 function RequestPanel() {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const forgot = useForgotPassword();
   const [submitted, setSubmitted] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -108,7 +108,7 @@ function RequestPanel() {
 }
 
 function ResetPanel({ token }: { token: string }) {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const reset = useResetPassword();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -129,9 +129,7 @@ function ResetPanel({ token }: { token: string }) {
       <FieldGroup>
         <div className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-2xl font-bold">{t("forgotPassword.reset.title")}</h1>
-          <p className="text-balance text-muted-foreground">
-            {t("forgotPassword.reset.subtitle")}
-          </p>
+          <p className="text-balance text-muted-foreground">{t("forgotPassword.reset.subtitle")}</p>
         </div>
 
         <Field>
@@ -191,7 +189,7 @@ function ResetPanel({ token }: { token: string }) {
 }
 
 function SuccessPanel({ devToken }: { devToken?: string }) {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   return (
     <div className="flex flex-col items-center gap-3 text-center">
       <CheckCircle2Icon className="size-10 text-emerald-500" />

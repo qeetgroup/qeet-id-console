@@ -1,8 +1,8 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-import { AuthBackground } from "@/features/auth/components/auth-background";
-import { isAuthenticated } from "@/lib/auth";
+import { AuthBackground } from "@/modules/authentication/components/auth-background";
+import { isAuthenticated } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_auth")({ component: AuthLayout });
 

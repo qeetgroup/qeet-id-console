@@ -14,8 +14,13 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { LoginForm } from "@/features/auth/components/signin-form";
-import { isMfaChallenge, useCompleteMfaLogin, useConsumeSocialCode, useLogin } from "@/lib/auth";
+import { LoginForm } from "@/modules/authentication/components/signin-form";
+import {
+  isMfaChallenge,
+  useCompleteMfaLogin,
+  useConsumeSocialCode,
+  useLogin,
+} from "@/modules/authentication";
 
 export const Route = createFileRoute("/_auth/sign-in")({
   component: SignInPage,
@@ -96,7 +101,7 @@ function MfaStep({
   errorMessage?: string;
   onSubmit: (code: string) => void;
 }) {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const [code, setCode] = useState("");
   // Move focus to the verification code field on mount — replaces autoFocus
   // (flagged by jsx-a11y/no-autofocus) with an explicit effect.

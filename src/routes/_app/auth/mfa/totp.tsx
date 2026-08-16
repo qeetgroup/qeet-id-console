@@ -17,6 +17,7 @@ import {
   StatusPill,
 } from "@qeetrix/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   CheckIcon,
@@ -33,16 +34,16 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { StepUpDialog } from "@/components/step-up-dialog";
-import { ApiError, api } from "@/lib/api";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { StepUpDialog } from "@/platform/security/step-up-dialog";
+import { ApiError, api } from "@/platform/api/client";
 import {
   isStepUpRequired,
   useRecoveryStatus,
   useRegenerateRecoveryCodes,
   useTotpStatus,
-} from "@/lib/mfa";
+} from "@/modules/authentication/api/mfa";
 
 export const Route = createFileRoute("/_app/auth/mfa/totp")({
   component: MfaTotpPage,
@@ -233,7 +234,7 @@ function MfaTotpPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">{t("mfa.totp.active.manageHint")}</p>
-                  {startM.error && <FieldError>{(startM.error as ApiError).message}</FieldError>}
+                  {startM.error && <FieldError>{errorMessage(startM.error)}</FieldError>}
                   <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
@@ -364,7 +365,7 @@ function MfaTotpPage() {
                   <li>{t("mfa.totp.idle.bullet2")}</li>
                   <li>{t("mfa.totp.idle.bullet3")}</li>
                 </ul>
-                {startM.error && <FieldError>{(startM.error as ApiError).message}</FieldError>}
+                {startM.error && <FieldError>{errorMessage(startM.error)}</FieldError>}
                 <Button onClick={() => startM.mutate()} disabled={startM.isPending}>
                   {startM.isPending && <Loader2Icon className="animate-spin" />}
                   {startM.isPending
@@ -449,7 +450,7 @@ function MfaTotpPage() {
                 </Field>
                 {confirmM.error && (
                   <Field>
-                    <FieldError>{(confirmM.error as ApiError).message}</FieldError>
+                    <FieldError>{errorMessage(confirmM.error)}</FieldError>
                   </Field>
                 )}
                 <Field className="flex flex-row justify-end gap-2">

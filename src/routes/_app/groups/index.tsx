@@ -29,6 +29,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Loader2Icon,
@@ -41,13 +42,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { ListToolbar, SortHeader } from "@/components/data-table";
-import { PageHeader } from "@/components/page-header";
-import { type ApiError, api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
-import { useListView } from "@/lib/list-view";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { ListToolbar, SortHeader } from "@/shared/components/data-table";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
+import { useListView } from "@/shared/hooks/use-list-view";
 
 export const Route = createFileRoute("/_app/groups/")({
   component: GroupsPage,
@@ -376,7 +377,7 @@ function CreateGroupSheet({
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>
@@ -478,7 +479,7 @@ function EditGroupSheet({ group, onOpenChange, groups, onSaved }: EditGroupSheet
               </Field>
               {updateM.error && (
                 <Field>
-                  <FieldError>{(updateM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(updateM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>
@@ -597,7 +598,7 @@ function MembersSheet({ groupId, groupName, onClose }: MembersSheetProps) {
               </div>
             )}
           </div>
-          {addM.error && <FieldError>{(addM.error as ApiError).message}</FieldError>}
+          {addM.error && <FieldError>{errorMessage(addM.error)}</FieldError>}
 
           {membersQ.isLoading ? (
             [...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)

@@ -28,8 +28,12 @@ import { Loader2Icon, MonitorSmartphoneIcon, RefreshCwIcon, Trash2Icon } from "l
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { type DeviceAuth, useDeviceAuthorizations, useRevokeDeviceAuth } from "@/lib/device-auth";
+import { PageHeader } from "@/platform/components/page-header";
+import {
+  type DeviceAuth,
+  useDeviceAuthorizations,
+  useRevokeDeviceAuth,
+} from "@/modules/security/api/device-auth";
 
 export const Route = createFileRoute("/_app/security/device-authorizations")({
   component: DeviceAuthorizationsPage,

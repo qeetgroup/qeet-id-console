@@ -19,6 +19,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeftIcon,
@@ -31,8 +32,8 @@ import {
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { api } from "@/lib/api";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { api } from "@/platform/api/client";
 
 export const Route = createFileRoute("/_app/developer/webhooks/$id")({
   component: WebhookDetailPage,
@@ -122,7 +123,7 @@ function WebhookDetailPage() {
             </>
           ) : webhookQ.isError ? (
             <CardTitle className="text-base text-destructive">
-              {(webhookQ.error as Error).message}
+              {errorMessage(webhookQ.error)}
             </CardTitle>
           ) : w ? (
             <div className="flex items-start justify-between gap-3">

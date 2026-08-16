@@ -18,7 +18,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type EmailTemplate,
   sampleVar,
@@ -26,7 +26,7 @@ import {
   usePreviewEmailTemplate,
   useResetEmailTemplate,
   useUpsertEmailTemplate,
-} from "@/lib/email-templates";
+} from "@/modules/organizations/api/email-templates";
 
 export const Route = createFileRoute("/_app/settings/organization/email-templates")({
   component: EmailTemplatesPage,

@@ -13,8 +13,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { SignupForm } from "@/features/auth/components/signup-form";
-import { useConfirmEmailVerification, useSignup, useStartEmailVerification } from "@/lib/auth";
+import { SignupForm } from "@/modules/authentication/components/signup-form";
+import {
+  useConfirmEmailVerification,
+  useSignup,
+  useStartEmailVerification,
+} from "@/modules/authentication";
 
 export const Route = createFileRoute("/_auth/sign-up")({
   component: SignupPage,

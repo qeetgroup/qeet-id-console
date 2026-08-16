@@ -15,12 +15,13 @@ import {
   PasswordInput,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ApiError } from "@/lib/api";
-import { useAcceptInvite } from "@/lib/auth";
+import { ApiError } from "@/platform/api/client";
+import { useAcceptInvite } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_auth/invite/accept")({
   component: AcceptInvitePage,
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_auth/invite/accept")({
 });
 
 function AcceptInvitePage() {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const { token } = Route.useSearch();
   const accept = useAcceptInvite();
   const [password, setPassword] = useState("");
@@ -107,7 +108,7 @@ function AcceptInvitePage() {
                   </Link>
                 </Field>
               ) : (
-                <FieldError>{accept.error.message}</FieldError>
+                <FieldError>{errorMessage(accept.error)}</FieldError>
               ))}
             <Field>
               <Button type="submit" disabled={accept.isPending || password.length < 8}>

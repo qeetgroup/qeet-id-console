@@ -13,21 +13,21 @@ import {
   Input,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, NetworkIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { RelationshipGraph } from "@/features/authorization/components/graph/relationship-graph";
-import { DecisionBadge } from "@/features/authorization/components/shared/decision-badge";
-import type { ApiError } from "@/lib/api";
-import { useRebacSimulate } from "@/lib/authz-simulate";
-import { pushDecision } from "@/lib/authz-store";
+import { PageHeader } from "@/platform/components/page-header";
+import { RelationshipGraph } from "@/modules/authorization/components/graph/relationship-graph";
+import { DecisionBadge } from "@/modules/authorization/components/shared/decision-badge";
+import { useRebacSimulate } from "@/modules/authorization/api/simulate";
+import { pushDecision } from "@/modules/authorization/store/authz-store";
 import {
   useDeleteTuple,
   useRelationGraph,
   useRelationTuples,
   useWriteTuple,
-} from "@/lib/relationships";
+} from "@/modules/authorization/api/relationships";
 
 export const Route = createFileRoute("/_app/authorization/rebac")({
   component: RebacPage,
@@ -103,9 +103,7 @@ function WriteCard() {
             />
             <FieldDescription>Usersets like group:eng#member expand recursively.</FieldDescription>
           </Field>
-          {writeM.error && (
-            <p className="text-destructive text-sm">{(writeM.error as ApiError).message}</p>
-          )}
+          {writeM.error && <p className="text-destructive text-sm">{errorMessage(writeM.error)}</p>}
           <Button
             type="submit"
             disabled={writeM.isPending || !object.trim() || !relation.trim() || !subject.trim()}

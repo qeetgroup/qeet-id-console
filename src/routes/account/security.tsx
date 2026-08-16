@@ -13,6 +13,7 @@ import {
   StatusPill,
 } from "@qeetrix/ui";
 import { Apple, Github, Google, Microsoft } from "@thesvg/react";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   FingerprintIcon,
@@ -27,17 +28,20 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { ApiError } from "@/lib/api";
+import { ApiError } from "@/platform/api/client";
+import { useMe } from "@/platform/auth/session";
 import {
   startSocialLink,
   useChangePassword,
   useForgotPassword,
-  useMe,
   usePasswordStatus,
   usePlatformSocialProviders,
-} from "@/lib/auth";
-import { usePasskeys } from "@/lib/passkeys";
-import { useSocialIdentities, useUnlinkIdentity } from "@/lib/social-identities";
+} from "@/modules/authentication";
+import { usePasskeys } from "@/modules/authentication/api/passkeys";
+import {
+  useSocialIdentities,
+  useUnlinkIdentity,
+} from "@/modules/authentication/api/social-identities";
 
 export const Route = createFileRoute("/account/security")({
   component: SecurityPage,
@@ -117,7 +121,9 @@ function SecurityPage() {
       {
         onSuccess: () => toast.success("We've emailed you a password reset link."),
         onError: (err) =>
-          toast.error(err instanceof ApiError ? err.message : "Couldn't send the reset link."),
+          toast.error(
+            err instanceof ApiError ? errorMessage(err) : "Couldn't send the reset link.",
+          ),
       },
     );
 
@@ -132,7 +138,9 @@ function SecurityPage() {
           void pwStatus.refetch();
         },
         onError: (err) =>
-          toast.error(err instanceof ApiError ? err.message : "Could not update your password."),
+          toast.error(
+            err instanceof ApiError ? errorMessage(err) : "Could not update your password.",
+          ),
       },
     );
   };

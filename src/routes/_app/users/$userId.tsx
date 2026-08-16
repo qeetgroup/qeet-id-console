@@ -1,316 +1,195 @@
-import {
-  Badge,
-  Button,
-  buttonVariants,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  DataState,
-  Skeleton,
-  StatusPill,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TimeSince,
-} from "@qeetrix/ui";
+import { Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TooltipProvider } from "@qeetrix/ui";
+import { errorMessage } from "@/platform/errors/user-message";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeftIcon, FileSearchIcon, MailIcon, PhoneIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { useCapabilities } from "@/features/access-control/capability-provider";
-import { ReadOnlyNotice } from "@/features/access-control/components/read-only-notice";
-import { useRegisterContext } from "@/features/qeetai/context/context-registry";
-import { api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
-import { useResetUserMfa } from "@/lib/users";
+import { useCapabilities } from "@/platform/security/capability-provider";
+import { useRegisterContext } from "@/modules/qeetai/context/context-registry";
+import { ActivityTab } from "@/modules/users/activity-tab";
+import { OverviewTab } from "@/modules/users/overview-tab";
+import {
+  AccessTab,
+  DeveloperTab,
+  IdentitiesTab,
+  SecurityTab,
+  SessionsTab,
+} from "@/modules/users/tab-panels";
+import { isUser360Tab, USER360_TABS, type User360Tab } from "@/modules/users/tabs";
+import { UserDetailHeader } from "@/modules/users/user-detail-header";
+import { deriveUserRisk } from "@/modules/users/user-risk";
+import { useAnomalies } from "@/modules/security/api/anomalies";
+import { api } from "@/platform/api/client";
+import {
+  type UserDetail,
+  useUserAccess,
+  useUserPermissions,
+  useUserRecentActivity,
+  useUserSecurity,
+  useUserSessions,
+} from "@/modules/users/api/user360";
 
 export const Route = createFileRoute("/_app/users/$userId")({
+  // tab is optional so existing `<Link to="/users/$userId">` call sites need not
+  // pass a search param; it defaults to the Overview tab.
+  validateSearch: (search: Record<string, unknown>): { tab?: User360Tab } => ({
+    tab: isUser360Tab(search.tab) ? search.tab : "overview",
+  }),
   component: UserDetailPage,
 });
 
-type User = {
-  id: string;
-  tenant_id: string;
-  email: string;
-  display_name?: string | null;
-  phone?: string | null;
-  status: "active" | "invited" | "suspended" | "deleted";
-  email_verified_at?: string | null;
-  phone_verified_at?: string | null;
-  metadata?: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type AuditEvent = {
-  id: string;
-  action: string;
-  resource_type: string;
-  resource_id?: string | null;
-  ip?: string | null;
-  created_at: string;
-};
-
 function UserDetailPage() {
   const { t } = useTranslation("users");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
   const { userId } = Route.useParams();
+  const tab = Route.useSearch().tab ?? "overview";
+  const navigate = Route.useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const tenantId = useTenantId();
   const access = useCapabilities();
-  const canWriteUsers = access.can("user.write");
-  const canViewAudit = access.can("audit.read");
-  const canViewRoles = access.can("role.read");
+  const canWrite = access.can("user.write");
+  const canViewActivity = access.can("audit.read");
+
+  const setTab = (next: User360Tab) =>
+    navigate({ search: (prev) => ({ ...prev, tab: next }), replace: true });
 
   const userQ = useQuery({
     queryKey: ["user", userId],
-    queryFn: () => api<User>(`/v1/users/${userId}`),
+    queryFn: () => api<UserDetail>(`/v1/users/${userId}`),
   });
 
-  // Publish the current user as the qeetai's selection context. The email
-  // label is filled once the query resolves; the id is always available from
-  // the URL param. Memoized so useRegisterContext sees a stable reference.
+  const securityQ = useUserSecurity(userId);
+  const accessQ = useUserAccess(userId);
+  const permissionsQ = useUserPermissions(userId);
+  const recentQ = useUserRecentActivity(userId, 6, canViewActivity);
+  const sessionsQ = useUserSessions(userId);
+  const anomaliesQ = useAnomalies();
+
+  // Publish the current user as the qeetai's selection context (kept from the
+  // original page so the assistant still knows which user is on screen).
   const qeetaiCtx = useMemo(
-    () => ({
-      selection: {
-        kind: "user" as const,
-        id: userId,
-        label: userQ.data?.email,
-      },
-    }),
+    () => ({ selection: { kind: "user" as const, id: userId, label: userQ.data?.email } }),
     [userId, userQ.data?.email],
   );
   useRegisterContext(pathname, qeetaiCtx);
 
-  // Recent audit events authored by this user. Filtered server-side via
-  // the actor_user_id parameter the audit list endpoint already accepts.
-  const auditQ = useQuery({
-    queryKey: ["user-activity", userId, tenantId],
-    queryFn: () =>
-      api<{ items: AuditEvent[] }>(`/v1/tenants/${tenantId}/audit`, {
-        query: { actor_user_id: userId, limit: 10 },
-      }),
-    enabled: !!tenantId && canViewAudit,
-  });
-
-  // Admin account-recovery: clear the user's MFA so they can re-enroll. Gated
-  // server-side on user.write; audited as mfa.admin_reset. Extracted to
-  // lib/users.ts so the qeetai reset_user_mfa tool shares the same hook.
-  const resetMfa = useResetUserMfa();
-
-  return (
-    <div className="flex min-w-0 flex-col gap-4">
-      {confirmDialog}
-      <Link
-        to="/users"
-        className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-      >
-        <ArrowLeftIcon className="size-3" /> {t("detail.backLink")}
-      </Link>
-
-      {/* Identity card */}
-      <Card>
-        <CardHeader>
-          {userQ.isLoading ? (
-            <>
-              <Skeleton className="h-5 w-48" />
-              <Skeleton className="mt-2 h-4 w-64" />
-            </>
-          ) : userQ.isError ? (
-            <CardTitle className="text-base text-destructive">
-              {(userQ.error as Error).message}
-            </CardTitle>
-          ) : userQ.data ? (
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <CardTitle className="text-base">
-                  {userQ.data.display_name || userQ.data.email}
-                </CardTitle>
-                <CardDescription className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 font-mono text-xs">
-                    <MailIcon className="size-3" /> {userQ.data.email}
-                  </span>
-                  {userQ.data.phone && (
-                    <span className="inline-flex items-center gap-1 font-mono text-xs">
-                      <PhoneIcon className="size-3" /> {userQ.data.phone}
-                    </span>
-                  )}
-                </CardDescription>
-              </div>
-              <StatusPill status={userQ.data.status} />
-            </div>
-          ) : null}
-        </CardHeader>
-        {userQ.data && (
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            <Field label={t("detail.fieldUserId")} value={userQ.data.id} mono />
-            <Field label={t("detail.fieldTenant")} value={userQ.data.tenant_id} mono />
-            <Field
-              label={t("detail.fieldEmailVerified")}
-              valueNode={
-                userQ.data.email_verified_at ? (
-                  <TimeSince value={userQ.data.email_verified_at} />
-                ) : (
-                  <Badge variant="warning">{t("detail.unverified")}</Badge>
-                )
-              }
-            />
-            <Field
-              label={t("detail.fieldPhoneVerified")}
-              valueNode={
-                userQ.data.phone_verified_at ? (
-                  <TimeSince value={userQ.data.phone_verified_at} />
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )
-              }
-            />
-            <Field
-              label={t("detail.fieldCreated")}
-              valueNode={<TimeSince value={userQ.data.created_at} />}
-            />
-            <Field
-              label={t("detail.fieldLastUpdated")}
-              valueNode={<TimeSince value={userQ.data.updated_at} />}
-            />
-          </CardContent>
-        )}
-      </Card>
-
-      {!canWriteUsers ? <ReadOnlyNotice /> : null}
-
-      {/* Recent activity */}
-      {canViewAudit ? (
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <CardTitle className="text-base">{t("detail.activityTitle")}</CardTitle>
-                <CardDescription>
-                  Last 10 audit events where this user was the actor.{" "}
-                  <Link to="/security/audit-logs" className="underline">
-                    View full audit log
-                  </Link>
-                  .
-                </CardDescription>
-              </div>
-              <Link
-                to="/users/$userId/timeline"
-                params={{ userId }}
-                className="shrink-0 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="View full identity timeline for this user"
-              >
-                View full timeline →
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataState
-              isLoading={auditQ.isLoading}
-              isError={auditQ.isError}
-              error={auditQ.error}
-              isEmpty={!auditQ.data?.items?.length}
-              emptyIcon={FileSearchIcon}
-              emptyTitle={t("detail.activityEmpty")}
-              skeletonRows={3}
-            >
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("detail.colWhen")}</TableHead>
-                    <TableHead>{t("detail.colAction")}</TableHead>
-                    <TableHead>{t("detail.colResource")}</TableHead>
-                    <TableHead>{t("detail.colIp")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {auditQ.data?.items?.map((e) => (
-                    <TableRow key={e.id}>
-                      <TableCell>
-                        <TimeSince value={e.created_at} className="font-mono text-xs" />
-                      </TableCell>
-                      <TableCell className="font-medium">{e.action}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {e.resource_type}
-                        {e.resource_id && (
-                          <span className="ml-1 font-mono text-xs">
-                            ({e.resource_id.slice(0, 8)}…)
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {e.ip ?? "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </DataState>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {/* Quick links */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("detail.quickTitle")}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Link to="/users/sessions" className={buttonVariants({ variant: "outline", size: "sm" })}>
-            {t("detail.allSessionsBtn")}
-          </Link>
-          {canViewRoles ? (
-            <Link
-              to="/authorization/roles"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              {t("detail.manageRolesBtn")}
-            </Link>
-          ) : null}
-          {canWriteUsers ? (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={resetMfa.isPending}
-              onClick={() =>
-                openConfirm({
-                  title: t("detail.resetMfaConfirmTitle"),
-                  description: t("detail.resetMfaConfirmDescription"),
-                  variant: "destructive",
-                  confirmLabel: t("detail.resetMfaConfirmLabel"),
-                  onConfirm: () => resetMfa.mutate(userId),
-                })
-              }
-            >
-              {resetMfa.isPending ? t("detail.resetMfaPendingBtn") : t("detail.resetMfaBtn")}
-            </Button>
-          ) : null}
-        </CardContent>
-      </Card>
-    </div>
+  const risk = useMemo(
+    () => deriveUserRisk(anomaliesQ.data?.items ?? [], userId),
+    [anomaliesQ.data, userId],
   );
-}
 
-interface FieldProps {
-  label: string;
-  value?: string;
-  valueNode?: React.ReactNode;
-  mono?: boolean;
-}
+  const lastSeenAt = useMemo(() => {
+    const items = sessionsQ.data?.items ?? [];
+    if (items.length === 0) return null;
+    return items.reduce(
+      (max, s) => (s.last_seen_at > max ? s.last_seen_at : max),
+      items[0].last_seen_at,
+    );
+  }, [sessionsQ.data]);
 
-function Field({ label, value, valueNode, mono }: FieldProps) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
-      {valueNode ?? <span className={mono ? "font-mono text-xs" : "text-sm"}>{value ?? "—"}</span>}
-    </div>
+    <TooltipProvider>
+      <div className="flex min-w-0 flex-col gap-5">
+        <Link
+          to="/users"
+          className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        >
+          <ArrowLeftIcon className="size-3" aria-hidden="true" /> {t("detail.backLink")}
+        </Link>
+
+        {userQ.isLoading ? (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <Skeleton className="size-14 rounded-xl" />
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+            </div>
+            <Skeleton className="h-16 w-full rounded-xl" />
+          </div>
+        ) : userQ.isError ? (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+            {errorMessage(userQ.error)}
+          </div>
+        ) : userQ.data ? (
+          <>
+            <UserDetailHeader
+              user={userQ.data}
+              lastSeenAt={lastSeenAt}
+              canWrite={canWrite}
+              onViewRaw={() => setTab("developer")}
+            />
+
+            <Tabs
+              value={tab}
+              onValueChange={(v) => setTab(v as User360Tab)}
+              className="flex min-w-0 flex-col gap-5"
+            >
+              <TabsList className="w-full justify-start overflow-x-auto">
+                {USER360_TABS.map((k) => (
+                  <TabsTrigger key={k} value={k}>
+                    {t(`detail.tabs.${k}`)}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              <TabsContent value="overview" className="flex min-w-0 flex-col">
+                <OverviewTab
+                  user={userQ.data}
+                  security={securityQ.data}
+                  securityLoading={securityQ.isLoading}
+                  risk={risk}
+                  riskLoading={anomaliesQ.isLoading}
+                  access={accessQ.data}
+                  accessLoading={accessQ.isLoading}
+                  permissionsCount={permissionsQ.data?.permissions.length ?? 0}
+                  recent={recentQ.data?.events ?? []}
+                  recentLoading={recentQ.isLoading}
+                  recentError={recentQ.isError}
+                  canWrite={canWrite}
+                  canViewActivity={canViewActivity}
+                  onTab={setTab}
+                />
+              </TabsContent>
+
+              <TabsContent value="security" className="flex min-w-0 flex-col">
+                <SecurityTab
+                  userId={userId}
+                  security={securityQ.data}
+                  loading={securityQ.isLoading}
+                  canWrite={canWrite}
+                />
+              </TabsContent>
+
+              <TabsContent value="access" className="flex min-w-0 flex-col">
+                <AccessTab
+                  access={accessQ.data}
+                  loading={accessQ.isLoading}
+                  permissions={permissionsQ.data?.permissions ?? []}
+                  permissionsLoading={permissionsQ.isLoading}
+                />
+              </TabsContent>
+
+              <TabsContent value="sessions" className="flex min-w-0 flex-col">
+                <SessionsTab userId={userId} canWrite={canWrite} />
+              </TabsContent>
+
+              <TabsContent value="activity" className="flex min-w-0 flex-col">
+                <ActivityTab userId={userId} canView={canViewActivity} />
+              </TabsContent>
+
+              <TabsContent value="identities" className="flex min-w-0 flex-col">
+                <IdentitiesTab userId={userId} passwordSet={securityQ.data?.password_set} />
+              </TabsContent>
+
+              <TabsContent value="developer" className="flex min-w-0 flex-col">
+                <DeveloperTab user={userQ.data} />
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : null}
+      </div>
+    </TooltipProvider>
   );
 }

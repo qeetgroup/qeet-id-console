@@ -8,13 +8,14 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GaugeIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/security/rate-limits")({
   component: RateLimitsPage,
@@ -111,7 +112,7 @@ function RateLimitsPage() {
               ))}
             </div>
           ) : policyQ.isError ? (
-            <div className="text-sm text-destructive">{(policyQ.error as Error).message}</div>
+            <div className="text-sm text-destructive">{errorMessage(policyQ.error)}</div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>

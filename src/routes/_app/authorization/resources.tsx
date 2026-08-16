@@ -17,8 +17,8 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { BoxesIcon, KeyRoundIcon, ShieldCheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
 
 export const Route = createFileRoute("/_app/authorization/resources")({
   component: ResourcesPage,

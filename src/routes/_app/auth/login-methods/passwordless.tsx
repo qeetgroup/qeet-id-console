@@ -21,8 +21,12 @@ import type { ComponentType } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { type AuthPolicy, useAuthPolicy, useUpdateAuthPolicy } from "@/lib/auth-policy";
+import { PageHeader } from "@/platform/components/page-header";
+import {
+  type AuthPolicy,
+  useAuthPolicy,
+  useUpdateAuthPolicy,
+} from "@/modules/authentication/api/auth-policy";
 
 export const Route = createFileRoute("/_app/auth/login-methods/passwordless")({
   component: PasswordlessPage,

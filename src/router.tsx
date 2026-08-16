@@ -6,7 +6,8 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 // and SSR-safe, so the first server render already has translations.
 import "./i18n";
 
-import { getContext } from "./integrations/tanstack-query/root-provider";
+import { RootErrorComponent } from "@/platform/errors/error-component";
+import { getContext } from "@/platform/query/query-client";
 import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
@@ -18,6 +19,9 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
+    // Fallback for uncaught render/loader throws — renders user-safe copy
+    // instead of a blank page, never leaking raw backend detail.
+    defaultErrorComponent: RootErrorComponent,
   });
 
   setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });

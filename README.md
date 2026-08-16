@@ -30,39 +30,40 @@ The shared `@qeetrix/ui` package remains the component foundation. Console-speci
 
 ## Architecture
 
+Layered, with the dependency direction enforced in CI (`bun run lint:boundaries`).
+Full detail in [`docs/architecture/target-architecture.md`](docs/architecture/target-architecture.md)
+and the decision records in [`docs/adr/`](docs/adr/).
+
 ```text
 src/
-├── components/                 Shared cross-domain console composition
-│   ├── data-table/             Search, filters, density, sorting, bulk actions
-│   ├── page-header.tsx         Standard route heading and action boundary
-│   └── ...
-├── config/
-│   ├── navigation.tsx          Operator information architecture and labels
-│   └── navigation-state.ts     Pure active-route matching
-├── features/
-│   ├── dashboard/
-│   │   ├── components/         Shell, metrics, panels, charts, activity, notices
-│   │   ├── dashboard-model.ts  Pure dashboard transformations and formatting
-│   │   └── use-dashboard-activity.ts
-│   ├── authorization/          Complex policy and graph experiences
-│   ├── compliance/             Shared evidence surfaces
-│   └── auth/                   Console authentication screens
-├── integrations/               Query provider and development integrations
-├── i18n/                       Namespaced locale resources
-├── lib/                        Typed endpoint clients, query hooks, auth, exports
-├── routes/                     Thin file-route boundaries and domain screens
-├── router.tsx                  Router and query integration
-└── styles.css                  Console semantic theme and product-level patterns
+├── app/            Bootstrap / providers
+├── routes/         File-based routes — URL concerns + composition only
+├── modules/        One folder per business capability (authentication,
+│                   authorization, billing, compliance, dashboard, developer,
+│                   onboarding, organizations, qeetai, security, users, activity,
+│                   timeline, search). Each: api/ components/ hooks/ store/ utils/
+├── platform/       Cross-cutting infrastructure: api (the one HTTP client), auth
+│                   (token-store/refresh/session), errors, query, security, telemetry,
+│                   feature-flags, config (env + navigation), components
+├── shared/         Generic, domain-agnostic: components/ hooks/ utils/ data/
+├── i18n/           Namespaced locale resources
+├── router.tsx      Router + query integration
+└── styles.css      Console semantic theme and product-level patterns
 ```
 
-### Boundaries
+### Boundaries (enforced)
 
-1. **Routes own URL concerns.** Route files validate search parameters, declare route boundaries, and compose feature modules. Large reusable experiences do not live in a route file.
-2. **Features own product composition.** The dashboard shell and command-center modules live under `features/dashboard`; authorization graph tooling stays under `features/authorization`.
-3. **`lib` owns remote contracts.** API calls, query keys, token handling, and reusable domain hooks stay out of presentational components.
-4. **`config` owns information architecture.** Sidebar, breadcrumbs, and command-palette navigation derive from one navigation model.
-5. **Qeetrix owns primitives.** Buttons, fields, dialogs, sheets, tables, charts, and accessibility behavior come from `@qeetrix/ui`.
-6. **Console CSS owns application identity.** Semantic token overrides and named product patterns are centralized in `styles.css`; raw colours should not be introduced in route components.
+```text
+app → routes → modules → platform → shared
+```
+
+1. **Routes own URL concerns** — validate search params, guards, page composition; no reusable logic.
+2. **Modules own product capability** — a module imports another module only via its public barrel (`@/modules/<name>`), never its internals.
+3. **Platform owns cross-cutting infrastructure** — the HTTP client, session, errors, security, telemetry, feature flags, config. Imports only platform + shared.
+4. **Shared owns generic primitives** — no domain-specific imports.
+5. **Qeetrix owns UI primitives** (`@qeetrix/ui`); **console CSS owns identity** (`styles.css`).
+
+Violations (wrong-direction imports, cross-module internals, import cycles) fail CI via Biome.
 
 ## Enterprise shell
 

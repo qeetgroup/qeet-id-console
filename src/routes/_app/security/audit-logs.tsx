@@ -22,16 +22,18 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
+import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { createFileRoute } from "@tanstack/react-router";
 import { DownloadIcon, FileSearchIcon, Loader2Icon, RefreshCwIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
-import { useEntitlements } from "@/lib/billing";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { useEntitlements } from "@/modules/billing/api/billing";
 
 // URL-driven filter state — the audit-logs view bookmarks any filter
 // combination as `/_app/security/audit-logs?action=user.create` so
@@ -100,33 +102,15 @@ const CSV_HEADERS = [
   "metadata",
 ] as const;
 
-function csvCell(v: unknown): string {
-  if (v == null) return "";
-  const s = typeof v === "string" ? v : JSON.stringify(v);
-  if (s.includes(",") || s.includes('"') || s.includes("\n") || s.includes("\r")) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
+// Audit fields map flatly onto the header names; the shared exporter handles
+// escaping + download.
+const CSV_COLUMNS: CsvColumn<AuditEvent>[] = CSV_HEADERS.map((h) => ({
+  header: h,
+  value: (ev: AuditEvent) => (ev as Record<string, unknown>)[h],
+}));
 
 function rowsToCSV(items: AuditEvent[]): string {
-  const lines = [CSV_HEADERS.join(",")];
-  for (const ev of items) {
-    lines.push(CSV_HEADERS.map((h) => csvCell((ev as Record<string, unknown>)[h])).join(","));
-  }
-  return lines.join("\n");
-}
-
-function downloadBlob(content: string, mime: string, filename: string) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  return rowsToCsv(items, CSV_COLUMNS);
 }
 
 function AuditLogsPage() {
@@ -200,7 +184,7 @@ function AuditLogsPage() {
           : undefined,
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Export failed");
+      toast.error(errorMessage(err));
     } finally {
       setExporting(null);
     }

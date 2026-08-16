@@ -33,6 +33,7 @@ import {
   TableRow,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
   Loader2Icon,
   MailIcon,
@@ -44,9 +45,8 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import type { ApiError } from "@/lib/api";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type OtpChannel,
   useChallengeOtpFactor,
@@ -54,7 +54,7 @@ import {
   useDeleteOtpFactor,
   useEnrollOtpStart,
   useOtpFactors,
-} from "@/lib/mfa";
+} from "@/modules/authentication/api/mfa";
 
 export const Route = createFileRoute("/_app/auth/mfa/sms-email")({
   component: SmsEmailPage,
@@ -267,7 +267,7 @@ function AddFactorSheet({
                   </Field>
                   {enrollM.error && (
                     <Field>
-                      <FieldError>{(enrollM.error as ApiError).message}</FieldError>
+                      <FieldError>{errorMessage(enrollM.error)}</FieldError>
                     </Field>
                   )}
                 </FieldGroup>
@@ -302,7 +302,7 @@ function AddFactorSheet({
                   </Field>
                   {confirmM.error && (
                     <Field>
-                      <FieldError>{(confirmM.error as ApiError).message}</FieldError>
+                      <FieldError>{errorMessage(confirmM.error)}</FieldError>
                     </Field>
                   )}
                 </FieldGroup>

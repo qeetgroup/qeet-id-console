@@ -1,12 +1,13 @@
 import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, ShieldXIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BrandHero } from "@/features/auth/components/brand-hero";
-import { ApiError } from "@/lib/api";
-import { useConsumeSamlCode } from "@/lib/auth";
+import { BrandHero } from "@/modules/authentication/components/brand-hero";
+import { ApiError } from "@/platform/api/client";
+import { useConsumeSamlCode } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_auth/sso/callback")({
   component: SsoCallbackPage,
@@ -22,7 +23,7 @@ function readSamlCode(): string | null {
 }
 
 function SsoCallbackPage() {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const consume = useConsumeSamlCode();
   const [code] = useState(readSamlCode);
 
@@ -92,7 +93,7 @@ function renderStatus({
   }
 
   const detail =
-    consume.error instanceof ApiError ? consume.error.message : "Single sign-on failed.";
+    consume.error instanceof ApiError ? errorMessage(consume.error) : "Single sign-on failed.";
   return (
     <>
       <ShieldXIcon className="size-10 text-rose-500" />

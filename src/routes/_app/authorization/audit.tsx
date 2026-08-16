@@ -18,8 +18,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { RefreshCwIcon, ScrollTextIcon } from "lucide-react";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { AUTHZ_RESOURCE_TYPES, isAuthzEvent, useAuditEvents } from "@/lib/authz-audit";
+import { PageHeader } from "@/platform/components/page-header";
+import {
+  AUTHZ_RESOURCE_TYPES,
+  isAuthzEvent,
+  useAuditEvents,
+} from "@/modules/authorization/api/audit";
 
 export const Route = createFileRoute("/_app/authorization/audit")({
   component: AuditPage,

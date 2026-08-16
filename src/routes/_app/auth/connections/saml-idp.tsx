@@ -38,12 +38,13 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, PencilIcon, PlusIcon, ServerIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import type { ApiError } from "@/lib/api";
+import { PageHeader } from "@/platform/components/page-header";
+import type { ApiError } from "@/platform/api/client";
 import {
   idpMetadataUrl,
   type SamlProvider,
@@ -51,7 +52,7 @@ import {
   useDeleteSamlProvider,
   useSamlProviders,
   useUpdateSamlProvider,
-} from "@/lib/saml-idp";
+} from "@/modules/authentication/api/saml-idp";
 
 export const Route = createFileRoute("/_app/auth/connections/saml-idp")({
   component: SamlIdpPage,
@@ -318,7 +319,7 @@ function SamlProviderSheet({
               </Field>
               {error && (
                 <Field>
-                  <FieldError>{error.message}</FieldError>
+                  <FieldError>{errorMessage(error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

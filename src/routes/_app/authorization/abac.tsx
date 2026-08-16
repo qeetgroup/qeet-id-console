@@ -16,17 +16,18 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, PlayIcon, PlusIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
-import { FeatureGate } from "@/features/billing/components/upgrade-gate";
-import { CodePreview } from "@/features/authorization/components/code-preview/code-preview";
-import { ConditionTree } from "@/features/authorization/components/condition-builder/condition-tree";
-import { DecisionExplain } from "@/features/authorization/components/explain/decision-explain";
-import { MonacoPanel } from "@/features/authorization/components/shared/monaco-panel";
-import type { ApiError } from "@/lib/api";
-import { useEntitlements } from "@/lib/billing";
+import { PageHeader } from "@/platform/components/page-header";
+import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
+import { CodePreview } from "@/modules/authorization/components/code-preview/code-preview";
+import { ConditionTree } from "@/modules/authorization/components/condition-builder/condition-tree";
+import { DecisionExplain } from "@/modules/authorization/components/explain/decision-explain";
+import { MonacoPanel } from "@/modules/authorization/components/shared/monaco-panel";
+import type { ApiError } from "@/platform/api/client";
+import { useEntitlements } from "@/modules/billing/api/billing";
 import {
   type AbacPolicy,
   type CondNode,
@@ -38,10 +39,10 @@ import {
   useCreateAbacPolicy,
   useDeleteAbacPolicy,
   useUpdateAbacPolicy,
-} from "@/lib/authz-abac";
-import type { PolicyDoc } from "@/lib/authz-codegen";
-import { type DecisionRecord, useAbacSimulate } from "@/lib/authz-simulate";
-import { pushDecision } from "@/lib/authz-store";
+} from "@/modules/authorization/api/abac";
+import type { PolicyDoc } from "@/modules/authorization/utils/policy-codegen";
+import { type DecisionRecord, useAbacSimulate } from "@/modules/authorization/api/simulate";
+import { pushDecision } from "@/modules/authorization/store/authz-store";
 
 export const Route = createFileRoute("/_app/authorization/abac")({
   component: AbacPage,
@@ -324,7 +325,7 @@ function PolicyEditor({
               onChange={(condition) => onChange({ ...draft, condition })}
             />
           </div>
-          {error && <p className="text-destructive text-sm">{error.message}</p>}
+          {error && <p className="text-destructive text-sm">{errorMessage(error)}</p>}
         </CardContent>
       </Card>
 

@@ -18,12 +18,13 @@ import {
   StatusPill,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { KeyRoundIcon, LinkIcon, Loader2Icon, ShieldCheckIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type AdminPortalCapability,
   type AdminPortalLink,
@@ -31,8 +32,7 @@ import {
   useAdminPortalLinks,
   useGenerateAdminPortalLink,
   useRevokeAdminPortalLink,
-} from "@/lib/admin-portal";
-import type { ApiError } from "@/lib/api";
+} from "@/modules/authentication/api/admin-portal";
 
 export const Route = createFileRoute("/_app/auth/connections/")({
   component: ConnectionsPage,
@@ -191,7 +191,7 @@ function AdminPortalCard({ ttlOptions }: { ttlOptions: { label: string; seconds:
             </Button>
           </div>
           {generateM.error && (
-            <p className="text-destructive text-sm">{(generateM.error as ApiError).message}</p>
+            <p className="text-destructive text-sm">{errorMessage(generateM.error)}</p>
           )}
 
           {generated && (

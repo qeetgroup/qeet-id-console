@@ -31,7 +31,7 @@ import { ShieldIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type IpAction,
   useAddIpRule,
@@ -39,7 +39,7 @@ import {
   useDeleteIpRule,
   useIpRules,
   useSetIpEnforcement,
-} from "@/lib/ip-allowlist";
+} from "@/modules/security/api/ip-allowlist";
 
 export const Route = createFileRoute("/_app/security/threats/ip-allowlist")({
   component: IpAllowlistPage,

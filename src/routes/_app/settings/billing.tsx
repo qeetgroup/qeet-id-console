@@ -33,9 +33,9 @@ import { CheckIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { ContactSalesDialog } from "@/features/billing/components/contact-sales-dialog";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { ContactSalesDialog } from "@/modules/billing/components/contact-sales-dialog";
 import {
   type BillingProfile,
   formatMoney,
@@ -49,7 +49,7 @@ import {
   useStartTrial,
   useSubscription,
   useUsage,
-} from "@/lib/billing";
+} from "@/modules/billing/api/billing";
 
 // Deep-link params: `?plan=pro&interval=year` (from in-context Upgrade CTAs)
 // preselects the billing period and highlights the recommended plan.
@@ -570,8 +570,8 @@ function BillingPage() {
               <div>
                 <CardTitle className="text-base">Try Pro free for 14 days</CardTitle>
                 <CardDescription>
-                  No card required — full Pro features (SSO, ABAC, audit export, Qeet AI).
-                  Reverts to Free when the trial ends unless you upgrade.
+                  No card required — full Pro features (SSO, ABAC, audit export, Qeet AI). Reverts
+                  to Free when the trial ends unless you upgrade.
                 </CardDescription>
               </div>
               <Button

@@ -1,12 +1,13 @@
 import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, MailIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BrandHero } from "@/features/auth/components/brand-hero";
-import { ApiError } from "@/lib/api";
-import { useConsumeMagicLink } from "@/lib/auth";
+import { BrandHero } from "@/modules/authentication/components/brand-hero";
+import { ApiError } from "@/platform/api/client";
+import { useConsumeMagicLink } from "@/modules/authentication";
 
 interface MagicSearch {
   token?: string;
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/_auth/magic")({
 });
 
 function MagicLinkPage() {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const { token } = useSearch({ from: "/_auth/magic" });
   const consume = useConsumeMagicLink();
 
@@ -92,7 +93,7 @@ function renderStatus({
   // Error path. Distinguish expired/used vs everything else so the user
   // sees actionable copy.
   const status = consume.error instanceof ApiError ? consume.error.status : undefined;
-  const detail = consume.error instanceof Error ? consume.error.message : "Unknown error";
+  const detail = consume.error ? errorMessage(consume.error) : "Unknown error";
   const isExpiredOrUsed = status === 400;
 
   return (

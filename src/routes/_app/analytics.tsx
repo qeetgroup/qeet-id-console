@@ -12,6 +12,7 @@ import {
   ChartTooltipContent,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
@@ -23,8 +24,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-import { PageHeader } from "@/components/page-header";
-import { useAnalyticsOverview } from "@/lib/analytics";
+import { PageHeader } from "@/platform/components/page-header";
+import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
 
 export const Route = createFileRoute("/_app/analytics")({
   component: AnalyticsPage,
@@ -124,7 +125,7 @@ function AnalyticsPage() {
         <Card>
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
             {t("analytics.loadError")}
-            {error instanceof Error ? `: ${error.message}` : ""}.
+            {error instanceof Error ? `: ${errorMessage(error)}` : ""}.
           </CardContent>
         </Card>
       </div>

@@ -35,15 +35,15 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, PlugIcon, PlusIcon, ServerIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { FeatureGate } from "@/features/billing/components/upgrade-gate";
-import type { ApiError } from "@/lib/api";
-import { useEntitlements } from "@/lib/billing";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
+import { useEntitlements } from "@/modules/billing/api/billing";
 import {
   type LdapConnection,
   useCreateLdapConnection,
@@ -51,7 +51,7 @@ import {
   useLdapConnections,
   useTestLdapConnection,
   useUpdateLdapConnection,
-} from "@/lib/ldap";
+} from "@/modules/authentication/api/ldap";
 
 export const Route = createFileRoute("/_app/auth/connections/ldap")({
   component: LdapPage,
@@ -346,7 +346,7 @@ function CreateConnectionSheet({
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

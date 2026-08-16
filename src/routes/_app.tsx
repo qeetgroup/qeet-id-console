@@ -2,20 +2,20 @@ import { SidebarProvider } from "@qeetrix/ui";
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 
-import { env } from "@/env";
-import { CapabilityProvider, useCapabilities } from "@/features/access-control/capability-provider";
-import { AccessBoundary } from "@/features/access-control/components/access-boundary";
-import { AppSidebar } from "@/features/dashboard/components/app-sidebar";
-import { CommandPaletteLauncher } from "@/features/dashboard/components/command-palette-launcher";
-import { ConsoleHeader } from "@/features/dashboard/components/console-header";
-import { ImpersonationBanner } from "@/features/dashboard/components/impersonation-banner";
-import { ShortcutsDialog } from "@/features/dashboard/components/shortcuts-dialog";
-import { VerifyEmailBanner } from "@/features/dashboard/components/verify-email-banner";
-import { QeetAILauncher, QeetAIRuntimeProvider, QeetAIWorkspace } from "@/features/qeetai";
-import { isAuthenticated, useIdleLogout } from "@/lib/auth";
-import { useGlobalShortcuts } from "@/lib/shortcuts";
+import { useFeatureFlag } from "@/platform/feature-flags/provider";
+import { CapabilityProvider, useCapabilities } from "@/platform/security/capability-provider";
+import { AccessBoundary } from "@/platform/security/access-boundary";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
+import { AppSidebar } from "@/modules/dashboard/components/app-sidebar";
+import { CommandPaletteLauncher } from "@/modules/dashboard/components/command-palette-launcher";
+import { ConsoleHeader } from "@/modules/dashboard/components/console-header";
+import { ImpersonationBanner } from "@/modules/dashboard/components/impersonation-banner";
+import { ShortcutsDialog } from "@/modules/dashboard/components/shortcuts-dialog";
+import { VerifyEmailBanner } from "@/modules/dashboard/components/verify-email-banner";
+import { QeetAILauncher, QeetAIRuntimeProvider, QeetAIWorkspace } from "@/modules/qeetai";
+import { isAuthenticated, useIdleLogout } from "@/platform/auth/session";
+import { useGlobalShortcuts } from "@/shared/hooks/use-shortcuts";
 
-const QEETAI_ENABLED = env.VITE_QEETAI_ENABLED !== "false";
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 export const Route = createFileRoute("/_app")({ component: AppLayout });
@@ -36,7 +36,9 @@ function AppLayout() {
 
   return (
     <CapabilityProvider>
-      <ConsoleFrame />
+      <SensitiveActionProvider>
+        <ConsoleFrame />
+      </SensitiveActionProvider>
     </CapabilityProvider>
   );
 }
@@ -44,6 +46,7 @@ function AppLayout() {
 function ConsoleFrame() {
   const navigate = useNavigate();
   const access = useCapabilities();
+  const qeetaiEnabled = useFeatureFlag("qeetai");
   useIdleLogout(IDLE_TIMEOUT_MS);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -89,7 +92,7 @@ function ConsoleFrame() {
           </AccessBoundary>
         </main>
       </div>
-      {QEETAI_ENABLED ? (
+      {qeetaiEnabled ? (
         <QeetAIRuntimeProvider>
           {/* Docked mode renders as an in-flow flex sibling here, so opening the
               QeetAI reflows the organization instead of covering it. */}

@@ -16,10 +16,10 @@ import { GaugeIcon, Loader2Icon, RotateCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/security/threats/rate-limits")({
   component: RateLimitsPage,

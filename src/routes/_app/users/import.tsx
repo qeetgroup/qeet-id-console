@@ -17,14 +17,15 @@ import {
   TableRow,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeftIcon, FileUpIcon, Loader2Icon, UploadCloudIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
+import { PageHeader } from "@/platform/components/page-header";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/users/import")({
   component: ImportUsersPage,
@@ -278,7 +279,7 @@ function ImportUsersPage() {
           <CardContent className="p-0">
             {importM.error && (
               <div className="border-b p-3 text-sm text-destructive">
-                {(importM.error as Error).message}
+                {errorMessage(importM.error)}
               </div>
             )}
             <DataState

@@ -10,15 +10,17 @@ import {
   Input,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
+import { downloadBlob } from "@/shared/utils/data-export";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import { DownloadIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { ApiError, api, tokenStore } from "@/lib/api";
-import { usePasswordStatus } from "@/lib/auth";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { ApiError, api, tokenStore } from "@/platform/api/client";
+import { usePasswordStatus } from "@/modules/authentication";
 
 export const Route = createFileRoute("/account/data")({ component: DataPage });
 
@@ -37,15 +39,11 @@ function DataPage() {
   const exportM = useMutation({
     mutationFn: async () => {
       const data = await api<Record<string, unknown>>("/v1/account/export", { method: "POST" });
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `qeet-id-account-export-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      downloadBlob(
+        JSON.stringify(data, null, 2),
+        "application/json",
+        `qeet-id-account-export-${new Date().toISOString().slice(0, 10)}.json`,
+      );
     },
     meta: { successMessage: "Your data has been downloaded" },
   });
@@ -61,7 +59,7 @@ function DataPage() {
       window.location.assign("/sign-up");
     },
     onError: (err) =>
-      toast.error(err instanceof ApiError ? err.message : "Could not delete your account."),
+      toast.error(err instanceof ApiError ? errorMessage(err) : "Could not delete your account."),
     meta: { silent: true },
   });
 

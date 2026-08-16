@@ -20,20 +20,20 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, RadioTowerIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { PageHeader } from "@/components/page-header";
-import type { ApiError } from "@/lib/api";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type SinkType,
   useCreateLogSink,
   useDeleteLogSink,
   useLogSinks,
   useToggleLogSink,
-} from "@/lib/log-sinks";
+} from "@/modules/security/api/log-sinks";
 
 export const Route = createFileRoute("/_app/security/log-streaming")({
   component: LogStreamingPage,
@@ -126,7 +126,7 @@ function LogStreamingPage() {
             </Button>
           </form>
           {createM.error && (
-            <p className="mt-2 text-destructive text-sm">{(createM.error as ApiError).message}</p>
+            <p className="mt-2 text-destructive text-sm">{errorMessage(createM.error)}</p>
           )}
         </CardContent>
       </Card>

@@ -25,8 +25,12 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/components/page-header";
-import { useAnomalies, useAnomalySummary, useResolveAnomaly } from "@/lib/anomalies";
+import { PageHeader } from "@/platform/components/page-header";
+import {
+  useAnomalies,
+  useAnomalySummary,
+  useResolveAnomaly,
+} from "@/modules/security/api/anomalies";
 
 export const Route = createFileRoute("/_app/security/threats/anomalies")({
   component: AnomaliesPage,

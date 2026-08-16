@@ -30,6 +30,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Loader2Icon,
@@ -42,15 +43,15 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/components/confirm-dialog";
-import { ListToolbar, SortHeader } from "@/components/data-table";
-import { PageHeader } from "@/components/page-header";
-import { FeatureGate } from "@/features/billing/components/upgrade-gate";
-import { type ApiError, api } from "@/lib/api";
-import { useTenantId } from "@/lib/auth";
-import { useEntitlements } from "@/lib/billing";
-import { type CsvColumn, exportToCsv, exportToJson } from "@/lib/export";
-import { useListView } from "@/lib/list-view";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { ListToolbar, SortHeader } from "@/shared/components/data-table";
+import { PageHeader } from "@/platform/components/page-header";
+import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { useEntitlements } from "@/modules/billing/api/billing";
+import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
+import { useListView } from "@/shared/hooks/use-list-view";
 
 export const Route = createFileRoute("/_app/developer/webhooks/")({
   component: WebhooksPage,
@@ -408,7 +409,7 @@ function CreateWebhookSheet({ open, onOpenChange, tenantId, onCreated }: CreateW
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

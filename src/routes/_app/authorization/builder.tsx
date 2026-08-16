@@ -15,28 +15,28 @@ import {
   toast,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { CopyIcon, DownloadIcon, Loader2Icon, SaveIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/platform/components/page-header";
 import {
   type BlockKind,
   PolicyCanvas,
-} from "@/features/authorization/components/canvas/policy-canvas";
-import { CodePreview } from "@/features/authorization/components/code-preview/code-preview";
-import { ConditionTree } from "@/features/authorization/components/condition-builder/condition-tree";
-import { ComingSoon } from "@/features/authorization/components/shared/coming-soon";
-import type { ApiError } from "@/lib/api";
-import { type Effect, emptyGroup, useCreateAbacPolicy } from "@/lib/authz-abac";
+} from "@/modules/authorization/components/canvas/policy-canvas";
+import { CodePreview } from "@/modules/authorization/components/code-preview/code-preview";
+import { ConditionTree } from "@/modules/authorization/components/condition-builder/condition-tree";
+import { ComingSoon } from "@/modules/authorization/components/shared/coming-soon";
+import { type Effect, emptyGroup, useCreateAbacPolicy } from "@/modules/authorization/api/abac";
 import {
   emptyPolicyDoc,
   isReducibleToAbac,
   type PolicyDoc,
   toAbacInput,
   toJson,
-} from "@/lib/authz-codegen";
-import { setBuilderDoc, useBuilderDoc } from "@/lib/authz-store";
-import { downloadBlob } from "@/lib/export";
+} from "@/modules/authorization/utils/policy-codegen";
+import { setBuilderDoc, useBuilderDoc } from "@/modules/authorization/store/authz-store";
+import { downloadBlob } from "@/shared/utils/data-export";
 
 export const Route = createFileRoute("/_app/authorization/builder")({
   component: BuilderPage,
@@ -111,9 +111,7 @@ function BuilderPage() {
         }
       />
 
-      {createM.error && (
-        <p className="text-destructive text-sm">{(createM.error as ApiError).message}</p>
-      )}
+      {createM.error && <p className="text-destructive text-sm">{errorMessage(createM.error)}</p>}
 
       <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
         <Card className="min-w-0">
