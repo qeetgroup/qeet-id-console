@@ -138,6 +138,8 @@
       "!**/.nitro",
       "!**/.netlify",
       "!**/coverage",
+      "!**/playwright-report",
+      "!**/test-results",
       "!**/routeTree.gen.ts",
       "!bun.lock"
     ]

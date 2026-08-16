@@ -174,6 +174,7 @@ function WebhooksPage() {
               {t("webhooks.list.count", {
                 shown: rows.length,
                 total: items.length,
+                count: items.length,
               })}
             </CardDescription>
           </CardHeader>

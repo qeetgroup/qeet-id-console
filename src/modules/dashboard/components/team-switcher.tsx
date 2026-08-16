@@ -17,7 +17,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Building2Icon, CheckIcon, ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 
-import { api, tokenStore } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
 
 type Tenant = {
@@ -37,7 +38,7 @@ function initialOf(name: string) {
 
 export function TeamSwitcher() {
   const { isMobile } = useSidebar();
-  const activeId = tokenStore.getTenantId();
+  const activeId = useTenantId();
 
   const tenantsQ = useQuery({
     queryKey: ["tenants", "switcher"],

@@ -43,7 +43,7 @@ src/
 │                   onboarding, organizations, qeetai, security, users, activity,
 │                   timeline, search). Each: api/ components/ hooks/ store/ utils/
 ├── platform/       Cross-cutting infrastructure: api (the one HTTP client), auth
-│                   (token-store/refresh/session), errors, query, security, telemetry,
+│                   (server-session/session-store), errors, query, security, telemetry,
 │                   feature-flags, config (env + navigation), components
 ├── shared/         Generic, domain-agnostic: components/ hooks/ utils/ data/
 ├── i18n/           Namespaced locale resources
@@ -75,6 +75,15 @@ Violations (wrong-direction imports, cross-module internals, import cycles) fail
 - command-palette and shortcut dialogs at shell scope.
 
 The sidebar account menu was intentionally removed. Account actions live in one predictable location in the top bar. The navigation rail uses real route state rather than a static active flag and keeps parent branches active on detail routes.
+
+## Session boundary
+
+TanStack Start is the same-origin BFF. Backend access and refresh tokens remain
+inside an encrypted `HttpOnly` cookie and are never returned to browser code.
+Protected layouts resolve the session in `beforeLoad`; JSON requests and SSE
+streams inherit backend bearer authentication, refresh rotation, correlation,
+safe error handling, and CSRF protection from the platform boundary. See
+[`ADR-0009`](docs/adr/0009-server-resolved-bff-session.md).
 
 ## Dashboard command center
 
@@ -125,6 +134,7 @@ Other scripts:
 bun run build       # production build (Vite + Nitro)
 bun run typecheck   # tsc --noEmit
 bun run test        # vitest
+bun run test:e2e    # Playwright session-boundary tests
 bun run lint        # biome
 ```
 
@@ -137,13 +147,14 @@ VITE_ENABLE_DEVTOOLS=true bun run dev
 
 ## Configuration
 
-`VITE_*` values are exposed to the browser (inlined at build time); `SERVER_URL` is server-only.
-Schema lives in `src/env.ts`. The app appends `/v1/...` to the API base itself.
+`VITE_*` values are exposed to the browser (inlined at build time). `SERVER_URL`
+and `SESSION_SECRET` are server-only. Schema lives in `src/platform/config/env.ts`.
 
 | Variable | Scope | Dev | Prod |
 |---|---|---|---|
 | `VITE_API_URL` | client | `http://localhost:4001` | `https://api.id.qeet.in` |
 | `SERVER_URL` | server (SSR) | falls back to `VITE_API_URL` | `https://api.id.qeet.in` |
+| `SESSION_SECRET` | server | development-only fallback | required, random 32+ characters |
 | `VITE_APP_TITLE` | client | `Qeet ID Admin` | `Qeet ID Admin` |
 
 ## Deployment (Vercel)
@@ -164,6 +175,7 @@ install/build commands:
    ```
    VITE_API_URL=https://api.id.qeet.in
    SERVER_URL=https://api.id.qeet.in
+   SESSION_SECRET=<at-least-32-random-characters>
    VITE_APP_TITLE=Qeet ID Admin
    ```
 3. Deploy.

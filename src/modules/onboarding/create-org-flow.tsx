@@ -19,7 +19,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { LogoField } from "@/shared/components/logo-field";
-import { type ApiError, api, tokenStore } from "@/platform/api/client";
+import { type ApiError, api } from "@/platform/api/client";
 import { startSignupCheckout } from "@/modules/billing";
 import { REGIONS } from "@/shared/data/regions";
 
@@ -135,19 +135,14 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
       }
 
       // Free / Enterprise: no self-serve payment, so create the org now. The
-      // response carries a tenant-scoped token we persist to switch straight in.
-      const res = await createM.mutateAsync({
+      // BFF consumes the tenant-scoped token response and updates the session.
+      await createM.mutateAsync({
         slug: slug.trim(),
         name: name.trim(),
         plan: selection.tier,
         region,
         logo_url: logo || undefined,
       });
-      if (res.access_token && res.refresh_token) {
-        tokenStore.set(res.access_token);
-        tokenStore.setRefresh(res.refresh_token);
-      }
-      tokenStore.setTenantId(res.tenant_id);
       if (selection.tier === "enterprise") {
         toast.success("Organization created — our team will reach out about Enterprise setup.");
       }

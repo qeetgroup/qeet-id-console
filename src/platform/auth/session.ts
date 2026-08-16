@@ -8,7 +8,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
 import { api } from "@/platform/api/client";
-import { tokenStore } from "@/platform/auth/token-store";
+import { sessionStore } from "@/platform/auth/session-store";
 
 export function useLogout() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => api<void>("/v1/auth/logout", { method: "POST" }).catch(() => undefined),
     onSettled: () => {
-      tokenStore.clear();
+      sessionStore.clear();
       qc.clear();
       navigate({ to: "/sign-in" });
     },
@@ -55,12 +55,11 @@ export function useIdleLogout(timeoutMs: number) {
 
 /** Returns the current tenant id stashed in localStorage. */
 export function useTenantId(): string | null {
-  return useSyncExternalStore(tokenStore.subscribe, tokenStore.getTenantId, () => null);
+  return useSyncExternalStore(sessionStore.subscribe, sessionStore.getTenantId, () => null);
 }
 
-/** Whether the user has a stored access token. Read synchronously for guards. */
-export function isAuthenticated(): boolean {
-  return !!tokenStore.get();
+export function useUserId(): string | null {
+  return useSyncExternalStore(sessionStore.subscribe, sessionStore.getUserId, () => null);
 }
 
 // ---------------------------------------------------------------------------
@@ -71,45 +70,6 @@ export function isAuthenticated(): boolean {
 // UX-only signals — e.g. the impersonation banner, which checks for the
 // RFC 8693 `act` claim and surfaces who the admin is acting as.
 // ---------------------------------------------------------------------------
-
-function base64UrlDecode(s: string): string {
-  let b = s.replace(/-/g, "+").replace(/_/g, "/");
-  while (b.length % 4) b += "=";
-  try {
-    return atob(b);
-  } catch {
-    return "";
-  }
-}
-
-interface AccessClaims {
-  /** RFC 8693 actor claim — present iff this token was issued by an
-   *  impersonation grant. `sub` identifies the admin doing the acting. */
-  act?: {
-    sub?: string;
-    email?: string;
-    display_name?: string;
-  };
-  sub?: string;
-  email?: string;
-  tenant_id?: string;
-  exp?: number;
-  [k: string]: unknown;
-}
-
-function decodeAccessToken(): AccessClaims | null {
-  const raw = tokenStore.get();
-  if (!raw) return null;
-  const parts = raw.split(".");
-  if (parts.length !== 3) return null;
-  const payload = base64UrlDecode(parts[1]);
-  if (!payload) return null;
-  try {
-    return JSON.parse(payload) as AccessClaims;
-  } catch {
-    return null;
-  }
-}
 
 export interface ImpersonationActor {
   /** The user being impersonated (the `sub` of the current token). */
@@ -126,14 +86,15 @@ export interface ImpersonationActor {
  * otherwise null. UI-only signal — server is the source of truth.
  */
 export function useImpersonationActor(): ImpersonationActor | null {
-  const claims = decodeAccessToken();
-  if (!claims?.act?.sub || !claims.sub) return null;
-  return {
-    targetSubject: claims.sub,
-    actorSubject: claims.act.sub,
-    actorEmail: claims.act.email,
-    actorDisplayName: claims.act.display_name,
-  };
+  return useSyncExternalStore(
+    sessionStore.subscribe,
+    sessionStore.getImpersonationActor,
+    () => null,
+  );
+}
+
+export function useSessionId(): string | null {
+  return useSyncExternalStore(sessionStore.subscribe, sessionStore.getSessionId, () => null);
 }
 
 type Me = {
@@ -153,7 +114,7 @@ type Me = {
  * for a tenant-less user (fresh signup).
  */
 export function useMe() {
-  const userId = tokenStore.getUserId();
+  const userId = useUserId();
   return useQuery({
     queryKey: ["me", userId],
     // Self endpoint: resolves to the caller from the token, so it works even for

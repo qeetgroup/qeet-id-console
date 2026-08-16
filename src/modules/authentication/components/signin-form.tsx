@@ -40,6 +40,8 @@ export function LoginForm({
   ...props
 }: LoginFormProps) {
   const [email, setEmail] = useState("");
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   // Debounce the email value used to drive SSO discovery so we don't
   // hammer the discovery endpoint on every keystroke.
   const [debouncedEmail, setDebouncedEmail] = useState("");
@@ -56,6 +58,7 @@ export function LoginForm({
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:min-h-160 md:grid-cols-2">
           <form
+            method="post"
             className="flex flex-col justify-center p-6 md:p-8"
             onSubmit={(e) => {
               e.preventDefault();
@@ -130,7 +133,7 @@ export function LoginForm({
               )}
 
               <Field>
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={!hydrated || isLoading}>
                   {isLoading && <Loader2Icon className="animate-spin" />}
                   {ssoHit
                     ? `Continue with ${ssoHit.provider_name}`

@@ -3,7 +3,7 @@
 // with reconnect + exponential backoff and Last-Event-ID replay.
 // Do NOT import from features/qeetai — this is a standalone client.
 
-import { API_BASE_URL, tokenStore } from "@/platform/api/client";
+import { clearBrowserSession, refreshSessionForRequest } from "@/platform/api/client";
 
 import type { ActivityEvent } from "./types/activity.types";
 
@@ -120,7 +120,7 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
     }, delay);
   }
 
-  async function connect() {
+  async function connect(hasRetriedAuth = false) {
     if (stopped) return;
 
     abortController = new AbortController();
@@ -128,13 +128,11 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
 
     callbacks.onStatusChange("reconnecting");
 
-    const url = new URL("v1/activity/stream", `${API_BASE_URL}/`);
-    const token = tokenStore.get();
+    const url = new URL("/api/activity-stream", window.location.origin);
     const headers: Record<string, string> = {
       Accept: "text/event-stream",
       "Cache-Control": "no-cache",
     };
-    if (token) headers.Authorization = `Bearer ${token}`;
     if (lastEventId) headers["Last-Event-ID"] = lastEventId;
 
     let res: Response;
@@ -148,6 +146,14 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
 
     if (!res.ok || !res.body) {
       if (stopped) return;
+      if (res.status === 401) {
+        if (!hasRetriedAuth && (await refreshSessionForRequest(signal, true))) {
+          await connect(true);
+          return;
+        }
+        await clearBrowserSession();
+        return;
+      }
       // 404 / 503 = backend not yet deployed; back off and retry silently
       scheduleReconnect();
       return;

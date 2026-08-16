@@ -1,4 +1,5 @@
-// Base URL of the qeet-id Go backend. Comes from VITE_API_URL (inlined at build
-// time; defaults to the local backend). The app appends `/v1/...` itself.
-export const API_BASE_URL =
-  (import.meta.env?.VITE_API_URL as string | undefined) ?? "http://localhost:4001";
+import { env } from "@/platform/config/env";
+
+// Public API origin used only for browser-facing federation/metadata URLs.
+// Authenticated data requests go through the same-origin Start BFF.
+export const API_BASE_URL = env.VITE_API_URL ?? "http://localhost:4001";

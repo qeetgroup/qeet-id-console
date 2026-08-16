@@ -1,12 +1,23 @@
 import { Avatar, AvatarFallback, AvatarImage, cn } from "@qeetrix/ui";
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { DatabaseIcon, MonitorSmartphoneIcon, ShieldCheckIcon, UserIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import { isAuthenticated, useMe } from "@/platform/auth/session";
+import { getServerSession } from "@/platform/api/server-proxy";
+import { useIdleLogout, useMe } from "@/platform/auth/session";
+import { sessionStore } from "@/platform/auth/session-store";
 
-export const Route = createFileRoute("/account")({ component: AccountLayout });
+const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+
+export const Route = createFileRoute("/account")({
+  beforeLoad: async () => {
+    const session = await getServerSession();
+    if (!session.isAuthenticated) throw redirect({ to: "/sign-in" });
+    return { session };
+  },
+  component: AccountLayout,
+});
 
 /**
  * AccountLayout hosts the end-user self-service surface ("My Account").
@@ -19,9 +30,10 @@ export const Route = createFileRoute("/account")({ component: AccountLayout });
  */
 function AccountLayout() {
   const { t } = useTranslation("account");
-  const navigate = useNavigate();
+  const { session } = Route.useRouteContext();
   const me = useMe();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useIdleLogout(IDLE_TIMEOUT_MS);
 
   const NAV = [
     { to: "/account/profile", label: t("nav.profile"), icon: UserIcon },
@@ -39,10 +51,8 @@ function AccountLayout() {
   ] as const;
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate({ to: "/sign-in", replace: true });
-    }
-  }, [navigate]);
+    sessionStore.hydrate(session);
+  }, [session]);
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">

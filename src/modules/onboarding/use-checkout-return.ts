@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { api, tokenStore } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
 
 type TenantListItem = { id: string; created_at?: string };
@@ -21,6 +22,7 @@ type TenantListItem = { id: string; created_at?: string };
 export function useCheckoutReturn(): { finalizing: boolean } {
   const [finalizing, setFinalizing] = useState(false);
   const started = useRef(false);
+  const currentTenantId = useTenantId();
 
   useEffect(() => {
     if (started.current) return;
@@ -63,7 +65,7 @@ export function useCheckoutReturn(): { finalizing: boolean } {
         );
       }
 
-      const current = tokenStore.getTenantId();
+      const current = currentTenantId;
       // Poll for up to ~45s (webhook + provisioning can lag well past 10s). A
       // gentle ramp keeps early checks snappy without hammering the API late.
       const MAX_ATTEMPTS = 30;
@@ -74,7 +76,7 @@ export function useCheckoutReturn(): { finalizing: boolean } {
           (b.created_at ?? "").localeCompare(a.created_at ?? ""),
         )[0];
         if (newest && newest.id !== current) {
-          await switchToTenant(newest.id); // persists a scoped token + reloads into the org
+          await switchToTenant(newest.id); // replaces the scoped session + reloads into the org
           return;
         }
         await new Promise((r) => setTimeout(r, attempt < 10 ? 1000 : 2000));
@@ -88,7 +90,7 @@ export function useCheckoutReturn(): { finalizing: boolean } {
         "Payment received — we're finishing your organization setup. This can take a moment; refresh shortly or contact support if it doesn't appear.",
       );
     })();
-  }, []);
+  }, [currentTenantId]);
 
   return { finalizing };
 }

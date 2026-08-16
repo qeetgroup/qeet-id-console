@@ -52,7 +52,7 @@ import { OrgPreviewDrawer } from "@/modules/organizations/org-preview-drawer";
 import { type OrgKpiFilter, OrgsKpis } from "@/modules/organizations/orgs-kpis";
 import { initials } from "@/shared/utils/initials";
 import { CreateOrgFlow } from "@/modules/onboarding/create-org-flow";
-import { api, tokenStore } from "@/platform/api/client";
+import { api, sessionStore } from "@/platform/api/client";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
 import { type Org, useDeleteOrg, useOrgs, useUpdateOrg } from "@/modules/organizations/api/orgs";
@@ -76,7 +76,7 @@ const orgCsvColumns: CsvColumn<Org>[] = [
 function TenantsPage() {
   const { t } = useTranslation("organizations");
   const qc = useQueryClient();
-  const currentTenantId = tokenStore.getTenantId();
+  const currentTenantId = sessionStore.getTenantId();
   const access = useCapabilities();
   const canWrite = access.can("tenant.write");
   const [confirmDialog, openConfirm] = useConfirmDialog();

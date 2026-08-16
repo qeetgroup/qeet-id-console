@@ -1,19 +1,17 @@
-// Auth hooks built on top of the api() client. Login / signup mutations
-// persist the access token, refresh token, tenant_id and user_id so every
-// downstream useQuery call sees a Bearer header automatically.
+// Auth hooks built on top of api(). The same-origin BFF stores token responses
+// in an encrypted HttpOnly session and returns only safe session metadata.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
-import { ApiError, api, API_BASE_URL, tokenStore } from "@/platform/api/client";
+import { ApiError, api, API_BASE_URL } from "@/platform/api/client";
 
-type TokenPair = {
-  access_token: string;
-  refresh_token: string;
+type SessionResponse = {
   token_type: string;
   expires_at: string;
   user_id: string;
   session_id: string;
+  tenant_id?: string;
 };
 
 type User = {
@@ -25,7 +23,6 @@ type User = {
 };
 
 type LoginInput = { email: string; password: string };
-type SessionResponse = TokenPair & { tenant_id?: string };
 // When the account has a second factor enrolled, /v1/auth/login returns this
 // challenge instead of tokens; complete it at /v1/auth/mfa.
 export type MfaChallenge = {
@@ -51,21 +48,11 @@ export function useLogin() {
       }),
 
     onSuccess: (res) => {
-      // A second factor is required — don't persist anything yet. The sign-in
+      // A second factor is required — no session is issued yet. The sign-in
       // page reads this mutation's data and renders the code step, completed
       // via useCompleteMfaLogin.
       if (isMfaChallenge(res)) return;
 
-      // Clear prior session so a tenant-less/different user doesn't inherit a stale organization.
-      tokenStore.clear();
-      tokenStore.set(res.access_token);
-      tokenStore.setRefresh(res.refresh_token);
-
-      if (res.tenant_id) {
-        tokenStore.setTenantId(res.tenant_id);
-      }
-
-      tokenStore.setUserId(res.user_id);
       navigate({ to: "/" });
     },
   });
@@ -73,7 +60,7 @@ export function useLogin() {
 
 /**
  * Complete a two-step login: exchange the mfa_token from useLogin plus a TOTP
- * or recovery code for a session. Persists tokens exactly like password login.
+ * or recovery code for a server-owned session.
  */
 export function useCompleteMfaLogin() {
   const navigate = useNavigate();
@@ -86,16 +73,7 @@ export function useCompleteMfaLogin() {
         anonymous: true,
       }),
 
-    onSuccess: (pair) => {
-      tokenStore.clear();
-      tokenStore.set(pair.access_token);
-      tokenStore.setRefresh(pair.refresh_token);
-      if (pair.tenant_id) {
-        tokenStore.setTenantId(pair.tenant_id);
-      }
-      tokenStore.setUserId(pair.user_id);
-      navigate({ to: "/" });
-    },
+    onSuccess: () => navigate({ to: "/" }),
   });
 }
 
@@ -115,18 +93,7 @@ export function useAcceptInvite() {
         anonymous: true,
       }),
 
-    onSuccess: (pair) => {
-      tokenStore.clear();
-      tokenStore.set(pair.access_token);
-      tokenStore.setRefresh(pair.refresh_token);
-
-      if (pair.tenant_id) {
-        tokenStore.setTenantId(pair.tenant_id);
-      }
-
-      tokenStore.setUserId(pair.user_id);
-      navigate({ to: "/" });
-    },
+    onSuccess: () => navigate({ to: "/" }),
   });
 }
 /** A pending invitation addressed to the signed-in user's email. */
@@ -183,14 +150,11 @@ export function useDeclineInvitation() {
 export function useAcceptInvitation() {
   return useMutation({
     mutationFn: (inviteId: string) =>
-      api<TokenPair & { tenant_id?: string }>(`/v1/me/invites/${inviteId}/accept`, {
+      api<SessionResponse>(`/v1/me/invites/${inviteId}/accept`, {
         method: "POST",
         body: {},
       }),
-    onSuccess: (pair) => {
-      tokenStore.set(pair.access_token);
-      tokenStore.setRefresh(pair.refresh_token);
-      if (pair.tenant_id) tokenStore.setTenantId(pair.tenant_id);
+    onSuccess: () => {
       if (typeof window !== "undefined") window.location.assign("/");
     },
   });
@@ -198,26 +162,19 @@ export function useAcceptInvitation() {
 
 /**
  * Consume a magic-link token and exchange it for a Qeet ID session.
- * Called by the public /magic landing page. On success the access /
- * refresh / tenant / user are persisted exactly like the password
- * login flow, so downstream queries immediately see a Bearer header.
+ * Called by the public /magic landing page. The BFF consumes the returned
+ * token pair and establishes the HttpOnly session before this resolves.
  */
 export function useConsumeMagicLink() {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (token: string) =>
-      api<TokenPair & { tenant_id?: string }>("/v1/auth/magic-link/consume", {
+      api<SessionResponse>("/v1/auth/magic-link/consume", {
         method: "POST",
         body: { token },
         anonymous: true,
       }),
-    onSuccess: (pair) => {
-      tokenStore.set(pair.access_token);
-      tokenStore.setRefresh(pair.refresh_token);
-      if (pair.tenant_id) tokenStore.setTenantId(pair.tenant_id);
-      tokenStore.setUserId(pair.user_id);
-      navigate({ to: "/" });
-    },
+    onSuccess: () => navigate({ to: "/" }),
     // The /magic page surfaces the error inline; no global toast.
     meta: { silent: true },
   });
@@ -225,26 +182,18 @@ export function useConsumeMagicLink() {
 
 /**
  * Exchange a one-time SAML login code (delivered to /sso/callback in the URL
- * fragment after a successful assertion) for a Qeet ID session. Persists the
- * tokens exactly like the other login flows.
+ * fragment after a successful assertion) for a Qeet ID session.
  */
 export function useConsumeSamlCode() {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (code: string) =>
-      api<TokenPair & { tenant_id?: string }>("/saml/exchange", {
+      api<SessionResponse>("/saml/exchange", {
         method: "POST",
         body: { code },
         anonymous: true,
       }),
-    onSuccess: (pair) => {
-      tokenStore.clear();
-      tokenStore.set(pair.access_token);
-      tokenStore.setRefresh(pair.refresh_token);
-      if (pair.tenant_id) tokenStore.setTenantId(pair.tenant_id);
-      tokenStore.setUserId(pair.user_id);
-      navigate({ to: "/" });
-    },
+    onSuccess: () => navigate({ to: "/" }),
     meta: { silent: true },
   });
 }
@@ -295,13 +244,13 @@ type SignupInput = {
   display_name?: string;
 };
 
-// Signup is now tenant-less: the response carries the new user + a token pair
-// but NO tenant. The user creates their first organization from the dashboard.
-export type SignupResponse = TokenPair & {
+// Signup is tenant-less. Token material is consumed by the BFF; the user and
+// safe session identifiers remain available for the verification step.
+export type SignupResponse = SessionResponse & {
   user: User;
 };
 
-// useSignup persists the new tenant-less session, then either runs a caller
+// useSignup establishes the new tenant-less server session, then either runs a caller
 // supplied onSuccess (e.g. to kick off email OTP verification) or, by default,
 // navigates straight to the dashboard.
 export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) {
@@ -314,12 +263,6 @@ export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) 
         anonymous: true,
       }),
     onSuccess: (res) => {
-      // Tenant-less session; clear any stale tenant id first. Tokens are set
-      // here so the follow-up email-verification calls are authenticated.
-      tokenStore.clear();
-      tokenStore.set(res.access_token);
-      tokenStore.setRefresh(res.refresh_token);
-      tokenStore.setUserId(res.user_id);
       if (opts?.onSuccess) {
         opts.onSuccess(res);
       } else {
@@ -404,15 +347,12 @@ export function useConfirmEmailVerification() {
   });
 }
 
-// Switch organization: mint a token scoped to a tenant the user belongs to, persist it, reload.
+// Switch organization: the BFF replaces the encrypted session, then reload.
 export async function switchToTenant(tenantId: string): Promise<void> {
-  const res = await api<TokenPair & { tenant_id: string }>("/v1/auth/switch-tenant", {
+  await api<SessionResponse & { tenant_id: string }>("/v1/auth/switch-tenant", {
     method: "POST",
     body: { tenant_id: tenantId },
   });
-  tokenStore.set(res.access_token);
-  tokenStore.setRefresh(res.refresh_token);
-  tokenStore.setTenantId(res.tenant_id);
   if (typeof window !== "undefined") window.location.assign("/");
 }
 
@@ -465,19 +405,12 @@ export function useConsumeSocialCode() {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (code: string) =>
-      api<TokenPair & { tenant_id?: string }>("/v1/social/exchange", {
+      api<SessionResponse>("/v1/social/exchange", {
         method: "POST",
         body: { code },
         anonymous: true,
       }),
-    onSuccess: (pair) => {
-      tokenStore.clear();
-      tokenStore.set(pair.access_token);
-      tokenStore.setRefresh(pair.refresh_token);
-      if (pair.tenant_id) tokenStore.setTenantId(pair.tenant_id);
-      tokenStore.setUserId(pair.user_id);
-      navigate({ to: "/" });
-    },
+    onSuccess: () => navigate({ to: "/" }),
     meta: { silent: true },
   });
 }

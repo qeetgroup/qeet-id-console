@@ -28,7 +28,7 @@ import {
   useState,
 } from "react";
 
-import { onTokenStoreClear } from "@/platform/auth/token-store";
+import { onSessionClear } from "@/platform/auth/session-store";
 import { StepUpDialog } from "@/platform/security/step-up-dialog";
 
 import { conversationActions, hydrateConversations } from "./store/conversation-store";
@@ -60,7 +60,7 @@ export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
     hydrateConversations();
     const unsubscribe = hydrateWorkspace();
     // Wipe conversation history from localStorage on logout (shared machines).
-    const unsubscribeClear = onTokenStoreClear(() => conversationActions.clearAll());
+    const unsubscribeClear = onSessionClear(() => conversationActions.clearAll());
     return () => {
       unsubscribe?.();
       unsubscribeClear();

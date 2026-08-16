@@ -4,6 +4,7 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     SERVER_URL: z.string().url().optional(),
+    SESSION_SECRET: z.string().min(32).optional(),
   },
 
   /**
@@ -14,6 +15,7 @@ export const env = createEnv({
 
   client: {
     VITE_APP_TITLE: z.string().min(1).optional(),
+    VITE_API_URL: z.string().url().optional(),
     // Build-time kill switch for the Qeet AI surface. Defaults on; the real
     // runtime gate is the backend `/v1/qeetai/status`. Set "false" to omit the
     // organization entirely (e.g. an air-gapped build).

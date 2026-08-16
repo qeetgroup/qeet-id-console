@@ -20,11 +20,11 @@ import type { Session } from "@/modules/authentication";
 import { formatIp } from "@/shared/utils/ip-format";
 import { createFileRoute } from "@tanstack/react-router";
 import { MonitorIcon, MonitorSmartphoneIcon, SmartphoneIcon, TabletIcon } from "lucide-react";
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
-import { api, tokenStore } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
+import { useSessionId, useUserId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/account/sessions")({
   component: SessionsPage,
@@ -71,35 +71,11 @@ function DeviceIcon({ kind }: { kind: DeviceKind }) {
   return <MonitorIcon className="size-4" />;
 }
 
-// Read the access token's `sid` (session id) claim — the session the
-// browser is currently using, so we can mark it "This device" and stop
-// the user from accidentally signing themselves out.
-function getCurrentSessionId(): string | null {
-  const raw = tokenStore.get();
-  if (!raw) return null;
-  const parts = raw.split(".");
-  if (parts.length !== 3) return null;
-  try {
-    const payload = JSON.parse(
-      atob(
-        parts[1]!
-          .replace(/-/g, "+")
-          .replace(/_/g, "/")
-          .padEnd(parts[1]!.length + ((4 - (parts[1]!.length % 4)) % 4), "="),
-      ),
-    );
-    const sid = (payload as { sid?: unknown }).sid;
-    return typeof sid === "string" ? sid : null;
-  } catch {
-    return null;
-  }
-}
-
 function SessionsPage() {
   const { t } = useTranslation("account");
-  const userId = tokenStore.getUserId();
+  const userId = useUserId();
   const qc = useQueryClient();
-  const currentSessionId = useMemo(() => getCurrentSessionId(), []);
+  const currentSessionId = useSessionId();
   const [confirmDialog, openConfirm] = useConfirmDialog();
 
   const sessionsQ = useQuery({
