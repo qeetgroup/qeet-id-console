@@ -10,7 +10,7 @@ import {
 import { useCallback, useState } from "react";
 
 import type { UseQeetAIChat } from "../../hooks/use-qeetai-chat";
-import type { Message } from "../../qeetai.types";
+import type { Message } from "../../types/qeetai.types";
 import { ExecutionTimeline } from "../execution/execution-timeline";
 import { MarkdownMessage } from "../markdown-message/markdown-message";
 import { type MessageAction, MessageActions } from "./message-actions";

@@ -6,7 +6,7 @@ import {
   formatDelta,
   mfaMethodColor,
   takeLatest,
-} from "./dashboard-model";
+} from "../dashboard-model";
 
 describe("dashboard model", () => {
   it("formats positive, negative, and point deltas", () => {

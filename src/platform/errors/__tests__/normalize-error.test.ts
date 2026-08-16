@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { ApiError } from "./api-error";
-import { AppError } from "./app-error";
-import { normalizeError } from "./normalize-error";
-import { userMessageForCode } from "./user-message";
+import { ApiError } from "../api-error";
+import { AppError } from "../app-error";
+import { normalizeError } from "../normalize-error";
+import { userMessageForCode } from "../user-message";
 
 describe("normalizeError", () => {
   it("passes AppError through unchanged", () => {

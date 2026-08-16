@@ -2,7 +2,7 @@
 // The actual async query lives in UniversalSearch (useQuery); this module
 // provides the pure transformation so it can be reused or tested independently.
 
-import type { SearchHit, SearchItem } from "./registry.types";
+import type { SearchHit, SearchItem } from "./types/registry.types";
 
 function typeToCategory(type: string): string {
   // e.g. "user" → "Users", "organization" → "Organizations"

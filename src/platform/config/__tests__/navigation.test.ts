@@ -6,8 +6,8 @@ import {
   getRequiredCapabilityForPath,
   navGroups,
   safeNavigation,
-} from "./navigation";
-import { isNavBranchActive, isNavPathActive, type NavTreeItem } from "./navigation-state";
+} from "../navigation";
+import { isNavBranchActive, isNavPathActive, type NavTreeItem } from "../navigation-state";
 
 const users: NavTreeItem = {
   url: "/users",

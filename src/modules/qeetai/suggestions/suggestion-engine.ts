@@ -9,7 +9,7 @@
 //      matching `user_id` / `role_id` / `client_id` prefill (they float to top).
 
 import type { Capability } from "@/platform/security/capability-model";
-import type { ConsoleContext } from "../context/context-types";
+import type { ConsoleContext } from "../context/types/context.types";
 import { ROUTE_SUGGESTIONS, type Suggestion } from "./route-suggestions";
 
 // ── Matcher ───────────────────────────────────────────────────────────────────

@@ -12,7 +12,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
 
 import type { Capability } from "@/platform/security/capability-model";
-import type { ConsoleContext } from "../context/context-types";
+import type { ConsoleContext } from "../../context/types/context.types";
 
 export type ToolCategory = "directory" | "authz" | "credentials" | "audit" | "codegen";
 

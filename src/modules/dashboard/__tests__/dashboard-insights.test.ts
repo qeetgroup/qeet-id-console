@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { type AnalyticsOverview, EMPTY_OVERVIEW } from "./api/analytics";
+import { type AnalyticsOverview, EMPTY_OVERVIEW } from "../api/analytics";
 import {
   computeIdentityHealth,
   deriveAttentionItems,
   deriveSecuritySignals,
   deriveSessionStats,
-} from "./dashboard-insights";
+} from "../dashboard-insights";
 
 /** Build an overview with specific KPI values, defaulting the rest to empty. */
 function overview(kpis: Partial<AnalyticsOverview["kpis"]>): AnalyticsOverview {

@@ -26,10 +26,10 @@ import type {
   ToolDefinition,
   ToolExecution,
   ToolResult,
-} from "./tool-types";
+} from "./types/tool.types";
 
 // Re-export types that callers import from here.
-export type { ExecutionStatus, ToolExecution } from "./tool-types";
+export type { ExecutionStatus, ToolExecution } from "./types/tool.types";
 export type { ConfirmRequest };
 
 // ── Options ───────────────────────────────────────────────────────────────────

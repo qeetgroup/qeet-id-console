@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ActivityEvent } from "@/modules/activity";
-import { groupTimelineByDate } from "./grouping";
+import { groupTimelineByDate } from "../grouping";
 
 // ---------------------------------------------------------------------------
 // Helpers

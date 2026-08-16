@@ -6,7 +6,7 @@
 
 import { activityActions } from "./activity-store";
 import { createActivityStream } from "./activity-stream";
-import type { ActivityEvent, ConnectionStatus } from "./activity.types";
+import type { ActivityEvent, ConnectionStatus } from "./types/activity.types";
 
 let refCount = 0;
 let client: ReturnType<typeof createActivityStream> | null = null;

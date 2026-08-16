@@ -8,7 +8,7 @@
 import { Store, useStore } from "@tanstack/react-store";
 import { useEffect } from "react";
 
-import type { ContextSelection } from "./context-types";
+import type { ContextSelection } from "./types/context.types";
 
 export interface PublishedContext {
   selection?: ContextSelection;

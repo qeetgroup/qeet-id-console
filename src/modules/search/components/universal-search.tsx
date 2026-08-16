@@ -18,7 +18,11 @@ import { ApiError, api } from "@/platform/api/client";
 import { moveHighlight } from "../keyboard";
 import { rankItems } from "../ranking";
 import { resourceHitsToSearchItems } from "../registry/resource-source";
-import type { SearchItem, SearchResponse, SearchResultGroup } from "../registry/registry.types";
+import type {
+  SearchItem,
+  SearchResponse,
+  SearchResultGroup,
+} from "../registry/types/registry.types";
 import { useUniversalSearch } from "../search-provider";
 import { PreviewPane } from "./preview-pane";
 import { ResultGroups } from "./result-groups";

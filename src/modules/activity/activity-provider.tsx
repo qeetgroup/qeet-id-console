@@ -28,7 +28,7 @@ import {
   type ConnectionStatus,
   type DateGroup,
   DEFAULT_FILTERS,
-} from "./activity.types";
+} from "./types/activity.types";
 
 // ---------------------------------------------------------------------------
 // Context contract

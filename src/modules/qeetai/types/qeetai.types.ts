@@ -2,7 +2,7 @@
 // other module (stores, AI provider, tools, UI) compiles against, so they live
 // in one place and stay dependency-free.
 
-import type { ToolExecution } from "./tools/tool-types";
+import type { ToolExecution } from "../tools/types/tool.types";
 
 /** How the workspace panel is presented. */
 export type QeetAIMode = "docked" | "floating" | "fullscreen";

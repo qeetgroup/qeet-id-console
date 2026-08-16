@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseActivityFrame } from "./activity-stream";
+import { parseActivityFrame } from "../activity-stream";
 
 // ---------------------------------------------------------------------------
 // parseActivityFrame — unit tests for the SSE frame parser

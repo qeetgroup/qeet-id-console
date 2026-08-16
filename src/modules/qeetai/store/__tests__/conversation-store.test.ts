@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { ToolExecution } from "../tools/tool-types";
-import { conversationActions, conversationStore } from "./conversation-store";
+import type { ToolExecution } from "../../tools/types/tool.types";
+import { conversationActions, conversationStore } from "../conversation-store";
 
 const STORE_KEY = "qeetid.qeetai.conversations";
 

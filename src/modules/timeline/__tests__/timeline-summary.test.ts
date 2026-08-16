@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ActivityEvent } from "@/modules/activity";
-import { computeTimelineSummary } from "./timeline-summary";
+import { computeTimelineSummary } from "../timeline-summary";
 
 function event(partial: Partial<ActivityEvent>): ActivityEvent {
   return {

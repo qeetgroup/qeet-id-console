@@ -7,7 +7,7 @@ import {
   hasAllCapabilities,
   hasAnyCapability,
   hasCapability,
-} from "./capability-model";
+} from "../capability-model";
 
 describe("console capability model", () => {
   it("matches effective permissions exactly without inferring read from write", () => {

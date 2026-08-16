@@ -6,7 +6,7 @@
 import { cn, Skeleton, Sparkline } from "@qeetrix/ui";
 
 import type { ActivitySearch } from "../activity-search";
-import type { ActivitySummary, Outcome } from "../activity.types";
+import type { ActivitySummary, Outcome } from "../types/activity.types";
 
 type Tone = "brand" | "success" | "warning" | "danger" | "info";
 

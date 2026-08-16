@@ -64,7 +64,11 @@ import {
   hydrateSavedViews,
   type SavedView,
 } from "@/modules/activity/saved-views";
-import type { ActivityFilters, ActivityMode, Outcome } from "@/modules/activity/activity.types";
+import type {
+  ActivityFilters,
+  ActivityMode,
+  Outcome,
+} from "@/modules/activity/types/activity.types";
 import { useEntitlements } from "@/modules/billing/api/billing";
 
 export const Route = createFileRoute("/_app/activity")({

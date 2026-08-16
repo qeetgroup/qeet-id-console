@@ -12,7 +12,7 @@ import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import type { AuthPolicy } from "@/modules/authentication";
-import type { ToolDefinition } from "../tool-types";
+import type { ToolDefinition } from "../types/tool.types";
 
 // ── simulate_authorization ────────────────────────────────────────────────────
 

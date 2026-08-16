@@ -4,7 +4,7 @@
 
 import { Store } from "@tanstack/react-store";
 
-import type { ActivityEvent, ConnectionStatus } from "./activity.types";
+import type { ActivityEvent, ConnectionStatus } from "./types/activity.types";
 
 const MAX_LIVE = 200;
 const PREFS_KEY = "qeetid.activity.prefs";

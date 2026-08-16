@@ -9,7 +9,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
-import type { ActivityEvent } from "@/modules/activity/activity.types";
+import type { ActivityEvent } from "@/modules/activity/types/activity.types";
 import { IdentityTimeline } from "@/modules/timeline/components/identity-timeline";
 import { TimelineDetailsDrawer } from "@/modules/timeline/components/timeline-details-drawer";
 import { TimelineExportMenu } from "@/modules/timeline/components/timeline-export-menu";

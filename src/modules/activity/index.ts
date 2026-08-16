@@ -10,4 +10,4 @@ export * from "./event-labels";
 export * from "./activity-filters";
 export * from "./ip-format";
 export * from "./activity-subscription";
-export * from "./activity.types";
+export * from "./types/activity.types";

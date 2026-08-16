@@ -8,7 +8,7 @@
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
-import type { ToolDefinition } from "../tool-types";
+import type { ToolDefinition } from "../types/tool.types";
 
 // ── search_audit_logs ─────────────────────────────────────────────────────────
 

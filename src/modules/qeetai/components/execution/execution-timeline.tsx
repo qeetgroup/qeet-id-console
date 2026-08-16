@@ -1,4 +1,4 @@
-import type { ToolExecution } from "../../tools/tool-types";
+import type { ToolExecution } from "../../tools/types/tool.types";
 import { ToolCallCard } from "./tool-call-card";
 
 /**

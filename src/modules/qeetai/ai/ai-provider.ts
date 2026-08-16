@@ -4,7 +4,7 @@
 // (backend-provider) or the graceful-degradation stub (unconfigured-provider).
 // Swapping providers never touches the UI.
 
-import type { ConsoleContext } from "../context/context-types";
+import type { ConsoleContext } from "../context/types/context.types";
 
 /**
  * Discriminated stream of everything one turn can emit. `token` carries visible

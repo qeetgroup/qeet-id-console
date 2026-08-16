@@ -12,4 +12,4 @@ export type {
   ToolDefinition,
   ToolExecution,
   ToolResult,
-} from "./tool-types";
+} from "./types/tool.types";

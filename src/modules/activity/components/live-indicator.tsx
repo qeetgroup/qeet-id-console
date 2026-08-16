@@ -1,7 +1,7 @@
 import { cn, StatusPill } from "@qeetrix/ui";
 import { RadioIcon } from "lucide-react";
 
-import type { ConnectionStatus } from "../activity.types";
+import type { ConnectionStatus } from "../types/activity.types";
 
 const STATUS_RING_CLASS: Record<ConnectionStatus, string> = {
   connected: "border-success/40 text-success",

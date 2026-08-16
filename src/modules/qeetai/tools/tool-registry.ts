@@ -11,7 +11,7 @@
 // vice-versa.
 
 import type { Capability } from "@/platform/security/capability-model";
-import type { ToolDefinition } from "./tool-types";
+import type { ToolDefinition } from "./types/tool.types";
 
 // ── Import all definitions ────────────────────────────────────────────────────
 

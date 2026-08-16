@@ -18,7 +18,7 @@ import {
   sortConversations,
 } from "../../store/conversation-store";
 import { workspaceActions } from "../../store/workspace-store";
-import type { Conversation } from "../../qeetai.types";
+import type { Conversation } from "../../types/qeetai.types";
 
 function formatRelative(ts: number): string {
   const diff = Date.now() - ts;

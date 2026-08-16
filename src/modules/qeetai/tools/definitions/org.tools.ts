@@ -5,7 +5,7 @@
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
-import type { ToolDefinition } from "../tool-types";
+import type { ToolDefinition } from "../types/tool.types";
 
 interface Tenant {
   id: string;

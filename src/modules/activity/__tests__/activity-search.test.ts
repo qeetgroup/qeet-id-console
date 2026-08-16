@@ -6,8 +6,8 @@ import {
   searchToFilters,
   severityToOutcome,
   validateActivitySearch,
-} from "./activity-search";
-import type { Severity } from "./activity.types";
+} from "../activity-search";
+import type { Severity } from "../types/activity.types";
 
 describe("validateActivitySearch", () => {
   it("drops blank values and passes through valid strings", () => {

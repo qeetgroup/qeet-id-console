@@ -21,7 +21,7 @@ import { redactPII } from "../redact";
 import { conversationActions, conversationStore } from "../store/conversation-store";
 import { secretsActions } from "../store/secrets-store";
 import { enabledTools, executeTool, getTool } from "../tools";
-import type { ToolContext, ToolExecution } from "../tools/tool-types";
+import type { ToolContext, ToolExecution } from "../tools/types/tool.types";
 
 /** Hard cap on tool-use round-trips per turn, guarding against runaway loops. */
 const MAX_TOOL_LEGS = 8;

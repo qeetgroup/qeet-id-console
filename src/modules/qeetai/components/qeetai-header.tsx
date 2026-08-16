@@ -14,7 +14,7 @@ import {
 
 import { conversationActions } from "../store/conversation-store";
 import { workspaceActions, workspaceStore } from "../store/workspace-store";
-import type { QeetAIMode } from "../qeetai.types";
+import type { QeetAIMode } from "../types/qeetai.types";
 
 const MODES: { mode: QeetAIMode; label: string; icon: typeof SidebarIcon }[] = [
   { mode: "docked", label: "Dock to side", icon: SidebarIcon },

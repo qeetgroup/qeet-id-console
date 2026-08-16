@@ -7,8 +7,8 @@
 import { Store } from "@tanstack/react-store";
 
 import { maskPII, redactPII } from "../redact";
-import type { ToolExecution } from "../tools/tool-types";
-import type { Conversation, Message, MessageStatus } from "../qeetai.types";
+import type { ToolExecution } from "../tools/types/tool.types";
+import type { Conversation, Message, MessageStatus } from "../types/qeetai.types";
 
 const STORE_KEY = "qeetid.qeetai.conversations";
 const MAX_CONVERSATIONS = 100;

@@ -14,7 +14,7 @@ import {
 import { useCallback, useState } from "react";
 
 import { useSensitiveArtifact } from "../../store/secrets-store";
-import type { ExecutionStatus, ToolExecution } from "../../tools/tool-types";
+import type { ExecutionStatus, ToolExecution } from "../../tools/types/tool.types";
 
 type Tone = "pending" | "running" | "success" | "error";
 

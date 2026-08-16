@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { eventResult, formatEventTitle, humanizeEventType } from "./event-labels";
+import { eventResult, formatEventTitle, humanizeEventType } from "../event-labels";
 
 describe("formatEventTitle", () => {
   it("maps a known enum to its human title", () => {

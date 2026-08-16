@@ -9,7 +9,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { fetchActivityPage } from "./activity-history";
-import type { ActivityEvent, ActivityFilters } from "./activity.types";
+import type { ActivityEvent, ActivityFilters } from "./types/activity.types";
 
 export type ExportFormat = "csv" | "json" | "ndjson";
 

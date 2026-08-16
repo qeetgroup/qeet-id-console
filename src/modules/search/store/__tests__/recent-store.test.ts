@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { SearchItem } from "../registry/registry.types";
-import { recentActions, recentStore } from "./recent-store";
+import type { SearchItem } from "../../registry/types/registry.types";
+import { recentActions, recentStore } from "../recent-store";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

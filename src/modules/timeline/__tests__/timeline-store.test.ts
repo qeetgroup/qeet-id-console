@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { DEFAULT_TIMELINE_FILTERS, timelineActions, timelineStore } from "./timeline-store";
+import { DEFAULT_TIMELINE_FILTERS, timelineActions, timelineStore } from "../timeline-store";
 
 // ---------------------------------------------------------------------------
 // Helpers

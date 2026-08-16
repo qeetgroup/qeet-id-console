@@ -7,7 +7,7 @@ import { EmptyState, Skeleton } from "@qeetrix/ui";
 import { LinkIcon } from "lucide-react";
 
 import { useRelatedEvents } from "../related-events";
-import type { ActivityEvent } from "../activity.types";
+import type { ActivityEvent } from "../types/activity.types";
 import { EventCard } from "./event-card";
 
 function Section({

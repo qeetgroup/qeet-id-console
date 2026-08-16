@@ -33,7 +33,7 @@ import { StepUpDialog } from "@/platform/security/step-up-dialog";
 
 import { conversationActions, hydrateConversations } from "./store/conversation-store";
 import { hydrateWorkspace } from "./store/workspace-store";
-import type { ConfirmRequest } from "./tools/tool-types";
+import type { ConfirmRequest } from "./tools/types/tool.types";
 
 interface QeetAIContextValue {
   /** Opens a confirmation dialog; resolves true on approval, false otherwise. */

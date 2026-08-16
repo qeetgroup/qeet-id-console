@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { hydrateSavedViews, PRESET_VIEWS, savedViewsActions, savedViewsStore } from "./saved-views";
+import {
+  hydrateSavedViews,
+  PRESET_VIEWS,
+  savedViewsActions,
+  savedViewsStore,
+} from "../saved-views";
 
 const STORE_KEY = "qeetid.activity.views";
 

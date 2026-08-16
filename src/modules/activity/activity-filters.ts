@@ -1,7 +1,7 @@
 // Pure filter and grouping functions for the activity feed.
 // No side effects, no imports from React or the store — easy to unit-test.
 
-import type { ActivityEvent, ActivityFilters, DateGroup, Severity } from "./activity.types";
+import type { ActivityEvent, ActivityFilters, DateGroup, Severity } from "./types/activity.types";
 
 /** Returns true if the event matches all active filters. */
 export function matchesFilters(event: ActivityEvent, filters: ActivityFilters): boolean {

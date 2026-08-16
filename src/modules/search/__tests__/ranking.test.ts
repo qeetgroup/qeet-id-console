@@ -7,7 +7,7 @@ import {
   rankItems,
   score,
   scoreText,
-} from "./ranking";
+} from "../ranking";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

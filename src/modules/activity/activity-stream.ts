@@ -5,7 +5,7 @@
 
 import { API_BASE_URL, tokenStore } from "@/platform/api/client";
 
-import type { ActivityEvent } from "./activity.types";
+import type { ActivityEvent } from "./types/activity.types";
 
 // ---------------------------------------------------------------------------
 // Frame parsing

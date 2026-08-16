@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { redact } from "./redact";
+import { redact } from "../redact";
 
 describe("telemetry redact", () => {
   it("drops denylisted keys entirely", () => {

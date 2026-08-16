@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import { ApiError } from "@/platform/errors/api-error";
-import { executeTool } from "./execution-engine";
-import type { ToolContext, ToolDefinition, ToolResult } from "./tool-types";
+import { executeTool } from "../execution-engine";
+import type { ToolContext, ToolDefinition, ToolResult } from "../types/tool.types";
 
 function makeCtx(overrides: Partial<ToolContext> = {}): ToolContext {
   return {

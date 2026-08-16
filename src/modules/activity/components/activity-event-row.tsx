@@ -19,7 +19,7 @@ import type { ReactNode } from "react";
 
 import type { ActivitySearch } from "../activity-search";
 import { formatIp } from "../ip-format";
-import type { ActivityEvent, Severity } from "../activity.types";
+import type { ActivityEvent, Severity } from "../types/activity.types";
 import { CopyIconButton } from "./copy-icon-button";
 import { InvestigateMenu } from "./investigate-menu";
 import { SeverityBadge } from "./severity-badge";

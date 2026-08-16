@@ -7,7 +7,7 @@
 
 import { Store, useStore } from "@tanstack/react-store";
 
-import type { ToolResult } from "../tools/tool-types";
+import type { ToolResult } from "../tools/types/tool.types";
 
 export type SensitiveArtifact = NonNullable<ToolResult["sensitiveArtifact"]>;
 

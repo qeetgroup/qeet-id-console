@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { tokenStore } from "@/platform/auth/token-store";
 import { ApiError } from "@/platform/errors/api-error";
-import { api } from "./client";
+import { api } from "../client";
 
 // Route the global fetch mock by URL so the /auth/refresh call and the business
 // call can return different responses.

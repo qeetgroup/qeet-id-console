@@ -6,7 +6,7 @@ import { cn } from "@qeetrix/ui";
 import { ArrowRightIcon, CopyIcon, ExternalLinkIcon, LinkIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import type { SearchContext, SearchItem } from "../registry/registry.types";
+import type { SearchContext, SearchItem } from "../registry/types/registry.types";
 
 interface QuickActionsProps {
   item: SearchItem;

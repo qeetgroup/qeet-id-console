@@ -12,7 +12,7 @@
 
 import { Store } from "@tanstack/react-store";
 
-import type { QeetAIMode, WorkspacePrefs } from "../qeetai.types";
+import type { QeetAIMode, WorkspacePrefs } from "../types/qeetai.types";
 
 export const MIN_DOCK_WIDTH = 340;
 export const MAX_DOCK_WIDTH = 720;

@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import { USER_KEYS, type User } from "@/modules/users";
-import type { ToolDefinition } from "../tool-types";
+import type { ToolDefinition } from "../types/tool.types";
 
 // ── search_users ──────────────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ import { type Capability, CONSOLE_CAPABILITIES } from "@/platform/security/capab
 import { useCapabilities } from "@/platform/security/capability-provider";
 
 import { useContextRegistry } from "./context-registry";
-import type { ConsoleContext } from "./context-types";
+import type { ConsoleContext } from "./types/context.types";
 
 export function useConsoleContext(): ConsoleContext {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

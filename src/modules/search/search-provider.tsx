@@ -11,7 +11,7 @@ import { useCapabilities } from "@/platform/security/capability-provider";
 import type { RankContext } from "./ranking";
 import { createCommandSource } from "./registry/command-source";
 import { createNavigationSource } from "./registry/navigation-source";
-import type { SearchContext, SearchItem } from "./registry/registry.types";
+import type { SearchContext, SearchItem } from "./registry/types/registry.types";
 import type { FavoriteEntry } from "./store/favorites-store";
 import { favoritesActions, favoritesStore, hydrateFavorites } from "./store/favorites-store";
 import type { RecentEntry } from "./store/recent-store";
