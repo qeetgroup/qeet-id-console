@@ -17,6 +17,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
   BadgeCheckIcon,
   CheckCircle2Icon,
@@ -27,9 +28,11 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { PageHeader } from "@/platform/components/page-header";
-import type { ApiError } from "@/platform/api/client";
 import {
   type IssueResult,
   useCredentials,
@@ -44,7 +47,10 @@ export const Route = createFileRoute("/_app/developer/credentials")({
 
 function CredentialsPage() {
   const { t } = useTranslation("developer");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
+  const runSensitive = useSensitiveAction();
+  const ignoreCancel = (e: unknown) => {
+    if (!(e instanceof SensitiveActionCancelled)) throw e;
+  };
   const listQ = useCredentials();
   const issueM = useIssueCredential();
   const revokeM = useRevokeCredential();
@@ -60,7 +66,6 @@ function CredentialsPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      {confirmDialog}
       <PageHeader description={t("credentials.description")} />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -139,7 +144,7 @@ function CredentialsPage() {
                 />
               </Field>
               {issueM.error && (
-                <p className="text-destructive text-sm">{(issueM.error as ApiError).message}</p>
+                <p className="text-destructive text-sm">{errorMessage(issueM.error)}</p>
               )}
               <Button type="submit" disabled={issueM.isPending || !subject.trim() || !type.trim()}>
                 {issueM.isPending && <Loader2Icon className="animate-spin" />}
@@ -201,12 +206,15 @@ function CredentialsPage() {
                       size="sm"
                       disabled={revokeM.isPending}
                       onClick={() =>
-                        openConfirm({
-                          title: t("credentials.confirm.title"),
-                          variant: "destructive",
-                          confirmLabel: t("credentials.confirm.label"),
-                          onConfirm: () => revokeM.mutate(c.id),
-                        })
+                        runSensitive({
+                          confirm: {
+                            title: t("credentials.confirm.title"),
+                            confirmLabel: t("credentials.confirm.label"),
+                            tone: "destructive",
+                          },
+                          actionLabel: "revoke this credential",
+                          run: () => revokeM.mutateAsync(c.id),
+                        }).catch(ignoreCancel)
                       }
                     >
                       <Trash2Icon /> {t("credentials.list.revokeButton")}
@@ -276,7 +284,7 @@ function VerifyCard() {
           </div>
         )}
         {verifyM.error && (
-          <p className="mt-2 text-destructive text-sm">{(verifyM.error as ApiError).message}</p>
+          <p className="mt-2 text-destructive text-sm">{errorMessage(verifyM.error)}</p>
         )}
       </CardContent>
     </Card>

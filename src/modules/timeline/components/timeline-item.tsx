@@ -33,7 +33,7 @@ import { toast } from "sonner";
 import { getCategoryIcon } from "@/modules/activity";
 import { ResultBadge } from "@/modules/activity";
 import { type EventResult, eventResult, formatEventTitle } from "@/modules/activity";
-import { formatIp } from "@/modules/activity";
+import { formatIp } from "@/shared/utils/ip-format";
 import type { ActivityEvent } from "@/modules/activity";
 
 // ---------------------------------------------------------------------------

@@ -31,6 +31,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
+import { initials } from "@/shared/utils/initials";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeftIcon, FolderIcon, Loader2Icon, ShieldCheckIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
@@ -64,13 +65,6 @@ type GroupMember = {
   email: string;
   display_name?: string | null;
 };
-
-function initialsFor(s: string): string {
-  const parts = s.trim().split(/\s+/);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
-}
 
 function GroupDetailPage() {
   const { t } = useTranslation("groups");
@@ -218,7 +212,7 @@ function GroupDetailPage() {
                             <div className="flex items-center gap-2">
                               <Avatar className="size-7">
                                 <AvatarFallback className="text-[10px]">
-                                  {initialsFor(m.display_name || m.email)}
+                                  {initials(m.display_name || m.email)}
                                 </AvatarFallback>
                               </Avatar>
                               <Link

@@ -35,6 +35,7 @@ import {
   TooltipProvider,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { formatDateTime } from "@/shared/utils/format";
 import {
   ArrowLeftIcon,
   ArrowLeftRightIcon,
@@ -49,7 +50,7 @@ import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { CopyId } from "@/modules/users/user-detail-fields";
-import { initials } from "@/modules/users/user-display";
+import { initials } from "@/shared/utils/initials";
 import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
 import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
@@ -73,17 +74,6 @@ export const Route = createFileRoute("/_app/organizations/$orgId")({
   }),
   component: OrgDetailPage,
 });
-
-function formatDateTime(iso?: string | null): string {
-  if (!iso) return "—";
-  try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-      new Date(iso),
-    );
-  } catch {
-    return iso;
-  }
-}
 
 function OrgDetailPage() {
   const { t } = useTranslation("organizations");

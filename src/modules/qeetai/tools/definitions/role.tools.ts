@@ -4,6 +4,7 @@
 // ctx.tenantId so RBAC + RLS + audit are inherited.
 
 import { z } from "zod";
+import { ROLES_KEY } from "@/modules/authorization";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
@@ -42,7 +43,7 @@ export const createRoleTool: ToolDefinition<CreateRoleInput> = {
         signal: ctx.signal,
       },
     );
-    ctx.queryClient.invalidateQueries({ queryKey: ["roles"] });
+    ctx.queryClient.invalidateQueries({ queryKey: ROLES_KEY });
     return {
       ok: true,
       summary: `Role "${role.name}" created (id: ${role.id}).`,

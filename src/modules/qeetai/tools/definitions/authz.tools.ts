@@ -9,6 +9,7 @@
 //   strict_mfa.enabled=false → remember_device_enabled=true  (allow adaptive skip)
 
 import { z } from "zod";
+import { AUTH_POLICY_KEY } from "@/modules/authentication";
 
 import { api } from "@/platform/api/client";
 import type { AuthPolicy } from "@/modules/authentication";
@@ -218,7 +219,7 @@ export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
       body: next,
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ["auth-policy"] });
+    ctx.queryClient.invalidateQueries({ queryKey: AUTH_POLICY_KEY });
     return {
       ok: true,
       summary: input.enabled

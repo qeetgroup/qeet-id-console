@@ -7,6 +7,7 @@
 // into a compact two-line layout.
 
 import { Avatar, AvatarFallback, Badge, cn, TimeSince } from "@qeetrix/ui";
+import { initials } from "@/shared/utils/initials";
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -18,7 +19,7 @@ import {
 import type { ReactNode } from "react";
 
 import type { ActivitySearch } from "../activity-search";
-import { formatIp } from "../ip-format";
+import { formatIp } from "@/shared/utils/ip-format";
 import type { ActivityEvent, Severity } from "../types/activity.types";
 import { CopyIconButton } from "./copy-icon-button";
 import { InvestigateMenu } from "./investigate-menu";
@@ -82,14 +83,8 @@ function actorVisual(event: ActivityEvent): {
       : event.actor?.name || event.actor?.id
         ? "bg-primary/12 text-primary"
         : "bg-muted text-muted-foreground";
-  const initials =
-    event.actor?.name
-      ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ?? "•";
-  return { cls: tone, content: initials, name };
+  const content = event.actor?.name ? initials(event.actor.name) : "•";
+  return { cls: tone, content, name };
 }
 
 /** Column header aligned to the row grid. Decorative; wide viewports only. */

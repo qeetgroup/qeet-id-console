@@ -81,9 +81,16 @@ function sanitizeForPersistence(state: ConversationState): ConversationState {
     ...state,
     conversations: state.conversations.map((c) => ({
       ...c,
-      messages: c.messages.map((m) =>
-        m.toolExecutions ? { ...m, toolExecutions: m.toolExecutions.map(sanitizeExecution) } : m,
-      ),
+      // The title is derived from the first user message, so it can carry the
+      // same PII — mask it before it lands in localStorage.
+      title: maskPII(c.title),
+      messages: c.messages.map((m) => ({
+        ...m,
+        // Mask emails/IPs in the message text too — prompts/answers can contain
+        // PII and would otherwise sit in localStorage in the clear.
+        content: maskPII(m.content),
+        toolExecutions: m.toolExecutions?.map(sanitizeExecution),
+      })),
     })),
   };
 }

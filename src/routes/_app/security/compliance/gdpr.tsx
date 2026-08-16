@@ -29,6 +29,7 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Loader2Icon,
@@ -42,7 +43,7 @@ import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { PageHeader } from "@/platform/components/page-header";
-import { type ApiError, api } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/security/compliance/gdpr")({
@@ -127,7 +128,7 @@ function GdprPage() {
               ))}
             </div>
           ) : listQ.isError ? (
-            <div className="p-6 text-sm text-destructive">{(listQ.error as Error).message}</div>
+            <div className="p-6 text-sm text-destructive">{errorMessage(listQ.error)}</div>
           ) : !listQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
               <ScrollTextIcon className="size-8 text-muted-foreground" />
@@ -272,7 +273,7 @@ function CreatePurgeSheet({ open, onOpenChange, tenantId, onCreated }: CreatePur
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

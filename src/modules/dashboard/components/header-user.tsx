@@ -13,6 +13,7 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import { initials } from "@/shared/utils/initials";
 import {
   BadgeCheckIcon,
   CreditCardIcon,
@@ -24,16 +25,6 @@ import {
 } from "lucide-react";
 
 import { useLogout, useMe, useTenantId } from "@/platform/auth/session";
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 export function HeaderUser() {
   const meQ = useMe();

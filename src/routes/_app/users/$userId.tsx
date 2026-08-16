@@ -1,4 +1,5 @@
 import { Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TooltipProvider } from "@qeetrix/ui";
+import { errorMessage } from "@/platform/errors/user-message";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { ArrowLeftIcon } from "lucide-react";
@@ -109,7 +110,7 @@ function UserDetailPage() {
           </div>
         ) : userQ.isError ? (
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-            {(userQ.error as Error).message}
+            {errorMessage(userQ.error)}
           </div>
         ) : userQ.data ? (
           <>

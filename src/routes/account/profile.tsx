@@ -21,6 +21,8 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
+import { initials } from "@/shared/utils/initials";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2Icon, UploadIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -39,18 +41,6 @@ export const Route = createFileRoute("/account/profile")({
 
 const AVATAR_PX = 192; // displayed at ≤64px; 192 keeps it crisp on retina
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
-
-function initials(name: string) {
-  return (
-    name
-      .split(/[\s@.]+/)
-      .map((p) => p[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join("")
-      .toUpperCase() || "?"
-  );
-}
 
 // Resize + center-crop to a square JPEG data-URL. Keeps the payload tiny
 // (~15–30 KB) so it fits the inline avatar_url column without object storage.
@@ -98,7 +88,9 @@ function ProfilePage() {
         toast.success("Verification code sent to your new email.");
       },
       onError: (err) =>
-        toast.error(err instanceof ApiError ? err.message : "Could not start the email change."),
+        toast.error(
+          err instanceof ApiError ? errorMessage(err) : "Could not start the email change.",
+        ),
     });
   };
 
@@ -112,7 +104,9 @@ function ProfilePage() {
         void me.refetch();
       },
       onError: (err) =>
-        toast.error(err instanceof ApiError ? err.message : "That code is incorrect or expired."),
+        toast.error(
+          err instanceof ApiError ? errorMessage(err) : "That code is incorrect or expired.",
+        ),
     });
   };
 

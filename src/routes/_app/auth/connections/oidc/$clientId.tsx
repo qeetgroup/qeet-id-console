@@ -26,12 +26,16 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
+import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { ArrowLeftIcon, KeySquareIcon, Loader2Icon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { OidcQuickstart } from "@/modules/authentication/components/oidc-quickstart";
-import type { ApiError } from "@/platform/api/client";
 import {
   type OidcClient,
   useDeleteOidcClient,
@@ -90,7 +94,29 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
   const updateM = useUpdateOidcClient(client.id);
   const rotateM = useRotateClientSecret(client.id);
   const deleteM = useDeleteOidcClient();
+  const runSensitive = useSensitiveAction();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  // Rotating the client secret invalidates the old one immediately — confirm +
+  // step-up before minting a new secret.
+  const rotateSecret = () =>
+    runSensitive({
+      confirm: {
+        title: "Rotate client secret?",
+        description:
+          "A new client secret is generated immediately and the current one stops working. Update the client application with the new secret.",
+        confirmLabel: "Rotate secret",
+        tone: "destructive",
+      },
+      actionLabel: "rotate this client secret",
+      run: () => rotateM.mutateAsync(undefined),
+    })
+      .then((res) => {
+        if (res) setRotatedSecret(res.client_secret);
+      })
+      .catch((e) => {
+        if (!(e instanceof SensitiveActionCancelled)) throw e;
+      });
   const [rotatedSecret, setRotatedSecret] = useState<string | null>(null);
 
   return (
@@ -162,7 +188,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
               </Field>
               {updateM.error && (
                 <Field>
-                  <FieldError>{(updateM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(updateM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>
@@ -227,11 +253,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
                   variant="outline"
                   size="sm"
                   disabled={rotateM.isPending}
-                  onClick={() =>
-                    rotateM.mutate(undefined, {
-                      onSuccess: (res) => setRotatedSecret(res.client_secret),
-                    })
-                  }
+                  onClick={rotateSecret}
                 >
                   {rotateM.isPending ? <Loader2Icon className="animate-spin" /> : <RefreshCwIcon />}
                   {t("detail.rotateSecret")}

@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@qeetrix/ui";
 import { startRegistration } from "@simplewebauthn/browser";
+import { errorMessage } from "@/platform/errors/user-message";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { FingerprintIcon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
@@ -128,7 +129,7 @@ function PasskeysPage() {
               ))}
             </div>
           ) : listQ.isError ? (
-            <div className="p-6 text-sm text-destructive">{(listQ.error as Error).message}</div>
+            <div className="p-6 text-sm text-destructive">{errorMessage(listQ.error)}</div>
           ) : !listQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
               <FingerprintIcon className="size-8 text-muted-foreground" />

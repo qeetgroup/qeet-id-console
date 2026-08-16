@@ -4,6 +4,7 @@
 // saves the merged result.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+export const AUTH_POLICY_KEY = ["auth-policy"] as const;
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -29,7 +30,7 @@ export interface AuthPolicy {
 export function useAuthPolicy() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["auth-policy", tenantId],
+    queryKey: [...AUTH_POLICY_KEY, tenantId],
     enabled: !!tenantId,
     queryFn: () => api<AuthPolicy>(`/v1/tenants/${tenantId}/auth-policy`),
   });
@@ -45,8 +46,8 @@ export function useUpdateAuthPolicy() {
         body,
       }),
     onSuccess: (data) => {
-      qc.setQueryData(["auth-policy", tenantId], data);
-      qc.invalidateQueries({ queryKey: ["auth-policy"] });
+      qc.setQueryData([...AUTH_POLICY_KEY, tenantId], data);
+      qc.invalidateQueries({ queryKey: AUTH_POLICY_KEY });
     },
     meta: { successMessage: "Authentication policy saved" },
   });

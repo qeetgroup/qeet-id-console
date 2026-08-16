@@ -8,6 +8,5 @@ export * from "./components/result-badge";
 export * from "./components/severity-badge";
 export * from "./event-labels";
 export * from "./activity-filters";
-export * from "./ip-format";
 export * from "./activity-subscription";
 export * from "./types/activity.types";

@@ -1,4 +1,5 @@
 import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, MailIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -92,7 +93,7 @@ function renderStatus({
   // Error path. Distinguish expired/used vs everything else so the user
   // sees actionable copy.
   const status = consume.error instanceof ApiError ? consume.error.status : undefined;
-  const detail = consume.error instanceof Error ? consume.error.message : "Unknown error";
+  const detail = consume.error ? errorMessage(consume.error) : "Unknown error";
   const isExpiredOrUsed = status === 400;
 
   return (

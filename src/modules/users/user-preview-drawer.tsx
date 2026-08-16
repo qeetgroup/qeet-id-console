@@ -24,6 +24,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import { formatDateTime } from "@/shared/utils/format";
 import { ArrowRightIcon, CheckCircle2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -38,18 +39,8 @@ import {
   useUserSessions,
 } from "./api/user360";
 import type { User } from "./api/users";
-import { initials, primaryRole } from "./user-display";
-
-function formatDateTime(iso?: string | null): string {
-  if (!iso) return "—";
-  try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-      new Date(iso),
-    );
-  } catch {
-    return iso;
-  }
-}
+import { primaryRole } from "./user-display";
+import { initials } from "@/shared/utils/initials";
 
 export function UserPreviewDrawer({ user, onClose }: { user: User | null; onClose: () => void }) {
   const { t } = useTranslation("users");

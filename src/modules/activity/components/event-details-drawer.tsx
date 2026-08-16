@@ -43,7 +43,7 @@ import {
 import { type ReactNode, useCallback } from "react";
 
 import type { ActivitySearch, DrawerTab } from "../activity-search";
-import { formatIp } from "../ip-format";
+import { formatIp } from "@/shared/utils/ip-format";
 import type { ActivityEvent } from "../types/activity.types";
 import { InvestigateMenu } from "./investigate-menu";
 import { RelatedEventsList } from "./related-events-list";

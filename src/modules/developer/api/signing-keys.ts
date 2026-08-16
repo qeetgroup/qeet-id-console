@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+export const SIGNING_KEYS_KEY = ["signing-keys"] as const;
 
 import { api } from "@/platform/api/client";
 
@@ -18,7 +19,7 @@ export interface RotateKeyResult {
 
 export function useSigningKeys() {
   return useQuery({
-    queryKey: ["signing-keys"],
+    queryKey: SIGNING_KEYS_KEY,
     queryFn: () => api<{ keys: SigningKey[] }>("/v1/oidc/signing-keys"),
   });
 }
@@ -27,6 +28,6 @@ export function useRotateKey() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () => api<RotateKeyResult>("/v1/oidc/signing-keys/rotate", { method: "POST" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["signing-keys"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: SIGNING_KEYS_KEY }),
   });
 }

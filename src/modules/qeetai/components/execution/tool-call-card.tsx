@@ -110,7 +110,9 @@ export function ToolCallCard({
         <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
             <AlertTriangleIcon className="size-3.5 shrink-0" />
-            {execution.error.message}
+            {execution.error.code === "execution_error"
+              ? "The action could not be completed."
+              : execution.error.message}
           </p>
           {retryable && onRetry ? (
             <Button size="xs" variant="ghost" onClick={onRetry}>

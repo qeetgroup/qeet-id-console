@@ -16,6 +16,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { QeetLogoMark } from "@qeetrix/ui/brand";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Link } from "@tanstack/react-router";
 import {
   ActivityIcon,
@@ -195,7 +196,7 @@ export function DashboardOverview() {
             <h2 className="mt-4 font-heading text-lg font-semibold">{t("error")}</h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {analytics.error instanceof Error
-                ? analytics.error.message
+                ? errorMessage(analytics.error)
                 : "The analytics service did not return a response."}
             </p>
             <Button className="mt-5" variant="outline" onClick={() => analytics.refetch()}>

@@ -25,6 +25,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
   AlertTriangleIcon,
   BrainCircuitIcon,
@@ -36,7 +37,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
-import type { ApiError } from "@/platform/api/client";
 import {
   type AnomalyReason,
   useAuditAnomalies,
@@ -287,9 +287,7 @@ function SettingsCard() {
             {t("auditIntelligence.settings.save")}
           </Button>
         </div>
-        {updateM.error && (
-          <p className="text-destructive text-sm">{(updateM.error as ApiError).message}</p>
-        )}
+        {updateM.error && <p className="text-destructive text-sm">{errorMessage(updateM.error)}</p>}
       </CardContent>
     </Card>
   );

@@ -1,72 +1,34 @@
 // Client-side export of the identity timeline. Exports the events currently
 // loaded into the view (scroll to load more before exporting for a longer
 // range). Scoped to a single user's timeline — deliberately not the tenant-wide
-// activity exporter, which walks a different endpoint.
+// activity exporter, which walks a different endpoint. CSV escaping + download
+// are the shared helpers (shared/utils/data-export).
 
 import { toast } from "sonner";
 
 import type { ActivityEvent } from "@/modules/activity";
+import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 
 export type TimelineExportFormat = "csv" | "json";
 
-const CSV_HEADERS = [
-  "id",
-  "at",
-  "type",
-  "category",
-  "severity",
-  "title",
-  "actor_id",
-  "actor_name",
-  "actor_type",
-  "target_type",
-  "target_id",
-  "source",
-  "ip",
-  "location",
-  "device",
-  "request_id",
-] as const;
-
-function csvCell(value: unknown): string {
-  if (value == null) return "";
-  const s = typeof value === "string" ? value : JSON.stringify(value);
-  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
-function toCsvRow(ev: ActivityEvent): string {
-  const cells: Record<(typeof CSV_HEADERS)[number], unknown> = {
-    id: ev.id,
-    at: ev.at,
-    type: ev.type,
-    category: ev.category,
-    severity: ev.severity,
-    title: ev.title,
-    actor_id: ev.actor?.id,
-    actor_name: ev.actor?.name,
-    actor_type: ev.actor?.type,
-    target_type: ev.target?.type,
-    target_id: ev.target?.id,
-    source: ev.source,
-    ip: ev.ip,
-    location: ev.location,
-    device: ev.device,
-    request_id: ev.request_id,
-  };
-  return CSV_HEADERS.map((h) => csvCell(cells[h])).join(",");
-}
-
-function download(content: string, mime: string, filename: string) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+const CSV_COLUMNS: CsvColumn<ActivityEvent>[] = [
+  { header: "id", value: (e) => e.id },
+  { header: "at", value: (e) => e.at },
+  { header: "type", value: (e) => e.type },
+  { header: "category", value: (e) => e.category },
+  { header: "severity", value: (e) => e.severity },
+  { header: "title", value: (e) => e.title },
+  { header: "actor_id", value: (e) => e.actor?.id },
+  { header: "actor_name", value: (e) => e.actor?.name },
+  { header: "actor_type", value: (e) => e.actor?.type },
+  { header: "target_type", value: (e) => e.target?.type },
+  { header: "target_id", value: (e) => e.target?.id },
+  { header: "source", value: (e) => e.source },
+  { header: "ip", value: (e) => e.ip },
+  { header: "location", value: (e) => e.location },
+  { header: "device", value: (e) => e.device },
+  { header: "request_id", value: (e) => e.request_id },
+];
 
 export function exportTimelineEvents(
   events: ActivityEvent[],
@@ -81,10 +43,9 @@ export function exportTimelineEvents(
   const name = `identity-timeline-${userId}-${stamp}.${format}`;
 
   if (format === "csv") {
-    const csv = [CSV_HEADERS.join(","), ...events.map(toCsvRow)].join("\n");
-    download(csv, "text/csv;charset=utf-8", name);
+    downloadBlob(rowsToCsv(events, CSV_COLUMNS), "text/csv;charset=utf-8", name);
   } else {
-    download(JSON.stringify(events, null, 2), "application/json", name);
+    downloadBlob(JSON.stringify(events, null, 2), "application/json", name);
   }
 
   const noun = events.length === 1 ? "event" : "events";

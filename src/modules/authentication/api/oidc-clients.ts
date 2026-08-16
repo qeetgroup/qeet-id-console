@@ -6,6 +6,7 @@
 // surface them via CopyableSecret immediately; they can't be re-read.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+export const OIDC_CLIENTS_KEY = ["oidc-clients"] as const;
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -54,7 +55,7 @@ export interface RotateSecretResponse {
 export function useOidcClients() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["oidc-clients", tenantId],
+    queryKey: [...OIDC_CLIENTS_KEY, tenantId],
     enabled: !!tenantId,
     queryFn: () => api<{ items: OidcClient[] }>(`/v1/tenants/${tenantId}/oidc/clients`),
   });
@@ -78,7 +79,7 @@ export function useCreateOidcClient() {
         method: "POST",
         body: { tenant_id: tenantId, ...input },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["oidc-clients"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY }),
     meta: { successMessage: "Application registered" },
   });
 }
@@ -93,7 +94,7 @@ export function useUpdateOidcClient(id: string) {
         body,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["oidc-clients"] });
+      qc.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
       qc.invalidateQueries({ queryKey: ["oidc-client"] });
     },
     meta: { successMessage: "Application updated" },
@@ -104,7 +105,7 @@ export function useDeleteOidcClient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/oidc/clients/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["oidc-clients"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY }),
     meta: { successMessage: "Application deleted" },
   });
 }
@@ -117,7 +118,7 @@ export function useRotateClientSecret(id: string) {
       api<RotateSecretResponse>(`/v1/tenants/${tenantId}/oidc/clients/${id}/rotate-secret`, {
         method: "POST",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["oidc-clients"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY }),
     meta: { successMessage: "Client secret rotated" },
   });
 }

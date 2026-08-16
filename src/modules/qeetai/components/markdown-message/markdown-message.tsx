@@ -3,6 +3,17 @@ import { type ReactNode, useMemo } from "react";
 
 import { CodeBlock } from "../conversation/code-block";
 
+// Link targets come from model output (which may echo attacker-controlled tool
+// data via prompt injection). Only allow safe schemes; reject javascript:/data:
+// and anything else so a `[x](javascript:…)` link can't execute.
+function safeHref(raw: string): string | undefined {
+  const href = raw.trim();
+  if (/^(https?:|mailto:)/i.test(href)) return href;
+  // Allow same-origin relative links (start with "/" but not "//").
+  if (href.startsWith("/") && !href.startsWith("//")) return href;
+  return undefined;
+}
+
 // A small, safe, dependency-free Markdown renderer for streamed assistant
 // output. It parses to React elements (never raw HTML / dangerouslySetInnerHTML),
 // so there is no injection surface, and it tolerates a half-finished document —
@@ -128,17 +139,22 @@ const INLINE_PATTERNS: { re: RegExp; render: (m: RegExpMatchArray, key: string) 
   { re: /_([^_]+)_/, render: (m, key) => <em key={key}>{renderInline(m[1], key)}</em> },
   {
     re: /\[([^\]]+)\]\(([^)\s]+)\)/,
-    render: (m, key) => (
-      <a
-        key={key}
-        href={m[2]}
-        target="_blank"
-        rel="noreferrer noopener"
-        className="text-primary underline underline-offset-2"
-      >
-        {m[1]}
-      </a>
-    ),
+    render: (m, key) => {
+      const href = safeHref(m[2]);
+      // Unsafe scheme (javascript:/data:/…) → render the label as plain text.
+      if (!href) return <span key={key}>{m[1]}</span>;
+      return (
+        <a
+          key={key}
+          href={href}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-primary underline underline-offset-2"
+        >
+          {m[1]}
+        </a>
+      );
+    },
   },
 ];
 

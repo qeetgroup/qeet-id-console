@@ -19,22 +19,14 @@ import {
   StatusPill,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import { formatDate } from "@/shared/utils/format";
 import { ArrowRightIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { CopyId } from "@/modules/users";
-import { initials } from "@/modules/users";
+import { initials } from "@/shared/utils/initials";
 import { switchToTenant } from "@/modules/authentication";
 import type { Org } from "./api/orgs";
-
-function formatDate(iso?: string | null): string {
-  if (!iso) return "—";
-  try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
 
 export function OrgPreviewDrawer({
   org,

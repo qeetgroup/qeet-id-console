@@ -16,6 +16,8 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { initials } from "@/shared/utils/initials";
+import { formatDate } from "@/shared/utils/format";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -46,24 +48,6 @@ export interface HeaderUser {
   email_verified_at?: string | null;
   created_at: string;
   updated_at?: string | null;
-}
-
-function initials(name: string): string {
-  const parts = name
-    .trim()
-    .split(/[\s@.]+/)
-    .filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
-
-function formatDate(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
 }
 
 export function UserDetailHeader({

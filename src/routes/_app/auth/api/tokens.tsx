@@ -19,7 +19,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { KeyRoundIcon, Trash2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { PageHeader } from "@/platform/components/page-header";
 import { useOAuthGrants, useRevokeOAuthGrant } from "@/modules/authentication/api/oauth-grants";
 
@@ -29,14 +32,16 @@ export const Route = createFileRoute("/_app/auth/api/tokens")({
 
 function TokensPage() {
   const { t } = useTranslation("auth");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
+  const runSensitive = useSensitiveAction();
+  const ignoreCancel = (e: unknown) => {
+    if (!(e instanceof SensitiveActionCancelled)) throw e;
+  };
   const listQ = useOAuthGrants();
   const revokeM = useRevokeOAuthGrant();
   const items = listQ.data?.items ?? [];
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      {confirmDialog}
       <PageHeader description={t("tokens.description")} />
 
       <Card>
@@ -92,15 +97,18 @@ function TokensPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() =>
-                          openConfirm({
-                            title: t("tokens.confirm.title", {
-                              user: g.user_email || t("tokens.confirm.thisUser"),
-                              client: g.client_id,
-                            }),
-                            variant: "destructive",
-                            confirmLabel: t("tokens.confirm.label"),
-                            onConfirm: () => revokeM.mutate(g.id),
-                          })
+                          runSensitive({
+                            confirm: {
+                              title: t("tokens.confirm.title", {
+                                user: g.user_email || t("tokens.confirm.thisUser"),
+                                client: g.client_id,
+                              }),
+                              confirmLabel: t("tokens.confirm.label"),
+                              tone: "destructive",
+                            },
+                            actionLabel: "revoke this authorization",
+                            run: () => revokeM.mutateAsync(g.id),
+                          }).catch(ignoreCancel)
                         }
                         disabled={revokeM.isPending}
                       >

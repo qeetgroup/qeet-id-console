@@ -22,6 +22,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
   CheckCircle2Icon,
   CircleAlertIcon,
@@ -205,7 +206,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
       {listQ.isError && (
         <Card className="border-destructive">
           <CardContent className="p-4 text-sm text-destructive">
-            {(listQ.error as Error).message}
+            {errorMessage(listQ.error)}
           </CardContent>
         </Card>
       )}

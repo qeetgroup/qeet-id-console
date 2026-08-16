@@ -1,63 +1,49 @@
-// This page is an alias view onto the same sessions endpoint used by
-// /security/sessions, but framed from the Users perspective in the navigation.
-// Same component, same query.
+// Alias view onto the same sessions endpoint used by /security/sessions, framed
+// from the Users perspective in the navigation. Shares the sessions data layer
+// and SessionsTable so the two views can't drift apart.
 
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@qeetrix/ui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { MonitorSmartphoneIcon, RefreshCwIcon, ShieldIcon } from "lucide-react";
+import { RefreshCwIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { PageHeader } from "@/platform/components/page-header";
-import { api } from "@/platform/api/client";
+import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
+import {
+  type Session,
+  SessionsTable,
+  useRevokeSession,
+  useSessions,
+} from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/users/sessions")({
   component: UserSessionsPage,
 });
 
-type Session = {
-  id: string;
-  user_id: string;
-  tenant_id: string;
-  ip?: string | null;
-  user_agent?: string | null;
-  created_at: string;
-  last_seen_at: string;
-  revoked_at?: string | null;
-};
-
 function UserSessionsPage() {
   const { t } = useTranslation("users");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
-  const qc = useQueryClient();
-  const sessionsQ = useQuery({
-    queryKey: ["sessions"],
-    queryFn: () => api<{ items: Session[] }>("/v1/auth/sessions"),
-  });
-  const revokeM = useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/auth/sessions/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sessions"] }),
-  });
+  const sessionsQ = useSessions();
+  const revokeM = useRevokeSession();
+  const runSensitive = useSensitiveAction();
+
+  const revoke = (s: Session) =>
+    runSensitive({
+      confirm: {
+        title: t("sessions.confirmTitle"),
+        confirmLabel: t("sessions.confirmLabel"),
+        tone: "destructive",
+      },
+      actionLabel: "revoke this session",
+      run: () => revokeM.mutateAsync(s.id),
+    }).catch((e) => {
+      if (!(e instanceof SensitiveActionCancelled)) throw e;
+    });
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      {confirmDialog}
       <PageHeader
         description={t("sessions.description")}
         actions={
@@ -80,79 +66,12 @@ function UserSessionsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          {sessionsQ.isLoading ? (
-            <div className="space-y-3 p-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : sessionsQ.isError ? (
-            <div className="p-6 text-sm text-destructive">{(sessionsQ.error as Error).message}</div>
-          ) : !sessionsQ.data?.items?.length ? (
-            <div className="flex flex-col items-center gap-2 p-10 text-center">
-              <ShieldIcon className="size-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{t("sessions.empty")}</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("sessions.colAgent")}</TableHead>
-                  <TableHead>{t("sessions.colIp")}</TableHead>
-                  <TableHead>{t("sessions.colCreated")}</TableHead>
-                  <TableHead>{t("sessions.colLastSeen")}</TableHead>
-                  <TableHead>{t("sessions.colStatus")}</TableHead>
-                  <TableHead className="text-right">{t("sessions.colActions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sessionsQ.data.items.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell
-                      className="max-w-md truncate text-xs text-muted-foreground"
-                      title={s.user_agent ?? ""}
-                    >
-                      <MonitorSmartphoneIcon className="mr-1 inline size-3" />
-                      {s.user_agent ?? "—"}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {s.ip ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(s.created_at).toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(s.last_seen_at).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      {s.revoked_at ? (
-                        <Badge variant="destructive">{t("sessions.statusRevoked")}</Badge>
-                      ) : (
-                        <Badge variant="success">{t("sessions.statusActive")}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={!!s.revoked_at || revokeM.isPending}
-                        onClick={() =>
-                          openConfirm({
-                            title: t("sessions.confirmTitle"),
-                            variant: "destructive",
-                            confirmLabel: t("sessions.confirmLabel"),
-                            onConfirm: () => revokeM.mutate(s.id),
-                          })
-                        }
-                      >
-                        {t("sessions.revokeBtn")}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <SessionsTable
+            query={sessionsQ}
+            onRevoke={revoke}
+            isRevoking={revokeM.isPending}
+            emptyLabel={t("sessions.empty")}
+          />
         </CardContent>
       </Card>
     </div>

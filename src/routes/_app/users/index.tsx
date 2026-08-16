@@ -37,6 +37,7 @@ import {
   TooltipProvider,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   CheckCircle2Icon,
@@ -66,11 +67,12 @@ import { useCapabilities } from "@/platform/security/capability-provider";
 import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
 import { BulkActions } from "@/modules/users/bulk-actions";
 import { MoreFilters, SaveView } from "@/modules/users/filter-extras";
-import { initials, primaryRole } from "@/modules/users/user-display";
+import { primaryRole } from "@/modules/users/user-display";
+import { initials } from "@/shared/utils/initials";
 import { UserPreviewDrawer } from "@/modules/users/user-preview-drawer";
 import { type RowActionHandlers, UserRowActions } from "@/modules/users/user-row-actions";
 import { type KpiFilter, UsersKpis } from "@/modules/users/users-kpis";
-import { type ApiError, api, tokenStore } from "@/platform/api/client";
+import { api, tokenStore } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
@@ -830,7 +832,7 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>
@@ -951,7 +953,7 @@ function EditUserSheet({ user, isSelf, onOpenChange, onSaved }: EditUserSheetPro
                 </Field>
                 {updateM.error && (
                   <Field>
-                    <FieldError>{(updateM.error as ApiError).message}</FieldError>
+                    <FieldError>{errorMessage(updateM.error)}</FieldError>
                   </Field>
                 )}
               </FieldGroup>
@@ -1050,7 +1052,7 @@ function SetPasswordSheet({ user, onOpenChange, onSaved }: SetPasswordSheetProps
                 </Field>
                 {setM.error && (
                   <Field>
-                    <FieldError>{(setM.error as ApiError).message}</FieldError>
+                    <FieldError>{errorMessage(setM.error)}</FieldError>
                   </Field>
                 )}
                 {setM.isSuccess && (

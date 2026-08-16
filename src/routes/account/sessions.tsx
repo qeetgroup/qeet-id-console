@@ -16,6 +16,8 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Session } from "@/modules/authentication";
+import { formatIp } from "@/shared/utils/ip-format";
 import { createFileRoute } from "@tanstack/react-router";
 import { MonitorIcon, MonitorSmartphoneIcon, SmartphoneIcon, TabletIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -27,17 +29,6 @@ import { api, tokenStore } from "@/platform/api/client";
 export const Route = createFileRoute("/account/sessions")({
   component: SessionsPage,
 });
-
-type Session = {
-  id: string;
-  user_id: string;
-  tenant_id: string;
-  ip?: string | null;
-  user_agent?: string | null;
-  created_at: string;
-  last_seen_at: string;
-  revoked_at?: string | null;
-};
 
 // Tiny user-agent classifier. Just enough to pick an icon + a friendly
 // label — full UA parsing requires a 50 KB library we don't ship.
@@ -73,12 +64,6 @@ function parseUA(ua: string | null | undefined): {
 
 // Loopback addresses (local dev, or a reverse proxy that didn't forward the
 // client IP) read as noise like "::1" — show a friendly label instead.
-function formatIp(ip: string | null | undefined): string {
-  if (!ip) return "—";
-  const v = ip.trim().replace(/^::ffff:/i, ""); // unwrap IPv4-mapped IPv6
-  if (v === "::1" || v === "127.0.0.1" || v === "0.0.0.0") return "Localhost";
-  return v;
-}
 
 function DeviceIcon({ kind }: { kind: DeviceKind }) {
   if (kind === "mobile") return <SmartphoneIcon className="size-4" />;

@@ -1,4 +1,5 @@
 import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, ShieldXIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -92,7 +93,7 @@ function renderStatus({
   }
 
   const detail =
-    consume.error instanceof ApiError ? consume.error.message : "Single sign-on failed.";
+    consume.error instanceof ApiError ? errorMessage(consume.error) : "Single sign-on failed.";
   return (
     <>
       <ShieldXIcon className="size-10 text-rose-500" />

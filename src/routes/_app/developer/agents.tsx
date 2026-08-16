@@ -14,6 +14,7 @@ import {
   Input,
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRightLeftIcon,
@@ -40,7 +41,7 @@ import {
   useSetAgentDisabled,
   useTransferSponsor,
 } from "@/modules/developer/api/agents";
-import { type ApiError, api } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
 import { useMe, useTenantId } from "@/platform/auth/session";
 import {
   useReviewShadowAIClient,
@@ -140,7 +141,7 @@ function AgentsPage() {
               </Button>
             </div>
             {createM.error && (
-              <p className="text-destructive text-sm">{(createM.error as ApiError).message}</p>
+              <p className="text-destructive text-sm">{errorMessage(createM.error)}</p>
             )}
           </form>
 
@@ -334,7 +335,7 @@ function SponsorTransferCard() {
             </p>
           )}
           {transferM.error && (
-            <p className="mt-2 text-destructive text-sm">{(transferM.error as ApiError).message}</p>
+            <p className="mt-2 text-destructive text-sm">{errorMessage(transferM.error)}</p>
           )}
         </CardContent>
       </Card>

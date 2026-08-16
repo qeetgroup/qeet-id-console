@@ -50,12 +50,12 @@
 │  │  │  │  ├── oidc.json
 │  │  │  │  ├── rbac.json
 │  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
+│  │  │  │  ├── signing-keys.json
 │  │  │  │  └── users.json
 │  │  │  ├── en
 │  │  │  │  ├── account.json
+│  │  │  │  ├── auth-flow.json
 │  │  │  │  ├── auth.json
-│  │  │  │  ├── authFlow.json
 │  │  │  │  ├── common.json
 │  │  │  │  ├── compliance.json
 │  │  │  │  ├── consent.json
@@ -70,7 +70,7 @@
 │  │  │  │  ├── saml.json
 │  │  │  │  ├── security.json
 │  │  │  │  ├── settings.json
-│  │  │  │  ├── signingKeys.json
+│  │  │  │  ├── signing-keys.json
 │  │  │  │  └── users.json
 │  │  │  ├── es
 │  │  │  │  ├── auth.json
@@ -81,7 +81,7 @@
 │  │  │  │  ├── oidc.json
 │  │  │  │  ├── rbac.json
 │  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
+│  │  │  │  ├── signing-keys.json
 │  │  │  │  └── users.json
 │  │  │  ├── fr
 │  │  │  │  ├── auth.json
@@ -92,7 +92,7 @@
 │  │  │  │  ├── oidc.json
 │  │  │  │  ├── rbac.json
 │  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
+│  │  │  │  ├── signing-keys.json
 │  │  │  │  └── users.json
 │  │  │  ├── hi
 │  │  │  │  ├── auth.json
@@ -103,7 +103,7 @@
 │  │  │  │  ├── oidc.json
 │  │  │  │  ├── rbac.json
 │  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
+│  │  │  │  ├── signing-keys.json
 │  │  │  │  └── users.json
 │  │  │  ├── ja
 │  │  │  │  ├── auth.json
@@ -114,7 +114,7 @@
 │  │  │  │  ├── oidc.json
 │  │  │  │  ├── rbac.json
 │  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
+│  │  │  │  ├── signing-keys.json
 │  │  │  │  └── users.json
 │  │  │  ├── pt
 │  │  │  │  ├── auth.json
@@ -125,7 +125,7 @@
 │  │  │  │  ├── oidc.json
 │  │  │  │  ├── rbac.json
 │  │  │  │  ├── saml.json
-│  │  │  │  ├── signingKeys.json
+│  │  │  │  ├── signing-keys.json
 │  │  │  │  └── users.json
 │  │  │  └── zh
 │  │  │    ├── auth.json
@@ -136,7 +136,7 @@
 │  │  │    ├── oidc.json
 │  │  │    ├── rbac.json
 │  │  │    ├── saml.json
-│  │  │    ├── signingKeys.json
+│  │  │    ├── signing-keys.json
 │  │  │    └── users.json
 │  │  └── README.md
 │  ├── integrations
@@ -144,19 +144,22 @@
 │  │    └── devtools.tsx
 │  ├── modules
 │  │  ├── activity
+│  │  │  ├── __tests__
+│  │  │  │  ├── activity-filters.test.ts
+│  │  │  │  ├── activity-search.test.ts
+│  │  │  │  ├── activity-store.test.ts
+│  │  │  │  ├── activity-stream.test.ts
+│  │  │  │  ├── event-labels.test.ts
+│  │  │  │  └── saved-views.test.ts
 │  │  │  ├── activity-export.ts
 │  │  │  ├── activity-filters.ts
 │  │  │  ├── activity-history.ts
 │  │  │  ├── activity-provider.tsx
-│  │  │  ├── activity-search.test.ts
 │  │  │  ├── activity-search.ts
-│  │  │  ├── activity-store.test.ts
 │  │  │  ├── activity-store.ts
-│  │  │  ├── activity-stream.test.ts
 │  │  │  ├── activity-stream.ts
 │  │  │  ├── activity-subscription.ts
 │  │  │  ├── activity-summary.ts
-│  │  │  ├── activity.types.ts
 │  │  │  ├── components
 │  │  │  │  ├── activity-event-row.tsx
 │  │  │  │  ├── activity-mode-toggle.tsx
@@ -173,14 +176,13 @@
 │  │  │  │  ├── related-events-list.tsx
 │  │  │  │  ├── result-badge.tsx
 │  │  │  │  └── severity-badge.tsx
-│  │  │  ├── event-labels.test.ts
 │  │  │  ├── event-labels.ts
-│  │  │  ├── filter-manager.test.ts
 │  │  │  ├── index.ts
 │  │  │  ├── ip-format.ts
 │  │  │  ├── related-events.ts
-│  │  │  ├── saved-views.test.ts
-│  │  │  └── saved-views.ts
+│  │  │  ├── saved-views.ts
+│  │  │  └── types
+│  │  │    └── activity.types.ts
 │  │  ├── authentication
 │  │  │  ├── api
 │  │  │  │  ├── admin-portal.ts
@@ -252,6 +254,9 @@
 │  │  │  │  └── retention.ts
 │  │  │  └── evidence-page.tsx
 │  │  ├── dashboard
+│  │  │  ├── __tests__
+│  │  │  │  ├── dashboard-insights.test.ts
+│  │  │  │  └── dashboard-model.test.ts
 │  │  │  ├── api
 │  │  │  │  └── analytics.ts
 │  │  │  ├── components
@@ -277,9 +282,7 @@
 │  │  │  │  ├── team-switcher.tsx
 │  │  │  │  ├── theme-toggle.tsx
 │  │  │  │  └── verify-email-banner.tsx
-│  │  │  ├── dashboard-insights.test.ts
 │  │  │  ├── dashboard-insights.ts
-│  │  │  ├── dashboard-model.test.ts
 │  │  │  ├── dashboard-model.ts
 │  │  │  └── use-dashboard-activity.ts
 │  │  ├── developer
@@ -342,37 +345,44 @@
 │  │  │  │    └── suggested-actions.tsx
 │  │  │  ├── context
 │  │  │  │  ├── context-registry.ts
-│  │  │  │  ├── context-types.ts
+│  │  │  │  ├── types
+│  │  │  │  │  └── context.types.ts
 │  │  │  │  └── use-console-context.ts
 │  │  │  ├── hooks
 │  │  │  │  └── use-qeetai-chat.ts
 │  │  │  ├── index.ts
 │  │  │  ├── qeetai-provider.tsx
-│  │  │  ├── qeetai.types.ts
 │  │  │  ├── redact.ts
 │  │  │  ├── store
-│  │  │  │  ├── conversation-store.test.ts
+│  │  │  │  ├── __tests__
+│  │  │  │  │  └── conversation-store.test.ts
 │  │  │  │  ├── conversation-store.ts
 │  │  │  │  ├── secrets-store.ts
 │  │  │  │  └── workspace-store.ts
 │  │  │  ├── suggestions
 │  │  │  │  ├── route-suggestions.ts
 │  │  │  │  └── suggestion-engine.ts
-│  │  │  └── tools
-│  │  │    ├── definitions
-│  │  │    │  ├── audit.tools.ts
-│  │  │    │  ├── authz.tools.ts
-│  │  │    │  ├── codegen.tools.ts
-│  │  │    │  ├── credentials.tools.ts
-│  │  │    │  ├── org.tools.ts
-│  │  │    │  ├── role.tools.ts
-│  │  │    │  └── user.tools.ts
-│  │  │    ├── execution-engine.test.ts
-│  │  │    ├── execution-engine.ts
-│  │  │    ├── index.ts
-│  │  │    ├── tool-registry.ts
-│  │  │    └── tool-types.ts
+│  │  │  ├── tools
+│  │  │  │  ├── __tests__
+│  │  │  │  │  └── execution-engine.test.ts
+│  │  │  │  ├── definitions
+│  │  │  │  │  ├── audit.tools.ts
+│  │  │  │  │  ├── authz.tools.ts
+│  │  │  │  │  ├── codegen.tools.ts
+│  │  │  │  │  ├── credentials.tools.ts
+│  │  │  │  │  ├── org.tools.ts
+│  │  │  │  │  ├── role.tools.ts
+│  │  │  │  │  └── user.tools.ts
+│  │  │  │  ├── execution-engine.ts
+│  │  │  │  ├── index.ts
+│  │  │  │  ├── tool-registry.ts
+│  │  │  │  └── types
+│  │  │  │    └── tool.types.ts
+│  │  │  └── types
+│  │  │    └── qeetai.types.ts
 │  │  ├── search
+│  │  │  ├── __tests__
+│  │  │  │  └── ranking.test.ts
 │  │  │  ├── components
 │  │  │  │  ├── preview-pane.tsx
 │  │  │  │  ├── quick-actions.tsx
@@ -381,18 +391,19 @@
 │  │  │  │  └── universal-search.tsx
 │  │  │  ├── index.ts
 │  │  │  ├── keyboard.ts
-│  │  │  ├── ranking.test.ts
 │  │  │  ├── ranking.ts
 │  │  │  ├── registry
 │  │  │  │  ├── command-source.tsx
 │  │  │  │  ├── navigation-source.tsx
-│  │  │  │  ├── registry.types.ts
-│  │  │  │  └── resource-source.ts
+│  │  │  │  ├── resource-source.ts
+│  │  │  │  └── types
+│  │  │  │    └── registry.types.ts
 │  │  │  ├── search-provider.tsx
 │  │  │  └── store
-│  │  │    ├── favorites-store.test.ts
+│  │  │    ├── __tests__
+│  │  │    │  ├── favorites-store.test.ts
+│  │  │    │  └── recent-store.test.ts
 │  │  │    ├── favorites-store.ts
-│  │  │    ├── recent-store.test.ts
 │  │  │    └── recent-store.ts
 │  │  ├── security
 │  │  │  ├── api
@@ -404,6 +415,10 @@
 │  │  │  │  └── log-sinks.ts
 │  │  │  └── index.ts
 │  │  ├── timeline
+│  │  │  ├── __tests__
+│  │  │  │  ├── grouping.test.ts
+│  │  │  │  ├── timeline-store.test.ts
+│  │  │  │  └── timeline-summary.test.ts
 │  │  │  ├── components
 │  │  │  │  ├── identity-timeline.tsx
 │  │  │  │  ├── timeline-details-drawer.tsx
@@ -411,15 +426,12 @@
 │  │  │  │  ├── timeline-filters.tsx
 │  │  │  │  ├── timeline-item.tsx
 │  │  │  │  └── timeline-summary-strip.tsx
-│  │  │  ├── grouping.test.ts
 │  │  │  ├── grouping.ts
 │  │  │  ├── index.ts
 │  │  │  ├── timeline-export.ts
 │  │  │  ├── timeline-history.ts
 │  │  │  ├── timeline-provider.tsx
-│  │  │  ├── timeline-store.test.ts
 │  │  │  ├── timeline-store.ts
-│  │  │  ├── timeline-summary.test.ts
 │  │  │  ├── timeline-summary.ts
 │  │  │  └── use-identity-timeline.ts
 │  │  └── users
@@ -445,7 +457,8 @@
 │  │    └── users-kpis.tsx
 │  ├── platform
 │  │  ├── api
-│  │  │  ├── client.test.ts
+│  │  │  ├── __tests__
+│  │  │  │  └── client.test.ts
 │  │  │  └── client.ts
 │  │  ├── auth
 │  │  │  ├── refresh.ts
@@ -454,17 +467,19 @@
 │  │  ├── components
 │  │  │  └── page-header.tsx
 │  │  ├── config
+│  │  │  ├── __tests__
+│  │  │  │  └── navigation.test.ts
 │  │  │  ├── api-base-url.ts
 │  │  │  ├── env.ts
 │  │  │  ├── navigation-state.ts
-│  │  │  ├── navigation.test.ts
 │  │  │  └── navigation.tsx
 │  │  ├── errors
+│  │  │  ├── __tests__
+│  │  │  │  └── normalize-error.test.ts
 │  │  │  ├── api-error.ts
 │  │  │  ├── app-error.ts
 │  │  │  ├── error-codes.ts
 │  │  │  ├── error-component.tsx
-│  │  │  ├── normalize-error.test.ts
 │  │  │  ├── normalize-error.ts
 │  │  │  └── user-message.ts
 │  │  ├── feature-flags
@@ -474,9 +489,10 @@
 │  │  ├── query
 │  │  │  └── query-client.ts
 │  │  ├── security
+│  │  │  ├── __tests__
+│  │  │  │  └── capability-model.test.ts
 │  │  │  ├── access-boundary.tsx
 │  │  │  ├── access-mode-indicator.tsx
-│  │  │  ├── capability-model.test.ts
 │  │  │  ├── capability-model.ts
 │  │  │  ├── capability-provider.tsx
 │  │  │  ├── effective-permissions.ts
@@ -485,10 +501,11 @@
 │  │  │  ├── step-up-dialog.tsx
 │  │  │  └── step-up.ts
 │  │  └── telemetry
+│  │    ├── __tests__
+│  │    │  └── redact.test.ts
 │  │    ├── errors.ts
 │  │    ├── events.ts
 │  │    ├── logger.ts
-│  │    ├── redact.test.ts
 │  │    ├── redact.ts
 │  │    └── tracing.ts
 │  ├── router.tsx

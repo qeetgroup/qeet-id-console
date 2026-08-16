@@ -12,6 +12,7 @@ import {
   ChartTooltipContent,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
@@ -124,7 +125,7 @@ function AnalyticsPage() {
         <Card>
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
             {t("analytics.loadError")}
-            {error instanceof Error ? `: ${error.message}` : ""}.
+            {error instanceof Error ? `: ${errorMessage(error)}` : ""}.
           </CardContent>
         </Card>
       </div>

@@ -15,6 +15,7 @@ import {
   PasswordInput,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -107,7 +108,7 @@ function AcceptInvitePage() {
                   </Link>
                 </Field>
               ) : (
-                <FieldError>{accept.error.message}</FieldError>
+                <FieldError>{errorMessage(accept.error)}</FieldError>
               ))}
             <Field>
               <Button type="submit" disabled={accept.isPending || password.length < 8}>

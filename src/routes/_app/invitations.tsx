@@ -35,6 +35,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2Icon, MailIcon, PlusIcon, RefreshCwIcon, SendIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -45,7 +46,7 @@ import { ListToolbar, SortHeader } from "@/shared/components/data-table";
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
-import { type ApiError, api } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
@@ -456,7 +457,7 @@ function CreateInviteSheet({
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

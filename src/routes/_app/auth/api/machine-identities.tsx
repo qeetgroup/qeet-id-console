@@ -28,14 +28,18 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import { BotIcon, CopyIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { PageHeader } from "@/platform/components/page-header";
-import { type ApiError, api } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/auth/api/machine-identities")({
@@ -54,7 +58,10 @@ type Principal = {
 
 function MachineIdentitiesPage() {
   const { t } = useTranslation("auth");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
+  const runSensitive = useSensitiveAction();
+  const ignoreCancel = (e: unknown) => {
+    if (!(e instanceof SensitiveActionCancelled)) throw e;
+  };
   const tenantId = useTenantId();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
@@ -76,7 +83,6 @@ function MachineIdentitiesPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      {confirmDialog}
       <PageHeader
         description={t("machineIds.description")}
         actions={
@@ -156,7 +162,7 @@ function MachineIdentitiesPage() {
               ))}
             </div>
           ) : listQ.isError ? (
-            <div className="p-6 text-sm text-destructive">{(listQ.error as Error).message}</div>
+            <div className="p-6 text-sm text-destructive">{errorMessage(listQ.error)}</div>
           ) : !listQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
               <BotIcon className="size-8 text-muted-foreground" />
@@ -210,15 +216,16 @@ function MachineIdentitiesPage() {
                         size="sm"
                         disabled={!!p.disabled_at || disableM.isPending}
                         onClick={() =>
-                          openConfirm({
-                            title: t("machineIds.confirm.title", {
-                              name: p.name,
-                            }),
-                            description: t("machineIds.confirm.description"),
-                            variant: "destructive",
-                            confirmLabel: t("machineIds.confirm.label"),
-                            onConfirm: () => disableM.mutate(p.id),
-                          })
+                          runSensitive({
+                            confirm: {
+                              title: t("machineIds.confirm.title", { name: p.name }),
+                              description: t("machineIds.confirm.description"),
+                              confirmLabel: t("machineIds.confirm.label"),
+                              tone: "destructive",
+                            },
+                            actionLabel: "disable this machine identity",
+                            run: () => disableM.mutateAsync(p.id),
+                          }).catch(ignoreCancel)
                         }
                       >
                         <Trash2Icon /> {t("machineIds.disableBtn")}
@@ -325,7 +332,7 @@ function CreatePrincipalSheet({
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

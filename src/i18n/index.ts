@@ -230,6 +230,23 @@ const resources = {
   },
 } as const;
 
+// Fallback shown when a key is missing from *every* loaded locale (including the
+// `en` source of truth). Turns the last segment of a dotted/namespaced key into
+// readable Title Case so an operator never sees a raw `secrets.rotateSheet.title`
+// string — a broken-looking leak of internal key names in an enterprise console.
+export function humanizeMissingKey(key: string): string {
+  const last = key.split(/[.:]/).pop() ?? key;
+  const spaced = last
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .trim();
+  if (!spaced) return key;
+  return spaced
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 i18n
   .use(initReactI18next)
   .use(LanguageDetector)
@@ -247,6 +264,16 @@ i18n
       lookupLocalStorage: "qeetid.lang",
       caches: ["localStorage"],
     },
+    // Never render a raw dotted key: fall back to a humanized last segment.
+    parseMissingKeyHandler: (key) => humanizeMissingKey(key),
+    // Surface missing keys to developers (dev only — no prod overhead, no network:
+    // there is no backend loader, so this is a pure console signal).
+    saveMissing: import.meta.env?.DEV,
+    missingKeyHandler: import.meta.env?.DEV
+      ? (lngs, ns, key) => {
+          console.warn(`[i18n] missing key "${key}" (ns: ${ns}) for [${lngs.join(", ")}]`);
+        }
+      : undefined,
   });
 
 export default i18n;

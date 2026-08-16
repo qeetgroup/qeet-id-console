@@ -10,3 +10,5 @@ export * from "./api/passkeys";
 export * from "./api/saml";
 export * from "./api/scim";
 export * from "./api/sso";
+export * from "./api/sessions";
+export { SessionsTable } from "./components/sessions-table";

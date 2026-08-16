@@ -41,13 +41,13 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon, WorkflowIcon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { OidcQuickstart } from "@/modules/authentication/components/oidc-quickstart";
-import type { ApiError } from "@/platform/api/client";
 import {
   type OidcClient,
   useCreateOidcClient,
@@ -333,7 +333,7 @@ function CreateOidcSheet({ open, onOpenChange, onCreated }: CreateOidcSheetProps
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

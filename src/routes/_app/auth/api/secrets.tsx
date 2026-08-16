@@ -43,9 +43,13 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { PageHeader } from "@/platform/components/page-header";
-import type { ApiError } from "@/platform/api/client";
+import { normalizeError } from "@/platform/errors/normalize-error";
+import { userMessageForCode } from "@/platform/errors/user-message";
+import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import {
   useCreateSecret,
   useDeleteSecret,
@@ -60,12 +64,17 @@ export const Route = createFileRoute("/_app/auth/api/secrets")({
 
 function SecretsPage() {
   const { t } = useTranslation("auth");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
+  const runSensitive = useSensitiveAction();
   const listQ = useSecrets();
   const revealM = useRevealSecret();
-  const rotateM = useRotateSecret();
   const deleteM = useDeleteSecret();
+
+  // Cancellation of the confirm/step-up dialog is expected — swallow it.
+  const ignoreCancel = (e: unknown) => {
+    if (!(e instanceof SensitiveActionCancelled)) throw e;
+  };
   const [creating, setCreating] = useState(false);
+  const [rotating, setRotating] = useState<{ id: string; name: string } | null>(null);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -91,14 +100,8 @@ function SecretsPage() {
     window.setTimeout(() => setCopied((c) => (c === id ? null : c)), 1500);
   };
 
-  const rotate = (id: string, name: string) => {
-    const v = window.prompt(t("secrets.rotatePrompt", { name }));
-    if (v && v.trim()) rotateM.mutate({ id, value: v.trim() });
-  };
-
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      {confirmDialog}
       <PageHeader
         description={t("secrets.description")}
         actions={
@@ -182,8 +185,7 @@ function SecretsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => rotate(s.id, s.name)}
-                          disabled={rotateM.isPending}
+                          onClick={() => setRotating({ id: s.id, name: s.name })}
                         >
                           <RefreshCwIcon /> {t("secrets.rotate")}
                         </Button>
@@ -191,15 +193,16 @@ function SecretsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() =>
-                            openConfirm({
-                              title: t("secrets.confirm.title", {
-                                name: s.name,
-                              }),
-                              description: t("secrets.confirm.description"),
-                              variant: "destructive",
-                              confirmLabel: t("secrets.confirm.label"),
-                              onConfirm: () => deleteM.mutate(s.id),
-                            })
+                            runSensitive({
+                              confirm: {
+                                title: t("secrets.confirm.title", { name: s.name }),
+                                description: t("secrets.confirm.description"),
+                                confirmLabel: t("secrets.confirm.label"),
+                                tone: "destructive",
+                              },
+                              actionLabel: "delete this secret",
+                              run: () => deleteM.mutateAsync(s.id),
+                            }).catch(ignoreCancel)
                           }
                           disabled={deleteM.isPending}
                         >
@@ -216,7 +219,94 @@ function SecretsPage() {
       </Card>
 
       <CreateSecretSheet open={creating} onOpenChange={setCreating} />
+      <RotateSecretSheet
+        target={rotating}
+        onClose={() => setRotating(null)}
+        onIgnoreCancel={ignoreCancel}
+      />
     </div>
+  );
+}
+
+function RotateSecretSheet({
+  target,
+  onClose,
+  onIgnoreCancel,
+}: {
+  target: { id: string; name: string } | null;
+  onClose: () => void;
+  onIgnoreCancel: (e: unknown) => void;
+}) {
+  const { t } = useTranslation("auth");
+  const rotateM = useRotateSecret();
+  const runSensitive = useSensitiveAction();
+  return (
+    <Sheet open={target !== null} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="right" className="w-full sm:max-w-md">
+        <form
+          className="flex h-full flex-col"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!target) return;
+            const value = String(new FormData(e.currentTarget).get("value") ?? "").trim();
+            if (!value) return;
+            // Route through the sensitive-action pipeline so a backend
+            // step_up_required opens the re-auth dialog and retries the rotation.
+            runSensitive({
+              actionLabel: "rotate this secret",
+              run: () => rotateM.mutateAsync({ id: target.id, value }),
+            })
+              .then(() => onClose())
+              .catch(onIgnoreCancel);
+          }}
+        >
+          <SheetHeader>
+            <SheetTitle>{t("secrets.rotateSheet.title", { name: target?.name ?? "" })}</SheetTitle>
+            <SheetDescription>{t("secrets.rotateSheet.description")}</SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto p-4">
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="rotate-value">
+                  {t("secrets.rotateSheet.valueLabel")}
+                </FieldLabel>
+                <Input
+                  id="rotate-value"
+                  name="value"
+                  type="password"
+                  placeholder="sk_live_…"
+                  className="font-mono"
+                  autoComplete="off"
+                  required
+                />
+                <FieldDescription>{t("secrets.rotateSheet.valueHelp")}</FieldDescription>
+              </Field>
+              {rotateM.error && (
+                <Field>
+                  <FieldError>
+                    {userMessageForCode(
+                      normalizeError(rotateM.error).code,
+                      normalizeError(rotateM.error).kind,
+                    )}
+                  </FieldError>
+                </Field>
+              )}
+            </FieldGroup>
+          </div>
+          <SheetFooter className="flex-row justify-end gap-2 border-t">
+            <SheetClose render={<Button type="button" variant="outline" />}>
+              {t("secrets.rotateSheet.cancelBtn")}
+            </SheetClose>
+            <Button type="submit" disabled={rotateM.isPending}>
+              {rotateM.isPending && <Loader2Icon className="animate-spin" />}
+              {rotateM.isPending
+                ? t("secrets.rotateSheet.savingBtn")
+                : t("secrets.rotateSheet.submitBtn")}
+            </Button>
+          </SheetFooter>
+        </form>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -281,7 +371,12 @@ function CreateSecretSheet({
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>
+                    {userMessageForCode(
+                      normalizeError(createM.error).code,
+                      normalizeError(createM.error).kind,
+                    )}
+                  </FieldError>
                 </Field>
               )}
             </FieldGroup>

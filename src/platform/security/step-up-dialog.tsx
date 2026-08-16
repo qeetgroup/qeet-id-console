@@ -12,6 +12,7 @@ import {
   Spinner,
 } from "@qeetrix/ui";
 import { ShieldCheckIcon } from "lucide-react";
+import { errorMessage } from "@/platform/errors/user-message";
 import { useEffect, useRef, useState } from "react";
 
 import { ApiError } from "@/platform/errors/api-error";
@@ -96,7 +97,7 @@ export function StepUpDialog({ open, onOpenChange, onVerified, actionLabel }: St
           {verifyM.isError && (
             <FieldError>
               {verifyM.error instanceof ApiError
-                ? verifyM.error.message
+                ? errorMessage(verifyM.error)
                 : "Verification failed. Try again."}
             </FieldError>
           )}

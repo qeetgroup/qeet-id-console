@@ -13,6 +13,7 @@ import {
   StatusPill,
 } from "@qeetrix/ui";
 import { Apple, Github, Google, Microsoft } from "@thesvg/react";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   FingerprintIcon,
@@ -120,7 +121,9 @@ function SecurityPage() {
       {
         onSuccess: () => toast.success("We've emailed you a password reset link."),
         onError: (err) =>
-          toast.error(err instanceof ApiError ? err.message : "Couldn't send the reset link."),
+          toast.error(
+            err instanceof ApiError ? errorMessage(err) : "Couldn't send the reset link.",
+          ),
       },
     );
 
@@ -135,7 +138,9 @@ function SecurityPage() {
           void pwStatus.refetch();
         },
         onError: (err) =>
-          toast.error(err instanceof ApiError ? err.message : "Could not update your password."),
+          toast.error(
+            err instanceof ApiError ? errorMessage(err) : "Could not update your password.",
+          ),
       },
     );
   };

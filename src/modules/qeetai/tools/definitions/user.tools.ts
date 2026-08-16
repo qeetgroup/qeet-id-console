@@ -125,6 +125,16 @@ export const updateUserTool: ToolDefinition<UpdateUserInput> = {
   input: updateUserInput,
   requiredCapability: "user.write",
   destructive: false,
+  confirm: (input) => ({
+    title: "Update user",
+    body: "Qeet AI will change this user's profile.",
+    affected: [
+      { label: "User", value: input.user_id },
+      ...(input.name ? [{ label: "Display name", value: input.name }] : []),
+    ],
+    confirmText: "Update user",
+    tone: "default",
+  }),
   auditLabel: "qeetai.update_user",
   async run(ctx, input) {
     await api<User>(`/v1/users/${input.user_id}`, {
@@ -193,6 +203,13 @@ export const enableUserTool: ToolDefinition<EnableUserInput> = {
   input: enableUserInput,
   requiredCapability: "user.write",
   destructive: false,
+  confirm: (input) => ({
+    title: "Enable user",
+    body: "This re-activates the user and restores their ability to sign in.",
+    affected: [{ label: "User ID", value: input.user_id }],
+    confirmText: "Enable user",
+    tone: "default",
+  }),
   auditLabel: "qeetai.enable_user",
   async run(ctx, input) {
     await api<User>(`/v1/users/${input.user_id}`, {

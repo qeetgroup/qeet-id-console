@@ -54,6 +54,20 @@ describe("conversation-store persistence sanitization", () => {
     expect(persistedExec.result.data.contact).toBe("[redacted-email]");
   });
 
+  it("masks PII in persisted message content (in-memory keeps it)", () => {
+    conversationActions.appendMessage({
+      role: "user",
+      content: "reset the account for owner@acme.io on 10.1.2.3",
+    });
+    // In-memory keeps the operator's original text.
+    expect(conversationStore.state.conversations[0].messages[0].content).toContain("owner@acme.io");
+    // Persisted copy is masked.
+    const raw = window.localStorage.getItem(STORE_KEY) ?? "";
+    expect(raw).not.toContain("owner@acme.io");
+    expect(raw).not.toContain("10.1.2.3");
+    expect(persistedState().conversations[0].messages[0].content).toContain("[redacted-email]");
+  });
+
   it("clearAll wipes conversations from memory and storage", () => {
     conversationActions.appendMessage({ role: "user", content: "hi" });
     expect(conversationStore.state.conversations.length).toBe(1);

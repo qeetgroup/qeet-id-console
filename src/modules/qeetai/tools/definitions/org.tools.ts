@@ -3,6 +3,7 @@
 // run() calls POST /v1/tenants via api() so RBAC + RLS + audit are inherited.
 
 import { z } from "zod";
+import { ORG_KEYS } from "@/modules/organizations";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
@@ -47,7 +48,7 @@ export const createOrganizationTool: ToolDefinition<CreateOrgInput> = {
       body: input,
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ["tenants"] });
+    ctx.queryClient.invalidateQueries({ queryKey: ORG_KEYS.all });
     return {
       ok: true,
       summary: `Organization "${tenant.name}" created (id: ${tenant.id}, slug: ${tenant.slug}).`,

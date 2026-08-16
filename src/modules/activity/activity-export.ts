@@ -1,13 +1,15 @@
 // Client-side export of the current activity filter to CSV / JSON / NDJSON.
 // Walks the cursor pages of GET /v1/activity (via the shared fetchActivityPage)
 // starting from the newest matching event, capped at EXPORT_ROW_CAP rows so an
-// open-ended loop can't run forever on huge tenants. Modeled on the audit-logs
-// exporter; export is client-side, so gating is UI-only (see the route's
-// audit_export entitlement check).
+// open-ended loop can't run forever on huge tenants. CSV escaping + download are
+// the shared helpers (shared/utils/data-export); export is client-side, so
+// gating is UI-only (see the route's audit_export entitlement check).
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import { errorMessage } from "@/platform/errors/user-message";
+import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { fetchActivityPage } from "./activity-history";
 import type { ActivityEvent, ActivityFilters } from "./types/activity.types";
 
@@ -16,68 +18,24 @@ export type ExportFormat = "csv" | "json" | "ndjson";
 const EXPORT_ROW_CAP = 10_000;
 const EXPORT_PAGE = 200;
 
-// Flat, spreadsheet-friendly columns. Nested objects are JSON-encoded per cell.
-const CSV_HEADERS = [
-  "id",
-  "at",
-  "type",
-  "category",
-  "severity",
-  "title",
-  "actor_id",
-  "actor_name",
-  "actor_type",
-  "target_type",
-  "target_id",
-  "ip",
-  "request_id",
-  "metadata",
-] as const;
-
-function csvCell(v: unknown): string {
-  if (v == null) return "";
-  const s = typeof v === "string" ? v : JSON.stringify(v);
-  if (s.includes(",") || s.includes('"') || s.includes("\n") || s.includes("\r")) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
-
-function toCSVRow(ev: ActivityEvent): string {
-  const cells: Record<(typeof CSV_HEADERS)[number], unknown> = {
-    id: ev.id,
-    at: ev.at,
-    type: ev.type,
-    category: ev.category,
-    severity: ev.severity,
-    title: ev.title,
-    actor_id: ev.actor?.id,
-    actor_name: ev.actor?.name,
-    actor_type: ev.actor?.type,
-    target_type: ev.target?.type,
-    target_id: ev.target?.id,
-    ip: ev.ip,
-    request_id: ev.request_id,
-    metadata: ev.metadata,
-  };
-  return CSV_HEADERS.map((h) => csvCell(cells[h])).join(",");
-}
-
-function rowsToCSV(items: ActivityEvent[]): string {
-  return [CSV_HEADERS.join(","), ...items.map(toCSVRow)].join("\n");
-}
-
-function downloadBlob(content: string, mime: string, filename: string) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+// Flat, spreadsheet-friendly columns. Nested objects are JSON-encoded per cell
+// by the shared csvCell escaper.
+const CSV_COLUMNS: CsvColumn<ActivityEvent>[] = [
+  { header: "id", value: (e) => e.id },
+  { header: "at", value: (e) => e.at },
+  { header: "type", value: (e) => e.type },
+  { header: "category", value: (e) => e.category },
+  { header: "severity", value: (e) => e.severity },
+  { header: "title", value: (e) => e.title },
+  { header: "actor_id", value: (e) => e.actor?.id },
+  { header: "actor_name", value: (e) => e.actor?.name },
+  { header: "actor_type", value: (e) => e.actor?.type },
+  { header: "target_type", value: (e) => e.target?.type },
+  { header: "target_id", value: (e) => e.target?.id },
+  { header: "ip", value: (e) => e.ip },
+  { header: "request_id", value: (e) => e.request_id },
+  { header: "metadata", value: (e) => e.metadata },
+];
 
 const MIME: Record<ExportFormat, string> = {
   csv: "text/csv;charset=utf-8",
@@ -113,7 +71,7 @@ export function useActivityExport(filters: ActivityFilters) {
         const stamp = new Date().toISOString().replace(/[:.]/g, "-");
         const name = `activity-${stamp}.${format}`;
         if (format === "csv") {
-          downloadBlob(rowsToCSV(all), MIME.csv, name);
+          downloadBlob(rowsToCsv(all, CSV_COLUMNS), MIME.csv, name);
         } else if (format === "ndjson") {
           downloadBlob(all.map((e) => JSON.stringify(e)).join("\n"), MIME.ndjson, name);
         } else {
@@ -127,7 +85,7 @@ export function useActivityExport(filters: ActivityFilters) {
             : undefined,
         });
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Export failed");
+        toast.error(errorMessage(err));
       } finally {
         setExporting(null);
       }

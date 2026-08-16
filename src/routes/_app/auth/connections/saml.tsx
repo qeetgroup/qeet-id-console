@@ -35,6 +35,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
   CheckCircle2Icon,
   DownloadIcon,
@@ -52,7 +53,6 @@ import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { PageHeader } from "@/platform/components/page-header";
 import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
-import type { ApiError } from "@/platform/api/client";
 import { useEntitlements } from "@/modules/billing/api/billing";
 import {
   type SamlConnection,
@@ -271,7 +271,7 @@ function ValidateConnection({ id }: { id: string }) {
                 <p className="text-sm text-muted-foreground">{t("samlSp.validate.running")}</p>
               )}
               {testM.error && (
-                <p className="text-destructive text-sm">{(testM.error as ApiError).message}</p>
+                <p className="text-destructive text-sm">{errorMessage(testM.error)}</p>
               )}
               {testM.data && (
                 <ul className="flex flex-col gap-3">
@@ -418,7 +418,7 @@ function CreateConnectionSheet({
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

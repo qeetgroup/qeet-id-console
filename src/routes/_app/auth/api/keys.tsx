@@ -30,14 +30,18 @@ import {
   TableRow,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import { KeyRoundIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { PageHeader } from "@/platform/components/page-header";
-import { type ApiError, api } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/auth/api/keys")({
@@ -61,7 +65,10 @@ type ApiKeysResponse = { items: ApiKey[] };
 
 function ApiKeysPage() {
   const { t } = useTranslation("auth");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
+  const runSensitive = useSensitiveAction();
+  const ignoreCancel = (e: unknown) => {
+    if (!(e instanceof SensitiveActionCancelled)) throw e;
+  };
   const tenantId = useTenantId();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
@@ -105,7 +112,6 @@ function ApiKeysPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      {confirmDialog}
       <PageHeader
         description={t("keys.description")}
         actions={
@@ -158,7 +164,7 @@ function ApiKeysPage() {
               ))}
             </div>
           ) : keysQ.isError ? (
-            <div className="p-6 text-sm text-destructive">{(keysQ.error as Error).message}</div>
+            <div className="p-6 text-sm text-destructive">{errorMessage(keysQ.error)}</div>
           ) : !keysQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
               <KeyRoundIcon className="size-8 text-muted-foreground" />
@@ -218,13 +224,16 @@ function ApiKeysPage() {
                         size="sm"
                         disabled={!!k.revoked_at || revokeM.isPending}
                         onClick={() =>
-                          openConfirm({
-                            title: t("keys.confirm.title", { name: k.name }),
-                            description: t("keys.confirm.description"),
-                            variant: "destructive",
-                            confirmLabel: t("keys.confirm.label"),
-                            onConfirm: () => revokeM.mutate(k.id),
-                          })
+                          runSensitive({
+                            confirm: {
+                              title: t("keys.confirm.title", { name: k.name }),
+                              description: t("keys.confirm.description"),
+                              confirmLabel: t("keys.confirm.label"),
+                              tone: "destructive",
+                            },
+                            actionLabel: "revoke this API key",
+                            run: () => revokeM.mutateAsync(k.id),
+                          }).catch(ignoreCancel)
                         }
                       >
                         <Trash2Icon /> {t("keys.revokeBtn")}
@@ -321,7 +330,7 @@ function CreateApiKeySheet({ open, onOpenChange, tenantId, onCreated }: CreateAp
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

@@ -8,6 +8,7 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GaugeIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -111,7 +112,7 @@ function RateLimitsPage() {
               ))}
             </div>
           ) : policyQ.isError ? (
-            <div className="text-sm text-destructive">{(policyQ.error as Error).message}</div>
+            <div className="text-sm text-destructive">{errorMessage(policyQ.error)}</div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div>

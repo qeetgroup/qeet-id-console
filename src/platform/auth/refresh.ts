@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "@/platform/config/api-base-url";
 import { tokenStore } from "@/platform/auth/token-store";
+import { newRequestId } from "@/platform/telemetry/tracing";
 
 // Single-flight refresh: if many queries hit a 401 at once they all await the
 // same in-flight `/v1/auth/refresh` instead of stampeding the endpoint (which
@@ -25,6 +26,7 @@ export async function refreshAccessToken(): Promise<string | null> {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          "X-Request-Id": newRequestId(),
         },
         body: JSON.stringify({ refresh_token: rt }),
       });

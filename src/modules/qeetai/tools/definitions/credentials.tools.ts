@@ -9,6 +9,8 @@
 //   POST /v1/oidc/signing-keys/rotate                             — rotate_signing_keys
 
 import { z } from "zod";
+import { SIGNING_KEYS_KEY } from "@/modules/developer";
+import { OIDC_CLIENTS_KEY } from "@/modules/authentication";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
@@ -58,7 +60,7 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
       body: { tenant_id: ctx.tenantId, ...input },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ["oidc-clients"] });
+    ctx.queryClient.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
 
     // Redact: secret never in summary or data — goes to sensitiveArtifact only.
     return {
@@ -117,7 +119,7 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
         signal: ctx.signal,
       },
     );
-    ctx.queryClient.invalidateQueries({ queryKey: ["oidc-clients"] });
+    ctx.queryClient.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
 
     // Redact: new secret goes to sensitiveArtifact only, never in summary/data.
     return {
@@ -171,7 +173,7 @@ export const rotateSigningKeysTool: ToolDefinition<RotateSigningKeysInput> = {
       method: "POST",
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ["signing-keys"] });
+    ctx.queryClient.invalidateQueries({ queryKey: SIGNING_KEYS_KEY });
 
     // Redact: private key goes to sensitiveArtifact only, never in summary/data.
     return {

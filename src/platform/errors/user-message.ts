@@ -1,4 +1,5 @@
 import { type ErrorCode, ERROR_CODES, type ErrorKind } from "@/platform/errors/error-codes";
+import { normalizeError } from "@/platform/errors/normalize-error";
 
 // The leak stop. Backend `error.message`/`detail` may carry internal context
 // (stack hints, infra names), so the UI must NEVER render them directly. Instead
@@ -31,4 +32,14 @@ const KIND_FALLBACK: Record<ErrorKind, string> = {
 /** A user-safe message for a code/kind — never the raw backend message. */
 export function userMessageForCode(code: ErrorCode, kind: ErrorKind): string {
   return CODE_MESSAGES[code] ?? KIND_FALLBACK[kind];
+}
+
+/**
+ * Convenience: normalize any thrown value and return its user-safe message.
+ * Use this everywhere an error is shown inline instead of rendering
+ * `error.message` (which would leak raw backend detail).
+ */
+export function errorMessage(err: unknown): string {
+  const app = normalizeError(err);
+  return userMessageForCode(app.code, app.kind);
 }

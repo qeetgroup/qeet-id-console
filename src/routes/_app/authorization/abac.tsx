@@ -16,6 +16,7 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, PlayIcon, PlusIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
@@ -324,7 +325,7 @@ function PolicyEditor({
               onChange={(condition) => onChange({ ...draft, condition })}
             />
           </div>
-          {error && <p className="text-destructive text-sm">{error.message}</p>}
+          {error && <p className="text-destructive text-sm">{errorMessage(error)}</p>}
         </CardContent>
       </Card>
 

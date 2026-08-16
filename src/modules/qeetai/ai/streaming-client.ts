@@ -4,6 +4,7 @@
 // skipped, and an aborted turn resolves to a clean `done: stopped`.
 
 import { API_BASE_URL, tokenStore } from "@/platform/api/client";
+import { newRequestId } from "@/platform/telemetry/tracing";
 
 import type { StreamEvent } from "./ai-provider";
 
@@ -79,6 +80,7 @@ export async function* streamQeetAITurn(
       headers: {
         "Content-Type": "application/json",
         Accept: "text/event-stream",
+        "X-Request-Id": newRequestId(),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(body),

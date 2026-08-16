@@ -36,6 +36,7 @@ import {
   TooltipProvider,
 } from "@qeetrix/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Building2Icon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
@@ -49,9 +50,9 @@ import { useCapabilities } from "@/platform/security/capability-provider";
 import { type OrgActionHandlers, OrgRowActions } from "@/modules/organizations/org-row-actions";
 import { OrgPreviewDrawer } from "@/modules/organizations/org-preview-drawer";
 import { type OrgKpiFilter, OrgsKpis } from "@/modules/organizations/orgs-kpis";
-import { initials } from "@/modules/users/user-display";
+import { initials } from "@/shared/utils/initials";
 import { CreateOrgFlow } from "@/modules/onboarding/create-org-flow";
-import { type ApiError, api, tokenStore } from "@/platform/api/client";
+import { api, tokenStore } from "@/platform/api/client";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
 import { type Org, useDeleteOrg, useOrgs, useUpdateOrg } from "@/modules/organizations/api/orgs";
@@ -499,7 +500,7 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
                 </Field>
                 {updateM.error && (
                   <Field>
-                    <FieldError>{(updateM.error as ApiError).message}</FieldError>
+                    <FieldError>{errorMessage(updateM.error)}</FieldError>
                   </Field>
                 )}
               </FieldGroup>

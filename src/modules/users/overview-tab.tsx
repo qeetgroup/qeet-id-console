@@ -23,6 +23,7 @@ import {
   ShieldAlertIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatDateTime } from "@/shared/utils/format";
 
 import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
 import type {
@@ -44,17 +45,6 @@ const SEVERITY_DOT: Record<string, string> = {
   error: "bg-destructive",
   critical: "bg-destructive",
 };
-
-function formatDateTime(iso?: string | null): string {
-  if (!iso) return "—";
-  try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-      new Date(iso),
-    );
-  } catch {
-    return iso;
-  }
-}
 
 export function OverviewTab({
   user,

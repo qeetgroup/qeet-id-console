@@ -38,6 +38,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, PencilIcon, PlusIcon, ServerIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -318,7 +319,7 @@ function SamlProviderSheet({
               </Field>
               {error && (
                 <Field>
-                  <FieldError>{error.message}</FieldError>
+                  <FieldError>{errorMessage(error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

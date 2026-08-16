@@ -14,12 +14,12 @@ import {
   Input,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { CheckCircle2Icon, Loader2Icon, ShieldCheckIcon, XCircleIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { type ExplainPath, useExplainCheck } from "@/modules/authorization/api/access-check";
-import type { ApiError } from "@/platform/api/client";
 
 export const Route = createFileRoute("/_app/authorization/access-tester")({
   component: AccessCheckPage,
@@ -70,7 +70,7 @@ function AccessCheckPage() {
                 </Field>
                 {checkM.error && (
                   <Field>
-                    <FieldError>{(checkM.error as ApiError).message}</FieldError>
+                    <FieldError>{errorMessage(checkM.error)}</FieldError>
                   </Field>
                 )}
               </FieldGroup>

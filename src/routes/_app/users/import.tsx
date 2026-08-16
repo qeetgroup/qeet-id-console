@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeftIcon, FileUpIcon, Loader2Icon, UploadCloudIcon, XIcon } from "lucide-react";
 import { useState } from "react";
@@ -278,7 +279,7 @@ function ImportUsersPage() {
           <CardContent className="p-0">
             {importM.error && (
               <div className="border-b p-3 text-sm text-destructive">
-                {(importM.error as Error).message}
+                {errorMessage(importM.error)}
               </div>
             )}
             <DataState

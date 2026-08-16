@@ -15,6 +15,7 @@ import {
   toast,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { CopyIcon, DownloadIcon, Loader2Icon, SaveIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -26,7 +27,6 @@ import {
 import { CodePreview } from "@/modules/authorization/components/code-preview/code-preview";
 import { ConditionTree } from "@/modules/authorization/components/condition-builder/condition-tree";
 import { ComingSoon } from "@/modules/authorization/components/shared/coming-soon";
-import type { ApiError } from "@/platform/api/client";
 import { type Effect, emptyGroup, useCreateAbacPolicy } from "@/modules/authorization/api/abac";
 import {
   emptyPolicyDoc,
@@ -111,9 +111,7 @@ function BuilderPage() {
         }
       />
 
-      {createM.error && (
-        <p className="text-destructive text-sm">{(createM.error as ApiError).message}</p>
-      )}
+      {createM.error && <p className="text-destructive text-sm">{errorMessage(createM.error)}</p>}
 
       <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
         <Card className="min-w-0">

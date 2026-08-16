@@ -30,13 +30,13 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute, useRouterState } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, PlusIcon, RefreshCwIcon, ShieldCheckIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ListToolbar, SortHeader } from "@/shared/components/data-table";
 import { PageHeader } from "@/platform/components/page-header";
 import { useRegisterContext } from "@/modules/qeetai/context/context-registry";
-import type { ApiError } from "@/platform/api/client";
 import {
   type Permission,
   type Role,
@@ -253,7 +253,7 @@ function CreateRoleSheet({
               </Field>
               {createM.error && (
                 <Field>
-                  <FieldError>{(createM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(createM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

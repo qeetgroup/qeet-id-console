@@ -28,6 +28,7 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Apple,
@@ -63,7 +64,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
-import { type ApiError, api } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/auth/social")({
@@ -542,7 +543,7 @@ function ConfigureProviderSheet({
               </Field>
               {upsertM.error && (
                 <Field>
-                  <FieldError>{(upsertM.error as ApiError).message}</FieldError>
+                  <FieldError>{errorMessage(upsertM.error)}</FieldError>
                 </Field>
               )}
             </FieldGroup>

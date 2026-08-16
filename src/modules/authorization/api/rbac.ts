@@ -4,6 +4,7 @@
 // /v1/roles/{id}/permissions. See domains/access/authorization/rbac/http.go.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+export const ROLES_KEY = ["roles"] as const;
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -33,7 +34,7 @@ export function usePermissions() {
 export function useRoles() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["roles", tenantId],
+    queryKey: [...ROLES_KEY, tenantId],
     enabled: !!tenantId,
     queryFn: () => api<{ items: Role[] }>(`/v1/tenants/${tenantId}/roles`),
   });
@@ -45,7 +46,7 @@ export function useCreateRole() {
   return useMutation({
     mutationFn: (body: { name: string; description: string }) =>
       api<Role>(`/v1/tenants/${tenantId}/roles`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["roles"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ROLES_KEY }),
     meta: { successMessage: "Role created" },
   });
 }

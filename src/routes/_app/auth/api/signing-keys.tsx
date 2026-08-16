@@ -36,6 +36,10 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
+import {
   type RotateKeyResult,
   useRotateKey,
   useSigningKeys,
@@ -107,19 +111,32 @@ function SigningKeysPage() {
   const { t } = useTranslation("signing-keys");
   const keysQ = useSigningKeys();
   const rotate = useRotateKey();
+  const runSensitive = useSensitiveAction();
   const keys = keysQ.data?.keys ?? [];
   const [rotateResult, setRotateResult] = useState<RotateKeyResult | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  function handleRotateClick() {
-    setConfirmOpen(true);
-  }
-
-  function handleConfirm() {
-    setConfirmOpen(false);
-    rotate.mutate(undefined, {
-      onSuccess: (data) => setRotateResult(data),
-    });
+  // Rotation is the highest-blast-radius action in the console (it changes the
+  // tenant's JWT signing key). Route it through the shared sensitive-action
+  // pipeline so it gets confirmation AND step-up recovery if the backend
+  // requires a fresh factor (RequireRecentMFA).
+  function handleRotate() {
+    runSensitive({
+      confirm: {
+        title: "Rotate signing key?",
+        description:
+          "A new EC P-256 key is generated immediately; all new tokens are signed with it. The current key is retired to verify-only — existing tokens stay valid until they expire. Save the new private-key PEM before the next server restart.",
+        confirmLabel: "Rotate now",
+        tone: "destructive",
+      },
+      actionLabel: "rotate the signing key",
+      run: () => rotate.mutateAsync(undefined),
+    })
+      .then((data) => {
+        if (data) setRotateResult(data);
+      })
+      .catch((e) => {
+        if (!(e instanceof SensitiveActionCancelled)) throw e;
+      });
   }
 
   return (
@@ -148,12 +165,7 @@ function SigningKeysPage() {
             <CardTitle className="text-base">{t("list.title")}</CardTitle>
             <CardDescription>{t("list.count", { count: keys.length })}</CardDescription>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={rotate.isPending}
-            onClick={handleRotateClick}
-          >
+          <Button variant="outline" size="sm" disabled={rotate.isPending} onClick={handleRotate}>
             {rotate.isPending ? <Loader2Icon className="animate-spin" /> : <RotateCcwIcon />}
             Rotate Key
           </Button>
@@ -199,31 +211,7 @@ function SigningKeysPage() {
         </CardContent>
       </Card>
 
-      {/* Confirmation dialog */}
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangleIcon className="size-4 text-amber-500" />
-              Rotate Signing Key?
-            </DialogTitle>
-            <DialogDescription>
-              A new EC P-256 key will be generated immediately. All new tokens will be signed with
-              the new key. The current key is retired to verify-only — existing tokens remain valid
-              until they expire. You must save the new private key PEM before the next server
-              restart.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleConfirm}>
-              Rotate Now
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Confirmation + step-up are handled by the shared SensitiveActionProvider. */}
 
       {/* PEM reveal dialog */}
       {rotateResult && <PEMDialog result={rotateResult} onClose={() => setRotateResult(null)} />}

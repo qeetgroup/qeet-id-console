@@ -15,13 +15,13 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, Trash2Icon, ZapIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { PageHeader } from "@/platform/components/page-header";
-import type { ApiError } from "@/platform/api/client";
 import {
   useAuthHooks,
   useCreateAuthHook,
@@ -119,7 +119,7 @@ function AuthHooksPage() {
             </Field>
           </form>
           {createM.error && (
-            <p className="mt-2 text-destructive text-sm">{(createM.error as ApiError).message}</p>
+            <p className="mt-2 text-destructive text-sm">{errorMessage(createM.error)}</p>
           )}
         </CardContent>
       </Card>
