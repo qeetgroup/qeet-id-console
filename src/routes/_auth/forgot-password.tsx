@@ -47,7 +47,7 @@ function ForgotPasswordPage() {
 }
 
 function RequestPanel() {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const forgot = useForgotPassword();
   const [submitted, setSubmitted] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -108,7 +108,7 @@ function RequestPanel() {
 }
 
 function ResetPanel({ token }: { token: string }) {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const reset = useResetPassword();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -189,7 +189,7 @@ function ResetPanel({ token }: { token: string }) {
 }
 
 function SuccessPanel({ devToken }: { devToken?: string }) {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   return (
     <div className="flex flex-col items-center gap-3 text-center">
       <CheckCircle2Icon className="size-10 text-emerald-500" />

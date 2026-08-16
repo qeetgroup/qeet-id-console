@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_auth/invite/accept")({
 });
 
 function AcceptInvitePage() {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const { token } = Route.useSearch();
   const accept = useAcceptInvite();
   const [password, setPassword] = useState("");

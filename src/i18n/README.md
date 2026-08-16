@@ -19,7 +19,7 @@ src/i18n/
       saml.json       SAML IdP service-provider screen
       rbac.json       Access Tester + group-roles
       device.json     device authorizations
-      signingKeys.json signing keys (JWKS)
+      signing-keys.json signing keys (JWKS)
       consent.json    OAuth consent grants
       auth.json       login-method policy screens (password, …)
       users.json      users list + create/edit/set-password sheets

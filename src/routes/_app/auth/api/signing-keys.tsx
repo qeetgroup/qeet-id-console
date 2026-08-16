@@ -104,7 +104,7 @@ function PEMDialog({ result, onClose }: { result: RotateKeyResult; onClose: () =
 }
 
 function SigningKeysPage() {
-  const { t } = useTranslation("signingKeys");
+  const { t } = useTranslation("signing-keys");
   const keysQ = useSigningKeys();
   const rotate = useRotateKey();
   const keys = keysQ.data?.keys ?? [];

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_auth/magic")({
 });
 
 function MagicLinkPage() {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const { token } = useSearch({ from: "/_auth/magic" });
   const consume = useConsumeMagicLink();
 

@@ -101,7 +101,7 @@ function MfaStep({
   errorMessage?: string;
   onSubmit: (code: string) => void;
 }) {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const [code, setCode] = useState("");
   // Move focus to the verification code field on mount — replaces autoFocus
   // (flagged by jsx-a11y/no-autofocus) with an explicit effect.

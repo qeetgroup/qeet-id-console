@@ -22,7 +22,7 @@ function readSamlCode(): string | null {
 }
 
 function SsoCallbackPage() {
-  const { t } = useTranslation("authFlow");
+  const { t } = useTranslation("auth-flow");
   const consume = useConsumeSamlCode();
   const [code] = useState(readSamlCode);
 

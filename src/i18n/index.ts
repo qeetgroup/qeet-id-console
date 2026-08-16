@@ -9,11 +9,11 @@ import deDevice from "./locales/de/device.json";
 import deOidc from "./locales/de/oidc.json";
 import deRbac from "./locales/de/rbac.json";
 import deSaml from "./locales/de/saml.json";
-import deSigningKeys from "./locales/de/signingKeys.json";
+import deSigningKeys from "./locales/de/signing-keys.json";
 import deUsers from "./locales/de/users.json";
 import account from "./locales/en/account.json";
 import auth from "./locales/en/auth.json";
-import authFlow from "./locales/en/authFlow.json";
+import authFlow from "./locales/en/auth-flow.json";
 import common from "./locales/en/common.json";
 import compliance from "./locales/en/compliance.json";
 import consent from "./locales/en/consent.json";
@@ -28,7 +28,7 @@ import rbac from "./locales/en/rbac.json";
 import saml from "./locales/en/saml.json";
 import security from "./locales/en/security.json";
 import settings from "./locales/en/settings.json";
-import signingKeys from "./locales/en/signingKeys.json";
+import signingKeys from "./locales/en/signing-keys.json";
 import users from "./locales/en/users.json";
 import esAuth from "./locales/es/auth.json";
 import esCommon from "./locales/es/common.json";
@@ -38,7 +38,7 @@ import esDevice from "./locales/es/device.json";
 import esOidc from "./locales/es/oidc.json";
 import esRbac from "./locales/es/rbac.json";
 import esSaml from "./locales/es/saml.json";
-import esSigningKeys from "./locales/es/signingKeys.json";
+import esSigningKeys from "./locales/es/signing-keys.json";
 import esUsers from "./locales/es/users.json";
 import frAuth from "./locales/fr/auth.json";
 import frCommon from "./locales/fr/common.json";
@@ -48,7 +48,7 @@ import frDevice from "./locales/fr/device.json";
 import frOidc from "./locales/fr/oidc.json";
 import frRbac from "./locales/fr/rbac.json";
 import frSaml from "./locales/fr/saml.json";
-import frSigningKeys from "./locales/fr/signingKeys.json";
+import frSigningKeys from "./locales/fr/signing-keys.json";
 import frUsers from "./locales/fr/users.json";
 import hiAuth from "./locales/hi/auth.json";
 import hiCommon from "./locales/hi/common.json";
@@ -58,7 +58,7 @@ import hiDevice from "./locales/hi/device.json";
 import hiOidc from "./locales/hi/oidc.json";
 import hiRbac from "./locales/hi/rbac.json";
 import hiSaml from "./locales/hi/saml.json";
-import hiSigningKeys from "./locales/hi/signingKeys.json";
+import hiSigningKeys from "./locales/hi/signing-keys.json";
 import hiUsers from "./locales/hi/users.json";
 import jaAuth from "./locales/ja/auth.json";
 import jaCommon from "./locales/ja/common.json";
@@ -68,7 +68,7 @@ import jaDevice from "./locales/ja/device.json";
 import jaOidc from "./locales/ja/oidc.json";
 import jaRbac from "./locales/ja/rbac.json";
 import jaSaml from "./locales/ja/saml.json";
-import jaSigningKeys from "./locales/ja/signingKeys.json";
+import jaSigningKeys from "./locales/ja/signing-keys.json";
 import jaUsers from "./locales/ja/users.json";
 import ptAuth from "./locales/pt/auth.json";
 import ptCommon from "./locales/pt/common.json";
@@ -78,7 +78,7 @@ import ptDevice from "./locales/pt/device.json";
 import ptOidc from "./locales/pt/oidc.json";
 import ptRbac from "./locales/pt/rbac.json";
 import ptSaml from "./locales/pt/saml.json";
-import ptSigningKeys from "./locales/pt/signingKeys.json";
+import ptSigningKeys from "./locales/pt/signing-keys.json";
 import ptUsers from "./locales/pt/users.json";
 import zhAuth from "./locales/zh/auth.json";
 import zhCommon from "./locales/zh/common.json";
@@ -88,7 +88,7 @@ import zhDevice from "./locales/zh/device.json";
 import zhOidc from "./locales/zh/oidc.json";
 import zhRbac from "./locales/zh/rbac.json";
 import zhSaml from "./locales/zh/saml.json";
-import zhSigningKeys from "./locales/zh/signingKeys.json";
+import zhSigningKeys from "./locales/zh/signing-keys.json";
 import zhUsers from "./locales/zh/users.json";
 
 // Languages the UI ships catalogs for. Adding a locale is a two-step change:
@@ -127,7 +127,7 @@ const newNs = {
   developer,
   account,
   compliance,
-  authFlow,
+  "auth-flow": authFlow,
 };
 
 const resources = {
@@ -137,7 +137,7 @@ const resources = {
     saml,
     rbac,
     device,
-    signingKeys,
+    "signing-keys": signingKeys,
     consent,
     auth,
     users,
@@ -150,7 +150,7 @@ const resources = {
     saml: hiSaml,
     rbac: hiRbac,
     device: hiDevice,
-    signingKeys: hiSigningKeys,
+    "signing-keys": hiSigningKeys,
     consent: hiConsent,
     auth: hiAuth,
     users: hiUsers,
@@ -162,7 +162,7 @@ const resources = {
     saml: frSaml,
     rbac: frRbac,
     device: frDevice,
-    signingKeys: frSigningKeys,
+    "signing-keys": frSigningKeys,
     consent: frConsent,
     auth: frAuth,
     users: frUsers,
@@ -174,7 +174,7 @@ const resources = {
     saml: deSaml,
     rbac: deRbac,
     device: deDevice,
-    signingKeys: deSigningKeys,
+    "signing-keys": deSigningKeys,
     consent: deConsent,
     auth: deAuth,
     users: deUsers,
@@ -186,7 +186,7 @@ const resources = {
     saml: esSaml,
     rbac: esRbac,
     device: esDevice,
-    signingKeys: esSigningKeys,
+    "signing-keys": esSigningKeys,
     consent: esConsent,
     auth: esAuth,
     users: esUsers,
@@ -198,7 +198,7 @@ const resources = {
     saml: ptSaml,
     rbac: ptRbac,
     device: ptDevice,
-    signingKeys: ptSigningKeys,
+    "signing-keys": ptSigningKeys,
     consent: ptConsent,
     auth: ptAuth,
     users: ptUsers,
@@ -210,7 +210,7 @@ const resources = {
     saml: jaSaml,
     rbac: jaRbac,
     device: jaDevice,
-    signingKeys: jaSigningKeys,
+    "signing-keys": jaSigningKeys,
     consent: jaConsent,
     auth: jaAuth,
     users: jaUsers,
@@ -222,7 +222,7 @@ const resources = {
     saml: zhSaml,
     rbac: zhRbac,
     device: zhDevice,
-    signingKeys: zhSigningKeys,
+    "signing-keys": zhSigningKeys,
     consent: zhConsent,
     auth: zhAuth,
     users: zhUsers,
