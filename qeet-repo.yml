@@ -1,0 +1,94 @@
+# qeet-id-console — repository context metadata (Level 2).
+# Inherits qeetgroup/qeet-context (L0) and qeetgroup/qeet-id-context (L1).
+
+schema_version: 1
+
+context: {type: repository, level: L2, canonical: true, last_verified: "2026-08-28"}
+
+inheritance:
+  organization: {repository: qeetgroup/qeet-context, level: L0}
+  product:      {repository: qeetgroup/qeet-id-context, level: L1}
+
+repository:
+  name: qeet-id-console
+  product: qeet-id
+  type: frontend
+  role: primary
+  status: active
+  visibility: public
+  default_branch: main
+  working_branch: develop
+  host: console.id.qeet.in
+
+runtime:
+  language: TypeScript
+  framework: TanStack Start   # ^1.168 + TanStack Router ^1.170
+  react: "^19.2.6"
+  bundler: vite ^8            # + nitro (Vercel Build Output)
+  package_manager: bun@1.3.14
+  styling: tailwindcss ^4.3
+  design_system: "@qeetrix/ui ^1.0.3"   # npm latest is 2.0.0 — a major behind
+
+architecture:
+  style: layered-with-enforced-boundaries
+  layers: [routes, modules, platform, shared]   # NOTE: src/app/ does NOT exist
+  enforcement:
+    mechanism: biome-noRestrictedImports        # + noImportCycles: error
+    config: biome.json
+    command: bun run lint:boundaries
+  modules: 14                                   # src/modules/
+  platform_dirs: [api, auth, components, config, errors, feature-flags, query, security, telemetry]
+
+session:
+  model: server-resolved-BFF                    # ADR-0009
+  cookie: __Host-qeet_console                   # qeet_console_dev when not secure
+  chunked: true                                 # __chunked__<n> + name.1..N
+  tokens_reach_browser: false                   # PublicSession only
+  max_age_days: 30
+  csrf: createCsrfMiddleware (src/start.ts)
+  idle_logout_minutes: 10
+
+authorization:
+  model: UX-only                                # ADR-0003 — backend is authoritative
+  capabilities: 25
+  source: GET /v1/users/{userId}/tenants/{tenantId}/permissions
+  fails: closed                                 # malformed payload throws
+  step_up: RequireRecentMFA on the backend      # ADR-0005
+
+contracts:
+  consumes: {api: qeet-id-server}
+  browser_base_url_env: VITE_API_URL            # federation/metadata URLs only
+  server_base_url_env: SERVER_URL               # the BFF's backend origin
+  ssrf_guard: src/platform/api/server-request-policy.ts
+
+commands:
+  dev:   bun run dev          # vite dev — NO port configured (Vite default 5173)
+  build: bun run build
+  test:  bun run test
+  e2e:   bun run test:e2e
+  check: bun run check
+  boundaries: bun run lint:boundaries
+
+ci:
+  workflows: [ci.yml]
+  job: verify                 # typecheck, check, lint:boundaries, test, e2e, build
+  runner: bby-ubuntu
+
+security:
+  sensitive_paths:
+    - src/platform/auth/server-session.ts       # encrypted session cookie
+    - src/platform/api/server-proxy.ts          # bearer attachment, refresh
+    - src/platform/api/server-request-policy.ts # SSRF guard
+    - src/platform/security/                    # capability model, step-up
+    - src/platform/telemetry/redact.ts          # PII/secret redaction
+    - src/platform/errors/user-message.ts       # backend message leak-stop
+  never: [render backend error.message, store a token in the browser, treat UI capabilities as enforcement]
+
+llm_context:
+  primary_instructions: AGENTS.md
+  canonical: docs/llm/context.md
+  subsystems: docs/llm/subsystems.md
+  boundaries: docs/llm/boundaries.md
+  workflows: docs/llm/workflows.md
+  architecture_map: docs/llm/architecture-map.md
+  adapters: [CLAUDE.md, GEMINI.md, .github/copilot-instructions.md]
