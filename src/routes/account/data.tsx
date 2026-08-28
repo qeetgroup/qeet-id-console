@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
-import { ApiError, api, tokenStore } from "@/platform/api/client";
+import { ApiError, api, sessionStore } from "@/platform/api/client";
 import { usePasswordStatus } from "@/modules/authentication";
 
 export const Route = createFileRoute("/account/data")({ component: DataPage });
@@ -55,7 +55,7 @@ function DataPage() {
         body: hasPassword ? { password } : {},
       }),
     onSuccess: () => {
-      tokenStore.clear();
+      sessionStore.clear();
       window.location.assign("/sign-up");
     },
     onError: (err) =>

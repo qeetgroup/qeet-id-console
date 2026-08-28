@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import { getRequiredCapabilityForPath } from "@/platform/config/navigation";
-import { tokenStore } from "@/platform/auth/token-store";
+import { sessionStore } from "@/platform/auth/session-store";
 import { ApiError } from "@/platform/errors/api-error";
 import { useTenantId } from "@/platform/auth/session";
 import { useEffectivePermissions } from "@/platform/security/effective-permissions";
@@ -45,7 +45,7 @@ const CapabilityContext = createContext<CapabilityContextValue | null>(null);
 export function CapabilityProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const tenantId = useTenantId();
-  const userId = tokenStore.getUserId();
+  const userId = sessionStore.getUserId();
   const effective = useEffectivePermissions(tenantId ? userId : null);
 
   useEffect(() => setHydrated(true), []);

@@ -72,7 +72,7 @@ import { initials } from "@/shared/utils/initials";
 import { UserPreviewDrawer } from "@/modules/users/user-preview-drawer";
 import { type RowActionHandlers, UserRowActions } from "@/modules/users/user-row-actions";
 import { type KpiFilter, UsersKpis } from "@/modules/users/users-kpis";
-import { api, tokenStore } from "@/platform/api/client";
+import { api, sessionStore } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
@@ -114,7 +114,7 @@ function UsersPage() {
   const canWriteUsers = access.can("user.write");
   const canCreateUsers = access.canAll(["user.write", "role.read", "role.write"]);
   const tenantId = useTenantId();
-  const currentUserId = tokenStore.getUserId();
+  const currentUserId = sessionStore.getUserId();
   const qc = useQueryClient();
   const rolesQ = useRoles();
 

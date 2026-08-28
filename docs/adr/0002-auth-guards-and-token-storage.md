@@ -1,6 +1,6 @@
 # ADR-0002: Client-side auth guards and localStorage token storage
 
-**Status:** Accepted (with a tracked follow-up)
+**Status:** Superseded by ADR-0009
 
 ## Context
 
@@ -23,6 +23,5 @@ the backend.
 - Simple, works with SSR, no server session to manage.
 - **Trade-off:** tokens are XSS-exfiltratable from localStorage. Mitigated by
   strict CSP/dependency hygiene and by keeping secrets out of the client.
-- **Follow-up (deferred):** move to httpOnly, SameSite cookies. Requires
-  `qeet-id-server` changes and reworking the guards to `beforeLoad`. Tracked in
-  SECURITY.md.
+- The follow-up was completed by ADR-0009. This document remains as the
+  historical record of the pre-BFF trust model.

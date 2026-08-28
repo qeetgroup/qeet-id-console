@@ -151,7 +151,8 @@ or backend internals to users.
 
 Security behavior must be obvious from the filename (`step-up.ts`,
 `sensitive-action-provider.tsx`, `capability-model.ts`, `effective-permissions.ts`,
-`token-store.ts`, `redact.ts`). Never hide it in `helpers.ts`/`utils.ts`.
+`server-session.ts`, `session-store.ts`, `redact.ts`). Never hide it in
+`helpers.ts`/`utils.ts`.
 
 ## 28–29. Test Naming & Organization
 

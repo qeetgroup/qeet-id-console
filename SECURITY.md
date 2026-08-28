@@ -12,18 +12,20 @@ open a public issue). Include reproduction steps and impact.
 
 ## Authentication & session
 
-- The console is a Qeet ID OIDC relying party. The operator's access + refresh
-  tokens and the active tenant/user ids are stored in `localStorage`
-  (`platform/auth/token-store.ts`).
-- **Known trade-off (tracked):** localStorage tokens are readable by any script
-  in the origin (XSS blast radius). Route guards are client-side `useEffect`
-  redirects *because* the token is invisible to SSR. Migrating to httpOnly
-  cookies requires `qeet-id-server` + SSR-guard changes and is deferred — see
-  `docs/adr/0002-auth-guards-and-token-storage.md`.
-- `api()` performs a single-flight `/v1/auth/refresh` on 401 and replays once;
-  a failed refresh clears the session and hard-redirects to `/sign-in`.
+- TanStack Start is a same-origin BFF. Access and refresh tokens are held only
+  in an encrypted, integrity-protected `HttpOnly` cookie. Production cookies are
+  `Secure`, `SameSite=Lax`, use `Path=/`, and use the `__Host-` prefix.
+- The browser receives only safe session metadata; legacy access/refresh token
+  keys are removed from Web Storage and never read.
+- Protected routes resolve the server session in `beforeLoad`, before protected
+  UI renders. Backend JWT verification, RBAC, and RLS remain authoritative.
+- Refresh-token rotation is serialized across tabs and guarded by a session
+  generation. A failed refresh clears the BFF cookie and redirects to sign-in.
+- Same-origin CSRF validation covers server functions and mutating server routes.
 - Conversations and other session-scoped client state are cleared on logout via
-  the `onTokenStoreClear` registry.
+  the `onSessionClear` registry. Logout and tenant transitions propagate to
+  other tabs through `BroadcastChannel` with a storage-event fallback.
+- See `docs/adr/0009-server-resolved-bff-session.md`.
 
 ## Authorization
 
@@ -43,9 +45,9 @@ open a public issue). Include reproduction steps and impact.
 
 ## Qeet AI
 
-- Tools execute **client-side under the operator's own token**, through the same
-  `api()` path — so RBAC/RLS/audit apply identically. The AI can never exceed
-  the operator's permissions and there is no separate/elevated path.
+- Tools execute through the BFF under the operator's backend session, so
+  RBAC/RLS/audit apply identically. The AI can never exceed the operator's
+  permissions and there is no separate/elevated path.
 - Mutating tools (create/assign/grant/rotate/disable, strict-MFA changes,
   OAuth-client minting) require **human confirmation**; execution is gated to the
   operator's **enabled** tool set; `step_up_required` opens the step-up dialog.
@@ -69,3 +71,5 @@ open a public issue). Include reproduction steps and impact.
 - Only `VITE_*` values are exposed to the browser (see `platform/config/env.ts`).
 - Never place private keys, API secrets, service credentials, or signing secrets
   in client-side (`VITE_*`) environment variables.
+- `SESSION_SECRET` and `SERVER_URL` are server-only. Production requires a
+  random `SESSION_SECRET` of at least 32 characters.

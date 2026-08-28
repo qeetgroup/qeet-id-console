@@ -222,6 +222,7 @@ export function UserDetailHeader({
           <Button
             variant="outline"
             size="icon"
+            nativeButton={false}
             render={<Link to="/users/$userId/timeline" params={{ userId: user.id }} />}
             aria-label={t("detail.openTimeline")}
           >

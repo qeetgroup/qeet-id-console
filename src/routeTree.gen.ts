@@ -28,6 +28,8 @@ import { Route as AccountDataRouteImport } from './routes/account/data'
 import { Route as AccountProfileRouteImport } from './routes/account/profile'
 import { Route as AccountSecurityRouteImport } from './routes/account/security'
 import { Route as AccountSessionsRouteImport } from './routes/account/sessions'
+import { Route as ApiActivityStreamRouteImport } from './routes/api/activity-stream'
+import { Route as ApiQeetaiStreamRouteImport } from './routes/api/qeetai-stream'
 import { Route as AppAuthSocialRouteImport } from './routes/_app/auth/social'
 import { Route as AppAuthorizationIndexRouteImport } from './routes/_app/authorization/index'
 import { Route as AppAuthorizationAbacRouteImport } from './routes/_app/authorization/abac'
@@ -200,6 +202,16 @@ const AccountSessionsRoute = AccountSessionsRouteImport.update({
   id: '/sessions',
   path: '/sessions',
   getParentRoute: () => AccountRoute,
+} as any)
+const ApiActivityStreamRoute = ApiActivityStreamRouteImport.update({
+  id: '/api/activity-stream',
+  path: '/api/activity-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiQeetaiStreamRoute = ApiQeetaiStreamRouteImport.update({
+  id: '/api/qeetai-stream',
+  path: '/api/qeetai-stream',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppAuthSocialRoute = AppAuthSocialRouteImport.update({
   id: '/auth/social',
@@ -647,6 +659,8 @@ export interface FileRoutesByFullPath {
   '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/account/sessions': typeof AccountSessionsRoute
+  '/api/activity-stream': typeof ApiActivityStreamRoute
+  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/auth/social': typeof AppAuthSocialRoute
   '/authorization/abac': typeof AppAuthorizationAbacRoute
   '/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
@@ -745,6 +759,8 @@ export interface FileRoutesByTo {
   '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/account/sessions': typeof AccountSessionsRoute
+  '/api/activity-stream': typeof ApiActivityStreamRoute
+  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/auth/social': typeof AppAuthSocialRoute
   '/authorization/abac': typeof AppAuthorizationAbacRoute
   '/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
@@ -845,6 +861,8 @@ export interface FileRoutesById {
   '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/account/sessions': typeof AccountSessionsRoute
+  '/api/activity-stream': typeof ApiActivityStreamRoute
+  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/_app/': typeof AppIndexRoute
   '/_app/auth/social': typeof AppAuthSocialRoute
   '/_app/authorization/abac': typeof AppAuthorizationAbacRoute
@@ -946,6 +964,8 @@ export interface FileRouteTypes {
     | '/account/profile'
     | '/account/security'
     | '/account/sessions'
+    | '/api/activity-stream'
+    | '/api/qeetai-stream'
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
@@ -1044,6 +1064,8 @@ export interface FileRouteTypes {
     | '/account/profile'
     | '/account/security'
     | '/account/sessions'
+    | '/api/activity-stream'
+    | '/api/qeetai-stream'
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
@@ -1143,6 +1165,8 @@ export interface FileRouteTypes {
     | '/account/profile'
     | '/account/security'
     | '/account/sessions'
+    | '/api/activity-stream'
+    | '/api/qeetai-stream'
     | '/_app/'
     | '/_app/auth/social'
     | '/_app/authorization/abac'
@@ -1229,6 +1253,8 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   AccountRoute: typeof AccountRouteWithChildren
+  ApiActivityStreamRoute: typeof ApiActivityStreamRoute
+  ApiQeetaiStreamRoute: typeof ApiQeetaiStreamRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1365,6 +1391,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/account/sessions'
       preLoaderRoute: typeof AccountSessionsRouteImport
       parentRoute: typeof AccountRoute
+    }
+    '/api/activity-stream': {
+      id: '/api/activity-stream'
+      path: '/api/activity-stream'
+      fullPath: '/api/activity-stream'
+      preLoaderRoute: typeof ApiActivityStreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/qeetai-stream': {
+      id: '/api/qeetai-stream'
+      path: '/api/qeetai-stream'
+      fullPath: '/api/qeetai-stream'
+      preLoaderRoute: typeof ApiQeetaiStreamRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/auth/social': {
       id: '/_app/auth/social'
@@ -2143,16 +2183,19 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   AccountRoute: AccountRouteWithChildren,
+  ApiActivityStreamRoute: ApiActivityStreamRoute,
+  ApiQeetaiStreamRoute: ApiQeetaiStreamRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

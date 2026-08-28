@@ -1,8 +1,7 @@
-// The single HTTP request path to the qeet-id Go backend.
-// - Attaches the Bearer access token (from platform/auth/token-store).
-// - On 401, tries `/v1/auth/refresh` once (single-flight, shared across a wave
-//   of concurrent queries) and replays the original request. If refresh fails,
-//   clears local state and hard-redirects to /sign-in (see platform/auth/refresh).
+// The single browser request path to the same-origin TanStack Start BFF.
+// Access and refresh tokens remain in an encrypted HttpOnly cookie; the BFF
+// attaches the Bearer token, refreshes once on 401, and returns only safe
+// session metadata to the browser.
 // - Normalises failures into a typed `ApiError` (platform/errors/api-error).
 //
 // This is the ONE place requests leave the app; cross-cutting concerns
@@ -10,16 +9,20 @@
 // every caller inherits them without change.
 import type { ZodType } from "zod";
 
-import { onAuthLost, refreshAccessToken } from "@/platform/auth/refresh";
-import { tokenStore } from "@/platform/auth/token-store";
-import { API_BASE_URL } from "@/platform/config/api-base-url";
+import { onAuthLost } from "@/platform/auth/auth-lost";
+import { sessionStore } from "@/platform/auth/session-store";
+import {
+  clearServerSession,
+  proxyApiRequest,
+  refreshServerSessionNow,
+} from "@/platform/api/server-proxy";
 import { ApiError } from "@/platform/errors/api-error";
 import { newRequestId } from "@/platform/telemetry/tracing";
 
 // Convenience re-exports so callers can import the request essentials from one
 // module (mirrors the old single-module ergonomics). Canonical homes remain
 // @/platform/errors, @/platform/config, and @/platform/auth.
-export { tokenStore } from "@/platform/auth/token-store";
+export { sessionStore } from "@/platform/auth/session-store";
 export { API_BASE_URL } from "@/platform/config/api-base-url";
 export { ApiError } from "@/platform/errors/api-error";
 
@@ -40,77 +43,119 @@ type RequestOpts<T = unknown> = {
   schema?: ZodType<T>;
 };
 
-async function doFetch(
-  url: URL,
-  method: string,
-  body: unknown,
-  signal: AbortSignal | undefined,
-  anonymous: boolean,
-  requestId: string,
-): Promise<Response> {
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    // Correlation id echoed into logs; ties a console action to the backend's
-    // request_id/correlation_id on audit/activity events.
-    "X-Request-Id": requestId,
+let localRefresh: Promise<void> | null = null;
+
+function needsRefresh(): boolean {
+  const session = sessionStore.getSnapshot();
+  if (!session.isAuthenticated || !session.expiresAt) return false;
+  const expiresAt = Date.parse(session.expiresAt);
+  return !Number.isFinite(expiresAt) || expiresAt <= Date.now() + 60_000;
+}
+
+export async function refreshSessionForRequest(
+  signal?: AbortSignal,
+  force = false,
+): Promise<boolean> {
+  if ((!force && !needsRefresh()) || typeof window === "undefined") return true;
+
+  const refresh = async () => {
+    const expectedVersion = sessionStore.getSnapshot().version;
+    const session = await refreshServerSessionNow({
+      data: { expectedVersion, force },
+      signal,
+    });
+    sessionStore.set(session);
+    return session.isAuthenticated;
   };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (!anonymous) {
-    const tok = tokenStore.get();
-    if (tok) headers.Authorization = `Bearer ${tok}`;
+
+  if (navigator.locks) {
+    return navigator.locks.request(
+      "qeetid-session-refresh",
+      { mode: "exclusive", signal },
+      refresh,
+    );
   }
-  return fetch(url, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    signal,
-  });
+
+  if (!localRefresh) {
+    localRefresh = refresh()
+      .then((authenticated) => {
+        if (!authenticated) throw new ApiError(401, "auth.session_expired", "Session expired");
+      })
+      .finally(() => {
+        localRefresh = null;
+      });
+  }
+  try {
+    await localRefresh;
+    return sessionStore.getSnapshot().isAuthenticated;
+  } catch {
+    return false;
+  }
+}
+
+export async function clearBrowserSession() {
+  await clearServerSession().catch(() => undefined);
+  onAuthLost();
 }
 
 export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}): Promise<T> {
   const { method = "GET", body, query, signal, anonymous = false, schema } = opts;
-
-  const url = new URL(path.startsWith("/") ? path.slice(1) : path, `${API_BASE_URL}/`);
+  if (!anonymous && !(await refreshSessionForRequest(signal))) {
+    await clearBrowserSession();
+    throw new ApiError(401, "auth.session_expired", "Your session has expired.");
+  }
+  const serializedQuery: Record<string, string | number> = {};
   if (query) {
     for (const [k, v] of Object.entries(query)) {
-      if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
+      if (v !== undefined && v !== null && v !== "") serializedQuery[k] = v;
     }
   }
 
-  // One id per logical request, shared across the refresh replay for correlation.
   const requestId = newRequestId();
-  let res = await doFetch(url, method, body, signal, anonymous, requestId);
-
-  // Authenticated 401 → try to refresh once, then replay. Skip the retry for
-  // the refresh endpoint itself (avoids infinite loop) and for explicitly
-  // anonymous calls (login/signup form errors should surface immediately).
-  if (res.status === 401 && !anonymous && !path.includes("/auth/refresh")) {
-    const fresh = await refreshAccessToken();
-    if (fresh) {
-      res = await doFetch(url, method, body, signal, anonymous, requestId);
-    } else {
-      onAuthLost();
-    }
+  let res = await proxyApiRequest({
+    data: {
+      path: path.startsWith("/") ? path : `/${path}`,
+      method,
+      body,
+      query: serializedQuery,
+      anonymous,
+      requestId,
+    },
+    signal,
+  });
+  if (res.status === 401 && !anonymous && (await refreshSessionForRequest(signal, true))) {
+    res = await proxyApiRequest({
+      data: {
+        path: path.startsWith("/") ? path : `/${path}`,
+        method,
+        body,
+        query: serializedQuery,
+        anonymous,
+        requestId,
+      },
+      signal,
+    });
   }
+  sessionStore.set(res.session, { broadcast: res.sessionChanged });
 
   if (res.status === 204) return undefined as T;
+  const data = res.data;
 
-  const text = await res.text();
-  const data = text ? safeParse(text) : null;
-
-  if (!res.ok) {
+  if (res.status < 200 || res.status >= 300) {
     const err = (
       data as {
         error?: { code?: string; message?: string; detail?: string; retryable?: boolean };
       } | null
     )?.error;
-    throw new ApiError(
+    const apiError = new ApiError(
       res.status,
       err?.code ?? `http_${res.status}`,
-      err?.message ?? res.statusText ?? "Request failed",
+      err?.message ?? "Request failed",
       err?.detail,
       err?.retryable ?? false,
     );
+    if (res.status === 401 && !anonymous) await clearBrowserSession();
+    throw apiError;
   }
 
   // Opt-in runtime validation. A mismatch means the backend contract drifted —
@@ -130,12 +175,4 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
   }
 
   return data as T;
-}
-
-function safeParse(s: string): unknown {
-  try {
-    return JSON.parse(s);
-  } catch {
-    return s;
-  }
 }

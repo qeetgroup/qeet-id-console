@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   verify:
-    name: Typecheck · Lint · Boundaries · Test · Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: Typecheck · Lint · Boundaries · Test · E2E · Build
+    runs-on: bby-ubuntu
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -37,6 +37,12 @@ jobs:
 
       - name: Unit tests
         run: bun run test
+
+      - name: Install Playwright browser
+        run: bunx playwright install chromium
+
+      - name: Session boundary E2E
+        run: bun run test:e2e
 
       - name: Build
         run: bun run build

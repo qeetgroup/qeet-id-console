@@ -165,7 +165,7 @@ function InvitationsPage() {
         <CardHeader>
           <CardTitle className="text-base">{t("list.title")}</CardTitle>
           <CardDescription>
-            {t("list.count", { shown: rows.length, total: items.length })}
+            {t("list.count", { shown: rows.length, total: items.length, count: items.length })}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">

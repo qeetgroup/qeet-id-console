@@ -3,7 +3,7 @@
 // stream the conversation UI consumes. Keep-alive comments (": ping") are
 // skipped, and an aborted turn resolves to a clean `done: stopped`.
 
-import { API_BASE_URL, tokenStore } from "@/platform/api/client";
+import { clearBrowserSession, refreshSessionForRequest } from "@/platform/api/client";
 import { newRequestId } from "@/platform/telemetry/tracing";
 
 import type { StreamEvent } from "./ai-provider";
@@ -70,22 +70,27 @@ export async function* streamQeetAITurn(
   body: unknown,
   signal: AbortSignal,
 ): AsyncIterable<StreamEvent> {
-  const url = new URL(path.startsWith("/") ? path.slice(1) : path, `${API_BASE_URL}/`);
-  const token = tokenStore.get();
+  const url = new URL("/api/qeetai-stream", window.location.origin);
+  url.searchParams.set("path", path.startsWith("/") ? path : `/${path}`);
 
-  let res: Response;
-  try {
-    res = await fetch(url, {
+  const request = () =>
+    fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "text/event-stream",
         "X-Request-Id": newRequestId(),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(body),
       signal,
     });
+
+  let res: Response;
+  try {
+    res = await request();
+    if (res.status === 401 && (await refreshSessionForRequest(signal, true))) {
+      res = await request();
+    }
   } catch {
     if (signal.aborted) {
       yield { type: "done", reason: "stopped" };
@@ -97,6 +102,7 @@ export async function* streamQeetAITurn(
   }
 
   if (!res.ok || !res.body) {
+    if (res.status === 401) await clearBrowserSession();
     let code = `http_${res.status}`;
     let message = res.statusText || "Request failed";
     try {

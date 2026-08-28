@@ -1,23 +1,18 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import { AuthBackground } from "@/modules/authentication/components/auth-background";
-import { isAuthenticated } from "@/platform/auth/session";
+import { getServerSession } from "@/platform/api/server-proxy";
 
-export const Route = createFileRoute("/_auth")({ component: AuthLayout });
+export const Route = createFileRoute("/_auth")({
+  beforeLoad: async () => {
+    const session = await getServerSession();
+    if (session.isAuthenticated) throw redirect({ to: "/" });
+    return { session };
+  },
+  component: AuthLayout,
+});
 
-// Mirror of _app.tsx's guard, in reverse: bounce authenticated visitors
-// out of the sign-in / sign-up screens. Has to run client-side because
-// the token lives in localStorage.
 function AuthLayout() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isAuthenticated()) {
-      navigate({ to: "/", replace: true });
-    }
-  }, [navigate]);
-
   return (
     <div className="relative isolate grid min-h-svh place-items-center overflow-hidden bg-zinc-950 p-6 md:p-10">
       <AuthBackground />

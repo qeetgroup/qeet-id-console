@@ -57,7 +57,11 @@ function ExplorerPage() {
               title="No decisions captured yet"
               description="Run a check from the Simulator, the ReBAC page, or an ABAC policy test — every decision lands here for inspection."
               action={
-                <Button render={<Link to="/authorization/simulator" />} size="sm">
+                <Button
+                  nativeButton={false}
+                  render={<Link to="/authorization/simulator" />}
+                  size="sm"
+                >
                   Open Simulator
                 </Button>
               }

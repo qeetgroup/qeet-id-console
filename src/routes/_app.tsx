@@ -1,5 +1,5 @@
 import { SidebarProvider } from "@qeetrix/ui";
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 
 import { useFeatureFlag } from "@/platform/feature-flags/provider";
@@ -13,26 +13,28 @@ import { ImpersonationBanner } from "@/modules/dashboard/components/impersonatio
 import { ShortcutsDialog } from "@/modules/dashboard/components/shortcuts-dialog";
 import { VerifyEmailBanner } from "@/modules/dashboard/components/verify-email-banner";
 import { QeetAILauncher, QeetAIRuntimeProvider, QeetAIWorkspace } from "@/modules/qeetai";
-import { isAuthenticated, useIdleLogout } from "@/platform/auth/session";
+import { useIdleLogout } from "@/platform/auth/session";
+import { sessionStore } from "@/platform/auth/session-store";
+import { getServerSession } from "@/platform/api/server-proxy";
 import { useGlobalShortcuts } from "@/shared/hooks/use-shortcuts";
 
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
-export const Route = createFileRoute("/_app")({ component: AppLayout });
+export const Route = createFileRoute("/_app")({
+  beforeLoad: async () => {
+    const session = await getServerSession();
+    if (!session.isAuthenticated) throw redirect({ to: "/sign-in" });
+    return { session };
+  },
+  component: AppLayout,
+});
 
-// The auth guard runs as a useEffect, not in beforeLoad, because the access
-// token lives in localStorage and is therefore invisible to the server.
-// Running it in beforeLoad would 302-redirect every hard refresh to
-// /sign-in even for users with a valid token (see issue: "after logged in
-// and i tried refresh the page, again it went to sign-in page").
 function AppLayout() {
-  const navigate = useNavigate();
+  const { session } = Route.useRouteContext();
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate({ to: "/sign-in", replace: true });
-    }
-  }, [navigate]);
+    sessionStore.hydrate(session);
+  }, [session]);
 
   return (
     <CapabilityProvider>

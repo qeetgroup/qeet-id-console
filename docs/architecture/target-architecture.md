@@ -16,7 +16,8 @@ src/
 │                   each: api/ components/ hooks/ store/ utils/ schemas/ index.ts
 │                          (only the subfolders it needs)
 ├── platform/       cross-cutting infrastructure
-│                     api/ (the one HTTP client) · auth/ (token-store, refresh, session)
+│                     api/ (BFF JSON + SSE transport) · auth/ (encrypted server session,
+│                     public client session store, cross-tab transitions)
 │                     errors/ · query/ · security/ (capabilities, step-up, sensitive-action)
 │                     telemetry/ · feature-flags/ · config/ (env, navigation) · components/
 ├── shared/         generic, domain-agnostic: components/ hooks/ utils/ data/
@@ -50,9 +51,13 @@ Forbidden (fail CI):
 route → feature page → feature hook → feature api/ → platform/api client → Qeet ID API
 ```
 
-The `api()` client is the single request path: Bearer auth, single-flight 401
-refresh + replay, `ApiError` normalization, `X-Request-Id` correlation, and
-opt-in zod response validation. Feature components do not call `fetch` directly.
+The browser `api()` client calls the same-origin TanStack Start BFF. Backend
+Bearer tokens remain in an encrypted HttpOnly cookie; the BFF owns correlation,
+refresh, replay, error normalization, token-response stripping, and opt-in zod
+validation. Fixed server routes proxy authenticated SSE streams.
+
+Protected layouts resolve `PublicSession` in `beforeLoad`. Backend JWT, RBAC,
+and RLS remain authoritative; route guards are navigation UX, not data security.
 
 ## Security spine
 
