@@ -12,8 +12,8 @@ concurrency:
 
 jobs:
   verify:
-    name: Typecheck · Lint · Boundaries · Test · E2E · Build
-    runs-on: bby-ubuntu
+    name: Verify
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4

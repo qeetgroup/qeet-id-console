@@ -72,7 +72,7 @@ commands:
 ci:
   workflows: [ci.yml]
   job: verify                 # typecheck, check, lint:boundaries, test, e2e, build
-  runner: bby-ubuntu
+  runner: ubuntu-latest
 
 security:
   sensitive_paths:
