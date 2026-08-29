@@ -7,8 +7,14 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
   workers: 1,
-  timeout: 60_000,
+  // The first authenticated navigation cold-compiles the whole dashboard route tree under Vite
+  // dev — three.js, @xyflow/react and @qeetrix/ui all get pulled in. On a CI runner that has
+  // measured past 30s, so the per-test budget has to sit well above signIn()'s own timeout.
+  timeout: 180_000,
   expect: { timeout: 10_000 },
+  // Only the first signIn() pays the cold-compile cost; a retry runs against a warm module graph.
+  // Playwright reports a passing retry as "flaky" rather than green, so this stays visible.
+  retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
     ...devices["Desktop Chrome"],

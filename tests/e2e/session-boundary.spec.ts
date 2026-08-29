@@ -1,19 +1,31 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const backendUrl = "http://127.0.0.1:43101";
 const appUrl = "http://127.0.0.1:43173";
 
+// The sign-in inputs are controlled by React. Typing into the server-rendered markup before
+// hydration completes is silently reverted the moment React takes ownership, which submits the
+// form with an empty field and leaves us on /sign-in. Under a cold Vite dev compile that window is
+// wide enough to lose, so re-fill until the value survives rather than assuming one fill sticks.
+async function fillOnceHydrated(field: Locator, value: string) {
+  await expect(async () => {
+    await field.fill(value);
+    await expect(field).toHaveValue(value, { timeout: 1_000 });
+  }).toPass({ timeout: 90_000 });
+}
+
 async function signIn(page: Page) {
   await page.goto("/sign-in");
-  await page.getByLabel("Email").fill("operator@example.com");
-  await page.locator("#password").fill("Password123!");
+  await fillOnceHydrated(page.getByLabel("Email"), "operator@example.com");
+  await fillOnceHydrated(page.locator("#password"), "Password123!");
   const submit = page.getByRole("button", { name: "Login", exact: true });
   await expect(page.locator("form").first()).toHaveAttribute("method", "post");
   await expect(submit).toBeEnabled({ timeout: 30_000 });
   await submit.click();
-  // First authenticated navigation cold-compiles the dashboard route tree under
-  // Vite dev, which can exceed the default expect timeout, so give it room.
-  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
+  // First authenticated navigation cold-compiles the dashboard route tree under Vite dev. The
+  // router cannot complete the redirect until that lazy chunk is built, so this assertion — not
+  // the click — is what absorbs the compile. Measured past 30s on CI; 90s leaves real headroom.
+  await expect(page).toHaveURL(/\/$/, { timeout: 90_000 });
   await expect(page.getByLabel("Account menu")).toBeVisible({ timeout: 30_000 });
 }
 
