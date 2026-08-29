@@ -76,6 +76,12 @@ jobs:
         run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
 
       - name: Build
+        env:
+          # Nitro selects its Vercel preset by detecting the Vercel platform at build time. Driven
+          # from GitHub Actions that detection does not fire, so it emits .output/ (the default
+          # preset) and `vercel build` then hunts for a "dist" directory and fails. Pin the preset
+          # so the build produces .vercel/output — the Build Output API dir the CLI expects.
+          NITRO_PRESET: vercel
         run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
 
       - name: Deploy to Vercel
