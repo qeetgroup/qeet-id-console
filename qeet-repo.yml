@@ -70,9 +70,12 @@ commands:
   boundaries: bun run lint:boundaries
 
 ci:
-  workflows: [ci.yml]
-  job: verify                 # typecheck, check, lint:boundaries, test, e2e, build
-  runner: bby-ubuntu
+  workflows: [ci.yml, deploy.yml]
+  jobs:                       # verify and e2e run in PARALLEL, not in sequence
+    verify: typecheck, check, lint:boundaries, test, build
+    e2e: session boundary (ADR-0009) — the only cover for CSRF + cookie flags
+  runner: ubuntu-latest
+  deploy: push main -> gate -> vercel build/deploy --prod -> tag vX.Y.Z + GitHub release
 
 security:
   sensitive_paths:

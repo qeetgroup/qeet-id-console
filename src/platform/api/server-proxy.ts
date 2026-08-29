@@ -30,7 +30,10 @@ const requestSchema = z.object({
       (path) =>
         path.startsWith("/") &&
         !path.startsWith("//") &&
-        !/[\\?#\u0000-\u001f\u007f]/.test(path),
+        // Mirrors FORBIDDEN_PATH_CHARACTERS in server-request-policy.ts.
+        // biome-ignore lint/suspicious/noControlCharactersInRegex: rejecting control characters is the intent
+        !/[\\?#\u0000-\u001f\u007f]/.test(path) &&
+        !path.includes("://"),
       "Invalid API path",
     ),
   method: z.enum(["GET", "POST", "PATCH", "PUT", "DELETE"]),

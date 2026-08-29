@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   verify:
-    name: Typecheck · Lint · Boundaries · Test · E2E · Build
-    runs-on: bby-ubuntu
-    timeout-minutes: 25
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -38,11 +38,42 @@ jobs:
       - name: Unit tests
         run: bun run test
 
+      - name: Build
+        run: bun run build
+
+  # Runs in parallel with `verify`, not after it: this is the only automated cover for the
+  # ADR-0009 session boundary (CSRF rejection, HttpOnly/SameSite cookie flags, tokens never
+  # reaching browser storage), so it must stay in CI — but it need not lengthen the critical path.
+  e2e:
+    name: Session boundary E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
       - name: Install Playwright browser
         run: bunx playwright install chromium
 
       - name: Session boundary E2E
         run: bun run test:e2e
 
-      - name: Build
-        run: bun run build
+      # The Playwright trace is what makes a failure here diagnosable — it carries the DOM
+      # snapshot at the point of failure. Without it a red run is just a timeout message.
+      - name: Upload Playwright trace on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-trace
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore

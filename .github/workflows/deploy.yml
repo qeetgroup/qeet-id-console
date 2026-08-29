@@ -1,0 +1,98 @@
+name: deploy
+
+on:
+  push:
+    branches: [main] # every merge to main gates, deploys, then tags
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which version part to increment
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # push the version tag after a successful deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://console.id.qeet.in
+    env:
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history to find the latest tag
+
+      - name: Determine next version
+        id: version
+        env:
+          # `type: choice` constrains this server-side, but keep it out of the
+          # script body anyway so the run block never interpolates input.
+          BUMP: ${{ inputs.bump || 'patch' }}
+        run: |
+          latest=$(git tag --list 'v*' --sort=-version:refname | head -1)
+          latest=${latest:-v0.0.0}
+          IFS='.' read -r major minor patch <<< "${latest#v}"
+          case "$BUMP" in
+            major) new_tag="v$((major + 1)).0.0" ;;
+            minor) new_tag="v${major}.$((minor + 1)).0" ;;
+            *)     new_tag="v${major}.${minor}.$((patch + 1))" ;;
+          esac
+          echo "Latest: $latest  ->  new: $new_tag"
+          echo "tag=$new_tag" >> "$GITHUB_OUTPUT"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Fast gate: don't ship code that fails typecheck, lint or unit tests.
+      # The full suite (boundaries + Playwright E2E) already ran in ci.yml on
+      # the PR into main; this is the last-mile guard against a bad merge.
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Format + lint (Biome)
+        run: bun run check
+
+      - name: Unit tests
+        run: bun run test
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull production environment
+        run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build
+        run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy to Vercel
+        run: vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # Tag + release AFTER a successful deploy so every tag == a live deployed
+      # version. Matches qeet-id-server's deploy.yml.
+      - name: Push version tag and create GitHub release
+        env:
+          VERSION: ${{ steps.version.outputs.tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --generate-notes \
+            --repo "${{ github.repository }}"
