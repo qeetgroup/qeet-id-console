@@ -70,9 +70,10 @@ commands:
   boundaries: bun run lint:boundaries
 
 ci:
-  workflows: [ci.yml]
+  workflows: [ci.yml, deploy.yml]
   job: verify                 # typecheck, check, lint:boundaries, test, e2e, build
   runner: ubuntu-latest
+  deploy: push main -> gate -> vercel build/deploy --prod -> tag vX.Y.Z + GitHub release
 
 security:
   sensitive_paths:
