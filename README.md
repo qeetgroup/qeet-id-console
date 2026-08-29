@@ -134,7 +134,6 @@ Other scripts:
 bun run build       # production build (Vite + Nitro)
 bun run typecheck   # tsc --noEmit
 bun run test        # vitest
-bun run test:e2e    # Playwright session-boundary tests
 bun run lint        # biome
 ```
 

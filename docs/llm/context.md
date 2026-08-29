@@ -173,23 +173,25 @@ CSRF is applied in `src/start.ts` for all server functions and all non-GET/HEAD/
 
 ## Testing
 
-29 unit test files + 1 Playwright spec. Vitest defaults to `environment: "node"`; seven files opt
-into jsdom with a `// @vitest-environment jsdom` pragma. `vitest.config.ts` deliberately does **not**
-reuse `vite.config.ts` — unit tests stay independent of Start/Nitro plugins.
+29 unit test files, Vitest only. It defaults to `environment: "node"`; seven files opt into jsdom
+with a `// @vitest-environment jsdom` pragma. `vitest.config.ts` deliberately does **not** reuse
+`vite.config.ts` — unit tests stay independent of Start/Nitro plugins.
 
-E2E (`tests/e2e/session-boundary.spec.ts`, 5 tests) runs against a fake backend stub on 43101 with
-the dev server on 43173. It asserts the session boundary directly: no localStorage tokens, HttpOnly
-+ `SameSite=Lax` cookies, cross-origin BFF mutations rejected, cross-tab logout, and
-single-flighted refresh.
+**There is no browser-level test cover.** The Playwright session-boundary suite was removed in
+2026-08 after persistent CI flake. Nothing now automatically verifies the ADR-0009 invariants that
+only appear in a real browser: absence of localStorage tokens, HttpOnly + `SameSite=Lax` cookie
+flags, cross-origin BFF rejection (the CSRF middleware in `src/start.ts` has **no** test at all),
+cross-tab logout, and single-flighted refresh. Verify these by hand when touching
+`src/platform/{api,auth}`.
 
 **No tests** for `billing`, `compliance`, `developer`, `onboarding`, `organizations`, `users`,
 `authorization`, or `src/routes/**`.
 
 ## CI/CD
 
-One workflow, one job `verify` on `bby-ubuntu`, 25-minute timeout:
+`ci.yml`, one job `verify` on `ubuntu-latest`, 15-minute timeout:
 checkout → bun 1.3.14 → `install --frozen-lockfile` → `typecheck` → `check` →
-**`lint:boundaries`** → `test` → install chromium → `test:e2e` → `build`.
+**`lint:boundaries`** → `test` → `build`.
 
 No deploy workflow — Vercel deploys from its own Git integration (`vercel.json` pins the install and
 build commands).

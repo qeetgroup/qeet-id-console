@@ -9,7 +9,6 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint --diagnostic-level=error .",
     "lint:boundaries": "biome lint --diagnostic-level=error ./src",
@@ -59,7 +58,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3",
-    "@playwright/test": "^1.62.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@structure-codes/cli": "^0.0.6",
     "@tanstack/devtools-vite": "^0.7.0",

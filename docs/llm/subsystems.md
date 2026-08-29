@@ -59,7 +59,7 @@ config/navigation.tsx          nav tree + getRequiredCapabilityForPath (645 line
 `auth/__tests__/{server-session,session-response,session-store}.test.ts` ·
 `security/__tests__/{capability-model,sensitive-action-provider}.test.*` ·
 `errors/__tests__/normalize-error.test.ts` · `telemetry/__tests__/redact.test.ts` ·
-`config/__tests__/navigation.test.ts` · E2E `tests/e2e/session-boundary.spec.ts`
+`config/__tests__/navigation.test.ts`
 
 ---
 

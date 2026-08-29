@@ -71,7 +71,7 @@ the fix if you need to.
    src/platform/auth/session-response.ts (token-issuing allowlist)
 2  TOKENS MUST NOT REACH THE BROWSER — ADR-0009
 3  keep unseal failures FAIL-CLOSED (clear the session, return {})
-4  test/unit + bun run test:e2e   ← session-boundary.spec.ts asserts this directly
+4  test/unit only — NO browser-level cover; verify this invariant by hand
 ```
 
 Never add a token to `PublicSession`. Never reintroduce localStorage token keys.
@@ -119,8 +119,9 @@ bun run typecheck && bun run check && bun run lint:boundaries && bun run test
 git diff
 ```
 
-Add `bun run test:e2e` if you touched `src/platform/{api,auth}` — the session-boundary spec is the
-guard on the most security-sensitive code here.
+If you touched `src/platform/{api,auth}`, verify the session boundary manually — there is no
+automated browser test for it. Sign in and confirm: no token in `localStorage` or `document.cookie`,
+the session cookie is HttpOnly + `SameSite=Lax`, and the session survives a hard refresh.
 
 ### Escalate rather than proceed
 

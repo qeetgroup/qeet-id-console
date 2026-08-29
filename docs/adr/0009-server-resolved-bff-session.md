@@ -54,6 +54,7 @@ console therefore needs a secure browser boundary, not a second identity system.
   every client-controlled path or input.
 - `SESSION_SECRET` rotation invalidates existing console cookies; the operator
   signs in again while backend sessions remain independently revocable.
-- Browser and server-session invariants are covered by unit tests plus Playwright
+- Server-session invariants are covered by unit tests. Browser-level invariants (cookie flags,
+  localStorage, cross-tab) have NO automated cover since the Playwright suite was removed
   tests for anonymous guards, cookie flags, hard refresh, CSRF, cross-tab logout,
   and single-use refresh coordination.
