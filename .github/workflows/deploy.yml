@@ -58,8 +58,8 @@ jobs:
         run: bun install --frozen-lockfile
 
       # Fast gate: don't ship code that fails typecheck, lint or unit tests.
-      # The full suite (boundaries + Playwright E2E) already ran in ci.yml on
-      # the PR into main; this is the last-mile guard against a bad merge.
+      # The full suite (including architecture boundaries) already ran in ci.yml
+      # on the PR into main; this is the last-mile guard against a bad merge.
       - name: Typecheck
         run: bun run typecheck
 

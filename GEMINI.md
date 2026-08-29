@@ -36,7 +36,7 @@ The **operator console for Qeet ID** (`console.id.qeet.in`). TanStack Start + Ro
 
 ## Commands
 
-`bun run dev` · `bun run build` · `bun run test` · `bun run test:e2e` · `bun run typecheck` · `bun run check` · `bun run lint:boundaries`
+`bun run dev` · `bun run build` · `bun run test` · `bun run typecheck` · `bun run check` · `bun run lint:boundaries`
 
 That list is complete — **do not invent commands.**
 
@@ -44,6 +44,6 @@ That list is complete — **do not invent commands.**
 
 ```bash
 bun run typecheck && bun run check && bun run lint:boundaries && bun run test
-# add: bun run test:e2e   if you touched src/platform/{api,auth}
+# src/platform/{api,auth} has no browser-level test cover - verify the session boundary by hand
 git diff
 ```

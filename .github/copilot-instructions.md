@@ -25,7 +25,7 @@ Layered and **lint-enforced**: `routes → modules → platform → shared`. 14 
 
 ## Commands
 
-`bun run dev` · `bun run build` · `bun run test` · `bun run test:e2e` · `bun run typecheck` · `bun run check` · `bun run lint:boundaries`
+`bun run dev` · `bun run build` · `bun run test` · `bun run typecheck` · `bun run check` · `bun run lint:boundaries`
 
 ## Do not
 

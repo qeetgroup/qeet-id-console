@@ -95,7 +95,6 @@ bun install
 bun run dev              # vite dev — NO port is configured; Vite defaults to 5173
 bun run build
 bun run test             # vitest
-bun run test:e2e         # playwright (starts a fake backend + dev server on 43173)
 bun run typecheck
 bun run check            # biome format + lint + assist
 bun run lint:boundaries  # the layering gate
@@ -110,9 +109,13 @@ bun run lint:boundaries  # the layering gate
 
 ## What CI enforces
 
-One workflow, one job (`verify`, runner `bby-ubuntu`, 25 min): typecheck → `check` →
-**`lint:boundaries`** → test → install chromium → `test:e2e` → build. There is no deploy workflow;
-Vercel deploys from its own Git integration.
+`ci.yml`, one job (`verify`, runner `ubuntu-latest`, 15 min): typecheck → `check` →
+**`lint:boundaries`** → test → build.
+
+`deploy.yml` runs on every push to `main`: the same gate, then `vercel build`/`deploy --prod`,
+then it tags `vX.Y.Z` and cuts a GitHub release. Vercel's own Git integration is disabled for
+`main` (`vercel.json`) so the two cannot double-deploy; PR and `develop` previews still come
+from Vercel.
 
 ## Before you finish
 
@@ -121,7 +124,9 @@ bun run typecheck && bun run check && bun run lint:boundaries && bun run test
 git diff
 ```
 
-Run `bun run test:e2e` if you touched anything under `src/platform/{api,auth}`.
+`src/platform/{api,auth}` carries the ADR-0009 session boundary and has no browser-level test
+cover, so changes there need manual verification: sign in, confirm no token appears in
+`localStorage` or `document.cookie`, and confirm the session survives a hard refresh.
 
 ## Escalate rather than proceed
 

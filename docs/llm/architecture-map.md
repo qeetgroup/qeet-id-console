@@ -93,10 +93,8 @@ Details and barrels: [`subsystems.md`](subsystems.md).
 | **Layering rules** | `biome.json` |
 | Vite plugins | `vite.config.ts` — **no `server.port`** |
 | Unit tests | `vitest.config.ts` — `environment: "node"`, jsdom via per-file pragma |
-| E2E | `playwright.config.ts` — fake backend + dev server on 43173 |
-| E2E spec + stub | `tests/e2e/session-boundary.spec.ts`, `tests/e2e/fixtures/fake-backend.mjs` |
 | CI | `.github/workflows/ci.yml` |
-| Deploy | `vercel.json` |
+| Deploy | `.github/workflows/deploy.yml` + `vercel.json` |
 
 ## Architecture docs
 
