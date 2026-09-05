@@ -100,6 +100,7 @@ export async function clearBrowserSession() {
 
 export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}): Promise<T> {
   const { method = "GET", body, query, signal, anonymous = false, schema } = opts;
+  const requestScopeGeneration = sessionStore.getScopeGeneration();
   if (!anonymous && !(await refreshSessionForRequest(signal))) {
     await clearBrowserSession();
     throw new ApiError(401, "auth.session_expired", "Your session has expired.");
@@ -135,6 +136,13 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
       },
       signal,
     });
+  }
+  if (requestScopeGeneration !== sessionStore.getScopeGeneration()) {
+    throw new ApiError(
+      0,
+      "client.stale_scope",
+      "This response belongs to a previous session scope.",
+    );
   }
   sessionStore.set(res.session, { broadcast: res.sessionChanged });
 
