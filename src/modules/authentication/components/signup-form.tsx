@@ -15,6 +15,8 @@ import type * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useIsDark } from "@/platform/theme/use-is-dark";
+
 import type { PasskeySignupInput } from "../api/passkey-flows";
 
 import { AuthDivider, AuthFormCard, PasskeyButton } from "./auth-form-card";
@@ -45,6 +47,9 @@ export function SignupForm({
   ...props
 }: SignupFormProps) {
   const { t } = useTranslation("auth-flow");
+  // Placeholders differ between the light and dark comps; unlike the headings
+  // they are attributes, so the .auth-copy-light/-dark swap cannot reach them.
+  const isDark = useIsDark();
   const [mismatch, setMismatch] = useState(false);
   const [password, setPassword] = useState("");
   const [hydrated, setHydrated] = useState(false);
@@ -114,7 +119,7 @@ export function SignupForm({
             <Field className="auth-field" disabled={isBusy}>
               <FieldLabel htmlFor="display_name">{t("signUp.name")}</FieldLabel>
               <div className="auth-input-wrap">
-                <UserRound className="auth-input-icon auth-copy-dark" aria-hidden="true" />
+                <UserRound className="auth-input-icon" aria-hidden="true" />
                 <Input
                   ref={nameRef}
                   id="display_name"
@@ -130,7 +135,7 @@ export function SignupForm({
             <Field className="auth-field" disabled={isBusy}>
               <FieldLabel htmlFor="email">{t("signUp.email")}</FieldLabel>
               <div className="auth-input-wrap">
-                <Mail className="auth-input-icon auth-copy-dark" aria-hidden="true" />
+                <Mail className="auth-input-icon" aria-hidden="true" />
                 <Input
                   ref={emailRef}
                   id="email"
@@ -139,7 +144,9 @@ export function SignupForm({
                   autoComplete="email"
                   autoCapitalize="none"
                   spellCheck={false}
-                  placeholder={t("signUp.emailPlaceholder")}
+                  placeholder={t(
+                    isDark ? "signUp.emailPlaceholderDark" : "signUp.emailPlaceholderLight",
+                  )}
                   required
                   aria-describedby="signup-email-help"
                 />
@@ -152,12 +159,14 @@ export function SignupForm({
             <Field className="auth-field" disabled={isBusy}>
               <FieldLabel htmlFor="password">{t("form.password")}</FieldLabel>
               <div className="auth-input-wrap">
-                <LockKeyhole className="auth-input-icon auth-copy-dark" aria-hidden="true" />
+                <LockKeyhole className="auth-input-icon" aria-hidden="true" />
                 <PasswordInput
                   id="password"
                   name="password"
                   autoComplete="new-password"
-                  placeholder={t("signUp.passwordPlaceholder")}
+                  placeholder={t(
+                    isDark ? "signUp.passwordPlaceholderDark" : "signUp.passwordPlaceholderLight",
+                  )}
                   minLength={8}
                   required
                   value={password}
@@ -173,7 +182,7 @@ export function SignupForm({
             <Field className="auth-field" disabled={isBusy} data-invalid={mismatch || undefined}>
               <FieldLabel htmlFor="confirm_password">{t("signUp.confirmPassword")}</FieldLabel>
               <div className="auth-input-wrap">
-                <LockKeyhole className="auth-input-icon auth-copy-dark" aria-hidden="true" />
+                <LockKeyhole className="auth-input-icon" aria-hidden="true" />
                 <PasswordInput
                   ref={confirmRef}
                   id="confirm_password"

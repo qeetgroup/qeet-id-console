@@ -128,6 +128,25 @@
   font-size: 0.6875rem;
 }
 
+.auth-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+/* The shared console toggle reads app tokens; re-tint it for the auth palette. */
+.auth-header-actions button {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  color: var(--auth-muted);
+}
+
+.auth-header-actions button:hover {
+  background: var(--auth-control-hover);
+  color: var(--auth-foreground);
+}
+
 .auth-navigation a,
 .auth-footer a {
   transition: color 180ms ease;
@@ -597,30 +616,14 @@
   font-size: 1.5625rem;
 }
 
-.auth-entry-signup .auth-card-orb,
-.auth-background-orb {
-  display: none;
-}
-
-.dark .auth-entry-signup .auth-card-orb {
-  display: block;
+/* The signup card is denser than the signin one, so its corner orb is a little
+   smaller — but it stays anchored in the card corner in both themes rather
+   than detaching into the page background. */
+.auth-entry-signup .auth-card-orb {
   top: -3.75rem;
   right: -5.25rem;
   width: 11rem;
   height: 11rem;
-}
-
-.auth-shell[data-auth-intent="signup"] .auth-background-orb {
-  z-index: 0;
-  top: 4rem;
-  right: -8rem;
-  display: block;
-  width: 18rem;
-  height: 18rem;
-}
-
-.dark .auth-shell[data-auth-intent="signup"] .auth-background-orb {
-  display: none;
 }
 
 .auth-entry-signup .auth-form-eyebrow {
@@ -645,11 +648,6 @@
 
 .auth-entry-signup .auth-field [data-slot="input"] {
   height: 1.875rem;
-  padding-inline-start: 0.75rem;
-}
-
-.dark .auth-entry-signup .auth-input-wrap [data-slot="input"] {
-  padding-inline-start: 2.5rem;
 }
 
 .auth-field-help {
@@ -675,26 +673,20 @@
   height: 2rem;
 }
 
+.auth-entry-signup .auth-passkey-chevron {
+  display: none;
+}
+
+.dark .auth-entry-signup .auth-passkey-chevron {
+  display: inline-flex;
+}
+
 .auth-entry-signup .auth-form-switch {
   margin-top: 0.875rem;
 }
 
 .auth-password-strength {
   margin-top: 0.625rem;
-}
-
-.auth-shell[data-auth-intent="signup"] .auth-header {
-  min-height: 3.5rem;
-  padding-bottom: 0;
-}
-
-.auth-shell[data-auth-intent="signup"] .auth-content {
-  padding-bottom: 1rem;
-}
-
-.auth-shell[data-auth-intent="signup"] .auth-footer {
-  min-height: 2.125rem;
-  padding-block: 0.5rem;
 }
 
 .auth-sso-notice {
@@ -820,11 +812,6 @@
 @media (max-width: 900px) {
   .auth-header {
     width: calc(100% - 3rem);
-    min-height: 5rem;
-    padding-block: 1rem;
-  }
-
-  .auth-shell[data-auth-intent="signup"] .auth-header {
     min-height: 5rem;
     padding-block: 1rem;
   }

@@ -2,10 +2,16 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { AuthBackground } from "./auth-background";
+import { ThemeToggle } from "@/platform/components/theme-toggle";
+import {
+  DOCS_URL,
+  PRICING_URL,
+  PRIVACY_URL,
+  SECURITY_URL,
+  TERMS_URL,
+} from "@/platform/config/site-urls";
 
-const TERMS_URL = "https://id.qeet.in/legal/terms";
-const PRIVACY_URL = "https://id.qeet.in/legal/privacy";
+import { AuthBackground } from "./auth-background";
 
 export function AuthShell({
   children,
@@ -41,17 +47,20 @@ export function AuthShell({
             />
             <span>Qeet ID</span>
           </Link>
-          <nav className="auth-navigation" aria-label={t("layout.navigation")}>
-            <a href="https://id.qeet.in/security" target="_blank" rel="noopener noreferrer">
-              {t("layout.security")}
-            </a>
-            <a href="https://id.qeet.in/pricing" target="_blank" rel="noopener noreferrer">
-              {t("layout.business")}
-            </a>
-            <a href="https://docs.id.qeet.in" target="_blank" rel="noopener noreferrer">
-              {t("layout.help")}
-            </a>
-          </nav>
+          <div className="auth-header-actions">
+            <nav className="auth-navigation" aria-label={t("layout.navigation")}>
+              <a href={SECURITY_URL} target="_blank" rel="noopener noreferrer">
+                {t("layout.security")}
+              </a>
+              <a href={PRICING_URL} target="_blank" rel="noopener noreferrer">
+                {t("layout.business")}
+              </a>
+              <a href={DOCS_URL} target="_blank" rel="noopener noreferrer">
+                {t("layout.help")}
+              </a>
+            </nav>
+            <ThemeToggle />
+          </div>
         </header>
         <main id="auth-content" className="auth-content" tabIndex={-1}>
           {children}
@@ -70,7 +79,7 @@ export function AuthShell({
           <a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer">
             {t("layout.privacy")}
           </a>
-          <a href="https://id.qeet.in/security" target="_blank" rel="noopener noreferrer">
+          <a href={SECURITY_URL} target="_blank" rel="noopener noreferrer">
             {t("layout.trust")}
           </a>
         </nav>

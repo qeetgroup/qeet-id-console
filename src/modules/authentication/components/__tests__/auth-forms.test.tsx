@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
+import { ThemeProvider } from "@qeetrix/ui";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { AnchorHTMLAttributes } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "@/i18n";
+
+import { TERMS_URL } from "@/platform/config/site-urls";
 
 import { usePlatformSocialProviders } from "../../api/flows";
 import { useSSODiscovery } from "../../api/sso";
@@ -182,13 +185,19 @@ describe("reference sign-up form", () => {
 
 describe("shared authentication chrome", () => {
   it("retains the sign-in and sign-up consent copy with real legal links", () => {
-    const { rerender } = render(<AuthShell intent="signin">Form</AuthShell>);
+    // The shell's theme toggle needs the provider __root.tsx supplies in-app.
+    const shell = (intent: "signin" | "signup") => (
+      <ThemeProvider storageKey="test-theme">
+        <AuthShell intent={intent}>Form</AuthShell>
+      </ThemeProvider>
+    );
+    const { rerender } = render(shell("signin"));
     expect(screen.getByText(/By signing in/)).toBeTruthy();
-    rerender(<AuthShell intent="signup">Form</AuthShell>);
+    rerender(shell("signup"));
     expect(screen.getByText(/By signing up/)).toBeTruthy();
     const legal = within(screen.getByRole("navigation", { name: "Legal and trust" }));
     expect(legal.getByRole("link", { name: "Terms of Service" }).getAttribute("href")).toBe(
-      "https://id.qeet.in/legal/terms",
+      TERMS_URL,
     );
     expect(screen.getByRole("main").id).toBe("auth-content");
   });

@@ -123,7 +123,6 @@ export function AuthBackground() {
           strokeWidth="0.8"
         />
       </svg>
-      <span className="auth-card-orb auth-background-orb" />
     </div>
   );
 }
