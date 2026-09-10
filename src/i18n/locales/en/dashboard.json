@@ -73,6 +73,269 @@
     "description": "Your account isn't tied to an organization yet. Create one to start managing users, configuring auth, and inviting teammates — you'll be its owner.",
     "cta": "Create organization"
   },
+  "welcome": {
+    "eyebrow": "Welcome to Qeet ID",
+    "description": "Your account isn't tied to an organization yet. Create one to manage users, configure authentication, and invite teammates — you’ll be its owner.",
+    "reviewSecurity": "Review account security",
+    "foundations": {
+      "title": "What an organization establishes",
+      "boundary": {
+        "title": "Tenant boundary",
+        "description": "Isolate identities, policies, and administrators from every other organization."
+      },
+      "authentication": {
+        "title": "Authentication policy",
+        "description": "Configure passkeys, federation, MFA, and application credentials in one place."
+      },
+      "audit": {
+        "title": "Verifiable audit trail",
+        "description": "Record operator and identity events from the first configuration change."
+      }
+    },
+    "checklist": {
+      "title": "Get started with Qeet ID",
+      "description": "A few simple steps to set up your organization and start secure access for your team.",
+      "progress": "{{completed}} of {{total}} complete",
+      "progressLabel": "Organization setup progress",
+      "collapse": "Collapse getting-started checklist",
+      "expand": "Expand getting-started checklist",
+      "steps": {
+        "organization": {
+          "title": "Create your organization",
+          "description": "Set up your organization and basic details like name and domain."
+        },
+        "authentication": {
+          "title": "Configure authentication",
+          "description": "Set your passkey and MFA policies to match your security requirements."
+        },
+        "team": {
+          "title": "Invite your team",
+          "description": "Add teammates and grant the right access to get started."
+        }
+      }
+    },
+    "account": {
+      "complete": {
+        "title": "Your account is ready",
+        "description": "Your identity has been verified and your account is secure."
+      },
+      "pending": {
+        "title": "Finish securing your account",
+        "description": "Verify your email and review your account security to complete your setup."
+      },
+      "loading": {
+        "title": "Checking your account",
+        "description": "Checking your email verification and enrolled passkeys."
+      },
+      "unavailable": {
+        "title": "Account status unavailable",
+        "description": "We couldn’t check your account. Try again to see its current status."
+      },
+      "status": {
+        "pending": "Action needed",
+        "loading": "Checking…",
+        "unavailable": "Unable to check"
+      },
+      "retry": "Check again",
+      "rows": {
+        "identity": {
+          "label": "Identity verification",
+          "complete": "Identity verified",
+          "description": "Completed"
+        },
+        "passkey": {
+          "label": "Passkeys",
+          "complete": "Passkeys enabled",
+          "description": "Ready to use"
+        },
+        "account": {
+          "label": "Account security",
+          "complete": "Account secured",
+          "description": "No action required"
+        }
+      }
+    },
+    "help": {
+      "title": "Need help getting started?",
+      "description": "Explore our documentation or contact our team.",
+      "docs": {
+        "title": "View documentation",
+        "description": "Step-by-step guides and best practices"
+      },
+      "support": { "title": "Contact support", "description": "Get help from our team" },
+      "newTab": "(opens in a new tab)"
+    },
+    "footer": {
+      "tagline": "Passkeys-first identity and access platform",
+      "navigation": "Dashboard resources",
+      "status": "Status",
+      "docs": "Documentation",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
+  },
+  "invites": {
+    "title": "You’ve been invited",
+    "description": "Accept an invitation to join an existing organization.",
+    "invitedAs": "Invited as {{email}}",
+    "decline": "Decline",
+    "accept": "Accept & join",
+    "dismissed": "Invitation dismissed."
+  },
+  "setup": {
+    "eyebrow": "Organization setup",
+    "title": "Set up your organization",
+    "planSubtitle": "Pick a plan to get started — you can change or cancel it anytime.",
+    "detailsSubtitle": "A few details help us tailor your experience — you can change these anytime.",
+    "cancel": "Cancel setup",
+    "back": "Back",
+    "continue": "Continue",
+    "skip": "Skip for now",
+    "optional": "Optional",
+    "progress": {
+      "label": "Organization setup progress",
+      "plan": "Choose plan",
+      "profile": "Project details",
+      "name": "Organization details",
+      "invite": "Invite your team",
+      "launch": "Launch",
+      "complete": "Complete",
+      "current": "Current step",
+      "next": "Next",
+      "later": "After creation"
+    },
+    "plans": {
+      "billingCycle": "Billing cycle",
+      "month": "Monthly",
+      "year": "Yearly",
+      "saving": "Save {{percent}}%",
+      "currency": "Currency",
+      "popular": "Most popular",
+      "current": "Current",
+      "currentPlan": "Current plan",
+      "chooseFree": "Choose Free",
+      "choose": "Choose plan",
+      "contactSales": "Contact sales",
+      "custom": "Custom",
+      "perMonth": "/ month",
+      "perYear": "/ year",
+      "annualContract": "Annual contract",
+      "yearlyEquivalent": "≈ {{amount}} / month, billed yearly",
+      "unavailable": "Unavailable in this currency or cycle",
+      "loading": "Loading plans",
+      "empty": "No plans are available right now.",
+      "error": "We couldn’t load the plans. Please try again.",
+      "retry": "Try again"
+    },
+    "summary": {
+      "plan": "{{name}} plan",
+      "description": "Your selected organization plan",
+      "change": "Change plan"
+    },
+    "profile": {
+      "title": "Tell us about your project",
+      "description": "This helps us personalize your setup and recommendations.",
+      "useCase": "What are you building?",
+      "useCaseHint": "e.g. B2B SaaS, consumer app, internal tools, etc.",
+      "teamSize": "How big is your team?",
+      "teamSizeHint": "Total number of people working on this project.",
+      "role": "Your role",
+      "roleHint": "Helps us tailor content and recommendations.",
+      "placeholder": "Select…"
+    },
+    "organization": {
+      "title": "Create your organization",
+      "description": "This will be your home in Qeet ID. You can update these details later.",
+      "name": "Organization name",
+      "namePlaceholder": "Acme Corporation",
+      "nameHint": "This is the name that will appear across Qeet ID for your team.",
+      "slug": "Slug",
+      "slugPlaceholder": "acme",
+      "slugHint": "Lowercase letters, numbers and hyphens. Used in URLs.",
+      "region": "Data region",
+      "regionHint": "Choose where your organization’s data will be stored.",
+      "logo": "Logo",
+      "logoHint": "Optional — we’ll use an initials avatar if you skip it.",
+      "create": "Create organization",
+      "enterprise": "Create & contact sales",
+      "payment": "Continue to payment",
+      "busy": "Setting up…"
+    },
+    "artwork": {
+      "organization": "Your organization",
+      "users": "Users",
+      "applications": "Applications",
+      "security": "Security",
+      "more": "And more…",
+      "headlineFirst": "Secure identities.",
+      "headlineSecond": "Build what’s next.",
+      "caption": "Built for modern teams."
+    },
+    "guidance": {
+      "profileTitle": "Why we ask this",
+      "profileIntro": "These details help us:",
+      "organizationTitle": "A strong foundation for your team",
+      "organizationIntro": "Your organization brings your team, applications and security settings together in one place.",
+      "organizationIntroDark": "This information helps us to:",
+      "organizationBenefits": {
+        "workspace": "Create a secure and isolated workspace for your team",
+        "region": "Route your data to the right region",
+        "defaults": "Personalize your experience and defaults",
+        "identity": "Represent your organization across Qeet ID"
+      },
+      "tipsTitle": "Tips for success",
+      "benefits": {
+        "checklist": "Tailor your setup checklist",
+        "integrations": "Recommend relevant integrations",
+        "dashboard": "Personalize your dashboard experience",
+        "resources": "Share helpful resources"
+      },
+      "changeTitle": "You can change this later",
+      "changeDescription": "As your needs evolve, you can update these details in your organization settings.",
+      "tips": {
+        "name": {
+          "title": "Naming tips",
+          "description": "Use a clear, recognizable name. You can change it later in organization settings."
+        },
+        "region": {
+          "title": "Data residency",
+          "description": "Choose the region closest to your users to meet your compliance and performance requirements."
+        },
+        "branding": {
+          "title": "Branding can be changed later",
+          "description": "Your logo is optional and can be updated anytime. We’ll use your initials if you skip it for now."
+        }
+      },
+      "quote": "“Secure identities for a more open world.”",
+      "team": "— The Qeet ID team"
+    },
+    "notes": {
+      "nextTitle": "What happens next?",
+      "nextDescription": "Get up and running in a few simple steps.",
+      "next": {
+        "plan": {
+          "title": "Choose your plan",
+          "description": "Select the plan that fits your needs."
+        },
+        "details": {
+          "title": "Create your organization",
+          "description": "Set up your project and organization details."
+        },
+        "launch": {
+          "title": "Start building",
+          "description": "Invite your team and connect your applications."
+        }
+      },
+      "securityTitle": "Security & billing, by design",
+      "securityDescription": "Built with account protection and clear billing in mind.",
+      "learnMore": "Learn more about Qeet ID security (opens in a new tab)",
+      "protections": {
+        "payments": "Secure hosted checkout",
+        "invoices": "Billing and tax invoices",
+        "control": "Plan changes as you grow"
+      }
+    }
+  },
   "analytics": {
     "description": "Product analytics across tenants, applications, and authentication methods.",
     "loadError": "Couldn't load analytics",
