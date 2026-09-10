@@ -1,8 +1,11 @@
-import { Button, cn, Field, FieldSeparator } from "@qeetrix/ui";
+import { Button } from "@qeetrix/ui";
 import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { socialStartUrl, usePlatformSocialProviders } from "../api/flows";
+
+import { AuthDivider } from "./auth-form-card";
 
 // Display catalog for the platform social providers. A button is rendered ONLY
 // when the backend reports the provider as configured (its keys are set) — see
@@ -10,19 +13,10 @@ import { socialStartUrl, usePlatformSocialProviders } from "../api/flows";
 // shown as a disabled placeholder.
 const CATALOG: { id: string; label: string; icon: ReactNode }[] = [
   { id: "google", label: "Google", icon: <Google /> },
-  { id: "microsoft", label: "Microsoft", icon: <Microsoft /> },
   { id: "github", label: "GitHub", icon: <Github className="dark:invert" /> },
+  { id: "microsoft", label: "Microsoft", icon: <Microsoft /> },
   { id: "apple", label: "Apple", icon: <Apple className="invert dark:invert-0" /> },
 ];
-
-// Static classes so Tailwind can see them (no dynamic string interpolation).
-const GRID_COLS: Record<number, string> = {
-  1: "grid-cols-1",
-  2: "grid-cols-2",
-  3: "grid-cols-3",
-  4: "grid-cols-4",
-  5: "grid-cols-5",
-};
 
 /**
  * The "Or continue with" divider + one button per configured social provider.
@@ -32,12 +26,15 @@ const GRID_COLS: Record<number, string> = {
 export function SocialButtons({
   verb = "Continue",
   intent = "login",
+  disabled = false,
 }: {
   verb?: string;
+  disabled?: boolean;
   // "signup" permits just-in-time account creation; "login" (default) requires
   // an existing account.
   intent?: "login" | "signup";
 }) {
+  const { t } = useTranslation("auth-flow");
   const q = usePlatformSocialProviders();
   const configured = q.data?.providers ?? [];
   const items = CATALOG.filter((p) => configured.includes(p.id));
@@ -45,26 +42,25 @@ export function SocialButtons({
 
   return (
     <>
-      <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-        Or continue with
-      </FieldSeparator>
-      <Field className={cn("grid gap-4", GRID_COLS[Math.min(items.length, 5)] ?? "grid-cols-4")}>
+      <AuthDivider>{t("form.socialDivider")}</AuthDivider>
+      <div className="auth-social-grid">
         {items.map((p) => (
           <Button
             key={p.id}
+            className="auth-social-button"
             variant="outline"
             type="button"
+            disabled={disabled}
+            aria-label={t("form.socialLabel", { verb, provider: p.label })}
             onClick={() => {
               window.location.href = socialStartUrl(p.id, intent);
             }}
           >
-            {p.icon}
-            <span className="sr-only">
-              {verb} with {p.label}
-            </span>
+            <span aria-hidden="true">{p.icon}</span>
+            <span>{p.label}</span>
           </Button>
         ))}
-      </Field>
+      </div>
     </>
   );
 }

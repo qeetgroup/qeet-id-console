@@ -40,7 +40,7 @@ export function isSessionIssuingRequest(path: string, method: string): boolean {
     "/v1/auth/switch-tenant",
     "/v1/invites/accept",
     "/v1/passkeys/login/finish",
-    "/v1/passkeys/signup/finish",
+    "/v1/signup/passkey/finish",
     "/v1/social/exchange",
     "/v1/tenants",
     "/v1/admin/impersonate",

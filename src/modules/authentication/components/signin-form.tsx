@@ -1,23 +1,13 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  cn,
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  PasswordInput,
-} from "@qeetrix/ui";
+import { Button, cn, Field, FieldError, FieldLabel, Input, PasswordInput } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { BuildingIcon, Loader2Icon } from "lucide-react";
+import { ArrowRightIcon, BuildingIcon, Loader2Icon, LockKeyholeIcon, MailIcon } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useSSODiscovery } from "../api/sso";
 
+import { AuthDivider, AuthFormCard, PasskeyButton } from "./auth-form-card";
 import { BrandHero } from "./brand-hero";
 import { SocialButtons } from "./social-buttons";
 
@@ -28,17 +18,22 @@ export type LoginFormValues = {
 
 type LoginFormProps = React.ComponentProps<"div"> & {
   isLoading?: boolean;
+  isPasskeyLoading?: boolean;
   errorMessage?: string;
   onLogin?: (values: LoginFormValues) => void;
+  onPasskeyLogin?: () => void;
 };
 
 export function LoginForm({
   className,
   isLoading = false,
+  isPasskeyLoading = false,
   errorMessage,
   onLogin,
+  onPasskeyLogin,
   ...props
 }: LoginFormProps) {
+  const { t } = useTranslation("auth-flow");
   const [email, setEmail] = useState("");
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
@@ -52,118 +47,120 @@ export function LoginForm({
 
   const sso = useSSODiscovery(debouncedEmail);
   const ssoHit = sso.data;
+  const isBusy = isLoading || isPasskeyLoading;
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:min-h-160 md:grid-cols-2">
-          <form
-            method="post"
-            className="flex flex-col justify-center p-6 md:p-8"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (ssoHit) {
-                // Browser redirect to the IdP — leaves the SPA entirely.
-                window.location.href = ssoHit.redirect_url;
-                return;
-              }
-              const data = new FormData(e.currentTarget);
-              onLogin?.({
-                email: String(data.get("email") ?? "").trim(),
-                password: String(data.get("password") ?? ""),
-              });
-            }}
-          >
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
-                <p className="text-balance text-muted-foreground">Login to your Qeet ID console</p>
-              </div>
+    <div className={cn("auth-entry auth-entry-signin", className)} {...props}>
+      <BrandHero />
+      <AuthFormCard>
+        <form
+          method="post"
+          aria-labelledby="signin-title"
+          aria-busy={isBusy}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!hydrated || isBusy) return;
+            if (ssoHit) {
+              // Browser redirect to the IdP — leaves the SPA entirely.
+              window.location.href = ssoHit.redirect_url;
+              return;
+            }
+            const data = new FormData(e.currentTarget);
+            onLogin?.({
+              email: String(data.get("email") ?? "").trim(),
+              password: String(data.get("password") ?? ""),
+            });
+          }}
+        >
+          <div className="auth-form-header">
+            <p className="auth-form-eyebrow">{t("signIn.eyebrow")}</p>
+            <h1 id="signin-title" className="auth-form-title">
+              {t("signIn.title")}
+            </h1>
+            <p className="auth-form-description">{t("signIn.description")}</p>
+          </div>
 
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+          <div className="auth-fields">
+            <Field className="auth-field" disabled={isBusy}>
+              <FieldLabel htmlFor="email">{t("form.email")}</FieldLabel>
+              <div className="auth-input-wrap">
+                <MailIcon className="auth-input-icon" aria-hidden="true" />
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="m@example.com"
+                  autoComplete="username webauthn"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder={t("form.emailPlaceholder")}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-              </Field>
+              </div>
+            </Field>
 
-              {ssoHit ? (
-                <Field>
-                  <div className="flex items-start gap-2 rounded-md border border-sky-500/40 bg-sky-50/40 p-3 dark:bg-sky-950/15">
-                    <BuildingIcon className="mt-0.5 size-4 shrink-0 text-sky-600 dark:text-sky-400" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">{ssoHit.provider_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Your organisation uses {ssoHit.kind.toUpperCase()} single sign-on.
-                        You&apos;ll be redirected to your identity provider.
-                      </p>
-                    </div>
-                  </div>
-                </Field>
-              ) : (
-                <Field>
-                  <div className="flex items-center">
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Link
-                      to="/forgot-password"
-                      className="ms-auto text-sm underline-offset-2 hover:underline"
-                    >
-                      Forgot your password?
-                    </Link>
-                  </div>
+            {ssoHit ? (
+              <div className="auth-sso-notice" role="status">
+                <BuildingIcon className="size-4" aria-hidden="true" />
+                <div>
+                  <p className="font-medium">{ssoHit.provider_name}</p>
+                  <p>{t("form.ssoDescription", { kind: ssoHit.kind.toUpperCase() })}</p>
+                </div>
+              </div>
+            ) : (
+              <Field className="auth-field" disabled={isBusy}>
+                <div className="auth-field-row">
+                  <FieldLabel htmlFor="password">{t("form.password")}</FieldLabel>
+                  <Link to="/forgot-password" className="auth-link">
+                    {t("form.forgotPassword")}
+                  </Link>
+                </div>
+                <div className="auth-input-wrap">
+                  <LockKeyholeIcon className="auth-input-icon" aria-hidden="true" />
                   <PasswordInput
                     id="password"
                     name="password"
-                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    placeholder={t("form.passwordPlaceholder")}
                     required
                   />
-                </Field>
-              )}
-
-              {errorMessage && (
-                <Field>
-                  <FieldError>{errorMessage}</FieldError>
-                </Field>
-              )}
-
-              <Field>
-                <Button type="submit" disabled={!hydrated || isLoading}>
-                  {isLoading && <Loader2Icon className="animate-spin" />}
-                  {ssoHit
-                    ? `Continue with ${ssoHit.provider_name}`
-                    : isLoading
-                      ? "Signing in…"
-                      : "Login"}
-                </Button>
+                </div>
               </Field>
+            )}
+          </div>
 
-              <SocialButtons verb="Login" />
+          {errorMessage && <FieldError className="auth-form-error">{errorMessage}</FieldError>}
 
-              <FieldDescription className="text-center">
-                Don&apos;t have an account? <Link to="/sign-up">Sign up</Link>
-              </FieldDescription>
-            </FieldGroup>
-          </form>
-          <BrandHero />
-        </CardContent>
-      </Card>
-      <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our{" "}
-        <a href="/terms" target="_blank" rel="noopener noreferrer">
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a href="/privacy" target="_blank" rel="noopener noreferrer">
-          Privacy Policy
-        </a>
-        .
-      </FieldDescription>
+          <Button type="submit" className="auth-submit" disabled={!hydrated || isBusy}>
+            {isLoading && <Loader2Icon className="animate-spin" aria-hidden="true" />}
+            {ssoHit
+              ? t("form.ssoContinue", { provider: ssoHit.provider_name })
+              : t(isLoading ? "signIn.submitting" : "signIn.submit")}
+            {!isLoading && <ArrowRightIcon aria-hidden="true" />}
+          </Button>
+
+          {!ssoHit && (
+            <>
+              <AuthDivider>{t("passkey.signinDivider")}</AuthDivider>
+              <PasskeyButton
+                isLoading={isPasskeyLoading}
+                disabled={!hydrated || isBusy || !onPasskeyLogin}
+                onClick={onPasskeyLogin}
+              />
+            </>
+          )}
+
+          <SocialButtons verb={t("signIn.submit")} disabled={!hydrated || isBusy} />
+
+          <p className="auth-form-switch">
+            {t("signIn.noAccount")}{" "}
+            <Link to="/sign-up" className="auth-link">
+              {t("signIn.signupLink")}
+            </Link>
+          </p>
+        </form>
+      </AuthFormCard>
     </div>
   );
 }

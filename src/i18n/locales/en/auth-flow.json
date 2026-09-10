@@ -1,5 +1,88 @@
 {
+  "layout": {
+    "skipToForm": "Skip to authentication form",
+    "navigation": "Qeet ID resources",
+    "legalNavigation": "Legal and trust",
+    "security": "Security",
+    "business": "For Business",
+    "help": "Help",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "trust": "Trust Center",
+    "simpleAccess": "SIMPLE ACCESS.",
+    "strongerTogether": "STRONGER TOGETHER.",
+    "tagline": "Security for a more open world.",
+    "signinConsent": "By signing in, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+    "signupConsent": "By signing up, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+  },
+  "hero": {
+    "eyebrow": "A MORE SECURE, OPEN TOMORROW",
+    "titleLine1": "Identity for",
+    "titleLine2": "what’s next",
+    "description": "Qeet ID makes it simple and secure for people and organizations to sign in with passkeys.",
+    "features": [
+      { "title": "Passkeys first", "description": "A faster, more secure way to sign in." },
+      {
+        "title": "Built for organizations",
+        "description": "Flexible, scalable, and developer friendly."
+      },
+      {
+        "title": "People at the center",
+        "description": "Secure access for every team, everywhere."
+      }
+    ],
+    "signup": {
+      "titleLine1": "Create your",
+      "titleLine2": "organization",
+      "titleLine3": "with confidence",
+      "description": "Secure, simple access for your team. Verify your email, then create your first organization in minutes.",
+      "lightDescription": "Qeet ID makes it simple and secure for people and organizations to get started and grow with passkeys.",
+      "lightFeatures": [
+        "A faster, more secure way to sign up.",
+        "Get your first organization up and running right after verifying your email.",
+        "Secure access for every team, everywhere."
+      ],
+      "features": [
+        { "title": "Built for modern teams", "description": "Simple, secure, and ready to scale." },
+        {
+          "title": "Passkeys-first by design",
+          "description": "A faster, more secure way to get started."
+        },
+        {
+          "title": "Your data stays yours",
+          "description": "Enterprise-grade security and privacy."
+        }
+      ]
+    }
+  },
+  "passkey": {
+    "button": "Use a passkey",
+    "waiting": "Follow your device’s prompt…",
+    "signinDivider": "Or sign in with a passkey",
+    "signupDivider": "Or sign up with a passkey",
+    "unsupported": "Passkeys aren’t available in this browser. Try a supported browser or use another sign-in method.",
+    "cancelled": "No passkey was selected. Try again or use another sign-in method.",
+    "failed": "Couldn’t complete the passkey request. Please try again or use another sign-in method."
+  },
+  "form": {
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot your password?",
+    "socialDivider": "Or continue with",
+    "socialLabel": "{{verb}} with {{provider}}",
+    "ssoDescription": "Your organization uses {{kind}} single sign-on. You’ll be redirected to your identity provider.",
+    "ssoContinue": "Continue with {{provider}}"
+  },
   "signIn": {
+    "eyebrow": "WELCOME BACK",
+    "title": "Sign in to Qeet ID",
+    "description": "Secure access for you and your organization.",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "noAccount": "Don’t have an account?",
+    "signupLink": "Sign up",
     "mfa": {
       "title": "Two-factor authentication",
       "subtitle": "Enter the 6-digit code from your authenticator app, or a recovery code.",
@@ -7,6 +90,27 @@
       "verifyingBtn": "Verifying…",
       "verifyBtn": "Verify"
     }
+  },
+  "signUp": {
+    "eyebrowLight": "JOIN QEET ID",
+    "eyebrowDark": "GET STARTED",
+    "titleLight": "Create your account",
+    "titleDark": "Create your Qeet ID account",
+    "descriptionLight": "You’ll set up your first organization right after verifying your email.",
+    "descriptionDark": "Verify your email, then set up your first organization.",
+    "name": "Full name",
+    "namePlaceholder": "Jane Doe",
+    "email": "Work email",
+    "emailPlaceholder": "you@company.com",
+    "emailHelp": "We’ll send a verification code to your email.",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPassword": "Confirm password",
+    "confirmPlaceholder": "Re-enter your password",
+    "passwordFeedback": "Use 12+ characters mixing upper/lower case, digits, and symbols.",
+    "mismatch": "Passwords don’t match.",
+    "submit": "Create account",
+    "submitting": "Creating account…",
+    "hasAccount": "Already have an account?"
   },
   "forgotPassword": {
     "title": "Reset your password",
