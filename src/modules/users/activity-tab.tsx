@@ -1,8 +1,8 @@
+import { Shield } from "@qeetrix/icons";
 // Activity tab — the full identity timeline, embedded in-place (rather than
 // navigating to /users/$userId/timeline). Reuses the timeline feature verbatim.
 
 import { EmptyState } from "@qeetrix/ui";
-import { ShieldIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -18,7 +18,7 @@ export function ActivityTab({ userId, canView }: { userId: string; canView: bool
     return (
       <div className="flex min-h-64 items-center justify-center rounded-xl border bg-card">
         <EmptyState
-          icon={ShieldIcon}
+          icon={Shield}
           title={t("detail.activityRestrictedTitle")}
           description={t("detail.activityRestrictedDesc")}
         />

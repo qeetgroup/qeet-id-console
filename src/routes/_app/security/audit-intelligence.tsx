@@ -1,3 +1,4 @@
+import { Cpu, Danger, MagicStar, RefreshArrow, ShieldTick } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -26,13 +27,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import {
-  AlertTriangleIcon,
-  BrainCircuitIcon,
-  RefreshCwIcon,
-  ShieldCheckIcon,
-  SparklesIcon,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -74,17 +68,17 @@ function AuditIntelligencePage() {
     {
       key: "open",
       value: sm?.open ?? 0,
-      icon: <AlertTriangleIcon className="size-4" />,
+      icon: <Danger className="size-4" />,
     },
     {
       key: "highScore",
       value: sm?.high_score_open ?? 0,
-      icon: <SparklesIcon className="size-4" />,
+      icon: <MagicStar className="size-4" />,
     },
     {
       key: "resolved7d",
       value: sm?.resolved_7d ?? 0,
-      icon: <ShieldCheckIcon className="size-4" />,
+      icon: <ShieldTick className="size-4" />,
     },
   ];
 
@@ -102,7 +96,7 @@ function AuditIntelligencePage() {
             }}
             disabled={anomaliesQ.isFetching}
           >
-            <RefreshCwIcon className={anomaliesQ.isFetching ? "animate-spin" : ""} />
+            <RefreshArrow className={anomaliesQ.isFetching ? "animate-spin" : ""} />
             {t("auditIntelligence.refresh")}
           </Button>
         }
@@ -146,7 +140,7 @@ function AuditIntelligencePage() {
             isError={anomaliesQ.isError}
             error={anomaliesQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={BrainCircuitIcon}
+            emptyIcon={Cpu}
             emptyTitle={
               status === "open"
                 ? t("auditIntelligence.anomalies.emptyOpen")

@@ -1,4 +1,21 @@
 import {
+  Activity,
+  Add,
+  ArrowRight,
+  Buildings,
+  Danger,
+  DocumentText,
+  Key,
+  People,
+  RefreshArrow,
+  RepeatArrow,
+  ShieldTick,
+  Sms,
+  Speedometer,
+  UserAdd,
+  UserTick,
+} from "@qeetrix/icons";
+import {
   Badge,
   Button,
   buttonVariants,
@@ -18,24 +35,6 @@ import {
 import { QeetLogoMark } from "@qeetrix/ui/brand";
 import { errorMessage } from "@/platform/errors/user-message";
 import { Link } from "@tanstack/react-router";
-import {
-  ActivityIcon,
-  AlertTriangleIcon,
-  ArrowRightIcon,
-  Building2Icon,
-  GaugeIcon,
-  KeyRoundIcon,
-  Loader2Icon,
-  MailIcon,
-  PlusIcon,
-  RefreshCwIcon,
-  RepeatIcon,
-  ScrollTextIcon,
-  ShieldCheckIcon,
-  UserCheckIcon,
-  UserPlusIcon,
-  UsersIcon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -157,7 +156,7 @@ function DashboardHeading({
         ) : null}
         {canInvite ? (
           <Link to="/invitations" className={buttonVariants({ size: "sm" })}>
-            <UserPlusIcon /> {t("quickActions.inviteLabel")}
+            <UserAdd /> {t("quickActions.inviteLabel")}
           </Link>
         ) : null}
       </div>
@@ -191,7 +190,7 @@ export function DashboardOverview() {
         <section className="enterprise-panel grid min-h-80 place-items-center p-8 text-center">
           <div className="max-w-md">
             <span className="mx-auto grid size-12 place-items-center rounded-xl bg-destructive/10 text-destructive">
-              <AlertTriangleIcon className="size-5" />
+              <Danger className="size-5" />
             </span>
             <h2 className="mt-4 font-heading text-lg font-semibold">{t("error")}</h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
@@ -200,7 +199,7 @@ export function DashboardOverview() {
                 : "The analytics service did not return a response."}
             </p>
             <Button className="mt-5" variant="outline" onClick={() => analytics.refetch()}>
-              <RefreshCwIcon /> Retry
+              <RefreshArrow /> Retry
             </Button>
           </div>
         </section>
@@ -220,7 +219,7 @@ export function DashboardOverview() {
     ? [
         {
           id: "mau",
-          icon: UsersIcon,
+          icon: People,
           label: t("kpi.mau"),
           value: overview.kpis.mau.value.toLocaleString("en-US"),
           delta: overview.kpis.mau.delta_pct,
@@ -230,7 +229,7 @@ export function DashboardOverview() {
         },
         {
           id: "logins",
-          icon: ActivityIcon,
+          icon: Activity,
           label: t("kpi.loginsToday"),
           value: overview.kpis.logins_today.value.toLocaleString("en-US"),
           delta: overview.kpis.logins_today.delta_pct,
@@ -240,7 +239,7 @@ export function DashboardOverview() {
         },
         {
           id: "mfa",
-          icon: KeyRoundIcon,
+          icon: Key,
           label: t("kpi.mfaAdoption"),
           value: `${overview.kpis.mfa_adoption_pct.value.toFixed(1)}%`,
           delta: overview.kpis.mfa_adoption_pct.delta_pct,
@@ -252,7 +251,7 @@ export function DashboardOverview() {
         },
         {
           id: "failed",
-          icon: ShieldCheckIcon,
+          icon: ShieldTick,
           label: t("kpi.failedLogins24h"),
           value: overview.kpis.failed_logins_24h.value.toLocaleString("en-US"),
           delta: overview.kpis.failed_logins_24h.delta_pct,
@@ -268,26 +267,26 @@ export function DashboardOverview() {
     ? [
         {
           id: "total",
-          icon: <UsersIcon />,
+          icon: <People />,
           label: t("stats.totalUsers"),
           value: overview.kpis.total_users.value.toLocaleString("en-US"),
         },
         {
           id: "daily",
-          icon: <UserCheckIcon />,
+          icon: <UserTick />,
           label: t("stats.dailyActive"),
           value: overview.kpis.dau.value.toLocaleString("en-US"),
           detail: formatDelta(overview.kpis.dau.delta_pct),
         },
         {
           id: "stickiness",
-          icon: <GaugeIcon />,
+          icon: <Speedometer />,
           label: t("stats.stickiness"),
           value: `${overview.kpis.stickiness_pct.value.toFixed(0)}%`,
         },
         {
           id: "sessions",
-          icon: <RepeatIcon />,
+          icon: <RepeatArrow />,
           label: t("stats.avgSessions"),
           value: overview.kpis.avg_sessions_per_user.value.toFixed(1),
         },
@@ -333,7 +332,7 @@ export function DashboardOverview() {
         <section className="enterprise-panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
-              <ShieldCheckIcon className="size-4.5" aria-hidden="true" />
+              <ShieldTick className="size-4.5" aria-hidden="true" />
             </span>
             <div className="min-w-0">
               <h2 className="font-heading text-base font-semibold">Your operator view is scoped</h2>
@@ -423,17 +422,17 @@ export function DashboardOverview() {
 
 const workspaceFoundations = [
   {
-    icon: ShieldCheckIcon,
+    icon: ShieldTick,
     title: "Tenant boundary",
     description: "Isolate identities, policies, and administrators from every other organization.",
   },
   {
-    icon: KeyRoundIcon,
+    icon: Key,
     title: "Authentication policy",
     description: "Configure passkeys, federation, MFA, and application credentials in one plane.",
   },
   {
-    icon: ScrollTextIcon,
+    icon: DocumentText,
     title: "Verifiable audit trail",
     description: "Record operator and identity events from the first configuration change.",
   },
@@ -465,7 +464,7 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <MailIcon className="size-5 text-primary" />
+              <Sms className="size-5 text-primary" />
               <CardTitle className="text-base">
                 {t("invites.title", { defaultValue: "You've been invited" })}
               </CardTitle>
@@ -501,7 +500,7 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
                     {t("invites.decline", { defaultValue: "Decline" })}
                   </Button>
                   <Button size="sm" disabled={inviteBusy} onClick={() => acceptInvite(inv.id)}>
-                    {accept.isPending && <Loader2Icon className="animate-spin" />}
+                    {accept.isPending && <RefreshArrow className="animate-spin" />}
                     {t("invites.accept", { defaultValue: "Accept & join" })}
                   </Button>
                 </div>
@@ -527,13 +526,13 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Button size="lg" onClick={onStart}>
-              <PlusIcon /> {t("noWorkspace.cta")}
+              <Add /> {t("noWorkspace.cta")}
             </Button>
             <Link
               to="/account/security"
               className={buttonVariants({ variant: "ghost", size: "lg" })}
             >
-              Review account security <ArrowRightIcon />
+              Review account security <ArrowRight />
             </Link>
           </div>
         </div>
@@ -545,7 +544,7 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
           />
           <div className="relative">
             <div className="flex items-center gap-2 text-xs font-semibold text-sidebar-foreground/80">
-              <Building2Icon className="size-4 text-sidebar-primary" />
+              <Buildings className="size-4 text-sidebar-primary" />
               What an organization establishes
             </div>
             <ol className="mt-8 space-y-7">
@@ -569,7 +568,7 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
               ))}
             </ol>
             <div className="mt-9 flex items-center gap-2 border-t border-white/10 pt-5 text-[11px] text-sidebar-foreground/45">
-              <ShieldCheckIcon className="size-3.5" />
+              <ShieldTick className="size-3.5" />
               Built for least privilege from the first operator session
             </div>
           </div>

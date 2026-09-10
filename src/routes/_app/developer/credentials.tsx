@@ -1,3 +1,4 @@
+import { CloseCircle, RefreshArrow, TickCircle, Trash, Verify } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -18,13 +19,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import {
-  BadgeCheckIcon,
-  CheckCircle2Icon,
-  Loader2Icon,
-  Trash2Icon,
-  XCircleIcon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -147,7 +141,7 @@ function CredentialsPage() {
                 <p className="text-destructive text-sm">{errorMessage(issueM.error)}</p>
               )}
               <Button type="submit" disabled={issueM.isPending || !subject.trim() || !type.trim()}>
-                {issueM.isPending && <Loader2Icon className="animate-spin" />}
+                {issueM.isPending && <RefreshArrow className="animate-spin" />}
                 {t("credentials.issue.submit")}
               </Button>
             </form>
@@ -174,7 +168,7 @@ function CredentialsPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={BadgeCheckIcon}
+            emptyIcon={Verify}
             emptyTitle={t("credentials.list.empty")}
             skeletonRows={2}
           >
@@ -217,7 +211,7 @@ function CredentialsPage() {
                         }).catch(ignoreCancel)
                       }
                     >
-                      <Trash2Icon /> {t("credentials.list.revokeButton")}
+                      <Trash /> {t("credentials.list.revokeButton")}
                     </Button>
                   )}
                 </li>
@@ -258,7 +252,7 @@ function VerifyCard() {
             onChange={(e) => setJwt(e.target.value)}
           />
           <Button type="submit" variant="outline" disabled={verifyM.isPending || !jwt.trim()}>
-            {verifyM.isPending && <Loader2Icon className="animate-spin" />}
+            {verifyM.isPending && <RefreshArrow className="animate-spin" />}
             {t("credentials.verify.submit")}
           </Button>
         </form>
@@ -267,12 +261,12 @@ function VerifyCard() {
             <div className="flex items-center gap-2 text-sm font-medium">
               {result.valid ? (
                 <>
-                  <CheckCircle2Icon className="size-4 text-emerald-600 dark:text-emerald-400" />
+                  <TickCircle className="size-4 text-emerald-600 dark:text-emerald-400" />
                   <Badge variant="success">{t("credentials.badge.valid")}</Badge>
                 </>
               ) : (
                 <>
-                  <XCircleIcon className="text-destructive size-4" />
+                  <CloseCircle className="text-destructive size-4" />
                   <Badge variant="destructive">{t("credentials.badge.invalid")}</Badge>
                   {result.reason && <span className="text-muted-foreground">{result.reason}</span>}
                 </>

@@ -1,3 +1,4 @@
+import { ArrowRight } from "@qeetrix/icons";
 // Row-preview slide-over for an organization — a quick look sourced from the
 // (enriched) caller-scoped list. Deeper per-org data lives behind "Open Org 360"
 // / switching, since the server locks detail surfaces to the active org.
@@ -20,7 +21,6 @@ import {
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { formatDate } from "@/shared/utils/format";
-import { ArrowRightIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { CopyId } from "@/modules/users";
@@ -94,7 +94,7 @@ export function OrgPreviewDrawer({
                 className={cn(buttonVariants({ size: "sm" }), "flex-1")}
               >
                 {t("preview.open")}
-                <ArrowRightIcon className="size-4" aria-hidden="true" />
+                <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
               {!isCurrent ? (
                 <Button variant="outline" size="sm" onClick={() => void switchToTenant(org.id)}>

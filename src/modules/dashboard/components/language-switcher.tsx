@@ -1,3 +1,4 @@
+import { Translate } from "@qeetrix/icons";
 import {
   Button,
   DropdownMenu,
@@ -9,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@qeetrix/ui";
-import { LanguagesIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
@@ -42,7 +42,7 @@ export function LanguageSwitcher() {
           />
         }
       >
-        <LanguagesIcon />
+        <Translate />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-44 rounded-lg" align="end" sideOffset={4}>
         <DropdownMenuGroup>

@@ -1,3 +1,4 @@
+import { RefreshArrow, TickCircle } from "@qeetrix/icons";
 import {
   Button,
   buttonVariants,
@@ -12,7 +13,6 @@ import {
   PasswordInput,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckCircle2Icon, Loader2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -91,7 +91,7 @@ function RequestPanel() {
 
         <Field>
           <Button type="submit" disabled={forgot.isPending}>
-            {forgot.isPending && <Loader2Icon className="animate-spin" />}
+            {forgot.isPending && <RefreshArrow className="animate-spin" />}
             {forgot.isPending ? t("forgotPassword.sendingBtn") : t("forgotPassword.sendBtn")}
           </Button>
         </Field>
@@ -170,7 +170,7 @@ function ResetPanel({ token }: { token: string }) {
 
         <Field>
           <Button type="submit" disabled={reset.isPending}>
-            {reset.isPending && <Loader2Icon className="animate-spin" />}
+            {reset.isPending && <RefreshArrow className="animate-spin" />}
             {reset.isPending
               ? t("forgotPassword.reset.submittingBtn")
               : t("forgotPassword.reset.submitBtn")}
@@ -192,7 +192,7 @@ function SuccessPanel({ devToken }: { devToken?: string }) {
   const { t } = useTranslation("auth-flow");
   return (
     <div className="flex flex-col items-center gap-3 text-center">
-      <CheckCircle2Icon className="size-10 text-emerald-500" />
+      <TickCircle className="size-10 text-emerald-500" />
       <h1 className="text-2xl font-bold">{t("forgotPassword.successTitle")}</h1>
       <p className="text-balance text-muted-foreground">{t("forgotPassword.successText")}</p>
 

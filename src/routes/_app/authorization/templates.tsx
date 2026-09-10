@@ -1,3 +1,4 @@
+import { ArrowRight } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -10,7 +11,6 @@ import {
   SegmentedControlItem,
 } from "@qeetrix/ui";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRightIcon } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -73,7 +73,7 @@ function TemplatesPage() {
                 ))}
               </div>
               <Button variant="outline" size="sm" className="self-start" onClick={() => use(t)}>
-                Use template <ArrowRightIcon />
+                Use template <ArrowRight />
               </Button>
             </CardContent>
           </Card>

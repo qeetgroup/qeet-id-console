@@ -1,5 +1,5 @@
+import { ArrowRightAlt, RefreshArrow } from "@qeetrix/icons";
 import { Button, cn } from "@qeetrix/ui";
-import { ChevronRightIcon, Loader2Icon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -25,7 +25,7 @@ export function PasskeyButton({
   return (
     <Button type="button" variant="outline" className="auth-passkey-button" {...props}>
       {isLoading ? (
-        <Loader2Icon className="animate-spin" aria-hidden="true" />
+        <RefreshArrow className="animate-spin" aria-hidden="true" />
       ) : (
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
           <circle cx="9" cy="6.5" r="4" />
@@ -34,7 +34,7 @@ export function PasskeyButton({
         </svg>
       )}
       <span>{t(isLoading ? "passkey.waiting" : "passkey.button")}</span>
-      {!isLoading && <ChevronRightIcon className="auth-passkey-chevron" aria-hidden="true" />}
+      {!isLoading && <ArrowRightAlt className="auth-passkey-chevron" aria-hidden="true" />}
     </Button>
   );
 }

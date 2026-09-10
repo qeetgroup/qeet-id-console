@@ -1,3 +1,4 @@
+import { Danger, Key } from "@qeetrix/icons";
 import {
   Badge,
   Card,
@@ -9,7 +10,6 @@ import {
   Input,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertTriangleIcon, KeyRoundIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -46,10 +46,7 @@ function PermissionsPage() {
       {wildcards.length > 0 && (
         <Card className="border-amber-500/40 bg-amber-500/5">
           <CardContent className="flex items-center gap-3 py-3">
-            <AlertTriangleIcon
-              className="size-4 shrink-0 text-amber-600 dark:text-amber-400"
-              aria-hidden
-            />
+            <Danger className="size-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{wildcards.length}</span> wildcard
               permission
@@ -73,7 +70,7 @@ function PermissionsPage() {
         isError={permsQ.isError}
         error={permsQ.error}
         isEmpty={filtered.length === 0}
-        emptyIcon={KeyRoundIcon}
+        emptyIcon={Key}
         emptyTitle={q ? "No permissions match your search" : "No permissions"}
         skeletonRows={4}
       >

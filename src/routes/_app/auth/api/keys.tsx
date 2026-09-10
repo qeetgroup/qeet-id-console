@@ -1,3 +1,4 @@
+import { Add, Key, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -32,7 +33,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { KeyRoundIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -122,11 +122,11 @@ function ApiKeysPage() {
               onClick={() => keysQ.refetch()}
               disabled={keysQ.isFetching}
             >
-              <RefreshCwIcon className={keysQ.isFetching ? "animate-spin" : ""} />
+              <RefreshArrow className={keysQ.isFetching ? "animate-spin" : ""} />
               {t("keys.refreshBtn")}
             </Button>
             <Button size="sm" onClick={() => setCreating(true)}>
-              <PlusIcon /> {t("keys.newButton")}
+              <Add /> {t("keys.newButton")}
             </Button>
           </>
         }
@@ -167,7 +167,7 @@ function ApiKeysPage() {
             <div className="p-6 text-sm text-destructive">{errorMessage(keysQ.error)}</div>
           ) : !keysQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
-              <KeyRoundIcon className="size-8 text-muted-foreground" />
+              <Key className="size-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("keys.list.empty")}</p>
             </div>
           ) : (
@@ -236,7 +236,7 @@ function ApiKeysPage() {
                           }).catch(ignoreCancel)
                         }
                       >
-                        <Trash2Icon /> {t("keys.revokeBtn")}
+                        <Trash /> {t("keys.revokeBtn")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -340,7 +340,7 @@ function CreateApiKeySheet({ open, onOpenChange, tenantId, onCreated }: CreateAp
               {t("keys.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <RefreshArrow className="animate-spin" />}
               {createM.isPending ? t("keys.create.creatingBtn") : t("keys.create.createBtn")}
             </Button>
           </SheetFooter>

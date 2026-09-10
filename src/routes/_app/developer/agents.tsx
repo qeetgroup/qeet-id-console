@@ -1,4 +1,14 @@
 import {
+  ArrowsSwapHorizontal,
+  Ghost,
+  MagicStar,
+  Pause,
+  Play,
+  RefreshArrow,
+  ShieldSecurity,
+  Trash,
+} from "@qeetrix/icons";
+import {
   Badge,
   Button,
   Card,
@@ -16,16 +26,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  ArrowRightLeftIcon,
-  Loader2Icon,
-  PauseIcon,
-  PlayIcon,
-  ShieldAlertIcon,
-  SkullIcon,
-  SparklesIcon,
-  Trash2Icon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -136,7 +136,7 @@ function AgentsPage() {
                 />
               </Field>
               <Button type="submit" disabled={createM.isPending || !name.trim() || !sponsorId}>
-                {createM.isPending && <Loader2Icon className="animate-spin" />}
+                {createM.isPending && <RefreshArrow className="animate-spin" />}
                 {t("agents.create.submit")}
               </Button>
             </div>
@@ -182,7 +182,7 @@ function AgentsPage() {
                 })
               }
             >
-              {killAllM.isPending ? <Loader2Icon className="animate-spin" /> : <SkullIcon />}
+              {killAllM.isPending ? <RefreshArrow className="animate-spin" /> : <Ghost />}
               {t("agents.list.suspendAll")}
             </Button>
           )}
@@ -193,7 +193,7 @@ function AgentsPage() {
             isError={agentsQ.isError}
             error={agentsQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={SparklesIcon}
+            emptyIcon={MagicStar}
             emptyTitle={t("agents.list.empty")}
             emptyDescription={t("agents.list.emptyDescription")}
             skeletonRows={2}
@@ -322,8 +322,8 @@ function SponsorTransferCard() {
                 });
               }}
             >
-              {transferM.isPending && <Loader2Icon className="animate-spin" />}
-              <ArrowRightLeftIcon />
+              {transferM.isPending && <RefreshArrow className="animate-spin" />}
+              <ArrowsSwapHorizontal />
               {t("agents.sponsor.transfer")}
             </Button>
           </div>
@@ -361,7 +361,7 @@ function ShadowAICard() {
           isError={candidatesQ.isError}
           error={candidatesQ.error}
           isEmpty={items.length === 0}
-          emptyIcon={ShieldAlertIcon}
+          emptyIcon={ShieldSecurity}
           emptyTitle={t("agents.shadow.empty")}
           emptyDescription={t("agents.shadow.emptyDescription")}
           skeletonRows={2}
@@ -433,11 +433,11 @@ function AgentRow({
           onClick={onToggle}
           title={a.disabled ? t("agents.row.resumeTitle") : t("agents.row.suspendTitle")}
         >
-          {a.disabled ? <PlayIcon /> : <PauseIcon />}
+          {a.disabled ? <Play /> : <Pause />}
           {a.disabled ? t("agents.row.resume") : t("agents.row.suspend")}
         </Button>
         <Button variant="ghost" size="sm" disabled={busy} onClick={onDelete}>
-          <Trash2Icon /> {t("agents.row.delete")}
+          <Trash /> {t("agents.row.delete")}
         </Button>
       </div>
     </li>

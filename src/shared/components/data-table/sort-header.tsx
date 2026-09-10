@@ -1,5 +1,5 @@
+import { ArrowDown, ArrowUp, ArrowsSwapVertical } from "@qeetrix/icons";
 import { cn, TableHead } from "@qeetrix/ui";
-import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from "lucide-react";
 
 import type { SortState } from "@/shared/hooks/use-list-view";
 
@@ -25,12 +25,12 @@ export function SortHeader({ columnKey, sort, onToggle, children, className }: S
         {children}
         {active ? (
           sort?.dir === "asc" ? (
-            <ArrowUpIcon className="size-3.5" />
+            <ArrowUp className="size-3.5" />
           ) : (
-            <ArrowDownIcon className="size-3.5" />
+            <ArrowDown className="size-3.5" />
           )
         ) : (
-          <ChevronsUpDownIcon className={cn("size-3.5 opacity-40")} />
+          <ArrowsSwapVertical className={cn("size-3.5 opacity-40")} />
         )}
       </button>
     </TableHead>

@@ -1,8 +1,8 @@
+import { ArrowLeft } from "@qeetrix/icons";
 import { Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TooltipProvider } from "@qeetrix/ui";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -94,7 +94,7 @@ function UserDetailPage() {
           to="/users"
           className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
         >
-          <ArrowLeftIcon className="size-3" aria-hidden="true" /> {t("detail.backLink")}
+          <ArrowLeft className="size-3" aria-hidden="true" /> {t("detail.backLink")}
         </Link>
 
         {userQ.isLoading ? (

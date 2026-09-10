@@ -1,3 +1,4 @@
+import { ArrowRightAlt } from "@qeetrix/icons";
 import {
   Collapsible,
   CollapsibleContent,
@@ -11,7 +12,6 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import { Link, useLocation } from "@tanstack/react-router";
-import { ChevronRightIcon } from "lucide-react";
 
 import type { NavGroup, NavItem } from "@/platform/config/navigation";
 import { isNavBranchActive, isNavPathActive } from "@/platform/config/navigation-state";
@@ -54,7 +54,7 @@ function NavMenuItem({ item, pathname }: { item: NavItem; pathname: string }) {
       >
         {item.icon}
         <span>{item.title}</span>
-        <ChevronRightIcon className="ms-auto transition-transform duration-200 ease-(--ease-decelerate) group-data-open/collapsible:rotate-90" />
+        <ArrowRightAlt className="ms-auto transition-transform duration-200 ease-(--ease-decelerate) group-data-open/collapsible:rotate-90" />
       </CollapsibleTrigger>
       <CollapsibleContent>
         <SidebarMenuSub>

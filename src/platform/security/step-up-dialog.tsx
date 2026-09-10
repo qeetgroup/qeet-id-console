@@ -1,3 +1,4 @@
+import { ShieldTick } from "@qeetrix/icons";
 import {
   Button,
   Dialog,
@@ -11,7 +12,6 @@ import {
   OTPInput,
   Spinner,
 } from "@qeetrix/ui";
-import { ShieldCheckIcon } from "lucide-react";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useEffect, useRef, useState } from "react";
 
@@ -75,7 +75,7 @@ export function StepUpDialog({ open, onOpenChange, onVerified, actionLabel }: St
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ShieldCheckIcon className="size-4 text-muted-foreground" />
+            <ShieldTick className="size-4 text-muted-foreground" />
             Confirm it&apos;s you
           </DialogTitle>
           <DialogDescription>

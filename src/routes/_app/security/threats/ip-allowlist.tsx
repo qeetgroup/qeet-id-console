@@ -1,3 +1,4 @@
+import { Shield, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -27,7 +28,6 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -160,7 +160,7 @@ function IpAllowlistPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={rules.length === 0}
-            emptyIcon={ShieldIcon}
+            emptyIcon={Shield}
             emptyTitle={t("threats.ipAllowlist.rules.empty")}
             skeletonRows={3}
           >
@@ -196,7 +196,7 @@ function IpAllowlistPage() {
                         onClick={() => deleteM.mutate(rule.id)}
                         disabled={deleteM.isPending}
                       >
-                        <Trash2Icon /> {t("threats.ipAllowlist.rules.remove")}
+                        <Trash /> {t("threats.ipAllowlist.rules.remove")}
                       </Button>
                     </TableCell>
                   </TableRow>

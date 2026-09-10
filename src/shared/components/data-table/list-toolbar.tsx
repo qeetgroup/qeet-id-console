@@ -1,4 +1,12 @@
 import {
+  CloseCircle,
+  ImportDown,
+  RowHorizontal,
+  RowVertical,
+  SearchNormal,
+  SliderHorizontal,
+} from "@qeetrix/icons";
+import {
   Button,
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -15,14 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qeetrix/ui";
-import {
-  DownloadIcon,
-  Rows2Icon,
-  Rows3Icon,
-  SearchIcon,
-  SlidersHorizontalIcon,
-  XIcon,
-} from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { Density } from "@/shared/hooks/use-list-view";
@@ -81,7 +81,7 @@ export function ListToolbar({
     >
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <div className="relative w-full sm:max-w-xs">
-          <SearchIcon className="pointer-events-none absolute inset-s-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchNormal className="pointer-events-none absolute inset-s-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -109,7 +109,7 @@ export function ListToolbar({
 
         {hasActiveFilters && onClear && (
           <Button variant="ghost" size="sm" onClick={onClear}>
-            <XIcon /> Clear
+            <CloseCircle /> Clear
           </Button>
         )}
       </div>
@@ -123,7 +123,7 @@ export function ListToolbar({
             title={density === "compact" ? "Comfortable rows" : "Compact rows"}
             onClick={() => onDensityChange(density === "compact" ? "comfortable" : "compact")}
           >
-            {density === "compact" ? <Rows3Icon /> : <Rows2Icon />}
+            {density === "compact" ? <RowVertical /> : <RowHorizontal />}
           </Button>
         )}
 
@@ -132,7 +132,7 @@ export function ListToolbar({
             <DropdownMenuTrigger
               render={
                 <Button variant="outline" size="icon" aria-label="Toggle columns" title="Columns">
-                  <SlidersHorizontalIcon />
+                  <SliderHorizontal />
                 </Button>
               }
             />
@@ -159,7 +159,7 @@ export function ListToolbar({
             <DropdownMenuTrigger
               render={
                 <Button variant="outline" size="sm" disabled={exportDisabled}>
-                  <DownloadIcon /> Export
+                  <ImportDown /> Export
                 </Button>
               }
             />

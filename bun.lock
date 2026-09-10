@@ -6,6 +6,7 @@
       "name": "qeet-id-console",
       "dependencies": {
         "@monaco-editor/react": "^4.7.0",
+        "@qeetrix/icons": "^1.0.4",
         "@qeetrix/ui": "^1.0.3",
         "@react-three/drei": "^10.7.7",
         "@react-three/fiber": "^9.6.1",
@@ -296,6 +297,8 @@
     "@oxc-parser/binding-win32-x64-msvc": ["@oxc-parser/binding-win32-x64-msvc@0.120.0", "", { "os": "win32", "cpu": "x64" }, "sha512-ys+upfqNtSu58huAhJMBKl3XCkGzyVFBlMlGPzHeFKgpFF/OdgNs1MMf8oaJIbgMH8ZxgGF7qfue39eJohmKIg=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.140.0", "", {}, "sha512-h5LUOzGArYemnW1NMz/DuuQhBi96J6JL2Bk8zE4kvqxB5Sg3jxmCiH4uyOWHDkiKSt5vWlG4FIwCR/DbstcNRQ=="],
+
+    "@qeetrix/icons": ["@qeetrix/icons@1.0.4", "", { "peerDependencies": { "react": ">=19" } }, "sha512-anQs1W3NdgzDLBg5JH588CAJXEW6dHJ5F9/ndVIsZ8tBWU52by1yEnClDW+RegWJyBEpobUVncH/piluDyx+vg=="],
 
     "@qeetrix/ui": ["@qeetrix/ui@1.0.3", "", { "dependencies": { "@base-ui/react": "^1.5.0", "@tanstack/react-table": "^8.21.3", "@tanstack/react-virtual": "^3.14.3", "@tiptap/pm": "^3.27.0", "@tiptap/react": "^3.27.0", "@tiptap/starter-kit": "^3.27.0", "class-variance-authority": "^0.7.1", "clsx": "^2.1.1", "embla-carousel-react": "^8.6.0", "lucide-react": "^0.577.0", "qrcode": "^1.5.4", "react-day-picker": "^9.9.0", "react-resizable-panels": "^4.11.2", "recharts": "^3.8.1", "shadcn": "^4.7.0", "tailwind-merge": "^3.6.0", "tw-animate-css": "^1.3.6" }, "peerDependencies": { "react": ">=19", "react-dom": ">=19" } }, "sha512-ycnc3DUpV9NhhTgvB0yyw4L+irK2sMg8NEFk8cdtdC2cQnxVNoUio5i4+rr8ncsNFyCRx3SKD9gfvhf8MM7sAA=="],
 

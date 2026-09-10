@@ -1,6 +1,6 @@
+import { RefreshArrow, SmsNotification } from "@qeetrix/icons";
 import { Button, OTPInput } from "@qeetrix/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2Icon, MailWarningIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -59,7 +59,7 @@ export function VerifyEmailBanner() {
       className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900 shadow-sm dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200"
     >
       <div className="flex items-center gap-2">
-        <MailWarningIcon className="size-4 shrink-0" />
+        <SmsNotification className="size-4 shrink-0" />
         <span>
           Verify <span className="font-medium">{me.email}</span> to unlock organization creation.
         </span>
@@ -80,13 +80,13 @@ export function VerifyEmailBanner() {
             aria-label="Email verification code"
           />
           <Button type="submit" size="sm" disabled={confirm.isPending || code.length !== 6}>
-            {confirm.isPending && <Loader2Icon className="animate-spin" />}
+            {confirm.isPending && <RefreshArrow className="animate-spin" />}
             Verify
           </Button>
         </form>
       ) : (
         <Button size="sm" variant="outline" onClick={resend} disabled={start.isPending}>
-          {start.isPending && <Loader2Icon className="animate-spin" />}
+          {start.isPending && <RefreshArrow className="animate-spin" />}
           Send verification code
         </Button>
       )}

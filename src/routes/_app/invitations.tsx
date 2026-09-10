@@ -1,3 +1,4 @@
+import { Add, RefreshArrow, Send, Sms, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -37,7 +38,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2Icon, MailIcon, PlusIcon, RefreshCwIcon, SendIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -147,12 +147,12 @@ function InvitationsPage() {
               onClick={() => listQ.refetch()}
               disabled={listQ.isFetching}
             >
-              <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
+              <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
               {t("list.refresh")}
             </Button>
             {canCreateInvites ? (
               <Button size="sm" onClick={() => setCreating(true)}>
-                <PlusIcon /> {t("list.send")}
+                <Add /> {t("list.send")}
               </Button>
             ) : null}
           </>
@@ -213,7 +213,7 @@ function InvitationsPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={rows.length === 0}
-            emptyIcon={MailIcon}
+            emptyIcon={Sms}
             emptyTitle={lv.hasActiveFilters ? t("list.emptyFiltered") : t("list.empty")}
             skeletonRows={3}
           >
@@ -277,9 +277,9 @@ function InvitationsPage() {
                             onClick={() => resendM.mutate(inv.id)}
                           >
                             {resendM.isPending && resendM.variables === inv.id ? (
-                              <Loader2Icon className="animate-spin" />
+                              <RefreshArrow className="animate-spin" />
                             ) : (
-                              <SendIcon />
+                              <Send />
                             )}
                             {t("table.resend")}
                           </Button>
@@ -298,7 +298,7 @@ function InvitationsPage() {
                               })
                             }
                           >
-                            <Trash2Icon /> {t("table.revoke")}
+                            <Trash /> {t("table.revoke")}
                           </Button>
                         </div>
                       </TableCell>
@@ -467,7 +467,7 @@ function CreateInviteSheet({
               {t("create.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending || !tenantId}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <RefreshArrow className="animate-spin" />}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>

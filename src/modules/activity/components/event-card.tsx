@@ -1,4 +1,22 @@
 import {
+  Activity,
+  ArrowDownAlt,
+  ArrowRightAlt,
+  CloseCircle,
+  Danger,
+  Driver,
+  FingerScan,
+  Global,
+  InfoCircle,
+  Key,
+  Login,
+  Monitor,
+  Routing,
+  ShieldSecurity,
+  TickCircle,
+  User,
+} from "@qeetrix/icons";
+import {
   Avatar,
   AvatarFallback,
   Badge,
@@ -8,24 +26,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@qeetrix/ui";
-import {
-  ActivityIcon,
-  AlertTriangleIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  FingerprintIcon,
-  GlobeIcon,
-  InfoIcon,
-  KeyRoundIcon,
-  LogInIcon,
-  MonitorIcon,
-  ServerIcon,
-  ShieldAlertIcon,
-  UserIcon,
-  WebhookIcon,
-  XCircleIcon,
-} from "lucide-react";
 import { useState } from "react";
 
 import type { ActivityEvent, Severity } from "../types/activity.types";
@@ -35,25 +35,25 @@ import { SeverityBadge } from "./severity-badge";
 // Category → icon mapping
 // ---------------------------------------------------------------------------
 
-const CATEGORY_ICONS: Record<string, typeof ActivityIcon> = {
-  authentication: LogInIcon,
-  authorization: ShieldAlertIcon,
-  mfa: FingerprintIcon,
-  "api-key": KeyRoundIcon,
-  apikey: KeyRoundIcon,
-  webhook: WebhookIcon,
-  user: UserIcon,
-  session: MonitorIcon,
-  system: ServerIcon,
-  federation: GlobeIcon,
+const CATEGORY_ICONS: Record<string, typeof Activity> = {
+  authentication: Login,
+  authorization: ShieldSecurity,
+  mfa: FingerScan,
+  "api-key": Key,
+  apikey: Key,
+  webhook: Routing,
+  user: User,
+  session: Monitor,
+  system: Driver,
+  federation: Global,
 };
 
-const SEVERITY_ICON: Record<Severity, typeof ActivityIcon> = {
-  critical: XCircleIcon,
-  error: XCircleIcon,
-  warning: AlertTriangleIcon,
-  success: CheckCircleIcon,
-  info: InfoIcon,
+const SEVERITY_ICON: Record<Severity, typeof Activity> = {
+  critical: CloseCircle,
+  error: CloseCircle,
+  warning: Danger,
+  success: TickCircle,
+  info: InfoCircle,
 };
 
 const SEVERITY_ICON_CLASS: Record<Severity, string> = {
@@ -64,9 +64,9 @@ const SEVERITY_ICON_CLASS: Record<Severity, string> = {
   info: "text-info",
 };
 
-export function getCategoryIcon(category: string): typeof ActivityIcon {
+export function getCategoryIcon(category: string): typeof Activity {
   const key = category.toLowerCase().replace(/[^a-z-]/g, "");
-  return CATEGORY_ICONS[key] ?? ActivityIcon;
+  return CATEGORY_ICONS[key] ?? Activity;
 }
 
 // ---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ export function EventCard({
               onClick={onClick}
               aria-label="Open event details"
             >
-              Details <ChevronRightIcon className="size-3" aria-hidden="true" />
+              Details <ArrowRightAlt className="size-3" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -272,9 +272,9 @@ export function EventCard({
             aria-controls={`event-meta-${event.id}`}
           >
             {expanded ? (
-              <ChevronDownIcon className="size-3" aria-hidden="true" />
+              <ArrowDownAlt className="size-3" aria-hidden="true" />
             ) : (
-              <ChevronRightIcon className="size-3" aria-hidden="true" />
+              <ArrowRightAlt className="size-3" aria-hidden="true" />
             )}
             Metadata
           </button>

@@ -1,3 +1,4 @@
+import { Radar, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -21,7 +22,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, RadioTowerIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -121,7 +121,7 @@ function LogStreamingPage() {
               <FieldDescription>{t("logStreaming.addSink.tokenHelp")}</FieldDescription>
             </Field>
             <Button type="submit" disabled={createM.isPending || !endpoint.trim()}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <RefreshArrow className="animate-spin" />}
               {t("logStreaming.addSink.add")}
             </Button>
           </form>
@@ -142,7 +142,7 @@ function LogStreamingPage() {
             isError={sinksQ.isError}
             error={sinksQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={RadioTowerIcon}
+            emptyIcon={Radar}
             emptyTitle={t("logStreaming.sinks.empty")}
             emptyDescription={t("logStreaming.sinks.emptyDescription")}
             skeletonRows={2}
@@ -191,7 +191,7 @@ function LogStreamingPage() {
                         })
                       }
                     >
-                      <Trash2Icon /> {t("logStreaming.sinks.remove")}
+                      <Trash /> {t("logStreaming.sinks.remove")}
                     </Button>
                   </div>
                 </li>

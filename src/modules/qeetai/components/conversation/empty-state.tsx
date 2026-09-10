@@ -1,5 +1,4 @@
-import { SparklesIcon } from "lucide-react";
-
+import { MagicStar } from "@qeetrix/icons";
 // Starter prompts shown on an empty conversation. These are generic defaults;
 // the suggestions feature replaces them with route-aware actions derived from
 // the current ConsoleContext.
@@ -17,7 +16,7 @@ export function ConversationEmptyState({ onPick }: { onPick: (prompt: string) =>
         className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15"
         aria-hidden
       >
-        <SparklesIcon className="size-6" />
+        <MagicStar className="size-6" />
       </span>
       <h2 className="mt-4 font-heading text-base font-semibold">How can I help?</h2>
       <p className="mt-1 max-w-sm text-sm text-muted-foreground">

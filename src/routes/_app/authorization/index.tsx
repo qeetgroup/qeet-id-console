@@ -1,4 +1,13 @@
 import {
+  Danger,
+  DocumentText,
+  GridBlocks,
+  Key,
+  ShieldTick,
+  SliderHorizontal,
+  TrendUp,
+} from "@qeetrix/icons";
+import {
   Badge,
   Card,
   CardContent,
@@ -15,15 +24,6 @@ import {
   TimelineTitle,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  AlertTriangleIcon,
-  BlocksIcon,
-  KeyRoundIcon,
-  ScrollTextIcon,
-  ShieldCheckIcon,
-  SlidersHorizontalIcon,
-  TrendingUpIcon,
-} from "lucide-react";
 import { useMemo } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -95,20 +95,20 @@ function DashboardPage() {
         <Stat
           label="Roles"
           value={roles.length}
-          icon={ShieldCheckIcon}
+          icon={ShieldTick}
           hint={`${roles.filter((r) => r.is_system).length} system`}
         />
-        <Stat label="Permissions" value={perms.length} icon={KeyRoundIcon} />
+        <Stat label="Permissions" value={perms.length} icon={Key} />
         <Stat
           label="ABAC policies"
           value={policies.length}
-          icon={SlidersHorizontalIcon}
+          icon={SliderHorizontal}
           hint={`${policies.filter((p) => p.enabled).length} enabled`}
         />
         <Stat
           label="Deny policies"
           value={policies.filter((p) => p.effect === "deny").length}
-          icon={AlertTriangleIcon}
+          icon={Danger}
         />
       </div>
 
@@ -157,7 +157,7 @@ function DashboardPage() {
           <CardContent>
             {changes.length === 0 ? (
               <p className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
-                <ScrollTextIcon className="size-4" aria-hidden /> No recent authorization changes.
+                <DocumentText className="size-4" aria-hidden /> No recent authorization changes.
               </p>
             ) : (
               <Timeline>
@@ -185,7 +185,7 @@ function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <ComingSoon
-            icon={TrendingUpIcon}
+            icon={TrendUp}
             title="Evaluation analytics"
             description="Allow-vs-deny trends, authorization latency, top resources and most-active roles will appear here once the authorization engine emits decision metrics."
             note="no authz metrics endpoint yet — real counts shown above"
@@ -193,7 +193,7 @@ function DashboardPage() {
         </div>
         <Card className="flex flex-col justify-center">
           <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
-            <BlocksIcon className="size-6 text-muted-foreground" aria-hidden />
+            <GridBlocks className="size-6 text-muted-foreground" aria-hidden />
             <p className="text-sm font-medium">Start building</p>
             <Link to="/authorization/builder" className="text-sm text-primary hover:underline">
               Open the Policy Builder →

@@ -1,3 +1,4 @@
+import { Clipboard, ExportRight, Filter, More, SidebarLeft } from "@qeetrix/icons";
 // Investigate menu — the per-event "⋯" action menu that turns an activity row
 // into an investigation hub: jump to the related entity, pivot the feed to a
 // facet, or copy correlation IDs. Deep-links only to routes that actually exist
@@ -16,13 +17,6 @@ import {
   useCopyToClipboard,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import {
-  ClipboardIcon,
-  ExternalLinkIcon,
-  FilterIcon,
-  MoreHorizontalIcon,
-  PanelRightOpenIcon,
-} from "lucide-react";
 import type { ReactElement } from "react";
 import { toast } from "sonner";
 
@@ -74,7 +68,7 @@ export function InvestigateMenu({
               aria-label="Investigate event"
               onClick={(e) => e.stopPropagation()}
             >
-              <MoreHorizontalIcon className="size-4" aria-hidden="true" />
+              <More className="size-4" aria-hidden="true" />
             </Button>
           )
         }
@@ -84,7 +78,7 @@ export function InvestigateMenu({
           <DropdownMenuLabel>Investigate</DropdownMenuLabel>
           {onViewDetails && (
             <DropdownMenuItem onClick={onViewDetails}>
-              <PanelRightOpenIcon className="size-3.5" aria-hidden="true" />
+              <SidebarLeft className="size-3.5" aria-hidden="true" />
               View details
             </DropdownMenuItem>
           )}
@@ -94,20 +88,20 @@ export function InvestigateMenu({
         {actorId && (
           <>
             <DropdownMenuItem render={<Link to="/users/$userId" params={{ userId: actorId }} />}>
-              <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
+              <ExportRight className="size-3.5" aria-hidden="true" />
               View user
             </DropdownMenuItem>
             <DropdownMenuItem
               render={<Link to="/users/$userId/timeline" params={{ userId: actorId }} />}
             >
-              <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
+              <ExportRight className="size-3.5" aria-hidden="true" />
               View user timeline
             </DropdownMenuItem>
           </>
         )}
         {targetIs(event, "group") && targetId && (
           <DropdownMenuItem render={<Link to="/groups/$groupId" params={{ groupId: targetId }} />}>
-            <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
+            <ExportRight className="size-3.5" aria-hidden="true" />
             View group
           </DropdownMenuItem>
         )}
@@ -115,7 +109,7 @@ export function InvestigateMenu({
           <DropdownMenuItem
             render={<Link to="/developer/webhooks/$id" params={{ id: targetId }} />}
           >
-            <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
+            <ExportRight className="size-3.5" aria-hidden="true" />
             View webhook
           </DropdownMenuItem>
         )}
@@ -123,12 +117,12 @@ export function InvestigateMenu({
           <DropdownMenuItem
             render={<Link to="/auth/connections/oidc/$clientId" params={{ clientId: targetId }} />}
           >
-            <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
+            <ExportRight className="size-3.5" aria-hidden="true" />
             View OIDC client
           </DropdownMenuItem>
         )}
         <DropdownMenuItem render={<Link to="/security/audit-logs" search={auditSearch} />}>
-          <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
+          <ExportRight className="size-3.5" aria-hidden="true" />
           Correlate in audit log
         </DropdownMenuItem>
 
@@ -137,17 +131,17 @@ export function InvestigateMenu({
             <DropdownMenuSeparator />
             {(actorId || event.actor?.name) && (
               <DropdownMenuItem onClick={() => onFilter({ actor: actorId ?? event.actor?.name })}>
-                <FilterIcon className="size-3.5" aria-hidden="true" />
+                <Filter className="size-3.5" aria-hidden="true" />
                 Filter by this actor
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => onFilter({ type: event.type })}>
-              <FilterIcon className="size-3.5" aria-hidden="true" />
+              <Filter className="size-3.5" aria-hidden="true" />
               Filter by event type
             </DropdownMenuItem>
             {event.ip && (
               <DropdownMenuItem onClick={() => onFilter({ ip: event.ip })}>
-                <FilterIcon className="size-3.5" aria-hidden="true" />
+                <Filter className="size-3.5" aria-hidden="true" />
                 Filter by this IP
               </DropdownMenuItem>
             )}
@@ -156,24 +150,24 @@ export function InvestigateMenu({
 
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => doCopy(event.id, "Event ID")}>
-          <ClipboardIcon className="size-3.5" aria-hidden="true" />
+          <Clipboard className="size-3.5" aria-hidden="true" />
           Copy event ID
         </DropdownMenuItem>
         {event.request_id && (
           <DropdownMenuItem onClick={() => doCopy(event.request_id as string, "Request ID")}>
-            <ClipboardIcon className="size-3.5" aria-hidden="true" />
+            <Clipboard className="size-3.5" aria-hidden="true" />
             Copy request ID
           </DropdownMenuItem>
         )}
         {actorId && (
           <DropdownMenuItem onClick={() => doCopy(actorId, "Actor ID")}>
-            <ClipboardIcon className="size-3.5" aria-hidden="true" />
+            <Clipboard className="size-3.5" aria-hidden="true" />
             Copy actor ID
           </DropdownMenuItem>
         )}
         {event.ip && (
           <DropdownMenuItem onClick={() => doCopy(event.ip as string, "IP address")}>
-            <ClipboardIcon className="size-3.5" aria-hidden="true" />
+            <Clipboard className="size-3.5" aria-hidden="true" />
             Copy IP address
           </DropdownMenuItem>
         )}

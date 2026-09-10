@@ -1,5 +1,5 @@
+import { Keyboard, SearchNormal } from "@qeetrix/icons";
 import { Button, Separator, SidebarTrigger } from "@qeetrix/ui";
-import { KeyboardIcon, SearchIcon } from "lucide-react";
 
 import { QeetAITrigger } from "@/modules/qeetai";
 import { ThemeToggle } from "@/platform/components/theme-toggle";
@@ -38,7 +38,7 @@ export function ConsoleHeader({
         }
         disabled={!searchAvailable}
       >
-        <SearchIcon className="size-4 shrink-0" aria-hidden="true" />
+        <SearchNormal className="size-4 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">Search the control plane</span>
         <kbd className="console-keycap">⌘ + K</kbd>
       </button>
@@ -52,7 +52,7 @@ export function ConsoleHeader({
           onClick={onOpenPalette}
           disabled={!searchAvailable}
         >
-          <SearchIcon />
+          <SearchNormal />
         </Button>
         <Button
           variant="ghost"
@@ -62,7 +62,7 @@ export function ConsoleHeader({
           title="Keyboard shortcuts (?)"
           onClick={onOpenShortcuts}
         >
-          <KeyboardIcon />
+          <Keyboard />
         </Button>
         <QeetAITrigger />
         <NotificationsInbox />

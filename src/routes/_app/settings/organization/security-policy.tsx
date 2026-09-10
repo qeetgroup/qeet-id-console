@@ -1,3 +1,4 @@
+import { RefreshArrow, TickCircle } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -22,7 +23,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -283,8 +283,8 @@ function PoliciesPage() {
                 {t("policies.resetBtn")}
               </Button>
               <Button type="submit" disabled={saveM.isPending}>
-                {saveM.isPending && <Loader2Icon className="animate-spin" />}
-                {saveM.isSuccess && !saveM.isPending && <CheckIcon />}
+                {saveM.isPending && <RefreshArrow className="animate-spin" />}
+                {saveM.isSuccess && !saveM.isPending && <TickCircle />}
                 {saveM.isPending ? t("policies.savingBtn") : t("policies.saveBtn")}
               </Button>
             </div>

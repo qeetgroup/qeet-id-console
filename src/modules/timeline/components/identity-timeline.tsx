@@ -1,3 +1,4 @@
+import { Activity, RefreshArrow } from "@qeetrix/icons";
 // Identity Timeline — git-history-style vertical timeline of a user's lifecycle.
 // Groups events by date bucket (Today → Older), virtualises with
 // IntersectionObserver + bounded DOM (cap via cursor pagination), supports
@@ -16,7 +17,6 @@ import {
   Timeline,
   usePrefersReducedMotion,
 } from "@qeetrix/ui";
-import { ActivityIcon, RefreshCwIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import type { ActivityEvent, DateGroup } from "@/modules/activity";
@@ -130,13 +130,13 @@ export function IdentityTimeline({
     return (
       <div className="flex min-h-72 items-center justify-center">
         <EmptyState
-          icon={RefreshCwIcon}
+          icon={RefreshArrow}
           title="Couldn't load timeline"
           description="There was a problem fetching this user's event history."
           action={
             onRetry && (
               <Button variant="outline" size="sm" onClick={onRetry}>
-                <RefreshCwIcon className="size-3.5" aria-hidden="true" />
+                <RefreshArrow className="size-3.5" aria-hidden="true" />
                 Retry
               </Button>
             )
@@ -150,7 +150,7 @@ export function IdentityTimeline({
     return (
       <div className="flex min-h-72 items-center justify-center">
         <EmptyState
-          icon={ActivityIcon}
+          icon={Activity}
           title="No events found"
           description="No activity events match your current filters for this user."
         />

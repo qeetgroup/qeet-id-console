@@ -1,5 +1,5 @@
+import { Key, ShieldTick } from "@qeetrix/icons";
 import { Handle, type NodeProps, Position } from "@xyflow/react";
-import { KeyRoundIcon, ShieldCheckIcon } from "lucide-react";
 
 import { NODE_W } from "./layout";
 
@@ -58,7 +58,7 @@ export function RoleNode({ data }: NodeProps) {
       style={{ width: NODE_W }}
     >
       <div className="flex items-center gap-1.5">
-        <ShieldCheckIcon className="size-3.5 text-blue-600 dark:text-blue-400" aria-hidden />
+        <ShieldTick className="size-3.5 text-blue-600 dark:text-blue-400" aria-hidden />
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           role{d.isSystem ? " · system" : ""}
         </p>
@@ -83,7 +83,7 @@ export function PermNode({ data }: NodeProps) {
     >
       <Handle type="target" position={Position.Left} className="!bg-muted-foreground" />
       <div className="flex items-center gap-1.5">
-        <KeyRoundIcon className="size-3.5 text-muted-foreground" aria-hidden />
+        <Key className="size-3.5 text-muted-foreground" aria-hidden />
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           permission
         </p>

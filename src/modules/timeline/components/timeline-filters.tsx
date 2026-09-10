@@ -1,3 +1,4 @@
+import { ArrowDownAlt, CloseCircle, SearchNormal, Sort } from "@qeetrix/icons";
 // Timeline filter bar — a compact, dropdown-driven control surface.
 // Primary row: full-text search + time-range preset. Secondary row: Category
 // and Severity multi-select dropdowns. Active selections render as removable
@@ -15,7 +16,6 @@ import {
   DropdownMenuTrigger,
   Input,
 } from "@qeetrix/ui";
-import { ChevronDownIcon, ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -88,7 +88,7 @@ function FilterDropdown({
                 {count}
               </span>
             )}
-            <ChevronDownIcon className="size-3.5 opacity-60" aria-hidden="true" />
+            <ArrowDownAlt className="size-3.5 opacity-60" aria-hidden="true" />
           </Button>
         }
       />
@@ -110,7 +110,7 @@ function ActiveChip({ label, onRemove }: { label: string; onRemove: () => void }
       className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 py-0.5 pe-1.5 ps-2.5 text-xs text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span className="truncate">{label}</span>
-      <XIcon className="size-3 text-muted-foreground" aria-hidden="true" />
+      <CloseCircle className="size-3 text-muted-foreground" aria-hidden="true" />
     </button>
   );
 }
@@ -205,7 +205,7 @@ export function TimelineFilters() {
       {/* Primary row: search + time range */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-52 flex-1">
-          <SearchIcon
+          <SearchNormal
             className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
@@ -232,7 +232,7 @@ export function TimelineFilters() {
 
       {/* Secondary row: dropdown facets */}
       <div className="flex flex-wrap items-center gap-2">
-        <ListFilterIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
+        <Sort className="size-3.5 text-muted-foreground" aria-hidden="true" />
 
         <FilterDropdown
           label="Category"
@@ -279,7 +279,7 @@ export function TimelineFilters() {
             className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Clear all timeline filters"
           >
-            <XIcon className="size-3" aria-hidden="true" />
+            <CloseCircle className="size-3" aria-hidden="true" />
             Clear all
           </button>
         )}

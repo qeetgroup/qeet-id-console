@@ -1,3 +1,4 @@
+import { RefreshArrow, TickCircle } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -13,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qeetrix/ui";
-import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ContactSalesDialog } from "@/modules/billing";
@@ -256,7 +256,7 @@ export function PlanSelect({
                   <ul className="flex flex-1 flex-col gap-2 text-sm">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-start gap-2">
-                        <CheckIcon className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
+                        <TickCircle className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
                         <span className="text-muted-foreground">{f}</span>
                       </li>
                     ))}
@@ -281,7 +281,7 @@ export function PlanSelect({
                             })
                       }
                     >
-                      {busy && <Loader2Icon className="animate-spin" />}
+                      {busy && <RefreshArrow className="animate-spin" />}
                       {isCurrent ? "Current plan" : label}
                     </Button>
                   </div>

@@ -1,3 +1,4 @@
+import { Global, RefreshArrow, TickCircle, Timer, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -23,14 +24,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  CheckCircle2Icon,
-  CheckIcon,
-  ConstructionIcon,
-  GlobeIcon,
-  Loader2Icon,
-  Trash2Icon,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -113,7 +106,7 @@ function VerifiedDomainsPanel() {
               />
             </Field>
             <Button type="submit" disabled={addM.isPending || !newDomain.trim()}>
-              {addM.isPending && <Loader2Icon className="animate-spin" />}
+              {addM.isPending && <RefreshArrow className="animate-spin" />}
               {t("domains.addCard.submit")}
             </Button>
           </form>
@@ -128,7 +121,7 @@ function VerifiedDomainsPanel() {
         isError={domainsQ.isError}
         error={domainsQ.error}
         isEmpty={items.length === 0}
-        emptyIcon={GlobeIcon}
+        emptyIcon={Global}
         emptyTitle={t("domains.empty")}
         emptyDescription={t("domains.emptyDescription")}
         skeletonRows={2}
@@ -158,11 +151,11 @@ function DomainCard({ domain }: { domain: TenantDomain }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <CardTitle className="flex items-center gap-2 text-base">
-                <GlobeIcon className="size-4 text-muted-foreground" />
+                <Global className="size-4 text-muted-foreground" />
                 <span className="font-mono">{domain.domain}</span>
                 {verified ? (
                   <Badge variant="success">
-                    <CheckCircle2Icon className="size-3" /> {t("domains.card.verified")}
+                    <TickCircle className="size-3" /> {t("domains.card.verified")}
                   </Badge>
                 ) : (
                   <Badge variant="outline">{t("domains.card.pending")}</Badge>
@@ -184,7 +177,7 @@ function DomainCard({ domain }: { domain: TenantDomain }) {
                 })
               }
             >
-              <Trash2Icon /> {t("domains.card.remove")}
+              <Trash /> {t("domains.card.remove")}
             </Button>
           </div>
         </CardHeader>
@@ -204,7 +197,7 @@ function DomainCard({ domain }: { domain: TenantDomain }) {
             )}
             <div>
               <Button onClick={() => verifyM.mutate(domain.id)} disabled={verifyM.isPending}>
-                {verifyM.isPending && <Loader2Icon className="animate-spin" />}
+                {verifyM.isPending && <RefreshArrow className="animate-spin" />}
                 {t("domains.card.verify")}
               </Button>
             </div>
@@ -261,7 +254,7 @@ function CustomLoginDomainPanel() {
 
       <Card className="border-amber-500/40 bg-amber-50/30 dark:bg-amber-950/20">
         <CardContent className="flex items-start gap-3 p-4">
-          <ConstructionIcon className="size-5 text-amber-700 dark:text-amber-500" />
+          <Timer className="size-5 text-amber-700 dark:text-amber-500" />
           <div className="text-sm">
             <p className="font-medium">{t("workspace.domains.pendingBanner.title")}</p>
             <p className="text-muted-foreground">
@@ -360,10 +353,10 @@ function CustomLoginDomainPanel() {
                 .
               </p>
               <div className="flex items-center gap-2">
-                <GlobeIcon className="size-4 text-muted-foreground" />
+                <Global className="size-4 text-muted-foreground" />
                 <Button type="submit" disabled={saveM.isPending}>
-                  {saveM.isPending && <Loader2Icon className="animate-spin" />}
-                  {saveM.isSuccess && !saveM.isPending && <CheckIcon />}
+                  {saveM.isPending && <RefreshArrow className="animate-spin" />}
+                  {saveM.isSuccess && !saveM.isPending && <TickCircle />}
                   {saveM.isPending
                     ? t("workspace.domains.footer.saving")
                     : t("workspace.domains.footer.save")}

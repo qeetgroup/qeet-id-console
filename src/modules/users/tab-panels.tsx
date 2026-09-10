@@ -1,3 +1,14 @@
+import {
+  Buildings,
+  Danger,
+  FingerScan,
+  Key,
+  Link,
+  Lock,
+  MonitorMobile,
+  People,
+  ShieldTick,
+} from "@qeetrix/icons";
 // Secondary User 360 tabs: Security, Access, Sessions, Identities, Developer.
 // (Overview lives in overview-tab.tsx, Activity in activity-tab.tsx.)
 
@@ -22,17 +33,6 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
-import {
-  AlertTriangleIcon,
-  Building2Icon,
-  FingerprintIcon,
-  KeyRoundIcon,
-  LinkIcon,
-  LockIcon,
-  MonitorSmartphoneIcon,
-  ShieldCheckIcon,
-  UsersRoundIcon,
-} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -145,7 +145,7 @@ export function SecurityTab({
             isLoading={anomaliesQ.isLoading}
             isError={anomaliesQ.isError}
             isEmpty={signals.length === 0}
-            emptyIcon={ShieldCheckIcon}
+            emptyIcon={ShieldTick}
             emptyTitle={t("detail.securitySignalsEmpty")}
             skeletonRows={3}
           >
@@ -204,7 +204,7 @@ export function AccessTab({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Building2Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+              <Buildings className="size-4 text-muted-foreground" aria-hidden="true" />
               {t("detail.organization")}
             </CardTitle>
           </CardHeader>
@@ -228,7 +228,7 @@ export function AccessTab({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldCheckIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+              <ShieldTick className="size-4 text-muted-foreground" aria-hidden="true" />
               {t("detail.roles")}
             </CardTitle>
           </CardHeader>
@@ -236,7 +236,7 @@ export function AccessTab({
             <DataState
               isLoading={loading}
               isEmpty={!access?.roles.length}
-              emptyIcon={ShieldCheckIcon}
+              emptyIcon={ShieldTick}
               emptyTitle={t("detail.noRoles")}
               skeletonRows={2}
             >
@@ -257,7 +257,7 @@ export function AccessTab({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <UsersRoundIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+              <People className="size-4 text-muted-foreground" aria-hidden="true" />
               {t("detail.groups")}
             </CardTitle>
           </CardHeader>
@@ -265,7 +265,7 @@ export function AccessTab({
             <DataState
               isLoading={loading}
               isEmpty={!access?.groups.length}
-              emptyIcon={UsersRoundIcon}
+              emptyIcon={People}
               emptyTitle={t("detail.noGroups")}
               skeletonRows={2}
             >
@@ -297,7 +297,7 @@ export function AccessTab({
           <DataState
             isLoading={permissionsLoading}
             isEmpty={permissions.length === 0}
-            emptyIcon={LockIcon}
+            emptyIcon={Lock}
             emptyTitle={t("detail.noPermissions")}
             skeletonRows={4}
           >
@@ -360,7 +360,7 @@ export function SessionsTab({ userId, canWrite }: { userId: string; canWrite: bo
           isError={sessionsQ.isError}
           error={sessionsQ.error}
           isEmpty={items.length === 0}
-          emptyIcon={MonitorSmartphoneIcon}
+          emptyIcon={MonitorMobile}
           emptyTitle={t("detail.sessionsEmpty")}
           skeletonRows={3}
         >
@@ -380,7 +380,7 @@ export function SessionsTab({ userId, canWrite }: { userId: string; canWrite: bo
                   <TableRow key={s.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <MonitorSmartphoneIcon
+                        <MonitorMobile
                           className="size-4 shrink-0 text-muted-foreground"
                           aria-hidden="true"
                         />
@@ -425,7 +425,7 @@ export function IdentitiesTab({ userId, passwordSet }: { userId: string; passwor
       <CardContent className="flex flex-col gap-2">
         {passwordSet ? (
           <IdentityRow
-            icon={<LockIcon className="size-4" aria-hidden="true" />}
+            icon={<Lock className="size-4" aria-hidden="true" />}
             title={t("detail.password")}
             subtitle={t("detail.passwordIdentity")}
           />
@@ -434,14 +434,14 @@ export function IdentitiesTab({ userId, passwordSet }: { userId: string; passwor
           isLoading={identitiesQ.isLoading}
           isError={identitiesQ.isError}
           isEmpty={social.length === 0 && !passwordSet}
-          emptyIcon={LinkIcon}
+          emptyIcon={Link}
           emptyTitle={t("detail.identitiesEmpty")}
           skeletonRows={2}
         >
           {social.map((i) => (
             <IdentityRow
               key={i.id}
-              icon={<FingerprintIcon className="size-4" aria-hidden="true" />}
+              icon={<FingerScan className="size-4" aria-hidden="true" />}
               title={i.provider}
               subtitle={i.email ?? i.subject}
               trailing={
@@ -491,7 +491,7 @@ export function DeveloperTab({ user }: { user: UserDetail }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <KeyRoundIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+            <Key className="size-4 text-muted-foreground" aria-hidden="true" />
             {t("detail.identifiers")}
           </CardTitle>
         </CardHeader>
@@ -519,7 +519,7 @@ export function DeveloperTab({ user }: { user: UserDetail }) {
           {user.metadata && Object.keys(user.metadata).length > 0 ? (
             <JSONTree value={user.metadata} rootLabel="metadata" initialOpenDepth={1} />
           ) : (
-            <EmptyState icon={AlertTriangleIcon} title={t("detail.metadataEmpty")} />
+            <EmptyState icon={Danger} title={t("detail.metadataEmpty")} />
           )}
         </CardContent>
       </Card>

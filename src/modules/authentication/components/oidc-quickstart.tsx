@@ -1,3 +1,4 @@
+import { Copy, ExportRight, Play, TickCircle } from "@qeetrix/icons";
 // Integration quickstart for a registered OIDC application: a framework picker
 // with a copy-paste "add login" snippet pre-filled with the app's real values
 // (issuer, client_id, redirect URI, scopes), plus a one-click "Test login" that
@@ -16,7 +17,6 @@ import {
   SegmentedControl,
   SegmentedControlItem,
 } from "@qeetrix/ui";
-import { CheckIcon, CopyIcon, ExternalLinkIcon, PlayIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -173,7 +173,7 @@ function CodeBlock({ code }: { code: string }) {
           window.setTimeout(() => setCopied(false), 1500);
         }}
       >
-        {copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
+        {copied ? <TickCircle className="size-4" /> : <Copy className="size-4" />}
       </Button>
     </div>
   );
@@ -222,7 +222,7 @@ export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?
 
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => testLogin(client)}>
-            <PlayIcon className="size-4" /> Test login
+            <Play className="size-4" /> Test login
           </Button>
           <Button
             variant="outline"
@@ -231,7 +231,7 @@ export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?
               window.open(`${ISSUER}/.well-known/openid-configuration`, "_blank", "noopener")
             }
           >
-            <ExternalLinkIcon className="size-4" /> Discovery document
+            <ExportRight className="size-4" /> Discovery document
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">

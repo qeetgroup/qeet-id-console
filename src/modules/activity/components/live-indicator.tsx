@@ -1,5 +1,5 @@
+import { Radio } from "@qeetrix/icons";
 import { cn, StatusPill } from "@qeetrix/ui";
-import { RadioIcon } from "lucide-react";
 
 import type { ConnectionStatus } from "../types/activity.types";
 
@@ -55,7 +55,7 @@ export function LiveIndicator({
         )}
         title={label}
       >
-        <RadioIcon
+        <Radio
           className={cn("size-3", isPulsing && "animate-pulse", STATUS_ICON_CLASS[status])}
           aria-hidden="true"
         />

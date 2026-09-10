@@ -1,4 +1,15 @@
 import {
+  CloseCircle,
+  ColorSwatch,
+  Key,
+  PartyPopper,
+  People,
+  Record,
+  Routing,
+  ShieldTick,
+  TickCircle,
+} from "@qeetrix/icons";
+import {
   Button,
   buttonVariants,
   Card,
@@ -9,17 +20,6 @@ import {
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import {
-  CheckCircle2Icon,
-  CircleIcon,
-  KeyRoundIcon,
-  PaletteIcon,
-  PartyPopperIcon,
-  ShieldCheckIcon,
-  UsersIcon,
-  WebhookIcon,
-  XIcon,
-} from "lucide-react";
 import { useState } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -49,7 +49,7 @@ function isDoneSafe<T>(
 
 interface Step {
   id: string;
-  icon: typeof UsersIcon;
+  icon: typeof People;
   title: string;
   description: string;
   ctaLabel: string;
@@ -122,7 +122,7 @@ function useSteps(): Step[] {
       ? [
           {
             id: "branding",
-            icon: PaletteIcon,
+            icon: ColorSwatch,
             title: "Set your brand",
             description: "Upload a logo and pick your brand colours.",
             ctaLabel: "Open branding",
@@ -139,7 +139,7 @@ function useSteps(): Step[] {
       ? [
           {
             id: "invite",
-            icon: UsersIcon,
+            icon: People,
             title: "Invite your team",
             description: "Bring in admins, engineers, or support staff.",
             ctaLabel: "Invite teammates",
@@ -152,7 +152,7 @@ function useSteps(): Step[] {
       ? [
           {
             id: "oauth-app",
-            icon: ShieldCheckIcon,
+            icon: ShieldTick,
             title: "Register an application",
             description: "Hook up your first OAuth/OIDC client to start signing users in.",
             ctaLabel: "Add application",
@@ -165,7 +165,7 @@ function useSteps(): Step[] {
       ? [
           {
             id: "api-key",
-            icon: KeyRoundIcon,
+            icon: Key,
             title: "Create an API key",
             description: "Service-to-service auth for your backend integrations.",
             ctaLabel: "Create key",
@@ -178,7 +178,7 @@ function useSteps(): Step[] {
       ? [
           {
             id: "webhook",
-            icon: WebhookIcon,
+            icon: Routing,
             title: "Subscribe to an event webhook",
             description: "Listen for sign-ins, role changes, audit events.",
             ctaLabel: "Add webhook",
@@ -254,7 +254,7 @@ export function OnboardingChecklist() {
         <CardHeader className="flex flex-row items-start justify-between">
           <div className="flex items-center gap-3">
             <span className="grid size-9 place-items-center rounded-lg bg-success/10 text-success ring-1 ring-success/15">
-              <PartyPopperIcon className="size-4" />
+              <PartyPopper className="size-4" />
             </span>
             <div>
               <CardTitle className="text-base">Organization fully set up</CardTitle>
@@ -262,7 +262,7 @@ export function OnboardingChecklist() {
             </div>
           </div>
           <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
-            <XIcon />
+            <CloseCircle />
           </Button>
         </CardHeader>
       </Card>
@@ -299,7 +299,7 @@ export function OnboardingChecklist() {
           </div>
         </div>
         <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
-          <XIcon />
+          <CloseCircle />
         </Button>
       </CardHeader>
       <ul className="divide-y divide-border/70 border-t border-border/70">
@@ -316,9 +316,9 @@ export function OnboardingChecklist() {
             >
               <div className="shrink-0">
                 {isDone ? (
-                  <CheckCircle2Icon className="size-5 text-success" />
+                  <TickCircle className="size-5 text-success" />
                 ) : (
-                  <CircleIcon className="size-5 text-muted-foreground/50" />
+                  <Record className="size-5 text-muted-foreground/50" />
                 )}
               </div>
               <Icon className="size-4 shrink-0 text-muted-foreground" />

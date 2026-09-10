@@ -1,3 +1,4 @@
+import { Copy, Key, People, RefreshArrow, TickCircle } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -21,7 +22,6 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckIcon, CopyIcon, KeyRoundIcon, RefreshCwIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -102,7 +102,7 @@ function ScimPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardDescription>{t("scim.stats.provisioned")}</CardDescription>
-              <UsersIcon className="size-4 text-muted-foreground" />
+              <People className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-semibold tracking-tight">
@@ -114,7 +114,7 @@ function ScimPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardDescription>{t("scim.stats.status")}</CardDescription>
-              <KeyRoundIcon className="size-4 text-muted-foreground" />
+              <Key className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <StatusPill status={enabled ? "active" : "disabled"} />
@@ -148,9 +148,9 @@ function ScimPage() {
                 <Input value={freshToken} readOnly className="font-mono text-xs" />
                 <Button variant="outline" size="icon" onClick={() => copy("new", freshToken)}>
                   {copied === "new" ? (
-                    <CheckIcon className="size-4" />
+                    <TickCircle className="size-4" />
                   ) : (
-                    <CopyIcon className="size-4" />
+                    <Copy className="size-4" />
                   )}
                 </Button>
               </div>
@@ -175,9 +175,9 @@ function ScimPage() {
                 <Input value={SCIM_BASE_URL} readOnly className="font-mono text-xs" />
                 <Button variant="outline" size="icon" onClick={() => copy("url", SCIM_BASE_URL)}>
                   {copied === "url" ? (
-                    <CheckIcon className="size-4" />
+                    <TickCircle className="size-4" />
                   ) : (
-                    <CopyIcon className="size-4" />
+                    <Copy className="size-4" />
                   )}
                 </Button>
               </div>
@@ -200,7 +200,7 @@ function ScimPage() {
                   className="font-mono text-xs"
                 />
                 <Button variant="outline" onClick={() => rotateM.mutate()} disabled={busy}>
-                  <RefreshCwIcon
+                  <RefreshArrow
                     className={rotateM.isPending ? "mr-2 size-4 animate-spin" : "mr-2 size-4"}
                   />
                   {enabled ? t("scim.endpoint.rotate") : t("scim.endpoint.generate")}
@@ -227,7 +227,7 @@ function ScimPage() {
               isError={usersQ.isError}
               error={usersQ.error}
               isEmpty={users.length === 0}
-              emptyIcon={UsersIcon}
+              emptyIcon={People}
               emptyTitle={t("scim.users.empty")}
               skeletonRows={3}
             >

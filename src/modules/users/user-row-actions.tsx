@@ -1,3 +1,17 @@
+import {
+  Activity,
+  Copy,
+  Edit,
+  Forbidden,
+  Key,
+  More,
+  ShieldCross,
+  ShieldSlash,
+  Trash,
+  User as UserIcon,
+  UserRemove,
+  UserTick,
+} from "@qeetrix/icons";
 // The ⋯ row-actions menu. Navigation items are Links into User 360; mutating
 // actions call up to page-level handlers (which own the hooks + confirm dialog).
 
@@ -10,20 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import {
-  ActivityIcon,
-  CopyIcon,
-  KeyRoundIcon,
-  MonitorXIcon,
-  MoreHorizontalIcon,
-  PencilIcon,
-  ShieldOffIcon,
-  ShieldXIcon,
-  Trash2Icon,
-  UserCheckIcon,
-  UserIcon,
-  UserXIcon,
-} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -57,7 +57,7 @@ export function UserRowActions({
       <DropdownMenuTrigger
         render={
           <Button variant="ghost" size="icon" aria-label={t("table.actions")}>
-            <MoreHorizontalIcon />
+            <More />
           </Button>
         }
       />
@@ -71,13 +71,13 @@ export function UserRowActions({
             <Link to="/users/$userId" params={{ userId: user.id }} search={{ tab: "access" }} />
           }
         >
-          <KeyRoundIcon />
+          <Key />
           {t("rowActions.manageAccess")}
         </DropdownMenuItem>
         <DropdownMenuItem
           render={<Link to="/users/$userId/timeline" params={{ userId: user.id }} />}
         >
-          <ActivityIcon />
+          <Activity />
           {t("rowActions.viewActivity")}
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -86,7 +86,7 @@ export function UserRowActions({
             toast.success(t("rowActions.copied"));
           }}
         >
-          <CopyIcon />
+          <Copy />
           {t("rowActions.copyId")}
         </DropdownMenuItem>
 
@@ -94,23 +94,23 @@ export function UserRowActions({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => handlers.onEdit(user)}>
-              <PencilIcon />
+              <Edit />
               {t("rowActions.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handlers.onSetPassword(user)}>
-              <KeyRoundIcon />
+              <Key />
               {t("table.setPassword")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handlers.onResetMfa(user)}>
-              <ShieldOffIcon />
+              <ShieldSlash />
               {t("detail.resetMfaBtn")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handlers.onRevokeSessions(user)}>
-              <MonitorXIcon />
+              <Forbidden />
               {t("detail.revokeAllBtn")}
             </DropdownMenuItem>
             <DropdownMenuItem disabled={isSelf} onClick={() => handlers.onToggleSuspend(user)}>
-              {suspended ? <UserCheckIcon /> : <UserXIcon />}
+              {suspended ? <UserTick /> : <UserRemove />}
               {suspended ? t("detail.reactivateBtn") : t("detail.suspendBtn")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -119,7 +119,7 @@ export function UserRowActions({
               disabled={isSelf}
               onClick={() => handlers.onDelete(user)}
             >
-              {isSelf ? <ShieldXIcon /> : <Trash2Icon />}
+              {isSelf ? <ShieldCross /> : <Trash />}
               {t("table.deleteUser")}
             </DropdownMenuItem>
           </>

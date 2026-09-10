@@ -1,5 +1,5 @@
+import { RefreshArrow } from "@qeetrix/icons";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -28,7 +28,7 @@ function DashboardPage() {
     return (
       <div className="grid min-h-[60vh] place-items-center">
         <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <Loader2Icon className="size-6 animate-spin" />
+          <RefreshArrow className="size-6 animate-spin" />
           <p className="text-sm">Finalizing your subscription…</p>
         </div>
       </div>

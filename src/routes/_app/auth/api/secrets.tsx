@@ -1,3 +1,4 @@
+import { Add, Copy, Eye, EyeSlash, Key, RefreshArrow, TickCircle, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -29,17 +30,6 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  CheckIcon,
-  CopyIcon,
-  EyeIcon,
-  EyeOffIcon,
-  KeyRoundIcon,
-  Loader2Icon,
-  PlusIcon,
-  RefreshCwIcon,
-  Trash2Icon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -106,7 +96,7 @@ function SecretsPage() {
         description={t("secrets.description")}
         actions={
           <Button size="sm" onClick={() => setCreating(true)}>
-            <PlusIcon className="mr-2 size-4" />
+            <Add className="mr-2 size-4" />
             {t("secrets.newButton")}
           </Button>
         }
@@ -123,7 +113,7 @@ function SecretsPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={KeyRoundIcon}
+            emptyIcon={Key}
             emptyTitle={t("secrets.list.empty")}
             skeletonRows={3}
           >
@@ -157,9 +147,9 @@ function SecretsPage() {
                               aria-label={t("secrets.copyAriaLabel")}
                             >
                               {copied === s.id ? (
-                                <CheckIcon className="size-3.5" />
+                                <TickCircle className="size-3.5" />
                               ) : (
-                                <CopyIcon className="size-3.5" />
+                                <Copy className="size-3.5" />
                               )}
                             </button>
                           </span>
@@ -179,7 +169,7 @@ function SecretsPage() {
                           onClick={() => toggleReveal(s.id)}
                           disabled={revealM.isPending}
                         >
-                          {shown !== undefined ? <EyeOffIcon /> : <EyeIcon />}
+                          {shown !== undefined ? <EyeSlash /> : <Eye />}
                           {shown !== undefined ? t("secrets.hide") : t("secrets.reveal")}
                         </Button>
                         <Button
@@ -187,7 +177,7 @@ function SecretsPage() {
                           size="sm"
                           onClick={() => setRotating({ id: s.id, name: s.name })}
                         >
-                          <RefreshCwIcon /> {t("secrets.rotate")}
+                          <RefreshArrow /> {t("secrets.rotate")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -206,7 +196,7 @@ function SecretsPage() {
                           }
                           disabled={deleteM.isPending}
                         >
-                          <Trash2Icon /> {t("secrets.deleteBtn")}
+                          <Trash /> {t("secrets.deleteBtn")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -298,7 +288,7 @@ function RotateSecretSheet({
               {t("secrets.rotateSheet.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={rotateM.isPending}>
-              {rotateM.isPending && <Loader2Icon className="animate-spin" />}
+              {rotateM.isPending && <RefreshArrow className="animate-spin" />}
               {rotateM.isPending
                 ? t("secrets.rotateSheet.savingBtn")
                 : t("secrets.rotateSheet.submitBtn")}
@@ -386,7 +376,7 @@ function CreateSecretSheet({
               {t("secrets.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <RefreshArrow className="animate-spin" />}
               {createM.isPending ? t("secrets.create.savingBtn") : t("secrets.create.createBtn")}
             </Button>
           </SheetFooter>

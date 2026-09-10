@@ -1,3 +1,4 @@
+import { CloseCircle, RefreshArrow, ShieldTick, TickCircle } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -15,7 +16,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { CheckCircle2Icon, Loader2Icon, ShieldCheckIcon, XCircleIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -76,11 +76,7 @@ function AccessCheckPage() {
               </FieldGroup>
               <div className="flex justify-end">
                 <Button type="submit" disabled={checkM.isPending}>
-                  {checkM.isPending ? (
-                    <Loader2Icon className="animate-spin" />
-                  ) : (
-                    <ShieldCheckIcon />
-                  )}
+                  {checkM.isPending ? <RefreshArrow className="animate-spin" /> : <ShieldTick />}
                   {checkM.isPending ? t("check.evaluating") : t("check.evaluate")}
                 </Button>
               </div>
@@ -98,7 +94,7 @@ function AccessCheckPage() {
           <CardContent aria-live="polite">
             {!result ? (
               <div className="flex flex-col items-center gap-2 py-12 text-center">
-                <ShieldCheckIcon className="size-8 text-muted-foreground" />
+                <ShieldTick className="size-8 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">{t("check.resultPlaceholder")}</p>
               </div>
             ) : (
@@ -111,9 +107,9 @@ function AccessCheckPage() {
                   }`}
                 >
                   {result.allowed ? (
-                    <CheckCircle2Icon className="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    <TickCircle className="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   ) : (
-                    <XCircleIcon className="mt-0.5 size-5 shrink-0 text-destructive" />
+                    <CloseCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
                   )}
                   <div>
                     <p className="text-sm font-semibold">

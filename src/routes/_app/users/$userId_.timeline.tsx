@@ -1,10 +1,10 @@
+import { ArrowLeft, Clock, Shield } from "@qeetrix/icons";
 // Identity Timeline route — /users/$userId/timeline
 // A per-user, git-history-style chronological view of a user's entire lifecycle.
 // Capability-gated on audit.read + user.read (server enforces tenant isolation).
 
 import { EmptyState } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeftIcon, ClockIcon, ShieldIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -78,7 +78,7 @@ function TimelinePage() {
         />
         <div className="enterprise-panel flex min-h-64 items-center justify-center">
           <EmptyState
-            icon={ShieldIcon}
+            icon={Shield}
             title="Access restricted"
             description={
               <>
@@ -100,7 +100,7 @@ function TimelinePage() {
         params={{ userId }}
         className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
       >
-        <ArrowLeftIcon className="size-3" aria-hidden="true" />
+        <ArrowLeft className="size-3" aria-hidden="true" />
         Back to user
       </Link>
 
@@ -110,7 +110,7 @@ function TimelinePage() {
         actions={
           <div className="flex items-center gap-2">
             <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:inline-flex">
-              <ClockIcon className="size-3.5" aria-hidden="true" />
+              <Clock className="size-3.5" aria-hidden="true" />
               {isLoading
                 ? "Loading…"
                 : `${events.length} event${events.length === 1 ? "" : "s"}${hasNextPage ? "+" : ""} loaded`}

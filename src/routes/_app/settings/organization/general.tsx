@@ -1,3 +1,4 @@
+import { RefreshArrow, TickCircle } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -22,7 +23,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -228,8 +228,8 @@ function WorkspaceGeneralPage() {
                     {t("workspace.general.footer.reset")}
                   </Button>
                   <Button type="submit" disabled={saveM.isPending}>
-                    {saveM.isPending && <Loader2Icon className="animate-spin" />}
-                    {saveM.isSuccess && !saveM.isPending && <CheckIcon />}
+                    {saveM.isPending && <RefreshArrow className="animate-spin" />}
+                    {saveM.isSuccess && !saveM.isPending && <TickCircle />}
                     {saveM.isPending
                       ? t("workspace.general.footer.saving")
                       : t("workspace.general.footer.save")}

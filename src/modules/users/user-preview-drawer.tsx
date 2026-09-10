@@ -1,3 +1,4 @@
+import { ArrowRight, TickCircle } from "@qeetrix/icons";
 // Row-preview slide-over — a condensed User 360 so an admin can investigate a
 // user without leaving the table. Overview matches the mockup's right panel
 // (Profile / Security / Access summary); the Access / Security / Activity tabs
@@ -25,7 +26,6 @@ import {
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { formatDateTime } from "@/shared/utils/format";
-import { ArrowRightIcon, CheckCircle2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { CopyId } from "./user-detail-fields";
@@ -276,7 +276,7 @@ export function UserPreviewDrawer({ user, onClose }: { user: User | null; onClos
                 className={cn(buttonVariants({ size: "sm" }), "flex-1")}
               >
                 {t("preview.openFull")}
-                <ArrowRightIcon className="size-4" aria-hidden="true" />
+                <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
               <Link
                 to="/users/$userId/timeline"
@@ -351,7 +351,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 function VerifiedBadge({ t }: { t: (k: string) => string }) {
   return (
     <Badge variant="success" className="gap-1">
-      <CheckCircle2Icon className="size-3" aria-hidden="true" />
+      <TickCircle className="size-3" aria-hidden="true" />
       {t("detail.verified")}
     </Badge>
   );
@@ -360,7 +360,7 @@ function VerifiedBadge({ t }: { t: (k: string) => string }) {
 function StateValue({ ok, t }: { ok: boolean; t: (k: string) => string }) {
   return ok ? (
     <span className="inline-flex items-center gap-1 text-success">
-      <CheckCircle2Icon className="size-3.5" aria-hidden="true" />
+      <TickCircle className="size-3.5" aria-hidden="true" />
       {t("detail.enabled")}
     </span>
   ) : (

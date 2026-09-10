@@ -1,3 +1,4 @@
+import { CalendarDate } from "@qeetrix/icons";
 // Enterprise time-range control for the Activity Center.
 // A preset dropdown (the primary, most-used activity filter) plus a custom
 // date-range picker — the pattern used by Datadog / Auth0 / Stripe / Okta.
@@ -13,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qeetrix/ui";
-import { CalendarClockIcon } from "lucide-react";
 
 // Re-exported so callers can hold the custom-range state without depending on
 // react-day-picker directly.
@@ -83,10 +83,7 @@ export function ActivityTimeRange({
     <div className="flex items-center gap-2">
       <Select value={preset} onValueChange={(v) => v && onPresetChange(v)}>
         <SelectTrigger className="w-44 gap-2" aria-label="Time range">
-          <CalendarClockIcon
-            className="size-3.5 shrink-0 text-muted-foreground"
-            aria-hidden="true"
-          />
+          <CalendarDate className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -1,3 +1,4 @@
+import { RefreshArrow } from "@qeetrix/icons";
 // In-app "Contact sales" form (Enterprise). Replaces the old mailto: link —
 // submits a lead to the backend (persisted + emailed to sales) so nothing is
 // lost to an unopened mail client. Used from the onboarding plan picker and the
@@ -24,7 +25,6 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { TEAM_SIZES } from "@/modules/onboarding";
@@ -133,7 +133,7 @@ export function ContactSalesDialog({
           <SheetFooter className="flex-row justify-end gap-2 border-t">
             <SheetClose render={<Button type="button" variant="outline" />}>Cancel</SheetClose>
             <Button type="submit" disabled={submitM.isPending}>
-              {submitM.isPending && <Loader2Icon className="animate-spin" />}
+              {submitM.isPending && <RefreshArrow className="animate-spin" />}
               {submitM.isPending ? "Sending…" : "Send"}
             </Button>
           </SheetFooter>

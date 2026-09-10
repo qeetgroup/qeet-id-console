@@ -1,4 +1,13 @@
 import {
+  ArrowDownAlt,
+  ArrowLeft,
+  ArrowsSwapHorizontal,
+  Buildings,
+  Trash,
+  UserRemove,
+  UserTick,
+} from "@qeetrix/icons";
+import {
   Avatar,
   AvatarFallback,
   AvatarImage,
@@ -36,15 +45,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { formatDateTime } from "@/shared/utils/format";
-import {
-  ArrowLeftIcon,
-  ArrowLeftRightIcon,
-  Building2Icon,
-  ChevronDownIcon,
-  Trash2Icon,
-  UserCheckIcon,
-  UserXIcon,
-} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -101,13 +101,13 @@ function OrgDetailPage() {
           to="/organizations/tenants"
           className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
         >
-          <ArrowLeftIcon className="size-3" aria-hidden="true" /> {t("detail.back")}
+          <ArrowLeft className="size-3" aria-hidden="true" /> {t("detail.back")}
         </Link>
 
         {isLoading && !org ? (
           <Skeleton className="h-24 w-full rounded-xl" />
         ) : isError || !org ? (
-          <EmptyState icon={Building2Icon} title={t("detail.notFound")} />
+          <EmptyState icon={Buildings} title={t("detail.notFound")} />
         ) : (
           <>
             <OrgHeader
@@ -220,7 +220,7 @@ function OrgHeader({
         <div className="flex items-center gap-2">
           {!isActive ? (
             <Button variant="outline" size="sm" onClick={() => void switchToTenant(org.id)}>
-              <ArrowLeftRightIcon className="size-4" />
+              <ArrowsSwapHorizontal className="size-4" />
               {t("tenants.table.switch")}
             </Button>
           ) : null}
@@ -230,18 +230,18 @@ function OrgHeader({
                 render={
                   <Button variant="outline" size="sm">
                     {t("detail.actions")}
-                    <ChevronDownIcon className="size-4" />
+                    <ArrowDownAlt className="size-4" />
                   </Button>
                 }
               />
               <DropdownMenuContent align="end" className="min-w-48">
                 <DropdownMenuItem onClick={onSuspendToggle}>
-                  {suspended ? <UserCheckIcon /> : <UserXIcon />}
+                  {suspended ? <UserTick /> : <UserRemove />}
                   {suspended ? t("rowActions.activate") : t("rowActions.suspend")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive" disabled={isActive} onClick={onDelete}>
-                  <Trash2Icon />
+                  <Trash />
                   {t("rowActions.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -281,12 +281,12 @@ function SwitchGate({ org }: { org: Org }) {
   return (
     <div className="rounded-xl border bg-card p-8">
       <EmptyState
-        icon={ArrowLeftRightIcon}
+        icon={ArrowsSwapHorizontal}
         title={t("detail.switchGateTitle")}
         description={t("detail.switchGateDesc", { name: org.name })}
         action={
           <Button size="sm" onClick={() => void switchToTenant(org.id)}>
-            <ArrowLeftRightIcon className="size-4" />
+            <ArrowsSwapHorizontal className="size-4" />
             {t("tenants.table.switch")}
           </Button>
         }

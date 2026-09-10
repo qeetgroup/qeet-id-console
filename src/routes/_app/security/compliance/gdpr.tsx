@@ -1,3 +1,4 @@
+import { Add, DocumentText, RefreshArrow, ShieldTick } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -31,13 +32,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Loader2Icon,
-  PlusIcon,
-  RefreshCwIcon,
-  ScrollTextIcon,
-  ShieldCheckIcon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -95,11 +89,11 @@ function GdprPage() {
               onClick={() => listQ.refetch()}
               disabled={listQ.isFetching}
             >
-              <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
+              <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
               {t("gdpr.refresh")}
             </Button>
             <Button size="sm" onClick={() => setCreating(true)}>
-              <PlusIcon /> {t("gdpr.fileRequest")}
+              <Add /> {t("gdpr.fileRequest")}
             </Button>
           </>
         }
@@ -107,7 +101,7 @@ function GdprPage() {
 
       <Card className="border-amber-500/40 bg-amber-50/30 dark:bg-amber-950/20">
         <CardContent className="flex items-start gap-3 p-4">
-          <ShieldCheckIcon className="size-5 text-emerald-700 dark:text-emerald-500" />
+          <ShieldTick className="size-5 text-emerald-700 dark:text-emerald-500" />
           <div className="text-sm">
             <p className="font-medium">{t("gdpr.infoBanner.title")}</p>
             <p className="text-muted-foreground">{t("gdpr.infoBanner.description")}</p>
@@ -131,7 +125,7 @@ function GdprPage() {
             <div className="p-6 text-sm text-destructive">{errorMessage(listQ.error)}</div>
           ) : !listQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
-              <ScrollTextIcon className="size-8 text-muted-foreground" />
+              <DocumentText className="size-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("gdpr.list.empty")}</p>
             </div>
           ) : (
@@ -283,7 +277,7 @@ function CreatePurgeSheet({ open, onOpenChange, tenantId, onCreated }: CreatePur
               {t("gdpr.create.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <RefreshArrow className="animate-spin" />}
               {createM.isPending ? t("gdpr.create.submitting") : t("gdpr.create.submit")}
             </Button>
           </SheetFooter>

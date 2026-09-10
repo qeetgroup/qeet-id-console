@@ -1,3 +1,4 @@
+import { Hierarchy, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -14,7 +15,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, NetworkIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -108,7 +108,7 @@ function WriteCard() {
             type="submit"
             disabled={writeM.isPending || !object.trim() || !relation.trim() || !subject.trim()}
           >
-            {writeM.isPending && <Loader2Icon className="animate-spin" />}
+            {writeM.isPending && <RefreshArrow className="animate-spin" />}
             Write tuple
           </Button>
         </form>
@@ -177,7 +177,7 @@ function CheckCard() {
             variant="outline"
             disabled={checkM.isPending || !object.trim() || !relation.trim() || !userId.trim()}
           >
-            {checkM.isPending && <Loader2Icon className="animate-spin" />}
+            {checkM.isPending && <RefreshArrow className="animate-spin" />}
             Check
           </Button>
         </form>
@@ -221,7 +221,7 @@ function BrowseCard() {
             isError={tuplesQ.isError}
             error={tuplesQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={NetworkIcon}
+            emptyIcon={Hierarchy}
             emptyTitle="No tuples on this object"
             skeletonRows={2}
           >
@@ -238,7 +238,7 @@ function BrowseCard() {
                     disabled={deleteM.isPending}
                     onClick={() => deleteM.mutate(tuple.id)}
                   >
-                    <Trash2Icon /> Remove
+                    <Trash /> Remove
                   </Button>
                 </li>
               ))}
@@ -291,7 +291,7 @@ function GraphCard() {
             variant="outline"
             disabled={graphQ.isFetching || !object.trim() || !relation.trim()}
           >
-            {graphQ.isFetching && <Loader2Icon className="animate-spin" />}
+            {graphQ.isFetching && <RefreshArrow className="animate-spin" />}
             Expand graph
           </Button>
           {graphQ.data && (
@@ -306,7 +306,7 @@ function GraphCard() {
             isError={graphQ.isError}
             error={graphQ.error}
             isEmpty={!graphQ.data || graphQ.data.nodes.length === 0}
-            emptyIcon={NetworkIcon}
+            emptyIcon={Hierarchy}
             emptyTitle="No relationships to graph"
             skeletonRows={3}
           >

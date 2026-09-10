@@ -1,3 +1,4 @@
+import { ArrowRight, Clock, Speedometer } from "@qeetrix/icons";
 import {
   Badge,
   JSONTree,
@@ -7,7 +8,6 @@ import {
   TimelineItem,
   TimelineTitle,
 } from "@qeetrix/ui";
-import { ArrowRightIcon, ClockIcon, GaugeIcon } from "lucide-react";
 
 import type { DecisionRecord, RbacExplainPath, RebacPathStep } from "../../api/simulate";
 import { DecisionBadge, ENGINE_DESCRIPTIONS, ENGINE_LABELS } from "../shared/decision-badge";
@@ -30,11 +30,11 @@ export function DecisionExplain({ record }: { record: DecisionRecord }) {
           </span>
         </div>
         <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-          <GaugeIcon className="size-3.5" aria-hidden />
+          <Speedometer className="size-3.5" aria-hidden />
           {record.durationMs} ms
         </span>
         <span className="flex items-center gap-1 text-xs text-muted-foreground">
-          <ClockIcon className="size-3.5" aria-hidden />
+          <Clock className="size-3.5" aria-hidden />
           {new Date(record.at).toLocaleTimeString()}
         </span>
       </header>
@@ -175,7 +175,7 @@ function RebacPathView({ path }: { path: RebacPathStep[] }) {
             </Badge>
             <span>{step.object}</span>
             <span className="text-muted-foreground">#{step.relation}</span>
-            <ArrowRightIcon className="size-3 text-muted-foreground" aria-hidden />
+            <ArrowRight className="size-3 text-muted-foreground" aria-hidden />
             <span>{step.subject}</span>
           </li>
         ))}

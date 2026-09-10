@@ -1,9 +1,9 @@
+import { Star } from "@qeetrix/icons";
 // PreviewPane: shows metadata, status, and quick actions for the selected item.
 // Rendered in the right column of the universal search dialog when an item is
 // highlighted.
 
 import { Badge, cn, Separator, StatusPill } from "@qeetrix/ui";
-import { StarIcon } from "lucide-react";
 
 import type { SearchContext, SearchItem } from "../registry/types/registry.types";
 import { QuickActions } from "./quick-actions";
@@ -46,7 +46,7 @@ export function PreviewPane({ item, ctx, isFavorite, onToggleFavorite }: Preview
             isFavorite ? "text-warning" : "text-muted-foreground hover:text-warning",
           )}
         >
-          <StarIcon
+          <Star
             className="size-3.5"
             fill={isFavorite ? "currentColor" : "none"}
             aria-hidden="true"

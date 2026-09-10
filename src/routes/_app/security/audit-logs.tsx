@@ -1,3 +1,4 @@
+import { CloseCircle, DocumentFilter, ImportDown, RefreshArrow } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -25,7 +26,6 @@ import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { createFileRoute } from "@tanstack/react-router";
-import { DownloadIcon, FileSearchIcon, Loader2Icon, RefreshCwIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -225,7 +225,7 @@ function AuditLogsPage() {
                 <DropdownMenuTrigger
                   render={
                     <Button variant="outline" size="sm" disabled={!!exporting}>
-                      {exporting ? <Loader2Icon className="animate-spin" /> : <DownloadIcon />}
+                      {exporting ? <RefreshArrow className="animate-spin" /> : <ImportDown />}
                       {exporting
                         ? t("auditLogs.exporting", {
                             format: exporting.toUpperCase(),
@@ -250,7 +250,7 @@ function AuditLogsPage() {
               onClick={() => auditQ.refetch()}
               disabled={auditQ.isFetching}
             >
-              <RefreshCwIcon className={auditQ.isFetching ? "animate-spin" : ""} />
+              <RefreshArrow className={auditQ.isFetching ? "animate-spin" : ""} />
               {t("auditLogs.refresh")}
             </Button>
           </>
@@ -320,7 +320,7 @@ function AuditLogsPage() {
                 setCursor(undefined);
               }}
             >
-              <XIcon /> {t("auditLogs.filter.clear")}
+              <CloseCircle /> {t("auditLogs.filter.clear")}
             </Button>
           </div>
         </CardContent>
@@ -337,7 +337,7 @@ function AuditLogsPage() {
             isError={auditQ.isError}
             error={auditQ.error}
             isEmpty={!auditQ.data?.items?.length}
-            emptyIcon={FileSearchIcon}
+            emptyIcon={DocumentFilter}
             emptyTitle={t("auditLogs.list.empty")}
           >
             {auditQ.data && (

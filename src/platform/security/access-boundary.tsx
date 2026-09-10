@@ -1,7 +1,7 @@
+import { Padlock, RefreshArrow, ShieldSecurity } from "@qeetrix/icons";
 import { Button, buttonVariants, Skeleton } from "@qeetrix/ui";
 import { PageState } from "@qeetrix/ui/blocks";
 import { Link, useLocation } from "@tanstack/react-router";
-import { LockKeyholeIcon, RefreshCwIcon, ShieldAlertIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 
@@ -58,12 +58,12 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
       <div ref={stateRef} role="alert">
         <PageState
           code="—"
-          icon={ShieldAlertIcon}
+          icon={ShieldSecurity}
           title="Organization access could not be verified"
           description="The console could not confirm your permissions. Retry the check, switch organizations, or use the account menu to sign out."
           actions={
             <Button onClick={access.retry}>
-              <RefreshCwIcon /> Retry access check
+              <RefreshArrow /> Retry access check
             </Button>
           }
         />
@@ -80,7 +80,7 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
         {hasOrg ? (
           <PageState
             code="403"
-            icon={LockKeyholeIcon}
+            icon={Padlock}
             title="You don’t have access to this page"
             description={
               <>
@@ -97,7 +97,7 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
         ) : (
           <PageState
             code="—"
-            icon={LockKeyholeIcon}
+            icon={Padlock}
             title="Create an organization to continue"
             description="This page belongs to an organization. Create or join one first, then you’ll have access."
             actions={

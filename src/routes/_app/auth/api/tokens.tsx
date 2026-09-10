@@ -1,3 +1,4 @@
+import { Key, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -16,7 +17,6 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { KeyRoundIcon, Trash2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -55,7 +55,7 @@ function TokensPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={KeyRoundIcon}
+            emptyIcon={Key}
             emptyTitle={t("tokens.list.empty")}
             skeletonRows={3}
           >
@@ -112,7 +112,7 @@ function TokensPage() {
                         }
                         disabled={revokeM.isPending}
                       >
-                        <Trash2Icon /> {t("tokens.revoke")}
+                        <Trash /> {t("tokens.revoke")}
                       </Button>
                     </TableCell>
                   </TableRow>

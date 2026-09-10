@@ -1,12 +1,5 @@
+import { Copy, Danger, Edit, MagicStar, RotateLeft, TickCircle } from "@qeetrix/icons";
 import { Button, Textarea } from "@qeetrix/ui";
-import {
-  AlertTriangleIcon,
-  CheckIcon,
-  CopyIcon,
-  PencilIcon,
-  RotateCcwIcon,
-  SparklesIcon,
-} from "lucide-react";
 import { useCallback, useState } from "react";
 
 import type { UseQeetAIChat } from "../../hooks/use-qeetai-chat";
@@ -49,9 +42,9 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
   const actions: MessageAction[] = [
     {
       icon: copied ? (
-        <CheckIcon className="size-3.5 text-success" />
+        <TickCircle className="size-3.5 text-success" />
       ) : (
-        <CopyIcon className="size-3.5" />
+        <Copy className="size-3.5" />
       ),
       label: copied ? "Copied" : "Copy",
       onClick: copy,
@@ -59,7 +52,7 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
   ];
   if (isLast && !streaming) {
     actions.push({
-      icon: <RotateCcwIcon className="size-3.5" />,
+      icon: <RotateLeft className="size-3.5" />,
       label: "Regenerate",
       onClick: chat.regenerate,
     });
@@ -71,7 +64,7 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
         className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/15"
         aria-hidden
       >
-        <SparklesIcon className="size-3.5" />
+        <MagicStar className="size-3.5" />
       </span>
       <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
         {message.content ? (
@@ -90,7 +83,7 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
         ) : null}
         {errored ? (
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
-            <AlertTriangleIcon className="size-3.5 shrink-0" />
+            <Danger className="size-3.5 shrink-0" />
             {message.error ?? "The assistant could not complete this turn."}
           </p>
         ) : null}
@@ -159,15 +152,15 @@ function UserMessage({
   const actions: MessageAction[] = [
     {
       icon: copied ? (
-        <CheckIcon className="size-3.5 text-success" />
+        <TickCircle className="size-3.5 text-success" />
       ) : (
-        <CopyIcon className="size-3.5" />
+        <Copy className="size-3.5" />
       ),
       label: copied ? "Copied" : "Copy",
       onClick: copy,
     },
     {
-      icon: <PencilIcon className="size-3.5" />,
+      icon: <Edit className="size-3.5" />,
       label: "Edit",
       onClick: () => {
         setDraft(message.content);

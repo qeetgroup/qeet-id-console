@@ -1,3 +1,4 @@
+import { Flash, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -16,7 +17,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, Trash2Icon, ZapIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -100,7 +100,7 @@ function AuthHooksPage() {
                 />
               </Field>
               <Button type="submit" disabled={createM.isPending || !url.trim()}>
-                {createM.isPending && <Loader2Icon className="animate-spin" />}
+                {createM.isPending && <RefreshArrow className="animate-spin" />}
                 {t("authHooks.add.submit")}
               </Button>
             </div>
@@ -135,7 +135,7 @@ function AuthHooksPage() {
             isError={hooksQ.isError}
             error={hooksQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={ZapIcon}
+            emptyIcon={Flash}
             emptyTitle={t("authHooks.list.empty")}
             emptyDescription={t("authHooks.list.emptyDescription")}
             skeletonRows={2}
@@ -182,7 +182,7 @@ function AuthHooksPage() {
                         })
                       }
                     >
-                      <Trash2Icon /> {t("authHooks.list.remove")}
+                      <Trash /> {t("authHooks.list.remove")}
                     </Button>
                   </div>
                 </li>

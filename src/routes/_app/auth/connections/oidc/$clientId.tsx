@@ -1,3 +1,4 @@
+import { ArrowLeft, KeySquare, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -31,7 +32,6 @@ import {
   SensitiveActionCancelled,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
-import { ArrowLeftIcon, KeySquareIcon, Loader2Icon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -69,7 +69,7 @@ function OidcClientDetailPage() {
           to="/auth/connections/oidc"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeftIcon className="size-3.5" /> {t("detail.backToList")}
+          <ArrowLeft className="size-3.5" /> {t("detail.backToList")}
         </Link>
       </div>
 
@@ -78,7 +78,7 @@ function OidcClientDetailPage() {
         isError={listQ.isError}
         error={listQ.error}
         isEmpty={listQ.isSuccess && !client}
-        emptyIcon={KeySquareIcon}
+        emptyIcon={KeySquare}
         emptyTitle={t("detail.notFoundTitle", { clientId })}
         emptyDescription={t("detail.notFoundDescription")}
       >
@@ -194,7 +194,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
             </FieldGroup>
             <div className="flex justify-end">
               <Button type="submit" disabled={updateM.isPending}>
-                {updateM.isPending && <Loader2Icon className="animate-spin" />}
+                {updateM.isPending && <RefreshArrow className="animate-spin" />}
                 {updateM.isPending ? t("common:actions.saving") : t("common:actions.saveChanges")}
               </Button>
             </div>
@@ -255,7 +255,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
                   disabled={rotateM.isPending}
                   onClick={rotateSecret}
                 >
-                  {rotateM.isPending ? <Loader2Icon className="animate-spin" /> : <RefreshCwIcon />}
+                  {rotateM.isPending ? <RefreshArrow className="animate-spin" /> : <RefreshArrow />}
                   {t("detail.rotateSecret")}
                 </Button>
               )}
@@ -275,7 +275,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
               onClick={() => setConfirmingDelete(true)}
               disabled={deleteM.isPending}
             >
-              <Trash2Icon /> {t("detail.deleteApplication")}
+              <Trash /> {t("detail.deleteApplication")}
             </Button>
           </CardContent>
         </Card>
@@ -318,7 +318,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
                 })
               }
             >
-              {deleteM.isPending && <Loader2Icon className="animate-spin" />}
+              {deleteM.isPending && <RefreshArrow className="animate-spin" />}
               {deleteM.isPending ? t("common:actions.deleting") : t("common:actions.delete")}
             </Button>
           </AlertDialogFooter>

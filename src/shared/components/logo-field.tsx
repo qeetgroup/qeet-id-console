@@ -1,5 +1,5 @@
+import { CloudAdd, Image, Trash } from "@qeetrix/icons";
 import { Button, cn, Input } from "@qeetrix/ui";
-import { ImageIcon, Trash2Icon, UploadCloudIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type LogoFieldProps = {
@@ -104,7 +104,7 @@ export function LogoField({
                 disabled={disabled}
                 onClick={openPicker}
               >
-                <UploadCloudIcon /> Replace
+                <CloudAdd /> Replace
               </Button>
               <Button
                 type="button"
@@ -113,7 +113,7 @@ export function LogoField({
                 disabled={disabled}
                 onClick={clearLogo}
               >
-                <Trash2Icon /> Remove
+                <Trash /> Remove
               </Button>
             </div>
           </div>
@@ -141,7 +141,7 @@ export function LogoField({
             disabled && "pointer-events-none opacity-50",
           )}
         >
-          <ImageIcon className="size-6 text-muted-foreground" />
+          <Image className="size-6 text-muted-foreground" />
           <span className="text-sm font-medium">Drop a logo here or click to upload</span>
           <span className="text-xs text-muted-foreground">
             PNG, JPG, SVG, or WEBP up to {maxSizeMB} MB

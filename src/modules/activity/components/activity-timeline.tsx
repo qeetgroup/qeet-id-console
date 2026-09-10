@@ -1,9 +1,9 @@
+import { Activity, CloudCross, RefreshArrow } from "@qeetrix/icons";
 // Activity Timeline — virtualized (CSS windowing) infinite list of events
 // grouped by date bucket. Renders live events first, then history pages
 // on demand via an IntersectionObserver sentinel.
 
 import { Button, cn, EmptyState, ScrollArea, Skeleton, usePrefersReducedMotion } from "@qeetrix/ui";
-import { ActivityIcon, RefreshCwIcon, WifiOffIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import type { ActivitySearch } from "../activity-search";
@@ -153,13 +153,13 @@ export function ActivityTimeline({
     return (
       <div className="flex min-h-80 items-center justify-center">
         <EmptyState
-          icon={RefreshCwIcon}
+          icon={RefreshArrow}
           title="Couldn't load activity history"
           description="There was a problem fetching the event log. Your live stream may still be working."
           action={
             onRetryHistory && (
               <Button variant="outline" size="sm" onClick={onRetryHistory}>
-                <RefreshCwIcon className="size-3.5" aria-hidden="true" />
+                <RefreshArrow className="size-3.5" aria-hidden="true" />
                 Retry
               </Button>
             )
@@ -190,13 +190,13 @@ export function ActivityTimeline({
     return (
       <div className="flex min-h-80 items-center justify-center">
         <EmptyState
-          icon={WifiOffIcon}
+          icon={CloudCross}
           title="Stream unavailable"
           description="The live event stream could not be established after several attempts."
           action={
             onRetryStream && (
               <Button variant="outline" size="sm" onClick={onRetryStream}>
-                <RefreshCwIcon className="size-3.5" aria-hidden="true" />
+                <RefreshArrow className="size-3.5" aria-hidden="true" />
                 Retry connection
               </Button>
             )
@@ -210,7 +210,7 @@ export function ActivityTimeline({
     return (
       <div className="flex min-h-80 items-center justify-center">
         <EmptyState
-          icon={ActivityIcon}
+          icon={Activity}
           title="No events yet"
           description="Live events will appear here as they stream in. Historical events load as you scroll."
         />

@@ -1,3 +1,4 @@
+import { Add, Buildings, RefreshArrow } from "@qeetrix/icons";
 import {
   Avatar,
   AvatarFallback,
@@ -38,7 +39,6 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Building2Icon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -152,11 +152,11 @@ function TenantsPage() {
                 onClick={() => listQ.refetch()}
                 disabled={listQ.isFetching}
               >
-                <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
+                <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
                 {t("tenants.refresh")}
               </Button>
               <Button size="sm" onClick={() => setCreating(true)}>
-                <PlusIcon /> {t("tenants.new")}
+                <Add /> {t("tenants.new")}
               </Button>
             </>
           }
@@ -218,7 +218,7 @@ function TenantsPage() {
               isError={listQ.isError}
               error={listQ.error}
               isEmpty={rows.length === 0}
-              emptyIcon={Building2Icon}
+              emptyIcon={Buildings}
               emptyTitle={
                 lv.hasActiveFilters ? t("tenants.list.emptyFiltered") : t("tenants.list.empty")
               }
@@ -510,7 +510,7 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
                 {t("tenants.edit.cancel")}
               </SheetClose>
               <Button type="submit" disabled={updateM.isPending}>
-                {updateM.isPending && <Loader2Icon className="animate-spin" />}
+                {updateM.isPending && <RefreshArrow className="animate-spin" />}
                 {updateM.isPending ? t("tenants.edit.saving") : t("tenants.edit.save")}
               </Button>
             </SheetFooter>

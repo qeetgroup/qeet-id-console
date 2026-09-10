@@ -1,6 +1,6 @@
+import { Timer } from "@qeetrix/icons";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { ConstructionIcon } from "lucide-react";
 import { navGroups } from "@/platform/config/navigation";
 
 export const Route = createFileRoute("/_app/$")({
@@ -49,7 +49,7 @@ function PlaceholderPage() {
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">{meta.title}</h1>
           <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-            <ConstructionIcon className="size-3" />
+            <Timer className="size-3" />
             Coming soon
           </span>
         </div>

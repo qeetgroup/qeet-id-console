@@ -1,3 +1,4 @@
+import { ArrowDownAlt, ArrowLeft, Play, RotateRight, Routing, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -21,14 +22,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ArrowLeftIcon,
-  ChevronDownIcon,
-  PlayIcon,
-  RotateCwIcon,
-  Trash2Icon,
-  WebhookIcon,
-} from "lucide-react";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -111,7 +104,7 @@ function WebhookDetailPage() {
         to="/developer/webhooks"
         className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
       >
-        <ArrowLeftIcon className="size-3" /> {t("webhookDetail.back")}
+        <ArrowLeft className="size-3" /> {t("webhookDetail.back")}
       </Link>
 
       <Card>
@@ -129,7 +122,7 @@ function WebhookDetailPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <WebhookIcon className="size-4 text-muted-foreground" />
+                  <Routing className="size-4 text-muted-foreground" />
                   <span className="break-all font-mono text-sm">{w.url}</span>
                 </CardTitle>
                 <CardDescription>
@@ -158,7 +151,7 @@ function WebhookDetailPage() {
                 onClick={() => testM.mutate()}
                 disabled={testM.isPending || !!w.disabled_at}
               >
-                <PlayIcon /> {t("webhookDetail.testEvent")}
+                <Play /> {t("webhookDetail.testEvent")}
               </Button>
               {!w.disabled_at && (
                 <Button
@@ -177,7 +170,7 @@ function WebhookDetailPage() {
                   }
                   disabled={disableM.isPending}
                 >
-                  <Trash2Icon /> {t("webhookDetail.disable")}
+                  <Trash /> {t("webhookDetail.disable")}
                 </Button>
               )}
               <span className="ms-auto text-xs text-muted-foreground">
@@ -199,7 +192,7 @@ function WebhookDetailPage() {
             isError={deliveriesQ.isError}
             error={deliveriesQ.error}
             isEmpty={!deliveriesQ.data?.items?.length}
-            emptyIcon={WebhookIcon}
+            emptyIcon={Routing}
             emptyTitle={t("webhookDetail.deliveries.empty")}
             emptyDescription={t("webhookDetail.deliveries.emptyDescription")}
             skeletonRows={3}
@@ -232,7 +225,7 @@ function WebhookDetailPage() {
                           className="text-muted-foreground hover:text-foreground"
                           onClick={() => setExpanded(expanded === d.id ? null : d.id)}
                         >
-                          <ChevronDownIcon
+                          <ArrowDownAlt
                             className={`size-4 transition-transform ${expanded === d.id ? "rotate-180" : ""}`}
                           />
                         </button>
@@ -271,7 +264,7 @@ function WebhookDetailPage() {
                           onClick={() => retryM.mutate(d.id)}
                           disabled={retryM.isPending}
                         >
-                          <RotateCwIcon /> {t("webhookDetail.deliveries.retry")}
+                          <RotateRight /> {t("webhookDetail.deliveries.retry")}
                         </Button>
                       </TableCell>
                     </TableRow>

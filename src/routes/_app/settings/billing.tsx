@@ -1,3 +1,4 @@
+import { TickCircle } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -29,7 +30,6 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -727,7 +727,7 @@ function BillingPage() {
                   <ul className="flex flex-1 flex-col gap-2 text-sm">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-start gap-2">
-                        <CheckIcon className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
+                        <TickCircle className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
                         <span className="text-muted-foreground">{f}</span>
                       </li>
                     ))}

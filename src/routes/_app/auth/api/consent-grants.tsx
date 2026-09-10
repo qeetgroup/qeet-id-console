@@ -1,3 +1,4 @@
+import { Key, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -23,7 +24,6 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { KeyRoundIcon, Loader2Icon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -58,7 +58,7 @@ function ConsentGrantsPage() {
             onClick={() => listQ.refetch()}
             disabled={listQ.isFetching}
           >
-            <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
+            <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
             {t("common:actions.refresh")}
           </Button>
         }
@@ -75,7 +75,7 @@ function ConsentGrantsPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={KeyRoundIcon}
+            emptyIcon={Key}
             emptyTitle={t("list.emptyTitle")}
             emptyDescription={t("list.emptyDescription")}
             skeletonRows={3}
@@ -120,7 +120,7 @@ function ConsentGrantsPage() {
                         onClick={() => setConfirming(g)}
                         disabled={revokeM.isPending}
                       >
-                        <Trash2Icon /> {t("common:actions.revoke")}
+                        <Trash /> {t("common:actions.revoke")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -169,7 +169,7 @@ function ConsentGrantsPage() {
                 })
               }
             >
-              {revokeM.isPending && <Loader2Icon className="animate-spin" />}
+              {revokeM.isPending && <RefreshArrow className="animate-spin" />}
               {revokeM.isPending ? t("common:actions.revoking") : t("common:actions.revoke")}
             </Button>
           </AlertDialogFooter>

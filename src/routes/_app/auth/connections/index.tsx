@@ -1,3 +1,4 @@
+import { Key, Link as LinkIcon, RefreshArrow, ShieldTick, Trash } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -19,7 +20,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { KeyRoundIcon, LinkIcon, Loader2Icon, ShieldCheckIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -185,7 +185,7 @@ function AdminPortalCard({ ttlOptions }: { ttlOptions: { label: string; seconds:
                 })
               }
             >
-              {generateM.isPending && <Loader2Icon className="animate-spin" />}
+              {generateM.isPending && <RefreshArrow className="animate-spin" />}
               <LinkIcon />
               {t("connections.portal.generate")}
             </Button>
@@ -211,7 +211,7 @@ function AdminPortalCard({ ttlOptions }: { ttlOptions: { label: string; seconds:
             isError={linksQ.isError}
             error={linksQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={ShieldCheckIcon}
+            emptyIcon={ShieldTick}
             emptyTitle={t("connections.portal.emptyTitle")}
             emptyDescription={t("connections.portal.emptyDescription")}
             skeletonRows={2}
@@ -258,7 +258,7 @@ function AdminPortalLinkRow({
     <li className="flex items-center justify-between gap-4 py-3">
       <div className="min-w-0">
         <p className="flex items-center gap-2 text-sm font-medium">
-          <KeyRoundIcon className="size-4 text-muted-foreground" />
+          <Key className="size-4 text-muted-foreground" />
           {l.capabilities.join(" + ")}
           <StatusPill status={status} />
         </p>
@@ -275,7 +275,7 @@ function AdminPortalLinkRow({
       </div>
       {active && (
         <Button variant="ghost" size="sm" disabled={busy} onClick={onRevoke}>
-          <Trash2Icon /> {t("connections.portal.revokeBtn")}
+          <Trash /> {t("connections.portal.revokeBtn")}
         </Button>
       )}
     </li>

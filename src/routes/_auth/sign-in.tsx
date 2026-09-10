@@ -1,3 +1,4 @@
+import { RefreshArrow } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -9,7 +10,6 @@ import {
   Input,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -62,7 +62,7 @@ function SignInPage() {
     return (
       <div className="grid min-h-[50vh] place-items-center">
         <div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
-          <Loader2Icon className="size-6 animate-spin" />
+          <RefreshArrow className="size-6 animate-spin" />
           <p className="text-sm">
             {social.isError ? errorMessage(social.error) : "Signing you in…"}
           </p>
@@ -166,7 +166,7 @@ function MfaStep({
 
               <Field>
                 <Button type="submit" disabled={isLoading || code.trim().length === 0}>
-                  {isLoading && <Loader2Icon className="animate-spin" />}
+                  {isLoading && <RefreshArrow className="animate-spin" />}
                   {isLoading ? t("signIn.mfa.verifyingBtn") : t("signIn.mfa.verifyBtn")}
                 </Button>
               </Field>

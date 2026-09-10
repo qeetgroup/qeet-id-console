@@ -1,9 +1,9 @@
+import { Clipboard, TickCircle } from "@qeetrix/icons";
 // Small icon-only copy control built on the shared useCopyToClipboard hook.
 // Sits above stretched-link row overlays via `relative z-1`, and reveals on
 // hover/focus inside a `group` when `revealOnHover` is set.
 
 import { cn, Tooltip, TooltipContent, TooltipTrigger, useCopyToClipboard } from "@qeetrix/ui";
-import { CheckIcon, ClipboardIcon } from "lucide-react";
 
 export function CopyIconButton({
   text,
@@ -35,9 +35,9 @@ export function CopyIconButton({
             )}
           >
             {copied ? (
-              <CheckIcon className="size-3 text-success" aria-hidden="true" />
+              <TickCircle className="size-3 text-success" aria-hidden="true" />
             ) : (
-              <ClipboardIcon className="size-3" aria-hidden="true" />
+              <Clipboard className="size-3" aria-hidden="true" />
             )}
           </button>
         }

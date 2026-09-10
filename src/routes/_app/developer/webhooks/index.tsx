@@ -1,3 +1,4 @@
+import { Add, Play, RefreshArrow, Routing, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -32,14 +33,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Loader2Icon,
-  PlayIcon,
-  PlusIcon,
-  RefreshCwIcon,
-  Trash2Icon,
-  WebhookIcon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -150,12 +143,12 @@ function WebhooksPage() {
               onClick={() => listQ.refetch()}
               disabled={listQ.isFetching}
             >
-              <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
+              <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
               {t("webhooks.refresh")}
             </Button>
             {!webhooksLocked && (
               <Button size="sm" onClick={() => setCreating(true)}>
-                <PlusIcon /> {t("webhooks.new")}
+                <Add /> {t("webhooks.new")}
               </Button>
             )}
           </>
@@ -223,7 +216,7 @@ function WebhooksPage() {
               isError={listQ.isError}
               error={listQ.error}
               isEmpty={rows.length === 0}
-              emptyIcon={WebhookIcon}
+              emptyIcon={Routing}
               emptyTitle={
                 lv.hasActiveFilters ? t("webhooks.list.emptyFiltered") : t("webhooks.list.empty")
               }
@@ -291,7 +284,7 @@ function WebhooksPage() {
                             onClick={() => testM.mutate(w.id)}
                             disabled={!!w.disabled_at || testM.isPending}
                           >
-                            <PlayIcon /> {t("webhooks.table.test")}
+                            <Play /> {t("webhooks.table.test")}
                           </Button>
                           <Button
                             variant="ghost"
@@ -309,7 +302,7 @@ function WebhooksPage() {
                             }
                             disabled={!!w.disabled_at || disableM.isPending}
                           >
-                            <Trash2Icon /> {t("webhooks.table.disable")}
+                            <Trash /> {t("webhooks.table.disable")}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -420,7 +413,7 @@ function CreateWebhookSheet({ open, onOpenChange, tenantId, onCreated }: CreateW
               {t("webhooks.create.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending || selectedEvents.length === 0}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <RefreshArrow className="animate-spin" />}
               {createM.isPending ? t("webhooks.create.submitting") : t("webhooks.create.submit")}
             </Button>
           </SheetFooter>

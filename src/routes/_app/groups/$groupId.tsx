@@ -1,3 +1,4 @@
+import { ArrowLeft, Folder, People, RefreshArrow, ShieldTick } from "@qeetrix/icons";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -33,7 +34,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { initials } from "@/shared/utils/initials";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeftIcon, FolderIcon, Loader2Icon, ShieldCheckIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -105,7 +105,7 @@ function GroupDetailPage() {
           to="/groups"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeftIcon className="size-3.5" /> {t("detail.back")}
+          <ArrowLeft className="size-3.5" /> {t("detail.back")}
         </Link>
       </div>
 
@@ -114,7 +114,7 @@ function GroupDetailPage() {
         isError={listQ.isError}
         error={listQ.error}
         isEmpty={listQ.isSuccess && !group}
-        emptyIcon={FolderIcon}
+        emptyIcon={Folder}
         emptyTitle={t("detail.notFound", { id: groupId.slice(0, 8) + "…" })}
         emptyDescription={t("detail.notFoundDescription")}
       >
@@ -191,7 +191,7 @@ function GroupDetailPage() {
                   isError={membersQ.isError}
                   error={membersQ.error}
                   isEmpty={members.length === 0}
-                  emptyIcon={UsersIcon}
+                  emptyIcon={People}
                   emptyTitle={t("detail.members.empty")}
                   skeletonRows={3}
                 >
@@ -297,7 +297,7 @@ function GroupRolesCard({ groupId }: { groupId: string }) {
               })
             }
           >
-            {grantM.isPending && <Loader2Icon className="animate-spin" />}
+            {grantM.isPending && <RefreshArrow className="animate-spin" />}
             {t("groupRoles.addRole")}
           </Button>
         </div>
@@ -308,7 +308,7 @@ function GroupRolesCard({ groupId }: { groupId: string }) {
           isError={rolesQ.isError}
           error={rolesQ.error}
           isEmpty={granted.length === 0}
-          emptyIcon={ShieldCheckIcon}
+          emptyIcon={ShieldTick}
           emptyTitle={t("groupRoles.emptyTitle")}
           emptyDescription={t("groupRoles.emptyDescription")}
           skeletonRows={2}
@@ -385,7 +385,7 @@ function GroupRolesCard({ groupId }: { groupId: string }) {
                 })
               }
             >
-              {revokeM.isPending && <Loader2Icon className="animate-spin" />}
+              {revokeM.isPending && <RefreshArrow className="animate-spin" />}
               {revokeM.isPending ? t("common:actions.removing") : t("common:actions.remove")}
             </Button>
           </AlertDialogFooter>

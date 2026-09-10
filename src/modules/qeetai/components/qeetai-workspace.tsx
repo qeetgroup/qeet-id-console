@@ -1,6 +1,6 @@
+import { MagicStar } from "@qeetrix/icons";
 import { Button, useFloatingWindow, useIsMobile } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
-import { SparklesIcon } from "lucide-react";
 import { useCallback } from "react";
 
 import { useQeetAIChat } from "../hooks/use-qeetai-chat";
@@ -127,7 +127,7 @@ function CollapsedRail() {
         onClick={() => workspaceActions.setCollapsed(false)}
         className="text-primary"
       >
-        <SparklesIcon className="size-5" />
+        <MagicStar className="size-5" />
       </Button>
     </div>
   );

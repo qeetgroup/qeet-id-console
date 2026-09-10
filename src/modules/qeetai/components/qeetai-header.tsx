@@ -1,25 +1,25 @@
+import {
+  ClockAlt,
+  CloseCircle,
+  EditAlt,
+  MagicStar,
+  Maximize,
+  MaximizeAlt,
+  Screenmirroring,
+  SidebarLeft,
+  SidebarRight,
+} from "@qeetrix/icons";
 import { Button, cn } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
-import {
-  HistoryIcon,
-  Maximize2Icon,
-  Minimize2Icon,
-  PanelRightCloseIcon,
-  PictureInPicture2Icon,
-  SidebarIcon,
-  SparklesIcon,
-  SquarePenIcon,
-  XIcon,
-} from "lucide-react";
 
 import { conversationActions } from "../store/conversation-store";
 import { workspaceActions, workspaceStore } from "../store/workspace-store";
 import type { QeetAIMode } from "../types/qeetai.types";
 
-const MODES: { mode: QeetAIMode; label: string; icon: typeof SidebarIcon }[] = [
-  { mode: "docked", label: "Dock to side", icon: SidebarIcon },
-  { mode: "floating", label: "Float", icon: PictureInPicture2Icon },
-  { mode: "fullscreen", label: "Full screen", icon: Maximize2Icon },
+const MODES: { mode: QeetAIMode; label: string; icon: typeof SidebarLeft }[] = [
+  { mode: "docked", label: "Dock to side", icon: SidebarLeft },
+  { mode: "floating", label: "Float", icon: Screenmirroring },
+  { mode: "fullscreen", label: "Full screen", icon: Maximize },
 ];
 
 /** The workspace title bar: identity, new-chat, mode switch, collapse, close. */
@@ -39,7 +39,7 @@ export function QeetAIHeader({ dragHandleProps }: { dragHandleProps?: Record<str
         )}
         {...dragHandleProps}
       >
-        <SparklesIcon className="size-4 shrink-0 text-primary" aria-hidden />
+        <MagicStar className="size-4 shrink-0 text-primary" aria-hidden />
         <span className="truncate font-heading text-sm font-semibold">Ask Qeet</span>
       </span>
 
@@ -52,7 +52,7 @@ export function QeetAIHeader({ dragHandleProps }: { dragHandleProps?: Record<str
         className={historyOpen ? "text-primary" : undefined}
         onClick={() => workspaceActions.toggleHistory()}
       >
-        <HistoryIcon className="size-4" />
+        <ClockAlt className="size-4" />
       </Button>
 
       <Button
@@ -65,7 +65,7 @@ export function QeetAIHeader({ dragHandleProps }: { dragHandleProps?: Record<str
           workspaceActions.closeHistory();
         }}
       >
-        <SquarePenIcon className="size-4" />
+        <EditAlt className="size-4" />
       </Button>
 
       <span className="mx-1 h-5 w-px bg-border" aria-hidden />
@@ -73,7 +73,7 @@ export function QeetAIHeader({ dragHandleProps }: { dragHandleProps?: Record<str
       <div className="flex items-center gap-0.5">
         {MODES.map(({ mode: m, label, icon: Icon }) => {
           const active = mode === m;
-          const Glyph = m === "fullscreen" && active ? Minimize2Icon : Icon;
+          const Glyph = m === "fullscreen" && active ? MaximizeAlt : Icon;
           return (
             <Button
               key={m}
@@ -103,7 +103,7 @@ export function QeetAIHeader({ dragHandleProps }: { dragHandleProps?: Record<str
           title="Collapse"
           onClick={() => workspaceActions.toggleCollapsed()}
         >
-          <PanelRightCloseIcon className="size-4" />
+          <SidebarRight className="size-4" />
         </Button>
       ) : null}
 
@@ -114,7 +114,7 @@ export function QeetAIHeader({ dragHandleProps }: { dragHandleProps?: Record<str
         title="Close (⌘J)"
         onClick={() => workspaceActions.close()}
       >
-        <XIcon className="size-4" />
+        <CloseCircle className="size-4" />
       </Button>
     </header>
   );

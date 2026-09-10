@@ -1,3 +1,4 @@
+import { Add, Hierarchy, RefreshArrow } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -59,7 +60,6 @@ import {
   X,
   Zoom,
 } from "@thesvg/react";
-import { Loader2Icon, NetworkIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -325,7 +325,7 @@ function SocialPage() {
             onClick={() => listQ.refetch()}
             disabled={listQ.isFetching}
           >
-            <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
+            <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
             {t("social.refreshBtn")}
           </Button>
         }
@@ -384,7 +384,7 @@ function SocialPage() {
                   disabled={p.oauth2Only}
                   onClick={() => setEditingProvider(p.id)}
                 >
-                  <PlusIcon /> {cfg ? t("social.updateBtn") : t("social.configureBtn")}
+                  <Add /> {cfg ? t("social.updateBtn") : t("social.configureBtn")}
                 </Button>
               </CardContent>
             </Card>
@@ -395,7 +395,7 @@ function SocialPage() {
       {!listQ.isLoading && !configured.size && (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 p-10 text-center">
-            <NetworkIcon className="size-8 text-muted-foreground" />
+            <Hierarchy className="size-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">{t("social.emptyTitle")}</p>
           </CardContent>
         </Card>
@@ -553,7 +553,7 @@ function ConfigureProviderSheet({
               {t("social.configure.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={upsertM.isPending}>
-              {upsertM.isPending && <Loader2Icon className="animate-spin" />}
+              {upsertM.isPending && <RefreshArrow className="animate-spin" />}
               {upsertM.isPending ? t("social.configure.savingBtn") : t("social.configure.saveBtn")}
             </Button>
           </SheetFooter>

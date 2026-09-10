@@ -1,3 +1,4 @@
+import { ArrowLeft, RefreshArrow } from "@qeetrix/icons";
 import {
   Button,
   cn,
@@ -14,7 +15,6 @@ import {
   SelectValue,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -194,7 +194,7 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
             className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             onClick={() => setStep("plan")}
           >
-            <ArrowLeftIcon className="size-3.5" /> Choose a different plan
+            <ArrowLeft className="size-3.5" /> Choose a different plan
           </button>
           <div>
             <h2 className="text-base font-semibold">Tell us about your project</h2>
@@ -289,7 +289,7 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
           onClick={() => setStep("profile")}
           disabled={busy}
         >
-          <ArrowLeftIcon className="size-3.5" />
+          <ArrowLeft className="size-3.5" />
           {tierName} plan{!isFree && !isEnterprise ? ` · ${cycleLabel}` : ""} — change
         </button>
 
@@ -360,7 +360,7 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
 
         <Field>
           <Button type="submit" disabled={busy || !name.trim() || slug.trim().length < 2}>
-            {busy && <Loader2Icon className="animate-spin" />}
+            {busy && <RefreshArrow className="animate-spin" />}
             {busy ? "Setting up…" : submitLabel}
           </Button>
         </Field>

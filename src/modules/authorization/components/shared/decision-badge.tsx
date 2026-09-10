@@ -1,5 +1,5 @@
+import { CloseCircle, TickCircle } from "@qeetrix/icons";
 import { Badge } from "@qeetrix/ui";
-import { CheckCircle2Icon, XCircleIcon } from "lucide-react";
 
 import type { Engine } from "../../api/simulate";
 
@@ -22,9 +22,9 @@ export function DecisionBadge({ allowed, className }: { allowed: boolean; classN
   return (
     <Badge variant={allowed ? "success" : "destructive"} className={className}>
       {allowed ? (
-        <CheckCircle2Icon className="size-3.5" aria-hidden />
+        <TickCircle className="size-3.5" aria-hidden />
       ) : (
-        <XCircleIcon className="size-3.5" aria-hidden />
+        <CloseCircle className="size-3.5" aria-hidden />
       )}
       {allowed ? "ALLOW" : "DENY"}
     </Badge>

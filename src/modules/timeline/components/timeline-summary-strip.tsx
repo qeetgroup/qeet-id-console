@@ -1,19 +1,16 @@
+import type { ComponentType, SVGProps } from "react";
+import { Activity, Login, Monitor, Shield, SliderHorizontal } from "@qeetrix/icons";
 // Identity summary strip — five stat cards computed from the loaded timeline
 // events. Cards toggle the category filter (Total clears it). Built on the
 // shared .dashboard-metric helpers so it matches the rest of the console.
 
 import { cn, Skeleton } from "@qeetrix/ui";
-import {
-  ActivityIcon,
-  LogInIcon,
-  type LucideIcon,
-  MonitorIcon,
-  ShieldIcon,
-  SlidersHorizontalIcon,
-} from "lucide-react";
 
 import type { ActivityEvent } from "@/modules/activity";
 import { computeTimelineSummary, SUMMARY_CATEGORY_FILTERS } from "../timeline-summary";
+
+/** Any `@qeetrix/icons` component, as a prop. */
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 type Tone = "brand" | "info" | "danger" | "warning" | "success";
 
@@ -45,7 +42,7 @@ function StatCard({
   active,
   onClick,
 }: {
-  icon: LucideIcon;
+  icon: IconComponent;
   label: string;
   value: number;
   sub: string;
@@ -113,7 +110,7 @@ export function TimelineSummaryStrip({
 
   const cards: {
     key: string;
-    icon: LucideIcon;
+    icon: IconComponent;
     label: string;
     value: number;
     sub: string;
@@ -122,7 +119,7 @@ export function TimelineSummaryStrip({
   }[] = [
     {
       key: "total",
-      icon: ActivityIcon,
+      icon: Activity,
       label: "Total events",
       value: s.total,
       sub: "In this view",
@@ -131,7 +128,7 @@ export function TimelineSummaryStrip({
     },
     {
       key: "authentication",
-      icon: LogInIcon,
+      icon: Login,
       label: "Authentication",
       value: s.authentication,
       sub: shareLabel(s.authentication, s.total),
@@ -140,7 +137,7 @@ export function TimelineSummaryStrip({
     },
     {
       key: "security",
-      icon: ShieldIcon,
+      icon: Shield,
       label: "Security",
       value: s.security,
       sub: shareLabel(s.security, s.total),
@@ -149,7 +146,7 @@ export function TimelineSummaryStrip({
     },
     {
       key: "admin",
-      icon: SlidersHorizontalIcon,
+      icon: SliderHorizontal,
       label: "Admin actions",
       value: s.admin,
       sub: shareLabel(s.admin, s.total),
@@ -158,7 +155,7 @@ export function TimelineSummaryStrip({
     },
     {
       key: "sessions",
-      icon: MonitorIcon,
+      icon: Monitor,
       label: "Session events",
       value: s.sessions,
       sub: shareLabel(s.sessions, s.total),

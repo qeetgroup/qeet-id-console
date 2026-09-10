@@ -1,3 +1,4 @@
+import { ImportDown, Trash } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -13,7 +14,6 @@ import { useMutation } from "@tanstack/react-query";
 import { downloadBlob } from "@/shared/utils/data-export";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { DownloadIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -69,14 +69,14 @@ function DataPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <DownloadIcon className="size-5 text-muted-foreground" />
+            <ImportDown className="size-5 text-muted-foreground" />
             <CardTitle className="text-base">{t("data.export.title")}</CardTitle>
           </div>
           <CardDescription>{t("data.export.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" onClick={() => exportM.mutate()} disabled={exportM.isPending}>
-            <DownloadIcon /> {t("data.export.button")}
+            <ImportDown /> {t("data.export.button")}
           </Button>
         </CardContent>
       </Card>
@@ -84,7 +84,7 @@ function DataPage() {
       <Card className="border-rose-500/40">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Trash2Icon className="size-5 text-rose-600 dark:text-rose-400" />
+            <Trash className="size-5 text-rose-600 dark:text-rose-400" />
             <CardTitle className="text-base">{t("data.delete.title")}</CardTitle>
           </div>
           <CardDescription>{t("data.delete.description")}</CardDescription>
@@ -116,7 +116,7 @@ function DataPage() {
             }
             disabled={deleteM.isPending || (hasPassword && !password)}
           >
-            <Trash2Icon /> {t("data.delete.button")}
+            <Trash /> {t("data.delete.button")}
           </Button>
         </CardContent>
       </Card>

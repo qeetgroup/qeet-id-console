@@ -1,3 +1,4 @@
+import { BoxAlt, Key, ShieldTick } from "@qeetrix/icons";
 import {
   Badge,
   Card,
@@ -15,7 +16,6 @@ import {
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { BoxesIcon, KeyRoundIcon, ShieldCheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/platform/components/page-header";
 import { api } from "@/platform/api/client";
@@ -71,7 +71,7 @@ function ResourcesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription>{t("resources.stats.resources")}</CardDescription>
-            <BoxesIcon className="size-4 text-muted-foreground" />
+            <BoxAlt className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold tracking-tight">{resources.length}</div>
@@ -80,7 +80,7 @@ function ResourcesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription>{t("resources.stats.actions")}</CardDescription>
-            <ShieldCheckIcon className="size-4 text-muted-foreground" />
+            <ShieldTick className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold tracking-tight">{totalActions}</div>
@@ -89,7 +89,7 @@ function ResourcesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription>{t("resources.stats.keys")}</CardDescription>
-            <KeyRoundIcon className="size-4 text-muted-foreground" />
+            <Key className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold tracking-tight">{perms.length}</div>
@@ -108,7 +108,7 @@ function ResourcesPage() {
             isError={permsQ.isError}
             error={permsQ.error}
             isEmpty={resources.length === 0}
-            emptyIcon={BoxesIcon}
+            emptyIcon={BoxAlt}
             emptyTitle={t("resources.catalogue.empty")}
             skeletonRows={4}
           >

@@ -1,6 +1,6 @@
+import { ArrowRight, Building, Padlock, RefreshArrow, Sms } from "@qeetrix/icons";
 import { Button, cn, Field, FieldError, FieldLabel, Input, PasswordInput } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { ArrowRightIcon, BuildingIcon, Loader2Icon, LockKeyholeIcon, MailIcon } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -84,7 +84,7 @@ export function LoginForm({
             <Field className="auth-field" disabled={isBusy}>
               <FieldLabel htmlFor="email">{t("form.email")}</FieldLabel>
               <div className="auth-input-wrap">
-                <MailIcon className="auth-input-icon" aria-hidden="true" />
+                <Sms className="auth-input-icon" aria-hidden="true" />
                 <Input
                   id="email"
                   name="email"
@@ -102,7 +102,7 @@ export function LoginForm({
 
             {ssoHit ? (
               <div className="auth-sso-notice" role="status">
-                <BuildingIcon className="size-4" aria-hidden="true" />
+                <Building className="size-4" aria-hidden="true" />
                 <div>
                   <p className="font-medium">{ssoHit.provider_name}</p>
                   <p>{t("form.ssoDescription", { kind: ssoHit.kind.toUpperCase() })}</p>
@@ -117,7 +117,7 @@ export function LoginForm({
                   </Link>
                 </div>
                 <div className="auth-input-wrap">
-                  <LockKeyholeIcon className="auth-input-icon" aria-hidden="true" />
+                  <Padlock className="auth-input-icon" aria-hidden="true" />
                   <PasswordInput
                     id="password"
                     name="password"
@@ -133,11 +133,11 @@ export function LoginForm({
           {errorMessage && <FieldError className="auth-form-error">{errorMessage}</FieldError>}
 
           <Button type="submit" className="auth-submit" disabled={!hydrated || isBusy}>
-            {isLoading && <Loader2Icon className="animate-spin" aria-hidden="true" />}
+            {isLoading && <RefreshArrow className="animate-spin" aria-hidden="true" />}
             {ssoHit
               ? t("form.ssoContinue", { provider: ssoHit.provider_name })
               : t(isLoading ? "signIn.submitting" : "signIn.submit")}
-            {!isLoading && <ArrowRightIcon aria-hidden="true" />}
+            {!isLoading && <ArrowRight aria-hidden="true" />}
           </Button>
 
           {!ssoHit && (

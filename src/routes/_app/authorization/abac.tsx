@@ -1,3 +1,4 @@
+import { Add, Play, RefreshArrow, SliderHorizontal, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -17,7 +18,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, PlayIcon, PlusIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -116,7 +116,7 @@ function AbacPage() {
         actions={
           abacLocked ? undefined : (
             <Button size="sm" onClick={() => setDraft(newDraft())}>
-              <PlusIcon /> New policy
+              <Add /> New policy
             </Button>
           )
         }
@@ -141,7 +141,7 @@ function AbacPage() {
                 isError={policiesQ.isError}
                 error={policiesQ.error}
                 isEmpty={policies.length === 0}
-                emptyIcon={SlidersHorizontalIcon}
+                emptyIcon={SliderHorizontal}
                 emptyTitle="No ABAC policies yet"
                 emptyDescription="Create your first attribute-based policy."
                 skeletonRows={4}
@@ -172,7 +172,7 @@ function AbacPage() {
                         disabled={deleteM.isPending}
                         onClick={() => deleteM.mutate(p.id)}
                       >
-                        <Trash2Icon />
+                        <Trash />
                       </Button>
                     </li>
                   ))}
@@ -243,7 +243,7 @@ function PolicyEditor({
               Cancel
             </Button>
             <Button size="sm" onClick={save} disabled={saving || !draft.name.trim()}>
-              {saving && <Loader2Icon className="animate-spin" />}
+              {saving && <RefreshArrow className="animate-spin" />}
               {draft.id ? "Save changes" : "Create policy"}
             </Button>
           </div>
@@ -408,7 +408,7 @@ function TestPanel({ draft }: { draft: Draft }) {
           </CardDescription>
         </div>
         <Button size="sm" variant="outline" onClick={run} disabled={simM.isPending}>
-          {simM.isPending ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
+          {simM.isPending ? <RefreshArrow className="animate-spin" /> : <Play />}
           Test
         </Button>
       </CardHeader>

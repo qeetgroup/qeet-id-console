@@ -1,3 +1,4 @@
+import { Add, MessageSquare, RefreshArrow, Send, Sms, Trash } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -34,14 +35,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import {
-  Loader2Icon,
-  MailIcon,
-  MessageSquareIcon,
-  PlusIcon,
-  SendIcon,
-  Trash2Icon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -77,7 +70,7 @@ function SmsEmailPage() {
         description={t("mfa.smsEmail.description")}
         actions={
           <Button size="sm" onClick={() => setAdding(true)}>
-            <PlusIcon className="mr-2 size-4" />
+            <Add className="mr-2 size-4" />
             {t("mfa.smsEmail.addBtn")}
           </Button>
         }
@@ -94,7 +87,7 @@ function SmsEmailPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={MailIcon}
+            emptyIcon={Sms}
             emptyTitle={t("mfa.smsEmail.list.empty")}
             skeletonRows={2}
           >
@@ -113,9 +106,9 @@ function SmsEmailPage() {
                     <TableCell>
                       <span className="flex items-center gap-2">
                         {f.channel === "email" ? (
-                          <MailIcon className="size-4 text-muted-foreground" />
+                          <Sms className="size-4 text-muted-foreground" />
                         ) : (
-                          <MessageSquareIcon className="size-4 text-muted-foreground" />
+                          <MessageSquare className="size-4 text-muted-foreground" />
                         )}
                         {f.channel === "email"
                           ? t("mfa.smsEmail.channelEmail")
@@ -138,7 +131,7 @@ function SmsEmailPage() {
                         disabled={!f.verified || challengeM.isPending}
                         title={t("mfa.smsEmail.sendTestTitle")}
                       >
-                        <SendIcon /> {t("mfa.smsEmail.sendTestBtn")}
+                        <Send /> {t("mfa.smsEmail.sendTestBtn")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -155,7 +148,7 @@ function SmsEmailPage() {
                         }
                         disabled={deleteM.isPending}
                       >
-                        <Trash2Icon /> {t("mfa.smsEmail.removeBtn")}
+                        <Trash /> {t("mfa.smsEmail.removeBtn")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -320,7 +313,7 @@ function AddFactorSheet({
                 form="otp-start"
                 disabled={enrollM.isPending || !destination.trim()}
               >
-                {enrollM.isPending && <Loader2Icon className="animate-spin" />}
+                {enrollM.isPending && <RefreshArrow className="animate-spin" />}
                 {enrollM.isPending
                   ? t("mfa.smsEmail.sheet.sendingBtn")
                   : t("mfa.smsEmail.sheet.sendCodeBtn")}
@@ -331,7 +324,7 @@ function AddFactorSheet({
                 form="otp-confirm"
                 disabled={confirmM.isPending || !code.trim()}
               >
-                {confirmM.isPending && <Loader2Icon className="animate-spin" />}
+                {confirmM.isPending && <RefreshArrow className="animate-spin" />}
                 {confirmM.isPending
                   ? t("mfa.smsEmail.sheet.confirmingBtn")
                   : t("mfa.smsEmail.sheet.confirmBtn")}

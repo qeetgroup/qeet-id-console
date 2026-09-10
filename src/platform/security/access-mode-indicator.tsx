@@ -1,12 +1,5 @@
+import { Buildings, Eye, InfoCircle, Padlock, ShieldTick, SliderHorizontal } from "@qeetrix/icons";
 import { Skeleton, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@qeetrix/ui";
-import {
-  Building2Icon,
-  CircleAlertIcon,
-  EyeIcon,
-  LockKeyholeIcon,
-  ShieldCheckIcon,
-  SlidersHorizontalIcon,
-} from "lucide-react";
 
 import { useCapabilities } from "./capability-provider";
 
@@ -14,32 +7,32 @@ const MODE_DETAILS = {
   setup: {
     label: "Organization setup required",
     description: "Create or select an organization to load operator permissions.",
-    icon: Building2Icon,
+    icon: Buildings,
   },
   full: {
     label: "Full console access",
     description: "All console capabilities are available in this organization.",
-    icon: ShieldCheckIcon,
+    icon: ShieldTick,
   },
   "read-only": {
     label: "Read-only console access",
     description: "You can inspect organization data but cannot change it.",
-    icon: EyeIcon,
+    icon: Eye,
   },
   restricted: {
     label: "Limited console access",
     description: "The console only shows areas granted to your organization role.",
-    icon: SlidersHorizontalIcon,
+    icon: SliderHorizontal,
   },
   none: {
     label: "No management access",
     description: "This organization has not granted management capabilities to your account.",
-    icon: LockKeyholeIcon,
+    icon: Padlock,
   },
   unknown: {
     label: "Access status unavailable",
     description: "The console could not verify organization permissions.",
-    icon: CircleAlertIcon,
+    icon: InfoCircle,
   },
 } as const;
 

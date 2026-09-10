@@ -1,3 +1,4 @@
+import { RefreshArrow } from "@qeetrix/icons";
 import {
   Button,
   buttonVariants,
@@ -16,7 +17,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -112,7 +112,7 @@ function AcceptInvitePage() {
               ))}
             <Field>
               <Button type="submit" disabled={accept.isPending || password.length < 8}>
-                {accept.isPending && <Loader2Icon className="animate-spin" />}
+                {accept.isPending && <RefreshArrow className="animate-spin" />}
                 {accept.isPending ? t("invite.joiningBtn") : t("invite.acceptBtn")}
               </Button>
             </Field>

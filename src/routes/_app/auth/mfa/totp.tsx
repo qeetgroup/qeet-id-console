@@ -1,4 +1,13 @@
 import {
+  Copy,
+  FingerScan,
+  ImportDown,
+  Key,
+  RefreshArrow,
+  ShieldTick,
+  TickCircle,
+} from "@qeetrix/icons";
+import {
   Badge,
   Button,
   Card,
@@ -19,16 +28,6 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  CheckIcon,
-  CopyIcon,
-  DownloadIcon,
-  FingerprintIcon,
-  KeyRoundIcon,
-  Loader2Icon,
-  RefreshCwIcon,
-  ShieldCheckIcon,
-} from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -229,7 +228,7 @@ function MfaTotpPage() {
                       </CardTitle>
                       <CardDescription>{t("mfa.totp.active.subtitle")}</CardDescription>
                     </div>
-                    <ShieldCheckIcon className="size-6 text-emerald-600 dark:text-emerald-400" />
+                    <ShieldTick className="size-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -248,8 +247,8 @@ function MfaTotpPage() {
                       }
                       disabled={startM.isPending}
                     >
-                      {startM.isPending && <Loader2Icon className="animate-spin" />}
-                      <FingerprintIcon /> {t("mfa.totp.active.replaceBtn")}
+                      {startM.isPending && <RefreshArrow className="animate-spin" />}
+                      <FingerScan /> {t("mfa.totp.active.replaceBtn")}
                     </Button>
                     <Button
                       variant="outline"
@@ -264,7 +263,7 @@ function MfaTotpPage() {
                       }
                       disabled={disableM.isPending}
                     >
-                      {disableM.isPending && <Loader2Icon className="animate-spin" />}
+                      {disableM.isPending && <RefreshArrow className="animate-spin" />}
                       {t("mfa.totp.active.disableBtn")}
                     </Button>
                   </div>
@@ -278,7 +277,7 @@ function MfaTotpPage() {
                       <CardTitle className="text-base">{t("mfa.totp.recovery.title")}</CardTitle>
                       <CardDescription>{t("mfa.totp.recovery.description")}</CardDescription>
                     </div>
-                    <KeyRoundIcon className="size-5 text-muted-foreground" />
+                    <Key className="size-5 text-muted-foreground" />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -319,7 +318,7 @@ function MfaTotpPage() {
                           size="sm"
                           onClick={() => copyAll(regenM.data?.recovery_codes ?? [])}
                         >
-                          {copied ? <CheckIcon /> : <CopyIcon />}
+                          {copied ? <TickCircle /> : <Copy />}
                           {copied
                             ? t("mfa.totp.recovery.copiedBtn")
                             : t("mfa.totp.recovery.copyAllBtn")}
@@ -329,7 +328,7 @@ function MfaTotpPage() {
                           size="sm"
                           onClick={() => download(regenM.data?.recovery_codes ?? [])}
                         >
-                          <DownloadIcon /> {t("mfa.totp.recovery.downloadBtn")}
+                          <ImportDown /> {t("mfa.totp.recovery.downloadBtn")}
                         </Button>
                       </div>
                     </div>
@@ -340,7 +339,7 @@ function MfaTotpPage() {
                     onClick={regenerate}
                     disabled={regenM.isPending}
                   >
-                    <RefreshCwIcon className={regenM.isPending ? "animate-spin" : ""} />
+                    <RefreshArrow className={regenM.isPending ? "animate-spin" : ""} />
                     {(recoveryQ.data?.total ?? 0) > 0
                       ? t("mfa.totp.recovery.regenerateBtn")
                       : t("mfa.totp.recovery.generateBtn")}
@@ -356,7 +355,7 @@ function MfaTotpPage() {
                     <CardTitle className="text-base">{t("mfa.totp.idle.title")}</CardTitle>
                     <CardDescription>{t("mfa.totp.idle.subtitle")}</CardDescription>
                   </div>
-                  <FingerprintIcon className="size-6 text-muted-foreground" />
+                  <FingerScan className="size-6 text-muted-foreground" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -367,7 +366,7 @@ function MfaTotpPage() {
                 </ul>
                 {startM.error && <FieldError>{errorMessage(startM.error)}</FieldError>}
                 <Button onClick={() => startM.mutate()} disabled={startM.isPending}>
-                  {startM.isPending && <Loader2Icon className="animate-spin" />}
+                  {startM.isPending && <RefreshArrow className="animate-spin" />}
                   {startM.isPending
                     ? t("mfa.totp.idle.generatingBtn")
                     : t("mfa.totp.idle.beginBtn")}
@@ -400,7 +399,7 @@ function MfaTotpPage() {
                       />
                     ) : (
                       <div className="flex size-42 items-center justify-center">
-                        <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
+                        <RefreshArrow className="size-5 animate-spin text-muted-foreground" />
                       </div>
                     )}
                   </div>
@@ -465,7 +464,7 @@ function MfaTotpPage() {
                     {t("mfa.totp.enrolling.cancelBtn")}
                   </Button>
                   <Button type="submit" disabled={confirmM.isPending || code.length !== 6}>
-                    {confirmM.isPending && <Loader2Icon className="animate-spin" />}
+                    {confirmM.isPending && <RefreshArrow className="animate-spin" />}
                     {confirmM.isPending
                       ? t("mfa.totp.enrolling.verifyingBtn")
                       : t("mfa.totp.enrolling.confirmBtn")}
@@ -491,7 +490,7 @@ function MfaTotpPage() {
                   </CardTitle>
                   <CardDescription>{t("mfa.totp.confirmed.subtitle")}</CardDescription>
                 </div>
-                <ShieldCheckIcon className="size-6 text-emerald-600 dark:text-emerald-400" />
+                <ShieldTick className="size-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </CardHeader>
           </Card>
@@ -513,7 +512,7 @@ function MfaTotpPage() {
                   variant="outline"
                   onClick={() => navigator.clipboard.writeText(recoveryCodes.join("\n"))}
                 >
-                  <CopyIcon /> {t("mfa.totp.confirmed.copyAllBtn")}
+                  <Copy /> {t("mfa.totp.confirmed.copyAllBtn")}
                 </Button>
                 <Button
                   variant="outline"
@@ -528,7 +527,7 @@ function MfaTotpPage() {
                   }
                   disabled={disableM.isPending}
                 >
-                  {disableM.isPending && <Loader2Icon className="animate-spin" />}
+                  {disableM.isPending && <RefreshArrow className="animate-spin" />}
                   {t("mfa.totp.confirmed.disableBtn")}
                 </Button>
               </div>
@@ -537,7 +536,7 @@ function MfaTotpPage() {
         </>
       )}
 
-      {stage === "confirmed" && <CheckIcon className="hidden" />}
+      {stage === "confirmed" && <TickCircle className="hidden" />}
 
       <StepUpDialog
         open={stepUpOpen}

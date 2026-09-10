@@ -1,16 +1,16 @@
+import {
+  Activity,
+  DocumentText,
+  Key,
+  Login,
+  MagicStar,
+  ShieldSecurity,
+  TrendUp,
+  User,
+  UserAdd,
+} from "@qeetrix/icons";
 import { Badge, buttonVariants, cn, EmptyState, Skeleton, TimeSince } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import {
-  ActivityIcon,
-  ArrowUpRightIcon,
-  FileTextIcon,
-  FlaskConicalIcon,
-  KeyRoundIcon,
-  LogInIcon,
-  ShieldAlertIcon,
-  UserIcon,
-  UserPlusIcon,
-} from "lucide-react";
 import type * as React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -26,7 +26,7 @@ const ACTIVITY_SKELETON_IDS = ["one", "two", "three", "four", "five"] as const;
 function getOperatorActions(t: (key: string) => string) {
   return [
     {
-      icon: UserPlusIcon,
+      icon: UserAdd,
       label: t("quickActions.inviteLabel"),
       description: t("quickActions.inviteDesc"),
       href: "/invitations",
@@ -34,7 +34,7 @@ function getOperatorActions(t: (key: string) => string) {
       requiredPermissions: ["user.read", "user.write", "role.read"] satisfies Capability[],
     },
     {
-      icon: KeyRoundIcon,
+      icon: Key,
       label: t("quickActions.apiKeyLabel"),
       description: t("quickActions.apiKeyDesc"),
       href: "/auth/api/keys",
@@ -42,7 +42,7 @@ function getOperatorActions(t: (key: string) => string) {
       requiredPermissions: ["apikey.read", "apikey.write"] satisfies Capability[],
     },
     {
-      icon: ShieldAlertIcon,
+      icon: ShieldSecurity,
       label: t("quickActions.threatsLabel"),
       description: t("quickActions.threatsDesc"),
       href: "/security/threats/anomalies",
@@ -50,7 +50,7 @@ function getOperatorActions(t: (key: string) => string) {
       requiredPermissions: ["audit.read"] satisfies Capability[],
     },
     {
-      icon: FlaskConicalIcon,
+      icon: MagicStar,
       label: "Test an access decision",
       description: "Evaluate a policy before it reaches production",
       href: "/authorization/simulator",
@@ -58,7 +58,7 @@ function getOperatorActions(t: (key: string) => string) {
       requiredPermissions: ["role.read"] satisfies Capability[],
     },
     {
-      icon: FileTextIcon,
+      icon: DocumentText,
       label: t("quickActions.auditLabel"),
       description: t("quickActions.auditDesc"),
       href: "/security/audit-logs",
@@ -70,10 +70,10 @@ function getOperatorActions(t: (key: string) => string) {
 
 function eventIcon(event: ActivityEvent): React.ReactNode {
   const cat = event.category.toLowerCase();
-  if (cat === "authentication" || event.type.startsWith("session.")) return <LogInIcon />;
-  if (cat === "user" || event.type.startsWith("user.")) return <UserIcon />;
-  if (cat === "mfa" || cat === "apikey") return <KeyRoundIcon />;
-  return <ActivityIcon />;
+  if (cat === "authentication" || event.type.startsWith("session.")) return <Login />;
+  if (cat === "user" || event.type.startsWith("user.")) return <User />;
+  if (cat === "mfa" || cat === "apikey") return <Key />;
+  return <Activity />;
 }
 
 // ---------------------------------------------------------------------------
@@ -134,7 +134,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
       ) : events.length === 0 ? (
         <div className="flex min-h-64 items-center justify-center px-6 py-10">
           <EmptyState
-            icon={ActivityIcon}
+            icon={Activity}
             title={t("activity.emptyTitle")}
             description={t("activity.emptyDescription")}
             action={<LiveIndicator status={status} />}
@@ -252,7 +252,7 @@ export function OperatorActionsPanel({ className }: { className?: string }) {
                 {description}
               </span>
             </span>
-            <ArrowUpRightIcon className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            <TrendUp className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </Link>
         ))}
       </nav>

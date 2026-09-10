@@ -1,7 +1,7 @@
+import { Danger, RefreshArrow } from "@qeetrix/icons";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Button } from "@qeetrix/ui";
 import { PageState } from "@qeetrix/ui/blocks";
-import { RefreshCwIcon, TriangleAlertIcon } from "lucide-react";
 
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
@@ -21,12 +21,12 @@ export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
     <div className="grid min-h-[60vh] place-items-center p-6">
       <PageState
         code="—"
-        icon={TriangleAlertIcon}
+        icon={Danger}
         title="Something went wrong"
         description={userMessageForCode(appError.code, appError.kind)}
         actions={
           <Button onClick={reset}>
-            <RefreshCwIcon /> Try again
+            <RefreshArrow /> Try again
           </Button>
         }
       />

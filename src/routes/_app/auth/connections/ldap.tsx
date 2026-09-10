@@ -1,3 +1,4 @@
+import { Add, Driver, Electricity, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -36,7 +37,6 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, PlugIcon, PlusIcon, ServerIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -77,7 +77,7 @@ function LdapPage() {
         actions={
           ldapLocked ? undefined : (
             <Button size="sm" onClick={() => setCreating(true)}>
-              <PlusIcon className="mr-2 size-4" />
+              <Add className="mr-2 size-4" />
               {t("ldap.newButton")}
             </Button>
           )
@@ -100,7 +100,7 @@ function LdapPage() {
               isError={listQ.isError}
               error={listQ.error}
               isEmpty={items.length === 0}
-              emptyIcon={ServerIcon}
+              emptyIcon={Driver}
               emptyTitle={t("ldap.list.empty")}
               skeletonRows={3}
             >
@@ -135,7 +135,7 @@ function LdapPage() {
                           disabled={testM.isPending}
                           title={t("ldap.testTitle")}
                         >
-                          <PlugIcon /> {t("ldap.testBtn")}
+                          <Electricity /> {t("ldap.testBtn")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -163,7 +163,7 @@ function LdapPage() {
                           }
                           disabled={deleteM.isPending}
                         >
-                          <Trash2Icon /> {t("ldap.deleteBtn")}
+                          <Trash /> {t("ldap.deleteBtn")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -356,7 +356,7 @@ function CreateConnectionSheet({
               {t("ldap.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <RefreshArrow className="animate-spin" />}
               {createM.isPending ? t("ldap.create.creatingBtn") : t("ldap.create.createBtn")}
             </Button>
           </SheetFooter>

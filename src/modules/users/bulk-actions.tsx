@@ -1,3 +1,14 @@
+import {
+  ArrowDownAlt,
+  Forbidden,
+  ImportDown,
+  People,
+  RefreshArrow,
+  ShieldTick,
+  Trash,
+  UserAdd,
+  UserRemove,
+} from "@qeetrix/icons";
 // Bulk-action bar contents. There is no batch API, so each action fans out over
 // the selected users' per-user endpoints (bounded concurrency), reporting a
 // combined success/failure toast. Assign-role / Add-to-group pick a target from
@@ -13,17 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@qeetrix/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ChevronDownIcon,
-  DownloadIcon,
-  Loader2Icon,
-  MonitorXIcon,
-  ShieldCheckIcon,
-  Trash2Icon,
-  UserPlusIcon,
-  UsersRoundIcon,
-  UserXIcon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -118,7 +118,7 @@ export function BulkActions({
   if (busy) {
     return (
       <span className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2Icon className="size-4 animate-spin" />
+        <RefreshArrow className="size-4 animate-spin" />
         {running.label} · {running.done}/{running.total}
       </span>
     );
@@ -133,9 +133,9 @@ export function BulkActions({
         <DropdownMenuTrigger
           render={
             <Button variant="outline" size="sm">
-              <UserPlusIcon />
+              <UserAdd />
               {t("bulk.assignRole")}
-              <ChevronDownIcon className="size-3.5" />
+              <ArrowDownAlt className="size-3.5" />
             </Button>
           }
         />
@@ -163,9 +163,9 @@ export function BulkActions({
         <DropdownMenuTrigger
           render={
             <Button variant="outline" size="sm">
-              <UsersRoundIcon />
+              <People />
               {t("bulk.addToGroup")}
-              <ChevronDownIcon className="size-3.5" />
+              <ArrowDownAlt className="size-3.5" />
             </Button>
           }
         />
@@ -202,7 +202,7 @@ export function BulkActions({
           )
         }
       >
-        <ShieldCheckIcon />
+        <ShieldTick />
         {t("bulk.requireMfa")}
       </Button>
 
@@ -222,7 +222,7 @@ export function BulkActions({
           })
         }
       >
-        <MonitorXIcon />
+        <Forbidden />
         {t("detail.revokeAllBtn")}
       </Button>
 
@@ -242,7 +242,7 @@ export function BulkActions({
           })
         }
       >
-        <UserXIcon />
+        <UserRemove />
         {t("detail.suspendBtn")}
       </Button>
 
@@ -252,17 +252,17 @@ export function BulkActions({
           render={
             <Button variant="outline" size="sm">
               {t("bulk.more")}
-              <ChevronDownIcon className="size-3.5" />
+              <ArrowDownAlt className="size-3.5" />
             </Button>
           }
         />
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => exportToCsv("users", selectedUsers, exportColumns)}>
-            <DownloadIcon />
+            <ImportDown />
             {t("bulk.exportCsv")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => exportToJson("users", selectedUsers)}>
-            <DownloadIcon />
+            <ImportDown />
             {t("bulk.exportJson")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -281,7 +281,7 @@ export function BulkActions({
               })
             }
           >
-            <Trash2Icon />
+            <Trash />
             {t("table.deleteUser")}
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -1,3 +1,4 @@
+import { Flash, RefreshArrow, ShieldSlash, ToyRobot } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -20,7 +21,6 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { BotIcon, RefreshCwIcon, ShieldOffIcon, ZapIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -60,17 +60,17 @@ function BotsPage() {
     {
       key: "blocked",
       value: s?.blocked_24h ?? 0,
-      icon: <ShieldOffIcon className="size-4" />,
+      icon: <ShieldSlash className="size-4" />,
     },
     {
       key: "challenged",
       value: s?.challenged_24h ?? 0,
-      icon: <ZapIcon className="size-4" />,
+      icon: <Flash className="size-4" />,
     },
     {
       key: "threshold",
       value: (s?.threshold ?? 0.7).toFixed(2),
-      icon: <BotIcon className="size-4" />,
+      icon: <ToyRobot className="size-4" />,
     },
   ];
 
@@ -92,7 +92,7 @@ function BotsPage() {
             onClick={() => overviewQ.refetch()}
             disabled={overviewQ.isFetching}
           >
-            <RefreshCwIcon className={overviewQ.isFetching ? "animate-spin" : ""} />
+            <RefreshArrow className={overviewQ.isFetching ? "animate-spin" : ""} />
             {t("bots.refresh")}
           </Button>
         }
@@ -184,7 +184,7 @@ function BotsPage() {
             isError={overviewQ.isError}
             error={overviewQ.error}
             isEmpty={recent.length === 0}
-            emptyIcon={BotIcon}
+            emptyIcon={ToyRobot}
             emptyTitle={t("bots.recent.empty")}
             skeletonRows={3}
           >

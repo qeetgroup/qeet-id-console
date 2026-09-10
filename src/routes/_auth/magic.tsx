@@ -1,7 +1,7 @@
+import { Danger, RefreshArrow, Sms, TickCircle } from "@qeetrix/icons";
 import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
-import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, MailIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -60,7 +60,7 @@ function renderStatus({
   if (!token) {
     return (
       <>
-        <AlertTriangleIcon className="size-10 text-amber-500" />
+        <Danger className="size-10 text-amber-500" />
         <h1 className="text-2xl font-bold">{t("magic.missingTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("magic.missingText")}</p>
         <Link to="/sign-in" className={buttonVariants({ variant: "outline" }) + " mt-2"}>
@@ -73,7 +73,7 @@ function renderStatus({
   if (consume.isPending || consume.isIdle) {
     return (
       <>
-        <Loader2Icon className="size-10 animate-spin text-sky-500" />
+        <RefreshArrow className="size-10 animate-spin text-sky-500" />
         <h1 className="text-2xl font-bold">{t("magic.loadingTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("magic.loadingText")}</p>
       </>
@@ -83,7 +83,7 @@ function renderStatus({
   if (consume.isSuccess) {
     return (
       <>
-        <CheckCircle2Icon className="size-10 text-emerald-500" />
+        <TickCircle className="size-10 text-emerald-500" />
         <h1 className="text-2xl font-bold">{t("magic.successTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("magic.successText")}</p>
       </>
@@ -98,7 +98,7 @@ function renderStatus({
 
   return (
     <>
-      <MailIcon className="size-10 text-rose-500" />
+      <Sms className="size-10 text-rose-500" />
       <h1 className="text-2xl font-bold">
         {isExpiredOrUsed ? t("magic.expiredTitle") : t("magic.errorTitle")}
       </h1>
