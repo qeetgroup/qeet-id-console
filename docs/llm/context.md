@@ -211,8 +211,8 @@ build commands).
 
 ## Known constraints
 
-- **No dev port is configured.** `vite dev` defaults to 5173, but `qeet-id-server` expects the
-  console on **3002** (`APP_BASE_URL`) for redirects and passkeys. Use `--port 3002`.
+- **The dev port is pinned to 3002.** `qeet-id-server` expects the console on **3002**
+  (`APP_BASE_URL`) for redirects and passkeys, so the `dev` script hardcodes `--port 3002`.
 - **`@qeetrix/ui ^1.0.3` is a major version behind** npm's `2.0.0`; `^1.x` will never resolve to it.
 - 25k LOC in `src/routes` despite the "composition only" rule.
 - Two modules have no barrel, so they cannot be imported by another module.

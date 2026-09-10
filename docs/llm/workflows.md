@@ -9,12 +9,12 @@
 ```bash
 bun install
 cp .env.example .env.local
-bun run dev -- --port 3002     # see the port note below
+bun run dev                    # serves on 3002 — see the port note below
 ```
 
-> **Run on 3002.** Nothing here configures a port (`vite dev` defaults to 5173), but
-> `qeet-id-server`'s `.env.example` sets `APP_BASE_URL=http://localhost:3002` and allowlists
-> 3000–3003 + 5173 for CORS and WebAuthn. Redirects and passkeys only work on 3002.
+> **Runs on 3002.** The `dev` script pins `--port 3002` to match `qeet-id-server`'s
+> `APP_BASE_URL=http://localhost:3002`, which allowlists 3000–3003 + 5173 for CORS and
+> WebAuthn. Redirects and passkeys only work on 3002 — don't override the port.
 
 `VITE_ENABLE_DEVTOOLS=true bun run dev` opts into the TanStack devtools launcher.
 

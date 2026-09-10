@@ -102,10 +102,9 @@ bun run lint:boundaries  # the layering gate
 
 **There is no Makefile.** `VITE_ENABLE_DEVTOOLS=true bun run dev` opts into the TanStack devtools.
 
-> **Local port caveat.** Nothing in this repo sets a dev port, but `qeet-id-server`'s `.env.example`
-> sets `APP_BASE_URL=http://localhost:3002` and allowlists 3000–3003 + 5173 for CORS and WebAuthn.
-> For redirects and passkeys to work locally, run the console on **3002**:
-> `bun run dev -- --port 3002`.
+> **Local port.** `bun run dev` serves on **3002** (pinned in the `dev` script), matching
+> `qeet-id-server`'s `APP_BASE_URL=http://localhost:3002`; it allowlists 3000–3003 + 5173 for
+> CORS and WebAuthn. Redirects and passkeys only work on 3002 — don't override the port.
 
 ## What CI enforces
 
