@@ -1,17 +1,6 @@
 @import "@qeetrix/ui/styles.css";
 @import "./modules/authentication/components/auth-page.css";
 
-/*
- * `@qeetrix/icons` ships every icon with `color="white"` on the root <svg> so
- * the artwork matches its source export. That is a presentation attribute, so
- * any real CSS rule outranks it — this one makes icons inherit the colour of
- * whatever they sit in, which is how the console's light and dark themes drive
- * them. Pass `color=` or a `text-*` class on an icon to override per call site.
- */
-svg {
-  color: inherit;
-}
-
 :root {
   color-scheme: light;
 

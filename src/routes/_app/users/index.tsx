@@ -1,15 +1,4 @@
 import {
-  Add,
-  ArrowLeftAlt,
-  ArrowRightAlt,
-  CloudAdd,
-  RefreshArrow,
-  ShieldSecurity,
-  ShieldTick,
-  TickCircle,
-  User as UserIcon,
-} from "@qeetrix/icons";
-import {
   Avatar,
   AvatarFallback,
   Badge,
@@ -50,6 +39,18 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  CheckCircle2Icon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Loader2Icon,
+  PlusIcon,
+  RefreshCwIcon,
+  ShieldAlertIcon,
+  ShieldCheckIcon,
+  UploadCloudIcon,
+  UserIcon,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -306,7 +307,7 @@ function UsersPage() {
                 }}
                 disabled={usersQ.isFetching}
               >
-                <RefreshArrow className={usersQ.isFetching ? "animate-spin" : ""} />
+                <RefreshCwIcon className={usersQ.isFetching ? "animate-spin" : ""} />
                 {t("common:actions.refresh")}
               </Button>
               {canWriteUsers ? (
@@ -314,12 +315,12 @@ function UsersPage() {
                   to="/users/import"
                   className={buttonVariants({ variant: "outline", size: "sm" })}
                 >
-                  <CloudAdd /> {t("list.import")}
+                  <UploadCloudIcon /> {t("list.import")}
                 </Link>
               ) : null}
               {canCreateUsers ? (
                 <Button size="sm" onClick={() => setCreating(true)}>
-                  <Add /> {t("list.newUser")}
+                  <PlusIcon /> {t("list.newUser")}
                 </Button>
               ) : null}
             </>
@@ -610,7 +611,7 @@ function UsersPage() {
                       aria-label={t("pagination.prev")}
                       onClick={() => goToPage(page - 1)}
                     >
-                      <ArrowLeftAlt className="size-4" />
+                      <ChevronLeftIcon className="size-4" />
                     </Button>
                     {totalPages !== undefined
                       ? pageWindow(page + 1, totalPages).map((p, i) =>
@@ -643,7 +644,7 @@ function UsersPage() {
                       aria-label={t("pagination.next")}
                       onClick={() => goToPage(page + 1)}
                     >
-                      <ArrowRightAlt className="size-4" />
+                      <ChevronRightIcon className="size-4" />
                     </Button>
                   </div>
                 </div>
@@ -706,17 +707,17 @@ function SecurityCell({ user }: { user: User }) {
     <div className="flex flex-col gap-0.5 text-xs">
       <span className="inline-flex items-center gap-1">
         {user.email_verified_at ? (
-          <TickCircle className="size-3.5 text-success" aria-hidden="true" />
+          <CheckCircle2Icon className="size-3.5 text-success" aria-hidden="true" />
         ) : (
-          <ShieldSecurity className="size-3.5 text-warning" aria-hidden="true" />
+          <ShieldAlertIcon className="size-3.5 text-warning" aria-hidden="true" />
         )}
         {t("security.email")}
       </span>
       <span className="inline-flex items-center gap-1">
         {user.mfa_enabled ? (
-          <ShieldTick className="size-3.5 text-success" aria-hidden="true" />
+          <ShieldCheckIcon className="size-3.5 text-success" aria-hidden="true" />
         ) : (
-          <ShieldSecurity className="size-3.5 text-warning" aria-hidden="true" />
+          <ShieldAlertIcon className="size-3.5 text-warning" aria-hidden="true" />
         )}
         {user.mfa_enabled ? t("security.mfaOn") : t("security.mfaOff")}
       </span>
@@ -842,7 +843,7 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
               {t("common:actions.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending || !tenantId}>
-              {createM.isPending && <RefreshArrow className="animate-spin" />}
+              {createM.isPending && <Loader2Icon className="animate-spin" />}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>
@@ -963,7 +964,7 @@ function EditUserSheet({ user, isSelf, onOpenChange, onSaved }: EditUserSheetPro
                 {t("common:actions.cancel")}
               </SheetClose>
               <Button type="submit" disabled={updateM.isPending}>
-                {updateM.isPending && <RefreshArrow className="animate-spin" />}
+                {updateM.isPending && <Loader2Icon className="animate-spin" />}
                 {updateM.isPending ? t("common:actions.saving") : t("common:actions.saveChanges")}
               </Button>
             </SheetFooter>
@@ -1069,7 +1070,7 @@ function SetPasswordSheet({ user, onOpenChange, onSaved }: SetPasswordSheetProps
                 {t("common:actions.cancel")}
               </SheetClose>
               <Button type="submit" disabled={setM.isPending}>
-                {setM.isPending && <RefreshArrow className="animate-spin" />}
+                {setM.isPending && <Loader2Icon className="animate-spin" />}
                 {setM.isPending ? t("common:actions.saving") : t("setPassword.submit")}
               </Button>
             </SheetFooter>

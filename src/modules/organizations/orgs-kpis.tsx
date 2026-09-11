@@ -1,16 +1,20 @@
-import type { ComponentType, SVGProps } from "react";
-import { ArrowRightAlt, Buildings, People, ShieldTick, UserRemove } from "@qeetrix/icons";
 // KPI cards atop the Organizations table. All counts are real (computed from the
 // enriched caller-scoped tenant list). No sparklines — there is no meaningful
 // per-day org trend; proportion cards show a meter instead.
 
 import { cn, Skeleton } from "@qeetrix/ui";
+import {
+  Building2Icon,
+  ChevronRightIcon,
+  type LucideIcon,
+  ShieldCheckIcon,
+  UserXIcon,
+  Users2Icon,
+  UsersIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import type { Org } from "./api/orgs";
-
-/** Any `@qeetrix/icons` component, as a prop. */
-type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 export type OrgKpiFilter = "all" | "active" | "suspended";
 
@@ -65,14 +69,14 @@ export function OrgsKpis({
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       <Kpi
-        icon={Buildings}
+        icon={Building2Icon}
         tone="brand"
         label={t("kpi.total")}
         value={total}
         onClick={() => onFilter("all")}
       />
       <Kpi
-        icon={People}
+        icon={Users2Icon}
         tone="success"
         label={t("kpi.active")}
         value={active}
@@ -80,7 +84,7 @@ export function OrgsKpis({
         onClick={() => onFilter("active")}
       />
       <Kpi
-        icon={UserRemove}
+        icon={UserXIcon}
         tone="danger"
         label={t("kpi.suspended")}
         value={suspended}
@@ -88,14 +92,14 @@ export function OrgsKpis({
         onClick={() => onFilter("suspended")}
       />
       <Kpi
-        icon={People}
+        icon={UsersIcon}
         tone="muted"
         label={t("kpi.members")}
         value={members}
         onClick={() => onFilter("all")}
       />
       <Kpi
-        icon={ShieldTick}
+        icon={ShieldCheckIcon}
         tone="success"
         label={t("kpi.mfaMembers")}
         value={mfaMembers}
@@ -114,7 +118,7 @@ function Kpi({
   meter,
   onClick,
 }: {
-  icon: IconComponent;
+  icon: LucideIcon;
   tone: Tone;
   label: string;
   value: number;
@@ -136,7 +140,7 @@ function Kpi({
           </span>
           <span className="text-sm font-medium text-muted-foreground">{label}</span>
         </div>
-        <ArrowRightAlt className="size-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
+        <ChevronRightIcon className="size-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
       </div>
       <div className="text-2xl font-semibold tabular-nums tracking-tight">
         {value.toLocaleString()}

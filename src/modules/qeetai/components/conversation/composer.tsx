@@ -1,5 +1,5 @@
-import { ArrowUp, Stop } from "@qeetrix/icons";
 import { Button, Textarea } from "@qeetrix/ui";
+import { ArrowUpIcon, SquareIcon } from "lucide-react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 interface ComposerProps {
@@ -62,7 +62,7 @@ export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
             aria-label="Stop generating"
             title="Stop generating"
           >
-            <Stop className="size-4" />
+            <SquareIcon className="size-4" />
           </Button>
         ) : (
           <Button
@@ -73,7 +73,7 @@ export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
             aria-label="Send message"
             title="Send (Enter)"
           >
-            <ArrowUp className="size-4" />
+            <ArrowUpIcon className="size-4" />
           </Button>
         )}
       </div>

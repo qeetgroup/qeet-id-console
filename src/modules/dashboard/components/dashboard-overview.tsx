@@ -1,15 +1,15 @@
 import {
-  Activity,
-  Danger,
-  Key,
-  People,
-  RefreshArrow,
-  RepeatArrow,
-  ShieldTick,
-  Speedometer,
-  UserAdd,
-  UserTick,
-} from "@qeetrix/icons";
+  ActivityIcon,
+  GaugeIcon,
+  KeyRoundIcon,
+  RefreshCwIcon,
+  RepeatIcon,
+  ShieldCheckIcon,
+  TriangleAlertIcon,
+  UserCheckIcon,
+  UserPlusIcon,
+  UsersIcon,
+} from "lucide-react";
 import {
   Badge,
   Button,
@@ -138,7 +138,7 @@ function DashboardHeading({
         ) : null}
         {canInvite ? (
           <Link to="/invitations" className={buttonVariants({ size: "sm" })}>
-            <UserAdd /> {t("quickActions.inviteLabel")}
+            <UserPlusIcon /> {t("quickActions.inviteLabel")}
           </Link>
         ) : null}
       </div>
@@ -172,7 +172,7 @@ export function DashboardOverview() {
         <section className="enterprise-panel grid min-h-80 place-items-center p-8 text-center">
           <div className="max-w-md">
             <span className="mx-auto grid size-12 place-items-center rounded-xl bg-destructive/10 text-destructive">
-              <Danger className="size-5" />
+              <TriangleAlertIcon className="size-5" />
             </span>
             <h2 className="mt-4 font-heading text-lg font-semibold">{t("error")}</h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
@@ -181,7 +181,7 @@ export function DashboardOverview() {
                 : "The analytics service did not return a response."}
             </p>
             <Button className="mt-5" variant="outline" onClick={() => analytics.refetch()}>
-              <RefreshArrow /> Retry
+              <RefreshCwIcon /> Retry
             </Button>
           </div>
         </section>
@@ -201,7 +201,7 @@ export function DashboardOverview() {
     ? [
         {
           id: "mau",
-          icon: People,
+          icon: UsersIcon,
           label: t("kpi.mau"),
           value: overview.kpis.mau.value.toLocaleString("en-US"),
           delta: overview.kpis.mau.delta_pct,
@@ -211,7 +211,7 @@ export function DashboardOverview() {
         },
         {
           id: "logins",
-          icon: Activity,
+          icon: ActivityIcon,
           label: t("kpi.loginsToday"),
           value: overview.kpis.logins_today.value.toLocaleString("en-US"),
           delta: overview.kpis.logins_today.delta_pct,
@@ -221,7 +221,7 @@ export function DashboardOverview() {
         },
         {
           id: "mfa",
-          icon: Key,
+          icon: KeyRoundIcon,
           label: t("kpi.mfaAdoption"),
           value: `${overview.kpis.mfa_adoption_pct.value.toFixed(1)}%`,
           delta: overview.kpis.mfa_adoption_pct.delta_pct,
@@ -233,7 +233,7 @@ export function DashboardOverview() {
         },
         {
           id: "failed",
-          icon: ShieldTick,
+          icon: ShieldCheckIcon,
           label: t("kpi.failedLogins24h"),
           value: overview.kpis.failed_logins_24h.value.toLocaleString("en-US"),
           delta: overview.kpis.failed_logins_24h.delta_pct,
@@ -249,26 +249,26 @@ export function DashboardOverview() {
     ? [
         {
           id: "total",
-          icon: <People />,
+          icon: <UsersIcon />,
           label: t("stats.totalUsers"),
           value: overview.kpis.total_users.value.toLocaleString("en-US"),
         },
         {
           id: "daily",
-          icon: <UserTick />,
+          icon: <UserCheckIcon />,
           label: t("stats.dailyActive"),
           value: overview.kpis.dau.value.toLocaleString("en-US"),
           detail: formatDelta(overview.kpis.dau.delta_pct),
         },
         {
           id: "stickiness",
-          icon: <Speedometer />,
+          icon: <GaugeIcon />,
           label: t("stats.stickiness"),
           value: `${overview.kpis.stickiness_pct.value.toFixed(0)}%`,
         },
         {
           id: "sessions",
-          icon: <RepeatArrow />,
+          icon: <RepeatIcon />,
           label: t("stats.avgSessions"),
           value: overview.kpis.avg_sessions_per_user.value.toFixed(1),
         },
@@ -314,7 +314,7 @@ export function DashboardOverview() {
         <section className="enterprise-panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
-              <ShieldTick className="size-4.5" aria-hidden="true" />
+              <ShieldCheckIcon className="size-4.5" aria-hidden="true" />
             </span>
             <div className="min-w-0">
               <h2 className="font-heading text-base font-semibold">Your operator view is scoped</h2>

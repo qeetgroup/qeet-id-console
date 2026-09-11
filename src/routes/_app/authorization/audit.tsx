@@ -1,4 +1,3 @@
-import { DocumentText, RefreshArrow } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -16,6 +15,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { RefreshCwIcon, ScrollTextIcon } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -54,7 +54,7 @@ function AuditPage() {
             onClick={() => auditQ.refetch()}
             disabled={auditQ.isFetching}
           >
-            <RefreshArrow className={auditQ.isFetching ? "animate-spin" : ""} /> Refresh
+            <RefreshCwIcon className={auditQ.isFetching ? "animate-spin" : ""} /> Refresh
           </Button>
         }
       />
@@ -93,7 +93,7 @@ function AuditPage() {
             isError={auditQ.isError}
             error={auditQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={DocumentText}
+            emptyIcon={ScrollTextIcon}
             emptyTitle="No authorization events"
             skeletonRows={6}
           >

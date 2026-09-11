@@ -1,4 +1,4 @@
-import { ArrowRight, Box, Buildings, Crown, People } from "@qeetrix/icons";
+import { ArrowRightIcon, BoxIcon, Building2Icon, CrownIcon, UsersIcon } from "lucide-react";
 import { cn } from "@qeetrix/ui";
 import { useTranslation } from "react-i18next";
 
@@ -7,7 +7,7 @@ import { usePlans } from "@/modules/billing";
 import type { PlanSelection } from "./plan-select";
 import { SETUP_FOCUS } from "./setup-styles";
 
-const ICONS = { free: Box, starter: People, pro: Crown, enterprise: Buildings };
+const ICONS = { free: BoxIcon, starter: UsersIcon, pro: CrownIcon, enterprise: Building2Icon };
 
 export function SetupPlanSummary({
   selection,
@@ -44,7 +44,7 @@ export function SetupPlanSummary({
           SETUP_FOCUS,
         )}
       >
-        {t("setup.summary.change")} <ArrowRight className="size-3" aria-hidden="true" />
+        {t("setup.summary.change")} <ArrowRightIcon className="size-3" aria-hidden="true" />
       </button>
     </div>
   );

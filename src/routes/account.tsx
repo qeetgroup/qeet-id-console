@@ -1,6 +1,6 @@
-import { Data, MonitorMobile, ShieldTick, User } from "@qeetrix/icons";
 import { Avatar, AvatarFallback, AvatarImage, cn } from "@qeetrix/ui";
 import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
+import { DatabaseIcon, MonitorSmartphoneIcon, ShieldCheckIcon, UserIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -36,18 +36,18 @@ function AccountLayout() {
   useIdleLogout(IDLE_TIMEOUT_MS);
 
   const NAV = [
-    { to: "/account/profile", label: t("nav.profile"), icon: User },
+    { to: "/account/profile", label: t("nav.profile"), icon: UserIcon },
     {
       to: "/account/security",
       label: t("nav.security"),
-      icon: ShieldTick,
+      icon: ShieldCheckIcon,
     },
     {
       to: "/account/sessions",
       label: t("nav.sessions"),
-      icon: MonitorMobile,
+      icon: MonitorSmartphoneIcon,
     },
-    { to: "/account/data", label: t("nav.data"), icon: Data },
+    { to: "/account/data", label: t("nav.data"), icon: DatabaseIcon },
   ] as const;
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-import { ArrowLeftAlt, ArrowRightAlt } from "@qeetrix/icons";
 // Numbered pagination footer for the Activity table — "Showing X to Y of N",
 // windowed page buttons (1 … 4 5 6 … 249), prev/next, and a page-size selector.
 // Pages are 0-based in props; labels are 1-based.
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qeetrix/ui";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 export const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
 
@@ -72,7 +72,7 @@ export function ActivityPagination({
           disabled={page === 0 || loading}
           aria-label="Previous page"
         >
-          <ArrowLeftAlt className="size-3.5" aria-hidden="true" />
+          <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
         </Button>
 
         {windowed.map((p, i) =>
@@ -109,7 +109,7 @@ export function ActivityPagination({
           disabled={current >= pageCount || loading}
           aria-label="Next page"
         >
-          <ArrowRightAlt className="size-3.5" aria-hidden="true" />
+          <ChevronRightIcon className="size-3.5" aria-hidden="true" />
         </Button>
       </nav>
 

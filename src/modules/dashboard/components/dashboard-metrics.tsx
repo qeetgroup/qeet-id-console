@@ -1,15 +1,12 @@
-import { Minus, TrendDown, TrendUp } from "@qeetrix/icons";
 import { Skeleton, Sparkline } from "@qeetrix/ui";
+import { ArrowDownRightIcon, ArrowUpRightIcon, type LucideIcon, MinusIcon } from "lucide-react";
 import type * as React from "react";
 
 import { formatDelta } from "../dashboard-model";
 
-/** Any `@qeetrix/icons` component, as a prop. */
-type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
-
 export type DashboardMetric = {
   id: string;
-  icon: IconComponent;
+  icon: LucideIcon;
   label: string;
   value: string;
   delta: number;
@@ -53,7 +50,11 @@ function MetricSkeleton() {
 function Metric({ metric }: { metric: DashboardMetric }) {
   const Icon = metric.icon;
   const isNeutral = metric.delta === 0;
-  const DirectionIcon = isNeutral ? Minus : metric.delta > 0 ? TrendUp : TrendDown;
+  const DirectionIcon = isNeutral
+    ? MinusIcon
+    : metric.delta > 0
+      ? ArrowUpRightIcon
+      : ArrowDownRightIcon;
 
   return (
     <article

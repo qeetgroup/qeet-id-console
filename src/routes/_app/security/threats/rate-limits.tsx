@@ -1,4 +1,3 @@
-import { RefreshArrow, RotateLeft, Speedometer } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -13,6 +12,7 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { GaugeIcon, Loader2Icon, RotateCcwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -163,7 +163,7 @@ function RateLimitsPage() {
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Speedometer className="size-4" />
+              <GaugeIcon className="size-4" />
               {t("threats.rateLimits.card.title")}
             </CardTitle>
             <CardDescription>{t("threats.rateLimits.card.description")}</CardDescription>
@@ -181,7 +181,7 @@ function RateLimitsPage() {
               })
             }
           >
-            {reset.isPending ? <RefreshArrow className="animate-spin" /> : <RotateLeft />}
+            {reset.isPending ? <Loader2Icon className="animate-spin" /> : <RotateCcwIcon />}
             {t("threats.rateLimits.card.resetToDefaults")}
           </Button>
         </CardHeader>
@@ -232,7 +232,7 @@ function RateLimitsPage() {
               />
               <div className="flex items-center gap-3 pt-2">
                 <Button type="submit" disabled={!dirty || update.isPending}>
-                  {update.isPending && <RefreshArrow className="animate-spin" />}
+                  {update.isPending && <Loader2Icon className="animate-spin" />}
                   {t("threats.rateLimits.card.save")}
                 </Button>
                 {update.isSuccess && (

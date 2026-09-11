@@ -1,4 +1,3 @@
-import { Bookmark, SliderHorizontal, Trash } from "@qeetrix/icons";
 // Filter-bar extras: a "More filters" popover (extra client-side facets) and a
 // "Save view" popover that snapshots the current filter state to localStorage.
 
@@ -14,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qeetrix/ui";
+import { BookmarkIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -53,7 +53,7 @@ export function MoreFilters({
       <PopoverTrigger
         render={
           <Button variant="outline" size="sm">
-            <SliderHorizontal />
+            <SlidersHorizontalIcon />
             {t("filters.more")}
             {activeCount > 0 ? (
               <span className="ml-1 inline-flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
@@ -119,7 +119,7 @@ export function SaveView({
       <PopoverTrigger
         render={
           <Button variant="outline" size="sm">
-            <Bookmark />
+            <BookmarkIcon />
             {t("filters.saveView")}
           </Button>
         }
@@ -153,7 +153,7 @@ export function SaveView({
                   aria-label={t("common:actions.delete")}
                   onClick={() => remove(n)}
                 >
-                  <Trash className="size-3.5 text-muted-foreground" />
+                  <Trash2Icon className="size-3.5 text-muted-foreground" />
                 </Button>
               </li>
             ))}

@@ -1,4 +1,3 @@
-import { Danger, InfoCircle, Key, RefreshArrow, RotateLeft } from "@qeetrix/icons";
 import {
   Alert,
   AlertDescription,
@@ -25,6 +24,13 @@ import {
   TableRow,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  AlertTriangleIcon,
+  InfoIcon,
+  KeyRoundIcon,
+  Loader2Icon,
+  RotateCcwIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -49,7 +55,7 @@ function PEMDialog({ result, onClose }: { result: RotateKeyResult; onClose: () =
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Danger className="size-4 text-amber-500" />
+            <AlertTriangleIcon className="size-4 text-amber-500" />
             New Signing Key — Save Immediately
           </DialogTitle>
           <DialogDescription>
@@ -71,7 +77,7 @@ function PEMDialog({ result, onClose }: { result: RotateKeyResult; onClose: () =
           </div>
 
           <Alert variant="warning">
-            <Danger className="size-4" />
+            <AlertTriangleIcon className="size-4" />
             <AlertDescription>
               Tokens signed by the old key will remain verifiable until the process restarts. After
               restart you must also add the old public key to{" "}
@@ -139,7 +145,7 @@ function SigningKeysPage() {
 
       <Card className="border-blue-500/30 bg-blue-50/40 dark:bg-blue-950/20">
         <CardContent className="flex items-start gap-3 py-4">
-          <InfoCircle className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+          <InfoIcon className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-400" />
           <p className="text-sm text-muted-foreground">
             <Trans
               t={t}
@@ -160,7 +166,7 @@ function SigningKeysPage() {
             <CardDescription>{t("list.count", { count: keys.length })}</CardDescription>
           </div>
           <Button variant="outline" size="sm" disabled={rotate.isPending} onClick={handleRotate}>
-            {rotate.isPending ? <RefreshArrow className="animate-spin" /> : <RotateLeft />}
+            {rotate.isPending ? <Loader2Icon className="animate-spin" /> : <RotateCcwIcon />}
             Rotate Key
           </Button>
         </CardHeader>
@@ -170,7 +176,7 @@ function SigningKeysPage() {
             isError={keysQ.isError}
             error={keysQ.error}
             isEmpty={keys.length === 0}
-            emptyIcon={Key}
+            emptyIcon={KeyRoundIcon}
             emptyTitle={t("list.emptyTitle")}
             skeletonRows={2}
           >

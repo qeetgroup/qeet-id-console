@@ -1,4 +1,3 @@
-import { MonitorMobile, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -25,6 +24,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { Loader2Icon, MonitorSmartphoneIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -59,7 +59,7 @@ function DeviceAuthorizationsPage() {
             onClick={() => listQ.refetch()}
             disabled={listQ.isFetching}
           >
-            <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
+            <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
             {t("common:actions.refresh")}
           </Button>
         }
@@ -76,7 +76,7 @@ function DeviceAuthorizationsPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={MonitorMobile}
+            emptyIcon={MonitorSmartphoneIcon}
             emptyTitle={t("list.emptyTitle")}
             emptyDescription={t("list.emptyDescription")}
             skeletonRows={3}
@@ -131,7 +131,7 @@ function DeviceAuthorizationsPage() {
                         onClick={() => setConfirming(d)}
                         disabled={revokeM.isPending}
                       >
-                        <Trash /> {t("common:actions.revoke")}
+                        <Trash2Icon /> {t("common:actions.revoke")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -180,7 +180,7 @@ function DeviceAuthorizationsPage() {
                 })
               }
             >
-              {revokeM.isPending && <RefreshArrow className="animate-spin" />}
+              {revokeM.isPending && <Loader2Icon className="animate-spin" />}
               {revokeM.isPending ? t("common:actions.revoking") : t("common:actions.revoke")}
             </Button>
           </AlertDialogFooter>

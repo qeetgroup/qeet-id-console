@@ -1,16 +1,16 @@
-import {
-  ArrowDownAlt,
-  CloseCircle,
-  Copy,
-  Danger,
-  Eye,
-  EyeSlash,
-  RecordCircle,
-  RotateLeft,
-  ShieldSecurity,
-  TickCircle,
-} from "@qeetrix/icons";
 import { Button, cn, Spinner } from "@qeetrix/ui";
+import {
+  AlertTriangleIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  CircleDotIcon,
+  CopyIcon,
+  EyeIcon,
+  EyeOffIcon,
+  RotateCcwIcon,
+  ShieldAlertIcon,
+  XIcon,
+} from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { useSensitiveArtifact } from "../../store/secrets-store";
@@ -48,9 +48,9 @@ function humanize(name: string): string {
 
 function StatusGlyph({ tone }: { tone: Tone }) {
   if (tone === "running") return <Spinner size="sm" className="text-primary" />;
-  if (tone === "success") return <TickCircle className="size-4 text-success" />;
-  if (tone === "error") return <Danger className="size-4 text-destructive" />;
-  return <RecordCircle className="size-4 text-muted-foreground" />;
+  if (tone === "success") return <CheckIcon className="size-4 text-success" />;
+  if (tone === "error") return <AlertTriangleIcon className="size-4 text-destructive" />;
+  return <CircleDotIcon className="size-4 text-muted-foreground" />;
 }
 
 /**
@@ -81,7 +81,7 @@ export function ToolCallCard({
           <span className={cn("ms-2 text-xs", TONE_TEXT[meta.tone])}>{meta.label}</span>
         </span>
         {execution.status === "cancelled" ? (
-          <CloseCircle className="size-3.5 text-muted-foreground" aria-hidden />
+          <XIcon className="size-3.5 text-muted-foreground" aria-hidden />
         ) : null}
         <button
           type="button"
@@ -90,7 +90,9 @@ export function ToolCallCard({
           aria-label={showInput ? "Hide input" : "Show input"}
           className="rounded p-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ArrowDownAlt className={cn("size-4 transition-transform", showInput && "rotate-180")} />
+          <ChevronDownIcon
+            className={cn("size-4 transition-transform", showInput && "rotate-180")}
+          />
         </button>
       </div>
 
@@ -107,14 +109,14 @@ export function ToolCallCard({
       {execution.error ? (
         <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
-            <Danger className="size-3.5 shrink-0" />
+            <AlertTriangleIcon className="size-3.5 shrink-0" />
             {execution.error.code === "execution_error"
               ? "The action could not be completed."
               : execution.error.message}
           </p>
           {retryable && onRetry ? (
             <Button size="xs" variant="ghost" onClick={onRetry}>
-              <RotateLeft className="size-3.5" /> Retry
+              <RotateCcwIcon className="size-3.5" /> Retry
             </Button>
           ) : null}
         </div>
@@ -146,7 +148,7 @@ function SensitiveArtifact({
   return (
     <div className="border-t bg-warning/5 px-3 py-2">
       <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-warning">
-        <ShieldSecurity className="size-3.5 shrink-0" />
+        <ShieldAlertIcon className="size-3.5 shrink-0" />
         {artifact.label} — shown once, never sent to the model. Store it securely now.
       </p>
       <div className="flex items-center gap-2">
@@ -159,7 +161,7 @@ function SensitiveArtifact({
           aria-label={revealed ? "Hide" : "Reveal"}
           onClick={() => setRevealed((v) => !v)}
         >
-          {revealed ? <EyeSlash className="size-3.5" /> : <Eye className="size-3.5" />}
+          {revealed ? <EyeOffIcon className="size-3.5" /> : <EyeIcon className="size-3.5" />}
         </Button>
         <Button
           size="icon-xs"
@@ -168,9 +170,9 @@ function SensitiveArtifact({
           onClick={copy}
         >
           {copied ? (
-            <TickCircle className="size-3.5 text-success" />
+            <CheckIcon className="size-3.5 text-success" />
           ) : (
-            <Copy className="size-3.5" />
+            <CopyIcon className="size-3.5" />
           )}
         </Button>
       </div>

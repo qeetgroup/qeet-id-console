@@ -1,4 +1,3 @@
-import { Add, ArrowsSwapVertical, Buildings, TickCircle } from "@qeetrix/icons";
 import {
   cn,
   DropdownMenu,
@@ -16,6 +15,7 @@ import {
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { Building2Icon, CheckIcon, ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -67,7 +67,7 @@ export function TeamSwitcher() {
               ) : active ? (
                 initialOf(active.name)
               ) : (
-                <Buildings className="size-4" />
+                <Building2Icon className="size-4" />
               )}
             </div>
             <div className="grid flex-1 text-start text-sm leading-tight">
@@ -92,7 +92,7 @@ export function TeamSwitcher() {
                 </>
               )}
             </div>
-            <ArrowsSwapVertical className="ms-auto" />
+            <ChevronsUpDownIcon className="ms-auto" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56 rounded-lg"
@@ -129,7 +129,7 @@ export function TeamSwitcher() {
                       </div>
                       <span className="truncate">{t.name}</span>
                       {isActive && (
-                        <TickCircle
+                        <CheckIcon
                           aria-label="Current organization"
                           className="ms-auto size-4 text-emerald-600 dark:text-emerald-400"
                         />
@@ -143,7 +143,7 @@ export function TeamSwitcher() {
             <DropdownMenuGroup>
               <DropdownMenuItem render={<Link to="/organizations/tenants" />} className="gap-2 p-2">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                  <Add className="size-4" />
+                  <PlusIcon className="size-4" />
                 </div>
                 <div className="font-medium text-muted-foreground">Add organization</div>
               </DropdownMenuItem>

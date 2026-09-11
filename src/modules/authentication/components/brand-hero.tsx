@@ -1,9 +1,9 @@
-import { People, Profile, ShieldTick } from "@qeetrix/icons";
 import { cn } from "@qeetrix/ui";
+import { ShieldCheckIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 
-const FEATURE_ICONS = [Profile, ShieldTick, People] as const;
+const FEATURE_ICONS = [UserRoundIcon, ShieldCheckIcon, UsersRoundIcon] as const;
 
 export function BrandHero({
   intent = "signin",

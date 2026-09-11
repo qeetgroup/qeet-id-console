@@ -1,11 +1,3 @@
-import {
-  Activity,
-  ArrowRight,
-  Key,
-  ShieldSecurity,
-  SmsNotification,
-  TickCircle,
-} from "@qeetrix/icons";
 // The Overview tab — the "answer the 5 questions at a glance" surface: security
 // posture, identity, access, recent activity, recommendations, and danger zone.
 
@@ -22,6 +14,14 @@ import {
   StatusPill,
   TimeSince,
 } from "@qeetrix/ui";
+import {
+  ActivityIcon,
+  ArrowRightIcon,
+  CheckCircle2Icon,
+  KeyRoundIcon,
+  MailWarningIcon,
+  ShieldAlertIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/shared/utils/format";
 
@@ -141,7 +141,7 @@ function IdentityCard({ user, onTab }: { user: UserDetail; onTab: (t: User360Tab
               <span className="truncate">{user.email}</span>
               {user.email_verified_at ? (
                 <Badge variant="success" className="gap-1">
-                  <TickCircle className="size-3" aria-hidden="true" />
+                  <CheckCircle2Icon className="size-3" aria-hidden="true" />
                   {t("detail.verified")}
                 </Badge>
               ) : (
@@ -175,7 +175,7 @@ function IdentityCard({ user, onTab }: { user: UserDetail; onTab: (t: User360Tab
           onClick={() => onTab("developer")}
         >
           {t("detail.viewFullIdentity")}
-          <ArrowRight className="size-3.5" aria-hidden="true" />
+          <ArrowRightIcon className="size-3.5" aria-hidden="true" />
         </Button>
       </CardContent>
     </Card>
@@ -233,7 +233,7 @@ function AccessSummaryCard({
         </DataState>
         <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => onTab("access")}>
           {t("detail.viewEffectiveAccess")}
-          <ArrowRight className="size-3.5" aria-hidden="true" />
+          <ArrowRightIcon className="size-3.5" aria-hidden="true" />
         </Button>
       </CardContent>
     </Card>
@@ -272,7 +272,7 @@ function RecentActivityCard({
         {!canView ? (
           <div className="flex flex-1 items-center justify-center py-6">
             <EmptyState
-              icon={Activity}
+              icon={ActivityIcon}
               title={t("detail.activityRestrictedTitle")}
               description={t("detail.activityRestrictedDesc")}
             />
@@ -282,7 +282,7 @@ function RecentActivityCard({
             isLoading={loading}
             isError={error}
             isEmpty={recent.length === 0}
-            emptyIcon={Activity}
+            emptyIcon={ActivityIcon}
             emptyTitle={t("detail.activityEmpty")}
             skeletonRows={4}
           >
@@ -317,7 +317,7 @@ function RecentActivityCard({
           onClick={() => onTab("activity")}
         >
           {t("detail.viewFullTimeline")}
-          <ArrowRight className="size-3.5" aria-hidden="true" />
+          <ArrowRightIcon className="size-3.5" aria-hidden="true" />
         </Button>
       </CardContent>
     </Card>
@@ -328,7 +328,7 @@ function RecentActivityCard({
 
 interface Rec {
   key: string;
-  icon: typeof ShieldSecurity;
+  icon: typeof ShieldAlertIcon;
   title: string;
   description: string;
   recommended?: boolean;
@@ -353,7 +353,7 @@ function SecurityRecommendations({
   if (security && !security.mfa_enabled) {
     recs.push({
       key: "mfa",
-      icon: ShieldSecurity,
+      icon: ShieldAlertIcon,
       title: t("detail.rec.mfaTitle"),
       description: t("detail.rec.mfaDesc"),
       recommended: true,
@@ -364,7 +364,7 @@ function SecurityRecommendations({
   if (security?.mfa_enabled && security.recovery_codes_remaining === 0) {
     recs.push({
       key: "recovery",
-      icon: Key,
+      icon: KeyRoundIcon,
       title: t("detail.rec.recoveryTitle"),
       description: t("detail.rec.recoveryDesc"),
       actionLabel: t("detail.rec.reviewSecurity"),
@@ -374,7 +374,7 @@ function SecurityRecommendations({
   if (risk && risk.level !== "low") {
     recs.push({
       key: "risk",
-      icon: ShieldSecurity,
+      icon: ShieldAlertIcon,
       title: t("detail.rec.riskTitle"),
       description: t("detail.rec.riskDesc", { count: risk.openCount }),
       actionLabel: t("detail.rec.investigate"),
@@ -384,7 +384,7 @@ function SecurityRecommendations({
   if (!user.email_verified_at) {
     recs.push({
       key: "email",
-      icon: SmsNotification,
+      icon: MailWarningIcon,
       title: t("detail.rec.emailTitle"),
       description: t("detail.rec.emailDesc"),
     });
@@ -398,7 +398,7 @@ function SecurityRecommendations({
       {recs.length === 0 ? (
         <div className="rounded-xl border bg-card p-6">
           <EmptyState
-            icon={TickCircle}
+            icon={CheckCircle2Icon}
             title={t("detail.rec.noneTitle")}
             description={t("detail.rec.noneDesc")}
           />

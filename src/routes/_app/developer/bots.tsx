@@ -1,6 +1,6 @@
-import { ToyRobot } from "@qeetrix/icons";
 import { Card, CardContent, EmptyState } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { BotIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -23,7 +23,7 @@ function BotsPage() {
       <Card>
         <CardContent className="py-16">
           <EmptyState
-            icon={ToyRobot}
+            icon={BotIcon}
             title={t("bots.comingSoon.title")}
             description={t("bots.comingSoon.description")}
           />

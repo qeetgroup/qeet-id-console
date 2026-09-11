@@ -1,17 +1,18 @@
 import {
-  Add,
-  ArrowRight,
-  BookOpen,
-  DocumentText,
-  ExportUp,
-  Headphone,
-  InfoCircle,
-  Key,
-  Layer,
-  RefreshArrow,
-  ShieldTick,
-  Sms,
-} from "@qeetrix/icons";
+  ArrowRightIcon,
+  BookOpenIcon,
+  FileTextIcon,
+  HeadphonesIcon,
+  InfoIcon,
+  KeyRoundIcon,
+  LayersIcon,
+  Loader2Icon,
+  MailIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  ShieldCheckIcon,
+  UploadIcon,
+} from "lucide-react";
 import { Button, cn } from "@qeetrix/ui";
 import { QeetLogoMark } from "@qeetrix/ui/brand";
 import { Link } from "@tanstack/react-router";
@@ -31,9 +32,9 @@ import { errorMessage } from "@/platform/errors/user-message";
 import { OrganizationIllustration } from "./organization-illustration";
 
 const FOUNDATIONS = [
-  { id: "boundary", icon: ShieldTick },
-  { id: "authentication", icon: Key },
-  { id: "audit", icon: DocumentText },
+  { id: "boundary", icon: ShieldCheckIcon },
+  { id: "authentication", icon: KeyRoundIcon },
+  { id: "audit", icon: FileTextIcon },
 ] as const;
 const SETUP_STEPS = ["organization", "authentication", "team"] as const;
 type Readiness = "complete" | "pending" | "loading" | "unavailable";
@@ -153,7 +154,7 @@ function ReadinessMark({ state }: { state: Readiness }) {
       ) : state === "loading" ? (
         <span className="h-0.75 w-3.5 rounded-full bg-current" />
       ) : (
-        <InfoCircle />
+        <InfoIcon />
       )}
     </span>
   );
@@ -301,7 +302,7 @@ function AccountReadiness() {
     <WelcomePanel className="min-h-41.5 pt-3.5 pb-3 dark:min-h-42.5" aria-labelledby={titleId}>
       <SectionHeading
         id={titleId}
-        icon={<ShieldTick variant="solid" aria-hidden="true" />}
+        icon={<ShieldCheckIcon aria-hidden="true" />}
         tone={account === "complete" ? "success" : "neutral"}
         title={t(`welcome.account.${account}.title`)}
         description={t(`welcome.account.${account}.description`)}
@@ -346,7 +347,7 @@ function AccountReadiness() {
             void passkeys.refetch();
           }}
         >
-          <RefreshArrow aria-hidden="true" /> {t("welcome.account.retry")}
+          <RefreshCwIcon aria-hidden="true" /> {t("welcome.account.retry")}
         </button>
       )}
     </WelcomePanel>
@@ -357,15 +358,15 @@ function HelpResources() {
   const { t } = useTranslation("dashboard");
   const titleId = useId();
   const resources = [
-    { id: "docs", href: "https://docs.id.qeet.in", icon: DocumentText },
-    { id: "support", href: "https://id.qeet.in/contact", icon: Headphone },
+    { id: "docs", href: "https://docs.id.qeet.in", icon: FileTextIcon },
+    { id: "support", href: "https://id.qeet.in/contact", icon: HeadphonesIcon },
   ] as const;
 
   return (
     <WelcomePanel className="min-h-41.5 pt-3.5 pb-3 dark:min-h-42.5" aria-labelledby={titleId}>
       <SectionHeading
         id={titleId}
-        icon={<BookOpen aria-hidden="true" />}
+        icon={<BookOpenIcon aria-hidden="true" />}
         tone="info"
         title={t("welcome.help.title")}
         description={t("welcome.help.description")}
@@ -392,7 +393,7 @@ function HelpResources() {
                 </span>
               </span>
               <span className="ms-auto grid size-5.5 shrink-0 place-items-center rounded border border-(--welcome-border) text-(--welcome-muted)">
-                <ExportUp className="size-3.25" aria-hidden="true" />
+                <UploadIcon className="size-3.25" aria-hidden="true" />
               </span>
               <span className="sr-only">{t("welcome.help.newTab")}</span>
             </a>
@@ -417,7 +418,7 @@ function PendingInvitations() {
     <WelcomePanel aria-labelledby={titleId}>
       <SectionHeading
         id={titleId}
-        icon={<Sms aria-hidden="true" />}
+        icon={<MailIcon aria-hidden="true" />}
         title={t("invites.title")}
         description={t("invites.description")}
       />
@@ -460,7 +461,7 @@ function PendingInvitations() {
                   accept.mutate(invite.id, { onError: (err) => toast.error(errorMessage(err)) });
                 }}
               >
-                {accept.isPending && <RefreshArrow className="animate-spin" aria-hidden="true" />}
+                {accept.isPending && <Loader2Icon className="animate-spin" aria-hidden="true" />}
                 {t("invites.accept")}
               </Button>
             </div>
@@ -529,7 +530,7 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
                   onClick={onStart}
                   disabled={!onStart}
                 >
-                  <Add aria-hidden="true" /> {t("noWorkspace.cta")}
+                  <PlusIcon aria-hidden="true" /> {t("noWorkspace.cta")}
                 </Button>
                 <Link
                   to="/account/security"
@@ -539,7 +540,7 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
                     FOCUS,
                   )}
                 >
-                  {t("welcome.reviewSecurity")} <ArrowRight aria-hidden="true" />
+                  {t("welcome.reviewSecurity")} <ArrowRightIcon aria-hidden="true" />
                 </Link>
               </div>
             </div>
@@ -553,7 +554,7 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
               id={`${id}-foundations`}
               className="m-0 mb-2 flex items-center gap-3.5 font-sans text-[13px] font-semibold leading-normal"
             >
-              <Layer className="size-5 shrink-0" aria-hidden="true" />
+              <LayersIcon className="size-5 shrink-0" aria-hidden="true" />
               {t("welcome.foundations.title")}
             </h2>
             <ul className="m-0 list-none p-0 @max-[760px]/welcome:grid @max-[760px]/welcome:grid-cols-3 @max-[760px]/welcome:gap-4 @max-[480px]/welcome:grid-cols-1">

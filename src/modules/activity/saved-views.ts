@@ -18,10 +18,7 @@ export interface SavedView {
   name: string;
   search: ActivitySearch;
   builtin?: boolean;
-  /**
-   * Optional `@qeetrix/icons` component name. Carried on the view
-   * but not rendered anywhere yet — the saved-views bar draws a fixed bookmark.
-   */
+  /** Optional lucide icon name (resolved by the saved-views bar). */
   icon?: string;
   createdAt: number;
 }

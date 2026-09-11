@@ -1,4 +1,3 @@
-import { RefreshArrow } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -11,6 +10,7 @@ import {
   Input,
 } from "@qeetrix/ui";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Loader2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { passkeyErrorMessage, usePasskeySignup } from "@/modules/authentication/api/passkey-flows";
@@ -167,7 +167,7 @@ function VerifyEmailStep({
 
               <Field>
                 <Button type="submit" disabled={isLoading || code.trim().length < 6}>
-                  {isLoading && <RefreshArrow className="animate-spin" />}
+                  {isLoading && <Loader2Icon className="animate-spin" />}
                   {isLoading ? "Verifying…" : "Verify email"}
                 </Button>
               </Field>

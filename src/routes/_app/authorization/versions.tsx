@@ -1,4 +1,3 @@
-import { ClockAlt, RotateLeft, SliderHorizontal } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -22,6 +21,7 @@ import {
   TooltipTrigger,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { HistoryIcon, RotateCcwIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -46,7 +46,7 @@ function VersionsPage() {
       <PageHeader description="Every policy change is reconstructed from the audit log. History is read-only — server-side rollback is not available yet." />
 
       <ComingSoon
-        icon={RotateLeft}
+        icon={RotateCcwIcon}
         title="One-click rollback is coming"
         description="The backend records every change but has no revert endpoint. For now, re-apply a prior state manually from the ABAC editor; rollback here is disabled."
         note="no POST /abac/policies/{id}/revert endpoint yet"
@@ -64,7 +64,7 @@ function VersionsPage() {
               isError={policiesQ.isError}
               error={policiesQ.error}
               isEmpty={policies.length === 0}
-              emptyIcon={SliderHorizontal}
+              emptyIcon={SlidersHorizontalIcon}
               emptyTitle="No policies to track"
               skeletonRows={4}
             >
@@ -106,7 +106,7 @@ function VersionsPage() {
                 isError={auditQ.isError}
                 error={auditQ.error}
                 isEmpty={timeline.length === 0}
-                emptyIcon={ClockAlt}
+                emptyIcon={HistoryIcon}
                 emptyTitle="No changes recorded for this policy"
                 skeletonRows={3}
               >
@@ -129,7 +129,7 @@ function VersionsPage() {
                                     disabled
                                     aria-label="Rollback (unavailable)"
                                   >
-                                    <RotateLeft />
+                                    <RotateCcwIcon />
                                   </Button>
                                 }
                               />

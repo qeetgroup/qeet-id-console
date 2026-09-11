@@ -1,10 +1,10 @@
-import { Forbidden, Trash, UserRemove, UserTick } from "@qeetrix/icons";
 // Danger zone — destructive lifecycle actions, each with an explained
 // confirmation. Only rendered for user.write; otherwise the caller shows a
 // read-only notice instead.
 
 import { Button } from "@qeetrix/ui";
 import { useNavigate } from "@tanstack/react-router";
+import { MonitorXIcon, Trash2Icon, UserCheckIcon, UserXIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -45,7 +45,7 @@ export function DangerZone({
       </header>
       <div className="grid gap-px sm:grid-cols-3">
         <DangerItem
-          icon={suspended ? UserTick : UserRemove}
+          icon={suspended ? UserCheckIcon : UserXIcon}
           title={suspended ? t("detail.reactivateBtn") : t("detail.suspendBtn")}
           description={suspended ? t("detail.reactivateDesc") : t("detail.suspendDesc")}
           pending={setStatus.isPending}
@@ -67,7 +67,7 @@ export function DangerZone({
           }}
         />
         <DangerItem
-          icon={Forbidden}
+          icon={MonitorXIcon}
           title={t("detail.revokeAllBtn")}
           description={t("detail.revokeAllDesc")}
           pending={revokeAll.isPending}
@@ -85,7 +85,7 @@ export function DangerZone({
           }
         />
         <DangerItem
-          icon={Trash}
+          icon={Trash2Icon}
           title={t("detail.deleteBtn")}
           description={t("detail.deleteDesc")}
           destructive
@@ -118,7 +118,7 @@ function DangerItem({
   pending,
   destructive,
 }: {
-  icon: typeof UserRemove;
+  icon: typeof UserXIcon;
   title: string;
   description: string;
   onClick: () => void;

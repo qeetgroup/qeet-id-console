@@ -1,4 +1,3 @@
-import { SearchZoomIn, Trash } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -9,6 +8,7 @@ import {
   EmptyState,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SearchCodeIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -43,7 +43,7 @@ function ExplorerPage() {
         actions={
           history.length > 0 && (
             <Button variant="outline" size="sm" onClick={() => clearHistory()}>
-              <Trash /> Clear history
+              <Trash2Icon /> Clear history
             </Button>
           )
         }
@@ -53,7 +53,7 @@ function ExplorerPage() {
         <Card>
           <CardContent className="py-6">
             <EmptyState
-              icon={SearchZoomIn}
+              icon={SearchCodeIcon}
               title="No decisions captured yet"
               description="Run a check from the Simulator, the ReBAC page, or an ABAC policy test — every decision lands here for inspection."
               action={

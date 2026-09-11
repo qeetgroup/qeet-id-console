@@ -1,20 +1,20 @@
-import type { ComponentType, SVGProps } from "react";
-import {
-  ArrowRightAlt,
-  Danger,
-  Flash,
-  Global,
-  Health,
-  Key,
-  Layer,
-  MagicStar,
-  People,
-  ShieldTick,
-  TrendDown,
-  TrendUp,
-} from "@qeetrix/icons";
 import { Badge, buttonVariants, cn, EmptyState, Skeleton } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import {
+  AlertTriangleIcon,
+  ArrowDownRightIcon,
+  ArrowUpRightIcon,
+  ChevronRightIcon,
+  GlobeIcon,
+  HeartPulseIcon,
+  KeyRoundIcon,
+  LayersIcon,
+  type LucideIcon,
+  PlugZapIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  UsersIcon,
+} from "lucide-react";
 
 import type { AnalyticsOverview } from "../api/analytics";
 import { useEntitlements, useUsage } from "@/modules/billing";
@@ -37,28 +37,25 @@ import { DashboardPanel } from "./dashboard-panel";
 // Shared tone maps — kept in one place so every insight panel reads the same
 // ---------------------------------------------------------------------------
 
-/** Any `@qeetrix/icons` component, as a prop. */
-type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
-
 const severityStyles: Record<
   InsightSeverity,
-  { chip: string; icon: IconComponent; badge: string; label: string }
+  { chip: string; icon: LucideIcon; badge: string; label: string }
 > = {
   critical: {
     chip: "bg-destructive/10 text-destructive ring-destructive/15",
-    icon: Danger,
+    icon: AlertTriangleIcon,
     badge: "bg-destructive/10 text-destructive",
     label: "Critical",
   },
   warning: {
     chip: "bg-warning/10 text-warning ring-warning/15",
-    icon: Danger,
+    icon: AlertTriangleIcon,
     badge: "bg-warning/10 text-warning",
     label: "Warning",
   },
   info: {
     chip: "bg-info/10 text-info ring-info/15",
-    icon: MagicStar,
+    icon: SparklesIcon,
     badge: "bg-info/10 text-info",
     label: "Notice",
   },
@@ -126,7 +123,7 @@ export function AttentionRequiredPanel({
       ) : items.length === 0 ? (
         <div className="flex min-h-52 items-center justify-center px-6 py-10">
           <EmptyState
-            icon={ShieldTick}
+            icon={ShieldCheckIcon}
             title="Nothing needs attention"
             description="Every monitored signal is within its healthy range right now."
           />
@@ -168,7 +165,7 @@ export function AttentionRequiredPanel({
                     </span>
                     <span className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-primary">
                       {item.actionLabel}
-                      <ArrowRightAlt className="size-3 transition-transform duration-150 group-hover:translate-x-0.5" />
+                      <ChevronRightIcon className="size-3 transition-transform duration-150 group-hover:translate-x-0.5" />
                     </span>
                   </span>
                 </Link>
@@ -249,7 +246,7 @@ export function IdentityHealthPanel({
       className={className}
       title="Identity health"
       description="Composite posture across your identity subsystems"
-      action={<Health className="size-4 text-muted-foreground" aria-hidden="true" />}
+      action={<HeartPulseIcon className="size-4 text-muted-foreground" aria-hidden="true" />}
     >
       {loading || !health ? (
         <div className="flex flex-col items-center gap-5">
@@ -402,7 +399,11 @@ export function SecurityPosturePanel({
         <ul className="space-y-2.5">
           {signals.map((signal) => {
             const DeltaIcon =
-              signal.delta === undefined ? null : signal.delta > 0 ? TrendUp : TrendDown;
+              signal.delta === undefined
+                ? null
+                : signal.delta > 0
+                  ? ArrowUpRightIcon
+                  : ArrowDownRightIcon;
             return (
               <li
                 key={signal.id}
@@ -449,7 +450,7 @@ export function SecurityPosturePanel({
 
 type EnterpriseTile = {
   id: string;
-  icon: IconComponent;
+  icon: LucideIcon;
   label: string;
   count: number | undefined;
   loading: boolean;
@@ -466,7 +467,7 @@ function EnterpriseStat({ tile }: { tile: EnterpriseTile }) {
         <span className="grid size-8 place-items-center rounded-lg bg-background text-muted-foreground ring-1 ring-border/70 [&_svg]:size-4">
           <tile.icon aria-hidden="true" />
         </span>
-        <ArrowRightAlt className="size-3.5 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5" />
+        <ChevronRightIcon className="size-3.5 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5" />
       </span>
       {tile.loading ? (
         <Skeleton className="h-7 w-10" />
@@ -489,7 +490,7 @@ export function EnterpriseOverviewPanel({ className }: { className?: string }) {
   const tiles: EnterpriseTile[] = [
     {
       id: "saml",
-      icon: Flash,
+      icon: PlugZapIcon,
       label: "SAML connections",
       count: saml.data?.items.length,
       loading: saml.isLoading,
@@ -497,7 +498,7 @@ export function EnterpriseOverviewPanel({ className }: { className?: string }) {
     },
     {
       id: "oidc",
-      icon: Layer,
+      icon: LayersIcon,
       label: "OIDC clients",
       count: oidc.data?.items.length,
       loading: oidc.isLoading,
@@ -505,7 +506,7 @@ export function EnterpriseOverviewPanel({ className }: { className?: string }) {
     },
     {
       id: "scim",
-      icon: People,
+      icon: UsersIcon,
       label: "SCIM provisioned",
       count: scim.data?.provisioned_count,
       loading: scim.isLoading,
@@ -513,7 +514,7 @@ export function EnterpriseOverviewPanel({ className }: { className?: string }) {
     },
     {
       id: "domains",
-      icon: Global,
+      icon: GlobeIcon,
       label: "Verified domains",
       count: domains.data?.items.filter((d) => d.verified_at).length,
       loading: domains.isLoading,
@@ -545,11 +546,11 @@ export function EnterpriseOverviewPanel({ className }: { className?: string }) {
 // Plan usage — real consumption vs plan limits
 // ---------------------------------------------------------------------------
 
-const USAGE_RESOURCES: { key: string; label: string; icon: IconComponent }[] = [
-  { key: "seats", label: "Members", icon: People },
-  { key: "apps", label: "Applications", icon: Layer },
-  { key: "api_keys", label: "API keys", icon: Key },
-  { key: "custom_roles", label: "Custom roles", icon: ShieldTick },
+const USAGE_RESOURCES: { key: string; label: string; icon: LucideIcon }[] = [
+  { key: "seats", label: "Members", icon: UsersIcon },
+  { key: "apps", label: "Applications", icon: LayersIcon },
+  { key: "api_keys", label: "API keys", icon: KeyRoundIcon },
+  { key: "custom_roles", label: "Custom roles", icon: ShieldCheckIcon },
 ];
 
 export function PlanUsagePanel({ className }: { className?: string }) {

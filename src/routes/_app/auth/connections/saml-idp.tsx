@@ -1,4 +1,3 @@
-import { Add, Driver, Edit, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -40,6 +39,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
+import { Loader2Icon, PencilIcon, PlusIcon, ServerIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -75,7 +75,7 @@ function SamlIdpPage() {
         description={t("page.description")}
         actions={
           <Button size="sm" onClick={() => setCreating(true)}>
-            <Add /> {t("page.addProvider")}
+            <PlusIcon /> {t("page.addProvider")}
           </Button>
         }
       />
@@ -102,7 +102,7 @@ function SamlIdpPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={Driver}
+            emptyIcon={ServerIcon}
             emptyTitle={t("list.emptyTitle")}
             emptyDescription={t("list.emptyDescription")}
             skeletonRows={3}
@@ -136,7 +136,7 @@ function SamlIdpPage() {
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
                       <Button variant="ghost" size="sm" onClick={() => setEditing(p)}>
-                        <Edit /> {t("common:actions.edit")}
+                        <PencilIcon /> {t("common:actions.edit")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -144,7 +144,7 @@ function SamlIdpPage() {
                         onClick={() => setConfirmingDelete(p)}
                         disabled={deleteM.isPending}
                       >
-                        <Trash /> {t("common:actions.remove")}
+                        <Trash2Icon /> {t("common:actions.remove")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -200,7 +200,7 @@ function SamlIdpPage() {
                 })
               }
             >
-              {deleteM.isPending && <RefreshArrow className="animate-spin" />}
+              {deleteM.isPending && <Loader2Icon className="animate-spin" />}
               {deleteM.isPending ? t("common:actions.removing") : t("common:actions.remove")}
             </Button>
           </AlertDialogFooter>
@@ -329,7 +329,7 @@ function SamlProviderSheet({
               {t("common:actions.cancel")}
             </SheetClose>
             <Button type="submit" disabled={pending}>
-              {pending && <RefreshArrow className="animate-spin" />}
+              {pending && <Loader2Icon className="animate-spin" />}
               {isEdit
                 ? pending
                   ? t("common:actions.saving")

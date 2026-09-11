@@ -1,9 +1,9 @@
-import { ArrowRight, Copy, ExportRight, Link } from "@qeetrix/icons";
 // QuickActions: per-item action buttons shown in the preview pane.
 // Standard actions (Open, Copy URL, Copy ID, New tab) are added automatically;
 // custom item.quickActions are prepended in front of them.
 
 import { cn } from "@qeetrix/ui";
+import { ArrowRightIcon, CopyIcon, ExternalLinkIcon, LinkIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { SearchContext, SearchItem } from "../registry/types/registry.types";
@@ -43,19 +43,19 @@ function resolveActions(item: SearchItem, _ctx: SearchContext): ResolvedAction[]
     acts.push({
       id: "open",
       label: "Open",
-      icon: <ArrowRight className="size-3" />,
+      icon: <ArrowRightIcon className="size-3" />,
       run: (c) => c.navigate(itemUrl),
     });
     acts.push({
       id: "copy-url",
       label: "Copy URL",
-      icon: <Link className="size-3" />,
+      icon: <LinkIcon className="size-3" />,
       run: () => copyToClipboard(itemUrl),
     });
     acts.push({
       id: "open-new-tab",
       label: "New tab",
-      icon: <ExportRight className="size-3" />,
+      icon: <ExternalLinkIcon className="size-3" />,
       run: () => {
         if (typeof window !== "undefined") {
           window.open(itemUrl, "_blank", "noopener,noreferrer");
@@ -67,7 +67,7 @@ function resolveActions(item: SearchItem, _ctx: SearchContext): ResolvedAction[]
   acts.push({
     id: "copy-id",
     label: "Copy ID",
-    icon: <Copy className="size-3" />,
+    icon: <CopyIcon className="size-3" />,
     run: () => copyToClipboard(item.id),
   });
 

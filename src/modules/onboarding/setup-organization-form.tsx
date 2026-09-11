@@ -1,4 +1,4 @@
-import { ArrowLeft, RefreshArrow } from "@qeetrix/icons";
+import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import {
   Button,
   cn,
@@ -89,7 +89,7 @@ export function SetupOrganizationForm({
       <FieldGroup
         className={cn(
           SETUP_FIELDS,
-          "mt-3 gap-2.5 [&_[data-slot=field]]:gap-0.75 [&_[data-slot=field-label]]:leading-3.5 [&_[data-slot=field-description]]:leading-3",
+          "mt-3 gap-2.5 **:data-[slot=field]:gap-0.75 **:data-[slot=field-label]:leading-3.5 **:data-[slot=field-description]:leading-3",
         )}
       >
         <Field disabled={busy}>
@@ -171,7 +171,7 @@ export function SetupOrganizationForm({
           onClick={onBack}
           disabled={busy}
         >
-          <ArrowLeft className="size-3.5" aria-hidden="true" /> {t("setup.back")}
+          <ArrowLeftIcon className="size-3.5" aria-hidden="true" /> {t("setup.back")}
         </Button>
         <Button
           type="submit"
@@ -179,7 +179,7 @@ export function SetupOrganizationForm({
           disabled={busy || !name.trim() || slug.trim().length < 2}
         >
           {busy && (
-            <RefreshArrow
+            <Loader2Icon
               className="size-3.5 animate-spin motion-reduce:animate-none"
               aria-hidden="true"
             />

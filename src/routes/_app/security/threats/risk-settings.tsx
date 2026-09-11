@@ -1,4 +1,3 @@
-import { Airplane, Mobile, RefreshArrow, ShieldTick } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -19,6 +18,7 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { Loader2Icon, PlaneIcon, ShieldCheckIcon, SmartphoneIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -100,7 +100,7 @@ function RiskSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldTick className="size-4" />
+            <ShieldCheckIcon className="size-4" />
             {t("threats.riskSettings.thresholds.title")}
           </CardTitle>
           <CardDescription>{t("threats.riskSettings.thresholds.description")}</CardDescription>
@@ -185,7 +185,7 @@ function RiskSettingsPage() {
               <div className="flex flex-col gap-4 border-t pt-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-2">
-                    <Airplane className="mt-0.5 size-4 text-muted-foreground" />
+                    <PlaneIcon className="mt-0.5 size-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">
                         {t("threats.riskSettings.impossibleTravel.title")}
@@ -215,7 +215,7 @@ function RiskSettingsPage() {
 
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-2">
-                    <Mobile className="mt-0.5 size-4 text-muted-foreground" />
+                    <SmartphoneIcon className="mt-0.5 size-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">
                         {t("threats.riskSettings.deviceReputation.title")}
@@ -231,7 +231,7 @@ function RiskSettingsPage() {
 
               <div className="flex items-center gap-3">
                 <Button type="submit" disabled={!dirty || update.isPending}>
-                  {update.isPending && <RefreshArrow className="animate-spin" />}
+                  {update.isPending && <Loader2Icon className="animate-spin" />}
                   {t("threats.riskSettings.save")}
                 </Button>
                 {update.isSuccess && (

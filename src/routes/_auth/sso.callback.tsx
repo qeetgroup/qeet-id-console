@@ -1,7 +1,7 @@
-import { Danger, RefreshArrow, ShieldCross, TickCircle } from "@qeetrix/icons";
 import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, ShieldXIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -62,7 +62,7 @@ function renderStatus({
   if (!code) {
     return (
       <>
-        <Danger className="size-10 text-amber-500" />
+        <AlertTriangleIcon className="size-10 text-amber-500" />
         <h1 className="text-2xl font-bold">{t("sso.noCodeTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("sso.noCodeText")}</p>
         <Link to="/sign-in" className={buttonVariants({ variant: "outline" }) + " mt-2"}>
@@ -75,7 +75,7 @@ function renderStatus({
   if (consume.isPending || consume.isIdle) {
     return (
       <>
-        <RefreshArrow className="size-10 animate-spin text-sky-500" />
+        <Loader2Icon className="size-10 animate-spin text-sky-500" />
         <h1 className="text-2xl font-bold">{t("sso.loadingTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("sso.loadingText")}</p>
       </>
@@ -85,7 +85,7 @@ function renderStatus({
   if (consume.isSuccess) {
     return (
       <>
-        <TickCircle className="size-10 text-emerald-500" />
+        <CheckCircle2Icon className="size-10 text-emerald-500" />
         <h1 className="text-2xl font-bold">{t("sso.successTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("sso.successText")}</p>
       </>
@@ -96,7 +96,7 @@ function renderStatus({
     consume.error instanceof ApiError ? errorMessage(consume.error) : "Single sign-on failed.";
   return (
     <>
-      <ShieldCross className="size-10 text-rose-500" />
+      <ShieldXIcon className="size-10 text-rose-500" />
       <h1 className="text-2xl font-bold">{t("sso.errorTitle")}</h1>
       <p className="text-balance text-muted-foreground">
         {detail} {t("sso.errorTrailer")}

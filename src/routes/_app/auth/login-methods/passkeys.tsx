@@ -1,4 +1,3 @@
-import { Add, FingerScan, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -19,6 +18,7 @@ import { startRegistration } from "@simplewebauthn/browser";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { FingerprintIcon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -99,11 +99,11 @@ function PasskeysPage() {
               onClick={() => listQ.refetch()}
               disabled={listQ.isFetching}
             >
-              <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
+              <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
               {t("loginMethods.passkeys.refreshBtn")}
             </Button>
             <Button size="sm" onClick={() => registerM.mutate()} disabled={registerM.isPending}>
-              <Add />{" "}
+              <PlusIcon />{" "}
               {registerM.isPending
                 ? t("loginMethods.passkeys.registeringBtn")
                 : t("loginMethods.passkeys.registerBtn")}
@@ -132,7 +132,7 @@ function PasskeysPage() {
             <div className="p-6 text-sm text-destructive">{errorMessage(listQ.error)}</div>
           ) : !listQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
-              <FingerScan className="size-8 text-muted-foreground" />
+              <FingerprintIcon className="size-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 {t("loginMethods.passkeys.list.empty")}
               </p>
@@ -187,7 +187,7 @@ function PasskeysPage() {
                         }
                         disabled={deleteM.isPending}
                       >
-                        <Trash /> {t("loginMethods.passkeys.removeBtn")}
+                        <Trash2Icon /> {t("loginMethods.passkeys.removeBtn")}
                       </Button>
                     </TableCell>
                   </TableRow>

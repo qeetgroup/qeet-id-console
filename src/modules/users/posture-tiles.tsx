@@ -1,22 +1,19 @@
-import type { ComponentType, SVGProps } from "react";
-import {
-  Key,
-  Lock,
-  MonitorMobile,
-  ShieldSecurity,
-  ShieldTick,
-  Sms,
-  Speedometer,
-} from "@qeetrix/icons";
 // The six "Security posture" tiles at the top of the Overview tab.
 
 import { cn, Skeleton, TimeSince } from "@qeetrix/ui";
+import {
+  GaugeIcon,
+  KeyRoundIcon,
+  LockIcon,
+  type LucideIcon,
+  MailIcon,
+  MonitorSmartphoneIcon,
+  ShieldAlertIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
 
 import type { SecuritySummary } from "./api/user360";
 import type { UserRisk } from "./user-risk";
-
-/** Any `@qeetrix/icons` component, as a prop. */
-type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 type Tone = "success" | "warning" | "danger" | "neutral";
 
@@ -35,7 +32,7 @@ function PostureTile({
   tone = "neutral",
   loading,
 }: {
-  icon: IconComponent;
+  icon: LucideIcon;
   label: string;
   value?: React.ReactNode;
   sub?: React.ReactNode;
@@ -95,14 +92,14 @@ export function SecurityPosture({
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
       <PostureTile
-        icon={Sms}
+        icon={MailIcon}
         label="Email"
         tone={emailVerified ? "success" : "warning"}
         value={emailVerified ? "Verified" : "Unverified"}
         sub={email}
       />
       <PostureTile
-        icon={security?.mfa_enabled ? ShieldTick : ShieldSecurity}
+        icon={security?.mfa_enabled ? ShieldCheckIcon : ShieldAlertIcon}
         label="MFA"
         loading={securityLoading}
         tone={security?.mfa_enabled ? "success" : "warning"}
@@ -110,7 +107,7 @@ export function SecurityPosture({
         sub={security ? mfaFactorsLabel(security) : undefined}
       />
       <PostureTile
-        icon={Key}
+        icon={KeyRoundIcon}
         label="Passkeys"
         loading={securityLoading}
         tone={security && security.passkeys > 0 ? "success" : "neutral"}
@@ -134,7 +131,7 @@ export function SecurityPosture({
         }
       />
       <PostureTile
-        icon={Lock}
+        icon={LockIcon}
         label="Password"
         loading={securityLoading}
         tone={security?.password_set ? "neutral" : "warning"}
@@ -152,7 +149,7 @@ export function SecurityPosture({
         }
       />
       <PostureTile
-        icon={MonitorMobile}
+        icon={MonitorSmartphoneIcon}
         label="Sessions"
         loading={securityLoading}
         tone="neutral"
@@ -170,7 +167,7 @@ export function SecurityPosture({
         }
       />
       <PostureTile
-        icon={Speedometer}
+        icon={GaugeIcon}
         label="Risk level"
         loading={riskLoading}
         tone={riskTone}

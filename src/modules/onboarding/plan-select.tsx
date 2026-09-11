@@ -1,4 +1,12 @@
-import { Box, Buildings, Crown, People, RefreshArrow, TickCircle } from "@qeetrix/icons";
+import {
+  BoxIcon,
+  Building2Icon,
+  CheckCircle2Icon,
+  CrownIcon,
+  Loader2Icon,
+  RefreshCwIcon,
+  UsersIcon,
+} from "lucide-react";
 import {
   Button,
   cn,
@@ -31,7 +39,7 @@ import {
   SETUP_THEME,
 } from "./setup-styles";
 
-const PLAN_ICONS = { free: Box, starter: People, pro: Crown, enterprise: Buildings };
+const PLAN_ICONS = { free: BoxIcon, starter: UsersIcon, pro: CrownIcon, enterprise: Building2Icon };
 
 function currencyLabel(currency: string) {
   try {
@@ -217,7 +225,7 @@ export function PlanSelect({
               className="mt-4"
               onClick={() => plansQ.refetch()}
             >
-              <RefreshArrow aria-hidden="true" /> {t("setup.plans.retry")}
+              <RefreshCwIcon aria-hidden="true" /> {t("setup.plans.retry")}
             </Button>
           </div>
         }
@@ -344,7 +352,7 @@ export function PlanSelect({
                           meta.featured && "dark:text-(--setup-accent)",
                         )}
                       >
-                        <TickCircle className="size-3" aria-hidden="true" />
+                        <CheckCircle2Icon className="size-3" aria-hidden="true" />
                       </span>
                       <span className="text-(--setup-muted)">{f}</span>
                     </li>
@@ -375,7 +383,7 @@ export function PlanSelect({
                   }
                 >
                   {busy && (
-                    <RefreshArrow
+                    <Loader2Icon
                       className="animate-spin motion-reduce:animate-none"
                       aria-hidden="true"
                     />

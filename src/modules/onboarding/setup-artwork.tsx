@@ -1,4 +1,4 @@
-import { Category, More, People, ShieldTick } from "@qeetrix/icons";
+import { LayoutDashboardIcon, MoreHorizontalIcon, ShieldCheckIcon, UsersIcon } from "lucide-react";
 import { cn } from "@qeetrix/ui";
 import { QeetLogoMark } from "@qeetrix/ui/brand";
 import { useId } from "react";
@@ -11,10 +11,10 @@ const GLASS = cn(
   "shadow-lg shadow-orange-950/5 dark:border-orange-400/25 dark:bg-neutral-900/80",
 );
 const PLAN_ITEMS = [
-  ["setup.artwork.users", People],
-  ["setup.artwork.applications", Category],
-  ["setup.artwork.security", ShieldTick],
-  ["setup.artwork.more", More],
+  ["setup.artwork.users", UsersIcon],
+  ["setup.artwork.applications", LayoutDashboardIcon],
+  ["setup.artwork.security", ShieldCheckIcon],
+  ["setup.artwork.more", MoreHorizontalIcon],
 ] as const;
 
 /** Original, non-interactive artwork; all copy is decorative and localized by the caller's i18n. */
@@ -106,7 +106,7 @@ export function SetupWindowArtwork({ className }: SetupArtworkProps = {}) {
         className,
       )}
     >
-      <div className="relative h-37.5 w-45 origin-top-left scale-[var(--setup-window-scale,1)]">
+      <div className="relative h-37.5 w-45 origin-top-left scale-(--setup-window-scale,1)">
         <div className="absolute top-7 left-4 size-28 rounded-full bg-orange-100/75 dark:bg-orange-500/10" />
         <div className="absolute top-3 right-1 size-24 rounded-full bg-(--setup-accent)/20 blur-2xl" />
         {["top-7 left-10 w-30 opacity-65", "top-14 left-3 w-32"].map((position) => (

@@ -1,4 +1,3 @@
-import { Add, Hierarchy, Key, ShieldTick, SliderHorizontal } from "@qeetrix/icons";
 import "@xyflow/react/dist/style.css";
 
 import { Badge, Button, Skeleton } from "@qeetrix/ui";
@@ -17,6 +16,13 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
+import {
+  KeyRoundIcon,
+  NetworkIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
 import { useEffect } from "react";
 import { countLeaves } from "../../api/abac";
 import type { PolicyDoc } from "../../utils/policy-codegen";
@@ -42,7 +48,8 @@ const BLOCK_META: Record<Exclude<BlockKind, "decision">, { title: string; color:
 function BlockNode({ data }: NodeProps) {
   const d = data as { kind: Exclude<BlockKind, "decision">; summary: string; selected?: boolean };
   const meta = BLOCK_META[d.kind];
-  const Icon = d.kind === "rbac" ? ShieldTick : d.kind === "abac" ? SliderHorizontal : Hierarchy;
+  const Icon =
+    d.kind === "rbac" ? ShieldCheckIcon : d.kind === "abac" ? SlidersHorizontalIcon : NetworkIcon;
   return (
     <div
       className={`w-52 rounded-lg border-2 px-3 py-2 shadow-sm ${meta.color} ${d.selected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""}`}
@@ -67,7 +74,7 @@ function DecisionNode({ data }: NodeProps) {
       <Handle type="target" position={Position.Left} className="!bg-muted-foreground" />
       <div className="flex items-center gap-2">
         <Badge variant={allow ? "success" : "destructive"}>{d.effect.toUpperCase()}</Badge>
-        <Key className="size-3.5 text-muted-foreground" aria-hidden />
+        <KeyRoundIcon className="size-3.5 text-muted-foreground" aria-hidden />
       </div>
       <p className="mt-1 truncate font-mono text-[11px]">{d.target}</p>
     </div>
@@ -163,17 +170,17 @@ function Canvas({
       <Panel position="top-left" className="flex flex-wrap gap-1.5">
         {doc.requireRole == null && (
           <Button variant="outline" size="xs" onClick={() => onToggleBlock("rbac")}>
-            <Add /> Role
+            <PlusIcon /> Role
           </Button>
         )}
         {doc.condition == null && (
           <Button variant="outline" size="xs" onClick={() => onToggleBlock("abac")}>
-            <Add /> Condition
+            <PlusIcon /> Condition
           </Button>
         )}
         {doc.relation == null && (
           <Button variant="outline" size="xs" onClick={() => onToggleBlock("rebac")}>
-            <Add /> Relationship
+            <PlusIcon /> Relationship
           </Button>
         )}
       </Panel>

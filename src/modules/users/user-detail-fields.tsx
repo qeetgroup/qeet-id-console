@@ -1,7 +1,7 @@
-import { Copy, TickCircle } from "@qeetrix/icons";
 // Small shared UI atoms for the User 360 workspace.
 
 import { Tooltip, TooltipContent, TooltipTrigger, useCopyToClipboard } from "@qeetrix/ui";
+import { CheckIcon, CopyIcon } from "lucide-react";
 
 import { truncateId } from "./user-display";
 
@@ -33,9 +33,9 @@ export function CopyId({
               className="inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {copied ? (
-                <TickCircle className="size-3 text-success" aria-hidden="true" />
+                <CheckIcon className="size-3 text-success" aria-hidden="true" />
               ) : (
-                <Copy className="size-3" aria-hidden="true" />
+                <CopyIcon className="size-3" aria-hidden="true" />
               )}
             </button>
           }

@@ -1,4 +1,3 @@
-import { MagicStar, Play, RefreshArrow } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -21,6 +20,7 @@ import {
   TableRow,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { FlaskConicalIcon, Loader2Icon, PlayIcon } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -90,7 +90,7 @@ function SimulatorPage() {
               <DecisionExplain record={record} />
             ) : (
               <div className="flex flex-col items-center gap-2 py-12 text-center">
-                <MagicStar className="size-8 text-muted-foreground" aria-hidden />
+                <FlaskConicalIcon className="size-8 text-muted-foreground" aria-hidden />
                 <p className="text-sm text-muted-foreground">
                   Run a simulation to see the decision.
                 </p>
@@ -316,7 +316,7 @@ function AbacForm({ onResult }: { onResult: (r: DecisionRecord) => void }) {
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <Button type="submit" disabled={pending} className="self-start">
-      {pending ? <RefreshArrow className="animate-spin" /> : <Play />}
+      {pending ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
       Simulate
     </Button>
   );
@@ -386,7 +386,7 @@ function BatchCard() {
           />
         </Field>
         <Button onClick={run} disabled={batch.isRunning} className="self-start">
-          {batch.isRunning ? <RefreshArrow className="animate-spin" /> : <Play />}
+          {batch.isRunning ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
           Run batch
         </Button>
         {batch.isRunning && (

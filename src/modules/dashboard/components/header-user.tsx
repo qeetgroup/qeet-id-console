@@ -1,4 +1,3 @@
-import { Card, Key, Logout, RefreshArrow, ShieldTick, User, Verify } from "@qeetrix/icons";
 import {
   Avatar,
   AvatarFallback,
@@ -15,6 +14,15 @@ import {
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { initials } from "@/shared/utils/initials";
+import {
+  BadgeCheckIcon,
+  CreditCardIcon,
+  KeyRoundIcon,
+  Loader2Icon,
+  LogOutIcon,
+  ShieldCheckIcon,
+  UserIcon,
+} from "lucide-react";
 
 import { useLogout, useMe, useTenantId } from "@/platform/auth/session";
 
@@ -68,25 +76,25 @@ export function HeaderUser() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem render={<Link to="/account/profile" />}>
-            <User />
+            <UserIcon />
             My account
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link to="/account/security" />}>
-            <ShieldTick />
+            <ShieldCheckIcon />
             Security & MFA
           </DropdownMenuItem>
           {hasOrg && (
             <>
               <DropdownMenuItem render={<Link to="/settings/organization/general" />}>
-                <Verify />
+                <BadgeCheckIcon />
                 Organization settings
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/auth/api/keys" />}>
-                <Key />
+                <KeyRoundIcon />
                 API Keys
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/settings/billing" />}>
-                <Card />
+                <CreditCardIcon />
                 Billing
               </DropdownMenuItem>
             </>
@@ -98,7 +106,7 @@ export function HeaderUser() {
           onClick={() => logout.mutate()}
           disabled={logout.isPending}
         >
-          {logout.isPending ? <RefreshArrow className="animate-spin" /> : <Logout />}
+          {logout.isPending ? <Loader2Icon className="animate-spin" /> : <LogOutIcon />}
           {logout.isPending ? "Signing out…" : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>

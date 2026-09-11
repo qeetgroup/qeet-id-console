@@ -1,4 +1,3 @@
-import { ClockAlt, CloseCircle, SearchNormal } from "@qeetrix/icons";
 // UniversalSearch: the Raycast/Linear-class command palette for the Qeet ID
 // admin console. Evolves the existing CommandPalette with:
 //   • Navigation (sidebar tree, capability-filtered)
@@ -11,6 +10,7 @@ import { ClockAlt, CloseCircle, SearchNormal } from "@qeetrix/icons";
 
 import { cn, EmptyState, Kbd, ScrollArea, Separator, Skeleton, Spinner } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
+import { HistoryIcon, SearchIcon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ApiError, api } from "@/platform/api/client";
@@ -270,7 +270,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
       <div className="flex flex-col" style={{ maxHeight: "80vh" }}>
         {/* ── Search input ─────────────────────────────────────────────── */}
         <div className="flex items-center gap-2 border-b px-3">
-          <SearchNormal className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <SearchIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           <input
             ref={inputRef}
             type="text"
@@ -303,7 +303,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
                 inputRef.current?.focus();
               }}
             >
-              <CloseCircle className="size-4" aria-hidden="true" />
+              <XIcon className="size-4" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -347,7 +347,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
                     className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
                     onClick={() => clearRecent()}
                   >
-                    <ClockAlt className="size-3" aria-hidden="true" />
+                    <HistoryIcon className="size-3" aria-hidden="true" />
                     Clear recent history
                   </button>
                 </div>

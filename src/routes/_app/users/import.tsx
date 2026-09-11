@@ -1,4 +1,3 @@
-import { ArrowLeft, CloseCircle, CloudAdd, DocumentUpload, RefreshArrow } from "@qeetrix/icons";
 import {
   Button,
   buttonVariants,
@@ -20,6 +19,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeftIcon, FileUpIcon, Loader2Icon, UploadCloudIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -194,7 +194,7 @@ function ImportUsersPage() {
         description={t("import.description")}
         actions={
           <Link to="/users" className={buttonVariants({ variant: "outline", size: "sm" })}>
-            <ArrowLeft /> {t("import.backLink")}
+            <ArrowLeftIcon /> {t("import.backLink")}
           </Link>
         }
       />
@@ -226,7 +226,7 @@ function ImportUsersPage() {
                 dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/30",
               )}
             >
-              <CloudAdd className="size-8 text-muted-foreground" />
+              <UploadCloudIcon className="size-8 text-muted-foreground" />
               <p className="text-sm font-medium">{t("import.dropTitle")}</p>
               <p className="text-xs text-muted-foreground">{t("import.dropHelp")}</p>
               <input
@@ -264,14 +264,14 @@ function ImportUsersPage() {
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={reset}>
-                <CloseCircle /> {t("import.cancelBtn")}
+                <XIcon /> {t("import.cancelBtn")}
               </Button>
               <Button
                 size="sm"
                 disabled={validRows.length === 0 || importM.isPending}
                 onClick={() => importM.mutate(validRows)}
               >
-                {importM.isPending ? <RefreshArrow className="animate-spin" /> : <DocumentUpload />}
+                {importM.isPending ? <Loader2Icon className="animate-spin" /> : <FileUpIcon />}
                 {t("import.importBtn", { count: validRows.length })}
               </Button>
             </div>

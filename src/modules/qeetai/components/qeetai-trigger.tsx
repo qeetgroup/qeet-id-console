@@ -1,6 +1,6 @@
-import { MagicStar } from "@qeetrix/icons";
 import { Button } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
+import { SparklesIcon } from "lucide-react";
 
 import { workspaceActions, workspaceStore } from "../store/workspace-store";
 
@@ -18,7 +18,7 @@ export function QeetAITrigger() {
       onClick={() => workspaceActions.toggle()}
       className={open ? "text-primary" : undefined}
     >
-      <MagicStar />
+      <SparklesIcon />
     </Button>
   );
 }

@@ -1,7 +1,6 @@
-import type { ComponentType, SVGProps } from "react";
-import { Lock } from "@qeetrix/icons";
 import { buttonVariants, Card, CardContent } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import { LockIcon, type LucideIcon } from "lucide-react";
 
 import { useEntitlements } from "../api/billing";
 
@@ -11,16 +10,13 @@ import { useEntitlements } from "../api/billing";
  * links to the billing page. Used when a boolean plan feature (SSO, SCIM,
  * LDAP, …) isn't included in the tenant's plan.
  */
-/** Any `@qeetrix/icons` component, as a prop. */
-type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
-
 export function UpgradeGate({
-  icon: Icon = Lock,
+  icon: Icon = LockIcon,
   title,
   description,
   plan,
 }: {
-  icon?: IconComponent;
+  icon?: LucideIcon;
   title: string;
   description: string;
   /** Recommended tier to preselect on the billing page (in-context deep-link). */

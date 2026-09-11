@@ -1,4 +1,3 @@
-import { RotateLeft, Trash, UserMinus } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -17,6 +16,7 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { RotateCcwIcon, Trash2Icon, UserMinusIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -75,7 +75,7 @@ function DeletedUsersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardDescription>{t("deleted.statLabel")}</CardDescription>
-            <UserMinus className="size-4 text-muted-foreground" />
+            <UserMinusIcon className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold tracking-tight">{items.length}</div>
@@ -95,7 +95,7 @@ function DeletedUsersPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={UserMinus}
+            emptyIcon={UserMinusIcon}
             emptyTitle={t("deleted.empty")}
             skeletonRows={3}
           >
@@ -129,7 +129,7 @@ function DeletedUsersPage() {
                           onClick={() => restoreM.mutate(u.id)}
                           disabled={restoreM.isPending}
                         >
-                          <RotateLeft /> {t("deleted.restoreBtn")}
+                          <RotateCcwIcon /> {t("deleted.restoreBtn")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -145,7 +145,7 @@ function DeletedUsersPage() {
                           }
                           disabled={purgeM.isPending}
                         >
-                          <Trash /> {t("deleted.purgeBtn")}
+                          <Trash2Icon /> {t("deleted.purgeBtn")}
                         </Button>
                       </TableCell>
                     ) : null}

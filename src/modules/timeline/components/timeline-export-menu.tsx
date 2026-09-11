@@ -1,4 +1,3 @@
-import { ArrowDownAlt, DocumentCode, ImportDown, NoteText } from "@qeetrix/icons";
 // Export control for the identity timeline header. Downloads the currently
 // loaded events as CSV or JSON (see timeline-export.ts).
 
@@ -9,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@qeetrix/ui";
+import { ChevronDownIcon, DownloadIcon, FileJsonIcon, SheetIcon } from "lucide-react";
 
 import type { ActivityEvent } from "@/modules/activity";
 import { exportTimelineEvents } from "../timeline-export";
@@ -27,19 +27,19 @@ export function TimelineExportMenu({
       <DropdownMenuTrigger
         render={
           <Button variant="outline" size="sm" disabled={disabled || events.length === 0}>
-            <ImportDown className="size-3.5" aria-hidden="true" />
+            <DownloadIcon className="size-3.5" aria-hidden="true" />
             Export
-            <ArrowDownAlt className="size-3.5 opacity-70" aria-hidden="true" />
+            <ChevronDownIcon className="size-3.5 opacity-70" aria-hidden="true" />
           </Button>
         }
       />
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => exportTimelineEvents(events, "csv", userId)}>
-          <NoteText className="size-3.5" aria-hidden="true" />
+          <SheetIcon className="size-3.5" aria-hidden="true" />
           Export as CSV
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => exportTimelineEvents(events, "json", userId)}>
-          <DocumentCode className="size-3.5" aria-hidden="true" />
+          <FileJsonIcon className="size-3.5" aria-hidden="true" />
           Export as JSON
         </DropdownMenuItem>
       </DropdownMenuContent>

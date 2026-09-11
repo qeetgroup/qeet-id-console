@@ -1,4 +1,3 @@
-import { Add, Bookmark } from "@qeetrix/icons";
 // Saved-views bar: quick-apply chips for the built-in investigation presets and
 // any user-saved views, plus a "Save view" popover that snapshots the current
 // filter set. Applying a view navigates the URL (see the route), so every view
@@ -16,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
+import { BookmarkIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 
 import type { ActivitySearch } from "../activity-search";
@@ -55,7 +55,7 @@ export function ActivitySavedViews({
     <div className={className}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          <Bookmark className="size-3.5" aria-hidden="true" />
+          <BookmarkIcon className="size-3.5" aria-hidden="true" />
           Saved views
         </span>
         <ChipGroup value={activeViewId ?? ""} onValueChange={handleChange}>
@@ -76,7 +76,7 @@ export function ActivitySavedViews({
           <PopoverTrigger
             render={
               <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground">
-                <Add className="size-3.5" aria-hidden="true" />
+                <PlusIcon className="size-3.5" aria-hidden="true" />
                 Save current view
               </Button>
             }

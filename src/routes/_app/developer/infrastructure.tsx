@@ -1,6 +1,6 @@
-import { Driver } from "@qeetrix/icons";
 import { Card, CardContent, EmptyState } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { ServerIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -22,7 +22,7 @@ function InfrastructurePage() {
       <Card>
         <CardContent className="py-16">
           <EmptyState
-            icon={Driver}
+            icon={ServerIcon}
             title={t("infrastructure.comingSoon.title")}
             description={t("infrastructure.comingSoon.description")}
           />

@@ -1,4 +1,3 @@
-import { Speedometer } from "@qeetrix/icons";
 import {
   Badge,
   Card,
@@ -11,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { GaugeIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -160,7 +160,7 @@ function RateLimitsPage() {
 
       <Card className="border-amber-500/40 bg-amber-50/30 dark:bg-amber-950/20">
         <CardContent className="flex items-start gap-3 p-4">
-          <Speedometer className="size-5 text-amber-700 dark:text-amber-500" />
+          <GaugeIcon className="size-5 text-amber-700 dark:text-amber-500" />
           <div className="text-sm">
             <p className="font-medium">{t("rateLimits.comingSoon.title")}</p>
             <p className="text-muted-foreground">{t("rateLimits.comingSoon.description")}</p>

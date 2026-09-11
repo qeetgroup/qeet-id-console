@@ -1,4 +1,3 @@
-import { ArrowUp } from "@qeetrix/icons";
 // Live vs History mode toggle + "N new events" jump affordance.
 // Live streams SSE events into the feed; History freezes the stream so an
 // operator can investigate a pinned window without rows shifting underfoot.
@@ -11,6 +10,7 @@ import { ArrowUp } from "@qeetrix/icons";
 // button avoids that.
 
 import { Button, cn } from "@qeetrix/ui";
+import { ArrowUpIcon } from "lucide-react";
 
 import type { ActivityMode } from "../types/activity.types";
 
@@ -65,7 +65,7 @@ export function ActivityModeToggle({
           className="fade-in-0 animate-in"
           aria-label={`Jump to ${newCount} new events`}
         >
-          <ArrowUp className="size-3.5" aria-hidden="true" />
+          <ArrowUpIcon className="size-3.5" aria-hidden="true" />
           {newCount > 99 ? "99+" : newCount} new
         </Button>
       )}

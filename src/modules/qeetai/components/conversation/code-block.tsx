@@ -1,5 +1,5 @@
-import { Copy, TickCircle } from "@qeetrix/icons";
 import { Button, cn } from "@qeetrix/ui";
+import { CheckIcon, CopyIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 
 interface CodeBlockProps {
@@ -43,9 +43,9 @@ export function CodeBlock({ code, lang, className }: CodeBlockProps) {
           onClick={copy}
         >
           {copied ? (
-            <TickCircle className="size-3.5 text-success" />
+            <CheckIcon className="size-3.5 text-success" />
           ) : (
-            <Copy className="size-3.5" />
+            <CopyIcon className="size-3.5" />
           )}
         </Button>
       </div>

@@ -1,4 +1,3 @@
-import { Flash, Key, MagicStar, RefreshArrow, TickCircle, Trash } from "@qeetrix/icons";
 import {
   Alert,
   AlertDescription,
@@ -25,6 +24,14 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  CheckIcon,
+  KeyRoundIcon,
+  Loader2Icon,
+  PlugZapIcon,
+  SparklesIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -149,7 +156,7 @@ function QeetAISettingsPage() {
       <PageHeader description="Connect your own AI provider so Qeet AI runs on your account instead of Qeet's — bringing your own key unlocks the assistant on any plan." />
 
       <Alert>
-        <MagicStar />
+        <SparklesIcon />
         <AlertDescription>
           When your organization sets a provider key here, every member's Qeet AI uses it. Leave it
           empty to use the Qeet-managed model (subject to your plan). Your key is encrypted at rest
@@ -304,7 +311,7 @@ function QeetAISettingsPage() {
               )}
               {testResult === "ok" && !actionError && (
                 <Alert>
-                  <TickCircle />
+                  <CheckIcon />
                   <AlertDescription>
                     Connection verified — the key and endpoint work. Save to apply it.
                   </AlertDescription>
@@ -318,7 +325,7 @@ function QeetAISettingsPage() {
                   onClick={() => testM.mutate()}
                   disabled={mutating || !apiKey || !model.trim()}
                 >
-                  {testM.isPending ? <RefreshArrow className="animate-spin" /> : <Flash />}
+                  {testM.isPending ? <Loader2Icon className="animate-spin" /> : <PlugZapIcon />}
                   Test connection
                 </Button>
                 <div className="flex gap-2">
@@ -329,12 +336,16 @@ function QeetAISettingsPage() {
                       onClick={() => removeM.mutate()}
                       disabled={mutating}
                     >
-                      {removeM.isPending ? <RefreshArrow className="animate-spin" /> : <Trash />}
+                      {removeM.isPending ? (
+                        <Loader2Icon className="animate-spin" />
+                      ) : (
+                        <Trash2Icon />
+                      )}
                       Remove key
                     </Button>
                   )}
                   <Button type="submit" disabled={mutating || !apiKey || !model.trim()}>
-                    {saveM.isPending ? <RefreshArrow className="animate-spin" /> : <Key />}
+                    {saveM.isPending ? <Loader2Icon className="animate-spin" /> : <KeyRoundIcon />}
                     {hasOwnKey ? "Update key" : "Save key"}
                   </Button>
                 </div>

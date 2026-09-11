@@ -1,6 +1,6 @@
-import { Logout, UserEdit } from "@qeetrix/icons";
 import { Button } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
+import { LogOutIcon, UserCogIcon } from "lucide-react";
 
 import { api } from "@/platform/api/client";
 import { useImpersonationActor, useLogout } from "@/platform/auth/session";
@@ -39,7 +39,7 @@ export function ImpersonationBanner() {
       className="sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-rose-700 bg-rose-600 px-4 py-2 text-sm text-white shadow-sm dark:border-rose-500 dark:bg-rose-700"
     >
       <div className="flex min-w-0 items-center gap-2">
-        <UserEdit className="size-4 shrink-0" />
+        <UserCogIcon className="size-4 shrink-0" />
         <span className="truncate">
           You are impersonating <strong>{actor.targetSubject}</strong>
           <span className="opacity-80"> — signed in as {adminLabel}.</span>
@@ -52,7 +52,7 @@ export function ImpersonationBanner() {
         disabled={exit.isPending}
         className="border-white/40 bg-white/10 text-white hover:bg-white/20"
       >
-        <Logout /> Exit impersonation
+        <LogOutIcon /> Exit impersonation
       </Button>
     </div>
   );

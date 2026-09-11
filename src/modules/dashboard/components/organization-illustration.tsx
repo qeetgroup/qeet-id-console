@@ -1,4 +1,4 @@
-import { ShieldTick, User } from "@qeetrix/icons";
+import { ShieldCheckIcon, UserIcon } from "lucide-react";
 import { cn } from "@qeetrix/ui";
 import { QeetLogoMark } from "@qeetrix/ui/brand";
 
@@ -22,7 +22,7 @@ export function OrganizationIllustration() {
           "top-6.5 left-4 h-19 w-14 border-[#ffdbbf] bg-linear-145 from-[#fff3e9] to-[#ffefe2]/40 text-[#f4bc98] dark:border-[#986033] dark:bg-linear-135 dark:from-[#50331f] dark:to-[#41291d]/80 dark:text-[#ffae72]",
         )}
       >
-        <User className="size-7" variant="solid" />
+        <UserIcon className="size-7" />
       </div>
       <div
         className={cn(
@@ -38,7 +38,7 @@ export function OrganizationIllustration() {
           "top-30.5 left-28 h-18 w-14 border-(--welcome-border) bg-linear-145 from-[#ebeff4]/85 to-[#f5f5f6]/75 text-[#a6adbd] dark:border-[#494345] dark:from-[#42352e]/88 dark:to-[#28272a]/85 dark:text-[#b0b8c9]",
         )}
       >
-        <ShieldTick className="size-7" />
+        <ShieldCheckIcon className="size-7" />
       </div>
     </div>
   );

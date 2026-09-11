@@ -1,4 +1,3 @@
-import { Clipboard, DocumentCode, DotsMore, Global, Monitor, User } from "@qeetrix/icons";
 // TimelineItem — one row of the identity timeline. A dense, columned card:
 // category icon + human title + tags on the left, Actor and Location columns in
 // the middle, and the outcome badge + timestamp + a ⋮ actions menu on the right.
@@ -21,6 +20,14 @@ import {
   TooltipTrigger,
   TimelineItem as UITimelineItem,
 } from "@qeetrix/ui";
+import {
+  ClipboardIcon,
+  FileJsonIcon,
+  GlobeIcon,
+  MonitorIcon,
+  MoreVerticalIcon,
+  UserIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { getCategoryIcon } from "@/modules/activity";
@@ -60,7 +67,7 @@ function MetaColumn({
   sub,
 }: {
   label: string;
-  icon: typeof User;
+  icon: typeof UserIcon;
   value?: string;
   sub?: string;
 }) {
@@ -95,24 +102,24 @@ function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () =>
             aria-label="Event actions"
             className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/item:opacity-100 data-popup-open:opacity-100"
           >
-            <DotsMore className="size-4" aria-hidden="true" />
+            <MoreVerticalIcon className="size-4" aria-hidden="true" />
           </button>
         }
       />
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={onOpen}>View details</DropdownMenuItem>
         <DropdownMenuItem onClick={() => copy(event.id, "event ID")}>
-          <Clipboard className="size-3.5" aria-hidden="true" />
+          <ClipboardIcon className="size-3.5" aria-hidden="true" />
           Copy event ID
         </DropdownMenuItem>
         {event.request_id ? (
           <DropdownMenuItem onClick={() => copy(event.request_id ?? "", "request ID")}>
-            <Clipboard className="size-3.5" aria-hidden="true" />
+            <ClipboardIcon className="size-3.5" aria-hidden="true" />
             Copy request ID
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuItem onClick={() => copy(JSON.stringify(event, null, 2), "event JSON")}>
-          <DocumentCode className="size-3.5" aria-hidden="true" />
+          <FileJsonIcon className="size-3.5" aria-hidden="true" />
           Copy JSON
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -219,7 +226,7 @@ export function TimelineItem({
                 ) : null}
                 {/* Compact meta for < lg where the columns are hidden */}
                 <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground lg:hidden">
-                  <User className="size-3" aria-hidden="true" />
+                  <UserIcon className="size-3" aria-hidden="true" />
                   {actorName}
                   {locationValue ? <span className="text-muted-foreground/50">·</span> : null}
                   {locationValue}
@@ -228,10 +235,10 @@ export function TimelineItem({
             </span>
 
             {/* Actor + Location columns (lg+) */}
-            <MetaColumn label="Actor" icon={User} value={actorName} sub={actorSub} />
+            <MetaColumn label="Actor" icon={UserIcon} value={actorName} sub={actorSub} />
             <MetaColumn
               label="Location"
-              icon={locationValue ? Global : Monitor}
+              icon={locationValue ? GlobeIcon : MonitorIcon}
               value={locationValue}
               sub={locationSub}
             />

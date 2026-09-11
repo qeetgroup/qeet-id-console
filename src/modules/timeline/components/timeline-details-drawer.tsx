@@ -1,14 +1,3 @@
-import {
-  ArrowLeftAlt,
-  ArrowRightAlt,
-  Clipboard,
-  Driver,
-  ExportRight,
-  Global,
-  Monitor,
-  ShieldSlash,
-  UserRemove,
-} from "@qeetrix/icons";
 // TimelineDetailsDrawer — extended event details drawer for the identity timeline.
 // Extends the activity event-details-drawer concept with:
 //   • Correlation / trace ID from event metadata
@@ -38,6 +27,17 @@ import {
   TooltipTrigger,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ClipboardIcon,
+  ExternalLinkIcon,
+  GlobeIcon,
+  MonitorIcon,
+  ServerIcon,
+  ShieldOffIcon,
+  UserXIcon,
+} from "lucide-react";
 import { type ReactNode, useCallback } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -66,7 +66,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
             aria-label={label}
             className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Clipboard className="size-3.5" aria-hidden="true" />
+            <ClipboardIcon className="size-3.5" aria-hidden="true" />
           </button>
         }
       />
@@ -255,7 +255,7 @@ export function TimelineDetailsDrawer({
                   aria-label="Previous event"
                   className="size-7"
                 >
-                  <ArrowLeftAlt className="size-3.5" aria-hidden="true" />
+                  <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
                 </Button>
                 <Button
                   variant="outline"
@@ -265,7 +265,7 @@ export function TimelineDetailsDrawer({
                   aria-label="Next event"
                   className="size-7"
                 >
-                  <ArrowRightAlt className="size-3.5" aria-hidden="true" />
+                  <ChevronRightIcon className="size-3.5" aria-hidden="true" />
                 </Button>
                 <span className="text-[10px] text-muted-foreground">Navigate events</span>
               </div>
@@ -311,7 +311,7 @@ export function TimelineDetailsDrawer({
                     {event.source && (
                       <DetailRow label="Source">
                         <span className="flex items-center gap-1">
-                          <Driver className="size-3 text-muted-foreground" aria-hidden="true" />
+                          <ServerIcon className="size-3 text-muted-foreground" aria-hidden="true" />
                           {event.source}
                         </span>
                       </DetailRow>
@@ -452,7 +452,10 @@ export function TimelineDetailsDrawer({
                         {event.location && (
                           <DetailRow label="Location">
                             <span className="flex items-center gap-1">
-                              <Global className="size-3 text-muted-foreground" aria-hidden="true" />
+                              <GlobeIcon
+                                className="size-3 text-muted-foreground"
+                                aria-hidden="true"
+                              />
                               {event.location}
                             </span>
                           </DetailRow>
@@ -460,7 +463,7 @@ export function TimelineDetailsDrawer({
                         {event.device && (
                           <DetailRow label="Device">
                             <span className="flex items-center gap-1">
-                              <Monitor
+                              <MonitorIcon
                                 className="size-3 text-muted-foreground"
                                 aria-hidden="true"
                               />
@@ -503,7 +506,7 @@ export function TimelineDetailsDrawer({
                       params={{ userId }}
                       className={buttonVariants({ variant: "outline", size: "sm" })}
                     >
-                      <ExportRight className="size-3.5" aria-hidden="true" />
+                      <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
                       View user
                     </Link>
 
@@ -512,7 +515,7 @@ export function TimelineDetailsDrawer({
                         to="/security/sessions"
                         className={buttonVariants({ variant: "outline", size: "sm" })}
                       >
-                        <ExportRight className="size-3.5" aria-hidden="true" />
+                        <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
                         View session
                       </Link>
                     )}
@@ -522,7 +525,7 @@ export function TimelineDetailsDrawer({
                         to="/organizations/tenants"
                         className={buttonVariants({ variant: "outline", size: "sm" })}
                       >
-                        <ExportRight className="size-3.5" aria-hidden="true" />
+                        <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
                         Open org
                       </Link>
                     )}
@@ -531,7 +534,7 @@ export function TimelineDetailsDrawer({
                       to="/security/audit-logs"
                       className={buttonVariants({ variant: "outline", size: "sm" })}
                     >
-                      <ExportRight className="size-3.5" aria-hidden="true" />
+                      <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
                       View audit log
                     </Link>
 
@@ -542,7 +545,7 @@ export function TimelineDetailsDrawer({
                       onClick={() => void navigator.clipboard.writeText(event.id)}
                       aria-label="Copy event ID to clipboard"
                     >
-                      <Clipboard className="size-3.5" aria-hidden="true" />
+                      <ClipboardIcon className="size-3.5" aria-hidden="true" />
                       Copy event ID
                     </Button>
 
@@ -554,7 +557,7 @@ export function TimelineDetailsDrawer({
                       }
                       aria-label="Copy full event JSON to clipboard"
                     >
-                      <Clipboard className="size-3.5" aria-hidden="true" />
+                      <ClipboardIcon className="size-3.5" aria-hidden="true" />
                       Copy JSON
                     </Button>
 
@@ -568,7 +571,7 @@ export function TimelineDetailsDrawer({
                           onClick={handleResetMfa}
                           aria-label="Reset this user's MFA factors"
                         >
-                          <ShieldSlash className="size-3.5" aria-hidden="true" />
+                          <ShieldOffIcon className="size-3.5" aria-hidden="true" />
                           {resetMfa.isPending ? "Resetting…" : "Reset MFA"}
                         </Button>
 
@@ -580,7 +583,7 @@ export function TimelineDetailsDrawer({
                           className="border-destructive/40 text-destructive hover:bg-destructive/10"
                           aria-label="Suspend this user account"
                         >
-                          <UserRemove className="size-3.5" aria-hidden="true" />
+                          <UserXIcon className="size-3.5" aria-hidden="true" />
                           {setStatus.isPending ? "Suspending…" : "Disable user"}
                         </Button>
                       </>

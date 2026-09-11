@@ -1,4 +1,3 @@
-import { Copy, ImportDown, RefreshArrow, SaveAlt, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -17,6 +16,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
+import { CopyIcon, DownloadIcon, Loader2Icon, SaveIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -88,7 +88,7 @@ function BuilderPage() {
                 toast.success("Copied JSON");
               }}
             >
-              <Copy /> Copy JSON
+              <CopyIcon /> Copy JSON
             </Button>
             <Button
               variant="outline"
@@ -97,14 +97,14 @@ function BuilderPage() {
                 downloadBlob(toJson(doc), "application/json", `${doc.name || "policy"}.json`)
               }
             >
-              <ImportDown /> Export
+              <DownloadIcon /> Export
             </Button>
             <Button
               size="sm"
               onClick={saveAsAbac}
               disabled={!reducible || createM.isPending || !doc.name.trim()}
             >
-              {createM.isPending ? <RefreshArrow className="animate-spin" /> : <SaveAlt />}
+              {createM.isPending ? <Loader2Icon className="animate-spin" /> : <SaveIcon />}
               Save as ABAC
             </Button>
           </>
@@ -261,7 +261,7 @@ function Inspector({
           />
         </Field>
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, requireRole: null })}>
-          <Trash /> Remove block
+          <Trash2Icon /> Remove block
         </Button>
       </div>
     );
@@ -299,7 +299,7 @@ function Inspector({
           />
         </Field>
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, relation: null })}>
-          <Trash /> Remove block
+          <Trash2Icon /> Remove block
         </Button>
       </div>
     );
@@ -318,7 +318,7 @@ function Inspector({
       )}
       {doc.condition && (
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, condition: null })}>
-          <Trash /> Remove block
+          <Trash2Icon /> Remove block
         </Button>
       )}
     </div>

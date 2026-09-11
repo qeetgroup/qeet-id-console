@@ -1,4 +1,3 @@
-import { Mobile, Monitor, MonitorMobile } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -20,6 +19,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Session } from "@/modules/authentication";
 import { formatIp } from "@/shared/utils/ip-format";
 import { createFileRoute } from "@tanstack/react-router";
+import { MonitorIcon, MonitorSmartphoneIcon, SmartphoneIcon, TabletIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -66,9 +66,9 @@ function parseUA(ua: string | null | undefined): {
 // client IP) read as noise like "::1" — show a friendly label instead.
 
 function DeviceIcon({ kind }: { kind: DeviceKind }) {
-  if (kind === "mobile") return <Mobile className="size-4" />;
-  if (kind === "tablet") return <Mobile className="size-4" />;
-  return <Monitor className="size-4" />;
+  if (kind === "mobile") return <SmartphoneIcon className="size-4" />;
+  if (kind === "tablet") return <TabletIcon className="size-4" />;
+  return <MonitorIcon className="size-4" />;
 }
 
 function SessionsPage() {
@@ -179,7 +179,7 @@ function SessionsPage() {
             isError={sessionsQ.isError}
             error={sessionsQ.error}
             isEmpty={items.filter((s) => !s.revoked_at).length === 0}
-            emptyIcon={MonitorMobile}
+            emptyIcon={MonitorSmartphoneIcon}
             emptyTitle={t("sessions.active.emptyTitle")}
             skeletonRows={3}
           >

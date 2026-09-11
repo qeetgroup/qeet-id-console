@@ -1,4 +1,3 @@
-import { Activity, Key, ShieldSecurity } from "@qeetrix/icons";
 import {
   buttonVariants,
   type ChartConfig,
@@ -12,6 +11,7 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import { ActivityIcon, KeyRoundIcon, ShieldAlertIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Area,
@@ -111,7 +111,7 @@ export function AuthenticationActivityPanel({
         <ChartSkeleton />
       ) : rows.length === 0 ? (
         <EmptyState
-          icon={Activity}
+          icon={ActivityIcon}
           title={t("charts.authActivity.emptyTitle")}
           description={t("charts.authActivity.emptyDescription")}
         />
@@ -209,7 +209,7 @@ export function LoginMethodMixPanel({
         </div>
       ) : rows.length === 0 ? (
         <EmptyState
-          icon={Activity}
+          icon={ActivityIcon}
           title={t("charts.loginMix.emptyTitle")}
           description={t("charts.loginMix.emptyDescription")}
         />
@@ -278,7 +278,7 @@ export function MfaAdoptionPanel({
         <ChartSkeleton className="h-64" />
       ) : rows.length === 0 ? (
         <EmptyState
-          icon={Key}
+          icon={KeyRoundIcon}
           title={t("charts.mfa.emptyTitle")}
           description={t("charts.mfa.emptyDescription")}
         />
@@ -365,7 +365,7 @@ export function FailedLoginsPanel({
         <ChartSkeleton className="h-64" />
       ) : rows.length === 0 ? (
         <EmptyState
-          icon={ShieldSecurity}
+          icon={ShieldAlertIcon}
           title={t("charts.failedLogins.emptyTitle")}
           description={t("charts.failedLogins.emptyDescription")}
         />

@@ -1,7 +1,7 @@
-import { ArrowRightAlt, Grid } from "@qeetrix/icons";
 import { Badge, buttonVariants } from "@qeetrix/ui";
 import { PageState } from "@qeetrix/ui/blocks";
 import { Link } from "@tanstack/react-router";
+import { ChevronRightIcon, LayoutGridIcon } from "lucide-react";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { filterNavigation, type NavItem, navGroups } from "@/platform/config/navigation";
@@ -36,7 +36,7 @@ export function SectionOverview({ group, overviewUrl, description }: SectionOver
       {items.length === 0 ? (
         <section className="enterprise-panel">
           <PageState
-            icon={Grid}
+            icon={LayoutGridIcon}
             title={
               hasOrg
                 ? `No ${group.toLowerCase()} areas are available`
@@ -106,7 +106,7 @@ function SectionCard({ item }: { item: NavItem }) {
           </span>
         ) : null}
       </span>
-      <ArrowRightAlt className="mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5" />
+      <ChevronRightIcon className="mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5" />
     </Link>
   );
 }

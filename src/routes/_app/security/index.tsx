@@ -1,16 +1,16 @@
-import type { ComponentType, SVGProps } from "react";
-import {
-  ArrowRightAlt,
-  DocumentText,
-  MonitorMobile,
-  Padlock,
-  Shield,
-  ShieldSecurity,
-  Speedometer,
-} from "@qeetrix/icons";
 import { Badge, buttonVariants } from "@qeetrix/ui";
 import { PageState } from "@qeetrix/ui/blocks";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  ChevronRightIcon,
+  GaugeIcon,
+  LockKeyholeIcon,
+  type LucideIcon,
+  MonitorSmartphoneIcon,
+  ScrollTextIcon,
+  ShieldAlertIcon,
+  ShieldIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -18,54 +18,50 @@ import type { Capability } from "@/platform/security/capability-model";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useTenantId } from "@/platform/auth/session";
 
-/** Any `@qeetrix/icons` component, as a prop. */
-type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
-
 export const Route = createFileRoute("/_app/security/")({
   component: SecurityOverviewPage,
 });
 
 // Each card deep-links into a real sub-page (the bare parent paths like
 // /security/threats are themselves placeholders, so we jump to a built child).
-const SECTIONS: { key: string; to: string; icon: IconComponent; requiredPermission: Capability }[] =
-  [
-    {
-      key: "threatProtection",
-      to: "/security/threats/bots",
-      icon: ShieldSecurity,
-      requiredPermission: "policy.read",
-    },
-    {
-      key: "sessions",
-      to: "/security/sessions",
-      icon: Shield,
-      requiredPermission: "user.read",
-    },
-    {
-      key: "deviceAuthorizations",
-      to: "/security/device-authorizations",
-      icon: MonitorMobile,
-      requiredPermission: "connection.read",
-    },
-    {
-      key: "rateLimits",
-      to: "/security/rate-limits",
-      icon: Speedometer,
-      requiredPermission: "policy.read",
-    },
-    {
-      key: "auditLogs",
-      to: "/security/audit-logs",
-      icon: DocumentText,
-      requiredPermission: "audit.read",
-    },
-    {
-      key: "compliance",
-      to: "/security/compliance/soc2",
-      icon: Padlock,
-      requiredPermission: "audit.read",
-    },
-  ];
+const SECTIONS: { key: string; to: string; icon: LucideIcon; requiredPermission: Capability }[] = [
+  {
+    key: "threatProtection",
+    to: "/security/threats/bots",
+    icon: ShieldAlertIcon,
+    requiredPermission: "policy.read",
+  },
+  {
+    key: "sessions",
+    to: "/security/sessions",
+    icon: ShieldIcon,
+    requiredPermission: "user.read",
+  },
+  {
+    key: "deviceAuthorizations",
+    to: "/security/device-authorizations",
+    icon: MonitorSmartphoneIcon,
+    requiredPermission: "connection.read",
+  },
+  {
+    key: "rateLimits",
+    to: "/security/rate-limits",
+    icon: GaugeIcon,
+    requiredPermission: "policy.read",
+  },
+  {
+    key: "auditLogs",
+    to: "/security/audit-logs",
+    icon: ScrollTextIcon,
+    requiredPermission: "audit.read",
+  },
+  {
+    key: "compliance",
+    to: "/security/compliance/soc2",
+    icon: LockKeyholeIcon,
+    requiredPermission: "audit.read",
+  },
+];
 
 function SecurityOverviewPage() {
   const { t } = useTranslation("security");
@@ -80,7 +76,7 @@ function SecurityOverviewPage() {
       {sections.length === 0 ? (
         <section className="enterprise-panel">
           <PageState
-            icon={Shield}
+            icon={ShieldIcon}
             title={hasOrg ? "No security areas are available" : "Create an organization first"}
             description={
               hasOrg
@@ -129,7 +125,7 @@ function SecurityOverviewPage() {
                       {t(`overview.sections.${section.key}.description`)}
                     </span>
                   </span>
-                  <ArrowRightAlt className="mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5" />
+                  <ChevronRightIcon className="mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5" />
                 </Link>
               );
             })}

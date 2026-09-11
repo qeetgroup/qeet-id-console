@@ -1,4 +1,3 @@
-import { MonitorMobile, Shield } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -12,6 +11,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { MonitorSmartphoneIcon, ShieldIcon } from "lucide-react";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import { formatIp } from "@/shared/utils/ip-format";
@@ -47,7 +47,7 @@ export function SessionsTable({
       isError={query.isError}
       error={query.error}
       isEmpty={items.length === 0}
-      emptyIcon={Shield}
+      emptyIcon={ShieldIcon}
       emptyTitle={emptyLabel}
       skeletonRows={3}
     >
@@ -71,7 +71,7 @@ export function SessionsTable({
                   className="max-w-md truncate text-xs text-muted-foreground"
                   title={s.user_agent ?? ""}
                 >
-                  <MonitorMobile className="mr-1 inline size-3" />
+                  <MonitorSmartphoneIcon className="mr-1 inline size-3" />
                   {s.user_agent ?? "—"}
                   {isCurrent && (
                     <Badge variant="secondary" className="ml-2">

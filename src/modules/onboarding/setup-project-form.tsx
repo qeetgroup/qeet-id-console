@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight } from "@qeetrix/icons";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import {
   Button,
   cn,
@@ -111,7 +111,7 @@ export function SetupProjectForm({
           className={cn(SETUP_SECONDARY, SETUP_FOCUS)}
           onClick={onBack}
         >
-          <ArrowLeft className="size-3.5" aria-hidden="true" /> {t("setup.back")}
+          <ArrowLeftIcon className="size-3.5" aria-hidden="true" /> {t("setup.back")}
         </Button>
         <button
           type="button"
@@ -124,7 +124,7 @@ export function SetupProjectForm({
           {t("setup.skip")}
         </button>
         <Button type="submit" className={cn(SETUP_PRIMARY, SETUP_FOCUS)}>
-          {t("setup.continue")} <ArrowRight className="size-3.5" aria-hidden="true" />
+          {t("setup.continue")} <ArrowRightIcon className="size-3.5" aria-hidden="true" />
         </Button>
       </div>
     </form>

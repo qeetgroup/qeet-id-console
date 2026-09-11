@@ -1,14 +1,14 @@
-import {
-  CloseCircle,
-  Edit,
-  MessageText,
-  Paperclip,
-  SearchNormal,
-  TickCircle,
-  Trash,
-} from "@qeetrix/icons";
 import { Button, cn, Input } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
+import {
+  CheckIcon,
+  MessageSquareTextIcon,
+  PencilIcon,
+  PinIcon,
+  SearchIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useQeetAIRuntime } from "../../qeetai-provider";
 import {
@@ -47,7 +47,7 @@ export function HistoryPanel() {
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center gap-2 border-b p-3">
         <div className="relative flex-1">
-          <SearchNormal
+          <SearchIcon
             className="pointer-events-none absolute inset-s-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
@@ -66,7 +66,7 @@ export function HistoryPanel() {
           title="Close history"
           onClick={() => workspaceActions.closeHistory()}
         >
-          <CloseCircle />
+          <XIcon />
         </Button>
       </div>
 
@@ -138,7 +138,7 @@ function ConversationRow({
           autoFocus
         />
         <Button size="icon-sm" variant="ghost" aria-label="Save title" onClick={commitRename}>
-          <TickCircle className="size-4" />
+          <CheckIcon className="size-4" />
         </Button>
       </li>
     );
@@ -157,11 +157,11 @@ function ConversationRow({
           onClick={select}
           className="flex min-w-0 flex-1 items-center gap-2 text-start focus-visible:outline-none"
         >
-          <MessageText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <MessageSquareTextIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1">
               {conversation.pinned ? (
-                <Paperclip className="size-3 shrink-0 text-primary" aria-label="Pinned" />
+                <PinIcon className="size-3 shrink-0 text-primary" aria-label="Pinned" />
               ) : null}
               <span className="truncate text-sm font-medium">{conversation.title}</span>
             </span>
@@ -180,7 +180,7 @@ function ConversationRow({
             onClick={() => conversationActions.togglePin(conversation.id)}
             className={conversation.pinned ? "text-primary" : undefined}
           >
-            <Paperclip className="size-3.5" />
+            <PinIcon className="size-3.5" />
           </Button>
           <Button
             size="icon-xs"
@@ -192,7 +192,7 @@ function ConversationRow({
               setRenaming(true);
             }}
           >
-            <Edit className="size-3.5" />
+            <PencilIcon className="size-3.5" />
           </Button>
           <Button
             size="icon-xs"
@@ -201,7 +201,7 @@ function ConversationRow({
             title="Delete"
             onClick={remove}
           >
-            <Trash className="size-3.5" />
+            <Trash2Icon className="size-3.5" />
           </Button>
         </div>
       </div>

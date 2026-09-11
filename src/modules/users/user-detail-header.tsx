@@ -1,16 +1,3 @@
-import {
-  ArrowDownAlt,
-  DocumentCode,
-  Forbidden,
-  Maximize,
-  RefreshArrow,
-  Send,
-  ShieldSlash,
-  TickCircle,
-  Trash,
-  UserRemove,
-  UserTick,
-} from "@qeetrix/icons";
 // User 360 hero header: identity, status, quick meta strip, and the contextual
 // "Actions" menu (with confirmation on anything destructive).
 
@@ -31,6 +18,19 @@ import {
 import { Link, useNavigate } from "@tanstack/react-router";
 import { initials } from "@/shared/utils/initials";
 import { formatDate } from "@/shared/utils/format";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  FileJsonIcon,
+  Loader2Icon,
+  Maximize2Icon,
+  MonitorXIcon,
+  SendIcon,
+  ShieldOffIcon,
+  Trash2Icon,
+  UserCheckIcon,
+  UserXIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -101,7 +101,7 @@ export function UserDetailHeader({
               <StatusPill status={user.status} dot />
               {emailVerified ? (
                 <Badge variant="success" className="gap-1">
-                  <TickCircle className="size-3" aria-hidden="true" />
+                  <CheckIcon className="size-3" aria-hidden="true" />
                   {t("detail.verified")}
                 </Badge>
               ) : (
@@ -122,11 +122,9 @@ export function UserDetailHeader({
             <DropdownMenuTrigger
               render={
                 <Button variant="outline" size="sm" disabled={busy}>
-                  {busy ? (
-                    <RefreshArrow className="size-4 animate-spin" aria-hidden="true" />
-                  ) : null}
+                  {busy ? <Loader2Icon className="size-4 animate-spin" aria-hidden="true" /> : null}
                   {t("detail.actions")}
-                  <ArrowDownAlt className="size-4" aria-hidden="true" />
+                  <ChevronDownIcon className="size-4" aria-hidden="true" />
                 </Button>
               }
             />
@@ -144,7 +142,7 @@ export function UserDetailHeader({
                       })
                     }
                   >
-                    <ShieldSlash />
+                    <ShieldOffIcon />
                     {t("detail.resetMfaBtn")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
@@ -158,14 +156,14 @@ export function UserDetailHeader({
                       })
                     }
                   >
-                    <Forbidden />
+                    <MonitorXIcon />
                     {t("detail.revokeAllBtn")}
                   </DropdownMenuItem>
                   {suspended ? (
                     <DropdownMenuItem
                       onClick={() => setStatus.mutate({ userId: user.id, status: "active" })}
                     >
-                      <UserTick />
+                      <UserCheckIcon />
                       {t("detail.reactivateBtn")}
                     </DropdownMenuItem>
                   ) : (
@@ -181,18 +179,18 @@ export function UserDetailHeader({
                         })
                       }
                     >
-                      <UserRemove />
+                      <UserXIcon />
                       {t("detail.suspendBtn")}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={() => sendReset.mutate(user.email)}>
-                    <Send />
+                    <SendIcon />
                     {t("detail.sendResetBtn")}
                   </DropdownMenuItem>
                 </>
               ) : null}
               <DropdownMenuItem onClick={onViewRaw}>
-                <DocumentCode />
+                <FileJsonIcon />
                 {t("detail.viewRawBtn")}
               </DropdownMenuItem>
               {canWrite ? (
@@ -213,7 +211,7 @@ export function UserDetailHeader({
                       })
                     }
                   >
-                    <Trash />
+                    <Trash2Icon />
                     {t("detail.deleteBtn")}
                   </DropdownMenuItem>
                 </>
@@ -228,7 +226,7 @@ export function UserDetailHeader({
             render={<Link to="/users/$userId/timeline" params={{ userId: user.id }} />}
             aria-label={t("detail.openTimeline")}
           >
-            <Maximize className="size-4" aria-hidden="true" />
+            <Maximize2Icon className="size-4" aria-hidden="true" />
           </Button>
         </div>
       </div>

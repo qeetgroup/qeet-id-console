@@ -1,6 +1,6 @@
-import { RefreshArrow } from "@qeetrix/icons";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { RefreshCwIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -50,7 +50,7 @@ function SessionsPage() {
             onClick={() => sessionsQ.refetch()}
             disabled={sessionsQ.isFetching}
           >
-            <RefreshArrow className={sessionsQ.isFetching ? "animate-spin" : ""} />
+            <RefreshCwIcon className={sessionsQ.isFetching ? "animate-spin" : ""} />
             {t("sessions.refresh")}
           </Button>
         }

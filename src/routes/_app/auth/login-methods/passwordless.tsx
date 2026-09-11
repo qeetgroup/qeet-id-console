@@ -1,4 +1,3 @@
-import { FingerScan, Key, MagicWand, MessageSquare, ShieldTick, Sms } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -10,6 +9,14 @@ import {
   Switch,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  FingerprintIcon,
+  KeyRoundIcon,
+  MailIcon,
+  MessageSquareIcon,
+  ShieldCheckIcon,
+  WandSparklesIcon,
+} from "lucide-react";
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -53,14 +60,14 @@ type MethodDef = {
 };
 
 const METHOD_DEFS: MethodDef[] = [
-  { key: "passkey_enabled", translationKey: "passkeys", icon: FingerScan },
+  { key: "passkey_enabled", translationKey: "passkeys", icon: FingerprintIcon },
   {
     key: "magic_link_enabled",
     translationKey: "magicLinks",
-    icon: MagicWand,
+    icon: WandSparklesIcon,
   },
-  { key: "otp_email_enabled", translationKey: "emailOtp", icon: Sms },
-  { key: "otp_sms_enabled", translationKey: "smsOtp", icon: MessageSquare },
+  { key: "otp_email_enabled", translationKey: "emailOtp", icon: MailIcon },
+  { key: "otp_sms_enabled", translationKey: "smsOtp", icon: MessageSquareIcon },
 ];
 
 function PasswordlessForm({ initial }: { initial: AuthPolicy }) {
@@ -104,7 +111,8 @@ function PasswordlessForm({ initial }: { initial: AuthPolicy }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldTick className="size-4" /> {t("loginMethods.passwordless.trustedDevices.title")}
+            <ShieldCheckIcon className="size-4" />{" "}
+            {t("loginMethods.passwordless.trustedDevices.title")}
           </CardTitle>
           <CardDescription>
             {t("loginMethods.passwordless.trustedDevices.description")}
@@ -127,7 +135,7 @@ function PasswordlessForm({ initial }: { initial: AuthPolicy }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Key className="size-4" /> {t("loginMethods.passwordless.passkeysMgmt.title")}
+            <KeyRoundIcon className="size-4" /> {t("loginMethods.passwordless.passkeysMgmt.title")}
           </CardTitle>
           <CardDescription>
             {t("loginMethods.passwordless.passkeysMgmt.description")}

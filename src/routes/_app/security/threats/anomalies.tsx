@@ -1,4 +1,3 @@
-import { Danger, Location, RefreshArrow, ShieldSecurity, UserRemove } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -17,6 +16,13 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  AlertTriangleIcon,
+  MapPinIcon,
+  RefreshCwIcon,
+  ShieldAlertIcon,
+  UserXIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -48,22 +54,22 @@ function AnomaliesPage() {
     {
       key: "openIncidents",
       value: sm?.open ?? 0,
-      icon: <Danger className="size-4" />,
+      icon: <AlertTriangleIcon className="size-4" />,
     },
     {
       key: "resolved24h",
       value: sm?.resolved_24h ?? 0,
-      icon: <ShieldSecurity className="size-4" />,
+      icon: <ShieldAlertIcon className="size-4" />,
     },
     {
       key: "affectedAccounts",
       value: sm?.affected_accounts ?? 0,
-      icon: <UserRemove className="size-4" />,
+      icon: <UserXIcon className="size-4" />,
     },
     {
       key: "highSeverity24h",
       value: sm?.high_severity_24h ?? 0,
-      icon: <Location className="size-4" />,
+      icon: <MapPinIcon className="size-4" />,
     },
   ];
 
@@ -81,7 +87,7 @@ function AnomaliesPage() {
             }}
             disabled={anomaliesQ.isFetching}
           >
-            <RefreshArrow className={anomaliesQ.isFetching ? "animate-spin" : ""} />
+            <RefreshCwIcon className={anomaliesQ.isFetching ? "animate-spin" : ""} />
             {t("threats.anomalies.refresh")}
           </Button>
         }
@@ -112,7 +118,7 @@ function AnomaliesPage() {
             isError={anomaliesQ.isError}
             error={anomaliesQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={Danger}
+            emptyIcon={AlertTriangleIcon}
             emptyTitle={t("threats.anomalies.recent.empty")}
             skeletonRows={3}
           >

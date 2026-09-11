@@ -1,4 +1,3 @@
-import { Add, Copy, RefreshArrow, ToyRobot, Trash } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -31,6 +30,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
+import { BotIcon, CopyIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -93,11 +93,11 @@ function MachineIdentitiesPage() {
               onClick={() => listQ.refetch()}
               disabled={listQ.isFetching}
             >
-              <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
+              <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
               {t("machineIds.refreshBtn")}
             </Button>
             <Button size="sm" onClick={() => setCreating(true)}>
-              <Add /> {t("machineIds.newButton")}
+              <PlusIcon /> {t("machineIds.newButton")}
             </Button>
           </>
         }
@@ -123,7 +123,7 @@ function MachineIdentitiesPage() {
                 size="sm"
                 onClick={() => navigator.clipboard.writeText(revealed.principal.id)}
               >
-                <Copy />
+                <CopyIcon />
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ function MachineIdentitiesPage() {
                 size="sm"
                 onClick={() => navigator.clipboard.writeText(revealed.secret)}
               >
-                <Copy />
+                <CopyIcon />
               </Button>
             </div>
             <Button variant="ghost" size="sm" onClick={() => setRevealed(null)}>
@@ -165,7 +165,7 @@ function MachineIdentitiesPage() {
             <div className="p-6 text-sm text-destructive">{errorMessage(listQ.error)}</div>
           ) : !listQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
-              <ToyRobot className="size-8 text-muted-foreground" />
+              <BotIcon className="size-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("machineIds.list.empty")}</p>
             </div>
           ) : (
@@ -228,7 +228,7 @@ function MachineIdentitiesPage() {
                           }).catch(ignoreCancel)
                         }
                       >
-                        <Trash /> {t("machineIds.disableBtn")}
+                        <Trash2Icon /> {t("machineIds.disableBtn")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -342,7 +342,7 @@ function CreatePrincipalSheet({
               {t("machineIds.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <RefreshArrow className="animate-spin" />}
+              {createM.isPending && <Loader2Icon className="animate-spin" />}
               {createM.isPending
                 ? t("machineIds.create.creatingBtn")
                 : t("machineIds.create.createBtn")}

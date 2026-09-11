@@ -1,4 +1,3 @@
-import { FingerScan, Key, Link as LinkIcon, RefreshArrow, ShieldTick, Trash } from "@qeetrix/icons";
 import {
   Button,
   buttonVariants,
@@ -16,6 +15,14 @@ import {
 import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  FingerprintIcon,
+  KeyRoundIcon,
+  LinkIcon,
+  Loader2Icon,
+  ShieldCheckIcon,
+  Trash2Icon,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -145,7 +152,7 @@ function SecurityPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Key className="size-5 text-muted-foreground" />
+              <KeyRoundIcon className="size-5 text-muted-foreground" />
               <CardTitle className="text-base">{t("security.password.title")}</CardTitle>
             </div>
             <StatusPill status={hasPassword ? "active" : "pending"} dot={false}>
@@ -195,7 +202,7 @@ function SecurityPage() {
                 size="sm"
                 disabled={changePassword.isPending || next.length < 8 || (hasPassword && !current)}
               >
-                {changePassword.isPending && <RefreshArrow className="animate-spin" />}
+                {changePassword.isPending && <Loader2Icon className="animate-spin" />}
                 {hasPassword
                   ? t("security.password.reset", { defaultValue: "Update password" })
                   : "Set a password"}
@@ -208,7 +215,7 @@ function SecurityPage() {
                   disabled={forgot.isPending || !me.data?.email}
                   onClick={emailResetLink}
                 >
-                  {forgot.isPending && <RefreshArrow className="animate-spin" />}
+                  {forgot.isPending && <Loader2Icon className="animate-spin" />}
                   Forgot password?
                 </Button>
               )}
@@ -222,7 +229,7 @@ function SecurityPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FingerScan className="size-5 text-muted-foreground" />
+              <FingerprintIcon className="size-5 text-muted-foreground" />
               <CardTitle className="text-base">{t("security.passkeys.title")}</CardTitle>
             </div>
             <StatusPill status={passkeyCount > 0 ? "active" : "pending"} dot={false}>
@@ -238,7 +245,7 @@ function SecurityPage() {
             to="/auth/login-methods/passkeys"
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
-            <FingerScan /> {t("security.passkeys.manage")}
+            <FingerprintIcon /> {t("security.passkeys.manage")}
           </Link>
         </CardContent>
       </Card>
@@ -247,7 +254,7 @@ function SecurityPage() {
       <Card className="md:col-span-2">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <ShieldTick className="size-5 text-muted-foreground" />
+            <ShieldCheckIcon className="size-5 text-muted-foreground" />
             <CardTitle className="text-base">{t("security.mfa.title")}</CardTitle>
           </div>
           <CardDescription>{t("security.mfa.description")}</CardDescription>
@@ -315,7 +322,7 @@ function SecurityPage() {
                         disabled={unlink.isPending}
                         onClick={() => unlink.mutate(linked.id)}
                       >
-                        <Trash /> {t("security.connected.unlink")}
+                        <Trash2Icon /> {t("security.connected.unlink")}
                       </Button>
                     ) : (
                       <Button

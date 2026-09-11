@@ -1,4 +1,3 @@
-import { CloseCircle, CloseSquare, Danger, Driver, InfoCircle, TickCircle } from "@qeetrix/icons";
 // A single activity row, styled as a dense two-line data-table row:
 //   TIME · ACTOR · ACTION · RESOURCE · OUTCOME · IP ADDRESS
 // Each cell stacks a primary value over a muted secondary (relative time, actor
@@ -9,6 +8,14 @@ import { CloseCircle, CloseSquare, Danger, Driver, InfoCircle, TickCircle } from
 
 import { Avatar, AvatarFallback, Badge, cn, TimeSince } from "@qeetrix/ui";
 import { initials } from "@/shared/utils/initials";
+import {
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  InfoIcon,
+  ServerIcon,
+  XCircleIcon,
+  XOctagonIcon,
+} from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { ActivitySearch } from "../activity-search";
@@ -24,12 +31,12 @@ const ROW_COLS =
   "grid-cols-[4.25rem_minmax(0,1fr)_auto_1.75rem] " +
   "lg:grid-cols-[6.5rem_minmax(0,1.25fr)_minmax(0,1.55fr)_minmax(0,1.15fr)_6.5rem_minmax(0,1.1fr)_2rem]";
 
-const SEVERITY_ICON: Record<Severity, typeof InfoCircle> = {
-  critical: CloseSquare,
-  error: CloseCircle,
-  warning: Danger,
-  success: TickCircle,
-  info: InfoCircle,
+const SEVERITY_ICON: Record<Severity, typeof InfoIcon> = {
+  critical: XOctagonIcon,
+  error: XCircleIcon,
+  warning: AlertTriangleIcon,
+  success: CheckCircleIcon,
+  info: InfoIcon,
 };
 
 const SEVERITY_ICON_CLASS: Record<Severity, string> = {
@@ -66,7 +73,7 @@ function actorVisual(event: ActivityEvent): {
   if (type.includes("system")) {
     return {
       cls: "bg-muted text-muted-foreground",
-      content: <Driver className="size-3.5" />,
+      content: <ServerIcon className="size-3.5" />,
       name: event.actor?.name ?? "System",
     };
   }

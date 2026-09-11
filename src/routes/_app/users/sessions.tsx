@@ -1,10 +1,10 @@
-import { RefreshArrow } from "@qeetrix/icons";
 // Alias view onto the same sessions endpoint used by /security/sessions, framed
 // from the Users perspective in the navigation. Shares the sessions data layer
 // and SessionsTable so the two views can't drift apart.
 
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { RefreshCwIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -53,7 +53,7 @@ function UserSessionsPage() {
             onClick={() => sessionsQ.refetch()}
             disabled={sessionsQ.isFetching}
           >
-            <RefreshArrow className={sessionsQ.isFetching ? "animate-spin" : ""} />
+            <RefreshCwIcon className={sessionsQ.isFetching ? "animate-spin" : ""} />
             {t("sessions.refreshBtn")}
           </Button>
         }

@@ -1,15 +1,4 @@
 import {
-  Add,
-  CloseCircle,
-  ExportRight,
-  HierarchySquare,
-  ImportDown,
-  RefreshArrow,
-  ShieldTick,
-  TickCircle,
-  Trash,
-} from "@qeetrix/icons";
-import {
   Button,
   Card,
   CardContent,
@@ -47,6 +36,17 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
+import {
+  CheckCircle2Icon,
+  DownloadIcon,
+  ExternalLinkIcon,
+  Loader2Icon,
+  PlusIcon,
+  ShieldCheckIcon,
+  Trash2Icon,
+  WorkflowIcon,
+  XCircleIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -94,7 +94,7 @@ function SamlPage() {
         actions={
           ssoLocked ? undefined : (
             <Button size="sm" onClick={() => setCreating(true)}>
-              <Add className="mr-2 size-4" />
+              <PlusIcon className="mr-2 size-4" />
               {t("samlSp.newButton")}
             </Button>
           )
@@ -110,7 +110,7 @@ function SamlPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardDescription>{t("samlSp.stats.active")}</CardDescription>
-              <HierarchySquare className="size-4 text-muted-foreground" />
+              <WorkflowIcon className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-semibold tracking-tight">{active}</div>
@@ -147,7 +147,7 @@ function SamlPage() {
               isError={listQ.isError}
               error={listQ.error}
               isEmpty={items.length === 0}
-              emptyIcon={HierarchySquare}
+              emptyIcon={WorkflowIcon}
               emptyTitle={t("samlSp.list.empty")}
               skeletonRows={3}
             >
@@ -183,7 +183,7 @@ function SamlPage() {
                           disabled={c.status === "disabled"}
                           title={t("samlSp.testSsoTitle")}
                         >
-                          <ExportRight /> {t("samlSp.testSso")}
+                          <ExternalLinkIcon /> {t("samlSp.testSso")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -191,7 +191,7 @@ function SamlPage() {
                           onClick={() => window.open(samlMetadataUrl(c.id), "_blank", "noopener")}
                           title={t("samlSp.metadataTitle")}
                         >
-                          <ImportDown /> {t("samlSp.metadata")}
+                          <DownloadIcon /> {t("samlSp.metadata")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -219,7 +219,7 @@ function SamlPage() {
                           }
                           disabled={deleteM.isPending}
                         >
-                          <Trash /> {t("samlSp.deleteBtn")}
+                          <Trash2Icon /> {t("samlSp.deleteBtn")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -256,7 +256,7 @@ function ValidateConnection({ id }: { id: string }) {
         }}
         title={t("samlSp.validate.buttonTitle")}
       >
-        {testM.isPending ? <RefreshArrow className="animate-spin" /> : <ShieldTick />}{" "}
+        {testM.isPending ? <Loader2Icon className="animate-spin" /> : <ShieldCheckIcon />}{" "}
         {t("samlSp.validate.button")}
       </Button>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -278,9 +278,9 @@ function ValidateConnection({ id }: { id: string }) {
                   {testM.data.checks.map((c) => (
                     <li key={c.name} className="flex items-start gap-2">
                       {c.ok ? (
-                        <TickCircle className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                        <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                       ) : (
-                        <CloseCircle className="text-destructive mt-0.5 size-4 shrink-0" />
+                        <XCircleIcon className="text-destructive mt-0.5 size-4 shrink-0" />
                       )}
                       <div className="min-w-0">
                         <p className="text-sm font-medium">{c.name}</p>
@@ -428,7 +428,7 @@ function CreateConnectionSheet({
               {t("samlSp.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <RefreshArrow className="animate-spin" />}
+              {createM.isPending && <Loader2Icon className="animate-spin" />}
               {createM.isPending ? t("samlSp.create.creatingBtn") : t("samlSp.create.createBtn")}
             </Button>
           </SheetFooter>

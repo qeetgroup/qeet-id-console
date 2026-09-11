@@ -1,22 +1,18 @@
-import type { ComponentType, SVGProps } from "react";
-import { Timer } from "@qeetrix/icons";
 import { Card, CardContent } from "@qeetrix/ui";
+import { ConstructionIcon, type LucideIcon } from "lucide-react";
 
 /**
  * Honest placeholder for surfaces whose backend does not exist yet (batch
  * simulation history, authorization analytics time-series, server-side
  * rollback, AI provider). We never fabricate data — we say so and explain why.
  */
-/** Any `@qeetrix/icons` component, as a prop. */
-type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
-
 export function ComingSoon({
-  icon: Icon = Timer,
+  icon: Icon = ConstructionIcon,
   title,
   description,
   note,
 }: {
-  icon?: IconComponent;
+  icon?: LucideIcon;
   title: string;
   description: string;
   note?: string;

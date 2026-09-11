@@ -1,4 +1,3 @@
-import { CloseCircle, FingerScan, Flash } from "@qeetrix/icons";
 import {
   Button,
   buttonVariants,
@@ -9,6 +8,7 @@ import {
   CardTitle,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import { FingerprintIcon, XIcon, ZapIcon } from "lucide-react";
 import { useState } from "react";
 
 import { usePasskeys } from "@/modules/authentication";
@@ -53,7 +53,7 @@ export function PasskeyPromptCard() {
       <CardHeader className="flex flex-row items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-info/10 text-info ring-1 ring-info/15">
-            <FingerScan className="size-4" />
+            <FingerprintIcon className="size-4" />
           </span>
           <div>
             <CardTitle className="text-sm font-semibold">
@@ -65,12 +65,12 @@ export function PasskeyPromptCard() {
           </div>
         </div>
         <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
-          <CloseCircle />
+          <XIcon />
         </Button>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2 border-t border-info/15 pt-3">
         <Link to="/auth/login-methods/passkeys" className={buttonVariants({ size: "sm" })}>
-          <Flash /> Add a passkey
+          <ZapIcon /> Add a passkey
         </Link>
         <Button variant="ghost" size="sm" onClick={handleDismiss}>
           Not now

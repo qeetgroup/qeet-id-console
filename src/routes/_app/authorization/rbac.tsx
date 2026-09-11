@@ -1,4 +1,3 @@
-import { ShieldTick } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -10,6 +9,7 @@ import {
   DataState,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { ShieldCheckIcon } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -37,7 +37,7 @@ function RbacPage() {
         isError={rolesQ.isError}
         error={rolesQ.error}
         isEmpty={roles.length === 0}
-        emptyIcon={ShieldTick}
+        emptyIcon={ShieldCheckIcon}
         emptyTitle="No roles to visualise yet"
         skeletonRows={4}
       >
@@ -89,7 +89,7 @@ function RbacPage() {
                   isError={permsQ.isError}
                   error={permsQ.error}
                   isEmpty={permissions.length === 0}
-                  emptyIcon={ShieldTick}
+                  emptyIcon={ShieldCheckIcon}
                   emptyTitle="This role grants no permissions"
                   skeletonRows={4}
                 >

@@ -1,4 +1,3 @@
-import { Add, RefreshArrow, ShieldTick } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -32,6 +31,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
+import { Loader2Icon, PlusIcon, RefreshCwIcon, ShieldCheckIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ListToolbar, SortHeader } from "@/shared/components/data-table";
@@ -97,10 +97,10 @@ function RolesPage() {
               onClick={() => rolesQ.refetch()}
               disabled={rolesQ.isFetching}
             >
-              <RefreshArrow className={rolesQ.isFetching ? "animate-spin" : ""} /> Refresh
+              <RefreshCwIcon className={rolesQ.isFetching ? "animate-spin" : ""} /> Refresh
             </Button>
             <Button size="sm" onClick={() => setCreating(true)}>
-              <Add /> New role
+              <PlusIcon /> New role
             </Button>
           </>
         }
@@ -149,7 +149,7 @@ function RolesPage() {
             isError={rolesQ.isError}
             error={rolesQ.error}
             isEmpty={rows.length === 0}
-            emptyIcon={ShieldTick}
+            emptyIcon={ShieldCheckIcon}
             emptyTitle={lv.hasActiveFilters ? "No roles match your filters" : "No roles yet"}
             skeletonRows={3}
           >
@@ -261,7 +261,7 @@ function CreateRoleSheet({
           <SheetFooter className="flex-row justify-end gap-2 border-t">
             <SheetClose render={<Button type="button" variant="outline" />}>Cancel</SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <RefreshArrow className="animate-spin" />}
+              {createM.isPending && <Loader2Icon className="animate-spin" />}
               Create role
             </Button>
           </SheetFooter>

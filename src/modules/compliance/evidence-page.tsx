@@ -1,11 +1,3 @@
-import {
-  ImportDown,
-  InfoCircle,
-  Record,
-  RefreshArrow,
-  ShieldTick,
-  TickCircle,
-} from "@qeetrix/icons";
 // Shared evidence-generation screen backing both the SOC 2 and ISO 27001
 // compliance route files.  All data-fetching and layout logic lives here
 // to avoid duplicating ~150 lines; translations come from the "compliance" ns.
@@ -31,6 +23,15 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
+import {
+  CheckCircle2Icon,
+  CircleAlertIcon,
+  CircleDashedIcon,
+  DownloadIcon,
+  Loader2Icon,
+  RefreshCwIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -77,7 +78,7 @@ function statusBadge(status: ControlStatus) {
   if (status === "pass") {
     return (
       <Badge className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">
-        <TickCircle className="size-3" />
+        <CheckCircle2Icon className="size-3" />
         pass
       </Badge>
     );
@@ -85,14 +86,14 @@ function statusBadge(status: ControlStatus) {
   if (status === "na") {
     return (
       <Badge variant="secondary" className="gap-1">
-        <Record className="size-3" />
+        <CircleDashedIcon className="size-3" />
         n/a
       </Badge>
     );
   }
   return (
     <Badge variant="destructive" className="gap-1">
-      <InfoCircle className="size-3" />
+      <CircleAlertIcon className="size-3" />
       fail
     </Badge>
   );
@@ -186,7 +187,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
         description={t(`${framework}.description`)}
         actions={
           <Button onClick={() => generateM.mutate()} disabled={isGenerating || !tenantId}>
-            {isGenerating ? <RefreshArrow className="animate-spin" /> : <RefreshArrow />}
+            {isGenerating ? <Loader2Icon className="animate-spin" /> : <RefreshCwIcon />}
             {isGenerating ? t("evidence.generating") : t("evidence.generate")}
           </Button>
         }
@@ -214,13 +215,13 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
       {!listQ.isLoading && !listQ.isError && items.length === 0 && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            <ShieldTick className="size-10 text-muted-foreground" />
+            <ShieldCheckIcon className="size-10 text-muted-foreground" />
             <div>
               <p className="text-sm font-medium">{t("evidence.emptyTitle")}</p>
               <p className="mt-1 text-xs text-muted-foreground">{t("evidence.emptyDescription")}</p>
             </div>
             <Button onClick={() => generateM.mutate()} disabled={isGenerating || !tenantId}>
-              {isGenerating && <RefreshArrow className="animate-spin" />}
+              {isGenerating && <Loader2Icon className="animate-spin" />}
               {t("evidence.generate")}
             </Button>
           </CardContent>
@@ -308,7 +309,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
                 disabled={!selectedRun}
                 aria-label={t("evidence.controls.download")}
               >
-                <ImportDown className="mr-2 size-4" />
+                <DownloadIcon className="mr-2 size-4" />
                 {t("evidence.controls.download")}
               </Button>
             </CardHeader>
@@ -318,7 +319,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
                 isError={runQ.isError}
                 error={runQ.error}
                 isEmpty={controls.length === 0}
-                emptyIcon={ShieldTick}
+                emptyIcon={ShieldCheckIcon}
                 emptyTitle={t("evidence.controls.empty")}
                 skeletonRows={8}
               >

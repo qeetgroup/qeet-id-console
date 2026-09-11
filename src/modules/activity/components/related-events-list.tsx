@@ -1,10 +1,10 @@
-import { Link } from "@qeetrix/icons";
 // Related-events list for the drawer's "Related events" tab. Correlates the
 // selected event by shared request_id and same-actor time window
 // (GET /v1/activity/{id}/related). Selecting a related event swaps the drawer to
 // it. Reuses the compact EventCard so rows match the dashboard widget.
 
 import { EmptyState, Skeleton } from "@qeetrix/ui";
+import { LinkIcon } from "lucide-react";
 
 import { useRelatedEvents } from "../related-events";
 import type { ActivityEvent } from "../types/activity.types";
@@ -66,7 +66,7 @@ export function RelatedEventsList({
   if (byRequest.length === 0 && byActor.length === 0) {
     return (
       <EmptyState
-        icon={Link}
+        icon={LinkIcon}
         title="No related events"
         description="Nothing else shares this event's request or actor in the surrounding window."
       />

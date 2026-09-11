@@ -1,4 +1,3 @@
-import { Add, HierarchySquare, RefreshArrow, Trash } from "@qeetrix/icons";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -43,6 +42,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
+import { Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon, WorkflowIcon } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -84,11 +84,11 @@ function OidcPage() {
               onClick={() => listQ.refetch()}
               disabled={listQ.isFetching}
             >
-              <RefreshArrow className={listQ.isFetching ? "animate-spin" : ""} />
+              <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
               {t("common:actions.refresh")}
             </Button>
             <Button size="sm" onClick={() => setCreating(true)}>
-              <Add /> {t("list.register")}
+              <PlusIcon /> {t("list.register")}
             </Button>
           </>
         }
@@ -116,7 +116,7 @@ function OidcPage() {
             isError={listQ.isError}
             error={listQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={HierarchySquare}
+            emptyIcon={WorkflowIcon}
             emptyTitle={t("list.emptyTitle")}
             emptyDescription={t("list.emptyDescription")}
             skeletonRows={3}
@@ -175,7 +175,7 @@ function OidcPage() {
                         onClick={() => setConfirmingDelete(c)}
                         disabled={deleteM.isPending}
                       >
-                        <Trash /> {t("common:actions.delete")}
+                        <Trash2Icon /> {t("common:actions.delete")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -230,7 +230,7 @@ function OidcPage() {
                 })
               }
             >
-              {deleteM.isPending && <RefreshArrow className="animate-spin" />}
+              {deleteM.isPending && <Loader2Icon className="animate-spin" />}
               {deleteM.isPending ? t("common:actions.deleting") : t("common:actions.delete")}
             </Button>
           </AlertDialogFooter>
@@ -343,7 +343,7 @@ function CreateOidcSheet({ open, onOpenChange, onCreated }: CreateOidcSheetProps
               {t("common:actions.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <RefreshArrow className="animate-spin" />}
+              {createM.isPending && <Loader2Icon className="animate-spin" />}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>

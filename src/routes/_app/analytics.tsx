@@ -1,4 +1,3 @@
-import { Flash, Global, People, TrendDown, TrendUp } from "@qeetrix/icons";
 import {
   Card,
   CardContent,
@@ -14,6 +13,14 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
+import {
+  ArrowDownRightIcon,
+  ArrowUpRightIcon,
+  GlobeIcon,
+  TrendingUpIcon,
+  UsersIcon,
+  ZapIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -65,9 +72,13 @@ function KpiCard({
         <div className="text-2xl font-semibold tracking-tight">{value}</div>
         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
           {isPositive ? (
-            <TrendUp className={`size-3 ${isGood ? "text-emerald-500" : "text-rose-500"}`} />
+            <ArrowUpRightIcon
+              className={`size-3 ${isGood ? "text-emerald-500" : "text-rose-500"}`}
+            />
           ) : (
-            <TrendDown className={`size-3 ${isGood ? "text-emerald-500" : "text-rose-500"}`} />
+            <ArrowDownRightIcon
+              className={`size-3 ${isGood ? "text-emerald-500" : "text-rose-500"}`}
+            />
           )}
           <span className={isGood ? "text-emerald-500" : "text-rose-500"}>
             {formatDelta(delta)}
@@ -159,28 +170,28 @@ function AnalyticsPage() {
               value={fmtInt(kpis.mau.value)}
               delta={kpis.mau.delta_pct}
               hint={t("analytics.kpiHintVs30d")}
-              icon={<People className="size-4" />}
+              icon={<UsersIcon className="size-4" />}
             />
             <KpiCard
               label="DAU / MAU"
               value={`${kpis.stickiness_pct.value.toFixed(1)}%`}
               delta={kpis.stickiness_pct.delta_pct}
               hint={t("analytics.kpiHintStickiness")}
-              icon={<Flash className="size-4" />}
+              icon={<ZapIcon className="size-4" />}
             />
             <KpiCard
               label="Avg sessions / user"
               value={kpis.avg_sessions_per_user.value.toFixed(1)}
               delta={kpis.avg_sessions_per_user.delta_pct}
               hint={t("analytics.kpiHintLast30d")}
-              icon={<TrendUp className="size-4" />}
+              icon={<TrendingUpIcon className="size-4" />}
             />
             <KpiCard
               label="Total users"
               value={fmtInt(kpis.total_users.value)}
               delta={kpis.total_users.delta_pct}
               hint={t("analytics.kpiHintVs30dAgo")}
-              icon={<Global className="size-4" />}
+              icon={<GlobeIcon className="size-4" />}
             />
           </>
         )}

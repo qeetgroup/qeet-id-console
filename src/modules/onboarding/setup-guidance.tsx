@@ -1,14 +1,14 @@
 import {
-  ArrowRight,
-  Card,
-  DocumentText,
-  ExportUp,
-  Global,
-  Lock,
-  People,
-  ShieldTick,
-  TickCircle,
-} from "@qeetrix/icons";
+  ArrowRightIcon,
+  CheckCircle2Icon,
+  CreditCardIcon,
+  FileTextIcon,
+  GlobeIcon,
+  LockIcon,
+  ShieldCheckIcon,
+  UploadIcon,
+  UsersIcon,
+} from "lucide-react";
 import { cn } from "@qeetrix/ui";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
@@ -46,9 +46,9 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
   const { t } = useTranslation("dashboard");
   const titleId = useId();
   const tips = [
-    { id: "name", icon: People },
-    { id: "region", icon: Global },
-    { id: "branding", icon: DocumentText },
+    { id: "name", icon: UsersIcon },
+    { id: "region", icon: GlobeIcon },
+    { id: "branding", icon: FileTextIcon },
   ] as const;
 
   return (
@@ -90,7 +90,7 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
             {["checklist", "integrations", "dashboard", "resources"].map((item) => (
               <li key={item} className="flex items-start gap-2">
                 <span className="shrink-0 text-(--setup-accent)">
-                  <TickCircle variant="solid" className="size-4" aria-hidden="true" />
+                  <CheckCircle2Icon className="size-4" aria-hidden="true" />
                 </span>
                 {t(`setup.guidance.benefits.${item}`)}
               </li>
@@ -109,7 +109,7 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
             {["workspace", "region", "defaults", "identity"].map((item) => (
               <li key={item} className="flex items-start gap-2">
                 <span className="shrink-0 text-(--setup-accent)">
-                  <TickCircle variant="solid" className="size-3.5" aria-hidden="true" />
+                  <CheckCircle2Icon className="size-3.5" aria-hidden="true" />
                 </span>
                 {t(`setup.guidance.organizationBenefits.${item}`)}
               </li>
@@ -157,14 +157,14 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
 export function SetupPlanNotes() {
   const { t } = useTranslation("dashboard");
   const nextSteps = [
-    { id: "plan", icon: Card },
-    { id: "details", icon: DocumentText },
-    { id: "launch", icon: People },
+    { id: "plan", icon: CreditCardIcon },
+    { id: "details", icon: FileTextIcon },
+    { id: "launch", icon: UsersIcon },
   ] as const;
   const protections = [
-    { id: "payments", icon: Lock },
-    { id: "invoices", icon: DocumentText },
-    { id: "control", icon: ShieldTick },
+    { id: "payments", icon: LockIcon },
+    { id: "invoices", icon: FileTextIcon },
+    { id: "control", icon: ShieldCheckIcon },
   ] as const;
 
   return (
@@ -205,7 +205,7 @@ export function SetupPlanNotes() {
                 </p>
               </div>
               {index < nextSteps.length - 1 && (
-                <ArrowRight
+                <ArrowRightIcon
                   className="mt-2 size-3 shrink-0 text-(--setup-muted) @max-[450px]/setup:hidden"
                   aria-hidden="true"
                 />
@@ -220,7 +220,7 @@ export function SetupPlanNotes() {
       >
         <div className="flex items-start gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-(--setup-soft)">
-            <ShieldTick className="size-6" aria-hidden="true" />
+            <ShieldCheckIcon className="size-6" aria-hidden="true" />
           </span>
           <div>
             <h2 id="setup-security-title" className="font-sans text-[13px] font-semibold">
@@ -237,7 +237,7 @@ export function SetupPlanNotes() {
             aria-label={t("setup.notes.learnMore")}
             className={cn("ms-auto rounded p-1 text-(--setup-muted)", SETUP_FOCUS)}
           >
-            <ExportUp className="size-3.5" aria-hidden="true" />
+            <UploadIcon className="size-3.5" aria-hidden="true" />
           </a>
         </div>
         <ul className="mt-auto grid list-none grid-cols-3 gap-2 p-0 pt-5">

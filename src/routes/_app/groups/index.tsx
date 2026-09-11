@@ -1,4 +1,3 @@
-import { Add, Edit, People, RefreshArrow, Trash, UserAdd } from "@qeetrix/icons";
 import {
   Button,
   Card,
@@ -32,6 +31,15 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  Loader2Icon,
+  PencilIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  Trash2Icon,
+  UserPlusIcon,
+  UsersRoundIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -121,11 +129,11 @@ function GroupsPage() {
               onClick={() => groupsQ.refetch()}
               disabled={groupsQ.isFetching}
             >
-              <RefreshArrow className={groupsQ.isFetching ? "animate-spin" : ""} />
+              <RefreshCwIcon className={groupsQ.isFetching ? "animate-spin" : ""} />
               {t("list.refresh")}
             </Button>
             <Button size="sm" onClick={() => setCreating(true)}>
-              <Add /> {t("list.new")}
+              <PlusIcon /> {t("list.new")}
             </Button>
           </>
         }
@@ -181,7 +189,7 @@ function GroupsPage() {
             isError={groupsQ.isError}
             error={groupsQ.error}
             isEmpty={rows.length === 0}
-            emptyIcon={People}
+            emptyIcon={UsersRoundIcon}
             emptyTitle={lv.hasActiveFilters ? t("list.emptyFiltered") : t("list.empty")}
             skeletonRows={3}
           >
@@ -232,10 +240,10 @@ function GroupsPage() {
                     )}
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => setExpandedId(g.id)}>
-                        <UserAdd /> {t("table.members")}
+                        <UserPlusIcon /> {t("table.members")}
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => setEditing(g)}>
-                        <Edit /> {t("table.edit")}
+                        <PencilIcon /> {t("table.edit")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -250,7 +258,7 @@ function GroupsPage() {
                           })
                         }
                       >
-                        <Trash /> {t("table.delete")}
+                        <Trash2Icon /> {t("table.delete")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -379,7 +387,7 @@ function CreateGroupSheet({
               {t("create.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <RefreshArrow className="animate-spin" />}
+              {createM.isPending && <Loader2Icon className="animate-spin" />}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>
@@ -481,7 +489,7 @@ function EditGroupSheet({ group, onOpenChange, groups, onSaved }: EditGroupSheet
               {t("edit.cancel")}
             </SheetClose>
             <Button type="submit" disabled={updateM.isPending}>
-              {updateM.isPending && <RefreshArrow className="animate-spin" />}
+              {updateM.isPending && <Loader2Icon className="animate-spin" />}
               {updateM.isPending ? t("edit.saving") : t("edit.save")}
             </Button>
           </SheetFooter>
@@ -583,7 +591,7 @@ function MembersSheet({ groupId, groupName, onClose }: MembersSheetProps) {
                           {u.email}
                         </span>
                       </span>
-                      <UserAdd className="size-4 shrink-0 text-muted-foreground" />
+                      <UserPlusIcon className="size-4 shrink-0 text-muted-foreground" />
                     </button>
                   ))
                 )}
@@ -617,7 +625,7 @@ function MembersSheet({ groupId, groupName, onClose }: MembersSheetProps) {
                   onClick={() => removeM.mutate(m.user_id)}
                   disabled={removeM.isPending}
                 >
-                  <Trash />
+                  <Trash2Icon />
                 </Button>
               </div>
             ))

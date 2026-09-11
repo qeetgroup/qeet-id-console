@@ -1,14 +1,3 @@
-import type { ComponentType, SVGProps } from "react";
-import {
-  ArrowRightAlt,
-  People,
-  ShieldSecurity,
-  ShieldTick,
-  TrendDown,
-  TrendUp,
-  UserRemove,
-  UserTick,
-} from "@qeetrix/icons";
 // The five KPI cards atop the Users table. Numbers and percentages are real
 // (from /v1/users/stats); Total and the MFA cards carry real 30-day sparklines
 // (/v1/users/trends), while the ratio-only cards (Active, Suspended) show a
@@ -16,12 +5,20 @@ import {
 // button that filters the table.
 
 import { cn, Skeleton, Sparkline } from "@qeetrix/ui";
+import {
+  ArrowDownRightIcon,
+  ArrowUpRightIcon,
+  ChevronRightIcon,
+  type LucideIcon,
+  ShieldAlertIcon,
+  ShieldCheckIcon,
+  UserCheckIcon,
+  UsersIcon,
+  UserXIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import type { UserStats, UserTrends } from "./api/users";
-
-/** Any `@qeetrix/icons` component, as a prop. */
-type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 export type KpiFilter = "all" | "active" | "mfa_enabled" | "mfa_missing" | "suspended";
 
@@ -92,7 +89,7 @@ export function UsersKpis({
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       <KpiCard
-        icon={People}
+        icon={UsersIcon}
         tone="brand"
         label={t("kpi.total")}
         value={stats.total}
@@ -101,7 +98,7 @@ export function UsersKpis({
         onClick={() => onFilter("all")}
       />
       <KpiCard
-        icon={UserTick}
+        icon={UserCheckIcon}
         tone="success"
         label={t("kpi.active")}
         value={stats.active}
@@ -109,7 +106,7 @@ export function UsersKpis({
         onClick={() => onFilter("active")}
       />
       <KpiCard
-        icon={ShieldTick}
+        icon={ShieldCheckIcon}
         tone="success"
         label={t("kpi.mfaEnabled")}
         value={stats.mfa_enabled}
@@ -118,7 +115,7 @@ export function UsersKpis({
         onClick={() => onFilter("mfa_enabled")}
       />
       <KpiCard
-        icon={ShieldSecurity}
+        icon={ShieldAlertIcon}
         tone="warning"
         label={t("kpi.mfaMissing")}
         value={stats.mfa_missing}
@@ -127,7 +124,7 @@ export function UsersKpis({
         onClick={() => onFilter("mfa_missing")}
       />
       <KpiCard
-        icon={UserRemove}
+        icon={UserXIcon}
         tone="danger"
         label={t("kpi.suspended")}
         value={stats.suspended}
@@ -148,7 +145,7 @@ function KpiCard({
   sparkline,
   onClick,
 }: {
-  icon: IconComponent;
+  icon: LucideIcon;
   tone: Tone;
   label: string;
   value: number;
@@ -172,7 +169,7 @@ function KpiCard({
           </span>
           <span className="text-sm font-medium text-muted-foreground">{label}</span>
         </div>
-        <ArrowRightAlt className="size-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
+        <ChevronRightIcon className="size-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
       </div>
 
       <div className="text-2xl font-semibold tabular-nums tracking-tight">
@@ -186,7 +183,11 @@ function KpiCard({
             delta.favorable ? "text-success" : "text-destructive",
           )}
         >
-          {delta.value >= 0 ? <TrendUp className="size-3.5" /> : <TrendDown className="size-3.5" />}
+          {delta.value >= 0 ? (
+            <ArrowUpRightIcon className="size-3.5" />
+          ) : (
+            <ArrowDownRightIcon className="size-3.5" />
+          )}
           {Math.abs(delta.value)}% {delta.label}
         </div>
       ) : meter !== undefined ? (

@@ -1,14 +1,3 @@
-import {
-  Activity,
-  Box,
-  Global,
-  ImportDown,
-  Layer,
-  RadarAlt,
-  RefreshArrow,
-  SearchNormal,
-  User,
-} from "@qeetrix/icons";
 // Activity & Audit — enterprise investigation workspace.
 // A live SSE feed + historical audit log, rendered as: a summary metric strip,
 // a sticky filter/saved-view toolbar, dense grouped rows, and a right-side
@@ -31,6 +20,17 @@ import {
   Separator,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  ActivityIcon,
+  BoxIcon,
+  DownloadIcon,
+  GlobeIcon,
+  LayersIcon,
+  Loader2Icon,
+  SearchIcon,
+  TargetIcon,
+  UserIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -129,7 +129,7 @@ function FacetSelect({
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
-  icon: typeof Activity;
+  icon: typeof ActivityIcon;
 }) {
   return (
     <Select value={value || "all"} onValueChange={(v) => onChange(v === "all" ? "" : (v ?? ""))}>
@@ -162,9 +162,9 @@ function ExportMenu({
         render={
           <Button variant="outline" size="sm" disabled={!!exporting}>
             {exporting ? (
-              <RefreshArrow className="size-3.5 animate-spin" aria-hidden="true" />
+              <Loader2Icon className="size-3.5 animate-spin" aria-hidden="true" />
             ) : (
-              <ImportDown className="size-3.5" aria-hidden="true" />
+              <DownloadIcon className="size-3.5" aria-hidden="true" />
             )}
             {exporting ? `Exporting ${exporting.toUpperCase()}…` : "Export"}
           </Button>
@@ -441,7 +441,7 @@ function ActivityWorkspace() {
         <PageHeader />
         <div className="enterprise-panel flex min-h-64 items-center justify-center">
           <EmptyState
-            icon={Activity}
+            icon={ActivityIcon}
             title="Activity not available"
             description={
               <>
@@ -503,35 +503,35 @@ function ActivityWorkspace() {
             value={filters.category[0] ?? ""}
             onChange={handleCategory}
             options={CATEGORY_OPTIONS}
-            icon={Layer}
+            icon={LayersIcon}
           />
           <FacetSelect
             label="All outcomes"
             value={activeOutcome}
             onChange={handleOutcome}
             options={OUTCOME_OPTIONS}
-            icon={RadarAlt}
+            icon={TargetIcon}
           />
           <FacetSelect
             label="All actors"
             value={filters.actor}
             onChange={handleActor}
             options={actorOptions}
-            icon={User}
+            icon={UserIcon}
           />
           <FacetSelect
             label="All resources"
             value={filters.resource}
             onChange={handleResource}
             options={resourceOptions}
-            icon={Box}
+            icon={BoxIcon}
           />
           <FacetSelect
             label="All environments"
             value="production"
             onChange={() => {}}
             options={[{ value: "production", label: "Production" }]}
-            icon={Global}
+            icon={GlobeIcon}
           />
           <form
             className="relative min-w-48 flex-1"
@@ -540,7 +540,7 @@ function ActivityWorkspace() {
               patchFilter({ q: searchDraft || undefined });
             }}
           >
-            <SearchNormal
+            <SearchIcon
               className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-2.5 size-3.5 text-muted-foreground"
               aria-hidden="true"
             />

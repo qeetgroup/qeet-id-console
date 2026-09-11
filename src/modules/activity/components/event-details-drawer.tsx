@@ -1,15 +1,3 @@
-import {
-  ArrowLeftAlt,
-  ArrowRight,
-  ArrowRightAlt,
-  Clipboard,
-  Driver,
-  ExportRight,
-  Global,
-  Monitor,
-  SearchNormal,
-  TickCircle,
-} from "@qeetrix/icons";
 // Event details drawer — a right-side Sheet that turns a selected event into an
 // investigation surface: an Overview tab (human context first, IDs second, all
 // copyable), a Raw event tab (full JSON), and a Related events tab (correlated
@@ -40,6 +28,18 @@ import {
   useCopyToClipboard,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ClipboardIcon,
+  ExternalLinkIcon,
+  GlobeIcon,
+  MonitorIcon,
+  SearchIcon,
+  ServerIcon,
+} from "lucide-react";
 import { type ReactNode, useCallback } from "react";
 
 import type { ActivitySearch, DrawerTab } from "../activity-search";
@@ -67,9 +67,9 @@ function CopyIconButton({ text, label }: { text: string; label: string }) {
             className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {copied ? (
-              <TickCircle className="size-3.5 text-success" aria-hidden="true" />
+              <CheckIcon className="size-3.5 text-success" aria-hidden="true" />
             ) : (
-              <Clipboard className="size-3.5" aria-hidden="true" />
+              <ClipboardIcon className="size-3.5" aria-hidden="true" />
             )}
           </button>
         }
@@ -166,11 +166,11 @@ export function EventDetailsDrawer({
                 <span className="max-w-40 truncate font-medium text-foreground">
                   {event.actor?.name ?? event.actor?.id ?? event.actor?.type ?? "System"}
                 </span>
-                <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
+                <ArrowRightIcon className="size-3 shrink-0" aria-hidden="true" />
                 <span className="truncate">{event.title}</span>
                 {event.target && (
                   <>
-                    <ArrowRight className="size-3 shrink-0" aria-hidden="true" />
+                    <ArrowRightIcon className="size-3 shrink-0" aria-hidden="true" />
                     <span className="max-w-40 truncate font-medium text-foreground">
                       {event.target.label ?? event.target.id ?? event.target.type}
                     </span>
@@ -186,7 +186,7 @@ export function EventDetailsDrawer({
                   align="start"
                   trigger={
                     <Button variant="outline" size="sm">
-                      <SearchNormal className="size-3.5" aria-hidden="true" />
+                      <SearchIcon className="size-3.5" aria-hidden="true" />
                       Investigate
                     </Button>
                   }
@@ -200,7 +200,7 @@ export function EventDetailsDrawer({
                     aria-label="Previous event"
                     className="size-7"
                   >
-                    <ArrowLeftAlt className="size-3.5" aria-hidden="true" />
+                    <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
                   </Button>
                   <Button
                     variant="outline"
@@ -210,7 +210,7 @@ export function EventDetailsDrawer({
                     aria-label="Next event"
                     className="size-7"
                   >
-                    <ArrowRightAlt className="size-3.5" aria-hidden="true" />
+                    <ChevronRightIcon className="size-3.5" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
@@ -261,7 +261,10 @@ export function EventDetailsDrawer({
                       {event.source && (
                         <DetailRow label="Source">
                           <span className="flex items-center gap-1">
-                            <Driver className="size-3 text-muted-foreground" aria-hidden="true" />
+                            <ServerIcon
+                              className="size-3 text-muted-foreground"
+                              aria-hidden="true"
+                            />
                             {event.source}
                           </span>
                         </DetailRow>
@@ -296,7 +299,7 @@ export function EventDetailsDrawer({
                                   params={{ userId: event.actor.id }}
                                   className={buttonVariants({ variant: "outline", size: "sm" })}
                                 >
-                                  <ExportRight className="size-3.5" aria-hidden="true" />
+                                  <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
                                   View user
                                 </Link>
                                 <Link
@@ -355,7 +358,7 @@ export function EventDetailsDrawer({
                           {event.location && (
                             <DetailRow label="Location">
                               <span className="flex items-center gap-1">
-                                <Global
+                                <GlobeIcon
                                   className="size-3 text-muted-foreground"
                                   aria-hidden="true"
                                 />
@@ -366,7 +369,7 @@ export function EventDetailsDrawer({
                           {event.device && (
                             <DetailRow label="Device">
                               <span className="flex items-center gap-1">
-                                <Monitor
+                                <MonitorIcon
                                   className="size-3 text-muted-foreground"
                                   aria-hidden="true"
                                 />

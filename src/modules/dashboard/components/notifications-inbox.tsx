@@ -1,6 +1,13 @@
-import { Bell, Danger, DirectInbox, InfoCircle, TickSquare } from "@qeetrix/icons";
 import { Button, cn, StatusPill, TimeSince } from "@qeetrix/ui";
 import { useNavigate } from "@tanstack/react-router";
+import {
+  AlertTriangleIcon,
+  BellIcon,
+  CheckCheckIcon,
+  CircleAlertIcon,
+  InboxIcon,
+  InfoIcon,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -10,11 +17,11 @@ import {
   useNotifications,
 } from "@/modules/developer";
 
-const KIND_ICON: Record<NotificationKind, typeof InfoCircle> = {
-  info: InfoCircle,
-  warning: Danger,
-  alert: InfoCircle,
-  success: TickSquare,
+const KIND_ICON: Record<NotificationKind, typeof InfoIcon> = {
+  info: InfoIcon,
+  warning: AlertTriangleIcon,
+  alert: CircleAlertIcon,
+  success: CheckCheckIcon,
 };
 
 const KIND_PILL: Record<NotificationKind, "info" | "warning" | "danger" | "success"> = {
@@ -71,7 +78,7 @@ export function NotificationsInbox() {
         onClick={() => setOpen((o) => !o)}
         className="relative"
       >
-        <Bell />
+        <BellIcon />
         {unread > 0 && (
           <span
             aria-hidden="true"
@@ -93,7 +100,7 @@ export function NotificationsInbox() {
               disabled={unread === 0 || markAll.isPending}
               onClick={() => markAll.mutate()}
             >
-              <TickSquare /> Mark all read
+              <CheckCheckIcon /> Mark all read
             </Button>
           </div>
           <div className="max-h-96 overflow-y-auto">
@@ -136,7 +143,7 @@ export function NotificationsInbox() {
 }
 
 function NotificationItem({ item, onSelect }: { item: Notification; onSelect: () => void }) {
-  const Icon = KIND_ICON[item.kind] ?? InfoCircle;
+  const Icon = KIND_ICON[item.kind] ?? InfoIcon;
   return (
     <li>
       <button
@@ -174,7 +181,7 @@ function NotificationItem({ item, onSelect }: { item: Notification; onSelect: ()
 function EmptyState() {
   return (
     <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
-      <DirectInbox className="size-7 text-muted-foreground" />
+      <InboxIcon className="size-7 text-muted-foreground" />
       <p className="text-sm font-medium">You&apos;re all caught up</p>
       <p className="text-xs text-muted-foreground">
         New activity in your organization will show up here.

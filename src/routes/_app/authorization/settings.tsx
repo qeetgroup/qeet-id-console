@@ -1,6 +1,6 @@
-import { Layer, Shield, Speedometer } from "@qeetrix/icons";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { GaugeIcon, LayersIcon, ShieldIcon } from "lucide-react";
 
 import { PageHeader } from "@/platform/components/page-header";
 
@@ -16,7 +16,7 @@ function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Layer className="size-4" aria-hidden /> Evaluation model
+            <LayersIcon className="size-4" aria-hidden /> Evaluation model
           </CardTitle>
           <CardDescription>The order and semantics used to reach a decision.</CardDescription>
         </CardHeader>
@@ -42,14 +42,14 @@ function SettingsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <LinkCard
-          icon={Shield}
+          icon={ShieldIcon}
           title="Security policy"
           detail="IP allow/deny lists, session limits, and MFA enforcement."
           to="/settings/organization/security-policy"
           badge="tenant policy"
         />
         <LinkCard
-          icon={Speedometer}
+          icon={GaugeIcon}
           title="Access Tester"
           detail="Run an ad-hoc RBAC check with the full grant path."
           to="/authorization/access-tester"
@@ -76,7 +76,7 @@ function LinkCard({
   to,
   badge,
 }: {
-  icon: typeof Shield;
+  icon: typeof ShieldIcon;
   title: string;
   detail: string;
   to: string;
