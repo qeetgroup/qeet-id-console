@@ -2,12 +2,12 @@ import { Button, Separator, SidebarTrigger } from "@qeetrix/ui";
 import { KeyboardIcon, SearchIcon } from "lucide-react";
 
 import { QeetAITrigger } from "@/modules/qeetai";
+import { ThemeToggle } from "@/platform/components/theme-toggle";
 
 import { DynamicBreadcrumb } from "./dynamic-breadcrumb";
 import { HeaderUser } from "./header-user";
 import { LanguageSwitcher } from "./language-switcher";
 import { NotificationsInbox } from "./notifications-inbox";
-import { ThemeToggle } from "./theme-toggle";
 
 type ConsoleHeaderProps = {
   onOpenPalette: () => void;

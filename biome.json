@@ -137,6 +137,7 @@
       "!**/.tanstack",
       "!**/.nitro",
       "!**/.netlify",
+      "!**/.vercel",
       "!**/coverage",
       "!**/routeTree.gen.ts",
       "!bun.lock"

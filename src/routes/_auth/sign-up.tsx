@@ -13,14 +13,17 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { passkeyErrorMessage, usePasskeySignup } from "@/modules/authentication/api/passkey-flows";
 import { SignupForm } from "@/modules/authentication/components/signup-form";
 import {
   useConfirmEmailVerification,
   useSignup,
   useStartEmailVerification,
 } from "@/modules/authentication";
+import { errorMessage } from "@/platform/errors/user-message";
 
 export const Route = createFileRoute("/_auth/sign-up")({
+  head: () => ({ meta: [{ title: "Qeet ID – Sign up" }] }),
   component: SignupPage,
 });
 
@@ -41,7 +44,15 @@ function SignupPage() {
     },
   });
 
+  const passkey = usePasskeySignup({
+    onSuccess: (res, input) => {
+      setPending({ userId: res.user_id, email: input.email });
+      startVerify.mutate(res.user_id);
+    },
+  });
+
   if (pending) {
+    const verificationError = confirmVerify.error ?? startVerify.error;
     return (
       <VerifyEmailStep
         email={pending.email}
@@ -49,7 +60,7 @@ function SignupPage() {
         isResending={startVerify.isPending}
         // Surface send failures too — otherwise a failed initial/resend code
         // send leaves the user staring at an OTP box with no code and no error.
-        errorMessage={confirmVerify.error?.message ?? startVerify.error?.message}
+        errorMessage={verificationError ? errorMessage(verificationError) : undefined}
         onResend={() => startVerify.mutate(pending.userId)}
         onSubmit={(code) =>
           confirmVerify.mutate(
@@ -64,13 +75,25 @@ function SignupPage() {
   return (
     <SignupForm
       isLoading={signup.isPending}
-      errorMessage={signup.error?.message}
+      isPasskeyLoading={passkey.isPending}
+      errorMessage={
+        passkey.error
+          ? passkeyErrorMessage(passkey.error)
+          : signup.error
+            ? errorMessage(signup.error)
+            : undefined
+      }
       onSignup={(values) => {
+        passkey.reset();
         signup.mutate({
           email: values.email,
           password: values.password,
           display_name: values.display_name || undefined,
         });
+      }}
+      onPasskeySignup={(values) => {
+        signup.reset();
+        passkey.mutate(values);
       }}
     />
   );
@@ -104,8 +127,10 @@ function VerifyEmailStep({
       <Card>
         <CardContent className="p-6 md:p-8">
           <form
+            aria-busy={isLoading}
             onSubmit={(e) => {
               e.preventDefault();
+              if (isLoading) return;
               onSubmit(code.trim());
             }}
           >

@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { passkeyErrorMessage, usePasskeyLogin } from "@/modules/authentication/api/passkey-flows";
 import { LoginForm } from "@/modules/authentication/components/signin-form";
 import {
   isMfaChallenge,
@@ -21,8 +22,10 @@ import {
   useConsumeSocialCode,
   useLogin,
 } from "@/modules/authentication";
+import { errorMessage } from "@/platform/errors/user-message";
 
 export const Route = createFileRoute("/_auth/sign-in")({
+  head: () => ({ meta: [{ title: "Qeet ID – Sign in" }] }),
   component: SignInPage,
 });
 
@@ -30,6 +33,7 @@ function SignInPage() {
   const login = useLogin();
   const mfa = useCompleteMfaLogin();
   const social = useConsumeSocialCode();
+  const passkey = usePasskeyLogin();
 
   // Returning from a platform social login: the provider callback bounced the
   // browser here with a one-time code to exchange for a session.
@@ -60,9 +64,7 @@ function SignInPage() {
         <div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
           <Loader2Icon className="size-6 animate-spin" />
           <p className="text-sm">
-            {social.isError
-              ? (social.error?.message ?? "Couldn't complete sign-in. Please try again.")
-              : "Signing you in…"}
+            {social.isError ? errorMessage(social.error) : "Signing you in…"}
           </p>
         </div>
       </div>
@@ -77,7 +79,7 @@ function SignInPage() {
     return (
       <MfaStep
         isLoading={mfa.isPending}
-        errorMessage={mfa.error?.message}
+        errorMessage={mfa.error ? errorMessage(mfa.error) : undefined}
         onSubmit={(code) => mfa.mutate({ mfa_token: challenge.mfa_token, code })}
       />
     );
@@ -86,8 +88,22 @@ function SignInPage() {
   return (
     <LoginForm
       isLoading={login.isPending}
-      errorMessage={login.error?.message}
-      onLogin={(values) => login.mutate(values)}
+      isPasskeyLoading={passkey.isPending}
+      errorMessage={
+        passkey.error
+          ? passkeyErrorMessage(passkey.error)
+          : login.error
+            ? errorMessage(login.error)
+            : undefined
+      }
+      onLogin={(values) => {
+        passkey.reset();
+        login.mutate(values);
+      }}
+      onPasskeyLogin={() => {
+        login.reset();
+        passkey.mutate();
+      }}
     />
   );
 }
@@ -115,8 +131,10 @@ function MfaStep({
       <Card>
         <CardContent className="p-6 md:p-8">
           <form
+            aria-busy={isLoading}
             onSubmit={(e) => {
               e.preventDefault();
+              if (isLoading) return;
               onSubmit(code.trim());
             }}
           >

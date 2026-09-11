@@ -66,7 +66,16 @@ describe("public session store", () => {
   it.each([
     ["user", { userId: "user-2" }],
     ["session", { sessionId: "session-2" }],
-    ["impersonation enter", { impersonationActor: { userId: "admin-1", email: "admin@example.com" } }],
+    [
+      "impersonation enter",
+      {
+        impersonationActor: {
+          targetSubject: "user-1",
+          actorSubject: "admin-1",
+          actorEmail: "admin@example.com",
+        },
+      },
+    ],
   ])("advances the generation before cleanup on %s change", (_label, patch) => {
     sessionStore.hydrate(AUTHENTICATED_SESSION);
     const generation = sessionStore.getScopeGeneration();

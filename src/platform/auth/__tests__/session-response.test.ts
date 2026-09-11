@@ -21,11 +21,17 @@ describe("session response policy", () => {
   it("adopts token pairs only from explicit authentication transitions", () => {
     expect(isSessionIssuingRequest("/v1/auth/login", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/auth/switch-tenant", "POST")).toBe(true);
+    expect(isSessionIssuingRequest("/v1/passkeys/login/finish", "POST")).toBe(true);
+    expect(isSessionIssuingRequest("/v1/signup/passkey/finish", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/me/invites/invite-1/accept", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/tenants", "POST")).toBe(true);
 
     expect(isSessionIssuingRequest("/v1/oauth/token-code", "POST")).toBe(false);
     expect(isSessionIssuingRequest("/v1/credentials/issue", "POST")).toBe(false);
+    expect(isSessionIssuingRequest("/v1/passkeys/signup/finish", "POST")).toBe(false);
+    expect(isSessionIssuingRequest("/v1/signup/passkey/begin", "POST")).toBe(false);
+    expect(isSessionIssuingRequest("/v1/signup/passkey/finish", "GET")).toBe(false);
+    expect(isSessionIssuingRequest("/v1/passkeys/login/finish", "GET")).toBe(false);
     expect(isSessionIssuingRequest("/v1/auth/login", "GET")).toBe(false);
   });
 
