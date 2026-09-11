@@ -126,6 +126,10 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     expect(api).not.toHaveBeenCalled();
   });
 
+  // The only test that walks the whole wizard forward, back and forward again,
+  // with four async select interactions: ~2s here, ~6s on CI's slower runners,
+  // so the 5s default is not enough. Every other test in this file stays under
+  // 600ms — raise this one rather than relaxing the default for all of them.
   it("preserves project, details, logo and manual slug through Back", async () => {
     mount(<OrgOnboarding onDone={onDone} onCancel={onCancel} />);
     expect(screen.getByRole("listitem", { current: "step" }).textContent).toContain("Choose plan");
@@ -187,7 +191,7 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     });
     expect(startSignupCheckout).not.toHaveBeenCalled();
     expect(onCancel).toHaveBeenCalledOnce();
-  });
+  }, 20_000);
 
   it.each([
     ["Free", "Continue", "free"],
