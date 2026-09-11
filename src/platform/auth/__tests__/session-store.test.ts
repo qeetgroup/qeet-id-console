@@ -62,4 +62,43 @@ describe("public session store", () => {
     expect(clear).toHaveBeenCalledOnce();
     unsubscribe();
   });
+
+  it.each([
+    ["user", { userId: "user-2" }],
+    ["session", { sessionId: "session-2" }],
+    [
+      "impersonation enter",
+      {
+        impersonationActor: {
+          targetSubject: "user-1",
+          actorSubject: "admin-1",
+          actorEmail: "admin@example.com",
+        },
+      },
+    ],
+  ])("advances the generation before cleanup on %s change", (_label, patch) => {
+    sessionStore.hydrate(AUTHENTICATED_SESSION);
+    const generation = sessionStore.getScopeGeneration();
+    const observed: number[] = [];
+    const unsubscribe = onSessionClear(() => observed.push(sessionStore.getScopeGeneration()));
+
+    sessionStore.set({ ...AUTHENTICATED_SESSION, ...patch });
+
+    expect(sessionStore.getScopeGeneration()).toBe(generation + 1);
+    expect(observed).toEqual([generation + 1]);
+    unsubscribe();
+  });
+
+  it("does not clear scope-owned state for an expiry-only refresh", () => {
+    sessionStore.hydrate(AUTHENTICATED_SESSION);
+    const generation = sessionStore.getScopeGeneration();
+    const clear = vi.fn();
+    const unsubscribe = onSessionClear(clear);
+
+    sessionStore.set({ ...AUTHENTICATED_SESSION, expiresAt: "2030-02-01T00:00:00Z", version: 2 });
+
+    expect(sessionStore.getScopeGeneration()).toBe(generation);
+    expect(clear).not.toHaveBeenCalled();
+    unsubscribe();
+  });
 });

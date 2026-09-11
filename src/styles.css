@@ -1,4 +1,5 @@
 @import "@qeetrix/ui/styles.css";
+@import "./modules/authentication/components/auth-page.css";
 
 :root {
   color-scheme: light;

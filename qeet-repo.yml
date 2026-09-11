@@ -15,7 +15,7 @@ repository:
   type: frontend
   role: primary
   status: active
-  visibility: public
+  visibility: private
   default_branch: main
   working_branch: develop
   host: console.id.qeet.in

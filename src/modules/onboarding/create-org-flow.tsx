@@ -1,43 +1,25 @@
-import {
-  Button,
-  cn,
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@qeetrix/ui";
+import { Button, cn } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { LogoField } from "@/shared/components/logo-field";
-import { type ApiError, api } from "@/platform/api/client";
+import { api } from "@/platform/api/client";
+import { errorMessage } from "@/platform/errors/user-message";
 import { startSignupCheckout } from "@/modules/billing";
-import { REGIONS } from "@/shared/data/regions";
 
-import {
-  type OnboardingProfile,
-  ROLES,
-  stashOnboardingProfile,
-  TEAM_SIZES,
-  USE_CASES,
-} from "./onboarding-profile";
+import { type OnboardingProfile, stashOnboardingProfile } from "./onboarding-profile";
 import { slugify } from "./plan-catalog";
 import { PlanSelect, type PlanSelection } from "./plan-select";
+import { SetupGuidance, SetupPlanNotes } from "./setup-guidance";
+import { SetupOrganizationForm } from "./setup-organization-form";
+import type { SetupStep } from "./setup-progress";
+import { SetupProjectForm } from "./setup-project-form";
+import { SETUP_FOCUS, SETUP_THEME } from "./setup-styles";
 
 type CreateTenantResponse = {
   tenant: { id: string; slug: string; name: string; plan: string };
   tenant_id: string;
-  access_token?: string;
-  refresh_token?: string;
 };
 
 interface CreateOrgFlowProps {
@@ -52,19 +34,29 @@ interface CreateOrgFlowProps {
   onCancel?: () => void;
   /** Force single-column plan cards (for narrow containers like a sheet). */
   planStacked?: boolean;
+  /** Full-page composition stays separate from the reusable sheet flow. */
+  renderHeader?: (step: SetupStep) => ReactNode;
+  showGuidance?: boolean;
   className?: string;
 }
 
 /**
- * Create-organization flow: choose a plan (+ billing cycle), name the org, then
- * pay. The org is created first (POST /v1/tenants returns a tenant-scoped token
- * we persist), so the tenant-scoped checkout that follows is authorized. Shared
- * by first-run onboarding and the "create another organization" action.
+ * Choose a plan, optionally describe the project, then enter organization details.
+ * Free plans create inline via the BFF; paid plans are provisioned after checkout.
+ * Shared by first-run onboarding and the "create another organization" action.
  */
-export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: CreateOrgFlowProps) {
+export function CreateOrgFlow({
+  onDone,
+  onCancel,
+  planStacked,
+  renderHeader,
+  showGuidance = false,
+  className,
+}: CreateOrgFlowProps) {
+  const { t } = useTranslation("dashboard");
   const done = onDone ?? (() => window.location.assign("/"));
 
-  const [step, setStep] = useState<"plan" | "profile" | "name">("plan");
+  const [step, setStep] = useState<SetupStep>("plan");
   const [selection, setSelection] = useState<PlanSelection | null>(null);
   const [profile, setProfile] = useState<OnboardingProfile>({});
   const [name, setName] = useState("");
@@ -99,7 +91,7 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selection) return;
+    if (!selection || busy) return;
     setError(null);
 
     const isPaid = selection.tier !== "free" && selection.tier !== "enterprise";
@@ -149,222 +141,89 @@ export function CreateOrgFlow({ onDone, onCancel, planStacked, className }: Crea
       done();
     } catch (err) {
       setPaying(false);
-      const msg = (err as ApiError)?.message ?? "Something went wrong. Please try again.";
-      setError(msg);
+      setError(errorMessage(err));
     }
   }
 
-  if (step === "plan") {
-    return (
-      <div className={className}>
-        <PlanSelect
-          onSelect={pickPlan}
-          stacked={planStacked}
-          ctaLabel={(tier) =>
-            tier === "enterprise"
-              ? "Contact sales"
-              : tier === "free"
-                ? "Choose Free"
-                : "Choose plan"
-          }
-        />
-        {onCancel && (
-          <div className="mt-5 flex justify-end">
-            <Button type="button" variant="ghost" onClick={onCancel}>
-              Cancel
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  if (step === "profile") {
-    return (
-      <form
-        className={cn("mx-auto w-full max-w-md", className)}
-        onSubmit={(e) => {
-          e.preventDefault();
-          setStep("name");
-        }}
-      >
-        <FieldGroup>
-          <button
-            type="button"
-            className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-            onClick={() => setStep("plan")}
-          >
-            <ArrowLeftIcon className="size-3.5" /> Choose a different plan
-          </button>
-          <div>
-            <h2 className="text-base font-semibold">Tell us about your project</h2>
-            <p className="text-sm text-muted-foreground">
-              This tailors your setup checklist — optional, and you can change it later.
-            </p>
-          </div>
-
-          <Field>
-            <FieldLabel>What are you building?</FieldLabel>
-            <Select
-              value={profile.use_case ?? ""}
-              onValueChange={(v) => setProfile((p) => ({ ...p, use_case: v || undefined }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select…" />
-              </SelectTrigger>
-              <SelectContent>
-                {USE_CASES.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field>
-            <FieldLabel>How big is your team?</FieldLabel>
-            <Select
-              value={profile.team_size ?? ""}
-              onValueChange={(v) => setProfile((p) => ({ ...p, team_size: v || undefined }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select…" />
-              </SelectTrigger>
-              <SelectContent>
-                {TEAM_SIZES.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field>
-            <FieldLabel>Your role</FieldLabel>
-            <Select
-              value={profile.role ?? ""}
-              onValueChange={(v) => setProfile((p) => ({ ...p, role: v || undefined }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select…" />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLES.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field>
-            <Button type="submit">Continue</Button>
-          </Field>
-        </FieldGroup>
-      </form>
-    );
-  }
-
-  const isFree = selection?.tier === "free";
-  const isEnterprise = selection?.tier === "enterprise";
-  const submitLabel = isFree
-    ? "Create organization"
-    : isEnterprise
-      ? "Create & contact sales"
-      : "Continue to payment";
-  const cycleLabel = selection?.interval === "year" ? "Yearly" : "Monthly";
-  const tierName = selection
-    ? selection.tier.charAt(0).toUpperCase() + selection.tier.slice(1)
-    : "";
-
   return (
-    <form className={cn("mx-auto w-full max-w-md", className)} onSubmit={submit}>
-      <FieldGroup>
-        <button
-          type="button"
-          className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => setStep("profile")}
-          disabled={busy}
+    <div
+      className={cn(
+        SETUP_THEME,
+        "@container/setup flex min-w-0 flex-col gap-5",
+        step === "plan" && "gap-3.5",
+        step === "name" && "gap-4",
+        className,
+      )}
+    >
+      {renderHeader?.(step)}
+      {step === "plan" ? (
+        <>
+          <PlanSelect onSelect={pickPlan} stacked={planStacked} initialSelection={selection} />
+          {showGuidance && <SetupPlanNotes />}
+          {onCancel && (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                className={cn("h-8 text-xs", SETUP_FOCUS)}
+                onClick={onCancel}
+              >
+                {t("setup.cancel")}
+              </Button>
+            </div>
+          )}
+        </>
+      ) : selection ? (
+        <div
+          className={cn(
+            "grid min-w-0 gap-3.5",
+            showGuidance && !planStacked
+              ? "@min-[700px]/setup:grid-cols-[minmax(0,1.85fr)_minmax(17rem,1fr)]"
+              : "mx-auto w-full max-w-xl",
+          )}
         >
-          <ArrowLeftIcon className="size-3.5" />
-          {tierName} plan{!isFree && !isEnterprise ? ` · ${cycleLabel}` : ""} — change
-        </button>
-
-        <Field>
-          <FieldLabel htmlFor="org-name">Organization name</FieldLabel>
-          <Input
-            id="org-name"
-            name="name"
-            placeholder="Acme Corp"
-            required
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              if (!slugEdited) setSlug(slugify(e.target.value));
-            }}
-          />
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="org-slug">Slug</FieldLabel>
-          <Input
-            id="org-slug"
-            name="slug"
-            pattern="[a-z0-9-]+"
-            minLength={2}
-            maxLength={64}
-            placeholder="acme"
-            required
-            value={slug}
-            onChange={(e) => {
-              setSlugEdited(true);
-              setSlug(e.target.value);
-            }}
-          />
-          <FieldDescription>Lowercase letters, numbers and hyphens. Used in URLs.</FieldDescription>
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="org-region">Data region</FieldLabel>
-          <Select value={region} onValueChange={(v) => v && setRegion(v)}>
-            <SelectTrigger id="org-region">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {REGIONS.map((r) => (
-                <SelectItem key={r.value} value={r.value}>
-                  {r.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-
-        <Field>
-          <FieldLabel>Logo</FieldLabel>
-          <LogoField
-            value={logo}
-            onChange={setLogo}
-            hint="Optional — we'll use an initials avatar if you skip it."
-          />
-        </Field>
-
-        {error && (
-          <Field>
-            <FieldError>{error}</FieldError>
-          </Field>
-        )}
-
-        <Field>
-          <Button type="submit" disabled={busy || !name.trim() || slug.trim().length < 2}>
-            {busy && <Loader2Icon className="animate-spin" />}
-            {busy ? "Setting up…" : submitLabel}
-          </Button>
-        </Field>
-      </FieldGroup>
-    </form>
+          {step === "profile" ? (
+            <SetupProjectForm
+              selection={selection}
+              profile={profile}
+              onProfileChange={setProfile}
+              onBack={() => setStep("plan")}
+              onContinue={() => setStep("name")}
+              onSkip={() => {
+                setProfile({});
+                setStep("name");
+              }}
+            />
+          ) : (
+            <SetupOrganizationForm
+              selection={selection}
+              name={name}
+              slug={slug}
+              region={region}
+              logo={logo}
+              busy={busy}
+              error={error}
+              onNameChange={(value) => {
+                setName(value);
+                if (!slugEdited) setSlug(slugify(value));
+              }}
+              onSlugChange={(value) => {
+                setSlugEdited(true);
+                setSlug(value);
+              }}
+              onRegionChange={setRegion}
+              onLogoChange={setLogo}
+              onBack={() => setStep("profile")}
+              onChangePlan={() => {
+                setError(null);
+                setStep("plan");
+              }}
+              onSubmit={submit}
+            />
+          )}
+          {showGuidance && !planStacked && <SetupGuidance kind={step} />}
+        </div>
+      ) : null}
+    </div>
   );
 }

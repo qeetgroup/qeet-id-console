@@ -29,6 +29,7 @@ const EMPTY_SESSION: PublicSession = {
 };
 
 let currentSession = EMPTY_SESSION;
+let scopeGeneration = 0;
 const subscribers = new Set<() => void>();
 const clearListeners = new Set<() => void>();
 
@@ -51,6 +52,22 @@ function runClearListeners() {
       // A module cleanup must not prevent the session transition.
     }
   }
+}
+
+function securityScopeChanged(left: PublicSession, right: PublicSession): boolean {
+  return (
+    left.isAuthenticated !== right.isAuthenticated ||
+    left.sessionId !== right.sessionId ||
+    left.userId !== right.userId ||
+    left.tenantId !== right.tenantId ||
+    JSON.stringify(left.impersonationActor) !== JSON.stringify(right.impersonationActor)
+  );
+}
+
+function transitionScope(next: PublicSession) {
+  scopeGeneration += 1;
+  runClearListeners();
+  currentSession = next;
 }
 
 type SessionEvent = {
@@ -102,8 +119,7 @@ function applyRemoteEvent(event: SessionEvent) {
   if (event.source === source || typeof window === "undefined") return;
   if (event.type === "cleared") {
     const wasAuthenticated = currentSession.isAuthenticated;
-    currentSession = EMPTY_SESSION;
-    if (wasAuthenticated) runClearListeners();
+    if (wasAuthenticated) transitionScope(EMPTY_SESSION);
     notifySubscribers();
     if (window.location.pathname !== "/sign-in") window.location.assign("/sign-in");
     return;
@@ -135,15 +151,13 @@ if (typeof window !== "undefined") {
 
 export const sessionStore = {
   getSnapshot: () => currentSession,
+  getScopeGeneration: () => scopeGeneration,
   set: (next: PublicSession, options: { broadcast?: boolean } = {}) => {
     if (sameSession(currentSession, next)) return;
-    const scopeChanged =
-      currentSession.userId !== next.userId || currentSession.tenantId !== next.tenantId;
+    const scopeChanged = securityScopeChanged(currentSession, next);
     const authChanged = currentSession.isAuthenticated !== next.isAuthenticated;
-    if (scopeChanged || (currentSession.isAuthenticated && !next.isAuthenticated)) {
-      runClearListeners();
-    }
-    currentSession = next;
+    if (scopeChanged) transitionScope(next);
+    else currentSession = next;
     notifySubscribers();
     if (options.broadcast && (scopeChanged || authChanged)) {
       publish(next.isAuthenticated ? "changed" : "cleared");
@@ -154,8 +168,8 @@ export const sessionStore = {
   },
   clear: () => {
     const wasAuthenticated = currentSession.isAuthenticated;
-    currentSession = EMPTY_SESSION;
-    if (wasAuthenticated) runClearListeners();
+    if (wasAuthenticated) transitionScope(EMPTY_SESSION);
+    else currentSession = EMPTY_SESSION;
     notifySubscribers();
     publish("cleared");
   },

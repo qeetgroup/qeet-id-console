@@ -152,4 +152,33 @@ describe("api() BFF request", () => {
       code: "client.schema_mismatch",
     });
   });
+
+  it("discards a response that resolves after the session scope changes", async () => {
+    sessionStore.set(AUTHENTICATED_SESSION);
+    let resolveRequest!: (value: {
+      status: number;
+      data: { items: Array<{ id: string }> };
+      session: PublicSession;
+      sessionChanged: boolean;
+    }) => void;
+    proxyApiRequest.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve;
+        }),
+    );
+
+    const pending = api<{ items: Array<{ id: string }> }>("/v1/users");
+    await vi.waitFor(() => expect(proxyApiRequest).toHaveBeenCalledOnce());
+    sessionStore.set({ ...AUTHENTICATED_SESSION, tenantId: "tenant-2", sessionId: "session-2" });
+    resolveRequest({
+      status: 200,
+      data: { items: [{ id: "tenant-1-user" }] },
+      session: AUTHENTICATED_SESSION,
+      sessionChanged: false,
+    });
+
+    await expect(pending).rejects.toMatchObject({ code: "client.stale_scope" });
+    expect(sessionStore.getSnapshot().tenantId).toBe("tenant-2");
+  });
 });
