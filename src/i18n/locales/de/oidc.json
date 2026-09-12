@@ -56,7 +56,7 @@
     "metadataTitle": "Metadaten",
     "createdLabel": "Erstellt",
     "rowIdLabel": "Zeilen-ID",
-    "tenantLabel": "Mandant",
+    "tenantLabel": "Organisation",
     "grantTypesLabel": "Grant-Typen",
     "secretTitle": "Client-Geheimnis",
     "secretDescription": "Die Rotation macht das aktuelle Geheimnis sofort ungültig. Der neue Wert wird einmal angezeigt.",

@@ -60,6 +60,7 @@ export function useUpdateAuthHook() {
         body: { enabled, fail_open },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Auth hook updated" },
   });
 }
 
@@ -72,5 +73,6 @@ export function useDeleteAuthHook() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Auth hook deleted" },
   });
 }

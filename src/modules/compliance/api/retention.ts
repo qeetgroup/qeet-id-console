@@ -43,6 +43,7 @@ export function useRetentionPreview() {
         `/v1/tenants/${tenantId}/retention/preview`,
         { method: "POST" },
       ),
+    meta: { silent: true },
   });
 }
 

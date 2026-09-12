@@ -30,7 +30,7 @@
     "expires": "Expires",
     "issued": "Issued",
     "type": "Type",
-    "tenant": "Tenant"
+    "tenant": "Organization"
   },
   "states": {
     "loading": "Loading…",

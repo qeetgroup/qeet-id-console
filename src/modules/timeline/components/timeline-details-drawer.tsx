@@ -522,7 +522,7 @@ export function TimelineDetailsDrawer({
 
                     {event.target?.type === "organization" && event.target.id && (
                       <Link
-                        to="/organizations/tenants"
+                        to="/organizations"
                         className={buttonVariants({ variant: "outline", size: "sm" })}
                       >
                         <ExternalLinkIcon className="size-3.5" aria-hidden="true" />

@@ -47,6 +47,7 @@ export type NavSubItem = {
   title: string;
   url: string;
   requiredPermission?: Capability;
+  planned?: boolean;
 };
 
 export type NavItem = {
@@ -100,16 +101,13 @@ export const navGroups: NavGroup[] = [
         items: [
           { title: "All users", url: "/users", requiredPermission: "user.read" },
           { title: "Invitations", url: "/invitations", requiredPermission: "user.read" },
+          {
+            title: "Suspended",
+            url: "/users/suspended",
+            requiredPermission: "user.read",
+          },
           { title: "Deleted", url: "/users/deleted", requiredPermission: "user.read" },
         ],
-      },
-      {
-        // Domain verification moved into Settings › Domains (tabbed with the
-        // custom login domain), so Organizations is now a single destination.
-        title: "Organizations",
-        url: "/organizations/tenants",
-        icon: <Building2Icon />,
-        description: "Tenant boundaries, plans and regions.",
       },
       {
         title: "Groups",
@@ -119,18 +117,46 @@ export const navGroups: NavGroup[] = [
         requiredPermission: "group.read",
       },
       {
+        // Domain verification moved into Settings › Domains (tabbed with the
+        // custom login domain), so Organizations is now a single destination.
+        title: "Organizations",
+        url: "/organizations",
+        icon: <Building2Icon />,
+        description: "Organization boundaries, plans and regions.",
+      },
+      {
         // SCIM / LDAP are directory-sync connections, so they live under
         // Directory rather than buried in the auth-connections catalogue.
         title: "Directories",
-        url: "/auth/connections/scim",
+        url: "/directory/connections",
         icon: <NetworkIcon />,
         description: "SCIM and LDAP / AD directory-sync connections.",
         requiredPermission: "connection.read",
         items: [
+          {
+            title: "Connections",
+            url: "/directory/connections",
+            requiredPermission: "connection.read",
+          },
           { title: "SCIM", url: "/auth/connections/scim", requiredPermission: "connection.read" },
           {
             title: "LDAP / AD",
             url: "/auth/connections/ldap",
+            requiredPermission: "connection.read",
+          },
+          {
+            title: "Sync activity",
+            url: "/directory/sync-activity",
+            requiredPermission: "connection.read",
+          },
+          {
+            title: "Sync errors",
+            url: "/directory/sync-errors",
+            requiredPermission: "connection.read",
+          },
+          {
+            title: "Mappings",
+            url: "/directory/attribute-mappings",
             requiredPermission: "connection.read",
           },
         ],
@@ -540,7 +566,7 @@ const ROUTE_REQUIREMENT_OVERRIDES: ReadonlyArray<{
   requiredPermission: Capability;
 }> = [{ path: "/users/import", requiredPermission: "user.write" }];
 
-const SAFE_DESTINATIONS = new Set(["/", "/organizations/tenants"]);
+const SAFE_DESTINATIONS = new Set(["/", "/organizations"]);
 
 function normalizePathname(pathname: string): string {
   const path = pathname.split(/[?#]/, 1)[0] || "/";

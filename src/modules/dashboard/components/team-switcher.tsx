@@ -141,7 +141,7 @@ export function TeamSwitcher() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem render={<Link to="/organizations/tenants" />} className="gap-2 p-2">
+              <DropdownMenuItem render={<Link to="/organizations" />} className="gap-2 p-2">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <PlusIcon className="size-4" />
                 </div>

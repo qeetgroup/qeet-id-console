@@ -56,6 +56,7 @@ export function useIssueCredential() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Credential issued" },
   });
 }
 
@@ -68,6 +69,7 @@ export function useRevokeCredential() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Credential revoked" },
   });
 }
 
@@ -78,5 +80,6 @@ export function useVerifyCredential() {
         method: "POST",
         body: { credential },
       }),
+    meta: { silent: true },
   });
 }

@@ -53,12 +53,12 @@ export interface UserTrends {
 }
 
 /** Directory summary counts. */
-export function useUserStats() {
+export function useUserStats(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["user-stats", tenantId],
     queryFn: () => api<UserStats>("/v1/users/stats"),
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     staleTime: 30_000,
   });
 }

@@ -4,6 +4,7 @@ import { Loader2Icon, MailWarningIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { errorMessage } from "@/platform/errors/user-message";
 import { useMe } from "@/platform/auth/session";
 import { useConfirmEmailVerification, useStartEmailVerification } from "@/modules/authentication";
 
@@ -30,11 +31,10 @@ export function VerifyEmailBanner() {
 
   const resend = () => {
     start.mutate(me.id, {
-      onSuccess: () => {
-        setOpen(true);
-        toast.success("Verification code sent to your email.");
-      },
-      onError: () => toast.error("Could not send the verification code. Try again."),
+      // The success toast comes from the mutation's meta; only the panel
+      // needs opening here.
+      onSuccess: () => setOpen(true),
+      onError: (err) => toast.error(errorMessage(err)),
     });
   };
 
@@ -43,12 +43,13 @@ export function VerifyEmailBanner() {
       { userId: me.id, code: value },
       {
         onSuccess: () => {
-          toast.success("Email verified.");
           setOpen(false);
           setCode("");
           void qc.invalidateQueries({ queryKey: ["me"] });
         },
-        onError: () => toast.error("That code is incorrect or expired."),
+        // Was a fixed "incorrect or expired" string, which hid the specific
+        // reason — a superseded code, a spent guess budget, a throttled resend.
+        onError: (err) => toast.error(errorMessage(err)),
       },
     );
   };

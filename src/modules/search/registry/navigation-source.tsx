@@ -38,7 +38,7 @@ export function buildNavSearchItems(
           });
         }
         for (const sub of item.items) {
-          if (can(sub.requiredPermission)) {
+          if (!sub.planned && can(sub.requiredPermission)) {
             out.push({
               id: sub.url,
               kind: "navigation",

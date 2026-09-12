@@ -66,5 +66,6 @@ export function useResolveAnomaly() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Anomaly resolved" },
   });
 }

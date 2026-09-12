@@ -55,6 +55,7 @@ export function useToggleLogSink() {
         body: { enabled },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Log sink updated" },
   });
 }
 
@@ -67,5 +68,6 @@ export function useDeleteLogSink() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Log sink deleted" },
   });
 }

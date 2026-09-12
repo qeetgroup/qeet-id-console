@@ -154,14 +154,14 @@ export const rotateSigningKeysTool: ToolDefinition<RotateSigningKeysInput> = {
   category: "credentials",
   title: "Rotate signing keys",
   description:
-    "Rotate the tenant's OIDC token-signing keys. The current key is invalidated after the grace window. Returns key material shown to the operator only, never to the model. Destructive: requires confirmation.",
+    "Rotate the organization's OIDC token-signing keys. The current key is invalidated after the grace window. Returns key material shown to the operator only, never to the model. Destructive: requires confirmation.",
   input: rotateSigningKeysInput,
   requiredCapability: "connection.write",
   destructive: true,
   confirm: () => ({
     title: "Rotate signing keys",
     body: "Rotating invalidates the current signing key after the grace window. Active sessions using the old key may be affected. The private key is shown to the operator once and cannot be retrieved again.",
-    affected: [{ label: "Action", value: "Rotate all tenant OIDC signing keys" }],
+    affected: [{ label: "Action", value: "Rotate all organization OIDC signing keys" }],
     confirmText: "Rotate keys",
     tone: "destructive",
   }),

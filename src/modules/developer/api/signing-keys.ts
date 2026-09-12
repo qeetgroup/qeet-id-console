@@ -29,5 +29,6 @@ export function useRotateKey() {
   return useMutation({
     mutationFn: () => api<RotateKeyResult>("/v1/oidc/signing-keys/rotate", { method: "POST" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: SIGNING_KEYS_KEY }),
+    meta: { successMessage: "Signing key rotated" },
   });
 }

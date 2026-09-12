@@ -50,8 +50,10 @@ import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
+import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
 
 export const Route = createFileRoute("/_app/invitations")({
+  validateSearch: parseCreateIntent,
   component: InvitationsPage,
 });
 
@@ -76,7 +78,7 @@ function InvitationsPage() {
   const canWriteUsers = access.can("user.write");
   const canReadRoles = access.can("role.read");
   const canCreateInvites = canWriteUsers && canReadRoles;
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useCreateIntent(canCreateInvites);
   const [confirmDialog, openConfirm] = useConfirmDialog();
 
   useEffect(() => {

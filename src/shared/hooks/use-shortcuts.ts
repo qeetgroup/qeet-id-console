@@ -26,7 +26,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { keys: ["g", "u"], description: "Users", path: "/users" },
       { keys: ["g", "r"], description: "Roles & permissions", path: "/authorization/roles" },
       { keys: ["g", "i"], description: "Invitations", path: "/invitations" },
-      { keys: ["g", "t"], description: "Tenants", path: "/organizations/tenants" },
+      { keys: ["g", "t"], description: "Organizations", path: "/organizations" },
       { keys: ["g", "w"], description: "Webhooks", path: "/developer/webhooks" },
       { keys: ["g", "a"], description: "Audit logs", path: "/security/audit-logs" },
       {
@@ -43,7 +43,7 @@ const GO_TO: Record<string, string> = {
   u: "/users",
   r: "/authorization/roles",
   i: "/invitations",
-  t: "/organizations/tenants",
+  t: "/organizations",
   w: "/developer/webhooks",
   a: "/security/audit-logs",
   s: "/settings/organization/general",

@@ -20,6 +20,7 @@ export function useLogout() {
       qc.clear();
       navigate({ to: "/sign-in" });
     },
+    meta: { successMessage: "Signed out successfully" },
   });
 }
 

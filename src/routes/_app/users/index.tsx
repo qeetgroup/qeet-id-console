@@ -14,6 +14,7 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
+  PasswordInput,
   Select,
   SelectContent,
   SelectItem,
@@ -40,16 +41,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  ArrowRightIcon,
   CheckCircle2Icon,
   ChevronLeftIcon,
   ChevronRightIcon,
   Loader2Icon,
+  LockIcon,
+  MailIcon,
   PlusIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
   ShieldCheckIcon,
   UploadCloudIcon,
   UserIcon,
+  UserPlusIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -68,6 +73,7 @@ import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
 import { BulkActions } from "@/modules/users/bulk-actions";
 import { MoreFilters, SaveView } from "@/modules/users/filter-extras";
 import { primaryRole } from "@/modules/users/user-display";
+import { DEFAULT_DIAL_COUNTRY, DIAL_CODES, toE164 } from "@/shared/data/country-dial-codes";
 import { initials } from "@/shared/utils/initials";
 import { UserPreviewDrawer } from "@/modules/users/user-preview-drawer";
 import { type RowActionHandlers, UserRowActions } from "@/modules/users/user-row-actions";
@@ -76,6 +82,7 @@ import { api, sessionStore } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
+import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { useRoles } from "@/modules/authorization/api/rbac-groups";
 import { useRevokeAllUserSessions } from "@/modules/users/api/user360";
 import {
@@ -89,7 +96,10 @@ import {
   useUserTrends,
 } from "@/modules/users/api/users";
 
-export const Route = createFileRoute("/_app/users/")({ component: UsersPage });
+export const Route = createFileRoute("/_app/users/")({
+  validateSearch: parseCreateIntent,
+  component: UsersPage,
+});
 
 type UsersResponse = { items: User[]; next_cursor?: string };
 
@@ -118,7 +128,7 @@ function UsersPage() {
   const qc = useQueryClient();
   const rolesQ = useRoles();
 
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useCreateIntent(canCreateUsers);
   const [editing, setEditing] = useState<User | null>(null);
   const [settingPassword, setSettingPassword] = useState<User | null>(null);
   const [previewUser, setPreviewUser] = useState<User | null>(null);
@@ -577,7 +587,11 @@ function UsersPage() {
                 </TableBody>
               </Table>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+              {/* Three tracks so the page controls sit centred on the table
+                  regardless of how wide the range label or size select get;
+                  justify-center on a single row would drift off-centre. Stacks
+                  to one column below sm. */}
+              <div className="grid grid-cols-1 items-center gap-3 border-t px-4 py-3 sm:grid-cols-[1fr_auto_1fr]">
                 <span className="text-sm text-muted-foreground">
                   {total !== undefined
                     ? t("pagination.showing", {
@@ -587,7 +601,51 @@ function UsersPage() {
                       })
                     : t("pagination.showingSimple", { start: rangeStart, end: rangeEnd })}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-1 sm:order-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={!hasPrev || usersQ.isFetching}
+                    aria-label={t("pagination.prev")}
+                    onClick={() => goToPage(page - 1)}
+                  >
+                    <ChevronLeftIcon className="size-4" />
+                  </Button>
+                  {totalPages !== undefined
+                    ? pageWindow(page + 1, totalPages).map((p, i) =>
+                        p === "…" ? (
+                          <span
+                            // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis markers are positional
+                            key={`ellipsis-${i}`}
+                            className="px-1.5 text-sm text-muted-foreground"
+                          >
+                            …
+                          </span>
+                        ) : (
+                          <Button
+                            key={p}
+                            variant={p === page + 1 ? "default" : "outline"}
+                            size="icon"
+                            className="min-w-9"
+                            disabled={usersQ.isFetching}
+                            onClick={() => goToPage(p - 1)}
+                          >
+                            {p}
+                          </Button>
+                        ),
+                      )
+                    : null}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={!hasNext || usersQ.isFetching}
+                    aria-label={t("pagination.next")}
+                    onClick={() => goToPage(page + 1)}
+                  >
+                    <ChevronRightIcon className="size-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2 sm:order-3 sm:justify-self-end">
                   <Select
                     value={String(pageSize)}
                     onValueChange={(v) => v && changePageSize(Number(v))}
@@ -603,50 +661,6 @@ function UsersPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      disabled={!hasPrev || usersQ.isFetching}
-                      aria-label={t("pagination.prev")}
-                      onClick={() => goToPage(page - 1)}
-                    >
-                      <ChevronLeftIcon className="size-4" />
-                    </Button>
-                    {totalPages !== undefined
-                      ? pageWindow(page + 1, totalPages).map((p, i) =>
-                          p === "…" ? (
-                            <span
-                              // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis markers are positional
-                              key={`ellipsis-${i}`}
-                              className="px-1.5 text-sm text-muted-foreground"
-                            >
-                              …
-                            </span>
-                          ) : (
-                            <Button
-                              key={p}
-                              variant={p === page + 1 ? "default" : "outline"}
-                              size="icon"
-                              className="min-w-9"
-                              disabled={usersQ.isFetching}
-                              onClick={() => goToPage(p - 1)}
-                            >
-                              {p}
-                            </Button>
-                          ),
-                        )
-                      : null}
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      disabled={!hasNext || usersQ.isFetching}
-                      aria-label={t("pagination.next")}
-                      onClick={() => goToPage(page + 1)}
-                    >
-                      <ChevronRightIcon className="size-4" />
-                    </Button>
-                  </div>
                 </div>
               </div>
             </DataState>
@@ -737,6 +751,21 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
   const rolesQ = useRoles();
   const roles = useMemo(() => rolesQ.data?.items ?? [], [rolesQ.data?.items]);
   const [roleId, setRoleId] = useState("");
+  const [country, setCountry] = useState(DEFAULT_DIAL_COUNTRY);
+  const [phone, setPhone] = useState("");
+  // Same query key as the sidebar's team switcher, so this reads from cache
+  // rather than issuing a second request just to name the organization.
+  const tenantsQ = useQuery({
+    queryKey: ["tenants", "switcher"],
+    queryFn: () => api<{ items: { id: string; name: string }[] }>("/v1/tenants"),
+    staleTime: 60_000,
+  });
+  const orgName = tenantsQ.data?.items.find((o) => o.id === tenantId)?.name;
+
+  const dial = useMemo(
+    () => DIAL_CODES.find((c) => c.code === country) ?? DIAL_CODES[0],
+    [country],
+  );
 
   // Default to a "member"-type role (else the least-privileged/last one) so a
   // created user is an organization member out of the box.
@@ -765,7 +794,9 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
                 email: String(data.get("email") ?? "").trim(),
                 password: String(data.get("password") ?? ""),
                 display_name: String(data.get("display_name") ?? "").trim() || undefined,
-                phone: String(data.get("phone") ?? "").trim() || undefined,
+                // The field is split into a dial code and a national number for
+                // entry; the API wants one E.164 string.
+                phone: toE164(dial.dial, phone),
                 role_id: roleId || undefined,
               },
               {
@@ -777,65 +808,174 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
             );
           }}
         >
-          <SheetHeader>
-            <SheetTitle>{t("create.title")}</SheetTitle>
-            <SheetDescription>{t("create.description")}</SheetDescription>
+          <SheetHeader className="flex-row items-start gap-3 space-y-0">
+            <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <UserPlusIcon className="size-4.5" />
+            </span>
+            <div className="min-w-0">
+              <SheetTitle>{t("create.title")}</SheetTitle>
+              <SheetDescription>{t("create.description")}</SheetDescription>
+            </div>
           </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto p-4">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">{t("create.email")}</FieldLabel>
-                <Input id="email" name="email" type="email" required />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="display_name">{t("create.displayName")}</FieldLabel>
-                <Input id="display_name" name="display_name" type="text" />
-                <FieldDescription>{t("create.displayNameHelp")}</FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="phone">{t("create.phone")}</FieldLabel>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="+15555550100"
-                  pattern="\+[1-9]\d{1,14}"
+          <div className="flex-1 space-y-4 overflow-y-auto p-4">
+            <Card>
+              <CardContent className="space-y-4 p-4">
+                <SheetSectionHeading
+                  icon={<UserIcon className="size-4" />}
+                  title={t("create.detailsTitle")}
+                  subtitle={t("create.detailsSubtitle")}
                 />
-                <FieldDescription>{t("create.phoneHelp")}</FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="password">{t("create.password")}</FieldLabel>
-                <Input id="password" name="password" type="password" minLength={8} required />
-                <FieldDescription>{t("create.passwordHelp")}</FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="role">Role</FieldLabel>
-                <Select value={roleId} onValueChange={(v) => v && setRoleId(v)}>
-                  <SelectTrigger id="role" aria-label="Role">
-                    <SelectValue
-                      placeholder={rolesQ.isLoading ? "Loading roles…" : "Select a role"}
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor="email">
+                      {t("create.email")} <RequiredMark />
+                    </FieldLabel>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="off"
+                      placeholder={t("create.emailPlaceholder")}
+                      required
                     />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FieldDescription>
-                  Grants organization membership — without a role the user won&apos;t appear in the
-                  members list.
-                </FieldDescription>
+                    <FieldDescription>{t("create.emailHelp")}</FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="display_name">{t("create.displayName")}</FieldLabel>
+                    <Input
+                      id="display_name"
+                      name="display_name"
+                      type="text"
+                      placeholder={t("create.displayNamePlaceholder")}
+                    />
+                    <FieldDescription>{t("create.displayNameHelp")}</FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="phone">{t("create.phone")}</FieldLabel>
+                    <div className="flex items-center gap-2">
+                      {/* One control, not a flag picker plus a dial picker:
+                          both would set the same country. The trigger shows the
+                          flag and the dial code it resolves to. */}
+                      <Select value={country} onValueChange={(v) => v && setCountry(v)}>
+                        <SelectTrigger
+                          className="w-28 shrink-0"
+                          aria-label={t("create.countryLabel")}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-base leading-none">{dial.flag}</span>
+                            <span className="text-sm">{dial.dial}</span>
+                          </span>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DIAL_CODES.map((c) => (
+                            <SelectItem key={c.code} value={c.code}>
+                              <span className="mr-2">{c.flag}</span>
+                              {c.code} <span className="text-muted-foreground">{c.dial}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        id="phone"
+                        name="phone_national"
+                        type="tel"
+                        inputMode="tel"
+                        className="min-w-0 flex-1"
+                        placeholder={t("create.phonePlaceholder")}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </div>
+                    <FieldDescription>{t("create.phoneHelp")}</FieldDescription>
+                  </Field>
+                </FieldGroup>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="space-y-4 p-4">
+                <SheetSectionHeading
+                  icon={<LockIcon className="size-4" />}
+                  title={t("create.accessTitle")}
+                  subtitle={t("create.accessSubtitle")}
+                />
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor="password">
+                      {t("create.password")} <RequiredMark />
+                    </FieldLabel>
+                    <PasswordInput
+                      id="password"
+                      name="password"
+                      autoComplete="new-password"
+                      placeholder={t("create.passwordPlaceholder")}
+                      minLength={8}
+                      required
+                    />
+                    <FieldDescription>{t("create.passwordHelp")}</FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="role">
+                      {t("create.role")} <RequiredMark />
+                    </FieldLabel>
+                    <Select value={roleId} onValueChange={(v) => v && setRoleId(v)}>
+                      <SelectTrigger id="role" aria-label={t("create.role")}>
+                        <SelectValue
+                          placeholder={
+                            rolesQ.isLoading ? t("create.roleLoading") : t("create.rolePlaceholder")
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((r) => (
+                          <SelectItem key={r.id} value={r.id}>
+                            {r.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FieldDescription>{t("create.roleHelp")}</FieldDescription>
+                  </Field>
+                </FieldGroup>
+              </CardContent>
+            </Card>
+
+            <div className="flex items-start gap-3 px-1">
+              <MailIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 space-y-1">
+                <p className="text-sm font-medium">
+                  {t("create.inviteTitle")}{" "}
+                  <span className="font-normal text-muted-foreground">
+                    {t("create.inviteOptional")}
+                  </span>
+                </p>
+                <p className="text-sm text-muted-foreground">{t("create.inviteDescription")}</p>
+                <Link
+                  to="/invitations"
+                  onClick={() => onOpenChange(false)}
+                  className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                >
+                  {t("create.inviteCta")} <ArrowRightIcon className="size-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 rounded-md border bg-muted/40 p-3">
+              <ShieldCheckIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium">
+                  {t("create.summaryTitle", { org: orgName ?? t("create.thisOrganization") })}
+                </p>
+                <p className="text-sm text-muted-foreground">{t("create.summaryDescription")}</p>
+              </div>
+            </div>
+
+            {createM.error && (
+              <Field>
+                <FieldError>{errorMessage(createM.error)}</FieldError>
               </Field>
-              {createM.error && (
-                <Field>
-                  <FieldError>{errorMessage(createM.error)}</FieldError>
-                </Field>
-              )}
-            </FieldGroup>
+            )}
           </div>
 
           <SheetFooter className="flex-row justify-end gap-2 border-t">
@@ -843,13 +983,42 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
               {t("common:actions.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending || !tenantId}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending ? <Loader2Icon className="animate-spin" /> : <PlusIcon />}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>
         </form>
       </SheetContent>
     </Sheet>
+  );
+}
+
+/** Small red asterisk marking a required field, matching the comps. */
+function RequiredMark() {
+  return (
+    <span aria-hidden="true" className="text-destructive">
+      *
+    </span>
+  );
+}
+
+function SheetSectionHeading({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span className="mt-0.5 text-muted-foreground">{icon}</span>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold leading-none">{title}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+      </div>
+    </div>
   );
 }
 

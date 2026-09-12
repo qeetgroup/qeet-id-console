@@ -16,7 +16,7 @@
       },
       "rateLimits": {
         "title": "Rate Limits",
-        "description": "Per-endpoint gateway limits and tenant network policy."
+        "description": "Per-endpoint gateway limits and organization network policy."
       },
       "auditLogs": {
         "title": "Audit Logs",
@@ -52,7 +52,7 @@
     }
   },
   "auditLogs": {
-    "description": "Every state-changing event in this tenant, written atomically with the underlying business row.",
+    "description": "Every state-changing event in this organization, written atomically with the underlying business row.",
     "export": "Export",
     "exporting": "Exporting {{format}}…",
     "exportCsv": "Download as CSV",
@@ -114,35 +114,35 @@
     },
     "settings": {
       "title": "Detection settings",
-      "description": "Tune sensitivity for this tenant.",
+      "description": "Tune sensitivity for this organization.",
       "scoreThreshold": "Score threshold",
       "coldStartGuard": "Cold-start guard (events)",
       "save": "Save"
     },
     "verify": {
       "title": "Chain integrity",
-      "description": "Walk the tenant's hash-chained audit log and confirm no row has been tampered with.",
+      "description": "Walk the organization's hash-chained audit log and confirm no row has been tampered with.",
       "verify": "Verify integrity",
       "verifying": "Verifying…"
     }
   },
   "rateLimits": {
-    "description": "Per-endpoint rate limits and per-tenant network policy. Per-tenant / per-user / per-api-key overrides are supported by the API; managing them from this screen is coming soon.",
+    "description": "Per-endpoint rate limits and per-organization network policy. Per-organization / per-user / per-api-key overrides are supported by the API; managing them from this screen isn't available yet.",
     "perEndpoint": {
       "title": "Per-endpoint limits",
-      "description": "Built-in token-bucket limits applied at the gateway in platform/ratelimit/limiter.go."
+      "description": "Built-in token-bucket limits applied at the gateway."
     },
     "networkPolicy": {
       "title": "Network policy",
-      "description": "Tenant-level IP filtering. Manage in Roles & Permissions → Policies.",
+      "description": "Organization-level IP filtering. Manage in Roles & Permissions → Policies.",
       "allowlist": "Allowlist ({{count}})",
       "denylist": "Denylist ({{count}})",
       "noAllowlist": "No allowlist — open to all source IPs.",
       "noDenylist": "No denied CIDRs."
     },
     "comingSoon": {
-      "title": "Per-tenant rate-limit controls coming to this screen.",
-      "description": "The API already supports per-tenant / per-user / per-api-key overrides (migration 0064_rate_limit_overrides); a UI to view and edit them from here is on the way."
+      "title": "Per-organization rate-limit controls coming to this screen.",
+      "description": "The API already supports per-organization / per-user / per-api-key overrides; a UI to view and edit them from here is on the way."
     }
   },
   "bots": {
@@ -179,7 +179,7 @@
     }
   },
   "logStreaming": {
-    "description": "Stream this tenant's audit events to your SIEM or log platform. New events are forwarded from when a sink is added (no history backfill); delivery is at-least-once.",
+    "description": "Stream this organization's audit events to your SIEM or log platform. New events are forwarded from when a sink is added (no history backfill); delivery is at-least-once.",
     "addSink": {
       "title": "Add a sink",
       "description": "Splunk HEC (token in the HEC field), Datadog (DD-API-KEY), or a generic HTTP endpoint (optional Bearer token).",
@@ -228,7 +228,7 @@
       "resolve": "Resolve"
     },
     "ipAllowlist": {
-      "description": "CIDR ranges that may or may not reach this tenant. Deny rules win over allow rules; if any allow rule exists, an address must match one.",
+      "description": "CIDR ranges that may or may not reach this organization. Deny rules win over allow rules; if any allow rule exists, an address must match one.",
       "enforcement": "Enforcement",
       "disabledBanner": "Enforcement is off — these rules are saved but not applied. Toggle it on once you've confirmed your own address is allowed.",
       "quickAdd": {
@@ -266,10 +266,10 @@
       }
     },
     "rateLimits": {
-      "description": "Configure per-tenant rate limits. Rate is tokens per second; burst is the maximum burst capacity. These override the platform defaults for this tenant.",
+      "description": "Configure per-organization rate limits. Rate is tokens per second; burst is the maximum burst capacity. These override the platform defaults for this organization.",
       "card": {
         "title": "Rate Limits",
-        "description": "Limits are enforced per bucket (tenant, user, API key). Burst allows short spikes above the sustained rate.",
+        "description": "Limits are enforced per bucket (organization, user, API key). Burst allows short spikes above the sustained rate.",
         "resetToDefaults": "Reset to defaults",
         "resetConfirmTitle": "Reset all rate limits to platform defaults?",
         "resetConfirmLabel": "Reset to defaults",
@@ -281,8 +281,8 @@
       },
       "rows": {
         "tenant": {
-          "label": "Per-tenant",
-          "description": "Total requests per second across all users in this tenant."
+          "label": "Per-organization",
+          "description": "Total requests per second across all users in this organization."
         },
         "user": {
           "label": "Per-user",
@@ -323,14 +323,14 @@
     }
   },
   "activity": {
-    "description": "The 20 most recent events across this tenant. Auto-refreshes every 15 seconds. For full filtering and search, head to Audit Logs.",
+    "description": "The 20 most recent events across this organization. Auto-refreshes every 15 seconds. For full filtering and search, head to Audit Logs.",
     "cardTitle": "Recent activity",
     "titleRefreshing": "Refreshing",
     "titleIdle": "Idle",
     "liveBadge": "live",
     "newSince_one": "{{count}} new since you opened",
     "newSince_other": "{{count}} new since you opened",
-    "empty": "No recent activity in this tenant yet.",
+    "empty": "No recent activity in this organization yet.",
     "colWhen": "When",
     "colActor": "Actor",
     "colAction": "Action",

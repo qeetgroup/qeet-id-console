@@ -32,6 +32,8 @@ import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import { BotIcon, CopyIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
+
+import { useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -64,7 +66,9 @@ function MachineIdentitiesPage() {
   };
   const tenantId = useTenantId();
   const qc = useQueryClient();
-  const [creating, setCreating] = useState(false);
+  // `?action=create` opens this drawer, so the Applications overview can
+  // deep-link straight into it.
+  const [creating, setCreating] = useCreateIntent(true);
   const [revealed, setRevealed] = useState<{
     principal: Principal;
     secret: string;
@@ -79,6 +83,7 @@ function MachineIdentitiesPage() {
   const disableM = useMutation({
     mutationFn: (id: string) => api<void>(`/v1/service-principals/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["principals"] }),
+    meta: { successMessage: "Machine identity status updated" },
   });
 
   return (
@@ -285,6 +290,7 @@ function CreatePrincipalSheet({
       onCreated(res as Principal, secret);
       onOpenChange(false);
     },
+    meta: { successMessage: "Machine identity created" },
   });
 
   return (

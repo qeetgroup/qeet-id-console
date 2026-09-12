@@ -53,6 +53,7 @@ export function useGenerateAdminPortalLink() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Admin portal link generated" },
   });
 }
 

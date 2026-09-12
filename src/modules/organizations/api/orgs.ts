@@ -34,10 +34,11 @@ export const ORG_KEYS = {
 };
 
 /** All orgs the caller belongs to (enriched with member/MFA counts). */
-export function useOrgs() {
+export function useOrgs(enabled = true) {
   return useQuery({
     queryKey: ORG_KEYS.all,
     queryFn: () => api<{ items: Org[] }>("/v1/tenants"),
+    enabled,
     staleTime: 30_000,
   });
 }

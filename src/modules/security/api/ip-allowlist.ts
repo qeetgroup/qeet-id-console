@@ -72,5 +72,6 @@ export function useCheckIp() {
         `/v1/tenants/${tenantId}/ip-rules/check`,
         { method: "POST", body: { ip } },
       ),
+    meta: { silent: true },
   });
 }

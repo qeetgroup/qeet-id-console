@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { navGroups } from "@/platform/config/navigation";
+import { buildNavSearchItems } from "../registry/navigation-source";
+
 import {
   editDistance,
   type RankCandidate,
@@ -17,6 +20,29 @@ const emptyCtx: RankContext = {
   favoriteIds: new Set(),
   currentPathname: "/",
 };
+
+describe("navigation candidates", () => {
+  it("excludes planned Directory views while keeping implemented destinations searchable", () => {
+    const paths = new Set(buildNavSearchItems(navGroups).map((item) => item.url));
+    const planned = navGroups.flatMap((group) =>
+      group.items.flatMap((item) => item.items?.filter((child) => child.planned) ?? []),
+    );
+
+    expect(planned).toHaveLength(0);
+    for (const item of planned) expect(paths.has(item.url)).toBe(false);
+    expect(paths.has("/auth/connections/scim")).toBe(true);
+    expect(paths.has("/auth/connections/ldap")).toBe(true);
+    expect(paths.has("/users/deleted")).toBe(true);
+    for (const path of [
+      "/users/suspended",
+      "/directory/connections",
+      "/directory/sync-activity",
+      "/directory/sync-errors",
+      "/directory/attribute-mappings",
+    ])
+      expect(paths.has(path)).toBe(true);
+  });
+});
 
 function candidate(
   overrides: Partial<RankCandidate> & { id: string; title: string },

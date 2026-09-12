@@ -19,7 +19,6 @@ import { Route as AppActivityRouteImport } from './routes/_app/activity'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
 import { Route as AppApplicationsRouteImport } from './routes/_app/applications'
 import { Route as AppAuthenticationRouteImport } from './routes/_app/authentication'
-import { Route as AppDirectoryRouteImport } from './routes/_app/directory'
 import { Route as AppInvitationsRouteImport } from './routes/_app/invitations'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthMagicRouteImport } from './routes/_auth/magic'
@@ -53,8 +52,14 @@ import { Route as AppDeveloperAuthHooksRouteImport } from './routes/_app/develop
 import { Route as AppDeveloperBotsRouteImport } from './routes/_app/developer/bots'
 import { Route as AppDeveloperCredentialsRouteImport } from './routes/_app/developer/credentials'
 import { Route as AppDeveloperInfrastructureRouteImport } from './routes/_app/developer/infrastructure'
+import { Route as AppDirectoryIndexRouteImport } from './routes/_app/directory/index'
+import { Route as AppDirectoryAttributeMappingsRouteImport } from './routes/_app/directory/attribute-mappings'
+import { Route as AppDirectoryConnectionsRouteImport } from './routes/_app/directory/connections'
+import { Route as AppDirectorySyncActivityRouteImport } from './routes/_app/directory/sync-activity'
+import { Route as AppDirectorySyncErrorsRouteImport } from './routes/_app/directory/sync-errors'
 import { Route as AppGroupsIndexRouteImport } from './routes/_app/groups/index'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups/$groupId'
+import { Route as AppOrganizationsIndexRouteImport } from './routes/_app/organizations/index'
 import { Route as AppOrganizationsOrgIdRouteImport } from './routes/_app/organizations/$orgId'
 import { Route as AppOrganizationsTenantsRouteImport } from './routes/_app/organizations/tenants'
 import { Route as AppSecurityIndexRouteImport } from './routes/_app/security/index'
@@ -73,6 +78,7 @@ import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 import { Route as AppUsersDeletedRouteImport } from './routes/_app/users/deleted'
 import { Route as AppUsersImportRouteImport } from './routes/_app/users/import'
 import { Route as AppUsersSessionsRouteImport } from './routes/_app/users/sessions'
+import { Route as AppUsersSuspendedRouteImport } from './routes/_app/users/suspended'
 import { Route as AuthInviteAcceptRouteImport } from './routes/_auth/invite.accept'
 import { Route as AuthSsoCallbackRouteImport } from './routes/_auth/sso.callback'
 import { Route as AppAuthApiConsentGrantsRouteImport } from './routes/_app/auth/api/consent-grants'
@@ -157,11 +163,6 @@ const AppApplicationsRoute = AppApplicationsRouteImport.update({
 const AppAuthenticationRoute = AppAuthenticationRouteImport.update({
   id: '/authentication',
   path: '/authentication',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDirectoryRoute = AppDirectoryRouteImport.update({
-  id: '/directory',
-  path: '/directory',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInvitationsRoute = AppInvitationsRouteImport.update({
@@ -338,6 +339,33 @@ const AppDeveloperInfrastructureRoute =
     path: '/developer/infrastructure',
     getParentRoute: () => AppRoute,
   } as any)
+const AppDirectoryIndexRoute = AppDirectoryIndexRouteImport.update({
+  id: '/directory/',
+  path: '/directory/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDirectoryAttributeMappingsRoute =
+  AppDirectoryAttributeMappingsRouteImport.update({
+    id: '/directory/attribute-mappings',
+    path: '/directory/attribute-mappings',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppDirectoryConnectionsRoute = AppDirectoryConnectionsRouteImport.update({
+  id: '/directory/connections',
+  path: '/directory/connections',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDirectorySyncActivityRoute =
+  AppDirectorySyncActivityRouteImport.update({
+    id: '/directory/sync-activity',
+    path: '/directory/sync-activity',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppDirectorySyncErrorsRoute = AppDirectorySyncErrorsRouteImport.update({
+  id: '/directory/sync-errors',
+  path: '/directory/sync-errors',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGroupsIndexRoute = AppGroupsIndexRouteImport.update({
   id: '/groups/',
   path: '/groups/',
@@ -346,6 +374,11 @@ const AppGroupsIndexRoute = AppGroupsIndexRouteImport.update({
 const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
   id: '/groups/$groupId',
   path: '/groups/$groupId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOrganizationsIndexRoute = AppOrganizationsIndexRouteImport.update({
+  id: '/organizations/',
+  path: '/organizations/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppOrganizationsOrgIdRoute = AppOrganizationsOrgIdRouteImport.update({
@@ -438,6 +471,11 @@ const AppUsersImportRoute = AppUsersImportRouteImport.update({
 const AppUsersSessionsRoute = AppUsersSessionsRouteImport.update({
   id: '/users/sessions',
   path: '/users/sessions',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersSuspendedRoute = AppUsersSuspendedRouteImport.update({
+  id: '/users/suspended',
+  path: '/users/suspended',
   getParentRoute: () => AppRoute,
 } as any)
 const AuthInviteAcceptRoute = AuthInviteAcceptRouteImport.update({
@@ -656,7 +694,6 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AppAnalyticsRoute
   '/applications': typeof AppApplicationsRoute
   '/authentication': typeof AppAuthenticationRoute
-  '/directory': typeof AppDirectoryRoute
   '/invitations': typeof AppInvitationsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/magic': typeof AuthMagicRoute
@@ -688,6 +725,10 @@ export interface FileRoutesByFullPath {
   '/developer/bots': typeof AppDeveloperBotsRoute
   '/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
+  '/directory/attribute-mappings': typeof AppDirectoryAttributeMappingsRoute
+  '/directory/connections': typeof AppDirectoryConnectionsRoute
+  '/directory/sync-activity': typeof AppDirectorySyncActivityRoute
+  '/directory/sync-errors': typeof AppDirectorySyncErrorsRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/organizations/$orgId': typeof AppOrganizationsOrgIdRoute
   '/organizations/tenants': typeof AppOrganizationsTenantsRoute
@@ -704,11 +745,14 @@ export interface FileRoutesByFullPath {
   '/users/deleted': typeof AppUsersDeletedRoute
   '/users/import': typeof AppUsersImportRoute
   '/users/sessions': typeof AppUsersSessionsRoute
+  '/users/suspended': typeof AppUsersSuspendedRoute
   '/invite/accept': typeof AuthInviteAcceptRoute
   '/sso/callback': typeof AuthSsoCallbackRoute
   '/authorization/': typeof AppAuthorizationIndexRoute
   '/developer/': typeof AppDeveloperIndexRoute
+  '/directory/': typeof AppDirectoryIndexRoute
   '/groups/': typeof AppGroupsIndexRoute
+  '/organizations/': typeof AppOrganizationsIndexRoute
   '/security/': typeof AppSecurityIndexRoute
   '/settings/': typeof AppSettingsIndexRoute
   '/users/': typeof AppUsersIndexRoute
@@ -757,7 +801,6 @@ export interface FileRoutesByTo {
   '/analytics': typeof AppAnalyticsRoute
   '/applications': typeof AppApplicationsRoute
   '/authentication': typeof AppAuthenticationRoute
-  '/directory': typeof AppDirectoryRoute
   '/invitations': typeof AppInvitationsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/magic': typeof AuthMagicRoute
@@ -789,6 +832,10 @@ export interface FileRoutesByTo {
   '/developer/bots': typeof AppDeveloperBotsRoute
   '/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
+  '/directory/attribute-mappings': typeof AppDirectoryAttributeMappingsRoute
+  '/directory/connections': typeof AppDirectoryConnectionsRoute
+  '/directory/sync-activity': typeof AppDirectorySyncActivityRoute
+  '/directory/sync-errors': typeof AppDirectorySyncErrorsRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/organizations/$orgId': typeof AppOrganizationsOrgIdRoute
   '/organizations/tenants': typeof AppOrganizationsTenantsRoute
@@ -805,11 +852,14 @@ export interface FileRoutesByTo {
   '/users/deleted': typeof AppUsersDeletedRoute
   '/users/import': typeof AppUsersImportRoute
   '/users/sessions': typeof AppUsersSessionsRoute
+  '/users/suspended': typeof AppUsersSuspendedRoute
   '/invite/accept': typeof AuthInviteAcceptRoute
   '/sso/callback': typeof AuthSsoCallbackRoute
   '/authorization': typeof AppAuthorizationIndexRoute
   '/developer': typeof AppDeveloperIndexRoute
+  '/directory': typeof AppDirectoryIndexRoute
   '/groups': typeof AppGroupsIndexRoute
+  '/organizations': typeof AppOrganizationsIndexRoute
   '/security': typeof AppSecurityIndexRoute
   '/settings': typeof AppSettingsIndexRoute
   '/users': typeof AppUsersIndexRoute
@@ -860,7 +910,6 @@ export interface FileRoutesById {
   '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/applications': typeof AppApplicationsRoute
   '/_app/authentication': typeof AppAuthenticationRoute
-  '/_app/directory': typeof AppDirectoryRoute
   '/_app/invitations': typeof AppInvitationsRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/magic': typeof AuthMagicRoute
@@ -893,6 +942,10 @@ export interface FileRoutesById {
   '/_app/developer/bots': typeof AppDeveloperBotsRoute
   '/_app/developer/credentials': typeof AppDeveloperCredentialsRoute
   '/_app/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
+  '/_app/directory/attribute-mappings': typeof AppDirectoryAttributeMappingsRoute
+  '/_app/directory/connections': typeof AppDirectoryConnectionsRoute
+  '/_app/directory/sync-activity': typeof AppDirectorySyncActivityRoute
+  '/_app/directory/sync-errors': typeof AppDirectorySyncErrorsRoute
   '/_app/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/organizations/$orgId': typeof AppOrganizationsOrgIdRoute
   '/_app/organizations/tenants': typeof AppOrganizationsTenantsRoute
@@ -909,11 +962,14 @@ export interface FileRoutesById {
   '/_app/users/deleted': typeof AppUsersDeletedRoute
   '/_app/users/import': typeof AppUsersImportRoute
   '/_app/users/sessions': typeof AppUsersSessionsRoute
+  '/_app/users/suspended': typeof AppUsersSuspendedRoute
   '/_auth/invite/accept': typeof AuthInviteAcceptRoute
   '/_auth/sso/callback': typeof AuthSsoCallbackRoute
   '/_app/authorization/': typeof AppAuthorizationIndexRoute
   '/_app/developer/': typeof AppDeveloperIndexRoute
+  '/_app/directory/': typeof AppDirectoryIndexRoute
   '/_app/groups/': typeof AppGroupsIndexRoute
+  '/_app/organizations/': typeof AppOrganizationsIndexRoute
   '/_app/security/': typeof AppSecurityIndexRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
@@ -964,7 +1020,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/applications'
     | '/authentication'
-    | '/directory'
     | '/invitations'
     | '/forgot-password'
     | '/magic'
@@ -996,6 +1051,10 @@ export interface FileRouteTypes {
     | '/developer/bots'
     | '/developer/credentials'
     | '/developer/infrastructure'
+    | '/directory/attribute-mappings'
+    | '/directory/connections'
+    | '/directory/sync-activity'
+    | '/directory/sync-errors'
     | '/groups/$groupId'
     | '/organizations/$orgId'
     | '/organizations/tenants'
@@ -1012,11 +1071,14 @@ export interface FileRouteTypes {
     | '/users/deleted'
     | '/users/import'
     | '/users/sessions'
+    | '/users/suspended'
     | '/invite/accept'
     | '/sso/callback'
     | '/authorization/'
     | '/developer/'
+    | '/directory/'
     | '/groups/'
+    | '/organizations/'
     | '/security/'
     | '/settings/'
     | '/users/'
@@ -1065,7 +1127,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/applications'
     | '/authentication'
-    | '/directory'
     | '/invitations'
     | '/forgot-password'
     | '/magic'
@@ -1097,6 +1158,10 @@ export interface FileRouteTypes {
     | '/developer/bots'
     | '/developer/credentials'
     | '/developer/infrastructure'
+    | '/directory/attribute-mappings'
+    | '/directory/connections'
+    | '/directory/sync-activity'
+    | '/directory/sync-errors'
     | '/groups/$groupId'
     | '/organizations/$orgId'
     | '/organizations/tenants'
@@ -1113,11 +1178,14 @@ export interface FileRouteTypes {
     | '/users/deleted'
     | '/users/import'
     | '/users/sessions'
+    | '/users/suspended'
     | '/invite/accept'
     | '/sso/callback'
     | '/authorization'
     | '/developer'
+    | '/directory'
     | '/groups'
+    | '/organizations'
     | '/security'
     | '/settings'
     | '/users'
@@ -1167,7 +1235,6 @@ export interface FileRouteTypes {
     | '/_app/analytics'
     | '/_app/applications'
     | '/_app/authentication'
-    | '/_app/directory'
     | '/_app/invitations'
     | '/_auth/forgot-password'
     | '/_auth/magic'
@@ -1200,6 +1267,10 @@ export interface FileRouteTypes {
     | '/_app/developer/bots'
     | '/_app/developer/credentials'
     | '/_app/developer/infrastructure'
+    | '/_app/directory/attribute-mappings'
+    | '/_app/directory/connections'
+    | '/_app/directory/sync-activity'
+    | '/_app/directory/sync-errors'
     | '/_app/groups/$groupId'
     | '/_app/organizations/$orgId'
     | '/_app/organizations/tenants'
@@ -1216,11 +1287,14 @@ export interface FileRouteTypes {
     | '/_app/users/deleted'
     | '/_app/users/import'
     | '/_app/users/sessions'
+    | '/_app/users/suspended'
     | '/_auth/invite/accept'
     | '/_auth/sso/callback'
     | '/_app/authorization/'
     | '/_app/developer/'
+    | '/_app/directory/'
     | '/_app/groups/'
+    | '/_app/organizations/'
     | '/_app/security/'
     | '/_app/settings/'
     | '/_app/users/'
@@ -1340,13 +1414,6 @@ declare module '@tanstack/react-router' {
       path: '/authentication'
       fullPath: '/authentication'
       preLoaderRoute: typeof AppAuthenticationRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/directory': {
-      id: '/_app/directory'
-      path: '/directory'
-      fullPath: '/directory'
-      preLoaderRoute: typeof AppDirectoryRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/invitations': {
@@ -1580,6 +1647,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDeveloperInfrastructureRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/directory/': {
+      id: '/_app/directory/'
+      path: '/directory'
+      fullPath: '/directory/'
+      preLoaderRoute: typeof AppDirectoryIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/directory/attribute-mappings': {
+      id: '/_app/directory/attribute-mappings'
+      path: '/directory/attribute-mappings'
+      fullPath: '/directory/attribute-mappings'
+      preLoaderRoute: typeof AppDirectoryAttributeMappingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/directory/connections': {
+      id: '/_app/directory/connections'
+      path: '/directory/connections'
+      fullPath: '/directory/connections'
+      preLoaderRoute: typeof AppDirectoryConnectionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/directory/sync-activity': {
+      id: '/_app/directory/sync-activity'
+      path: '/directory/sync-activity'
+      fullPath: '/directory/sync-activity'
+      preLoaderRoute: typeof AppDirectorySyncActivityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/directory/sync-errors': {
+      id: '/_app/directory/sync-errors'
+      path: '/directory/sync-errors'
+      fullPath: '/directory/sync-errors'
+      preLoaderRoute: typeof AppDirectorySyncErrorsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups/': {
       id: '/_app/groups/'
       path: '/groups'
@@ -1592,6 +1694,13 @@ declare module '@tanstack/react-router' {
       path: '/groups/$groupId'
       fullPath: '/groups/$groupId'
       preLoaderRoute: typeof AppGroupsGroupIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/organizations/': {
+      id: '/_app/organizations/'
+      path: '/organizations'
+      fullPath: '/organizations/'
+      preLoaderRoute: typeof AppOrganizationsIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/organizations/$orgId': {
@@ -1718,6 +1827,13 @@ declare module '@tanstack/react-router' {
       path: '/users/sessions'
       fullPath: '/users/sessions'
       preLoaderRoute: typeof AppUsersSessionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/suspended': {
+      id: '/_app/users/suspended'
+      path: '/users/suspended'
+      fullPath: '/users/suspended'
+      preLoaderRoute: typeof AppUsersSuspendedRouteImport
       parentRoute: typeof AppRoute
     }
     '/_auth/invite/accept': {
@@ -1988,7 +2104,6 @@ interface AppRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppApplicationsRoute: typeof AppApplicationsRoute
   AppAuthenticationRoute: typeof AppAuthenticationRoute
-  AppDirectoryRoute: typeof AppDirectoryRoute
   AppInvitationsRoute: typeof AppInvitationsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAuthSocialRoute: typeof AppAuthSocialRoute
@@ -2011,6 +2126,10 @@ interface AppRouteChildren {
   AppDeveloperBotsRoute: typeof AppDeveloperBotsRoute
   AppDeveloperCredentialsRoute: typeof AppDeveloperCredentialsRoute
   AppDeveloperInfrastructureRoute: typeof AppDeveloperInfrastructureRoute
+  AppDirectoryAttributeMappingsRoute: typeof AppDirectoryAttributeMappingsRoute
+  AppDirectoryConnectionsRoute: typeof AppDirectoryConnectionsRoute
+  AppDirectorySyncActivityRoute: typeof AppDirectorySyncActivityRoute
+  AppDirectorySyncErrorsRoute: typeof AppDirectorySyncErrorsRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppOrganizationsOrgIdRoute: typeof AppOrganizationsOrgIdRoute
   AppOrganizationsTenantsRoute: typeof AppOrganizationsTenantsRoute
@@ -2027,9 +2146,12 @@ interface AppRouteChildren {
   AppUsersDeletedRoute: typeof AppUsersDeletedRoute
   AppUsersImportRoute: typeof AppUsersImportRoute
   AppUsersSessionsRoute: typeof AppUsersSessionsRoute
+  AppUsersSuspendedRoute: typeof AppUsersSuspendedRoute
   AppAuthorizationIndexRoute: typeof AppAuthorizationIndexRoute
   AppDeveloperIndexRoute: typeof AppDeveloperIndexRoute
+  AppDirectoryIndexRoute: typeof AppDirectoryIndexRoute
   AppGroupsIndexRoute: typeof AppGroupsIndexRoute
+  AppOrganizationsIndexRoute: typeof AppOrganizationsIndexRoute
   AppSecurityIndexRoute: typeof AppSecurityIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
@@ -2076,7 +2198,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
   AppApplicationsRoute: AppApplicationsRoute,
   AppAuthenticationRoute: AppAuthenticationRoute,
-  AppDirectoryRoute: AppDirectoryRoute,
   AppInvitationsRoute: AppInvitationsRoute,
   AppIndexRoute: AppIndexRoute,
   AppAuthSocialRoute: AppAuthSocialRoute,
@@ -2099,6 +2220,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppDeveloperBotsRoute: AppDeveloperBotsRoute,
   AppDeveloperCredentialsRoute: AppDeveloperCredentialsRoute,
   AppDeveloperInfrastructureRoute: AppDeveloperInfrastructureRoute,
+  AppDirectoryAttributeMappingsRoute: AppDirectoryAttributeMappingsRoute,
+  AppDirectoryConnectionsRoute: AppDirectoryConnectionsRoute,
+  AppDirectorySyncActivityRoute: AppDirectorySyncActivityRoute,
+  AppDirectorySyncErrorsRoute: AppDirectorySyncErrorsRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppOrganizationsOrgIdRoute: AppOrganizationsOrgIdRoute,
   AppOrganizationsTenantsRoute: AppOrganizationsTenantsRoute,
@@ -2115,9 +2240,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppUsersDeletedRoute: AppUsersDeletedRoute,
   AppUsersImportRoute: AppUsersImportRoute,
   AppUsersSessionsRoute: AppUsersSessionsRoute,
+  AppUsersSuspendedRoute: AppUsersSuspendedRoute,
   AppAuthorizationIndexRoute: AppAuthorizationIndexRoute,
   AppDeveloperIndexRoute: AppDeveloperIndexRoute,
+  AppDirectoryIndexRoute: AppDirectoryIndexRoute,
   AppGroupsIndexRoute: AppGroupsIndexRoute,
+  AppOrganizationsIndexRoute: AppOrganizationsIndexRoute,
   AppSecurityIndexRoute: AppSecurityIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
   AppUsersIndexRoute: AppUsersIndexRoute,

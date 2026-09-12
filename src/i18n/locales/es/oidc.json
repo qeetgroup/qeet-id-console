@@ -56,7 +56,7 @@
     "metadataTitle": "Metadatos",
     "createdLabel": "Creado",
     "rowIdLabel": "ID de fila",
-    "tenantLabel": "Inquilino",
+    "tenantLabel": "Organización",
     "grantTypesLabel": "Tipos de concesión",
     "secretTitle": "Secreto de cliente",
     "secretDescription": "Rotar invalida el secreto actual inmediatamente. El nuevo valor se muestra una vez.",

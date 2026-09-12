@@ -1,9 +1,128 @@
 {
+  "overview": {
+    "title": "Overview",
+    "description": "Keys, tokens, webhooks and the building blocks for integrating with Qeet ID.",
+    "createKey": "Create API key",
+    "createWebhook": "Create webhook",
+    "viewAll": "View all",
+    "retry": "Retry",
+    "retryMetric": "Retry {{label}}",
+    "loadingMetric": "Loading {{label}}",
+    "unavailable": "Unavailable",
+    "restricted": "Restricted",
+    "historyUnavailable": "History unavailable",
+    "recentCreations_one": "{{count}} created in 7 days",
+    "recentCreations_other": "{{count}} created in 7 days",
+    "checkingAccess": "Checking developer access",
+    "selectOrganization": "Choose an organization first",
+    "goToOverview": "Go to overview",
+    "metricsLabel": "Developer metrics",
+    "metrics": {
+      "keys": "API keys",
+      "tokens": "Active grants",
+      "webhooks": "Webhooks",
+      "hooks": "Auth hooks",
+      "agents": "Agents",
+      "secrets": "Secrets"
+    },
+    "names": {
+      "keys": "API key",
+      "tokens": "Token grant",
+      "webhooks": "Webhook",
+      "hooks": "Auth hook",
+      "agents": "Agent",
+      "secrets": "Secret",
+      "credentials": "Credential"
+    },
+    "explore": {
+      "title": "Explore and manage",
+      "description": "Manage the developer tools connected to your organization.",
+      "navigation": "Developer areas",
+      "count_one": "{{count}} area",
+      "count_other": "{{count}} areas",
+      "restricted": "Your role does not include access to these developer areas."
+    },
+    "activity": {
+      "title": "Recent developer activity",
+      "loading": "Loading developer activity",
+      "error": "Developer activity is unavailable.",
+      "empty": "No recent developer activity.",
+      "restricted": "Activity access is required to view this feed.",
+      "event": "{{resource}} {{action}}",
+      "record": "Record {{id}}",
+      "organization": "Organization activity",
+      "verbs": {
+        "created": "created",
+        "updated": "updated",
+        "rotated": "rotated",
+        "revoked": "revoked",
+        "deleted": "deleted",
+        "enabled": "enabled",
+        "disabled": "disabled",
+        "issued": "issued",
+        "delivered": "delivered",
+        "suspended": "suspended",
+        "decommissioned": "decommissioned",
+        "changed": "changed"
+      }
+    },
+    "quick": {
+      "title": "Quick actions",
+      "key": {
+        "title": "Create API key",
+        "description": "Credentials for API requests."
+      },
+      "webhook": {
+        "title": "Create webhook",
+        "description": "Subscribe to identity events."
+      },
+      "docs": {
+        "title": "Read the documentation",
+        "description": "Guides and API reference."
+      },
+      "sdks": {
+        "title": "View SDKs",
+        "description": "Libraries for your stack."
+      },
+      "quickstart": {
+        "title": "Open the quickstart",
+        "description": "Your first Qeet ID integration."
+      }
+    },
+    "checklist": {
+      "title": "Integration checklist",
+      "progress": "{{completed}} of {{total}} complete",
+      "progressLabel": "Integration setup progress",
+      "complete": "Complete",
+      "pending": "Not complete",
+      "restricted": "No setup steps are available for your role.",
+      "keys": {
+        "title": "Create an API key",
+        "description": "Authenticate API requests."
+      },
+      "webhooks": {
+        "title": "Set up a webhook",
+        "description": "Receive identity events."
+      },
+      "hooks": {
+        "title": "Configure an auth hook",
+        "description": "Connect your sign-in policy."
+      },
+      "agents": {
+        "title": "Register an agent",
+        "description": "Assign an accountable identity."
+      },
+      "credentials": {
+        "title": "Issue a test credential",
+        "description": "Create a verifiable credential."
+      }
+    }
+  },
   "bots": {
     "description": "Event-driven automations stitched together from triggers and actions.",
     "comingSoon": {
       "title": "Automations are coming soon",
-      "description": "Build no-code automations that react to identity events — sign-ins, role changes, risk signals — and run actions in response. This surface isn't available yet; follow the roadmap for availability."
+      "description": "Build no-code automations that react to identity events — sign-ins, role changes, risk signals — and run actions in response. This surface isn't available yet."
     }
   },
   "infrastructure": {
@@ -64,7 +183,7 @@
     },
     "list": {
       "title": "Issued credentials",
-      "description": "Registry of credentials issued by this tenant.",
+      "description": "Registry of credentials issued by this organization.",
       "empty": "No credentials issued yet.",
       "revoked": "revoked",
       "noExpiry": " · no expiry",
@@ -84,7 +203,7 @@
     }
   },
   "agents": {
-    "description": "First-class identities for AI agents / MCP clients, and the primitives that keep them accountable to a human: sponsorship, Shadow-AI discovery, ephemeral tokens, and a tenant-wide kill-switch.",
+    "description": "First-class identities for AI agents / MCP clients, and the primitives that keep them accountable to a human: sponsorship, Shadow-AI discovery, ephemeral tokens, and an organization-wide kill-switch.",
     "create": {
       "title": "Create an agent",
       "description": "The secret is shown once. Scopes are space-separated; token lifetime is clamped to 60–3600s. You’re recorded as the agent’s sponsor — its accountable human owner — and can transfer that later if it changes hands.",
@@ -98,7 +217,7 @@
     },
     "list": {
       "title": "Agents",
-      "description": "AI-agent identities in this tenant.",
+      "description": "AI-agent identities in this organization.",
       "suspendAll": "Suspend All",
       "empty": "No agents yet.",
       "emptyDescription": "Create an agent above to issue it ephemeral, scoped tokens."
@@ -139,7 +258,7 @@
     },
     "shadow": {
       "title": "Shadow AI discovery",
-      "description": "OAuth clients that picked up a machine grant type (client_credentials / token-exchange) without ever going through the agents/service-accounts registry — unmanaged automation acting under this tenant, ranked by live grants.",
+      "description": "OAuth clients that picked up a machine grant type (client_credentials / token-exchange) without ever going through the agents/service-accounts registry — unmanaged automation acting under this organization, ranked by live grants.",
       "empty": "No unreviewed candidates.",
       "emptyDescription": "Every machine-grant OIDC client has been acknowledged.",
       "acknowledge": "Acknowledge",

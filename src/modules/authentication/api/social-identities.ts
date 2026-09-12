@@ -43,5 +43,6 @@ export function useUnlinkIdentity() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/me/social/identities/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Identity unlinked" },
   });
 }

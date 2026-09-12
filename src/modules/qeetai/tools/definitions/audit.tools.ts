@@ -36,7 +36,7 @@ export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
   category: "audit",
   title: "Search audit logs",
   description:
-    "Search the tenant's append-only audit log by free-text, action, resource type, and/or actor. Read-only.",
+    "Search the organization's append-only audit log by free-text, action, resource type, and/or actor. Read-only.",
   input: searchAuditLogsInput,
   requiredCapability: "audit.read",
   destructive: false,

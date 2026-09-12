@@ -56,7 +56,7 @@
     "metadataTitle": "メタデータ",
     "createdLabel": "作成日",
     "rowIdLabel": "行ID",
-    "tenantLabel": "テナント",
+    "tenantLabel": "組織",
     "grantTypesLabel": "グラントタイプ",
     "secretTitle": "クライアントシークレット",
     "secretDescription": "ローテーションすると現在のシークレットが直ちに無効になります。新しい値は1回だけ表示されます。",

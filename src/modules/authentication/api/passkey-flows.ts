@@ -67,7 +67,7 @@ export function usePasskeyLogin() {
   return useMutation({
     mutationFn: signInWithPasskey,
     onSuccess: () => navigate({ to: "/" }),
-    meta: { silent: true },
+    meta: { successMessage: "Signed in successfully" },
   });
 }
 
@@ -79,6 +79,9 @@ export function usePasskeySignup({
   return useMutation({
     mutationFn: signUpWithPasskey,
     onSuccess,
-    meta: { silent: true },
+    meta: {
+      successMessage: "Account created successfully",
+      successDescription: "Check your email for the verification code.",
+    },
   });
 }

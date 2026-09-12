@@ -1,17 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { SectionOverview } from "@/modules/dashboard/components/section-overview";
+import { ApplicationsOverview } from "@/modules/dashboard/components/applications-overview";
 
 export const Route = createFileRoute("/_app/applications")({
-  component: ApplicationsOverview,
+  component: ApplicationsOverviewPage,
 });
 
-function ApplicationsOverview() {
+function ApplicationsOverviewPage() {
   return (
-    <SectionOverview
-      group="Applications"
-      overviewUrl="/applications"
-      description="Apps and machine identities that authenticate with Qeet ID, and the consents they hold."
-    />
+    <ApplicationsOverview description="Manage client applications, machine identities, API keys, permissions, and OAuth consent across your organization." />
   );
 }

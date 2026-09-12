@@ -1,12 +1,12 @@
 {
   "list": {
-    "description": "Hierarchical groups inside this tenant. Use them to organise members; group-based RBAC inheritance is on the v1.0 roadmap.",
+    "description": "Hierarchical groups inside this organization. Use them to organise members and manage access.",
     "refresh": "Refresh",
     "new": "New group",
     "title": "Groups",
     "count_one": "{{shown}} of {{total}} group",
     "count_other": "{{shown}} of {{total}} groups",
-    "searchPlaceholder": "Search name or description…",
+    "searchPlaceholder": "Search groups by name or description...",
     "emptyFiltered": "No groups match your filters.",
     "empty": "No groups yet.",
     "filters": {
@@ -22,7 +22,15 @@
       "parent": "Parent",
       "created": "Created",
       "actions": "Actions"
-    }
+    },
+    "subtitle": "Manage your organization's groups. Create groups, build hierarchies, and assign members.",
+    "hierarchyView": "Hierarchy view",
+    "templates": "Group templates",
+    "export": "Export",
+    "scopeAll": "All",
+    "viewList": "List view",
+    "viewTree": "Hierarchy view",
+    "viewTable": "Table view"
   },
   "table": {
     "members": "Members",
@@ -31,15 +39,27 @@
   },
   "create": {
     "title": "New group",
-    "description": "Groups can be nested via the parent dropdown.",
+    "description": "Create a new group in your organization. Groups can be nested and inherit access from their parent group.",
     "name": "Name",
-    "namePlaceholder": "Engineering",
+    "namePlaceholder": "e.g. Engineering",
     "description_field": "Description",
     "parent": "Parent group",
     "parentNone": "— None (top-level)",
     "cancel": "Cancel",
-    "submit": "Create",
-    "submitting": "Creating…"
+    "submit": "Create group",
+    "submitting": "Creating…",
+    "info": "Groups support hierarchical structure. Members inherit permissions from parent groups.",
+    "nameHelp": "Use a clear, descriptive name for the group.",
+    "descriptionPlaceholder": "Describe the purpose of this group...",
+    "descriptionHelp": "Optional. Help others understand what this group is for.",
+    "parentHelp": "Select a parent group to create a nested group. Leave empty to create a top-level group.",
+    "optionalSettings": "Optional settings",
+    "defaultRole": "Default role assignment",
+    "defaultRoleNone": "No default role",
+    "defaultRoleHelp": "Members of this group will be granted this role.",
+    "initialMembers": "Initial members",
+    "initialMembersPlaceholder": "Search users to add...",
+    "initialMembersHelp": "You can also add members later."
   },
   "edit": {
     "title": "Edit group",
@@ -69,7 +89,7 @@
   },
   "detail": {
     "back": "All groups",
-    "notFound": "No group with id \"{{id}}\" in this tenant",
+    "notFound": "No group with id \"{{id}}\" in this organization",
     "notFoundDescription": "It may have been deleted, or you may not have permission to view it. Use the back link above to return to the list.",
     "noDescription": "No description",
     "stats": {
@@ -80,7 +100,7 @@
       "title": "Metadata",
       "groupId": "Group ID",
       "parentGroup": "Parent group",
-      "tenant": "Tenant"
+      "tenant": "Organization"
     },
     "members": {
       "title": "Members",
@@ -100,5 +120,64 @@
     "deleted": "Group deleted",
     "memberAdded": "Member added",
     "memberRemoved": "Member removed"
+  },
+  "kpis": {
+    "total": "Total groups",
+    "totalHintEmpty": "No groups yet",
+    "totalHint": "All groups in this organization",
+    "topLevel": "Top-level groups",
+    "topLevelHint": "Groups at root level",
+    "nested": "Nested groups",
+    "nestedHint": "Groups with a parent",
+    "members": "Members assigned",
+    "membersHint": "Users in groups"
+  },
+  "emptyState": {
+    "title": "No groups yet",
+    "description": "Groups help you organise members and manage access across your organization. Create your first group to get started, or import groups from your identity provider.",
+    "createFirst": "Create first group",
+    "import": "Import groups",
+    "features": {
+      "hierarchy": {
+        "title": "Build hierarchies",
+        "detail": "Create nested groups to mirror your organisation structure."
+      },
+      "access": {
+        "title": "Manage access",
+        "detail": "Use groups for role-based access control (RBAC)."
+      },
+      "scale": {
+        "title": "Scale with confidence",
+        "detail": "Easily manage access for growing teams."
+      }
+    }
+  },
+  "templates": {
+    "title": "Group templates",
+    "description": "Reusable group structures. Applying one creates every group it defines.",
+    "empty": "No templates yet. Save a structure you create often and apply it in one step.",
+    "newName": "Template name",
+    "newNamePlaceholder": "e.g. Engineering org",
+    "newNodes": "Groups to create",
+    "newNodesHelp": "One group per line. Indent with two spaces to nest under the line above.",
+    "newNodesPlaceholder": "Engineering\n  Platform\n  Product\n    Web",
+    "save": "Save template",
+    "apply": "Apply",
+    "applying": "Applying…",
+    "delete": "Delete",
+    "groupCount_one": "{{count}} group",
+    "groupCount_other": "{{count}} groups",
+    "close": "Close"
+  },
+  "import": {
+    "title": "Import groups",
+    "description": "Paste one group per line as name, description, parent. Parents are matched by name, so a child can appear before its parent.",
+    "placeholder": "Engineering,Engineering department,\nPlatform,Core services,Engineering",
+    "submit": "Import",
+    "submitting": "Importing…",
+    "cancel": "Cancel",
+    "resultTitle": "Import finished",
+    "resultSummary": "{{created}} created · {{skipped}} skipped · {{failed}} failed",
+    "done": "Done"
   }
 }

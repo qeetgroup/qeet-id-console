@@ -77,5 +77,6 @@ export function useUpdateBotSettings() {
         body: settings,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Bot protection settings saved" },
   });
 }

@@ -98,7 +98,7 @@ function OrgDetailPage() {
       <div className="flex min-w-0 flex-col gap-5">
         {confirmDialog}
         <Link
-          to="/organizations/tenants"
+          to="/organizations"
           className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
         >
           <ArrowLeftIcon className="size-3" aria-hidden="true" /> {t("detail.back")}
@@ -135,7 +135,7 @@ function OrgDetailPage() {
                   confirmLabel: t("tenants.delete.delete"),
                   onConfirm: () =>
                     deleteOrg.mutate(org.id, {
-                      onSuccess: () => navigate({ to: "/organizations/tenants" }),
+                      onSuccess: () => navigate({ to: "/organizations" }),
                     }),
                 })
               }

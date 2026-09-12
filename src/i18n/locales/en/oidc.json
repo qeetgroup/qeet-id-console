@@ -43,7 +43,7 @@
   },
   "detail": {
     "backToList": "All applications",
-    "notFoundTitle": "No application \"{{clientId}}\" in this tenant",
+    "notFoundTitle": "No application \"{{clientId}}\" in this organization",
     "notFoundDescription": "It may have been deleted, or you may not have permission to view it. Use the back link above to return to the list.",
     "name": "Name",
     "redirectUris": "Redirect URIs",
@@ -56,7 +56,7 @@
     "metadataTitle": "Metadata",
     "createdLabel": "Created",
     "rowIdLabel": "Row ID",
-    "tenantLabel": "Tenant",
+    "tenantLabel": "Organization",
     "grantTypesLabel": "Grant types",
     "secretTitle": "Client secret",
     "secretDescription": "Rotating invalidates the current secret immediately. The new value is shown once.",

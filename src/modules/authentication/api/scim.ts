@@ -29,11 +29,11 @@ export interface ScimProvisionedUser {
 /** The /scim/v2 base an IdP should be pointed at for this deployment. */
 export const SCIM_BASE_URL = `${API_BASE_URL.replace(/\/$/, "")}/scim/v2`;
 
-export function useScimConfig() {
+export function useScimConfig(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["scim", "config", tenantId],
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<ScimConfig>(`/v1/tenants/${tenantId}/scim`),
   });
 }

@@ -62,6 +62,15 @@ let client: QueryClient;
 const mount = (ui: ReactNode = <CreateOrgFlow onDone={onDone} onCancel={onCancel} />) =>
   render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
 const input = (name: string) => screen.getByRole<HTMLInputElement>("textbox", { name });
+/**
+ * Reveals the logo URL field. It's behind an "Upload via URL" toggle so the
+ * form offers one URL input rather than a permanently visible second box next
+ * to the file picker.
+ */
+const revealLogoUrl = () => {
+  const toggle = screen.queryByRole("button", { name: "Upload via URL" });
+  if (toggle) fireEvent.click(toggle);
+};
 const change = (name: string, value: string) =>
   fireEvent.change(input(name), { target: { value } });
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole("button", { name }));
@@ -153,6 +162,7 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     change("Organization name", "  Final Org  ");
     expect(input("Slug").value).toBe("  custom-org  ");
     await select("Data region", "Europe (Ireland)");
+    revealLogoUrl();
     change("Logo URL", logo);
     expect(input("Logo URL").checkValidity()).toBe(true);
     click("Back");
@@ -167,6 +177,7 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     expect(input("Organization name").value).toBe("  Final Org  ");
     expect(input("Slug").value).toBe("  custom-org  ");
     expect(screen.getByRole("combobox", { name: "Data region" }).textContent).toContain("Ireland");
+    revealLogoUrl();
     expect(input("Logo URL").value).toBe(logo);
     expect(screen.getByRole("img", { name: "Logo preview" }).getAttribute("src")).toBe(logo);
     expect(api).not.toHaveBeenCalled();
@@ -305,6 +316,7 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     expect(screen.getByText("Uploaded file (preview)")).toBeTruthy();
     click("Remove");
     expect(screen.queryByRole("img", { name: "Logo preview" })).toBeNull();
+    revealLogoUrl();
     expect(input("Logo URL").value).toBe("");
     expect(api).not.toHaveBeenCalled();
   });
@@ -319,6 +331,7 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     const file = new File([new Uint8Array(size)], "logo", { type });
     fireEvent.change(screen.getByLabelText("Upload a logo file"), { target: { files: [file] } });
     expect(screen.getByRole("alert").textContent).toBe(copy);
+    revealLogoUrl();
     expect(input("Logo URL").value).toBe("");
     expect(screen.queryByRole("img", { name: "Logo preview" })).toBeNull();
     expect(api).not.toHaveBeenCalled();

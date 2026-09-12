@@ -111,7 +111,7 @@
     },
     "otherDataClasses": {
       "title": "Other data classes",
-      "description": "Audit logs are append-only and retained for the compliance window; session and event retention are managed by the platform. Configurable per-class policies are on the roadmap."
+      "description": "Audit logs are append-only and retained for the compliance window; session and event retention are managed by the platform. Per-class policies aren't configurable yet."
     }
   }
 }

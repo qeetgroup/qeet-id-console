@@ -56,7 +56,7 @@
     "metadataTitle": "Métadonnées",
     "createdLabel": "Créé",
     "rowIdLabel": "ID de ligne",
-    "tenantLabel": "Locataire",
+    "tenantLabel": "Organisation",
     "grantTypesLabel": "Types d'octroi",
     "secretTitle": "Secret client",
     "secretDescription": "La rotation invalide le secret actuel immédiatement. La nouvelle valeur est affichée une fois.",

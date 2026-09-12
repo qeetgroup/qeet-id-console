@@ -67,10 +67,10 @@ const COMMANDS: CommandDef[] = [
   {
     id: "cmd.create.organization",
     title: "Create Organization",
-    subtitle: "Add a new tenant or sub-organization",
-    keywords: ["add org", "new tenant", "create tenant"],
+    subtitle: "Add a new organization or sub-organization",
+    keywords: ["add org", "new organization", "create organization", "new tenant", "create tenant"],
     icon: <Building2Icon className="size-4" />,
-    run: ({ navigate }) => navigate("/organizations/tenants"),
+    run: ({ navigate }) => navigate("/organizations"),
   },
   {
     id: "cmd.create.role",

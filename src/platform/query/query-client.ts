@@ -11,6 +11,10 @@ import { userMessageForCode } from "@/platform/errors/user-message";
 // "Saved" string; `successDescription` adds a second line.
 interface MutationMeta {
   silent?: boolean;
+  // Opt out of the error toast only, keeping the success one. For screens that
+  // render the failure themselves (inline field error, a widget's own message)
+  // and would otherwise show it twice.
+  silentError?: boolean;
   successMessage?: string;
   successDescription?: string;
 }
@@ -28,7 +32,7 @@ declare module "@tanstack/react-query" {
 // duplicate toast. Individual mutations can opt out by setting
 // `meta: { silent: true }`.
 function reportError(error: unknown, meta?: Record<string, unknown>) {
-  if (meta?.silent) return;
+  if (meta?.silent || meta?.silentError) return;
   if (!(error instanceof ApiError)) return;
   // Plan-entitlement errors: a numeric cap reached (plan_limit) or a locked
   // feature (upgrade_required). Show an actionable "Upgrade" toast instead of a
