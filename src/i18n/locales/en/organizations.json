@@ -1,15 +1,15 @@
 {
   "tenants": {
-    "description": "Every tenant your account has access to. Click a tenant to switch into it, or create a new one — you become its owner automatically.",
+    "description": "Every organization your account has access to. Click an organization to switch into it, or create a new one — you become its owner automatically.",
     "refresh": "Refresh",
-    "new": "New tenant",
+    "new": "New organization",
     "list": {
-      "title": "Tenants",
-      "count_one": "{{shown}} of {{total}} tenant",
-      "count_other": "{{shown}} of {{total}} tenants",
+      "title": "Organizations",
+      "count_one": "{{shown}} of {{total}} organization",
+      "count_other": "{{shown}} of {{total}} organizations",
       "searchPlaceholder": "Search name, slug, region…",
-      "emptyFiltered": "No tenants match your filters.",
-      "empty": "No tenants yet."
+      "emptyFiltered": "No organizations match your filters.",
+      "empty": "No organizations yet."
     },
     "filters": {
       "status": {
@@ -38,15 +38,15 @@
     "table": {
       "current": "Current",
       "switch": "Switch",
-      "editLabel": "Edit tenant",
-      "deleteLabel": "Delete tenant",
-      "deleteSelfTitle": "Switch to another tenant before deleting this one"
+      "editLabel": "Edit organization",
+      "deleteLabel": "Delete organization",
+      "deleteSelfTitle": "Switch to another organization before deleting this one"
     },
     "delete": {
-      "title": "Delete this tenant?",
+      "title": "Delete this organization?",
       "descriptionPrefix": "This soft-deletes",
       "descriptionSuffix": ". Audit history is preserved, but you won't be able to undo this from the UI.",
-      "descriptionFallback": "This soft-deletes the tenant. Audit history is preserved.",
+      "descriptionFallback": "This soft-deletes the organization. Audit history is preserved.",
       "cancel": "Cancel",
       "deleting": "Deleting…",
       "delete": "Delete"
@@ -64,8 +64,8 @@
       "submitting": "Creating…"
     },
     "edit": {
-      "title": "Edit tenant",
-      "description": "Slug can't be changed once a tenant is created.",
+      "title": "Edit organization",
+      "description": "Slug can't be changed once an organization is created.",
       "name": "Name",
       "slug": "Slug",
       "slugHelp": "Immutable after creation.",
@@ -73,16 +73,16 @@
       "status": "Status",
       "statusActive": "Active",
       "statusSuspended": "Suspended",
-      "statusHelp": "Use the Delete action to soft-delete a tenant.",
+      "statusHelp": "Use the Delete action to soft-delete an organization.",
       "region": "Region",
       "cancel": "Cancel",
       "save": "Save changes",
       "saving": "Saving…"
     },
     "toast": {
-      "deleted": "Tenant deleted",
+      "deleted": "Organization deleted",
       "created": "Organization created",
-      "updated": "Tenant updated"
+      "updated": "Organization updated"
     }
   },
   "kpi": {
@@ -145,7 +145,11 @@
     "overviewSwitchHint": "Switch to this organization for live analytics (active users, MFA adoption).",
     "membersDesc": "People who belong to this organization.",
     "membersEmpty": "No members found.",
-    "memberCols": { "user": "User", "roles": "Roles", "mfa": "MFA" },
+    "memberCols": {
+      "user": "User",
+      "roles": "Roles",
+      "mfa": "MFA"
+    },
     "on": "On",
     "off": "Off",
     "manageMembers": "Manage members",
@@ -170,10 +174,18 @@
     "renews": "Renews",
     "invoices": "Invoices",
     "noInvoices": "No invoices yet.",
-    "invoiceCols": { "date": "Date", "amount": "Amount" },
+    "invoiceCols": {
+      "date": "Date",
+      "amount": "Amount"
+    },
     "activityDesc": "Recent audit events across this organization.",
     "activityEmpty": "No activity recorded.",
-    "auditCols": { "action": "Action", "resource": "Resource", "ip": "IP", "when": "When" }
+    "auditCols": {
+      "action": "Action",
+      "resource": "Resource",
+      "ip": "IP",
+      "when": "When"
+    }
   },
   "domains": {
     "description": "Prove ownership of your email domains to enable organization SSO and just-in-time provisioning. Add a DNS TXT record, then verify.",

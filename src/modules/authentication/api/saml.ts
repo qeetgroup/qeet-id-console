@@ -104,5 +104,6 @@ export function useTestSamlConnection() {
       api<SamlTestResult>(`/v1/tenants/${tenantId}/saml/${id}/test`, {
         method: "POST",
       }),
+    meta: { silent: true },
   });
 }

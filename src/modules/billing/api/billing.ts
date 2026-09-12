@@ -59,11 +59,11 @@ export interface Entitlements {
   limits: Record<string, number>;
 }
 
-export function useEntitlements() {
+export function useEntitlements(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["billing", "entitlements", tenantId],
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<Entitlements>(`/v1/tenants/${tenantId}/entitlements`),
   });
 }
@@ -73,11 +73,11 @@ export function useEntitlements() {
  * billing usage-vs-limits display. Separate from useEntitlements so the count
  * queries only run on the billing page, not on every gated page load.
  */
-export function useUsage() {
+export function useUsage(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["billing", "usage", tenantId],
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () =>
       api<{ usage: Record<string, number> }>(`/v1/tenants/${tenantId}/entitlements/usage`),
   });
@@ -105,14 +105,15 @@ export function useStartTrial() {
     mutationFn: (body: { plan_code: string; currency: string }) =>
       api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
+    meta: { successMessage: "Trial started" },
   });
 }
 
-export function useBillingProfile() {
+export function useBillingProfile(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["billing", "profile", tenantId],
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`),
   });
 }
@@ -124,6 +125,7 @@ export function useSaveBillingProfile() {
     mutationFn: (body: BillingProfile) =>
       api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["billing", "profile", tenantId] }),
+    meta: { successMessage: "Billing profile saved" },
   });
 }
 
@@ -149,20 +151,20 @@ export function usePlans() {
   });
 }
 
-export function useSubscription() {
+export function useSubscription(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["billing", "subscription", tenantId],
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<Subscription>(`/v1/tenants/${tenantId}/billing/subscription`),
   });
 }
 
-export function useInvoices() {
+export function useInvoices(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["billing", "invoices", tenantId],
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<{ items: Invoice[] }>(`/v1/tenants/${tenantId}/billing/invoices`),
   });
 }

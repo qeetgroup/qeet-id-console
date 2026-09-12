@@ -40,11 +40,11 @@ export interface CreateLdapInput {
   status?: LdapStatus;
 }
 
-export function useLdapConnections() {
+export function useLdapConnections(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: ["ldap", tenantId],
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<{ items: LdapConnection[] }>(`/v1/tenants/${tenantId}/ldap`),
   });
 }

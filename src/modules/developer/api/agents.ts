@@ -45,6 +45,7 @@ export function useCreateAgent() {
       sponsor_user_id: string;
     }) => api<Agent>(`/v1/tenants/${tenantId}/agents`, { method: "POST", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Agent created" },
   });
 }
 
@@ -55,6 +56,7 @@ export function useDeleteAgent() {
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/agents/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Agent deleted" },
   });
 }
 
@@ -68,6 +70,7 @@ export function useSetAgentDisabled() {
         body: { disabled },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Agent status updated" },
   });
 }
 
@@ -80,6 +83,7 @@ export function useKillAllAgents() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "All agent access revoked" },
   });
 }
 
@@ -106,5 +110,6 @@ export function useTransferSponsor() {
         { method: "POST", body: { to_user_id: toUserId } },
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Sponsor transferred" },
   });
 }

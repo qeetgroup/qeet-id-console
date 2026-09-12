@@ -56,7 +56,7 @@
     "metadataTitle": "元数据",
     "createdLabel": "创建时间",
     "rowIdLabel": "行 ID",
-    "tenantLabel": "租户",
+    "tenantLabel": "组织",
     "grantTypesLabel": "授权类型",
     "secretTitle": "客户端密钥",
     "secretDescription": "轮换将立即使当前密钥失效。新值只显示一次。",

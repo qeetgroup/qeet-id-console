@@ -54,6 +54,7 @@ function PasskeysPage() {
   const deleteM = useMutation({
     mutationFn: (id: string) => api<void>(`/v1/passkeys/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["passkeys"] }),
+    meta: { successMessage: "Passkey removed" },
   });
 
   // Registration ceremony: ask the backend for creation options, drive the

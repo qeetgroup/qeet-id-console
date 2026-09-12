@@ -52,8 +52,11 @@ import { useTenantId } from "@/platform/auth/session";
 import { useEntitlements } from "@/modules/billing/api/billing";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
+import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
+import { useCapabilities } from "@/platform/security/capability-provider";
 
 export const Route = createFileRoute("/_app/developer/webhooks/")({
+  validateSearch: parseCreateIntent,
   component: WebhooksPage,
 });
 
@@ -92,7 +95,10 @@ function WebhooksPage() {
   const [confirmDialog, openConfirm] = useConfirmDialog();
   const tenantId = useTenantId();
   const qc = useQueryClient();
-  const [creating, setCreating] = useState(false);
+  const webhooksLocked = useEntitlements().data?.features.webhooks === false;
+  const [creating, setCreating] = useCreateIntent(
+    useCapabilities().can("webhook.write") && !webhooksLocked,
+  );
 
   const listQ = useQuery({
     queryKey: ["webhooks", tenantId],
@@ -134,8 +140,6 @@ function WebhooksPage() {
     mutationFn: (id: string) => api<void>(`/v1/webhooks/${id}/test`, { method: "POST" }),
     meta: { successMessage: t("webhooks.toast.testQueued") },
   });
-
-  const webhooksLocked = useEntitlements().data?.features.webhooks === false;
 
   return (
     <div className="flex min-w-0 flex-col gap-4">

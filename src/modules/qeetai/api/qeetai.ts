@@ -7,6 +7,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
 
 export interface QeetAIStatus {
   configured: boolean;
@@ -86,10 +87,12 @@ export function createQeetAIConversation(title?: string): Promise<ServerConversa
 export const QEETAI_PROVIDER_CONFIG_KEY = ["qeetai", "provider-config"] as const;
 
 /** Read the tenant's effective Qeet AI provider config (masked). */
-export function useQeetAIProviderConfig() {
+export function useQeetAIProviderConfig(enabled = true) {
+  const tenantId = useTenantId();
   return useQuery({
-    queryKey: QEETAI_PROVIDER_CONFIG_KEY,
+    queryKey: [...QEETAI_PROVIDER_CONFIG_KEY, tenantId],
     queryFn: ({ signal }) => api<QeetAIProviderConfig>("/v1/qeetai/provider-config", { signal }),
+    enabled: !!tenantId && enabled,
     staleTime: 30_000,
     retry: false,
   });

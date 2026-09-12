@@ -5,15 +5,21 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getServerSession } from "@/platform/api/server-proxy";
+import { hasVerifiedEmail } from "@/platform/auth/email-verification";
 import { useIdleLogout, useMe } from "@/platform/auth/session";
 import { sessionStore } from "@/platform/auth/session-store";
 
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
 
 export const Route = createFileRoute("/account")({
-  beforeLoad: async () => {
+  beforeLoad: async ({ context }) => {
     const session = await getServerSession();
     if (!session.isAuthenticated) throw redirect({ to: "/sign-in" });
+    // Mirrors `_app`: self-service account pages are part of the console, so an
+    // unverified user must not reach them by URL either.
+    if (!(await hasVerifiedEmail(context.queryClient, session.userId))) {
+      throw redirect({ to: "/verify-email" });
+    }
     return { session };
   },
   component: AccountLayout,

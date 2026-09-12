@@ -58,6 +58,7 @@ function useUpdateRiskSettings() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["risk-settings", tenantId] }),
+    meta: { successMessage: "Risk settings saved" },
   });
 }
 

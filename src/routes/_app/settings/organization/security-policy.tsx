@@ -79,6 +79,7 @@ function PoliciesPage() {
       setSavedAt(new Date());
       qc.invalidateQueries({ queryKey: ["policy", tenantId] });
     },
+    meta: { successMessage: "Security policy saved" },
   });
 
   const set = <K extends keyof Policy>(k: K, v: Policy[K]) => setDraft((d) => ({ ...d, [k]: v }));

@@ -56,7 +56,7 @@
     "metadataTitle": "मेटाडेटा",
     "createdLabel": "बनाया गया",
     "rowIdLabel": "पंक्ति ID",
-    "tenantLabel": "किरायेदार",
+    "tenantLabel": "कार्यक्षेत्र",
     "grantTypesLabel": "अनुदान प्रकार",
     "secretTitle": "क्लाइंट सीक्रेट",
     "secretDescription": "रोटेट करने से वर्तमान सीक्रेट तुरंत अमान्य हो जाता है। नया मान एक बार दिखाया जाता है।",

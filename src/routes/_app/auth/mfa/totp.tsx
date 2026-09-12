@@ -114,6 +114,7 @@ function MfaTotpPage() {
       // drop the cached status so a cancel back to idle reflects reality.
       void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
     },
+    meta: { silent: true },
   });
 
   const confirmM = useMutation({
@@ -128,6 +129,7 @@ function MfaTotpPage() {
       void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
       void qc.invalidateQueries({ queryKey: ["mfa", "recovery-codes"] });
     },
+    meta: { successMessage: "Authenticator app enabled" },
   });
 
   // Both "disable" and "regenerate recovery codes" are RequireRecentMFA-gated,

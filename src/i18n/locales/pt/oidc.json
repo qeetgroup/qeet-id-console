@@ -56,7 +56,7 @@
     "metadataTitle": "Metadados",
     "createdLabel": "Criado",
     "rowIdLabel": "ID da linha",
-    "tenantLabel": "Tenant",
+    "tenantLabel": "Organização",
     "grantTypesLabel": "Tipos de concessão",
     "secretTitle": "Segredo do cliente",
     "secretDescription": "Rotacionar invalida o segredo atual imediatamente. O novo valor é exibido uma vez.",

@@ -61,6 +61,7 @@ export function usePreviewEmailTemplate() {
         `/v1/tenants/${tenantId}/email-templates/${key}/preview`,
         { method: "POST", body: { vars } },
       ),
+    meta: { silent: true },
   });
 }
 

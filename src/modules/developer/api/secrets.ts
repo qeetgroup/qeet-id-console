@@ -56,6 +56,7 @@ export function useRevealSecret() {
       api<{ value: string }>(`/v1/tenants/${tenantId}/secrets/${id}/reveal`, {
         method: "POST",
       }),
+    meta: { silent: true },
   });
 }
 

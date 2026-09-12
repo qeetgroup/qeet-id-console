@@ -50,6 +50,7 @@ export function useDeleteTuple() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["relation-tuples"] }),
+    meta: { successMessage: "Relationship deleted" },
   });
 }
 
@@ -61,6 +62,7 @@ export function useCheckRelation() {
         method: "POST",
         body,
       }),
+    meta: { silent: true },
   });
 }
 

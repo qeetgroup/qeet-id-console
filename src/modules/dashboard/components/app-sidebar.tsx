@@ -20,7 +20,7 @@ import {
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { AccessModeIndicator } from "@/platform/security/access-mode-indicator";
 
-import { SectionNav, SectionNavSkeleton } from "./nav-main";
+import { DirectoryNav, SectionNav, SectionNavSkeleton } from "./nav-main";
 import { TeamSwitcher } from "./team-switcher";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -109,6 +109,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <div className="console-panel-title">{activeGroup?.label}</div>
             {access.state === "resolving" ? (
               <SectionNavSkeleton />
+            ) : activeGroup?.label === "Directory" ? (
+              <DirectoryNav group={activeGroup} />
             ) : activeGroup ? (
               <SectionNav group={activeGroup} />
             ) : null}

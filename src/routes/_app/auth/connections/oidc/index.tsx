@@ -44,6 +44,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon, WorkflowIcon } from "lucide-react";
 import { useState } from "react";
+
+import { useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { Trans, useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -63,7 +65,9 @@ function OidcPage() {
   const { t } = useTranslation("oidc");
   const listQ = useOidcClients();
   const deleteM = useDeleteOidcClient();
-  const [creating, setCreating] = useState(false);
+  // `?action=create` opens this drawer, so the Applications overview can
+  // deep-link straight into it.
+  const [creating, setCreating] = useCreateIntent(true);
   const [confirmingDelete, setConfirmingDelete] = useState<OidcClient | null>(null);
   const [revealed, setRevealed] = useState<{
     client: OidcClient;

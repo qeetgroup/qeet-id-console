@@ -1,17 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { SectionOverview } from "@/modules/dashboard/components/section-overview";
+import { SettingsOverview } from "@/modules/dashboard/components/settings-overview";
 
 export const Route = createFileRoute("/_app/settings/")({
-  component: SettingsOverview,
+  component: SettingsOverviewPage,
 });
 
-function SettingsOverview() {
+function SettingsOverviewPage() {
   return (
-    <SectionOverview
-      group="Settings"
-      overviewUrl="/settings"
-      description="Configure your organization — profile, domains, branding, security, billing and AI."
-    />
+    <SettingsOverview description="Configure your organization — profile, domains, branding, security, billing and AI." />
   );
 }

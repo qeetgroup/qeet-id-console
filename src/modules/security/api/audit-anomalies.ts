@@ -76,6 +76,7 @@ export function useResolveAuditAnomaly() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    meta: { successMessage: "Anomaly resolved" },
   });
 }
 
@@ -113,5 +114,6 @@ export function useVerifyAuditChain() {
         broken_at_id?: string;
         broken_reason?: string;
       }>(`/v1/tenants/${tenantId}/audit/verify`),
+    meta: { silent: true },
   });
 }

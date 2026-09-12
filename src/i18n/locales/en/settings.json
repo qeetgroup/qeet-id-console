@@ -1,6 +1,232 @@
 {
+  "qeetAI": {
+    "title": "Qeet AI",
+    "description": "Connect your own AI provider so Qeet AI runs on your account. Bringing your own key unlocks the assistant on any plan.",
+    "tagline": {
+      "data": "Your data.",
+      "ai": "Your AI.",
+      "control": "Your control."
+    },
+    "configuration": {
+      "title": "AI provider configuration",
+      "description": "Choose a provider and add your API credentials. Qeet AI uses this configuration for your organization."
+    },
+    "source": {
+      "tenant": "Key saved",
+      "platform": "Qeet-managed",
+      "none": "Not configured"
+    },
+    "loading": "Loading AI provider settings",
+    "loadError": "Provider settings couldn't be loaded",
+    "noAccess": "Provider settings are not available for your account",
+    "readOnly": "You have read-only access to this configuration.",
+    "retry": "Retry",
+    "learnMore": "Learn more",
+    "optional": "(optional)",
+    "required": "(required)",
+    "provider": {
+      "label": "Provider",
+      "anthropic": "Uses api.anthropic.com unless you set a custom base URL.",
+      "openai": "Uses api.openai.com/v1, or your OpenAI-compatible base URL.",
+      "azure": "Requires your Azure or OpenAI-compatible base URL."
+    },
+    "model": {
+      "label": "Model",
+      "hint": "Choose a suggestion or enter a custom model ID.",
+      "azure": "Enter your deployment or model ID.",
+      "placeholder": "deployment / model ID"
+    },
+    "key": {
+      "label": "API key",
+      "placeholder": "Enter your provider API key",
+      "stored": "Stored key is hidden. Enter a new key.",
+      "last4": "Ends in {{last4}}",
+      "hint": "Write-only. Re-enter your key to save changes or rotate it. The stored key is never returned.",
+      "show": "Show entered API key",
+      "hide": "Hide entered API key"
+    },
+    "endpoint": {
+      "label": "Base URL",
+      "hint": "Use a compatible gateway, self-hosted service, or Azure endpoint."
+    },
+    "tokens": {
+      "label": "Max output tokens",
+      "hint": "Limit each response to 1-200,000 tokens. Leave empty to use the default of 4,096."
+    },
+    "encrypted": {
+      "title": "Your key is encrypted and stored securely",
+      "description": "The saved key is never shown again and is used only for your organization's provider requests."
+    },
+    "actions": {
+      "test": "Test connection",
+      "testing": "Testing connection",
+      "save": "Save key",
+      "saving": "Saving key",
+      "reset": "Reset",
+      "remove": "Remove key",
+      "menu": "Provider actions"
+    },
+    "feedback": {
+      "tested": "Connection test passed. The key and endpoint were accepted. Save to apply these settings.",
+      "testFailed": "The connection test did not succeed. Check the key and endpoint, then try again.",
+      "saved": "Provider settings saved. Your entered key has been cleared from the form.",
+      "removed": "Your organization's provider key has been removed."
+    },
+    "validation": {
+      "required": "This field is required.",
+      "url": "Enter a complete HTTP or HTTPS URL without embedded credentials.",
+      "tokens": "Enter a whole number from 1 to 200,000."
+    },
+    "remove": {
+      "title": "Remove the organization's provider key?",
+      "fallback": "Qeet AI will return to the Qeet-managed provider, subject to your plan.",
+      "unavailable": "No Qeet-managed fallback is available. Qeet AI will be unavailable until a new provider key is saved."
+    },
+    "guide": {
+      "label": "Qeet AI provider guidance",
+      "how": "How it works",
+      "key": {
+        "title": "Add your provider key",
+        "description": "Use your existing AI provider account and enter its API key."
+      },
+      "account": {
+        "title": "Run on your account",
+        "description": "Qeet sends requests from its backend to your chosen provider using your key."
+      },
+      "organization": {
+        "title": "Use across your organization",
+        "description": "Your configuration enables Qeet AI for organization members on any Qeet ID plan."
+      },
+      "security": {
+        "title": "Security & compliance",
+        "description": "Your key is encrypted at rest and never returned. Prompts and selected context go to your provider under its data policies."
+      },
+      "providers": "Supported providers",
+      "compatible": "OpenAI-compatible endpoints",
+      "billing": {
+        "title": "Usage & billing",
+        "description": "Provider usage is billed to your provider account. Set an output limit to help manage response size and costs."
+      },
+      "fallback": "A Qeet-managed fallback is available, subject to your plan.",
+      "noFallback": "This deployment has no Qeet-managed fallback. Add a key to enable Qeet AI.",
+      "fallbackUnknown": "Fallback availability appears after your configuration loads."
+    }
+  },
   "branding": {
-    "description": "Logo, colors, custom domain, and outgoing email identity for this tenant. Changes apply to hosted login pages and transactional emails.",
+    "description": "Customize your organization's identity for hosted login and organization emails.",
+    "workspace": {
+      "title": "Branding",
+      "docs": "View documentation",
+      "form": "Organization branding",
+      "loading": "Loading branding",
+      "loadError": "Branding settings couldn't be loaded.",
+      "noAccess": "You don't have access to branding settings.",
+      "retry": "Retry",
+      "readOnly": "Read-only access",
+      "upgrade": "Custom branding requires Starter or a higher plan.",
+      "comparePlans": "Compare plans",
+      "unsaved": "You have unsaved changes",
+      "upToDate": "No unsaved changes",
+      "saved": "Branding changes saved",
+      "reset": "Reset changes",
+      "leave": {
+        "title": "Discard branding changes?",
+        "description": "Your unsaved changes will be lost when you leave this page.",
+        "stay": "Keep editing",
+        "discard": "Discard and leave"
+      },
+      "identity": {
+        "title": "Brand identity",
+        "description": "Your organization's logo for hosted authentication.",
+        "hint": "Transparent SVG or PNG. Original proportions are preserved."
+      },
+      "fields": {
+        "primary_color": "Primary color",
+        "secondary_color": "Secondary / accent color",
+        "background_color": "Background color",
+        "custom_domain": "Login domain",
+        "email_from_name": "From name",
+        "email_from_address": "From address",
+        "email_reply_to": "Reply-to (optional)"
+      },
+      "colors": {
+        "title": "Brand colors",
+        "description": "Your color palette for hosted sign-in pages.",
+        "primary_color": "Buttons, links, and focus.",
+        "secondary_color": "Brand-panel highlights.",
+        "background_color": "Behind the sign-in form.",
+        "pick": "Pick {{color}}",
+        "swatch": "Set {{color}} to {{hex}}",
+        "automatic": "Automatic",
+        "resetBackground": "Use automatic background",
+        "preview": "Color preview",
+        "primaryButton": "Primary button",
+        "secondaryButton": "Secondary",
+        "contrast": "Button text contrast {{ratio}}:1 (WCAG AA)",
+        "linkWarning": "Primary color on white is {{ratio}}:1. Small links need 4.5:1 contrast."
+      },
+      "domain": {
+        "description": "A custom hostname for your hosted login experience.",
+        "setup": "Domain ownership, DNS routing, and TLS must be configured separately.",
+        "notConfigured": "Not configured",
+        "unsaved": "Unsaved domain",
+        "verified": "Ownership verified",
+        "pending": "Ownership not verified",
+        "unknown": "Ownership not reported",
+        "tls": "TLS certificate: not reported",
+        "tlsStates": {
+          "not_started": "TLS certificate: not started",
+          "pending": "TLS certificate: pending",
+          "issued": "TLS certificate: issued"
+        },
+        "live": "Login endpoint: live",
+        "notLive": "Login endpoint: not available",
+        "instructions": "DNS instructions"
+      },
+      "email": {
+        "title": "Outgoing email identity",
+        "description": "Sender name and reply-to for organization invitations and tenant magic links.",
+        "providerNote": "The platform's provider-approved From address remains in use. A custom sender address needs email-provider configuration; saving it here does not activate it."
+      },
+      "preview": {
+        "sidebar": "Branding preview and application context",
+        "title": "Hosted login preview",
+        "description": "Your logo and colors on a sample sign-in form.",
+        "size": "Preview size",
+        "desktop": "Desktop view",
+        "mobile": "Mobile view",
+        "signIn": "Sign in to your account",
+        "emailHint": "Enter your email to continue",
+        "caption": "Sample hosted sign-in appearance with your current logo and colors.",
+        "note": "Appearance preview. Sign-in methods and layout follow your application's authentication policy."
+      },
+      "appears": {
+        "title": "Where your brand appears",
+        "login": {
+          "title": "Hosted sign-in",
+          "description": "Logo, primary color, accent, and page background."
+        },
+        "email": {
+          "title": "Organization emails",
+          "description": "Sender name and reply-to for invitations and tenant magic links."
+        },
+        "domain": {
+          "title": "Custom login domain",
+          "description": "Your hostname after DNS and TLS configuration."
+        },
+        "security": {
+          "title": "Account security",
+          "description": "Account recovery, verification, and MFA retain the Qeet ID identity."
+        }
+      },
+      "validation": {
+        "color": "Enter a three- or six-digit hex color, such as #f97316.",
+        "logo": "Use an HTTP or HTTPS image URL without credentials, or an image file up to 2 MB.",
+        "domain": "Enter a hostname without a protocol, port, path, or spaces.",
+        "email": "Enter one valid email address.",
+        "header": "Sender names cannot contain line breaks."
+      }
+    },
     "visualIdentity": {
       "title": "Visual identity",
       "description": "Used in hosted sign-in, emails, and the admin sidebar.",
@@ -50,7 +276,163 @@
     }
   },
   "billing": {
-    "description": "Your subscription plan, billed in your chosen currency. Invoices are generated each period.",
+    "description": "Manage your plan, usage, billing details, and invoices.",
+    "screen": {
+      "title": "Billing",
+      "cycle": "Billing period",
+      "month": "Monthly",
+      "year": "Yearly",
+      "savePercent": "Save {{percent}}%",
+      "loading": "Loading billing",
+      "retry": "Retry",
+      "unavailable": "Not available",
+      "noAccess": "You don't have access to billing.",
+      "readOnly": "Read-only access",
+      "subscriptionError": "Subscription details couldn't be loaded.",
+      "forever": "forever",
+      "duringTrial": "during trial",
+      "perMonth": "/ month",
+      "perYear": "/ year",
+      "noRenewal": "No renewal date",
+      "renewsOn": "Renews on {{date}}",
+      "endsOn": "Access ends on {{date}}",
+      "trialEnds": "Trial ends on {{date}}",
+      "included": "Included in your plan",
+      "featuresUnavailable": "Plan features are not available.",
+      "nextInvoice": "Next invoice",
+      "noneScheduled": "None scheduled",
+      "noRecurringCharge": "No recurring charge on your current plan.",
+      "cancellationScheduled": "Cancellation is scheduled for the end of this period.",
+      "invoiceTotalPending": "The final amount, including tax, is available when issued.",
+      "managePlan": "Manage plan",
+      "viewUsage": "View usage",
+      "status": {
+        "active": "Active",
+        "none": "Free plan",
+        "trialing": "Trial",
+        "trialEnded": "Trial ended",
+        "cancelling": "Cancels at period end",
+        "cancelled": "Cancelled",
+        "canceled": "Cancelled",
+        "past_due": "Past due",
+        "unpaid": "Unpaid",
+        "expired": "Expired",
+        "unknown": "Status unavailable"
+      },
+      "checkout": {
+        "success": "Checkout returned successfully. Your subscription details reflect the latest payment confirmation received.",
+        "cancelled": "Checkout was cancelled. No plan change has been confirmed."
+      },
+      "trial": {
+        "offer": "Try Pro free for 14 days",
+        "description": "No card required. Your organization returns to Free when the trial ends unless you upgrade.",
+        "active": "Your trial is active",
+        "ended": "Your trial has ended",
+        "convert": "Choose a paid plan to continue after your trial.",
+        "start": "Start free trial",
+        "compare": "Compare plans"
+      },
+      "usage": {
+        "title": "Usage",
+        "export": "Export usage",
+        "seats": "Members",
+        "apps": "Applications",
+        "api_keys": "API keys",
+        "custom_roles": "Custom roles",
+        "unlimited": "/ Unlimited",
+        "noCap": "No plan limit",
+        "notIncluded": "Not included in your plan",
+        "exceeded": "Over your plan limit",
+        "count": "{{used}} of {{limit}} used",
+        "percent": "{{percent}}% of plan limit",
+        "loading": "Loading usage",
+        "unavailable": "Usage or limit not reported",
+        "error": "Usage couldn't be loaded."
+      },
+      "profile": {
+        "title": "Billing profile",
+        "form": "Billing profile and tax details",
+        "loading": "Loading billing profile",
+        "error": "Billing profile couldn't be loaded.",
+        "legal_name": "Legal / business name",
+        "billing_email": "Billing email",
+        "address_line1": "Address",
+        "address_line2": "Address line 2 (optional)",
+        "city": "City",
+        "state": "State / region",
+        "postal_code": "Postal code",
+        "selectCountry": "Select country",
+        "saved": "Billing details saved",
+        "unsaved": "Unsaved changes",
+        "invoiceDetails": "Billing and tax details for your invoices.",
+        "reset": "Reset",
+        "saving": "Saving...",
+        "save": "Save changes"
+      },
+      "payment": {
+        "title": "Payment method",
+        "managed": "Managed at checkout",
+        "unavailable": "No payment method information available.",
+        "provider": "Payment details are collected by your payment provider during checkout."
+      },
+      "tax": {
+        "title": "Tax & compliance",
+        "provided": "Tax ID provided",
+        "type": "Tax ID type",
+        "none": "None",
+        "gstin": "GSTIN (India)",
+        "vat": "VAT",
+        "gstinLabel": "GSTIN",
+        "vatLabel": "VAT number",
+        "invalidGstin": "Enter a valid 15-character GSTIN.",
+        "invalidVat": "Enter your VAT number.",
+        "note": "Tax treatment depends on your billing country and tax details. A saved tax ID is not a verification of registration."
+      },
+      "invoices": {
+        "invoice": "Invoice",
+        "loading": "Loading invoices",
+        "error": "Invoices couldn't be loaded.",
+        "filter": "Invoice status",
+        "all": "All statuses",
+        "noMatches": "No invoices match this status.",
+        "export": "Export CSV",
+        "download": "Download CSV",
+        "tax": "Tax",
+        "subtotal": "Subtotal",
+        "supply": "Place of supply",
+        "zeroRated": "Zero-rated",
+        "reverseCharge": "Reverse charge",
+        "actions": "Invoice actions",
+        "rowActions": "Actions for invoice {{id}}",
+        "viewInvoice": "View invoice {{id}}",
+        "view": "View details",
+        "details": "Invoice details",
+        "status": {
+          "paid": "Paid",
+          "open": "Open",
+          "pending": "Pending",
+          "draft": "Draft",
+          "void": "Void",
+          "uncollectible": "Uncollectible",
+          "failed": "Failed",
+          "refunded": "Refunded"
+        }
+      },
+      "plans": {
+        "title": "Choose your plan",
+        "taxNote": "Prices exclude applicable taxes.",
+        "error": "Plans couldn't be loaded.",
+        "recommended": "Recommended",
+        "custom": "Custom",
+        "contactSales": "Contact sales",
+        "unavailable": "Price unavailable",
+        "confirmTitle": "Switch to {{name}}?",
+        "confirmDescription": "{{amount}} {{period}}, before applicable taxes. Your payment provider may require checkout to complete the change.",
+        "downgradeTitle": "Downgrade to Free?",
+        "downgradeDescription": "You're over the Free limits for {{resources}}. Existing items stay, but you won't be able to add more until you're under the limit.",
+        "downgradeConfirm": "Downgrade anyway"
+      }
+    },
     "country": "Country",
     "currency": "Currency",
     "currentPlan": {
@@ -92,7 +474,7 @@
         "name": "Enterprise",
         "price": "Custom",
         "period": "annual contract",
-        "mau": "Unlimited MAU & tenants"
+        "mau": "Unlimited MAU & organizations"
       }
     },
     "invoices": {
@@ -111,40 +493,69 @@
   },
   "workspace": {
     "general": {
-      "description": "The display name, plan, and region for this organization. The slug is immutable.",
+      "description": "Manage your organization profile, plan, region, and identity settings.",
       "profile": {
-        "title": "Profile",
-        "description": "Visible to members of this tenant.",
+        "title": "Organization profile",
+        "description": "Basic information about your organization. This is visible to members of your organization.",
         "slug": "Slug",
-        "slugHelp": "Immutable. Used in tenant URLs and SCIM/SAML metadata.",
-        "name": "Name",
+        "slugHelp": "Immutable. Used in organization URLs and SCIM/SAML metadata.",
+        "name": "Organization name",
         "plan": "Plan",
         "region": "Region",
         "status": "Status",
         "statusActive": "Active",
         "statusSuspended": "Suspended",
-        "statusHelp": "Suspending blocks new logins for everyone in this tenant.",
+        "statusHelp": "Suspending blocks new logins for everyone in this organization.",
         "plans": {
           "free": "Free",
           "pro": "Pro",
           "enterprise": "Enterprise"
-        }
+        },
+        "nameHelp": "This name will be shown across the console to your team members.",
+        "slugTooltip": "Set when the organization was created and cannot be changed.",
+        "logo": "Logo",
+        "logoTitle": "Organization logo",
+        "logoHint": "A square image works best. Recommended size is 512 × 512px.",
+        "planHelp": "Your current plan. Manage your plan in",
+        "planHelpLink": "billing",
+        "regionHelp": "Determines where your organization's data is stored."
       },
       "tenantId": {
-        "title": "Tenant ID",
-        "description": "Reference value used by SCIM, SAML and API calls.",
-        "created": "Created"
+        "title": "Organization identity",
+        "description": "Technical details about your organization.",
+        "created": "Created",
+        "idLabel": "Organization ID",
+        "copy": "Copy organization ID",
+        "copied": "Organization ID copied"
       },
       "footer": {
         "savedAt": "Saved {{time}}",
         "unsaved": "Unsaved changes",
         "reset": "Reset",
         "save": "Save changes",
-        "saving": "Saving…"
+        "saving": "Saving…",
+        "unsavedDetail": "You have made changes to this page."
+      },
+      "tagline": "Secure identity for modern teams.",
+      "notes": {
+        "title": "Operational notes",
+        "description": "Important things to know about your organization settings.",
+        "slug": {
+          "title": "Slug is immutable",
+          "detail": "Your organization slug cannot be changed after creation as it's used in URLs and SSO metadata."
+        },
+        "region": {
+          "title": "Region impacts data residency",
+          "detail": "Your region determines where your organization's data is stored and processed."
+        },
+        "status": {
+          "title": "Status controls access",
+          "detail": "Suspending your organization will block new logins for everyone, but keep existing sessions active."
+        }
       }
     },
     "domains": {
-      "description": "Bring your own domain for hosted login pages (e.g. auth.acme.com). The DNS + TLS provisioning wizard isn't built yet — for now we just store the hostname against the tenant's branding record.",
+      "description": "Prove ownership of domains your members use, and — on paid plans — serve the hosted login from your own URL.",
       "overview": "Prove ownership of domains your members use, and — on paid plans — serve the hosted login from your own URL.",
       "tabs": {
         "verified": "Verified domains",
@@ -155,13 +566,85 @@
         "description": "Saving here only persists the hostname. The 4-step DNS-verification + ACM-provisioning wizard is on the Phase 3 admin spec — see documents/IMPLEMENTATION-STATUS.md. Today you must front qeet-id with your own reverse proxy."
       },
       "custom": {
-        "title": "Custom domain",
-        "description": "One domain per tenant. Leave blank to use the default Qeet ID-hosted URL.",
-        "label": "Domain",
-        "statusConfigured": "configured · TLS not provisioned",
-        "statusNone": "none",
-        "dnsRecords": "Required DNS",
-        "dnsHelp": "Records aren't enforced yet; we'll start checking them in the DNS-verification wizard."
+        "bannerTitle": "Custom hosted login in progress",
+        "bannerDetail": "You're setting up a custom login domain for your organization. Complete the DNS setup below to enable Sign in at",
+        "bannerPending": "DNS pending",
+        "bannerActive": "Active",
+        "bannerNone": "Not configured",
+        "bannerSub": "DNS records added · Waiting for verification",
+        "bannerNote": "This usually takes a few minutes, but can take up to 24 hours.",
+        "title": "Custom login domain",
+        "detail": "Use your own domain for hosted login pages (e.g. auth.acme.com). One domain per organization. Leave blank to use the default Qeet ID-hosted URL.",
+        "label": "Login domain",
+        "placeholder": "auth.acme.com",
+        "hint": "This will be used for your organization's hosted login, e.g.",
+        "steps": {
+          "title": "Setup steps",
+          "1": {
+            "title": "Enter hostname",
+            "detail": "Add your login domain above."
+          },
+          "2": {
+            "title": "Configure DNS",
+            "detail": "Add CNAME and TXT records."
+          },
+          "3": {
+            "title": "TLS provisioning",
+            "detail": "We'll issue a certificate (after DNS is verified)."
+          },
+          "4": {
+            "title": "Validate routing",
+            "detail": "We'll confirm everything is working."
+          }
+        },
+        "records": {
+          "title": "Required DNS records",
+          "detail": "Add these records to your DNS provider. Records may take a few minutes to propagate.",
+          "guide": "View setup guide",
+          "copy": "Copy",
+          "copied": "Copied",
+          "note": "Keep these records in place. They're used to verify domain ownership and enable automatic certificate provisioning.",
+          "none": "Add a login domain above to see the records you need to publish."
+        },
+        "provisioning": {
+          "title": "Provisioning status",
+          "inProgress": "In progress",
+          "notStarted": "Not started",
+          "active": "Active",
+          "loginDomain": "Login domain",
+          "dns": "DNS verification",
+          "tls": "TLS certificate",
+          "endpoint": "Login endpoint",
+          "pending": "Pending",
+          "verified": "Verified",
+          "tlsNotStarted": "Not started",
+          "tlsPending": "In progress",
+          "endpointNone": "Not available",
+          "endpointNoneDetail": "Will be enabled after provisioning completes."
+        },
+        "helpful": {
+          "title": "Helpful information",
+          "q1": {
+            "title": "How long does this take?",
+            "detail": "DNS verification usually takes a few minutes, but can take up to 24 hours depending on your DNS provider."
+          },
+          "q2": {
+            "title": "Is this secure?",
+            "detail": "Yes. We automatically provision and renew TLS certificates using industry-standard automation (ACME)."
+          },
+          "q3": {
+            "title": "Need help?",
+            "detail": "See the step-by-step guide or contact our support team.",
+            "cta": "View setup guide"
+          }
+        },
+        "footerNote": "For colors and logo, see",
+        "footerBranding": "Branding",
+        "verifyDns": "Verify DNS",
+        "verifying": "Checking…",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "guide": "View setup guide"
       },
       "footer": {
         "savedAt": "Saved {{time}}",
@@ -169,6 +652,57 @@
         "brandingLink": "For colors and logo, see",
         "save": "Save",
         "saving": "Saving…"
+      },
+      "help": {
+        "title": "Need help?",
+        "detail": "Follow our domain verification guide.",
+        "cta": "View documentation"
+      },
+      "kpis": {
+        "verified": "Verified domains",
+        "verifiedHint": "Domains ready to use",
+        "pending": "Pending verification",
+        "pendingHint": "Awaiting DNS verification",
+        "attention": "Attention required",
+        "attentionHint": "Needs your attention",
+        "default": "Default domain",
+        "defaultHint": "Used for Qeet ID links"
+      },
+      "add": {
+        "title": "Add a domain",
+        "detail": "Enter the email domain your members use, e.g. acme.com. We'll add a DNS TXT record for verification.",
+        "placeholder": "example.com",
+        "submit": "Add domain",
+        "submitting": "Adding…"
+      },
+      "table": {
+        "title": "Domains",
+        "subtitle": "Manage and monitor your domains. Verify domains to enable organization SSO and just-in-time provisioning.",
+        "search": "Search domains...",
+        "domain": "Domain",
+        "status": "Verification status",
+        "sso": "SSO eligible",
+        "jit": "JIT provisioning",
+        "lastChecked": "Last checked",
+        "actions": "Actions",
+        "default": "Default",
+        "yes": "Yes",
+        "no": "No",
+        "never": "Never checked",
+        "statusVerified": "Verified",
+        "statusPending": "Pending DNS",
+        "statusAttention": "Attention required",
+        "empty": "No domains yet. Add one above to get started.",
+        "verify": "Verify now",
+        "makeDefault": "Make default",
+        "toggleSso": "Toggle SSO eligibility",
+        "toggleJit": "Toggle JIT provisioning",
+        "remove": "Remove domain"
+      },
+      "how": {
+        "title": "How domain verification works",
+        "detail": "We add a DNS TXT record to your domain to verify ownership. After verification, you can enable organization SSO and, on paid plans, use a custom login domain.",
+        "cta": "View documentation"
       }
     },
     "emailTemplates": {

@@ -6,9 +6,11 @@
 export * from "./api/flows";
 export * from "./api/auth-policy";
 export * from "./api/oidc-clients";
+export * from "./api/oauth-grants";
 export * from "./api/passkeys";
 export * from "./api/saml";
 export * from "./api/scim";
+export { type LdapConnection, useLdapConnections } from "./api/ldap";
 export * from "./api/sso";
 export * from "./api/sessions";
 export { SessionsTable } from "./components/sessions-table";

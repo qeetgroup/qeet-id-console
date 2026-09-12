@@ -1,6 +1,6 @@
 {
   "roles": {
-    "description": "RBAC roles scoped to this tenant. Assign permissions per role; users get the union of permissions across all roles they hold.",
+    "description": "RBAC roles scoped to this organization. Assign permissions per role; users get the union of permissions across all roles they hold.",
     "refreshBtn": "Refresh",
     "newButton": "New role",
     "list": {
@@ -28,7 +28,7 @@
     },
     "create": {
       "title": "New role",
-      "description": "Create a custom role for this tenant. Assign permissions afterwards.",
+      "description": "Create a custom role for this organization. Assign permissions afterwards.",
       "nameLabel": "Name",
       "descLabel": "Description",
       "cancelBtn": "Cancel",
@@ -69,14 +69,14 @@
     }
   },
   "permissions": {
-    "description": "The complete catalogue of permission keys you can grant to roles. These are global to the platform; bindings to roles live under each tenant.",
+    "description": "The complete catalogue of permission keys you can grant to roles. These are global to the platform; bindings to roles live under each organization.",
     "empty": "No permissions registered yet.",
     "noDescription": "No description",
     "count_one": "{{count}} permission",
     "count_other": "{{count}} permissions"
   },
   "policies": {
-    "description": "Tenant-wide security policy. Applies to every login, every session, every API call against this tenant.",
+    "description": "Organization-wide security policy. Applies to every login, every session, every API call against this organization.",
     "network": {
       "title": "Network policy",
       "description": "IP allowlist takes precedence: if non-empty, only matching CIDRs may sign in. Denylist always blocks.",

@@ -30,5 +30,6 @@ export function useRevokeSession() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/auth/sessions/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: SESSIONS_KEY }),
+    meta: { successMessage: "Session revoked" },
   });
 }

@@ -34,6 +34,9 @@ import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import { KeyRoundIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
+
+import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
+import { useCapabilities } from "@/platform/security/capability-provider";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -45,6 +48,7 @@ import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export const Route = createFileRoute("/_app/auth/api/keys")({
+  validateSearch: parseCreateIntent,
   component: ApiKeysPage,
 });
 
@@ -71,7 +75,9 @@ function ApiKeysPage() {
   };
   const tenantId = useTenantId();
   const qc = useQueryClient();
-  const [creating, setCreating] = useState(false);
+  // `?action=create` opens this drawer, so the Applications overview can
+  // deep-link straight into it.
+  const [creating, setCreating] = useCreateIntent(useCapabilities().can("apikey.write"));
   const [revealed, setRevealed] = useState<{
     name: string;
     raw: string;
@@ -108,6 +114,7 @@ function ApiKeysPage() {
       ctx?.snapshots.forEach(([key, snap]) => qc.setQueryData(key, snap));
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["api-keys"] }),
+    meta: { successMessage: "API key revoked" },
   });
 
   return (
@@ -282,6 +289,7 @@ function CreateApiKeySheet({ open, onOpenChange, tenantId, onCreated }: CreateAp
       onCreated({ name: res.name, raw: res.raw });
       onOpenChange(false);
     },
+    meta: { successMessage: "API key created" },
   });
 
   return (

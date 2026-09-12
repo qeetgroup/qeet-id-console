@@ -443,6 +443,7 @@ function ConfigureProviderSheet({
       onSaved();
       onClose();
     },
+    meta: { successMessage: "Social provider saved" },
   });
 
   return (

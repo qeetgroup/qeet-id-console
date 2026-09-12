@@ -55,6 +55,7 @@ export function useLogin() {
 
       navigate({ to: "/" });
     },
+    meta: { successMessage: "Signed in successfully" },
   });
 }
 
@@ -74,6 +75,7 @@ export function useCompleteMfaLogin() {
       }),
 
     onSuccess: () => navigate({ to: "/" }),
+    meta: { successMessage: "Signed in successfully" },
   });
 }
 
@@ -94,6 +96,7 @@ export function useAcceptInvite() {
       }),
 
     onSuccess: () => navigate({ to: "/" }),
+    meta: { successMessage: "Invitation accepted" },
   });
 }
 /** A pending invitation addressed to the signed-in user's email. */
@@ -139,7 +142,7 @@ export function useDeclineInvitation() {
     mutationFn: (inviteId: string) =>
       api<{ message: string }>(`/v1/me/invites/${inviteId}/decline`, { method: "POST", body: {} }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["invites", "mine"] }),
-    meta: { silent: true },
+    meta: { successMessage: "Invitation declined" },
   });
 }
 
@@ -157,6 +160,7 @@ export function useAcceptInvitation() {
     onSuccess: () => {
       if (typeof window !== "undefined") window.location.assign("/");
     },
+    meta: { successMessage: "Invitation accepted" },
   });
 }
 
@@ -176,7 +180,7 @@ export function useConsumeMagicLink() {
       }),
     onSuccess: () => navigate({ to: "/" }),
     // The /magic page surfaces the error inline; no global toast.
-    meta: { silent: true },
+    meta: { successMessage: "Signed in successfully" },
   });
 }
 
@@ -194,7 +198,7 @@ export function useConsumeSamlCode() {
         anonymous: true,
       }),
     onSuccess: () => navigate({ to: "/" }),
-    meta: { silent: true },
+    meta: { successMessage: "Signed in successfully" },
   });
 }
 
@@ -269,6 +273,10 @@ export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) 
         navigate({ to: "/" });
       }
     },
+    meta: {
+      successMessage: "Account created successfully",
+      successDescription: "Check your email for the verification code.",
+    },
   });
 }
 
@@ -282,6 +290,7 @@ export function useStartEmailVerification() {
         method: "POST",
         body: {},
       }),
+    meta: { successMessage: "Verification code sent to your email", silentError: true },
   });
 }
 
@@ -293,6 +302,7 @@ export function useStartEmailChange() {
   return useMutation({
     mutationFn: (email: string) =>
       api<{ message: string }>("/v1/me/email/change/start", { method: "POST", body: { email } }),
+    meta: { successMessage: "Verification code sent to your new address" },
   });
 }
 
@@ -303,6 +313,7 @@ export function useConfirmEmailChange() {
         method: "POST",
         body: { code },
       }),
+    meta: { successMessage: "Email address updated" },
   });
 }
 
@@ -334,6 +345,7 @@ export function useChangePassword() {
   return useMutation({
     mutationFn: (in_: { current_password: string; new_password: string }) =>
       api<{ message: string }>("/v1/auth/password", { method: "POST", body: in_ }),
+    meta: { successMessage: "Password changed" },
   });
 }
 
@@ -344,6 +356,7 @@ export function useConfirmEmailVerification() {
         method: "POST",
         body: { code: in_.code },
       }),
+    meta: { successMessage: "Email verified", silentError: true },
   });
 }
 
@@ -411,7 +424,7 @@ export function useConsumeSocialCode() {
         anonymous: true,
       }),
     onSuccess: () => navigate({ to: "/" }),
-    meta: { silent: true },
+    meta: { successMessage: "Signed in successfully" },
   });
 }
 

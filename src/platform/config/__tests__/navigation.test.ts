@@ -15,6 +15,48 @@ const users: NavTreeItem = {
 };
 
 describe("console navigation state", () => {
+  it("keeps Directory focused on people, groups, organizations and sync", () => {
+    const directory = navGroups.find((group) => group.label === "Directory");
+
+    expect(directory?.items.map((item) => item.title)).toEqual([
+      "Overview",
+      "Users",
+      "Groups",
+      "Organizations",
+      "Directories",
+    ]);
+  });
+
+  it("exposes the completed Directory views with short labels and scoped access", () => {
+    const directory = navGroups.find((group) => group.label === "Directory");
+    const users = directory?.items.find((item) => item.title === "Users");
+    const directories = directory?.items.find((item) => item.title === "Directories");
+
+    expect(users?.items?.map((item) => item.title)).toEqual([
+      "All users",
+      "Invitations",
+      "Suspended",
+      "Deleted",
+    ]);
+    expect(directories?.items?.map((item) => item.title)).toEqual([
+      "Connections",
+      "SCIM",
+      "LDAP / AD",
+      "Sync activity",
+      "Sync errors",
+      "Mappings",
+    ]);
+    expect(users?.items?.find((item) => item.title === "Suspended")?.planned).toBeUndefined();
+    expect(getRequiredCapabilityForPath("/users/suspended")).toBe("user.read");
+    for (const item of directories?.items ?? []) {
+      expect(item.title.length).toBeLessThanOrEqual(13);
+      expect(item.requiredPermission).toBe("connection.read");
+      expect(findNavGroupForPath(navGroups, item.url)).toBe("Directory");
+      expect(getRequiredCapabilityForPath(item.url)).toBe("connection.read");
+      expect(item.planned).toBeUndefined();
+    }
+  });
+
   it("marks leaf routes only on exact matches", () => {
     expect(isNavPathActive("/security", "/security")).toBe(true);
     expect(isNavPathActive("/security/audit-logs", "/security")).toBe(false);
@@ -69,6 +111,6 @@ describe("console navigation state", () => {
       group.items.flatMap((item) => [item.url, ...(item.items?.map((child) => child.url) ?? [])]),
     );
 
-    expect(new Set(visiblePaths)).toEqual(new Set(["/", "/organizations/tenants"]));
+    expect(new Set(visiblePaths)).toEqual(new Set(["/", "/organizations"]));
   });
 });

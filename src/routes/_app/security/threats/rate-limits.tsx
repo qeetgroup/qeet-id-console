@@ -55,6 +55,7 @@ function useUpdateRateLimits() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["rate-limits", tenantId] }),
+    meta: { successMessage: "Rate limits saved" },
   });
 }
 
@@ -64,6 +65,7 @@ function useResetRateLimits() {
   return useMutation({
     mutationFn: () => api<void>(`/v1/tenants/${tenantId}/rate-limits`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["rate-limits", tenantId] }),
+    meta: { successMessage: "Rate limits reset to platform defaults" },
   });
 }
 

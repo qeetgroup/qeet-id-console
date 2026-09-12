@@ -78,6 +78,7 @@ function GdprPage() {
   const cancelM = useMutation({
     mutationFn: (id: string) => api<void>(`/v1/gdpr/purge/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["gdpr-purges"] }),
+    meta: { successMessage: "Erasure request cancelled" },
   });
 
   const itemCount = listQ.data?.items?.length ?? 0;
@@ -226,6 +227,7 @@ function CreatePurgeSheet({ open, onOpenChange, tenantId, onCreated }: CreatePur
       onCreated();
       onOpenChange(false);
     },
+    meta: { successMessage: "Erasure request submitted" },
   });
 
   return (

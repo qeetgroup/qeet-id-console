@@ -22,7 +22,24 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckIcon, Loader2Icon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  Building2Icon,
+  CalendarIcon,
+  CheckIcon,
+  CircleDotIcon,
+  CopyIcon,
+  CreditCardIcon,
+  ExternalLinkIcon,
+  FingerprintIcon,
+  GlobeIcon,
+  InfoIcon,
+  LightbulbIcon,
+  Loader2Icon,
+  LockIcon,
+  UsersRoundIcon,
+} from "lucide-react";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -53,7 +70,6 @@ function WorkspaceGeneralPage() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   const [draft, setDraft] = useState<Partial<Tenant>>({});
-  const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   const tenantQ = useQuery({
     queryKey: ["tenant", tenantId],
@@ -71,15 +87,42 @@ function WorkspaceGeneralPage() {
     mutationFn: (body: { name?: string; region?: string; status?: string; logo_url?: string }) =>
       api<Tenant>(`/v1/tenants/${tenantId}`, { method: "PATCH", body }),
     onSuccess: () => {
-      setSavedAt(new Date());
       qc.invalidateQueries({ queryKey: ["tenant", tenantId] });
       qc.invalidateQueries({ queryKey: ["tenants"] });
     },
+    meta: { successMessage: "Organization details saved" },
   });
 
+  // Comparing against the server copy is what drives the unsaved-changes bar;
+  // tracking a separate "dirty" flag would drift the moment a field is edited
+  // back to its original value.
+  const dirty =
+    !!tenantQ.data &&
+    (draft.name !== tenantQ.data.name ||
+      draft.region !== tenantQ.data.region ||
+      draft.status !== tenantQ.data.status ||
+      (draft.logo_url ?? "") !== (tenantQ.data.logo_url ?? ""));
+
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader description={t("workspace.general.description")} />
+    <div className="flex min-w-0 flex-col gap-4 pb-20">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <PageHeader description={t("workspace.general.description")} />
+        <div className="flex shrink-0 items-center gap-3 rounded-xl border bg-primary/5 p-4 xl:w-80">
+          <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-primary/10 text-primary">
+            {draft.logo_url ? (
+              <img src={draft.logo_url} alt="" className="size-full object-cover" />
+            ) : (
+              <Building2Icon className="size-5" />
+            )}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-heading text-sm font-semibold">{draft.name ?? "—"}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {t("workspace.general.tagline")}
+            </p>
+          </div>
+        </div>
+      </div>
 
       {tenantQ.isLoading ? (
         <Card>
@@ -104,16 +147,25 @@ function WorkspaceGeneralPage() {
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="space-y-4 lg:col-span-2">
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">
-                    {t("workspace.general.profile.title")}
-                  </CardTitle>
-                  <CardDescription>{t("workspace.general.profile.description")}</CardDescription>
+                <CardHeader className="flex-row items-start gap-3 space-y-0">
+                  <SectionIcon icon={<Building2Icon />} />
+                  <div className="min-w-0">
+                    <CardTitle className="text-base">
+                      {t("workspace.general.profile.title")}
+                    </CardTitle>
+                    <CardDescription>{t("workspace.general.profile.description")}</CardDescription>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <FieldGroup>
                     <Field>
-                      <FieldLabel htmlFor="slug">{t("workspace.general.profile.slug")}</FieldLabel>
+                      <FieldLabel htmlFor="slug" className="gap-1.5">
+                        {t("workspace.general.profile.slug")}
+                        <InfoIcon
+                          className="size-3.5 text-muted-foreground"
+                          aria-label={t("workspace.general.profile.slugTooltip")}
+                        />
+                      </FieldLabel>
                       <Input id="slug" value={draft.slug ?? ""} disabled className="font-mono" />
                       <FieldDescription>{t("workspace.general.profile.slugHelp")}</FieldDescription>
                     </Field>
@@ -125,33 +177,43 @@ function WorkspaceGeneralPage() {
                         onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
                         required
                       />
+                      <FieldDescription>{t("workspace.general.profile.nameHelp")}</FieldDescription>
                     </Field>
                     <Field>
-                      <FieldLabel>Logo</FieldLabel>
+                      <FieldLabel>{t("workspace.general.profile.logo")}</FieldLabel>
                       <LogoField
                         value={draft.logo_url ?? ""}
                         onChange={(v) => setDraft((d) => ({ ...d, logo_url: v }))}
-                        hint="Shown across the console. Leave empty to use an initials avatar."
+                        subtitle={t("workspace.general.profile.logoHint")}
+                        title={t("workspace.general.profile.logoTitle")}
                       />
                     </Field>
                     <Field className="grid grid-cols-2 gap-4">
                       <Field>
-                        <FieldLabel>{t("workspace.general.profile.plan")}</FieldLabel>
+                        <FieldLabel className="gap-1.5">
+                          <CreditCardIcon className="size-3.5 text-muted-foreground" />
+                          {t("workspace.general.profile.plan")}
+                        </FieldLabel>
                         <Input
                           value={(draft.plan ?? "free").replace(/^./, (c) => c.toUpperCase())}
                           readOnly
                           disabled
                         />
                         <FieldDescription>
-                          Manage your plan in{" "}
-                          <Link to="/settings/billing" className="underline">
-                            billing
+                          {t("workspace.general.profile.planHelp")}{" "}
+                          <Link
+                            to="/settings/billing"
+                            className="inline-flex items-center gap-0.5 underline"
+                          >
+                            {t("workspace.general.profile.planHelpLink")}
+                            <ExternalLinkIcon className="size-3" />
                           </Link>
                           .
                         </FieldDescription>
                       </Field>
                       <Field>
-                        <FieldLabel htmlFor="region">
+                        <FieldLabel htmlFor="region" className="gap-1.5">
+                          <GlobeIcon className="size-3.5 text-muted-foreground" />
                           {t("workspace.general.profile.region")}
                         </FieldLabel>
                         <Select
@@ -169,10 +231,16 @@ function WorkspaceGeneralPage() {
                             ))}
                           </SelectContent>
                         </Select>
+                        <FieldDescription>
+                          {t("workspace.general.profile.regionHelp")}
+                        </FieldDescription>
                       </Field>
                     </Field>
                     <Field>
-                      <FieldLabel>{t("workspace.general.profile.status")}</FieldLabel>
+                      <FieldLabel className="gap-1.5">
+                        <CircleDotIcon className="size-3.5 text-muted-foreground" />
+                        {t("workspace.general.profile.status")}
+                      </FieldLabel>
                       <Select
                         value={draft.status ?? "active"}
                         onValueChange={(v) =>
@@ -209,16 +277,128 @@ function WorkspaceGeneralPage() {
                   </CardContent>
                 </Card>
               )}
+            </div>
 
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {savedAt
-                    ? t("workspace.general.footer.savedAt", {
-                        time: savedAt.toLocaleTimeString(),
-                      })
-                    : t("workspace.general.footer.unsaved")}
-                </p>
-                <div className="flex gap-2">
+            <div className="space-y-4">
+              <Card>
+                <CardHeader className="flex-row items-start gap-3 space-y-0">
+                  <SectionIcon icon={<FingerprintIcon />} />
+                  <div className="min-w-0">
+                    <CardTitle className="text-base">
+                      {t("workspace.general.tenantId.title")}
+                    </CardTitle>
+                    <CardDescription>{t("workspace.general.tenantId.description")}</CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Field>
+                    <FieldLabel htmlFor="org-id">
+                      {t("workspace.general.tenantId.idLabel")}
+                    </FieldLabel>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="org-id"
+                        value={draft.id ?? ""}
+                        readOnly
+                        className="font-mono text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        aria-label={t("workspace.general.tenantId.copy")}
+                        disabled={!draft.id}
+                        onClick={() => {
+                          if (!draft.id) return;
+                          void navigator.clipboard.writeText(draft.id);
+                          toast.success(t("workspace.general.tenantId.copied"));
+                        }}
+                      >
+                        <CopyIcon className="size-4" />
+                      </Button>
+                    </div>
+                  </Field>
+
+                  <div className="flex items-start gap-3">
+                    <CalendarIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">
+                        {t("workspace.general.tenantId.created")}
+                      </p>
+                      {draft.created_at ? (
+                        <>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(draft.created_at).toLocaleString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                          <TimeSince
+                            value={draft.created_at}
+                            className="text-xs text-muted-foreground"
+                          />
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">—</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex-row items-start gap-3 space-y-0">
+                  <SectionIcon icon={<LightbulbIcon />} />
+                  <div className="min-w-0">
+                    <CardTitle className="text-base">
+                      {t("workspace.general.notes.title")}
+                    </CardTitle>
+                    <CardDescription>{t("workspace.general.notes.description")}</CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 border-t pt-4">
+                  {(
+                    [
+                      { id: "slug", icon: <LockIcon /> },
+                      { id: "region", icon: <GlobeIcon /> },
+                      { id: "status", icon: <UsersRoundIcon /> },
+                    ] as const
+                  ).map((note) => (
+                    <div key={note.id} className="flex items-start gap-3">
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground [&_svg]:size-4">
+                        {note.icon}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">
+                          {t(`workspace.general.notes.${note.id}.title`)}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                          {t(`workspace.general.notes.${note.id}.detail`)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {dirty ? (
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+              <div className="mx-auto flex max-w-(--breakpoint-2xl) flex-wrap items-center justify-between gap-3 px-6 py-3">
+                <div className="flex items-center gap-3">
+                  <AlertCircleIcon className="size-5 shrink-0 text-primary" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{t("workspace.general.footer.unsaved")}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("workspace.general.footer.unsavedDetail")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex shrink-0 gap-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -237,33 +417,18 @@ function WorkspaceGeneralPage() {
                 </div>
               </div>
             </div>
-
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">
-                    {t("workspace.general.tenantId.title")}
-                  </CardTitle>
-                  <CardDescription>{t("workspace.general.tenantId.description")}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <code className="block break-all rounded-md border bg-muted px-3 py-2 text-xs">
-                    {draft.id ?? "—"}
-                  </code>
-                  <p className="mt-4 text-xs text-muted-foreground">
-                    {t("workspace.general.tenantId.created")}{" "}
-                    {draft.created_at ? (
-                      <TimeSince value={draft.created_at} className="text-xs" />
-                    ) : (
-                      "—"
-                    )}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          ) : null}
         </form>
       )}
     </div>
+  );
+}
+
+/** The tinted square that heads each card in this layout. */
+function SectionIcon({ icon }: { icon: React.ReactNode }) {
+  return (
+    <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary [&_svg]:size-5">
+      {icon}
+    </span>
   );
 }
