@@ -22,6 +22,10 @@ import {
   isLocalSessionDestroyRequest,
 } from "@/platform/api/server-request-policy";
 import { logger } from "@/platform/telemetry/logger";
+import {
+  requiresOrganizationSelection,
+  signInRequiresOrganizationSelection,
+} from "@/platform/auth/organization-selection";
 
 const requestSchema = z.object({
   path: z
@@ -108,6 +112,7 @@ async function refreshSession(
   }
   await session.update({
     ...refreshed,
+    organizationSelectionRequired: session.data.organizationSelectionRequired === true,
     version: (session.data.version ?? 0) + 1,
   });
   return true;
@@ -219,7 +224,25 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       }
       const session = await openServerSession();
       if (sessionData.accessToken) await session.clear();
-      await session.update(serverSessionData(responseData));
+      const organizationSelectionRequired = await signInRequiresOrganizationSelection(
+        pathname,
+        input.method,
+        async () => {
+          const organizations = await fetch(
+            `${getServerApiBaseUrl()}/v1/me/organizations?limit=2`,
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${responseData.access_token}`,
+                "X-Request-Id": input.requestId,
+              },
+              signal: AbortSignal.timeout(5000),
+            },
+          );
+          return organizations.ok ? parseResponse(organizations) : null;
+        },
+      );
+      await session.update({ ...serverSessionData(responseData), organizationSelectionRequired });
       sessionData = session.data;
       safeData = stripBackendTokens(responseData);
       sessionChanged = true;
@@ -240,6 +263,18 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
         session: toPublicSession(sessionData),
         sessionChanged: false,
       };
+    } else if (
+      response.ok &&
+      input.method === "GET" &&
+      pathname === "/v1/me/organizations" &&
+      !input.query?.cursor &&
+      sessionData.organizationSelectionRequired &&
+      !requiresOrganizationSelection(responseData)
+    ) {
+      const session = await openServerSession();
+      await session.update({ organizationSelectionRequired: false });
+      sessionData = session.data;
+      sessionChanged = true;
     }
 
     traceBackendCall(input.method, pathname, response.status, elapsedMs, input.requestId, {

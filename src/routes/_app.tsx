@@ -14,6 +14,7 @@ import { ShortcutsDialog } from "@/modules/dashboard/components/shortcuts-dialog
 import { VerifyEmailBanner } from "@/modules/dashboard/components/verify-email-banner";
 import { QeetAILauncher, QeetAIRuntimeProvider, QeetAIWorkspace } from "@/modules/qeetai";
 import { hasVerifiedEmail } from "@/platform/auth/email-verification";
+import { organizationSelectionBlocksPath } from "@/platform/auth/organization-selection";
 import { useIdleLogout } from "@/platform/auth/session";
 import { sessionStore } from "@/platform/auth/session-store";
 import { getServerSession } from "@/platform/api/server-proxy";
@@ -22,7 +23,7 @@ import { useGlobalShortcuts } from "@/shared/hooks/use-shortcuts";
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 export const Route = createFileRoute("/_app")({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     const session = await getServerSession();
     if (!session.isAuthenticated) throw redirect({ to: "/sign-in" });
     // An unverified account is held on /verify-email rather than admitted to
@@ -30,6 +31,9 @@ export const Route = createFileRoute("/_app")({
     // survive a refresh, a deep link and the back button.
     if (!(await hasVerifiedEmail(context.queryClient, session.userId))) {
       throw redirect({ to: "/verify-email" });
+    }
+    if (organizationSelectionBlocksPath(session.organizationSelectionRequired, location.pathname)) {
+      throw redirect({ to: "/select-organization", replace: true });
     }
     return { session };
   },

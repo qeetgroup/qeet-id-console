@@ -6,7 +6,8 @@ import { getServerSession } from "@/platform/api/server-proxy";
 export const Route = createFileRoute("/_auth")({
   beforeLoad: async () => {
     const session = await getServerSession();
-    if (session.isAuthenticated) throw redirect({ to: "/" });
+    if (session.isAuthenticated)
+      throw redirect({ to: session.organizationSelectionRequired ? "/select-organization" : "/" });
     return { session };
   },
   component: AuthLayout,

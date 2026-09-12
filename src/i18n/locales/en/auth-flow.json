@@ -1,4 +1,46 @@
 {
+  "organizationSelection": {
+    "title": "Select an organization",
+    "eyebrow": "Organization access",
+    "controlPlane": "Control plane",
+    "description_one": "You're a member of {{count}} organization. Choose it to continue to the dashboard.",
+    "description_other": "You're a member of {{count}} organizations. Choose one to continue to the dashboard.",
+    "loading": "Loading your organizations...",
+    "loadError": "Your organizations couldn't be loaded.",
+    "retry": "Try again",
+    "search": "Search organizations",
+    "searchPlaceholder": "Search by organization name or domain...",
+    "clearSearch": "Clear search",
+    "roleFilter": "Filter by role",
+    "allRoles": "All roles",
+    "roles": { "owner": "Owner", "admin": "Admin", "member": "Member" },
+    "plans": { "free": "Free", "starter": "Starter", "pro": "Pro", "enterprise": "Enterprise" },
+    "sort": "Sort organizations",
+    "sorts": { "recent": "Sort: Last used", "name": "Name: A to Z", "name-desc": "Name: Z to A" },
+    "layout": "Organization view",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "available": "Available organizations",
+    "lastUsed": "Last used",
+    "region": "Region",
+    "plan": "Plan",
+    "notReported": "Not reported",
+    "empty": "No organizations available",
+    "noMatches": "No matching organizations",
+    "resetFilters": "Clear filters",
+    "results_one": "{{count}} of {{total}} organization shown",
+    "results_other": "{{count}} of {{total}} organizations shown",
+    "create": "Create a new organization",
+    "createDescription": "Choose a plan and set up another organization for your account.",
+    "continue": "Continue to dashboard",
+    "entering": "Opening organization...",
+    "signOut": "Sign out",
+    "accountSettings": "Account settings",
+    "accountMenu": "Account menu",
+    "yourAccount": "Your account",
+    "skip": "Skip to organization selection",
+    "tagline": "Secure access for a more open world."
+  },
   "layout": {
     "skipToForm": "Skip to authentication form",
     "navigation": "Qeet ID resources",
@@ -21,7 +63,10 @@
     "titleLine2": "what’s next",
     "description": "Qeet ID makes it simple and secure for people and organizations to sign in with passkeys.",
     "features": [
-      { "title": "Passkeys first", "description": "A faster, more secure way to sign in." },
+      {
+        "title": "Passkeys first",
+        "description": "A faster, more secure way to sign in."
+      },
       {
         "title": "Built for organizations",
         "description": "Flexible, scalable, and developer friendly."
@@ -43,7 +88,10 @@
         "Secure access for every team, everywhere."
       ],
       "features": [
-        { "title": "Built for modern teams", "description": "Simple, secure, and ready to scale." },
+        {
+          "title": "Built for modern teams",
+          "description": "Simple, secure, and ready to scale."
+        },
         {
           "title": "Passkeys-first by design",
           "description": "A faster, more secure way to get started."
@@ -164,7 +212,10 @@
     "passwordLabel": "Password",
     "passwordHelp": "At least 8 characters.",
     "joiningBtn": "Joining…",
-    "acceptBtn": "Accept invite"
+    "acceptBtn": "Accept invite",
+    "accountExistsTitle": "You already have a Qeet ID with this email.",
+    "accountExistsHelp": "Sign in, then accept this invitation from your dashboard.",
+    "accountExistsCta": "Sign in to accept"
   },
   "sso": {
     "noCodeTitle": "No sign-in code",

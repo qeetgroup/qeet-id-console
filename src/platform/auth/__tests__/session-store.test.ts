@@ -101,4 +101,12 @@ describe("public session store", () => {
     expect(clear).not.toHaveBeenCalled();
     unsubscribe();
   });
+
+  it("updates selection routing without invalidating the current identity's requests", () => {
+    sessionStore.hydrate({ ...AUTHENTICATED_SESSION, organizationSelectionRequired: true });
+    const generation = sessionStore.getScopeGeneration();
+    sessionStore.set({ ...AUTHENTICATED_SESSION, organizationSelectionRequired: false });
+    expect(sessionStore.getScopeGeneration()).toBe(generation);
+    expect(sessionStore.getSnapshot().organizationSelectionRequired).toBe(false);
+  });
 });

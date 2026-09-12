@@ -17,6 +17,7 @@ export type ServerSessionData = {
   userId?: string;
   tenantId?: string;
   version?: number;
+  organizationSelectionRequired?: boolean;
 };
 
 export type PublicSession = {
@@ -26,6 +27,7 @@ export type PublicSession = {
   userId: string | null;
   tenantId: string | null;
   version: number;
+  organizationSelectionRequired?: boolean;
   impersonationActor: {
     targetSubject: string;
     actorSubject: string;
@@ -137,6 +139,7 @@ export function toPublicSession(data: ServerSessionData): PublicSession {
     userId: data.userId ?? null,
     tenantId: data.tenantId ?? null,
     version: data.version ?? 0,
+    organizationSelectionRequired: data.organizationSelectionRequired === true,
     impersonationActor,
   };
 }
