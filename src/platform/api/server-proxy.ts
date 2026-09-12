@@ -21,6 +21,7 @@ import {
   buildBackendUrl,
   isLocalSessionDestroyRequest,
 } from "@/platform/api/server-request-policy";
+import { logger } from "@/platform/telemetry/logger";
 
 const requestSchema = z.object({
   path: z
@@ -138,6 +139,30 @@ async function forwardRequest(
   });
 }
 
+// Dev-only trace of the real outbound call. The browser's Network tab stops at
+// the server function, so without this the upstream endpoint, status and bodies
+// are invisible in both the browser and the dev-server terminal.
+//
+// Bodies go through `bodies`, never the message string: `logger` deep-redacts
+// its context argument, so denylisted keys (password, *token*, otp, recovery,
+// cookie, credential, …) are dropped and emails/IPs masked before anything
+// prints. The query string is still excluded entirely — it can carry one-time
+// tokens under key names redact() doesn't know. `logger` is DEV-gated and
+// no-ops in production, so this cannot become a prod log sink by accident.
+function traceBackendCall(
+  method: string,
+  pathname: string,
+  status: number | "ERR",
+  elapsedMs: number,
+  requestId: string,
+  bodies?: { request?: unknown; response?: unknown },
+): void {
+  logger.debug(
+    `api → ${method} ${pathname} ${status} (${elapsedMs}ms) req=${requestId}`,
+    bodies ? { request: bodies.request ?? null, response: bodies.response ?? null } : undefined,
+  );
+}
+
 export const proxyApiRequest = createServerFn({ method: "POST" })
   .validator(requestSchema)
   .handler(async ({ data: input }): Promise<ServerProxyResponse> => {
@@ -148,6 +173,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
     const pathname = target.pathname;
     const destroysLocalSession = isLocalSessionDestroyRequest(pathname, input.method);
     let response: Response;
+    const startedAt = Date.now();
     try {
       response = await forwardRequest(
         input,
@@ -155,9 +181,15 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
         input.anonymous ? undefined : sessionData.accessToken,
       );
     } catch (error) {
+      traceBackendCall(input.method, pathname, "ERR", Date.now() - startedAt, input.requestId, {
+        request: input.body,
+      });
       if (destroysLocalSession) await clearServerSessionCookie();
       throw error;
     }
+    // Measured here so the timing stays the upstream round trip, not the
+    // session bookkeeping that follows.
+    const elapsedMs = Date.now() - startedAt;
 
     const responseData = await parseResponse(response);
     let safeData = responseData;
@@ -192,6 +224,10 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       safeData = stripBackendTokens(responseData);
       sessionChanged = true;
     } else if (response.ok && isBackendTokenResponse(responseData)) {
+      // Deliberately omits the response: it is the token payload we are refusing.
+      traceBackendCall(input.method, pathname, 502, elapsedMs, input.requestId, {
+        request: input.body,
+      });
       return {
         status: 502,
         data: {
@@ -206,6 +242,10 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       };
     }
 
+    traceBackendCall(input.method, pathname, response.status, elapsedMs, input.requestId, {
+      request: input.body,
+      response: safeData,
+    });
     return {
       status: response.status,
       data: safeData,

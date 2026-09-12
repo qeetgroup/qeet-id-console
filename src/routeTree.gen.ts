@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppSplatRouteImport } from './routes/_app/$'
 import { Route as AppActivityRouteImport } from './routes/_app/activity'
@@ -121,6 +122,11 @@ const AuthRoute = AuthRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -644,6 +650,7 @@ const AppAuthConnectionsOidcClientIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/account': typeof AccountRouteWithChildren
+  '/verify-email': typeof VerifyEmailRoute
   '/$': typeof AppSplatRoute
   '/activity': typeof AppActivityRoute
   '/analytics': typeof AppAnalyticsRoute
@@ -744,6 +751,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/account': typeof AccountRouteWithChildren
+  '/verify-email': typeof VerifyEmailRoute
   '/$': typeof AppSplatRoute
   '/activity': typeof AppActivityRoute
   '/analytics': typeof AppAnalyticsRoute
@@ -846,6 +854,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/account': typeof AccountRouteWithChildren
+  '/verify-email': typeof VerifyEmailRoute
   '/_app/$': typeof AppSplatRoute
   '/_app/activity': typeof AppActivityRoute
   '/_app/analytics': typeof AppAnalyticsRoute
@@ -949,6 +958,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/verify-email'
     | '/$'
     | '/activity'
     | '/analytics'
@@ -1049,6 +1059,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/verify-email'
     | '/$'
     | '/activity'
     | '/analytics'
@@ -1150,6 +1161,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/account'
+    | '/verify-email'
     | '/_app/$'
     | '/_app/activity'
     | '/_app/analytics'
@@ -1253,6 +1265,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   AccountRoute: typeof AccountRouteWithChildren
+  VerifyEmailRoute: typeof VerifyEmailRoute
   ApiActivityStreamRoute: typeof ApiActivityStreamRoute
   ApiQeetaiStreamRoute: typeof ApiQeetaiStreamRoute
 }
@@ -1278,6 +1291,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -2183,6 +2203,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   AccountRoute: AccountRouteWithChildren,
+  VerifyEmailRoute: VerifyEmailRoute,
   ApiActivityStreamRoute: ApiActivityStreamRoute,
   ApiQeetaiStreamRoute: ApiQeetaiStreamRoute,
 }

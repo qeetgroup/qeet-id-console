@@ -97,7 +97,7 @@ export function useSessionId(): string | null {
   return useSyncExternalStore(sessionStore.subscribe, sessionStore.getSessionId, () => null);
 }
 
-type Me = {
+export type Me = {
   id: string;
   tenant_id: string;
   email: string;

@@ -13,6 +13,7 @@ import { ImpersonationBanner } from "@/modules/dashboard/components/impersonatio
 import { ShortcutsDialog } from "@/modules/dashboard/components/shortcuts-dialog";
 import { VerifyEmailBanner } from "@/modules/dashboard/components/verify-email-banner";
 import { QeetAILauncher, QeetAIRuntimeProvider, QeetAIWorkspace } from "@/modules/qeetai";
+import { hasVerifiedEmail } from "@/platform/auth/email-verification";
 import { useIdleLogout } from "@/platform/auth/session";
 import { sessionStore } from "@/platform/auth/session-store";
 import { getServerSession } from "@/platform/api/server-proxy";
@@ -21,9 +22,15 @@ import { useGlobalShortcuts } from "@/shared/hooks/use-shortcuts";
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 export const Route = createFileRoute("/_app")({
-  beforeLoad: async () => {
+  beforeLoad: async ({ context }) => {
     const session = await getServerSession();
     if (!session.isAuthenticated) throw redirect({ to: "/sign-in" });
+    // An unverified account is held on /verify-email rather than admitted to
+    // the console. Guarding here (not in the signup component) is what makes it
+    // survive a refresh, a deep link and the back button.
+    if (!(await hasVerifiedEmail(context.queryClient, session.userId))) {
+      throw redirect({ to: "/verify-email" });
+    }
     return { session };
   },
   component: AppLayout,
