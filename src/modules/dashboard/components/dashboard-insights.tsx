@@ -1,4 +1,5 @@
 import { Badge, buttonVariants, cn, EmptyState, Skeleton } from "@qeetrix/ui";
+import { HealthGauge, healthColor, healthText, stateFromScore } from "./health-gauge";
 import { Link } from "@tanstack/react-router";
 import {
   AlertTriangleIcon,
@@ -28,7 +29,6 @@ import {
   deriveAttentionItems,
   deriveSecuritySignals,
   deriveSessionStats,
-  type HealthState,
   type InsightSeverity,
 } from "../dashboard-insights";
 import { DashboardPanel } from "./dashboard-panel";
@@ -60,24 +60,6 @@ const severityStyles: Record<
     label: "Notice",
   },
 };
-
-const healthColor: Record<HealthState, string> = {
-  healthy: "var(--success)",
-  attention: "var(--warning)",
-  critical: "var(--destructive)",
-};
-
-const healthText: Record<HealthState, string> = {
-  healthy: "text-success",
-  attention: "text-warning",
-  critical: "text-destructive",
-};
-
-function stateFromScore(score: number): HealthState {
-  if (score >= 75) return "healthy";
-  if (score >= 50) return "attention";
-  return "critical";
-}
 
 const SKELETON_ROWS = ["a", "b", "c", "d"] as const;
 
@@ -182,54 +164,6 @@ export function AttentionRequiredPanel({
 // Identity health — composite gauge + subsystem breakdown
 // ---------------------------------------------------------------------------
 
-function HealthGauge({ score }: { score: number }) {
-  const size = 116;
-  const stroke = 9;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const state = stateFromScore(score);
-  const offset = circumference * (1 - Math.min(100, Math.max(0, score)) / 100);
-
-  return (
-    <div
-      className="relative shrink-0"
-      style={{ width: size, height: size }}
-      role="img"
-      aria-label={`Identity health score ${score} out of 100`}
-    >
-      <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--border)"
-          strokeWidth={stroke}
-          opacity={0.6}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={healthColor[state]}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className="transition-all duration-700"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-heading text-3xl font-semibold leading-none tabular-nums">
-          {score}
-        </span>
-        <span className="mt-0.5 text-[10px] font-medium text-muted-foreground">/ 100</span>
-      </div>
-    </div>
-  );
-}
-
 export function IdentityHealthPanel({
   overview,
   loading,
@@ -260,7 +194,10 @@ export function IdentityHealthPanel({
       ) : (
         <div className="flex flex-col gap-5">
           <div className="flex items-center gap-4">
-            <HealthGauge score={health.score} />
+            <HealthGauge
+              score={health.score}
+              ariaLabel={`Identity health score ${health.score} out of 100`}
+            />
             <div className="min-w-0">
               <p className={cn("text-lg font-semibold", healthText[stateFromScore(health.score)])}>
                 {health.grade}
