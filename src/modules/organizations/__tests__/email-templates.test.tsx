@@ -379,10 +379,31 @@ describe("Emails workspace", () => {
     );
   });
 
+  it("shows the subject and preheader as an inbox row above the frame", () => {
+    // What a recipient sees before opening anything. A too-long subject or a
+    // missing preheader is only obvious here, not in the rendered body.
+    render(<EmailTemplatesView {...viewProps()} />);
+    expect(screen.getAllByText("Qeet ID").length).toBeGreaterThan(0);
+    expect(screen.getByText(/No preheader — the client will fall back/)).toBeTruthy();
+  });
+
+  it("lists resolved link destinations, since preview links are inert", () => {
+    // The iframe is sandbox="" and sets pointer-events:none on purpose — it
+    // renders tenant-authored markup. This list is how an operator checks where
+    // a link actually points without being able to navigate.
+    render(<EmailTemplatesView {...viewProps()} />);
+    expect(screen.getAllByText("Links in this email").length).toBeGreaterThan(0);
+  });
+
   it("opens all previews and changes preview size without dirtying the template", () => {
     render(<EmailTemplatesView {...viewProps()} />);
+    const frame = () => screen.getByTitle("Email verification email preview");
+    // Desktop fills the panel; mobile constrains to a phone-ish column. Assert
+    // the constraint appears and disappears rather than a specific rem value,
+    // so retuning the width doesn't break the test.
+    expect(frame().className).not.toMatch(/max-w-/);
     fireEvent.click(screen.getByRole("button", { name: "Mobile" }));
-    expect(screen.getByTitle("Email verification email preview").className).toContain("max-w-55");
+    expect(frame().className).toMatch(/max-w-/);
     expect(screen.getByRole("button", { name: "Save template" }).hasAttribute("disabled")).toBe(
       true,
     );

@@ -35,7 +35,11 @@
       "localization": "Localization",
       "advanced": "Advanced"
     },
-    "fields": { "subject": "Subject", "preheader": "Preheader (optional)", "body": "Email body" },
+    "fields": {
+      "subject": "Subject",
+      "preheader": "Preheader (optional)",
+      "body": "Email body"
+    },
     "variables": "Variables",
     "language": "Language: {{name}}",
     "editLanguage": "Editing language",
@@ -118,7 +122,21 @@
     "leaveTitle": "Discard email changes?",
     "leaveDescription": "You have unsaved template changes. Leave this page without saving?",
     "keepEditing": "Keep editing",
-    "discard": "Discard and leave"
+    "discard": "Discard and leave",
+    "leave": {
+      "title": "Discard template changes?",
+      "description": "Your unsaved changes will be lost when you leave this page.",
+      "stay": "Keep editing",
+      "discard": "Discard and leave"
+    },
+    "preview": {
+      "now": "now",
+      "noSubject": "(no subject)",
+      "noPreheader": "No preheader — the client will fall back to the first line of the body.",
+      "linksTitle": "Links in this email",
+      "linksHint": "Links are inert in the preview. Check each destination here.",
+      "noLinks": "This template contains no links."
+    }
   },
   "qeetAI": {
     "title": "Qeet AI",

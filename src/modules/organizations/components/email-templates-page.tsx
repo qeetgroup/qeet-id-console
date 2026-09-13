@@ -77,6 +77,8 @@ import {
   emailHTMLText,
   emailLocaleContent,
   emailPreviewDocument,
+  emailPreviewHeader,
+  emailPreviewLinks,
   emailTemplateInput,
   emailTextHTML,
   sanitizeEmailHTML,
@@ -299,26 +301,87 @@ export function EmailPreview({
   mode?: "desktop" | "mobile";
   title: string;
 }) {
+  const { t } = useTranslation("settings");
   const [document, setDocument] = useState("");
   useEffect(() => {
     setDocument(emailPreviewDocument(draft, locale, variables, brand));
   }, [draft, locale, variables, brand]);
+
+  // The subject and preheader are what a recipient actually sees first, in the
+  // message list, before they open anything. Showing them as an inbox row makes
+  // the preview answer "how does this land?" rather than only "how does the
+  // body look?" — and it's where a too-long subject or an empty preheader
+  // becomes obvious.
+  const samples = emailPreviewHeader(draft, locale, variables, brand);
+  const links = emailPreviewLinks(draft, locale, variables, brand);
+  const sender = brand.name || "Qeet ID";
+
   return (
-    <div className="min-w-0 overflow-hidden rounded-md border border-border/60 bg-muted/15 p-1.5">
-      {document ? (
-        <iframe
-          title={title}
-          sandbox=""
-          referrerPolicy="no-referrer"
-          srcDoc={document}
-          className={cn(
-            "mx-auto block h-87 w-full rounded bg-white",
-            mode === "mobile" && "max-w-55",
-          )}
-        />
-      ) : (
-        <Skeleton className="h-87 w-full rounded" />
-      )}
+    <div className="min-w-0 overflow-hidden rounded-lg border bg-card">
+      <div className="flex items-start gap-3 border-b bg-muted/30 px-3 py-2.5">
+        <span
+          aria-hidden="true"
+          className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary"
+        >
+          {sender.slice(0, 1).toUpperCase()}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="truncate text-xs font-semibold">{sender}</span>
+            <span className="shrink-0 text-[10px] text-muted-foreground">
+              {t("emails.preview.now")}
+            </span>
+          </div>
+          <p className="truncate text-xs font-medium">
+            {samples.subject || t("emails.preview.noSubject")}
+          </p>
+          <p className="truncate text-[11px] text-muted-foreground">
+            {samples.preheader || t("emails.preview.noPreheader")}
+          </p>
+        </div>
+      </div>
+
+      <div className={cn("bg-muted/15 p-3", mode === "mobile" && "flex justify-center")}>
+        {document ? (
+          <iframe
+            title={title}
+            sandbox=""
+            referrerPolicy="no-referrer"
+            srcDoc={document}
+            className={cn(
+              "block w-full rounded border border-border/50 bg-white",
+              // Taller than the old h-87: a real template needs room before the
+              // reader has to scroll inside a preview.
+              mode === "mobile" ? "h-120 max-w-[22rem]" : "h-140",
+            )}
+          />
+        ) : (
+          <Skeleton className={cn("w-full rounded", mode === "mobile" ? "h-120" : "h-140")} />
+        )}
+      </div>
+
+      <div className="border-t px-3 py-2.5">
+        <p className="text-[11px] font-medium">{t("emails.preview.linksTitle")}</p>
+        {links.length === 0 ? (
+          <p className="mt-1 text-[11px] text-muted-foreground">{t("emails.preview.noLinks")}</p>
+        ) : (
+          <>
+            <ul className="mt-1.5 flex flex-col gap-1">
+              {links.map((link) => (
+                <li key={link.href} className="flex min-w-0 items-baseline gap-2 text-[11px]">
+                  <span className="shrink-0 font-medium">{link.text}</span>
+                  <span className="min-w-0 truncate font-mono text-muted-foreground">
+                    {link.href}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              {t("emails.preview.linksHint")}
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }
