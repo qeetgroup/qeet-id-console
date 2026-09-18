@@ -1,27 +1,24 @@
 import {
   Button,
   buttonVariants,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  cn,
   Field,
   FieldDescription,
   FieldError,
-  FieldGroup,
   FieldLabel,
   Input,
   PasswordInput,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { errorMessage } from "@/platform/errors/user-message";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ApiError } from "@/platform/api/client";
 import { useAcceptInvite } from "@/modules/authentication";
+import { AuthFormCard } from "@/modules/authentication/components/auth-form-card";
+import { BrandHero } from "@/modules/authentication/components/brand-hero";
+import { ApiError } from "@/platform/api/client";
+import { errorMessage } from "@/platform/errors/user-message";
 
 export const Route = createFileRoute("/_auth/invite/accept")({
   component: AcceptInvitePage,
@@ -30,6 +27,12 @@ export const Route = createFileRoute("/_auth/invite/accept")({
   }),
 });
 
+/**
+ * Accepting an invite is a sign-up, so it uses the same shell as /sign-up:
+ * `auth-entry` (hero + fixed-width card) rather than a bare <Card>, which
+ * rendered as a narrow panel floating at a different width and offset from
+ * every other auth route.
+ */
 function AcceptInvitePage() {
   const { t } = useTranslation("auth-flow");
   const { token } = Route.useSearch();
@@ -37,30 +40,35 @@ function AcceptInvitePage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
 
+  const accountExists =
+    accept.error instanceof ApiError && accept.error.code === "invite.account_exists";
+
   if (!token) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("invite.invalidTitle")}</CardTitle>
-          <CardDescription>{t("invite.invalidDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link to="/sign-in" className="text-sm underline">
+      <div className="auth-entry">
+        <BrandHero />
+        <AuthFormCard>
+          <div className="auth-form-header">
+            <h1 className="auth-form-title">{t("invite.invalidTitle")}</h1>
+            <p className="auth-form-description">{t("invite.invalidDescription")}</p>
+          </div>
+          <Link
+            to="/sign-in"
+            className={cn(buttonVariants({ variant: "outline" }), "auth-submit mt-4")}
+          >
             {t("invite.backToSignIn")}
           </Link>
-        </CardContent>
-      </Card>
+        </AuthFormCard>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("invite.acceptTitle")}</CardTitle>
-        <CardDescription>{t("invite.acceptDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="auth-entry">
+      <BrandHero intent="signup" />
+      <AuthFormCard>
         <form
+          aria-busy={accept.isPending}
           onSubmit={(e) => {
             e.preventDefault();
             accept.mutate({
@@ -70,8 +78,13 @@ function AcceptInvitePage() {
             });
           }}
         >
-          <FieldGroup>
-            <Field>
+          <div className="auth-form-header">
+            <h1 className="auth-form-title">{t("invite.acceptTitle")}</h1>
+            <p className="auth-form-description">{t("invite.acceptDescription")}</p>
+          </div>
+
+          <div className="auth-fields">
+            <Field className="auth-field">
               <FieldLabel htmlFor="display_name">{t("invite.displayNameLabel")}</FieldLabel>
               <Input
                 id="display_name"
@@ -81,7 +94,8 @@ function AcceptInvitePage() {
                 autoComplete="name"
               />
             </Field>
-            <Field>
+
+            <Field className="auth-field">
               <FieldLabel htmlFor="password">{t("invite.passwordLabel")}</FieldLabel>
               <PasswordInput
                 id="password"
@@ -93,32 +107,42 @@ function AcceptInvitePage() {
               />
               <FieldDescription>{t("invite.passwordHelp")}</FieldDescription>
             </Field>
-            {accept.error &&
-              (accept.error instanceof ApiError && accept.error.code === "invite.account_exists" ? (
-                <Field>
-                  <FieldDescription>
-                    You already have a Qeet ID with this email. Sign in, then accept this invitation
-                    from your dashboard.
-                  </FieldDescription>
-                  <Link
-                    to="/sign-in"
-                    className={buttonVariants({ variant: "outline", size: "sm" })}
-                  >
-                    Sign in to accept
-                  </Link>
-                </Field>
-              ) : (
-                <FieldError>{errorMessage(accept.error)}</FieldError>
-              ))}
-            <Field>
-              <Button type="submit" disabled={accept.isPending || password.length < 8}>
-                {accept.isPending && <Loader2Icon className="animate-spin" />}
-                {accept.isPending ? t("invite.joiningBtn") : t("invite.acceptBtn")}
-              </Button>
-            </Field>
-          </FieldGroup>
+          </div>
+
+          {/* An existing account isn't a failure to retype — it needs a
+              different route entirely, so it gets a recovery action rather than
+              a red error line. */}
+          {accountExists ? (
+            <div className="mt-4 rounded-lg border bg-muted/40 p-3">
+              <p className="text-sm font-medium">{t("invite.accountExistsTitle")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("invite.accountExistsHelp")}</p>
+              <Link
+                to="/sign-in"
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-2 w-full")}
+              >
+                {t("invite.accountExistsCta")}
+              </Link>
+            </div>
+          ) : accept.error ? (
+            <FieldError className="auth-form-error">{errorMessage(accept.error)}</FieldError>
+          ) : null}
+
+          <Button
+            type="submit"
+            className="auth-submit"
+            disabled={accept.isPending || password.length < 8}
+          >
+            {accept.isPending && <Loader2Icon className="animate-spin" />}
+            {accept.isPending ? t("invite.joiningBtn") : t("invite.acceptBtn")}
+          </Button>
+
+          <p className="auth-form-switch">
+            <Link to="/sign-in" className="auth-link">
+              {t("invite.backToSignIn")}
+            </Link>
+          </p>
         </form>
-      </CardContent>
-    </Card>
+      </AuthFormCard>
+    </div>
   );
 }

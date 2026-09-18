@@ -49,6 +49,20 @@ export function isSessionIssuingRequest(path: string, method: string): boolean {
   ]).has(path);
 }
 
+export function isSignInRequest(path: string, method: string): boolean {
+  return (
+    method === "POST" &&
+    new Set([
+      "/v1/auth/login",
+      "/v1/auth/mfa",
+      "/v1/auth/magic-link/consume",
+      "/v1/passkeys/login/finish",
+      "/v1/social/exchange",
+      "/saml/exchange",
+    ]).has(path)
+  );
+}
+
 export function stripBackendTokens(value: BackendTokenResponse): Record<string, JsonValue> {
   const { access_token: _accessToken, refresh_token: _refreshToken, ...safe } = value;
   return safe;

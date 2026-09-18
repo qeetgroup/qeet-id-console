@@ -24,6 +24,7 @@ describe("public server session", () => {
       userId: "user-1",
       tenantId: "tenant-1",
       version: 0,
+      organizationSelectionRequired: false,
       impersonationActor: null,
     });
     expect(session).not.toHaveProperty("accessToken");
@@ -46,5 +47,17 @@ describe("public server session", () => {
       actorEmail: "admin@example.com",
       actorDisplayName: "Admin",
     });
+  });
+
+  it("exposes only the organization-selection decision, never the credentials", () => {
+    const session = toPublicSession({
+      accessToken: "secret",
+      refreshToken: "secret",
+      userId: "user-1",
+      organizationSelectionRequired: true,
+    });
+    expect(session.organizationSelectionRequired).toBe(true);
+    expect(session).not.toHaveProperty("accessToken");
+    expect(session).not.toHaveProperty("refreshToken");
   });
 });

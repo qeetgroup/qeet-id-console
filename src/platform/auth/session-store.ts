@@ -25,6 +25,7 @@ const EMPTY_SESSION: PublicSession = {
   userId: null,
   tenantId: null,
   version: 0,
+  organizationSelectionRequired: false,
   impersonationActor: null,
 };
 
@@ -111,6 +112,7 @@ function sameSession(left: PublicSession, right: PublicSession): boolean {
     left.userId === right.userId &&
     left.tenantId === right.tenantId &&
     left.version === right.version &&
+    !!left.organizationSelectionRequired === !!right.organizationSelectionRequired &&
     JSON.stringify(left.impersonationActor) === JSON.stringify(right.impersonationActor)
   );
 }

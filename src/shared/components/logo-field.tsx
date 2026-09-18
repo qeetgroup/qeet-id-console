@@ -167,6 +167,7 @@ export function LogoField({
               setDragOver(false);
               if (!disabled && event.dataTransfer.files[0]) handleFile(event.dataTransfer.files[0]);
             }}
+            data-slot="logo-dropzone"
             className={cn(
               "flex min-h-26 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-md border border-dashed px-3 py-3 text-center transition-colors hover:border-primary/60 hover:bg-primary/3 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50",
               dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/40 bg-muted/10",
@@ -327,6 +328,7 @@ export function LogoField({
             const file = e.dataTransfer.files[0];
             if (file) handleFile(file);
           }}
+          data-slot="logo-dropzone"
           className={cn(
             "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors",
             dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/30",
@@ -342,19 +344,32 @@ export function LogoField({
       )}
 
       {/* Offered in the empty state too: without it, a logo that already lives
-          at a URL would have to be downloaded and re-uploaded. */}
+          at a URL would have to be downloaded and re-uploaded. Wrapped so it
+          reads as one control with its input rather than two stacked blocks. */}
       {!value ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="self-start"
-          disabled={disabled}
-          onClick={() => setUrlOpen((v) => !v)}
-          aria-expanded={urlOpen}
-        >
-          <LinkIcon /> Upload via URL
-        </Button>
+        <div data-slot="logo-url-toggle" className="flex flex-col gap-2">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setUrlOpen((v) => !v)}
+            aria-expanded={urlOpen}
+            className="inline-flex w-fit items-center gap-1.5 rounded-md text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+          >
+            <LinkIcon className="size-3.5" />
+            Upload via URL
+          </button>
+          {urlOpen ? (
+            <Input
+              type="url"
+              inputMode="url"
+              placeholder="https://example.com/logo.png"
+              value={value && !value.startsWith("data:") ? value : ""}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={disabled}
+              aria-label="Logo URL"
+            />
+          ) : null}
+        </div>
       ) : null}
 
       <input
@@ -370,12 +385,12 @@ export function LogoField({
         }}
       />
 
-      {urlOpen ? (
+      {value && urlOpen ? (
         <Input
           type="url"
           inputMode="url"
           placeholder="https://example.com/logo.png"
-          value={value && !value.startsWith("data:") ? value : ""}
+          value={value.startsWith("data:") ? "" : value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           aria-label="Logo URL"

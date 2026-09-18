@@ -2,11 +2,34 @@
   "list": {
     "description": "OAuth 2.0 / OIDC applications that delegate authentication to Qeet ID. Confidential apps receive a client secret on registration; public apps use PKCE.",
     "register": "Register application",
+    "registerFirst": "Register your first application",
     "registeredTitle": "Registered applications",
     "appCount_one": "{{count}} app",
     "appCount_other": "{{count}} apps",
-    "emptyTitle": "No applications registered.",
-    "emptyDescription": "Click Register application to add your first OAuth / OIDC client."
+    "shownOf": "Showing {{shown}} of {{total}}",
+    "searchPlaceholder": "Search applications by name, client ID or scope…",
+    "resultCount_one": "{{count}} result",
+    "resultCount_other": "{{count}} results",
+    "emptyTitle": "No applications registered yet",
+    "emptyDescription": "Register an OAuth / OIDC application to get started. Define your application, set redirect URIs, and configure the required scopes.",
+    "emptyTitleFiltered": "No applications match your filters",
+    "emptyDescriptionFiltered": "Try a different search term, or clear the filters to see every registered application.",
+    "clearFilters": "Clear filters"
+  },
+  "stats": {
+    "total": "Total applications",
+    "totalCaption": "Registered in this organization",
+    "public": "Public clients",
+    "publicCaption": "Use PKCE (no client secret)",
+    "confidential": "Confidential clients",
+    "confidentialCaption": "Use a client secret",
+    "recent": "Recently registered",
+    "recentEmpty": "No applications yet"
+  },
+  "filters": {
+    "type": "Type",
+    "typePublic": "Public",
+    "typeConfidential": "Confidential"
   },
   "table": {
     "name": "Name",
@@ -14,7 +37,21 @@
     "type": "Type",
     "redirectUris": "Redirect URIs",
     "scopes": "Scopes",
-    "actions": "Actions"
+    "created": "Created",
+    "actions": "Actions",
+    "selectAll": "Select all applications",
+    "selectRow": "Select {{name}}"
+  },
+  "bulk": {
+    "delete": "Delete selected"
+  },
+  "help": {
+    "docsTitle": "Read the documentation",
+    "docsDescription": "Learn how to integrate with Qeet ID",
+    "examplesTitle": "See integration examples",
+    "examplesDescription": "SDKs, libraries and sample code",
+    "supportTitle": "Get help",
+    "supportDescription": "Visit our support center"
   },
   "credentials": {
     "title": "Client credentials for {{name}}",
@@ -22,23 +59,34 @@
   },
   "delete": {
     "title": "Delete this application?",
+    "titleBulk_one": "Delete {{count}} application?",
+    "titleBulk_other": "Delete {{count}} applications?",
     "descriptionNamed": "Apps using the client ID for <strong>{{name}}</strong> will immediately stop being able to authenticate. This can’t be undone.",
-    "descriptionFallback": "Apps using this client ID will stop working."
+    "descriptionFallback": "Apps using this client ID will stop working.",
+    "descriptionBulk_one": "{{count}} application will be deleted. Every app using its client ID will immediately stop being able to authenticate. This can’t be undone.",
+    "descriptionBulk_other": "{{count}} applications will be deleted. Every app using their client IDs will immediately stop being able to authenticate. This can’t be undone."
   },
   "create": {
     "title": "Register OAuth / OIDC application",
-    "description": "Creates an OIDC client. Confidential clients receive a one-time client secret.",
+    "description": "Create an OIDC client. Confidential clients receive a one-time client secret.",
     "name": "Name",
-    "type": "Type",
+    "nameHelp": "A friendly name to identify this application in your organization.",
+    "type": "Application type",
     "typePublic": "Public — SPA, mobile (PKCE)",
     "typeConfidential": "Confidential — server-side app (client secret)",
+    "typePublicHelp": "Public clients run in browsers or mobile apps and use PKCE. They do not receive a client secret.",
+    "typeConfidentialHelp": "Confidential clients run on a server that can keep a secret. They receive a client secret on registration.",
+    "publicCalloutTitle": "Public clients use PKCE",
+    "publicCalloutBody": "PKCE helps protect authorization codes in public clients such as SPAs and mobile apps.",
+    "confidentialCalloutTitle": "The client secret is shown once",
+    "confidentialCalloutBody": "Copy it as soon as it appears — it’s hashed server-side and can’t be shown again. You can rotate it later.",
     "redirectUris": "Redirect URIs",
-    "redirectUrisHelp": "One URL per line. Must be HTTPS in production; localhost is allowed for dev.",
+    "redirectUrisHelp": "One URL per line. Must be HTTPS in production; localhost is allowed for development.",
     "postLogoutUris": "Post-logout redirect URIs",
-    "postLogoutUrisHelp": "Optional. One URL per line.",
+    "postLogoutUrisHelp": "Optional. One URL per line. Users will be redirected here after signing out.",
     "scopes": "Scopes",
-    "scopesHelp": "Space-separated.",
-    "submit": "Register",
+    "scopesHelp": "Space-separated list of OAuth scopes. Common scopes include openid, profile, and email.",
+    "submit": "Register application",
     "submitting": "Registering…"
   },
   "detail": {
