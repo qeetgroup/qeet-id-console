@@ -75,8 +75,10 @@ function ConsoleFrame() {
       className="console-shell"
       style={
         {
-          // Two-pane sidebar: 4rem icon rail + ~15rem section panel. Collapsed
-          // state falls back to just the rail (--sidebar-width-icon).
+          // Two-pane sidebar: 4rem icon rail + 15rem section panel — wide
+          // enough for the longest nav labels and the tenant switcher without
+          // truncating. Collapsed state falls back to just the rail
+          // (--sidebar-width-icon).
           "--sidebar-width": "19rem",
           "--sidebar-width-icon": "4rem",
         } as React.CSSProperties

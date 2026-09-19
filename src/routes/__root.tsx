@@ -67,7 +67,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: themeFlashScript }} />
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ThemeProvider defaultTheme="system" storageKey={THEME_STORAGE_KEY}>
           {children}
           <Toaster position="bottom-right" closeButton richColors />

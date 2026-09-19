@@ -300,6 +300,28 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     expect(onDone).not.toHaveBeenCalled();
   });
 
+  // Reusing an existing org's name auto-derives that org's slug (the slug field
+  // mirrors the name until edited), so this is the collision users actually hit.
+  // Both paths reach it: Free inserts directly, paid pre-checks before charging.
+  it.each(["Free", "Pro"] as const)("names the taken org URL on the %s path", async (tier) => {
+    const error = new ApiError(409, "tenant.slug_taken", "slug taken", "uq_tenants_slug");
+    vi.mocked(tier === "Free" ? api : startSignupCheckout).mockRejectedValueOnce(error);
+    mount();
+    pick(tier);
+    click("Skip for now");
+    change("Organization name", "Existing Org");
+    click(tier === "Free" ? "Create organization" : "Continue to payment");
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toBe(
+      "That organization URL is already taken. Choose a different URL — your organization name can stay the same.",
+    );
+    expect(alert.textContent).not.toMatch(/something went wrong/i);
+    expect(document.body.textContent).not.toContain(error.detail);
+    // Recoverable in place: the form stays usable so the slug can be corrected.
+    expect(details().getAttribute("aria-busy")).toBe("false");
+    expect(onDone).not.toHaveBeenCalled();
+  });
+
   it("previews a valid uploaded logo and allows it to be removed without submitting", async () => {
     mount();
     pick();

@@ -61,6 +61,12 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.PASSKEY_LOGIN_FAILED]:
     "We couldn't sign you in with that passkey. Try again, or use your password.",
   [ERROR_CODES.FORBIDDEN]: "You don't have access to do that.",
+  // 409 -> `api`, so this used to read "Something went wrong. Please try
+  // again." on the org setup form — advice that can never succeed, since the
+  // retry resubmits the same slug. Name it, and point at the field that fixes
+  // it: the slug, not the name (names aren't unique, so theirs can stay).
+  [ERROR_CODES.ORG_SLUG_TAKEN]:
+    "That organization URL is already taken. Choose a different URL — your organization name can stay the same.",
   [ERROR_CODES.MFA_CODE_INVALID]: "That code isn't valid. Check your authenticator and try again.",
   [ERROR_CODES.BILLING_PLAN_LIMIT]: "You've reached your plan's limit.",
   [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "This feature isn't included in your plan.",

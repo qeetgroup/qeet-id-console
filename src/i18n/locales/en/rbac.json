@@ -205,5 +205,106 @@
     "revokeTitle": "Remove this role from the group?",
     "revokeDescriptionNamed": "Members will lose the permissions granted by <strong>{{name}}</strong> unless they hold it through another group or a direct assignment.",
     "revokeDescriptionFallback": "Members will lose this role’s permissions."
+  },
+  "overview": {
+    "description": "A single view of your authorization posture: what's configured, what's risky, and what changed.",
+    "rangeLabel": "Reporting window",
+    "range": {
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days"
+    },
+    "updated": "Updated",
+    "kpi": {
+      "roles": "Roles",
+      "rolesHint_one": "{{count}} system role",
+      "rolesHint_other": "{{count}} system roles",
+      "permissions": "Permissions",
+      "permissionsHint_one": "Across {{count}} resource type",
+      "permissionsHint_other": "Across {{count}} resource types",
+      "abac": "ABAC policies",
+      "abacHint": "{{count}} enabled",
+      "deny": "Deny policies",
+      "denyHint_one": "{{count}} active deny policy",
+      "denyHint_other": "{{count}} active deny policies",
+      "notConfigured": "Not configured",
+      "healthy": "Healthy"
+    },
+    "health": {
+      "title": "Policy health",
+      "subtitle": "Overall configuration health and risk summary.",
+      "recommendations": "View recommendations",
+      "ringLabel": "Policy health score {{score}} out of 100",
+      "band": {
+        "good": "Good",
+        "fair": "Fair",
+        "atRisk": "At risk"
+      },
+      "bandHint": {
+        "good": "Your authorization configuration is healthy.",
+        "fair": "A few findings are worth reviewing.",
+        "atRisk": "High-severity findings need attention."
+      },
+      "critical": "Critical issues",
+      "warnings": "Warnings",
+      "info": "Info"
+    },
+    "coverage": {
+      "title": "Resources protected",
+      "subtitle": "Resources with authorization policies.",
+      "ringLabel": "{{percent}}% of resource types covered by a policy",
+      "caption": "Resources protected",
+      "protected": "Protected",
+      "unprotected": "Not protected",
+      "viewResources": "View resources"
+    },
+    "changes": {
+      "title": "Recent policy changes",
+      "subtitle": "From the audit log",
+      "viewAll": "View all",
+      "by": "by",
+      "empty": "No authorization changes in this window."
+    },
+    "insights": {
+      "title": "Security insights",
+      "subtitle": "Computed from your live configuration.",
+      "severity": {
+        "high": "High",
+        "medium": "Medium",
+        "info": "Info"
+      },
+      "wildcard": {
+        "title": "Wildcard permissions",
+        "description": "Permissions containing * grant broad access."
+      },
+      "unconditional": {
+        "title": "Unconditional allow policies",
+        "description": "Enabled allow policies with no condition match everything."
+      },
+      "disabled": {
+        "title": "Disabled policies",
+        "description": "Policies that exist but are not enforced."
+      },
+      "deny": {
+        "title": "Explicit deny policies",
+        "description": "Deny-effect policies (deny wins over allow)."
+      }
+    },
+    "build": {
+      "title": "Start building",
+      "subtitle": "Quick actions to manage your authorization setup.",
+      "createRole": "Create role",
+      "addPermission": "Add permission",
+      "createPolicy": "Create policy",
+      "runSimulation": "Run simulation",
+      "openBuilder": "Open policy builder"
+    },
+    "analytics": {
+      "title": "Evaluation analytics",
+      "subtitle": "Allow-vs-deny trends, latency, and decision volume from the authorization engine.",
+      "unavailableTitle": "Decision metrics aren't being collected yet",
+      "unavailableBody": "Allow-vs-deny volume, p95 decision latency and policy-evaluation counts will appear here once the authorization engine emits decision metrics. Everything above is read from live configuration and the audit log.",
+      "note": "no authz metrics endpoint yet"
+    }
   }
 }

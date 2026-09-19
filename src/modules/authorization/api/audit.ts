@@ -68,10 +68,15 @@ export function useAuditEvents(filter: AuditFilter = {}) {
   });
 }
 
+/** Whether an audit/activity action belongs to the authorization domain. */
+export function isAuthzAction(action: string): boolean {
+  return /^(abac|rbac|role|permission|relation|policy)[._]/i.test(action);
+}
+
 /** Whether an event is authorization-related (by resource type or action prefix). */
 export function isAuthzEvent(e: AuditEvent): boolean {
   if ((AUTHZ_RESOURCE_TYPES as readonly string[]).includes(e.resource_type)) return true;
-  return /^(abac|rbac|role|permission|relation|policy)[._]/i.test(e.action);
+  return isAuthzAction(e.action);
 }
 
 export interface VersionEntry {

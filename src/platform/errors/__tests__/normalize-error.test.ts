@@ -133,6 +133,17 @@ describe("userMessageForCode (leak stop)", () => {
     expect(shown).not.toMatch(/sign in again/i);
   });
 
+  it("names a taken org slug instead of saying 'try again'", () => {
+    // 409 classifies as `api`, whose fallback invites a retry that resubmits
+    // the same slug and fails identically. Must point at the slug, and must
+    // not imply the org *name* is the problem — names aren't unique.
+    const app = normalizeError(new ApiError(409, "tenant.slug_taken", "slug taken"));
+    expect(app.kind).toBe("api");
+    const shown = userMessageForCode(app.code, app.kind);
+    expect(shown).toMatch(/already taken/i);
+    expect(shown).not.toMatch(/something went wrong/i);
+  });
+
   it("falls back to generic per-kind copy for unknown codes", () => {
     const msg = userMessageForCode("some.internal.code", "api");
     expect(msg).toBe("Something went wrong. Please try again.");

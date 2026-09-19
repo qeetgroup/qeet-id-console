@@ -37,6 +37,11 @@ export const ERROR_CODES = {
   VERIFY_EMAIL_NOT_VERIFIED: "verification.email_not_verified",
   // authz
   FORBIDDEN: "auth.forbidden",
+  // organization / tenant. Only `slug` is unique (uq_tenants_slug on
+  // LOWER(slug)); org names are free to repeat. The console auto-derives the
+  // slug from the name, so typing an existing org's name silently reuses its
+  // slug and trips this on submit.
+  ORG_SLUG_TAKEN: "tenant.slug_taken",
   // billing entitlements (surfaced as actionable upgrade prompts elsewhere)
   BILLING_PLAN_LIMIT: "billing.plan_limit",
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
