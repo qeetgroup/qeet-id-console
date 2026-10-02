@@ -4,7 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
-import { ApiError, api, API_BASE_URL } from "@/platform/api/client";
+import { ApiError, api, getApiBaseUrl } from "@/platform/api/client";
 
 type SessionResponse = {
   token_type: string;
@@ -389,7 +389,7 @@ export function usePlatformSocialProviders() {
  * requires an existing account, so signing in never silently creates one.
  */
 export function socialStartUrl(provider: string, intent: "login" | "signup" = "login"): string {
-  return `${API_BASE_URL}/v1/social/${provider}/start?intent=${intent}`;
+  return `${getApiBaseUrl()}/v1/social/${provider}/start?intent=${intent}`;
 }
 
 /**

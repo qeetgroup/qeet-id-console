@@ -11,7 +11,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { API_BASE_URL, api } from "@/platform/api/client";
+import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export interface SocialProvider {
@@ -25,15 +25,13 @@ export interface SocialProvider {
 
 export const SOCIAL_PROVIDERS_KEY = ["social-providers"] as const;
 
-const apiOrigin = API_BASE_URL.replace(/\/$/, "");
-
 /**
  * The redirect URI the upstream IdP must have on its allowlist. The backend
  * owns the callback leg of the ceremony, so it is derived from the API origin
  * rather than the console's own.
  */
 export const socialRedirectUri = (provider: string) =>
-  `${apiOrigin}/v1/social/${provider}/callback`;
+  `${getApiBaseUrl()}/v1/social/${provider}/callback`;
 
 /** Providers configured for the current tenant. */
 export function useSocialProviders(enabled = true) {

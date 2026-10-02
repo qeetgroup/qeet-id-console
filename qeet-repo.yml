@@ -57,7 +57,7 @@ authorization:
 
 contracts:
   consumes: {api: qeet-id-server}
-  browser_base_url_env: VITE_API_URL            # federation/metadata URLs only
+  browser_base_url_env: PUBLIC_API_URL          # runtime (platform/config/api-base-url.ts), falls back to build-time VITE_API_URL (Vercel); federation/metadata URLs only
   server_base_url_env: SERVER_URL               # the BFF's backend origin
   ssrf_guard: src/platform/api/server-request-policy.ts
 
@@ -73,6 +73,11 @@ ci:
   job: verify                 # typecheck, check, lint:boundaries, test, build
   runner: ubuntu-latest
   deploy: push main -> gate -> vercel build/deploy --prod -> tag vX.Y.Z + GitHub release
+  release_image: "ci.yml job `image` — push to release/** after verify: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, linux/amd64+arm64 (consumed by the qeet-id-deploy test kit)"
+container:
+  dockerfile: Dockerfile      # Nitro node-server; not used by Vercel production
+  runtime_env: [SERVER_URL, SESSION_SECRET, PUBLIC_API_URL, PORT, HOST]
+  health: GET /healthz -> 200
 
 security:
   sensitive_paths:

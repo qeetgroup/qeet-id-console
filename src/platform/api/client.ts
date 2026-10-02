@@ -23,7 +23,7 @@ import { newRequestId } from "@/platform/telemetry/tracing";
 // module (mirrors the old single-module ergonomics). Canonical homes remain
 // @/platform/errors, @/platform/config, and @/platform/auth.
 export { sessionStore } from "@/platform/auth/session-store";
-export { API_BASE_URL } from "@/platform/config/api-base-url";
+export { getApiBaseUrl } from "@/platform/config/api-base-url";
 export { ApiError } from "@/platform/errors/api-error";
 
 type RequestOpts<T = unknown> = {

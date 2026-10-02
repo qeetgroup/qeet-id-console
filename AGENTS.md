@@ -108,8 +108,14 @@ bun run lint:boundaries  # the layering gate
 
 ## What CI enforces
 
-`ci.yml`, one job (`verify`, runner `ubuntu-latest`, 15 min): typecheck → `check` →
-**`lint:boundaries`** → test → build.
+`ci.yml` (push to `main`/`develop`/`release/**`, every PR):
+
+- `verify` (runner `ubuntu-latest`, 15 min): typecheck → `check` → **`lint:boundaries`** → test → build.
+- `image` — push to `release/**` only, after `verify`: publishes
+  `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>` (amd64+arm64) for the `qeet-id-deploy` test kit.
+  It never computes an RC number. The image is the `Dockerfile` (Nitro `node-server`), configured at
+  runtime by `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL`; health `GET /healthz`. Vercel
+  production does not use it.
 
 `deploy.yml` runs on every push to `main`: the same gate, then `vercel build`/`deploy --prod`,
 then it tags `vX.Y.Z` and cuts a GitHub release. Vercel's own Git integration is disabled for

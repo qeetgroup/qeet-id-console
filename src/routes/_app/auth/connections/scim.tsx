@@ -30,7 +30,7 @@ import { PageHeader } from "@/platform/components/page-header";
 import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
 import { useEntitlements } from "@/modules/billing/api/billing";
 import {
-  SCIM_BASE_URL,
+  scimBaseUrl,
   useRevokeScimToken,
   useRotateScimToken,
   useScimConfig,
@@ -172,8 +172,8 @@ function ScimPage() {
             <Field>
               <FieldLabel>{t("scim.endpoint.baseUrlLabel")}</FieldLabel>
               <div className="flex gap-2">
-                <Input value={SCIM_BASE_URL} readOnly className="font-mono text-xs" />
-                <Button variant="outline" size="icon" onClick={() => copy("url", SCIM_BASE_URL)}>
+                <Input value={scimBaseUrl()} readOnly className="font-mono text-xs" />
+                <Button variant="outline" size="icon" onClick={() => copy("url", scimBaseUrl())}>
                   {copied === "url" ? (
                     <CheckIcon className="size-4" />
                   ) : (
