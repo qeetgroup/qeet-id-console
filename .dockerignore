@@ -1,0 +1,18 @@
+# Build context = repository root. Ship source and lockfile only.
+.git
+.github
+.output
+.tanstack
+.vercel
+.nitro
+node_modules
+coverage
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+Dockerfile
+.dockerignore
+docs
+project.tree
+.DS_Store

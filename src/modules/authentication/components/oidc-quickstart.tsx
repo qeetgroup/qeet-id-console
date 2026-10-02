@@ -20,12 +20,13 @@ import { CheckIcon, CopyIcon, ExternalLinkIcon, PlayIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { API_BASE_URL } from "@/platform/api/client";
+import { getApiBaseUrl } from "@/platform/api/client";
 import type { OidcClient } from "../api/oidc-clients";
 
 // The OIDC issuer (authority) is the API origin; SDKs discover the rest at
-// {ISSUER}/.well-known/openid-configuration (see the server's discovery handler).
-const ISSUER = new URL(API_BASE_URL).origin;
+// {issuer}/.well-known/openid-configuration (see the server's discovery handler).
+// Resolved per call: the API origin is runtime configuration.
+const issuer = () => new URL(getApiBaseUrl()).origin;
 
 type Framework = "config" | "nextjs" | "react" | "go";
 
@@ -44,12 +45,12 @@ function buildSnippet(fw: Framework, client: OidcClient): string {
   switch (fw) {
     case "config":
       return [
-        `Issuer / Authority   ${ISSUER}`,
-        `Discovery            ${ISSUER}/.well-known/openid-configuration`,
-        `Authorization        ${ISSUER}/v1/oauth/authorize`,
-        `Token                ${ISSUER}/v1/oauth/token-code`,
-        `UserInfo             ${ISSUER}/v1/oauth/userinfo`,
-        `JWKS                 ${ISSUER}/.well-known/jwks.json`,
+        `Issuer / Authority   ${issuer()}`,
+        `Discovery            ${issuer()}/.well-known/openid-configuration`,
+        `Authorization        ${issuer()}/v1/oauth/authorize`,
+        `Token                ${issuer()}/v1/oauth/token-code`,
+        `UserInfo             ${issuer()}/v1/oauth/userinfo`,
+        `JWKS                 ${issuer()}/.well-known/jwks.json`,
         `Client ID            ${client.client_id}`,
         `Client type          ${client.type}`,
         `Redirect URI         ${redirect}`,
@@ -68,7 +69,7 @@ function buildSnippet(fw: Framework, client: OidcClient): string {
         `      id: "qeetid",`,
         `      name: "Qeet ID",`,
         `      type: "oidc",`,
-        `      issuer: "${ISSUER}",`,
+        `      issuer: "${issuer()}",`,
         `      clientId: "${client.client_id}",`,
         confidential
           ? `      clientSecret: process.env.QEETID_CLIENT_SECRET, // shown once on creation`
@@ -86,7 +87,7 @@ function buildSnippet(fw: Framework, client: OidcClient): string {
         `import { AuthProvider } from "react-oidc-context";`,
         ``,
         `const oidcConfig = {`,
-        `  authority: "${ISSUER}",`,
+        `  authority: "${issuer()}",`,
         `  client_id: "${client.client_id}",`,
         `  redirect_uri: "${redirect}",`,
         `  scope: "${scopes}",`,
@@ -103,7 +104,7 @@ function buildSnippet(fw: Framework, client: OidcClient): string {
     case "go":
       return [
         `// github.com/coreos/go-oidc/v3 + golang.org/x/oauth2`,
-        `provider, err := oidc.NewProvider(ctx, "${ISSUER}")`,
+        `provider, err := oidc.NewProvider(ctx, "${issuer()}")`,
         `if err != nil { log.Fatal(err) }`,
         ``,
         `conf := &oauth2.Config{`,
@@ -143,7 +144,7 @@ async function testLogin(client: OidcClient) {
   const challenge = base64url(new Uint8Array(digest));
   const scopes = (client.scopes.length ? client.scopes : ["openid", "profile", "email"]).join(" ");
 
-  const url = new URL(`${ISSUER}/v1/oauth/authorize`);
+  const url = new URL(`${issuer()}/v1/oauth/authorize`);
   url.searchParams.set("client_id", client.client_id);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
@@ -228,7 +229,7 @@ export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?
             variant="outline"
             size="sm"
             onClick={() =>
-              window.open(`${ISSUER}/.well-known/openid-configuration`, "_blank", "noopener")
+              window.open(`${issuer()}/.well-known/openid-configuration`, "_blank", "noopener")
             }
           >
             <ExternalLinkIcon className="size-4" /> Discovery document

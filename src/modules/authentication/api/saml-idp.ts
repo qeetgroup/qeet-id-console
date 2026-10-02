@@ -2,11 +2,11 @@
 // the Identity Provider and the rows are the Service Providers (SPs) that trust
 // us: the apps that consume our assertions. SPs import a single shared IdP
 // metadata document (idpMetadataUrl()) served at the API origin's /saml/idp
-// route, so that URL is derived from API_BASE_URL rather than per-row.
+// route, so that URL is derived from the API base URL rather than per-row.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { API_BASE_URL, api } from "@/platform/api/client";
+import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export interface SamlProvider {
@@ -34,7 +34,7 @@ export interface CreateSamlProviderInput {
 }
 
 /** The single IdP metadata document an SP imports to trust this deployment. */
-export const idpMetadataUrl = () => `${API_BASE_URL.replace(/\/$/, "")}/saml/idp/metadata`;
+export const idpMetadataUrl = () => `${getApiBaseUrl()}/saml/idp/metadata`;
 
 export function useSamlProviders() {
   const tenantId = useTenantId();

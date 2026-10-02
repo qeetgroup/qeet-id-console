@@ -6,7 +6,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { API_BASE_URL, api } from "@/platform/api/client";
+import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export interface ScimConfig {
@@ -27,7 +27,7 @@ export interface ScimProvisionedUser {
 }
 
 /** The /scim/v2 base an IdP should be pointed at for this deployment. */
-export const SCIM_BASE_URL = `${API_BASE_URL.replace(/\/$/, "")}/scim/v2`;
+export const scimBaseUrl = () => `${getApiBaseUrl()}/scim/v2`;
 
 export function useScimConfig(enabled = true) {
   const tenantId = useTenantId();

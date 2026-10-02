@@ -1,10 +1,10 @@
 // SAML 2.0 connection data layer. Connections are managed under the tenant;
 // the SP metadata + login URLs an IdP needs live at the API origin's /saml/*
-// routes, so they're derived from API_BASE_URL.
+// routes, so they're derived from the API base URL.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { API_BASE_URL, api } from "@/platform/api/client";
+import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 export type SamlStatus = "draft" | "active" | "disabled";
@@ -34,9 +34,8 @@ export interface CreateSamlInput {
   status?: SamlStatus;
 }
 
-const apiOrigin = API_BASE_URL.replace(/\/$/, "");
-export const samlMetadataUrl = (id: string) => `${apiOrigin}/saml/metadata/${id}`;
-export const samlLoginUrl = (id: string) => `${apiOrigin}/saml/login/${id}`;
+export const samlMetadataUrl = (id: string) => `${getApiBaseUrl()}/saml/metadata/${id}`;
+export const samlLoginUrl = (id: string) => `${getApiBaseUrl()}/saml/login/${id}`;
 
 export function useSamlConnections() {
   const tenantId = useTenantId();

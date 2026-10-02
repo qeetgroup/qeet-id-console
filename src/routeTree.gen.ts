@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as SelectOrganizationRouteImport } from './routes/select-organization'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
@@ -129,6 +130,11 @@ const AuthRoute = AuthRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthzRoute = HealthzRouteImport.update({
+  id: '/healthz',
+  path: '/healthz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SelectOrganizationRoute = SelectOrganizationRouteImport.update({
@@ -694,6 +700,7 @@ const AppAuthConnectionsOidcClientIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/account': typeof AccountRouteWithChildren
+  '/healthz': typeof HealthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/$': typeof AppSplatRoute
@@ -802,6 +809,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/account': typeof AccountRouteWithChildren
+  '/healthz': typeof HealthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/$': typeof AppSplatRoute
@@ -912,6 +920,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/account': typeof AccountRouteWithChildren
+  '/healthz': typeof HealthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_app/$': typeof AppSplatRoute
@@ -1023,6 +1032,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/$'
@@ -1131,6 +1141,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/$'
@@ -1240,6 +1251,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/account'
+    | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/_app/$'
@@ -1351,6 +1363,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   AccountRoute: typeof AccountRouteWithChildren
+  HealthzRoute: typeof HealthzRoute
   SelectOrganizationRoute: typeof SelectOrganizationRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   ApiActivityStreamRoute: typeof ApiActivityStreamRoute
@@ -1378,6 +1391,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/healthz': {
+      id: '/healthz'
+      path: '/healthz'
+      fullPath: '/healthz'
+      preLoaderRoute: typeof HealthzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/select-organization': {
@@ -2351,6 +2371,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   AccountRoute: AccountRouteWithChildren,
+  HealthzRoute: HealthzRoute,
   SelectOrganizationRoute: SelectOrganizationRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   ApiActivityStreamRoute: ApiActivityStreamRoute,

@@ -5,6 +5,8 @@ import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/reac
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Toaster } from "sonner";
 
+import { publicConfigScript } from "@/platform/config/api-base-url";
+
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
 import appCss from "../styles.css?url";
@@ -65,6 +67,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static, source-controlled anti-flash script must execute before hydration */}
         <script dangerouslySetInnerHTML={{ __html: themeFlashScript }} />
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-escaped public runtime config (API origin) the browser needs before hydration — see platform/config/api-base-url.ts */}
+        <script dangerouslySetInnerHTML={{ __html: publicConfigScript() }} />
         <HeadContent />
       </head>
       <body suppressHydrationWarning>
