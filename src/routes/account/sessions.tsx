@@ -16,10 +16,16 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { revokeOtherSessions, type Session } from "@/modules/authentication";
+import { revokeOtherSessions, type Session, signOutEverywhere } from "@/modules/authentication";
 import { formatIp } from "@/shared/utils/ip-format";
-import { createFileRoute } from "@tanstack/react-router";
-import { MonitorIcon, MonitorSmartphoneIcon, SmartphoneIcon, TabletIcon } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  LogOutIcon,
+  MonitorIcon,
+  MonitorSmartphoneIcon,
+  SmartphoneIcon,
+  TabletIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -78,6 +84,7 @@ function SessionsPage() {
   const userId = useUserId();
   const qc = useQueryClient();
   const currentSessionId = useSessionId();
+  const navigate = useNavigate();
   const [confirmDialog, openConfirm] = useConfirmDialog();
 
   const sessionsQ = useQuery({
@@ -131,6 +138,25 @@ function SessionsPage() {
     onError: (err) =>
       toast.error(t("sessions.revokeAll.toast.failed"), { description: errorMessage(err) }),
     onSettled: () => qc.invalidateQueries({ queryKey: ["account-sessions"] }),
+    meta: { silent: true }, // this screen reports both outcomes itself
+  });
+
+  // Signing out everywhere ends this console's own session too: on success the
+  // server-side session is already gone, so drop the cached data and go to
+  // sign-in. On failure the person is still signed in here and can retry.
+  const signOutEverywhereM = useMutation({
+    mutationFn: signOutEverywhere,
+    onSuccess: ({ revoked }) => {
+      toast.success(t("sessions.signOutEverywhere.toast.done", { count: revoked }), {
+        description: t("sessions.signOutEverywhere.toast.doneDescription"),
+      });
+      qc.clear();
+      navigate({ to: "/sign-in" });
+    },
+    onError: (err) =>
+      toast.error(t("sessions.signOutEverywhere.toast.failed"), {
+        description: errorMessage(err),
+      }),
     meta: { silent: true }, // this screen reports both outcomes itself
   });
 
@@ -245,6 +271,31 @@ function SessionsPage() {
             </Table>
           </DataState>
         </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">{t("sessions.signOutEverywhere.title")}</CardTitle>
+            <CardDescription>{t("sessions.signOutEverywhere.description")}</CardDescription>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={signOutEverywhereM.isPending}
+            onClick={() =>
+              openConfirm({
+                title: t("sessions.signOutEverywhere.confirm.title"),
+                description: t("sessions.signOutEverywhere.confirm.description"),
+                variant: "destructive",
+                confirmLabel: t("sessions.signOutEverywhere.confirm.label"),
+                onConfirm: () => signOutEverywhereM.mutate(),
+              })
+            }
+          >
+            <LogOutIcon />
+            {t("sessions.signOutEverywhere.button")}
+          </Button>
+        </CardHeader>
       </Card>
     </>
   );

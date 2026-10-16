@@ -11,6 +11,11 @@ vi.mock("@/platform/auth/session", () => ({
   useUserId: () => "user-1",
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+const navigate = vi.hoisted(() => vi.fn());
+vi.mock("@tanstack/react-router", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-router")>()),
+  useNavigate: () => navigate,
+}));
 
 import { toast } from "sonner";
 import type { Session } from "@/modules/authentication";
@@ -38,6 +43,7 @@ function session(id: string, revoked = false): Session {
 // the screen has not loaded — the action must still end those.
 let listedPage: { items: Session[]; has_more: boolean };
 let revokeOthers: () => Promise<unknown>;
+let revokeAll: () => Promise<unknown>;
 
 beforeEach(() => {
   listedPage = {
@@ -45,15 +51,18 @@ beforeEach(() => {
     has_more: true,
   };
   revokeOthers = async () => ({ revoked: 57 });
+  revokeAll = async () => ({ revoked: 9, sessions: 4, hosted_login_sessions: 2, app_grants: 3 });
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     if (path === "/v1/auth/sessions" && (options?.method ?? "GET") === "GET") return listedPage;
     if (path === "/v1/auth/sessions/revoke-others" && options?.method === "POST")
       return revokeOthers();
+    if (path === "/v1/auth/sessions/revoke-all" && options?.method === "POST") return revokeAll();
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });
   vi.mocked(toast.success).mockReset();
   vi.mocked(toast.error).mockReset();
+  navigate.mockReset();
 });
 
 afterEach(cleanup);
@@ -116,5 +125,51 @@ describe("Account › Sessions › sign out other sessions", () => {
     await waitFor(() => expect(toast.success).toHaveBeenCalled());
     expect(requests()).toContain("POST /v1/auth/sessions/revoke-others");
     expect(String(vi.mocked(toast.success).mock.calls[0]?.[0])).toMatch(/no other session/i);
+  });
+});
+
+// Opens the confirmation for signing out everywhere, returns its text, and
+// confirms it.
+async function signOutEverywhere(): Promise<string> {
+  const trigger = await screen.findByRole("button", { name: /sign out everywhere/i });
+  fireEvent.click(trigger);
+  const cancel = await screen.findByRole("button", { name: "Cancel" });
+  const dialog = cancel.closest('[role="dialog"], [role="alertdialog"]') as HTMLElement | null;
+  if (!dialog) throw new Error("Confirmation dialog is missing");
+  const text = dialog.textContent ?? "";
+  fireEvent.click(within(dialog).getByRole("button", { name: /sign out everywhere/i }));
+  return text;
+}
+
+describe("Account › Sessions › sign out everywhere", () => {
+  it("signs out everywhere with one server call, says how many sign-ins ended, then asks to sign in again", async () => {
+    renderPage();
+    const confirmation = await signOutEverywhere();
+
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/sign-in" }));
+    expect(requests().filter((r) => !r.startsWith("GET "))).toEqual([
+      "POST /v1/auth/sessions/revoke-all",
+    ]);
+    expect(toast.success).toHaveBeenCalledTimes(1);
+    expect(String(vi.mocked(toast.success).mock.calls[0]?.[0])).toContain("9");
+    expect(toast.error).not.toHaveBeenCalled();
+    // Access already issued lasts a few minutes: neither the confirmation nor
+    // the result may promise an instant cut-off everywhere.
+    expect(confirmation).toMatch(/this one/i);
+    expect(confirmation).toMatch(/few (more )?minutes/i);
+    expect(JSON.stringify(vi.mocked(toast.success).mock.calls[0])).toMatch(/few (more )?minutes/i);
+  });
+
+  it("keeps the person signed in here and reports a failure when it could not be done", async () => {
+    revokeAll = async () => {
+      throw new ApiError(500, "internal", "boom");
+    };
+    renderPage();
+    await signOutEverywhere();
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(JSON.stringify(vi.mocked(toast.error).mock.calls)).not.toContain("boom");
   });
 });
