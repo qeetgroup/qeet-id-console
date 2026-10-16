@@ -16,15 +16,17 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Session } from "@/modules/authentication";
+import { revokeOtherSessions, type Session } from "@/modules/authentication";
 import { formatIp } from "@/shared/utils/ip-format";
 import { createFileRoute } from "@tanstack/react-router";
 import { MonitorIcon, MonitorSmartphoneIcon, SmartphoneIcon, TabletIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { api } from "@/platform/api/client";
 import { useSessionId, useUserId } from "@/platform/auth/session";
+import { errorMessage } from "@/platform/errors/user-message";
 
 export const Route = createFileRoute("/account/sessions")({
   component: SessionsPage,
@@ -111,35 +113,28 @@ function SessionsPage() {
     meta: { successMessage: t("sessions.toast.revoked") },
   });
 
-  const revokeAllOtherM = useMutation({
-    mutationFn: async (others: Session[]) => {
-      // No bulk endpoint — fan out one DELETE per session at a small
-      // concurrency. Same pattern as users.tsx bulk-delete.
-      const CONCURRENCY = 4;
-      const queue = [...others];
-      let ok = 0;
-      let failed = 0;
-      async function worker() {
-        for (;;) {
-          const s = queue.shift();
-          if (!s) return;
-          try {
-            await api<void>(`/v1/auth/sessions/${s.id}`, { method: "DELETE" });
-            ok++;
-          } catch {
-            failed++;
-          }
-        }
+  // One server call, all or nothing: the server keeps the session behind this
+  // console's own credential and ends every other one — including any this
+  // page has not loaded — then says how many it ended. So the action is always
+  // offered, whatever the loaded list shows.
+  const revokeOthersM = useMutation({
+    mutationFn: revokeOtherSessions,
+    onSuccess: ({ revoked }) => {
+      if (revoked === 0) {
+        toast.success(t("sessions.revokeAll.toast.none"));
+        return;
       }
-      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, others.length) }, worker));
-      return { ok, failed };
+      toast.success(t("sessions.revokeAll.toast.done", { count: revoked }), {
+        description: t("sessions.revokeAll.toast.doneDescription"),
+      });
     },
+    onError: (err) =>
+      toast.error(t("sessions.revokeAll.toast.failed"), { description: errorMessage(err) }),
     onSettled: () => qc.invalidateQueries({ queryKey: ["account-sessions"] }),
-    meta: { silent: true }, // handled in onSuccess with combined counts
+    meta: { silent: true }, // this screen reports both outcomes itself
   });
 
   const items = sessionsQ.data?.items ?? [];
-  const otherActive = items.filter((s) => !s.revoked_at && s.id !== currentSessionId);
 
   return (
     <>
@@ -150,28 +145,22 @@ function SessionsPage() {
             <CardTitle className="text-base">{t("sessions.active.title")}</CardTitle>
             <CardDescription>{t("sessions.active.description")}</CardDescription>
           </div>
-          {otherActive.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={revokeAllOtherM.isPending}
-              onClick={() =>
-                openConfirm({
-                  title: t("sessions.revokeAll.title", {
-                    count: otherActive.length,
-                  }),
-                  description: t("sessions.revokeAll.description"),
-                  variant: "destructive",
-                  confirmLabel: t("sessions.revokeAll.label"),
-                  onConfirm: () => revokeAllOtherM.mutate(otherActive),
-                })
-              }
-            >
-              {t("sessions.active.signOutElsewhere", {
-                count: otherActive.length,
-              })}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={revokeOthersM.isPending}
+            onClick={() =>
+              openConfirm({
+                title: t("sessions.revokeAll.title"),
+                description: t("sessions.revokeAll.description"),
+                variant: "destructive",
+                confirmLabel: t("sessions.revokeAll.label"),
+                onConfirm: () => revokeOthersM.mutate(),
+              })
+            }
+          >
+            {t("sessions.active.signOutOthers")}
+          </Button>
         </CardHeader>
         <CardContent className="p-0">
           <DataState

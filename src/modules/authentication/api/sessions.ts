@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 
@@ -31,5 +32,21 @@ export function useRevokeSession() {
     mutationFn: (id: string) => api<void>(`/v1/auth/sessions/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: SESSIONS_KEY }),
     meta: { successMessage: "Session revoked" },
+  });
+}
+
+const revokeOtherSessionsSchema = z.object({ revoked: z.number().int().nonnegative() });
+export type RevokeOtherSessionsResult = z.infer<typeof revokeOtherSessionsSchema>;
+
+// Ends every one of the caller's sessions except the current one, in a single
+// all-or-nothing server call (POST /v1/auth/sessions/revoke-others). The server
+// keeps the session behind this console's own credential and ends the rest —
+// including any the session list has not loaded — so nothing here names a
+// session. Resolves with how many sessions ended (0 when there were none);
+// rejects when the call fails — the server ends all of them or none.
+export function revokeOtherSessions(): Promise<RevokeOtherSessionsResult> {
+  return api("/v1/auth/sessions/revoke-others", {
+    method: "POST",
+    schema: revokeOtherSessionsSchema,
   });
 }

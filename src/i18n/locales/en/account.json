@@ -66,7 +66,7 @@
     "active": {
       "title": "Active sessions",
       "description": "Every place you're currently signed in. Revoke any session you don't recognise.",
-      "signOutElsewhere": "Sign out elsewhere ({{count}})",
+      "signOutOthers": "Sign out other sessions",
       "emptyTitle": "No active sessions.",
       "thisDevice": "This device"
     },
@@ -86,10 +86,16 @@
       "selfHelp": "Use the sign-out menu to end the session you're currently using."
     },
     "revokeAll": {
-      "title_one": "Sign out {{count}} other session?",
-      "title_other": "Sign out {{count}} other sessions?",
-      "description": "This won't sign you out of this browser.",
-      "label": "Sign out elsewhere"
+      "title": "Sign out all other sessions?",
+      "description": "Every session except this one ends and can no longer be renewed, including any not listed here. A device that is signed in may keep access for a few more minutes, until its current access runs out. You stay signed in here.",
+      "label": "Sign out other sessions",
+      "toast": {
+        "done_one": "Signed out of {{count}} other session",
+        "done_other": "Signed out of {{count}} other sessions",
+        "doneDescription": "They can no longer renew their access. Access they already hold runs out within a few minutes.",
+        "none": "There were no other sessions to sign out",
+        "failed": "Couldn't sign out your other sessions. Try again."
+      }
     },
     "toast": {
       "revoked": "Session revoked"
