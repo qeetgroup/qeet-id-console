@@ -43,7 +43,15 @@
       "enrolled_one": "{{count}} enrolled",
       "enrolled_other": "{{count}} enrolled",
       "notEnrolled": "Not enrolled",
-      "manage": "Manage passkeys"
+      "nameLabel": "Name (optional)",
+      "nameHint": "Leave it empty to name it after this browser. You can rename it later.",
+      "add": "Add passkey",
+      "adding": "Waiting for your device…",
+      "added": "Passkey added",
+      "cancelled": "The passkey wasn't created. You can try again.",
+      "disabled": "Your organization has turned off passkeys, so you can't add one.",
+      "removeConfirm": "Remove passkey \"{{name}}\"?",
+      "remove": "Remove"
     },
     "mfa": {
       "title": "Two-factor authentication",
