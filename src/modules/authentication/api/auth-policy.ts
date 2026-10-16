@@ -25,6 +25,28 @@ export interface AuthPolicy {
   self_registration_enabled: boolean;
   // Adaptive MFA: allow skipping the second factor on a trusted device.
   remember_device_enabled: boolean;
+  // Sign-in lockout: this many failed sign-ins to one account from one network,
+  // each within the window of the last, lock it for that network for the
+  // duration. null = the platform default (see lockout_limits). The server
+  // refuses a value outside the bounds.
+  lockout_threshold: number | null;
+  lockout_window_minutes: number | null;
+  lockout_duration_minutes: number | null;
+  // Read-only: the platform defaults and the inclusive bounds for the three
+  // settings above. Sent back unchanged by the full-replace PUT (ignored there).
+  lockout_limits?: LockoutLimits;
+}
+
+export interface LockoutSettings {
+  threshold: number;
+  window_minutes: number;
+  duration_minutes: number;
+}
+
+export interface LockoutLimits {
+  defaults: LockoutSettings;
+  min: LockoutSettings;
+  max: LockoutSettings;
 }
 
 export function useAuthPolicy() {

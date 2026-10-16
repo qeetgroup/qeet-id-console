@@ -48,6 +48,9 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.INVALID_CREDENTIALS]: "Invalid email or password.",
   [ERROR_CODES.ACCOUNT_LOCKED]:
     "Too many failed attempts. Your account is temporarily locked — please try again later.",
+  // 503 -> `api`, whose "Something went wrong" reads like a fault in the form.
+  [ERROR_CODES.SIGN_IN_UNAVAILABLE]:
+    "Sign-in is temporarily unavailable. Please try again in a moment.",
   // Also a 401, and "sign in again" is actively wrong here: retrying cannot help.
   [ERROR_CODES.ACCOUNT_SUSPENDED]:
     "Your account is no longer active. Please contact your administrator.",

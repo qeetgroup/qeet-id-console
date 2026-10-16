@@ -18,6 +18,9 @@ export const ERROR_CODES = {
   // fallback ("Please sign in again") is wrong for every one of them.
   INVALID_CREDENTIALS: "auth.invalid_credentials",
   ACCOUNT_LOCKED: "auth.account_locked",
+  // 503: the server could not check or record failed sign-ins, so it refused
+  // the sign-in (fail closed). Retrying shortly is the right advice.
+  SIGN_IN_UNAVAILABLE: "auth.sign_in_unavailable",
   ACCOUNT_SUSPENDED: "auth.account_suspended",
   ACCOUNT_INACTIVE: "auth.account_inactive",
   SESSION_REVOKED: "auth.session_revoked",
