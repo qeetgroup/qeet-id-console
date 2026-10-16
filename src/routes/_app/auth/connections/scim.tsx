@@ -21,7 +21,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckIcon, CopyIcon, KeyRoundIcon, RefreshCwIcon, UsersIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, KeyRoundIcon, RefreshCwIcon, UsersIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 

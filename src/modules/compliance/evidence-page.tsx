@@ -24,14 +24,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
-  CheckCircle2Icon,
   CircleAlertIcon,
+  CircleCheckIcon,
   CircleDashedIcon,
   DownloadIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -78,7 +78,7 @@ function statusBadge(status: ControlStatus) {
   if (status === "pass") {
     return (
       <Badge className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">
-        <CheckCircle2Icon className="size-3" />
+        <CircleCheckIcon className="size-3" />
         pass
       </Badge>
     );
@@ -187,7 +187,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
         description={t(`${framework}.description`)}
         actions={
           <Button onClick={() => generateM.mutate()} disabled={isGenerating || !tenantId}>
-            {isGenerating ? <Loader2Icon className="animate-spin" /> : <RefreshCwIcon />}
+            {isGenerating ? <LoaderCircleIcon className="animate-spin" /> : <RefreshCwIcon />}
             {isGenerating ? t("evidence.generating") : t("evidence.generate")}
           </Button>
         }
@@ -221,7 +221,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
               <p className="mt-1 text-xs text-muted-foreground">{t("evidence.emptyDescription")}</p>
             </div>
             <Button onClick={() => generateM.mutate()} disabled={isGenerating || !tenantId}>
-              {isGenerating && <Loader2Icon className="animate-spin" />}
+              {isGenerating && <LoaderCircleIcon className="animate-spin" />}
               {t("evidence.generate")}
             </Button>
           </CardContent>

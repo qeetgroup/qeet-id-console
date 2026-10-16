@@ -1,12 +1,12 @@
 import { Button, cn, Input } from "@qeetrix/ui";
 import {
-  CheckCircle2Icon,
+  CircleCheckIcon,
+  CloudUploadIcon,
   ImageIcon,
   LinkIcon,
-  Loader2Icon,
-  Trash2Icon,
-  UploadCloudIcon,
-} from "lucide-react";
+  LoaderCircleIcon,
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useEffect, useId, useRef, useState } from "react";
 
 export type LogoStatus = "empty" | "loading" | "ready" | "error";
@@ -223,9 +223,9 @@ export function LogoField({
                 )}
               >
                 {imageReady ? (
-                  <CheckCircle2Icon className="size-3" aria-hidden="true" />
+                  <CircleCheckIcon className="size-3" aria-hidden="true" />
                 ) : !error ? (
-                  <Loader2Icon className="size-3 animate-spin" aria-hidden="true" />
+                  <LoaderCircleIcon className="size-3 animate-spin" aria-hidden="true" />
                 ) : null}
                 {imageReady ? "Logo ready" : !error ? "Loading logo" : ""}
               </p>
@@ -247,7 +247,7 @@ export function LogoField({
                   disabled={disabled}
                   onClick={clearLogo}
                 >
-                  <Trash2Icon className="size-3.5" />
+                  <TrashIcon className="size-3.5" />
                 </Button>
               </div>
             </>
@@ -287,7 +287,7 @@ export function LogoField({
                 disabled={disabled}
                 onClick={openPicker}
               >
-                <UploadCloudIcon /> Replace
+                <CloudUploadIcon /> Replace
               </Button>
               <Button
                 type="button"
@@ -296,7 +296,7 @@ export function LogoField({
                 disabled={disabled}
                 onClick={clearLogo}
               >
-                <Trash2Icon /> Remove
+                <TrashIcon /> Remove
               </Button>
               <Button
                 type="button"

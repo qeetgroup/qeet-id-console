@@ -1,8 +1,15 @@
-import { LayoutDashboardIcon, MoreHorizontalIcon, ShieldCheckIcon, UsersIcon } from "lucide-react";
+import {
+  EllipsisIcon,
+  LayoutDashboardIcon,
+  QeetLogo,
+  ShieldCheckIcon,
+  UsersIcon,
+} from "@qeetrix/icons";
 import { cn } from "@qeetrix/ui";
-import { QeetLogoMark } from "@qeetrix/ui/brand";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
+
+import { QeetMark } from "@/shared/components/qeet-mark";
 
 export type SetupArtworkProps = { className?: string };
 
@@ -14,7 +21,7 @@ const PLAN_ITEMS = [
   ["setup.artwork.users", UsersIcon],
   ["setup.artwork.applications", LayoutDashboardIcon],
   ["setup.artwork.security", ShieldCheckIcon],
-  ["setup.artwork.more", MoreHorizontalIcon],
+  ["setup.artwork.more", EllipsisIcon],
 ] as const;
 
 /** Original, non-interactive artwork; all copy is decorative and localized by the caller's i18n. */
@@ -35,7 +42,7 @@ export function SetupPlanArtwork({ className }: SetupArtworkProps = {}) {
         <div className="absolute right-4 bottom-1 h-18 w-27 bg-[radial-gradient(var(--setup-accent)_0.7px,transparent_0.8px)] bg-size-[6px_6px] opacity-30" />
         <div className={cn(GLASS, "absolute top-11 left-3 w-39 -rotate-6 p-3")}>
           <div className="absolute -top-5 left-4 grid size-8 place-items-center rounded-lg border border-orange-200/70 bg-orange-50 shadow-sm shadow-orange-950/5">
-            <QeetLogoMark size={21} variant="on-light" />
+            <QeetLogo height={21} />
           </div>
           <p className="mt-1 truncate text-[10px] font-medium text-(--setup-text)">
             {t("setup.artwork.organization")}
@@ -117,7 +124,7 @@ export function SetupWindowArtwork({ className }: SetupArtworkProps = {}) {
               ))}
             </div>
             <div className="flex h-14 items-center gap-3 px-3">
-              <QeetLogoMark size={23} />
+              <QeetMark height={23} />
               <div className="flex-1 space-y-2">
                 <div className="h-1 w-9 rounded-full bg-(--setup-muted)/25" />
                 <div className="h-1 w-6 rounded-full bg-(--setup-accent)/30" />

@@ -14,7 +14,7 @@ import {
   Input,
   Textarea,
 } from "@qeetrix/ui";
-import { Loader2Icon, PlayIcon, Trash2Icon } from "lucide-react";
+import { LoaderCircleIcon, PlayIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -99,7 +99,7 @@ export function GroupTemplatesDialog({
                     onClick={() => applyM.mutate({ id: tpl.id })}
                   >
                     {applyM.isPending && applyM.variables?.id === tpl.id ? (
-                      <Loader2Icon className="animate-spin" />
+                      <LoaderCircleIcon className="animate-spin" />
                     ) : (
                       <PlayIcon />
                     )}
@@ -112,7 +112,7 @@ export function GroupTemplatesDialog({
                     disabled={deleteM.isPending}
                     onClick={() => deleteM.mutate(tpl.id)}
                   >
-                    <Trash2Icon className="size-4" />
+                    <TrashIcon className="size-4" />
                   </Button>
                 </li>
               ))}
@@ -165,7 +165,7 @@ export function GroupTemplatesDialog({
               </Field>
             ) : null}
             <Button type="submit" size="sm" disabled={createM.isPending}>
-              {createM.isPending ? <Loader2Icon className="animate-spin" /> : null}
+              {createM.isPending ? <LoaderCircleIcon className="animate-spin" /> : null}
               {t("templates.save")}
             </Button>
           </form>

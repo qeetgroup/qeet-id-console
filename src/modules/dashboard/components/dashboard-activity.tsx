@@ -10,7 +10,7 @@ import {
   ShieldAlertIcon,
   UserIcon,
   UserPlusIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import type * as React from "react";
 import { useTranslation } from "react-i18next";
 

@@ -13,21 +13,21 @@ import {
   ArrowDownToLineIcon,
   ArrowRightIcon,
   ArrowUpRightIcon,
-  BarChart3Icon,
   BoxIcon,
-  Building2Icon,
+  BuildingComplexIcon,
   CalendarDaysIcon,
+  ChartColumnIcon,
   CheckIcon,
   ChevronRightIcon,
   CrownIcon,
   KeyRoundIcon,
   LayersIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
   SparklesIcon,
   UsersIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -82,7 +82,7 @@ const PLAN_ICONS = {
   free: BoxIcon,
   starter: LayersIcon,
   pro: CrownIcon,
-  enterprise: Building2Icon,
+  enterprise: BuildingComplexIcon,
 };
 const RESOURCE_ICONS = {
   seats: UsersIcon,
@@ -634,7 +634,7 @@ export function BillingSettingsView(props: BillingSettingsViewProps) {
                       className={ACTION}
                       onClick={() => jumpTo(usageSection.current)}
                     >
-                      <BarChart3Icon aria-hidden="true" />
+                      <ChartColumnIcon aria-hidden="true" />
                       {t("billing.screen.viewUsage")}
                     </Button>
                   </div>
@@ -673,7 +673,7 @@ export function BillingSettingsView(props: BillingSettingsViewProps) {
                   disabled={!props.canWrite || !!pending}
                   onClick={() => void runAction("trial", () => props.onStartTrial(activeCurrency))}
                 >
-                  {pending === "trial" && <Loader2Icon className="animate-spin" />}
+                  {pending === "trial" && <LoaderCircleIcon className="animate-spin" />}
                   {t("billing.screen.trial.start")}
                   <ArrowRightIcon aria-hidden="true" />
                 </Button>
@@ -973,7 +973,7 @@ export function BillingSettingsView(props: BillingSettingsViewProps) {
                         }
                       >
                         {pending === choice.code ? (
-                          <Loader2Icon className="animate-spin" aria-hidden="true" />
+                          <LoaderCircleIcon className="animate-spin" aria-hidden="true" />
                         ) : current ? (
                           <CheckIcon aria-hidden="true" />
                         ) : null}
@@ -1010,7 +1010,7 @@ export function BillingSettingsView(props: BillingSettingsViewProps) {
                     onClick={() => void runAction("cancel", props.onCancel)}
                   >
                     {pending === "cancel" && (
-                      <Loader2Icon className="animate-spin" aria-hidden="true" />
+                      <LoaderCircleIcon className="animate-spin" aria-hidden="true" />
                     )}
                     {t("billing.currentPlan.cancelPlan")}
                   </Button>

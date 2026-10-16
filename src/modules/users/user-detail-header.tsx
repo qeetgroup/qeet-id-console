@@ -21,16 +21,16 @@ import { formatDate } from "@/shared/utils/format";
 import {
   CheckIcon,
   ChevronDownIcon,
-  FileJsonIcon,
-  Loader2Icon,
+  FileBracesIcon,
+  LoaderCircleIcon,
   Maximize2Icon,
   MonitorXIcon,
   SendIcon,
   ShieldOffIcon,
-  Trash2Icon,
+  TrashIcon,
   UserCheckIcon,
   UserXIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -122,7 +122,9 @@ export function UserDetailHeader({
             <DropdownMenuTrigger
               render={
                 <Button variant="outline" size="sm" disabled={busy}>
-                  {busy ? <Loader2Icon className="size-4 animate-spin" aria-hidden="true" /> : null}
+                  {busy ? (
+                    <LoaderCircleIcon className="size-4 animate-spin" aria-hidden="true" />
+                  ) : null}
                   {t("detail.actions")}
                   <ChevronDownIcon className="size-4" aria-hidden="true" />
                 </Button>
@@ -190,7 +192,7 @@ export function UserDetailHeader({
                 </>
               ) : null}
               <DropdownMenuItem onClick={onViewRaw}>
-                <FileJsonIcon />
+                <FileBracesIcon />
                 {t("detail.viewRawBtn")}
               </DropdownMenuItem>
               {canWrite ? (
@@ -211,7 +213,7 @@ export function UserDetailHeader({
                       })
                     }
                   >
-                    <Trash2Icon />
+                    <TrashIcon />
                     {t("detail.deleteBtn")}
                   </DropdownMenuItem>
                 </>

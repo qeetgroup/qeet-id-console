@@ -23,22 +23,22 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  AlertCircleIcon,
-  Building2Icon,
+  BuildingComplexIcon,
   CalendarIcon,
   CheckIcon,
+  CircleAlertIcon,
   CircleDotIcon,
   CopyIcon,
   CreditCardIcon,
   ExternalLinkIcon,
-  FingerprintIcon,
+  FingerprintPatternIcon,
   GlobeIcon,
   InfoIcon,
   LightbulbIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   LockIcon,
   UsersRoundIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -112,7 +112,7 @@ function WorkspaceGeneralPage() {
             {draft.logo_url ? (
               <img src={draft.logo_url} alt="" className="size-full object-cover" />
             ) : (
-              <Building2Icon className="size-5" />
+              <BuildingComplexIcon className="size-5" />
             )}
           </span>
           <div className="min-w-0">
@@ -148,7 +148,7 @@ function WorkspaceGeneralPage() {
             <div className="space-y-4 lg:col-span-2">
               <Card>
                 <CardHeader className="flex-row items-start gap-3 space-y-0">
-                  <SectionIcon icon={<Building2Icon />} />
+                  <SectionIcon icon={<BuildingComplexIcon />} />
                   <div className="min-w-0">
                     <CardTitle className="text-base">
                       {t("workspace.general.profile.title")}
@@ -282,7 +282,7 @@ function WorkspaceGeneralPage() {
             <div className="space-y-4">
               <Card>
                 <CardHeader className="flex-row items-start gap-3 space-y-0">
-                  <SectionIcon icon={<FingerprintIcon />} />
+                  <SectionIcon icon={<FingerprintPatternIcon />} />
                   <div className="min-w-0">
                     <CardTitle className="text-base">
                       {t("workspace.general.tenantId.title")}
@@ -390,7 +390,7 @@ function WorkspaceGeneralPage() {
             <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
               <div className="mx-auto flex max-w-(--breakpoint-2xl) flex-wrap items-center justify-between gap-3 px-6 py-3">
                 <div className="flex items-center gap-3">
-                  <AlertCircleIcon className="size-5 shrink-0 text-primary" />
+                  <CircleAlertIcon className="size-5 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="text-sm font-medium">{t("workspace.general.footer.unsaved")}</p>
                     <p className="text-xs text-muted-foreground">
@@ -408,7 +408,7 @@ function WorkspaceGeneralPage() {
                     {t("workspace.general.footer.reset")}
                   </Button>
                   <Button type="submit" disabled={saveM.isPending}>
-                    {saveM.isPending && <Loader2Icon className="animate-spin" />}
+                    {saveM.isPending && <LoaderCircleIcon className="animate-spin" />}
                     {saveM.isSuccess && !saveM.isPending && <CheckIcon />}
                     {saveM.isPending
                       ? t("workspace.general.footer.saving")

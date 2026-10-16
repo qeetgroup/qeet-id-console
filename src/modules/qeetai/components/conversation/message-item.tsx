@@ -1,12 +1,12 @@
 import { Button, Textarea } from "@qeetrix/ui";
 import {
-  AlertTriangleIcon,
   CheckIcon,
   CopyIcon,
   PencilIcon,
   RotateCcwIcon,
   SparklesIcon,
-} from "lucide-react";
+  TriangleAlertIcon,
+} from "@qeetrix/icons";
 import { useCallback, useState } from "react";
 
 import type { UseQeetAIChat } from "../../hooks/use-qeetai-chat";
@@ -90,7 +90,7 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
         ) : null}
         {errored ? (
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
-            <AlertTriangleIcon className="size-3.5 shrink-0" />
+            <TriangleAlertIcon className="size-3.5 shrink-0" />
             {message.error ?? "The assistant could not complete this turn."}
           </p>
         ) : null}

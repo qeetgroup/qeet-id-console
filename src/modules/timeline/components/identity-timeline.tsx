@@ -16,7 +16,7 @@ import {
   Timeline,
   usePrefersReducedMotion,
 } from "@qeetrix/ui";
-import { ActivityIcon, RefreshCwIcon } from "lucide-react";
+import { ActivityIcon, RefreshCwIcon } from "@qeetrix/icons";
 import { useEffect, useRef } from "react";
 
 import type { ActivityEvent, DateGroup } from "@/modules/activity";

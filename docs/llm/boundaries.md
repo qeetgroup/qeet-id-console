@@ -90,7 +90,7 @@ adding a test · internal refactoring inside one module · i18n strings · featu
 | **CSRF cookie/header names** | Must match `qeet-id-server` and `qeet-id-login` |
 | A new permission surfaced in the UI | `qeet-id-server` must define it |
 | Error-code handling | `qeet-id-server` owns the codes |
-| `@qeetrix/ui` major upgrade | `qeetrix-ui` — currently pinned `^1.0.3` against npm `2.0.0` |
+| `@qeetrix/ui` / `@qeetrix/icons` upgrade | `qeetrix-ui`, `qeetrix-icons` — pinned exactly to `2.1.5` / `1.0.11` (patch releases have removed exports and replaced the icon catalogue, so bump deliberately) |
 | Hostname change | `qeet-id-deploy`, backend CORS, WebAuthn origins |
 
 Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.

@@ -17,7 +17,13 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, PlayIcon, PlusIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
+import {
+  LoaderCircleIcon,
+  PlayIcon,
+  PlusIcon,
+  SlidersHorizontalIcon,
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -172,7 +178,7 @@ function AbacPage() {
                         disabled={deleteM.isPending}
                         onClick={() => deleteM.mutate(p.id)}
                       >
-                        <Trash2Icon />
+                        <TrashIcon />
                       </Button>
                     </li>
                   ))}
@@ -243,7 +249,7 @@ function PolicyEditor({
               Cancel
             </Button>
             <Button size="sm" onClick={save} disabled={saving || !draft.name.trim()}>
-              {saving && <Loader2Icon className="animate-spin" />}
+              {saving && <LoaderCircleIcon className="animate-spin" />}
               {draft.id ? "Save changes" : "Create policy"}
             </Button>
           </div>
@@ -408,7 +414,7 @@ function TestPanel({ draft }: { draft: Draft }) {
           </CardDescription>
         </div>
         <Button size="sm" variant="outline" onClick={run} disabled={simM.isPending}>
-          {simM.isPending ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
+          {simM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <PlayIcon />}
           Test
         </Button>
       </CardHeader>

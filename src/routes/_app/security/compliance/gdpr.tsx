@@ -32,12 +32,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Loader2Icon,
+  LoaderCircleIcon,
   PlusIcon,
   RefreshCwIcon,
   ScrollTextIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -285,7 +285,7 @@ function CreatePurgeSheet({ open, onOpenChange, tenantId, onCreated }: CreatePur
               {t("gdpr.create.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending ? t("gdpr.create.submitting") : t("gdpr.create.submit")}
             </Button>
           </SheetFooter>

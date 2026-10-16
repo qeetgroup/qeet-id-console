@@ -16,7 +16,7 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { RotateCcwIcon, Trash2Icon, UserMinusIcon } from "lucide-react";
+import { RotateCcwIcon, TrashIcon, UserMinusIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -145,7 +145,7 @@ function DeletedUsersPage() {
                           }
                           disabled={purgeM.isPending}
                         >
-                          <Trash2Icon /> {t("deleted.purgeBtn")}
+                          <TrashIcon /> {t("deleted.purgeBtn")}
                         </Button>
                       </TableCell>
                     ) : null}

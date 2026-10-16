@@ -11,7 +11,7 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { ActivityIcon, KeyRoundIcon, ShieldAlertIcon } from "lucide-react";
+import { ActivityIcon, KeyRoundIcon, ShieldAlertIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 import {
   Area,

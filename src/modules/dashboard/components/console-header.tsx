@@ -1,5 +1,5 @@
 import { Button, Separator, SidebarTrigger } from "@qeetrix/ui";
-import { KeyboardIcon, SearchIcon } from "lucide-react";
+import { KeyboardIcon, SearchIcon } from "@qeetrix/icons";
 
 import { QeetAITrigger } from "@/modules/qeetai";
 import { ThemeToggle } from "@/platform/components/theme-toggle";

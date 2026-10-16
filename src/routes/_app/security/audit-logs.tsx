@@ -25,7 +25,13 @@ import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { createFileRoute } from "@tanstack/react-router";
-import { DownloadIcon, FileSearchIcon, Loader2Icon, RefreshCwIcon, XIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  FileSearchIcon,
+  LoaderCircleIcon,
+  RefreshCwIcon,
+  XIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -225,7 +231,7 @@ function AuditLogsPage() {
                 <DropdownMenuTrigger
                   render={
                     <Button variant="outline" size="sm" disabled={!!exporting}>
-                      {exporting ? <Loader2Icon className="animate-spin" /> : <DownloadIcon />}
+                      {exporting ? <LoaderCircleIcon className="animate-spin" /> : <DownloadIcon />}
                       {exporting
                         ? t("auditLogs.exporting", {
                             format: exporting.toUpperCase(),

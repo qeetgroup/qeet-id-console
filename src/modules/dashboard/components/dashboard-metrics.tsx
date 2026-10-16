@@ -1,12 +1,12 @@
 import { Skeleton, Sparkline } from "@qeetrix/ui";
-import { ArrowDownRightIcon, ArrowUpRightIcon, type LucideIcon, MinusIcon } from "lucide-react";
+import { ArrowDownRightIcon, ArrowUpRightIcon, type IconProps, MinusIcon } from "@qeetrix/icons";
 import type * as React from "react";
 
 import { formatDelta } from "../dashboard-model";
 
 export type DashboardMetric = {
   id: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<IconProps<"outline">>;
   label: string;
   value: string;
   delta: number;

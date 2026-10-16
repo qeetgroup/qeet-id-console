@@ -15,15 +15,15 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  AlertTriangleIcon,
   ArrowRightIcon,
-  BarChart3Icon,
   CalendarIcon,
+  ChartColumnIcon,
   ChevronRightIcon,
   CircleAlertIcon,
   ClockIcon,
   CodeXmlIcon,
   DatabaseIcon,
+  type IconProps,
   InfoIcon,
   KeyRoundIcon,
   LightbulbIcon,
@@ -35,9 +35,10 @@ import {
   SlidersHorizontalIcon,
   TrendingDownIcon,
   TrendingUpIcon,
+  TriangleAlertIcon,
   UsersRoundIcon,
-} from "lucide-react";
-import { useMemo, useState } from "react";
+} from "@qeetrix/icons";
+import { type ComponentType, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAbacPolicies } from "@/modules/authorization/api/abac";
@@ -395,7 +396,7 @@ function OverviewPage() {
           <CardHeader className="gap-0">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <SectionHeading
-                icon={<BarChart3Icon className="size-5" />}
+                icon={<ChartColumnIcon className="size-5" />}
                 tone="primary"
                 title={t("overview.analytics.title")}
                 subtitle={t("overview.analytics.subtitle")}
@@ -477,7 +478,7 @@ function KpiCard({
   to,
   loading,
 }: {
-  icon: typeof KeyRoundIcon;
+  icon: ComponentType<IconProps<"outline">>;
   tone: ChipTone;
   label: string;
   value: number;
@@ -567,7 +568,7 @@ function LegendDot({ tone, label, value }: { tone: string; label: string; value:
 
 const SEVERITY_META = {
   high: { icon: CircleAlertIcon, className: "text-destructive", badge: "destructive" },
-  medium: { icon: AlertTriangleIcon, className: "text-warning", badge: "warning" },
+  medium: { icon: TriangleAlertIcon, className: "text-warning", badge: "warning" },
   info: { icon: InfoIcon, className: "text-muted-foreground", badge: "muted" },
 } as const;
 
@@ -676,7 +677,7 @@ function QuickAction({
   label,
 }: {
   to: string;
-  icon: typeof KeyRoundIcon;
+  icon: ComponentType<IconProps<"outline">>;
   label: string;
 }) {
   return (

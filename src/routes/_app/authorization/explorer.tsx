@@ -8,7 +8,7 @@ import {
   EmptyState,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SearchCodeIcon, Trash2Icon } from "lucide-react";
+import { SearchCodeIcon, TrashIcon } from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -43,7 +43,7 @@ function ExplorerPage() {
         actions={
           history.length > 0 && (
             <Button variant="outline" size="sm" onClick={() => clearHistory()}>
-              <Trash2Icon /> Clear history
+              <TrashIcon /> Clear history
             </Button>
           )
         }

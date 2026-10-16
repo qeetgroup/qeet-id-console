@@ -39,7 +39,7 @@ import {
   UserCheckIcon,
   UsersRoundIcon,
   XIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useDeferredValue, useState } from "react";
 import { useTranslation } from "react-i18next";
 

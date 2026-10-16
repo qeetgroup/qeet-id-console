@@ -10,8 +10,9 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
-  CheckCircle2Icon,
+  CircleCheckIcon,
   CircleIcon,
+  type IconProps,
   KeyRoundIcon,
   PaletteIcon,
   PartyPopperIcon,
@@ -19,8 +20,8 @@ import {
   UsersIcon,
   WebhookIcon,
   XIcon,
-} from "lucide-react";
-import { useState } from "react";
+} from "@qeetrix/icons";
+import { type ComponentType, useState } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { CHECKLIST_INTRO, CHECKLIST_ORDER } from "@/modules/onboarding";
@@ -49,7 +50,7 @@ function isDoneSafe<T>(
 
 interface Step {
   id: string;
-  icon: typeof UsersIcon;
+  icon: ComponentType<IconProps<"outline">>;
   title: string;
   description: string;
   ctaLabel: string;
@@ -316,7 +317,7 @@ export function OnboardingChecklist() {
             >
               <div className="shrink-0">
                 {isDone ? (
-                  <CheckCircle2Icon className="size-5 text-success" />
+                  <CircleCheckIcon className="size-5 text-success" />
                 ) : (
                   <CircleIcon className="size-5 text-muted-foreground/50" />
                 )}

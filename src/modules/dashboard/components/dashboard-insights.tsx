@@ -2,20 +2,21 @@ import { Badge, buttonVariants, cn, EmptyState, Skeleton } from "@qeetrix/ui";
 import { HealthGauge, healthColor, healthText, stateFromScore } from "./health-gauge";
 import { Link } from "@tanstack/react-router";
 import {
-  AlertTriangleIcon,
   ArrowDownRightIcon,
   ArrowUpRightIcon,
   ChevronRightIcon,
   GlobeIcon,
   HeartPulseIcon,
+  type IconProps,
   KeyRoundIcon,
   LayersIcon,
-  type LucideIcon,
   PlugZapIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  TriangleAlertIcon,
   UsersIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 
 import type { AnalyticsOverview } from "../api/analytics";
 import { useEntitlements, useUsage } from "@/modules/billing";
@@ -39,17 +40,17 @@ import { DashboardPanel } from "./dashboard-panel";
 
 const severityStyles: Record<
   InsightSeverity,
-  { chip: string; icon: LucideIcon; badge: string; label: string }
+  { chip: string; icon: ComponentType<IconProps<"outline">>; badge: string; label: string }
 > = {
   critical: {
     chip: "bg-destructive/10 text-destructive ring-destructive/15",
-    icon: AlertTriangleIcon,
+    icon: TriangleAlertIcon,
     badge: "bg-destructive/10 text-destructive",
     label: "Critical",
   },
   warning: {
     chip: "bg-warning/10 text-warning ring-warning/15",
-    icon: AlertTriangleIcon,
+    icon: TriangleAlertIcon,
     badge: "bg-warning/10 text-warning",
     label: "Warning",
   },
@@ -387,7 +388,7 @@ export function SecurityPosturePanel({
 
 type EnterpriseTile = {
   id: string;
-  icon: LucideIcon;
+  icon: ComponentType<IconProps<"outline">>;
   label: string;
   count: number | undefined;
   loading: boolean;
@@ -483,12 +484,13 @@ export function EnterpriseOverviewPanel({ className }: { className?: string }) {
 // Plan usage — real consumption vs plan limits
 // ---------------------------------------------------------------------------
 
-const USAGE_RESOURCES: { key: string; label: string; icon: LucideIcon }[] = [
-  { key: "seats", label: "Members", icon: UsersIcon },
-  { key: "apps", label: "Applications", icon: LayersIcon },
-  { key: "api_keys", label: "API keys", icon: KeyRoundIcon },
-  { key: "custom_roles", label: "Custom roles", icon: ShieldCheckIcon },
-];
+const USAGE_RESOURCES: { key: string; label: string; icon: ComponentType<IconProps<"outline">> }[] =
+  [
+    { key: "seats", label: "Members", icon: UsersIcon },
+    { key: "apps", label: "Applications", icon: LayersIcon },
+    { key: "api_keys", label: "API keys", icon: KeyRoundIcon },
+    { key: "custom_roles", label: "Custom roles", icon: ShieldCheckIcon },
+  ];
 
 export function PlanUsagePanel({ className }: { className?: string }) {
   const usageQ = useUsage();

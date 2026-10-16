@@ -1,6 +1,6 @@
 import { Button } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
-import { LogOutIcon, UserCogIcon } from "lucide-react";
+import { LogOutIcon, UserCogIcon } from "@qeetrix/icons";
 
 import { api } from "@/platform/api/client";
 import { useImpersonationActor, useLogout } from "@/platform/auth/session";

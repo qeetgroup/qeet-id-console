@@ -31,7 +31,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, PlusIcon, RefreshCwIcon, ShieldCheckIcon } from "lucide-react";
+import { LoaderCircleIcon, PlusIcon, RefreshCwIcon, ShieldCheckIcon } from "@qeetrix/icons";
 import { useMemo, useState } from "react";
 
 import { ListToolbar, SortHeader } from "@/shared/components/data-table";
@@ -261,7 +261,7 @@ function CreateRoleSheet({
           <SheetFooter className="flex-row justify-end gap-2 border-t">
             <SheetClose render={<Button type="button" variant="outline" />}>Cancel</SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               Create role
             </Button>
           </SheetFooter>

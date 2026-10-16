@@ -24,7 +24,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2Icon, MonitorSmartphoneIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
+import { LoaderCircleIcon, MonitorSmartphoneIcon, RefreshCwIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -131,7 +131,7 @@ function DeviceAuthorizationsPage() {
                         onClick={() => setConfirming(d)}
                         disabled={revokeM.isPending}
                       >
-                        <Trash2Icon /> {t("common:actions.revoke")}
+                        <TrashIcon /> {t("common:actions.revoke")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -180,7 +180,7 @@ function DeviceAuthorizationsPage() {
                 })
               }
             >
-              {revokeM.isPending && <Loader2Icon className="animate-spin" />}
+              {revokeM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {revokeM.isPending ? t("common:actions.revoking") : t("common:actions.revoke")}
             </Button>
           </AlertDialogFooter>

@@ -7,7 +7,6 @@ import {
   TooltipTrigger,
   useSidebar,
 } from "@qeetrix/ui";
-import { QeetLogoMark } from "@qeetrix/ui/brand";
 import { useLocation } from "@tanstack/react-router";
 import * as React from "react";
 
@@ -19,6 +18,7 @@ import {
 } from "@/platform/config/navigation";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { AccessModeIndicator } from "@/platform/security/access-mode-indicator";
+import { QeetMark } from "@/shared/components/qeet-mark";
 
 import { DirectoryNav, SectionNav, SectionNavSkeleton } from "./nav-main";
 import { TeamSwitcher } from "./team-switcher";
@@ -56,7 +56,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <div className="console-rail flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-1 border-e border-sidebar-border/60 py-3">
           <a href="/" aria-label="Qeet ID overview" className="console-rail-logo">
             {/* No forced variant → the mark stays theme-adaptive on the sidebar. */}
-            <QeetLogoMark size={22} title="Qeet" />
+            <QeetMark height={22} aria-label="Qeet" />
           </a>
           {/* delay lets the first hover settle; base-ui shares it across the
               group so sweeping between icons then reveals labels instantly. */}

@@ -16,7 +16,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, Trash2Icon, ZapIcon } from "lucide-react";
+import { LoaderCircleIcon, TrashIcon, ZapIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -100,7 +100,7 @@ function AuthHooksPage() {
                 />
               </Field>
               <Button type="submit" disabled={createM.isPending || !url.trim()}>
-                {createM.isPending && <Loader2Icon className="animate-spin" />}
+                {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {t("authHooks.add.submit")}
               </Button>
             </div>
@@ -182,7 +182,7 @@ function AuthHooksPage() {
                         })
                       }
                     >
-                      <Trash2Icon /> {t("authHooks.list.remove")}
+                      <TrashIcon /> {t("authHooks.list.remove")}
                     </Button>
                   </div>
                 </li>

@@ -1,5 +1,5 @@
 import { cn } from "@qeetrix/ui";
-import { ShieldCheckIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
+import { ShieldCheckIcon, UserRoundIcon, UsersRoundIcon } from "@qeetrix/icons";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 

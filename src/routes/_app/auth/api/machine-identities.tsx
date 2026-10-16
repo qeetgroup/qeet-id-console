@@ -30,7 +30,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { BotIcon, CopyIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
+import {
+  BotIcon,
+  CopyIcon,
+  LoaderCircleIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 
 import { useCreateIntent } from "@/shared/hooks/use-create-intent";
@@ -233,7 +240,7 @@ function MachineIdentitiesPage() {
                           }).catch(ignoreCancel)
                         }
                       >
-                        <Trash2Icon /> {t("machineIds.disableBtn")}
+                        <TrashIcon /> {t("machineIds.disableBtn")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -348,7 +355,7 @@ function CreatePrincipalSheet({
               {t("machineIds.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending
                 ? t("machineIds.create.creatingBtn")
                 : t("machineIds.create.createBtn")}

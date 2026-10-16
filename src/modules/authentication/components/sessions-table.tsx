@@ -11,7 +11,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
-import { MonitorSmartphoneIcon, ShieldIcon } from "lucide-react";
+import { MonitorSmartphoneIcon, ShieldIcon } from "@qeetrix/icons";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import { formatIp } from "@/shared/utils/ip-format";

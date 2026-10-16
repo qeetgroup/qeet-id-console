@@ -1,6 +1,6 @@
 import { Button, OTPInput } from "@qeetrix/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2Icon, MailWarningIcon } from "lucide-react";
+import { LoaderCircleIcon, MailWarningIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -81,13 +81,13 @@ export function VerifyEmailBanner() {
             aria-label="Email verification code"
           />
           <Button type="submit" size="sm" disabled={confirm.isPending || code.length !== 6}>
-            {confirm.isPending && <Loader2Icon className="animate-spin" />}
+            {confirm.isPending && <LoaderCircleIcon className="animate-spin" />}
             Verify
           </Button>
         </form>
       ) : (
         <Button size="sm" variant="outline" onClick={resend} disabled={start.isPending}>
-          {start.isPending && <Loader2Icon className="animate-spin" />}
+          {start.isPending && <LoaderCircleIcon className="animate-spin" />}
           Send verification code
         </Button>
       )}

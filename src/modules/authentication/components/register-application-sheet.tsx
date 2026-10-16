@@ -21,7 +21,7 @@ import {
   SheetTitle,
   Textarea,
 } from "@qeetrix/ui";
-import { InfoIcon, Loader2Icon } from "lucide-react";
+import { InfoIcon, LoaderCircleIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -177,7 +177,7 @@ export function RegisterApplicationSheet({
               {t("common:actions.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>

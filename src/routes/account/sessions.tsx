@@ -25,7 +25,7 @@ import {
   MonitorSmartphoneIcon,
   SmartphoneIcon,
   TabletIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 

@@ -4,7 +4,7 @@
 
 import { EmptyState } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeftIcon, ClockIcon, ShieldIcon } from "lucide-react";
+import { ArrowLeftIcon, ClockIcon, ShieldIcon } from "@qeetrix/icons";
 import { useCallback, useMemo, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";

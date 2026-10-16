@@ -1,12 +1,13 @@
-import { Building2Icon } from "lucide-react";
+import { BuildingComplexIcon } from "@qeetrix/icons";
 import { cn } from "@qeetrix/ui";
-import { QeetLogoMark } from "@qeetrix/ui/brand";
 import { useTranslation } from "react-i18next";
 
 import { CreateOrgFlow } from "./create-org-flow";
 import { SetupPlanArtwork } from "./setup-artwork";
 import { SetupProgress } from "./setup-progress";
 import { SETUP_THEME } from "./setup-styles";
+
+import { QeetMark } from "@/shared/components/qeet-mark";
 
 interface OrgOnboardingProps {
   title?: string;
@@ -51,7 +52,7 @@ export function OrgOnboarding({ title, subtitle, onCancel, onDone }: OrgOnboardi
                   step === "plan" && "size-9",
                 )}
               >
-                <QeetLogoMark size={27} title="Qeet ID" />
+                <QeetMark height={27} aria-label="Qeet ID" />
               </span>
               <div>
                 <div className="flex items-center gap-3 leading-3.5">
@@ -60,7 +61,7 @@ export function OrgOnboarding({ title, subtitle, onCancel, onDone }: OrgOnboardi
                   </p>
                   {step === "plan" && (
                     <span className="hidden items-center gap-1 rounded-full border border-(--setup-border) bg-(--setup-soft)/50 px-2 py-0.5 text-[10px] leading-3.5 dark:inline-flex">
-                      <Building2Icon className="size-3" aria-hidden="true" />1 / 3
+                      <BuildingComplexIcon className="size-3" aria-hidden="true" />1 / 3
                     </span>
                   )}
                 </div>

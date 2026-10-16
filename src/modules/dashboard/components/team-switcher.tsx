@@ -15,7 +15,7 @@ import {
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Building2Icon, CheckIcon, ChevronsUpDownIcon, PlusIcon } from "lucide-react";
+import { BuildingComplexIcon, CheckIcon, ChevronsUpDownIcon, PlusIcon } from "@qeetrix/icons";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -67,7 +67,7 @@ export function TeamSwitcher() {
               ) : active ? (
                 initialOf(active.name)
               ) : (
-                <Building2Icon className="size-4" />
+                <BuildingComplexIcon className="size-4" />
               )}
             </div>
             <div className="grid flex-1 text-start text-sm leading-tight">

@@ -1,5 +1,5 @@
 import { Button, cn } from "@qeetrix/ui";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon } from "@qeetrix/icons";
 import { useCallback, useState } from "react";
 
 interface CodeBlockProps {

@@ -25,14 +25,14 @@ import {
   CircleXIcon,
   Clock3Icon,
   EllipsisIcon,
-  FilterIcon,
+  FunnelIcon,
   LinkIcon,
   NetworkIcon,
   PlusIcon,
   SearchIcon,
   ServerIcon,
   TriangleAlertIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -189,7 +189,7 @@ export function ConnectionsView({
               <DropdownMenuTrigger
                 render={<Button variant="outline" className={DIRECTORY_ACTION} />}
               >
-                <FilterIcon /> {t("directory.filter")}
+                <FunnelIcon /> {t("directory.filter")}
                 {type !== "all" ? " (1)" : ""}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

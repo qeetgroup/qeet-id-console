@@ -1,6 +1,12 @@
 import { Button, cn, Field, FieldError, FieldLabel, Input, PasswordInput } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { ArrowRightIcon, BuildingIcon, Loader2Icon, LockKeyholeIcon, MailIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  BuildingIcon,
+  LoaderCircleIcon,
+  LockKeyholeIcon,
+  MailIcon,
+} from "@qeetrix/icons";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -133,7 +139,7 @@ export function LoginForm({
           {errorMessage && <FieldError className="auth-form-error">{errorMessage}</FieldError>}
 
           <Button type="submit" className="auth-submit" disabled={!hydrated || isBusy}>
-            {isLoading && <Loader2Icon className="animate-spin" aria-hidden="true" />}
+            {isLoading && <LoaderCircleIcon className="animate-spin" aria-hidden="true" />}
             {ssoHit
               ? t("form.ssoContinue", { provider: ssoHit.provider_name })
               : t(isLoading ? "signIn.submitting" : "signIn.submit")}

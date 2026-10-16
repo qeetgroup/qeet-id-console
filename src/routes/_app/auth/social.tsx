@@ -22,20 +22,21 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import {
   BanIcon,
-  CheckCircle2Icon,
+  CircleCheckIcon,
   ClockIcon,
   CopyIcon,
+  EllipsisVerticalIcon,
   ExternalLinkIcon,
+  type IconProps,
   InfoIcon,
   LayoutGridIcon,
   ListFilterIcon,
-  MoreVerticalIcon,
   PlusIcon,
   SearchIcon,
   SettingsIcon,
   Share2Icon,
-} from "lucide-react";
-import { useState } from "react";
+} from "@qeetrix/icons";
+import { type ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -115,7 +116,7 @@ function SocialPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <SummaryTile
-          icon={CheckCircle2Icon}
+          icon={CircleCheckIcon}
           tone="success"
           value={summary.configured}
           label={t("social.summary.configured")}
@@ -235,7 +236,7 @@ function SummaryTile({
   label,
   hint,
 }: {
-  icon: typeof CheckCircle2Icon;
+  icon: ComponentType<IconProps<"outline">>;
   tone: keyof typeof TILE_TONES;
   value: number;
   label: string;
@@ -312,7 +313,7 @@ function ProviderCard({
                   className="-me-1 size-7 text-muted-foreground"
                   aria-label={t("social.menu.label", { label: provider.label })}
                 >
-                  <MoreVerticalIcon className="size-4" aria-hidden="true" />
+                  <EllipsisVerticalIcon className="size-4" aria-hidden="true" />
                 </Button>
               }
             />

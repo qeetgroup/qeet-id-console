@@ -13,19 +13,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowUpRightIcon,
-  CheckCircle2Icon,
+  CircleCheckIcon,
   FileTextIcon,
   ImageIcon,
   InfoIcon,
   LinkIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   MailIcon,
   PaletteIcon,
   RefreshCwIcon,
   RotateCcwIcon,
   SaveIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -707,9 +707,9 @@ function BrandingForm({ branding, ...props }: BrandingSettingsViewProps & { bran
               }
             >
               {pending ? (
-                <Loader2Icon className="animate-spin" aria-hidden="true" />
+                <LoaderCircleIcon className="animate-spin" aria-hidden="true" />
               ) : saved && !changed ? (
-                <CheckCircle2Icon aria-hidden="true" />
+                <CircleCheckIcon aria-hidden="true" />
               ) : (
                 <SaveIcon aria-hidden="true" />
               )}

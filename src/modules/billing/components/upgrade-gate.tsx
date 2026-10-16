@@ -1,6 +1,7 @@
 import { buttonVariants, Card, CardContent } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { LockIcon, type LucideIcon } from "lucide-react";
+import { type IconProps, LockIcon } from "@qeetrix/icons";
+import type { ComponentType } from "react";
 
 import { useEntitlements } from "../api/billing";
 
@@ -16,7 +17,7 @@ export function UpgradeGate({
   description,
   plan,
 }: {
-  icon?: LucideIcon;
+  icon?: ComponentType<IconProps<"outline">>;
   title: string;
   description: string;
   /** Recommended tier to preselect on the billing page (in-context deep-link). */

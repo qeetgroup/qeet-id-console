@@ -12,11 +12,11 @@ import {
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  type IconProps,
   RefreshCwIcon,
   SearchIcon,
-  type LucideIcon,
-} from "lucide-react";
-import type { ReactNode } from "react";
+} from "@qeetrix/icons";
+import type { ComponentType, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Cell, Pie, PieChart } from "recharts";
 
@@ -193,7 +193,7 @@ export function DirectoryStat({
   label: string;
   value: ReactNode;
   detail?: string;
-  icon: LucideIcon;
+  icon: ComponentType<IconProps<"outline">>;
   tone?: keyof typeof TONES;
   loading?: boolean;
 }) {

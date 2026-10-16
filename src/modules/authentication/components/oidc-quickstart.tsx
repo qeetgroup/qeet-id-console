@@ -16,7 +16,7 @@ import {
   SegmentedControl,
   SegmentedControlItem,
 } from "@qeetrix/ui";
-import { CheckIcon, CopyIcon, ExternalLinkIcon, PlayIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, ExternalLinkIcon, PlayIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { toast } from "sonner";
 

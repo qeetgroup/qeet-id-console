@@ -16,7 +16,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { CopyIcon, DownloadIcon, Loader2Icon, SaveIcon, Trash2Icon } from "lucide-react";
+import { CopyIcon, DownloadIcon, LoaderCircleIcon, SaveIcon, TrashIcon } from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -104,7 +104,7 @@ function BuilderPage() {
               onClick={saveAsAbac}
               disabled={!reducible || createM.isPending || !doc.name.trim()}
             >
-              {createM.isPending ? <Loader2Icon className="animate-spin" /> : <SaveIcon />}
+              {createM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
               Save as ABAC
             </Button>
           </>
@@ -261,7 +261,7 @@ function Inspector({
           />
         </Field>
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, requireRole: null })}>
-          <Trash2Icon /> Remove block
+          <TrashIcon /> Remove block
         </Button>
       </div>
     );
@@ -299,7 +299,7 @@ function Inspector({
           />
         </Field>
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, relation: null })}>
-          <Trash2Icon /> Remove block
+          <TrashIcon /> Remove block
         </Button>
       </div>
     );
@@ -318,7 +318,7 @@ function Inspector({
       )}
       {doc.condition && (
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, condition: null })}>
-          <Trash2Icon /> Remove block
+          <TrashIcon /> Remove block
         </Button>
       )}
     </div>

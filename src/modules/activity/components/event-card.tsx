@@ -10,23 +10,24 @@ import {
 } from "@qeetrix/ui";
 import {
   ActivityIcon,
-  AlertTriangleIcon,
-  CheckCircleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
-  FingerprintIcon,
+  CircleCheckBigIcon,
+  CircleXIcon,
+  FingerprintPatternIcon,
   GlobeIcon,
+  type IconProps,
   InfoIcon,
   KeyRoundIcon,
   LogInIcon,
   MonitorIcon,
   ServerIcon,
   ShieldAlertIcon,
+  TriangleAlertIcon,
   UserIcon,
   WebhookIcon,
-  XCircleIcon,
-} from "lucide-react";
-import { useState } from "react";
+} from "@qeetrix/icons";
+import { type ComponentType, useState } from "react";
 
 import type { ActivityEvent, Severity } from "../types/activity.types";
 import { SeverityBadge } from "./severity-badge";
@@ -35,10 +36,10 @@ import { SeverityBadge } from "./severity-badge";
 // Category → icon mapping
 // ---------------------------------------------------------------------------
 
-const CATEGORY_ICONS: Record<string, typeof ActivityIcon> = {
+const CATEGORY_ICONS: Record<string, ComponentType<IconProps<"outline">>> = {
   authentication: LogInIcon,
   authorization: ShieldAlertIcon,
-  mfa: FingerprintIcon,
+  mfa: FingerprintPatternIcon,
   "api-key": KeyRoundIcon,
   apikey: KeyRoundIcon,
   webhook: WebhookIcon,
@@ -48,11 +49,11 @@ const CATEGORY_ICONS: Record<string, typeof ActivityIcon> = {
   federation: GlobeIcon,
 };
 
-const SEVERITY_ICON: Record<Severity, typeof ActivityIcon> = {
-  critical: XCircleIcon,
-  error: XCircleIcon,
-  warning: AlertTriangleIcon,
-  success: CheckCircleIcon,
+const SEVERITY_ICON: Record<Severity, ComponentType<IconProps<"outline">>> = {
+  critical: CircleXIcon,
+  error: CircleXIcon,
+  warning: TriangleAlertIcon,
+  success: CircleCheckBigIcon,
   info: InfoIcon,
 };
 
@@ -64,7 +65,7 @@ const SEVERITY_ICON_CLASS: Record<Severity, string> = {
   info: "text-info",
 };
 
-export function getCategoryIcon(category: string): typeof ActivityIcon {
+export function getCategoryIcon(category: string): ComponentType<IconProps<"outline">> {
   const key = category.toLowerCase().replace(/[^a-z-]/g, "");
   return CATEGORY_ICONS[key] ?? ActivityIcon;
 }

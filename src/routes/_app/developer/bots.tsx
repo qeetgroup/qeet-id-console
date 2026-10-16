@@ -1,6 +1,6 @@
 import { Card, CardContent, EmptyState } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { BotIcon } from "lucide-react";
+import { BotIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";

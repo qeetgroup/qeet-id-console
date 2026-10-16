@@ -1,14 +1,15 @@
 import { Button, cn, StatusPill, TimeSince } from "@qeetrix/ui";
 import { useNavigate } from "@tanstack/react-router";
 import {
-  AlertTriangleIcon,
   BellIcon,
   CheckCheckIcon,
   CircleAlertIcon,
+  type IconProps,
   InboxIcon,
   InfoIcon,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+  TriangleAlertIcon,
+} from "@qeetrix/icons";
+import { type ComponentType, useEffect, useRef, useState } from "react";
 
 import {
   type Notification,
@@ -17,9 +18,9 @@ import {
   useNotifications,
 } from "@/modules/developer";
 
-const KIND_ICON: Record<NotificationKind, typeof InfoIcon> = {
+const KIND_ICON: Record<NotificationKind, ComponentType<IconProps<"outline">>> = {
   info: InfoIcon,
-  warning: AlertTriangleIcon,
+  warning: TriangleAlertIcon,
   alert: CircleAlertIcon,
   success: CheckCheckIcon,
 };

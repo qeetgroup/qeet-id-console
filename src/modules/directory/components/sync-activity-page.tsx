@@ -36,7 +36,7 @@ import {
   NetworkIcon,
   RefreshCwIcon,
   TriangleAlertIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useDeferredValue, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";

@@ -1,5 +1,5 @@
 import { cn, Skeleton, TimeSince } from "@qeetrix/ui";
-import { ClockIcon, LayersIcon, LockIcon, UsersIcon } from "lucide-react";
+import { ClockIcon, LayersIcon, LockIcon, UsersIcon } from "@qeetrix/icons";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 

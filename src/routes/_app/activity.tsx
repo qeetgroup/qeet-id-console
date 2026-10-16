@@ -25,13 +25,14 @@ import {
   BoxIcon,
   DownloadIcon,
   GlobeIcon,
+  type IconProps,
   LayersIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   SearchIcon,
   TargetIcon,
   UserIcon,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+} from "@qeetrix/icons";
+import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -129,7 +130,7 @@ function FacetSelect({
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
-  icon: typeof ActivityIcon;
+  icon: ComponentType<IconProps<"outline">>;
 }) {
   return (
     <Select value={value || "all"} onValueChange={(v) => onChange(v === "all" ? "" : (v ?? ""))}>
@@ -162,7 +163,7 @@ function ExportMenu({
         render={
           <Button variant="outline" size="sm" disabled={!!exporting}>
             {exporting ? (
-              <Loader2Icon className="size-3.5 animate-spin" aria-hidden="true" />
+              <LoaderCircleIcon className="size-3.5 animate-spin" aria-hidden="true" />
             ) : (
               <DownloadIcon className="size-3.5" aria-hidden="true" />
             )}

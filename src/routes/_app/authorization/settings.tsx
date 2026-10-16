@@ -1,6 +1,7 @@
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { GaugeIcon, LayersIcon, ShieldIcon } from "lucide-react";
+import { GaugeIcon, type IconProps, LayersIcon, ShieldIcon } from "@qeetrix/icons";
+import type { ComponentType } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
 
@@ -76,7 +77,7 @@ function LinkCard({
   to,
   badge,
 }: {
-  icon: typeof ShieldIcon;
+  icon: ComponentType<IconProps<"outline">>;
   title: string;
   detail: string;
   to: string;

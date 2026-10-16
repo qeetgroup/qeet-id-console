@@ -19,7 +19,13 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { KeyRoundIcon, LinkIcon, Loader2Icon, ShieldCheckIcon, Trash2Icon } from "lucide-react";
+import {
+  KeyRoundIcon,
+  LinkIcon,
+  LoaderCircleIcon,
+  ShieldCheckIcon,
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -185,7 +191,7 @@ function AdminPortalCard({ ttlOptions }: { ttlOptions: { label: string; seconds:
                 })
               }
             >
-              {generateM.isPending && <Loader2Icon className="animate-spin" />}
+              {generateM.isPending && <LoaderCircleIcon className="animate-spin" />}
               <LinkIcon />
               {t("connections.portal.generate")}
             </Button>
@@ -275,7 +281,7 @@ function AdminPortalLinkRow({
       </div>
       {active && (
         <Button variant="ghost" size="sm" disabled={busy} onClick={onRevoke}>
-          <Trash2Icon /> {t("connections.portal.revokeBtn")}
+          <TrashIcon /> {t("connections.portal.revokeBtn")}
         </Button>
       )}
     </li>

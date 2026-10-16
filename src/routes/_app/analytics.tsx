@@ -20,7 +20,7 @@ import {
   TrendingUpIcon,
   UsersIcon,
   ZapIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 

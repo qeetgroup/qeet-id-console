@@ -9,14 +9,15 @@
 import { Avatar, AvatarFallback, Badge, cn, TimeSince } from "@qeetrix/ui";
 import { initials } from "@/shared/utils/initials";
 import {
-  AlertTriangleIcon,
-  CheckCircleIcon,
+  CircleCheckBigIcon,
+  CircleXIcon,
+  type IconProps,
   InfoIcon,
+  OctagonXIcon,
   ServerIcon,
-  XCircleIcon,
-  XOctagonIcon,
-} from "lucide-react";
-import type { ReactNode } from "react";
+  TriangleAlertIcon,
+} from "@qeetrix/icons";
+import type { ComponentType, ReactNode } from "react";
 
 import type { ActivitySearch } from "../activity-search";
 import { formatIp } from "@/shared/utils/ip-format";
@@ -31,11 +32,11 @@ const ROW_COLS =
   "grid-cols-[4.25rem_minmax(0,1fr)_auto_1.75rem] " +
   "lg:grid-cols-[6.5rem_minmax(0,1.25fr)_minmax(0,1.55fr)_minmax(0,1.15fr)_6.5rem_minmax(0,1.1fr)_2rem]";
 
-const SEVERITY_ICON: Record<Severity, typeof InfoIcon> = {
-  critical: XOctagonIcon,
-  error: XCircleIcon,
-  warning: AlertTriangleIcon,
-  success: CheckCircleIcon,
+const SEVERITY_ICON: Record<Severity, ComponentType<IconProps<"outline">>> = {
+  critical: OctagonXIcon,
+  error: CircleXIcon,
+  warning: TriangleAlertIcon,
+  success: CircleCheckBigIcon,
   info: InfoIcon,
 };
 

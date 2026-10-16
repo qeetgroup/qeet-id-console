@@ -10,7 +10,7 @@ import {
 import { errorMessage } from "@/platform/errors/user-message";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { FingerprintIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
+import { FingerprintPatternIcon, PlusIcon, RefreshCwIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -112,7 +112,7 @@ function PasskeysPage() {
             <div className="p-6 text-sm text-destructive">{errorMessage(listQ.error)}</div>
           ) : !listQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
-              <FingerprintIcon className="size-8 text-muted-foreground" />
+              <FingerprintPatternIcon className="size-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 {t("loginMethods.passkeys.list.empty")}
               </p>

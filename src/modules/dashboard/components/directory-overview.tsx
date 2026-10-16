@@ -13,12 +13,12 @@ import {
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
-  Building2Icon,
+  BuildingComplexIcon,
   ChevronRightIcon,
   CirclePlusIcon,
   CreditCardIcon,
+  type IconProps,
   LightbulbIcon,
-  type LucideIcon,
   MailIcon,
   NetworkIcon,
   RefreshCwIcon,
@@ -28,8 +28,8 @@ import {
   UserPlusIcon,
   UserRoundIcon,
   UsersRoundIcon,
-} from "lucide-react";
-import type { ReactNode } from "react";
+} from "@qeetrix/icons";
+import type { ComponentType, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { type DirectoryData, summarizeConnections, useDirectoryData } from "../api/directory";
@@ -65,7 +65,7 @@ function DirectoryCard({
   queries,
 }: {
   area: DirectoryArea;
-  icon: LucideIcon;
+  icon: ComponentType<IconProps<"outline">>;
   href: string;
   children: ReactNode;
   footer: ReactNode;
@@ -401,13 +401,13 @@ export function DirectoryOverviewView({ data }: { data: DirectoryViewData }) {
 
           <DirectoryCard
             area="organizations"
-            icon={Building2Icon}
+            icon={BuildingComplexIcon}
             href="/organizations"
             queries={[organizations]}
             footer={
               <>
                 <Link to="/organizations" className={FOOTER_LINK_CLASS}>
-                  <Building2Icon /> {t("directory.organizations.manage")}
+                  <BuildingComplexIcon /> {t("directory.organizations.manage")}
                 </Link>
                 {permissions.billing ? (
                   <Link to="/settings/billing" className={FOOTER_LINK_CLASS}>

@@ -1,6 +1,6 @@
 import { Button, useFloatingWindow, useIsMobile } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
-import { SparklesIcon } from "lucide-react";
+import { SparklesIcon } from "@qeetrix/icons";
 import { useCallback } from "react";
 
 import { useQeetAIChat } from "../hooks/use-qeetai-chat";

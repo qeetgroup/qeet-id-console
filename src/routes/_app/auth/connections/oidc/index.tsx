@@ -24,7 +24,13 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppWindowIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
+import {
+  AppWindowIcon,
+  LoaderCircleIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -229,7 +235,7 @@ function OidcPage() {
                 disabled={bulkBusy}
                 onClick={() => setConfirmingBulk(true)}
               >
-                <Trash2Icon /> {t("bulk.delete")}
+                <TrashIcon /> {t("bulk.delete")}
               </Button>
             </BulkBar>
           )}
@@ -364,7 +370,7 @@ function OidcPage() {
                           onClick={() => setConfirmingDelete(c)}
                           disabled={deleteM.isPending || bulkBusy}
                         >
-                          <Trash2Icon /> {t("common:actions.delete")}
+                          <TrashIcon /> {t("common:actions.delete")}
                         </Button>
                       )}
                     </TableCell>
@@ -422,7 +428,7 @@ function OidcPage() {
                 })
               }
             >
-              {deleteM.isPending && <Loader2Icon className="animate-spin" />}
+              {deleteM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {deleteM.isPending ? t("common:actions.deleting") : t("common:actions.delete")}
             </Button>
           </AlertDialogFooter>
@@ -445,7 +451,7 @@ function OidcPage() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={bulkBusy}>{t("common:actions.cancel")}</AlertDialogCancel>
             <Button variant="destructive" disabled={bulkBusy} onClick={deleteSelected}>
-              {bulkBusy && <Loader2Icon className="animate-spin" />}
+              {bulkBusy && <LoaderCircleIcon className="animate-spin" />}
               {bulkBusy ? t("common:actions.deleting") : t("common:actions.delete")}
             </Button>
           </AlertDialogFooter>

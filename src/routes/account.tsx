@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage, cn } from "@qeetrix/ui";
 import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
-import { DatabaseIcon, MonitorSmartphoneIcon, ShieldCheckIcon, UserIcon } from "lucide-react";
+import { DatabaseIcon, MonitorSmartphoneIcon, ShieldCheckIcon, UserIcon } from "@qeetrix/icons";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 

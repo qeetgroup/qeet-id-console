@@ -1,6 +1,6 @@
 import { cn } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { BookOpenIcon } from "lucide-react";
+import { BookOpenIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 

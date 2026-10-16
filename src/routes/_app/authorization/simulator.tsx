@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { FlaskConicalIcon, Loader2Icon, PlayIcon } from "lucide-react";
+import { FlaskConicalIcon, LoaderCircleIcon, PlayIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -316,7 +316,7 @@ function AbacForm({ onResult }: { onResult: (r: DecisionRecord) => void }) {
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <Button type="submit" disabled={pending} className="self-start">
-      {pending ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
+      {pending ? <LoaderCircleIcon className="animate-spin" /> : <PlayIcon />}
       Simulate
     </Button>
   );
@@ -386,7 +386,7 @@ function BatchCard() {
           />
         </Field>
         <Button onClick={run} disabled={batch.isRunning} className="self-start">
-          {batch.isRunning ? <Loader2Icon className="animate-spin" /> : <PlayIcon />}
+          {batch.isRunning ? <LoaderCircleIcon className="animate-spin" /> : <PlayIcon />}
           Run batch
         </Button>
         {batch.isRunning && (

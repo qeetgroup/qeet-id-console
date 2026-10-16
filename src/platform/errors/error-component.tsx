@@ -1,11 +1,11 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Button } from "@qeetrix/ui";
-import { PageState } from "@qeetrix/ui/blocks";
-import { RefreshCwIcon, TriangleAlertIcon } from "lucide-react";
+import { RefreshCwIcon, TriangleAlertIcon } from "@qeetrix/icons";
 
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
 import { captureError } from "@/platform/telemetry/errors";
+import { PageState } from "@/shared/components/page-state";
 
 /**
  * Router-level fallback for uncaught render/loader throws. Wired as the router's

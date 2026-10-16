@@ -31,16 +31,16 @@ import {
   ArrowDownIcon,
   ArrowRightIcon,
   CircleCheckIcon,
-  Code2Icon,
+  CodeXmlIcon,
   EllipsisIcon,
   LayersIcon,
   PencilIcon,
   PlayIcon,
   PlusIcon,
   PowerIcon,
-  Trash2Icon,
+  TrashIcon,
   TriangleAlertIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -408,7 +408,7 @@ export function MappingsView({
           label={t("directory.mappings.transforms")}
           value={data ? active.filter((mapping) => mapping.transform !== "none").length : null}
           detail={t("directory.mappings.transformTypes")}
-          icon={Code2Icon}
+          icon={CodeXmlIcon}
           tone="info"
           loading={loading}
         />
@@ -460,7 +460,7 @@ export function MappingsView({
                 disabled={busy}
                 onClick={() => onDelete(selectedMappings)}
               >
-                <Trash2Icon />
+                <TrashIcon />
                 {t("directory.mappings.delete")}
               </Button>
             </div>
@@ -609,7 +609,7 @@ export function MappingsView({
                                   )}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => onDelete([mapping])}>
-                                  <Trash2Icon />
+                                  <TrashIcon />
                                   {t("directory.mappings.delete")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>

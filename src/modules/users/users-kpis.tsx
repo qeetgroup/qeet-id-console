@@ -9,13 +9,14 @@ import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
   ChevronRightIcon,
-  type LucideIcon,
+  type IconProps,
   ShieldAlertIcon,
   ShieldCheckIcon,
   UserCheckIcon,
-  UsersIcon,
   UserXIcon,
-} from "lucide-react";
+  UsersIcon,
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { UserStats, UserTrends } from "./api/users";
@@ -145,7 +146,7 @@ function KpiCard({
   sparkline,
   onClick,
 }: {
-  icon: LucideIcon;
+  icon: ComponentType<IconProps<"outline">>;
   tone: Tone;
   label: string;
   value: number;
