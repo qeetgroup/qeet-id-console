@@ -1,5 +1,4 @@
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -7,21 +6,22 @@ import {
   CardHeader,
   CardTitle,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@qeetrix/ui";
 import { startRegistration } from "@simplewebauthn/browser";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { FingerprintIcon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
+import { FingerprintIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import {
+  type Passkey,
+  PASSKEYS_KEY,
+  PasskeysTable,
+  passkeyDisplayName,
+  useRenamePasskey,
+} from "@/modules/authentication";
 import { api } from "@/platform/api/client";
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
@@ -32,33 +32,28 @@ export const Route = createFileRoute("/_app/auth/login-methods/passkeys")({
   component: PasskeysPage,
 });
 
-type Passkey = {
-  id: string;
-  user_id: string;
-  name: string;
-  transports?: string[] | null;
-  last_used_at?: string | null;
-  created_at: string;
-};
-
 function PasskeysPage() {
   const { t } = useTranslation("auth");
   const [confirmDialog, openConfirm] = useConfirmDialog();
   const qc = useQueryClient();
 
   const listQ = useQuery({
-    queryKey: ["passkeys"],
+    queryKey: PASSKEYS_KEY,
     queryFn: () => api<{ items: Passkey[] }>("/v1/passkeys"),
   });
 
   const deleteM = useMutation({
     mutationFn: (id: string) => api<void>(`/v1/passkeys/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["passkeys"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: PASSKEYS_KEY }),
     meta: { successMessage: "Passkey removed" },
   });
 
+  const renameM = useRenamePasskey();
+
   // Registration ceremony: ask the backend for creation options, drive the
-  // browser WebAuthn API, then post the attestation back to finish.
+  // browser WebAuthn API, then post the attestation back to finish. No name is
+  // asked for: the server names the passkey after this browser (e.g. "Chrome
+  // on macOS") and it can be renamed inline from the list.
   const registerM = useMutation({
     mutationFn: async () => {
       const begin = await api<{
@@ -68,16 +63,12 @@ function PasskeysPage() {
       const credential = await startRegistration({
         optionsJSON: begin.publicKey,
       });
-      const name =
-        window
-          .prompt(t("loginMethods.passkeys.promptName"), t("loginMethods.passkeys.promptDefault"))
-          ?.trim() || undefined;
       await api<void>("/v1/passkeys/register/finish", {
         method: "POST",
-        body: { session_id: begin.session_id, credential, name },
+        body: { session_id: begin.session_id, credential },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["passkeys"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: PASSKEYS_KEY }),
     // Own the error toast (silences the global handler) with user-safe copy —
     // covers both ApiError and WebAuthn browser errors without leaking raw text.
     meta: { silent: true },
@@ -139,62 +130,21 @@ function PasskeysPage() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("loginMethods.passkeys.columns.name")}</TableHead>
-                  <TableHead>{t("loginMethods.passkeys.columns.transports")}</TableHead>
-                  <TableHead>{t("loginMethods.passkeys.columns.lastUsed")}</TableHead>
-                  <TableHead>{t("loginMethods.passkeys.columns.created")}</TableHead>
-                  <TableHead className="text-right">
-                    {t("loginMethods.passkeys.columns.actions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {listQ.data.items.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.name}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {(p.transports ?? []).map((transport) => (
-                          <Badge key={transport} variant="muted">
-                            {transport}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {p.last_used_at
-                        ? new Date(p.last_used_at).toLocaleString()
-                        : t("loginMethods.passkeys.lastUsedNever")}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(p.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          openConfirm({
-                            title: t("loginMethods.passkeys.confirm.title", {
-                              name: p.name,
-                            }),
-                            variant: "destructive",
-                            confirmLabel: t("loginMethods.passkeys.confirm.label"),
-                            onConfirm: () => deleteM.mutate(p.id),
-                          })
-                        }
-                        disabled={deleteM.isPending}
-                      >
-                        <Trash2Icon /> {t("loginMethods.passkeys.removeBtn")}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <PasskeysTable
+              passkeys={listQ.data.items}
+              onRename={(p, name) => renameM.mutateAsync({ id: p.id, name })}
+              onRemove={(p) =>
+                openConfirm({
+                  title: t("loginMethods.passkeys.confirm.title", {
+                    name: passkeyDisplayName(p, t("loginMethods.passkeys.unnamed")),
+                  }),
+                  variant: "destructive",
+                  confirmLabel: t("loginMethods.passkeys.confirm.label"),
+                  onConfirm: () => deleteM.mutate(p.id),
+                })
+              }
+              isRemoving={deleteM.isPending}
+            />
           )}
         </CardContent>
       </Card>

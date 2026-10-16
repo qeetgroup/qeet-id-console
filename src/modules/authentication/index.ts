@@ -17,3 +17,4 @@ export { type LdapConnection, useLdapConnections } from "./api/ldap";
 export * from "./api/sso";
 export * from "./api/sessions";
 export { SessionsTable } from "./components/sessions-table";
+export { PasskeysTable, passkeyDisplayName } from "./components/passkeys-table";
