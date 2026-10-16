@@ -89,20 +89,28 @@
       "description": "Enforced at signup, password change, and password reset.",
       "minLengthLabel": "Minimum length",
       "complexityLabel": "Complexity",
-      "complexityBasic": "Basic — letters only",
+      "complexityBasic": "Relaxed — letters only",
       "complexityStandard": "Standard — mixed case + numbers",
       "complexityStrict": "Strict — also requires symbols"
     },
     "session": {
       "title": "Session policy",
       "description": "Affects new sessions only; existing sessions keep their original lifetime.",
-      "maxAgeLabel": "Maximum session age"
+      "maxAgeLabel": "Maximum session age",
+      "maxAgeHelp": "How long a session lasts after sign-in, however active it is. Also how long an application stays signed in. A duration such as 24h, 720h (30 days) or 2160h (90 days); between 1h and 8760h.",
+      "idleLabel": "Idle timeout",
+      "idleHelp": "A session ends once it goes this long without being used. At least 15m and no longer than the maximum session age, such as 30m, 8h or 24h.",
+      "maxSessionsLabel": "Sessions per person",
+      "maxSessionsNone": "No limit",
+      "limitActionLabel": "At the limit",
+      "limitEvict": "End their least recently used session",
+      "limitRefuse": "Refuse the new sign-in",
+      "limitHelp": "How many places one person may be signed in at once. A session ended this way can't be renewed; anything it already holds stops working within 10 minutes."
     },
     "mfa": {
       "title": "MFA enforcement",
       "description": "How aggressively users are pushed toward enrolling a second factor.",
       "modeLabel": "Mode",
-      "disabled": "Disabled — users cannot enrol MFA",
       "optional": "Optional — users may enrol but aren't required",
       "required": "Required — block login until enrolled",
       "adminOnly": "Admins only — require MFA for owner/admin roles",

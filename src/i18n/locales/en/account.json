@@ -30,6 +30,7 @@
     }
   },
   "security": {
+    "lastMethod": "This is your only way to sign in. Add a passkey or set a password before removing it.",
     "title": "Security",
     "description": "Password, two-factor authentication, and active sessions for your account.",
     "password": {

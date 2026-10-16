@@ -1,13 +1,17 @@
-import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
+import { Button, buttonVariants, Card, CardContent, Field, FieldLabel, Input } from "@qeetrix/ui";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
-import { CircleCheckIcon, LoaderCircleIcon, MailIcon, TriangleAlertIcon } from "@qeetrix/icons";
-import { useEffect, useRef } from "react";
+import { CircleCheckIcon, LoaderCircleIcon, MailIcon } from "@qeetrix/icons";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BrandHero } from "@/modules/authentication/components/brand-hero";
 import { ApiError } from "@/platform/api/client";
-import { useConsumeMagicLink } from "@/modules/authentication";
+import {
+  useConsumeMagicLink,
+  useRequestMagicLink,
+  useResendMagicLink,
+} from "@/modules/authentication";
 
 interface MagicSearch {
   token?: string;
@@ -20,10 +24,14 @@ export const Route = createFileRoute("/_auth/magic")({
   }),
 });
 
+// One route, two modes, as /forgot-password: without ?token= ask for a link;
+// with it, sign in with the link (and, if it no longer works, send a new one
+// to the same address).
 function MagicLinkPage() {
   const { t } = useTranslation("auth-flow");
   const { token } = useSearch({ from: "/_auth/magic" });
   const consume = useConsumeMagicLink();
+  const resend = useResendMagicLink();
 
   // Auto-consume on mount when the URL carries a token. useRef guards
   // against double-fire from React 19 strict mode.
@@ -39,7 +47,7 @@ function MagicLinkPage() {
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-            {renderStatus({ token, consume, t })}
+            {token ? renderStatus({ token, consume, resend, t }) : <RequestLink />}
           </div>
           <BrandHero />
         </CardContent>
@@ -48,28 +56,71 @@ function MagicLinkPage() {
   );
 }
 
-function renderStatus({
-  token,
-  consume,
-  t,
-}: {
-  token: string | undefined;
-  consume: ReturnType<typeof useConsumeMagicLink>;
-  t: (key: string) => string;
-}) {
-  if (!token) {
+/** Asks for a sign-in link; the answer is the same for any address. */
+function RequestLink() {
+  const { t } = useTranslation("auth-flow");
+  const request = useRequestMagicLink();
+  const [email, setEmail] = useState("");
+  if (request.isSuccess) {
     return (
       <>
-        <TriangleAlertIcon className="size-10 text-amber-500" />
-        <h1 className="text-2xl font-bold">{t("magic.missingTitle")}</h1>
-        <p className="text-balance text-muted-foreground">{t("magic.missingText")}</p>
+        <MailIcon className="size-10 text-sky-500" />
+        <h1 className="text-2xl font-bold">{t("magic.sentTitle")}</h1>
+        <p className="text-balance text-muted-foreground">{t("magic.sentText")}</p>
         <Link to="/sign-in" className={buttonVariants({ variant: "outline" }) + " mt-2"}>
           {t("magic.backToSignIn")}
         </Link>
       </>
     );
   }
+  return (
+    <form
+      className="flex w-full max-w-sm flex-col gap-3 text-left"
+      onSubmit={(e) => {
+        e.preventDefault();
+        request.mutate(email.trim());
+      }}
+    >
+      <h1 className="text-center text-2xl font-bold">{t("magic.requestTitle")}</h1>
+      <p className="text-balance text-center text-muted-foreground">{t("magic.requestText")}</p>
+      <Field>
+        <FieldLabel htmlFor="magic-email">{t("magic.emailLabel")}</FieldLabel>
+        <Input
+          id="magic-email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </Field>
+      {request.error && (
+        <p role="alert" className="text-sm text-destructive">
+          {errorMessage(request.error)}
+        </p>
+      )}
+      <Button type="submit" disabled={request.isPending || !email.trim()}>
+        {request.isPending && <LoaderCircleIcon className="animate-spin" />}
+        {t("magic.requestBtn")}
+      </Button>
+      <Link to="/sign-in" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+        {t("magic.backToSignIn")}
+      </Link>
+    </form>
+  );
+}
 
+function renderStatus({
+  token,
+  consume,
+  resend,
+  t,
+}: {
+  token: string;
+  consume: ReturnType<typeof useConsumeMagicLink>;
+  resend: ReturnType<typeof useResendMagicLink>;
+  t: (key: string) => string;
+}) {
   if (consume.isPending || consume.isIdle) {
     return (
       <>
@@ -109,18 +160,21 @@ function renderStatus({
         <Link to="/sign-in" className={buttonVariants({ variant: "outline", size: "sm" })}>
           {t("magic.backToSignIn")}
         </Link>
-        {/* The "request a new link" entry point is the sign-in form's
-            magic-link flow — for now we route there. Future: a dedicated
-            /magic/start UI. */}
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => {
-            window.location.href = "/sign-in?from=magic";
-          }}
-        >
-          {t("magic.sendNewLink")}
-        </Button>
+        {resend.isSuccess ? (
+          <p role="status" className="text-sm text-muted-foreground">
+            {t("magic.resentText")}
+          </p>
+        ) : (
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={resend.isPending}
+            onClick={() => resend.mutate(token)}
+          >
+            {resend.isPending && <LoaderCircleIcon className="animate-spin" />}
+            {t("magic.sendNewLink")}
+          </Button>
+        )}
       </div>
     </>
   );

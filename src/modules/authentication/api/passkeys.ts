@@ -12,6 +12,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 
+import { refreshSignInMethods } from "./sign-in-methods";
+
 /** One of the signed-in user's passkeys, as GET /v1/passkeys returns it. */
 export interface Passkey {
   id: string;
@@ -106,7 +108,10 @@ export function useRegisterPasskey() {
         body: { session_id: begin.session_id, credential, ...(name ? { name } : {}) },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: PASSKEYS_KEY }),
+    onSuccess: () => {
+      void refreshSignInMethods(qc);
+      return qc.invalidateQueries({ queryKey: PASSKEYS_KEY });
+    },
     meta: { silent: true },
   });
 }
@@ -117,7 +122,10 @@ export function useRemovePasskey() {
   return useMutation({
     mutationFn: (id: string) =>
       api<void>(`/v1/passkeys/${encodeURIComponent(id)}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PASSKEYS_KEY }),
+    onSuccess: () => {
+      void refreshSignInMethods(qc);
+      return qc.invalidateQueries({ queryKey: PASSKEYS_KEY });
+    },
     meta: { successMessage: "Passkey removed" },
   });
 }

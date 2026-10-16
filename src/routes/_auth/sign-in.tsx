@@ -8,13 +8,17 @@ import {
   FieldLabel,
   Input,
 } from "@qeetrix/ui";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { passkeyErrorMessage, usePasskeyLogin } from "@/modules/authentication/api/passkey-flows";
+import {
+  passkeyErrorMessage,
+  startPasskeyAutofill,
+  usePasskeyLogin,
+} from "@/modules/authentication/api/passkey-flows";
 import { LoginForm } from "@/modules/authentication/components/signin-form";
 import {
   isMfaChallenge,
@@ -34,6 +38,19 @@ function SignInPage() {
   const mfa = useCompleteMfaLogin();
   const social = useConsumeSocialCode();
   const passkey = usePasskeyLogin();
+  const navigate = useNavigate();
+  const [autofillError, setAutofillError] = useState<unknown>(null);
+  // Offer the user's passkeys in the browser's own prompt as the page loads;
+  // stopped before signing in any other way.
+  const stopAutofill = useRef<() => void>(() => {});
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("social_code")) return;
+    stopAutofill.current = startPasskeyAutofill({
+      onSignedIn: () => navigate({ to: "/" }),
+      onError: setAutofillError,
+    });
+    return () => stopAutofill.current();
+  }, [navigate]);
 
   // Returning from a platform social login: the provider callback bounced the
   // browser here with a one-time code to exchange for a session.
@@ -92,15 +109,21 @@ function SignInPage() {
       errorMessage={
         passkey.error
           ? passkeyErrorMessage(passkey.error)
-          : login.error
-            ? errorMessage(login.error)
-            : undefined
+          : autofillError
+            ? passkeyErrorMessage(autofillError)
+            : login.error
+              ? errorMessage(login.error)
+              : undefined
       }
       onLogin={(values) => {
+        stopAutofill.current();
+        setAutofillError(null);
         passkey.reset();
         login.mutate(values);
       }}
       onPasskeyLogin={() => {
+        stopAutofill.current();
+        setAutofillError(null);
         login.reset();
         passkey.mutate();
       }}

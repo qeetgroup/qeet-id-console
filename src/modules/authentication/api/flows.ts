@@ -6,6 +6,8 @@ import { useNavigate } from "@tanstack/react-router";
 
 import { ApiError, api, getApiBaseUrl } from "@/platform/api/client";
 
+import { refreshSignInMethods } from "./sign-in-methods";
+
 type SessionResponse = {
   token_type: string;
   expires_at: string;
@@ -99,6 +101,33 @@ export function useAcceptInvite() {
     meta: { successMessage: "Invitation accepted" },
   });
 }
+/** What an invitation link names, before the invitee chooses how to accept. */
+export interface InvitePreview {
+  organization: { name: string; slug: string };
+  email: string;
+  expires_at: string;
+  /** An account already holds the address: sign in and accept as yourself. */
+  account_exists: boolean;
+  /** The ways a new account may accept. */
+  methods: { password: boolean; passkey: boolean };
+}
+
+/** Look an invitation up by its emailed token (sent in the body, not the URL). */
+export function useInvitePreview(token: string) {
+  return useQuery({
+    queryKey: ["invite-preview", token],
+    queryFn: () =>
+      api<InvitePreview>("/v1/invites/lookup", {
+        method: "POST",
+        body: { token },
+        anonymous: true,
+      }),
+    enabled: !!token,
+    retry: false,
+    staleTime: Infinity,
+  });
+}
+
 /** A pending invitation addressed to the signed-in user's email. */
 export interface ReceivedInvite {
   id: string;
@@ -161,6 +190,35 @@ export function useAcceptInvitation() {
       if (typeof window !== "undefined") window.location.assign("/");
     },
     meta: { successMessage: "Invitation accepted" },
+  });
+}
+
+/**
+ * Ask for a one-time sign-in link for an address, from the console's sign-in
+ * page. The server answers the same whether or not the address has an account.
+ */
+export function useRequestMagicLink() {
+  return useMutation({
+    mutationFn: (email: string) =>
+      api<{ message: string }>("/v1/auth/magic-link/start", {
+        method: "POST",
+        body: { email },
+        anonymous: true,
+      }),
+    meta: { silent: true },
+  });
+}
+
+/** Send a new link in place of a used or expired one, to the same address. */
+export function useResendMagicLink() {
+  return useMutation({
+    mutationFn: (token: string) =>
+      api<{ message: string }>("/v1/auth/magic-link/resend", {
+        method: "POST",
+        body: { token },
+        anonymous: true,
+      }),
+    meta: { silent: true },
   });
 }
 
@@ -342,9 +400,12 @@ export function usePasswordStatus() {
  * social/passkey account may set one by leaving it empty. Tenant-independent.
  */
 export function useChangePassword() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { current_password: string; new_password: string }) =>
       api<{ message: string }>("/v1/auth/password", { method: "POST", body: in_ }),
+    // Setting a first password adds a way to sign in.
+    onSuccess: () => refreshSignInMethods(qc),
     meta: { successMessage: "Password changed" },
   });
 }
