@@ -56,6 +56,13 @@ const CODE_MESSAGES: Record<string, string> = {
     "Your account is no longer active. Please contact your administrator.",
   [ERROR_CODES.ACCOUNT_INACTIVE]: "Your account isn't active. Contact your administrator.",
   [ERROR_CODES.SESSION_REVOKED]: "Your session was revoked. Please sign in again.",
+  [ERROR_CODES.SESSION_TIMED_OUT]: "Your session has timed out. Please sign in again.",
+  [ERROR_CODES.SESSION_LIMIT]:
+    "You're signed in on too many devices for this organisation. Sign out of one of them, then try again.",
+  [ERROR_CODES.LAST_SIGN_IN_METHOD]:
+    "This is your only way to sign in. Add a passkey or set a password before removing it.",
+  [ERROR_CODES.SOCIAL_PROVIDER_IN_USE]:
+    "Some people can sign in only with this provider. Switch it off instead, or give them another way to sign in first.",
   [ERROR_CODES.NOT_TENANT_MEMBER]: "You're not a member of this organization.",
   [ERROR_CODES.SELF_REGISTRATION_DISABLED]: "Self-registration isn't enabled for this application.",
   [ERROR_CODES.PASSWORD_WEAK]: "Choose a stronger password.",

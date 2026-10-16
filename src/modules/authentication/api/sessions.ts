@@ -15,7 +15,44 @@ export type Session = {
   created_at: string;
   last_seen_at: string;
   revoked_at?: string | null;
+  /** When the session ends however active it is. */
+  expires_at?: string;
+  /** When the session ends unless it is renewed first. */
+  idle_expires_at?: string;
+  status?: SessionStatus;
+  /** The device and browser in words, from the server ("Chrome on macOS"). */
+  device?: string;
+  device_kind?: "desktop" | "mobile" | "tablet" | "unknown";
+  /** Where the session was opened (ISO 3166-1 alpha-2), when known. */
+  country?: string;
+  /** True for the session the list was requested with. */
+  current?: boolean;
 };
+
+/** The session's device in words; the server describes it, never the browser. */
+export function sessionDevice(s: Session): string {
+  return s.device || "Unknown device";
+}
+
+/** The country a session was opened from, by name, or "" when unknown. */
+export function sessionCountry(s: Session, locale = "en"): string {
+  if (!s.country) return "";
+  try {
+    return new Intl.DisplayNames([locale], { type: "region" }).of(s.country) ?? s.country;
+  } catch {
+    return s.country;
+  }
+}
+
+/**
+ * active, revoked (ended by sign-out or revocation) or expired (reached its
+ * maximum age or idle timeout first). Only an active session can be revoked.
+ */
+export type SessionStatus = "active" | "revoked" | "expired";
+
+export function sessionStatus(s: Session): SessionStatus {
+  return s.status ?? (s.revoked_at ? "revoked" : "active");
+}
 
 export const SESSIONS_KEY = ["sessions"] as const;
 

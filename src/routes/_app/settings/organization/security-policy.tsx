@@ -41,6 +41,9 @@ type Policy = {
   password_min_length: number;
   password_complexity: string;
   session_max_age: string;
+  session_idle_timeout: string;
+  max_sessions: number | null;
+  session_limit_action: string;
   mfa_enforcement: string;
   settings?: Record<string, unknown> | null;
 };
@@ -52,6 +55,9 @@ const empty: Policy = {
   password_min_length: 8,
   password_complexity: "standard",
   session_max_age: "720h",
+  session_idle_timeout: "24h",
+  max_sessions: null,
+  session_limit_action: "evict_oldest",
   mfa_enforcement: "optional",
 };
 
@@ -188,7 +194,7 @@ function PoliciesPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="basic">
+                        <SelectItem value="relaxed">
                           {t("policies.password.complexityBasic")}
                         </SelectItem>
                         <SelectItem value="standard">
@@ -222,11 +228,60 @@ function PoliciesPage() {
                     onChange={(e) => set("session_max_age", e.target.value)}
                     placeholder="720h"
                   />
-                  <FieldDescription>
-                    Go duration string. Examples: <code>24h</code>, <code>720h</code> (30 days),{" "}
-                    <code>2160h</code> (90 days).
-                  </FieldDescription>
+                  <FieldDescription>{t("policies.session.maxAgeHelp")}</FieldDescription>
                 </Field>
+                <Field>
+                  <FieldLabel htmlFor="session_idle_timeout">
+                    {t("policies.session.idleLabel")}
+                  </FieldLabel>
+                  <Input
+                    id="session_idle_timeout"
+                    value={draft.session_idle_timeout}
+                    onChange={(e) => set("session_idle_timeout", e.target.value)}
+                    placeholder="24h"
+                  />
+                  <FieldDescription>{t("policies.session.idleHelp")}</FieldDescription>
+                </Field>
+                <Field className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel htmlFor="max_sessions">
+                      {t("policies.session.maxSessionsLabel")}
+                    </FieldLabel>
+                    <Input
+                      id="max_sessions"
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={draft.max_sessions ?? ""}
+                      placeholder={t("policies.session.maxSessionsNone")}
+                      onChange={(e) =>
+                        set(
+                          "max_sessions",
+                          e.target.value === "" ? null : Number.parseInt(e.target.value, 10),
+                        )
+                      }
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>{t("policies.session.limitActionLabel")}</FieldLabel>
+                    <Select
+                      value={draft.session_limit_action}
+                      onValueChange={(v) => set("session_limit_action", v ?? "evict_oldest")}
+                      disabled={draft.max_sessions === null}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="evict_oldest">
+                          {t("policies.session.limitEvict")}
+                        </SelectItem>
+                        <SelectItem value="refuse">{t("policies.session.limitRefuse")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </Field>
+                <FieldDescription>{t("policies.session.limitHelp")}</FieldDescription>
               </FieldGroup>
             </CardContent>
           </Card>
@@ -248,7 +303,6 @@ function PoliciesPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="disabled">{t("policies.mfa.disabled")}</SelectItem>
                       <SelectItem value="optional">{t("policies.mfa.optional")}</SelectItem>
                       <SelectItem value="required">{t("policies.mfa.required")}</SelectItem>
                       <SelectItem value="admin_only">{t("policies.mfa.adminOnly")}</SelectItem>

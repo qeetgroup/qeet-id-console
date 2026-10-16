@@ -9,6 +9,7 @@ export * from "./api/oidc-clients";
 export * from "./api/oauth-grants";
 export * from "./api/social";
 export * from "./api/passkeys";
+export * from "./api/sign-in-methods";
 export * from "./api/saml";
 export * from "./api/saml-idp";
 export * from "./api/trusted-devices";

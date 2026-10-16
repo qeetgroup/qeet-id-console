@@ -16,7 +16,14 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { revokeOtherSessions, type Session, signOutEverywhere } from "@/modules/authentication";
+import {
+  revokeOtherSessions,
+  type Session,
+  sessionCountry,
+  sessionDevice,
+  sessionStatus,
+  signOutEverywhere,
+} from "@/modules/authentication";
 import { formatIp } from "@/shared/utils/ip-format";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
@@ -38,42 +45,9 @@ export const Route = createFileRoute("/account/sessions")({
   component: SessionsPage,
 });
 
-// Tiny user-agent classifier. Just enough to pick an icon + a friendly
-// label — full UA parsing requires a 50 KB library we don't ship.
-type DeviceKind = "mobile" | "tablet" | "desktop";
+type DeviceKind = NonNullable<Session["device_kind"]>;
 
-function parseUA(ua: string | null | undefined): {
-  kind: DeviceKind;
-  label: string;
-} {
-  if (!ua) return { kind: "desktop", label: "Unknown device" };
-  const lower = ua.toLowerCase();
-  let kind: DeviceKind = "desktop";
-  if (/ipad|tablet/.test(lower)) kind = "tablet";
-  else if (/iphone|android.*mobile|mobile/.test(lower)) kind = "mobile";
-
-  // Browser
-  let browser = "Browser";
-  if (/edg\//.test(lower)) browser = "Edge";
-  else if (/chrome\//.test(lower) && !/edg\//.test(lower)) browser = "Chrome";
-  else if (/firefox\//.test(lower)) browser = "Firefox";
-  else if (/safari\//.test(lower) && !/chrome\//.test(lower)) browser = "Safari";
-
-  // OS
-  let os = "";
-  if (/mac os x/.test(lower)) os = "macOS";
-  else if (/windows/.test(lower)) os = "Windows";
-  else if (/android/.test(lower)) os = "Android";
-  else if (/iphone|ipad|ios/.test(lower)) os = "iOS";
-  else if (/linux/.test(lower)) os = "Linux";
-
-  return { kind, label: os ? `${browser} on ${os}` : browser };
-}
-
-// Loopback addresses (local dev, or a reverse proxy that didn't forward the
-// client IP) read as noise like "::1" — show a friendly label instead.
-
-function DeviceIcon({ kind }: { kind: DeviceKind }) {
+function DeviceIcon({ kind }: { kind?: DeviceKind }) {
   if (kind === "mobile") return <SmartphoneIcon className="size-4" />;
   if (kind === "tablet") return <TabletIcon className="size-4" />;
   return <MonitorIcon className="size-4" />;
@@ -107,7 +81,9 @@ function SessionsPage() {
         prev
           ? {
               ...prev,
-              items: prev.items.map((s) => (s.id === id ? { ...s, revoked_at: now } : s)),
+              items: prev.items.map((s) =>
+                s.id === id ? { ...s, revoked_at: now, status: "revoked" as const } : s,
+              ),
             }
           : prev,
       );
@@ -193,7 +169,7 @@ function SessionsPage() {
             isLoading={sessionsQ.isLoading}
             isError={sessionsQ.isError}
             error={sessionsQ.error}
-            isEmpty={items.filter((s) => !s.revoked_at).length === 0}
+            isEmpty={items.filter((s) => sessionStatus(s) === "active").length === 0}
             emptyIcon={MonitorSmartphoneIcon}
             emptyTitle={t("sessions.active.emptyTitle")}
             skeletonRows={3}
@@ -211,20 +187,27 @@ function SessionsPage() {
               </TableHeader>
               <TableBody>
                 {items.map((s) => {
-                  const device = parseUA(s.user_agent);
-                  const isCurrent = currentSessionId === s.id;
+                  // The server describes the device and marks the session the
+                  // list was requested with.
+                  const isCurrent = s.current ?? currentSessionId === s.id;
+                  const country = sessionCountry(s);
                   return (
                     <TableRow key={s.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <DeviceIcon kind={device.kind} />
+                          <DeviceIcon kind={s.device_kind} />
                           <span
                             className="text-sm font-medium"
                             // Keep the raw UA on hover for support, but don't
                             // surface the noisy string as visible text.
                             title={s.user_agent ?? ""}
                           >
-                            {device.label}
+                            {sessionDevice(s)}
+                            {country && (
+                              <span className="ml-1 font-normal text-muted-foreground">
+                                · {country}
+                              </span>
+                            )}
                             {isCurrent && (
                               <span className="ml-2 rounded-full bg-emerald-500/15 px-1.5 py-px text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                                 {t("sessions.active.thisDevice")}
@@ -243,13 +226,13 @@ function SessionsPage() {
                         <TimeSince value={s.last_seen_at} />
                       </TableCell>
                       <TableCell>
-                        <StatusPill status={s.revoked_at ? "revoked" : "active"} />
+                        <StatusPill status={sessionStatus(s)} />
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
-                          disabled={!!s.revoked_at || revokeM.isPending || isCurrent}
+                          disabled={sessionStatus(s) !== "active" || revokeM.isPending || isCurrent}
                           title={isCurrent ? t("sessions.revoke.selfHelp") : undefined}
                           onClick={() =>
                             openConfirm({

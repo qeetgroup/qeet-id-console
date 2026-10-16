@@ -14,8 +14,16 @@ import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useAcceptInvite } from "@/modules/authentication";
-import { AuthFormCard } from "@/modules/authentication/components/auth-form-card";
+import { useAcceptInvite, useInvitePreview } from "@/modules/authentication";
+import {
+  passkeyErrorMessage,
+  useAcceptInviteWithPasskey,
+} from "@/modules/authentication/api/passkey-flows";
+import {
+  AuthDivider,
+  AuthFormCard,
+  PasskeyButton,
+} from "@/modules/authentication/components/auth-form-card";
 import { BrandHero } from "@/modules/authentication/components/brand-hero";
 import { ApiError } from "@/platform/api/client";
 import { errorMessage } from "@/platform/errors/user-message";
@@ -27,50 +35,91 @@ export const Route = createFileRoute("/_auth/invite/accept")({
   }),
 });
 
+/** A card with a title, a line of text and a way back to sign-in. */
+function InviteNotice({ title, description }: { title: string; description?: string }) {
+  const { t } = useTranslation("auth-flow");
+  return (
+    <div className="auth-entry">
+      <BrandHero />
+      <AuthFormCard>
+        <div className="auth-form-header">
+          <h1 className="auth-form-title">{title}</h1>
+          {description && <p className="auth-form-description">{description}</p>}
+        </div>
+        <Link
+          to="/sign-in"
+          className={cn(buttonVariants({ variant: "outline" }), "auth-submit mt-4")}
+        >
+          {t("invite.backToSignIn")}
+        </Link>
+      </AuthFormCard>
+    </div>
+  );
+}
+
 /**
  * Accepting an invite is a sign-up, so it uses the same shell as /sign-up:
  * `auth-entry` (hero + fixed-width card) rather than a bare <Card>, which
  * rendered as a narrow panel floating at a different width and offset from
  * every other auth route.
+ *
+ * The invitation is looked up first: it names the organisation and address,
+ * says whether an account already holds the address, and which ways of
+ * accepting the organisation allows — a password always, a passkey where the
+ * organisation allows passkeys.
  */
 function AcceptInvitePage() {
   const { t } = useTranslation("auth-flow");
   const { token } = Route.useSearch();
+  const preview = useInvitePreview(token);
   const accept = useAcceptInvite();
+  const acceptWithPasskey = useAcceptInviteWithPasskey();
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
 
+  const isAccountExists = (e: unknown) =>
+    e instanceof ApiError && e.code === "invite.account_exists";
   const accountExists =
-    accept.error instanceof ApiError && accept.error.code === "invite.account_exists";
+    preview.data?.account_exists === true ||
+    isAccountExists(accept.error) ||
+    isAccountExists(acceptWithPasskey.error);
+  const isPending = accept.isPending || acceptWithPasskey.isPending;
+  const offersPasskey = preview.data?.methods.passkey === true;
+  const formError = acceptWithPasskey.error
+    ? passkeyErrorMessage(acceptWithPasskey.error)
+    : accept.error
+      ? errorMessage(accept.error)
+      : undefined;
 
   if (!token) {
     return (
-      <div className="auth-entry">
-        <BrandHero />
-        <AuthFormCard>
-          <div className="auth-form-header">
-            <h1 className="auth-form-title">{t("invite.invalidTitle")}</h1>
-            <p className="auth-form-description">{t("invite.invalidDescription")}</p>
-          </div>
-          <Link
-            to="/sign-in"
-            className={cn(buttonVariants({ variant: "outline" }), "auth-submit mt-4")}
-          >
-            {t("invite.backToSignIn")}
-          </Link>
-        </AuthFormCard>
-      </div>
+      <InviteNotice title={t("invite.invalidTitle")} description={t("invite.invalidDescription")} />
     );
   }
+  if (preview.isLoading) {
+    return <InviteNotice title={t("invite.loadingTitle")} />;
+  }
+  if (preview.error) {
+    return (
+      <InviteNotice
+        title={t("invite.unavailableTitle")}
+        description={errorMessage(preview.error)}
+      />
+    );
+  }
+  const invited = preview.data
+    ? { organization: preview.data.organization.name, email: preview.data.email }
+    : undefined;
 
   return (
     <div className="auth-entry">
       <BrandHero intent="signup" />
       <AuthFormCard>
         <form
-          aria-busy={accept.isPending}
+          aria-busy={isPending}
           onSubmit={(e) => {
             e.preventDefault();
+            acceptWithPasskey.reset();
             accept.mutate({
               token,
               password,
@@ -80,7 +129,9 @@ function AcceptInvitePage() {
         >
           <div className="auth-form-header">
             <h1 className="auth-form-title">{t("invite.acceptTitle")}</h1>
-            <p className="auth-form-description">{t("invite.acceptDescription")}</p>
+            <p className="auth-form-description">
+              {invited ? t("invite.acceptDescriptionFor", invited) : t("invite.acceptDescription")}
+            </p>
           </div>
 
           <div className="auth-fields">
@@ -123,18 +174,36 @@ function AcceptInvitePage() {
                 {t("invite.accountExistsCta")}
               </Link>
             </div>
-          ) : accept.error ? (
-            <FieldError className="auth-form-error">{errorMessage(accept.error)}</FieldError>
+          ) : formError ? (
+            <FieldError className="auth-form-error">{formError}</FieldError>
           ) : null}
 
           <Button
             type="submit"
             className="auth-submit"
-            disabled={accept.isPending || password.length < 8}
+            disabled={isPending || accountExists || password.length < 8}
           >
             {accept.isPending && <LoaderCircleIcon className="animate-spin" />}
             {accept.isPending ? t("invite.joiningBtn") : t("invite.acceptBtn")}
           </Button>
+
+          {offersPasskey && (
+            <>
+              <AuthDivider>{t("invite.passkeyDivider")}</AuthDivider>
+              <PasskeyButton
+                data-auth-method="passkey"
+                isLoading={acceptWithPasskey.isPending}
+                disabled={isPending || accountExists}
+                onClick={() => {
+                  accept.reset();
+                  acceptWithPasskey.mutate({
+                    token,
+                    display_name: displayName.trim() || undefined,
+                  });
+                }}
+              />
+            </>
+          )}
 
           <p className="auth-form-switch">
             <Link to="/sign-in" className="auth-link">

@@ -55,7 +55,10 @@ export interface UpsertSocialProviderInput {
   discovery_url: string;
 }
 
-/** Create or replace one provider's OAuth client credentials. */
+/**
+ * Create or replace one provider's OAuth client credentials. Replacing keeps
+ * whether it is switched on, and an empty client_secret keeps the stored one.
+ */
 export function useUpsertSocialProvider() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
@@ -67,5 +70,42 @@ export function useUpsertSocialProvider() {
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: SOCIAL_PROVIDERS_KEY }),
     meta: { successMessage: "Social provider saved" },
+  });
+}
+
+/** Change some of a provider's settings — switch it on or off, replace its secret. */
+export interface UpdateSocialProviderInput {
+  enabled?: boolean;
+  client_id?: string;
+  /** Replaces the stored secret; omitted or empty keeps it. */
+  client_secret?: string;
+  discovery_url?: string;
+}
+
+export function useUpdateSocialProvider() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ provider, ...input }: UpdateSocialProviderInput & { provider: string }) =>
+      api<SocialProvider>(`/v1/social/providers/${encodeURIComponent(provider)}`, {
+        method: "PATCH",
+        body: input,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: SOCIAL_PROVIDERS_KEY }),
+    meta: { successMessage: "Social provider updated" },
+  });
+}
+
+/**
+ * Remove a provider. The identities people linked through it are kept; the
+ * server refuses (social.provider_in_use) while someone can sign in only
+ * through it.
+ */
+export function useDeleteSocialProvider() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (provider: string) =>
+      api<void>(`/v1/social/providers/${encodeURIComponent(provider)}`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: SOCIAL_PROVIDERS_KEY }),
+    meta: { successMessage: "Social provider removed" },
   });
 }
