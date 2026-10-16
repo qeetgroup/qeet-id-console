@@ -36,7 +36,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, PlugIcon, PlusIcon, ServerIcon, Trash2Icon } from "lucide-react";
+import { LoaderCircleIcon, PlugIcon, PlusIcon, ServerIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -163,7 +163,7 @@ function LdapPage() {
                           }
                           disabled={deleteM.isPending}
                         >
-                          <Trash2Icon /> {t("ldap.deleteBtn")}
+                          <TrashIcon /> {t("ldap.deleteBtn")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -356,7 +356,7 @@ function CreateConnectionSheet({
               {t("ldap.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending ? t("ldap.create.creatingBtn") : t("ldap.create.createBtn")}
             </Button>
           </SheetFooter>

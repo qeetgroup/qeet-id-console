@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
+import { ArrowLeftIcon, LoaderCircleIcon } from "@qeetrix/icons";
 import {
   Button,
   cn,
@@ -182,7 +182,7 @@ export function SetupOrganizationForm({
           disabled={busy || !name.trim() || slug.trim().length < 2}
         >
           {busy && (
-            <Loader2Icon
+            <LoaderCircleIcon
               className="size-3.5 animate-spin motion-reduce:animate-none"
               aria-hidden="true"
             />

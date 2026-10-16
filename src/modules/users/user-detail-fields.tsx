@@ -1,7 +1,7 @@
 // Small shared UI atoms for the User 360 workspace.
 
 import { Tooltip, TooltipContent, TooltipTrigger, useCopyToClipboard } from "@qeetrix/ui";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon } from "@qeetrix/icons";
 
 import { truncateId } from "./user-display";
 

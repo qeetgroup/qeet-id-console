@@ -24,7 +24,7 @@ import { useMutation } from "@tanstack/react-query";
 import { initials } from "@/shared/utils/initials";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2Icon, UploadIcon } from "lucide-react";
+import { LoaderCircleIcon, UploadIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -288,7 +288,7 @@ function ProfilePage() {
                           onClick={sendEmailCode}
                           disabled={startEmail.isPending || !newEmail.includes("@")}
                         >
-                          {startEmail.isPending && <Loader2Icon className="animate-spin" />}
+                          {startEmail.isPending && <LoaderCircleIcon className="animate-spin" />}
                           {startEmail.isSuccess
                             ? t("profile.emailResend", { defaultValue: "Resend code" })
                             : t("profile.emailSend", { defaultValue: "Send code" })}
@@ -321,7 +321,9 @@ function ProfilePage() {
                             onClick={confirmEmailChange}
                             disabled={confirmEmail.isPending || emailCode.length < 6}
                           >
-                            {confirmEmail.isPending && <Loader2Icon className="animate-spin" />}
+                            {confirmEmail.isPending && (
+                              <LoaderCircleIcon className="animate-spin" />
+                            )}
                             {t("profile.emailConfirm", { defaultValue: "Confirm" })}
                           </Button>
                         </div>
@@ -359,7 +361,7 @@ function ProfilePage() {
 
                 <Field>
                   <Button type="submit" disabled={saveM.isPending}>
-                    {saveM.isPending && <Loader2Icon className="animate-spin" />}
+                    {saveM.isPending && <LoaderCircleIcon className="animate-spin" />}
                     {saveM.isPending ? t("profile.saving") : t("profile.save")}
                   </Button>
                 </Field>

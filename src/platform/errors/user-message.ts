@@ -48,6 +48,9 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.INVALID_CREDENTIALS]: "Invalid email or password.",
   [ERROR_CODES.ACCOUNT_LOCKED]:
     "Too many failed attempts. Your account is temporarily locked — please try again later.",
+  // 503 -> `api`, whose "Something went wrong" reads like a fault in the form.
+  [ERROR_CODES.SIGN_IN_UNAVAILABLE]:
+    "Sign-in is temporarily unavailable. Please try again in a moment.",
   // Also a 401, and "sign in again" is actively wrong here: retrying cannot help.
   [ERROR_CODES.ACCOUNT_SUSPENDED]:
     "Your account is no longer active. Please contact your administrator.",
@@ -57,6 +60,14 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.SELF_REGISTRATION_DISABLED]: "Self-registration isn't enabled for this application.",
   [ERROR_CODES.PASSWORD_WEAK]: "Choose a stronger password.",
   [ERROR_CODES.PASSWORD_BREACHED]:
+    "This password has appeared in known data breaches. Please choose a different one.",
+  // The rule that refused a new password. The exact minimum length isn't in the
+  // error code, so the length copy can't name the number.
+  [ERROR_CODES.PASSWORD_TOO_SHORT]: "Your password is too short. Please choose a longer one.",
+  [ERROR_CODES.PASSWORD_NO_UPPERCASE]: "Your password must contain an uppercase letter.",
+  [ERROR_CODES.PASSWORD_NO_NUMBER]: "Your password must contain a number.",
+  [ERROR_CODES.PASSWORD_NO_SYMBOL]: "Your password must contain a symbol.",
+  [ERROR_CODES.PASSWORD_POLICY_BREACHED]:
     "This password has appeared in known data breaches. Please choose a different one.",
   [ERROR_CODES.PASSKEY_LOGIN_FAILED]:
     "We couldn't sign you in with that passkey. Try again, or use your password.",

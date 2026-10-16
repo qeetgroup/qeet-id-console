@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qeetrix/ui";
-import { CalendarClockIcon } from "lucide-react";
+import { CalendarClockIcon } from "@qeetrix/icons";
 
 // Re-exported so callers can hold the custom-range state without depending on
 // react-day-picker directly.

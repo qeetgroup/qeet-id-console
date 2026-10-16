@@ -10,13 +10,11 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  FingerprintIcon,
+  FingerprintPatternIcon,
   KeyRoundIcon,
-  MailIcon,
-  MessageSquareIcon,
   ShieldCheckIcon,
   WandSparklesIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -51,23 +49,23 @@ function PasswordlessPage() {
   );
 }
 
-type MethodKey = "passkey_enabled" | "magic_link_enabled" | "otp_email_enabled" | "otp_sms_enabled";
+// The email and SMS one-time-code flags are not offered: no such sign-in exists,
+// and the server refuses to switch them on.
+type MethodKey = "passkey_enabled" | "magic_link_enabled";
 
 type MethodDef = {
   key: MethodKey;
-  translationKey: "passkeys" | "magicLinks" | "emailOtp" | "smsOtp";
+  translationKey: "passkeys" | "magicLinks";
   icon: ComponentType<{ className?: string }>;
 };
 
 const METHOD_DEFS: MethodDef[] = [
-  { key: "passkey_enabled", translationKey: "passkeys", icon: FingerprintIcon },
+  { key: "passkey_enabled", translationKey: "passkeys", icon: FingerprintPatternIcon },
   {
     key: "magic_link_enabled",
     translationKey: "magicLinks",
     icon: WandSparklesIcon,
   },
-  { key: "otp_email_enabled", translationKey: "emailOtp", icon: MailIcon },
-  { key: "otp_sms_enabled", translationKey: "smsOtp", icon: MessageSquareIcon },
 ];
 
 function PasswordlessForm({ initial }: { initial: AuthPolicy }) {

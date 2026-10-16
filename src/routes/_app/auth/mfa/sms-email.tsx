@@ -35,13 +35,13 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
-  Loader2Icon,
+  LoaderCircleIcon,
   MailIcon,
   MessageSquareIcon,
   PlusIcon,
   SendIcon,
-  Trash2Icon,
-} from "lucide-react";
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -155,7 +155,7 @@ function SmsEmailPage() {
                         }
                         disabled={deleteM.isPending}
                       >
-                        <Trash2Icon /> {t("mfa.smsEmail.removeBtn")}
+                        <TrashIcon /> {t("mfa.smsEmail.removeBtn")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -320,7 +320,7 @@ function AddFactorSheet({
                 form="otp-start"
                 disabled={enrollM.isPending || !destination.trim()}
               >
-                {enrollM.isPending && <Loader2Icon className="animate-spin" />}
+                {enrollM.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {enrollM.isPending
                   ? t("mfa.smsEmail.sheet.sendingBtn")
                   : t("mfa.smsEmail.sheet.sendCodeBtn")}
@@ -331,7 +331,7 @@ function AddFactorSheet({
                 form="otp-confirm"
                 disabled={confirmM.isPending || !code.trim()}
               >
-                {confirmM.isPending && <Loader2Icon className="animate-spin" />}
+                {confirmM.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {confirmM.isPending
                   ? t("mfa.smsEmail.sheet.confirmingBtn")
                   : t("mfa.smsEmail.sheet.confirmBtn")}

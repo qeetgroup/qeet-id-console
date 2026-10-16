@@ -4,7 +4,7 @@
 
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { RefreshCwIcon } from "lucide-react";
+import { RefreshCwIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";

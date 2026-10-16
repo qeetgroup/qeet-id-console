@@ -22,12 +22,14 @@ import {
 } from "@qeetrix/ui";
 import {
   ClipboardIcon,
-  FileJsonIcon,
+  EllipsisVerticalIcon,
+  FileBracesIcon,
   GlobeIcon,
+  type IconProps,
   MonitorIcon,
-  MoreVerticalIcon,
   UserIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 import { toast } from "sonner";
 
 import { getCategoryIcon } from "@/modules/activity";
@@ -67,7 +69,7 @@ function MetaColumn({
   sub,
 }: {
   label: string;
-  icon: typeof UserIcon;
+  icon: ComponentType<IconProps<"outline">>;
   value?: string;
   sub?: string;
 }) {
@@ -102,7 +104,7 @@ function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () =>
             aria-label="Event actions"
             className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/item:opacity-100 data-popup-open:opacity-100"
           >
-            <MoreVerticalIcon className="size-4" aria-hidden="true" />
+            <EllipsisVerticalIcon className="size-4" aria-hidden="true" />
           </button>
         }
       />
@@ -119,7 +121,7 @@ function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () =>
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuItem onClick={() => copy(JSON.stringify(event, null, 2), "event JSON")}>
-          <FileJsonIcon className="size-3.5" aria-hidden="true" />
+          <FileBracesIcon className="size-3.5" aria-hidden="true" />
           Copy JSON
         </DropdownMenuItem>
       </DropdownMenuContent>

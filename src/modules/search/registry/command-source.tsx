@@ -5,11 +5,11 @@
 import {
   ArchiveIcon,
   BadgeCheckIcon,
-  BarChart3Icon,
   BotIcon,
-  Building2Icon,
+  BuildingComplexIcon,
+  ChartColumnIcon,
   FileDownIcon,
-  FingerprintIcon,
+  FingerprintPatternIcon,
   GaugeIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
@@ -24,7 +24,7 @@ import {
   UsersRoundIcon,
   WebhookIcon,
   ZapIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import type { ReactNode } from "react";
 
 import type { Capability } from "@/platform/security/capability-model";
@@ -69,7 +69,7 @@ const COMMANDS: CommandDef[] = [
     title: "Create Organization",
     subtitle: "Add a new organization or sub-organization",
     keywords: ["add org", "new organization", "create organization", "new tenant", "create tenant"],
-    icon: <Building2Icon className="size-4" />,
+    icon: <BuildingComplexIcon className="size-4" />,
     run: ({ navigate }) => navigate("/organizations"),
   },
   {
@@ -140,7 +140,7 @@ const COMMANDS: CommandDef[] = [
     title: "Configure Passkeys",
     subtitle: "Manage WebAuthn / passkey settings",
     keywords: ["webauthn", "fido2", "passkey", "biometric"],
-    icon: <FingerprintIcon className="size-4" />,
+    icon: <FingerprintPatternIcon className="size-4" />,
     run: ({ navigate }) => navigate("/auth/login-methods/passkeys"),
   },
   {
@@ -210,7 +210,7 @@ const COMMANDS: CommandDef[] = [
     title: "Analytics",
     subtitle: "Organization usage metrics and trends",
     keywords: ["metrics", "stats", "analytics", "charts"],
-    icon: <BarChart3Icon className="size-4" />,
+    icon: <ChartColumnIcon className="size-4" />,
     capability: "analytics.read",
     run: ({ navigate }) => navigate("/analytics"),
   },

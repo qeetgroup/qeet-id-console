@@ -3,7 +3,7 @@
 // highlighted.
 
 import { Badge, cn, Separator, StatusPill } from "@qeetrix/ui";
-import { StarIcon } from "lucide-react";
+import { StarIcon } from "@qeetrix/icons";
 
 import type { SearchContext, SearchItem } from "../registry/types/registry.types";
 import { QuickActions } from "./quick-actions";

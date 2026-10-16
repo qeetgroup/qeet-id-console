@@ -33,13 +33,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Loader2Icon,
+  LoaderCircleIcon,
   PlayIcon,
   PlusIcon,
   RefreshCwIcon,
-  Trash2Icon,
+  TrashIcon,
   WebhookIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -313,7 +313,7 @@ function WebhooksPage() {
                             }
                             disabled={!!w.disabled_at || disableM.isPending}
                           >
-                            <Trash2Icon /> {t("webhooks.table.disable")}
+                            <TrashIcon /> {t("webhooks.table.disable")}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -424,7 +424,7 @@ function CreateWebhookSheet({ open, onOpenChange, tenantId, onCreated }: CreateW
               {t("webhooks.create.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending || selectedEvents.length === 0}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending ? t("webhooks.create.submitting") : t("webhooks.create.submit")}
             </Button>
           </SheetFooter>

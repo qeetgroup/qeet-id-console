@@ -11,7 +11,7 @@ import {
   OTPInput,
   Spinner,
 } from "@qeetrix/ui";
-import { ShieldCheckIcon } from "lucide-react";
+import { ShieldCheckIcon } from "@qeetrix/icons";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useEffect, useRef, useState } from "react";
 

@@ -25,12 +25,12 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  AlertTriangleIcon,
   InfoIcon,
   KeyRoundIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   RotateCcwIcon,
-} from "lucide-react";
+  TriangleAlertIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -55,7 +55,7 @@ function PEMDialog({ result, onClose }: { result: RotateKeyResult; onClose: () =
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangleIcon className="size-4 text-amber-500" />
+            <TriangleAlertIcon className="size-4 text-amber-500" />
             New Signing Key — Save Immediately
           </DialogTitle>
           <DialogDescription>
@@ -77,7 +77,7 @@ function PEMDialog({ result, onClose }: { result: RotateKeyResult; onClose: () =
           </div>
 
           <Alert variant="warning">
-            <AlertTriangleIcon className="size-4" />
+            <TriangleAlertIcon className="size-4" />
             <AlertDescription>
               Tokens signed by the old key will remain verifiable until the process restarts. After
               restart you must also add the old public key to{" "}
@@ -166,7 +166,7 @@ function SigningKeysPage() {
             <CardDescription>{t("list.count", { count: keys.length })}</CardDescription>
           </div>
           <Button variant="outline" size="sm" disabled={rotate.isPending} onClick={handleRotate}>
-            {rotate.isPending ? <Loader2Icon className="animate-spin" /> : <RotateCcwIcon />}
+            {rotate.isPending ? <LoaderCircleIcon className="animate-spin" /> : <RotateCcwIcon />}
             Rotate Key
           </Button>
         </CardHeader>

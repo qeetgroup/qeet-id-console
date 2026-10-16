@@ -42,20 +42,20 @@ import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
-  CheckCircle2Icon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  Loader2Icon,
+  CircleCheckIcon,
+  CloudUploadIcon,
+  LoaderCircleIcon,
   LockIcon,
   MailIcon,
   PlusIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
   ShieldCheckIcon,
-  UploadCloudIcon,
   UserIcon,
   UserPlusIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -325,7 +325,7 @@ function UsersPage() {
                   to="/users/import"
                   className={buttonVariants({ variant: "outline", size: "sm" })}
                 >
-                  <UploadCloudIcon /> {t("list.import")}
+                  <CloudUploadIcon /> {t("list.import")}
                 </Link>
               ) : null}
               {canCreateUsers ? (
@@ -721,7 +721,7 @@ function SecurityCell({ user }: { user: User }) {
     <div className="flex flex-col gap-0.5 text-xs">
       <span className="inline-flex items-center gap-1">
         {user.email_verified_at ? (
-          <CheckCircle2Icon className="size-3.5 text-success" aria-hidden="true" />
+          <CircleCheckIcon className="size-3.5 text-success" aria-hidden="true" />
         ) : (
           <ShieldAlertIcon className="size-3.5 text-warning" aria-hidden="true" />
         )}
@@ -983,7 +983,7 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
               {t("common:actions.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending || !tenantId}>
-              {createM.isPending ? <Loader2Icon className="animate-spin" /> : <PlusIcon />}
+              {createM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <PlusIcon />}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>
@@ -1133,7 +1133,7 @@ function EditUserSheet({ user, isSelf, onOpenChange, onSaved }: EditUserSheetPro
                 {t("common:actions.cancel")}
               </SheetClose>
               <Button type="submit" disabled={updateM.isPending}>
-                {updateM.isPending && <Loader2Icon className="animate-spin" />}
+                {updateM.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {updateM.isPending ? t("common:actions.saving") : t("common:actions.saveChanges")}
               </Button>
             </SheetFooter>
@@ -1239,7 +1239,7 @@ function SetPasswordSheet({ user, onOpenChange, onSaved }: SetPasswordSheetProps
                 {t("common:actions.cancel")}
               </SheetClose>
               <Button type="submit" disabled={setM.isPending}>
-                {setM.isPending && <Loader2Icon className="animate-spin" />}
+                {setM.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {setM.isPending ? t("common:actions.saving") : t("setPassword.submit")}
               </Button>
             </SheetFooter>

@@ -18,6 +18,9 @@ export const ERROR_CODES = {
   // fallback ("Please sign in again") is wrong for every one of them.
   INVALID_CREDENTIALS: "auth.invalid_credentials",
   ACCOUNT_LOCKED: "auth.account_locked",
+  // 503: the server could not check or record failed sign-ins, so it refused
+  // the sign-in (fail closed). Retrying shortly is the right advice.
+  SIGN_IN_UNAVAILABLE: "auth.sign_in_unavailable",
   ACCOUNT_SUSPENDED: "auth.account_suspended",
   ACCOUNT_INACTIVE: "auth.account_inactive",
   SESSION_REVOKED: "auth.session_revoked",
@@ -25,6 +28,15 @@ export const ERROR_CODES = {
   SELF_REGISTRATION_DISABLED: "auth.self_registration_disabled",
   PASSWORD_WEAK: "auth.password_weak",
   PASSWORD_BREACHED: "auth.password_breached",
+  // Password rules. Every path that sets a password — sign-up,
+  // change, reset, invite accept, admin create/set — answers 422 with the rule
+  // that failed; 422 -> `validation`, whose fallback names no rule at all.
+  // A breached password now always arrives as authpolicy.password_breached.
+  PASSWORD_TOO_SHORT: "authpolicy.password_too_short",
+  PASSWORD_NO_UPPERCASE: "authpolicy.password_no_uppercase",
+  PASSWORD_NO_NUMBER: "authpolicy.password_no_number",
+  PASSWORD_NO_SYMBOL: "authpolicy.password_no_symbol",
+  PASSWORD_POLICY_BREACHED: "authpolicy.password_breached",
   PASSKEY_LOGIN_FAILED: "passkey.login_failed",
   // email / phone verification (signup OTP step, email-change flow)
   VERIFY_CODE_INVALID: "verification.code_invalid",

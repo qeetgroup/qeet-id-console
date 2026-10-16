@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
   Input,
 } from "@qeetrix/ui";
-import { ChevronDownIcon, ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon, ListFilterIcon, SearchIcon, XIcon } from "@qeetrix/icons";
 import { useCallback, useState } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";

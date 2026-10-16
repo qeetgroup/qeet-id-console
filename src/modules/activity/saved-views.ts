@@ -18,7 +18,7 @@ export interface SavedView {
   name: string;
   search: ActivitySearch;
   builtin?: boolean;
-  /** Optional lucide icon name (resolved by the saved-views bar). */
+  /** Optional icon name, e.g. "ShieldCheck" (resolved by the saved-views bar). */
   icon?: string;
   createdAt: number;
 }

@@ -213,7 +213,9 @@ build commands).
 
 - **The dev port is pinned to 3002.** `qeet-id-server` expects the console on **3002**
   (`APP_BASE_URL`) for redirects and passkeys, so the `dev` script hardcodes `--port 3002`.
-- **`@qeetrix/ui ^1.0.3` is a major version behind** npm's `2.0.0`; `^1.x` will never resolve to it.
+- **Icons come only from `@qeetrix/icons`** (`lucide-react` is not a dependency). Type an "any icon"
+  prop as `ComponentType<IconProps<"outline">>`, not `typeof SomeIcon`: icons with a filled drawing
+  have a wider props type.
 - 25k LOC in `src/routes` despite the "composition only" rule.
 - Two modules have no barrel, so they cannot be imported by another module.
 - Seven modules and all routes have no tests.

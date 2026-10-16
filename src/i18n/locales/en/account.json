@@ -43,7 +43,15 @@
       "enrolled_one": "{{count}} enrolled",
       "enrolled_other": "{{count}} enrolled",
       "notEnrolled": "Not enrolled",
-      "manage": "Manage passkeys"
+      "nameLabel": "Name (optional)",
+      "nameHint": "Leave it empty to name it after this browser. You can rename it later.",
+      "add": "Add passkey",
+      "adding": "Waiting for your device…",
+      "added": "Passkey added",
+      "cancelled": "The passkey wasn't created. You can try again.",
+      "disabled": "Your organization has turned off passkeys, so you can't add one.",
+      "removeConfirm": "Remove passkey \"{{name}}\"?",
+      "remove": "Remove"
     },
     "mfa": {
       "title": "Two-factor authentication",
@@ -66,7 +74,7 @@
     "active": {
       "title": "Active sessions",
       "description": "Every place you're currently signed in. Revoke any session you don't recognise.",
-      "signOutElsewhere": "Sign out elsewhere ({{count}})",
+      "signOutOthers": "Sign out other sessions",
       "emptyTitle": "No active sessions.",
       "thisDevice": "This device"
     },
@@ -86,10 +94,32 @@
       "selfHelp": "Use the sign-out menu to end the session you're currently using."
     },
     "revokeAll": {
-      "title_one": "Sign out {{count}} other session?",
-      "title_other": "Sign out {{count}} other sessions?",
-      "description": "This won't sign you out of this browser.",
-      "label": "Sign out elsewhere"
+      "title": "Sign out all other sessions?",
+      "description": "Every session except this one ends and can no longer be renewed, including any not listed here. A device that is signed in may keep access for a few more minutes, until its current access runs out. You stay signed in here.",
+      "label": "Sign out other sessions",
+      "toast": {
+        "done_one": "Signed out of {{count}} other session",
+        "done_other": "Signed out of {{count}} other sessions",
+        "doneDescription": "They can no longer renew their access. Access they already hold runs out within a few minutes.",
+        "none": "There were no other sessions to sign out",
+        "failed": "Couldn't sign out your other sessions. Try again."
+      }
+    },
+    "signOutEverywhere": {
+      "title": "Sign out everywhere",
+      "description": "Lost a device? End every sign-in at once: this session, your other devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account.",
+      "button": "Sign out everywhere",
+      "confirm": {
+        "title": "Sign out everywhere?",
+        "description": "Every session ends, this one included, and none can be renewed: your devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account. A device or app that is signed in may keep access for a few more minutes, until its current access runs out. You will need to sign in again.",
+        "label": "Sign out everywhere"
+      },
+      "toast": {
+        "done_one": "Signed out everywhere: {{count}} sign-in ended",
+        "done_other": "Signed out everywhere: {{count}} sign-ins ended",
+        "doneDescription": "None of them can be renewed. Access a device or app already holds runs out within a few minutes.",
+        "failed": "Couldn't sign you out everywhere. You are still signed in here; try again."
+      }
     },
     "toast": {
       "revoked": "Session revoked"

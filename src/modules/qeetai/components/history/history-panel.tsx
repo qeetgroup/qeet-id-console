@@ -6,9 +6,9 @@ import {
   PencilIcon,
   PinIcon,
   SearchIcon,
-  Trash2Icon,
+  TrashIcon,
   XIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useMemo, useState } from "react";
 import { useQeetAIRuntime } from "../../qeetai-provider";
 import {
@@ -201,7 +201,7 @@ function ConversationRow({
             title="Delete"
             onClick={remove}
           >
-            <Trash2Icon className="size-3.5" />
+            <TrashIcon className="size-3.5" />
           </Button>
         </div>
       </div>

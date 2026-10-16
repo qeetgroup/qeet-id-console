@@ -35,11 +35,11 @@ import {
   EyeIcon,
   EyeOffIcon,
   KeyRoundIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   PlusIcon,
   RefreshCwIcon,
-  Trash2Icon,
-} from "lucide-react";
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -206,7 +206,7 @@ function SecretsPage() {
                           }
                           disabled={deleteM.isPending}
                         >
-                          <Trash2Icon /> {t("secrets.deleteBtn")}
+                          <TrashIcon /> {t("secrets.deleteBtn")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -298,7 +298,7 @@ function RotateSecretSheet({
               {t("secrets.rotateSheet.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={rotateM.isPending}>
-              {rotateM.isPending && <Loader2Icon className="animate-spin" />}
+              {rotateM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {rotateM.isPending
                 ? t("secrets.rotateSheet.savingBtn")
                 : t("secrets.rotateSheet.submitBtn")}
@@ -386,7 +386,7 @@ function CreateSecretSheet({
               {t("secrets.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending ? t("secrets.create.savingBtn") : t("secrets.create.createBtn")}
             </Button>
           </SheetFooter>

@@ -1,6 +1,5 @@
-import { ShieldCheckIcon, UserIcon } from "lucide-react";
+import { QeetLogo, ShieldCheckIcon, UserIcon } from "@qeetrix/icons";
 import { cn } from "@qeetrix/ui";
-import { QeetLogoMark } from "@qeetrix/ui/brand";
 
 const PLANE = "absolute grid -skew-y-[19deg] place-items-center rounded-md border";
 
@@ -30,7 +29,7 @@ export function OrganizationIllustration() {
           "top-24 left-16 z-1 size-13.5 border-[#ffc491] bg-linear-125 from-[#ffe1c7] to-[#ffb47c] shadow-[0_8px_22px_rgb(255_111_25/0.07)] dark:border-[#fda260] dark:bg-linear-135 dark:from-[#ffc58f] dark:via-[#ff8234] dark:via-65% dark:to-[#f57124] dark:shadow-[inset_0_1px_3px_rgb(255_255_255/0.25),0_4px_30px_rgb(255_112_20/0.15)]",
         )}
       >
-        <QeetLogoMark className="skew-y-[19deg]" size={34} variant="on-light" />
+        <QeetLogo className="skew-y-[19deg]" height={34} />
       </div>
       <div
         className={cn(

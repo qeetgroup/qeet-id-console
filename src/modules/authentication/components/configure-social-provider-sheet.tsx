@@ -39,12 +39,12 @@ import {
   GlobeIcon,
   KeyRoundIcon,
   LinkIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   NetworkIcon,
   PlayIcon,
   SaveIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -366,7 +366,7 @@ export function ConfigureSocialProviderSheet({
               {t("social.configure.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={!canSave}>
-              {upsertM.isPending ? <Loader2Icon className="animate-spin" /> : <SaveIcon />}
+              {upsertM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
               {upsertM.isPending ? t("social.configure.savingBtn") : t("social.configure.saveBtn")}
             </Button>
           </SheetFooter>

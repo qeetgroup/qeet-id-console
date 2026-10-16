@@ -483,7 +483,7 @@ describe("Email template API actions", () => {
       false,
     );
     fireEvent.click(
-      within(screen.getByRole("dialog")).getByRole("button", { name: "Reset to default" }),
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Reset to default" }),
     );
     await screen.findByText("Template reset to default.");
     expect((screen.getByLabelText(/Subject/) as HTMLInputElement).value).toBe("Verify your email");
@@ -508,7 +508,7 @@ describe("Email template API actions", () => {
     await screen.findByLabelText(/Subject/);
     fireEvent.change(screen.getByLabelText(/Subject/), { target: { value: "Current draft" } });
     fireEvent.click(screen.getByRole("button", { name: "Test email" }));
-    const dialog = screen.getByRole("dialog");
+    const dialog = screen.getByRole("alertdialog");
     expect(dialog.textContent).toContain("operator@example.test");
     expect(vi.mocked(api).mock.calls.some(([path]) => path.endsWith("/test"))).toBe(false);
     fireEvent.click(within(dialog).getByRole("button", { name: "Send test email" }));
@@ -527,9 +527,9 @@ describe("Email template API actions", () => {
     view.rerender(view.tree());
     await waitFor(() => expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-b/email-templates"));
     fireEvent.click(
-      within(screen.getByRole("dialog")).getByRole("button", { name: "Send test email" }),
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Send test email" }),
     );
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
     expect(vi.mocked(api).mock.calls.some(([path]) => path.endsWith("/test"))).toBe(false);
   });
 

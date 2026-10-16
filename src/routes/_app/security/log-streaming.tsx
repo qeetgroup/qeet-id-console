@@ -21,7 +21,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, RadioTowerIcon, Trash2Icon } from "lucide-react";
+import { LoaderCircleIcon, RadioTowerIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -121,7 +121,7 @@ function LogStreamingPage() {
               <FieldDescription>{t("logStreaming.addSink.tokenHelp")}</FieldDescription>
             </Field>
             <Button type="submit" disabled={createM.isPending || !endpoint.trim()}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {t("logStreaming.addSink.add")}
             </Button>
           </form>
@@ -191,7 +191,7 @@ function LogStreamingPage() {
                         })
                       }
                     >
-                      <Trash2Icon /> {t("logStreaming.sinks.remove")}
+                      <TrashIcon /> {t("logStreaming.sinks.remove")}
                     </Button>
                   </div>
                 </li>

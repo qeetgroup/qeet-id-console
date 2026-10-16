@@ -2,7 +2,7 @@
 // navigating to /users/$userId/timeline). Reuses the timeline feature verbatim.
 
 import { EmptyState } from "@qeetrix/ui";
-import { ShieldIcon } from "lucide-react";
+import { ShieldIcon } from "@qeetrix/icons";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 

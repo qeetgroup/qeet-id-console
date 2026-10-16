@@ -31,21 +31,22 @@ import {
   ArrowRightIcon,
   ArrowUpDownIcon,
   BookOpenIcon,
-  CheckCircle2Icon,
+  CircleCheckIcon,
+  CircleXIcon,
   ClockIcon,
   DatabaseIcon,
   DownloadIcon,
   ExternalLinkIcon,
   FileTextIcon,
-  Loader2Icon,
+  type IconProps,
+  LoaderCircleIcon,
   PlusIcon,
   SearchIcon,
   ShieldCheckIcon,
-  Trash2Icon,
+  TrashIcon,
   UsersRoundIcon,
-  XCircleIcon,
-} from "lucide-react";
-import { useState } from "react";
+} from "@qeetrix/icons";
+import { type ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useEntitlements } from "@/modules/billing/api/billing";
@@ -381,7 +382,7 @@ function StatTile({
   label,
   value,
 }: {
-  icon: typeof ClockIcon;
+  icon: ComponentType<IconProps<"outline">>;
   tone: keyof typeof STAT_TONES;
   label: string;
   value: React.ReactNode;
@@ -507,7 +508,7 @@ function ConnectionRow({
           {connection.status === "active" ? t("samlSp.disable") : t("samlSp.enable")}
         </Button>
         <Button variant="ghost" size="sm" onClick={onDelete} disabled={busy}>
-          <Trash2Icon /> {t("samlSp.deleteBtn")}
+          <TrashIcon /> {t("samlSp.deleteBtn")}
         </Button>
       </TableCell>
     </TableRow>
@@ -534,7 +535,7 @@ function ValidateConnection({ id }: { id: string }) {
         }}
         title={t("samlSp.validate.buttonTitle")}
       >
-        {testM.isPending ? <Loader2Icon className="animate-spin" /> : <ShieldCheckIcon />}{" "}
+        {testM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <ShieldCheckIcon />}{" "}
         {t("samlSp.validate.button")}
       </Button>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -556,9 +557,9 @@ function ValidateConnection({ id }: { id: string }) {
                   {testM.data.checks.map((c) => (
                     <li key={c.name} className="flex items-start gap-2">
                       {c.ok ? (
-                        <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-success" />
+                        <CircleCheckIcon className="mt-0.5 size-4 shrink-0 text-success" />
                       ) : (
-                        <XCircleIcon className="mt-0.5 size-4 shrink-0 text-destructive" />
+                        <CircleXIcon className="mt-0.5 size-4 shrink-0 text-destructive" />
                       )}
                       <div className="min-w-0">
                         <p className="text-sm font-medium">{c.name}</p>

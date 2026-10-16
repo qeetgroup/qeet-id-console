@@ -20,7 +20,7 @@ import {
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { formatDate } from "@/shared/utils/format";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { CopyId } from "@/modules/users";

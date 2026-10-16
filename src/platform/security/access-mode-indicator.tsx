@@ -1,12 +1,12 @@
 import { Skeleton, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@qeetrix/ui";
 import {
-  Building2Icon,
+  BuildingComplexIcon,
   CircleAlertIcon,
   EyeIcon,
   LockKeyholeIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 
 import { useCapabilities } from "./capability-provider";
 
@@ -14,7 +14,7 @@ const MODE_DETAILS = {
   setup: {
     label: "Organization setup required",
     description: "Create or select an organization to load operator permissions.",
-    icon: Building2Icon,
+    icon: BuildingComplexIcon,
   },
   full: {
     label: "Full console access",

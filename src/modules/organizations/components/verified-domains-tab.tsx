@@ -16,16 +16,16 @@ import {
   Input,
 } from "@qeetrix/ui";
 import {
-  AlertTriangleIcon,
   BookOpenIcon,
-  CheckCircle2Icon,
+  CircleCheckIcon,
   ClockIcon,
+  EllipsisIcon,
   GlobeIcon,
-  Loader2Icon,
-  MoreHorizontalIcon,
+  LoaderCircleIcon,
   PackageIcon,
   SearchIcon,
-} from "lucide-react";
+  TriangleAlertIcon,
+} from "@qeetrix/icons";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -83,7 +83,7 @@ export function VerifiedDomainsTab() {
           hint={t("workspace.domains.kpis.pendingHint")}
         />
         <DomainKpi
-          icon={<AlertTriangleIcon />}
+          icon={<TriangleAlertIcon />}
           tone="bg-destructive/10 text-destructive"
           label={t("workspace.domains.kpis.attention")}
           value={attention}
@@ -126,7 +126,7 @@ export function VerifiedDomainsTab() {
               required
             />
             <Button type="submit" disabled={addM.isPending || !draft.trim()}>
-              {addM.isPending ? <Loader2Icon className="animate-spin" /> : null}
+              {addM.isPending ? <LoaderCircleIcon className="animate-spin" /> : null}
               {addM.isPending
                 ? t("workspace.domains.add.submitting")
                 : t("workspace.domains.add.submit")}
@@ -240,7 +240,7 @@ export function VerifiedDomainsTab() {
                               />
                             }
                           >
-                            <MoreHorizontalIcon className="size-4" />
+                            <EllipsisIcon className="size-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             {d.status !== "verified" ? (
@@ -350,7 +350,7 @@ function StatusPill({ status }: { status: TenantDomain["status"] }) {
   if (status === "verified") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-        <CheckCircle2Icon className="size-3.5" />
+        <CircleCheckIcon className="size-3.5" />
         {t("workspace.domains.table.statusVerified")}
       </span>
     );
@@ -358,7 +358,7 @@ function StatusPill({ status }: { status: TenantDomain["status"] }) {
   if (status === "attention") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">
-        <AlertTriangleIcon className="size-3.5" />
+        <TriangleAlertIcon className="size-3.5" />
         {t("workspace.domains.table.statusAttention")}
       </span>
     );

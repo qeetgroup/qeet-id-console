@@ -20,7 +20,7 @@ import {
   SheetTitle,
   Textarea,
 } from "@qeetrix/ui";
-import { ChevronUpIcon, InfoIcon, Loader2Icon, SearchIcon, XIcon } from "lucide-react";
+import { ChevronUpIcon, InfoIcon, LoaderCircleIcon, SearchIcon, XIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -274,7 +274,7 @@ export function NewGroupSheet({ open, onOpenChange, groups, users }: Props) {
               {t("create.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending ? <Loader2Icon className="animate-spin" /> : null}
+              {createM.isPending ? <LoaderCircleIcon className="animate-spin" /> : null}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>

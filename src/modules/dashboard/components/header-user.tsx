@@ -18,11 +18,11 @@ import {
   BadgeCheckIcon,
   CreditCardIcon,
   KeyRoundIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   LogOutIcon,
   ShieldCheckIcon,
   UserIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 
 import { useLogout, useMe, useTenantId } from "@/platform/auth/session";
 
@@ -106,7 +106,7 @@ export function HeaderUser() {
           onClick={() => logout.mutate()}
           disabled={logout.isPending}
         >
-          {logout.isPending ? <Loader2Icon className="animate-spin" /> : <LogOutIcon />}
+          {logout.isPending ? <LoaderCircleIcon className="animate-spin" /> : <LogOutIcon />}
           {logout.isPending ? "Signing out…" : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>

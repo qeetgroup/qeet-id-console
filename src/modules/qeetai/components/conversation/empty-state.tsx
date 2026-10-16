@@ -1,4 +1,4 @@
-import { SparklesIcon } from "lucide-react";
+import { SparklesIcon } from "@qeetrix/icons";
 
 // Starter prompts shown on an empty conversation. These are generic defaults;
 // the suggestions feature replaces them with route-aware actions derived from

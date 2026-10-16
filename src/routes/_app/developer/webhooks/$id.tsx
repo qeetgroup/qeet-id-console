@@ -26,9 +26,9 @@ import {
   ChevronDownIcon,
   PlayIcon,
   RotateCwIcon,
-  Trash2Icon,
+  TrashIcon,
   WebhookIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -177,7 +177,7 @@ function WebhookDetailPage() {
                   }
                   disabled={disableM.isPending}
                 >
-                  <Trash2Icon /> {t("webhookDetail.disable")}
+                  <TrashIcon /> {t("webhookDetail.disable")}
                 </Button>
               )}
               <span className="ms-auto text-xs text-muted-foreground">

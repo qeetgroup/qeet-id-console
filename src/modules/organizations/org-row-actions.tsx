@@ -11,13 +11,13 @@ import {
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeftRightIcon,
-  Building2Icon,
-  MoreHorizontalIcon,
+  BuildingComplexIcon,
+  EllipsisIcon,
   PencilIcon,
-  Trash2Icon,
+  TrashIcon,
   UserCheckIcon,
   UserXIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { switchToTenant } from "@/modules/authentication";
@@ -48,13 +48,13 @@ export function OrgRowActions({
       <DropdownMenuTrigger
         render={
           <Button variant="ghost" size="icon" aria-label={t("tenants.columns.actions")}>
-            <MoreHorizontalIcon />
+            <EllipsisIcon />
           </Button>
         }
       />
       <DropdownMenuContent align="end" className="min-w-48">
         <DropdownMenuItem render={<Link to="/organizations/$orgId" params={{ orgId: org.id }} />}>
-          <Building2Icon />
+          <BuildingComplexIcon />
           {t("rowActions.open")}
         </DropdownMenuItem>
         <DropdownMenuItem disabled={isCurrent} onClick={() => void switchToTenant(org.id)}>
@@ -78,7 +78,7 @@ export function OrgRowActions({
               disabled={isCurrent}
               onClick={() => handlers.onDelete(org)}
             >
-              <Trash2Icon />
+              <TrashIcon />
               {t("rowActions.delete")}
             </DropdownMenuItem>
           </>

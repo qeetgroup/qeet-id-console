@@ -13,16 +13,16 @@ import {
   Skeleton,
 } from "@qeetrix/ui";
 import {
-  Building2Icon,
-  CheckCircle2Icon,
+  BuildingComplexIcon,
+  CircleCheckIcon,
   CreditCardIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   LockKeyholeIcon,
   RefreshCwIcon,
   RotateCcwIcon,
   SaveIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -234,7 +234,7 @@ function BillingProfileForm({
               id={`${id}-profile`}
               className="flex items-center gap-2 font-heading text-base font-semibold"
             >
-              <Building2Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+              <BuildingComplexIcon className="size-4 text-muted-foreground" aria-hidden="true" />
               {t("billing.screen.profile.title")}
             </h2>
             {!canWrite && (
@@ -283,7 +283,7 @@ function BillingProfileForm({
               className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
             >
               {saved && (
-                <CheckCircle2Icon
+                <CircleCheckIcon
                   className="size-3.5 text-emerald-600 dark:text-emerald-400"
                   aria-hidden="true"
                 />
@@ -309,7 +309,7 @@ function BillingProfileForm({
               </Button>
               <Button type="submit" className={ACTION} disabled={!changed || pending || !canWrite}>
                 {pending ? (
-                  <Loader2Icon className="animate-spin" aria-hidden="true" />
+                  <LoaderCircleIcon className="animate-spin" aria-hidden="true" />
                 ) : (
                   <SaveIcon aria-hidden="true" />
                 )}

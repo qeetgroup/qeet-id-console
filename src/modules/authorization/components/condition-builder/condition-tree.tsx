@@ -1,5 +1,5 @@
 import { Badge, Button, Combobox, Input } from "@qeetrix/ui";
-import { FolderPlusIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { FolderPlusIcon, PlusIcon, TrashIcon } from "@qeetrix/icons";
 
 import {
   type CondNode,
@@ -52,7 +52,7 @@ function NodeEditor({
           <Badge variant="destructive">NOT</Badge>
           {onRemove && (
             <Button variant="ghost" size="icon-xs" onClick={onRemove} aria-label="Remove NOT">
-              <Trash2Icon />
+              <TrashIcon />
             </Button>
           )}
         </div>
@@ -103,7 +103,7 @@ function NodeEditor({
         </div>
         {onRemove && (
           <Button variant="ghost" size="icon-xs" onClick={onRemove} aria-label="Remove group">
-            <Trash2Icon />
+            <TrashIcon />
           </Button>
         )}
       </div>
@@ -212,7 +212,7 @@ function LeafEditor({
           onClick={onRemove}
           aria-label="Remove condition"
         >
-          <Trash2Icon />
+          <TrashIcon />
         </Button>
       )}
     </div>

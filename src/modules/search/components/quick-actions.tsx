@@ -3,7 +3,7 @@
 // custom item.quickActions are prepended in front of them.
 
 import { cn } from "@qeetrix/ui";
-import { ArrowRightIcon, CopyIcon, ExternalLinkIcon, LinkIcon } from "lucide-react";
+import { ArrowRightIcon, CopyIcon, ExternalLinkIcon, LinkIcon } from "@qeetrix/icons";
 import type { ReactNode } from "react";
 
 import type { SearchContext, SearchItem } from "../registry/types/registry.types";

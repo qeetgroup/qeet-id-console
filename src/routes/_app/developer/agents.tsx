@@ -18,14 +18,14 @@ import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRightLeftIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   PauseIcon,
   PlayIcon,
   ShieldAlertIcon,
   SkullIcon,
   SparklesIcon,
-  Trash2Icon,
-} from "lucide-react";
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -136,7 +136,7 @@ function AgentsPage() {
                 />
               </Field>
               <Button type="submit" disabled={createM.isPending || !name.trim() || !sponsorId}>
-                {createM.isPending && <Loader2Icon className="animate-spin" />}
+                {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {t("agents.create.submit")}
               </Button>
             </div>
@@ -182,7 +182,7 @@ function AgentsPage() {
                 })
               }
             >
-              {killAllM.isPending ? <Loader2Icon className="animate-spin" /> : <SkullIcon />}
+              {killAllM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <SkullIcon />}
               {t("agents.list.suspendAll")}
             </Button>
           )}
@@ -322,7 +322,7 @@ function SponsorTransferCard() {
                 });
               }}
             >
-              {transferM.isPending && <Loader2Icon className="animate-spin" />}
+              {transferM.isPending && <LoaderCircleIcon className="animate-spin" />}
               <ArrowRightLeftIcon />
               {t("agents.sponsor.transfer")}
             </Button>
@@ -437,7 +437,7 @@ function AgentRow({
           {a.disabled ? t("agents.row.resume") : t("agents.row.suspend")}
         </Button>
         <Button variant="ghost" size="sm" disabled={busy} onClick={onDelete}>
-          <Trash2Icon /> {t("agents.row.delete")}
+          <TrashIcon /> {t("agents.row.delete")}
         </Button>
       </div>
     </li>

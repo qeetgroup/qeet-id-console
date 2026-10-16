@@ -10,7 +10,7 @@ import {
   PasswordInput,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Loader2Icon } from "lucide-react";
+import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -132,7 +132,7 @@ function AcceptInvitePage() {
             className="auth-submit"
             disabled={accept.isPending || password.length < 8}
           >
-            {accept.isPending && <Loader2Icon className="animate-spin" />}
+            {accept.isPending && <LoaderCircleIcon className="animate-spin" />}
             {accept.isPending ? t("invite.joiningBtn") : t("invite.acceptBtn")}
           </Button>
 

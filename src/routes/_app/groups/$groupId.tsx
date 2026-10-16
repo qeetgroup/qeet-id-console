@@ -33,7 +33,13 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { initials } from "@/shared/utils/initials";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeftIcon, FolderIcon, Loader2Icon, ShieldCheckIcon, UsersIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  FolderIcon,
+  LoaderCircleIcon,
+  ShieldCheckIcon,
+  UsersIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -297,7 +303,7 @@ function GroupRolesCard({ groupId }: { groupId: string }) {
               })
             }
           >
-            {grantM.isPending && <Loader2Icon className="animate-spin" />}
+            {grantM.isPending && <LoaderCircleIcon className="animate-spin" />}
             {t("groupRoles.addRole")}
           </Button>
         </div>
@@ -385,7 +391,7 @@ function GroupRolesCard({ groupId }: { groupId: string }) {
                 })
               }
             >
-              {revokeM.isPending && <Loader2Icon className="animate-spin" />}
+              {revokeM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {revokeM.isPending ? t("common:actions.removing") : t("common:actions.remove")}
             </Button>
           </AlertDialogFooter>

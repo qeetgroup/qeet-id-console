@@ -8,10 +8,10 @@ import {
   CardTitle,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { FingerprintIcon, XIcon, ZapIcon } from "lucide-react";
+import { FingerprintPatternIcon, XIcon, ZapIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
-import { usePasskeys } from "@/modules/authentication";
+import { canAddPasskey, usePasskeys } from "@/modules/authentication";
 
 const DISMISS_KEY = "qeetid-admin-passkey-prompt-dismissed";
 
@@ -20,13 +20,14 @@ const DISMISS_KEY = "qeetid-admin-passkey-prompt-dismissed";
  * passkey on file. Built as a dismissible card (state persisted in
  * localStorage so it doesn't reappear on every refresh).
  *
- * Hidden in three cases:
+ * Hidden in four cases:
  *   1. The user already has at least one passkey.
  *   2. The list query is still loading (avoid flicker).
  *   3. The user has explicitly dismissed it.
+ *   4. The user's organization has passkeys switched off.
  *
- * The card renders the nudge and its CTA routes to the passkey settings
- * page, where the register ceremony (backed by the WebAuthn register
+ * The card renders the nudge and its CTA routes to the user's own security
+ * settings, where the register ceremony (backed by the WebAuthn register
  * begin/finish endpoints) runs.
  */
 export function PasskeyPromptCard() {
@@ -38,6 +39,7 @@ export function PasskeyPromptCard() {
   if (dismissed) return null;
   if (q.isLoading) return null;
   if ((q.data?.items?.length ?? 0) > 0) return null;
+  if (!canAddPasskey(q.data)) return null;
 
   function handleDismiss() {
     setDismissed(true);
@@ -53,7 +55,7 @@ export function PasskeyPromptCard() {
       <CardHeader className="flex flex-row items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-info/10 text-info ring-1 ring-info/15">
-            <FingerprintIcon className="size-4" />
+            <FingerprintPatternIcon className="size-4" />
           </span>
           <div>
             <CardTitle className="text-sm font-semibold">
@@ -69,7 +71,7 @@ export function PasskeyPromptCard() {
         </Button>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2 border-t border-info/15 pt-3">
-        <Link to="/auth/login-methods/passkeys" className={buttonVariants({ size: "sm" })}>
+        <Link to="/account/security" className={buttonVariants({ size: "sm" })}>
           <ZapIcon /> Add a passkey
         </Link>
         <Button variant="ghost" size="sm" onClick={handleDismiss}>

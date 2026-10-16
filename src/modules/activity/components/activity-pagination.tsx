@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qeetrix/ui";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@qeetrix/icons";
 
 export const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
 

@@ -19,6 +19,7 @@ import {
 } from "@/platform/auth/session-response";
 import {
   buildBackendUrl,
+  isGlobalSignOutRequest,
   isLocalSessionDestroyRequest,
 } from "@/platform/api/server-request-policy";
 import { logger } from "@/platform/telemetry/logger";
@@ -199,7 +200,11 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
     const responseData = await parseResponse(response);
     let safeData = responseData;
     let sessionChanged = false;
-    if (destroysLocalSession || (response.ok && pathname === "/v1/account/delete")) {
+    if (
+      destroysLocalSession ||
+      (response.ok &&
+        (pathname === "/v1/account/delete" || isGlobalSignOutRequest(pathname, input.method)))
+    ) {
       await clearServerSessionCookie();
       sessionData = {};
       sessionChanged = true;

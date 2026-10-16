@@ -1,4 +1,4 @@
-import { BookOpenIcon, Code2Icon, HelpCircleIcon } from "lucide-react";
+import { BookOpenIcon, CircleQuestionMarkIcon, CodeXmlIcon } from "@qeetrix/icons";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -26,13 +26,13 @@ export function ApplicationHelpLinks() {
     },
     {
       href: "https://docs.id.qeet.in/docs/sdks",
-      icon: <Code2Icon />,
+      icon: <CodeXmlIcon />,
       title: t("help.examplesTitle"),
       description: t("help.examplesDescription"),
     },
     {
       href: "https://id.qeet.in/contact",
-      icon: <HelpCircleIcon />,
+      icon: <CircleQuestionMarkIcon />,
       title: t("help.supportTitle"),
       description: t("help.supportDescription"),
     },

@@ -12,7 +12,7 @@ import {
   FieldLabel,
   Textarea,
 } from "@qeetrix/ui";
-import { CheckCircle2Icon, CircleSlashIcon, Loader2Icon, XCircleIcon } from "lucide-react";
+import { CircleCheckIcon, CircleSlashIcon, CircleXIcon, LoaderCircleIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -88,11 +88,11 @@ export function ImportGroupsDialog({
                 className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm"
               >
                 {row.status === "created" ? (
-                  <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-emerald-500" />
+                  <CircleCheckIcon className="mt-0.5 size-4 shrink-0 text-emerald-500" />
                 ) : row.status === "skipped" ? (
                   <CircleSlashIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                 ) : (
-                  <XCircleIcon className="mt-0.5 size-4 shrink-0 text-destructive" />
+                  <CircleXIcon className="mt-0.5 size-4 shrink-0 text-destructive" />
                 )}
                 <span className="min-w-0">
                   <span className="font-medium">{row.name}</span>
@@ -138,7 +138,7 @@ export function ImportGroupsDialog({
                 {t("import.cancel")}
               </DialogClose>
               <Button type="submit" form="import-groups-form" disabled={importM.isPending}>
-                {importM.isPending ? <Loader2Icon className="animate-spin" /> : null}
+                {importM.isPending ? <LoaderCircleIcon className="animate-spin" /> : null}
                 {importM.isPending ? t("import.submitting") : t("import.submit")}
               </Button>
             </>

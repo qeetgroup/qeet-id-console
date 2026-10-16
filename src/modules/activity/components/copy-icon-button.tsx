@@ -3,7 +3,7 @@
 // hover/focus inside a `group` when `revealOnHover` is set.
 
 import { cn, Tooltip, TooltipContent, TooltipTrigger, useCopyToClipboard } from "@qeetrix/ui";
-import { CheckIcon, ClipboardIcon } from "lucide-react";
+import { CheckIcon, ClipboardIcon } from "@qeetrix/icons";
 
 export function CopyIconButton({
   text,

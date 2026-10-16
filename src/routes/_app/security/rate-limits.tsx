@@ -10,7 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { GaugeIcon } from "lucide-react";
+import { GaugeIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";

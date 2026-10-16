@@ -7,7 +7,7 @@ import {
   TimelineItem,
   TimelineTitle,
 } from "@qeetrix/ui";
-import { ArrowRightIcon, ClockIcon, GaugeIcon } from "lucide-react";
+import { ArrowRightIcon, ClockIcon, GaugeIcon } from "@qeetrix/icons";
 
 import type { DecisionRecord, RbacExplainPath, RebacPathStep } from "../../api/simulate";
 import { DecisionBadge, ENGINE_DESCRIPTIONS, ENGINE_LABELS } from "../shared/decision-badge";

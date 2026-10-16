@@ -3,10 +3,10 @@ import { Link } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
   BookOpenIcon,
-  CheckCircle2Icon,
   ChevronRightIcon,
+  CircleCheckIcon,
   CircleIcon,
-  Code2Icon,
+  CodeXmlIcon,
   KeyRoundIcon,
   LockKeyholeIcon,
   PackageIcon,
@@ -18,7 +18,7 @@ import {
   TicketIcon,
   WebhookIcon,
   ZapIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { type ReactNode, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart } from "recharts";
@@ -349,7 +349,7 @@ function IntegrationChecklist({ data }: { data: DeveloperOverviewData }) {
               )}
             >
               {step.data?.configured ? (
-                <CheckCircle2Icon
+                <CircleCheckIcon
                   className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
                   aria-hidden="true"
                 />
@@ -434,7 +434,7 @@ export function DeveloperOverviewView({ data }: { data: DeveloperOverviewData })
 
       {!data.tenantId || data.accessState !== "ready" ? (
         <section className="grid min-h-64 place-content-center justify-items-center gap-3 border-y border-border/60 px-6 text-center">
-          <Code2Icon className="size-8 text-primary" aria-hidden="true" />
+          <CodeXmlIcon className="size-8 text-primary" aria-hidden="true" />
           <h2 className="font-heading text-lg font-semibold">
             {t(data.tenantId ? "overview.checkingAccess" : "overview.selectOrganization")}
           </h2>

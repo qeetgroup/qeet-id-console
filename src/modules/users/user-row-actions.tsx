@@ -13,17 +13,17 @@ import { Link } from "@tanstack/react-router";
 import {
   ActivityIcon,
   CopyIcon,
+  EllipsisIcon,
   KeyRoundIcon,
   MonitorXIcon,
-  MoreHorizontalIcon,
   PencilIcon,
   ShieldOffIcon,
   ShieldXIcon,
-  Trash2Icon,
+  TrashIcon,
   UserCheckIcon,
   UserIcon,
   UserXIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -57,7 +57,7 @@ export function UserRowActions({
       <DropdownMenuTrigger
         render={
           <Button variant="ghost" size="icon" aria-label={t("table.actions")}>
-            <MoreHorizontalIcon />
+            <EllipsisIcon />
           </Button>
         }
       />
@@ -119,7 +119,7 @@ export function UserRowActions({
               disabled={isSelf}
               onClick={() => handlers.onDelete(user)}
             >
-              {isSelf ? <ShieldXIcon /> : <Trash2Icon />}
+              {isSelf ? <ShieldXIcon /> : <TrashIcon />}
               {t("table.deleteUser")}
             </DropdownMenuItem>
           </>

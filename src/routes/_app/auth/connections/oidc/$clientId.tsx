@@ -31,7 +31,13 @@ import {
   SensitiveActionCancelled,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
-import { ArrowLeftIcon, KeySquareIcon, Loader2Icon, RefreshCwIcon, Trash2Icon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  KeySquareIcon,
+  LoaderCircleIcon,
+  RefreshCwIcon,
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -194,7 +200,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
             </FieldGroup>
             <div className="flex justify-end">
               <Button type="submit" disabled={updateM.isPending}>
-                {updateM.isPending && <Loader2Icon className="animate-spin" />}
+                {updateM.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {updateM.isPending ? t("common:actions.saving") : t("common:actions.saveChanges")}
               </Button>
             </div>
@@ -255,7 +261,11 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
                   disabled={rotateM.isPending}
                   onClick={rotateSecret}
                 >
-                  {rotateM.isPending ? <Loader2Icon className="animate-spin" /> : <RefreshCwIcon />}
+                  {rotateM.isPending ? (
+                    <LoaderCircleIcon className="animate-spin" />
+                  ) : (
+                    <RefreshCwIcon />
+                  )}
                   {t("detail.rotateSecret")}
                 </Button>
               )}
@@ -275,7 +285,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
               onClick={() => setConfirmingDelete(true)}
               disabled={deleteM.isPending}
             >
-              <Trash2Icon /> {t("detail.deleteApplication")}
+              <TrashIcon /> {t("detail.deleteApplication")}
             </Button>
           </CardContent>
         </Card>
@@ -318,7 +328,7 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
                 })
               }
             >
-              {deleteM.isPending && <Loader2Icon className="animate-spin" />}
+              {deleteM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {deleteM.isPending ? t("common:actions.deleting") : t("common:actions.delete")}
             </Button>
           </AlertDialogFooter>

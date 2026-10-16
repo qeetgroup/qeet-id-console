@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@qeetrix/ui";
-import { ChevronDownIcon, DownloadIcon, FileJsonIcon, SheetIcon } from "lucide-react";
+import { ChevronDownIcon, DownloadIcon, FileBracesIcon, SheetIcon } from "@qeetrix/icons";
 
 import type { ActivityEvent } from "@/modules/activity";
 import { exportTimelineEvents } from "../timeline-export";
@@ -39,7 +39,7 @@ export function TimelineExportMenu({
           Export as CSV
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => exportTimelineEvents(events, "json", userId)}>
-          <FileJsonIcon className="size-3.5" aria-hidden="true" />
+          <FileBracesIcon className="size-3.5" aria-hidden="true" />
           Export as JSON
         </DropdownMenuItem>
       </DropdownMenuContent>

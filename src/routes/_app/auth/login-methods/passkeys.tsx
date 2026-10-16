@@ -1,5 +1,4 @@
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -7,21 +6,24 @@ import {
   CardHeader,
   CardTitle,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@qeetrix/ui";
-import { startRegistration } from "@simplewebauthn/browser";
 import { errorMessage } from "@/platform/errors/user-message";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { FingerprintIcon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
+import { FingerprintPatternIcon, PlusIcon, RefreshCwIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import {
+  canAddPasskey,
+  type PasskeyList,
+  PASSKEYS_KEY,
+  PasskeysTable,
+  passkeyDisplayName,
+  useRegisterPasskey,
+  useRemovePasskey,
+  useRenamePasskey,
+} from "@/modules/authentication";
 import { api } from "@/platform/api/client";
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
@@ -32,60 +34,31 @@ export const Route = createFileRoute("/_app/auth/login-methods/passkeys")({
   component: PasskeysPage,
 });
 
-type Passkey = {
-  id: string;
-  user_id: string;
-  name: string;
-  transports?: string[] | null;
-  last_used_at?: string | null;
-  created_at: string;
-};
-
 function PasskeysPage() {
   const { t } = useTranslation("auth");
   const [confirmDialog, openConfirm] = useConfirmDialog();
-  const qc = useQueryClient();
 
   const listQ = useQuery({
-    queryKey: ["passkeys"],
-    queryFn: () => api<{ items: Passkey[] }>("/v1/passkeys"),
+    queryKey: PASSKEYS_KEY,
+    queryFn: () => api<PasskeyList>("/v1/passkeys"),
   });
 
-  const deleteM = useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/passkeys/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["passkeys"] }),
-    meta: { successMessage: "Passkey removed" },
-  });
+  const deleteM = useRemovePasskey();
+  const renameM = useRenamePasskey();
 
-  // Registration ceremony: ask the backend for creation options, drive the
-  // browser WebAuthn API, then post the attestation back to finish.
-  const registerM = useMutation({
-    mutationFn: async () => {
-      const begin = await api<{
-        session_id: string;
-        publicKey: Parameters<typeof startRegistration>[0]["optionsJSON"];
-      }>("/v1/passkeys/register/begin", { method: "POST" });
-      const credential = await startRegistration({
-        optionsJSON: begin.publicKey,
-      });
-      const name =
-        window
-          .prompt(t("loginMethods.passkeys.promptName"), t("loginMethods.passkeys.promptDefault"))
-          ?.trim() || undefined;
-      await api<void>("/v1/passkeys/register/finish", {
-        method: "POST",
-        body: { session_id: begin.session_id, credential, name },
-      });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["passkeys"] }),
-    // Own the error toast (silences the global handler) with user-safe copy —
-    // covers both ApiError and WebAuthn browser errors without leaking raw text.
-    meta: { silent: true },
-    onError: (e) => {
-      const appError = normalizeError(e);
-      toast.error(userMessageForCode(appError.code, appError.kind));
-    },
-  });
+  // Registration ceremony (creation options → browser WebAuthn → attestation).
+  // No name is asked for here: the server names the passkey after this browser
+  // (e.g. "Chrome on macOS") and it can be renamed inline from the list. The
+  // hook leaves errors to the caller; toast user-safe copy for both ApiError
+  // and WebAuthn browser errors without leaking raw text.
+  const registerM = useRegisterPasskey();
+  const register = () =>
+    registerM.mutate(undefined, {
+      onError: (e) => {
+        const appError = normalizeError(e);
+        toast.error(userMessageForCode(appError.code, appError.kind));
+      },
+    });
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -103,12 +76,15 @@ function PasskeysPage() {
               <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
               {t("loginMethods.passkeys.refreshBtn")}
             </Button>
-            <Button size="sm" onClick={() => registerM.mutate()} disabled={registerM.isPending}>
-              <PlusIcon />{" "}
-              {registerM.isPending
-                ? t("loginMethods.passkeys.registeringBtn")
-                : t("loginMethods.passkeys.registerBtn")}
-            </Button>
+            {/* Not offered when the organization has passkeys switched off. */}
+            {canAddPasskey(listQ.data) && (
+              <Button size="sm" onClick={register} disabled={registerM.isPending}>
+                <PlusIcon />{" "}
+                {registerM.isPending
+                  ? t("loginMethods.passkeys.registeringBtn")
+                  : t("loginMethods.passkeys.registerBtn")}
+              </Button>
+            )}
           </>
         }
       />
@@ -120,6 +96,9 @@ function PasskeysPage() {
             {t("loginMethods.passkeys.list.count", {
               count: listQ.data?.items?.length ?? 0,
             })}
+            {listQ.data && !canAddPasskey(listQ.data) && (
+              <> · {t("loginMethods.passkeys.disabled")}</>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -133,68 +112,27 @@ function PasskeysPage() {
             <div className="p-6 text-sm text-destructive">{errorMessage(listQ.error)}</div>
           ) : !listQ.data?.items?.length ? (
             <div className="flex flex-col items-center gap-2 p-10 text-center">
-              <FingerprintIcon className="size-8 text-muted-foreground" />
+              <FingerprintPatternIcon className="size-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 {t("loginMethods.passkeys.list.empty")}
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("loginMethods.passkeys.columns.name")}</TableHead>
-                  <TableHead>{t("loginMethods.passkeys.columns.transports")}</TableHead>
-                  <TableHead>{t("loginMethods.passkeys.columns.lastUsed")}</TableHead>
-                  <TableHead>{t("loginMethods.passkeys.columns.created")}</TableHead>
-                  <TableHead className="text-right">
-                    {t("loginMethods.passkeys.columns.actions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {listQ.data.items.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-medium">{p.name}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {(p.transports ?? []).map((transport) => (
-                          <Badge key={transport} variant="muted">
-                            {transport}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {p.last_used_at
-                        ? new Date(p.last_used_at).toLocaleString()
-                        : t("loginMethods.passkeys.lastUsedNever")}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(p.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          openConfirm({
-                            title: t("loginMethods.passkeys.confirm.title", {
-                              name: p.name,
-                            }),
-                            variant: "destructive",
-                            confirmLabel: t("loginMethods.passkeys.confirm.label"),
-                            onConfirm: () => deleteM.mutate(p.id),
-                          })
-                        }
-                        disabled={deleteM.isPending}
-                      >
-                        <Trash2Icon /> {t("loginMethods.passkeys.removeBtn")}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <PasskeysTable
+              passkeys={listQ.data.items}
+              onRename={(p, name) => renameM.mutateAsync({ id: p.id, name })}
+              onRemove={(p) =>
+                openConfirm({
+                  title: t("loginMethods.passkeys.confirm.title", {
+                    name: passkeyDisplayName(p, t("loginMethods.passkeys.unnamed")),
+                  }),
+                  variant: "destructive",
+                  confirmLabel: t("loginMethods.passkeys.confirm.label"),
+                  onConfirm: () => deleteM.mutate(p.id),
+                })
+              }
+              isRemoving={deleteM.isPending}
+            />
           )}
         </CardContent>
       </Card>

@@ -2,19 +2,19 @@ import { Badge, buttonVariants, cn, EmptyState, Skeleton, TimeSince } from "@qee
 import { Link } from "@tanstack/react-router";
 import {
   ActivityIcon,
-  AlertTriangleIcon,
   ArrowRightIcon,
-  CheckCircle2Icon,
   ChevronRightIcon,
+  CircleCheckIcon,
   ExternalLinkIcon,
-  FingerprintIcon,
+  FingerprintPatternIcon,
   LightbulbIcon,
   LinkIcon,
   MonitorSmartphoneIcon,
   ShareIcon,
   TrendingUpIcon,
+  TriangleAlertIcon,
   UserRoundIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -192,7 +192,7 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
           />
         ) : null}
         <Kpi
-          icon={<FingerprintIcon />}
+          icon={<FingerprintPatternIcon />}
           tone="success"
           label={t("overview.kpi.mfa.label")}
           value={`${Math.round(mfa.pct)}%`}
@@ -278,7 +278,7 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
               ) : null}
               <Area
                 to="/auth/mfa/totp"
-                icon={<FingerprintIcon />}
+                icon={<FingerprintPatternIcon />}
                 tone="success"
                 title={t("overview.areas.mfa.title")}
                 description={t("overview.areas.mfa.description")}
@@ -387,9 +387,9 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
               {posture.items.map((item) => (
                 <li key={item.id} className="flex items-center gap-2 text-sm">
                   {item.ok ? (
-                    <CheckCircle2Icon className="size-4 shrink-0 text-success" />
+                    <CircleCheckIcon className="size-4 shrink-0 text-success" />
                   ) : (
-                    <AlertTriangleIcon className="size-4 shrink-0 text-warning" />
+                    <TriangleAlertIcon className="size-4 shrink-0 text-warning" />
                   )}
                   <span className={cn("min-w-0 truncate", item.ok ? "" : "text-muted-foreground")}>
                     {t(`overview.posture.items.${item.id}`)}
@@ -475,7 +475,7 @@ function actionIcon(id: AuthPostureId): ReactNode {
     case "social":
       return <ShareIcon />;
     case "mfa":
-      return <FingerprintIcon />;
+      return <FingerprintPatternIcon />;
     case "sso":
       return <LinkIcon />;
     default:
@@ -505,8 +505,6 @@ function enabledMethodChips(policy: AuthPolicy | undefined, t: (k: string) => st
     [policy.password_enabled, "overview.areas.methods.password"],
     [policy.passkey_enabled, "overview.areas.methods.passkey"],
     [policy.magic_link_enabled, "overview.areas.methods.magicLink"],
-    [policy.otp_email_enabled, "overview.areas.methods.otpEmail"],
-    [policy.otp_sms_enabled, "overview.areas.methods.otpSms"],
   ];
   return map.filter(([on]) => on).map(([, key]) => t(key));
 }

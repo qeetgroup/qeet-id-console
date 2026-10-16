@@ -2,7 +2,7 @@ import { Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TooltipProvider } f
 import { errorMessage } from "@/platform/errors/user-message";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon } from "@qeetrix/icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 

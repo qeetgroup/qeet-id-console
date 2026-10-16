@@ -24,7 +24,7 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2Icon } from "lucide-react";
+import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { TEAM_SIZES } from "@/modules/onboarding";
@@ -133,7 +133,7 @@ export function ContactSalesDialog({
           <SheetFooter className="flex-row justify-end gap-2 border-t">
             <SheetClose render={<Button type="button" variant="outline" />}>Cancel</SheetClose>
             <Button type="submit" disabled={submitM.isPending}>
-              {submitM.isPending && <Loader2Icon className="animate-spin" />}
+              {submitM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {submitM.isPending ? "Sending…" : "Send"}
             </Button>
           </SheetFooter>

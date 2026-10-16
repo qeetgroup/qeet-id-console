@@ -12,7 +12,7 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { GaugeIcon, Loader2Icon, RotateCcwIcon } from "lucide-react";
+import { GaugeIcon, LoaderCircleIcon, RotateCcwIcon } from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -183,7 +183,7 @@ function RateLimitsPage() {
               })
             }
           >
-            {reset.isPending ? <Loader2Icon className="animate-spin" /> : <RotateCcwIcon />}
+            {reset.isPending ? <LoaderCircleIcon className="animate-spin" /> : <RotateCcwIcon />}
             {t("threats.rateLimits.card.resetToDefaults")}
           </Button>
         </CardHeader>
@@ -234,7 +234,7 @@ function RateLimitsPage() {
               />
               <div className="flex items-center gap-3 pt-2">
                 <Button type="submit" disabled={!dirty || update.isPending}>
-                  {update.isPending && <Loader2Icon className="animate-spin" />}
+                  {update.isPending && <LoaderCircleIcon className="animate-spin" />}
                   {t("threats.rateLimits.card.save")}
                 </Button>
                 {update.isSuccess && (

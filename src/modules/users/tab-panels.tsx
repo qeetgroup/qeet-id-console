@@ -23,16 +23,16 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import {
-  AlertTriangleIcon,
-  Building2Icon,
-  FingerprintIcon,
+  BuildingComplexIcon,
+  FingerprintPatternIcon,
   KeyRoundIcon,
   LinkIcon,
   LockIcon,
   MonitorSmartphoneIcon,
   ShieldCheckIcon,
+  TriangleAlertIcon,
   UsersRoundIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -204,7 +204,7 @@ export function AccessTab({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Building2Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+              <BuildingComplexIcon className="size-4 text-muted-foreground" aria-hidden="true" />
               {t("detail.organization")}
             </CardTitle>
           </CardHeader>
@@ -441,7 +441,7 @@ export function IdentitiesTab({ userId, passwordSet }: { userId: string; passwor
           {social.map((i) => (
             <IdentityRow
               key={i.id}
-              icon={<FingerprintIcon className="size-4" aria-hidden="true" />}
+              icon={<FingerprintPatternIcon className="size-4" aria-hidden="true" />}
               title={i.provider}
               subtitle={i.email ?? i.subject}
               trailing={
@@ -519,7 +519,7 @@ export function DeveloperTab({ user }: { user: UserDetail }) {
           {user.metadata && Object.keys(user.metadata).length > 0 ? (
             <JSONTree value={user.metadata} rootLabel="metadata" initialOpenDepth={1} />
           ) : (
-            <EmptyState icon={AlertTriangleIcon} title={t("detail.metadataEmpty")} />
+            <EmptyState icon={TriangleAlertIcon} title={t("detail.metadataEmpty")} />
           )}
         </CardContent>
       </Card>

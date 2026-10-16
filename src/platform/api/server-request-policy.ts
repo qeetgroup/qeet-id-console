@@ -41,3 +41,11 @@ export function buildBackendUrl(
 export function isLocalSessionDestroyRequest(pathname: string, method: string): boolean {
   return method === "POST" && pathname === "/v1/auth/logout";
 }
+
+// Signing out everywhere ends the session behind the console's own credential
+// too, so a successful call must also end the console's encrypted session.
+// Only on success: if the server could not do it, the person stays signed in
+// here and can try again.
+export function isGlobalSignOutRequest(pathname: string, method: string): boolean {
+  return method === "POST" && pathname === "/v1/auth/sessions/revoke-all";
+}

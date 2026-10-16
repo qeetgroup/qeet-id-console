@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@qeetrix/ui";
-import { LanguagesIcon } from "lucide-react";
+import { LanguagesIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";

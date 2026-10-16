@@ -31,7 +31,7 @@ import {
   Redo2Icon,
   UnderlineIcon,
   Undo2Icon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { type Ref, useEffect, useImperativeHandle, useState } from "react";
 import { useTranslation } from "react-i18next";
 

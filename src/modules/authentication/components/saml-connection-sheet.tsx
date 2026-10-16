@@ -23,14 +23,14 @@ import {
 } from "@qeetrix/ui";
 import {
   ArrowRightIcon,
-  CheckCircle2Icon,
-  Loader2Icon,
+  CircleCheckIcon,
+  CircleXIcon,
+  LoaderCircleIcon,
   PencilLineIcon,
   PlayIcon,
   UploadIcon,
   UserRoundIcon,
-  XCircleIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -411,9 +411,9 @@ export function SamlConnectionSheet({
                     {checks.map((check) => (
                       <li key={check.id} className="flex items-start gap-2 text-xs">
                         {check.ok ? (
-                          <CheckCircle2Icon className="mt-0.5 size-3.5 shrink-0 text-success" />
+                          <CircleCheckIcon className="mt-0.5 size-3.5 shrink-0 text-success" />
                         ) : (
-                          <XCircleIcon className="mt-0.5 size-3.5 shrink-0 text-destructive" />
+                          <CircleXIcon className="mt-0.5 size-3.5 shrink-0 text-destructive" />
                         )}
                         <span className={check.ok ? "" : "text-destructive"}>
                           {t(`samlSp.create.checks.${check.id}${check.ok ? "Ok" : "Failed"}`)}
@@ -445,7 +445,7 @@ export function SamlConnectionSheet({
               <PlayIcon /> {t("samlSp.create.testValuesBtn")}
             </Button>
             <Button type="submit" disabled={!canCreate}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending ? t("samlSp.create.creatingBtn") : t("samlSp.create.createBtn")}
             </Button>
           </SheetFooter>

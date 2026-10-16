@@ -39,12 +39,12 @@ import { formatDateTime } from "@/shared/utils/format";
 import {
   ArrowLeftIcon,
   ArrowLeftRightIcon,
-  Building2Icon,
+  BuildingComplexIcon,
   ChevronDownIcon,
-  Trash2Icon,
+  TrashIcon,
   UserCheckIcon,
   UserXIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
@@ -107,7 +107,7 @@ function OrgDetailPage() {
         {isLoading && !org ? (
           <Skeleton className="h-24 w-full rounded-xl" />
         ) : isError || !org ? (
-          <EmptyState icon={Building2Icon} title={t("detail.notFound")} />
+          <EmptyState icon={BuildingComplexIcon} title={t("detail.notFound")} />
         ) : (
           <>
             <OrgHeader
@@ -241,7 +241,7 @@ function OrgHeader({
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive" disabled={isActive} onClick={onDelete}>
-                  <Trash2Icon />
+                  <TrashIcon />
                   {t("rowActions.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -468,8 +468,6 @@ function SecurityTab({ orgId }: { orgId: string }) {
                 <InfoRow label={t("detail.password")}>{method(p.password_enabled)}</InfoRow>
                 <InfoRow label={t("detail.passkeys")}>{method(p.passkey_enabled)}</InfoRow>
                 <InfoRow label={t("detail.magicLink")}>{method(p.magic_link_enabled)}</InfoRow>
-                <InfoRow label={t("detail.otpEmail")}>{method(p.otp_email_enabled)}</InfoRow>
-                <InfoRow label={t("detail.otpSms")}>{method(p.otp_sms_enabled)}</InfoRow>
                 <InfoRow label={t("detail.selfReg")}>{method(p.self_registration_enabled)}</InfoRow>
               </div>
             ) : null}

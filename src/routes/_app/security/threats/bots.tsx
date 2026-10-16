@@ -20,7 +20,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { BotIcon, RefreshCwIcon, ShieldOffIcon, ZapIcon } from "lucide-react";
+import { BotIcon, RefreshCwIcon, ShieldOffIcon, ZapIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";

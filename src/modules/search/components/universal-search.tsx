@@ -10,7 +10,7 @@
 
 import { cn, EmptyState, Kbd, ScrollArea, Separator, Skeleton, Spinner } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
-import { HistoryIcon, SearchIcon, XIcon } from "lucide-react";
+import { RotateCcwClockIcon, SearchIcon, XIcon } from "@qeetrix/icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ApiError, api } from "@/platform/api/client";
@@ -347,7 +347,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
                     className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
                     onClick={() => clearRecent()}
                   >
-                    <HistoryIcon className="size-3" aria-hidden="true" />
+                    <RotateCcwClockIcon className="size-3" aria-hidden="true" />
                     Clear recent history
                   </button>
                 </div>

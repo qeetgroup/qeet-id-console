@@ -20,25 +20,25 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@qeetrix/ui";
-import { QeetLogoOnLight, QeetLogoOnDark } from "@qeetrix/ui/brand";
 import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
-  Building2Icon,
+  BuildingComplexIcon,
   CheckIcon,
   ChevronDownIcon,
+  CirclePlusIcon,
   CrownIcon,
   GlobeIcon,
   LayoutGridIcon,
   ListIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   LogOutIcon,
-  PlusCircleIcon,
+  QeetLogo,
   RefreshCwIcon,
   SearchIcon,
   SettingsIcon,
   XIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -209,10 +209,10 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
             aria-hidden="true"
           >
             <span className="absolute opacity-100 dark:opacity-0">
-              <QeetLogoOnLight size={24} title={null} />
+              <QeetLogo height={24} />
             </span>
             <span className="absolute opacity-0 dark:opacity-100">
-              <QeetLogoOnDark size={24} title={null} />
+              <QeetLogo variant="dark" height={24} />
             </span>
           </span>
           <span className="font-heading text-sm font-semibold">Qeet ID</span>
@@ -271,7 +271,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
       >
         <div className="mx-auto mb-7 flex max-w-2xl flex-col items-center text-center sm:mb-2">
           <span className="mb-5 grid size-13 place-items-center rounded-lg border border-border/60 bg-muted/25 shadow-xs">
-            <Building2Icon
+            <BuildingComplexIcon
               className="size-6 text-foreground/80"
               strokeWidth={1.6}
               aria-hidden="true"
@@ -417,7 +417,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
             role="alert"
             className="grid min-h-60 place-content-center justify-items-center gap-3 px-5 text-center"
           >
-            <Building2Icon className="size-8 text-muted-foreground/70" aria-hidden="true" />
+            <BuildingComplexIcon className="size-8 text-muted-foreground/70" aria-hidden="true" />
             <h2 className="font-heading text-base font-semibold">
               {t("organizationSelection.loadError")}
             </h2>
@@ -661,7 +661,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
             onClick={props.onCreate}
             disabled={controlsDisabled}
           >
-            <PlusCircleIcon aria-hidden="true" />
+            <CirclePlusIcon aria-hidden="true" />
             {t("organizationSelection.create")}
           </Button>
           <Button
@@ -670,7 +670,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
             disabled={!selectedOrganization || controlsDisabled || props.loading || props.error}
             onClick={() => void submit()}
           >
-            {pending ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : null}
+            {pending ? <LoaderCircleIcon className="animate-spin" aria-hidden="true" /> : null}
             {t(pending ? "organizationSelection.entering" : "organizationSelection.continue")}
             <ArrowRightIcon aria-hidden="true" />
           </Button>

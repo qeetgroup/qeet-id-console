@@ -1,5 +1,5 @@
 import { cn, StatusPill } from "@qeetrix/ui";
-import { RadioIcon } from "lucide-react";
+import { RadioIcon } from "@qeetrix/icons";
 
 import type { ConnectionStatus } from "../types/activity.types";
 

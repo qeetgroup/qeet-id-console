@@ -28,16 +28,15 @@ import {
 } from "@qeetrix/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  AlignCenterIcon,
-  AlignLeftIcon,
   ArrowUpRightIcon,
   BracesIcon,
-  CheckCircle2Icon,
+  CircleCheckIcon,
   EyeIcon,
   GlobeIcon,
+  type IconProps,
   KeyRoundIcon,
   LinkIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   MailIcon,
   MonitorIcon,
   PlusIcon,
@@ -46,10 +45,12 @@ import {
   SendIcon,
   ShieldCheckIcon,
   SmartphoneIcon,
-  Trash2Icon,
+  TextAlignCenterIcon,
+  TextAlignStartIcon,
+  TrashIcon,
   UserRoundPlusIcon,
-} from "lucide-react";
-import { type ChangeEvent, useEffect, useId, useRef, useState } from "react";
+} from "@qeetrix/icons";
+import { type ChangeEvent, type ComponentType, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useBranding } from "@/modules/branding";
@@ -92,7 +93,7 @@ const ACTION =
   "h-8 rounded-md px-3 text-xs focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11";
 const INPUT =
   "h-8 min-w-0 rounded-md bg-background/25 text-xs pointer-coarse:min-h-11 pointer-coarse:text-base";
-const ICONS: Record<string, typeof MailIcon> = {
+const ICONS: Record<string, ComponentType<IconProps<"outline">>> = {
   verify_email: MailIcon,
   password_reset: KeyRoundIcon,
   magic_link: LinkIcon,
@@ -526,7 +527,7 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
               }
               onClick={() => void run("test")}
             >
-              {pending === "test" ? <Loader2Icon className="animate-spin" /> : <SendIcon />}
+              {pending === "test" ? <LoaderCircleIcon className="animate-spin" /> : <SendIcon />}
               {t("emails.test")}
             </Button>
           </TooltipTrigger>
@@ -809,7 +810,8 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
                     <legend className="text-xs">{t("emails.design.alignment")}</legend>
                     <div className="inline-flex rounded-md border border-border/70 bg-muted/20 p-0.5">
                       {(["left", "center"] as const).map((alignment) => {
-                        const Icon = alignment === "left" ? AlignLeftIcon : AlignCenterIcon;
+                        const Icon =
+                          alignment === "left" ? TextAlignStartIcon : TextAlignCenterIcon;
                         return (
                           <button
                             key={alignment}
@@ -911,7 +913,7 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
                               });
                             }}
                           >
-                            <Trash2Icon className="size-3.5" />
+                            <TrashIcon className="size-3.5" />
                           </Button>
                         )}
                       </div>
@@ -1135,7 +1137,7 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
                 feedback ? "text-success" : "text-muted-foreground",
               )}
             >
-              {feedback && <CheckCircle2Icon className="size-3.5" />}
+              {feedback && <CircleCheckIcon className="size-3.5" />}
               {feedback || t(dirty ? "emails.unsaved" : "emails.noChanges")}
             </p>
           )}
@@ -1162,7 +1164,7 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
             disabled={disabled || !dirty || errors.length > 0}
             onClick={() => void run("save")}
           >
-            {pending === "save" && <Loader2Icon className="animate-spin" />}
+            {pending === "save" && <LoaderCircleIcon className="animate-spin" />}
             {t(pending === "save" ? "emails.saving" : "emails.save")}
           </Button>
         </div>

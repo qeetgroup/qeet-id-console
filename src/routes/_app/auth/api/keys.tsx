@@ -32,7 +32,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { KeyRoundIcon, Loader2Icon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
+import { KeyRoundIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
@@ -243,7 +243,7 @@ function ApiKeysPage() {
                           }).catch(ignoreCancel)
                         }
                       >
-                        <Trash2Icon /> {t("keys.revokeBtn")}
+                        <TrashIcon /> {t("keys.revokeBtn")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -348,7 +348,7 @@ function CreateApiKeySheet({ open, onOpenChange, tenantId, onCreated }: CreateAp
               {t("keys.create.cancelBtn")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending ? t("keys.create.creatingBtn") : t("keys.create.createBtn")}
             </Button>
           </SheetFooter>

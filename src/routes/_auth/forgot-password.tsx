@@ -11,7 +11,7 @@ import {
   PasswordInput,
 } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckCircle2Icon, Loader2Icon } from "lucide-react";
+import { CircleCheckIcon, LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -89,7 +89,7 @@ function RequestPanel() {
 
         <Field>
           <Button type="submit" className="auth-submit" disabled={forgot.isPending}>
-            {forgot.isPending && <Loader2Icon className="animate-spin" />}
+            {forgot.isPending && <LoaderCircleIcon className="animate-spin" />}
             {forgot.isPending ? t("forgotPassword.sendingBtn") : t("forgotPassword.sendBtn")}
           </Button>
         </Field>
@@ -168,7 +168,7 @@ function ResetPanel({ token }: { token: string }) {
 
         <Field>
           <Button type="submit" className="auth-submit" disabled={reset.isPending}>
-            {reset.isPending && <Loader2Icon className="animate-spin" />}
+            {reset.isPending && <LoaderCircleIcon className="animate-spin" />}
             {reset.isPending
               ? t("forgotPassword.reset.submittingBtn")
               : t("forgotPassword.reset.submitBtn")}
@@ -192,7 +192,7 @@ function SuccessPanel({ devToken }: { devToken?: string }) {
     <div className="flex flex-col gap-4">
       <div className="auth-form-header">
         <span className="mx-auto grid size-12 place-items-center rounded-full bg-emerald-500/10 text-emerald-500">
-          <CheckCircle2Icon className="size-6" />
+          <CircleCheckIcon className="size-6" />
         </span>
         <h1 className="auth-form-title mt-3">{t("forgotPassword.successTitle")}</h1>
         <p className="auth-form-description">{t("forgotPassword.successText")}</p>

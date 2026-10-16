@@ -1,6 +1,6 @@
 import {
   ArrowRightIcon,
-  CheckCircle2Icon,
+  CircleCheckIcon,
   CreditCardIcon,
   FileTextIcon,
   GlobeIcon,
@@ -8,7 +8,7 @@ import {
   ShieldCheckIcon,
   UploadIcon,
   UsersIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { cn } from "@qeetrix/ui";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
@@ -90,7 +90,7 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
             {["checklist", "integrations", "dashboard", "resources"].map((item) => (
               <li key={item} className="flex items-start gap-2">
                 <span className="shrink-0 text-(--setup-accent)">
-                  <CheckCircle2Icon className="size-4" aria-hidden="true" />
+                  <CircleCheckIcon className="size-4" aria-hidden="true" />
                 </span>
                 {t(`setup.guidance.benefits.${item}`)}
               </li>
@@ -109,7 +109,7 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
             {["workspace", "region", "defaults", "identity"].map((item) => (
               <li key={item} className="flex items-start gap-2">
                 <span className="shrink-0 text-(--setup-accent)">
-                  <CheckCircle2Icon className="size-3.5" aria-hidden="true" />
+                  <CircleCheckIcon className="size-3.5" aria-hidden="true" />
                 </span>
                 {t(`setup.guidance.organizationBenefits.${item}`)}
               </li>

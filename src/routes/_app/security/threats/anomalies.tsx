@@ -17,12 +17,12 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  AlertTriangleIcon,
   MapPinIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
+  TriangleAlertIcon,
   UserXIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -54,7 +54,7 @@ function AnomaliesPage() {
     {
       key: "openIncidents",
       value: sm?.open ?? 0,
-      icon: <AlertTriangleIcon className="size-4" />,
+      icon: <TriangleAlertIcon className="size-4" />,
     },
     {
       key: "resolved24h",
@@ -118,7 +118,7 @@ function AnomaliesPage() {
             isError={anomaliesQ.isError}
             error={anomaliesQ.error}
             isEmpty={items.length === 0}
-            emptyIcon={AlertTriangleIcon}
+            emptyIcon={TriangleAlertIcon}
             emptyTitle={t("threats.anomalies.recent.empty")}
             skeletonRows={3}
           >

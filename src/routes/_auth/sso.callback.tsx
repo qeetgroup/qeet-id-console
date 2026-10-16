@@ -1,7 +1,7 @@
 import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangleIcon, CheckCircle2Icon, Loader2Icon, ShieldXIcon } from "lucide-react";
+import { CircleCheckIcon, LoaderCircleIcon, ShieldXIcon, TriangleAlertIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -62,7 +62,7 @@ function renderStatus({
   if (!code) {
     return (
       <>
-        <AlertTriangleIcon className="size-10 text-amber-500" />
+        <TriangleAlertIcon className="size-10 text-amber-500" />
         <h1 className="text-2xl font-bold">{t("sso.noCodeTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("sso.noCodeText")}</p>
         <Link to="/sign-in" className={buttonVariants({ variant: "outline" }) + " mt-2"}>
@@ -75,7 +75,7 @@ function renderStatus({
   if (consume.isPending || consume.isIdle) {
     return (
       <>
-        <Loader2Icon className="size-10 animate-spin text-sky-500" />
+        <LoaderCircleIcon className="size-10 animate-spin text-sky-500" />
         <h1 className="text-2xl font-bold">{t("sso.loadingTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("sso.loadingText")}</p>
       </>
@@ -85,7 +85,7 @@ function renderStatus({
   if (consume.isSuccess) {
     return (
       <>
-        <CheckCircle2Icon className="size-10 text-emerald-500" />
+        <CircleCheckIcon className="size-10 text-emerald-500" />
         <h1 className="text-2xl font-bold">{t("sso.successTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("sso.successText")}</p>
       </>

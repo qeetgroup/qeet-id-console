@@ -3,7 +3,7 @@
 // on demand via an IntersectionObserver sentinel.
 
 import { Button, cn, EmptyState, ScrollArea, Skeleton, usePrefersReducedMotion } from "@qeetrix/ui";
-import { ActivityIcon, RefreshCwIcon, WifiOffIcon } from "lucide-react";
+import { ActivityIcon, RefreshCwIcon, WifiOffIcon } from "@qeetrix/icons";
 import { useEffect, useRef } from "react";
 
 import type { ActivitySearch } from "../activity-search";
