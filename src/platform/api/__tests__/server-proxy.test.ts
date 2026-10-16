@@ -200,3 +200,41 @@ describe("Organization-selection session boundary", () => {
     ).toBe(false);
   });
 });
+
+describe("Sign-out-everywhere session boundary", () => {
+  const signedIn = {
+    accessToken: "access-secret",
+    refreshToken: "refresh-secret",
+    userId: "user-a",
+    sessionId: "session-a",
+    tenantId: tokens.tenant_id,
+    version: 3,
+  };
+
+  it("ends the console's own session once the server has signed the person out everywhere", async () => {
+    store.data = { ...signedIn };
+    store.fetch.mockResolvedValueOnce(
+      Response.json({ revoked: 5, sessions: 3, hosted_login_sessions: 1, app_grants: 1 }),
+    );
+    const result = await request("/v1/auth/sessions/revoke-all");
+
+    expect(String(store.fetch.mock.calls[0][0])).toMatch(/\/v1\/auth\/sessions\/revoke-all$/);
+    expect(store.fetch.mock.calls[0][1].headers.Authorization).toBe("Bearer access-secret");
+    expect(store.data).toEqual({});
+    expect(result.session.isAuthenticated).toBe(false);
+    expect(result.sessionChanged).toBe(true);
+    expect(result.data).toMatchObject({ revoked: 5 });
+  });
+
+  it("keeps the console's session when signing out everywhere failed", async () => {
+    store.data = { ...signedIn };
+    store.fetch.mockResolvedValueOnce(
+      Response.json({ error: { code: "internal" } }, { status: 500 }),
+    );
+    const result = await request("/v1/auth/sessions/revoke-all");
+
+    expect(store.data.accessToken).toBe("access-secret");
+    expect(result.session.isAuthenticated).toBe(true);
+    expect(result.sessionChanged).toBe(false);
+  });
+});

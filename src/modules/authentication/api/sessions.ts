@@ -50,3 +50,25 @@ export function revokeOtherSessions(): Promise<RevokeOtherSessionsResult> {
     schema: revokeOtherSessionsSchema,
   });
 }
+
+const signOutEverywhereSchema = z.object({
+  revoked: z.number().int().nonnegative(),
+  sessions: z.number().int().nonnegative().optional(),
+  hosted_login_sessions: z.number().int().nonnegative().optional(),
+  app_grants: z.number().int().nonnegative().optional(),
+});
+export type SignOutEverywhereResult = z.infer<typeof signOutEverywhereSchema>;
+
+// Signs the caller out everywhere in one all-or-nothing server call
+// (POST /v1/auth/sessions/revoke-all): every session including the one this
+// console uses, the hosted sign-in in every browser, and the apps signed in
+// with this account. Resolves with how many sign-ins ended (`revoked`, all
+// places together); on success the console's own session has ended as well, so
+// the caller must send the person to sign in again. Rejects when the call fails
+// — the person is then still signed in here.
+export function signOutEverywhere(): Promise<SignOutEverywhereResult> {
+  return api("/v1/auth/sessions/revoke-all", {
+    method: "POST",
+    schema: signOutEverywhereSchema,
+  });
+}

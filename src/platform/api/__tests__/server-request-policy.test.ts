@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { buildBackendUrl, isLocalSessionDestroyRequest } from "../server-request-policy";
+import {
+  buildBackendUrl,
+  isGlobalSignOutRequest,
+  isLocalSessionDestroyRequest,
+} from "../server-request-policy";
 
 describe("server request policy", () => {
   it("keeps relative API paths on the configured backend origin", () => {
@@ -23,5 +27,13 @@ describe("server request policy", () => {
     expect(isLocalSessionDestroyRequest("/v1/auth/logout", "POST")).toBe(true);
     expect(isLocalSessionDestroyRequest("/v1/auth/logout", "GET")).toBe(false);
     expect(isLocalSessionDestroyRequest("/v1/account/delete", "POST")).toBe(false);
+    expect(isLocalSessionDestroyRequest("/v1/auth/sessions/revoke-all", "POST")).toBe(false);
+  });
+
+  it("recognizes only the sign-out-everywhere mutation as a global sign-out", () => {
+    expect(isGlobalSignOutRequest("/v1/auth/sessions/revoke-all", "POST")).toBe(true);
+    expect(isGlobalSignOutRequest("/v1/auth/sessions/revoke-all", "GET")).toBe(false);
+    expect(isGlobalSignOutRequest("/v1/auth/sessions/revoke-others", "POST")).toBe(false);
+    expect(isGlobalSignOutRequest("/v1/auth/logout", "POST")).toBe(false);
   });
 });

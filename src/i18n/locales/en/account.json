@@ -97,6 +97,22 @@
         "failed": "Couldn't sign out your other sessions. Try again."
       }
     },
+    "signOutEverywhere": {
+      "title": "Sign out everywhere",
+      "description": "Lost a device? End every sign-in at once: this session, your other devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account.",
+      "button": "Sign out everywhere",
+      "confirm": {
+        "title": "Sign out everywhere?",
+        "description": "Every session ends, this one included, and none can be renewed: your devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account. A device or app that is signed in may keep access for a few more minutes, until its current access runs out. You will need to sign in again.",
+        "label": "Sign out everywhere"
+      },
+      "toast": {
+        "done_one": "Signed out everywhere: {{count}} sign-in ended",
+        "done_other": "Signed out everywhere: {{count}} sign-ins ended",
+        "doneDescription": "None of them can be renewed. Access a device or app already holds runs out within a few minutes.",
+        "failed": "Couldn't sign you out everywhere. You are still signed in here; try again."
+      }
+    },
     "toast": {
       "revoked": "Session revoked"
     }
