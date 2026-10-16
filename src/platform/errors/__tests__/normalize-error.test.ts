@@ -54,6 +54,27 @@ describe("normalizeError", () => {
 });
 
 describe("userMessageForCode (leak stop)", () => {
+  it("names the password rule that refused a password", () => {
+    // Every path that sets a password answers 422 with the rule that
+    // failed (length, character class, breach). The user must see which rule,
+    // not the generic "details aren't valid" validation copy.
+    const shown = (code: string) => {
+      const app = normalizeError(new ApiError(422, code, "backend copy"));
+      return userMessageForCode(app.code, app.kind);
+    };
+    const expected: Record<string, RegExp> = {
+      "authpolicy.password_too_short": /too short/i,
+      "authpolicy.password_no_uppercase": /uppercase letter/i,
+      "authpolicy.password_no_number": /a number/i,
+      "authpolicy.password_no_symbol": /a symbol/i,
+      "authpolicy.password_breached": /known data breaches/i,
+    };
+    for (const [code, copy] of Object.entries(expected)) {
+      expect(shown(code)).toMatch(copy);
+      expect(shown(code)).not.toMatch(/aren't valid/i);
+    }
+  });
+
   it("returns curated copy for a known code", () => {
     expect(userMessageForCode("step_up_required", "auth")).toMatch(/identity check/i);
     expect(userMessageForCode("billing.plan_limit", "api")).toMatch(/plan's limit/i);

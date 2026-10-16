@@ -58,6 +58,14 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.PASSWORD_WEAK]: "Choose a stronger password.",
   [ERROR_CODES.PASSWORD_BREACHED]:
     "This password has appeared in known data breaches. Please choose a different one.",
+  // The rule that refused a new password. The exact minimum length isn't in the
+  // error code, so the length copy can't name the number.
+  [ERROR_CODES.PASSWORD_TOO_SHORT]: "Your password is too short. Please choose a longer one.",
+  [ERROR_CODES.PASSWORD_NO_UPPERCASE]: "Your password must contain an uppercase letter.",
+  [ERROR_CODES.PASSWORD_NO_NUMBER]: "Your password must contain a number.",
+  [ERROR_CODES.PASSWORD_NO_SYMBOL]: "Your password must contain a symbol.",
+  [ERROR_CODES.PASSWORD_POLICY_BREACHED]:
+    "This password has appeared in known data breaches. Please choose a different one.",
   [ERROR_CODES.PASSKEY_LOGIN_FAILED]:
     "We couldn't sign you in with that passkey. Try again, or use your password.",
   [ERROR_CODES.FORBIDDEN]: "You don't have access to do that.",
