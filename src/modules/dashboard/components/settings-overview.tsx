@@ -93,7 +93,7 @@ export function SettingsOverview({ description }: { description: string }) {
   const branding = brandingQ.data;
   const brandingDone = !!(branding?.primary_color || branding?.logo_url);
   const policy = policyQ.data;
-  const securityDone = !!policy && (policy.passkey_enabled || policy.otp_email_enabled);
+  const securityDone = !!policy && policy.passkey_enabled;
   const sub = subQ.data;
   const aiConnected = aiQ.data?.source === "tenant" || !!aiQ.data?.provider;
 

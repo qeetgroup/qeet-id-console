@@ -31,15 +31,21 @@ const GREENFIELD = {
 };
 
 describe("countSignInMethods", () => {
-  it("counts only the five sign-in toggles", () => {
+  it("counts only the three sign-in toggles", () => {
+    // The email and SMS one-time-code flags are not sign-in methods (no such
+    // sign-in exists), so a stray one is not counted.
     expect(
-      countSignInMethods({ password_enabled: true, passkey_enabled: true, otp_sms_enabled: true }),
-    ).toBe(3);
+      countSignInMethods({
+        password_enabled: true,
+        passkey_enabled: true,
+        otp_sms_enabled: true,
+      } as Parameters<typeof countSignInMethods>[0]),
+    ).toBe(2);
   });
 
   it("does not count remember-device as a sign-in method", () => {
     // Adaptive MFA skips the second factor on a known device; it is not a way
-    // to sign in, and counting it would show six methods out of five.
+    // to sign in, and counting it would show four methods out of three.
     expect(
       countSignInMethods({
         password_enabled: true,

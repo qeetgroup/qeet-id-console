@@ -10,13 +10,15 @@ import { MFA_TARGET_PCT } from "./dashboard-insights";
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
 
-/** The five sign-in methods the auth policy can switch on. */
+/**
+ * The sign-in methods the auth policy can switch on. The email and SMS
+ * one-time-code flags are not among them: no such sign-in exists, and the
+ * server refuses to switch them on.
+ */
 export const SIGN_IN_METHODS = [
   "password_enabled",
   "passkey_enabled",
   "magic_link_enabled",
-  "otp_email_enabled",
-  "otp_sms_enabled",
 ] as const;
 
 export type SignInMethod = (typeof SIGN_IN_METHODS)[number];

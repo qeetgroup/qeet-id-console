@@ -505,8 +505,6 @@ function enabledMethodChips(policy: AuthPolicy | undefined, t: (k: string) => st
     [policy.password_enabled, "overview.areas.methods.password"],
     [policy.passkey_enabled, "overview.areas.methods.passkey"],
     [policy.magic_link_enabled, "overview.areas.methods.magicLink"],
-    [policy.otp_email_enabled, "overview.areas.methods.otpEmail"],
-    [policy.otp_sms_enabled, "overview.areas.methods.otpSms"],
   ];
   return map.filter(([on]) => on).map(([, key]) => t(key));
 }
