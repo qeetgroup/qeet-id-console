@@ -11,7 +11,7 @@ import {
   Input,
   StatusPill,
 } from "@qeetrix/ui";
-import { FingerprintIcon, Loader2Icon, PlusIcon } from "lucide-react";
+import { FingerprintPatternIcon, LoaderCircleIcon, PlusIcon } from "@qeetrix/icons";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -74,7 +74,7 @@ export function AccountPasskeysCard({ className }: { className?: string }) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FingerprintIcon className="size-5 text-muted-foreground" />
+            <FingerprintPatternIcon className="size-5 text-muted-foreground" />
             <CardTitle className="text-base">{t("security.passkeys.title")}</CardTitle>
           </div>
           <StatusPill status={passkeys.length > 0 ? "active" : "pending"} dot={false}>
@@ -129,7 +129,11 @@ export function AccountPasskeysCard({ className }: { className?: string }) {
               ) : null}
               <div>
                 <Button type="submit" size="sm" disabled={register.isPending}>
-                  {register.isPending ? <Loader2Icon className="animate-spin" /> : <PlusIcon />}
+                  {register.isPending ? (
+                    <LoaderCircleIcon className="animate-spin" />
+                  ) : (
+                    <PlusIcon />
+                  )}
                   {register.isPending ? t("security.passkeys.adding") : t("security.passkeys.add")}
                 </Button>
               </div>

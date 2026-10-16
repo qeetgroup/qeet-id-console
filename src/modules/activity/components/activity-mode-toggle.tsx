@@ -10,7 +10,7 @@
 // button avoids that.
 
 import { Button, cn } from "@qeetrix/ui";
-import { ArrowUpIcon } from "lucide-react";
+import { ArrowUpIcon } from "@qeetrix/icons";
 
 import type { ActivityMode } from "../types/activity.types";
 

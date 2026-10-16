@@ -25,7 +25,7 @@ import {
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { formatDateTime } from "@/shared/utils/format";
-import { ArrowRightIcon, CheckCircle2Icon } from "lucide-react";
+import { ArrowRightIcon, CircleCheckIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { CopyId } from "./user-detail-fields";
@@ -351,7 +351,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 function VerifiedBadge({ t }: { t: (k: string) => string }) {
   return (
     <Badge variant="success" className="gap-1">
-      <CheckCircle2Icon className="size-3" aria-hidden="true" />
+      <CircleCheckIcon className="size-3" aria-hidden="true" />
       {t("detail.verified")}
     </Badge>
   );
@@ -360,7 +360,7 @@ function VerifiedBadge({ t }: { t: (k: string) => string }) {
 function StateValue({ ok, t }: { ok: boolean; t: (k: string) => string }) {
   return ok ? (
     <span className="inline-flex items-center gap-1 text-success">
-      <CheckCircle2Icon className="size-3.5" aria-hidden="true" />
+      <CircleCheckIcon className="size-3.5" aria-hidden="true" />
       {t("detail.enabled")}
     </span>
   ) : (

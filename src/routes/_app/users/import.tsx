@@ -19,7 +19,13 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeftIcon, FileUpIcon, Loader2Icon, UploadCloudIcon, XIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  CloudUploadIcon,
+  FileUpIcon,
+  LoaderCircleIcon,
+  XIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -226,7 +232,7 @@ function ImportUsersPage() {
                 dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/30",
               )}
             >
-              <UploadCloudIcon className="size-8 text-muted-foreground" />
+              <CloudUploadIcon className="size-8 text-muted-foreground" />
               <p className="text-sm font-medium">{t("import.dropTitle")}</p>
               <p className="text-xs text-muted-foreground">{t("import.dropHelp")}</p>
               <input
@@ -271,7 +277,7 @@ function ImportUsersPage() {
                 disabled={validRows.length === 0 || importM.isPending}
                 onClick={() => importM.mutate(validRows)}
               >
-                {importM.isPending ? <Loader2Icon className="animate-spin" /> : <FileUpIcon />}
+                {importM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <FileUpIcon />}
                 {t("import.importBtn", { count: validRows.length })}
               </Button>
             </div>

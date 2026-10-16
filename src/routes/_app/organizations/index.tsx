@@ -38,7 +38,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Building2Icon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
+import { BuildingComplexIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -218,7 +218,7 @@ function TenantsPage() {
               isError={listQ.isError}
               error={listQ.error}
               isEmpty={rows.length === 0}
-              emptyIcon={Building2Icon}
+              emptyIcon={BuildingComplexIcon}
               emptyTitle={
                 lv.hasActiveFilters ? t("tenants.list.emptyFiltered") : t("tenants.list.empty")
               }
@@ -510,7 +510,7 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
                 {t("tenants.edit.cancel")}
               </SheetClose>
               <Button type="submit" disabled={updateM.isPending}>
-                {updateM.isPending && <Loader2Icon className="animate-spin" />}
+                {updateM.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {updateM.isPending ? t("tenants.edit.saving") : t("tenants.edit.save")}
               </Button>
             </SheetFooter>

@@ -1,23 +1,25 @@
 import { Button, cn } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
 import {
-  HistoryIcon,
+  type IconProps,
   Maximize2Icon,
   Minimize2Icon,
+  PanelLeftIcon,
   PanelRightCloseIcon,
   PictureInPicture2Icon,
-  SidebarIcon,
+  RotateCcwClockIcon,
   SparklesIcon,
   SquarePenIcon,
   XIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 
 import { conversationActions } from "../store/conversation-store";
 import { workspaceActions, workspaceStore } from "../store/workspace-store";
 import type { QeetAIMode } from "../types/qeetai.types";
 
-const MODES: { mode: QeetAIMode; label: string; icon: typeof SidebarIcon }[] = [
-  { mode: "docked", label: "Dock to side", icon: SidebarIcon },
+const MODES: { mode: QeetAIMode; label: string; icon: ComponentType<IconProps<"outline">> }[] = [
+  { mode: "docked", label: "Dock to side", icon: PanelLeftIcon },
   { mode: "floating", label: "Float", icon: PictureInPicture2Icon },
   { mode: "fullscreen", label: "Full screen", icon: Maximize2Icon },
 ];
@@ -52,7 +54,7 @@ export function QeetAIHeader({ dragHandleProps }: { dragHandleProps?: Record<str
         className={historyOpen ? "text-primary" : undefined}
         onClick={() => workspaceActions.toggleHistory()}
       >
-        <HistoryIcon className="size-4" />
+        <RotateCcwClockIcon className="size-4" />
       </Button>
 
       <Button

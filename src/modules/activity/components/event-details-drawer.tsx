@@ -39,7 +39,7 @@ import {
   MonitorIcon,
   SearchIcon,
   ServerIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { type ReactNode, useCallback } from "react";
 
 import type { ActivitySearch, DrawerTab } from "../activity-search";

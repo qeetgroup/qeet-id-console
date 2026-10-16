@@ -6,15 +6,14 @@ import {
   InfoIcon,
   KeyRoundIcon,
   LayersIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   MailIcon,
   PlusIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
   UploadIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { Button, cn } from "@qeetrix/ui";
-import { QeetLogoMark } from "@qeetrix/ui/brand";
 import { Link } from "@tanstack/react-router";
 import { type ComponentProps, type ReactNode, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,6 +27,7 @@ import {
 } from "@/modules/authentication";
 import { useMe } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
+import { QeetMark } from "@/shared/components/qeet-mark";
 
 import { OrganizationIllustration } from "./organization-illustration";
 
@@ -461,7 +461,9 @@ function PendingInvitations() {
                   accept.mutate(invite.id, { onError: (err) => toast.error(errorMessage(err)) });
                 }}
               >
-                {accept.isPending && <Loader2Icon className="animate-spin" aria-hidden="true" />}
+                {accept.isPending && (
+                  <LoaderCircleIcon className="animate-spin" aria-hidden="true" />
+                )}
                 {t("invites.accept")}
               </Button>
             </div>
@@ -508,7 +510,7 @@ export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
           <div className="relative isolate min-w-0 px-2.5 py-5 dark:px-0">
             <div className="relative z-1 max-w-[min(27.5rem,calc(100%-10rem))] @max-[920px]/welcome:max-w-[calc(100%-7.25rem)] @max-[760px]/welcome:max-w-[min(29rem,calc(100%-10rem))] @max-[480px]/welcome:max-w-none">
               <p className="m-0 flex items-center gap-0.5 text-xs font-medium leading-normal text-(--welcome-muted)">
-                <QeetLogoMark size={13} aria-hidden="true" /> {t("welcome.eyebrow")}
+                <QeetMark height={13} /> {t("welcome.eyebrow")}
               </p>
               <h1
                 id={`${id}-title`}

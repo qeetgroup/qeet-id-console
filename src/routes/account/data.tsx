@@ -13,7 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { downloadBlob } from "@/shared/utils/data-export";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { DownloadIcon, Trash2Icon } from "lucide-react";
+import { DownloadIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -84,7 +84,7 @@ function DataPage() {
       <Card className="border-rose-500/40">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Trash2Icon className="size-5 text-rose-600 dark:text-rose-400" />
+            <TrashIcon className="size-5 text-rose-600 dark:text-rose-400" />
             <CardTitle className="text-base">{t("data.delete.title")}</CardTitle>
           </div>
           <CardDescription>{t("data.delete.description")}</CardDescription>
@@ -116,7 +116,7 @@ function DataPage() {
             }
             disabled={deleteM.isPending || (hasPassword && !password)}
           >
-            <Trash2Icon /> {t("data.delete.button")}
+            <TrashIcon /> {t("data.delete.button")}
           </Button>
         </CardContent>
       </Card>

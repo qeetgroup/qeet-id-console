@@ -22,7 +22,7 @@ import {
   PlusIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useEffect } from "react";
 import { countLeaves } from "../../api/abac";
 import type { PolicyDoc } from "../../utils/policy-codegen";

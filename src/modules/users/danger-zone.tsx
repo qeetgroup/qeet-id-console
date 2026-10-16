@@ -4,7 +4,8 @@
 
 import { Button } from "@qeetrix/ui";
 import { useNavigate } from "@tanstack/react-router";
-import { MonitorXIcon, Trash2Icon, UserCheckIcon, UserXIcon } from "lucide-react";
+import { type IconProps, MonitorXIcon, TrashIcon, UserCheckIcon, UserXIcon } from "@qeetrix/icons";
+import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -85,7 +86,7 @@ export function DangerZone({
           }
         />
         <DangerItem
-          icon={Trash2Icon}
+          icon={TrashIcon}
           title={t("detail.deleteBtn")}
           description={t("detail.deleteDesc")}
           destructive
@@ -118,7 +119,7 @@ function DangerItem({
   pending,
   destructive,
 }: {
-  icon: typeof UserXIcon;
+  icon: ComponentType<IconProps<"outline">>;
   title: string;
   description: string;
   onClick: () => void;

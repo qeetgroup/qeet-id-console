@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qeetrix/ui";
-import { BookmarkIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
+import { BookmarkIcon, SlidersHorizontalIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -153,7 +153,7 @@ export function SaveView({
                   aria-label={t("common:actions.delete")}
                   onClick={() => remove(n)}
                 >
-                  <Trash2Icon className="size-3.5 text-muted-foreground" />
+                  <TrashIcon className="size-3.5 text-muted-foreground" />
                 </Button>
               </li>
             ))}

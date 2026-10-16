@@ -1,22 +1,23 @@
 import { Badge, buttonVariants } from "@qeetrix/ui";
-import { PageState } from "@qeetrix/ui/blocks";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ChevronRightIcon,
   GaugeIcon,
+  type IconProps,
   LockKeyholeIcon,
-  type LucideIcon,
   MonitorSmartphoneIcon,
   ScrollTextIcon,
   ShieldAlertIcon,
   ShieldIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import type { Capability } from "@/platform/security/capability-model";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useTenantId } from "@/platform/auth/session";
+import { PageState } from "@/shared/components/page-state";
 
 export const Route = createFileRoute("/_app/security/")({
   component: SecurityOverviewPage,
@@ -24,7 +25,12 @@ export const Route = createFileRoute("/_app/security/")({
 
 // Each card deep-links into a real sub-page (the bare parent paths like
 // /security/threats are themselves placeholders, so we jump to a built child).
-const SECTIONS: { key: string; to: string; icon: LucideIcon; requiredPermission: Capability }[] = [
+const SECTIONS: {
+  key: string;
+  to: string;
+  icon: ComponentType<IconProps<"outline">>;
+  requiredPermission: Capability;
+}[] = [
   {
     key: "threatProtection",
     to: "/security/threats/bots",

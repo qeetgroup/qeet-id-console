@@ -9,7 +9,7 @@ import {
   UserCheckIcon,
   UserPlusIcon,
   UsersIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import {
   Badge,
   Button,

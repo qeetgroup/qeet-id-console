@@ -17,11 +17,13 @@ import {
 import {
   ActivityIcon,
   ArrowRightIcon,
-  CheckCircle2Icon,
+  CircleCheckIcon,
+  type IconProps,
   KeyRoundIcon,
   MailWarningIcon,
   ShieldAlertIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/shared/utils/format";
 
@@ -141,7 +143,7 @@ function IdentityCard({ user, onTab }: { user: UserDetail; onTab: (t: User360Tab
               <span className="truncate">{user.email}</span>
               {user.email_verified_at ? (
                 <Badge variant="success" className="gap-1">
-                  <CheckCircle2Icon className="size-3" aria-hidden="true" />
+                  <CircleCheckIcon className="size-3" aria-hidden="true" />
                   {t("detail.verified")}
                 </Badge>
               ) : (
@@ -328,7 +330,7 @@ function RecentActivityCard({
 
 interface Rec {
   key: string;
-  icon: typeof ShieldAlertIcon;
+  icon: ComponentType<IconProps<"outline">>;
   title: string;
   description: string;
   recommended?: boolean;
@@ -398,7 +400,7 @@ function SecurityRecommendations({
       {recs.length === 0 ? (
         <div className="rounded-xl border bg-card p-6">
           <EmptyState
-            icon={CheckCircle2Icon}
+            icon={CircleCheckIcon}
             title={t("detail.rec.noneTitle")}
             description={t("detail.rec.noneDesc")}
           />

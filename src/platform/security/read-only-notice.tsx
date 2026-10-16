@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from "@qeetrix/ui";
-import { EyeIcon } from "lucide-react";
+import { EyeIcon } from "@qeetrix/icons";
 
 export function ReadOnlyNotice({
   title = "Read-only access",

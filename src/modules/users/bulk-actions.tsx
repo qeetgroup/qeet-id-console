@@ -16,14 +16,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDownIcon,
   DownloadIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   MonitorXIcon,
   ShieldCheckIcon,
-  Trash2Icon,
+  TrashIcon,
   UserPlusIcon,
-  UsersRoundIcon,
   UserXIcon,
-} from "lucide-react";
+  UsersRoundIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -118,7 +118,7 @@ export function BulkActions({
   if (busy) {
     return (
       <span className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2Icon className="size-4 animate-spin" />
+        <LoaderCircleIcon className="size-4 animate-spin" />
         {running.label} · {running.done}/{running.total}
       </span>
     );
@@ -281,7 +281,7 @@ export function BulkActions({
               })
             }
           >
-            <Trash2Icon />
+            <TrashIcon />
             {t("table.deleteUser")}
           </DropdownMenuItem>
         </DropdownMenuContent>

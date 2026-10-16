@@ -33,18 +33,18 @@ import {
   FileTextIcon,
   FolderOpenIcon,
   LayersIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   NetworkIcon,
   PencilIcon,
   PlusIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
-  Trash2Icon,
+  TrashIcon,
   UploadIcon,
   UserIcon,
   UserPlusIcon,
   UsersRoundIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
@@ -352,7 +352,7 @@ function GroupsPage() {
                             })
                           }
                         >
-                          <Trash2Icon /> {t("table.delete")}
+                          <TrashIcon /> {t("table.delete")}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -490,7 +490,7 @@ function EditGroupSheet({ group, onOpenChange, groups, onSaved }: EditGroupSheet
               {t("edit.cancel")}
             </SheetClose>
             <Button type="submit" disabled={updateM.isPending}>
-              {updateM.isPending && <Loader2Icon className="animate-spin" />}
+              {updateM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {updateM.isPending ? t("edit.saving") : t("edit.save")}
             </Button>
           </SheetFooter>
@@ -626,7 +626,7 @@ function MembersSheet({ groupId, groupName, onClose }: MembersSheetProps) {
                   onClick={() => removeM.mutate(m.user_id)}
                   disabled={removeM.isPending}
                 >
-                  <Trash2Icon />
+                  <TrashIcon />
                 </Button>
               </div>
             ))

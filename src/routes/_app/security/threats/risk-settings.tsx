@@ -18,7 +18,7 @@ import {
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2Icon, PlaneIcon, ShieldCheckIcon, SmartphoneIcon } from "lucide-react";
+import { LoaderCircleIcon, PlaneIcon, ShieldCheckIcon, SmartphoneIcon } from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -232,7 +232,7 @@ function RiskSettingsPage() {
 
               <div className="flex items-center gap-3">
                 <Button type="submit" disabled={!dirty || update.isPending}>
-                  {update.isPending && <Loader2Icon className="animate-spin" />}
+                  {update.isPending && <LoaderCircleIcon className="animate-spin" />}
                   {t("threats.riskSettings.save")}
                 </Button>
                 {update.isSuccess && (

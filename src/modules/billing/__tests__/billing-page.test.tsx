@@ -284,24 +284,29 @@ describe("Billing profile and invoices", () => {
   it.each(["light", "dark"])("uses explicit invoice chip and dot colors in %s mode", (theme) => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     const cases = [
-      { status: "paid", label: "Paid", dot: "bg-success", surface: "bg-success/10" },
-      { status: "PAID", label: "Paid", dot: "bg-success", surface: "bg-success/10" },
-      { status: "open", label: "Open", dot: "bg-warning", surface: "bg-warning/10" },
-      { status: "pending", label: "Pending", dot: "bg-warning", surface: "bg-warning/10" },
-      { status: "failed", label: "Failed", dot: "bg-destructive", surface: "bg-destructive/10" },
+      { status: "paid", label: "Paid", dot: "bg-success", surface: "bg-success-subtle" },
+      { status: "PAID", label: "Paid", dot: "bg-success", surface: "bg-success-subtle" },
+      { status: "open", label: "Open", dot: "bg-warning", surface: "bg-warning-subtle" },
+      { status: "pending", label: "Pending", dot: "bg-warning", surface: "bg-warning-subtle" },
+      {
+        status: "failed",
+        label: "Failed",
+        dot: "bg-destructive",
+        surface: "bg-destructive-subtle",
+      },
       {
         status: "uncollectible",
         label: "Uncollectible",
         dot: "bg-destructive",
-        surface: "bg-destructive/10",
+        surface: "bg-destructive-subtle",
       },
       { status: "refunded", label: "Refunded", dot: "bg-info", surface: "bg-info/10" },
-      { status: "draft", label: "Draft", dot: "bg-muted-foreground/60", surface: "bg-muted" },
-      { status: "void", label: "Void", dot: "bg-muted-foreground/60", surface: "bg-muted" },
+      { status: "draft", label: "Draft", dot: "bg-muted-foreground", surface: "bg-muted" },
+      { status: "void", label: "Void", dot: "bg-muted-foreground", surface: "bg-muted" },
       {
         status: "unknown",
         label: "Status unavailable",
-        dot: "bg-muted-foreground/60",
+        dot: "bg-muted-foreground",
         surface: "text-foreground",
       },
     ];
@@ -503,7 +508,7 @@ describe("Billing API orchestration", () => {
       0,
     );
     fireEvent.click(
-      within(screen.getByRole("dialog")).getByRole("button", { name: "Switch to Starter" }),
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Switch to Starter" }),
     );
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith(
@@ -526,7 +531,7 @@ describe("Billing API orchestration", () => {
     renderPage();
     await screen.findByDisplayValue("Example Ltd");
     fireEvent.click(screen.getByRole("button", { name: "Switch to Free" }));
-    const dialog = screen.getByRole("dialog");
+    const dialog = screen.getByRole("alertdialog");
     expect(within(dialog).getByText(/Members \(12\/5\)/)).toBeTruthy();
     expect(within(dialog).getByText(/Custom roles \(5\/0\)/)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
@@ -543,7 +548,7 @@ describe("Billing API orchestration", () => {
       vi.mocked(api).mock.calls.filter(([path]) => path.endsWith("/subscription/cancel")),
     ).toHaveLength(0);
     fireEvent.click(
-      within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel subscription" }),
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Cancel subscription" }),
     );
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/billing/subscription/cancel", {
@@ -560,9 +565,9 @@ describe("Billing API orchestration", () => {
     view.rerender(view.tree());
     await screen.findByDisplayValue("Other organization");
     fireEvent.click(
-      within(screen.getByRole("dialog")).getByRole("button", { name: "Switch to Starter" }),
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Switch to Starter" }),
     );
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
     expect(vi.mocked(api).mock.calls.filter(([path]) => path.endsWith("/checkout"))).toHaveLength(
       0,
     );

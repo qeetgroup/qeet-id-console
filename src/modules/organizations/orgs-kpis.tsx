@@ -4,14 +4,15 @@
 
 import { cn, Skeleton } from "@qeetrix/ui";
 import {
-  Building2Icon,
+  BuildingComplexIcon,
   ChevronRightIcon,
-  type LucideIcon,
+  type IconProps,
   ShieldCheckIcon,
   UserXIcon,
-  Users2Icon,
   UsersIcon,
-} from "lucide-react";
+  UsersRoundIcon,
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Org } from "./api/orgs";
@@ -69,14 +70,14 @@ export function OrgsKpis({
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       <Kpi
-        icon={Building2Icon}
+        icon={BuildingComplexIcon}
         tone="brand"
         label={t("kpi.total")}
         value={total}
         onClick={() => onFilter("all")}
       />
       <Kpi
-        icon={Users2Icon}
+        icon={UsersRoundIcon}
         tone="success"
         label={t("kpi.active")}
         value={active}
@@ -118,7 +119,7 @@ function Kpi({
   meter,
   onClick,
 }: {
-  icon: LucideIcon;
+  icon: ComponentType<IconProps<"outline">>;
   tone: Tone;
   label: string;
   value: number;

@@ -11,7 +11,7 @@ import {
   SquareStackIcon,
   TrendingUpIcon,
   ZapIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";

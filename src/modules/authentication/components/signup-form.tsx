@@ -10,7 +10,13 @@ import {
   scorePassword,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Loader2, LockKeyhole, Mail, UserRound } from "lucide-react";
+import {
+  ArrowRightIcon,
+  LoaderCircleIcon,
+  LockKeyholeIcon,
+  MailIcon,
+  UserRoundIcon,
+} from "@qeetrix/icons";
 import type * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -119,7 +125,7 @@ export function SignupForm({
             <Field className="auth-field" disabled={isBusy}>
               <FieldLabel htmlFor="display_name">{t("signUp.name")}</FieldLabel>
               <div className="auth-input-wrap">
-                <UserRound className="auth-input-icon" aria-hidden="true" />
+                <UserRoundIcon className="auth-input-icon" aria-hidden="true" />
                 <Input
                   ref={nameRef}
                   id="display_name"
@@ -135,7 +141,7 @@ export function SignupForm({
             <Field className="auth-field" disabled={isBusy}>
               <FieldLabel htmlFor="email">{t("signUp.email")}</FieldLabel>
               <div className="auth-input-wrap">
-                <Mail className="auth-input-icon" aria-hidden="true" />
+                <MailIcon className="auth-input-icon" aria-hidden="true" />
                 <Input
                   ref={emailRef}
                   id="email"
@@ -159,7 +165,7 @@ export function SignupForm({
             <Field className="auth-field" disabled={isBusy}>
               <FieldLabel htmlFor="password">{t("form.password")}</FieldLabel>
               <div className="auth-input-wrap">
-                <LockKeyhole className="auth-input-icon" aria-hidden="true" />
+                <LockKeyholeIcon className="auth-input-icon" aria-hidden="true" />
                 <PasswordInput
                   id="password"
                   name="password"
@@ -182,7 +188,7 @@ export function SignupForm({
             <Field className="auth-field" disabled={isBusy} data-invalid={mismatch || undefined}>
               <FieldLabel htmlFor="confirm_password">{t("signUp.confirmPassword")}</FieldLabel>
               <div className="auth-input-wrap">
-                <LockKeyhole className="auth-input-icon" aria-hidden="true" />
+                <LockKeyholeIcon className="auth-input-icon" aria-hidden="true" />
                 <PasswordInput
                   ref={confirmRef}
                   id="confirm_password"
@@ -211,9 +217,9 @@ export function SignupForm({
           )}
 
           <Button type="submit" className="auth-submit" disabled={isDisabled}>
-            {isLoading && <Loader2 className="animate-spin" aria-hidden="true" />}
+            {isLoading && <LoaderCircleIcon className="animate-spin" aria-hidden="true" />}
             {t(isLoading ? "signUp.submitting" : "signUp.submit")}
-            {!isLoading && <ArrowRight aria-hidden="true" />}
+            {!isLoading && <ArrowRightIcon aria-hidden="true" />}
           </Button>
 
           <AuthDivider>{t("passkey.signupDivider")}</AuthDivider>

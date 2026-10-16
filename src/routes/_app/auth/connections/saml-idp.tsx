@@ -39,7 +39,7 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
-import { Loader2Icon, PencilIcon, PlusIcon, ServerIcon, Trash2Icon } from "lucide-react";
+import { LoaderCircleIcon, PencilIcon, PlusIcon, ServerIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -144,7 +144,7 @@ function SamlIdpPage() {
                         onClick={() => setConfirmingDelete(p)}
                         disabled={deleteM.isPending}
                       >
-                        <Trash2Icon /> {t("common:actions.remove")}
+                        <TrashIcon /> {t("common:actions.remove")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -200,7 +200,7 @@ function SamlIdpPage() {
                 })
               }
             >
-              {deleteM.isPending && <Loader2Icon className="animate-spin" />}
+              {deleteM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {deleteM.isPending ? t("common:actions.removing") : t("common:actions.remove")}
             </Button>
           </AlertDialogFooter>
@@ -329,7 +329,7 @@ function SamlProviderSheet({
               {t("common:actions.cancel")}
             </SheetClose>
             <Button type="submit" disabled={pending}>
-              {pending && <Loader2Icon className="animate-spin" />}
+              {pending && <LoaderCircleIcon className="animate-spin" />}
               {isEdit
                 ? pending
                   ? t("common:actions.saving")

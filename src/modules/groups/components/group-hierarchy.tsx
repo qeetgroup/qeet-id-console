@@ -1,6 +1,6 @@
 import { cn } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { ChevronRightIcon, UsersRoundIcon } from "lucide-react";
+import { ChevronRightIcon, UsersRoundIcon } from "@qeetrix/icons";
 
 import type { Group } from "../api/groups";
 

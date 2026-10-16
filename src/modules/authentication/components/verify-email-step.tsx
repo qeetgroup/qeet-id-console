@@ -9,7 +9,7 @@ import {
   FieldLabel,
   Input,
 } from "@qeetrix/ui";
-import { Loader2Icon } from "lucide-react";
+import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 
 /**
@@ -88,7 +88,7 @@ export function VerifyEmailStep({
 
               <Field>
                 <Button type="submit" disabled={isLoading || code.trim().length < 6}>
-                  {isLoading && <Loader2Icon className="animate-spin" />}
+                  {isLoading && <LoaderCircleIcon className="animate-spin" />}
                   {isLoading ? "Verifying…" : "Verify email"}
                 </Button>
               </Field>

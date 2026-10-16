@@ -5,13 +5,13 @@ import {
   BlocksIcon,
   BotIcon,
   BoxesIcon,
-  Building2Icon,
+  BuildingComplexIcon,
   ChartColumnIcon,
-  Code2Icon,
+  CodeXmlIcon,
   CpuIcon,
   CreditCardIcon,
-  FileKey2Icon,
-  FingerprintIcon,
+  FileKeyIcon,
+  FingerprintPatternIcon,
   FlaskConicalIcon,
   GaugeIcon,
   GlobeIcon,
@@ -38,7 +38,7 @@ import {
   WebhookIcon,
   WorkflowIcon,
   ZapIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import type { ReactNode } from "react";
 
 import type { Capability } from "@/platform/security/capability-model";
@@ -121,7 +121,7 @@ export const navGroups: NavGroup[] = [
         // custom login domain), so Organizations is now a single destination.
         title: "Organizations",
         url: "/organizations",
-        icon: <Building2Icon />,
+        icon: <BuildingComplexIcon />,
         description: "Organization boundaries, plans and regions.",
       },
       {
@@ -194,7 +194,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Authentication",
-    icon: <FingerprintIcon />,
+    icon: <FingerprintPatternIcon />,
     items: [
       { title: "Overview", url: "/authentication", icon: <GaugeIcon /> },
       {
@@ -249,7 +249,7 @@ export const navGroups: NavGroup[] = [
       {
         title: "MFA",
         url: "/auth/mfa/totp",
-        icon: <FingerprintIcon />,
+        icon: <FingerprintPatternIcon />,
         description: "TOTP and SMS / email second factors.",
         items: [
           { title: "TOTP", url: "/auth/mfa/totp" },
@@ -422,7 +422,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Developer",
-    icon: <Code2Icon />,
+    icon: <CodeXmlIcon />,
     items: [
       { title: "Overview", url: "/developer", icon: <GaugeIcon /> },
       {
@@ -442,7 +442,7 @@ export const navGroups: NavGroup[] = [
       {
         title: "Signing keys",
         url: "/auth/api/signing-keys",
-        icon: <FileKey2Icon />,
+        icon: <FileKeyIcon />,
         description: "JWKS keys that sign your tokens.",
         requiredPermission: "connection.read",
       },

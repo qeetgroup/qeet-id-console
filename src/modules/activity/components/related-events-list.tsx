@@ -4,7 +4,7 @@
 // it. Reuses the compact EventCard so rows match the dashboard widget.
 
 import { EmptyState, Skeleton } from "@qeetrix/ui";
-import { LinkIcon } from "lucide-react";
+import { LinkIcon } from "@qeetrix/icons";
 
 import { useRelatedEvents } from "../related-events";
 import type { ActivityEvent } from "../types/activity.types";

@@ -10,7 +10,7 @@ import {
   SegmentedControlItem,
 } from "@qeetrix/ui";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";

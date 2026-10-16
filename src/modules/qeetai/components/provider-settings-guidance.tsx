@@ -6,7 +6,7 @@ import {
   ExternalLinkIcon,
   NetworkIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import type { QeetAIProvider } from "../api/qeetai";

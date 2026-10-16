@@ -37,7 +37,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2Icon, MailIcon, PlusIcon, RefreshCwIcon, SendIcon, Trash2Icon } from "lucide-react";
+import {
+  LoaderCircleIcon,
+  MailIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  SendIcon,
+  TrashIcon,
+} from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -279,7 +286,7 @@ function InvitationsPage() {
                             onClick={() => resendM.mutate(inv.id)}
                           >
                             {resendM.isPending && resendM.variables === inv.id ? (
-                              <Loader2Icon className="animate-spin" />
+                              <LoaderCircleIcon className="animate-spin" />
                             ) : (
                               <SendIcon />
                             )}
@@ -300,7 +307,7 @@ function InvitationsPage() {
                               })
                             }
                           >
-                            <Trash2Icon /> {t("table.revoke")}
+                            <TrashIcon /> {t("table.revoke")}
                           </Button>
                         </div>
                       </TableCell>
@@ -469,7 +476,7 @@ function CreateInviteSheet({
               {t("create.cancel")}
             </SheetClose>
             <Button type="submit" disabled={createM.isPending || !tenantId}>
-              {createM.isPending && <Loader2Icon className="animate-spin" />}
+              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
               {createM.isPending ? t("create.submitting") : t("create.submit")}
             </Button>
           </SheetFooter>

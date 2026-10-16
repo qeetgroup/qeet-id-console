@@ -33,7 +33,7 @@ import {
   ListFilterIcon,
   ReceiptTextIcon,
   RefreshCwIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 

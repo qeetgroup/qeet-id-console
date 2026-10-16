@@ -1,5 +1,5 @@
 import { Button, Textarea } from "@qeetrix/ui";
-import { ArrowUpIcon, SquareIcon } from "lucide-react";
+import { ArrowUpIcon, SquareIcon } from "@qeetrix/icons";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 interface ComposerProps {

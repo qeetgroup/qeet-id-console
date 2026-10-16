@@ -15,7 +15,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { RefreshCwIcon, ScrollTextIcon } from "lucide-react";
+import { RefreshCwIcon, ScrollTextIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";

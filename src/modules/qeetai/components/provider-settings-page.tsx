@@ -23,23 +23,23 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import {
   BoxIcon,
-  CheckCircle2Icon,
   ChevronDownIcon,
+  CircleCheckIcon,
   EllipsisVerticalIcon,
   EyeIcon,
   EyeOffIcon,
   HashIcon,
   KeyRoundIcon,
   LinkIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   LockKeyholeIcon,
   PlugZapIcon,
   RefreshCwIcon,
   RotateCcwIcon,
   ShieldCheckIcon,
-  Trash2Icon,
+  TrashIcon,
   WandSparklesIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -435,7 +435,7 @@ function ProviderSettingsForm({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => void perform("remove")}>
-                  <Trash2Icon /> {t("qeetAI.actions.remove")}
+                  <TrashIcon /> {t("qeetAI.actions.remove")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -643,7 +643,7 @@ function ProviderSettingsForm({
             role="status"
             className="flex items-start gap-2 text-xs leading-5 text-emerald-700 dark:text-emerald-400"
           >
-            <CheckCircle2Icon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <CircleCheckIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {t(`qeetAI.feedback.${feedback}`)}
           </p>
         ) : null}
@@ -656,7 +656,7 @@ function ProviderSettingsForm({
             disabled={!!pending || !canWrite || invalid}
           >
             {pending === "test" ? (
-              <Loader2Icon className="size-4 motion-safe:animate-spin" />
+              <LoaderCircleIcon className="size-4 motion-safe:animate-spin" />
             ) : (
               <PlugZapIcon className="size-4" />
             )}
@@ -674,7 +674,7 @@ function ProviderSettingsForm({
             </Button>
             <Button type="submit" className={ACTION} disabled={!!pending || !canWrite || invalid}>
               {pending === "save" ? (
-                <Loader2Icon className="size-4 motion-safe:animate-spin" />
+                <LoaderCircleIcon className="size-4 motion-safe:animate-spin" />
               ) : (
                 <KeyRoundIcon className="size-4" />
               )}

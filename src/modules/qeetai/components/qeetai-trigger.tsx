@@ -1,6 +1,6 @@
 import { Button } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
-import { SparklesIcon } from "lucide-react";
+import { SparklesIcon } from "@qeetrix/icons";
 
 import { workspaceActions, workspaceStore } from "../store/workspace-store";
 

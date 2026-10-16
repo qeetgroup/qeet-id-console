@@ -18,11 +18,11 @@ import {
 import { Link } from "@tanstack/react-router";
 import {
   ClipboardIcon,
+  EllipsisIcon,
   ExternalLinkIcon,
-  FilterIcon,
-  MoreHorizontalIcon,
+  FunnelIcon,
   PanelRightOpenIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import type { ReactElement } from "react";
 import { toast } from "sonner";
 
@@ -74,7 +74,7 @@ export function InvestigateMenu({
               aria-label="Investigate event"
               onClick={(e) => e.stopPropagation()}
             >
-              <MoreHorizontalIcon className="size-4" aria-hidden="true" />
+              <EllipsisIcon className="size-4" aria-hidden="true" />
             </Button>
           )
         }
@@ -137,17 +137,17 @@ export function InvestigateMenu({
             <DropdownMenuSeparator />
             {(actorId || event.actor?.name) && (
               <DropdownMenuItem onClick={() => onFilter({ actor: actorId ?? event.actor?.name })}>
-                <FilterIcon className="size-3.5" aria-hidden="true" />
+                <FunnelIcon className="size-3.5" aria-hidden="true" />
                 Filter by this actor
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => onFilter({ type: event.type })}>
-              <FilterIcon className="size-3.5" aria-hidden="true" />
+              <FunnelIcon className="size-3.5" aria-hidden="true" />
               Filter by event type
             </DropdownMenuItem>
             {event.ip && (
               <DropdownMenuItem onClick={() => onFilter({ ip: event.ip })}>
-                <FilterIcon className="size-3.5" aria-hidden="true" />
+                <FunnelIcon className="size-3.5" aria-hidden="true" />
                 Filter by this IP
               </DropdownMenuItem>
             )}

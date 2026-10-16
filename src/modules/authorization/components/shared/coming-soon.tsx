@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@qeetrix/ui";
-import { ConstructionIcon, type LucideIcon } from "lucide-react";
+import { ConstructionIcon, type IconProps } from "@qeetrix/icons";
+import type { ComponentType } from "react";
 
 /**
  * Honest placeholder for surfaces whose backend does not exist yet (batch
@@ -12,7 +13,7 @@ export function ComingSoon({
   description,
   note,
 }: {
-  icon?: LucideIcon;
+  icon?: ComponentType<IconProps<"outline">>;
   title: string;
   description: string;
   note?: string;

@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
-import { FingerprintIcon, XIcon, ZapIcon } from "lucide-react";
+import { FingerprintPatternIcon, XIcon, ZapIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { canAddPasskey, usePasskeys } from "@/modules/authentication";
@@ -55,7 +55,7 @@ export function PasskeyPromptCard() {
       <CardHeader className="flex flex-row items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-info/10 text-info ring-1 ring-info/15">
-            <FingerprintIcon className="size-4" />
+            <FingerprintPatternIcon className="size-4" />
           </span>
           <div>
             <CardTitle className="text-sm font-semibold">

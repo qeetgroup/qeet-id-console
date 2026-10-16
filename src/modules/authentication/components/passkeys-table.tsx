@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@qeetrix/ui";
-import { CheckIcon, PencilIcon, Trash2Icon, XIcon } from "lucide-react";
+import { CheckIcon, PencilIcon, TrashIcon, XIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -176,7 +176,7 @@ export function PasskeysTable({ passkeys, onRename, onRemove, isRemoving }: Pass
                   <PencilIcon /> {t("loginMethods.passkeys.renameBtn")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => onRemove(p)} disabled={isRemoving}>
-                  <Trash2Icon /> {t("loginMethods.passkeys.removeBtn")}
+                  <TrashIcon /> {t("loginMethods.passkeys.removeBtn")}
                 </Button>
               </TableCell>
             </TableRow>

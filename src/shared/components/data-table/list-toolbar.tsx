@@ -22,7 +22,7 @@ import {
   SearchIcon,
   SlidersHorizontalIcon,
   XIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import type { ReactNode } from "react";
 
 import type { Density } from "@/shared/hooks/use-list-view";

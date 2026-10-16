@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
-import { BookmarkIcon, PlusIcon } from "lucide-react";
+import { BookmarkIcon, PlusIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import type { ActivitySearch } from "../activity-search";

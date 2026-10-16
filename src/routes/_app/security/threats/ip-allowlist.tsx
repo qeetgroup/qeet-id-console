@@ -27,7 +27,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldIcon, Trash2Icon } from "lucide-react";
+import { ShieldIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -196,7 +196,7 @@ function IpAllowlistPage() {
                         onClick={() => deleteM.mutate(rule.id)}
                         disabled={deleteM.isPending}
                       >
-                        <Trash2Icon /> {t("threats.ipAllowlist.rules.remove")}
+                        <TrashIcon /> {t("threats.ipAllowlist.rules.remove")}
                       </Button>
                     </TableCell>
                   </TableRow>

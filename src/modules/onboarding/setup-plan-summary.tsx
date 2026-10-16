@@ -1,4 +1,4 @@
-import { ArrowRightIcon, BoxIcon, Building2Icon, CrownIcon, UsersIcon } from "lucide-react";
+import { ArrowRightIcon, BoxIcon, BuildingComplexIcon, CrownIcon, UsersIcon } from "@qeetrix/icons";
 import { cn } from "@qeetrix/ui";
 import { useTranslation } from "react-i18next";
 
@@ -7,7 +7,12 @@ import { usePlans } from "@/modules/billing";
 import type { PlanSelection } from "./plan-select";
 import { SETUP_FOCUS } from "./setup-styles";
 
-const ICONS = { free: BoxIcon, starter: UsersIcon, pro: CrownIcon, enterprise: Building2Icon };
+const ICONS = {
+  free: BoxIcon,
+  starter: UsersIcon,
+  pro: CrownIcon,
+  enterprise: BuildingComplexIcon,
+};
 
 export function SetupPlanSummary({
   selection,

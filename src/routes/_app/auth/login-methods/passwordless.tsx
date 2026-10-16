@@ -10,13 +10,13 @@ import {
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  FingerprintIcon,
+  FingerprintPatternIcon,
   KeyRoundIcon,
   MailIcon,
   MessageSquareIcon,
   ShieldCheckIcon,
   WandSparklesIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -60,7 +60,7 @@ type MethodDef = {
 };
 
 const METHOD_DEFS: MethodDef[] = [
-  { key: "passkey_enabled", translationKey: "passkeys", icon: FingerprintIcon },
+  { key: "passkey_enabled", translationKey: "passkeys", icon: FingerprintPatternIcon },
   {
     key: "magic_link_enabled",
     translationKey: "magicLinks",

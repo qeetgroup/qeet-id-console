@@ -1,6 +1,5 @@
 import { Button, cn, Spinner } from "@qeetrix/ui";
 import {
-  AlertTriangleIcon,
   CheckIcon,
   ChevronDownIcon,
   CircleDotIcon,
@@ -9,8 +8,9 @@ import {
   EyeOffIcon,
   RotateCcwIcon,
   ShieldAlertIcon,
+  TriangleAlertIcon,
   XIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useCallback, useState } from "react";
 
 import { useSensitiveArtifact } from "../../store/secrets-store";
@@ -49,7 +49,7 @@ function humanize(name: string): string {
 function StatusGlyph({ tone }: { tone: Tone }) {
   if (tone === "running") return <Spinner size="sm" className="text-primary" />;
   if (tone === "success") return <CheckIcon className="size-4 text-success" />;
-  if (tone === "error") return <AlertTriangleIcon className="size-4 text-destructive" />;
+  if (tone === "error") return <TriangleAlertIcon className="size-4 text-destructive" />;
   return <CircleDotIcon className="size-4 text-muted-foreground" />;
 }
 
@@ -109,7 +109,7 @@ export function ToolCallCard({
       {execution.error ? (
         <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
-            <AlertTriangleIcon className="size-3.5 shrink-0" />
+            <TriangleAlertIcon className="size-3.5 shrink-0" />
             {execution.error.code === "execution_error"
               ? "The action could not be completed."
               : execution.error.message}

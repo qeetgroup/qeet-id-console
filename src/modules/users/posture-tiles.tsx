@@ -3,14 +3,15 @@
 import { cn, Skeleton, TimeSince } from "@qeetrix/ui";
 import {
   GaugeIcon,
+  type IconProps,
   KeyRoundIcon,
   LockIcon,
-  type LucideIcon,
   MailIcon,
   MonitorSmartphoneIcon,
   ShieldAlertIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 
 import type { SecuritySummary } from "./api/user360";
 import type { UserRisk } from "./user-risk";
@@ -32,7 +33,7 @@ function PostureTile({
   tone = "neutral",
   loading,
 }: {
-  icon: LucideIcon;
+  icon: ComponentType<IconProps<"outline">>;
   label: string;
   value?: React.ReactNode;
   sub?: React.ReactNode;

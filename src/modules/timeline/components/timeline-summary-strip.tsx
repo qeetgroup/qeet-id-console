@@ -5,12 +5,13 @@
 import { cn, Skeleton } from "@qeetrix/ui";
 import {
   ActivityIcon,
+  type IconProps,
   LogInIcon,
-  type LucideIcon,
   MonitorIcon,
   ShieldIcon,
   SlidersHorizontalIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
+import type { ComponentType } from "react";
 
 import type { ActivityEvent } from "@/modules/activity";
 import { computeTimelineSummary, SUMMARY_CATEGORY_FILTERS } from "../timeline-summary";
@@ -45,7 +46,7 @@ function StatCard({
   active,
   onClick,
 }: {
-  icon: LucideIcon;
+  icon: ComponentType<IconProps<"outline">>;
   label: string;
   value: number;
   sub: string;
@@ -113,7 +114,7 @@ export function TimelineSummaryStrip({
 
   const cards: {
     key: string;
-    icon: LucideIcon;
+    icon: ComponentType<IconProps<"outline">>;
     label: string;
     value: number;
     sub: string;

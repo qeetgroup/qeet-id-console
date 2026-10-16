@@ -15,7 +15,7 @@ import {
   TooltipTrigger,
 } from "@qeetrix/ui";
 import { Link, useLocation } from "@tanstack/react-router";
-import { ChevronRightIcon, Clock3Icon } from "lucide-react";
+import { ChevronRightIcon, Clock3Icon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import type { NavGroup, NavItem } from "@/platform/config/navigation";

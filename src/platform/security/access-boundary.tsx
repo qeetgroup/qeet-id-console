@@ -1,12 +1,12 @@
 import { Button, buttonVariants, Skeleton } from "@qeetrix/ui";
-import { PageState } from "@qeetrix/ui/blocks";
 import { Link, useLocation } from "@tanstack/react-router";
-import { LockKeyholeIcon, RefreshCwIcon, ShieldAlertIcon } from "lucide-react";
+import { LockKeyholeIcon, RefreshCwIcon, ShieldAlertIcon } from "@qeetrix/icons";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 
 import { useTenantId } from "@/platform/auth/session";
 import { getRequiredCapabilityForPath } from "@/platform/config/navigation";
+import { PageState } from "@/shared/components/page-state";
 import { capabilityLabel } from "./capability-model";
 import { useCapabilities } from "./capability-provider";
 

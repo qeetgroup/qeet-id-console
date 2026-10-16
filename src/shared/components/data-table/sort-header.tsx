@@ -1,5 +1,5 @@
 import { cn, TableHead } from "@qeetrix/ui";
-import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from "@qeetrix/icons";
 
 import type { SortState } from "@/shared/hooks/use-list-view";
 

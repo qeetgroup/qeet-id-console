@@ -13,21 +13,21 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
-  BarChart3Icon,
   BookOpenIcon,
+  ChartColumnIcon,
   CircleIcon,
+  CircleQuestionMarkIcon,
   CopyIcon,
   ExternalLinkIcon,
   GlobeIcon,
-  HelpCircleIcon,
   InfoIcon,
   LinkIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   RefreshCwIcon,
   ServerIcon,
   ShieldCheckIcon,
   UsersRoundIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -257,7 +257,7 @@ export function CustomLoginDomainTab() {
           <Card>
             <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
               <div className="flex min-w-0 items-center gap-3">
-                <SectionIcon icon={<BarChart3Icon />} />
+                <SectionIcon icon={<ChartColumnIcon />} />
                 <CardTitle className="text-base">
                   {t("workspace.domains.custom.provisioning.title")}
                 </CardTitle>
@@ -311,7 +311,7 @@ export function CustomLoginDomainTab() {
             <CardContent className="space-y-4">
               {(
                 [
-                  { id: "q1", icon: <HelpCircleIcon /> },
+                  { id: "q1", icon: <CircleQuestionMarkIcon /> },
                   { id: "q2", icon: <ShieldCheckIcon /> },
                   { id: "q3", icon: <UsersRoundIcon /> },
                 ] as const
@@ -385,7 +385,7 @@ export function CustomLoginDomainTab() {
             <ExternalLinkIcon className="size-3.5" />
           </a>
           <Button disabled={!dirty || saving} onClick={save}>
-            {saving ? <Loader2Icon className="animate-spin" /> : null}
+            {saving ? <LoaderCircleIcon className="animate-spin" /> : null}
             {saving ? t("workspace.domains.custom.saving") : t("workspace.domains.custom.save")}
           </Button>
         </div>

@@ -16,7 +16,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { KeyRoundIcon, Trash2Icon } from "lucide-react";
+import { KeyRoundIcon, TrashIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -112,7 +112,7 @@ function TokensPage() {
                         }
                         disabled={revokeM.isPending}
                       >
-                        <Trash2Icon /> {t("tokens.revoke")}
+                        <TrashIcon /> {t("tokens.revoke")}
                       </Button>
                     </TableCell>
                   </TableRow>

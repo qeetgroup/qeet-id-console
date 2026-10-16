@@ -15,7 +15,13 @@ import {
 import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { KeyRoundIcon, LinkIcon, Loader2Icon, ShieldCheckIcon, Trash2Icon } from "lucide-react";
+import {
+  KeyRoundIcon,
+  LinkIcon,
+  LoaderCircleIcon,
+  ShieldCheckIcon,
+  TrashIcon,
+} from "@qeetrix/icons";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -193,7 +199,7 @@ function SecurityPage() {
                 size="sm"
                 disabled={changePassword.isPending || next.length < 8 || (hasPassword && !current)}
               >
-                {changePassword.isPending && <Loader2Icon className="animate-spin" />}
+                {changePassword.isPending && <LoaderCircleIcon className="animate-spin" />}
                 {hasPassword
                   ? t("security.password.reset", { defaultValue: "Update password" })
                   : "Set a password"}
@@ -206,7 +212,7 @@ function SecurityPage() {
                   disabled={forgot.isPending || !me.data?.email}
                   onClick={emailResetLink}
                 >
-                  {forgot.isPending && <Loader2Icon className="animate-spin" />}
+                  {forgot.isPending && <LoaderCircleIcon className="animate-spin" />}
                   Forgot password?
                 </Button>
               )}
@@ -291,7 +297,7 @@ function SecurityPage() {
                         disabled={unlink.isPending}
                         onClick={() => unlink.mutate(linked.id)}
                       >
-                        <Trash2Icon /> {t("security.connected.unlink")}
+                        <TrashIcon /> {t("security.connected.unlink")}
                       </Button>
                     ) : (
                       <Button

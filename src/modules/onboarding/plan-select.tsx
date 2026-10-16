@@ -1,12 +1,12 @@
 import {
   BoxIcon,
-  Building2Icon,
-  CheckCircle2Icon,
+  BuildingComplexIcon,
+  CircleCheckIcon,
   CrownIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   RefreshCwIcon,
   UsersIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import {
   Button,
   cn,
@@ -39,7 +39,12 @@ import {
   SETUP_THEME,
 } from "./setup-styles";
 
-const PLAN_ICONS = { free: BoxIcon, starter: UsersIcon, pro: CrownIcon, enterprise: Building2Icon };
+const PLAN_ICONS = {
+  free: BoxIcon,
+  starter: UsersIcon,
+  pro: CrownIcon,
+  enterprise: BuildingComplexIcon,
+};
 
 function currencyLabel(currency: string) {
   try {
@@ -352,7 +357,7 @@ export function PlanSelect({
                           meta.featured && "dark:text-(--setup-accent)",
                         )}
                       >
-                        <CheckCircle2Icon className="size-3" aria-hidden="true" />
+                        <CircleCheckIcon className="size-3" aria-hidden="true" />
                       </span>
                       <span className="text-(--setup-muted)">{f}</span>
                     </li>
@@ -383,7 +388,7 @@ export function PlanSelect({
                   }
                 >
                   {busy && (
-                    <Loader2Icon
+                    <LoaderCircleIcon
                       className="animate-spin motion-reduce:animate-none"
                       aria-hidden="true"
                     />

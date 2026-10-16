@@ -21,7 +21,7 @@ import {
   TooltipTrigger,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { HistoryIcon, RotateCcwIcon, SlidersHorizontalIcon } from "lucide-react";
+import { RotateCcwClockIcon, RotateCcwIcon, SlidersHorizontalIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -106,7 +106,7 @@ function VersionsPage() {
                 isError={auditQ.isError}
                 error={auditQ.error}
                 isEmpty={timeline.length === 0}
-                emptyIcon={HistoryIcon}
+                emptyIcon={RotateCcwClockIcon}
                 emptyTitle="No changes recorded for this policy"
                 skeletonRows={3}
               >

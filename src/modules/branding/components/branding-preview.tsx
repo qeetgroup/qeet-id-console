@@ -1,5 +1,4 @@
 import { cn, Tooltip, TooltipContent, TooltipTrigger } from "@qeetrix/ui";
-import { QeetLogoOnLight } from "@qeetrix/ui/brand";
 import {
   EyeIcon,
   GlobeIcon,
@@ -7,9 +6,10 @@ import {
   LayersIcon,
   MailIcon,
   MonitorIcon,
+  QeetLogo,
   ShieldCheckIcon,
   SmartphoneIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -126,7 +126,7 @@ export function BrandingPreview({
                   />
                 ) : (
                   <>
-                    <QeetLogoOnLight size={27} title={null} />
+                    <QeetLogo height={27} />
                     <span className="font-heading text-sm font-semibold">Qeet ID</span>
                   </>
                 )}

@@ -37,7 +37,7 @@ import {
   ServerIcon,
   ShieldOffIcon,
   UserXIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import { type ReactNode, useCallback } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";

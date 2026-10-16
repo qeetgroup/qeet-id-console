@@ -3,12 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
-  BarChart3Icon,
-  CheckCircle2Icon,
+  ChartColumnIcon,
   ChevronRightIcon,
+  CircleCheckIcon,
   CreditCardIcon,
   MapPinIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -199,7 +199,7 @@ export function SettingsOverview({ description }: { description: string }) {
       <section className="flex flex-col gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-            <BarChart3Icon className="size-5" />
+            <ChartColumnIcon className="size-5" />
           </span>
           <div className="min-w-0">
             <h2 className="font-heading text-base font-semibold">
@@ -275,7 +275,7 @@ function SettingsCard({ item, status }: { item: NavItem; status?: CardStatus }) 
         <div className="flex items-center justify-between gap-3 ps-13">
           <span className="flex min-w-0 items-center gap-1.5 text-sm">
             {status?.done ? (
-              <CheckCircle2Icon className="size-4 shrink-0 text-emerald-500" />
+              <CircleCheckIcon className="size-4 shrink-0 text-emerald-500" />
             ) : status?.done === false ? (
               <span className="size-2 shrink-0 rounded-full bg-muted-foreground/40" />
             ) : null}

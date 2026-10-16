@@ -1,5 +1,5 @@
 import { Handle, type NodeProps, Position } from "@xyflow/react";
-import { KeyRoundIcon, ShieldCheckIcon } from "lucide-react";
+import { KeyRoundIcon, ShieldCheckIcon } from "@qeetrix/icons";
 
 import { NODE_W } from "./layout";
 

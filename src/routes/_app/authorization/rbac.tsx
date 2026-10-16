@@ -9,7 +9,7 @@ import {
   DataState,
 } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldCheckIcon } from "lucide-react";
+import { ShieldCheckIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { PageHeader } from "@/platform/components/page-header";

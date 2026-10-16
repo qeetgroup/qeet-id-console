@@ -1,5 +1,5 @@
 import { cn } from "@qeetrix/ui";
-import { SparklesIcon } from "lucide-react";
+import { SparklesIcon } from "@qeetrix/icons";
 import { useMemo } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";

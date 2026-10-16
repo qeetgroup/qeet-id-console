@@ -23,12 +23,12 @@ import {
   CheckIcon,
   CopyIcon,
   DownloadIcon,
-  FingerprintIcon,
+  FingerprintPatternIcon,
   KeyRoundIcon,
-  Loader2Icon,
+  LoaderCircleIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@qeetrix/icons";
 import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -250,8 +250,8 @@ function MfaTotpPage() {
                       }
                       disabled={startM.isPending}
                     >
-                      {startM.isPending && <Loader2Icon className="animate-spin" />}
-                      <FingerprintIcon /> {t("mfa.totp.active.replaceBtn")}
+                      {startM.isPending && <LoaderCircleIcon className="animate-spin" />}
+                      <FingerprintPatternIcon /> {t("mfa.totp.active.replaceBtn")}
                     </Button>
                     <Button
                       variant="outline"
@@ -266,7 +266,7 @@ function MfaTotpPage() {
                       }
                       disabled={disableM.isPending}
                     >
-                      {disableM.isPending && <Loader2Icon className="animate-spin" />}
+                      {disableM.isPending && <LoaderCircleIcon className="animate-spin" />}
                       {t("mfa.totp.active.disableBtn")}
                     </Button>
                   </div>
@@ -358,7 +358,7 @@ function MfaTotpPage() {
                     <CardTitle className="text-base">{t("mfa.totp.idle.title")}</CardTitle>
                     <CardDescription>{t("mfa.totp.idle.subtitle")}</CardDescription>
                   </div>
-                  <FingerprintIcon className="size-6 text-muted-foreground" />
+                  <FingerprintPatternIcon className="size-6 text-muted-foreground" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -369,7 +369,7 @@ function MfaTotpPage() {
                 </ul>
                 {startM.error && <FieldError>{errorMessage(startM.error)}</FieldError>}
                 <Button onClick={() => startM.mutate()} disabled={startM.isPending}>
-                  {startM.isPending && <Loader2Icon className="animate-spin" />}
+                  {startM.isPending && <LoaderCircleIcon className="animate-spin" />}
                   {startM.isPending
                     ? t("mfa.totp.idle.generatingBtn")
                     : t("mfa.totp.idle.beginBtn")}
@@ -402,7 +402,7 @@ function MfaTotpPage() {
                       />
                     ) : (
                       <div className="flex size-42 items-center justify-center">
-                        <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
+                        <LoaderCircleIcon className="size-5 animate-spin text-muted-foreground" />
                       </div>
                     )}
                   </div>
@@ -467,7 +467,7 @@ function MfaTotpPage() {
                     {t("mfa.totp.enrolling.cancelBtn")}
                   </Button>
                   <Button type="submit" disabled={confirmM.isPending || code.length !== 6}>
-                    {confirmM.isPending && <Loader2Icon className="animate-spin" />}
+                    {confirmM.isPending && <LoaderCircleIcon className="animate-spin" />}
                     {confirmM.isPending
                       ? t("mfa.totp.enrolling.verifyingBtn")
                       : t("mfa.totp.enrolling.confirmBtn")}
@@ -530,7 +530,7 @@ function MfaTotpPage() {
                   }
                   disabled={disableM.isPending}
                 >
-                  {disableM.isPending && <Loader2Icon className="animate-spin" />}
+                  {disableM.isPending && <LoaderCircleIcon className="animate-spin" />}
                   {t("mfa.totp.confirmed.disableBtn")}
                 </Button>
               </div>

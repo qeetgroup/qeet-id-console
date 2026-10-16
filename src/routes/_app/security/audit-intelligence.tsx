@@ -27,12 +27,12 @@ import {
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
-  AlertTriangleIcon,
   BrainCircuitIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
   SparklesIcon,
-} from "lucide-react";
+  TriangleAlertIcon,
+} from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -74,7 +74,7 @@ function AuditIntelligencePage() {
     {
       key: "open",
       value: sm?.open ?? 0,
-      icon: <AlertTriangleIcon className="size-4" />,
+      icon: <TriangleAlertIcon className="size-4" />,
     },
     {
       key: "highScore",
