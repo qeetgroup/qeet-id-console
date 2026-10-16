@@ -1,8 +1,8 @@
 # Container image for the console (TanStack Start + Nitro node-server).
 #
 # Production is deployed by Vercel (deploy.yml) and does not use this file. The
-# image is built by ci.yml on release/** branches and run by the qeet-id-deploy
-# test kit (DEV / TEST / STAGING). Runtime configuration (no rebuild per
+# image is built by ci.yml on release/** branches and run by the Qeet ID Kit
+# (qeet-id-kit; DEV / TEST / STAGING). Runtime configuration (no rebuild per
 # environment):
 #   SERVER_URL       backend origin the BFF calls server-to-server
 #   SESSION_SECRET   >= 32 chars; seals the __Host-qeet_console session cookie

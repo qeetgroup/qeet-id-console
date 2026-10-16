@@ -112,7 +112,7 @@ bun run lint:boundaries  # the layering gate
 
 - `verify` (runner `ubuntu-latest`, 15 min): typecheck → `check` → **`lint:boundaries`** → test → build.
 - `image` — push to `release/**` only, after `verify`: publishes
-  `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>` (amd64+arm64) for the `qeet-id-deploy` test kit.
+  `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>` (amd64+arm64) for the Qeet ID Kit (`qeet-id-kit`).
   It never computes an RC number. The image is the `Dockerfile` (Nitro `node-server`), configured at
   runtime by `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL`; health `GET /healthz`. Vercel
   production does not use it.

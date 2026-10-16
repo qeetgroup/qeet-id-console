@@ -4,7 +4,7 @@ import { env } from "@/platform/config/env";
 // Authenticated data requests go through the same-origin Start BFF.
 //
 // Resolved at RUNTIME so one container image serves any environment (the
-// qeet-id-deploy test kit runs the same image for QA and UAT): the server reads
+// Qeet ID Kit (qeet-id-kit) runs the same image for QA and UAT): the server reads
 // PUBLIC_API_URL per request and RootDocument hands the same value to the
 // browser before hydration (publicConfigScript). VITE_API_URL — inlined at
 // build time — remains the fallback, which is what the Vercel deployment uses.
