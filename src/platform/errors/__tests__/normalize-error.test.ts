@@ -75,6 +75,16 @@ describe("userMessageForCode (leak stop)", () => {
     }
   });
 
+  it("says sign-in is temporarily unavailable when the lockout cannot be checked", () => {
+    // The server refuses a password sign-in with 503 when its failed-attempt
+    // counters cannot be read or written; retrying shortly is the right advice,
+    // not "something went wrong".
+    const app = normalizeError(
+      new ApiError(503, "auth.sign_in_unavailable", "backend copy", undefined, true),
+    );
+    expect(userMessageForCode(app.code, app.kind)).toMatch(/temporarily unavailable/i);
+  });
+
   it("returns curated copy for a known code", () => {
     expect(userMessageForCode("step_up_required", "auth")).toMatch(/identity check/i);
     expect(userMessageForCode("billing.plan_limit", "api")).toMatch(/plan's limit/i);
