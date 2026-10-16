@@ -7,19 +7,21 @@ import {
   CardTitle,
   Skeleton,
 } from "@qeetrix/ui";
-import { startRegistration } from "@simplewebauthn/browser";
 import { errorMessage } from "@/platform/errors/user-message";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { FingerprintIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import {
-  type Passkey,
+  canAddPasskey,
+  type PasskeyList,
   PASSKEYS_KEY,
   PasskeysTable,
   passkeyDisplayName,
+  useRegisterPasskey,
+  useRemovePasskey,
   useRenamePasskey,
 } from "@/modules/authentication";
 import { api } from "@/platform/api/client";
@@ -35,48 +37,28 @@ export const Route = createFileRoute("/_app/auth/login-methods/passkeys")({
 function PasskeysPage() {
   const { t } = useTranslation("auth");
   const [confirmDialog, openConfirm] = useConfirmDialog();
-  const qc = useQueryClient();
 
   const listQ = useQuery({
     queryKey: PASSKEYS_KEY,
-    queryFn: () => api<{ items: Passkey[] }>("/v1/passkeys"),
+    queryFn: () => api<PasskeyList>("/v1/passkeys"),
   });
 
-  const deleteM = useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/passkeys/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PASSKEYS_KEY }),
-    meta: { successMessage: "Passkey removed" },
-  });
-
+  const deleteM = useRemovePasskey();
   const renameM = useRenamePasskey();
 
-  // Registration ceremony: ask the backend for creation options, drive the
-  // browser WebAuthn API, then post the attestation back to finish. No name is
-  // asked for: the server names the passkey after this browser (e.g. "Chrome
-  // on macOS") and it can be renamed inline from the list.
-  const registerM = useMutation({
-    mutationFn: async () => {
-      const begin = await api<{
-        session_id: string;
-        publicKey: Parameters<typeof startRegistration>[0]["optionsJSON"];
-      }>("/v1/passkeys/register/begin", { method: "POST" });
-      const credential = await startRegistration({
-        optionsJSON: begin.publicKey,
-      });
-      await api<void>("/v1/passkeys/register/finish", {
-        method: "POST",
-        body: { session_id: begin.session_id, credential },
-      });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: PASSKEYS_KEY }),
-    // Own the error toast (silences the global handler) with user-safe copy —
-    // covers both ApiError and WebAuthn browser errors without leaking raw text.
-    meta: { silent: true },
-    onError: (e) => {
-      const appError = normalizeError(e);
-      toast.error(userMessageForCode(appError.code, appError.kind));
-    },
-  });
+  // Registration ceremony (creation options → browser WebAuthn → attestation).
+  // No name is asked for here: the server names the passkey after this browser
+  // (e.g. "Chrome on macOS") and it can be renamed inline from the list. The
+  // hook leaves errors to the caller; toast user-safe copy for both ApiError
+  // and WebAuthn browser errors without leaking raw text.
+  const registerM = useRegisterPasskey();
+  const register = () =>
+    registerM.mutate(undefined, {
+      onError: (e) => {
+        const appError = normalizeError(e);
+        toast.error(userMessageForCode(appError.code, appError.kind));
+      },
+    });
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -94,12 +76,15 @@ function PasskeysPage() {
               <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
               {t("loginMethods.passkeys.refreshBtn")}
             </Button>
-            <Button size="sm" onClick={() => registerM.mutate()} disabled={registerM.isPending}>
-              <PlusIcon />{" "}
-              {registerM.isPending
-                ? t("loginMethods.passkeys.registeringBtn")
-                : t("loginMethods.passkeys.registerBtn")}
-            </Button>
+            {/* Not offered when the organization has passkeys switched off. */}
+            {canAddPasskey(listQ.data) && (
+              <Button size="sm" onClick={register} disabled={registerM.isPending}>
+                <PlusIcon />{" "}
+                {registerM.isPending
+                  ? t("loginMethods.passkeys.registeringBtn")
+                  : t("loginMethods.passkeys.registerBtn")}
+              </Button>
+            )}
           </>
         }
       />
@@ -111,6 +96,9 @@ function PasskeysPage() {
             {t("loginMethods.passkeys.list.count", {
               count: listQ.data?.items?.length ?? 0,
             })}
+            {listQ.data && !canAddPasskey(listQ.data) && (
+              <> · {t("loginMethods.passkeys.disabled")}</>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">

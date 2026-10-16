@@ -15,14 +15,7 @@ import {
 import { Apple, Github, Google, Microsoft } from "@thesvg/react";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  FingerprintIcon,
-  KeyRoundIcon,
-  LinkIcon,
-  Loader2Icon,
-  ShieldCheckIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { KeyRoundIcon, LinkIcon, Loader2Icon, ShieldCheckIcon, Trash2Icon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -31,13 +24,13 @@ import { toast } from "sonner";
 import { ApiError } from "@/platform/api/client";
 import { useMe } from "@/platform/auth/session";
 import {
+  AccountPasskeysCard,
   startSocialLink,
   useChangePassword,
   useForgotPassword,
   usePasswordStatus,
   usePlatformSocialProviders,
 } from "@/modules/authentication";
-import { usePasskeys } from "@/modules/authentication/api/passkeys";
 import {
   useSocialIdentities,
   useUnlinkIdentity,
@@ -66,8 +59,6 @@ function providerIcon(provider: string): ReactNode {
 
 function SecurityPage() {
   const { t } = useTranslation("account");
-  const passkeysQ = usePasskeys();
-  const passkeyCount = passkeysQ.data?.items?.length ?? 0;
   const identitiesQ = useSocialIdentities();
   const identities = identitiesQ.data?.items ?? [];
   const unlink = useUnlinkIdentity();
@@ -224,34 +215,8 @@ function SecurityPage() {
         </CardContent>
       </Card>
 
-      {/* Passkeys */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FingerprintIcon className="size-5 text-muted-foreground" />
-              <CardTitle className="text-base">{t("security.passkeys.title")}</CardTitle>
-            </div>
-            <StatusPill status={passkeyCount > 0 ? "active" : "pending"} dot={false}>
-              {passkeyCount > 0
-                ? t("security.passkeys.enrolled", { count: passkeyCount })
-                : t("security.passkeys.notEnrolled")}
-            </StatusPill>
-          </div>
-          <CardDescription>{t("security.passkeys.description")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link
-            to="/auth/login-methods/passkeys"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            <FingerprintIcon /> {t("security.passkeys.manage")}
-          </Link>
-        </CardContent>
-      </Card>
-
       {/* Two-factor */}
-      <Card className="md:col-span-2">
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <ShieldCheckIcon className="size-5 text-muted-foreground" />
@@ -271,6 +236,10 @@ function SecurityPage() {
           </Link>
         </CardContent>
       </Card>
+
+      {/* Passkeys: listed, renamed, removed and added right here — the user's own
+          settings, not the Authentication › Login methods admin screen. */}
+      <AccountPasskeysCard className="md:col-span-2" />
 
       {/* Connected accounts */}
       <Card className="md:col-span-2">
