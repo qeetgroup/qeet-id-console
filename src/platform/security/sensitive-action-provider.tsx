@@ -8,13 +8,22 @@ import {
   AlertDialogTitle,
   Button,
 } from "@qeetrix/ui";
-import { createContext, type ReactNode, useCallback, useContext, useRef, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
 import type { Capability } from "@/platform/security/capability-model";
 import { StepUpDialog } from "@/platform/security/step-up-dialog";
 import { isStepUpRequired } from "@/platform/security/step-up";
+import { registerStepUpHandler } from "@/platform/security/step-up-gate";
 
 export type SensitiveActionOptions<T> = {
   /** Optional client capability pre-check (UX only — backend stays authoritative). */
@@ -47,15 +56,21 @@ export class SensitiveActionCancelled extends Error {
 type ConfirmState = NonNullable<SensitiveActionOptions<unknown>["confirm"]> & {
   resolve: (ok: boolean) => void;
 };
-type StepUpState = { actionLabel?: string; resolve: (verified: boolean) => void };
+type StepUpState = {
+  actionLabel?: string;
+  /** The factor types the organisation counts; null when every one does. */
+  allowedMethods: string[] | null;
+  resolve: (verified: boolean) => void;
+};
 
 /**
  * Mounts the ONE shared confirm + step-up dialog for the app and exposes
- * `useSensitiveAction()`. Every sensitive mutation flows through the same
- * capability → confirm → step-up → api path, so a backend `step_up_required`
- * (403) consistently opens the re-auth dialog and retries — instead of
- * dead-ending as a generic toast. The backend remains the authority; this is
- * UX + a single recovery path. Mount inside CapabilityProvider.
+ * `useSensitiveAction()`. It also registers the step-up prompt with the API
+ * client (step-up-gate), so a backend `step_up_required` (403) on ANY request
+ * opens the dialog and the request is sent again once the person confirms —
+ * whether or not the action went through `useSensitiveAction`, which adds the
+ * capability check, the confirmation and the action's wording. The backend
+ * remains the authority. Mount inside CapabilityProvider.
  */
 export function SensitiveActionProvider({ children }: { children: ReactNode }) {
   const { can } = useCapabilities();
@@ -64,6 +79,20 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
   // Keep the latest `can` without resubscribing the callback identity.
   const canRef = useRef(can);
   canRef.current = can;
+  // The wording of the sensitive action running now, for the step-up dialog.
+  const actionLabelRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    registerStepUpHandler(async ({ allowedMethods }) => {
+      const verified = await new Promise<boolean>((resolve) => {
+        setStepUp({ actionLabel: actionLabelRef.current, allowedMethods, resolve });
+      });
+      setStepUp(null);
+      if (!verified) toast.info("Cancelled. Nothing was changed.");
+      return verified;
+    });
+    return () => registerStepUpHandler(null);
+  }, []);
 
   const runSensitive = useCallback<RunSensitive>(async (options) => {
     if (options.capability && !canRef.current(options.capability)) {
@@ -79,18 +108,16 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
       if (!ok) throw new SensitiveActionCancelled();
     }
 
-    const attempt = () => options.run();
+    actionLabelRef.current = options.actionLabel;
     try {
-      return await attempt();
+      return await options.run();
     } catch (err) {
-      if (!isStepUpRequired(err)) throw err;
-      // Backend wants a fresh factor — open the step-up dialog and retry once.
-      const verified = await new Promise<boolean>((resolve) => {
-        setStepUp({ actionLabel: options.actionLabel, resolve });
-      });
-      setStepUp(null);
-      if (!verified) throw new SensitiveActionCancelled();
-      return await attempt();
+      // The API client has already asked for the step-up and sent the request
+      // again; a refusal that still reaches here is one the person cancelled.
+      if (isStepUpRequired(err)) throw new SensitiveActionCancelled();
+      throw err;
+    } finally {
+      actionLabelRef.current = undefined;
     }
   }, []);
 
@@ -136,6 +163,7 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
         }}
         onVerified={() => stepUp?.resolve(true)}
         actionLabel={stepUp?.actionLabel}
+        allowedMethods={stepUp?.allowedMethods ?? null}
       />
     </SensitiveActionContext.Provider>
   );

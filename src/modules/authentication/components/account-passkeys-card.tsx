@@ -26,6 +26,7 @@ import {
   useRemovePasskey,
   useRenamePasskey,
 } from "../api/passkeys";
+import { isLastSignInMethod, useSignInMethods } from "../api/sign-in-methods";
 import { PasskeysTable, passkeyDisplayName } from "./passkeys-table";
 
 /**
@@ -41,6 +42,8 @@ export function AccountPasskeysCard({ className }: { className?: string }) {
   const rename = useRenamePasskey();
   const register = useRegisterPasskey();
   const remove = useRemovePasskey();
+  const methodsQ = useSignInMethods();
+  const lastMethod = isLastSignInMethod(methodsQ.data);
   const [name, setName] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
 
@@ -102,9 +105,15 @@ export function AccountPasskeysCard({ className }: { className?: string }) {
                 })
               }
               isRemoving={remove.isPending}
+              removeBlockedReason={lastMethod ? t("security.lastMethod") : undefined}
             />
           </div>
         )}
+        {remove.error ? (
+          <p role="alert" className="text-sm text-destructive">
+            {errorMessage(remove.error)}
+          </p>
+        ) : null}
         {passkeysQ.isSuccess &&
           (canAddPasskey(passkeysQ.data) ? (
             <form onSubmit={add} className="grid max-w-md gap-3">

@@ -27,6 +27,7 @@ import {
   SheetHeader,
   SheetTitle,
   StatusPill,
+  Switch,
   Tabs,
   TabsContent,
   TabsList,
@@ -44,15 +45,23 @@ import {
   PlayIcon,
   SaveIcon,
   ShieldCheckIcon,
+  TrashIcon,
 } from "@qeetrix/icons";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { errorMessage } from "@/platform/errors/user-message";
+import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { formatDateTime } from "@/shared/utils/format";
 
 import { socialStartUrl } from "../api/flows";
-import { type SocialProvider, socialRedirectUri, useUpsertSocialProvider } from "../api/social";
+import {
+  type SocialProvider,
+  socialRedirectUri,
+  useDeleteSocialProvider,
+  useUpdateSocialProvider,
+  useUpsertSocialProvider,
+} from "../api/social";
 import {
   SOCIAL_PROVIDERS,
   type SocialProviderMeta,
@@ -75,10 +84,12 @@ type ConfigureSocialProviderSheetProps = {
  * native `required` validation cannot focus a control inside one. Validation
  * therefore happens here — `canSave` gates the submit button.
  *
- * `POST /v1/social/providers` accepts client_id, client_secret and
- * discovery_url and nothing else. The comps' enable/disable switch, Scopes
- * field and "Test configuration" button are left out until the server has
- * endpoints for them, rather than shipping controls that do nothing.
+ * Saving goes through `POST /v1/social/providers`, which keeps whether the
+ * provider is switched on and, for one already configured, keeps the stored
+ * secret when the field is left blank. A configured provider can be switched
+ * off or on (`PATCH`) and removed (`DELETE`, refused while someone can sign in
+ * only through it). The comps' Scopes field and "Test configuration" button
+ * are left out until the server has endpoints for them.
  */
 export function ConfigureSocialProviderSheet({
   provider,
@@ -87,6 +98,9 @@ export function ConfigureSocialProviderSheet({
 }: ConfigureSocialProviderSheetProps) {
   const { t } = useTranslation("auth");
   const upsertM = useUpsertSocialProvider();
+  const updateM = useUpdateSocialProvider();
+  const deleteM = useDeleteSocialProvider();
+  const [confirmDialog, openConfirm] = useConfirmDialog();
 
   const [clientId, setClientId] = useState(existing?.client_id ?? "");
   const [clientSecret, setClientSecret] = useState("");
@@ -96,8 +110,13 @@ export function ConfigureSocialProviderSheet({
 
   const redirectUri = socialRedirectUri(provider.id);
   const isEnabled = !!existing?.enabled;
+  // A configured provider keeps its stored secret when the field is blank.
   const canSave =
-    !!clientId.trim() && !!clientSecret.trim() && !!discoveryUrl.trim() && !upsertM.isPending;
+    !!clientId.trim() &&
+    (!!existing || !!clientSecret.trim()) &&
+    !!discoveryUrl.trim() &&
+    !upsertM.isPending;
+  const actionError = upsertM.error ?? updateM.error ?? deleteM.error;
 
   return (
     <Sheet open onOpenChange={(o) => !o && onClose()}>
@@ -137,6 +156,21 @@ export function ConfigureSocialProviderSheet({
                 <SheetDescription className="mt-1.5">
                   {t("social.configure.description", { label: provider.label })}
                 </SheetDescription>
+                {existing && (
+                  <div className="mt-3 flex items-center gap-2 text-sm">
+                    <Switch
+                      id="social-provider-enabled"
+                      checked={isEnabled}
+                      disabled={updateM.isPending}
+                      onCheckedChange={(on) =>
+                        updateM.mutate({ provider: provider.id, enabled: on === true })
+                      }
+                    />
+                    <FieldLabel htmlFor="social-provider-enabled">
+                      {t("social.configure.enabledLabel")}
+                    </FieldLabel>
+                  </div>
+                )}
               </div>
             </div>
           </SheetHeader>
@@ -215,7 +249,7 @@ export function ConfigureSocialProviderSheet({
                     </Field>
                     <Field>
                       <FieldLabel htmlFor="social-client-secret">
-                        {t("social.configure.clientSecretLabel")} <RequiredMark />
+                        {t("social.configure.clientSecretLabel")} {!existing && <RequiredMark />}
                       </FieldLabel>
                       <PasswordInput
                         id="social-client-secret"
@@ -272,10 +306,10 @@ export function ConfigureSocialProviderSheet({
                 </CardContent>
               </Card>
 
-              {upsertM.error && (
+              {actionError && (
                 <FieldGroup>
                   <Field>
-                    <FieldError>{errorMessage(upsertM.error)}</FieldError>
+                    <FieldError>{errorMessage(actionError)}</FieldError>
                   </Field>
                 </FieldGroup>
               )}
@@ -362,15 +396,37 @@ export function ConfigureSocialProviderSheet({
           </Tabs>
 
           <SheetFooter className="mt-0 shrink-0 flex-row items-center justify-between gap-2 border-t p-4">
-            <SheetClose render={<Button type="button" variant="outline" />}>
-              {t("social.configure.cancelBtn")}
-            </SheetClose>
+            <div className="flex items-center gap-2">
+              <SheetClose render={<Button type="button" variant="outline" />}>
+                {t("social.configure.cancelBtn")}
+              </SheetClose>
+              {existing && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-destructive"
+                  disabled={deleteM.isPending}
+                  onClick={() =>
+                    openConfirm({
+                      title: t("social.configure.remove.title", { label: provider.label }),
+                      description: t("social.configure.remove.description"),
+                      confirmLabel: t("social.configure.remove.confirm"),
+                      onConfirm: () => deleteM.mutate(provider.id, { onSuccess: () => onClose() }),
+                    })
+                  }
+                >
+                  <TrashIcon />
+                  {t("social.configure.remove.button")}
+                </Button>
+              )}
+            </div>
             <Button type="submit" disabled={!canSave}>
               {upsertM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
               {upsertM.isPending ? t("social.configure.savingBtn") : t("social.configure.saveBtn")}
             </Button>
           </SheetFooter>
         </form>
+        {confirmDialog}
       </SheetContent>
     </Sheet>
   );

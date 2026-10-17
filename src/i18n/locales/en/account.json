@@ -30,6 +30,7 @@
     }
   },
   "security": {
+    "lastMethod": "This is your only way to sign in. Add a passkey or set a password before removing it.",
     "title": "Security",
     "description": "Password, two-factor authentication, and active sessions for your account.",
     "password": {
@@ -66,6 +67,25 @@
       "empty": "No connected accounts. Link one by signing in with a provider from the sign-in screen.",
       "linkedAt": "· linked {{date}}",
       "unlink": "Unlink"
+    },
+    "devices": {
+      "title": "Remembered devices",
+      "description": "Browsers you chose to remember skip the second factor when you sign in, until they expire. Forget any you no longer use or don't recognise; it's asked for the second factor next time.",
+      "memberDescription": "Browsers this person chose to remember in your organisation skip the second factor until they expire. Forget any that may be lost or compromised.",
+      "empty": "No remembered devices.",
+      "thisDevice": "This device",
+      "remembered": "Remembered {{date}}",
+      "lastUsed": "last used {{date}}",
+      "neverUsed": "not used since",
+      "expires": "expires {{date}}",
+      "forget": "Forget",
+      "forgetAll": "Forget all",
+      "forgetConfirm": "Forget {{device}}?",
+      "forgetDescription": "It will be asked for the second factor at its next sign-in.",
+      "forgetAllConfirm": "Forget all remembered devices?",
+      "forgetAllDescription": "Each will be asked for the second factor at its next sign-in.",
+      "forgotOne": "Device forgotten",
+      "forgotAll": "Remembered devices forgotten"
     }
   },
   "sessions": {
@@ -111,7 +131,7 @@
       "button": "Sign out everywhere",
       "confirm": {
         "title": "Sign out everywhere?",
-        "description": "Every session ends, this one included, and none can be renewed: your devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account. A device or app that is signed in may keep access for a few more minutes, until its current access runs out. You will need to sign in again.",
+        "description": "Every session ends, this one included, and none can be renewed: your devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account. Your remembered devices are forgotten too. A device or app that is signed in may keep access for a few more minutes, until its current access runs out. You will need to sign in again.",
         "label": "Sign out everywhere"
       },
       "toast": {

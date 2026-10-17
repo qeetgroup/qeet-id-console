@@ -89,24 +89,58 @@
       "description": "Enforced at signup, password change, and password reset.",
       "minLengthLabel": "Minimum length",
       "complexityLabel": "Complexity",
-      "complexityBasic": "Basic — letters only",
+      "complexityBasic": "Relaxed — letters only",
       "complexityStandard": "Standard — mixed case + numbers",
       "complexityStrict": "Strict — also requires symbols"
     },
     "session": {
       "title": "Session policy",
       "description": "Affects new sessions only; existing sessions keep their original lifetime.",
-      "maxAgeLabel": "Maximum session age"
+      "maxAgeLabel": "Maximum session age",
+      "maxAgeHelp": "How long a session lasts after sign-in, however active it is. Also how long an application stays signed in. A duration such as 24h, 720h (30 days) or 2160h (90 days); between 1h and 8760h.",
+      "idleLabel": "Idle timeout",
+      "idleHelp": "A session ends once it goes this long without being used. At least 15m and no longer than the maximum session age, such as 30m, 8h or 24h.",
+      "maxSessionsLabel": "Sessions per person",
+      "maxSessionsNone": "No limit",
+      "limitActionLabel": "At the limit",
+      "limitEvict": "End their least recently used session",
+      "limitRefuse": "Refuse the new sign-in",
+      "limitHelp": "How many places one person may be signed in at once. A session ended this way can't be renewed; anything it already holds stops working within 10 minutes."
     },
     "mfa": {
       "title": "MFA enforcement",
-      "description": "How aggressively users are pushed toward enrolling a second factor.",
+      "description": "Who must use a second factor to sign in. Anyone who must and has none sets up an authenticator app before they get in.",
       "modeLabel": "Mode",
-      "disabled": "Disabled — users cannot enrol MFA",
-      "optional": "Optional — users may enrol but aren't required",
-      "required": "Required — block login until enrolled",
-      "adminOnly": "Admins only — require MFA for owner/admin roles",
-      "noteHelp": "Note: this policy isn't enforced at login yet — only the separate risk-based step-up (adaptive MFA) applies today."
+      "optional": "Optional — only people who set up a second factor are asked for it",
+      "required": "Required — everyone uses a second factor to sign in",
+      "adminOnly": "Admins only — anyone whose role can change anything (a write permission)",
+      "noteHelp": "Applies to password sign-in. People an administrator marks as requiring MFA must use it whatever this is set to.",
+      "graceLabel": "Grace period (days)",
+      "graceHelp": "For this many days after you turn the requirement on, people who already have an account can skip setting up a second factor; they're asked each time they sign in. 0 means no grace period.",
+      "graceEnds": "The current grace period ends {{date}}."
+    },
+    "stepUp": {
+      "title": "Step-up for sensitive actions",
+      "description": "Before someone changes factors, keys, secrets, sign-in settings or other sensitive things, they confirm a second factor again. A confirmation counts only in the browser where it was made.",
+      "windowLabel": "Confirmation lasts",
+      "windowHelp": "How long a confirmation keeps sensitive actions unlocked in that browser. Signing out, a password change or a factor reset ends it sooner.",
+      "window": {
+        "1m": "1 minute",
+        "5m": "5 minutes",
+        "10m": "10 minutes",
+        "15m": "15 minutes",
+        "30m": "30 minutes",
+        "1h": "1 hour"
+      },
+      "methodsLabel": "Factors that count",
+      "methodsHelp": "Only these confirm a sensitive action. People who hold none of them aren't asked to confirm changes to their own factors.",
+      "method": {
+        "webauthn": "Passkey",
+        "totp": "Authenticator app",
+        "recovery_code": "Recovery code",
+        "otp": "Email or text-message code",
+        "push": "Push approval on a phone"
+      }
     },
     "savedAt": "Saved {{time}}",
     "unsaved": "Unsaved changes",

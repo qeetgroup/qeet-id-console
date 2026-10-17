@@ -65,6 +65,7 @@ beforeEach(() => {
     if (path === "/v1/auth/password") return { has_password: true };
     if (path === "/v1/me/social/identities") return { items: [] };
     if (path === "/v1/social/platform/providers") return { providers: [] };
+    if (path === "/v1/auth/trusted-devices") return { items: [] };
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });

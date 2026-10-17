@@ -15,7 +15,7 @@ import { MonitorSmartphoneIcon, ShieldIcon } from "@qeetrix/icons";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import { formatIp } from "@/shared/utils/ip-format";
-import type { Session } from "../api/sessions";
+import { type Session, sessionCountry, sessionDevice, sessionStatus } from "../api/sessions";
 
 type SessionsTableProps = {
   query: UseQueryResult<{ items: Session[] }>;
@@ -64,7 +64,9 @@ export function SessionsTable({
         </TableHeader>
         <TableBody>
           {items.map((s) => {
-            const isCurrent = !!currentSessionId && s.id === currentSessionId;
+            // The server marks the session the list was requested with.
+            const isCurrent = s.current ?? (!!currentSessionId && s.id === currentSessionId);
+            const country = sessionCountry(s);
             return (
               <TableRow key={s.id}>
                 <TableCell
@@ -72,7 +74,8 @@ export function SessionsTable({
                   title={s.user_agent ?? ""}
                 >
                   <MonitorSmartphoneIcon className="mr-1 inline size-3" />
-                  {s.user_agent ?? "—"}
+                  {sessionDevice(s)}
+                  {country && <span className="ml-1">· {country}</span>}
                   {isCurrent && (
                     <Badge variant="secondary" className="ml-2">
                       This device
@@ -89,13 +92,13 @@ export function SessionsTable({
                   <TimeSince value={s.last_seen_at} />
                 </TableCell>
                 <TableCell>
-                  <StatusPill status={s.revoked_at ? "revoked" : "active"} />
+                  <StatusPill status={sessionStatus(s)} />
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="ghost"
                     size="sm"
-                    disabled={!!s.revoked_at || isCurrent || isRevoking}
+                    disabled={sessionStatus(s) !== "active" || isCurrent || isRevoking}
                     onClick={() => onRevoke(s)}
                   >
                     Revoke

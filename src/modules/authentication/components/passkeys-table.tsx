@@ -31,6 +31,8 @@ type PasskeysTableProps = {
   /** Called when the user asks to remove a passkey — the caller confirms. */
   onRemove: (passkey: Passkey) => void;
   isRemoving?: boolean;
+  /** Set when no passkey may be removed (it would be the account's last way to sign in): shown as the reason. */
+  removeBlockedReason?: string;
 };
 
 /**
@@ -38,7 +40,13 @@ type PasskeysTableProps = {
  * actions) with an inline rename. Names are user-supplied, so they are only
  * ever rendered as text.
  */
-export function PasskeysTable({ passkeys, onRename, onRemove, isRemoving }: PasskeysTableProps) {
+export function PasskeysTable({
+  passkeys,
+  onRename,
+  onRemove,
+  isRemoving,
+  removeBlockedReason,
+}: PasskeysTableProps) {
   const { t } = useTranslation("auth");
   const [editing, setEditing] = useState<{ id: string; draft: string } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -175,7 +183,13 @@ export function PasskeysTable({ passkeys, onRename, onRemove, isRemoving }: Pass
                 >
                   <PencilIcon /> {t("loginMethods.passkeys.renameBtn")}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => onRemove(p)} disabled={isRemoving}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRemove(p)}
+                  disabled={isRemoving || !!removeBlockedReason}
+                  title={removeBlockedReason}
+                >
                   <TrashIcon /> {t("loginMethods.passkeys.removeBtn")}
                 </Button>
               </TableCell>

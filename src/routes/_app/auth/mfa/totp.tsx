@@ -36,10 +36,12 @@ import { toast } from "sonner";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { PageHeader } from "@/platform/components/page-header";
-import { StepUpDialog } from "@/platform/security/step-up-dialog";
-import { ApiError, api } from "@/platform/api/client";
 import {
-  isStepUpRequired,
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
+import { api } from "@/platform/api/client";
+import {
   useRecoveryStatus,
   useRegenerateRecoveryCodes,
   useTotpStatus,
@@ -49,7 +51,12 @@ export const Route = createFileRoute("/_app/auth/mfa/totp")({
   component: MfaTotpPage,
 });
 
-type EnrollStart = { secret: string; provisioning_url: string };
+type EnrollStart = {
+  secret: string;
+  provisioning_url: string;
+  /** The account holds a confirmed app, which keeps working until this one is confirmed. */
+  replacing?: boolean;
+};
 type ConfirmResult = { recovery_codes: string[] };
 
 type Stage = "idle" | "enrolling" | "confirmed";
@@ -61,6 +68,7 @@ function MfaTotpPage() {
   const recoveryQ = useRecoveryStatus();
   const regenM = useRegenerateRecoveryCodes();
   const [confirmDialog, openConfirm] = useConfirmDialog();
+  const sensitive = useSensitiveAction();
   const [stage, setStage] = useState<Stage>("idle");
   const [copied, setCopied] = useState(false);
   const [enrollment, setEnrollment] = useState<EnrollStart | null>(null);
@@ -110,12 +118,22 @@ function MfaTotpPage() {
     onSuccess: (res) => {
       setEnrollment(res);
       setStage("enrolling");
-      // enroll/start rotated the secret and cleared confirmed_at server-side;
-      // drop the cached status so a cancel back to idle reflects reality.
+      // A replacement waits beside the confirmed app, which keeps working
+      // until the new one is confirmed; refresh the status either way.
       void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
     },
     meta: { silent: true },
   });
+
+  // Starting a replacement needs a step-up while an app is confirmed: the
+  // shared step-up dialog asks for it, worded for this action.
+  function startEnrollment() {
+    // A failure shows on the card (startM.error); a cancel changes nothing.
+    sensitive({
+      actionLabel: t("mfa.totp.active.replaceStepUpLabel"),
+      run: () => startM.mutateAsync(),
+    }).catch(() => undefined);
+  }
 
   const confirmM = useMutation({
     mutationFn: (otpCode: string) =>
@@ -132,12 +150,6 @@ function MfaTotpPage() {
     meta: { successMessage: "Authenticator app enabled" },
   });
 
-  // Both "disable" and "regenerate recovery codes" are RequireRecentMFA-gated,
-  // so a single step-up dialog serves both — we track which action triggered it
-  // to retry the right one (and label the prompt) after re-verification.
-  const [stepUpOpen, setStepUpOpen] = useState(false);
-  const [stepUpAction, setStepUpAction] = useState<"disable" | "regenerate">("disable");
-
   const disableM = useMutation({
     mutationFn: () => api<void>("/v1/mfa/totp", { method: "DELETE" }),
     onSuccess: () => {
@@ -153,34 +165,25 @@ function MfaTotpPage() {
     meta: { silent: true },
   });
 
-  // Disabling TOTP is RequireRecentMFA-gated — retry after step-up on a 403.
+  // Disabling the app and regenerating recovery codes both need a step-up:
+  // the shared step-up dialog asks for it, worded for the action, and the
+  // request is sent again once the person confirms.
   function disableTotp() {
-    disableM.mutate(undefined, {
-      onSuccess: () => toast.success(t("mfa.totp.toastDisabled")),
-      onError: (err) => {
-        if (isStepUpRequired(err)) {
-          setStepUpAction("disable");
-          setStepUpOpen(true);
-        } else {
-          toast.error(err instanceof ApiError ? err.message : t("mfa.totp.toastError"));
-        }
-      },
-    });
+    sensitive({ actionLabel: t("mfa.totp.stepUpLabel"), run: () => disableM.mutateAsync() })
+      .then(() => toast.success(t("mfa.totp.toastDisabled")))
+      .catch((err) => {
+        if (err instanceof SensitiveActionCancelled) return;
+        toast.error(errorMessage(err));
+      });
   }
 
-  // Regenerating recovery codes is also RequireRecentMFA-gated (QID-17).
   function regenerate() {
-    regenM.mutate(undefined, {
-      onSuccess: () => toast.success(t("mfa.totp.recovery.toastSuccess")),
-      onError: (err) => {
-        if (isStepUpRequired(err)) {
-          setStepUpAction("regenerate");
-          setStepUpOpen(true);
-        } else {
-          toast.error(err instanceof ApiError ? err.message : t("mfa.totp.recovery.toastError"));
-        }
-      },
-    });
+    sensitive({ actionLabel: t("mfa.totp.recovery.stepUpLabel"), run: () => regenM.mutateAsync() })
+      .then(() => toast.success(t("mfa.totp.recovery.toastSuccess")))
+      .catch((err) => {
+        if (err instanceof SensitiveActionCancelled) return;
+        toast.error(errorMessage(err));
+      });
   }
 
   const copyAll = (codes: string[]) => {
@@ -245,7 +248,7 @@ function MfaTotpPage() {
                           title: t("mfa.totp.active.replaceConfirmTitle"),
                           description: t("mfa.totp.active.replaceConfirmDescription"),
                           confirmLabel: t("mfa.totp.active.replaceConfirmLabel"),
-                          onConfirm: () => startM.mutate(),
+                          onConfirm: startEnrollment,
                         })
                       }
                       disabled={startM.isPending}
@@ -368,7 +371,7 @@ function MfaTotpPage() {
                   <li>{t("mfa.totp.idle.bullet3")}</li>
                 </ul>
                 {startM.error && <FieldError>{errorMessage(startM.error)}</FieldError>}
-                <Button onClick={() => startM.mutate()} disabled={startM.isPending}>
+                <Button onClick={() => startEnrollment()} disabled={startM.isPending}>
                   {startM.isPending && <LoaderCircleIcon className="animate-spin" />}
                   {startM.isPending
                     ? t("mfa.totp.idle.generatingBtn")
@@ -385,6 +388,11 @@ function MfaTotpPage() {
           <CardHeader>
             <CardTitle className="text-base">{t("mfa.totp.enrolling.title")}</CardTitle>
             <CardDescription>{t("mfa.totp.enrolling.subtitle")}</CardDescription>
+            {enrollment.replacing && (
+              <p className="text-sm text-muted-foreground">
+                {t("mfa.totp.enrolling.replacingNote")}
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             <FieldGroup>
@@ -540,17 +548,6 @@ function MfaTotpPage() {
       )}
 
       {stage === "confirmed" && <CheckIcon className="hidden" />}
-
-      <StepUpDialog
-        open={stepUpOpen}
-        onOpenChange={setStepUpOpen}
-        actionLabel={
-          stepUpAction === "regenerate"
-            ? t("mfa.totp.recovery.stepUpLabel")
-            : t("mfa.totp.stepUpLabel")
-        }
-        onVerified={stepUpAction === "regenerate" ? regenerate : disableTotp}
-      />
     </div>
   );
 }

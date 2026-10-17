@@ -16,6 +16,8 @@ const base: Session = {
   created_at: new Date().toISOString(),
   last_seen_at: new Date().toISOString(),
   revoked_at: null,
+  device: "Chrome on macOS",
+  device_kind: "desktop",
 };
 
 // Minimal stand-in for a resolved useQuery result.
@@ -35,6 +37,23 @@ describe("SessionsTable", () => {
     expect(screen.getByText(/Chrome/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /revoke/i }));
     expect(onRevoke).toHaveBeenCalledWith(base);
+  });
+
+  it("shows the server's device description and country, keeping the raw user agent on hover", () => {
+    render(<SessionsTable query={q([{ ...base, country: "IN" }])} onRevoke={vi.fn()} />);
+    expect(screen.getByText(/Chrome on macOS/)).toBeTruthy();
+    expect(screen.getByText(/India/)).toBeTruthy();
+    expect(screen.getByTitle("Mozilla/5.0 Chrome")).toBeTruthy();
+  });
+
+  it("names a device the server could not describe neutrally", () => {
+    render(<SessionsTable query={q([{ ...base, device: undefined }])} onRevoke={vi.fn()} />);
+    expect(screen.getByText(/Unknown device/)).toBeTruthy();
+  });
+
+  it("marks the session the server says is the current one", () => {
+    render(<SessionsTable query={q([{ ...base, current: true }])} onRevoke={vi.fn()} />);
+    expect(screen.getByText(/This device/i)).toBeTruthy();
   });
 
   it("marks the current session and disables its revoke button", () => {

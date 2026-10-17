@@ -134,9 +134,33 @@
     "mfa": {
       "title": "Two-factor authentication",
       "subtitle": "Enter the 6-digit code from your authenticator app, or a recovery code.",
+      "subtitleAny": "Confirm it's you with one of your second factors.",
       "codeLabel": "Verification code",
       "verifyingBtn": "Verifying…",
-      "verifyBtn": "Verify"
+      "verifyBtn": "Verify",
+      "sendCodeTo": "Send a code to {{destination}}",
+      "codeSentTo": "Code sent to {{destination}}. Enter it above.",
+      "usePasskey": "Use a passkey",
+      "pushBtn": "Approve on my phone",
+      "pushWaiting": "Approve the sign-in on your phone…",
+      "or": "Or"
+    },
+    "enroll": {
+      "title": "Set up two-step verification",
+      "subtitle": "Your organisation requires a second step when you sign in. Set up an authenticator app to continue.",
+      "subtitleDue": "Your organisation requires a second step when you sign in from {{date}}. Set up an authenticator app now, or skip until then.",
+      "startBtn": "Set up an authenticator app",
+      "scanLabel": "Scan with your authenticator app",
+      "keyLabel": "Setup key",
+      "keyHint": "Can't scan? Enter this key in your app instead.",
+      "codeLabel": "Code from the app",
+      "confirmBtn": "Confirm and sign in",
+      "skipBtn": "Skip for now",
+      "codesTitle": "Save your recovery codes",
+      "codesSubtitle": "Each code signs you in once if you lose your authenticator app. They won't be shown again.",
+      "copyBtn": "Copy",
+      "downloadBtn": "Download",
+      "continueBtn": "Continue"
     }
   },
   "signUp": {
@@ -197,9 +221,16 @@
     "successTitle": "Welcome back",
     "successText": "Redirecting to your dashboard…",
     "expiredTitle": "Link no longer valid",
-    "expiredText": "This link was either already used or has expired. Magic links work once and last 60 minutes.",
+    "expiredText": "This link was either already used or has expired. Sign-in links work once and only for a short time.",
     "errorTitle": "Couldn't sign you in",
-    "sendNewLink": "Send a new link"
+    "sendNewLink": "Send a new link",
+    "resentText": "If the address has an account, a new sign-in link is on its way.",
+    "requestTitle": "Email me a sign-in link",
+    "requestText": "We'll email you a link that signs you in once. It works for a short time.",
+    "emailLabel": "Email",
+    "requestBtn": "Send sign-in link",
+    "sentTitle": "Check your email",
+    "sentText": "If that address has an account, a sign-in link is on its way. It works once and for a short time."
   },
   "invite": {
     "invalidTitle": "Invalid invite link",
@@ -207,12 +238,16 @@
     "backToSignIn": "Back to sign in",
     "acceptTitle": "Accept your invite",
     "acceptDescription": "Set a password to finish joining the organization — you'll be signed in afterwards.",
+    "acceptDescriptionFor": "{{organization}} invited {{email}}. Choose how you’ll sign in — you’ll be signed in afterwards.",
     "displayNameLabel": "Display name",
     "displayNamePlaceholder": "How you'd like to be addressed",
     "passwordLabel": "Password",
     "passwordHelp": "At least 8 characters.",
     "joiningBtn": "Joining…",
     "acceptBtn": "Accept invite",
+    "passkeyDivider": "Or join with a passkey",
+    "loadingTitle": "Checking your invite…",
+    "unavailableTitle": "This invite can’t be used",
     "accountExistsTitle": "You already have a Qeet ID with this email.",
     "accountExistsHelp": "Sign in, then accept this invitation from your dashboard.",
     "accountExistsCta": "Sign in to accept"

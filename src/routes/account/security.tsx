@@ -31,11 +31,14 @@ import { ApiError } from "@/platform/api/client";
 import { useMe } from "@/platform/auth/session";
 import {
   AccountPasskeysCard,
+  TrustedDevicesCard,
+  isLastSignInMethod,
   startSocialLink,
   useChangePassword,
   useForgotPassword,
   usePasswordStatus,
   usePlatformSocialProviders,
+  useSignInMethods,
 } from "@/modules/authentication";
 import {
   useSocialIdentities,
@@ -68,6 +71,9 @@ function SecurityPage() {
   const identitiesQ = useSocialIdentities();
   const identities = identitiesQ.data?.items ?? [];
   const unlink = useUnlinkIdentity();
+  // The server refuses removing the account's last way to sign in; say so
+  // before the button is pressed.
+  const lastMethod = isLastSignInMethod(useSignInMethods().data);
 
   // One row per provider: every configured platform provider, plus any already
   // linked (in case a provider was later unconfigured). Each row shows Unlink
@@ -247,6 +253,9 @@ function SecurityPage() {
           settings, not the Authentication › Login methods admin screen. */}
       <AccountPasskeysCard className="md:col-span-2" />
 
+      {/* Devices remembered so they skip the second factor: listed and forgotten here. */}
+      <TrustedDevicesCard scope={{ kind: "self" }} className="md:col-span-2" />
+
       {/* Connected accounts */}
       <Card className="md:col-span-2">
         <CardHeader>
@@ -294,7 +303,8 @@ function SecurityPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        disabled={unlink.isPending}
+                        disabled={unlink.isPending || lastMethod}
+                        title={lastMethod ? t("security.lastMethod") : undefined}
                         onClick={() => unlink.mutate(linked.id)}
                       >
                         <TrashIcon /> {t("security.connected.unlink")}

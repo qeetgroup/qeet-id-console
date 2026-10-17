@@ -4,11 +4,13 @@
 // MFA, auth policy, OAuth grants). Session identity is NOT here — it's platform
 // state at @/platform/auth/session.
 export * from "./api/flows";
+export * from "./api/mfa-sign-in";
 export * from "./api/auth-policy";
 export * from "./api/oidc-clients";
 export * from "./api/oauth-grants";
 export * from "./api/social";
 export * from "./api/passkeys";
+export * from "./api/sign-in-methods";
 export * from "./api/saml";
 export * from "./api/saml-idp";
 export * from "./api/trusted-devices";
@@ -19,3 +21,6 @@ export * from "./api/sessions";
 export { SessionsTable } from "./components/sessions-table";
 export { PasskeysTable, passkeyDisplayName } from "./components/passkeys-table";
 export { AccountPasskeysCard } from "./components/account-passkeys-card";
+export { TrustedDevicesCard } from "./components/trusted-devices-card";
+export { MfaEnrollmentStep, RecoveryCodesStep } from "./components/mfa-enrollment-step";
+export { MfaChallengeStep, MfaStep } from "./components/mfa-challenge-step";

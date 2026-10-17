@@ -1,18 +1,81 @@
-import { useMutation } from "@tanstack/react-query";
+import {
+  browserSupportsWebAuthn,
+  type PublicKeyCredentialRequestOptionsJSON,
+  startAuthentication,
+} from "@simplewebauthn/browser";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
 
-// Step-up (recent-MFA) re-verification. Sensitive actions are gated server-side
-// by RequireRecentMFA and return 403 `step_up_required` when the session hasn't
-// verified a factor recently. `useStepUpVerify` re-verifies a TOTP/recovery code
-// (refreshing that window) so the caller can retry. This is the cross-cutting
-// gate paired with the platform step-up dialog and useSensitiveAction — the
-// backend remains authoritative.
+// Step-up re-verification. Sensitive actions are gated server-side and answer
+// 403 `step_up_required` when the calling session hasn't confirmed a second
+// factor recently. The step-up dialog confirms one of the person's factors that
+// the organisation counts — a passkey, an authenticator-app or recovery code,
+// or a code sent to an email or SMS factor — so the action can be sent again
+// (see step-up-gate and useSensitiveAction). The backend remains authoritative.
+
+/** True when an error is the backend's step-up-required signal. */
+export function isStepUpRequired(err: unknown): boolean {
+  return err instanceof ApiError && err.code === "step_up_required";
+}
+
+/** An email or SMS factor the person can be sent a step-up code at. */
+export type StepUpCodeFactor = { id: string; channel: "email" | "sms"; destination: string };
+
+/** The ways the calling person can step up, given what the organisation counts. */
+export type StepUpOptions = {
+  passkey: boolean;
+  authenticator: boolean;
+  recoveryCode: boolean;
+  codeFactors: StepUpCodeFactor[];
+};
+
+type OtpFactor = StepUpCodeFactor & { verified: boolean };
+
+function counts(allowed: string[] | null, ...methods: string[]): boolean {
+  return allowed === null || methods.some((m) => allowed.includes(m));
+}
+
+/** What the person can step up with, read when the dialog opens. */
+export function useStepUpOptions(open: boolean, allowed: string[] | null) {
+  return useQuery({
+    queryKey: ["step-up", "options", allowed],
+    enabled: open,
+    staleTime: 0,
+    queryFn: async (): Promise<StepUpOptions> => {
+      const [totp, otp, passkeys] = await Promise.all([
+        api<{ enrolled: boolean }>("/v1/mfa/totp").catch(() => ({ enrolled: false })),
+        api<{ items: OtpFactor[] }>("/v1/mfa/otp/factors").catch(() => ({ items: [] })),
+        api<{ items: unknown[] }>("/v1/passkeys").catch(() => ({ items: [] })),
+      ]);
+      return {
+        passkey:
+          counts(allowed, "webauthn") && passkeys.items.length > 0 && browserSupportsWebAuthn(),
+        authenticator: counts(allowed, "totp") && totp.enrolled,
+        recoveryCode: counts(allowed, "recovery_code") && totp.enrolled,
+        codeFactors: counts(allowed, "otp")
+          ? otp.items
+              .filter((f) => f.verified)
+              .map(({ id, channel, destination }) => ({ id, channel, destination }))
+          : [],
+      };
+    },
+    meta: { silent: true },
+  });
+}
+
+/** Confirms an authenticator-app or recovery code (`authenticator`), or a code sent to an email/SMS factor (`otp`). */
 export function useStepUpVerify() {
   return useMutation({
-    mutationFn: (code: string) =>
-      api<{ verified: boolean }>("/v1/mfa/totp/verify", {
+    mutationFn: ({
+      code,
+      kind = "authenticator",
+    }: {
+      code: string;
+      kind?: "authenticator" | "otp";
+    }) =>
+      api<{ verified: boolean }>(kind === "otp" ? "/v1/mfa/otp/verify" : "/v1/mfa/totp/verify", {
         method: "POST",
         body: { code },
       }),
@@ -20,7 +83,32 @@ export function useStepUpVerify() {
   });
 }
 
-/** True when an error is the backend's step-up-required signal. */
-export function isStepUpRequired(err: unknown): boolean {
-  return err instanceof ApiError && err.code === "step_up_required";
+/** Sends a step-up code to one of the person's email or SMS factors. */
+export function useStepUpSendCode() {
+  return useMutation({
+    mutationFn: (factorId: string) =>
+      api<{ message: string }>(`/v1/mfa/otp/factors/${factorId}/challenge`, {
+        method: "POST",
+        body: {},
+      }),
+    meta: { silent: true },
+  });
+}
+
+/** Confirms one of the person's passkeys through the browser's passkey prompt. */
+export function useStepUpPasskey() {
+  return useMutation({
+    mutationFn: async () => {
+      const begin = await api<{
+        session_id: string;
+        publicKey: PublicKeyCredentialRequestOptionsJSON;
+      }>("/v1/mfa/webauthn/challenge", { method: "POST", body: {} });
+      const credential = await startAuthentication({ optionsJSON: begin.publicKey });
+      return api<{ verified: boolean }>("/v1/mfa/webauthn/verify", {
+        method: "POST",
+        body: { session_id: begin.session_id, credential },
+      });
+    },
+    meta: { silent: true },
+  });
 }

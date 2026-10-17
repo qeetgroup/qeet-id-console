@@ -7,6 +7,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 
+import { refreshSignInMethods } from "./sign-in-methods";
+
 export interface SocialIdentity {
   id: string;
   provider: string;
@@ -42,7 +44,10 @@ export function useUnlinkIdentity() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/me/social/identities/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => {
+      void refreshSignInMethods(qc);
+      return qc.invalidateQueries({ queryKey: KEY });
+    },
     meta: { successMessage: "Identity unlinked" },
   });
 }

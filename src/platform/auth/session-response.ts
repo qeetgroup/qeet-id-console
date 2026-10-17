@@ -39,6 +39,7 @@ export function isSessionIssuingRequest(path: string, method: string): boolean {
     "/v1/auth/magic-link/consume",
     "/v1/auth/switch-tenant",
     "/v1/invites/accept",
+    "/v1/invites/accept/passkey/finish",
     "/v1/passkeys/login/finish",
     "/v1/signup/passkey/finish",
     "/v1/social/exchange",

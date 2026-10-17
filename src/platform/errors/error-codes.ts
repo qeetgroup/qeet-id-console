@@ -24,6 +24,14 @@ export const ERROR_CODES = {
   ACCOUNT_SUSPENDED: "auth.account_suspended",
   ACCOUNT_INACTIVE: "auth.account_inactive",
   SESSION_REVOKED: "auth.session_revoked",
+  // 401 from a renewal: the session reached its maximum age or idle timeout.
+  SESSION_TIMED_OUT: "auth.session_timed_out",
+  // 409 when removing an account's last way to sign in.
+  LAST_SIGN_IN_METHOD: "auth.last_sign_in_method",
+  // 403 when a sign-in would exceed the organisation's limit on sessions.
+  SESSION_LIMIT: "auth.session_limit",
+  // 409 when removing a social provider some people can sign in only through.
+  SOCIAL_PROVIDER_IN_USE: "social.provider_in_use",
   NOT_TENANT_MEMBER: "auth.not_tenant_member",
   SELF_REGISTRATION_DISABLED: "auth.self_registration_disabled",
   PASSWORD_WEAK: "auth.password_weak",
@@ -59,6 +67,12 @@ export const ERROR_CODES = {
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
   // mfa
   MFA_CODE_INVALID: "mfa.code_invalid",
+  MFA_CODE_SEND_LIMITED: "mfa.code_send_limited",
+  MFA_FACTOR_LIMIT: "mfa.factor_limit",
+  MFA_DELIVERY_UNAVAILABLE: "mfa.delivery_unavailable",
+  MFA_DELIVERY_FAILED: "mfa.delivery_failed",
+  // a risky sign-in that cannot be confirmed (no second factor, no verified email)
+  AUTH_RISK_VERIFICATION_UNAVAILABLE: "auth.risk_verification_unavailable",
   // throttling
   TOO_MANY_REQUESTS: "too_many_requests",
   // Synthesised by client.ts as `http_${status}` when a response carries no

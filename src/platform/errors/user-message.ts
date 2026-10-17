@@ -56,6 +56,13 @@ const CODE_MESSAGES: Record<string, string> = {
     "Your account is no longer active. Please contact your administrator.",
   [ERROR_CODES.ACCOUNT_INACTIVE]: "Your account isn't active. Contact your administrator.",
   [ERROR_CODES.SESSION_REVOKED]: "Your session was revoked. Please sign in again.",
+  [ERROR_CODES.SESSION_TIMED_OUT]: "Your session has timed out. Please sign in again.",
+  [ERROR_CODES.SESSION_LIMIT]:
+    "You're signed in on too many devices for this organisation. Sign out of one of them, then try again.",
+  [ERROR_CODES.LAST_SIGN_IN_METHOD]:
+    "This is your only way to sign in. Add a passkey or set a password before removing it.",
+  [ERROR_CODES.SOCIAL_PROVIDER_IN_USE]:
+    "Some people can sign in only with this provider. Switch it off instead, or give them another way to sign in first.",
   [ERROR_CODES.NOT_TENANT_MEMBER]: "You're not a member of this organization.",
   [ERROR_CODES.SELF_REGISTRATION_DISABLED]: "Self-registration isn't enabled for this application.",
   [ERROR_CODES.PASSWORD_WEAK]: "Choose a stronger password.",
@@ -79,6 +86,16 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.ORG_SLUG_TAKEN]:
     "That organization URL is already taken. Choose a different URL — your organization name can stay the same.",
   [ERROR_CODES.MFA_CODE_INVALID]: "That code isn't valid. Check your authenticator and try again.",
+  [ERROR_CODES.MFA_CODE_SEND_LIMITED]:
+    "A code was sent recently. Wait a moment before asking for another.",
+  [ERROR_CODES.MFA_FACTOR_LIMIT]:
+    "You've set up as many email and SMS codes as an account can have. Remove one to add another.",
+  [ERROR_CODES.MFA_DELIVERY_UNAVAILABLE]:
+    "Codes can't be sent this way right now. Use another way to verify.",
+  [ERROR_CODES.MFA_DELIVERY_FAILED]:
+    "We couldn't send your code. Try again in a moment, or use another way to verify.",
+  [ERROR_CODES.AUTH_RISK_VERIFICATION_UNAVAILABLE]:
+    "We couldn't confirm this sign-in. Ask your administrator for help.",
   [ERROR_CODES.BILLING_PLAN_LIMIT]: "You've reached your plan's limit.",
   [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "This feature isn't included in your plan.",
   [ERROR_CODES.NETWORK]: "Can't reach the server. Check your connection and try again.",
