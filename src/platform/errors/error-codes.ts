@@ -67,6 +67,12 @@ export const ERROR_CODES = {
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
   // mfa
   MFA_CODE_INVALID: "mfa.code_invalid",
+  MFA_CODE_SEND_LIMITED: "mfa.code_send_limited",
+  MFA_FACTOR_LIMIT: "mfa.factor_limit",
+  MFA_DELIVERY_UNAVAILABLE: "mfa.delivery_unavailable",
+  MFA_DELIVERY_FAILED: "mfa.delivery_failed",
+  // a risky sign-in that cannot be confirmed (no second factor, no verified email)
+  AUTH_RISK_VERIFICATION_UNAVAILABLE: "auth.risk_verification_unavailable",
   // throttling
   TOO_MANY_REQUESTS: "too_many_requests",
   // Synthesised by client.ts as `http_${status}` when a response carries no
