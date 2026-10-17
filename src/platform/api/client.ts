@@ -17,6 +17,7 @@ import {
   refreshServerSessionNow,
 } from "@/platform/api/server-proxy";
 import { ApiError } from "@/platform/errors/api-error";
+import { requestStepUp } from "@/platform/security/step-up-gate";
 import { newRequestId } from "@/platform/telemetry/tracing";
 
 // Convenience re-exports so callers can import the request essentials from one
@@ -41,6 +42,11 @@ type RequestOpts<T = unknown> = {
    * refresh, MFA, signing keys, OAuth clients).
    */
   schema?: ZodType<T>;
+  /**
+   * Set on the one retry after a step-up, so a second refusal surfaces instead
+   * of prompting again. Callers leave it unset.
+   */
+  afterStepUp?: boolean;
 };
 
 let localRefresh: Promise<void> | null = null;
@@ -152,7 +158,13 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
   if (res.status < 200 || res.status >= 300) {
     const err = (
       data as {
-        error?: { code?: string; message?: string; detail?: string; retryable?: boolean };
+        error?: {
+          code?: string;
+          message?: string;
+          detail?: string;
+          retryable?: boolean;
+          metadata?: Record<string, unknown>;
+        };
       } | null
     )?.error;
     const apiError = new ApiError(
@@ -161,8 +173,18 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
       err?.message ?? "Request failed",
       err?.detail,
       err?.retryable ?? false,
+      err?.metadata,
     );
     if (res.status === 401 && !anonymous) await clearBrowserSession();
+    // A sensitive action refused for want of a step-up: ask for one, then send
+    // the same request once more. It never ran, so the retry is safe.
+    if (
+      apiError.code === "step_up_required" &&
+      !opts.afterStepUp &&
+      (await requestStepUp(apiError))
+    ) {
+      return api<T>(path, { ...opts, afterStepUp: true });
+    }
     throw apiError;
   }
 

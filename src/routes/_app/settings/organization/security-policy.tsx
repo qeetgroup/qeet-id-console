@@ -2,6 +2,7 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -48,8 +49,20 @@ type Policy = {
   mfa_grace_days: number;
   /** When the requirement was turned on (read-only); null while optional. */
   mfa_enforced_since?: string | null;
+  /** How long a step-up keeps sensitive actions unlocked, e.g. "5m" or "1h". */
+  step_up_window: string;
+  /** The factor types that count as a step-up; null = every one. */
+  step_up_methods: StepUpMethod[] | null;
   settings?: Record<string, unknown> | null;
 };
+
+type StepUpMethod = "totp" | "recovery_code" | "otp" | "webauthn" | "push";
+
+// The factor types a step-up may be met with, in the order shown.
+const STEP_UP_METHODS: StepUpMethod[] = ["webauthn", "totp", "recovery_code", "otp", "push"];
+
+// The step-up windows offered (the server accepts 1m–60m).
+const STEP_UP_WINDOWS = ["1m", "5m", "10m", "15m", "30m", "1h"];
 
 const empty: Policy = {
   tenant_id: "",
@@ -63,6 +76,8 @@ const empty: Policy = {
   session_limit_action: "evict_oldest",
   mfa_enforcement: "optional",
   mfa_grace_days: 0,
+  step_up_window: "5m",
+  step_up_methods: null,
 };
 
 function PoliciesPage() {
@@ -93,6 +108,18 @@ function PoliciesPage() {
   });
 
   const set = <K extends keyof Policy>(k: K, v: Policy[K]) => setDraft((d) => ({ ...d, [k]: v }));
+
+  // null means every factor type counts; keep at least one ticked, and send
+  // null again once all are.
+  const stepUpMethods = draft.step_up_methods ?? STEP_UP_METHODS;
+  const toggleStepUpMethod = (m: StepUpMethod, on: boolean) => {
+    const next = STEP_UP_METHODS.filter((x) => (x === m ? on : stepUpMethods.includes(x)));
+    if (next.length === 0) return;
+    set("step_up_methods", next.length === STEP_UP_METHODS.length ? null : next);
+  };
+  const stepUpWindows = STEP_UP_WINDOWS.includes(draft.step_up_window)
+    ? STEP_UP_WINDOWS
+    : [draft.step_up_window, ...STEP_UP_WINDOWS];
 
   // When the saved requirement's grace period ends, while it is still running.
   const saved = policyQ.data;
@@ -347,6 +374,56 @@ function PoliciesPage() {
                     </FieldDescription>
                   </Field>
                 )}
+              </FieldGroup>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("policies.stepUp.title")}</CardTitle>
+              <CardDescription>{t("policies.stepUp.description")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field className="sm:w-60">
+                  <FieldLabel htmlFor="step_up_window">
+                    {t("policies.stepUp.windowLabel")}
+                  </FieldLabel>
+                  <Select
+                    value={draft.step_up_window}
+                    onValueChange={(v) => set("step_up_window", v ?? "5m")}
+                  >
+                    <SelectTrigger id="step_up_window">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stepUpWindows.map((w) => (
+                        <SelectItem key={w} value={w}>
+                          {t(`policies.stepUp.window.${w}`, { defaultValue: w })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>{t("policies.stepUp.windowHelp")}</FieldDescription>
+                </Field>
+                <Field>
+                  <FieldLabel>{t("policies.stepUp.methodsLabel")}</FieldLabel>
+                  <div className="flex flex-col gap-2 pt-1">
+                    {STEP_UP_METHODS.map((m) => (
+                      <div key={m} className="flex items-center gap-2 text-sm">
+                        {/* A @base-ui custom element: label it with aria-label. */}
+                        <Checkbox
+                          aria-label={t(`policies.stepUp.method.${m}`)}
+                          checked={stepUpMethods.includes(m)}
+                          disabled={stepUpMethods.length === 1 && stepUpMethods.includes(m)}
+                          onCheckedChange={(c) => toggleStepUpMethod(m, c === true)}
+                        />
+                        <span aria-hidden>{t(`policies.stepUp.method.${m}`)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <FieldDescription>{t("policies.stepUp.methodsHelp")}</FieldDescription>
+                </Field>
               </FieldGroup>
             </CardContent>
           </Card>

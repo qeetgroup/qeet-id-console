@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "@/platform/errors/api-error";
 import { CapabilityProvider } from "../capability-provider";
+import { requestStepUp } from "../step-up-gate";
 import {
   SensitiveActionCancelled,
   type SensitiveActionOptions,
@@ -14,6 +15,19 @@ import {
 } from "../sensitive-action-provider";
 
 afterEach(cleanup);
+
+// The dialog reads the person's factors: an authenticator app and one email factor.
+vi.mock("@/platform/api/client", () => ({
+  api: vi.fn(async (path: string) => {
+    if (path === "/v1/mfa/totp") return { enrolled: true };
+    if (path === "/v1/mfa/otp/factors") {
+      return {
+        items: [{ id: "f1", channel: "email", destination: "j***@example.com", verified: true }],
+      };
+    }
+    return { items: [] };
+  }),
+}));
 
 // Capture the runSensitive function so the test can drive the pipeline directly.
 let run: <T>(o: SensitiveActionOptions<T>) => Promise<T | undefined>;
@@ -76,16 +90,45 @@ describe("useSensitiveAction", () => {
     expect(action).not.toHaveBeenCalled();
   });
 
-  it("opens the step-up dialog when the backend returns step_up_required", async () => {
+  it("treats a step-up refusal that reaches it as cancelled", async () => {
     mount();
     const action = vi.fn(async () => {
       throw new ApiError(403, "step_up_required", "needs mfa");
     });
+    let promise!: Promise<unknown>;
     act(() => {
-      void run({ actionLabel: "do the thing", run: action });
+      promise = run({ actionLabel: "do the thing", run: action });
     });
-    // The run throws step_up_required → the shared StepUpDialog opens for re-auth.
-    await waitFor(() => expect(screen.getByText(/confirm it's you/i)).toBeTruthy());
+    // The API client has already asked and the person declined, so nothing is asked again.
+    await expect(promise).rejects.toBeInstanceOf(SensitiveActionCancelled);
     expect(action).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/confirm it's you/i)).toBeNull();
+  });
+});
+
+describe("step-up prompt", () => {
+  it("opens the step-up dialog for a refused request and reports a cancel", async () => {
+    mount();
+    let answer!: Promise<boolean>;
+    act(() => {
+      answer = requestStepUp(new ApiError(403, "step_up_required", "needs mfa"));
+    });
+    await waitFor(() => expect(screen.getByText(/confirm it's you/i)).toBeTruthy());
+    await screen.findByText(/code from your authenticator app/i);
+    fireEvent.click(screen.getByRole("button", { name: /^cancel$/i }));
+    await expect(answer).resolves.toBe(false);
+  });
+
+  it("offers only the factors the organisation counts", async () => {
+    mount();
+    act(() => {
+      void requestStepUp(
+        new ApiError(403, "step_up_required", "needs mfa", undefined, false, {
+          allowed_methods: ["otp"],
+        }),
+      );
+    });
+    await screen.findByRole("button", { name: /send a code to j\*\*\*@example.com/i });
+    expect(screen.queryByText(/code from your authenticator app/i)).toBeNull();
   });
 });

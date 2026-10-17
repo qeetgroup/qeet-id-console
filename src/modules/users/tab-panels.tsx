@@ -36,6 +36,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { TrustedDevicesCard } from "@/modules/authentication";
 import { type Anomaly, useAnomalies } from "@/modules/security";
 import type { AccessSummary, SecuritySummary, UserDetail } from "./api/user360";
 import {
@@ -328,84 +329,88 @@ export function SessionsTab({ userId, canWrite }: { userId: string; canWrite: bo
   const items = sessionsQ.data?.items ?? [];
 
   return (
-    <Card>
-      {confirmDialog}
-      <CardHeader className="flex flex-row items-start justify-between gap-3">
-        <div>
-          <CardTitle className="text-base">{t("detail.sessionsTitle")}</CardTitle>
-          <CardDescription>{t("detail.sessionsDesc")}</CardDescription>
-        </div>
-        {canWrite && items.length > 0 ? (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={revokeAll.isPending}
-            onClick={() =>
-              openConfirm({
-                title: t("detail.revokeAllTitle"),
-                description: t("detail.revokeAllDescription"),
-                variant: "destructive",
-                confirmLabel: t("detail.revokeAllConfirm"),
-                onConfirm: () => revokeAll.mutate(userId),
-              })
-            }
+    <div className="flex flex-col gap-4">
+      <Card>
+        {confirmDialog}
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">{t("detail.sessionsTitle")}</CardTitle>
+            <CardDescription>{t("detail.sessionsDesc")}</CardDescription>
+          </div>
+          {canWrite && items.length > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={revokeAll.isPending}
+              onClick={() =>
+                openConfirm({
+                  title: t("detail.revokeAllTitle"),
+                  description: t("detail.revokeAllDescription"),
+                  variant: "destructive",
+                  confirmLabel: t("detail.revokeAllConfirm"),
+                  onConfirm: () => revokeAll.mutate(userId),
+                })
+              }
+            >
+              {t("detail.revokeAllBtn")}
+            </Button>
+          ) : null}
+        </CardHeader>
+        <CardContent className="p-0">
+          <DataState
+            isLoading={sessionsQ.isLoading}
+            isError={sessionsQ.isError}
+            error={sessionsQ.error}
+            isEmpty={items.length === 0}
+            emptyIcon={MonitorSmartphoneIcon}
+            emptyTitle={t("detail.sessionsEmpty")}
+            skeletonRows={3}
           >
-            {t("detail.revokeAllBtn")}
-          </Button>
-        ) : null}
-      </CardHeader>
-      <CardContent className="p-0">
-        <DataState
-          isLoading={sessionsQ.isLoading}
-          isError={sessionsQ.isError}
-          error={sessionsQ.error}
-          isEmpty={items.length === 0}
-          emptyIcon={MonitorSmartphoneIcon}
-          emptyTitle={t("detail.sessionsEmpty")}
-          skeletonRows={3}
-        >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("detail.device")}</TableHead>
-                <TableHead>{t("detail.colIp")}</TableHead>
-                <TableHead>{t("detail.fieldCreated")}</TableHead>
-                <TableHead>{t("detail.lastSeen")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((s) => {
-                const ua = parseUserAgent(s.user_agent);
-                return (
-                  <TableRow key={s.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <MonitorSmartphoneIcon
-                          className="size-4 shrink-0 text-muted-foreground"
-                          aria-hidden="true"
-                        />
-                        <span className="font-medium" title={s.user_agent ?? undefined}>
-                          {ua.label}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {s.ip ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      <TimeSince value={s.created_at} />
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      <TimeSince value={s.last_seen_at} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </DataState>
-      </CardContent>
-    </Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("detail.device")}</TableHead>
+                  <TableHead>{t("detail.colIp")}</TableHead>
+                  <TableHead>{t("detail.fieldCreated")}</TableHead>
+                  <TableHead>{t("detail.lastSeen")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((s) => {
+                  const ua = parseUserAgent(s.user_agent);
+                  return (
+                    <TableRow key={s.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <MonitorSmartphoneIcon
+                            className="size-4 shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                          />
+                          <span className="font-medium" title={s.user_agent ?? undefined}>
+                            {ua.label}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {s.ip ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        <TimeSince value={s.created_at} />
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        <TimeSince value={s.last_seen_at} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </DataState>
+        </CardContent>
+      </Card>
+      {/* The member's devices remembered in this organisation. */}
+      <TrustedDevicesCard scope={{ kind: "member", userId }} canForget={canWrite} />
+    </div>
   );
 }
 

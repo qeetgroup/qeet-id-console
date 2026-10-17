@@ -86,6 +86,16 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.ORG_SLUG_TAKEN]:
     "That organization URL is already taken. Choose a different URL — your organization name can stay the same.",
   [ERROR_CODES.MFA_CODE_INVALID]: "That code isn't valid. Check your authenticator and try again.",
+  [ERROR_CODES.MFA_CODE_SEND_LIMITED]:
+    "A code was sent recently. Wait a moment before asking for another.",
+  [ERROR_CODES.MFA_FACTOR_LIMIT]:
+    "You've set up as many email and SMS codes as an account can have. Remove one to add another.",
+  [ERROR_CODES.MFA_DELIVERY_UNAVAILABLE]:
+    "Codes can't be sent this way right now. Use another way to verify.",
+  [ERROR_CODES.MFA_DELIVERY_FAILED]:
+    "We couldn't send your code. Try again in a moment, or use another way to verify.",
+  [ERROR_CODES.AUTH_RISK_VERIFICATION_UNAVAILABLE]:
+    "We couldn't confirm this sign-in. Ask your administrator for help.",
   [ERROR_CODES.BILLING_PLAN_LIMIT]: "You've reached your plan's limit.",
   [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "This feature isn't included in your plan.",
   [ERROR_CODES.NETWORK]: "Can't reach the server. Check your connection and try again.",

@@ -10,13 +10,23 @@ export class ApiError extends Error {
   detail?: string;
   /** True when the API marks the failure as safe to retry (e.g. session refresh). */
   retryable: boolean;
+  /** Structured context from the API's `metadata` field (e.g. `retry_after`, `allowed_methods`). */
+  metadata?: Record<string, unknown>;
 
-  constructor(status: number, code: string, message: string, detail?: string, retryable = false) {
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    detail?: string,
+    retryable = false,
+    metadata?: Record<string, unknown>,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.detail = detail;
     this.retryable = retryable;
+    this.metadata = metadata;
   }
 }

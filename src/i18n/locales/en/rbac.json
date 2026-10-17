@@ -119,6 +119,29 @@
       "graceHelp": "For this many days after you turn the requirement on, people who already have an account can skip setting up a second factor; they're asked each time they sign in. 0 means no grace period.",
       "graceEnds": "The current grace period ends {{date}}."
     },
+    "stepUp": {
+      "title": "Step-up for sensitive actions",
+      "description": "Before someone changes factors, keys, secrets, sign-in settings or other sensitive things, they confirm a second factor again. A confirmation counts only in the browser where it was made.",
+      "windowLabel": "Confirmation lasts",
+      "windowHelp": "How long a confirmation keeps sensitive actions unlocked in that browser. Signing out, a password change or a factor reset ends it sooner.",
+      "window": {
+        "1m": "1 minute",
+        "5m": "5 minutes",
+        "10m": "10 minutes",
+        "15m": "15 minutes",
+        "30m": "30 minutes",
+        "1h": "1 hour"
+      },
+      "methodsLabel": "Factors that count",
+      "methodsHelp": "Only these confirm a sensitive action. People who hold none of them aren't asked to confirm changes to their own factors.",
+      "method": {
+        "webauthn": "Passkey",
+        "totp": "Authenticator app",
+        "recovery_code": "Recovery code",
+        "otp": "Email or text-message code",
+        "push": "Push approval on a phone"
+      }
+    },
     "savedAt": "Saved {{time}}",
     "unsaved": "Unsaved changes",
     "resetBtn": "Reset",

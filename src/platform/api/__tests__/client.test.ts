@@ -182,3 +182,69 @@ describe("api() BFF request", () => {
     expect(sessionStore.getSnapshot().tenantId).toBe("tenant-2");
   });
 });
+
+describe("api() step-up", () => {
+  const refused = {
+    status: 403,
+    data: {
+      error: {
+        code: "step_up_required",
+        message: "Step up",
+        metadata: { allowed_methods: ["webauthn"] },
+      },
+    },
+    session: AUTHENTICATED_SESSION,
+    sessionChanged: false,
+  };
+  const ok = {
+    status: 200,
+    data: { saved: true },
+    session: AUTHENTICATED_SESSION,
+    sessionChanged: false,
+  };
+
+  beforeEach(() => sessionStore.set(AUTHENTICATED_SESSION));
+
+  it("asks for a step-up and sends the refused request once more", async () => {
+    const { registerStepUpHandler } = await import("@/platform/security/step-up-gate");
+    const handler = vi.fn(async () => true);
+    registerStepUpHandler(handler);
+    proxyApiRequest.mockResolvedValueOnce(refused).mockResolvedValueOnce(ok);
+
+    await expect(api("/v1/api-keys", { method: "POST", body: { name: "ci" } })).resolves.toEqual({
+      saved: true,
+    });
+    expect(handler).toHaveBeenCalledWith({ allowedMethods: ["webauthn"] });
+    expect(proxyApiRequest).toHaveBeenCalledTimes(2);
+    expect(proxyApiRequest.mock.calls[1][0].data).toMatchObject({
+      path: "/v1/api-keys",
+      method: "POST",
+      body: { name: "ci" },
+    });
+    registerStepUpHandler(null);
+  });
+
+  it("leaves the action undone when the step-up is cancelled", async () => {
+    const { registerStepUpHandler } = await import("@/platform/security/step-up-gate");
+    registerStepUpHandler(async () => false);
+    proxyApiRequest.mockResolvedValueOnce(refused);
+
+    await expect(api("/v1/api-keys", { method: "POST" })).rejects.toMatchObject({
+      code: "step_up_required",
+    });
+    expect(proxyApiRequest).toHaveBeenCalledTimes(1);
+    registerStepUpHandler(null);
+  });
+
+  it("asks only once: a second refusal after the step-up surfaces", async () => {
+    const { registerStepUpHandler } = await import("@/platform/security/step-up-gate");
+    const handler = vi.fn(async () => true);
+    registerStepUpHandler(handler);
+    proxyApiRequest.mockResolvedValue(refused);
+
+    await expect(api("/v1/api-keys", { method: "POST" })).rejects.toBeInstanceOf(ApiError);
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(proxyApiRequest).toHaveBeenCalledTimes(2);
+    registerStepUpHandler(null);
+  });
+});
