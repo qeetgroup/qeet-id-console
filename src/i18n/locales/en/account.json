@@ -86,6 +86,35 @@
       "forgetAllDescription": "Each will be asked for the second factor at its next sign-in.",
       "forgotOne": "Device forgotten",
       "forgotAll": "Remembered devices forgotten"
+    },
+    "phones": {
+      "title": "Linked phones",
+      "description": "Phones with the Qeet Auth app approve your sign-ins. Remove any you no longer have; it stops approving at once.",
+      "memberDescription": "Phones this person linked to approve their sign-ins. Remove one that may be lost or stolen; their other factors stay.",
+      "empty": "No linked phones.",
+      "link": "Link a phone",
+      "platform": {
+        "ios": "iPhone or iPad",
+        "android": "Android"
+      },
+      "linked": "linked {{date}}",
+      "lastUsed": "last used {{date}}",
+      "remove": "Remove",
+      "removeConfirm": "Remove {{name}}?",
+      "removeDescription": "It stops approving your sign-ins at once. Link it again to use it.",
+      "removeMemberDescription": "It stops approving this person's sign-ins at once. Their other factors stay.",
+      "removed": "Phone removed",
+      "dialog": {
+        "title": "Link a phone",
+        "description": "Open Qeet Auth on your phone, go to Settings and scan this code. It links one phone, once.",
+        "scan": "Scan with Qeet Auth",
+        "orType": "Or type this code in the app:",
+        "expiresIn": "Expires in {{time}}",
+        "expired": "This code has expired. Get a new one to link your phone.",
+        "newCode": "Get a new code",
+        "linked": "Phone linked. It can now approve your sign-ins.",
+        "close": "Close"
+      }
     }
   },
   "sessions": {
