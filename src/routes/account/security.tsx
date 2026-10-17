@@ -31,6 +31,7 @@ import { ApiError } from "@/platform/api/client";
 import { useMe } from "@/platform/auth/session";
 import {
   AccountPasskeysCard,
+  LinkedPhonesCard,
   TrustedDevicesCard,
   isLastSignInMethod,
   startSocialLink,
@@ -252,6 +253,9 @@ function SecurityPage() {
       {/* Passkeys: listed, renamed, removed and added right here — the user's own
           settings, not the Authentication › Login methods admin screen. */}
       <AccountPasskeysCard className="md:col-span-2" />
+
+      {/* Phones that approve sign-ins with Qeet Auth, linked with a pairing code. */}
+      <LinkedPhonesCard scope={{ kind: "self" }} className="md:col-span-2" />
 
       {/* Devices remembered so they skip the second factor: listed and forgotten here. */}
       <TrustedDevicesCard scope={{ kind: "self" }} className="md:col-span-2" />
