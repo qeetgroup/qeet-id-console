@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next";
 import { BrandHero } from "@/modules/authentication/components/brand-hero";
 import { ApiError } from "@/platform/api/client";
 import {
+  isMfaChallenge,
+  MfaChallengeStep,
   useConsumeMagicLink,
   useRequestMagicLink,
   useResendMagicLink,
@@ -41,6 +43,12 @@ function MagicLinkPage() {
     firedRef.current = true;
     consume.mutate(token);
   }, [token, consume]);
+
+  // The link proved the first factor; the account holds a second, or must
+  // have one. The link is spent, so this step is the only way on.
+  if (consume.data && isMfaChallenge(consume.data)) {
+    return <MfaChallengeStep challenge={consume.data} />;
+  }
 
   return (
     <div className="flex flex-col gap-6">

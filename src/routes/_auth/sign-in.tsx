@@ -1,17 +1,6 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-} from "@qeetrix/ui";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import {
@@ -22,7 +11,7 @@ import {
 import { LoginForm } from "@/modules/authentication/components/signin-form";
 import {
   isMfaChallenge,
-  useCompleteMfaLogin,
+  MfaChallengeStep,
   useConsumeSocialCode,
   useLogin,
 } from "@/modules/authentication";
@@ -35,7 +24,6 @@ export const Route = createFileRoute("/_auth/sign-in")({
 
 function SignInPage() {
   const login = useLogin();
-  const mfa = useCompleteMfaLogin();
   const social = useConsumeSocialCode();
   const passkey = usePasskeyLogin();
   const navigate = useNavigate();
@@ -88,19 +76,11 @@ function SignInPage() {
     );
   }
 
-  // After a correct password, an MFA-enrolled account returns a challenge
-  // instead of tokens; show the second-factor step.
+  // After a correct password, an account that holds a second factor — or must
+  // have one — returns a challenge instead of tokens; show the second-factor
+  // step, or the setup of an authenticator app.
   const challenge = login.data && isMfaChallenge(login.data) ? login.data : null;
-
-  if (challenge) {
-    return (
-      <MfaStep
-        isLoading={mfa.isPending}
-        errorMessage={mfa.error ? errorMessage(mfa.error) : undefined}
-        onSubmit={(code) => mfa.mutate({ mfa_token: challenge.mfa_token, code })}
-      />
-    );
-  }
+  if (challenge) return <MfaChallengeStep challenge={challenge} />;
 
   return (
     <LoginForm
@@ -128,75 +108,5 @@ function SignInPage() {
         passkey.mutate();
       }}
     />
-  );
-}
-
-function MfaStep({
-  isLoading,
-  errorMessage,
-  onSubmit,
-}: {
-  isLoading: boolean;
-  errorMessage?: string;
-  onSubmit: (code: string) => void;
-}) {
-  const { t } = useTranslation("auth-flow");
-  const [code, setCode] = useState("");
-  // Move focus to the verification code field on mount — replaces autoFocus
-  // (flagged by jsx-a11y/no-autofocus) with an explicit effect.
-  const codeRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    codeRef.current?.focus();
-  }, []);
-
-  return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <Card>
-        <CardContent className="p-6 md:p-8">
-          <form
-            aria-busy={isLoading}
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (isLoading) return;
-              onSubmit(code.trim());
-            }}
-          >
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">{t("signIn.mfa.title")}</h1>
-                <p className="text-balance text-muted-foreground">{t("signIn.mfa.subtitle")}</p>
-              </div>
-
-              <Field>
-                <FieldLabel htmlFor="code">{t("signIn.mfa.codeLabel")}</FieldLabel>
-                <Input
-                  ref={codeRef}
-                  id="code"
-                  name="code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  required
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                />
-              </Field>
-
-              {errorMessage && (
-                <Field>
-                  <FieldError>{errorMessage}</FieldError>
-                </Field>
-              )}
-
-              <Field>
-                <Button type="submit" disabled={isLoading || code.trim().length === 0}>
-                  {isLoading && <LoaderCircleIcon className="animate-spin" />}
-                  {isLoading ? t("signIn.mfa.verifyingBtn") : t("signIn.mfa.verifyBtn")}
-                </Button>
-              </Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
   );
 }

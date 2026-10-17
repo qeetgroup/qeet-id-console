@@ -13,6 +13,9 @@ describe("formatEventTitle", () => {
     expect(formatEventTitle({ type: "auth.login_succeeded" })).toBe("Successful sign-in");
     expect(formatEventTitle({ type: "user.mfa_required_set" })).toBe("MFA requirement enabled");
     expect(formatEventTitle({ type: "tenant.created" })).toBe("Organization created");
+    expect(formatEventTitle({ type: "auth.mfa_challenged" })).toBe("MFA challenge issued");
+    expect(formatEventTitle({ type: "auth.mfa_enrollment_deferred" })).toBe("MFA setup postponed");
+    expect(formatEventTitle({ type: "auth.mfa_verified" })).toBe("MFA verification succeeded");
   });
 
   it("never leaks an enum-shaped server title", () => {

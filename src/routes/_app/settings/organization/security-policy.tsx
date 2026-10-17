@@ -45,6 +45,9 @@ type Policy = {
   max_sessions: number | null;
   session_limit_action: string;
   mfa_enforcement: string;
+  mfa_grace_days: number;
+  /** When the requirement was turned on (read-only); null while optional. */
+  mfa_enforced_since?: string | null;
   settings?: Record<string, unknown> | null;
 };
 
@@ -59,6 +62,7 @@ const empty: Policy = {
   max_sessions: null,
   session_limit_action: "evict_oldest",
   mfa_enforcement: "optional",
+  mfa_grace_days: 0,
 };
 
 function PoliciesPage() {
@@ -89,6 +93,17 @@ function PoliciesPage() {
   });
 
   const set = <K extends keyof Policy>(k: K, v: Policy[K]) => setDraft((d) => ({ ...d, [k]: v }));
+
+  // When the saved requirement's grace period ends, while it is still running.
+  const saved = policyQ.data;
+  const graceEndsAt =
+    saved?.mfa_enforced_since && saved.mfa_grace_days > 0
+      ? new Date(new Date(saved.mfa_enforced_since).getTime() + saved.mfa_grace_days * 86_400_000)
+      : null;
+  const graceEnds =
+    graceEndsAt && graceEndsAt.getTime() > Date.now()
+      ? graceEndsAt.toLocaleDateString(undefined, { dateStyle: "long" })
+      : null;
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -310,6 +325,28 @@ function PoliciesPage() {
                   </Select>
                   <FieldDescription>{t("policies.mfa.noteHelp")}</FieldDescription>
                 </Field>
+                {draft.mfa_enforcement !== "optional" && (
+                  <Field>
+                    <FieldLabel htmlFor="mfa_grace_days">{t("policies.mfa.graceLabel")}</FieldLabel>
+                    <Input
+                      id="mfa_grace_days"
+                      type="number"
+                      min={0}
+                      max={90}
+                      value={draft.mfa_grace_days}
+                      onChange={(e) =>
+                        set(
+                          "mfa_grace_days",
+                          e.target.value === "" ? 0 : Number.parseInt(e.target.value, 10),
+                        )
+                      }
+                    />
+                    <FieldDescription>
+                      {t("policies.mfa.graceHelp")}
+                      {graceEnds && ` ${t("policies.mfa.graceEnds", { date: graceEnds })}`}
+                    </FieldDescription>
+                  </Field>
+                )}
               </FieldGroup>
             </CardContent>
           </Card>
