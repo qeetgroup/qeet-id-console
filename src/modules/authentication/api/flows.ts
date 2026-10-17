@@ -25,13 +25,41 @@ type User = {
 };
 
 type LoginInput = { email: string; password: string };
-// When the account has a second factor enrolled, /v1/auth/login returns this
-// challenge instead of tokens; complete it at /v1/auth/mfa.
+// When the account holds a second factor, or must have one, /v1/auth/login
+// returns this challenge instead of tokens; complete it at /v1/auth/mfa.
 export type MfaChallenge = {
   mfa_required: true;
   mfa_token: string;
   methods: string[];
+  /** Exactly the second factors this person can complete the challenge with. */
+  factors?: LoginFactor[];
+  /**
+   * The account must have a second factor and holds none: set up an
+   * authenticator app (startMfaEnrollment) and complete with a code from it.
+   */
+  enrollment_required?: boolean;
+  /** While the organisation's grace period runs: when it ends; until then the setup can be skipped. */
+  enrollment_due_at?: string;
 };
+
+/** One way to complete a sign-in's second-factor challenge. */
+export type LoginFactor = {
+  type: "totp" | "recovery_code" | "email" | "sms" | "passkey" | "push";
+  /** An email or SMS factor's id, to send it a code. */
+  id?: string;
+  /** An email or SMS factor's masked address or number. */
+  destination?: string;
+};
+
+/**
+ * How a challenge is completed: a code, a passkey assertion, or an approved
+ * push — or, for an enrolment challenge in its grace period, a skip.
+ */
+export type MfaProof =
+  | { code: string }
+  | { passkey: { session_id: string; credential: unknown } }
+  | { push: true }
+  | { skip: true };
 type LoginResponse = SessionResponse | MfaChallenge;
 
 export function isMfaChallenge(r: LoginResponse): r is MfaChallenge {
@@ -62,21 +90,26 @@ export function useLogin() {
 }
 
 /**
- * Complete a two-step login: exchange the mfa_token from useLogin plus a TOTP
- * or recovery code for a server-owned session.
+ * Complete a two-step login: exchange the mfa_token from useLogin plus a proof
+ * for a server-owned session. When the proof set up an authenticator app the
+ * response carries its new recovery codes, which the sign-in page shows once
+ * before continuing.
  */
 export function useCompleteMfaLogin() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (in_: { mfa_token: string; code: string }) =>
-      api<SessionResponse>("/v1/auth/mfa", {
+    mutationFn: (in_: { mfa_token: string } & MfaProof) =>
+      api<SessionResponse & { recovery_codes?: string[] }>("/v1/auth/mfa", {
         method: "POST",
         body: in_,
         anonymous: true,
       }),
 
-    onSuccess: () => navigate({ to: "/" }),
+    onSuccess: (res) => {
+      if (res.recovery_codes?.length) return;
+      navigate({ to: "/" });
+    },
     meta: { successMessage: "Signed in successfully" },
   });
 }
@@ -225,18 +258,24 @@ export function useResendMagicLink() {
 /**
  * Consume a magic-link token and exchange it for a Qeet ID session.
  * Called by the public /magic landing page. The BFF consumes the returned
- * token pair and establishes the HttpOnly session before this resolves.
+ * token pair and establishes the HttpOnly session before this resolves. When
+ * the account holds a second factor, or must have one, the link answers a
+ * challenge instead; the page reads it from this mutation's data and
+ * completes it like a password sign-in's.
  */
 export function useConsumeMagicLink() {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (token: string) =>
-      api<SessionResponse>("/v1/auth/magic-link/consume", {
+      api<LoginResponse>("/v1/auth/magic-link/consume", {
         method: "POST",
         body: { token },
         anonymous: true,
       }),
-    onSuccess: () => navigate({ to: "/" }),
+    onSuccess: (res) => {
+      if (isMfaChallenge(res)) return;
+      navigate({ to: "/" });
+    },
     // The /magic page surfaces the error inline; no global toast.
     meta: { successMessage: "Signed in successfully" },
   });

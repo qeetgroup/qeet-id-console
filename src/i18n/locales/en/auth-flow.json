@@ -134,9 +134,33 @@
     "mfa": {
       "title": "Two-factor authentication",
       "subtitle": "Enter the 6-digit code from your authenticator app, or a recovery code.",
+      "subtitleAny": "Confirm it's you with one of your second factors.",
       "codeLabel": "Verification code",
       "verifyingBtn": "Verifying…",
-      "verifyBtn": "Verify"
+      "verifyBtn": "Verify",
+      "sendCodeTo": "Send a code to {{destination}}",
+      "codeSentTo": "Code sent to {{destination}}. Enter it above.",
+      "usePasskey": "Use a passkey",
+      "pushBtn": "Approve on my phone",
+      "pushWaiting": "Approve the sign-in on your phone…",
+      "or": "Or"
+    },
+    "enroll": {
+      "title": "Set up two-step verification",
+      "subtitle": "Your organisation requires a second step when you sign in. Set up an authenticator app to continue.",
+      "subtitleDue": "Your organisation requires a second step when you sign in from {{date}}. Set up an authenticator app now, or skip until then.",
+      "startBtn": "Set up an authenticator app",
+      "scanLabel": "Scan with your authenticator app",
+      "keyLabel": "Setup key",
+      "keyHint": "Can't scan? Enter this key in your app instead.",
+      "codeLabel": "Code from the app",
+      "confirmBtn": "Confirm and sign in",
+      "skipBtn": "Skip for now",
+      "codesTitle": "Save your recovery codes",
+      "codesSubtitle": "Each code signs you in once if you lose your authenticator app. They won't be shown again.",
+      "copyBtn": "Copy",
+      "downloadBtn": "Download",
+      "continueBtn": "Continue"
     }
   },
   "signUp": {

@@ -109,12 +109,15 @@
     },
     "mfa": {
       "title": "MFA enforcement",
-      "description": "How aggressively users are pushed toward enrolling a second factor.",
+      "description": "Who must use a second factor to sign in. Anyone who must and has none sets up an authenticator app before they get in.",
       "modeLabel": "Mode",
-      "optional": "Optional — users may enrol but aren't required",
-      "required": "Required — block login until enrolled",
-      "adminOnly": "Admins only — require MFA for owner/admin roles",
-      "noteHelp": "Note: this policy isn't enforced at login yet — only the separate risk-based step-up (adaptive MFA) applies today."
+      "optional": "Optional — only people who set up a second factor are asked for it",
+      "required": "Required — everyone uses a second factor to sign in",
+      "adminOnly": "Admins only — anyone whose role can change anything (a write permission)",
+      "noteHelp": "Applies to password sign-in. People an administrator marks as requiring MFA must use it whatever this is set to.",
+      "graceLabel": "Grace period (days)",
+      "graceHelp": "For this many days after you turn the requirement on, people who already have an account can skip setting up a second factor; they're asked each time they sign in. 0 means no grace period.",
+      "graceEnds": "The current grace period ends {{date}}."
     },
     "savedAt": "Saved {{time}}",
     "unsaved": "Unsaved changes",
