@@ -35,6 +35,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { KeyRoundIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
+import { localDateTimeToInstant } from "@/shared/utils/format";
+
 import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useTranslation } from "react-i18next";
@@ -299,6 +301,7 @@ type CreateApiKeyResponse = {
 
 function CreateApiKeySheet({ open, onOpenChange, tenantId, onCreated }: CreateApiKeySheetProps) {
   const { t } = useTranslation("auth");
+  const [expiryError, setExpiryError] = useState<string | null>(null);
   const createM = useMutation({
     mutationFn: (body: {
       tenant_id: string;
@@ -314,7 +317,13 @@ function CreateApiKeySheet({ open, onOpenChange, tenantId, onCreated }: CreateAp
   });
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) setExpiryError(null);
+        onOpenChange(o);
+      }}
+    >
       <SheetContent side="right" className="w-full sm:max-w-md">
         <form
           className="flex h-full flex-col"
@@ -323,11 +332,19 @@ function CreateApiKeySheet({ open, onOpenChange, tenantId, onCreated }: CreateAp
             if (!tenantId) return;
             const data = new FormData(e.currentTarget);
             const scopesRaw = String(data.get("scopes") ?? "").trim();
+            // The input holds a local wall-clock time; the API takes an RFC 3339 instant.
+            const expiresRaw = String(data.get("expires_at") ?? "");
+            const expiresAt = localDateTimeToInstant(expiresRaw);
+            if (expiresRaw && (!expiresAt || new Date(expiresAt) <= new Date())) {
+              setExpiryError(t("keys.create.expiresPast"));
+              return;
+            }
+            setExpiryError(null);
             createM.mutate({
               tenant_id: tenantId,
               name: String(data.get("name") ?? "").trim(),
               scopes: scopesRaw ? scopesRaw.split(/\s+/) : undefined,
-              expires_at: String(data.get("expires_at") ?? "") || undefined,
+              expires_at: expiresAt ?? undefined,
             });
           }}
         >
@@ -352,10 +369,20 @@ function CreateApiKeySheet({ open, onOpenChange, tenantId, onCreated }: CreateAp
                 <Input id="apikey-scopes" name="scopes" placeholder="user.read tenant.read" />
                 <FieldDescription>{t("keys.create.scopesHelp")}</FieldDescription>
               </Field>
-              <Field>
+              <Field data-invalid={expiryError ? true : undefined}>
                 <FieldLabel htmlFor="apikey-expires_at">{t("keys.create.expiresLabel")}</FieldLabel>
-                <Input id="apikey-expires_at" name="expires_at" type="datetime-local" />
-                <FieldDescription>{t("keys.create.expiresHelp")}</FieldDescription>
+                <Input
+                  id="apikey-expires_at"
+                  name="expires_at"
+                  type="datetime-local"
+                  aria-invalid={expiryError ? true : undefined}
+                  onChange={() => setExpiryError(null)}
+                />
+                {expiryError ? (
+                  <FieldError>{expiryError}</FieldError>
+                ) : (
+                  <FieldDescription>{t("keys.create.expiresHelp")}</FieldDescription>
+                )}
               </Field>
               {createM.error && (
                 <Field>

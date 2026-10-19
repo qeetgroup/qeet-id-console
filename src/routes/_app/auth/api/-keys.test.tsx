@@ -24,6 +24,7 @@ vi.mock("@/shared/hooks/use-create-intent", async () => {
 });
 
 import { api } from "@/platform/api/client";
+import { ApiError } from "@/platform/errors/api-error";
 import { Route } from "./keys";
 
 const ApiKeysPage = Route.options.component as () => React.JSX.Element;
@@ -47,13 +48,21 @@ function created(name: string, secret?: string) {
 }
 
 let responses: ReturnType<typeof created>[];
+let posted: Record<string, unknown>[];
+let rejection: Error | undefined;
 
 beforeEach(() => {
   responses = [];
+  posted = [];
+  rejection = undefined;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     if (path === "/v1/tenants/tenant-1/api-keys") return { items: [] };
-    if (path === "/v1/api-keys" && options?.method === "POST") return responses.shift();
+    if (path === "/v1/api-keys" && options?.method === "POST") {
+      posted.push(options.body as Record<string, unknown>);
+      if (rejection) throw rejection;
+      return responses.shift();
+    }
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });
 });
@@ -71,11 +80,30 @@ function renderPage() {
   );
 }
 
-async function createKey(name: string) {
+async function submitKey(name: string, expiresAt?: string) {
   fireEvent.click(screen.getByRole("button", { name: /new api key/i }));
   fireEvent.change(await screen.findByLabelText("Name"), { target: { value: name } });
+  if (expiresAt !== undefined) {
+    fireEvent.change(screen.getByLabelText("Expires at"), { target: { value: expiresAt } });
+  }
   fireEvent.click(screen.getByRole("button", { name: /create key/i }));
+}
+
+async function createKey(name: string, expiresAt?: string) {
+  await submitKey(name, expiresAt);
   await waitFor(() => expect(screen.queryByRole("button", { name: /create key/i })).toBeNull());
+}
+
+/** A Date as a datetime-local input value ("2026-11-01T10:30"), in local time. */
+function localInput(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function minutesFromNow(minutes: number) {
+  const d = new Date(Date.now() + minutes * 60_000);
+  d.setSeconds(0, 0);
+  return d;
 }
 
 describe("API keys — revealing a new key", () => {
@@ -110,5 +138,53 @@ describe("API keys — revealing a new key", () => {
 
     expect(await screen.findByText(/secret didn't come back/i)).toBeTruthy();
     expect(screen.queryByRole("button", { name: /copy/i })).toBeNull();
+  });
+});
+
+describe("API keys — choosing an expiry", () => {
+  it("sends the chosen local moment as an RFC 3339 instant", async () => {
+    const tomorrow = minutesFromNow(24 * 60);
+    responses.push(created("expiring", "qk_expiring_secret"));
+    renderPage();
+
+    await createKey("expiring", localInput(tomorrow));
+
+    expect(posted).toHaveLength(1);
+    expect(posted[0].expires_at).toBe(tomorrow.toISOString());
+    expect(await screen.findByText("qk_expiring_secret")).toBeTruthy();
+  });
+
+  it("stops a past expiry at the field and sends nothing", async () => {
+    renderPage();
+
+    await submitKey("stale", localInput(minutesFromNow(-60)));
+
+    expect(await screen.findByText(/must be in the future/i)).toBeTruthy();
+    expect(posted).toHaveLength(0);
+  });
+
+  it("shows a plain message, not the parser's, when the server rejects the request", async () => {
+    rejection = new ApiError(
+      400,
+      "bad_request",
+      "The request was invalid.",
+      'parsing time "2026-11-01T10:30" as "2006-01-02T15:04:05Z07:00"',
+    );
+    renderPage();
+
+    await submitKey("rejected", localInput(minutesFromNow(60)));
+
+    expect(await screen.findByText(/aren't valid/i)).toBeTruthy();
+    expect(screen.queryByText(/parsing time/)).toBeNull();
+  });
+
+  it("still creates a key that never expires when no expiry is chosen", async () => {
+    responses.push(created("forever", "qk_forever_secret"));
+    renderPage();
+
+    await createKey("forever");
+
+    expect(posted).toHaveLength(1);
+    expect(posted[0].expires_at).toBeUndefined();
   });
 });
