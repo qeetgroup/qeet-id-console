@@ -1,15 +1,14 @@
 // Credentials tools — create_oauth_client, rotate_oauth_client_secret,
-// rotate_signing_keys. All three are secret-bearing: any secret material
-// (client_secret, private_key_pem) goes into ToolResult.sensitiveArtifact and
-// is NEVER included in summary/data or sent back to the model.
+// rotate_signing_keys. The OAuth client tools are secret-bearing: any secret
+// material (client_secret) goes into ToolResult.sensitiveArtifact and is NEVER
+// included in summary/data or sent back to the model.
 //
 // Endpoints:
 //   POST /v1/oidc/clients                                          — create_oauth_client
 //   POST /v1/tenants/{id}/oidc/clients/{cid}/rotate-secret        — rotate_oauth_client_secret
-//   POST /v1/oidc/signing-keys/rotate                             — rotate_signing_keys
+//   (none: signing keys rotate by deployment)                      — rotate_signing_keys
 
 import { z } from "zod";
-import { SIGNING_KEYS_KEY } from "@/modules/developer";
 import { OIDC_CLIENTS_KEY } from "@/modules/authentication";
 
 import { api } from "@/platform/api/client";
@@ -146,19 +145,12 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
 const rotateSigningKeysInput = z.object({});
 type RotateSigningKeysInput = z.infer<typeof rotateSigningKeysInput>;
 
-interface RotateKeyResult {
-  kid: string;
-  alg: string;
-  private_key_pem: string;
-  warning: string;
-}
-
 export const rotateSigningKeysTool: ToolDefinition<RotateSigningKeysInput> = {
   name: "rotate_signing_keys",
   category: "credentials",
   title: "Rotate signing keys",
   description:
-    "Rotate the organization's OIDC token-signing keys. The current key is invalidated after the grace window. Returns key material shown to the operator only, never to the model. Destructive: requires confirmation.",
+    "Signing keys rotate by deployment, not from the console, so this explains where rotation happens and changes nothing.",
   input: rotateSigningKeysInput,
   requiredCapability: "connection.write",
   destructive: true,
@@ -170,33 +162,16 @@ export const rotateSigningKeysTool: ToolDefinition<RotateSigningKeysInput> = {
   },
   confirm: () => ({
     title: "Rotate signing keys",
-    body: "Rotating invalidates the current signing key after the grace window. Active sessions using the old key may be affected. The private key is shown to the operator once and cannot be retrieved again.",
-    affected: [{ label: "Action", value: "Rotate all organization OIDC signing keys" }],
-    confirmText: "Rotate keys",
-    tone: "destructive",
+    body: "Signing keys rotate by deployment, not from the console. Nothing will be changed.",
+    affected: [{ label: "Action", value: "None" }],
+    confirmText: "OK",
+    tone: "default",
   }),
   auditLabel: "qeetai.rotate_signing_keys",
-  async run(ctx, input) {
-    // input is {} — satisfy linter
-    void input;
-    const res = await api<RotateKeyResult>("/v1/oidc/signing-keys/rotate", {
-      method: "POST",
-      signal: ctx.signal,
-    });
-    ctx.queryClient.invalidateQueries({ queryKey: SIGNING_KEYS_KEY });
-
-    // Redact: private key goes to sensitiveArtifact only, never in summary/data.
-    return {
-      ok: true,
-      summary: `Signing keys rotated. New key id: ${res.kid} (${res.alg}). The private key has been shown to the operator separately.${res.warning ? ` Note: ${res.warning}` : ""}`,
-      data: { kid: res.kid, alg: res.alg },
-      sensitiveArtifact: res.private_key_pem
-        ? {
-            kind: "private_key" as const,
-            label: `Private key for signing key ${res.kid}`,
-            value: res.private_key_pem,
-          }
-        : undefined,
-    };
+  // The rotate route was removed from the server: keys rotate by deployment only.
+  // The tool stays so a request for it is answered, not met with "unknown tool".
+  async run() {
+    const message = "Signing keys rotate by deployment, not from the console. Nothing was changed.";
+    return { ok: false, summary: message, error: { code: "rotation_by_deployment", message } };
   },
 };
