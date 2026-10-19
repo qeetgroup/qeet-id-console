@@ -150,6 +150,7 @@ export const simulateAuthorizationTool: ToolDefinition<SimulateAuthorizationInpu
   input: simulateAuthorizationInput,
   requiredCapability: "role.read",
   destructive: false,
+  mutates: false,
   auditLabel: "qeetai.simulate_authorization",
   async run(ctx, input) {
     let result: SimulateResult;
@@ -196,6 +197,8 @@ export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
   input: setStrictMfaInput,
   requiredCapability: "policy.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Passwordless", to: "/auth/login-methods/passwordless" },
   confirm: (input) => ({
     title: input.enabled ? "Enforce strict MFA" : "Disable strict MFA",
     body: input.enabled

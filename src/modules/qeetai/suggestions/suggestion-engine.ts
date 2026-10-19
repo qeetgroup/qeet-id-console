@@ -4,12 +4,14 @@
 // Ranking strategy:
 //   1. Exact route match → prefix match → global fallback.
 //   2. Within each source, preserve the declaration order from route-suggestions.ts.
-//   3. Filter out suggestions whose `requiredCapability` the operator lacks.
+//   3. Filter out suggestions whose `requiredCapability` the operator lacks, and
+//      tool suggestions for change tools while those are switched off.
 //   4. If a context selection is active, boost tool suggestions that accept a
 //      matching `user_id` / `role_id` / `client_id` prefill (they float to top).
 
 import type { Capability } from "@/platform/security/capability-model";
 import type { ConsoleContext } from "../context/types/context.types";
+import { getTool, isWithheldChange } from "../tools";
 import { ROUTE_SUGGESTIONS, type Suggestion } from "./route-suggestions";
 
 // ── Matcher ───────────────────────────────────────────────────────────────────
@@ -89,8 +91,12 @@ export function rankSuggestions(
 ): Suggestion[] {
   const raw = matchSuggestions(ctx.route.pathname);
 
-  // Filter by capability.
+  // Filter by capability, and drop change tools the assistant can't run.
   const visible = raw.filter((s) => {
+    if (s.type === "tool") {
+      const tool = getTool(s.toolName);
+      if (tool && isWithheldChange(tool)) return false;
+    }
     if (!s.requiredCapability) return true;
     return can(s.requiredCapability);
   });

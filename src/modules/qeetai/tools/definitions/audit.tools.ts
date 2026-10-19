@@ -40,6 +40,7 @@ export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
   input: searchAuditLogsInput,
   requiredCapability: "audit.read",
   destructive: false,
+  mutates: false,
   auditLabel: "qeetai.search_audit_logs",
   async run(ctx, input) {
     const data = await api<{ items: AuditEvent[] }>(`/v1/tenants/${ctx.tenantId}/audit`, {
@@ -94,6 +95,7 @@ export const searchSessionsTool: ToolDefinition<SearchSessionsInput> = {
   input: searchSessionsInput,
   requiredCapability: "user.read",
   destructive: false,
+  mutates: false,
   auditLabel: "qeetai.search_sessions",
   async run(ctx, input) {
     // input is {} — satisfy linter

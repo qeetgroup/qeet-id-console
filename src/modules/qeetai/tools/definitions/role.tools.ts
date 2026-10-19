@@ -26,6 +26,8 @@ export const createRoleTool: ToolDefinition<CreateRoleInput> = {
   input: createRoleInput,
   requiredCapability: "role.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Roles", to: "/authorization/roles" },
   confirm: (input) => ({
     title: "Create role",
     body: "Qeet AI will create a new role in this organization.",
@@ -68,6 +70,8 @@ export const assignRoleTool: ToolDefinition<AssignRoleInput> = {
   input: assignRoleInput,
   requiredCapability: "role.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Users", to: "/users" },
   confirm: (input) => ({
     title: "Assign role",
     body: "This grants the role's permissions to the user — a privilege change.",
@@ -110,6 +114,8 @@ export const grantPermissionTool: ToolDefinition<GrantPermissionInput> = {
   input: grantPermissionInput,
   requiredCapability: "role.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Roles", to: "/authorization/roles" },
   confirm: (input) => ({
     title: "Grant permission to role",
     body: "This broadens what every user holding the role can do — a privilege change.",

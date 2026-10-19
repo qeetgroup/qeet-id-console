@@ -46,6 +46,8 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
   input: createOAuthClientInput,
   requiredCapability: "connection.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Applications", to: "/auth/connections/oidc" },
   confirm: (input) => ({
     title: "Create OAuth client",
     body: "This registers a new OAuth/OIDC client. Confidential clients mint a client secret shown once.",
@@ -103,6 +105,8 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
   input: rotateOAuthClientSecretInput,
   requiredCapability: "connection.write",
   destructive: true,
+  mutates: true,
+  consoleScreen: { label: "Applications", to: "/auth/connections/oidc" },
   confirm: (input) => ({
     title: "Rotate client secret",
     body: "The existing client secret will stop working immediately. Update your application before confirming. The new secret is shown once only.",
@@ -158,6 +162,12 @@ export const rotateSigningKeysTool: ToolDefinition<RotateSigningKeysInput> = {
   input: rotateSigningKeysInput,
   requiredCapability: "connection.write",
   destructive: true,
+  mutates: true,
+  consoleScreen: {
+    label: "Signing keys",
+    to: "/auth/api/signing-keys",
+    hint: "Signing keys rotate by deployment; the current keys are listed",
+  },
   confirm: () => ({
     title: "Rotate signing keys",
     body: "Rotating invalidates the current signing key after the grace window. Active sessions using the old key may be affected. The private key is shown to the operator once and cannot be retrieved again.",

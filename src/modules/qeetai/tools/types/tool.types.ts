@@ -69,6 +69,17 @@ export interface ToolDefinition<I = unknown> {
   input: z.ZodType<I>;
   requiredCapability?: Capability;
   destructive: boolean;
+  /**
+   * True when the tool changes anything (creates, updates, deletes, rotates),
+   * not only when it is destructive. Change tools are withheld while
+   * `ASSISTANT_CHANGE_TOOLS_ENABLED` is off.
+   */
+  mutates: boolean;
+  /**
+   * Console screen where the operator makes this change themselves. Every
+   * change tool names one, so a withheld tool can point the operator there.
+   */
+  consoleScreen?: { label: string; to: string; hint?: string };
   confirm?: (input: I, ctx: ToolContext) => ConfirmRequest;
   auditLabel: string;
   run: (ctx: ToolContext, input: I) => Promise<ToolResult>;

@@ -21,8 +21,8 @@ export function ConversationEmptyState({ onPick }: { onPick: (prompt: string) =>
       </span>
       <h2 className="mt-4 font-heading text-base font-semibold">How can I help?</h2>
       <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-        Ask about your tenant, run administrative actions as tools, or generate code — all under
-        your own permissions.
+        Ask about your tenant, look things up, or generate code — all under your own permissions. In
+        this version the assistant reads and explains; it doesn't make changes.
       </p>
       <ul className="mt-6 flex w-full max-w-md flex-col gap-2">
         {STARTER_PROMPTS.map((prompt) => (
