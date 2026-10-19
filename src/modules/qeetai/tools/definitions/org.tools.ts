@@ -31,6 +31,8 @@ export const createOrganizationTool: ToolDefinition<CreateOrgInput> = {
   input: createOrgInput,
   requiredCapability: "tenant.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Organizations", to: "/organizations" },
   confirm: (input) => ({
     title: "Create organization",
     body: "Qeet AI will create a new organization (tenant).",

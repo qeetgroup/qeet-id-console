@@ -18,6 +18,11 @@ step-up recovery; and non-secret PII flowed to the model and to localStorage.
   declare a confirm builder; `destructive` now only drives dialog tone.
 - **Enabled-set gating:** execution is restricted to tools in
   `enabledTools(can)`; a call outside it is refused (`tool_not_enabled`).
+- **Read-only in 1.0:** every tool declares `mutates`. While
+  `ASSISTANT_CHANGE_TOOLS_ENABLED` is false, `enabledTools` drops every
+  `mutates` tool; a call to one is refused (`change_tools_disabled`) with the
+  console screen that makes the change, and route suggestions don't offer it.
+  The tools stay in the code until the server bounds the assistant's authority.
 - **Step-up in the AI path:** `ToolContext.stepUp()` + an `awaiting_step_up`
   state; a `step_up_required` pauses, re-verifies, and retries once.
 - **Data hygiene:** secrets are diverted to an in-memory store and never sent to

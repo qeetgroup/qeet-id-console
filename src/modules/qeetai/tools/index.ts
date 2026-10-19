@@ -3,7 +3,14 @@
 
 export type { ExecuteToolOptions } from "./execution-engine";
 export { executeTool } from "./execution-engine";
-export { enabledTools, getTool, listTools } from "./tool-registry";
+export {
+  CHANGE_TOOLS_DISABLED,
+  changeRefusal,
+  enabledTools,
+  getTool,
+  isWithheldChange,
+  listTools,
+} from "./tool-registry";
 export type {
   ConfirmRequest,
   ExecutionStatus,

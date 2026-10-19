@@ -4,7 +4,8 @@
 //
 // getTool(name)    — look up a single definition by its manifest name.
 // listTools()      — all 21 definitions in insertion order.
-// enabledTools(can) — subset visible to the current operator (capability gate).
+// enabledTools(can) — subset visible to the current operator (change-tool switch
+//                     + capability gate).
 //
 // The registry name-set is parity-checked against api/qeetai/tools.manifest.json
 // by the qa parity test (vitest). Every name here MUST equal a manifest entry and
@@ -93,12 +94,53 @@ export function listTools(): ToolDefinition[] {
 }
 
 /**
- * Subset of tools the current operator can see: filters out any tool whose
- * `requiredCapability` the `can` predicate returns false for.
+ * Owner decision for 1.0: the assistant only reads and explains. While this is
+ * false, no tool that changes anything is run, and route suggestions don't offer
+ * one. The change tools stay in place for when the server bounds the
+ * assistant's own authority.
+ */
+export const ASSISTANT_CHANGE_TOOLS_ENABLED = false;
+
+/** Error code a withheld change tool settles with. */
+export const CHANGE_TOOLS_DISABLED = "change_tools_disabled";
+
+/** True when `tool` changes something and change tools are switched off. */
+export function isWithheldChange(
+  tool: ToolDefinition,
+  changeToolsEnabled = ASSISTANT_CHANGE_TOOLS_ENABLED,
+): boolean {
+  return tool.mutates && !changeToolsEnabled;
+}
+
+/**
+ * The tool result for a withheld change tool. It goes back to the model, which
+ * explains the steps instead, and names the screen where the operator can make
+ * the change themselves.
+ */
+export function changeRefusal(tool: ToolDefinition): { code: string; message: string } {
+  const screen = tool.consoleScreen;
+  const where = screen
+    ? ` ${screen.hint ?? "The operator can make this change themselves"} on the ${screen.label} screen (${screen.to}).`
+    : "";
+  return {
+    code: CHANGE_TOOLS_DISABLED,
+    message: `The assistant can't make changes in this version, so nothing was changed.${where}`,
+  };
+}
+
+/**
+ * Subset of tools the current operator can see: filters out change tools while
+ * they are switched off, and any tool whose `requiredCapability` the `can`
+ * predicate returns false for.
  *
  * This is a UX gate (defense-in-depth); the backend endpoints each tool calls
  * remain the real authorization boundary. Never use this as a security check.
  */
-export function enabledTools(can: (c?: Capability) => boolean): ToolDefinition[] {
-  return ALL_TOOLS.filter((t) => can(t.requiredCapability));
+export function enabledTools(
+  can: (c?: Capability) => boolean,
+  changeToolsEnabled = ASSISTANT_CHANGE_TOOLS_ENABLED,
+): ToolDefinition[] {
+  return ALL_TOOLS.filter(
+    (t) => !isWithheldChange(t, changeToolsEnabled) && can(t.requiredCapability),
+  );
 }

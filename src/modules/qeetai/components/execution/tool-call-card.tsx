@@ -11,9 +11,11 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from "@qeetrix/icons";
+import { Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 
 import { useSensitiveArtifact } from "../../store/secrets-store";
+import { CHANGE_TOOLS_DISABLED, getTool } from "../../tools";
 import type { ExecutionStatus, ToolExecution } from "../../tools/types/tool.types";
 
 type Tone = "pending" | "running" | "success" | "error";
@@ -30,6 +32,8 @@ const STATUS_META: Record<ExecutionStatus, { label: string; tone: Tone }> = {
   timed_out: { label: "Timed out", tone: "error" },
   cancelled: { label: "Cancelled", tone: "pending" },
 };
+
+const WITHHELD_META = { label: "Not available in this version", tone: "pending" } as const;
 
 const TONE_TEXT: Record<Tone, string> = {
   pending: "text-muted-foreground",
@@ -66,11 +70,14 @@ export function ToolCallCard({
   onRetry?: () => void;
 }) {
   const [showInput, setShowInput] = useState(false);
-  const meta = STATUS_META[execution.status];
+  // A change tool withheld in this version: not a failure, and retrying can't help.
+  const withheld = execution.error?.code === CHANGE_TOOLS_DISABLED;
+  const meta = withheld ? WITHHELD_META : STATUS_META[execution.status];
   const result = execution.result;
   // Secret artifacts live in the in-memory secrets store (never localStorage).
   const artifact = useSensitiveArtifact(execution.id);
-  const retryable = execution.status === "failed" || execution.status === "timed_out";
+  const retryable =
+    !withheld && (execution.status === "failed" || execution.status === "timed_out");
 
   return (
     <div className="rounded-lg border bg-card/50 text-sm">
@@ -106,7 +113,9 @@ export function ToolCallCard({
         <p className="border-t px-3 py-2 text-[13px] text-muted-foreground">{result.summary}</p>
       ) : null}
 
-      {execution.error ? (
+      {withheld ? <ChangeRefusal toolName={execution.toolName} /> : null}
+
+      {execution.error && !withheld ? (
         <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
             <TriangleAlertIcon className="size-3.5 shrink-0" />
@@ -123,6 +132,24 @@ export function ToolCallCard({
       ) : null}
 
       {artifact ? <SensitiveArtifact artifact={artifact} /> : null}
+    </div>
+  );
+}
+
+/** The assistant only reads in this version: say nothing changed, and where to do it. */
+function ChangeRefusal({ toolName }: { toolName: string }) {
+  const screen = getTool(toolName)?.consoleScreen;
+  return (
+    <div className="border-t px-3 py-2 text-xs text-muted-foreground" role="status">
+      <p>Nothing was changed. The assistant can't make changes in this version.</p>
+      {screen ? (
+        <Link
+          to={screen.to as never}
+          className="mt-1 inline-block font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Open {screen.label}
+        </Link>
+      ) : null}
     </div>
   );
 }

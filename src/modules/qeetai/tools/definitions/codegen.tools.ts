@@ -96,6 +96,7 @@ export const generateTerraformTool: ToolDefinition<GenerateTerraformInput> = {
   input: generateTerraformInput,
   requiredCapability: "connection.read",
   destructive: false,
+  mutates: false,
   auditLabel: "qeetai.generate_terraform",
   async run(ctx, input) {
     let hcl = "";
@@ -221,6 +222,7 @@ export const generateSdkSnippetTool: ToolDefinition<GenerateSdkSnippetInput> = {
   input: generateSdkSnippetInput,
   // No requiredCapability — informational
   destructive: false,
+  mutates: false,
   auditLabel: "qeetai.generate_sdk_snippet",
   async run(_ctx, input) {
     let snippet = "";
@@ -286,6 +288,7 @@ export const generateApiExampleTool: ToolDefinition<GenerateApiExampleInput> = {
   input: generateApiExampleInput,
   // No requiredCapability — informational
   destructive: false,
+  mutates: false,
   auditLabel: "qeetai.generate_api_example",
   async run(_ctx, input) {
     const example = buildApiExample(input.endpoint, input.method);
