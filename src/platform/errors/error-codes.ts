@@ -30,6 +30,11 @@ export const ERROR_CODES = {
   LAST_SIGN_IN_METHOD: "auth.last_sign_in_method",
   // 403 when a sign-in would exceed the organisation's limit on sessions.
   SESSION_LIMIT: "auth.session_limit",
+  // 403 when the organisation's address rules refuse the network signed in
+  // from; renewals too. Retrying from the same network cannot help.
+  ADDRESS_NOT_ALLOWED: "auth.address_not_allowed",
+  // 409 when an address-rule change would block the address it comes from.
+  RULES_LOCK_OUT_CALLER: "risk.rules_lock_out_caller",
   // 409 when removing a social provider some people can sign in only through.
   SOCIAL_PROVIDER_IN_USE: "social.provider_in_use",
   NOT_TENANT_MEMBER: "auth.not_tenant_member",

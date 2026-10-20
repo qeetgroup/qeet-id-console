@@ -18,11 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
-  Textarea,
 } from "@qeetrix/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckIcon, LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,8 +36,6 @@ export const Route = createFileRoute("/_app/settings/organization/security-polic
 
 type Policy = {
   tenant_id: string;
-  ip_allowlist: string[] | null;
-  ip_denylist: string[] | null;
   password_min_length: number;
   password_complexity: string;
   session_max_age: string;
@@ -66,8 +63,6 @@ const STEP_UP_WINDOWS = ["1m", "5m", "10m", "15m", "30m", "1h"];
 
 const empty: Policy = {
   tenant_id: "",
-  ip_allowlist: [],
-  ip_denylist: [],
   password_min_length: 8,
   password_complexity: "standard",
   session_max_age: "720h",
@@ -155,52 +150,13 @@ function PoliciesPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{t("policies.network.title")}</CardTitle>
-              <CardDescription>{t("policies.network.description")}</CardDescription>
+              <CardDescription>
+                {t("policies.network.movedToRules")}{" "}
+                <Link to="/security/threats/ip-allowlist" className="underline">
+                  {t("policies.network.openRules")}
+                </Link>
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="ip_allowlist">
-                    {t("policies.network.allowlistLabel")}
-                  </FieldLabel>
-                  <Textarea
-                    id="ip_allowlist"
-                    rows={3}
-                    value={(draft.ip_allowlist ?? []).join("\n")}
-                    onChange={(e) =>
-                      set(
-                        "ip_allowlist",
-                        e.target.value
-                          .split(/\n+/)
-                          .map((s) => s.trim())
-                          .filter(Boolean),
-                      )
-                    }
-                    placeholder="10.0.0.0/8&#10;203.0.113.0/24"
-                  />
-                  <FieldDescription>{t("policies.network.allowlistHelp")}</FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="ip_denylist">
-                    {t("policies.network.denylistLabel")}
-                  </FieldLabel>
-                  <Textarea
-                    id="ip_denylist"
-                    rows={3}
-                    value={(draft.ip_denylist ?? []).join("\n")}
-                    onChange={(e) =>
-                      set(
-                        "ip_denylist",
-                        e.target.value
-                          .split(/\n+/)
-                          .map((s) => s.trim())
-                          .filter(Boolean),
-                      )
-                    }
-                  />
-                </Field>
-              </FieldGroup>
-            </CardContent>
           </Card>
 
           <Card>
