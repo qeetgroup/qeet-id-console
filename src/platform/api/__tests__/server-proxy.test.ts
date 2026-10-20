@@ -14,6 +14,7 @@ vi.mock("@tanstack/react-start", () => ({
 }));
 vi.mock("@tanstack/react-start/server", () => ({
   getRequest: () => new Request("http://localhost:3002/"),
+  getRequestIP: () => "203.0.113.7",
   getResponse: () => new Response(),
   clearSession: vi.fn(),
   getCookies: () => ({}),
@@ -236,5 +237,40 @@ describe("Sign-out-everywhere session boundary", () => {
     expect(store.data.accessToken).toBe("access-secret");
     expect(result.session.isAuthenticated).toBe(true);
     expect(result.sessionChanged).toBe(false);
+  });
+});
+
+describe("Relaying the person's address", () => {
+  afterEach(() => {
+    delete process.env.QEET_ID_RELAY_KEY;
+  });
+
+  it("names the person's address with the relay key on every backend call", async () => {
+    process.env.QEET_ID_RELAY_KEY = "relay-key-for-tests-0123456789abcdef";
+    store.data = {
+      ...store.data,
+      accessToken: "access-secret",
+      refreshToken: "refresh-secret",
+      expiresAt: "2030-01-01T00:00:00Z",
+    };
+    store.fetch.mockResolvedValueOnce(Response.json({ items: [] }));
+    await request("/v1/users", "GET");
+    const headers = store.fetch.mock.calls[0][1].headers;
+    expect(headers["X-Qeet-Relay-Key"]).toBe("relay-key-for-tests-0123456789abcdef");
+    expect(headers["X-Qeet-Client-IP"]).toBe("203.0.113.7");
+  });
+
+  it("sends no claim at all without a relay key", async () => {
+    store.data = {
+      ...store.data,
+      accessToken: "access-secret",
+      refreshToken: "refresh-secret",
+      expiresAt: "2030-01-01T00:00:00Z",
+    };
+    store.fetch.mockResolvedValueOnce(Response.json({ items: [] }));
+    await request("/v1/users", "GET");
+    const headers = store.fetch.mock.calls[0][1].headers;
+    expect(headers["X-Qeet-Relay-Key"]).toBeUndefined();
+    expect(headers["X-Qeet-Client-IP"]).toBeUndefined();
   });
 });
