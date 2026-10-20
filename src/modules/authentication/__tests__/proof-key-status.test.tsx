@@ -5,9 +5,9 @@ import "@/i18n";
 
 vi.mock("@/platform/api/client", () => ({ getApiBaseUrl: () => "https://api.id.example" }));
 
-import { type OidcClient, proofKeyStatus } from "@/modules/authentication/api/oidc-clients";
-import { OidcQuickstart } from "@/modules/authentication/components/oidc-quickstart";
-import { ProofKeyBadge, ProofKeyCard } from "@/modules/authentication/components/proof-key-status";
+import { type OidcClient, proofKeyStatus } from "../api/oidc-clients";
+import { OidcQuickstart } from "../components/oidc-quickstart";
+import { ProofKeyBadge, ProofKeyCard } from "../components/proof-key-status";
 
 afterEach(() => {
   cleanup();
