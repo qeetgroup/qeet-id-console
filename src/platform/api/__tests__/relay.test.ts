@@ -28,6 +28,8 @@ describe("clientAddress", () => {
     process.env.CONSOLE_TRUSTED_PROXY_HOPS = "2";
     expect(clientAddress(req("198.51.100.7"), "10.0.0.2")).toBe("10.0.0.2");
     expect(clientAddress(req(), "not-an-ip")).toBeNull();
+    expect(clientAddress(req(), "2001:db8::1")).toBe("2001:db8::1");
+    expect(clientAddress(req(), "999.1.1.1")).toBeNull();
   });
 });
 
