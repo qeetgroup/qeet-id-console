@@ -133,12 +133,12 @@
       "description": "Built-in token-bucket limits applied at the gateway."
     },
     "networkPolicy": {
-      "title": "Network policy",
-      "description": "Organization-level IP filtering. Manage in Roles & Permissions → Policies.",
-      "allowlist": "Allowlist ({{count}})",
-      "denylist": "Denylist ({{count}})",
-      "noAllowlist": "No allowlist — open to all source IPs.",
-      "noDenylist": "No denied CIDRs."
+      "title": "Network access",
+      "description": "Which networks may sign in to this organization is set by IP rules.",
+      "openRules": "Open IP rules",
+      "enforced": "Enforced",
+      "notEnforced": "Not enforced",
+      "rules": "{{allow}} allow · {{deny}} deny"
     },
     "comingSoon": {
       "title": "Per-organization rate-limit controls coming to this screen.",
@@ -228,9 +228,9 @@
       "resolve": "Resolve"
     },
     "ipAllowlist": {
-      "description": "CIDR ranges that may or may not reach this organization. Deny rules win over allow rules; if any allow rule exists, an address must match one.",
+      "description": "Ranges that may or may not sign in to this organization. Deny rules win over allow rules; if any allow rule exists, an address must match one.",
       "enforcement": "Enforcement",
-      "disabledBanner": "Enforcement is off — these rules are saved but not applied. Toggle it on once you've confirmed your own address is allowed.",
+      "disabledBanner": "Enforcement is off — these rules are stored but not applied. Switch it on once you've confirmed the address you work from is allowed.",
       "quickAdd": {
         "title": "Quick add",
         "description": "Add a CIDR range or a single IP address.",
@@ -259,10 +259,51 @@
         "title": "Test an address",
         "description": "Evaluate an IP against the current rules before turning enforcement on.",
         "ipLabel": "IP address",
-        "ipHelp": "Checked exactly as the rules would apply at request time.",
+        "ipHelp": "Checked exactly as a sign-in from that address would be. An address that can't be read is refused.",
         "check": "Check",
         "allowed": "Allowed",
         "blocked": "Blocked"
+      },
+      "coverage": {
+        "title": "What the rules cover",
+        "applied": "While enforcement is on, every sign-in to this organization is checked: password, passkey, magic link, social and enterprise sign-in, invitations, sign-up, the device flow and sign-in to your applications, and every session renewal. A refused sign-in gets no session.",
+        "unknown": "If an address can't be determined, sign-in is refused.",
+        "console": "This console signs you in from its own server, so the rules see that server's address, not yours. A change that would block the address you're working from is refused, so you can't lock yourself out.",
+        "off": "Enforcement is off: the rules are stored but not applied to any sign-in."
+      },
+      "refusals": {
+        "title": "Recent refusals",
+        "description": "Sign-ins and renewals the rules refused, newest first.",
+        "empty": "Nothing has been refused.",
+        "columns": {
+          "when": "When",
+          "address": "Address",
+          "method": "Sign-in",
+          "rule": "Rule"
+        },
+        "noRule": "Outside every allow rule",
+        "unknownAddress": "Address unknown",
+        "removedRule": "{{cidr}} (removed)",
+        "paths": {
+          "password": "Password",
+          "hosted_password": "Password",
+          "passkey": "Passkey",
+          "magic_link": "Magic link",
+          "hosted_magic_link": "Magic link",
+          "social": "Social",
+          "hosted_social": "Social",
+          "saml": "Enterprise (SAML)",
+          "ldap": "Directory (LDAP)",
+          "invite_accept": "Invitation",
+          "hosted_signup": "Sign-up",
+          "tenant_create": "New organization",
+          "tenant_switch": "Organization switch",
+          "refresh": "Session renewal",
+          "oidc_authorize": "Application sign-in",
+          "device_approval": "Device approval",
+          "device": "Device",
+          "mfa": "Second factor"
+        }
       }
     },
     "rateLimits": {

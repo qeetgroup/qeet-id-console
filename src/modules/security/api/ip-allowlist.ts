@@ -75,3 +75,55 @@ export function useCheckIp() {
     meta: { silent: true },
   });
 }
+
+// A sign-in or renewal the rules refused, as the audit log records it
+// (auth.address_refused). rule_id and cidr are the deny rule responsible; an
+// address outside every allow rule, or one that couldn't be read, has none.
+export interface AddressRefusal {
+  id: string;
+  at: string;
+  address: string;
+  path: string;
+  reason: string;
+  ruleId: string | null;
+  cidr: string | null;
+}
+
+interface AuditRow {
+  id: string;
+  created_at: string;
+  ip: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
+function text(v: unknown): string | null {
+  return typeof v === "string" && v !== "" ? v : null;
+}
+
+export function toAddressRefusal(row: AuditRow): AddressRefusal {
+  const m = row.metadata ?? {};
+  return {
+    id: row.id,
+    at: row.created_at,
+    address: text(m.address) ?? row.ip ?? "",
+    path: text(m.path) ?? "",
+    reason: text(m.reason) ?? "",
+    ruleId: text(m.rule_id),
+    cidr: text(m.cidr),
+  };
+}
+
+/** The organisation's most recent address-rule refusals, newest first. */
+export function useAddressRefusals(limit = 20) {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: ["ip-rules", "refusals", tenantId, limit],
+    enabled: !!tenantId,
+    queryFn: async () => {
+      const res = await api<{ items: AuditRow[] }>(`/v1/tenants/${tenantId}/audit`, {
+        query: { action: "auth.address_refused", limit },
+      });
+      return (res.items ?? []).map(toAddressRefusal);
+    },
+  });
+}

@@ -78,11 +78,9 @@
   "policies": {
     "description": "Organization-wide security policy. Applies to every login, every session, every API call against this organization.",
     "network": {
-      "title": "Network policy",
-      "description": "IP allowlist takes precedence: if non-empty, only matching CIDRs may sign in. Denylist always blocks.",
-      "allowlistLabel": "IP allowlist (CIDR, one per line)",
-      "allowlistHelp": "Empty = allow from anywhere (subject to denylist).",
-      "denylistLabel": "IP denylist (CIDR, one per line)"
+      "title": "Network access",
+      "movedToRules": "Which networks may sign in is set by IP rules, which every sign-in to this organization is checked against.",
+      "openRules": "Open IP rules"
     },
     "password": {
       "title": "Password policy",

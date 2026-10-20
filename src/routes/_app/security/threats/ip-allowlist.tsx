@@ -33,8 +33,11 @@ import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import {
+  type AddressRefusal,
   type IpAction,
+  type IpRule,
   useAddIpRule,
+  useAddressRefusals,
   useCheckIp,
   useDeleteIpRule,
   useIpRules,
@@ -84,6 +87,21 @@ function IpAllowlistPage() {
           {t("threats.ipAllowlist.disabledBanner")}
         </p>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("threats.ipAllowlist.coverage.title")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <p>
+            {enabled
+              ? t("threats.ipAllowlist.coverage.applied")
+              : t("threats.ipAllowlist.coverage.off")}
+          </p>
+          <p>{t("threats.ipAllowlist.coverage.unknown")}</p>
+          <p>{t("threats.ipAllowlist.coverage.console")}</p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -178,7 +196,7 @@ function IpAllowlistPage() {
               </TableHeader>
               <TableBody>
                 {rules.map((rule) => (
-                  <TableRow key={rule.id}>
+                  <TableRow key={rule.id} id={`rule-${rule.id}`}>
                     <TableCell className="font-mono text-xs">{rule.cidr}</TableCell>
                     <TableCell>{rule.label || "—"}</TableCell>
                     <TableCell>
@@ -246,6 +264,80 @@ function IpAllowlistPage() {
           </form>
         </CardContent>
       </Card>
+
+      <RecentRefusals rules={rules} />
     </div>
+  );
+}
+
+// The rules' recent refusals from the audit log, each naming the rule
+// responsible: a link to it while it exists, its range once removed.
+function RecentRefusals({ rules }: { rules: IpRule[] }) {
+  const { t } = useTranslation("security");
+  const refusalsQ = useAddressRefusals();
+  const refusals = refusalsQ.data ?? [];
+  const rulesById = new Map(rules.map((r) => [r.id, r]));
+
+  function ruleCell(r: AddressRefusal) {
+    if (!r.ruleId) {
+      return r.reason === "address_unknown"
+        ? t("threats.ipAllowlist.refusals.unknownAddress")
+        : t("threats.ipAllowlist.refusals.noRule");
+    }
+    const rule = rulesById.get(r.ruleId);
+    if (!rule) return t("threats.ipAllowlist.refusals.removedRule", { cidr: r.cidr ?? r.ruleId });
+    return (
+      <a href={`#rule-${rule.id}`} className="font-mono text-xs underline">
+        {rule.cidr}
+        {rule.label ? ` · ${rule.label}` : ""}
+      </a>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("threats.ipAllowlist.refusals.title")}</CardTitle>
+        <CardDescription>{t("threats.ipAllowlist.refusals.description")}</CardDescription>
+      </CardHeader>
+      <CardContent className="p-0">
+        <DataState
+          isLoading={refusalsQ.isLoading}
+          isError={refusalsQ.isError}
+          error={refusalsQ.error}
+          isEmpty={refusals.length === 0}
+          emptyIcon={ShieldIcon}
+          emptyTitle={t("threats.ipAllowlist.refusals.empty")}
+          skeletonRows={2}
+        >
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("threats.ipAllowlist.refusals.columns.when")}</TableHead>
+                <TableHead>{t("threats.ipAllowlist.refusals.columns.address")}</TableHead>
+                <TableHead>{t("threats.ipAllowlist.refusals.columns.method")}</TableHead>
+                <TableHead>{t("threats.ipAllowlist.refusals.columns.rule")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {refusals.map((r) => (
+                <TableRow key={r.id}>
+                  <TableCell className="text-xs text-muted-foreground">
+                    <TimeSince value={r.at} />
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{r.address || "—"}</TableCell>
+                  <TableCell>
+                    {t(`threats.ipAllowlist.refusals.paths.${r.path}`, {
+                      defaultValue: r.path || "—",
+                    })}
+                  </TableCell>
+                  <TableCell>{ruleCell(r)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DataState>
+      </CardContent>
+    </Card>
   );
 }

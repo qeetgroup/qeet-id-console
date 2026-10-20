@@ -59,6 +59,14 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.SESSION_TIMED_OUT]: "Your session has timed out. Please sign in again.",
   [ERROR_CODES.SESSION_LIMIT]:
     "You're signed in on too many devices for this organisation. Sign out of one of them, then try again.",
+  // 403 -> `authz`, whose "You don't have access to do that" reads like a
+  // missing permission; the network is what the organisation refuses.
+  [ERROR_CODES.ADDRESS_NOT_ALLOWED]:
+    "Your organisation doesn't allow sign-in from this network. Contact your administrator.",
+  // 409 -> `api`. The console signs in from its own server, so it's that
+  // server's address the rules must keep allowing.
+  [ERROR_CODES.RULES_LOCK_OUT_CALLER]:
+    "This change would block the address you're working from and lock you out. Add an allow rule that covers it first.",
   [ERROR_CODES.LAST_SIGN_IN_METHOD]:
     "This is your only way to sign in. Add a passkey or set a password before removing it.",
   [ERROR_CODES.SOCIAL_PROVIDER_IN_USE]:
