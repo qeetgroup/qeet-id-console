@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest, getResponse } from "@tanstack/react-start/server";
+import { getRequest, getRequestIP, getResponse } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import {
@@ -22,6 +22,7 @@ import {
   isGlobalSignOutRequest,
   isLocalSessionDestroyRequest,
 } from "@/platform/api/server-request-policy";
+import { relayHeaders } from "@/platform/api/relay";
 import { logger } from "@/platform/telemetry/logger";
 import {
   requiresOrganizationSelection,
@@ -55,6 +56,11 @@ export type ServerProxyResponse = {
   session: PublicSession;
   sessionChanged: boolean;
 };
+
+// relayed names the person's address to the API (see relay.ts).
+function relayed(): Record<string, string> {
+  return relayHeaders(getRequest(), getRequestIP());
+}
 
 function preventSharedCaching() {
   const headers = getResponse().headers;
@@ -96,6 +102,7 @@ async function refreshSession(
           Accept: "application/json",
           "Content-Type": "application/json",
           "X-Request-Id": requestId,
+          ...relayed(),
         },
         body: JSON.stringify({ refresh_token: refreshToken }),
       });
@@ -132,6 +139,7 @@ async function forwardRequest(
   const headers: Record<string, string> = {
     Accept: "application/json",
     "X-Request-Id": input.requestId,
+    ...relayed(),
   };
   if (input.body !== undefined) headers["Content-Type"] = "application/json";
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
@@ -224,6 +232,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
             Accept: "application/json",
             Authorization: `Bearer ${sessionData.accessToken}`,
             "X-Request-Id": input.requestId,
+            ...relayed(),
           },
         }).catch(() => undefined);
       }
@@ -240,6 +249,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
                 Accept: "application/json",
                 Authorization: `Bearer ${responseData.access_token}`,
                 "X-Request-Id": input.requestId,
+                ...relayed(),
               },
               signal: AbortSignal.timeout(5000),
             },
