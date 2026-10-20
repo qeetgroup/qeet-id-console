@@ -80,6 +80,26 @@ export interface RotateSecretResponse {
   warning: string;
 }
 
+/**
+ * A confidential application's wrong-secret lockout (server QTID-215): the
+ * lockout in force, if any, and its recent failed authentications, each with
+ * its time and the caller's address. No secret material is ever recorded.
+ */
+export interface ClientAuthFailures {
+  locked_until: string | null;
+  items: { at: string; ip: string; reason: string }[];
+}
+
+export function useClientAuthFailures(clientRowId: string | undefined, enabled = true) {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: [...OIDC_CLIENTS_KEY, tenantId, clientRowId, "auth-failures"],
+    enabled: !!tenantId && !!clientRowId && enabled,
+    queryFn: () =>
+      api<ClientAuthFailures>(`/v1/tenants/${tenantId}/oidc/clients/${clientRowId}/auth-failures`),
+  });
+}
+
 export function useOidcClients() {
   const tenantId = useTenantId();
   return useQuery({
