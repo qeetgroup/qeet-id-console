@@ -86,9 +86,13 @@ async function parseResponse(response: Response): Promise<JsonValue> {
   }
 }
 
+// relay: the headers naming the person's address (relayed()), computed by the
+// server-function caller: this function is exported, so it reaches the client
+// bundle and can't read the request itself.
 async function refreshSession(
   session: Awaited<ReturnType<typeof openServerSession>>,
   requestId: string,
+  relay: Record<string, string> = {},
 ): Promise<boolean> {
   if (!session.data.refreshToken) return false;
   const flightKey = session.data.sessionId ?? session.data.refreshToken;
@@ -102,7 +106,7 @@ async function refreshSession(
           Accept: "application/json",
           "Content-Type": "application/json",
           "X-Request-Id": requestId,
-          ...relayed(),
+          ...relay,
         },
         body: JSON.stringify({ refresh_token: refreshToken }),
       });
@@ -334,7 +338,7 @@ export const refreshServerSessionNow = createServerFn({ method: "POST" })
       return current;
 
     const session = await openServerSession();
-    await refreshServerSession(session, crypto.randomUUID());
+    await refreshServerSession(session, crypto.randomUUID(), relayed());
     return toPublicSession(session.data);
   });
 
