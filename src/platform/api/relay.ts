@@ -8,7 +8,18 @@
 //
 // Server-only: the key never reaches the browser.
 
-import { isIP } from "node:net";
+// A bare IPv4 or IPv6 address. No node: import: this module is bundled for the
+// browser too (server-proxy.ts is), where only the server function runs it.
+const IPV4 = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+function isIP(value: string): boolean {
+  if (IPV4.test(value)) return true;
+  if (!value.includes(":") || /[[\]/@\s]/.test(value)) return false;
+  try {
+    return new URL(`http://[${value}]/`).hostname.length > 2;
+  } catch {
+    return false;
+  }
+}
 
 export const RELAY_KEY_HEADER = "X-Qeet-Relay-Key";
 export const RELAY_CLIENT_IP_HEADER = "X-Qeet-Client-IP";
