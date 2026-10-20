@@ -56,6 +56,7 @@ function buildSnippet(fw: Framework, client: OidcClient): string {
         `Redirect URI         ${redirect}`,
         `Scopes               ${scopes}`,
         `PKCE                 required (S256)`,
+        `Nonce                required with openid`,
       ].join("\n");
 
     case "nextjs":
@@ -75,7 +76,7 @@ function buildSnippet(fw: Framework, client: OidcClient): string {
           ? `      clientSecret: process.env.QEETID_CLIENT_SECRET, // shown once on creation`
           : `      // public client — no client secret`,
         `      authorization: { params: { scope: "${scopes}" } },`,
-        `      checks: ["pkce", "state"],`,
+        `      checks: ["pkce", "state", "nonce"],`,
         `    },`,
         `  ],`,
         `});`,
@@ -93,6 +94,7 @@ function buildSnippet(fw: Framework, client: OidcClient): string {
         `  scope: "${scopes}",`,
         `  response_type: "code", // PKCE is automatic in oidc-client-ts`,
         `};`,
+        `// Qeet ID also requires a nonce with openid: pass a fresh one to signinRedirect({ nonce }).`,
         ``,
         `createRoot(document.getElementById("root")!).render(`,
         `  <AuthProvider {...oidcConfig}>`,
@@ -116,7 +118,9 @@ function buildSnippet(fw: Framework, client: OidcClient): string {
         `    Endpoint:     provider.Endpoint(),`,
         `    Scopes:       []string{${(client.scopes.length ? client.scopes : ["openid", "profile", "email"]).map((s) => `"${s}"`).join(", ")}},`,
         `}`,
-        `// Redirect the user to conf.AuthCodeURL(state, oidc-generated S256 PKCE params).`,
+        `// verifier := oauth2.GenerateVerifier(); nonce := <random per sign-in>`,
+        `// Redirect to conf.AuthCodeURL(state, oauth2.S256ChallengeOption(verifier), oidc.Nonce(nonce)),`,
+        `// then check the ID token's nonce claim after the exchange.`,
       ].join("\n");
   }
 }
@@ -150,6 +154,8 @@ async function testLogin(client: OidcClient) {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", scopes);
   url.searchParams.set("state", crypto.randomUUID());
+  // Every app must send a nonce with openid, and a proof key.
+  url.searchParams.set("nonce", base64url(crypto.getRandomValues(new Uint8Array(16))));
   url.searchParams.set("code_challenge", challenge);
   url.searchParams.set("code_challenge_method", "S256");
   window.open(url.toString(), "_blank", "noopener");

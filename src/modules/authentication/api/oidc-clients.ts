@@ -22,6 +22,34 @@ export interface OidcClient {
   grant_types: string[];
   scopes: string[];
   created_at: string;
+  /** When a confidential app's exemption from sending a proof key (and a nonce) ends; null: none. */
+  pkce_exempt_until?: string | null;
+}
+
+/** How soon before its end an exemption is flagged as ending. */
+export const PKCE_EXEMPTION_ENDING_SOON_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Whether an app must send a proof key (PKCE, S256) and a nonce on every
+ * sign-in, the server's rule for every app, or holds an exemption until a date.
+ * A public app never does; an exemption that has ended is reported as such, so
+ * its owner can see why sign-ins now fail.
+ */
+export type ProofKeyStatus =
+  | { kind: "required" }
+  | { kind: "exempt"; until: Date; endingSoon: boolean }
+  | { kind: "ended"; until: Date };
+
+export function proofKeyStatus(client: OidcClient, now: Date = new Date()): ProofKeyStatus {
+  if (client.type !== "confidential" || !client.pkce_exempt_until) return { kind: "required" };
+  const until = new Date(client.pkce_exempt_until);
+  if (Number.isNaN(until.getTime())) return { kind: "required" };
+  if (until.getTime() <= now.getTime()) return { kind: "ended", until };
+  return {
+    kind: "exempt",
+    until,
+    endingSoon: until.getTime() - now.getTime() <= PKCE_EXEMPTION_ENDING_SOON_MS,
+  };
 }
 
 export interface CreateOidcInput {
