@@ -17,6 +17,16 @@ import {
 } from "@/modules/authentication";
 import { errorMessage } from "@/platform/errors/user-message";
 
+// Why a social sign-in came back refused (?social_error=…).
+const SOCIAL_ERRORS: Record<string, string> = {
+  // The provider authenticated, but we don't create accounts on sign-in.
+  no_account: "No account uses that provider yet. Sign up first, then sign in.",
+  // An account uses the address but nobody has proved owning it there, so the
+  // provider's word doesn't hand it over.
+  account_unverified:
+    "An account already uses this email address, but it hasn't been verified. Verify it, or reset its password from the link we email you, then sign in with this provider.",
+};
+
 export const Route = createFileRoute("/_auth/sign-in")({
   head: () => ({ meta: [{ title: "Qeet ID – Sign in" }] }),
   component: SignInPage,
@@ -53,13 +63,13 @@ function SignInPage() {
     social.mutate(code);
   }, [social]);
 
-  // Returning from a social sign-in that had no matching account: the provider
-  // authenticated, but we don't create accounts on sign-in — tell the user to
-  // sign up first, then strip the param so a reload won't re-toast.
+  // Returning from a social sign-in the provider completed but we refused: say
+  // why, then strip the param so a reload won't re-toast.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("social_error") !== "no_account") return;
-    toast.error("No account uses that provider yet. Sign up first, then sign in.");
+    const message = SOCIAL_ERRORS[params.get("social_error") ?? ""];
+    if (!message) return;
+    toast.error(message);
     window.history.replaceState({}, "", window.location.pathname);
   }, []);
 

@@ -20,6 +20,7 @@ vi.mock("@/modules/authentication/api/passkey-flows", async (importOriginal) => 
   startPasskeyAutofill: () => () => {},
 }));
 
+import { toast } from "sonner";
 import { api } from "@/platform/api/client";
 import { Route } from "./sign-in";
 
@@ -45,6 +46,16 @@ afterEach(() => {
 });
 
 describe("returning from a social sign-in", () => {
+  it("says why when the provider's address belongs to an unverified account", () => {
+    vi.mocked(toast.error).mockReset();
+    window.history.replaceState({}, "", "/sign-in?social_error=account_unverified");
+    renderPage();
+    expect(toast.error).toHaveBeenCalledWith(
+      "An account already uses this email address, but it hasn't been verified. Verify it, or reset its password from the link we email you, then sign in with this provider.",
+    );
+    expect(window.location.search).toBe("");
+  });
+
   it("asks for the second factor when the exchange answers a challenge", async () => {
     vi.mocked(api).mockResolvedValue({
       mfa_required: true,
