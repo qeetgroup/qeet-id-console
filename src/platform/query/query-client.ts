@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/platform/errors/api-error";
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
+import { isTwoStepRequired, toastTwoStepRequired } from "@/platform/security/two-step-required";
 
 // Per-mutation overrides go on the `meta` object. `silent: true` opts out
 // of both the success toast and the error toast (e.g. background polls
@@ -51,6 +52,12 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
         },
       },
     });
+    return;
+  }
+  // An organisation that requires two-step verification, entered by someone
+  // with none set up: say so and offer the setup, not the generic 403 below.
+  if (isTwoStepRequired(error)) {
+    toastTwoStepRequired();
     return;
   }
   if (error.status === 401 || error.status === 400 || error.status === 422) return;

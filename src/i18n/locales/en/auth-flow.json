@@ -8,6 +8,7 @@
     "loading": "Loading your organizations...",
     "loadError": "Your organizations couldn't be loaded.",
     "retry": "Try again",
+    "setUpTwoStep": "Set up two-step verification",
     "search": "Search organizations",
     "searchPlaceholder": "Search by organization name or domain...",
     "clearSearch": "Clear search",
