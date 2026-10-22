@@ -512,18 +512,24 @@ export async function startSocialLink(provider: string): Promise<void> {
 /**
  * Trade the one-time social login code (delivered to /sign-in?social_code=…
  * after the provider redirect) for a Qeet session. Tenant-less, like signup —
- * the user creates their first organization from the dashboard.
+ * the user creates their first organization from the dashboard. When the
+ * account holds a second factor, or must have one, the exchange answers a
+ * challenge instead, as a password sign-in does; the sign-in page reads it
+ * from this mutation's data and completes it the same way.
  */
 export function useConsumeSocialCode() {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (code: string) =>
-      api<SessionResponse>("/v1/social/exchange", {
+      api<LoginResponse>("/v1/social/exchange", {
         method: "POST",
         body: { code },
         anonymous: true,
       }),
-    onSuccess: () => navigate({ to: "/" }),
+    onSuccess: (res) => {
+      if (isMfaChallenge(res)) return;
+      navigate({ to: "/" });
+    },
     meta: { successMessage: "Signed in successfully" },
   });
 }
