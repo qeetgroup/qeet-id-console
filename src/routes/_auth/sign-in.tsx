@@ -23,6 +23,8 @@ const SOCIAL_ERRORS: Record<string, string> = {
   no_account: "No account uses that provider yet. Sign up first, then sign in.",
   // An account uses the address but nobody has proved owning it there, so the
   // provider's word doesn't hand it over.
+  // A suspended or deleted account isn't signed in by any method.
+  account_inactive: "Your account isn't active. Contact your administrator.",
   account_unverified:
     "An account already uses this email address, but it hasn't been verified. Verify it, or reset its password from the link we email you, then sign in with this provider.",
 };
