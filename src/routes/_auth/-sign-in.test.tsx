@@ -46,6 +46,15 @@ afterEach(() => {
 });
 
 describe("returning from a social sign-in", () => {
+  it("says a suspended account isn't signed in", () => {
+    vi.mocked(toast.error).mockReset();
+    window.history.replaceState({}, "", "/sign-in?social_error=account_inactive");
+    renderPage();
+    expect(toast.error).toHaveBeenCalledWith(
+      "Your account isn't active. Contact your administrator.",
+    );
+  });
+
   it("says why when the provider's address belongs to an unverified account", () => {
     vi.mocked(toast.error).mockReset();
     window.history.replaceState({}, "", "/sign-in?social_error=account_unverified");
