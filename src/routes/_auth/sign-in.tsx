@@ -63,6 +63,11 @@ function SignInPage() {
     window.history.replaceState({}, "", window.location.pathname);
   }, []);
 
+  // A social sign-in that must meet a second factor first answers a challenge
+  // instead of a session: the same step as after a password.
+  const socialChallenge = social.data && isMfaChallenge(social.data) ? social.data : null;
+  if (socialChallenge) return <MfaChallengeStep challenge={socialChallenge} />;
+
   if (socialCode) {
     return (
       <div className="grid min-h-[50vh] place-items-center">
