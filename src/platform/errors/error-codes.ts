@@ -9,6 +9,9 @@ export type ErrorKind = "auth" | "authz" | "validation" | "network" | "api" | "u
 export const ERROR_CODES = {
   // auth (session / step-up)
   STEP_UP_REQUIRED: "step_up_required",
+  // 403 when an organisation that requires two-step verification is entered
+  // (switched into, its invitation accepted) by someone who has set none up.
+  MFA_ENROLLMENT_REQUIRED: "mfa.enrollment_required",
   SESSION_EXPIRED: "auth.session_expired",
   INVALID_STATE: "auth.invalid_state",
   // account / signup

@@ -11,6 +11,10 @@ import { normalizeError } from "@/platform/errors/normalize-error";
 // until the i18n backfill; wiring these to i18n keys is tracked separately.)
 const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.STEP_UP_REQUIRED]: "This action needs a fresh identity check.",
+  // 403 -> `authz`, whose "You don't have access" sends the person looking for
+  // a permission; setting up a factor is what lets them in.
+  [ERROR_CODES.MFA_ENROLLMENT_REQUIRED]:
+    "This organization requires two-step verification. Set it up on your account, then try again.",
   [ERROR_CODES.SESSION_EXPIRED]: "Your session has expired. Please sign in again.",
   [ERROR_CODES.INVALID_STATE]: "That sign-in link is no longer valid. Please start again.",
   // Signup conflict. The backend returns 409 auth.email_exists, which classifies

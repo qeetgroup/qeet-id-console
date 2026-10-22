@@ -37,6 +37,7 @@ import {
   RefreshCwIcon,
   SearchIcon,
   SettingsIcon,
+  ShieldCheckIcon,
   XIcon,
 } from "@qeetrix/icons";
 import { useEffect, useId, useRef, useState } from "react";
@@ -53,6 +54,7 @@ import {
 } from "@/platform/auth/session";
 import { ThemeToggle } from "@/platform/components/theme-toggle";
 import { errorMessage } from "@/platform/errors/user-message";
+import { isTwoStepRequired, TWO_STEP_SETUP_PATH } from "@/platform/security/two-step-required";
 import { switchToTenant } from "../api/flows";
 import { useEligibleOrganizations } from "../api/organization-selection";
 import {
@@ -82,10 +84,14 @@ export type OrganizationSelectorViewProps = {
   fetching: boolean;
   signingOut?: boolean;
   entryError?: string | null;
+  /** The automatic entry was refused until two-step verification is set up. */
+  entryNeedsTwoStep?: boolean;
   onRetry: () => unknown;
   onContinue: (organizationId: string) => Promise<unknown>;
   onCreate: () => void;
   onAccount: () => void;
+  /** Opens the account page where a second factor is set up. */
+  onSetUpTwoStep: () => void;
   onSignOut: () => void;
 };
 
@@ -97,6 +103,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
   const logout = useLogout();
   const navigate = useNavigate();
   const [entryError, setEntryError] = useState<string | null>(null);
+  const [entryNeedsTwoStep, setEntryNeedsTwoStep] = useState(false);
   const [retry, setRetry] = useState(0);
   const automaticAttempt = useRef(-1);
   useIdleLogout(10 * 60 * 1000);
@@ -112,7 +119,10 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
     const only = organizations.data[0];
     const enter =
       only && only.id !== tenantId ? switchToTenant(only.id) : navigate({ to: "/", replace: true });
-    void Promise.resolve(enter).catch((failure) => setEntryError(errorMessage(failure)));
+    void Promise.resolve(enter).catch((failure) => {
+      setEntryNeedsTwoStep(isTwoStepRequired(failure));
+      setEntryError(errorMessage(failure));
+    });
   }, [organizations.data, organizations.isSuccess, tenantId, navigate, retry]);
 
   return (
@@ -125,6 +135,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
       }
       error={organizations.isError}
       entryError={entryError}
+      entryNeedsTwoStep={entryNeedsTwoStep}
       fetching={organizations.isFetching}
       signingOut={logout.isPending}
       onRetry={async () => {
@@ -141,6 +152,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
       }}
       onCreate={onCreate}
       onAccount={() => void navigate({ to: "/account/profile" })}
+      onSetUpTwoStep={() => void navigate({ to: TWO_STEP_SETUP_PATH })}
       onSignOut={() => logout.mutate()}
     />
   );
@@ -157,6 +169,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
   const [selectionTouched, setSelectionTouched] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsTwoStep, setNeedsTwoStep] = useState(false);
   const busy = useRef(false);
   const organizations = props.error ? [] : props.organizations;
   const recent = mostRecentOrganization(organizations);
@@ -184,9 +197,11 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
     busy.current = true;
     setPending(true);
     setError(null);
+    setNeedsTwoStep(false);
     try {
       await props.onContinue(selectedOrganization.id);
     } catch (failure) {
+      setNeedsTwoStep(isTwoStepRequired(failure));
       setError(errorMessage(failure));
     } finally {
       busy.current = false;
@@ -632,6 +647,17 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
             className="mt-4 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive"
           >
             <p>{error || props.entryError}</p>
+            {(error ? needsTwoStep : props.entryNeedsTwoStep) && (
+              <Button
+                variant="outline"
+                className={cn(ACTION, "mt-3 me-2 text-foreground")}
+                onClick={props.onSetUpTwoStep}
+                disabled={controlsDisabled}
+              >
+                <ShieldCheckIcon aria-hidden="true" />
+                {t("organizationSelection.setUpTwoStep")}
+              </Button>
+            )}
             {props.entryError && (
               <Button
                 variant="outline"

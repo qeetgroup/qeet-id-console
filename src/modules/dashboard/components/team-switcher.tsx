@@ -15,10 +15,14 @@ import {
 } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { BuildingComplexIcon, CheckIcon, ChevronsUpDownIcon, PlusIcon } from "@qeetrix/icons";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { errorMessage } from "@/platform/errors/user-message";
+import { isStepUpRequired } from "@/platform/security/step-up";
+import { isTwoStepRequired, toastTwoStepRequired } from "@/platform/security/two-step-required";
 import { switchToTenant } from "@/modules/authentication";
 
 type Tenant = {
@@ -31,6 +35,15 @@ type Tenant = {
 };
 
 // GET /v1/tenants is scoped to the caller; clicking one switches via switchToTenant().
+
+// A refused switch is told, not dropped: an organisation that requires
+// two-step verification offers its setup; a declined step-up was the person's
+// own choice and needs no message.
+function reportSwitchFailure(failure: unknown) {
+  if (isStepUpRequired(failure)) return;
+  if (isTwoStepRequired(failure)) toastTwoStepRequired();
+  else toast.error(errorMessage(failure));
+}
 function initialOf(name: string) {
   const trimmed = name.trim();
   return trimmed ? trimmed.charAt(0).toUpperCase() : "?";
@@ -115,7 +128,7 @@ export function TeamSwitcher() {
                     <DropdownMenuItem
                       key={t.id}
                       onClick={() => {
-                        if (!isActive) void switchToTenant(t.id);
+                        if (!isActive) void switchToTenant(t.id).catch(reportSwitchFailure);
                       }}
                       className={cn("gap-2 p-2", isActive && "bg-accent/40")}
                       aria-current={isActive ? "true" : undefined}

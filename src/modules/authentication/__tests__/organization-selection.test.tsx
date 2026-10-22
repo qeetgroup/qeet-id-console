@@ -34,6 +34,7 @@ vi.mock("@/platform/auth/session", () => ({
 vi.mock("../api/flows", () => ({ switchToTenant: vi.fn().mockResolvedValue(undefined) }));
 
 import { api } from "@/platform/api/client";
+import { ApiError } from "@/platform/errors/api-error";
 import type { EligibleOrganization } from "@/platform/auth/organization-selection";
 import { switchToTenant } from "../api/flows";
 import { loadEligibleOrganizations } from "../api/organization-selection";
@@ -109,6 +110,7 @@ function viewProps(): OrganizationSelectorViewProps {
     onContinue: vi.fn().mockResolvedValue(undefined),
     onCreate: vi.fn(),
     onAccount: vi.fn(),
+    onSetUpTwoStep: vi.fn(),
     onSignOut: vi.fn(),
   };
 }
@@ -298,6 +300,31 @@ describe("Organization selector", () => {
     expect(
       screen.getByRole("button", { name: "Continue to dashboard" }).hasAttribute("disabled"),
     ).toBe(false);
+  });
+
+  it("offers two-step setup when the organization requires it and none is set up", async () => {
+    const props = viewProps();
+    props.onContinue = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError(403, "mfa.enrollment_required", "raw backend text"))
+      .mockRejectedValueOnce(new Error("offline"));
+    render(<OrganizationSelectorView {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "Continue to dashboard" }));
+    await screen.findByRole("alert");
+    expect(
+      screen.getByText(
+        "This organization requires two-step verification. Set it up on your account, then try again.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText("raw backend text")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Set up two-step verification" }));
+    expect(props.onSetUpTwoStep).toHaveBeenCalledTimes(1);
+
+    // Any other failure offers no setup.
+    fireEvent.click(screen.getByRole("button", { name: "Continue to dashboard" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Set up two-step verification" })).toBeNull(),
+    );
   });
 
   it("connects create, account and sign-out actions", () => {
