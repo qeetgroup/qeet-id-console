@@ -20,8 +20,8 @@ import { useQeetAIRuntime } from "../qeetai-provider";
 import { redactPII } from "../redact";
 import { conversationActions, conversationStore } from "../store/conversation-store";
 import { secretsActions } from "../store/secrets-store";
-import { enabledTools, executeTool, getTool } from "../tools";
-import type { ToolContext, ToolExecution } from "../tools/types/tool.types";
+import { changeRefusal, enabledTools, executeTool, getTool, isWithheldChange } from "../tools";
+import type { ToolContext, ToolDefinition, ToolExecution } from "../tools/types/tool.types";
 
 /** Hard cap on tool-use round-trips per turn, guarding against runaway loops. */
 const MAX_TOOL_LEGS = 8;
@@ -59,6 +59,16 @@ function toToolResult(exec: ToolExecution): ToolResultInput {
     toolCallId: exec.id,
     name: exec.toolName,
     error: exec.error ?? { code: "tool_failed", message: "The tool did not complete." },
+  };
+}
+
+/** Why a requested tool won't run: unknown, a withheld change, or no permission. */
+function refusal(name: string, tool: ToolDefinition | undefined): ToolExecution["error"] {
+  if (!tool) return { code: "unknown_tool", message: `Unknown tool: ${name}` };
+  if (isWithheldChange(tool)) return changeRefusal(tool);
+  return {
+    code: "tool_not_enabled",
+    message: `The "${name}" tool isn't available with your current permissions.`,
   };
 }
 
@@ -120,8 +130,9 @@ export function useQeetAIChat(): UseQeetAIChat {
 
       // Only tools the operator can actually use are executable. `getTool`
       // resolves any registered tool, so gate on the enabled set here too —
-      // the model can't invoke a tool outside the operator's capabilities
-      // (defence-in-depth; the backend remains authoritative).
+      // the model can't invoke a tool outside the operator's capabilities, or
+      // any change tool while those are switched off (defence-in-depth; the
+      // backend remains authoritative).
       const enabled = new Set(enabledTools(access.can).map((t) => t.name));
 
       // Consume one streamed leg; collect any tool_call requests + the stop reason.
@@ -196,12 +207,7 @@ export function useQeetAIChat(): UseQeetAIChat {
                   startedAt: Date.now(),
                   endedAt: Date.now(),
                   attempts: 1,
-                  error: tool
-                    ? {
-                        code: "tool_not_enabled",
-                        message: `The "${call.name}" tool isn't available with your current permissions.`,
-                      }
-                    : { code: "unknown_tool", message: `Unknown tool: ${call.name}` },
+                  error: refusal(call.name, tool),
                 };
                 recordExecution(conversationId, assistantId, exec);
               } else {

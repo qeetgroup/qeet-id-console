@@ -37,6 +37,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { ApplicationHelpLinks } from "@/modules/authentication/components/application-help-links";
 import { ApplicationStats } from "@/modules/authentication/components/application-stats";
 import { OidcQuickstart } from "@/modules/authentication/components/oidc-quickstart";
+import { ProofKeyBadge } from "@/modules/authentication/components/proof-key-status";
 import { RegisterApplicationSheet } from "@/modules/authentication/components/register-application-sheet";
 import {
   type OidcClient,
@@ -328,9 +329,12 @@ function OidcPage() {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={c.type === "confidential" ? "default" : "muted"}>
-                        {c.type}
-                      </Badge>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <Badge variant={c.type === "confidential" ? "default" : "muted"}>
+                          {c.type}
+                        </Badge>
+                        <ProofKeyBadge client={c} />
+                      </div>
                     </TableCell>
                     {lv.isVisible("clientId") && (
                       <TableCell className="font-mono text-xs text-muted-foreground">

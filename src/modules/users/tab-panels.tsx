@@ -36,7 +36,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
-import { TrustedDevicesCard } from "@/modules/authentication";
+import { LinkedPhonesCard, TrustedDevicesCard } from "@/modules/authentication";
 import { type Anomaly, useAnomalies } from "@/modules/security";
 import type { AccessSummary, SecuritySummary, UserDetail } from "./api/user360";
 import {
@@ -181,6 +181,14 @@ export function SecurityTab({
           </DataState>
         </CardContent>
       </Card>
+
+      {/* The member's phones that approve their sign-ins: one can be removed
+          without resetting every factor. */}
+      <LinkedPhonesCard
+        scope={{ kind: "member", userId }}
+        canRemove={canWrite}
+        className="lg:col-span-2"
+      />
     </div>
   );
 }

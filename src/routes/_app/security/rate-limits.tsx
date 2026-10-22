@@ -7,24 +7,17 @@ import {
   CardTitle,
   Skeleton,
 } from "@qeetrix/ui";
-import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GaugeIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useIpRules } from "@/modules/security/api/ip-allowlist";
 
 export const Route = createFileRoute("/_app/security/rate-limits")({
   component: RateLimitsPage,
 });
-
-type Policy = {
-  ip_allowlist: string[] | null;
-  ip_denylist: string[] | null;
-};
 
 // These are the per-IP defaults baked into platform/cache/ratelimit/limiter.go.
 // Per-tenant / per-user / per-api-key overrides now ship backend-side
@@ -61,15 +54,9 @@ const STATIC_LIMITS: { endpoint: string; limit: string; window: string }[] = [
 
 function RateLimitsPage() {
   const { t } = useTranslation("security");
-  const tenantId = useTenantId();
-  const policyQ = useQuery({
-    queryKey: ["policy", tenantId],
-    queryFn: () => api<Policy>(`/v1/tenants/${tenantId}/policy`),
-    enabled: !!tenantId,
-  });
-
-  const allowCount = policyQ.data?.ip_allowlist?.length ?? 0;
-  const denyCount = policyQ.data?.ip_denylist?.length ?? 0;
+  // Which networks may sign in is the IP rules' job; this page only points there.
+  const rulesQ = useIpRules();
+  const rules = rulesQ.data?.items ?? [];
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -98,61 +85,29 @@ function RateLimitsPage() {
           <CardTitle className="text-base">{t("rateLimits.networkPolicy.title")}</CardTitle>
           <CardDescription>
             {t("rateLimits.networkPolicy.description")}{" "}
-            <Link to="/settings/organization/security-policy" className="underline">
-              Settings → Security Policy
+            <Link to="/security/threats/ip-allowlist" className="underline">
+              {t("rateLimits.networkPolicy.openRules")}
             </Link>
-            .
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {policyQ.isLoading ? (
-            <div className="space-y-3">
-              {[...Array(2)].map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : policyQ.isError ? (
-            <div className="text-sm text-destructive">{errorMessage(policyQ.error)}</div>
+          {rulesQ.isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : rulesQ.isError ? (
+            <div className="text-sm text-destructive">{errorMessage(rulesQ.error)}</div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="mb-2 text-xs font-medium text-muted-foreground">
-                  {t("rateLimits.networkPolicy.allowlist", {
-                    count: allowCount,
-                  })}
-                </p>
-                {policyQ.data?.ip_allowlist?.length ? (
-                  <div className="flex flex-wrap gap-1">
-                    {policyQ.data.ip_allowlist.map((c) => (
-                      <Badge key={c} variant="muted">
-                        {c}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    {t("rateLimits.networkPolicy.noAllowlist")}
-                  </p>
-                )}
-              </div>
-              <div>
-                <p className="mb-2 text-xs font-medium text-muted-foreground">
-                  {t("rateLimits.networkPolicy.denylist", { count: denyCount })}
-                </p>
-                {policyQ.data?.ip_denylist?.length ? (
-                  <div className="flex flex-wrap gap-1">
-                    {policyQ.data.ip_denylist.map((c) => (
-                      <Badge key={c} variant="destructive">
-                        {c}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    {t("rateLimits.networkPolicy.noDenylist")}
-                  </p>
-                )}
-              </div>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <Badge variant={rulesQ.data?.enabled ? "default" : "muted"}>
+                {rulesQ.data?.enabled
+                  ? t("rateLimits.networkPolicy.enforced")
+                  : t("rateLimits.networkPolicy.notEnforced")}
+              </Badge>
+              <span className="text-muted-foreground">
+                {t("rateLimits.networkPolicy.rules", {
+                  allow: rules.filter((r) => r.action === "allow").length,
+                  deny: rules.filter((r) => r.action === "deny").length,
+                })}
+              </span>
             </div>
           )}
         </CardContent>

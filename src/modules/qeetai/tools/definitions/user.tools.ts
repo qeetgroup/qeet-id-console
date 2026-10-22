@@ -29,6 +29,7 @@ export const searchUsersTool: ToolDefinition<SearchUsersInput> = {
   input: searchUsersInput,
   requiredCapability: "user.read",
   destructive: false,
+  mutates: false,
   auditLabel: "qeetai.search_users",
   async run(ctx, input) {
     const data = await api<{ items: User[] }>("/v1/users", {
@@ -75,6 +76,8 @@ export const createUserTool: ToolDefinition<CreateUserInput> = {
   input: createUserInput,
   requiredCapability: "user.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Users", to: "/users" },
   confirm: (input) => ({
     title: "Create user",
     body: "Qeet AI will create a new user account in this tenant.",
@@ -125,6 +128,8 @@ export const updateUserTool: ToolDefinition<UpdateUserInput> = {
   input: updateUserInput,
   requiredCapability: "user.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Users", to: "/users" },
   confirm: (input) => ({
     title: "Update user",
     body: "Qeet AI will change this user's profile.",
@@ -166,6 +171,8 @@ export const disableUserTool: ToolDefinition<DisableUserInput> = {
   input: disableUserInput,
   requiredCapability: "user.write",
   destructive: true,
+  mutates: true,
+  consoleScreen: { label: "Users", to: "/users" },
   confirm: (input) => ({
     title: "Disable user",
     body: "This will immediately block the user from signing in. They can be re-enabled with enable_user.",
@@ -203,6 +210,8 @@ export const enableUserTool: ToolDefinition<EnableUserInput> = {
   input: enableUserInput,
   requiredCapability: "user.write",
   destructive: false,
+  mutates: true,
+  consoleScreen: { label: "Users", to: "/users" },
   confirm: (input) => ({
     title: "Enable user",
     body: "This re-activates the user and restores their ability to sign in.",
@@ -241,6 +250,8 @@ export const deleteUserTool: ToolDefinition<DeleteUserInput> = {
   input: deleteUserInput,
   requiredCapability: "user.write",
   destructive: true,
+  mutates: true,
+  consoleScreen: { label: "Users", to: "/users" },
   confirm: (input) => ({
     title: "Delete user",
     body: "This will permanently soft-delete the user. This action cannot be easily reversed.",
@@ -277,6 +288,8 @@ export const resetUserMfaTool: ToolDefinition<ResetUserMfaInput> = {
   input: resetUserMfaInput,
   requiredCapability: "user.write",
   destructive: true,
+  mutates: true,
+  consoleScreen: { label: "Users", to: "/users" },
   confirm: (input) => ({
     title: "Reset MFA",
     body: "This will clear all enrolled MFA factors. The user must re-enroll at their next sign-in.",

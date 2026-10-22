@@ -22,6 +22,34 @@ export interface OidcClient {
   grant_types: string[];
   scopes: string[];
   created_at: string;
+  /** When a confidential app's exemption from sending a proof key (and a nonce) ends; null: none. */
+  pkce_exempt_until?: string | null;
+}
+
+/** How soon before its end an exemption is flagged as ending. */
+export const PKCE_EXEMPTION_ENDING_SOON_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Whether an app must send a proof key (PKCE, S256) and a nonce on every
+ * sign-in, the server's rule for every app, or holds an exemption until a date.
+ * A public app never does; an exemption that has ended is reported as such, so
+ * its owner can see why sign-ins now fail.
+ */
+export type ProofKeyStatus =
+  | { kind: "required" }
+  | { kind: "exempt"; until: Date; endingSoon: boolean }
+  | { kind: "ended"; until: Date };
+
+export function proofKeyStatus(client: OidcClient, now: Date = new Date()): ProofKeyStatus {
+  if (client.type !== "confidential" || !client.pkce_exempt_until) return { kind: "required" };
+  const until = new Date(client.pkce_exempt_until);
+  if (Number.isNaN(until.getTime())) return { kind: "required" };
+  if (until.getTime() <= now.getTime()) return { kind: "ended", until };
+  return {
+    kind: "exempt",
+    until,
+    endingSoon: until.getTime() - now.getTime() <= PKCE_EXEMPTION_ENDING_SOON_MS,
+  };
 }
 
 export interface CreateOidcInput {
@@ -50,6 +78,26 @@ export interface UpdateOidcInput {
 export interface RotateSecretResponse {
   client_secret: string;
   warning: string;
+}
+
+/**
+ * A confidential application's wrong-secret lockout (server QTID-215): the
+ * lockout in force, if any, and its recent failed authentications, each with
+ * its time and the caller's address. No secret material is ever recorded.
+ */
+export interface ClientAuthFailures {
+  locked_until: string | null;
+  items: { at: string; ip: string; reason: string }[];
+}
+
+export function useClientAuthFailures(clientRowId: string | undefined, enabled = true) {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: [...OIDC_CLIENTS_KEY, tenantId, clientRowId, "auth-failures"],
+    enabled: !!tenantId && !!clientRowId && enabled,
+    queryFn: () =>
+      api<ClientAuthFailures>(`/v1/tenants/${tenantId}/oidc/clients/${clientRowId}/auth-failures`),
+  });
 }
 
 export function useOidcClients() {

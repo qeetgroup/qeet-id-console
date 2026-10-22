@@ -1,6 +1,8 @@
 import { newRequestId } from "@/platform/telemetry/tracing";
 import { readServerSession } from "@/platform/auth/server-session";
 import { getServerApiBaseUrl } from "@/platform/api/server-proxy";
+import { getRequestIP } from "@tanstack/react-start/server";
+import { relayHeaders } from "@/platform/api/relay";
 
 const QEETAI_STREAM_PATH = /^\/v1\/qeetai\/conversations\/[0-9a-f-]{36}\/messages$/i;
 
@@ -32,6 +34,7 @@ async function proxyAuthenticatedStream({ path, method, request }: StreamProxyOp
       Authorization: `Bearer ${accessToken}`,
       "Cache-Control": "no-cache",
       "X-Request-Id": requestId,
+      ...relayHeaders(request, getRequestIP()),
     };
     if (body !== undefined) headers["Content-Type"] = "application/json";
     const lastEventId = request.headers.get("last-event-id");

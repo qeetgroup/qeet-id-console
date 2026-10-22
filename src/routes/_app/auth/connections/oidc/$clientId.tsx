@@ -42,6 +42,8 @@ import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { OidcQuickstart } from "@/modules/authentication/components/oidc-quickstart";
+import { ProofKeyCard } from "@/modules/authentication/components/proof-key-status";
+import { SecretFailuresCard } from "@/modules/authentication/components/secret-failures-card";
 import {
   type OidcClient,
   useDeleteOidcClient,
@@ -238,6 +240,10 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
             </div>
           </CardContent>
         </Card>
+
+        <ProofKeyCard client={client} />
+
+        <SecretFailuresCard client={client} />
 
         {client.type === "confidential" && (
           <Card>

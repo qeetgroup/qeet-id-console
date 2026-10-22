@@ -40,7 +40,9 @@
     "created": "Created",
     "actions": "Actions",
     "selectAll": "Select all applications",
-    "selectRow": "Select {{name}}"
+    "selectRow": "Select {{name}}",
+    "pkceExempt": "PKCE exempt",
+    "pkceEndingSoon": "PKCE exemption ends soon"
   },
   "bulk": {
     "delete": "Delete selected"
@@ -114,6 +116,22 @@
     "dangerZoneDescription": "Deleting stops every app using this client ID from authenticating.",
     "deleteApplication": "Delete application",
     "deleteTitle": "Delete this application?",
-    "deleteDescription": "Apps using the client ID for <strong>{{name}}</strong> will immediately stop being able to authenticate. This can’t be undone."
+    "deleteDescription": "Apps using the client ID for <strong>{{name}}</strong> will immediately stop being able to authenticate. This can’t be undone.",
+    "proofKey": {
+      "title": "Proof key (PKCE)",
+      "required": "Every sign-in must send a proof key (PKCE, S256) and, when it asks for openid, a nonce. Requests without them are refused.",
+      "exempt": "Exempt",
+      "endingSoon": "Ends soon",
+      "exemptUntil": "Exempt until {{date}}: sign-ins may leave out the proof key and nonce until then. After that, they must send them.",
+      "ended": "Its exemption ended on {{date}}. Every sign-in must now send a proof key (PKCE, S256) and, with openid, a nonce."
+    },
+    "secretFailures": {
+      "title": "Secret attempts",
+      "description": "Wrong client secrets presented for this application, newest first. Too many in a short time lock it out for a while; the right secret then fails too, with the same answer.",
+      "locked": "Locked out",
+      "lockedUntil": "Locked out until {{date}}: every request authenticating as this application is refused until then.",
+      "none": "No recent failed attempts.",
+      "error": "Couldn't load the recent attempts."
+    }
   }
 }
