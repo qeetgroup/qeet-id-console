@@ -19,16 +19,10 @@ import { useTranslation } from "react-i18next";
 
 import { type ActivitySearch, arrayToCsv } from "../activity-search";
 import type { ActivityFilters, Outcome } from "@/modules/activity";
+import { ACTIVITY_CATEGORIES } from "../event-labels";
 
 // Labelled `activity:category.<value>` and `activity:outcome.<value>`.
-export const CATEGORIES = [
-  "authentication",
-  "authorization",
-  "security",
-  "directory",
-  "developer",
-  "system",
-] as const;
+export const CATEGORIES = ACTIVITY_CATEGORIES;
 export const OUTCOMES: Outcome[] = ["success", "warning", "failed", "info"];
 
 export function prettify(v: string): string {

@@ -1,6 +1,7 @@
-import { StatusPill, TimeSince } from "@qeetrix/ui";
+import { TimeSince } from "@qeetrix/ui";
 import { Trans, useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import type { Webhook } from "../api/webhooks";
 import { type WebhookState, webhookState } from "../webhook-state";
 

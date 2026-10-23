@@ -78,7 +78,7 @@ export function IdentityTimeline({
   isError = false,
   onRetry,
 }: IdentityTimelineProps) {
-  const { t } = useTranslation("timeline");
+  const { t } = useTranslation(["timeline", "activity"]);
   const reducedMotion = usePrefersReducedMotion();
   const sentinelRef = useRef<HTMLLIElement>(null);
 

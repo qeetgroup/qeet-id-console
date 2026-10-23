@@ -50,7 +50,7 @@ import { SuspensionReviewDialog } from "./suspended-page-review-dialog";
 import { SuspendedTable } from "./suspended-page-table";
 
 export function SuspendedPage() {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [filters, setFilters] = useState(DEFAULT_SUSPENDED_FILTERS);
   const search = useDeferredValue(filters.q);
   const query = useSuspendedUsers({ ...filters, q: search });
@@ -86,7 +86,7 @@ export function SuspendedPage() {
     try {
       await sensitive({
         capability: "user.write",
-        actionLabel: t("directory.suspended.reactivateActionLabel").toLowerCase(),
+        actionLabel: t("directory.suspended.reactivateActionLabel"),
         confirm: {
           title: t("directory.suspended.reactivateTitle", { count: users.length }),
           description: t("directory.suspended.reactivateDescription"),
@@ -106,7 +106,7 @@ export function SuspendedPage() {
     try {
       await sensitive({
         capability: "user.write",
-        actionLabel: t("directory.suspended.saveReview").toLowerCase(),
+        actionLabel: t("directory.suspended.saveReview"),
         run: () => review.mutateAsync({ id: reviewing.id, review: input }),
       });
       setReviewing(null);
@@ -190,7 +190,7 @@ export function SuspendedView({
   exporting: boolean;
   actionError?: string;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const manageable = (user: SuspendedDirectoryUser) =>
     canWrite && user.can_manage && user.id !== currentUserId;
   const change = (next: Partial<SuspendedFilters>) =>
@@ -297,10 +297,12 @@ export function SuspendedView({
           onChange={(source) => change({ source })}
           options={[
             { value: "all", label: t("directory.suspended.allSources") },
-            ...["manual", "scim", "ldap", "policy", "unknown", "external"].map((value) => ({
-              value,
-              label: t(`directory.suspended.sources.${value}`),
-            })),
+            ...(["manual", "scim", "ldap", "policy", "unknown", "external"] as const).map(
+              (value) => ({
+                value,
+                label: t(`directory.suspended.sources.${value}`),
+              }),
+            ),
           ]}
         />
         <DirectorySelect
@@ -318,14 +320,19 @@ export function SuspendedView({
           onChange={(risk) => change({ risk })}
           options={[
             { value: "all", label: t("directory.suspended.allRisks") },
-            ...["high", "medium", "low", "unknown"].map((value) => ({
+            ...(["high", "medium", "low", "unknown"] as const).map((value) => ({
               value,
               label: t(`directory.suspended.risks.${value}`),
             })),
           ]}
         />
         {filters.review ? (
-          <Button variant="ghost" size="sm" onClick={() => change({ review: "" })}>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={t("directory.suspended.clearPending")}
+            onClick={() => change({ review: "" })}
+          >
             <XIcon />
             {t("directory.suspended.pending")}
           </Button>

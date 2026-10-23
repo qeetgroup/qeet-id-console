@@ -14,7 +14,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -25,6 +24,7 @@ import {
 import { KeyRoundIcon, PlusIcon, RefreshCwIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
+import { formatLocale } from "@/i18n";
 import { localDateTimeToInstant } from "@/shared/utils/format";
 
 import { useCreateIntent } from "@/shared/hooks/use-create-intent";
@@ -40,6 +40,7 @@ import { PageHeader } from "@/platform/components/page-header";
 import { useTenantId } from "@/platform/auth/session";
 import { useApiKeys, useCreateApiKey, useRevokeApiKey } from "../api/api-keys";
 import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import { useMemo } from "react";
 import { z } from "zod";
@@ -48,7 +49,7 @@ const SKELETON_IDS = ["a", "b", "c"] as const;
 
 /** Renders the tenant's API keys with revoke, and the sheet that creates one. */
 export function ApiKeysPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("developer");
   const runSensitive = useSensitiveAction();
   // `?action=create` opens this drawer, so the Applications overview can deep-link into it.
   const [creating, setCreating] = useCreateIntent(useCapabilities().can("apikey.write"));
@@ -162,7 +163,7 @@ export function ApiKeysPage() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {k.last_used_at
-                        ? new Date(k.last_used_at).toLocaleString()
+                        ? new Date(k.last_used_at).toLocaleString(formatLocale())
                         : t("keys.lastUsedNever")}
                     </TableCell>
                     <TableCell>
@@ -241,7 +242,7 @@ function CreateApiKeyForm({
 }: {
   onCreated: (key: { name: string; secret: string }) => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("developer");
   const tenantId = useTenantId();
   const runSensitive = useSensitiveAction();
   const createM = useCreateApiKey();

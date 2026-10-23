@@ -23,6 +23,7 @@ import {
   useUserId,
 } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
+import { isOneOf } from "@/shared/utils/one-of";
 import { switchToTenant } from "../api/flows";
 import { useEligibleOrganizations } from "../api/organization-selection";
 import {
@@ -36,6 +37,10 @@ import {
   type OrganizationLayout,
   OrganizationSelectorToolbar,
 } from "./organization-selector-toolbar";
+
+// The roles and plans with their own copy; any other shows as the server names it.
+const KNOWN_ROLES = ["owner", "admin", "member"] as const;
+const KNOWN_PLANS = ["free", "starter", "pro", "enterprise"] as const;
 
 const ACTION =
   "h-9 rounded-md px-3 text-xs focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11";
@@ -135,14 +140,16 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
   const accountName =
     props.user?.display_name?.trim() || props.user?.email || t("organizationSelection.yourAccount");
   const controlsDisabled = pending || !!props.signingOut;
-  const roleLabel = (name: string) =>
-    ["owner", "admin", "member"].includes(name.toLowerCase())
-      ? t(`organizationSelection.roles.${name.toLowerCase()}`)
-      : name;
-  const planLabel = (plan: string) =>
-    ["free", "starter", "pro", "enterprise"].includes(plan.replace(/_year$/, ""))
-      ? t(`organizationSelection.plans.${plan.replace(/_year$/, "")}`)
-      : plan || t("organizationSelection.notReported");
+  const roleLabel = (name: string) => {
+    const role = name.toLowerCase();
+    return isOneOf(KNOWN_ROLES, role) ? t(`organizationSelection.roles.${role}`) : name;
+  };
+  const planLabel = (code: string) => {
+    const plan = code.replace(/_year$/, "");
+    return isOneOf(KNOWN_PLANS, plan)
+      ? t(`organizationSelection.plans.${plan}`)
+      : code || t("organizationSelection.notReported");
+  };
 
   async function submit() {
     if (busy.current || !selectedOrganization || props.error || props.loading || props.signingOut)
@@ -233,7 +240,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
             aria-label={t("organizationSelection.loading")}
             className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
           >
-            {["first", "second", "third", "fourth", "fifth"].map((item) => (
+            {(["first", "second", "third", "fourth", "fifth"] as const).map((item) => (
               <Skeleton key={item} className="h-34 rounded-lg" />
             ))}
           </div>

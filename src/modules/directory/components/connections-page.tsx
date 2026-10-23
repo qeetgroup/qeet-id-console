@@ -33,6 +33,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { useUserStats } from "@/modules/users";
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -89,7 +90,7 @@ export function ConnectionsView({
   canWrite: boolean;
   totalUsers?: number;
 }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [search, setSearch] = useState("");
   const [type, setType] = useState<"all" | "scim" | "ldap">("all");
   const records = connections ?? [];
@@ -103,7 +104,7 @@ export function ConnectionsView({
   );
   const scimUsers = records.find((connection) => connection.type === "scim")?.userCount ?? null;
   const coverage = coveragePercent(scimUsers, totalUsers);
-  const number = (value: number) => value.toLocaleString(i18n.resolvedLanguage);
+  const number = (value: number) => value.toLocaleString(formatLocale());
   const share = (count: number | null) =>
     count == null || summary.total === 0
       ? t("directory.connectionsPage.awaiting")
@@ -294,22 +295,22 @@ export function ConnectionsView({
               label={t("directory.connectionsPage.healthy")}
               values={[
                 {
-                  label: t("connectionsPage.healthy"),
+                  label: t("directory.connectionsPage.healthy"),
                   count: summary.healthy ?? 0,
                   color: "var(--color-emerald-500)",
                 },
                 {
-                  label: t("connectionsPage.warnings"),
+                  label: t("directory.connectionsPage.warnings"),
                   count: summary.warnings ?? 0,
                   color: "var(--color-amber-500)",
                 },
                 {
-                  label: t("connectionsPage.failed"),
+                  label: t("directory.connectionsPage.failed"),
                   count: summary.failed ?? 0,
                   color: "var(--color-rose-500)",
                 },
                 {
-                  label: t("connectionsPage.unknown"),
+                  label: t("directory.connectionsPage.unknown"),
                   count: summary.unknown,
                   color: "var(--muted)",
                 },
@@ -379,7 +380,7 @@ export function ConnectionsView({
 }
 
 function AddConnection() {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button className={DIRECTORY_ACTION} />}>

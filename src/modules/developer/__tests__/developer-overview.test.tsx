@@ -40,8 +40,7 @@ vi.mock("@/platform/security/capability-provider", () => ({
 }));
 
 import { api } from "@/platform/api/client";
-import i18n from "@/i18n";
-import { navGroups, translateNavigation } from "@/platform/config/navigation";
+import { getNavGroups, translateNavigation } from "@/platform/config/navigation";
 import { type DeveloperOverviewData, useDeveloperOverview } from "../api/overview";
 import { DeveloperOverviewView } from "../components/developer-overview";
 import { isCurrentCredential, summarizeDeveloperRecords } from "../overview-model";
@@ -236,11 +235,34 @@ describe("Developer overview data", () => {
     expect(result.current.activity.data?.[0]).toMatchObject({
       id: "public",
       area: "keys",
-      verb: "created",
+      action: "keyCreated",
     });
     expect(JSON.stringify(result.current.activity.data)).not.toMatch(
       /private|token|metadata|description/,
     );
+  });
+
+  it("names each recorded developer action and reads any other as a generic change", async () => {
+    vi.mocked(api).mockImplementation(async (path) => {
+      if (path !== "/v1/activity") return { items: [] } as never;
+      const at = "2026-09-12T10:00:00Z";
+      return {
+        events: [
+          { id: "1", type: "webhook.subscription_auto_disabled", at },
+          { id: "2", type: "agent.kill_switch", at },
+          { id: "3", type: "auth_hook.updated", at },
+          { id: "4", type: "apikey.renamed", at },
+        ],
+      } as never;
+    });
+    const { result } = renderOverview();
+    await waitFor(() => expect(result.current.activity.data).toHaveLength(4));
+    expect(result.current.activity.data?.map(({ area, action }) => [area, action])).toEqual([
+      ["webhooks", "webhookAutoDisabled"],
+      ["agents", "agentsSuspended"],
+      ["hooks", "hookUpdated"],
+      ["keys", "changed"],
+    ]);
   });
 });
 
@@ -261,7 +283,7 @@ function viewData(): DeveloperOverviewData {
     canCreateKey: true,
     canCreateWebhook: true,
     areas:
-      translateNavigation(navGroups, i18n.t)
+      translateNavigation(getNavGroups())
         .find((group) => group.id === "developer")
         ?.items.filter((item) => item.url !== "/developer") ?? [],
     resources: ids.map((id) => ({
@@ -291,7 +313,7 @@ function viewData(): DeveloperOverviewData {
         {
           id: "event-1",
           area: "keys",
-          verb: "created",
+          action: "keyCreated",
           at: "2026-09-12T10:00:00Z",
           targetId: "key-123456",
         },

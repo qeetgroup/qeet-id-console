@@ -11,7 +11,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -29,6 +28,7 @@ import { useTranslation } from "react-i18next";
 
 import { ListToolbar, SortHeader } from "@/shared/components/data-table";
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { type OrgActionHandlers, OrgRowActions } from "./org-row-actions";
 import { OrgPreviewDrawer } from "./org-preview-drawer";
@@ -56,7 +56,7 @@ const orgCsvColumns: CsvColumn<Org>[] = [
 
 /** Renders the organizations the caller belongs to, with KPIs, filters and the create and edit sheets. */
 export function OrgsPage() {
-  const { t } = useTranslation("organizations");
+  const { t, i18n } = useTranslation("organizations");
   const currentTenantId = useTenantId();
   const access = useCapabilities();
   const canWrite = access.can("tenant.write");
@@ -96,7 +96,7 @@ export function OrgsPage() {
     lv.setFilter("status", f === "all" ? "" : f);
   }
 
-  const regionOptions = REGIONS.map((r) => ({ label: t(r.label), value: r.value }));
+  const regionOptions = REGIONS.map((r) => ({ label: i18n.t(r.label), value: r.value }));
 
   return (
     <TooltipProvider>

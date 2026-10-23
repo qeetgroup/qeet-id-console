@@ -28,6 +28,7 @@ import {
 import { useDeferredValue, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
 import { errorMessage } from "@/platform/errors/user-message";
@@ -42,7 +43,7 @@ import {
   useDirectoryConnections,
   useDirectoryEvents,
 } from "../api/directory";
-import type { DirectoryConnection } from "../directory-model";
+import { type DirectoryConnection, formatDirectoryDuration } from "../directory-model";
 import {
   DIRECTORY_ACTION,
   DIRECTORY_PAGE,
@@ -56,7 +57,6 @@ import {
   DirectorySkeletonRows,
   DirectoryStat,
   DirectoryStatus,
-  formatDirectoryDuration,
 } from "./directory-ui";
 import { DirectoryAlertDialog } from "./sync-activity-page-alert-dialog";
 import { EventDetails } from "./sync-activity-page-details";
@@ -142,7 +142,7 @@ export function SyncActivityView({
   exporting: boolean;
   exportError?: string;
 }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [selected, setSelected] = useState<DirectoryEvent | null>(null);
   const summary = page?.summary;
   const latest = page?.items[0];
@@ -205,7 +205,7 @@ export function SyncActivityView({
           onChange={(status) => change({ status })}
           options={[
             { value: "all", label: t("directory.allStatuses") },
-            ...["success", "warning", "failed"].map((status) => ({
+            ...(["success", "warning", "failed"] as const).map((status) => ({
               value: status,
               label: t(`directory.activity.${status}`),
             })),
@@ -273,16 +273,18 @@ export function SyncActivityView({
           <Table className="min-w-220 text-xs [&_td]:px-4 [&_td]:py-2.5 [&_th]:px-4 [&_th]:text-[10px]">
             <TableHeader className="border-y border-border/60 bg-muted/25">
               <TableRow>
-                {[
-                  "connection",
-                  "trigger",
-                  "started",
-                  "duration",
-                  "users",
-                  "groups",
-                  "result",
-                  "actions",
-                ].map((column) => (
+                {(
+                  [
+                    "connection",
+                    "trigger",
+                    "started",
+                    "duration",
+                    "users",
+                    "groups",
+                    "result",
+                    "actions",
+                  ] as const
+                ).map((column) => (
                   <TableHead key={column}>{t(`directory.activity.${column}`)}</TableHead>
                 ))}
               </TableRow>
@@ -314,14 +316,14 @@ export function SyncActivityView({
                       </span>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {new Date(event.started_at).toLocaleString(i18n.resolvedLanguage)}
+                      {new Date(event.started_at).toLocaleString(formatLocale())}
                     </TableCell>
                     <TableCell>{formatDirectoryDuration(event.duration_ms)}</TableCell>
                     <TableCell className="tabular-nums">
-                      {event.users_synced.toLocaleString(i18n.resolvedLanguage)}
+                      {event.users_synced.toLocaleString(formatLocale())}
                     </TableCell>
                     <TableCell className="tabular-nums">
-                      {event.groups_synced.toLocaleString(i18n.resolvedLanguage)}
+                      {event.groups_synced.toLocaleString(formatLocale())}
                     </TableCell>
                     <TableCell>
                       <DirectoryStatus

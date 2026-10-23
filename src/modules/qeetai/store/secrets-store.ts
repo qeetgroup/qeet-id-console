@@ -4,11 +4,15 @@
 
 import { Store, useStore } from "@tanstack/react-store";
 
+import { onSessionClear } from "@/platform/auth/session-store";
 import type { ToolResult } from "../tools/types/tool.types";
 
 export type SensitiveArtifact = NonNullable<ToolResult["sensitiveArtifact"]>;
 
 const secretsStore = new Store<Record<string, SensitiveArtifact>>({});
+
+// A secret is the outgoing scope's; another person or organisation must never see it.
+onSessionClear(() => secretsStore.setState(() => ({})));
 
 export const secretsActions = {
   set(executionId: string, artifact: SensitiveArtifact) {

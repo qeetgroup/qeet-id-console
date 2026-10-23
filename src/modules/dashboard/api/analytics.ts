@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { formatLocale } from "@/i18n";
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { dashboardKeys } from "./keys";
@@ -21,6 +22,8 @@ export interface ActivityPoint {
   social: number;
   saml: number;
   oidc: number;
+  magic_link: number;
+  ldap: number;
 }
 
 export interface MethodSlice {
@@ -126,7 +129,7 @@ export function useAnalyticsOverview(enabled = true) {
 export function formatShortDate(iso: string): string {
   const d = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
+  return d.toLocaleDateString(formatLocale(), {
     month: "short",
     day: "numeric",
     timeZone: "UTC",

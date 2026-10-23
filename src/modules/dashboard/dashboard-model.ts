@@ -1,6 +1,26 @@
-import i18n from "@/i18n";
+import i18n, { type TranslationKey } from "@/i18n";
 
-export const AUTH_METHOD_KEYS = ["password", "passkey", "social", "saml", "oidc"] as const;
+// In colour-slot order: each method keeps its --chart-<n> on every chart.
+export const AUTH_METHOD_KEYS = [
+  "password",
+  "passkey",
+  "social",
+  "saml",
+  "oidc",
+  "magic_link",
+  "ldap",
+] as const;
+
+// Bottom to top in the stacked activity chart; neighbours stay apart under colour-vision deficiency.
+export const AUTH_METHOD_STACK = [
+  "passkey",
+  "social",
+  "oidc",
+  "password",
+  "ldap",
+  "saml",
+  "magic_link",
+] as const satisfies readonly (typeof AUTH_METHOD_KEYS)[number][];
 
 export type DashboardRange = "7d" | "14d";
 
@@ -13,14 +33,14 @@ export function formatDelta(value: number, unit: "%" | "pp" = "%"): string {
 }
 
 export function authMethodColor(method: string): string {
-  const key = method.toLowerCase().replace(/[^a-z]/g, "");
+  const key = method.toLowerCase().replace(/[^a-z_]/g, "");
   const index = (AUTH_METHOD_KEYS as readonly string[]).indexOf(key);
   return index >= 0 ? `var(--chart-${index + 1})` : "var(--chart-1)";
 }
 
 // Protocol names read the same in every language; the other codes are catalogue keys.
 const PROTOCOL_METHODS: Record<string, string> = { saml: "SAML", oidc: "OIDC", ldap: "LDAP" };
-const LOGIN_METHOD_KEYS: Record<string, string> = {
+const LOGIN_METHOD_KEYS: Record<string, TranslationKey> = {
   password: "dashboard:dashboardCharts.methods.password",
   passkey: "dashboard:dashboardCharts.methods.passkey",
   social: "dashboard:dashboardCharts.methods.social",

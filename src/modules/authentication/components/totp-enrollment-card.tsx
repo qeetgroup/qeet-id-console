@@ -40,7 +40,7 @@ export function TotpEnrollmentCard({
   onConfirm: (code: string) => void;
   onCancel: () => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const [code, setCode] = useState("");
 
   // Focuses the code input once the card animation settles, in place of autoFocus.

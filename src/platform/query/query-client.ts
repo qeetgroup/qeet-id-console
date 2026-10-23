@@ -1,15 +1,15 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import i18n from "@/i18n";
+import i18n, { type TranslationKey } from "@/i18n";
 import { ApiError } from "@/platform/errors/api-error";
 import { toastError } from "@/platform/errors/error-toast";
 
 interface MutationMeta {
   silent?: boolean; // drops both toasts, as for a background poll
   silentError?: boolean; // drops only the error toast, for a screen that shows it itself
-  successMessage?: string; // a catalogue key ("<ns>:toast.<key>") replacing the default "Saved"
-  successDescription?: string; // a catalogue key for a second line
+  successMessage?: TranslationKey; // replaces the default "Saved"
+  successDescription?: TranslationKey; // a second line
 }
 
 declare module "@tanstack/react-query" {

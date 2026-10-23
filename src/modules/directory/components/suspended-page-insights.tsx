@@ -2,6 +2,7 @@ import { Button, TimeSince } from "@qeetrix/ui";
 import { ChevronRightIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { translateDynamic } from "@/i18n";
 import type { SuspendedDirectoryUser, SuspendedUsersPage } from "@/modules/users";
 import { DirectoryDonut, DirectoryPanel } from "./directory-ui";
 import { SuspendedUserAvatar } from "./suspended-page-table";
@@ -39,7 +40,7 @@ export function SuspendedInsights({
   onReview: (user: SuspendedDirectoryUser) => void;
   onViewPending: () => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <div className="grid gap-3 @min-[850px]/directory-page:grid-cols-3">
       <DirectoryPanel
@@ -87,7 +88,7 @@ export function SuspendedInsights({
                     {user.display_name || user.email}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
-                    {t(`directory.suspended.reasons.${user.reason}`)}
+                    {translateDynamic(`directory:directory.suspended.reasons.${user.reason}`)}
                   </span>
                 </span>
                 {user.suspended_at ? (
@@ -137,7 +138,7 @@ export function SuspendedInsights({
             {page?.risks.map((risk) => (
               <div key={risk.key} className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">
-                  {t(`directory.suspended.risks.${risk.key}`)}
+                  {translateDynamic(`directory:directory.suspended.risks.${risk.key}`)}
                 </dt>
                 <dd className="tabular-nums">{risk.count}</dd>
               </div>

@@ -11,7 +11,7 @@ interface CodeBlockProps {
 
 /** Renders a fenced code block with a language chip and a copy button, without highlighting. */
 export function CodeBlock({ code, lang, className }: CodeBlockProps) {
-  const { t } = useTranslation("qeetai");
+  const { t } = useTranslation(["qeetai", "common"]);
   const [copied, setCopied] = useState(false);
 
   const copy = useCallback(() => {

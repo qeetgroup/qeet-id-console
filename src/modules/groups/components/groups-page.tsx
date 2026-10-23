@@ -34,6 +34,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { userQueries } from "@/modules/users";
 import { useTenantId } from "@/platform/auth/session";
 import { DataState } from "@/platform/components/data-state";
@@ -379,7 +380,7 @@ function GroupKpi({
       <div className="min-w-0 flex-1">
         <p className="text-sm text-muted-foreground">{label}</p>
         <p className="mt-0.5 font-heading text-2xl font-semibold tabular-nums">
-          {loading ? "—" : value.toLocaleString()}
+          {loading ? "—" : value.toLocaleString(formatLocale())}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       </div>

@@ -56,7 +56,7 @@ export function RateLimitsPage() {
                   confirmLabel: t("threats.rateLimits.card.resetConfirmLabel"),
                   tone: "destructive",
                 },
-                actionLabel: t("threats.rateLimits.card.resetAction").toLowerCase(),
+                actionLabel: t("threats.rateLimits.card.resetAction"),
                 run: () => reset.mutateAsync(),
               }).catch(settleSensitiveAction)
             }
@@ -109,7 +109,7 @@ function RateLimitsForm({ limits }: { limits: TenantLimits }) {
         api_key: { rate: value.api_key.rate ?? 1, capacity: value.api_key.capacity ?? 1 },
       };
       await runSensitive({
-        actionLabel: t("threats.rateLimits.card.saveAction").toLowerCase(),
+        actionLabel: t("threats.rateLimits.card.saveAction"),
         run: () => update.mutateAsync(body),
       }).catch((err: unknown) => {
         applyServerErrors(formApi, err);

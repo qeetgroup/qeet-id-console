@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  StatusPill,
   Switch,
   Table,
   TableBody,
@@ -16,6 +15,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import type { ParseKeys } from "i18next";
 import { DataState } from "@/platform/components/data-state";
 import { ShieldIcon, TrashIcon } from "@qeetrix/icons";
 import { useMemo } from "react";
@@ -23,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import {
   settleSensitiveAction,
@@ -64,7 +65,7 @@ export function IpAllowlistPage() {
               checked={enabled}
               onCheckedChange={(v) =>
                 runSensitive({
-                  actionLabel: t("threats.ipAllowlist.enforcementAction").toLowerCase(),
+                  actionLabel: t("threats.ipAllowlist.enforcementAction"),
                   run: () => setEnforce.mutateAsync(v),
                 }).catch(settleSensitiveAction)
               }
@@ -164,7 +165,7 @@ export function IpAllowlistPage() {
                               confirmLabel: t("threats.ipAllowlist.rules.confirmRemoveLabel"),
                               tone: "destructive",
                             },
-                            actionLabel: t("threats.ipAllowlist.rules.removeAction").toLowerCase(),
+                            actionLabel: t("threats.ipAllowlist.rules.removeAction"),
                             run: () => deleteM.mutateAsync(rule.id),
                           }).catch(settleSensitiveAction)
                         }
@@ -287,7 +288,7 @@ function AddRuleForm() {
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
       await runSensitive({
-        actionLabel: t("threats.ipAllowlist.quickAdd.addAction").toLowerCase(),
+        actionLabel: t("threats.ipAllowlist.quickAdd.addAction"),
         run: () =>
           addM.mutateAsync({
             cidr: value.cidr.trim(),
@@ -359,7 +360,7 @@ function AddRuleForm() {
 
 // The server's check reasons, shown in the reader's language.
 // A server without reason_code sends these reasons instead.
-const CHECK_REASONS: Record<string, string> = {
+const CHECK_REASONS: Record<string, ParseKeys<"security">> = {
   "ip.allowed": "threats.ipAllowlist.test.reasons.allowed",
   "ip.deny_rule": "threats.ipAllowlist.test.reasons.denyRule",
   "ip.not_in_allow_rules": "threats.ipAllowlist.test.reasons.notAllowed",

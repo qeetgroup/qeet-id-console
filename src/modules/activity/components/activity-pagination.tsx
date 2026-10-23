@@ -10,6 +10,8 @@ import {
 } from "@qeetrix/ui";
 import { ChevronLeftIcon, ChevronRightIcon } from "@qeetrix/icons";
 
+import { formatLocale } from "@/i18n";
+
 export const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
 
 /** Returns the 1-based pages to show (first, last, current ±1) with "…" for each gap. */
@@ -59,9 +61,9 @@ export function ActivityPagination({
           t={t}
           i18nKey="activityPagination.showing"
           values={{
-            from: from.toLocaleString(),
-            to: to.toLocaleString(),
-            total: total.toLocaleString(),
+            from: from.toLocaleString(formatLocale()),
+            to: to.toLocaleString(formatLocale()),
+            total: total.toLocaleString(formatLocale()),
           }}
           components={{ n: <span className="font-medium text-foreground tabular-nums" /> }}
         />

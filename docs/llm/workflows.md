@@ -1,6 +1,6 @@
 # Workflows — qeet-id-console
 
-**Level:** L2 · **Last verified:** 2026-08-28
+**Level:** L2 · **Last verified:** 2026-10-23
 **Verification scope:** every command checked against `package.json` and
 `.github/workflows/ci.yml`.
 
@@ -24,21 +24,24 @@ bun run dev                    # serves on 3002 — see the port note below
 1  find the subsystem        docs/llm/subsystems.md
 2  page component            src/modules/<name>/components/<page>.tsx, exported from the
                              module's pages.ts (routes only), not its barrel
-3  route file                src/routes/_app/<area>/<page>.tsx — createFileRoute, search
-                             validation and the page from @/modules/<name>/pages; params reach
-                             the page as props
-4  navigation entry          src/platform/config/navigation.tsx — sets the required capability
+3  route file                src/modules/<name>/routes/app/<url path>.tsx (routes/public/ for a
+                             page outside the signed-in shell) — createFileRoute,
+                             staticData: { capability }, search validation and the page from
+                             @/modules/<name>/pages; params reach the page as props
+4  navigation entry          the module's manifest.tsx `nav`, with the same capability
 5  data access               the module's api/ dir, NEVER fetch from the component
 6  states                    the platform DataState for loading, empty and error
-7  i18n                      add strings; en is required, others fall back
+7  i18n                      add strings to the module's locales/en/<ns>.json; others fall back
 8  test
 9  bun run typecheck && bun run check && bun run lint:boundaries && bun run test
 ```
 
 `src/modules/users` is the reference: `UsersPage`, `UserDetailPage` and their thin routes.
+The dev server or a build regenerates `src/routeTree.gen.ts` for a new route file.
 
-**The navigation entry is what gates the page.** `getRequiredCapabilityForPath` reads it, and
-`AccessBoundary` enforces it in the UI. Both are UX — the backend still decides.
+**The route's `staticData.capability` is what gates the page.** `getRequiredCapabilityForPath`
+reads it, and `AccessBoundary` enforces it in the UI. Both are UX — the backend still decides.
+A nav entry naming a different capability from its route fails `route-capability.test.ts`.
 
 ## Call a new endpoint
 
@@ -60,14 +63,33 @@ bun run dev                    # serves on 3002 — see the port note below
 ## Add or change a module
 
 ```text
-1  src/modules/<name>/ with api/ + components/ + index.ts BARREL
-2  the barrel is the module's public surface — other modules may import ONLY it
-3  do not import @/routes from a module
-4  bun run lint:boundaries      ← the gate
+1  bun run new-module <id>      ← creates src/modules/<id>/ from the template and adds <id>
+                                  to src/app/modules.ts (the only file outside the folder)
+2  bun run dev                  ← regenerates the route tree; the page is at /<id>
+3  fill in api/, components/, routes/, locales/en/<id>.json and manifest.tsx
+4  the barrel (index.ts) is the module's public surface — other modules may import ONLY it
+5  do not import @/routes or @/app from a module
+6  bun run lint:boundaries && bun run test   ← module-registry and module-boundaries tests
 ```
 
 Every module has a barrel. Export from it only what another module or a route needs, by name (no
 new `export *`).
+
+What a module adds to the shell goes in its `manifest.tsx`, never in a platform table:
+
+| To add | Manifest field |
+|---|---|
+| A sidebar entry (group, order, capability, parent for a sub-entry) | `nav` |
+| A command-palette entry | `commands` |
+| A `g <key>` shortcut | `shortcuts` |
+| A feature flag (owner, description, `expires` date or `null` for a kill switch) | `flags` |
+| Qeet AI suggestions for its pages | `extensions.qeetaiSuggestions` |
+| A namespace of its own | `locales/en/<ns>.json`, declared in the manifest's `ResourceNamespaceMap` block |
+
+Copy in a manifest is a key in the module's namespace (`<ns>:nav.*`, `<ns>:commands.*`). A module
+offers its own extension point by augmenting `ModuleExtensions` in
+`src/platform/modules/manifest.ts` from its own folder (see `qeetai/suggestions/route-suggestions.ts`)
+and reading it with `extensionContributions()`.
 
 A **route** stays thin: `createFileRoute`, its guards (`beforeLoad`, `head`), a Zod search schema
 (`searchText()` / `searchEnum()` from `src/shared/utils/search-params.ts`) and the page from the
@@ -94,10 +116,11 @@ Never add a token to `PublicSession`. Never reintroduce localStorage token keys.
 
 ```text
 1  src/platform/security/capability-model.ts   (the 25 capabilities)
-2  src/platform/config/navigation.tsx          (path → capability)
+2  the route's staticData: { capability }      (path → capability), and the
+                                               matching nav entry in its manifest
 3  remember: UX ONLY. The backend decides
 4  a new capability must exist in qeet-id-server first
-5  test capability-model + navigation
+5  test capability-model + route-capability
 ```
 
 **Never re-implement RBAC/ABAC evaluation in the browser.**

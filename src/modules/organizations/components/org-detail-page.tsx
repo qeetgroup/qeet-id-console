@@ -11,7 +11,6 @@ import {
   DropdownMenuTrigger,
   EmptyState,
   Skeleton,
-  StatusPill,
   Tabs,
   TabsContent,
   TabsList,
@@ -30,6 +29,7 @@ import {
 } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { CopyId } from "@/modules/users";
 import { initials } from "@/shared/utils/initials";

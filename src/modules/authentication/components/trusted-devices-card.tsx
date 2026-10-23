@@ -1,17 +1,11 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  StatusPill,
-} from "@qeetrix/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { MonitorIcon, LoaderCircleIcon, SmartphoneIcon, TrashIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { formatLocale } from "@/i18n";
 import { ErrorText } from "@/platform/components/error-reference";
+import { StatusPill } from "@/platform/components/status-pill";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import {
   type TrustedDeviceScope,
@@ -39,7 +33,7 @@ export function TrustedDevicesCard({
   const forget = useForgetTrustedDevices(scope);
   const devices = devicesQ.data?.items ?? [];
   const date = (iso: string) =>
-    new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" });
+    new Date(iso).toLocaleDateString(formatLocale(), { dateStyle: "medium" });
 
   function forgetDevices(deviceId?: string) {
     forget.mutate(deviceId, {

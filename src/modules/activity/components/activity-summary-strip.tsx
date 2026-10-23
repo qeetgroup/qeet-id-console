@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { cn, Skeleton, Sparkline } from "@qeetrix/ui";
 
+import { formatLocale } from "@/i18n";
+
 import type { ActivitySearch } from "../activity-search";
 import type { ActivitySummary, Outcome } from "../types/activity.types";
 
@@ -21,7 +23,9 @@ function pctLabel(share: number): string {
 }
 
 function compact(n: number): string {
-  return n >= 10_000 ? n.toLocaleString(undefined, { notation: "compact" }) : n.toLocaleString();
+  return n >= 10_000
+    ? n.toLocaleString(formatLocale(), { notation: "compact" })
+    : n.toLocaleString(formatLocale());
 }
 
 const RAIL_CLASS =

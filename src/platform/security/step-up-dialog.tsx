@@ -32,7 +32,9 @@ type StepUpDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onVerified: () => void; // after a successful step-up: retry the gated action here
-  actionLabel?: string; // what the person is about to do, e.g. "delete this user"
+  // The action's label, e.g. "Delete user", shown as given on its own line: spliced into a
+  // sentence it would force one case and word order on every language.
+  actionLabel?: string;
   allowedMethods?: string[] | null; // factor types the organisation counts; null = all
 };
 
@@ -139,13 +141,12 @@ export function StepUpDialog({
             {t("stepUpDialog.title")}
           </DialogTitle>
           <DialogDescription>
-            {nothing
-              ? t(actionLabel ? "stepUpDialog.needFactorFor" : "stepUpDialog.needFactor", {
-                  action: actionLabel,
-                })
-              : t(actionLabel ? "stepUpDialog.confirmFor" : "stepUpDialog.confirm", {
-                  action: actionLabel,
-                })}
+            {actionLabel && (
+              <>
+                <span className="block font-medium text-foreground">{actionLabel}</span>{" "}
+              </>
+            )}
+            {nothing ? t("stepUpDialog.needFactor") : t("stepUpDialog.confirm")}
           </DialogDescription>
         </DialogHeader>
 

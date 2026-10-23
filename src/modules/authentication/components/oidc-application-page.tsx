@@ -7,10 +7,10 @@ import {
   CardHeader,
   CardTitle,
   FieldGroup,
-  StatusPill,
   TimeSince,
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   settleSensitiveAction,
@@ -82,7 +82,7 @@ export function OidcApplicationPage({ clientId }: { clientId: string }) {
 }
 
 function OidcClientDetail({ client }: { client: OidcClient }) {
-  const { t } = useTranslation("oidc");
+  const { t } = useTranslation(["oidc", "common"]);
   const navigate = useNavigate();
   const rotateM = useRotateClientSecret(client.id);
   const deleteM = useDeleteOidcClient();
@@ -245,7 +245,7 @@ function editValues(client: OidcClient) {
 
 /** Renders the form that edits an application's name, URIs, grants and scopes. */
 function OidcClientEditForm({ client }: { client: OidcClient }) {
-  const { t } = useTranslation("oidc");
+  const { t } = useTranslation(["oidc", "common"]);
   const runSensitive = useSensitiveAction();
   const updateM = useUpdateOidcClient(client.id);
   const schema = useMemo(

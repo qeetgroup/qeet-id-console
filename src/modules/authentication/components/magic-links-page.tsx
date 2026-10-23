@@ -1,17 +1,10 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  StatusPill,
-  Switch,
-} from "@qeetrix/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Switch } from "@qeetrix/ui";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { DataState } from "@/platform/components/data-state";
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import { settleSensitiveAction } from "@/platform/security/sensitive-action-provider";
 import { type AuthPolicy, useAuthPolicy } from "../api/auth-policy";
@@ -40,7 +33,7 @@ function sliceOf(p: AuthPolicy) {
 
 /** Renders the organization's magic-link sign-in: on or off, and how long a link lives. */
 export function MagicLinksPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const policyQ = useAuthPolicy();
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -59,7 +52,7 @@ export function MagicLinksPage() {
 }
 
 function MagicLinkForm({ policy }: { policy: AuthPolicy }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const save = useSaveAuthPolicy();
   const form = useAppForm({
     defaultValues: sliceOf(policy),

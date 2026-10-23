@@ -44,7 +44,7 @@ type OnResult = (record: DecisionRecord) => void;
 
 /** Renders the policy simulator: a what-if request to any engine, and its explained decision. */
 export function PolicySimulatorPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const [engine, setEngine] = useState<Engine>("authzen");
   const [record, setRecord] = useState<DecisionRecord | null>(null);
   // Each decision is also kept for the Decision Explorer.
@@ -138,12 +138,12 @@ function SimulationForm({
 }
 
 function useRequired() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   return useMemo(() => z.string().trim().min(1, t("simulator.validation.required")), [t]);
 }
 
 function AuthzenForm({ onResult }: { onResult: OnResult }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const m = useAuthzenEvaluate();
   const required = useRequired();
   const form = useAppForm({
@@ -219,7 +219,7 @@ function AuthzenForm({ onResult }: { onResult: OnResult }) {
 }
 
 function RbacForm({ onResult }: { onResult: OnResult }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const m = useRbacSimulate();
   const required = useRequired();
   const form = useAppForm({
@@ -266,7 +266,7 @@ function RbacForm({ onResult }: { onResult: OnResult }) {
 }
 
 function RebacForm({ onResult }: { onResult: OnResult }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const m = useRebacSimulate();
   const required = useRequired();
   const form = useAppForm({
@@ -340,7 +340,7 @@ function parseAbacRequest(raw: string): AbacRequest | null {
 }
 
 function AbacForm({ onResult }: { onResult: OnResult }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const m = useAbacSimulate();
   const schema = useMemo(
     () =>

@@ -27,6 +27,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import {
   settleSensitiveAction,
   useSensitiveAction,
@@ -42,11 +43,10 @@ import {
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import { useMemo } from "react";
 import { z } from "zod";
-import { AuthStatusPill } from "./auth-status-pill";
 
 /** Renders the organization's LDAP and Active Directory connections, with test, enable and delete. */
 export function LdapPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const listQ = useLdapConnections();
   const updateM = useUpdateLdapConnection();
@@ -109,7 +109,7 @@ export function LdapPage() {
                         {c.server_url}
                       </TableCell>
                       <TableCell>
-                        <AuthStatusPill status={c.status} />
+                        <StatusPill status={c.status} />
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {c.last_login_at ? <TimeSince value={c.last_login_at} /> : "—"}
@@ -195,11 +195,11 @@ function CreateConnectionSheet({
 }
 
 function CreateConnectionForm({ onDone }: { onDone: () => void }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const createM = useCreateLdapConnection();
   const schema = useMemo(() => {
-    const required = (key: string) =>
+    const required = (key: "name" | "serverUrl" | "bindDn" | "bindPassword" | "baseDn") =>
       z
         .string()
         .trim()

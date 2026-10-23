@@ -67,7 +67,7 @@ export function ConfigureSocialProviderSheet({
   existing,
   onClose,
 }: ConfigureSocialProviderSheetProps) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const upsertM = useUpsertSocialProvider();
   const updateM = useUpdateSocialProvider();
   const deleteM = useDeleteSocialProvider();

@@ -26,7 +26,7 @@ const PLAN_ITEMS = [
 
 /** Renders decorative plan artwork, hidden from assistive tech; its copy is localized. */
 export function SetupPlanArtwork({ className }: SetupArtworkProps = {}) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   const globeId = useId();
 
   return (

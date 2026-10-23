@@ -1,7 +1,8 @@
-import { cn, StatusPill } from "@qeetrix/ui";
+import { cn } from "@qeetrix/ui";
 import { RadioIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import type { ConnectionStatus } from "../types/activity.types";
 
 const STATUS_RING_CLASS: Record<ConnectionStatus, string> = {

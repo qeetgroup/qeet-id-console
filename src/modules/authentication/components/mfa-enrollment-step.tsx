@@ -15,6 +15,7 @@ import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { errorMessage } from "@/platform/errors/user-message";
 
 import { type MfaEnrollment, startMfaEnrollment } from "../api/mfa-sign-in";
@@ -39,7 +40,7 @@ export function MfaEnrollmentStep({
   errorMessage?: string;
   onSubmit: (proof: MfaProof) => void;
 }) {
-  const { t, i18n } = useTranslation("auth-flow");
+  const { t } = useTranslation("auth-flow");
   const [app, setApp] = useState<MfaEnrollment | null>(null);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function MfaEnrollmentStep({
   }
 
   const due = dueAt
-    ? new Intl.DateTimeFormat(i18n.language, { dateStyle: "long" }).format(new Date(dueAt))
+    ? new Intl.DateTimeFormat(formatLocale(), { dateStyle: "long" }).format(new Date(dueAt))
     : null;
   const busy = isLoading || starting;
   const shownError = startError ?? submitError;

@@ -22,7 +22,7 @@ export function BillingErrorState({
   fetching: boolean;
   onRetry: () => unknown;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   return (
     <div
       className="flex min-h-32 flex-col items-center justify-center gap-3 px-4 py-6 text-center"

@@ -11,13 +11,14 @@ import {
   MapPinIcon,
 } from "@qeetrix/icons";
 
+import { formatLocale } from "@/i18n";
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
 import { filterNavigation, type NavItem, useNavGroups } from "@/platform/config/navigation";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useAuthPolicy } from "@/modules/authentication";
 import { brandingQueries } from "@/modules/branding";
-import { useSubscription } from "@/modules/billing";
+import { usePlanName, useSubscription } from "@/modules/billing";
 import { orgQueries, useDomains, useEmailTemplates } from "@/modules/organizations";
 import { useQeetAIProviderConfig } from "@/modules/qeetai";
 import { REGIONS } from "@/shared/data/regions";
@@ -37,7 +38,7 @@ function monthYear(iso?: string | null): string | undefined {
   const d = new Date(iso);
   return Number.isNaN(d.getTime())
     ? undefined
-    : d.toLocaleDateString(undefined, { month: "short", year: "numeric" });
+    : d.toLocaleDateString(formatLocale(), { month: "short", year: "numeric" });
 }
 
 function longDate(iso?: string | null): string | undefined {
@@ -45,7 +46,7 @@ function longDate(iso?: string | null): string | undefined {
   const d = new Date(iso);
   return Number.isNaN(d.getTime())
     ? undefined
-    : d.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+    : d.toLocaleDateString(formatLocale(), { month: "long", day: "numeric", year: "numeric" });
 }
 
 // The greeting's key for the time of day.
@@ -57,7 +58,7 @@ function greetingKey(): "morning" | "afternoon" | "evening" {
 }
 
 export function SettingsOverview() {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const access = useCapabilities();
   const navGroups = useNavGroups();
   const tenantId = useTenantId();
@@ -69,6 +70,7 @@ export function SettingsOverview() {
   const templatesQ = useEmailTemplates();
   const policyQ = useAuthPolicy();
   const subQ = useSubscription();
+  const planName = usePlanName();
   const aiQ = useQeetAIProviderConfig();
   const brandingQ = useQuery(brandingQueries.detail(tenantId));
 
@@ -82,9 +84,10 @@ export function SettingsOverview() {
   const aiConnected = aiQ.data?.source === "tenant" || !!aiQ.data?.provider;
 
   const regionKey = REGIONS.find((r) => r.value === org?.region)?.label;
-  const regionLabel = regionKey ? t(regionKey) : (org?.region ?? undefined);
+  const regionLabel = regionKey ? i18n.t(regionKey) : (org?.region ?? undefined);
   const planLabel =
-    sub?.plan_name ?? (org?.plan ? t("settingsOverview.plan", { plan: org.plan }) : undefined);
+    sub?.plan_name ??
+    (org?.plan ? t("settingsOverview.plan", { plan: planName(org.plan) }) : undefined);
 
   // One entry per settings area, keyed by the nav URL so the cards stay in
   // lockstep with the sidebar and with each area's own page.

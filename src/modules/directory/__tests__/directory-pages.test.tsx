@@ -103,6 +103,7 @@ describe("Connections page", () => {
       expect(screen.getByRole("region", { name: "Provisioning coverage" })).toBeTruthy();
       expect(screen.getByRole("region", { name: "Recent sync events" })).toBeTruthy();
       expect(screen.getByText("80%")).toBeTruthy();
+      expect(screen.getByRole("img", { name: "Healthy: --" })).toBeTruthy();
       expect(screen.queryByText("Production")).toBeNull();
       expect(screen.getByRole("article", { name: "Healthy" }).textContent).toContain(
         "Not reported",
@@ -693,6 +694,17 @@ describe("Suspended users page", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Export list" }));
     expect(state.onExport).toHaveBeenCalledOnce();
+  });
+
+  it("names the pending-review filter chip by what it does", () => {
+    const state = suspendedProps();
+    render(<SuspendedView {...state} filters={{ ...state.filters, review: "pending" }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Clear the pending review filter" }));
+    expect(state.onFiltersChange).toHaveBeenLastCalledWith({
+      ...state.filters,
+      review: "",
+      offset: 0,
+    });
   });
 
   it("keeps unknown summaries distinct from zero or no pending reviews when loading fails", () => {

@@ -34,6 +34,12 @@ beforeEach(() => {
 });
 
 describe("addLiveEvents", () => {
+  it("keeps the stream's frame id as the resume point, never an event's id", () => {
+    activityActions.setLastEventId("cursor-9");
+    activityActions.addLiveEvents([makeEvent({ id: "evt-uuid-1" })]);
+    expect(activityStore.state.lastEventId).toBe("cursor-9");
+  });
+
   it("prepends new events newest-first", () => {
     const a = makeEvent({ title: "A" });
     const b = makeEvent({ title: "B" });

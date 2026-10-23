@@ -124,7 +124,7 @@ export function ConnectedAccountsCard({ className }: { className?: string }) {
                             confirmLabel: t("security.connected.unlink"),
                             tone: "destructive",
                           },
-                          actionLabel: t("security.connected.unlinkAction").toLowerCase(),
+                          actionLabel: t("security.connected.unlinkAction"),
                           run: () => unlink.mutateAsync(linked.id),
                         }).catch(settleSensitiveAction)
                       }

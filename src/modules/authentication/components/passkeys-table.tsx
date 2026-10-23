@@ -13,6 +13,7 @@ import { CheckIcon, PencilIcon, TrashIcon, XIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { errorMessage } from "@/platform/errors/user-message";
 import { PASSKEY_NAME_MAX_LENGTH, type Passkey } from "../api/passkeys";
 
@@ -43,7 +44,7 @@ export function PasskeysTable({
   isRemoving,
   removeBlockedReason,
 }: PasskeysTableProps) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const [editing, setEditing] = useState<{ id: string; draft: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -164,11 +165,11 @@ export function PasskeysTable({
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {p.last_used_at
-                  ? new Date(p.last_used_at).toLocaleString()
+                  ? new Date(p.last_used_at).toLocaleString(formatLocale())
                   : t("loginMethods.passkeys.lastUsedNever")}
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {new Date(p.created_at).toLocaleDateString()}
+                {new Date(p.created_at).toLocaleDateString(formatLocale())}
               </TableCell>
               <TableCell className="text-right">
                 <Button

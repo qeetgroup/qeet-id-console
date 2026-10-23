@@ -3,6 +3,7 @@ import { errorMessage } from "@/platform/errors/user-message";
 import { Link } from "@tanstack/react-router";
 import { CircleCheckIcon, LoaderCircleIcon, ShieldXIcon, TriangleAlertIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { BrandHero } from "./brand-hero";
@@ -53,7 +54,7 @@ function renderStatus({
 }: {
   code: string | null;
   consume: ReturnType<typeof useConsumeSamlCode>;
-  t: (key: string) => string;
+  t: TFunction<"auth-flow">;
 }) {
   if (!code) {
     return (

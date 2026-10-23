@@ -39,7 +39,7 @@ function sliceOf(p: AuthPolicy) {
 
 /** Renders the organization's passwordless sign-in methods and trusted devices. */
 export function PasswordlessPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const policyQ = useAuthPolicy();
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -58,7 +58,7 @@ export function PasswordlessPage() {
 }
 
 function PasswordlessForm({ policy }: { policy: AuthPolicy }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const save = useSaveAuthPolicy();
   const form = useAppForm({
     defaultValues: sliceOf(policy),

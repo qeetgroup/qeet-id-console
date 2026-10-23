@@ -17,7 +17,7 @@ import { groupPermissionsByResource, usePermissions, wildcardPermissions } from 
 
 /** Renders the permission catalogue grouped by resource. */
 export function PermissionsPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const permsQ = usePermissions();
   const [q, setQ] = useState("");
   const all = permsQ.data?.items ?? [];

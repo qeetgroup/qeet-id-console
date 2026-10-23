@@ -1,6 +1,7 @@
-import { Badge, cn, Highlight, StatusPill } from "@qeetrix/ui";
+import { Badge, cn, Highlight } from "@qeetrix/ui";
 import { useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import type { SearchItem } from "../registry/types/registry.types";
 
 interface ResultRowProps {

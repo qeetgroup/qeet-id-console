@@ -185,6 +185,7 @@ export function useUserRecentActivity(userId: string, limit = 6, enabled = true)
 /** The subset of an activity event's fields the user overview reads. */
 export interface RecentActivityEvent {
   id: string;
+  type: string; // e.g. auth.login_succeeded; titles are worded from it
   category?: string;
   severity?: "info" | "success" | "warning" | "error" | "critical";
   title: string;

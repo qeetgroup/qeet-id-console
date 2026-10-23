@@ -46,6 +46,7 @@ export const createRoleTool: ToolDefinition<CreateRoleInput> = {
     return {
       ok: true,
       summary: `Role "${role.name}" created (id: ${role.id}).`,
+      display: { key: "qeetai:toolCallCard.results.roleCreated", values: { name: role.name } },
       data: { id: role.id, name: role.name, description: role.description },
     };
   },
@@ -87,6 +88,10 @@ export const assignRoleTool: ToolDefinition<AssignRoleInput> = {
     return {
       ok: true,
       summary: `Role ${input.role_id} assigned to user ${input.user_id} in tenant ${ctx.tenantId}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.roleAssigned",
+        values: { roleId: input.role_id, userId: input.user_id },
+      },
       data: { user_id: input.user_id, role_id: input.role_id, tenant_id: ctx.tenantId },
     };
   },
@@ -130,6 +135,10 @@ export const grantPermissionTool: ToolDefinition<GrantPermissionInput> = {
     return {
       ok: true,
       summary: `Permission ${input.permission_id} granted to role ${input.role_id}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.permissionGranted",
+        values: { permission: input.permission_id, roleId: input.role_id },
+      },
       data: { role_id: input.role_id, permission_id: input.permission_id },
     };
   },

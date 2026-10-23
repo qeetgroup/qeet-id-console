@@ -44,7 +44,8 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const access = useCapabilities();
-  const { t } = useTranslation();
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage;
 
   // Recents and favorites are scoped per person and tenant, so re-read them on the client
   // (never during render) whenever that scope changes.
@@ -58,17 +59,17 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const recentEntries = useStore(recentStore, (s) => s.entries);
   const favoriteEntries = useStore(favoritesStore, (s) => s.entries);
 
-  // A language change gives a new `t`, so the items are rebuilt in it.
+  // A language change rebuilds the items in it.
   const searchCtx = useMemo<SearchContext>(
     () => ({
       pathname,
       tenantId: access.tenantId,
       capabilities: access.permissions,
       navigate: (url: string) => navigate({ to: url }),
-      t,
+      language,
     }),
     // useNavigate returns a stable callback, so listing it never recomputes the context.
-    [pathname, access.tenantId, access.permissions, navigate, t],
+    [pathname, access.tenantId, access.permissions, navigate, language],
   );
 
   // Until capabilities load there is nothing to filter against, so no items are offered.

@@ -23,7 +23,7 @@ export function SetupPlanSummary({
   disabled?: boolean;
   onChangePlan: () => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   const plans = usePlans();
   const plan = plans.data?.items.find((item) => item.code === selection.planCode);
   const Icon = ICONS[selection.tier];

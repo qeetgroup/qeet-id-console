@@ -52,6 +52,10 @@ export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
     return {
       ok: true,
       summary: `Found ${events.length} audit event${events.length === 1 ? "" : "s"}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.auditEventsFound",
+        values: { count: events.length },
+      },
       data: {
         events: events.map((e) => ({
           id: e.id,
@@ -88,6 +92,10 @@ export const searchSessionsTool: ToolDefinition<SearchSessionsInput> = {
     return {
       ok: true,
       summary: `Found ${sessions.length} active session${sessions.length === 1 ? "" : "s"} for the current operator. (Note: cross-user session search is not available — this returns only your own sessions.)`,
+      display: {
+        key: "qeetai:toolCallCard.results.sessionsFound",
+        values: { count: sessions.length },
+      },
       data: {
         sessions: sessions.map((s) => ({
           id: s.id,

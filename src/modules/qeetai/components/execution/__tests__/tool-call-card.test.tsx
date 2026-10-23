@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { ToolExecution } from "../../../tools/types/tool.types";
+import type { ToolExecution } from "@/modules/qeetai/tools/types/tool.types";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, ...props }: ComponentProps<"a"> & { to: string }) => <a {...props} href={to} />,
@@ -55,5 +55,33 @@ describe("ToolCallCard copy", () => {
       'This action requires the "user.read" capability, which is not granted to your account.',
     );
     expect(screen.queryByText(/written for the model/)).toBeNull();
+  });
+});
+
+describe("ToolCallCard result", () => {
+  function succeeded(result: ToolExecution["result"]): ToolExecution {
+    return { ...failed("unused"), status: "succeeded", error: undefined, result };
+  }
+
+  it("tells the operator the tool's own copy, never the summary written for the model", () => {
+    render(
+      <ToolCallCard
+        execution={succeeded({
+          ok: true,
+          summary: "Found 2 users. (Summary written for the model.)",
+          display: { key: "qeetai:toolCallCard.results.usersFound", values: { count: 2 } },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("Found 2 users.")).toBeTruthy();
+    expect(screen.queryByText(/written for the model/)).toBeNull();
+  });
+
+  it("falls back to a plain done for a tool with no copy of its own", () => {
+    render(<ToolCallCard execution={succeeded({ ok: true, summary: "Model-only text." })} />);
+
+    expect(screen.getByText("Done.")).toBeTruthy();
+    expect(screen.queryByText("Model-only text.")).toBeNull();
   });
 });

@@ -35,7 +35,7 @@ import {
 } from "../api/saml";
 import { SAML_IDP_VENDOR_LABELS, samlIdpVendor } from "../saml-vendors";
 import { ErrorText } from "@/platform/components/error-reference";
-import { AuthStatusPill } from "./auth-status-pill";
+import { StatusPill } from "@/platform/components/status-pill";
 
 const SETUP_GUIDE_URL = `${DOCS_URL}/docs/guides/add-enterprise-sso`;
 
@@ -83,7 +83,7 @@ export function ConnectionsEmptyState({
   filtered: boolean;
   onCreate: () => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   return (
     <div className="m-4 flex flex-col items-center gap-4 rounded-xl border border-dashed p-10 text-center">
       <span className="relative">
@@ -137,7 +137,7 @@ export function ConnectionRow({
   onToggle: () => void;
   onDelete: () => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const vendor = samlIdpVendor(connection);
 
   return (
@@ -150,7 +150,7 @@ export function ConnectionRow({
         {vendor === "other" ? t("samlSp.filters.vendorOther") : SAML_IDP_VENDOR_LABELS[vendor]}
       </TableCell>
       <TableCell>
-        <AuthStatusPill status={connection.status} />
+        <StatusPill status={connection.status} />
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
         {connection.last_login_at ? <TimeSince value={connection.last_login_at} /> : "—"}
@@ -188,7 +188,7 @@ export function ConnectionRow({
 // An offline config preflight with per-check results, catching errors before any sign-in;
 // "Test SSO" is the live IdP round trip.
 function ValidateConnection({ id }: { id: string }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const testM = useTestSamlConnection();
   const [open, setOpen] = useState(false);
 

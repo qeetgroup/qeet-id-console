@@ -1,15 +1,16 @@
-import { Button, cn, StatusPill } from "@qeetrix/ui";
+import { Button, cn } from "@qeetrix/ui";
 import { RotateCcwIcon } from "@qeetrix/icons";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import type {
   EmailTemplate,
   EmailTemplateCapabilities,
   EmailTemplateInput,
   EmailTemplateTranslation,
 } from "../api/email-templates";
-import type { EmailBrand } from "../email-template-model";
+import type { EmailBrand, EmailDraftIssue } from "../email-template-model";
 import { type EmailField, EmailContentTab } from "./email-templates-page-content";
 import { EmailPreviewPanel } from "./email-templates-page-preview";
 import {
@@ -48,7 +49,7 @@ export function EmailTemplateEditor({
   draft: EmailTemplateInput;
   content: EmailTemplateTranslation;
   currentLocale: string;
-  errors: string[];
+  errors: EmailDraftIssue[];
   modern: boolean;
   disabled: boolean;
   capabilities?: EmailTemplateCapabilities;
@@ -59,7 +60,7 @@ export function EmailTemplateEditor({
   onUpdate: (patch: Partial<EmailTemplateTranslation>) => void;
   onReset: () => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const [tab, setTab] = useState<EmailTab>("content");
   const [newLocale, setNewLocale] = useState("fr");
   const activeField = useRef<EmailField>("body");

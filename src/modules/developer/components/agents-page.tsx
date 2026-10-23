@@ -51,7 +51,7 @@ import { z } from "zod";
 
 /** Renders agent governance: create, the agent list, kill switch, sponsor transfer and shadow AI. */
 export function AgentsPage() {
-  const { t } = useTranslation("developer");
+  const { t } = useTranslation(["developer", "common"]);
   const runSensitive = useSensitiveAction();
   const meQ = useMe();
   const agentsQ = useAgents();

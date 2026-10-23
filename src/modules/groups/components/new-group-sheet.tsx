@@ -106,7 +106,7 @@ export function NewGroupSheet({ open, onOpenChange, groups, users }: Props) {
                     ...(roleId !== NONE
                       ? [
                           runSensitive({
-                            actionLabel: t("create.roleAction").toLowerCase(),
+                            actionLabel: t("create.roleAction"),
                             run: () => assignRoleM.mutateAsync({ groupId: group.id, roleId }),
                           }).catch(settleSensitiveAction),
                         ]

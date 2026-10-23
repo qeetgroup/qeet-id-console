@@ -76,7 +76,7 @@ function DeleteAccountForm() {
           confirmLabel: t("data.delete.confirm.label"),
           tone: "destructive",
         },
-        actionLabel: t("data.delete.button").toLowerCase(),
+        actionLabel: t("data.delete.button"),
         run: () => deleteM.mutateAsync(hasPassword ? value.password : null),
       }).catch((err: unknown) => {
         applyServerErrors(formApi, err);

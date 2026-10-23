@@ -11,12 +11,12 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import { MonitorSmartphoneIcon, ShieldIcon } from "@qeetrix/icons";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import { formatIp } from "@/shared/utils/ip-format";
 import { type Session, sessionCountry, sessionDevice, sessionStatus } from "../api/sessions";
-import { AuthStatusPill } from "./auth-status-pill";
 
 type SessionsTableProps = {
   query: UseQueryResult<{ items: Session[] }>;
@@ -39,7 +39,7 @@ export function SessionsTable({
   isRevoking,
   emptyLabel,
 }: SessionsTableProps) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation(["authentication", "common"]);
   const items = query.data?.items ?? [];
   return (
     <DataState
@@ -92,7 +92,7 @@ export function SessionsTable({
                   <TimeSince value={s.last_seen_at} />
                 </TableCell>
                 <TableCell>
-                  <AuthStatusPill status={sessionStatus(s)} />
+                  <StatusPill status={sessionStatus(s)} />
                 </TableCell>
                 <TableCell className="text-right">
                   <Button

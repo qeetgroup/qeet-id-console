@@ -30,6 +30,7 @@ import {
 import { type ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { actorTypeLabel, categoryLabel, formatEventTitle } from "../event-labels";
 import type { ActivityEvent, Severity } from "../types/activity.types";
 import { SeverityBadge } from "./severity-badge";
 
@@ -108,7 +109,11 @@ export function EventCard({
           isSelected && "bg-muted/55",
         )}
         onClick={onClick}
-        aria-label={`${event.title}${event.actor?.name ? `, by ${event.actor.name}` : ""}`}
+        aria-label={
+          event.actor?.name
+            ? t("eventCard.titleBy", { title: formatEventTitle(event), actor: event.actor.name })
+            : formatEventTitle(event)
+        }
       >
         <span
           className={cn(
@@ -120,14 +125,16 @@ export function EventCard({
           <CategoryIcon />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{event.title}</p>
+          <p className="truncate text-sm font-medium">{formatEventTitle(event)}</p>
           <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
             {event.actor?.type && (
               <Badge variant="muted" className="max-w-24 truncate text-[10px]">
-                {event.actor.type}
+                {actorTypeLabel(event.actor.type)}
               </Badge>
             )}
-            <span className="truncate text-[11px] text-muted-foreground">{event.category}</span>
+            <span className="truncate text-[11px] text-muted-foreground">
+              {categoryLabel(event.category)}
+            </span>
           </div>
         </div>
         <TimeSince
@@ -148,7 +155,7 @@ export function EventCard({
         isNew && "border-success/30 bg-success/10",
         isSelected && "ring-2 ring-ring",
       )}
-      aria-label={event.title}
+      aria-label={formatEventTitle(event)}
     >
       {/* Header row */}
       <div className="flex min-w-0 items-start gap-3">
@@ -165,7 +172,9 @@ export function EventCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{event.title}</span>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+              {formatEventTitle(event)}
+            </span>
             <SeverityBadge severity={event.severity} />
             {isNew && (
               <Badge variant="success" className="text-[10px]">
@@ -213,7 +222,9 @@ export function EventCard({
               />
               <TooltipContent>
                 {event.actor.type && (
-                  <p className="text-xs">{t("eventCard.actorType", { type: event.actor.type })}</p>
+                  <p className="text-xs">
+                    {t("eventCard.actorType", { type: actorTypeLabel(event.actor.type) })}
+                  </p>
                 )}
                 {event.actor.id && (
                   <p className="font-mono text-xs">

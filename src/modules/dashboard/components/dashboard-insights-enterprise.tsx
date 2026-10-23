@@ -13,7 +13,8 @@ import {
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useEntitlements, useUsage } from "@/modules/billing";
+import { formatLocale, type TranslationKey } from "@/i18n";
+import { useEntitlements, usePlanName, useUsage } from "@/modules/billing";
 import { useDomains } from "@/modules/organizations";
 import { useOidcClients, useSamlConnections, useScimConfig } from "@/modules/authentication";
 
@@ -44,7 +45,7 @@ function EnterpriseStat({ tile }: { tile: EnterpriseTile }) {
         <Skeleton className="h-7 w-10" />
       ) : (
         <span className="font-heading text-2xl font-semibold leading-none tabular-nums">
-          {(tile.count ?? 0).toLocaleString("en-US")}
+          {(tile.count ?? 0).toLocaleString(formatLocale())}
         </span>
       )}
       <span className="text-[11px] font-medium text-muted-foreground">{tile.label}</span>
@@ -115,18 +116,22 @@ export function EnterpriseOverviewPanel({ className }: { className?: string }) {
 }
 
 // `key` is the billing resource; `label` its catalogue key.
-const USAGE_RESOURCES: { key: string; label: string; icon: ComponentType<IconProps<"outline">> }[] =
-  [
-    { key: "seats", label: "dashboard:insights.usage.seats", icon: UsersIcon },
-    { key: "apps", label: "dashboard:insights.usage.apps", icon: LayersIcon },
-    { key: "api_keys", label: "dashboard:insights.usage.apiKeys", icon: KeyRoundIcon },
-    { key: "custom_roles", label: "dashboard:insights.usage.customRoles", icon: ShieldCheckIcon },
-  ];
+const USAGE_RESOURCES: {
+  key: string;
+  label: TranslationKey;
+  icon: ComponentType<IconProps<"outline">>;
+}[] = [
+  { key: "seats", label: "dashboard:insights.usage.seats", icon: UsersIcon },
+  { key: "apps", label: "dashboard:insights.usage.apps", icon: LayersIcon },
+  { key: "api_keys", label: "dashboard:insights.usage.apiKeys", icon: KeyRoundIcon },
+  { key: "custom_roles", label: "dashboard:insights.usage.customRoles", icon: ShieldCheckIcon },
+];
 
 export function PlanUsagePanel({ className }: { className?: string }) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const usageQ = useUsage();
   const entQ = useEntitlements();
+  const planName = usePlanName();
   const loading = usageQ.isLoading || entQ.isLoading;
   const usage = usageQ.data?.usage ?? {};
   const limits = entQ.data?.limits ?? {};
@@ -137,7 +142,9 @@ export function PlanUsagePanel({ className }: { className?: string }) {
       className={className}
       title={t("insights.planUsage")}
       description={
-        plan ? t("insights.planConsumption", { plan }) : t("insights.planConsumptionDefault")
+        plan
+          ? t("insights.planConsumption", { plan: planName(plan) })
+          : t("insights.planConsumptionDefault")
       }
       action={
         <Link to="/settings/billing" className={buttonVariants({ variant: "ghost", size: "sm" })}>
@@ -170,7 +177,7 @@ export function PlanUsagePanel({ className }: { className?: string }) {
                 <div className="flex items-baseline justify-between gap-2 text-xs">
                   <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
                     <Icon className="size-3.5" aria-hidden="true" />
-                    {t(label)}
+                    {i18n.t(label)}
                   </span>
                   <span
                     className={cn(
@@ -178,8 +185,8 @@ export function PlanUsagePanel({ className }: { className?: string }) {
                       atLimit ? "text-destructive" : "text-foreground",
                     )}
                   >
-                    {used.toLocaleString("en-US")}
-                    {unlimited ? " / ∞" : ` / ${limit.toLocaleString("en-US")}`}
+                    {used.toLocaleString(formatLocale())}
+                    {unlimited ? " / ∞" : ` / ${limit.toLocaleString(formatLocale())}`}
                   </span>
                 </div>
                 <div className="dashboard-method-track">

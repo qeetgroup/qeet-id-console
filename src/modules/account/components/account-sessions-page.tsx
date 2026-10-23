@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -15,6 +14,7 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useRevokeOtherSessions,
@@ -77,7 +77,7 @@ export function AccountSessionsPage() {
         confirmLabel: t("sessions.revokeAll.label"),
         tone: "destructive",
       },
-      actionLabel: t("sessions.active.signOutOthers").toLowerCase(),
+      actionLabel: t("sessions.active.signOutOthers"),
       // The hook is silent, so a failure toasts here; a refused step-up has already said so.
       run: () =>
         revokeOthersM.mutateAsync(undefined, {
@@ -106,7 +106,7 @@ export function AccountSessionsPage() {
         confirmLabel: t("sessions.signOutEverywhere.confirm.label"),
         tone: "destructive",
       },
-      actionLabel: t("sessions.signOutEverywhere.button").toLowerCase(),
+      actionLabel: t("sessions.signOutEverywhere.button"),
       run: () =>
         signOutEverywhereM.mutateAsync(undefined, {
           onError: (err) => {
@@ -221,7 +221,7 @@ export function AccountSessionsPage() {
                                 confirmLabel: t("sessions.revoke.label"),
                                 tone: "destructive",
                               },
-                              actionLabel: t("sessions.revoke.action").toLowerCase(),
+                              actionLabel: t("sessions.revoke.action"),
                               run: () => revokeM.mutateAsync(s.id),
                             }).catch(settleSensitiveAction)
                           }

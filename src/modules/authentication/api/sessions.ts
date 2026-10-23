@@ -43,7 +43,7 @@ export function listSessions(signal?: AbortSignal): Promise<SessionList> {
 
 /** Returns the session's device in words, as the server describes it (never the browser). */
 export function sessionDevice(s: Session): string {
-  return s.device || i18n.t("auth:sessionsTable.unknownDevice");
+  return s.device || i18n.t("authentication:sessionsTable.unknownDevice");
 }
 
 /** Returns the name of the country a session was opened from, or "" when unknown. */
@@ -90,7 +90,7 @@ export function useRevokeSession() {
     },
     onError: (_err, _id, ctx) => qc.setQueryData(authKeys.sessions(), ctx?.previous),
     onSettled: () => qc.invalidateQueries({ queryKey: authKeys.sessions() }),
-    meta: { successMessage: "auth:toast.sessionRevoked" },
+    meta: { successMessage: "authentication:toast.sessionRevoked" },
   });
 }
 

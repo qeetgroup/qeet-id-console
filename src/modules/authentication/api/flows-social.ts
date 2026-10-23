@@ -62,6 +62,6 @@ export function useConsumeSocialCode() {
         anonymous: true,
       }),
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "auth:toast.signedInSuccessfully" },
+    meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
 }

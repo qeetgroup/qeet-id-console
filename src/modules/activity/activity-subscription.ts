@@ -1,4 +1,6 @@
-import { activityActions } from "./activity-store";
+import { onSessionClear } from "@/platform/auth/session-store";
+
+import { activityActions, activityStore } from "./activity-store";
 import { createActivityStream } from "./activity-stream";
 import type { ActivityEvent, ConnectionStatus } from "./types/activity.types";
 
@@ -21,13 +23,28 @@ function onLastEventId(id: string) {
  * Takes a reference to the ref-counted SSE subscription, so every view shares one connection.
  * The first reference starts the stream; the returned release function stops it after the last.
  */
+function openClient() {
+  // Carries on from the last frame an earlier subscription saw, so the feed has no gap.
+  client = createActivityStream(
+    { onEvents, onStatusChange, onLastEventId },
+    activityStore.state.lastEventId,
+  );
+  client.start();
+}
+
+// Another organisation or person must not see this one's events, and an open stream would keep
+// delivering them: drop them and reconnect as the new session, once it is visible.
+onSessionClear((next) => {
+  client?.stop();
+  client = null;
+  if (refCount > 0 && next.isAuthenticated)
+    queueMicrotask(() => refCount > 0 && !client && openClient());
+});
+
 export function acquireSubscription(): () => void {
   refCount++;
 
-  if (refCount === 1) {
-    client = createActivityStream({ onEvents, onStatusChange, onLastEventId });
-    client.start();
-  }
+  if (refCount === 1) openClient();
 
   let released = false;
   return () => {

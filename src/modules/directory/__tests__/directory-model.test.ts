@@ -3,6 +3,7 @@ import type { LdapConnection, ScimConfig } from "@/modules/authentication";
 import {
   buildDirectoryConnections,
   coveragePercent,
+  formatDirectoryDuration,
   summarizeConnectionHealth,
 } from "../directory-model";
 
@@ -88,5 +89,12 @@ describe("Directory connections", () => {
     expect(coveragePercent(0, 0)).toBeNull();
     expect(coveragePercent(120, 100)).toBeNull();
     expect(coveragePercent(10, undefined)).toBeNull();
+  });
+
+  it("formats sync durations with the locale's unit names", () => {
+    expect(formatDirectoryDuration(null)).toBeNull();
+    expect(formatDirectoryDuration(249.6)).toBe("250ms");
+    expect(formatDirectoryDuration(1300)).toBe("1s");
+    expect(formatDirectoryDuration(138000)).toBe("2m 18s");
   });
 });

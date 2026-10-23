@@ -35,3 +35,69 @@ describe("createActivityStream restart", () => {
     client.stop();
   });
 });
+
+describe("createActivityStream resume point", () => {
+  const event = {
+    id: "8f14e45f-ceea-467f-a0e6-d2d1c4f3c2a1",
+    type: "auth.login_succeeded",
+    category: "authentication",
+    severity: "success",
+    title: "Auth Login Succeeded",
+    at: "2026-10-23T10:00:00Z",
+  };
+
+  it("resumes from the SSE frame id, not the event's own id", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const sent: (string | undefined)[] = [];
+    let call = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: URL, init: RequestInit) => {
+        sent.push((init.headers as Record<string, string>)["Last-Event-ID"]);
+        call++;
+        if (call === 1) {
+          // One event, then the connection drops.
+          const frame = `id: cursor-7\nevent: activity\ndata: ${JSON.stringify(event)}\n\n`;
+          return Promise.resolve(
+            new Response(frame, { headers: { "Content-Type": "text/event-stream" } }),
+          );
+        }
+        return new Promise<Response>(() => {});
+      }),
+    );
+    const onLastEventId = vi.fn();
+    const client = createActivityStream({
+      onEvents: vi.fn(),
+      onStatusChange: vi.fn(),
+      onLastEventId,
+    });
+
+    client.start();
+    await vi.waitFor(() => expect(onLastEventId).toHaveBeenCalledWith("cursor-7"));
+    await vi.advanceTimersByTimeAsync(2_000);
+    await vi.waitFor(() => expect(sent).toHaveLength(2));
+
+    expect(sent).toEqual([undefined, "cursor-7"]);
+    client.stop();
+    vi.useRealTimers();
+  });
+
+  it("carries on from an earlier stream's frame id", async () => {
+    const sent: (string | undefined)[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_url: URL, init: RequestInit) => {
+        sent.push((init.headers as Record<string, string>)["Last-Event-ID"]);
+        return new Promise<Response>(() => {});
+      }),
+    );
+    const client = createActivityStream(
+      { onEvents: vi.fn(), onStatusChange: vi.fn(), onLastEventId: vi.fn() },
+      "cursor-3",
+    );
+
+    client.start();
+    await vi.waitFor(() => expect(sent).toEqual(["cursor-3"]));
+    client.stop();
+  });
+});

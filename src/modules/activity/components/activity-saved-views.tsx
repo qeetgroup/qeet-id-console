@@ -29,7 +29,7 @@ export function ActivitySavedViews({
   onApply: (view: SavedView) => void;
   className?: string;
 }) {
-  const { t } = useTranslation("activity");
+  const { t, i18n } = useTranslation(["activity", "common"]);
   const userViews = useStore(savedViewsStore, (s) => s.views);
   const [name, setName] = useState("");
 
@@ -59,7 +59,7 @@ export function ActivitySavedViews({
         <ChipGroup value={activeViewId ?? ""} onValueChange={handleChange}>
           {PRESET_VIEWS.map((v) => (
             <Chip key={v.id} value={v.id} size="sm">
-              {t(v.name)}
+              {i18n.t(v.name)}
             </Chip>
           ))}
           {userViews.map((v) => (

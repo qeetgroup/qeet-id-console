@@ -58,24 +58,48 @@ const ACTIVITY_AREAS: Record<string, DeveloperResourceId> = {
   credential: "credentials",
   vc: "credentials",
 };
-const ACTIVITY_VERBS = new Set([
-  "created",
-  "updated",
-  "rotated",
-  "revoked",
-  "deleted",
-  "enabled",
-  "disabled",
-  "issued",
-  "delivered",
-  "suspended",
-  "decommissioned",
-]);
+// The developer audit actions the server records, each read as one whole sentence; any other
+// action of a known area reads as a generic change.
+const ACTIVITY_ACTIONS = {
+  "apikey.created": "keyCreated",
+  "apikey.revoked": "keyRevoked",
+  "api_key.created": "keyCreated",
+  "api_key.revoked": "keyRevoked",
+  "webhook.subscription_created": "webhookCreated",
+  "webhook.subscription_enabled": "webhookEnabled",
+  "webhook.subscription_disabled": "webhookDisabled",
+  "webhook.subscription_auto_disabled": "webhookAutoDisabled",
+  "webhook.secret_rotated": "webhookSecretRotated",
+  "auth_hook.created": "hookCreated",
+  "auth_hook.updated": "hookUpdated",
+  "auth_hook.deleted": "hookDeleted",
+  "agent.created": "agentCreated",
+  "agent.suspended": "agentSuspended",
+  "agent.resumed": "agentResumed",
+  "agent.decommissioned": "agentDecommissioned",
+  "agent.deleted": "agentDeleted",
+  "agent.kill_switch": "agentsSuspended",
+  "agent.sponsor_transferred": "agentsTransferred",
+  "secret.created": "secretCreated",
+  "secret.updated": "secretUpdated",
+  "secret.rotated": "secretRotated",
+  "secret.revealed": "secretRevealed",
+  "secret.deleted": "secretDeleted",
+  "credential.issued": "credentialIssued",
+  "credential.revoked": "credentialRevoked",
+} as const;
+
+/** What a developer activity row says happened; `changed` for an action it doesn't name. */
+export type DeveloperActivityAction =
+  | (typeof ACTIVITY_ACTIONS)[keyof typeof ACTIVITY_ACTIONS]
+  | "changed";
+
+const activityActions = new Map<string, DeveloperActivityAction>(Object.entries(ACTIVITY_ACTIONS));
 
 export type DeveloperActivity = {
   id: string;
   area: DeveloperResourceId;
-  verb: string;
+  action: DeveloperActivityAction;
   at: string;
   targetId?: string;
 };
@@ -137,7 +161,7 @@ export function useDeveloperOverview() {
     select: (response: z.infer<typeof activitySchema>) =>
       response.events
         .flatMap((event) => {
-          const [prefix, action] = event.type.split(".");
+          const [prefix] = event.type.split(".");
           // split() always yields a first element; the check only narrows the type.
           const area = prefix === undefined ? undefined : ACTIVITY_AREAS[prefix];
           if (!area || !resources.some((resource) => resource.id === area && resource.allowed))
@@ -147,7 +171,7 @@ export function useDeveloperOverview() {
             {
               id: event.id,
               area,
-              verb: action !== undefined && ACTIVITY_VERBS.has(action) ? action : "changed",
+              action: activityActions.get(event.type) ?? "changed",
               at: event.at,
               targetId: event.target?.id,
             } satisfies DeveloperActivity,

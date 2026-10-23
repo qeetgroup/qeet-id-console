@@ -210,7 +210,7 @@ export function GroupDetailPage({ groupId }: { groupId: string }) {
 }
 
 function GroupRolesCard({ groupId }: { groupId: string }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation(["authorization", "common"]);
   const rolesQ = useGroupRoles(groupId);
   const allRolesQ = useRoles();
   const grantM = useGrantGroupRole(groupId);
@@ -221,7 +221,7 @@ function GroupRolesCard({ groupId }: { groupId: string }) {
   // Granting and removing a group's role are step-up gated: they change what every member can do.
   const grant = (roleId: string) =>
     runSensitive({
-      actionLabel: t("groupRoles.grantAction").toLowerCase(),
+      actionLabel: t("groupRoles.grantAction"),
       run: () => grantM.mutateAsync(roleId),
     })
       .then(() => setSelectedRoleId(""))
@@ -235,7 +235,7 @@ function GroupRolesCard({ groupId }: { groupId: string }) {
         confirmLabel: t("common:actions.remove"),
         tone: "destructive",
       },
-      actionLabel: t("groupRoles.revokeAction").toLowerCase(),
+      actionLabel: t("groupRoles.revokeAction"),
       run: () => revokeM.mutateAsync(role.role_id),
     }).catch(settleSensitiveAction);
 

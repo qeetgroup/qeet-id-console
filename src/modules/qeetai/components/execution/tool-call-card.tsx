@@ -15,9 +15,10 @@ import { Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useSensitiveArtifact } from "../../store/secrets-store";
-import { CHANGE_TOOLS_DISABLED, getTool } from "../../tools";
-import type { ExecutionStatus, ToolExecution } from "../../tools/types/tool.types";
+import type { TranslationKey } from "@/i18n";
+import { useSensitiveArtifact } from "@/modules/qeetai/store/secrets-store";
+import { CHANGE_TOOLS_DISABLED, getTool } from "@/modules/qeetai/tools";
+import type { ExecutionStatus, ToolExecution } from "@/modules/qeetai/tools/types/tool.types";
 
 // A missing capability or invalid input fails the same way on every retry.
 const PERMANENT_ERRORS = new Set(["capability_denied", "validation_error"]);
@@ -25,7 +26,7 @@ const PERMANENT_ERRORS = new Set(["capability_denied", "validation_error"]);
 type Tone = "pending" | "running" | "success" | "error";
 
 // Labels are catalogue keys, translated at render.
-const STATUS_META: Record<ExecutionStatus, { label: string; tone: Tone }> = {
+const STATUS_META: Record<ExecutionStatus, { label: TranslationKey; tone: Tone }> = {
   queued: { label: "qeetai:toolCallCard.status.queued", tone: "pending" },
   validating: { label: "qeetai:toolCallCard.status.validating", tone: "running" },
   awaiting_confirmation: {
@@ -45,7 +46,7 @@ const WITHHELD_META = { label: "qeetai:toolCallCard.status.withheld", tone: "pen
 
 // An execution error's message is written for the model, so the card shows copy keyed on its
 // code; any other code gets the generic failure.
-const ERROR_COPY: Record<string, string> = {
+const ERROR_COPY: Record<string, TranslationKey> = {
   capability_denied: "qeetai:toolCallCard.errors.capabilityDenied",
   validation_error: "qeetai:toolCallCard.errors.invalidInput",
   timeout: "qeetai:toolCallCard.errors.timedOut",
@@ -86,7 +87,7 @@ export function ToolCallCard({
   execution: ToolExecution;
   onRetry?: () => void;
 }) {
-  const { t } = useTranslation("qeetai");
+  const { t, i18n } = useTranslation("qeetai");
   const [showInput, setShowInput] = useState(false);
   const tool = getTool(execution.toolName);
   // A change tool withheld in this version: not a failure, and retrying can't help.
@@ -105,8 +106,10 @@ export function ToolCallCard({
       <div className="flex items-center gap-2 px-3 py-2">
         <StatusGlyph tone={meta.tone} />
         <span className="min-w-0 flex-1">
-          <span className="font-medium">{tool ? t(tool.title) : humanize(execution.toolName)}</span>
-          <span className={cn("ms-2 text-xs", TONE_TEXT[meta.tone])}>{t(meta.label)}</span>
+          <span className="font-medium">
+            {tool ? i18n.t(tool.title) : humanize(execution.toolName)}
+          </span>
+          <span className={cn("ms-2 text-xs", TONE_TEXT[meta.tone])}>{i18n.t(meta.label)}</span>
         </span>
         {execution.status === "cancelled" ? (
           <XIcon className="size-3.5 text-muted-foreground" aria-hidden />
@@ -130,8 +133,13 @@ export function ToolCallCard({
         </pre>
       ) : null}
 
-      {result?.summary ? (
-        <p className="border-t px-3 py-2 text-[13px] text-muted-foreground">{result.summary}</p>
+      {/* `summary` is the model's English; the operator reads the tool's own copy. */}
+      {result?.ok ? (
+        <p className="border-t px-3 py-2 text-[13px] text-muted-foreground">
+          {result.display
+            ? i18n.t(result.display.key, result.display.values)
+            : i18n.t("qeetai:toolCallCard.results.done")}
+        </p>
       ) : null}
 
       {withheld ? <ChangeRefusal toolName={execution.toolName} /> : null}
@@ -140,7 +148,7 @@ export function ToolCallCard({
         <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
             <TriangleAlertIcon className="size-3.5 shrink-0" />
-            {t(ERROR_COPY[execution.error.code] ?? "toolCallCard.errors.failed", {
+            {i18n.t(ERROR_COPY[execution.error.code] ?? "qeetai:toolCallCard.errors.failed", {
               capability: tool?.requiredCapability,
             })}
           </p>
@@ -159,7 +167,7 @@ export function ToolCallCard({
 
 /** Renders "nothing was changed", since the assistant only reads, with a link to where to do it. */
 function ChangeRefusal({ toolName }: { toolName: string }) {
-  const { t } = useTranslation("qeetai");
+  const { t, i18n } = useTranslation("qeetai");
   const screen = getTool(toolName)?.consoleScreen;
   return (
     <div className="border-t px-3 py-2 text-xs text-muted-foreground" role="status">
@@ -169,7 +177,7 @@ function ChangeRefusal({ toolName }: { toolName: string }) {
           to={screen.to as never}
           className="mt-1 inline-block font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          {t("toolCallCard.openScreen", { screen: t(screen.label) })}
+          {t("toolCallCard.openScreen", { screen: i18n.t(screen.label) })}
         </Link>
       ) : null}
     </div>
@@ -181,7 +189,7 @@ function SensitiveArtifact({
 }: {
   artifact: NonNullable<ToolExecution["result"]>["sensitiveArtifact"];
 }) {
-  const { t } = useTranslation("qeetai");
+  const { t } = useTranslation(["qeetai", "common"]);
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
   const value = artifact?.value ?? "";

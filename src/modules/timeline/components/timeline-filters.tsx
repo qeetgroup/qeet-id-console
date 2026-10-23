@@ -13,26 +13,21 @@ import { ChevronDownIcon, ListFilterIcon, SearchIcon, XIcon } from "@qeetrix/ico
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isOneOf } from "@/shared/utils/one-of";
 import { useCapabilities } from "@/platform/security/capability-provider";
-import { ActivityTimeRange, type DateRange, presetToRange, TIME_PRESETS } from "@/modules/activity";
+import {
+  ACTIVITY_CATEGORIES,
+  ActivityTimeRange,
+  categoryLabel,
+  type DateRange,
+  presetToRange,
+  TIME_PRESETS,
+} from "@/modules/activity";
 import type { Severity } from "@/modules/activity";
 import { useTimeline } from "../timeline-provider";
 
-// Labelled `timeline:category.<value>`; severities share `activity:severity.<value>`.
-const CATEGORIES = [
-  "authentication",
-  "authorization",
-  "security",
-  "provisioning",
-  "organizations",
-  "groups",
-  "policies",
-  "applications",
-  "devices",
-  "sessions",
-  "api",
-  "administration",
-] as const;
+// The server's categories (labelled `activity:category.<value>`); severities `activity:severity.<value>`.
+const CATEGORIES = ACTIVITY_CATEGORIES;
 
 const SEVERITY_OPTIONS: { value: Severity; dot: string }[] = [
   { value: "info", dot: "bg-info" },
@@ -42,7 +37,7 @@ const SEVERITY_OPTIONS: { value: Severity; dot: string }[] = [
   { value: "critical", dot: "bg-destructive" },
 ];
 
-const PRESETS = new Set(TIME_PRESETS.map((p) => p.value));
+const PRESETS = TIME_PRESETS.map((p) => p.value);
 
 function FilterDropdown({
   label,
@@ -100,7 +95,7 @@ function ActiveChip({ label, onRemove }: { label: string; onRemove: () => void }
  * removable chip per active filter. Disabled without audit.read and user.read.
  */
 export function TimelineFilters() {
-  const { t } = useTranslation("timeline");
+  const { t } = useTranslation(["timeline", "activity"]);
   const access = useCapabilities();
   const disabled = !access.can("audit.read") || !access.can("user.read");
 
@@ -176,7 +171,7 @@ export function TimelineFilters() {
   // An unknown preset gets an empty chip label.
   const dateChipLabel =
     preset !== "all" && preset !== "custom"
-      ? PRESETS.has(preset)
+      ? isOneOf(PRESETS, preset)
         ? t(`activity:activityTimeRange.presets.${preset}`)
         : ""
       : preset === "custom"
@@ -232,7 +227,7 @@ export function TimelineFilters() {
               checked={filters.category.includes(value)}
               onCheckedChange={() => toggleCategory(value)}
             >
-              {t(`category.${value}`)}
+              {t(`activity:category.${value}`)}
             </DropdownMenuCheckboxItem>
           ))}
         </FilterDropdown>
@@ -281,9 +276,7 @@ export function TimelineFilters() {
             <li key={`cat-${value}`}>
               <ActiveChip
                 label={t("timelineFilters.categoryChip", {
-                  label: (CATEGORIES as readonly string[]).includes(value)
-                    ? t(`category.${value}`)
-                    : value,
+                  label: categoryLabel(value),
                 })}
                 onRemove={() => toggleCategory(value)}
               />

@@ -35,7 +35,7 @@ export function EmailPreview({
   mode?: "desktop" | "mobile";
   title: string;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const [document, setDocument] = useState("");
   useEffect(() => {
     setDocument(emailPreviewDocument(draft, locale, variables, brand));
@@ -127,7 +127,7 @@ export function EmailPreviewPanel({
   template: EmailTemplate;
   brand: EmailBrand;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const tenantDelivery =
     template.delivery_scope === "tenant" || ["invite", "magic_link"].includes(template.key);
@@ -199,7 +199,7 @@ export function EmailPreviewAllDialog({
   saved: Record<string, EmailTemplate>;
   brand: EmailBrand;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] min-w-0 overflow-y-auto sm:max-w-5xl">

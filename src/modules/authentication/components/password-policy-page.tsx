@@ -67,7 +67,7 @@ function sliceOf(p: AuthPolicy): PasswordSlice {
 
 /** Renders the organization's password sign-in: on or off, complexity rules and lockout. */
 export function PasswordPolicyPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const policyQ = useAuthPolicy();
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -86,7 +86,7 @@ export function PasswordPolicyPage() {
 }
 
 function PasswordPolicyForm({ policy }: { policy: AuthPolicy }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation(["authentication", "common"]);
   const save = useSaveAuthPolicy();
   const limits = policy.lockout_limits;
   const schema = useMemo(() => {

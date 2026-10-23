@@ -15,18 +15,20 @@ const ACTION =
 
 /** Who the emails come from, how many languages the template has, and who a test reaches. */
 export function EmailSummaryCards({ brandName, locales }: { brandName: string; locales: number }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <div className="grid gap-3 @min-[640px]/emails:grid-cols-3">
-      {[
-        { key: "brand", Icon: MailIcon, detail: brandName },
-        {
-          key: "languages",
-          Icon: GlobeIcon,
-          detail: t("emails.localeCount", { count: locales }),
-        },
-        { key: "secure", Icon: ShieldCheckIcon, detail: t("emails.selfOnly") },
-      ].map(({ key, Icon, detail }) => (
+      {(
+        [
+          { key: "brand", Icon: MailIcon, detail: brandName },
+          {
+            key: "languages",
+            Icon: GlobeIcon,
+            detail: t("emails.localeCount", { count: locales }),
+          },
+          { key: "secure", Icon: ShieldCheckIcon, detail: t("emails.selfOnly") },
+        ] as const
+      ).map(({ key, Icon, detail }) => (
         <div key={key} className={cn(SURFACE, "flex items-start gap-3 px-3.5 py-3")}>
           <span className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/6 text-primary">
             <Icon className="size-4" />
@@ -61,7 +63,7 @@ export function EmailSaveBar({
   onDiscard: () => void;
   onSave: () => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <footer className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border/50 bg-background/95 px-1 py-3 backdrop-blur-sm">
       <div className="min-w-0 text-xs">

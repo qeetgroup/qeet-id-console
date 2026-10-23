@@ -3,6 +3,8 @@ import { ClockIcon, LayersIcon, LockIcon, UsersIcon } from "@qeetrix/icons";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+
 import type { OidcClient } from "../api/oidc-clients";
 
 // Tinted icon squares, matching the StatCard tones on the Applications hub.
@@ -80,21 +82,21 @@ export function ApplicationStats({ clients, isLoading }: ApplicationStatsProps) 
         icon={<LayersIcon />}
         tone="neutral"
         label={t("stats.total")}
-        value={clients.length.toLocaleString()}
+        value={clients.length.toLocaleString(formatLocale())}
         caption={t("stats.totalCaption")}
       />
       <StatCard
         icon={<UsersIcon />}
         tone="emerald"
         label={t("stats.public")}
-        value={publicCount.toLocaleString()}
+        value={publicCount.toLocaleString(formatLocale())}
         caption={t("stats.publicCaption")}
       />
       <StatCard
         icon={<LockIcon />}
         tone="violet"
         label={t("stats.confidential")}
-        value={confidentialCount.toLocaleString()}
+        value={confidentialCount.toLocaleString(formatLocale())}
         caption={t("stats.confidentialCaption")}
       />
       <StatCard

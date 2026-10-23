@@ -10,8 +10,8 @@ import {
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { UseQeetAIChat } from "../../hooks/use-qeetai-chat";
-import type { Message } from "../../types/qeetai.types";
+import type { UseQeetAIChat } from "@/modules/qeetai/hooks/use-qeetai-chat";
+import type { Message } from "@/modules/qeetai/types/qeetai.types";
 import { ExecutionTimeline } from "../execution/execution-timeline";
 import { MarkdownMessage } from "../markdown-message/markdown-message";
 import { type MessageAction, MessageActions } from "./message-actions";
@@ -38,7 +38,7 @@ interface MessageItemProps {
  * Markdown with copy and regenerate actions.
  */
 export function MessageItem({ message, isLast, chat }: MessageItemProps) {
-  const { t } = useTranslation("qeetai");
+  const { t } = useTranslation(["qeetai", "common"]);
   const { copied, copy } = useCopy(message.content);
 
   if (message.role === "user") {
@@ -118,7 +118,7 @@ function UserMessage({
   copy: () => void;
   chat: UseQeetAIChat;
 }) {
-  const { t } = useTranslation("qeetai");
+  const { t } = useTranslation(["qeetai", "common"]);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
 

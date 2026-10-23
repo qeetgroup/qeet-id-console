@@ -18,9 +18,9 @@ const CATALOG: { id: string; label: string; icon: ReactNode }[] = [
 
 // One whole phrase per action, so no sentence is assembled from a verb and a provider name.
 const ACTION_LABEL = {
-  continue: "auth-flow:form.socialContinue",
-  signIn: "auth-flow:form.socialSignIn",
-  signUp: "auth-flow:form.socialSignUp",
+  continue: "form.socialContinue",
+  signIn: "form.socialSignIn",
+  signUp: "form.socialSignUp",
 } as const;
 
 /**

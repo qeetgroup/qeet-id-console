@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
 
-import { useConsoleContext } from "../../context/use-console-context";
-import { rankSuggestions } from "../../suggestions/suggestion-engine";
+import { useConsoleContext } from "@/modules/qeetai/context/use-console-context";
+import { rankSuggestions } from "@/modules/qeetai/suggestions/suggestion-engine";
 
 /**
  * Renders the ranked suggestions for the current route. Picking one sends a prompt
@@ -20,7 +20,7 @@ export function SuggestedActions({
   onPick: (text: string) => void;
   className?: string;
 }) {
-  const { t } = useTranslation("qeetai");
+  const { i18n } = useTranslation("qeetai");
   const context = useConsoleContext();
   const access = useCapabilities();
   const suggestions = useMemo(() => rankSuggestions(context, access.can), [context, access.can]);
@@ -34,14 +34,14 @@ export function SuggestedActions({
           // Labels are unique within a route's suggestion list.
           key={`${suggestion.type}-${suggestion.label}`}
           type="button"
-          title={suggestion.description ? t(suggestion.description) : undefined}
+          title={suggestion.description ? i18n.t(suggestion.description) : undefined}
           onClick={() =>
-            onPick(t(suggestion.type === "prompt" ? suggestion.text : suggestion.label))
+            onPick(i18n.t(suggestion.type === "prompt" ? suggestion.text : suggestion.label))
           }
           className="inline-flex items-center gap-1.5 rounded-full border bg-card/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <SparklesIcon className="size-3 text-primary" aria-hidden />
-          {t(suggestion.label)}
+          {i18n.t(suggestion.label)}
         </button>
       ))}
     </div>

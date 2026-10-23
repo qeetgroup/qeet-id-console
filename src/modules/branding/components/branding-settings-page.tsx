@@ -75,7 +75,7 @@ export type BrandingSettingsViewProps = {
 export function BrandingSettingsPage({
   onDirtyChange,
 }: Pick<BrandingSettingsViewProps, "onDirtyChange">) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const tenantId = useTenantId();
   const access = useCapabilities();
   const canRead = !!tenantId && access.state === "ready" && access.can("tenant.read");
@@ -128,7 +128,7 @@ export function BrandingSettingsPage({
       onSave={async (input) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("branding.footer.save").toLowerCase(),
+          actionLabel: t("branding.footer.save"),
           run: () => {
             if (!tenantId || active.current?.tenantId !== tenantId || !active.current.canWrite)
               throw new SensitiveActionCancelled();
@@ -148,7 +148,7 @@ export function BrandingSettingsPage({
 }
 
 export function BrandingSettingsView(props: BrandingSettingsViewProps) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   return (
     <div className="@container/branding relative isolate flex min-w-0 flex-col gap-4 before:pointer-events-none before:absolute before:-inset-4 before:-z-10 before:bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] before:bg-size-[32px_32px] before:opacity-10 dark:before:opacity-5">
       <header className="flex flex-wrap items-center justify-between gap-4 py-1">
@@ -219,7 +219,7 @@ export function BrandingSettingsView(props: BrandingSettingsViewProps) {
 }
 
 function BrandingForm({ branding, ...props }: BrandingSettingsViewProps & { branding: Branding }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const id = useId();
   const [savedBranding, setSavedBranding] = useState(branding);
   const [draft, setDraft] = useState(() => brandingDraft(branding));

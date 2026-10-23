@@ -2,6 +2,8 @@ import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue }
 import { ChevronLeftIcon, ChevronRightIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+
 const PAGE_SIZES = [25, 50, 100];
 
 type UsersPaginationProps = {
@@ -40,7 +42,7 @@ export function UsersPagination({
           ? t("pagination.showing", {
               start: rangeStart,
               end: rangeEnd,
-              total: total.toLocaleString(),
+              total: total.toLocaleString(formatLocale()),
             })
           : t("pagination.showingSimple", { start: rangeStart, end: rangeEnd })}
       </span>

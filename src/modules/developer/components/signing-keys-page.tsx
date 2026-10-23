@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -18,6 +17,7 @@ import { InfoIcon, KeyRoundIcon } from "@qeetrix/icons";
 import { Trans, useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import { useSigningKeys } from "../api/signing-keys";
 
 // Signing keys rotate by deployment only, never from the console.

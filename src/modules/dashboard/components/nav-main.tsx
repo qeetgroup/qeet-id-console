@@ -18,9 +18,10 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ChevronRightIcon, Clock3Icon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import type { NavGroup, NavItem } from "@/platform/config/navigation";
 import { isNavBranchActive, isNavPathActive } from "@/platform/config/navigation-state";
-import { useDirectoryData } from "../api/directory";
+import { useDirectoryData } from "@/modules/directory";
 
 export type NavBadge = {
   label: string;
@@ -55,7 +56,7 @@ function NavMenuItem({
   expandBranches: boolean;
   badges: Record<string, NavBadge>;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "directory"]);
   const isActive = isNavPathActive(pathname, item.url);
   const isBranchActive = isNavBranchActive(pathname, item);
 
@@ -126,7 +127,7 @@ function NavMenuItem({
                 {subItem.planned ? (
                   <>
                     <Clock3Icon className="ms-auto size-3.5 shrink-0" aria-hidden="true" />
-                    <span className="sr-only">{t("directory.planned")}</span>
+                    <span className="sr-only">{t("directory:directory.planned")}</span>
                   </>
                 ) : null}
               </SidebarMenuSubButton>
@@ -136,7 +137,9 @@ function NavMenuItem({
                 {subItem.planned ? (
                   <Tooltip>
                     <TooltipTrigger render={button} />
-                    <TooltipContent side="right">{t("directory.plannedHint")}</TooltipContent>
+                    <TooltipContent side="right">
+                      {t("directory:directory.plannedHint")}
+                    </TooltipContent>
                   </Tooltip>
                 ) : (
                   button
@@ -179,31 +182,38 @@ export function SectionNav({
 }
 
 export function DirectoryNav({ group }: { group: NavGroup }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "directory"]);
   const { permissions, invitations, scim, ldap } = useDirectoryData(false);
   const badges: Record<string, NavBadge> = {};
 
   if (permissions.invitations && invitations.isSuccess && invitations.data > 0) {
     badges["/invitations"] = {
-      label: invitations.data > 99 ? "99+" : invitations.data.toLocaleString(i18n.resolvedLanguage),
-      description: t("directory.status.pendingInvitations", { count: invitations.data }),
+      label: invitations.data > 99 ? "99+" : invitations.data.toLocaleString(formatLocale()),
+      description: t("directory:directory.status.pendingInvitations", { count: invitations.data }),
       tone: "warning",
     };
   }
   if (permissions.connections && scim.isSuccess && scim.data.token_set) {
     badges["/auth/connections/scim"] = {
-      label: t("directory.status.configured"),
-      description: t("directory.status.scimConfigured"),
+      label: t("directory:directory.status.configured"),
+      description: t("directory:directory.status.scimConfigured"),
       tone: "success",
     };
   }
   if (permissions.connections && ldap.isSuccess && ldap.data.items.length > 0) {
     const inactive = ldap.data.items.filter((connection) => connection.status !== "active").length;
     badges["/auth/connections/ldap"] = {
-      label: t(inactive ? "directory.status.attention" : "directory.status.active"),
-      description: t(inactive ? "directory.status.ldapAttention" : "directory.status.ldapActive", {
-        count: inactive || ldap.data.items.length,
-      }),
+      label: t(
+        inactive ? "directory:directory.status.attention" : "directory:directory.status.active",
+      ),
+      description: t(
+        inactive
+          ? "directory:directory.status.ldapAttention"
+          : "directory:directory.status.ldapActive",
+        {
+          count: inactive || ldap.data.items.length,
+        },
+      ),
       tone: inactive ? "warning" : "success",
     };
   }

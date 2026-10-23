@@ -46,6 +46,7 @@ import {
   resourceTypes,
 } from "../authz-posture";
 import { PostureRing } from "./shared/posture-ring";
+import { formatLocale } from "@/i18n";
 import { PageHeader } from "@/platform/components/page-header";
 import {
   HealthCounter,
@@ -65,7 +66,7 @@ const RANGES = Object.keys(RANGE_DAYS) as RangeKey[];
 
 /** Renders the authorization overview: posture, models in use and recent changes. */
 export function AuthorizationOverviewPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const [range, setRange] = useState<RangeKey>("7d");
 
   const from = useMemo(() => {
@@ -100,7 +101,7 @@ export function AuthorizationOverviewPage() {
   const systemRoles = roles.filter((r) => r.is_system).length;
   const updatedAt = Math.max(rolesQ.dataUpdatedAt, permsQ.dataUpdatedAt, policiesQ.dataUpdatedAt);
 
-  const dateFormat = new Intl.DateTimeFormat(undefined, {
+  const dateFormat = new Intl.DateTimeFormat(formatLocale(), {
     month: "short",
     day: "numeric",
     year: "numeric",

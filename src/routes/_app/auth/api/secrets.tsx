@@ -1,7 +1,0 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-import { SecretsPage } from "@/modules/developer/pages";
-
-export const Route = createFileRoute("/_app/auth/api/secrets")({
-  component: SecretsPage,
-});

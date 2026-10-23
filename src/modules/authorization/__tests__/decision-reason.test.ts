@@ -15,28 +15,40 @@ describe("explainReason", () => {
   it.each([
     [
       "no role grants this permission for this user in this tenant",
-      { key: "rbac:check.deniedReason" },
+      { key: "authorization:check.deniedReason" },
     ],
     [
       'explicitly denied by policy "deny_contractors" (priority 90)',
-      { key: "rbac:decisionExplain.reason.explicitDeny", name: "deny_contractors", priority: "90" },
+      {
+        key: "authorization:decisionExplain.reason.explicitDeny",
+        name: "deny_contractors",
+        priority: "90",
+      },
     ],
     [
       'denied by policy "geo" (priority -5): an attribute it compares is absent',
-      { key: "rbac:decisionExplain.reason.absentDeny", name: "geo", priority: "-5" },
+      { key: "authorization:decisionExplain.reason.absentDeny", name: "geo", priority: "-5" },
     ],
     [
       'allowed by policy "hr_view" (priority 30)',
-      { key: "rbac:decisionExplain.reason.allowed", name: "hr_view", priority: "30" },
+      { key: "authorization:decisionExplain.reason.allowed", name: "hr_view", priority: "30" },
     ],
-    ["no matching allow policy", { key: "rbac:decisionExplain.reason.noAllow" }],
+    ["no matching allow policy", { key: "authorization:decisionExplain.reason.noAllow" }],
     [
       'condition error in policy "geo": unknown operator "near"',
-      { key: "rbac:decisionExplain.reason.conditionError", name: "geo", priority: undefined },
+      {
+        key: "authorization:decisionExplain.reason.conditionError",
+        name: "geo",
+        priority: undefined,
+      },
     ],
     [
       'condition error in policy "geo"',
-      { key: "rbac:decisionExplain.reason.conditionError", name: "geo", priority: undefined },
+      {
+        key: "authorization:decisionExplain.reason.conditionError",
+        name: "geo",
+        priority: undefined,
+      },
     ],
   ])("maps %j", (reason, explained) => {
     expect(explainReason(reason)).toEqual(explained);
@@ -77,19 +89,23 @@ describe("explainTraceStep", () => {
   it.each([
     [
       'policy "p" (effect=allow, priority=10): condition not matched',
-      { key: "rbac:decisionExplain.trace.notMatched", effect: "allow", priority: "10" },
+      { key: "authorization:decisionExplain.trace.notMatched", effect: "allow", priority: "10" },
     ],
     [
       'policy "p" (effect=deny, priority=95): condition matched → deny',
-      { key: "rbac:decisionExplain.trace.matched", effect: "deny", priority: "95" },
+      { key: "authorization:decisionExplain.trace.matched", effect: "deny", priority: "95" },
     ],
     [
       'policy "p" (effect=deny, priority=1): an attribute the condition compares is absent → deny',
-      { key: "rbac:decisionExplain.trace.absentApplies", effect: "deny", priority: "1" },
+      { key: "authorization:decisionExplain.trace.absentApplies", effect: "deny", priority: "1" },
     ],
     [
       'policy "p" (effect=allow, priority=1): an attribute the condition compares is absent → not matched',
-      { key: "rbac:decisionExplain.trace.absentNotMatched", effect: "allow", priority: "1" },
+      {
+        key: "authorization:decisionExplain.trace.absentNotMatched",
+        effect: "allow",
+        priority: "1",
+      },
     ],
   ])("maps %j", (step, explained) => {
     expect(explainTraceStep(step)).toEqual({ name: "p", ...explained });
@@ -101,7 +117,7 @@ describe("explainTraceStep", () => {
       'policy "geo": condition error → fail-closed deny',
     ]) {
       expect(explainTraceStep(step)).toEqual({
-        key: "rbac:decisionExplain.trace.conditionError",
+        key: "authorization:decisionExplain.trace.conditionError",
         name: "geo",
       });
     }
@@ -109,13 +125,13 @@ describe("explainTraceStep", () => {
 
   it("maps the default deny and reads anything else as a generic step", () => {
     expect(explainTraceStep("no matching allow policy found → default deny")).toEqual({
-      key: "rbac:decisionExplain.trace.defaultDeny",
+      key: "authorization:decisionExplain.trace.defaultDeny",
     });
     expect(
       explainTraceStep('policy "p" (effect=allow, priority=1): condition matched → deny'),
-    ).toEqual({ key: "rbac:decisionExplain.trace.unknown" });
+    ).toEqual({ key: "authorization:decisionExplain.trace.unknown" });
     expect(explainTraceStep("internal: stack trace")).toEqual({
-      key: "rbac:decisionExplain.trace.unknown",
+      key: "authorization:decisionExplain.trace.unknown",
     });
   });
 });
@@ -128,27 +144,27 @@ describe("explainCode", () => {
   ])("words %s with its policy, or without one the caller may not read", (code, named, unnamed) => {
     const params = { policy_id: "p1", policy_name: "geo", priority: 90 };
     expect(explainCode(code, params)).toMatchObject({
-      key: `rbac:decisionExplain.reason.${named}`,
+      key: `authorization:decisionExplain.reason.${named}`,
       name: "geo",
       priority: "90",
     });
-    expect(explainCode(code)).toEqual({ key: `rbac:decisionExplain.reason.${unnamed}` });
+    expect(explainCode(code)).toEqual({ key: `authorization:decisionExplain.reason.${unnamed}` });
     expect(explainCode(code, { policy_name: "geo" })).toEqual({
-      key: `rbac:decisionExplain.reason.${unnamed}`,
+      key: `authorization:decisionExplain.reason.${unnamed}`,
     });
   });
 
   it("words the composed decision's codes with what they name", () => {
     expect(explainCode("authz.role_grant", { permission: "user.read" })).toMatchObject({
-      key: "rbac:decisionExplain.reason.roleGrant",
+      key: "authorization:decisionExplain.reason.roleGrant",
       permission: "user.read",
     });
     expect(explainCode("authz.role_grant")).toEqual({
-      key: "rbac:decisionExplain.reason.roleGrantUnnamed",
+      key: "authorization:decisionExplain.reason.roleGrantUnnamed",
     });
     expect(
       explainCode("authz.relation_grant", { relation: "viewer", object: "doc:1" }),
-    ).toMatchObject({ key: "rbac:decisionExplain.reason.relationGrant" });
+    ).toMatchObject({ key: "authorization:decisionExplain.reason.relationGrant" });
     for (const [code, key] of [
       ["authz.condition_error", "conditionErrorUnnamed"],
       ["authz.no_matching_allow", "noAllow"],
@@ -156,14 +172,16 @@ describe("explainCode", () => {
       ["authz.no_tenant", "noTenant"],
       ["authz.engine_error", "engineError"],
     ]) {
-      expect(explainCode(code ?? "")).toEqual({ key: `rbac:decisionExplain.reason.${key}` });
+      expect(explainCode(code ?? "")).toEqual({
+        key: `authorization:decisionExplain.reason.${key}`,
+      });
     }
-    expect(explainCode("authz.no_role_grant")).toEqual({ key: "rbac:check.deniedReason" });
+    expect(explainCode("authz.no_role_grant")).toEqual({ key: "authorization:check.deniedReason" });
   });
 
   it("reads an unknown code as a generic line", () => {
     for (const code of ["authz.something_new", "constructor", ""]) {
-      expect(explainCode(code)).toEqual({ key: "rbac:decisionExplain.reason.unknown" });
+      expect(explainCode(code)).toEqual({ key: "authorization:decisionExplain.reason.unknown" });
     }
   });
 
@@ -204,17 +222,17 @@ describe("explainReasonFields / explainDecidedBy", () => {
         reason: 'allowed by policy "hr" (priority 3)',
         reason_code: "authz.denied_by_policy",
       }),
-    ).toEqual({ key: "rbac:decisionExplain.reason.explicitDenyUnnamed" });
+    ).toEqual({ key: "authorization:decisionExplain.reason.explicitDenyUnnamed" });
   });
 
   it("maps a known sentence when there is no code, and never shows an unknown one", () => {
     expect(explainReasonFields({ reason: 'allowed by policy "hr" (priority 3)' })).toEqual({
-      key: "rbac:decisionExplain.reason.allowed",
+      key: "authorization:decisionExplain.reason.allowed",
       name: "hr",
       priority: "3",
     });
     expect(explainReasonFields({ reason: "pq: deadlock detected" })).toEqual({
-      key: "rbac:decisionExplain.reason.unknown",
+      key: "authorization:decisionExplain.reason.unknown",
     });
     expect(explainReasonFields({})).toBeNull();
   });
@@ -227,7 +245,10 @@ describe("explainReasonFields / explainDecidedBy", () => {
         reason_code: "authz.role_grant",
         reason_params: { permission: "user.read" },
       }),
-    ).toMatchObject({ key: "rbac:decisionExplain.reason.roleGrant", permission: "user.read" });
+    ).toMatchObject({
+      key: "authorization:decisionExplain.reason.roleGrant",
+      permission: "user.read",
+    });
     expect(explainDecidedBy({ model: "none", rule: "nothing allows it" })).toBeNull();
     expect(explainDecidedBy(undefined)).toBeNull();
   });
@@ -261,7 +282,7 @@ describe("explainDecision", () => {
         }),
       ),
     ).toMatchObject({
-      key: "rbac:decisionExplain.reason.explicitDeny",
+      key: "authorization:decisionExplain.reason.explicitDeny",
       name: "geo",
       priority: "90",
     });
@@ -277,7 +298,7 @@ describe("explainDecision", () => {
       explainDecision(
         record({ engine: "rbac", allowed: true, rbac: { allowed: true, paths: [], decided_by } }),
       ),
-    ).toMatchObject({ key: "rbac:decisionExplain.reason.roleGrant" });
+    ).toMatchObject({ key: "authorization:decisionExplain.reason.roleGrant" });
     expect(
       explainDecision(
         record({
@@ -289,7 +310,7 @@ describe("explainDecision", () => {
           },
         }),
       ),
-    ).toEqual({ key: "rbac:decisionExplain.reason.nothingAllows" });
+    ).toEqual({ key: "authorization:decisionExplain.reason.nothingAllows" });
     expect(
       explainDecision(
         record({

@@ -70,7 +70,7 @@ const SETUP_STEPS = ["metadata", "certificate", "test", "jit"] as const;
 
 /** Renders the organization's SAML connections: stats, first-run guide, filters and the list. */
 export function SamlConnectionsPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const listQ = useSamlConnections();
   const updateM = useUpdateSamlConnection();

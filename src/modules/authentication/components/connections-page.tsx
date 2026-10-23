@@ -15,6 +15,7 @@ import { z } from "zod";
 
 import { DataState } from "@/platform/components/data-state";
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import {
   applyServerErrors,
   FieldFrame,
@@ -36,7 +37,6 @@ import {
   useGenerateAdminPortalLink,
   useRevokeAdminPortalLink,
 } from "../api/admin-portal";
-import { AuthStatusPill } from "./auth-status-pill";
 
 const HOUR = 60 * 60;
 
@@ -56,7 +56,7 @@ const CAPABILITIES = [
 
 /** Renders the ways to connect an identity source, and the self-serve admin portal links. */
 export function ConnectionsPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <PageHeader description={t("connections.description")} />
@@ -112,7 +112,7 @@ function ConnectionCard({
 
 /** Renders the admin portal: generate a link (shown once), and the links with revoke. */
 function AdminPortalCard() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const linksQ = useAdminPortalLinks();
   const generateM = useGenerateAdminPortalLink();
@@ -181,7 +181,7 @@ function GenerateLinkForm({
 }: {
   generate: ReturnType<typeof useGenerateAdminPortalLink>;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const schema = useMemo(
     () =>
@@ -255,7 +255,7 @@ function GenerateLinkForm({
 // The capability checkboxes, bound to the enclosing form field as one list. A @base-ui Checkbox is
 // a custom element, so label/htmlFor doesn't apply: it takes an aria-label, beside visible text.
 function CapabilityChoices({ selected }: { selected: AdminPortalCapability[] }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const change = useFieldChange<AdminPortalCapability[]>();
   return (
     <div className="flex items-center gap-4 pt-1">
@@ -284,7 +284,7 @@ function AdminPortalLinkRow({
   onRevoke: () => void;
   busy: boolean;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const active = isAdminPortalLinkActive(l);
   const status = l.revoked_at ? "revoked" : active ? "active" : "expired";
 
@@ -294,7 +294,7 @@ function AdminPortalLinkRow({
         <p className="flex items-center gap-2 text-sm font-medium">
           <KeyRoundIcon className="size-4 text-muted-foreground" />
           {l.capabilities.join(" + ")}
-          <AuthStatusPill status={status} />
+          <StatusPill status={status} />
         </p>
         <p className="truncate text-xs text-muted-foreground">
           {t("connections.portal.linkExpires", { date: formatDateTime(l.expires_at) })}

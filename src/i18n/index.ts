@@ -1,104 +1,15 @@
-import i18n from "i18next";
+import i18n, {
+  type BackendModule,
+  type FlatNamespace,
+  type ParseKeys,
+  type ResourceKey,
+  type TOptions,
+} from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
-import deAuth from "./locales/de/auth.json";
-import deCommon from "./locales/de/common.json";
-import deConsent from "./locales/de/consent.json";
-import deDashboard from "./locales/de/dashboard.json";
-import deDevice from "./locales/de/device.json";
-import deOidc from "./locales/de/oidc.json";
-import deRbac from "./locales/de/rbac.json";
-import deSaml from "./locales/de/saml.json";
-import deSigningKeys from "./locales/de/signing-keys.json";
-import deUsers from "./locales/de/users.json";
-import account from "./locales/en/account.json";
-import activity from "./locales/en/activity.json";
-import auth from "./locales/en/auth.json";
-import authFlow from "./locales/en/auth-flow.json";
-import common from "./locales/en/common.json";
-import compliance from "./locales/en/compliance.json";
-import consent from "./locales/en/consent.json";
-import dashboard from "./locales/en/dashboard.json";
-import developer from "./locales/en/developer.json";
-import device from "./locales/en/device.json";
-import errors from "./locales/en/errors.json";
-import groups from "./locales/en/groups.json";
-import invitations from "./locales/en/invitations.json";
-import nav from "./locales/en/nav.json";
-import oidc from "./locales/en/oidc.json";
-import qeetai from "./locales/en/qeetai.json";
-import organizations from "./locales/en/organizations.json";
-import rbac from "./locales/en/rbac.json";
-import saml from "./locales/en/saml.json";
-import search from "./locales/en/search.json";
-import security from "./locales/en/security.json";
-import settings from "./locales/en/settings.json";
-import timeline from "./locales/en/timeline.json";
-import signingKeys from "./locales/en/signing-keys.json";
-import users from "./locales/en/users.json";
-import esAuth from "./locales/es/auth.json";
-import esCommon from "./locales/es/common.json";
-import esConsent from "./locales/es/consent.json";
-import esDashboard from "./locales/es/dashboard.json";
-import esDevice from "./locales/es/device.json";
-import esOidc from "./locales/es/oidc.json";
-import esRbac from "./locales/es/rbac.json";
-import esSaml from "./locales/es/saml.json";
-import esSigningKeys from "./locales/es/signing-keys.json";
-import esUsers from "./locales/es/users.json";
-import frAuth from "./locales/fr/auth.json";
-import frCommon from "./locales/fr/common.json";
-import frConsent from "./locales/fr/consent.json";
-import frDashboard from "./locales/fr/dashboard.json";
-import frDevice from "./locales/fr/device.json";
-import frOidc from "./locales/fr/oidc.json";
-import frRbac from "./locales/fr/rbac.json";
-import frSaml from "./locales/fr/saml.json";
-import frSigningKeys from "./locales/fr/signing-keys.json";
-import frUsers from "./locales/fr/users.json";
-import hiAuth from "./locales/hi/auth.json";
-import hiCommon from "./locales/hi/common.json";
-import hiConsent from "./locales/hi/consent.json";
-import hiDashboard from "./locales/hi/dashboard.json";
-import hiDevice from "./locales/hi/device.json";
-import hiOidc from "./locales/hi/oidc.json";
-import hiRbac from "./locales/hi/rbac.json";
-import hiSaml from "./locales/hi/saml.json";
-import hiSigningKeys from "./locales/hi/signing-keys.json";
-import hiUsers from "./locales/hi/users.json";
-import jaAuth from "./locales/ja/auth.json";
-import jaCommon from "./locales/ja/common.json";
-import jaConsent from "./locales/ja/consent.json";
-import jaDashboard from "./locales/ja/dashboard.json";
-import jaDevice from "./locales/ja/device.json";
-import jaOidc from "./locales/ja/oidc.json";
-import jaRbac from "./locales/ja/rbac.json";
-import jaSaml from "./locales/ja/saml.json";
-import jaSigningKeys from "./locales/ja/signing-keys.json";
-import jaUsers from "./locales/ja/users.json";
-import ptAuth from "./locales/pt/auth.json";
-import ptCommon from "./locales/pt/common.json";
-import ptConsent from "./locales/pt/consent.json";
-import ptDashboard from "./locales/pt/dashboard.json";
-import ptDevice from "./locales/pt/device.json";
-import ptOidc from "./locales/pt/oidc.json";
-import ptRbac from "./locales/pt/rbac.json";
-import ptSaml from "./locales/pt/saml.json";
-import ptSigningKeys from "./locales/pt/signing-keys.json";
-import ptUsers from "./locales/pt/users.json";
-import zhAuth from "./locales/zh/auth.json";
-import zhCommon from "./locales/zh/common.json";
-import zhConsent from "./locales/zh/consent.json";
-import zhDashboard from "./locales/zh/dashboard.json";
-import zhDevice from "./locales/zh/device.json";
-import zhOidc from "./locales/zh/oidc.json";
-import zhRbac from "./locales/zh/rbac.json";
-import zhSaml from "./locales/zh/saml.json";
-import zhSigningKeys from "./locales/zh/signing-keys.json";
-import zhUsers from "./locales/zh/users.json";
 
-// Every locale with translation files. To add one, add `locales/<lng>/*.json` mirroring the `en`
-// namespaces, then its code here and its entry in `resources`.
+// Every locale with translation files. To add one, add `locales/<lng>/<ns>.json` for each `en`
+// namespace (the platform's here, a module's in its own folder), then its code here.
 export const SUPPORTED_LANGUAGES = ["en", "hi", "fr", "de", "es", "pt", "ja", "zh"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
@@ -121,125 +32,94 @@ export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   zh: "中文",
 };
 
-// Bundled rather than fetched, so init is synchronous and the first server render already has
-// translations. These namespaces are English-only; other locales fall back to "en".
-const newNs = {
-  settings,
-  security,
-  organizations,
-  groups,
-  invitations,
-  developer,
-  account,
-  compliance,
-  "auth-flow": authFlow,
-  activity,
-  timeline,
-  qeetai,
-  search,
-  errors,
-  nav,
-};
+// Types translation keys from the English catalogues: the platform's here, each module's in its
+// manifest. A key no catalogue holds fails the typecheck.
+declare module "i18next" {
+  interface CustomTypeOptions {
+    defaultNS: "common";
+  }
+  interface ResourceNamespaceMap {
+    common: typeof import("./locales/en/common.json");
+    errors: typeof import("./locales/en/errors.json");
+  }
+}
 
-const resources = {
-  en: {
-    common,
-    oidc,
-    saml,
-    rbac,
-    device,
-    "signing-keys": signingKeys,
-    consent,
-    auth,
-    users,
-    dashboard,
-    ...newNs,
+/**
+ * Any key in any catalogue, namespace-qualified ("users:commands.users.title"; a `common` key may drop its
+ * prefix). For a key held as data, such as a manifest's label or an error code's copy, which
+ * `i18n.t` renders; a component's own keys are typed by its `useTranslation` namespaces.
+ */
+export type TranslationKey = ParseKeys<["common", ...Exclude<FlatNamespace, "common">[]]>;
+
+type Catalogue = Record<string, ResourceKey>;
+
+// Catalogues live with their owner: the platform's in src/i18n/locales/<lng>/<ns>.json, each
+// module's in src/modules/<module>/locales/<lng>/<ns>.json. The server and tests bundle every
+// language; the browser bundles English, which every page needs at first paint, and fetches
+// another language when it is chosen.
+const bundled: Record<string, Catalogue> =
+  import.meta.env.SSR || import.meta.env.MODE === "test"
+    ? import.meta.glob<Catalogue>(
+        ["/src/i18n/locales/*/*.json", "/src/modules/*/locales/*/*.json"],
+        {
+          eager: true,
+          import: "default",
+        },
+      )
+    : import.meta.glob<Catalogue>(
+        ["/src/i18n/locales/en/*.json", "/src/modules/*/locales/en/*.json"],
+        { eager: true, import: "default" },
+      );
+const fetchable: Record<string, () => Promise<Catalogue>> = import.meta.env.SSR
+  ? {}
+  : import.meta.glob<Catalogue>(
+      [
+        "/src/i18n/locales/*/*.json",
+        "/src/modules/*/locales/*/*.json",
+        "!/src/i18n/locales/en/*.json",
+        "!/src/modules/*/locales/en/*.json",
+      ],
+      { import: "default" },
+    );
+
+/** Returns the language and namespace a catalogue file holds, from its path. */
+function catalogueOf(path: string): { lng: string; ns: string } {
+  const [lng = "", file = ""] = path.split("/").slice(-2);
+  return { lng, ns: file.replace(/\.json$/, "") };
+}
+
+const resources: Record<string, Record<string, Catalogue>> = {};
+for (const [path, catalogue] of Object.entries(bundled)) {
+  const { lng, ns } = catalogueOf(path);
+  resources[lng] ??= {};
+  resources[lng][ns] = catalogue;
+}
+/** Every namespace, from the English catalogues, which are complete by definition. */
+export const NAMESPACES = Object.keys(resources.en ?? {}).sort();
+
+const loaders = new Map<string, () => Promise<Catalogue>>();
+for (const [path, load] of Object.entries(fetchable)) {
+  const { lng, ns } = catalogueOf(path);
+  loaders.set(`${lng}/${ns}`, load);
+}
+
+// Fetches a catalogue that isn't bundled; a namespace with no file for the language is empty, so
+// English shows instead.
+const lazyCatalogues: BackendModule = {
+  type: "backend",
+  init() {},
+  read(lng, ns, done) {
+    const load = loaders.get(`${lng}/${ns}`);
+    if (!load) {
+      done(null, {});
+      return;
+    }
+    load().then(
+      (catalogue) => done(null, catalogue),
+      (error: unknown) => done(error instanceof Error ? error : new Error(String(error)), null),
+    );
   },
-  hi: {
-    common: hiCommon,
-    oidc: hiOidc,
-    saml: hiSaml,
-    rbac: hiRbac,
-    device: hiDevice,
-    "signing-keys": hiSigningKeys,
-    consent: hiConsent,
-    auth: hiAuth,
-    users: hiUsers,
-    dashboard: hiDashboard,
-  },
-  fr: {
-    common: frCommon,
-    oidc: frOidc,
-    saml: frSaml,
-    rbac: frRbac,
-    device: frDevice,
-    "signing-keys": frSigningKeys,
-    consent: frConsent,
-    auth: frAuth,
-    users: frUsers,
-    dashboard: frDashboard,
-  },
-  de: {
-    common: deCommon,
-    oidc: deOidc,
-    saml: deSaml,
-    rbac: deRbac,
-    device: deDevice,
-    "signing-keys": deSigningKeys,
-    consent: deConsent,
-    auth: deAuth,
-    users: deUsers,
-    dashboard: deDashboard,
-  },
-  es: {
-    common: esCommon,
-    oidc: esOidc,
-    saml: esSaml,
-    rbac: esRbac,
-    device: esDevice,
-    "signing-keys": esSigningKeys,
-    consent: esConsent,
-    auth: esAuth,
-    users: esUsers,
-    dashboard: esDashboard,
-  },
-  pt: {
-    common: ptCommon,
-    oidc: ptOidc,
-    saml: ptSaml,
-    rbac: ptRbac,
-    device: ptDevice,
-    "signing-keys": ptSigningKeys,
-    consent: ptConsent,
-    auth: ptAuth,
-    users: ptUsers,
-    dashboard: ptDashboard,
-  },
-  ja: {
-    common: jaCommon,
-    oidc: jaOidc,
-    saml: jaSaml,
-    rbac: jaRbac,
-    device: jaDevice,
-    "signing-keys": jaSigningKeys,
-    consent: jaConsent,
-    auth: jaAuth,
-    users: jaUsers,
-    dashboard: jaDashboard,
-  },
-  zh: {
-    common: zhCommon,
-    oidc: zhOidc,
-    saml: zhSaml,
-    rbac: zhRbac,
-    device: zhDevice,
-    "signing-keys": zhSigningKeys,
-    consent: zhConsent,
-    auth: zhAuth,
-    users: zhUsers,
-    dashboard: zhDashboard,
-  },
-} as const;
+};
 
 /**
  * Returns the last segment of a key missing from every locale in Title Case, so an operator
@@ -258,11 +138,39 @@ export function humanizeMissingKey(key: string): string {
     .join(" ");
 }
 
+/**
+ * The locale numbers and dates are formatted in: the reader's own when it shares the console's
+ * language (en-IN groups 1,23,456), else the console's, so a date never carries another
+ * language's month names. A server render uses the console's language.
+ */
+export function formatLocale(): string {
+  const language = i18n.resolvedLanguage ?? "en";
+  if (import.meta.env.SSR || typeof navigator === "undefined") return language;
+  return navigator.language.split("-")[0] === language ? navigator.language : language;
+}
+
+/** True when a catalogue holds `key` (namespace-qualified), which narrows it for `i18n.t`. */
+export function isTranslationKey(key: string, options?: TOptions): key is TranslationKey {
+  return i18n.exists(key, options);
+}
+
+/**
+ * Translates a key built from a value only known at runtime, such as an event category the server
+ * sends, which no catalogue may hold yet; a missing one reads as words, like any missing key.
+ * A key from a known set of values is typed instead: build it from a union, not a string.
+ */
+export function translateDynamic(key: string, options?: TOptions): string {
+  return isTranslationKey(key, options) ? i18n.t(key, options) : humanizeMissingKey(key);
+}
+
 i18n
+  .use(lazyCatalogues)
   .use(initReactI18next)
   .use(LanguageDetector)
   .init({
     resources,
+    partialBundledLanguages: true, // English is bundled; another language is fetched when chosen
+    ns: NAMESPACES,
     fallbackLng: "en",
     supportedLngs: [...OFFERED_LANGUAGES],
     defaultNS: "common",
@@ -275,13 +183,13 @@ i18n
       caches: ["localStorage"],
     },
     parseMissingKeyHandler: (key) => humanizeMissingKey(key), // never render a raw dotted key
-    // Logs missing keys in dev only; with no backend loader, nothing is sent anywhere.
-    saveMissing: import.meta.env?.DEV,
+    // Logs missing keys in dev only; nothing is sent anywhere.
     missingKeyHandler: import.meta.env?.DEV
       ? (lngs, ns, key) => {
           console.warn(`[i18n] missing key "${key}" (ns: ${ns}) for [${lngs.join(", ")}]`);
         }
       : undefined,
+    saveMissing: import.meta.env?.DEV,
   });
 
 export default i18n;

@@ -44,7 +44,7 @@ export function CreateOrgFlow({
   showGuidance = false,
   className,
 }: CreateOrgFlowProps) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   const done = onDone ?? (() => window.location.assign("/"));
 
   const [step, setStep] = useState<SetupStep>("plan");

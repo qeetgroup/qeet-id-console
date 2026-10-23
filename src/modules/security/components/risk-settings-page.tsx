@@ -97,7 +97,7 @@ function RiskSettingsForm({ settings }: { settings: RiskSettings }) {
         min_travel_hours: value.min_travel_hours ?? settings.min_travel_hours,
       };
       await runSensitive({
-        actionLabel: t("threats.riskSettings.saveAction").toLowerCase(),
+        actionLabel: t("threats.riskSettings.saveAction"),
         run: () => update.mutateAsync(body),
       }).catch((err: unknown) => {
         applyServerErrors(formApi, err);

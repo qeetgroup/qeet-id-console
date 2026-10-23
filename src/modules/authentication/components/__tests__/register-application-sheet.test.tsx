@@ -94,7 +94,7 @@ describe("RegisterApplicationSheet", () => {
     await waitFor(() => expect(onCreated).toHaveBeenCalledWith(created, "cs_once"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(sensitive.calls).toHaveLength(1);
-    expect(sensitive.calls[0]?.actionLabel).toBe("register this application");
+    expect(sensitive.calls[0]?.actionLabel).toBe("Register this application");
     expect(sensitive.calls[0]?.confirm).toBeUndefined();
   });
 

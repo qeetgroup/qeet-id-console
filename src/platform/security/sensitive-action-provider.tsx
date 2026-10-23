@@ -36,7 +36,7 @@ export type SensitiveActionOptions<T> = {
     confirmLabel?: string;
     tone?: "destructive" | "default";
   };
-  actionLabel?: string; // phrase for the step-up dialog, e.g. "delete this user"
+  actionLabel?: string; // names the action in the step-up dialog, as given, e.g. "Delete user"
   run: () => Promise<T>; // the mutation or api() call itself
 };
 

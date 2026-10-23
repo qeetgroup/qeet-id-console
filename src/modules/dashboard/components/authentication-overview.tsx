@@ -10,7 +10,7 @@ import {
   TriangleAlertIcon,
   UserRoundIcon,
 } from "@qeetrix/icons";
-import type { TFunction } from "i18next";
+import type { ParseKeys, TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -135,7 +135,7 @@ export function AuthenticationOverview() {
 }
 
 export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewData }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("dashboard");
   const { permissions: perm } = data;
 
   const socialEnabled = (data.social.data ?? []).filter((p) => p.enabled);
@@ -155,15 +155,15 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader description={t("overview.description")} />
+      <PageHeader description={t("authOverview.description")} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Kpi
           icon={<UserRoundIcon />}
           tone="brand"
-          label={t("overview.kpi.signIn.label")}
+          label={t("authOverview.kpi.signIn.label")}
           value={signInCount}
-          detail={t("overview.kpi.signIn.detail", { count: signInCount })}
+          detail={t("authOverview.kpi.signIn.detail", { count: signInCount })}
           loading={data.policy.isPending}
           error={data.policy.isError}
         />
@@ -171,12 +171,12 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
           <Kpi
             icon={<ShareIcon />}
             tone="info"
-            label={t("overview.kpi.social.label")}
+            label={t("authOverview.kpi.social.label")}
             value={socialEnabled.length}
             detail={
               socialEnabled.length > 0
                 ? socialEnabled.map((p) => providerLabel(p.provider)).join(", ")
-                : t("overview.kpi.social.none")
+                : t("authOverview.kpi.social.none")
             }
             loading={data.social.isPending}
             error={data.social.isError}
@@ -186,9 +186,9 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
           <Kpi
             icon={<LinkIcon />}
             tone="neutral"
-            label={t("overview.kpi.sso.label")}
+            label={t("authOverview.kpi.sso.label")}
             value={samlIn + samlOut}
-            detail={t("overview.kpi.sso.detail", { inbound: samlIn, outbound: samlOut })}
+            detail={t("authOverview.kpi.sso.detail", { inbound: samlIn, outbound: samlOut })}
             loading={data.saml.isPending}
             error={data.saml.isError}
           />
@@ -196,15 +196,15 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
         <Kpi
           icon={<FingerprintPatternIcon />}
           tone="success"
-          label={t("overview.kpi.mfa.label")}
+          label={t("authOverview.kpi.mfa.label")}
           value={`${Math.round(mfa.pct)}%`}
-          detail={t("overview.kpi.mfa.detail")}
+          detail={t("authOverview.kpi.mfa.detail")}
           loading={data.analytics.isPending && data.userStats.isPending}
           error={false}
           // The page's only trend: a percentage-point move over 7 days, captioned as such.
           delta={
             mfa.deltaPp !== undefined && Math.abs(mfa.deltaPp) >= 0.1
-              ? { value: mfa.deltaPp, caption: t("overview.kpi.mfa.delta") }
+              ? { value: mfa.deltaPp, caption: t("authOverview.kpi.mfa.delta") }
               : undefined
           }
         />
@@ -212,12 +212,12 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
           <Kpi
             icon={<MonitorSmartphoneIcon />}
             tone="neutral"
-            label={t("overview.kpi.devices.label")}
+            label={t("authOverview.kpi.devices.label")}
             value={deviceSummary?.devices ?? 0}
             detail={
               deviceSummary && deviceSummary.devices > 0
-                ? t("overview.kpi.devices.detail", { count: deviceSummary.users })
-                : t("overview.kpi.devices.none")
+                ? t("authOverview.kpi.devices.detail", { count: deviceSummary.users })
+                : t("authOverview.kpi.devices.none")
             }
             loading={data.devices.isPending}
             error={data.devices.isError}
@@ -228,8 +228,8 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
         <div className="flex min-w-0 flex-col gap-4 xl:col-span-8">
           <DashboardPanel
-            title={t("overview.areas.title")}
-            description={t("overview.areas.description")}
+            title={t("authOverview.areas.title")}
+            description={t("authOverview.areas.description")}
             contentClassName="p-0"
             action={
               <a
@@ -238,18 +238,18 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
                 rel="noreferrer"
                 className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0")}
               >
-                {t("overview.areas.documentation")} <ExternalLinkIcon />
+                {t("authOverview.areas.documentation")} <ExternalLinkIcon />
               </a>
             }
           >
-            <nav aria-label={t("overview.areas.title")} className="grid md:grid-cols-2">
+            <nav aria-label={t("authOverview.areas.title")} className="grid md:grid-cols-2">
               <Area
                 to="/auth/login-methods/password"
                 icon={<UserRoundIcon />}
                 tone="brand"
-                title={t("overview.areas.signin.title")}
-                description={t("overview.areas.signin.description")}
-                stat={t("overview.areas.signin.stat", { count: signInCount })}
+                title={t("authOverview.areas.signin.title")}
+                description={t("authOverview.areas.signin.description")}
+                stat={t("authOverview.areas.signin.stat", { count: signInCount })}
                 chips={enabledMethodChips(data.policy.data, t)}
               />
               {perm.connections ? (
@@ -257,9 +257,9 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
                   to="/auth/social"
                   icon={<ShareIcon />}
                   tone="info"
-                  title={t("overview.areas.social.title")}
-                  description={t("overview.areas.social.description")}
-                  stat={t("overview.areas.social.stat", { count: socialEnabled.length })}
+                  title={t("authOverview.areas.social.title")}
+                  description={t("authOverview.areas.social.description")}
+                  stat={t("authOverview.areas.social.stat", { count: socialEnabled.length })}
                   chips={socialEnabled.slice(0, 4).map((p) => providerLabel(p.provider))}
                 />
               ) : null}
@@ -268,12 +268,12 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
                   to="/auth/connections/saml"
                   icon={<LinkIcon />}
                   tone="neutral"
-                  title={t("overview.areas.sso.title")}
-                  description={t("overview.areas.sso.description")}
-                  stat={t("overview.areas.sso.stat", { count: samlIn + samlOut })}
+                  title={t("authOverview.areas.sso.title")}
+                  description={t("authOverview.areas.sso.description")}
+                  stat={t("authOverview.areas.sso.stat", { count: samlIn + samlOut })}
                   chips={[
-                    t("overview.areas.chips.samlIn", { count: samlIn }),
-                    t("overview.areas.chips.samlOut", { count: samlOut }),
+                    t("authOverview.areas.chips.samlIn", { count: samlIn }),
+                    t("authOverview.areas.chips.samlOut", { count: samlOut }),
                   ]}
                 />
               ) : null}
@@ -281,9 +281,9 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
                 to="/auth/mfa/totp"
                 icon={<FingerprintPatternIcon />}
                 tone="success"
-                title={t("overview.areas.mfa.title")}
-                description={t("overview.areas.mfa.description")}
-                stat={t("overview.areas.mfa.stat", { pct: Math.round(mfa.pct) })}
+                title={t("authOverview.areas.mfa.title")}
+                description={t("authOverview.areas.mfa.description")}
+                stat={t("authOverview.areas.mfa.stat", { pct: Math.round(mfa.pct) })}
                 chips={mfaMethodChips(data.analytics.data, t)}
               />
               {perm.connections ? (
@@ -292,15 +292,15 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
                   icon={<MonitorSmartphoneIcon />}
                   tone="neutral"
                   wide
-                  title={t("overview.areas.devices.title")}
-                  description={t("overview.areas.devices.description")}
-                  stat={t("overview.areas.devices.stat", {
+                  title={t("authOverview.areas.devices.title")}
+                  description={t("authOverview.areas.devices.description")}
+                  stat={t("authOverview.areas.devices.stat", {
                     count: deviceSummary?.devices ?? 0,
                   })}
                   chips={[
                     data.policy.data?.remember_device_enabled
-                      ? t("overview.areas.chips.rememberOn")
-                      : t("overview.areas.chips.rememberOff"),
+                      ? t("authOverview.areas.chips.rememberOn")
+                      : t("authOverview.areas.chips.rememberOff"),
                   ]}
                 />
               ) : null}
@@ -312,10 +312,10 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
 
         <div className="flex min-w-0 flex-col gap-4 xl:col-span-4">
           <DashboardPanel
-            title={t("overview.posture.title")}
+            title={t("authOverview.posture.title")}
             action={
               <Badge variant={postureBadge(posture.state)} className="shrink-0">
-                {t(`overview.posture.state.${posture.state}`)}
+                {t(`authOverview.posture.state.${posture.state}`)}
               </Badge>
             }
           >
@@ -325,11 +325,11 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
                 size={104}
                 stroke={8}
                 readout={`${posture.score}%`}
-                caption={t("overview.posture.overall")}
-                ariaLabel={t("overview.posture.title")}
+                caption={t("authOverview.posture.overall")}
+                ariaLabel={t("authOverview.posture.title")}
               />
               <p className="min-w-0 text-sm leading-5 text-muted-foreground">
-                {t(`overview.posture.summary.${posture.state}`)}
+                {t(`authOverview.posture.summary.${posture.state}`)}
               </p>
             </div>
 
@@ -342,7 +342,7 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
                     <TriangleAlertIcon className="size-4 shrink-0 text-warning" />
                   )}
                   <span className={cn("min-w-0 truncate", item.ok ? "" : "text-muted-foreground")}>
-                    {t(`overview.posture.items.${item.id}`)}
+                    {t(`authOverview.posture.items.${item.id}`)}
                   </span>
                 </li>
               ))}
@@ -352,18 +352,18 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
           </DashboardPanel>
 
           <DashboardPanel
-            title={t("overview.actions.title")}
+            title={t("authOverview.actions.title")}
             action={
               posture.pending.length > 0 ? (
                 <Badge variant="muted" className="shrink-0 tabular-nums">
-                  {t("overview.actions.pending", { count: posture.pending.length })}
+                  {t("authOverview.actions.pending", { count: posture.pending.length })}
                 </Badge>
               ) : null
             }
           >
             {posture.pending.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                {t("overview.posture.callout.allClearDetail")}
+                {t("authOverview.posture.callout.allClearDetail")}
               </p>
             ) : (
               <ul className="flex flex-col gap-2">
@@ -377,17 +377,17 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">
-                        {t(`overview.actions.items.${item.id}.title`)}
+                        {t(`authOverview.actions.items.${item.id}.title`)}
                       </span>
                       <span className="block truncate text-xs text-muted-foreground">
-                        {t(`overview.actions.items.${item.id}.description`)}
+                        {t(`authOverview.actions.items.${item.id}.description`)}
                       </span>
                     </span>
                     <Link
                       to={item.to as never}
                       className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0")}
                     >
-                      {t(`overview.actions.items.${item.id}.verb`)}
+                      {t(`authOverview.actions.items.${item.id}.verb`)}
                     </Link>
                   </li>
                 ))}
@@ -413,22 +413,25 @@ function providerLabel(id: string): string {
   return PROVIDER_LABELS[id] ?? id.charAt(0).toUpperCase() + id.slice(1);
 }
 
-function enabledMethodChips(policy: AuthPolicy | undefined, t: TFunction): string[] {
+function enabledMethodChips(policy: AuthPolicy | undefined, t: TFunction<"dashboard">): string[] {
   if (!policy) return [];
-  const map: [boolean, string][] = [
-    [policy.password_enabled, "overview.areas.methods.password"],
-    [policy.passkey_enabled, "overview.areas.methods.passkey"],
-    [policy.magic_link_enabled, "overview.areas.methods.magicLink"],
+  const map: [boolean, ParseKeys<"dashboard">][] = [
+    [policy.password_enabled, "authOverview.areas.methods.password"],
+    [policy.passkey_enabled, "authOverview.areas.methods.passkey"],
+    [policy.magic_link_enabled, "authOverview.areas.methods.magicLink"],
   ];
   return map.filter(([on]) => on).map(([, key]) => t(key));
 }
 
-function mfaMethodChips(analytics: AnalyticsOverview | undefined, t: TFunction): string[] {
+function mfaMethodChips(
+  analytics: AnalyticsOverview | undefined,
+  t: TFunction<"dashboard">,
+): string[] {
   return (analytics?.mfa_methods_adoption ?? [])
     .filter((m) => m.users > 0)
     .slice(0, 3)
     .map((m) =>
-      t("dashboard:authenticationOverview.mfaChip", {
+      t("authenticationOverview.mfaChip", {
         method: mfaMethodLabel(m.method),
         count: m.users,
       }),

@@ -1,18 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import i18n from "@/i18n";
 import {
   filterNavigation,
   findNavGroupForPath,
-  getRequiredCapabilityForPath,
-  navGroups as navKeys,
+  getNavGroups,
   safeNavigation,
   translateNavigation,
 } from "../navigation";
 import { isNavBranchActive, isNavPathActive, type NavTreeItem } from "../navigation-state";
 
 // The navigation as the sidebar shows it.
-const navGroups = translateNavigation(navKeys, i18n.t);
+const navGroups = translateNavigation(getNavGroups());
 
 const users: NavTreeItem = {
   url: "/users",
@@ -65,12 +63,10 @@ describe("console navigation state", () => {
       "Mappings",
     ]);
     expect(users?.items?.find((item) => item.title === "Suspended")?.planned).toBeUndefined();
-    expect(getRequiredCapabilityForPath("/users/suspended")).toBe("user.read");
     for (const item of directories?.items ?? []) {
       expect(item.title.length).toBeLessThanOrEqual(13);
       expect(item.requiredPermission).toBe("connection.read");
       expect(findNavGroupForPath(navGroups, item.url)).toBe("directory");
-      expect(getRequiredCapabilityForPath(item.url)).toBe("connection.read");
       expect(item.planned).toBeUndefined();
     }
   });
@@ -86,19 +82,6 @@ describe("console navigation state", () => {
     expect(isNavBranchActive("/users/sessions", users)).toBe(true);
     expect(isNavBranchActive("/users/4c1f", users)).toBe(true);
     expect(isNavBranchActive("/groups", users)).toBe(false);
-  });
-
-  it("resolves exact routes before detail-route inheritance", () => {
-    expect(getRequiredCapabilityForPath("/users/import")).toBe("user.write");
-    expect(getRequiredCapabilityForPath("/users/4c1f")).toBe("user.read");
-    expect(getRequiredCapabilityForPath("/auth/connections/oidc/client-1")).toBe("connection.read");
-  });
-
-  it("normalizes trailing slashes without matching lookalike prefixes", () => {
-    expect(getRequiredCapabilityForPath("/users/")).toBe("user.read");
-    expect(getRequiredCapabilityForPath("/users?status=active")).toBe("user.read");
-    expect(getRequiredCapabilityForPath("/users-archive")).toBeUndefined();
-    expect(getRequiredCapabilityForPath("/unknown")).toBeUndefined();
   });
 
   it("removes denied destinations while retaining a branch with an allowed child", () => {

@@ -9,7 +9,6 @@ import {
   CardTitle,
   cn,
   Skeleton,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -18,7 +17,9 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { formatLocale } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { formatDateTime } from "@/shared/utils/format";
@@ -390,7 +391,7 @@ function Stat({
         <Skeleton className="mt-1 h-6 w-16" />
       ) : (
         <div className="text-xl font-semibold tabular-nums">
-          {typeof value === "number" ? value.toLocaleString() : value}
+          {typeof value === "number" ? value.toLocaleString(formatLocale()) : value}
         </div>
       )}
       {sub ? <div className="text-xs text-muted-foreground">{sub}</div> : null}

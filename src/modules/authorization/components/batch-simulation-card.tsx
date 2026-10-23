@@ -41,7 +41,7 @@ function parseSubjects(raw: string): { type: string; id: string }[] {
  * the browser to the live decision point (there is no batch endpoint).
  */
 export function BatchSimulationCard() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const batch = useBatchSimulate();
   const schema = useMemo(() => {
     const required = z.string().trim().min(1, t("simulator.validation.required"));

@@ -1,12 +1,4 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  StatusPill,
-} from "@qeetrix/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { KeyRoundIcon, LoaderCircleIcon } from "@qeetrix/icons";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,6 +7,7 @@ import { z } from "zod";
 
 import { useChangePassword, useForgotPassword, usePasswordStatus } from "@/modules/authentication";
 import { useMe } from "@/platform/auth/session";
+import { StatusPill } from "@/platform/components/status-pill";
 import { toastError } from "@/platform/errors/error-toast";
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 

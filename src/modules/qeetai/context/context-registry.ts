@@ -4,6 +4,7 @@
 import { Store, useStore } from "@tanstack/react-store";
 import { useEffect } from "react";
 
+import { onSessionClear } from "@/platform/auth/session-store";
 import type { ContextSelection } from "./types/context.types";
 
 export interface PublishedContext {
@@ -14,6 +15,9 @@ export interface PublishedContext {
 type RegistryState = Record<string, PublishedContext>;
 
 const registryStore = new Store<RegistryState>({});
+
+// What a page published names the outgoing scope's records.
+onSessionClear(() => registryStore.setState(() => ({})));
 
 const EMPTY: PublishedContext = {};
 

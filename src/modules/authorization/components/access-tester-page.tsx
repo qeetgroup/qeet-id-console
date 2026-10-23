@@ -19,7 +19,7 @@ import { explainDecidedBy, explainedMessage, explainReasonFields } from "./expla
 
 /** Renders the access tester: one permission check, explained. */
 export function AccessTesterPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const checkM = useExplainCheck();
   const result = checkM.data;
   // A denial states its own reason; either answer may say what decided it.
@@ -74,7 +74,7 @@ export function AccessTesterPage() {
                     </p>
                     {(why || !result.allowed) && (
                       <p className="mt-0.5 text-sm text-muted-foreground">
-                        {why ? explainedMessage(why, t) : t("check.deniedReason")}
+                        {why ? explainedMessage(why) : t("check.deniedReason")}
                       </p>
                     )}
                   </div>
@@ -108,7 +108,7 @@ export function AccessTesterPage() {
 }
 
 function GrantPathRow({ path }: { path: ExplainPath }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const isGroup = path.via.startsWith("group:");
   const viaLabel = isGroup
     ? t("check.viaGroup", { group: path.via.slice("group:".length) })
@@ -134,7 +134,7 @@ function GrantPathRow({ path }: { path: ExplainPath }) {
 
 /** Renders the check's inputs: whose access, and to which permission. */
 function CheckForm({ check }: { check: ReturnType<typeof useExplainCheck> }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const schema = useMemo(
     () =>
       z.object({

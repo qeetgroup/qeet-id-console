@@ -37,10 +37,15 @@ export function DirectoryDonut({
   value: string;
   label: string;
 }) {
+  const { t } = useTranslation("directory");
   const total = values.reduce((sum, item) => sum + item.count, 0);
   const data = total > 0 ? values : [{ label, count: 1, color: "var(--muted)" }];
   return (
-    <div className="relative size-32 shrink-0" role="img" aria-label={`${value} ${label}`}>
+    <div
+      className="relative size-32 shrink-0"
+      role="img"
+      aria-label={t("directory.chartSummary", { label, value })}
+    >
       <PieChart width={128} height={128}>
         <Pie
           data={data}
@@ -115,7 +120,7 @@ export function DirectoryDaysSelect({
   value: number;
   onChange: (days: number) => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <DirectorySelect
       label={t("directory.dateRange")}
@@ -165,7 +170,7 @@ export function DirectoryPagination({
   busy: boolean;
   onChange: (offset: number) => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <footer className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-2 text-xs text-muted-foreground">
       <span>
@@ -214,13 +219,6 @@ export function DirectorySkeletonRows({ colSpan }: { colSpan: number }) {
   );
 }
 
-export function formatDirectoryDuration(milliseconds: number | null | undefined): string | null {
-  if (milliseconds == null) return null;
-  if (milliseconds < 1000) return `${Math.round(milliseconds)} ms`;
-  const seconds = Math.round(milliseconds / 1000);
-  return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
-}
-
 export function DirectoryStat({
   label,
   value,
@@ -236,7 +234,7 @@ export function DirectoryStat({
   tone?: keyof typeof TONES;
   loading?: boolean;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <article className={cn(DIRECTORY_PANEL, "flex gap-3 px-4 py-4")} aria-label={label}>
       <span className={cn("grid size-10 shrink-0 place-items-center rounded-lg", TONES[tone])}>
@@ -282,7 +280,7 @@ export function DirectoryStatus({
 }
 
 export function DirectoryQueryError({ retry, busy }: { retry: () => unknown; busy: boolean }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <div
       role="alert"

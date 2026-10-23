@@ -107,7 +107,7 @@ function draftToDoc(d: Draft): PolicyDoc {
 
 /** Renders the ABAC policies: list, edit with the condition builder, and a dry run. */
 export function AbacPoliciesPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const policiesQ = useAbacPolicies();
   const [draft, setDraft] = useState<Draft | null>(null);
   const policies = policiesQ.data?.items ?? [];
@@ -122,7 +122,7 @@ export function AbacPoliciesPage() {
         confirmLabel: t("abac.deleteLabel"),
         tone: "destructive",
       },
-      actionLabel: t("abac.deleteAction").toLowerCase(),
+      actionLabel: t("abac.deleteAction"),
       run: () => deleteM.mutateAsync(p.id),
     }).catch(settleSensitiveAction);
   const abacLocked = useEntitlements().data?.features.abac === false;
@@ -222,7 +222,7 @@ export function AbacPoliciesPage() {
 
 /** Renders the editor for a new or existing policy, with its generated code and a dry run. */
 function PolicyEditor({ draft, onClose }: { draft: Draft; onClose: () => void }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation(["authorization", "common"]);
   const createM = useCreateAbacPolicy();
   const updateM = useUpdateAbacPolicy(draft.id ?? "");
   const runSensitive = useSensitiveAction();
@@ -267,7 +267,7 @@ function PolicyEditor({ draft, onClose }: { draft: Draft; onClose: () => void })
         enabled: value.enabled,
       };
       await runSensitive({
-        actionLabel: t(draft.id ? "abac.updateAction" : "abac.createAction").toLowerCase(),
+        actionLabel: t(draft.id ? "abac.updateAction" : "abac.createAction"),
         run: () => (draft.id ? updateM.mutateAsync(input) : createM.mutateAsync(input)),
       })
         .then((saved) => saved && onClose())
@@ -366,7 +366,7 @@ function PolicyEditor({ draft, onClose }: { draft: Draft; onClose: () => void })
             <ConditionTree value={condition} onChange={setCondition} />
           </div>
           {problem && (
-            <p className="text-sm text-muted-foreground">{policyProblemMessage(problem, t)}</p>
+            <p className="text-sm text-muted-foreground">{policyProblemMessage(problem)}</p>
           )}
           <FormError error={createM.error ?? updateM.error} />
         </CardContent>
@@ -414,7 +414,7 @@ function defaultEvalInput(resourceType: string, action: string): string {
 
 /** Renders the dry run: a request evaluated against the live engine, explained. */
 function TestPanel({ resourceType, action }: { resourceType: string; action: string }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const [raw, setRaw] = useState(() => defaultEvalInput(resourceType, action));
   const [parseError, setParseError] = useState(false);
   const [record, setRecord] = useState<DecisionRecord | null>(null);

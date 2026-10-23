@@ -77,7 +77,7 @@ function MappingsWorkspace({
   connectionError: boolean;
   retryConnections: () => unknown;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const query = useDirectoryMappings(connection?.id ?? "");
   const save = useSaveDirectoryMapping(connection?.id ?? "");
   const remove = useDeleteDirectoryMappings(connection?.id ?? "");
@@ -100,7 +100,7 @@ function MappingsWorkspace({
     try {
       await sensitive({
         capability: "connection.write",
-        actionLabel: t("directory.mappings.save").toLowerCase(),
+        actionLabel: t("directory.mappings.save"),
         run: () => save.mutateAsync(mapping),
       });
       setDraft(null);
@@ -120,7 +120,7 @@ function MappingsWorkspace({
           confirmLabel: t("directory.mappings.delete"),
           tone: "destructive",
         },
-        actionLabel: t("directory.mappings.deleteActionLabel").toLowerCase(),
+        actionLabel: t("directory.mappings.deleteActionLabel"),
         run: () => remove.mutateAsync(mappings.map((mapping) => mapping.id)),
       });
       preview.reset();
@@ -237,7 +237,7 @@ export function MappingsView({
   onDelete: (mappings: DirectoryMapping[]) => void;
   onToggle: (mapping: DirectoryMapping) => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const mappings = data?.items ?? [];
   const active = mappings.filter((mapping) => mapping.enabled);
   const required = active.filter((mapping) => mapping.required);

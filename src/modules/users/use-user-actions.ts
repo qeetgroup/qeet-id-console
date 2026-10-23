@@ -40,7 +40,7 @@ export function useUserActions() {
           confirmLabel: t("detail.resetMfaConfirmLabel"),
           tone: "destructive",
         },
-        actionLabel: t("detail.resetMfaBtn").toLowerCase(),
+        actionLabel: t("detail.resetMfaBtn"),
         run: () => resetMfa.mutateAsync(user.id),
       }).catch(settleSensitiveAction),
     revokeSessions: (user: Target) =>
@@ -51,7 +51,7 @@ export function useUserActions() {
           confirmLabel: t("detail.revokeAllConfirm"),
           tone: "destructive",
         },
-        actionLabel: t("detail.revokeAllBtn").toLowerCase(),
+        actionLabel: t("detail.revokeAllBtn"),
         run: () => revokeAll.mutateAsync(user.id),
       }).catch(settleSensitiveAction),
     suspend: (user: Target) =>
@@ -62,13 +62,13 @@ export function useUserActions() {
           confirmLabel: t("detail.suspendConfirm"),
           tone: "destructive",
         },
-        actionLabel: t("detail.suspendBtn").toLowerCase(),
+        actionLabel: t("detail.suspendBtn"),
         run: () => setStatus.mutateAsync({ userId: user.id, status: "suspended" }),
       }).catch(settleSensitiveAction),
     // A toggle the person can flip back, so it isn't confirmed; the backend may ask for a step-up.
     setMfaRequired: (user: Target, required: boolean) =>
       runSensitive({
-        actionLabel: t("detail.mfaRequired").toLowerCase(),
+        actionLabel: t("detail.mfaRequired"),
         run: () => mfaRequired.mutateAsync({ userId: user.id, required }),
       }).catch(settleSensitiveAction),
     // Restores access, so it needs no confirmation.
@@ -81,7 +81,7 @@ export function useUserActions() {
           confirmLabel: t("detail.deleteConfirm"),
           tone: "destructive",
         },
-        actionLabel: t("detail.deleteBtn").toLowerCase(),
+        actionLabel: t("detail.deleteBtn"),
         run: () => del.mutateAsync(user.id),
       })
         .then(onDeleted)

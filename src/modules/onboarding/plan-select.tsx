@@ -93,7 +93,7 @@ export function PlanSelect({
   initialSelection,
   className,
 }: PlanSelectProps) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   const id = useId();
   const plansQ = usePlans();
   const plans = useMemo(() => plansQ.data?.items ?? [], [plansQ.data]);

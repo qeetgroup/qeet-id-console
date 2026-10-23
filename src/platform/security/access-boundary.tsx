@@ -6,7 +6,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { useEffect, useRef } from "react";
 
 import { useTenantId } from "@/platform/auth/session";
-import { getRequiredCapabilityForPath } from "@/platform/config/navigation";
+import { getRequiredCapabilityForPath } from "@/platform/security/route-capability";
 import { PageState } from "@/shared/components/page-state";
 import { capabilityLabel } from "./capability-model";
 import { useCapabilities } from "./capability-provider";

@@ -20,6 +20,7 @@ import { BuildingComplexIcon, CheckIcon, ChevronsUpDownIcon, PlusIcon } from "@q
 
 import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
+import { usePlanName } from "@/modules/billing";
 import { orgQueries } from "@/modules/organizations";
 
 function initialOf(name: string) {
@@ -33,6 +34,7 @@ export function TeamSwitcher() {
   const activeId = useTenantId();
 
   const tenantsQ = useQuery(orgQueries.list()); // only the caller's orgs
+  const planName = usePlanName();
 
   const tenants = tenantsQ.data?.items ?? [];
   const active = tenants.find((t) => t.id === activeId) ?? tenants[0];
@@ -68,7 +70,7 @@ export function TeamSwitcher() {
                 <>
                   <span className="truncate font-medium">{active.name}</span>
                   <span className="truncate text-[10px] capitalize text-sidebar-foreground/55">
-                    {active.plan} · {active.region}
+                    {planName(active.plan)} · {active.region}
                   </span>
                 </>
               ) : (

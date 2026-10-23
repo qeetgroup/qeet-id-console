@@ -42,7 +42,7 @@ const userCsvColumns: CsvColumn<User>[] = [
 
 /** Renders the users list: KPIs, filters, bulk actions, paging and the create and edit sheets. */
 export function UsersPage() {
-  const { t } = useTranslation("users");
+  const { t } = useTranslation(["users", "common"]);
   const access = useCapabilities();
   const canWriteUsers = access.can("user.write");
   const canCreateUsers = access.canAll(["user.write", "role.read", "role.write"]);

@@ -18,7 +18,7 @@ export function UpgradeGate({
   description: string;
   plan?: string; // tier to preselect on the billing page
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   return (
     <Card className="border-dashed">
       <CardContent className="flex flex-col items-center gap-3 py-12 text-center">

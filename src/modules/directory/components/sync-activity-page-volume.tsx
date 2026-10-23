@@ -8,7 +8,7 @@ import { DirectoryPanel } from "./directory-ui";
 
 /** Daily synced users or groups, one series at a time. */
 export function SyncVolumePanel({ volume }: { volume?: DirectoryEventPage["volume"] }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [series, setSeries] = useState<"users" | "groups">("users");
   return (
     <DirectoryPanel

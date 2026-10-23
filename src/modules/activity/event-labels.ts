@@ -1,7 +1,7 @@
 // Product wording for backend event enums such as `auth.login_succeeded`, which the console
 // never shows raw, and the event outcome, which is distinct from log severity.
 
-import i18n from "@/i18n";
+import i18n, { isTranslationKey, translateDynamic } from "@/i18n";
 import type { Severity } from "./types/activity.types";
 
 /** Lowercases an event type and joins its words with single dots. */
@@ -11,6 +11,31 @@ function normalizeType(type: string): string {
     .replace(/[\s_]+/g, ".")
     .replace(/\.{2,}/g, ".")
     .replace(/^\.|\.$/g, "");
+}
+
+/** The categories the server files events under, in the order filters list them. */
+export const ACTIVITY_CATEGORIES = [
+  "authentication",
+  "authorization",
+  "security",
+  "directory",
+  "developer",
+  "system",
+] as const;
+
+/** Returns an event category's name, such as "Directory"; an unknown one reads as words. */
+export function categoryLabel(category: string): string {
+  return translateDynamic(`activity:category.${category}`);
+}
+
+/** Returns an actor type's name, such as "API key"; an unknown one reads as words. */
+export function actorTypeLabel(type: string): string {
+  return translateDynamic(`activity:actorType.${type}`);
+}
+
+/** Returns a severity's name, such as "Error". */
+export function severityLabel(severity: Severity): string {
+  return i18n.t(`activity:severity.${severity}`);
 }
 
 /** True for strings that look like a raw backend enum rather than prose. */
@@ -32,7 +57,7 @@ export function humanizeEventType(type: string): string {
 export function formatEventTitle(event: { type: string; title?: string }): string {
   // Curated titles are `activity:eventType.<normalized type, dots as underscores>`.
   const key = `activity:eventType.${normalizeType(event.type).replace(/\./g, "_")}`;
-  if (i18n.exists(key)) return i18n.t(key);
+  if (isTranslationKey(key)) return i18n.t(key);
   const title = event.title?.trim();
   if (title && !looksLikeEnum(title)) return title;
   return humanizeEventType(event.type);

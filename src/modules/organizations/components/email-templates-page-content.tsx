@@ -61,7 +61,7 @@ export function EmailContentTab({
   onUpdate: (patch: Partial<EmailTemplateTranslation>) => void;
   onLocaleChange: (code: string) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const editorRef = useRef<EmailBodyEditorHandle>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
   const preheaderRef = useRef<HTMLInputElement>(null);

@@ -121,7 +121,7 @@ describe("LinkedPhonesCard", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: /^remove$/i }));
     await waitFor(() => expect(deleted()).toContain("/v1/mfa/push/devices/p2"));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Phone removed"));
-    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("remove this phone");
+    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Remove this phone");
   });
 
   it("keeps the phone when the confirmation is cancelled", async () => {
@@ -165,7 +165,7 @@ describe("LinkPhoneDialog", () => {
     expect(calls).toContainEqual({ path: "/v1/mfa/push/pairing", method: "POST" });
     expect(screen.getByText(/expires in [45]:\d\d/i)).toBeTruthy();
     // Asking for a code is step-up gated: it runs as a sensitive action, without a confirmation.
-    expect(sensitiveCalls).toEqual([expect.objectContaining({ actionLabel: "link a phone" })]);
+    expect(sensitiveCalls).toEqual([expect.objectContaining({ actionLabel: "Link a phone" })]);
     expect(sensitiveCalls[0]?.confirm).toBeUndefined();
   });
 

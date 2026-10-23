@@ -18,7 +18,7 @@ interface OrgOnboardingProps {
 
 /** Renders the create-organization flow as a full-width page, for a first or an additional org. */
 export function OrgOnboarding({ title, subtitle, onCancel, onDone }: OrgOnboardingProps) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   return (
     <section
       data-slot="org-setup"

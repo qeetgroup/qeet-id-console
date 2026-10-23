@@ -9,13 +9,13 @@ import {
   FieldDescription,
   FieldLabel,
   Input,
-  StatusPill,
 } from "@qeetrix/ui";
 import { FingerprintPatternIcon, LoaderCircleIcon, PlusIcon } from "@qeetrix/icons";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import { errorMessage } from "@/platform/errors/user-message";
 import { isStepUpRequired } from "@/platform/security/step-up";
 import {
@@ -39,7 +39,7 @@ import { PasskeysTable, passkeyDisplayName } from "./passkeys-table";
  */
 export function AccountPasskeysCard({ className }: { className?: string }) {
   const { t } = useTranslation("account");
-  const { t: tAuth } = useTranslation("auth");
+  const { t: tAuth } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const passkeysQ = usePasskeys();
   const rename = useRenamePasskey();
@@ -56,7 +56,7 @@ export function AccountPasskeysCard({ className }: { className?: string }) {
     e.preventDefault();
     setAddError(null);
     runSensitive({
-      actionLabel: t("security.passkeys.add").toLowerCase(),
+      actionLabel: t("security.passkeys.add"),
       run: () =>
         register.mutateAsync(
           { name },
@@ -112,7 +112,7 @@ export function AccountPasskeysCard({ className }: { className?: string }) {
                     confirmLabel: t("security.passkeys.remove"),
                     tone: "destructive",
                   },
-                  actionLabel: t("security.passkeys.removeAction").toLowerCase(),
+                  actionLabel: t("security.passkeys.removeAction"),
                   run: () => remove.mutateAsync(p.id),
                 }).catch(settleSensitiveAction)
               }

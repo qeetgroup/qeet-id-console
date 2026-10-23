@@ -75,10 +75,11 @@ export function VerifyEmailStep({
                   name="code"
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  maxLength={6}
                   required
                   value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  // No maxLength: it would cut a code pasted with spaces around it before the
+                  // digits are taken, leaving too few to submit.
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 />
                 <FieldDescription>{t("verifyEmail.expiry")}</FieldDescription>
               </Field>

@@ -38,6 +38,7 @@ export const searchUsersTool: ToolDefinition<SearchUsersInput> = {
     return {
       ok: true,
       summary: `Found ${users.length} user${users.length === 1 ? "" : "s"}.`,
+      display: { key: "qeetai:toolCallCard.results.usersFound", values: { count: users.length } },
       data: {
         users: users.map((u) => ({
           id: u.id,
@@ -101,6 +102,12 @@ export const createUserTool: ToolDefinition<CreateUserInput> = {
     return {
       ok: true,
       summary: `Created user ${user.email} (id: ${user.id})${role_id ? " and assigned the requested role" : ""}.`,
+      display: {
+        key: role_id
+          ? "qeetai:toolCallCard.results.userCreatedWithRole"
+          : "qeetai:toolCallCard.results.userCreated",
+        values: { email: user.email },
+      },
       data: { id: user.id, email: user.email, status: user.status },
     };
   },
@@ -145,6 +152,10 @@ export const updateUserTool: ToolDefinition<UpdateUserInput> = {
     return {
       ok: true,
       summary: `Updated display name for user ${input.user_id}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.displayNameUpdated",
+        values: { userId: input.user_id },
+      },
       data: { user_id: input.user_id, name: input.name },
     };
   },
@@ -182,6 +193,10 @@ export const disableUserTool: ToolDefinition<DisableUserInput> = {
     return {
       ok: true,
       summary: `User ${input.user_id} has been suspended and can no longer sign in.`,
+      display: {
+        key: "qeetai:toolCallCard.results.userSuspended",
+        values: { userId: input.user_id },
+      },
       data: { user_id: input.user_id, status: "suspended" },
     };
   },
@@ -218,6 +233,10 @@ export const enableUserTool: ToolDefinition<EnableUserInput> = {
     return {
       ok: true,
       summary: `User ${input.user_id} has been re-activated and can sign in again.`,
+      display: {
+        key: "qeetai:toolCallCard.results.userReactivated",
+        values: { userId: input.user_id },
+      },
       data: { user_id: input.user_id, status: "active" },
     };
   },
@@ -254,6 +273,10 @@ export const deleteUserTool: ToolDefinition<DeleteUserInput> = {
     return {
       ok: true,
       summary: `User ${input.user_id} has been deleted.`,
+      display: {
+        key: "qeetai:toolCallCard.results.userDeleted",
+        values: { userId: input.user_id },
+      },
       data: { user_id: input.user_id },
     };
   },
@@ -290,6 +313,7 @@ export const resetUserMfaTool: ToolDefinition<ResetUserMfaInput> = {
     return {
       ok: true,
       summary: `MFA has been reset for user ${input.user_id}. They will be prompted to re-enroll.`,
+      display: { key: "qeetai:toolCallCard.results.mfaReset", values: { userId: input.user_id } },
       data: { user_id: input.user_id },
     };
   },

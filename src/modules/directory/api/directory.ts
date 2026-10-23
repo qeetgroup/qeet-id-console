@@ -173,7 +173,7 @@ export function useSaveDirectoryMapping(connectionId: string) {
       queryClient.invalidateQueries({
         queryKey: directoryKeys.mappings(tenantId, connectionId),
       }),
-    meta: { successMessage: "dashboard:toast.mappingSaved", silentError: true }, // the page shows the error
+    meta: { successMessage: "directory:toast.mappingSaved", silentError: true }, // the page shows the error
   });
 }
 
@@ -189,7 +189,7 @@ export function useDeleteDirectoryMappings(connectionId: string) {
       queryClient.invalidateQueries({
         queryKey: directoryKeys.mappings(tenantId, connectionId),
       }),
-    meta: { successMessage: "dashboard:toast.mappingsDeleted", silentError: true }, // the page shows the error
+    meta: { successMessage: "directory:toast.mappingsDeleted", silentError: true }, // the page shows the error
   });
 }
 
@@ -296,7 +296,7 @@ export function useCreateDirectoryAlert() {
   return useMutation({
     mutationFn: (body: { name: string; connection_id: string | null; threshold: number }) =>
       api(`/v1/tenants/${tenantId}/directory/alerts`, { method: "POST", body }),
-    meta: { successMessage: "dashboard:toast.directoryAlertCreated" },
+    meta: { successMessage: "directory:toast.directoryAlertCreated" },
   });
 }
 

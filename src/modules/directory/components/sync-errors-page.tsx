@@ -23,6 +23,7 @@ import {
 import { useDeferredValue, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
 import { errorMessage } from "@/platform/errors/user-message";
@@ -57,7 +58,7 @@ import { SyncErrorSheet } from "./sync-errors-page-sheet";
 
 export function SyncErrorsPage() {
   const tenantId = useTenantId();
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const access = useCapabilities();
   const [filters, setFilters] = useState(DEFAULT_ERROR_FILTERS);
   const deferredSearch = useDeferredValue(filters.q);
@@ -143,7 +144,7 @@ export function SyncErrorsView({
   exporting: boolean;
   actionMessage?: string;
 }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [selected, setSelected] = useState<DirectoryEvent | null>(null);
   const change = (next: Partial<ErrorFilters>) =>
     onFiltersChange({ ...filters, ...next, offset: 0 });
@@ -212,7 +213,7 @@ export function SyncErrorsView({
           onChange={(severity) => change({ severity })}
           options={[
             { value: "all", label: t("directory.errors.allSeverities") },
-            ...["critical", "warning"].map((value) => ({
+            ...(["critical", "warning"] as const).map((value) => ({
               value,
               label: t(`directory.errors.${value}`),
             })),
@@ -224,7 +225,7 @@ export function SyncErrorsView({
           onChange={(resolution) => change({ resolution })}
           options={[
             { value: "all", label: t("directory.allStatuses") },
-            ...["open", "resolved", "retried"].map((value) => ({
+            ...(["open", "resolved", "retried"] as const).map((value) => ({
               value,
               label: t(`directory.errors.${value}`),
             })),
@@ -288,16 +289,18 @@ export function SyncErrorsView({
           <Table className="min-w-250 text-xs [&_td]:px-3 [&_td]:py-2.5 [&_th]:px-3 [&_th]:text-[10px]">
             <TableHeader className="border-y border-border/60 bg-muted/25">
               <TableRow>
-                {[
-                  "connection",
-                  "code",
-                  "message",
-                  "severity",
-                  "occurred",
-                  "objects",
-                  "status",
-                  "actions",
-                ].map((column) => (
+                {(
+                  [
+                    "connection",
+                    "code",
+                    "message",
+                    "severity",
+                    "occurred",
+                    "objects",
+                    "status",
+                    "actions",
+                  ] as const
+                ).map((column) => (
                   <TableHead key={column}>{t(`directory.errors.${column}`)}</TableHead>
                 ))}
               </TableRow>
@@ -336,7 +339,7 @@ export function SyncErrorsView({
                       />
                     </TableCell>
                     <TableCell>
-                      <p>{new Date(event.started_at).toLocaleString(i18n.resolvedLanguage)}</p>
+                      <p>{new Date(event.started_at).toLocaleString(formatLocale())}</p>
                       <TimeSince
                         value={event.started_at}
                         className="text-[10px] text-muted-foreground"

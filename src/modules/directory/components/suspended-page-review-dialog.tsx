@@ -31,7 +31,7 @@ export function SuspensionReviewDialog({
   onSave: (input: SuspensionReview) => void;
   onClose: () => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [input, setInput] = useState<SuspensionReview>({
     reason: user.reason,
     risk: user.risk,
@@ -64,7 +64,7 @@ export function SuspensionReviewDialog({
               label={t("directory.suspended.risk")}
               value={input.risk}
               onChange={(risk) => setInput({ ...input, risk })}
-              options={["unknown", "low", "medium", "high"].map((value) => ({
+              options={(["unknown", "low", "medium", "high"] as const).map((value) => ({
                 value,
                 label: t(`directory.suspended.risks.${value}`),
               }))}

@@ -13,12 +13,14 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRightIcon, EllipsisIcon, NetworkIcon, ServerIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+
 import type { DirectoryConnection } from "../directory-model";
 import { DirectoryStatus } from "./directory-ui";
 
 /** One connection: its source, scope, health, last sync and synced counts. */
 export function ConnectionRow({ connection }: { connection: DirectoryConnection }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const destination =
     connection.type === "scim" ? "/auth/connections/scim" : "/auth/connections/ldap";
   const tone =
@@ -97,7 +99,7 @@ export function ConnectionRow({ connection }: { connection: DirectoryConnection 
           <>
             <TimeSince value={connection.lastSyncAt} />
             <p className="mt-1 text-[10px] text-muted-foreground">
-              {new Date(connection.lastSyncAt).toLocaleString(i18n.resolvedLanguage)}
+              {new Date(connection.lastSyncAt).toLocaleString(formatLocale())}
             </p>
           </>
         ) : (
@@ -108,7 +110,7 @@ export function ConnectionRow({ connection }: { connection: DirectoryConnection 
         <p>
           {connection.userCount == null
             ? "--"
-            : connection.userCount.toLocaleString(i18n.resolvedLanguage)}{" "}
+            : connection.userCount.toLocaleString(formatLocale())}{" "}
           {t("directory.connectionsPage.users")}
         </p>
         <p className="mt-0.5 text-[10px] text-muted-foreground">

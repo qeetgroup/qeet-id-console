@@ -13,11 +13,26 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { CircleCheckIcon, CircleSlashIcon, CircleXIcon, LoaderCircleIcon } from "@qeetrix/icons";
+import type { ParseKeys } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ErrorText } from "@/platform/components/error-reference";
-import { type ImportRow, useImportGroups } from "../api/groups";
+import { type ImportResult, type ImportRow, useImportGroups } from "../api/groups";
+
+// Why a row wasn't created, by the server's code; an unknown code reads as its status.
+const ROW_CODE_KEYS: Record<string, ParseKeys<"groups">> = {
+  "group.import_name_required": "import.rowCodes.nameRequired",
+  "group.import_name_exists": "import.rowCodes.nameExists",
+  "group.import_parent_not_found": "import.rowCodes.parentNotFound",
+};
+
+function rowReasonKey(row: ImportResult["rows"][number]): ParseKeys<"groups"> {
+  if (row.code && Object.hasOwn(ROW_CODE_KEYS, row.code)) {
+    return ROW_CODE_KEYS[row.code] ?? "import.rowFailed";
+  }
+  return row.status === "skipped" ? "import.rowSkipped" : "import.rowFailed";
+}
 
 /**
  * Parses pasted `name, description, parent` lines into import rows. Only the first and last commas
@@ -94,10 +109,9 @@ export function ImportGroupsDialog({
                 )}
                 <span className="min-w-0">
                   <span className="font-medium">{row.name}</span>
-                  {/* The server's reason is its own text, so the row's status picks the wording. */}
                   {row.status !== "created" ? (
                     <span className="block text-xs text-muted-foreground">
-                      {t(row.status === "skipped" ? "import.rowSkipped" : "import.rowFailed")}
+                      {t(rowReasonKey(row))}
                     </span>
                   ) : null}
                 </span>

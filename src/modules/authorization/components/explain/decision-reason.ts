@@ -3,11 +3,10 @@
 // anchored patterns map the sentences the console knows. Server text is never shown as written:
 // it may carry internal detail, such as the evaluation error behind a condition that failed.
 
-import type { TFunction } from "i18next";
-
-import type { Effect } from "../../api/abac";
-import type { DecidedBy, ReasonFields, ReasonParams } from "../../api/decision";
-import type { DecisionRecord } from "../../api/simulate";
+import i18n, { type TranslationKey } from "@/i18n";
+import type { Effect } from "@/modules/authorization/api/abac";
+import type { DecidedBy, ReasonFields, ReasonParams } from "@/modules/authorization/api/decision";
+import type { DecisionRecord } from "@/modules/authorization/api/simulate";
 
 type Values = {
   name?: string;
@@ -19,50 +18,53 @@ type Values = {
 
 /** A server explanation as a catalogue key and the values it interpolates. */
 export interface ExplainedText extends Values {
-  key: string;
+  key: TranslationKey;
   effect?: Effect; // raw; explainedMessage translates it
 }
 
-const UNKNOWN_REASON = "rbac:decisionExplain.reason.unknown";
+const UNKNOWN_REASON: TranslationKey = "authorization:decisionExplain.reason.unknown";
 
 // Each code's sentence, the params it needs, and the sentence for when they are absent: a caller
 // who may not read policies gets no policy name.
-const REASON_CODES: Record<string, { key: string; needs?: (keyof Values)[]; without?: string }> = {
+const REASON_CODES: Record<
+  string,
+  { key: TranslationKey; needs?: (keyof Values)[]; without?: TranslationKey }
+> = {
   "authz.allowed_by_policy": {
-    key: "rbac:decisionExplain.reason.allowed",
+    key: "authorization:decisionExplain.reason.allowed",
     needs: ["name", "priority"],
-    without: "rbac:decisionExplain.reason.allowedUnnamed",
+    without: "authorization:decisionExplain.reason.allowedUnnamed",
   },
   "authz.denied_by_policy": {
-    key: "rbac:decisionExplain.reason.explicitDeny",
+    key: "authorization:decisionExplain.reason.explicitDeny",
     needs: ["name", "priority"],
-    without: "rbac:decisionExplain.reason.explicitDenyUnnamed",
+    without: "authorization:decisionExplain.reason.explicitDenyUnnamed",
   },
   "authz.attribute_absent": {
-    key: "rbac:decisionExplain.reason.absentDeny",
+    key: "authorization:decisionExplain.reason.absentDeny",
     needs: ["name", "priority"],
-    without: "rbac:decisionExplain.reason.absentDenyUnnamed",
+    without: "authorization:decisionExplain.reason.absentDenyUnnamed",
   },
   "authz.condition_error": {
-    key: "rbac:decisionExplain.reason.conditionError",
+    key: "authorization:decisionExplain.reason.conditionError",
     needs: ["name"],
-    without: "rbac:decisionExplain.reason.conditionErrorUnnamed",
+    without: "authorization:decisionExplain.reason.conditionErrorUnnamed",
   },
-  "authz.no_matching_allow": { key: "rbac:decisionExplain.reason.noAllow" },
-  "authz.no_role_grant": { key: "rbac:check.deniedReason" },
+  "authz.no_matching_allow": { key: "authorization:decisionExplain.reason.noAllow" },
+  "authz.no_role_grant": { key: "authorization:check.deniedReason" },
   "authz.role_grant": {
-    key: "rbac:decisionExplain.reason.roleGrant",
+    key: "authorization:decisionExplain.reason.roleGrant",
     needs: ["permission"],
-    without: "rbac:decisionExplain.reason.roleGrantUnnamed",
+    without: "authorization:decisionExplain.reason.roleGrantUnnamed",
   },
   "authz.relation_grant": {
-    key: "rbac:decisionExplain.reason.relationGrant",
+    key: "authorization:decisionExplain.reason.relationGrant",
     needs: ["relation", "object"],
-    without: "rbac:decisionExplain.reason.relationGrantUnnamed",
+    without: "authorization:decisionExplain.reason.relationGrantUnnamed",
   },
-  "authz.nothing_allows": { key: "rbac:decisionExplain.reason.nothingAllows" },
-  "authz.no_tenant": { key: "rbac:decisionExplain.reason.noTenant" },
-  "authz.engine_error": { key: "rbac:decisionExplain.reason.engineError" },
+  "authz.nothing_allows": { key: "authorization:decisionExplain.reason.nothingAllows" },
+  "authz.no_tenant": { key: "authorization:decisionExplain.reason.noTenant" },
+  "authz.engine_error": { key: "authorization:decisionExplain.reason.engineError" },
 };
 
 // Reads the params the server sent, keeping only well-typed values.
@@ -100,11 +102,11 @@ function unquote(inner: string): string {
   }
 }
 
-function named(key: string): (m: RegExpMatchArray) => ExplainedText {
+function named(key: TranslationKey): (m: RegExpMatchArray) => ExplainedText {
   return (m) => ({ key, name: unquote(m[1] ?? ""), priority: m[2] });
 }
 
-function policyStep(key: string): (m: RegExpMatchArray) => ExplainedText {
+function policyStep(key: TranslationKey): (m: RegExpMatchArray) => ExplainedText {
   return (m) => ({ key, name: unquote(m[1] ?? ""), effect: m[2] as Effect, priority: m[3] });
 }
 
@@ -112,52 +114,52 @@ function policyStep(key: string): (m: RegExpMatchArray) => ExplainedText {
 const REASONS: Rule[] = [
   [
     /^no role grants this permission for this user in this tenant$/,
-    () => ({ key: "rbac:check.deniedReason" }),
+    () => ({ key: "authorization:check.deniedReason" }),
   ],
   [
     /^explicitly denied by policy "((?:[^"\\]|\\.)*)" \(priority (-?\d+)\)$/,
-    named("rbac:decisionExplain.reason.explicitDeny"),
+    named("authorization:decisionExplain.reason.explicitDeny"),
   ],
   [
     /^denied by policy "((?:[^"\\]|\\.)*)" \(priority (-?\d+)\): an attribute it compares is absent$/,
-    named("rbac:decisionExplain.reason.absentDeny"),
+    named("authorization:decisionExplain.reason.absentDeny"),
   ],
   [
     /^allowed by policy "((?:[^"\\]|\\.)*)" \(priority (-?\d+)\)$/,
-    named("rbac:decisionExplain.reason.allowed"),
+    named("authorization:decisionExplain.reason.allowed"),
   ],
-  [/^no matching allow policy$/, () => ({ key: "rbac:decisionExplain.reason.noAllow" })],
+  [/^no matching allow policy$/, () => ({ key: "authorization:decisionExplain.reason.noAllow" })],
   // Any evaluation error after the name is internal, so it is never read.
   [
     /^condition error in policy "((?:[^"\\]|\\.)*)"(?::|$)/,
-    named("rbac:decisionExplain.reason.conditionError"),
+    named("authorization:decisionExplain.reason.conditionError"),
   ],
 ];
 
 const TRACE_STEPS: Rule[] = [
   [
     /^policy "((?:[^"\\]|\\.)*)" \(effect=(allow|deny), priority=(-?\d+)\): condition not matched$/,
-    policyStep("rbac:decisionExplain.trace.notMatched"),
+    policyStep("authorization:decisionExplain.trace.notMatched"),
   ],
   [
     /^policy "((?:[^"\\]|\\.)*)" \(effect=(allow|deny), priority=(-?\d+)\): condition matched → \2$/,
-    policyStep("rbac:decisionExplain.trace.matched"),
+    policyStep("authorization:decisionExplain.trace.matched"),
   ],
   [
     /^policy "((?:[^"\\]|\\.)*)" \(effect=(allow|deny), priority=(-?\d+)\): an attribute the condition compares is absent → \2$/,
-    policyStep("rbac:decisionExplain.trace.absentApplies"),
+    policyStep("authorization:decisionExplain.trace.absentApplies"),
   ],
   [
     /^policy "((?:[^"\\]|\\.)*)" \(effect=(allow|deny), priority=(-?\d+)\): an attribute the condition compares is absent → not matched$/,
-    policyStep("rbac:decisionExplain.trace.absentNotMatched"),
+    policyStep("authorization:decisionExplain.trace.absentNotMatched"),
   ],
   [
     /^policy "((?:[^"\\]|\\.)*)": condition error(?: \([\s\S]*\))? → fail-closed deny$/,
-    named("rbac:decisionExplain.trace.conditionError"),
+    named("authorization:decisionExplain.trace.conditionError"),
   ],
   [
     /^no matching allow policy found → default deny$/,
-    () => ({ key: "rbac:decisionExplain.trace.defaultDeny" }),
+    () => ({ key: "authorization:decisionExplain.trace.defaultDeny" }),
   ],
 ];
 
@@ -207,13 +209,13 @@ export function explainDecision(record: DecisionRecord): ExplainedText | null {
 
 /** Returns an ABAC trace step as a catalogue key; an unknown step reads as a generic line. */
 export function explainTraceStep(step: string): ExplainedText {
-  return match(TRACE_STEPS, step.trim()) ?? { key: "rbac:decisionExplain.trace.unknown" };
+  return match(TRACE_STEPS, step.trim()) ?? { key: "authorization:decisionExplain.trace.unknown" };
 }
 
 /** Renders an explanation; a raw effect reads in the reader's language. */
-export function explainedMessage({ key, effect, ...values }: ExplainedText, t: TFunction): string {
-  return t(key, {
+export function explainedMessage({ key, effect, ...values }: ExplainedText): string {
+  return i18n.t(key, {
     ...values,
-    effect: effect ? t(`rbac:decisionExplain.effect.${effect}`) : undefined,
+    effect: effect ? i18n.t(`authorization:decisionExplain.effect.${effect}`) : undefined,
   });
 }

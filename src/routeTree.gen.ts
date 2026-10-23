@@ -9,117 +9,117 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as AuthRouteImport } from './routes/_auth'
-import { Route as AccountRouteImport } from './routes/account'
-import { Route as HealthzRouteImport } from './routes/healthz'
-import { Route as SelectOrganizationRouteImport } from './routes/select-organization'
-import { Route as VerifyEmailRouteImport } from './routes/verify-email'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppSplatRouteImport } from './routes/_app/$'
-import { Route as AppActivityRouteImport } from './routes/_app/activity'
-import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
-import { Route as AppApplicationsRouteImport } from './routes/_app/applications'
-import { Route as AppAuthenticationRouteImport } from './routes/_app/authentication'
-import { Route as AppInvitationsRouteImport } from './routes/_app/invitations'
-import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
-import { Route as AuthMagicRouteImport } from './routes/_auth/magic'
-import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
-import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
-import { Route as AccountDataRouteImport } from './routes/account/data'
-import { Route as AccountProfileRouteImport } from './routes/account/profile'
-import { Route as AccountSecurityRouteImport } from './routes/account/security'
-import { Route as AccountSessionsRouteImport } from './routes/account/sessions'
+import { Route as appRouteImport } from './routes/_app'
+import { Route as AuthRouteImport } from './modules/authentication/routes/public/_auth'
+import { Route as AccountRouteImport } from './modules/account/routes/public/account'
+import { Route as healthzRouteImport } from './routes/healthz'
+import { Route as SelectOrganizationRouteImport } from './modules/authentication/routes/public/select-organization'
+import { Route as VerifyEmailRouteImport } from './modules/authentication/routes/public/verify-email'
+import { Route as IndexRouteImport } from './modules/dashboard/routes/app/index'
+import { Route as SplatRouteImport } from './modules/dashboard/routes/app/$'
+import { Route as ActivityRouteImport } from './modules/activity/routes/app/activity'
+import { Route as AnalyticsRouteImport } from './modules/dashboard/routes/app/analytics'
+import { Route as ApplicationsRouteImport } from './modules/dashboard/routes/app/applications'
+import { Route as AuthenticationRouteImport } from './modules/dashboard/routes/app/authentication'
+import { Route as InvitationsRouteImport } from './modules/users/routes/app/invitations'
+import { Route as AuthForgotPasswordRouteImport } from './modules/authentication/routes/public/_auth/forgot-password'
+import { Route as AuthMagicRouteImport } from './modules/authentication/routes/public/_auth/magic'
+import { Route as AuthSignInRouteImport } from './modules/authentication/routes/public/_auth/sign-in'
+import { Route as AuthSignUpRouteImport } from './modules/authentication/routes/public/_auth/sign-up'
+import { Route as AccountDataRouteImport } from './modules/account/routes/public/account/data'
+import { Route as AccountProfileRouteImport } from './modules/account/routes/public/account/profile'
+import { Route as AccountSecurityRouteImport } from './modules/account/routes/public/account/security'
+import { Route as AccountSessionsRouteImport } from './modules/account/routes/public/account/sessions'
 import { Route as ApiActivityStreamRouteImport } from './routes/api/activity-stream'
 import { Route as ApiQeetaiStreamRouteImport } from './routes/api/qeetai-stream'
-import { Route as AppAuthSocialRouteImport } from './routes/_app/auth/social'
-import { Route as AppAuthorizationIndexRouteImport } from './routes/_app/authorization/index'
-import { Route as AppAuthorizationAbacRouteImport } from './routes/_app/authorization/abac'
-import { Route as AppAuthorizationAccessTesterRouteImport } from './routes/_app/authorization/access-tester'
-import { Route as AppAuthorizationAuditRouteImport } from './routes/_app/authorization/audit'
-import { Route as AppAuthorizationBuilderRouteImport } from './routes/_app/authorization/builder'
-import { Route as AppAuthorizationExplorerRouteImport } from './routes/_app/authorization/explorer'
-import { Route as AppAuthorizationPermissionsRouteImport } from './routes/_app/authorization/permissions'
-import { Route as AppAuthorizationRbacRouteImport } from './routes/_app/authorization/rbac'
-import { Route as AppAuthorizationRebacRouteImport } from './routes/_app/authorization/rebac'
-import { Route as AppAuthorizationResourcesRouteImport } from './routes/_app/authorization/resources'
-import { Route as AppAuthorizationRolesRouteImport } from './routes/_app/authorization/roles'
-import { Route as AppAuthorizationSettingsRouteImport } from './routes/_app/authorization/settings'
-import { Route as AppAuthorizationSimulatorRouteImport } from './routes/_app/authorization/simulator'
-import { Route as AppAuthorizationTemplatesRouteImport } from './routes/_app/authorization/templates'
-import { Route as AppAuthorizationVersionsRouteImport } from './routes/_app/authorization/versions'
-import { Route as AppDeveloperIndexRouteImport } from './routes/_app/developer/index'
-import { Route as AppDeveloperAgentsRouteImport } from './routes/_app/developer/agents'
-import { Route as AppDeveloperAuthHooksRouteImport } from './routes/_app/developer/auth-hooks'
-import { Route as AppDeveloperBotsRouteImport } from './routes/_app/developer/bots'
-import { Route as AppDeveloperCredentialsRouteImport } from './routes/_app/developer/credentials'
-import { Route as AppDeveloperInfrastructureRouteImport } from './routes/_app/developer/infrastructure'
-import { Route as AppDirectoryIndexRouteImport } from './routes/_app/directory/index'
-import { Route as AppDirectoryAttributeMappingsRouteImport } from './routes/_app/directory/attribute-mappings'
-import { Route as AppDirectoryConnectionsRouteImport } from './routes/_app/directory/connections'
-import { Route as AppDirectorySyncActivityRouteImport } from './routes/_app/directory/sync-activity'
-import { Route as AppDirectorySyncErrorsRouteImport } from './routes/_app/directory/sync-errors'
-import { Route as AppGroupsIndexRouteImport } from './routes/_app/groups/index'
-import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups/$groupId'
-import { Route as AppOrganizationsIndexRouteImport } from './routes/_app/organizations/index'
-import { Route as AppOrganizationsOrgIdRouteImport } from './routes/_app/organizations/$orgId'
-import { Route as AppOrganizationsTenantsRouteImport } from './routes/_app/organizations/tenants'
-import { Route as AppSecurityIndexRouteImport } from './routes/_app/security/index'
-import { Route as AppSecurityAuditIntelligenceRouteImport } from './routes/_app/security/audit-intelligence'
-import { Route as AppSecurityAuditLogsRouteImport } from './routes/_app/security/audit-logs'
-import { Route as AppSecurityDeviceAuthorizationsRouteImport } from './routes/_app/security/device-authorizations'
-import { Route as AppSecurityLogStreamingRouteImport } from './routes/_app/security/log-streaming'
-import { Route as AppSecurityRateLimitsRouteImport } from './routes/_app/security/rate-limits'
-import { Route as AppSecuritySessionsRouteImport } from './routes/_app/security/sessions'
-import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
-import { Route as AppSettingsBillingRouteImport } from './routes/_app/settings/billing'
-import { Route as AppSettingsBrandingRouteImport } from './routes/_app/settings/branding'
-import { Route as AppSettingsQeetAiRouteImport } from './routes/_app/settings/qeet-ai'
-import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
-import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
-import { Route as AppUsersDeletedRouteImport } from './routes/_app/users/deleted'
-import { Route as AppUsersImportRouteImport } from './routes/_app/users/import'
-import { Route as AppUsersSessionsRouteImport } from './routes/_app/users/sessions'
-import { Route as AppUsersSuspendedRouteImport } from './routes/_app/users/suspended'
-import { Route as AuthInviteAcceptRouteImport } from './routes/_auth/invite.accept'
-import { Route as AuthSsoCallbackRouteImport } from './routes/_auth/sso.callback'
-import { Route as AppAuthApiConsentGrantsRouteImport } from './routes/_app/auth/api/consent-grants'
-import { Route as AppAuthApiKeysRouteImport } from './routes/_app/auth/api/keys'
-import { Route as AppAuthApiMachineIdentitiesRouteImport } from './routes/_app/auth/api/machine-identities'
-import { Route as AppAuthApiSecretsRouteImport } from './routes/_app/auth/api/secrets'
-import { Route as AppAuthApiSigningKeysRouteImport } from './routes/_app/auth/api/signing-keys'
-import { Route as AppAuthApiTokensRouteImport } from './routes/_app/auth/api/tokens'
-import { Route as AppAuthConnectionsIndexRouteImport } from './routes/_app/auth/connections/index'
-import { Route as AppAuthConnectionsLdapRouteImport } from './routes/_app/auth/connections/ldap'
-import { Route as AppAuthConnectionsSamlRouteImport } from './routes/_app/auth/connections/saml'
-import { Route as AppAuthConnectionsSamlIdpRouteImport } from './routes/_app/auth/connections/saml-idp'
-import { Route as AppAuthConnectionsScimRouteImport } from './routes/_app/auth/connections/scim'
-import { Route as AppAuthLoginMethodsMagicLinksRouteImport } from './routes/_app/auth/login-methods/magic-links'
-import { Route as AppAuthLoginMethodsPasskeysRouteImport } from './routes/_app/auth/login-methods/passkeys'
-import { Route as AppAuthLoginMethodsPasswordRouteImport } from './routes/_app/auth/login-methods/password'
-import { Route as AppAuthLoginMethodsPasswordlessRouteImport } from './routes/_app/auth/login-methods/passwordless'
-import { Route as AppAuthMfaSmsEmailRouteImport } from './routes/_app/auth/mfa/sms-email'
-import { Route as AppAuthMfaTotpRouteImport } from './routes/_app/auth/mfa/totp'
-import { Route as AppDeveloperWebhooksIndexRouteImport } from './routes/_app/developer/webhooks/index'
-import { Route as AppDeveloperWebhooksIdRouteImport } from './routes/_app/developer/webhooks/$id'
-import { Route as AppSecurityComplianceGdprRouteImport } from './routes/_app/security/compliance/gdpr'
-import { Route as AppSecurityComplianceIso27001RouteImport } from './routes/_app/security/compliance/iso27001'
-import { Route as AppSecurityComplianceRetentionRouteImport } from './routes/_app/security/compliance/retention'
-import { Route as AppSecurityComplianceSoc2RouteImport } from './routes/_app/security/compliance/soc2'
-import { Route as AppSecurityThreatsAnomaliesRouteImport } from './routes/_app/security/threats/anomalies'
-import { Route as AppSecurityThreatsBotsRouteImport } from './routes/_app/security/threats/bots'
-import { Route as AppSecurityThreatsIpAllowlistRouteImport } from './routes/_app/security/threats/ip-allowlist'
-import { Route as AppSecurityThreatsRateLimitsRouteImport } from './routes/_app/security/threats/rate-limits'
-import { Route as AppSecurityThreatsRiskSettingsRouteImport } from './routes/_app/security/threats/risk-settings'
-import { Route as AppSettingsOrganizationDomainsRouteImport } from './routes/_app/settings/organization/domains'
-import { Route as AppSettingsOrganizationEmailTemplatesRouteImport } from './routes/_app/settings/organization/email-templates'
-import { Route as AppSettingsOrganizationGeneralRouteImport } from './routes/_app/settings/organization/general'
-import { Route as AppSettingsOrganizationSecurityPolicyRouteImport } from './routes/_app/settings/organization/security-policy'
-import { Route as AppUsersUserIdTimelineRouteImport } from './routes/_app/users/$userId_.timeline'
-import { Route as AppAuthConnectionsOidcIndexRouteImport } from './routes/_app/auth/connections/oidc/index'
-import { Route as AppAuthConnectionsOidcClientIdRouteImport } from './routes/_app/auth/connections/oidc/$clientId'
+import { Route as AuthSocialRouteImport } from './modules/authentication/routes/app/auth/social'
+import { Route as AuthorizationIndexRouteImport } from './modules/authorization/routes/app/authorization/index'
+import { Route as AuthorizationAbacRouteImport } from './modules/authorization/routes/app/authorization/abac'
+import { Route as AuthorizationAccessTesterRouteImport } from './modules/authorization/routes/app/authorization/access-tester'
+import { Route as AuthorizationAuditRouteImport } from './modules/authorization/routes/app/authorization/audit'
+import { Route as AuthorizationBuilderRouteImport } from './modules/authorization/routes/app/authorization/builder'
+import { Route as AuthorizationExplorerRouteImport } from './modules/authorization/routes/app/authorization/explorer'
+import { Route as AuthorizationPermissionsRouteImport } from './modules/authorization/routes/app/authorization/permissions'
+import { Route as AuthorizationRbacRouteImport } from './modules/authorization/routes/app/authorization/rbac'
+import { Route as AuthorizationRebacRouteImport } from './modules/authorization/routes/app/authorization/rebac'
+import { Route as AuthorizationResourcesRouteImport } from './modules/authorization/routes/app/authorization/resources'
+import { Route as AuthorizationRolesRouteImport } from './modules/authorization/routes/app/authorization/roles'
+import { Route as AuthorizationSettingsRouteImport } from './modules/authorization/routes/app/authorization/settings'
+import { Route as AuthorizationSimulatorRouteImport } from './modules/authorization/routes/app/authorization/simulator'
+import { Route as AuthorizationTemplatesRouteImport } from './modules/authorization/routes/app/authorization/templates'
+import { Route as AuthorizationVersionsRouteImport } from './modules/authorization/routes/app/authorization/versions'
+import { Route as DeveloperIndexRouteImport } from './modules/developer/routes/app/developer/index'
+import { Route as DeveloperAgentsRouteImport } from './modules/developer/routes/app/developer/agents'
+import { Route as DeveloperAuthHooksRouteImport } from './modules/developer/routes/app/developer/auth-hooks'
+import { Route as DeveloperBotsRouteImport } from './modules/developer/routes/app/developer/bots'
+import { Route as DeveloperCredentialsRouteImport } from './modules/developer/routes/app/developer/credentials'
+import { Route as DeveloperInfrastructureRouteImport } from './modules/developer/routes/app/developer/infrastructure'
+import { Route as DirectoryIndexRouteImport } from './modules/directory/routes/app/directory/index'
+import { Route as DirectoryAttributeMappingsRouteImport } from './modules/directory/routes/app/directory/attribute-mappings'
+import { Route as DirectoryConnectionsRouteImport } from './modules/directory/routes/app/directory/connections'
+import { Route as DirectorySyncActivityRouteImport } from './modules/directory/routes/app/directory/sync-activity'
+import { Route as DirectorySyncErrorsRouteImport } from './modules/directory/routes/app/directory/sync-errors'
+import { Route as GroupsIndexRouteImport } from './modules/groups/routes/app/groups/index'
+import { Route as GroupsGroupIdRouteImport } from './modules/groups/routes/app/groups/$groupId'
+import { Route as OrganizationsIndexRouteImport } from './modules/organizations/routes/app/organizations/index'
+import { Route as OrganizationsOrgIdRouteImport } from './modules/organizations/routes/app/organizations/$orgId'
+import { Route as OrganizationsTenantsRouteImport } from './modules/organizations/routes/app/organizations/tenants'
+import { Route as SecurityIndexRouteImport } from './modules/security/routes/app/security/index'
+import { Route as SecurityAuditIntelligenceRouteImport } from './modules/security/routes/app/security/audit-intelligence'
+import { Route as SecurityAuditLogsRouteImport } from './modules/security/routes/app/security/audit-logs'
+import { Route as SecurityDeviceAuthorizationsRouteImport } from './modules/security/routes/app/security/device-authorizations'
+import { Route as SecurityLogStreamingRouteImport } from './modules/security/routes/app/security/log-streaming'
+import { Route as SecurityRateLimitsRouteImport } from './modules/security/routes/app/security/rate-limits'
+import { Route as SecuritySessionsRouteImport } from './modules/security/routes/app/security/sessions'
+import { Route as SettingsIndexRouteImport } from './modules/dashboard/routes/app/settings/index'
+import { Route as SettingsBillingRouteImport } from './modules/billing/routes/app/settings/billing'
+import { Route as SettingsBrandingRouteImport } from './modules/branding/routes/app/settings/branding'
+import { Route as SettingsQeetAiRouteImport } from './modules/qeetai/routes/app/settings/qeet-ai'
+import { Route as UsersIndexRouteImport } from './modules/users/routes/app/users/index'
+import { Route as UsersUserIdRouteImport } from './modules/users/routes/app/users/$userId'
+import { Route as UsersDeletedRouteImport } from './modules/users/routes/app/users/deleted'
+import { Route as UsersImportRouteImport } from './modules/users/routes/app/users/import'
+import { Route as UsersSessionsRouteImport } from './modules/users/routes/app/users/sessions'
+import { Route as UsersSuspendedRouteImport } from './modules/directory/routes/app/users/suspended'
+import { Route as AuthInviteDotacceptRouteImport } from './modules/authentication/routes/public/_auth/invite.accept'
+import { Route as AuthSsoDotcallbackRouteImport } from './modules/authentication/routes/public/_auth/sso.callback'
+import { Route as AuthApiConsentGrantsRouteImport } from './modules/authentication/routes/app/auth/api/consent-grants'
+import { Route as AuthApiKeysRouteImport } from './modules/developer/routes/app/auth/api/keys'
+import { Route as AuthApiMachineIdentitiesRouteImport } from './modules/developer/routes/app/auth/api/machine-identities'
+import { Route as AuthApiSecretsRouteImport } from './modules/developer/routes/app/auth/api/secrets'
+import { Route as AuthApiSigningKeysRouteImport } from './modules/developer/routes/app/auth/api/signing-keys'
+import { Route as AuthApiTokensRouteImport } from './modules/authentication/routes/app/auth/api/tokens'
+import { Route as AuthConnectionsIndexRouteImport } from './modules/authentication/routes/app/auth/connections/index'
+import { Route as AuthConnectionsLdapRouteImport } from './modules/authentication/routes/app/auth/connections/ldap'
+import { Route as AuthConnectionsSamlRouteImport } from './modules/authentication/routes/app/auth/connections/saml'
+import { Route as AuthConnectionsSamlIdpRouteImport } from './modules/authentication/routes/app/auth/connections/saml-idp'
+import { Route as AuthConnectionsScimRouteImport } from './modules/authentication/routes/app/auth/connections/scim'
+import { Route as AuthLoginMethodsMagicLinksRouteImport } from './modules/authentication/routes/app/auth/login-methods/magic-links'
+import { Route as AuthLoginMethodsPasskeysRouteImport } from './modules/authentication/routes/app/auth/login-methods/passkeys'
+import { Route as AuthLoginMethodsPasswordRouteImport } from './modules/authentication/routes/app/auth/login-methods/password'
+import { Route as AuthLoginMethodsPasswordlessRouteImport } from './modules/authentication/routes/app/auth/login-methods/passwordless'
+import { Route as AuthMfaSmsEmailRouteImport } from './modules/authentication/routes/app/auth/mfa/sms-email'
+import { Route as AuthMfaTotpRouteImport } from './modules/authentication/routes/app/auth/mfa/totp'
+import { Route as DeveloperWebhooksIndexRouteImport } from './modules/developer/routes/app/developer/webhooks/index'
+import { Route as DeveloperWebhooksIdRouteImport } from './modules/developer/routes/app/developer/webhooks/$id'
+import { Route as SecurityComplianceGdprRouteImport } from './modules/compliance/routes/app/security/compliance/gdpr'
+import { Route as SecurityComplianceIso27001RouteImport } from './modules/compliance/routes/app/security/compliance/iso27001'
+import { Route as SecurityComplianceRetentionRouteImport } from './modules/compliance/routes/app/security/compliance/retention'
+import { Route as SecurityComplianceSoc2RouteImport } from './modules/compliance/routes/app/security/compliance/soc2'
+import { Route as SecurityThreatsAnomaliesRouteImport } from './modules/security/routes/app/security/threats/anomalies'
+import { Route as SecurityThreatsBotsRouteImport } from './modules/security/routes/app/security/threats/bots'
+import { Route as SecurityThreatsIpAllowlistRouteImport } from './modules/security/routes/app/security/threats/ip-allowlist'
+import { Route as SecurityThreatsRateLimitsRouteImport } from './modules/security/routes/app/security/threats/rate-limits'
+import { Route as SecurityThreatsRiskSettingsRouteImport } from './modules/security/routes/app/security/threats/risk-settings'
+import { Route as SettingsOrganizationDomainsRouteImport } from './modules/organizations/routes/app/settings/organization/domains'
+import { Route as SettingsOrganizationEmailTemplatesRouteImport } from './modules/organizations/routes/app/settings/organization/email-templates'
+import { Route as SettingsOrganizationGeneralRouteImport } from './modules/organizations/routes/app/settings/organization/general'
+import { Route as SettingsOrganizationSecurityPolicyRouteImport } from './modules/organizations/routes/app/settings/organization/security-policy'
+import { Route as UsersUserId_DottimelineRouteImport } from './modules/timeline/routes/app/users/$userId_.timeline'
+import { Route as AuthConnectionsOidcIndexRouteImport } from './modules/authentication/routes/app/auth/connections/oidc/index'
+import { Route as AuthConnectionsOidcClientIdRouteImport } from './modules/authentication/routes/app/auth/connections/oidc/$clientId'
 
-const AppRoute = AppRouteImport.update({
+const appRoute = appRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -132,7 +132,7 @@ const AccountRoute = AccountRouteImport.update({
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HealthzRoute = HealthzRouteImport.update({
+const healthzRoute = healthzRouteImport.update({
   id: '/healthz',
   path: '/healthz',
   getParentRoute: () => rootRouteImport,
@@ -147,40 +147,40 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
   path: '/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSplatRoute = AppSplatRouteImport.update({
+const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppActivityRoute = AppActivityRouteImport.update({
+const ActivityRoute = ActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppApplicationsRoute = AppApplicationsRouteImport.update({
+const ApplicationsRoute = ApplicationsRouteImport.update({
   id: '/applications',
   path: '/applications',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthenticationRoute = AppAuthenticationRouteImport.update({
+const AuthenticationRoute = AuthenticationRouteImport.update({
   id: '/authentication',
   path: '/authentication',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppInvitationsRoute = AppInvitationsRouteImport.update({
+const InvitationsRoute = InvitationsRouteImport.update({
   id: '/invitations',
   path: '/invitations',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/forgot-password',
@@ -232,483 +232,471 @@ const ApiQeetaiStreamRoute = ApiQeetaiStreamRouteImport.update({
   path: '/api/qeetai-stream',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppAuthSocialRoute = AppAuthSocialRouteImport.update({
+const AuthSocialRoute = AuthSocialRouteImport.update({
   id: '/auth/social',
   path: '/auth/social',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthorizationIndexRoute = AppAuthorizationIndexRouteImport.update({
+const AuthorizationIndexRoute = AuthorizationIndexRouteImport.update({
   id: '/authorization/',
   path: '/authorization/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthorizationAbacRoute = AppAuthorizationAbacRouteImport.update({
+const AuthorizationAbacRoute = AuthorizationAbacRouteImport.update({
   id: '/authorization/abac',
   path: '/authorization/abac',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthorizationAccessTesterRoute =
-  AppAuthorizationAccessTesterRouteImport.update({
+const AuthorizationAccessTesterRoute =
+  AuthorizationAccessTesterRouteImport.update({
     id: '/authorization/access-tester',
     path: '/authorization/access-tester',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppAuthorizationAuditRoute = AppAuthorizationAuditRouteImport.update({
+const AuthorizationAuditRoute = AuthorizationAuditRouteImport.update({
   id: '/authorization/audit',
   path: '/authorization/audit',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthorizationBuilderRoute = AppAuthorizationBuilderRouteImport.update({
+const AuthorizationBuilderRoute = AuthorizationBuilderRouteImport.update({
   id: '/authorization/builder',
   path: '/authorization/builder',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthorizationExplorerRoute =
-  AppAuthorizationExplorerRouteImport.update({
-    id: '/authorization/explorer',
-    path: '/authorization/explorer',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppAuthorizationPermissionsRoute =
-  AppAuthorizationPermissionsRouteImport.update({
+const AuthorizationExplorerRoute = AuthorizationExplorerRouteImport.update({
+  id: '/authorization/explorer',
+  path: '/authorization/explorer',
+  getParentRoute: () => appRoute,
+} as any)
+const AuthorizationPermissionsRoute =
+  AuthorizationPermissionsRouteImport.update({
     id: '/authorization/permissions',
     path: '/authorization/permissions',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppAuthorizationRbacRoute = AppAuthorizationRbacRouteImport.update({
+const AuthorizationRbacRoute = AuthorizationRbacRouteImport.update({
   id: '/authorization/rbac',
   path: '/authorization/rbac',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthorizationRebacRoute = AppAuthorizationRebacRouteImport.update({
+const AuthorizationRebacRoute = AuthorizationRebacRouteImport.update({
   id: '/authorization/rebac',
   path: '/authorization/rebac',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthorizationResourcesRoute =
-  AppAuthorizationResourcesRouteImport.update({
-    id: '/authorization/resources',
-    path: '/authorization/resources',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppAuthorizationRolesRoute = AppAuthorizationRolesRouteImport.update({
+const AuthorizationResourcesRoute = AuthorizationResourcesRouteImport.update({
+  id: '/authorization/resources',
+  path: '/authorization/resources',
+  getParentRoute: () => appRoute,
+} as any)
+const AuthorizationRolesRoute = AuthorizationRolesRouteImport.update({
   id: '/authorization/roles',
   path: '/authorization/roles',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthorizationSettingsRoute =
-  AppAuthorizationSettingsRouteImport.update({
-    id: '/authorization/settings',
-    path: '/authorization/settings',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppAuthorizationSimulatorRoute =
-  AppAuthorizationSimulatorRouteImport.update({
-    id: '/authorization/simulator',
-    path: '/authorization/simulator',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppAuthorizationTemplatesRoute =
-  AppAuthorizationTemplatesRouteImport.update({
-    id: '/authorization/templates',
-    path: '/authorization/templates',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppAuthorizationVersionsRoute =
-  AppAuthorizationVersionsRouteImport.update({
-    id: '/authorization/versions',
-    path: '/authorization/versions',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppDeveloperIndexRoute = AppDeveloperIndexRouteImport.update({
+const AuthorizationSettingsRoute = AuthorizationSettingsRouteImport.update({
+  id: '/authorization/settings',
+  path: '/authorization/settings',
+  getParentRoute: () => appRoute,
+} as any)
+const AuthorizationSimulatorRoute = AuthorizationSimulatorRouteImport.update({
+  id: '/authorization/simulator',
+  path: '/authorization/simulator',
+  getParentRoute: () => appRoute,
+} as any)
+const AuthorizationTemplatesRoute = AuthorizationTemplatesRouteImport.update({
+  id: '/authorization/templates',
+  path: '/authorization/templates',
+  getParentRoute: () => appRoute,
+} as any)
+const AuthorizationVersionsRoute = AuthorizationVersionsRouteImport.update({
+  id: '/authorization/versions',
+  path: '/authorization/versions',
+  getParentRoute: () => appRoute,
+} as any)
+const DeveloperIndexRoute = DeveloperIndexRouteImport.update({
   id: '/developer/',
   path: '/developer/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppDeveloperAgentsRoute = AppDeveloperAgentsRouteImport.update({
+const DeveloperAgentsRoute = DeveloperAgentsRouteImport.update({
   id: '/developer/agents',
   path: '/developer/agents',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppDeveloperAuthHooksRoute = AppDeveloperAuthHooksRouteImport.update({
+const DeveloperAuthHooksRoute = DeveloperAuthHooksRouteImport.update({
   id: '/developer/auth-hooks',
   path: '/developer/auth-hooks',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppDeveloperBotsRoute = AppDeveloperBotsRouteImport.update({
+const DeveloperBotsRoute = DeveloperBotsRouteImport.update({
   id: '/developer/bots',
   path: '/developer/bots',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppDeveloperCredentialsRoute = AppDeveloperCredentialsRouteImport.update({
+const DeveloperCredentialsRoute = DeveloperCredentialsRouteImport.update({
   id: '/developer/credentials',
   path: '/developer/credentials',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppDeveloperInfrastructureRoute =
-  AppDeveloperInfrastructureRouteImport.update({
-    id: '/developer/infrastructure',
-    path: '/developer/infrastructure',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppDirectoryIndexRoute = AppDirectoryIndexRouteImport.update({
+const DeveloperInfrastructureRoute = DeveloperInfrastructureRouteImport.update({
+  id: '/developer/infrastructure',
+  path: '/developer/infrastructure',
+  getParentRoute: () => appRoute,
+} as any)
+const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
   id: '/directory/',
   path: '/directory/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppDirectoryAttributeMappingsRoute =
-  AppDirectoryAttributeMappingsRouteImport.update({
+const DirectoryAttributeMappingsRoute =
+  DirectoryAttributeMappingsRouteImport.update({
     id: '/directory/attribute-mappings',
     path: '/directory/attribute-mappings',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppDirectoryConnectionsRoute = AppDirectoryConnectionsRouteImport.update({
+const DirectoryConnectionsRoute = DirectoryConnectionsRouteImport.update({
   id: '/directory/connections',
   path: '/directory/connections',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppDirectorySyncActivityRoute =
-  AppDirectorySyncActivityRouteImport.update({
-    id: '/directory/sync-activity',
-    path: '/directory/sync-activity',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppDirectorySyncErrorsRoute = AppDirectorySyncErrorsRouteImport.update({
+const DirectorySyncActivityRoute = DirectorySyncActivityRouteImport.update({
+  id: '/directory/sync-activity',
+  path: '/directory/sync-activity',
+  getParentRoute: () => appRoute,
+} as any)
+const DirectorySyncErrorsRoute = DirectorySyncErrorsRouteImport.update({
   id: '/directory/sync-errors',
   path: '/directory/sync-errors',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppGroupsIndexRoute = AppGroupsIndexRouteImport.update({
+const GroupsIndexRoute = GroupsIndexRouteImport.update({
   id: '/groups/',
   path: '/groups/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
+const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   id: '/groups/$groupId',
   path: '/groups/$groupId',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppOrganizationsIndexRoute = AppOrganizationsIndexRouteImport.update({
+const OrganizationsIndexRoute = OrganizationsIndexRouteImport.update({
   id: '/organizations/',
   path: '/organizations/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppOrganizationsOrgIdRoute = AppOrganizationsOrgIdRouteImport.update({
+const OrganizationsOrgIdRoute = OrganizationsOrgIdRouteImport.update({
   id: '/organizations/$orgId',
   path: '/organizations/$orgId',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppOrganizationsTenantsRoute = AppOrganizationsTenantsRouteImport.update({
+const OrganizationsTenantsRoute = OrganizationsTenantsRouteImport.update({
   id: '/organizations/tenants',
   path: '/organizations/tenants',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSecurityIndexRoute = AppSecurityIndexRouteImport.update({
+const SecurityIndexRoute = SecurityIndexRouteImport.update({
   id: '/security/',
   path: '/security/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSecurityAuditIntelligenceRoute =
-  AppSecurityAuditIntelligenceRouteImport.update({
+const SecurityAuditIntelligenceRoute =
+  SecurityAuditIntelligenceRouteImport.update({
     id: '/security/audit-intelligence',
     path: '/security/audit-intelligence',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSecurityAuditLogsRoute = AppSecurityAuditLogsRouteImport.update({
+const SecurityAuditLogsRoute = SecurityAuditLogsRouteImport.update({
   id: '/security/audit-logs',
   path: '/security/audit-logs',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSecurityDeviceAuthorizationsRoute =
-  AppSecurityDeviceAuthorizationsRouteImport.update({
+const SecurityDeviceAuthorizationsRoute =
+  SecurityDeviceAuthorizationsRouteImport.update({
     id: '/security/device-authorizations',
     path: '/security/device-authorizations',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSecurityLogStreamingRoute = AppSecurityLogStreamingRouteImport.update({
+const SecurityLogStreamingRoute = SecurityLogStreamingRouteImport.update({
   id: '/security/log-streaming',
   path: '/security/log-streaming',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSecurityRateLimitsRoute = AppSecurityRateLimitsRouteImport.update({
+const SecurityRateLimitsRoute = SecurityRateLimitsRouteImport.update({
   id: '/security/rate-limits',
   path: '/security/rate-limits',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSecuritySessionsRoute = AppSecuritySessionsRouteImport.update({
+const SecuritySessionsRoute = SecuritySessionsRouteImport.update({
   id: '/security/sessions',
   path: '/security/sessions',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSettingsBillingRoute = AppSettingsBillingRouteImport.update({
+const SettingsBillingRoute = SettingsBillingRouteImport.update({
   id: '/settings/billing',
   path: '/settings/billing',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSettingsBrandingRoute = AppSettingsBrandingRouteImport.update({
+const SettingsBrandingRoute = SettingsBrandingRouteImport.update({
   id: '/settings/branding',
   path: '/settings/branding',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSettingsQeetAiRoute = AppSettingsQeetAiRouteImport.update({
+const SettingsQeetAiRoute = SettingsQeetAiRouteImport.update({
   id: '/settings/qeet-ai',
   path: '/settings/qeet-ai',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
+const UsersIndexRoute = UsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppUsersUserIdRoute = AppUsersUserIdRouteImport.update({
+const UsersUserIdRoute = UsersUserIdRouteImport.update({
   id: '/users/$userId',
   path: '/users/$userId',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppUsersDeletedRoute = AppUsersDeletedRouteImport.update({
+const UsersDeletedRoute = UsersDeletedRouteImport.update({
   id: '/users/deleted',
   path: '/users/deleted',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppUsersImportRoute = AppUsersImportRouteImport.update({
+const UsersImportRoute = UsersImportRouteImport.update({
   id: '/users/import',
   path: '/users/import',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppUsersSessionsRoute = AppUsersSessionsRouteImport.update({
+const UsersSessionsRoute = UsersSessionsRouteImport.update({
   id: '/users/sessions',
   path: '/users/sessions',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppUsersSuspendedRoute = AppUsersSuspendedRouteImport.update({
+const UsersSuspendedRoute = UsersSuspendedRouteImport.update({
   id: '/users/suspended',
   path: '/users/suspended',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AuthInviteAcceptRoute = AuthInviteAcceptRouteImport.update({
+const AuthInviteDotacceptRoute = AuthInviteDotacceptRouteImport.update({
   id: '/invite/accept',
   path: '/invite/accept',
   getParentRoute: () => AuthRoute,
 } as any)
-const AuthSsoCallbackRoute = AuthSsoCallbackRouteImport.update({
+const AuthSsoDotcallbackRoute = AuthSsoDotcallbackRouteImport.update({
   id: '/sso/callback',
   path: '/sso/callback',
   getParentRoute: () => AuthRoute,
 } as any)
-const AppAuthApiConsentGrantsRoute = AppAuthApiConsentGrantsRouteImport.update({
+const AuthApiConsentGrantsRoute = AuthApiConsentGrantsRouteImport.update({
   id: '/auth/api/consent-grants',
   path: '/auth/api/consent-grants',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthApiKeysRoute = AppAuthApiKeysRouteImport.update({
+const AuthApiKeysRoute = AuthApiKeysRouteImport.update({
   id: '/auth/api/keys',
   path: '/auth/api/keys',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthApiMachineIdentitiesRoute =
-  AppAuthApiMachineIdentitiesRouteImport.update({
+const AuthApiMachineIdentitiesRoute =
+  AuthApiMachineIdentitiesRouteImport.update({
     id: '/auth/api/machine-identities',
     path: '/auth/api/machine-identities',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppAuthApiSecretsRoute = AppAuthApiSecretsRouteImport.update({
+const AuthApiSecretsRoute = AuthApiSecretsRouteImport.update({
   id: '/auth/api/secrets',
   path: '/auth/api/secrets',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthApiSigningKeysRoute = AppAuthApiSigningKeysRouteImport.update({
+const AuthApiSigningKeysRoute = AuthApiSigningKeysRouteImport.update({
   id: '/auth/api/signing-keys',
   path: '/auth/api/signing-keys',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthApiTokensRoute = AppAuthApiTokensRouteImport.update({
+const AuthApiTokensRoute = AuthApiTokensRouteImport.update({
   id: '/auth/api/tokens',
   path: '/auth/api/tokens',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthConnectionsIndexRoute = AppAuthConnectionsIndexRouteImport.update({
+const AuthConnectionsIndexRoute = AuthConnectionsIndexRouteImport.update({
   id: '/auth/connections/',
   path: '/auth/connections/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthConnectionsLdapRoute = AppAuthConnectionsLdapRouteImport.update({
+const AuthConnectionsLdapRoute = AuthConnectionsLdapRouteImport.update({
   id: '/auth/connections/ldap',
   path: '/auth/connections/ldap',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthConnectionsSamlRoute = AppAuthConnectionsSamlRouteImport.update({
+const AuthConnectionsSamlRoute = AuthConnectionsSamlRouteImport.update({
   id: '/auth/connections/saml',
   path: '/auth/connections/saml',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthConnectionsSamlIdpRoute =
-  AppAuthConnectionsSamlIdpRouteImport.update({
-    id: '/auth/connections/saml-idp',
-    path: '/auth/connections/saml-idp',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppAuthConnectionsScimRoute = AppAuthConnectionsScimRouteImport.update({
+const AuthConnectionsSamlIdpRoute = AuthConnectionsSamlIdpRouteImport.update({
+  id: '/auth/connections/saml-idp',
+  path: '/auth/connections/saml-idp',
+  getParentRoute: () => appRoute,
+} as any)
+const AuthConnectionsScimRoute = AuthConnectionsScimRouteImport.update({
   id: '/auth/connections/scim',
   path: '/auth/connections/scim',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthLoginMethodsMagicLinksRoute =
-  AppAuthLoginMethodsMagicLinksRouteImport.update({
+const AuthLoginMethodsMagicLinksRoute =
+  AuthLoginMethodsMagicLinksRouteImport.update({
     id: '/auth/login-methods/magic-links',
     path: '/auth/login-methods/magic-links',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppAuthLoginMethodsPasskeysRoute =
-  AppAuthLoginMethodsPasskeysRouteImport.update({
+const AuthLoginMethodsPasskeysRoute =
+  AuthLoginMethodsPasskeysRouteImport.update({
     id: '/auth/login-methods/passkeys',
     path: '/auth/login-methods/passkeys',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppAuthLoginMethodsPasswordRoute =
-  AppAuthLoginMethodsPasswordRouteImport.update({
+const AuthLoginMethodsPasswordRoute =
+  AuthLoginMethodsPasswordRouteImport.update({
     id: '/auth/login-methods/password',
     path: '/auth/login-methods/password',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppAuthLoginMethodsPasswordlessRoute =
-  AppAuthLoginMethodsPasswordlessRouteImport.update({
+const AuthLoginMethodsPasswordlessRoute =
+  AuthLoginMethodsPasswordlessRouteImport.update({
     id: '/auth/login-methods/passwordless',
     path: '/auth/login-methods/passwordless',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppAuthMfaSmsEmailRoute = AppAuthMfaSmsEmailRouteImport.update({
+const AuthMfaSmsEmailRoute = AuthMfaSmsEmailRouteImport.update({
   id: '/auth/mfa/sms-email',
   path: '/auth/mfa/sms-email',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthMfaTotpRoute = AppAuthMfaTotpRouteImport.update({
+const AuthMfaTotpRoute = AuthMfaTotpRouteImport.update({
   id: '/auth/mfa/totp',
   path: '/auth/mfa/totp',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppDeveloperWebhooksIndexRoute =
-  AppDeveloperWebhooksIndexRouteImport.update({
-    id: '/developer/webhooks/',
-    path: '/developer/webhooks/',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppDeveloperWebhooksIdRoute = AppDeveloperWebhooksIdRouteImport.update({
+const DeveloperWebhooksIndexRoute = DeveloperWebhooksIndexRouteImport.update({
+  id: '/developer/webhooks/',
+  path: '/developer/webhooks/',
+  getParentRoute: () => appRoute,
+} as any)
+const DeveloperWebhooksIdRoute = DeveloperWebhooksIdRouteImport.update({
   id: '/developer/webhooks/$id',
   path: '/developer/webhooks/$id',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSecurityComplianceGdprRoute =
-  AppSecurityComplianceGdprRouteImport.update({
-    id: '/security/compliance/gdpr',
-    path: '/security/compliance/gdpr',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppSecurityComplianceIso27001Route =
-  AppSecurityComplianceIso27001RouteImport.update({
+const SecurityComplianceGdprRoute = SecurityComplianceGdprRouteImport.update({
+  id: '/security/compliance/gdpr',
+  path: '/security/compliance/gdpr',
+  getParentRoute: () => appRoute,
+} as any)
+const SecurityComplianceIso27001Route =
+  SecurityComplianceIso27001RouteImport.update({
     id: '/security/compliance/iso27001',
     path: '/security/compliance/iso27001',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSecurityComplianceRetentionRoute =
-  AppSecurityComplianceRetentionRouteImport.update({
+const SecurityComplianceRetentionRoute =
+  SecurityComplianceRetentionRouteImport.update({
     id: '/security/compliance/retention',
     path: '/security/compliance/retention',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSecurityComplianceSoc2Route =
-  AppSecurityComplianceSoc2RouteImport.update({
-    id: '/security/compliance/soc2',
-    path: '/security/compliance/soc2',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppSecurityThreatsAnomaliesRoute =
-  AppSecurityThreatsAnomaliesRouteImport.update({
+const SecurityComplianceSoc2Route = SecurityComplianceSoc2RouteImport.update({
+  id: '/security/compliance/soc2',
+  path: '/security/compliance/soc2',
+  getParentRoute: () => appRoute,
+} as any)
+const SecurityThreatsAnomaliesRoute =
+  SecurityThreatsAnomaliesRouteImport.update({
     id: '/security/threats/anomalies',
     path: '/security/threats/anomalies',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSecurityThreatsBotsRoute = AppSecurityThreatsBotsRouteImport.update({
+const SecurityThreatsBotsRoute = SecurityThreatsBotsRouteImport.update({
   id: '/security/threats/bots',
   path: '/security/threats/bots',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppSecurityThreatsIpAllowlistRoute =
-  AppSecurityThreatsIpAllowlistRouteImport.update({
+const SecurityThreatsIpAllowlistRoute =
+  SecurityThreatsIpAllowlistRouteImport.update({
     id: '/security/threats/ip-allowlist',
     path: '/security/threats/ip-allowlist',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSecurityThreatsRateLimitsRoute =
-  AppSecurityThreatsRateLimitsRouteImport.update({
+const SecurityThreatsRateLimitsRoute =
+  SecurityThreatsRateLimitsRouteImport.update({
     id: '/security/threats/rate-limits',
     path: '/security/threats/rate-limits',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSecurityThreatsRiskSettingsRoute =
-  AppSecurityThreatsRiskSettingsRouteImport.update({
+const SecurityThreatsRiskSettingsRoute =
+  SecurityThreatsRiskSettingsRouteImport.update({
     id: '/security/threats/risk-settings',
     path: '/security/threats/risk-settings',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSettingsOrganizationDomainsRoute =
-  AppSettingsOrganizationDomainsRouteImport.update({
+const SettingsOrganizationDomainsRoute =
+  SettingsOrganizationDomainsRouteImport.update({
     id: '/settings/organization/domains',
     path: '/settings/organization/domains',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSettingsOrganizationEmailTemplatesRoute =
-  AppSettingsOrganizationEmailTemplatesRouteImport.update({
+const SettingsOrganizationEmailTemplatesRoute =
+  SettingsOrganizationEmailTemplatesRouteImport.update({
     id: '/settings/organization/email-templates',
     path: '/settings/organization/email-templates',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSettingsOrganizationGeneralRoute =
-  AppSettingsOrganizationGeneralRouteImport.update({
+const SettingsOrganizationGeneralRoute =
+  SettingsOrganizationGeneralRouteImport.update({
     id: '/settings/organization/general',
     path: '/settings/organization/general',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppSettingsOrganizationSecurityPolicyRoute =
-  AppSettingsOrganizationSecurityPolicyRouteImport.update({
+const SettingsOrganizationSecurityPolicyRoute =
+  SettingsOrganizationSecurityPolicyRouteImport.update({
     id: '/settings/organization/security-policy',
     path: '/settings/organization/security-policy',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppUsersUserIdTimelineRoute = AppUsersUserIdTimelineRouteImport.update({
+const UsersUserId_DottimelineRoute = UsersUserId_DottimelineRouteImport.update({
   id: '/users/$userId_/timeline',
   path: '/users/$userId/timeline',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => appRoute,
 } as any)
-const AppAuthConnectionsOidcIndexRoute =
-  AppAuthConnectionsOidcIndexRouteImport.update({
+const AuthConnectionsOidcIndexRoute =
+  AuthConnectionsOidcIndexRouteImport.update({
     id: '/auth/connections/oidc/',
     path: '/auth/connections/oidc/',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
-const AppAuthConnectionsOidcClientIdRoute =
-  AppAuthConnectionsOidcClientIdRouteImport.update({
+const AuthConnectionsOidcClientIdRoute =
+  AuthConnectionsOidcClientIdRouteImport.update({
     id: '/auth/connections/oidc/$clientId',
     path: '/auth/connections/oidc/$clientId',
-    getParentRoute: () => AppRoute,
+    getParentRoute: () => appRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
   '/account': typeof AccountRouteWithChildren
-  '/healthz': typeof HealthzRoute
+  '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/$': typeof AppSplatRoute
-  '/activity': typeof AppActivityRoute
-  '/analytics': typeof AppAnalyticsRoute
-  '/applications': typeof AppApplicationsRoute
-  '/authentication': typeof AppAuthenticationRoute
-  '/invitations': typeof AppInvitationsRoute
+  '/$': typeof SplatRoute
+  '/activity': typeof ActivityRoute
+  '/analytics': typeof AnalyticsRoute
+  '/applications': typeof ApplicationsRoute
+  '/authentication': typeof AuthenticationRoute
+  '/invitations': typeof InvitationsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/magic': typeof AuthMagicRoute
   '/sign-in': typeof AuthSignInRoute
@@ -719,105 +707,105 @@ export interface FileRoutesByFullPath {
   '/account/sessions': typeof AccountSessionsRoute
   '/api/activity-stream': typeof ApiActivityStreamRoute
   '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
-  '/auth/social': typeof AppAuthSocialRoute
-  '/authorization/abac': typeof AppAuthorizationAbacRoute
-  '/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/authorization/audit': typeof AppAuthorizationAuditRoute
-  '/authorization/builder': typeof AppAuthorizationBuilderRoute
-  '/authorization/explorer': typeof AppAuthorizationExplorerRoute
-  '/authorization/permissions': typeof AppAuthorizationPermissionsRoute
-  '/authorization/rbac': typeof AppAuthorizationRbacRoute
-  '/authorization/rebac': typeof AppAuthorizationRebacRoute
-  '/authorization/resources': typeof AppAuthorizationResourcesRoute
-  '/authorization/roles': typeof AppAuthorizationRolesRoute
-  '/authorization/settings': typeof AppAuthorizationSettingsRoute
-  '/authorization/simulator': typeof AppAuthorizationSimulatorRoute
-  '/authorization/templates': typeof AppAuthorizationTemplatesRoute
-  '/authorization/versions': typeof AppAuthorizationVersionsRoute
-  '/developer/agents': typeof AppDeveloperAgentsRoute
-  '/developer/auth-hooks': typeof AppDeveloperAuthHooksRoute
-  '/developer/bots': typeof AppDeveloperBotsRoute
-  '/developer/credentials': typeof AppDeveloperCredentialsRoute
-  '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
-  '/directory/attribute-mappings': typeof AppDirectoryAttributeMappingsRoute
-  '/directory/connections': typeof AppDirectoryConnectionsRoute
-  '/directory/sync-activity': typeof AppDirectorySyncActivityRoute
-  '/directory/sync-errors': typeof AppDirectorySyncErrorsRoute
-  '/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/organizations/$orgId': typeof AppOrganizationsOrgIdRoute
-  '/organizations/tenants': typeof AppOrganizationsTenantsRoute
-  '/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
-  '/security/audit-logs': typeof AppSecurityAuditLogsRoute
-  '/security/device-authorizations': typeof AppSecurityDeviceAuthorizationsRoute
-  '/security/log-streaming': typeof AppSecurityLogStreamingRoute
-  '/security/rate-limits': typeof AppSecurityRateLimitsRoute
-  '/security/sessions': typeof AppSecuritySessionsRoute
-  '/settings/billing': typeof AppSettingsBillingRoute
-  '/settings/branding': typeof AppSettingsBrandingRoute
-  '/settings/qeet-ai': typeof AppSettingsQeetAiRoute
-  '/users/$userId': typeof AppUsersUserIdRoute
-  '/users/deleted': typeof AppUsersDeletedRoute
-  '/users/import': typeof AppUsersImportRoute
-  '/users/sessions': typeof AppUsersSessionsRoute
-  '/users/suspended': typeof AppUsersSuspendedRoute
-  '/invite/accept': typeof AuthInviteAcceptRoute
-  '/sso/callback': typeof AuthSsoCallbackRoute
-  '/authorization/': typeof AppAuthorizationIndexRoute
-  '/developer/': typeof AppDeveloperIndexRoute
-  '/directory/': typeof AppDirectoryIndexRoute
-  '/groups/': typeof AppGroupsIndexRoute
-  '/organizations/': typeof AppOrganizationsIndexRoute
-  '/security/': typeof AppSecurityIndexRoute
-  '/settings/': typeof AppSettingsIndexRoute
-  '/users/': typeof AppUsersIndexRoute
-  '/auth/api/consent-grants': typeof AppAuthApiConsentGrantsRoute
-  '/auth/api/keys': typeof AppAuthApiKeysRoute
-  '/auth/api/machine-identities': typeof AppAuthApiMachineIdentitiesRoute
-  '/auth/api/secrets': typeof AppAuthApiSecretsRoute
-  '/auth/api/signing-keys': typeof AppAuthApiSigningKeysRoute
-  '/auth/api/tokens': typeof AppAuthApiTokensRoute
-  '/auth/connections/ldap': typeof AppAuthConnectionsLdapRoute
-  '/auth/connections/saml': typeof AppAuthConnectionsSamlRoute
-  '/auth/connections/saml-idp': typeof AppAuthConnectionsSamlIdpRoute
-  '/auth/connections/scim': typeof AppAuthConnectionsScimRoute
-  '/auth/login-methods/magic-links': typeof AppAuthLoginMethodsMagicLinksRoute
-  '/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
-  '/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
-  '/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
-  '/auth/mfa/totp': typeof AppAuthMfaTotpRoute
-  '/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
-  '/security/compliance/gdpr': typeof AppSecurityComplianceGdprRoute
-  '/security/compliance/iso27001': typeof AppSecurityComplianceIso27001Route
-  '/security/compliance/retention': typeof AppSecurityComplianceRetentionRoute
-  '/security/compliance/soc2': typeof AppSecurityComplianceSoc2Route
-  '/security/threats/anomalies': typeof AppSecurityThreatsAnomaliesRoute
-  '/security/threats/bots': typeof AppSecurityThreatsBotsRoute
-  '/security/threats/ip-allowlist': typeof AppSecurityThreatsIpAllowlistRoute
-  '/security/threats/rate-limits': typeof AppSecurityThreatsRateLimitsRoute
-  '/security/threats/risk-settings': typeof AppSecurityThreatsRiskSettingsRoute
-  '/settings/organization/domains': typeof AppSettingsOrganizationDomainsRoute
-  '/settings/organization/email-templates': typeof AppSettingsOrganizationEmailTemplatesRoute
-  '/settings/organization/general': typeof AppSettingsOrganizationGeneralRoute
-  '/settings/organization/security-policy': typeof AppSettingsOrganizationSecurityPolicyRoute
-  '/users/$userId/timeline': typeof AppUsersUserIdTimelineRoute
-  '/auth/connections/': typeof AppAuthConnectionsIndexRoute
-  '/developer/webhooks/': typeof AppDeveloperWebhooksIndexRoute
-  '/auth/connections/oidc/$clientId': typeof AppAuthConnectionsOidcClientIdRoute
-  '/auth/connections/oidc/': typeof AppAuthConnectionsOidcIndexRoute
+  '/auth/social': typeof AuthSocialRoute
+  '/authorization/abac': typeof AuthorizationAbacRoute
+  '/authorization/access-tester': typeof AuthorizationAccessTesterRoute
+  '/authorization/audit': typeof AuthorizationAuditRoute
+  '/authorization/builder': typeof AuthorizationBuilderRoute
+  '/authorization/explorer': typeof AuthorizationExplorerRoute
+  '/authorization/permissions': typeof AuthorizationPermissionsRoute
+  '/authorization/rbac': typeof AuthorizationRbacRoute
+  '/authorization/rebac': typeof AuthorizationRebacRoute
+  '/authorization/resources': typeof AuthorizationResourcesRoute
+  '/authorization/roles': typeof AuthorizationRolesRoute
+  '/authorization/settings': typeof AuthorizationSettingsRoute
+  '/authorization/simulator': typeof AuthorizationSimulatorRoute
+  '/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/authorization/versions': typeof AuthorizationVersionsRoute
+  '/developer/agents': typeof DeveloperAgentsRoute
+  '/developer/auth-hooks': typeof DeveloperAuthHooksRoute
+  '/developer/bots': typeof DeveloperBotsRoute
+  '/developer/credentials': typeof DeveloperCredentialsRoute
+  '/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
+  '/directory/connections': typeof DirectoryConnectionsRoute
+  '/directory/sync-activity': typeof DirectorySyncActivityRoute
+  '/directory/sync-errors': typeof DirectorySyncErrorsRoute
+  '/groups/$groupId': typeof GroupsGroupIdRoute
+  '/organizations/$orgId': typeof OrganizationsOrgIdRoute
+  '/organizations/tenants': typeof OrganizationsTenantsRoute
+  '/security/audit-intelligence': typeof SecurityAuditIntelligenceRoute
+  '/security/audit-logs': typeof SecurityAuditLogsRoute
+  '/security/device-authorizations': typeof SecurityDeviceAuthorizationsRoute
+  '/security/log-streaming': typeof SecurityLogStreamingRoute
+  '/security/rate-limits': typeof SecurityRateLimitsRoute
+  '/security/sessions': typeof SecuritySessionsRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/settings/branding': typeof SettingsBrandingRoute
+  '/settings/qeet-ai': typeof SettingsQeetAiRoute
+  '/users/$userId': typeof UsersUserIdRoute
+  '/users/deleted': typeof UsersDeletedRoute
+  '/users/import': typeof UsersImportRoute
+  '/users/sessions': typeof UsersSessionsRoute
+  '/users/suspended': typeof UsersSuspendedRoute
+  '/invite/accept': typeof AuthInviteDotacceptRoute
+  '/sso/callback': typeof AuthSsoDotcallbackRoute
+  '/authorization/': typeof AuthorizationIndexRoute
+  '/developer/': typeof DeveloperIndexRoute
+  '/directory/': typeof DirectoryIndexRoute
+  '/groups/': typeof GroupsIndexRoute
+  '/organizations/': typeof OrganizationsIndexRoute
+  '/security/': typeof SecurityIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/users/': typeof UsersIndexRoute
+  '/auth/api/consent-grants': typeof AuthApiConsentGrantsRoute
+  '/auth/api/keys': typeof AuthApiKeysRoute
+  '/auth/api/machine-identities': typeof AuthApiMachineIdentitiesRoute
+  '/auth/api/secrets': typeof AuthApiSecretsRoute
+  '/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
+  '/auth/api/tokens': typeof AuthApiTokensRoute
+  '/auth/connections/ldap': typeof AuthConnectionsLdapRoute
+  '/auth/connections/saml': typeof AuthConnectionsSamlRoute
+  '/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
+  '/auth/connections/scim': typeof AuthConnectionsScimRoute
+  '/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
+  '/auth/login-methods/passkeys': typeof AuthLoginMethodsPasskeysRoute
+  '/auth/login-methods/password': typeof AuthLoginMethodsPasswordRoute
+  '/auth/login-methods/passwordless': typeof AuthLoginMethodsPasswordlessRoute
+  '/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
+  '/auth/mfa/totp': typeof AuthMfaTotpRoute
+  '/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
+  '/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
+  '/security/compliance/retention': typeof SecurityComplianceRetentionRoute
+  '/security/compliance/soc2': typeof SecurityComplianceSoc2Route
+  '/security/threats/anomalies': typeof SecurityThreatsAnomaliesRoute
+  '/security/threats/bots': typeof SecurityThreatsBotsRoute
+  '/security/threats/ip-allowlist': typeof SecurityThreatsIpAllowlistRoute
+  '/security/threats/rate-limits': typeof SecurityThreatsRateLimitsRoute
+  '/security/threats/risk-settings': typeof SecurityThreatsRiskSettingsRoute
+  '/settings/organization/domains': typeof SettingsOrganizationDomainsRoute
+  '/settings/organization/email-templates': typeof SettingsOrganizationEmailTemplatesRoute
+  '/settings/organization/general': typeof SettingsOrganizationGeneralRoute
+  '/settings/organization/security-policy': typeof SettingsOrganizationSecurityPolicyRoute
+  '/users/$userId/timeline': typeof UsersUserId_DottimelineRoute
+  '/auth/connections/': typeof AuthConnectionsIndexRoute
+  '/developer/webhooks/': typeof DeveloperWebhooksIndexRoute
+  '/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/auth/connections/oidc/': typeof AuthConnectionsOidcIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
   '/account': typeof AccountRouteWithChildren
-  '/healthz': typeof HealthzRoute
+  '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/$': typeof AppSplatRoute
-  '/activity': typeof AppActivityRoute
-  '/analytics': typeof AppAnalyticsRoute
-  '/applications': typeof AppApplicationsRoute
-  '/authentication': typeof AppAuthenticationRoute
-  '/invitations': typeof AppInvitationsRoute
+  '/$': typeof SplatRoute
+  '/activity': typeof ActivityRoute
+  '/analytics': typeof AnalyticsRoute
+  '/applications': typeof ApplicationsRoute
+  '/authentication': typeof AuthenticationRoute
+  '/invitations': typeof InvitationsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/magic': typeof AuthMagicRoute
   '/sign-in': typeof AuthSignInRoute
@@ -828,107 +816,107 @@ export interface FileRoutesByTo {
   '/account/sessions': typeof AccountSessionsRoute
   '/api/activity-stream': typeof ApiActivityStreamRoute
   '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
-  '/auth/social': typeof AppAuthSocialRoute
-  '/authorization/abac': typeof AppAuthorizationAbacRoute
-  '/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/authorization/audit': typeof AppAuthorizationAuditRoute
-  '/authorization/builder': typeof AppAuthorizationBuilderRoute
-  '/authorization/explorer': typeof AppAuthorizationExplorerRoute
-  '/authorization/permissions': typeof AppAuthorizationPermissionsRoute
-  '/authorization/rbac': typeof AppAuthorizationRbacRoute
-  '/authorization/rebac': typeof AppAuthorizationRebacRoute
-  '/authorization/resources': typeof AppAuthorizationResourcesRoute
-  '/authorization/roles': typeof AppAuthorizationRolesRoute
-  '/authorization/settings': typeof AppAuthorizationSettingsRoute
-  '/authorization/simulator': typeof AppAuthorizationSimulatorRoute
-  '/authorization/templates': typeof AppAuthorizationTemplatesRoute
-  '/authorization/versions': typeof AppAuthorizationVersionsRoute
-  '/developer/agents': typeof AppDeveloperAgentsRoute
-  '/developer/auth-hooks': typeof AppDeveloperAuthHooksRoute
-  '/developer/bots': typeof AppDeveloperBotsRoute
-  '/developer/credentials': typeof AppDeveloperCredentialsRoute
-  '/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
-  '/directory/attribute-mappings': typeof AppDirectoryAttributeMappingsRoute
-  '/directory/connections': typeof AppDirectoryConnectionsRoute
-  '/directory/sync-activity': typeof AppDirectorySyncActivityRoute
-  '/directory/sync-errors': typeof AppDirectorySyncErrorsRoute
-  '/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/organizations/$orgId': typeof AppOrganizationsOrgIdRoute
-  '/organizations/tenants': typeof AppOrganizationsTenantsRoute
-  '/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
-  '/security/audit-logs': typeof AppSecurityAuditLogsRoute
-  '/security/device-authorizations': typeof AppSecurityDeviceAuthorizationsRoute
-  '/security/log-streaming': typeof AppSecurityLogStreamingRoute
-  '/security/rate-limits': typeof AppSecurityRateLimitsRoute
-  '/security/sessions': typeof AppSecuritySessionsRoute
-  '/settings/billing': typeof AppSettingsBillingRoute
-  '/settings/branding': typeof AppSettingsBrandingRoute
-  '/settings/qeet-ai': typeof AppSettingsQeetAiRoute
-  '/users/$userId': typeof AppUsersUserIdRoute
-  '/users/deleted': typeof AppUsersDeletedRoute
-  '/users/import': typeof AppUsersImportRoute
-  '/users/sessions': typeof AppUsersSessionsRoute
-  '/users/suspended': typeof AppUsersSuspendedRoute
-  '/invite/accept': typeof AuthInviteAcceptRoute
-  '/sso/callback': typeof AuthSsoCallbackRoute
-  '/authorization': typeof AppAuthorizationIndexRoute
-  '/developer': typeof AppDeveloperIndexRoute
-  '/directory': typeof AppDirectoryIndexRoute
-  '/groups': typeof AppGroupsIndexRoute
-  '/organizations': typeof AppOrganizationsIndexRoute
-  '/security': typeof AppSecurityIndexRoute
-  '/settings': typeof AppSettingsIndexRoute
-  '/users': typeof AppUsersIndexRoute
-  '/auth/api/consent-grants': typeof AppAuthApiConsentGrantsRoute
-  '/auth/api/keys': typeof AppAuthApiKeysRoute
-  '/auth/api/machine-identities': typeof AppAuthApiMachineIdentitiesRoute
-  '/auth/api/secrets': typeof AppAuthApiSecretsRoute
-  '/auth/api/signing-keys': typeof AppAuthApiSigningKeysRoute
-  '/auth/api/tokens': typeof AppAuthApiTokensRoute
-  '/auth/connections/ldap': typeof AppAuthConnectionsLdapRoute
-  '/auth/connections/saml': typeof AppAuthConnectionsSamlRoute
-  '/auth/connections/saml-idp': typeof AppAuthConnectionsSamlIdpRoute
-  '/auth/connections/scim': typeof AppAuthConnectionsScimRoute
-  '/auth/login-methods/magic-links': typeof AppAuthLoginMethodsMagicLinksRoute
-  '/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
-  '/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
-  '/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
-  '/auth/mfa/totp': typeof AppAuthMfaTotpRoute
-  '/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
-  '/security/compliance/gdpr': typeof AppSecurityComplianceGdprRoute
-  '/security/compliance/iso27001': typeof AppSecurityComplianceIso27001Route
-  '/security/compliance/retention': typeof AppSecurityComplianceRetentionRoute
-  '/security/compliance/soc2': typeof AppSecurityComplianceSoc2Route
-  '/security/threats/anomalies': typeof AppSecurityThreatsAnomaliesRoute
-  '/security/threats/bots': typeof AppSecurityThreatsBotsRoute
-  '/security/threats/ip-allowlist': typeof AppSecurityThreatsIpAllowlistRoute
-  '/security/threats/rate-limits': typeof AppSecurityThreatsRateLimitsRoute
-  '/security/threats/risk-settings': typeof AppSecurityThreatsRiskSettingsRoute
-  '/settings/organization/domains': typeof AppSettingsOrganizationDomainsRoute
-  '/settings/organization/email-templates': typeof AppSettingsOrganizationEmailTemplatesRoute
-  '/settings/organization/general': typeof AppSettingsOrganizationGeneralRoute
-  '/settings/organization/security-policy': typeof AppSettingsOrganizationSecurityPolicyRoute
-  '/users/$userId/timeline': typeof AppUsersUserIdTimelineRoute
-  '/auth/connections': typeof AppAuthConnectionsIndexRoute
-  '/developer/webhooks': typeof AppDeveloperWebhooksIndexRoute
-  '/auth/connections/oidc/$clientId': typeof AppAuthConnectionsOidcClientIdRoute
-  '/auth/connections/oidc': typeof AppAuthConnectionsOidcIndexRoute
+  '/auth/social': typeof AuthSocialRoute
+  '/authorization/abac': typeof AuthorizationAbacRoute
+  '/authorization/access-tester': typeof AuthorizationAccessTesterRoute
+  '/authorization/audit': typeof AuthorizationAuditRoute
+  '/authorization/builder': typeof AuthorizationBuilderRoute
+  '/authorization/explorer': typeof AuthorizationExplorerRoute
+  '/authorization/permissions': typeof AuthorizationPermissionsRoute
+  '/authorization/rbac': typeof AuthorizationRbacRoute
+  '/authorization/rebac': typeof AuthorizationRebacRoute
+  '/authorization/resources': typeof AuthorizationResourcesRoute
+  '/authorization/roles': typeof AuthorizationRolesRoute
+  '/authorization/settings': typeof AuthorizationSettingsRoute
+  '/authorization/simulator': typeof AuthorizationSimulatorRoute
+  '/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/authorization/versions': typeof AuthorizationVersionsRoute
+  '/developer/agents': typeof DeveloperAgentsRoute
+  '/developer/auth-hooks': typeof DeveloperAuthHooksRoute
+  '/developer/bots': typeof DeveloperBotsRoute
+  '/developer/credentials': typeof DeveloperCredentialsRoute
+  '/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
+  '/directory/connections': typeof DirectoryConnectionsRoute
+  '/directory/sync-activity': typeof DirectorySyncActivityRoute
+  '/directory/sync-errors': typeof DirectorySyncErrorsRoute
+  '/groups/$groupId': typeof GroupsGroupIdRoute
+  '/organizations/$orgId': typeof OrganizationsOrgIdRoute
+  '/organizations/tenants': typeof OrganizationsTenantsRoute
+  '/security/audit-intelligence': typeof SecurityAuditIntelligenceRoute
+  '/security/audit-logs': typeof SecurityAuditLogsRoute
+  '/security/device-authorizations': typeof SecurityDeviceAuthorizationsRoute
+  '/security/log-streaming': typeof SecurityLogStreamingRoute
+  '/security/rate-limits': typeof SecurityRateLimitsRoute
+  '/security/sessions': typeof SecuritySessionsRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/settings/branding': typeof SettingsBrandingRoute
+  '/settings/qeet-ai': typeof SettingsQeetAiRoute
+  '/users/$userId': typeof UsersUserIdRoute
+  '/users/deleted': typeof UsersDeletedRoute
+  '/users/import': typeof UsersImportRoute
+  '/users/sessions': typeof UsersSessionsRoute
+  '/users/suspended': typeof UsersSuspendedRoute
+  '/invite/accept': typeof AuthInviteDotacceptRoute
+  '/sso/callback': typeof AuthSsoDotcallbackRoute
+  '/authorization': typeof AuthorizationIndexRoute
+  '/developer': typeof DeveloperIndexRoute
+  '/directory': typeof DirectoryIndexRoute
+  '/groups': typeof GroupsIndexRoute
+  '/organizations': typeof OrganizationsIndexRoute
+  '/security': typeof SecurityIndexRoute
+  '/settings': typeof SettingsIndexRoute
+  '/users': typeof UsersIndexRoute
+  '/auth/api/consent-grants': typeof AuthApiConsentGrantsRoute
+  '/auth/api/keys': typeof AuthApiKeysRoute
+  '/auth/api/machine-identities': typeof AuthApiMachineIdentitiesRoute
+  '/auth/api/secrets': typeof AuthApiSecretsRoute
+  '/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
+  '/auth/api/tokens': typeof AuthApiTokensRoute
+  '/auth/connections/ldap': typeof AuthConnectionsLdapRoute
+  '/auth/connections/saml': typeof AuthConnectionsSamlRoute
+  '/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
+  '/auth/connections/scim': typeof AuthConnectionsScimRoute
+  '/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
+  '/auth/login-methods/passkeys': typeof AuthLoginMethodsPasskeysRoute
+  '/auth/login-methods/password': typeof AuthLoginMethodsPasswordRoute
+  '/auth/login-methods/passwordless': typeof AuthLoginMethodsPasswordlessRoute
+  '/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
+  '/auth/mfa/totp': typeof AuthMfaTotpRoute
+  '/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
+  '/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
+  '/security/compliance/retention': typeof SecurityComplianceRetentionRoute
+  '/security/compliance/soc2': typeof SecurityComplianceSoc2Route
+  '/security/threats/anomalies': typeof SecurityThreatsAnomaliesRoute
+  '/security/threats/bots': typeof SecurityThreatsBotsRoute
+  '/security/threats/ip-allowlist': typeof SecurityThreatsIpAllowlistRoute
+  '/security/threats/rate-limits': typeof SecurityThreatsRateLimitsRoute
+  '/security/threats/risk-settings': typeof SecurityThreatsRiskSettingsRoute
+  '/settings/organization/domains': typeof SettingsOrganizationDomainsRoute
+  '/settings/organization/email-templates': typeof SettingsOrganizationEmailTemplatesRoute
+  '/settings/organization/general': typeof SettingsOrganizationGeneralRoute
+  '/settings/organization/security-policy': typeof SettingsOrganizationSecurityPolicyRoute
+  '/users/$userId/timeline': typeof UsersUserId_DottimelineRoute
+  '/auth/connections': typeof AuthConnectionsIndexRoute
+  '/developer/webhooks': typeof DeveloperWebhooksIndexRoute
+  '/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/auth/connections/oidc': typeof AuthConnectionsOidcIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_app': typeof AppRouteWithChildren
+  '/_app': typeof appRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/account': typeof AccountRouteWithChildren
-  '/healthz': typeof HealthzRoute
+  '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/_app/$': typeof AppSplatRoute
-  '/_app/activity': typeof AppActivityRoute
-  '/_app/analytics': typeof AppAnalyticsRoute
-  '/_app/applications': typeof AppApplicationsRoute
-  '/_app/authentication': typeof AppAuthenticationRoute
-  '/_app/invitations': typeof AppInvitationsRoute
+  '/_app/$': typeof SplatRoute
+  '/_app/activity': typeof ActivityRoute
+  '/_app/analytics': typeof AnalyticsRoute
+  '/_app/applications': typeof ApplicationsRoute
+  '/_app/authentication': typeof AuthenticationRoute
+  '/_app/invitations': typeof InvitationsRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/magic': typeof AuthMagicRoute
   '/_auth/sign-in': typeof AuthSignInRoute
@@ -939,93 +927,93 @@ export interface FileRoutesById {
   '/account/sessions': typeof AccountSessionsRoute
   '/api/activity-stream': typeof ApiActivityStreamRoute
   '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
-  '/_app/': typeof AppIndexRoute
-  '/_app/auth/social': typeof AppAuthSocialRoute
-  '/_app/authorization/abac': typeof AppAuthorizationAbacRoute
-  '/_app/authorization/access-tester': typeof AppAuthorizationAccessTesterRoute
-  '/_app/authorization/audit': typeof AppAuthorizationAuditRoute
-  '/_app/authorization/builder': typeof AppAuthorizationBuilderRoute
-  '/_app/authorization/explorer': typeof AppAuthorizationExplorerRoute
-  '/_app/authorization/permissions': typeof AppAuthorizationPermissionsRoute
-  '/_app/authorization/rbac': typeof AppAuthorizationRbacRoute
-  '/_app/authorization/rebac': typeof AppAuthorizationRebacRoute
-  '/_app/authorization/resources': typeof AppAuthorizationResourcesRoute
-  '/_app/authorization/roles': typeof AppAuthorizationRolesRoute
-  '/_app/authorization/settings': typeof AppAuthorizationSettingsRoute
-  '/_app/authorization/simulator': typeof AppAuthorizationSimulatorRoute
-  '/_app/authorization/templates': typeof AppAuthorizationTemplatesRoute
-  '/_app/authorization/versions': typeof AppAuthorizationVersionsRoute
-  '/_app/developer/agents': typeof AppDeveloperAgentsRoute
-  '/_app/developer/auth-hooks': typeof AppDeveloperAuthHooksRoute
-  '/_app/developer/bots': typeof AppDeveloperBotsRoute
-  '/_app/developer/credentials': typeof AppDeveloperCredentialsRoute
-  '/_app/developer/infrastructure': typeof AppDeveloperInfrastructureRoute
-  '/_app/directory/attribute-mappings': typeof AppDirectoryAttributeMappingsRoute
-  '/_app/directory/connections': typeof AppDirectoryConnectionsRoute
-  '/_app/directory/sync-activity': typeof AppDirectorySyncActivityRoute
-  '/_app/directory/sync-errors': typeof AppDirectorySyncErrorsRoute
-  '/_app/groups/$groupId': typeof AppGroupsGroupIdRoute
-  '/_app/organizations/$orgId': typeof AppOrganizationsOrgIdRoute
-  '/_app/organizations/tenants': typeof AppOrganizationsTenantsRoute
-  '/_app/security/audit-intelligence': typeof AppSecurityAuditIntelligenceRoute
-  '/_app/security/audit-logs': typeof AppSecurityAuditLogsRoute
-  '/_app/security/device-authorizations': typeof AppSecurityDeviceAuthorizationsRoute
-  '/_app/security/log-streaming': typeof AppSecurityLogStreamingRoute
-  '/_app/security/rate-limits': typeof AppSecurityRateLimitsRoute
-  '/_app/security/sessions': typeof AppSecuritySessionsRoute
-  '/_app/settings/billing': typeof AppSettingsBillingRoute
-  '/_app/settings/branding': typeof AppSettingsBrandingRoute
-  '/_app/settings/qeet-ai': typeof AppSettingsQeetAiRoute
-  '/_app/users/$userId': typeof AppUsersUserIdRoute
-  '/_app/users/deleted': typeof AppUsersDeletedRoute
-  '/_app/users/import': typeof AppUsersImportRoute
-  '/_app/users/sessions': typeof AppUsersSessionsRoute
-  '/_app/users/suspended': typeof AppUsersSuspendedRoute
-  '/_auth/invite/accept': typeof AuthInviteAcceptRoute
-  '/_auth/sso/callback': typeof AuthSsoCallbackRoute
-  '/_app/authorization/': typeof AppAuthorizationIndexRoute
-  '/_app/developer/': typeof AppDeveloperIndexRoute
-  '/_app/directory/': typeof AppDirectoryIndexRoute
-  '/_app/groups/': typeof AppGroupsIndexRoute
-  '/_app/organizations/': typeof AppOrganizationsIndexRoute
-  '/_app/security/': typeof AppSecurityIndexRoute
-  '/_app/settings/': typeof AppSettingsIndexRoute
-  '/_app/users/': typeof AppUsersIndexRoute
-  '/_app/auth/api/consent-grants': typeof AppAuthApiConsentGrantsRoute
-  '/_app/auth/api/keys': typeof AppAuthApiKeysRoute
-  '/_app/auth/api/machine-identities': typeof AppAuthApiMachineIdentitiesRoute
-  '/_app/auth/api/secrets': typeof AppAuthApiSecretsRoute
-  '/_app/auth/api/signing-keys': typeof AppAuthApiSigningKeysRoute
-  '/_app/auth/api/tokens': typeof AppAuthApiTokensRoute
-  '/_app/auth/connections/ldap': typeof AppAuthConnectionsLdapRoute
-  '/_app/auth/connections/saml': typeof AppAuthConnectionsSamlRoute
-  '/_app/auth/connections/saml-idp': typeof AppAuthConnectionsSamlIdpRoute
-  '/_app/auth/connections/scim': typeof AppAuthConnectionsScimRoute
-  '/_app/auth/login-methods/magic-links': typeof AppAuthLoginMethodsMagicLinksRoute
-  '/_app/auth/login-methods/passkeys': typeof AppAuthLoginMethodsPasskeysRoute
-  '/_app/auth/login-methods/password': typeof AppAuthLoginMethodsPasswordRoute
-  '/_app/auth/login-methods/passwordless': typeof AppAuthLoginMethodsPasswordlessRoute
-  '/_app/auth/mfa/sms-email': typeof AppAuthMfaSmsEmailRoute
-  '/_app/auth/mfa/totp': typeof AppAuthMfaTotpRoute
-  '/_app/developer/webhooks/$id': typeof AppDeveloperWebhooksIdRoute
-  '/_app/security/compliance/gdpr': typeof AppSecurityComplianceGdprRoute
-  '/_app/security/compliance/iso27001': typeof AppSecurityComplianceIso27001Route
-  '/_app/security/compliance/retention': typeof AppSecurityComplianceRetentionRoute
-  '/_app/security/compliance/soc2': typeof AppSecurityComplianceSoc2Route
-  '/_app/security/threats/anomalies': typeof AppSecurityThreatsAnomaliesRoute
-  '/_app/security/threats/bots': typeof AppSecurityThreatsBotsRoute
-  '/_app/security/threats/ip-allowlist': typeof AppSecurityThreatsIpAllowlistRoute
-  '/_app/security/threats/rate-limits': typeof AppSecurityThreatsRateLimitsRoute
-  '/_app/security/threats/risk-settings': typeof AppSecurityThreatsRiskSettingsRoute
-  '/_app/settings/organization/domains': typeof AppSettingsOrganizationDomainsRoute
-  '/_app/settings/organization/email-templates': typeof AppSettingsOrganizationEmailTemplatesRoute
-  '/_app/settings/organization/general': typeof AppSettingsOrganizationGeneralRoute
-  '/_app/settings/organization/security-policy': typeof AppSettingsOrganizationSecurityPolicyRoute
-  '/_app/users/$userId_/timeline': typeof AppUsersUserIdTimelineRoute
-  '/_app/auth/connections/': typeof AppAuthConnectionsIndexRoute
-  '/_app/developer/webhooks/': typeof AppDeveloperWebhooksIndexRoute
-  '/_app/auth/connections/oidc/$clientId': typeof AppAuthConnectionsOidcClientIdRoute
-  '/_app/auth/connections/oidc/': typeof AppAuthConnectionsOidcIndexRoute
+  '/_app/': typeof IndexRoute
+  '/_app/auth/social': typeof AuthSocialRoute
+  '/_app/authorization/abac': typeof AuthorizationAbacRoute
+  '/_app/authorization/access-tester': typeof AuthorizationAccessTesterRoute
+  '/_app/authorization/audit': typeof AuthorizationAuditRoute
+  '/_app/authorization/builder': typeof AuthorizationBuilderRoute
+  '/_app/authorization/explorer': typeof AuthorizationExplorerRoute
+  '/_app/authorization/permissions': typeof AuthorizationPermissionsRoute
+  '/_app/authorization/rbac': typeof AuthorizationRbacRoute
+  '/_app/authorization/rebac': typeof AuthorizationRebacRoute
+  '/_app/authorization/resources': typeof AuthorizationResourcesRoute
+  '/_app/authorization/roles': typeof AuthorizationRolesRoute
+  '/_app/authorization/settings': typeof AuthorizationSettingsRoute
+  '/_app/authorization/simulator': typeof AuthorizationSimulatorRoute
+  '/_app/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/_app/authorization/versions': typeof AuthorizationVersionsRoute
+  '/_app/developer/agents': typeof DeveloperAgentsRoute
+  '/_app/developer/auth-hooks': typeof DeveloperAuthHooksRoute
+  '/_app/developer/bots': typeof DeveloperBotsRoute
+  '/_app/developer/credentials': typeof DeveloperCredentialsRoute
+  '/_app/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/_app/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
+  '/_app/directory/connections': typeof DirectoryConnectionsRoute
+  '/_app/directory/sync-activity': typeof DirectorySyncActivityRoute
+  '/_app/directory/sync-errors': typeof DirectorySyncErrorsRoute
+  '/_app/groups/$groupId': typeof GroupsGroupIdRoute
+  '/_app/organizations/$orgId': typeof OrganizationsOrgIdRoute
+  '/_app/organizations/tenants': typeof OrganizationsTenantsRoute
+  '/_app/security/audit-intelligence': typeof SecurityAuditIntelligenceRoute
+  '/_app/security/audit-logs': typeof SecurityAuditLogsRoute
+  '/_app/security/device-authorizations': typeof SecurityDeviceAuthorizationsRoute
+  '/_app/security/log-streaming': typeof SecurityLogStreamingRoute
+  '/_app/security/rate-limits': typeof SecurityRateLimitsRoute
+  '/_app/security/sessions': typeof SecuritySessionsRoute
+  '/_app/settings/billing': typeof SettingsBillingRoute
+  '/_app/settings/branding': typeof SettingsBrandingRoute
+  '/_app/settings/qeet-ai': typeof SettingsQeetAiRoute
+  '/_app/users/$userId': typeof UsersUserIdRoute
+  '/_app/users/deleted': typeof UsersDeletedRoute
+  '/_app/users/import': typeof UsersImportRoute
+  '/_app/users/sessions': typeof UsersSessionsRoute
+  '/_app/users/suspended': typeof UsersSuspendedRoute
+  '/_auth/invite/accept': typeof AuthInviteDotacceptRoute
+  '/_auth/sso/callback': typeof AuthSsoDotcallbackRoute
+  '/_app/authorization/': typeof AuthorizationIndexRoute
+  '/_app/developer/': typeof DeveloperIndexRoute
+  '/_app/directory/': typeof DirectoryIndexRoute
+  '/_app/groups/': typeof GroupsIndexRoute
+  '/_app/organizations/': typeof OrganizationsIndexRoute
+  '/_app/security/': typeof SecurityIndexRoute
+  '/_app/settings/': typeof SettingsIndexRoute
+  '/_app/users/': typeof UsersIndexRoute
+  '/_app/auth/api/consent-grants': typeof AuthApiConsentGrantsRoute
+  '/_app/auth/api/keys': typeof AuthApiKeysRoute
+  '/_app/auth/api/machine-identities': typeof AuthApiMachineIdentitiesRoute
+  '/_app/auth/api/secrets': typeof AuthApiSecretsRoute
+  '/_app/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
+  '/_app/auth/api/tokens': typeof AuthApiTokensRoute
+  '/_app/auth/connections/ldap': typeof AuthConnectionsLdapRoute
+  '/_app/auth/connections/saml': typeof AuthConnectionsSamlRoute
+  '/_app/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
+  '/_app/auth/connections/scim': typeof AuthConnectionsScimRoute
+  '/_app/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
+  '/_app/auth/login-methods/passkeys': typeof AuthLoginMethodsPasskeysRoute
+  '/_app/auth/login-methods/password': typeof AuthLoginMethodsPasswordRoute
+  '/_app/auth/login-methods/passwordless': typeof AuthLoginMethodsPasswordlessRoute
+  '/_app/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
+  '/_app/auth/mfa/totp': typeof AuthMfaTotpRoute
+  '/_app/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/_app/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
+  '/_app/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
+  '/_app/security/compliance/retention': typeof SecurityComplianceRetentionRoute
+  '/_app/security/compliance/soc2': typeof SecurityComplianceSoc2Route
+  '/_app/security/threats/anomalies': typeof SecurityThreatsAnomaliesRoute
+  '/_app/security/threats/bots': typeof SecurityThreatsBotsRoute
+  '/_app/security/threats/ip-allowlist': typeof SecurityThreatsIpAllowlistRoute
+  '/_app/security/threats/rate-limits': typeof SecurityThreatsRateLimitsRoute
+  '/_app/security/threats/risk-settings': typeof SecurityThreatsRiskSettingsRoute
+  '/_app/settings/organization/domains': typeof SettingsOrganizationDomainsRoute
+  '/_app/settings/organization/email-templates': typeof SettingsOrganizationEmailTemplatesRoute
+  '/_app/settings/organization/general': typeof SettingsOrganizationGeneralRoute
+  '/_app/settings/organization/security-policy': typeof SettingsOrganizationSecurityPolicyRoute
+  '/_app/users/$userId_/timeline': typeof UsersUserId_DottimelineRoute
+  '/_app/auth/connections/': typeof AuthConnectionsIndexRoute
+  '/_app/developer/webhooks/': typeof DeveloperWebhooksIndexRoute
+  '/_app/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/_app/auth/connections/oidc/': typeof AuthConnectionsOidcIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1360,10 +1348,10 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren
+  appRoute: typeof appRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   AccountRoute: typeof AccountRouteWithChildren
-  HealthzRoute: typeof HealthzRoute
+  healthzRoute: typeof healthzRoute
   SelectOrganizationRoute: typeof SelectOrganizationRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   ApiActivityStreamRoute: typeof ApiActivityStreamRoute
@@ -1376,7 +1364,7 @@ declare module '@tanstack/react-router' {
       id: '/_app'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+      preLoaderRoute: typeof appRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth': {
@@ -1397,7 +1385,7 @@ declare module '@tanstack/react-router' {
       id: '/healthz'
       path: '/healthz'
       fullPath: '/healthz'
-      preLoaderRoute: typeof HealthzRouteImport
+      preLoaderRoute: typeof healthzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/select-organization': {
@@ -1418,50 +1406,50 @@ declare module '@tanstack/react-router' {
       id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/$': {
       id: '/_app/$'
       path: '/$'
       fullPath: '/$'
-      preLoaderRoute: typeof AppSplatRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/activity': {
       id: '/_app/activity'
       path: '/activity'
       fullPath: '/activity'
-      preLoaderRoute: typeof AppActivityRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof ActivityRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/analytics': {
       id: '/_app/analytics'
       path: '/analytics'
       fullPath: '/analytics'
-      preLoaderRoute: typeof AppAnalyticsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/applications': {
       id: '/_app/applications'
       path: '/applications'
       fullPath: '/applications'
-      preLoaderRoute: typeof AppApplicationsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof ApplicationsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authentication': {
       id: '/_app/authentication'
       path: '/authentication'
       fullPath: '/authentication'
-      preLoaderRoute: typeof AppAuthenticationRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticationRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/invitations': {
       id: '/_app/invitations'
       path: '/invitations'
       fullPath: '/invitations'
-      preLoaderRoute: typeof AppInvitationsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof InvitationsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_auth/forgot-password': {
       id: '/_auth/forgot-password'
@@ -1537,806 +1525,806 @@ declare module '@tanstack/react-router' {
       id: '/_app/auth/social'
       path: '/auth/social'
       fullPath: '/auth/social'
-      preLoaderRoute: typeof AppAuthSocialRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthSocialRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/': {
       id: '/_app/authorization/'
       path: '/authorization'
       fullPath: '/authorization/'
-      preLoaderRoute: typeof AppAuthorizationIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/abac': {
       id: '/_app/authorization/abac'
       path: '/authorization/abac'
       fullPath: '/authorization/abac'
-      preLoaderRoute: typeof AppAuthorizationAbacRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationAbacRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/access-tester': {
       id: '/_app/authorization/access-tester'
       path: '/authorization/access-tester'
       fullPath: '/authorization/access-tester'
-      preLoaderRoute: typeof AppAuthorizationAccessTesterRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationAccessTesterRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/audit': {
       id: '/_app/authorization/audit'
       path: '/authorization/audit'
       fullPath: '/authorization/audit'
-      preLoaderRoute: typeof AppAuthorizationAuditRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationAuditRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/builder': {
       id: '/_app/authorization/builder'
       path: '/authorization/builder'
       fullPath: '/authorization/builder'
-      preLoaderRoute: typeof AppAuthorizationBuilderRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationBuilderRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/explorer': {
       id: '/_app/authorization/explorer'
       path: '/authorization/explorer'
       fullPath: '/authorization/explorer'
-      preLoaderRoute: typeof AppAuthorizationExplorerRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationExplorerRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/permissions': {
       id: '/_app/authorization/permissions'
       path: '/authorization/permissions'
       fullPath: '/authorization/permissions'
-      preLoaderRoute: typeof AppAuthorizationPermissionsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationPermissionsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/rbac': {
       id: '/_app/authorization/rbac'
       path: '/authorization/rbac'
       fullPath: '/authorization/rbac'
-      preLoaderRoute: typeof AppAuthorizationRbacRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationRbacRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/rebac': {
       id: '/_app/authorization/rebac'
       path: '/authorization/rebac'
       fullPath: '/authorization/rebac'
-      preLoaderRoute: typeof AppAuthorizationRebacRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationRebacRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/resources': {
       id: '/_app/authorization/resources'
       path: '/authorization/resources'
       fullPath: '/authorization/resources'
-      preLoaderRoute: typeof AppAuthorizationResourcesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationResourcesRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/roles': {
       id: '/_app/authorization/roles'
       path: '/authorization/roles'
       fullPath: '/authorization/roles'
-      preLoaderRoute: typeof AppAuthorizationRolesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationRolesRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/settings': {
       id: '/_app/authorization/settings'
       path: '/authorization/settings'
       fullPath: '/authorization/settings'
-      preLoaderRoute: typeof AppAuthorizationSettingsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationSettingsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/simulator': {
       id: '/_app/authorization/simulator'
       path: '/authorization/simulator'
       fullPath: '/authorization/simulator'
-      preLoaderRoute: typeof AppAuthorizationSimulatorRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationSimulatorRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/templates': {
       id: '/_app/authorization/templates'
       path: '/authorization/templates'
       fullPath: '/authorization/templates'
-      preLoaderRoute: typeof AppAuthorizationTemplatesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationTemplatesRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/authorization/versions': {
       id: '/_app/authorization/versions'
       path: '/authorization/versions'
       fullPath: '/authorization/versions'
-      preLoaderRoute: typeof AppAuthorizationVersionsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthorizationVersionsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/developer/': {
       id: '/_app/developer/'
       path: '/developer'
       fullPath: '/developer/'
-      preLoaderRoute: typeof AppDeveloperIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DeveloperIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/developer/agents': {
       id: '/_app/developer/agents'
       path: '/developer/agents'
       fullPath: '/developer/agents'
-      preLoaderRoute: typeof AppDeveloperAgentsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DeveloperAgentsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/developer/auth-hooks': {
       id: '/_app/developer/auth-hooks'
       path: '/developer/auth-hooks'
       fullPath: '/developer/auth-hooks'
-      preLoaderRoute: typeof AppDeveloperAuthHooksRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DeveloperAuthHooksRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/developer/bots': {
       id: '/_app/developer/bots'
       path: '/developer/bots'
       fullPath: '/developer/bots'
-      preLoaderRoute: typeof AppDeveloperBotsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DeveloperBotsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/developer/credentials': {
       id: '/_app/developer/credentials'
       path: '/developer/credentials'
       fullPath: '/developer/credentials'
-      preLoaderRoute: typeof AppDeveloperCredentialsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DeveloperCredentialsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/developer/infrastructure': {
       id: '/_app/developer/infrastructure'
       path: '/developer/infrastructure'
       fullPath: '/developer/infrastructure'
-      preLoaderRoute: typeof AppDeveloperInfrastructureRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DeveloperInfrastructureRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/directory/': {
       id: '/_app/directory/'
       path: '/directory'
       fullPath: '/directory/'
-      preLoaderRoute: typeof AppDirectoryIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DirectoryIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/directory/attribute-mappings': {
       id: '/_app/directory/attribute-mappings'
       path: '/directory/attribute-mappings'
       fullPath: '/directory/attribute-mappings'
-      preLoaderRoute: typeof AppDirectoryAttributeMappingsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DirectoryAttributeMappingsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/directory/connections': {
       id: '/_app/directory/connections'
       path: '/directory/connections'
       fullPath: '/directory/connections'
-      preLoaderRoute: typeof AppDirectoryConnectionsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DirectoryConnectionsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/directory/sync-activity': {
       id: '/_app/directory/sync-activity'
       path: '/directory/sync-activity'
       fullPath: '/directory/sync-activity'
-      preLoaderRoute: typeof AppDirectorySyncActivityRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DirectorySyncActivityRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/directory/sync-errors': {
       id: '/_app/directory/sync-errors'
       path: '/directory/sync-errors'
       fullPath: '/directory/sync-errors'
-      preLoaderRoute: typeof AppDirectorySyncErrorsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DirectorySyncErrorsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/groups/': {
       id: '/_app/groups/'
       path: '/groups'
       fullPath: '/groups/'
-      preLoaderRoute: typeof AppGroupsIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof GroupsIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/groups/$groupId': {
       id: '/_app/groups/$groupId'
       path: '/groups/$groupId'
       fullPath: '/groups/$groupId'
-      preLoaderRoute: typeof AppGroupsGroupIdRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof GroupsGroupIdRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/organizations/': {
       id: '/_app/organizations/'
       path: '/organizations'
       fullPath: '/organizations/'
-      preLoaderRoute: typeof AppOrganizationsIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof OrganizationsIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/organizations/$orgId': {
       id: '/_app/organizations/$orgId'
       path: '/organizations/$orgId'
       fullPath: '/organizations/$orgId'
-      preLoaderRoute: typeof AppOrganizationsOrgIdRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof OrganizationsOrgIdRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/organizations/tenants': {
       id: '/_app/organizations/tenants'
       path: '/organizations/tenants'
       fullPath: '/organizations/tenants'
-      preLoaderRoute: typeof AppOrganizationsTenantsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof OrganizationsTenantsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/': {
       id: '/_app/security/'
       path: '/security'
       fullPath: '/security/'
-      preLoaderRoute: typeof AppSecurityIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/audit-intelligence': {
       id: '/_app/security/audit-intelligence'
       path: '/security/audit-intelligence'
       fullPath: '/security/audit-intelligence'
-      preLoaderRoute: typeof AppSecurityAuditIntelligenceRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityAuditIntelligenceRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/audit-logs': {
       id: '/_app/security/audit-logs'
       path: '/security/audit-logs'
       fullPath: '/security/audit-logs'
-      preLoaderRoute: typeof AppSecurityAuditLogsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityAuditLogsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/device-authorizations': {
       id: '/_app/security/device-authorizations'
       path: '/security/device-authorizations'
       fullPath: '/security/device-authorizations'
-      preLoaderRoute: typeof AppSecurityDeviceAuthorizationsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityDeviceAuthorizationsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/log-streaming': {
       id: '/_app/security/log-streaming'
       path: '/security/log-streaming'
       fullPath: '/security/log-streaming'
-      preLoaderRoute: typeof AppSecurityLogStreamingRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityLogStreamingRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/rate-limits': {
       id: '/_app/security/rate-limits'
       path: '/security/rate-limits'
       fullPath: '/security/rate-limits'
-      preLoaderRoute: typeof AppSecurityRateLimitsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityRateLimitsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/sessions': {
       id: '/_app/security/sessions'
       path: '/security/sessions'
       fullPath: '/security/sessions'
-      preLoaderRoute: typeof AppSecuritySessionsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecuritySessionsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/settings/': {
       id: '/_app/settings/'
       path: '/settings'
       fullPath: '/settings/'
-      preLoaderRoute: typeof AppSettingsIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/settings/billing': {
       id: '/_app/settings/billing'
       path: '/settings/billing'
       fullPath: '/settings/billing'
-      preLoaderRoute: typeof AppSettingsBillingRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SettingsBillingRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/settings/branding': {
       id: '/_app/settings/branding'
       path: '/settings/branding'
       fullPath: '/settings/branding'
-      preLoaderRoute: typeof AppSettingsBrandingRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SettingsBrandingRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/settings/qeet-ai': {
       id: '/_app/settings/qeet-ai'
       path: '/settings/qeet-ai'
       fullPath: '/settings/qeet-ai'
-      preLoaderRoute: typeof AppSettingsQeetAiRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SettingsQeetAiRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/users/': {
       id: '/_app/users/'
       path: '/users'
       fullPath: '/users/'
-      preLoaderRoute: typeof AppUsersIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof UsersIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/users/$userId': {
       id: '/_app/users/$userId'
       path: '/users/$userId'
       fullPath: '/users/$userId'
-      preLoaderRoute: typeof AppUsersUserIdRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof UsersUserIdRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/users/deleted': {
       id: '/_app/users/deleted'
       path: '/users/deleted'
       fullPath: '/users/deleted'
-      preLoaderRoute: typeof AppUsersDeletedRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof UsersDeletedRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/users/import': {
       id: '/_app/users/import'
       path: '/users/import'
       fullPath: '/users/import'
-      preLoaderRoute: typeof AppUsersImportRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof UsersImportRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/users/sessions': {
       id: '/_app/users/sessions'
       path: '/users/sessions'
       fullPath: '/users/sessions'
-      preLoaderRoute: typeof AppUsersSessionsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof UsersSessionsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/users/suspended': {
       id: '/_app/users/suspended'
       path: '/users/suspended'
       fullPath: '/users/suspended'
-      preLoaderRoute: typeof AppUsersSuspendedRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof UsersSuspendedRouteImport
+      parentRoute: typeof appRoute
     }
     '/_auth/invite/accept': {
       id: '/_auth/invite/accept'
       path: '/invite/accept'
       fullPath: '/invite/accept'
-      preLoaderRoute: typeof AuthInviteAcceptRouteImport
+      preLoaderRoute: typeof AuthInviteDotacceptRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_auth/sso/callback': {
       id: '/_auth/sso/callback'
       path: '/sso/callback'
       fullPath: '/sso/callback'
-      preLoaderRoute: typeof AuthSsoCallbackRouteImport
+      preLoaderRoute: typeof AuthSsoDotcallbackRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_app/auth/api/consent-grants': {
       id: '/_app/auth/api/consent-grants'
       path: '/auth/api/consent-grants'
       fullPath: '/auth/api/consent-grants'
-      preLoaderRoute: typeof AppAuthApiConsentGrantsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthApiConsentGrantsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/api/keys': {
       id: '/_app/auth/api/keys'
       path: '/auth/api/keys'
       fullPath: '/auth/api/keys'
-      preLoaderRoute: typeof AppAuthApiKeysRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthApiKeysRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/api/machine-identities': {
       id: '/_app/auth/api/machine-identities'
       path: '/auth/api/machine-identities'
       fullPath: '/auth/api/machine-identities'
-      preLoaderRoute: typeof AppAuthApiMachineIdentitiesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthApiMachineIdentitiesRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/api/secrets': {
       id: '/_app/auth/api/secrets'
       path: '/auth/api/secrets'
       fullPath: '/auth/api/secrets'
-      preLoaderRoute: typeof AppAuthApiSecretsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthApiSecretsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/api/signing-keys': {
       id: '/_app/auth/api/signing-keys'
       path: '/auth/api/signing-keys'
       fullPath: '/auth/api/signing-keys'
-      preLoaderRoute: typeof AppAuthApiSigningKeysRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthApiSigningKeysRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/api/tokens': {
       id: '/_app/auth/api/tokens'
       path: '/auth/api/tokens'
       fullPath: '/auth/api/tokens'
-      preLoaderRoute: typeof AppAuthApiTokensRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthApiTokensRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/connections/': {
       id: '/_app/auth/connections/'
       path: '/auth/connections'
       fullPath: '/auth/connections/'
-      preLoaderRoute: typeof AppAuthConnectionsIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthConnectionsIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/connections/ldap': {
       id: '/_app/auth/connections/ldap'
       path: '/auth/connections/ldap'
       fullPath: '/auth/connections/ldap'
-      preLoaderRoute: typeof AppAuthConnectionsLdapRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthConnectionsLdapRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/connections/saml': {
       id: '/_app/auth/connections/saml'
       path: '/auth/connections/saml'
       fullPath: '/auth/connections/saml'
-      preLoaderRoute: typeof AppAuthConnectionsSamlRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthConnectionsSamlRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/connections/saml-idp': {
       id: '/_app/auth/connections/saml-idp'
       path: '/auth/connections/saml-idp'
       fullPath: '/auth/connections/saml-idp'
-      preLoaderRoute: typeof AppAuthConnectionsSamlIdpRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthConnectionsSamlIdpRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/connections/scim': {
       id: '/_app/auth/connections/scim'
       path: '/auth/connections/scim'
       fullPath: '/auth/connections/scim'
-      preLoaderRoute: typeof AppAuthConnectionsScimRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthConnectionsScimRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/login-methods/magic-links': {
       id: '/_app/auth/login-methods/magic-links'
       path: '/auth/login-methods/magic-links'
       fullPath: '/auth/login-methods/magic-links'
-      preLoaderRoute: typeof AppAuthLoginMethodsMagicLinksRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthLoginMethodsMagicLinksRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/login-methods/passkeys': {
       id: '/_app/auth/login-methods/passkeys'
       path: '/auth/login-methods/passkeys'
       fullPath: '/auth/login-methods/passkeys'
-      preLoaderRoute: typeof AppAuthLoginMethodsPasskeysRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthLoginMethodsPasskeysRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/login-methods/password': {
       id: '/_app/auth/login-methods/password'
       path: '/auth/login-methods/password'
       fullPath: '/auth/login-methods/password'
-      preLoaderRoute: typeof AppAuthLoginMethodsPasswordRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthLoginMethodsPasswordRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/login-methods/passwordless': {
       id: '/_app/auth/login-methods/passwordless'
       path: '/auth/login-methods/passwordless'
       fullPath: '/auth/login-methods/passwordless'
-      preLoaderRoute: typeof AppAuthLoginMethodsPasswordlessRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthLoginMethodsPasswordlessRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/mfa/sms-email': {
       id: '/_app/auth/mfa/sms-email'
       path: '/auth/mfa/sms-email'
       fullPath: '/auth/mfa/sms-email'
-      preLoaderRoute: typeof AppAuthMfaSmsEmailRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthMfaSmsEmailRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/mfa/totp': {
       id: '/_app/auth/mfa/totp'
       path: '/auth/mfa/totp'
       fullPath: '/auth/mfa/totp'
-      preLoaderRoute: typeof AppAuthMfaTotpRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthMfaTotpRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/developer/webhooks/': {
       id: '/_app/developer/webhooks/'
       path: '/developer/webhooks'
       fullPath: '/developer/webhooks/'
-      preLoaderRoute: typeof AppDeveloperWebhooksIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DeveloperWebhooksIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/developer/webhooks/$id': {
       id: '/_app/developer/webhooks/$id'
       path: '/developer/webhooks/$id'
       fullPath: '/developer/webhooks/$id'
-      preLoaderRoute: typeof AppDeveloperWebhooksIdRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof DeveloperWebhooksIdRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/compliance/gdpr': {
       id: '/_app/security/compliance/gdpr'
       path: '/security/compliance/gdpr'
       fullPath: '/security/compliance/gdpr'
-      preLoaderRoute: typeof AppSecurityComplianceGdprRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityComplianceGdprRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/compliance/iso27001': {
       id: '/_app/security/compliance/iso27001'
       path: '/security/compliance/iso27001'
       fullPath: '/security/compliance/iso27001'
-      preLoaderRoute: typeof AppSecurityComplianceIso27001RouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityComplianceIso27001RouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/compliance/retention': {
       id: '/_app/security/compliance/retention'
       path: '/security/compliance/retention'
       fullPath: '/security/compliance/retention'
-      preLoaderRoute: typeof AppSecurityComplianceRetentionRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityComplianceRetentionRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/compliance/soc2': {
       id: '/_app/security/compliance/soc2'
       path: '/security/compliance/soc2'
       fullPath: '/security/compliance/soc2'
-      preLoaderRoute: typeof AppSecurityComplianceSoc2RouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityComplianceSoc2RouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/threats/anomalies': {
       id: '/_app/security/threats/anomalies'
       path: '/security/threats/anomalies'
       fullPath: '/security/threats/anomalies'
-      preLoaderRoute: typeof AppSecurityThreatsAnomaliesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityThreatsAnomaliesRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/threats/bots': {
       id: '/_app/security/threats/bots'
       path: '/security/threats/bots'
       fullPath: '/security/threats/bots'
-      preLoaderRoute: typeof AppSecurityThreatsBotsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityThreatsBotsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/threats/ip-allowlist': {
       id: '/_app/security/threats/ip-allowlist'
       path: '/security/threats/ip-allowlist'
       fullPath: '/security/threats/ip-allowlist'
-      preLoaderRoute: typeof AppSecurityThreatsIpAllowlistRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityThreatsIpAllowlistRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/threats/rate-limits': {
       id: '/_app/security/threats/rate-limits'
       path: '/security/threats/rate-limits'
       fullPath: '/security/threats/rate-limits'
-      preLoaderRoute: typeof AppSecurityThreatsRateLimitsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityThreatsRateLimitsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/security/threats/risk-settings': {
       id: '/_app/security/threats/risk-settings'
       path: '/security/threats/risk-settings'
       fullPath: '/security/threats/risk-settings'
-      preLoaderRoute: typeof AppSecurityThreatsRiskSettingsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SecurityThreatsRiskSettingsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/settings/organization/domains': {
       id: '/_app/settings/organization/domains'
       path: '/settings/organization/domains'
       fullPath: '/settings/organization/domains'
-      preLoaderRoute: typeof AppSettingsOrganizationDomainsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SettingsOrganizationDomainsRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/settings/organization/email-templates': {
       id: '/_app/settings/organization/email-templates'
       path: '/settings/organization/email-templates'
       fullPath: '/settings/organization/email-templates'
-      preLoaderRoute: typeof AppSettingsOrganizationEmailTemplatesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SettingsOrganizationEmailTemplatesRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/settings/organization/general': {
       id: '/_app/settings/organization/general'
       path: '/settings/organization/general'
       fullPath: '/settings/organization/general'
-      preLoaderRoute: typeof AppSettingsOrganizationGeneralRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SettingsOrganizationGeneralRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/settings/organization/security-policy': {
       id: '/_app/settings/organization/security-policy'
       path: '/settings/organization/security-policy'
       fullPath: '/settings/organization/security-policy'
-      preLoaderRoute: typeof AppSettingsOrganizationSecurityPolicyRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof SettingsOrganizationSecurityPolicyRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/users/$userId_/timeline': {
       id: '/_app/users/$userId_/timeline'
       path: '/users/$userId/timeline'
       fullPath: '/users/$userId/timeline'
-      preLoaderRoute: typeof AppUsersUserIdTimelineRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof UsersUserId_DottimelineRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/connections/oidc/': {
       id: '/_app/auth/connections/oidc/'
       path: '/auth/connections/oidc'
       fullPath: '/auth/connections/oidc/'
-      preLoaderRoute: typeof AppAuthConnectionsOidcIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthConnectionsOidcIndexRouteImport
+      parentRoute: typeof appRoute
     }
     '/_app/auth/connections/oidc/$clientId': {
       id: '/_app/auth/connections/oidc/$clientId'
       path: '/auth/connections/oidc/$clientId'
       fullPath: '/auth/connections/oidc/$clientId'
-      preLoaderRoute: typeof AppAuthConnectionsOidcClientIdRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthConnectionsOidcClientIdRouteImport
+      parentRoute: typeof appRoute
     }
   }
 }
 
-interface AppRouteChildren {
-  AppSplatRoute: typeof AppSplatRoute
-  AppActivityRoute: typeof AppActivityRoute
-  AppAnalyticsRoute: typeof AppAnalyticsRoute
-  AppApplicationsRoute: typeof AppApplicationsRoute
-  AppAuthenticationRoute: typeof AppAuthenticationRoute
-  AppInvitationsRoute: typeof AppInvitationsRoute
-  AppIndexRoute: typeof AppIndexRoute
-  AppAuthSocialRoute: typeof AppAuthSocialRoute
-  AppAuthorizationAbacRoute: typeof AppAuthorizationAbacRoute
-  AppAuthorizationAccessTesterRoute: typeof AppAuthorizationAccessTesterRoute
-  AppAuthorizationAuditRoute: typeof AppAuthorizationAuditRoute
-  AppAuthorizationBuilderRoute: typeof AppAuthorizationBuilderRoute
-  AppAuthorizationExplorerRoute: typeof AppAuthorizationExplorerRoute
-  AppAuthorizationPermissionsRoute: typeof AppAuthorizationPermissionsRoute
-  AppAuthorizationRbacRoute: typeof AppAuthorizationRbacRoute
-  AppAuthorizationRebacRoute: typeof AppAuthorizationRebacRoute
-  AppAuthorizationResourcesRoute: typeof AppAuthorizationResourcesRoute
-  AppAuthorizationRolesRoute: typeof AppAuthorizationRolesRoute
-  AppAuthorizationSettingsRoute: typeof AppAuthorizationSettingsRoute
-  AppAuthorizationSimulatorRoute: typeof AppAuthorizationSimulatorRoute
-  AppAuthorizationTemplatesRoute: typeof AppAuthorizationTemplatesRoute
-  AppAuthorizationVersionsRoute: typeof AppAuthorizationVersionsRoute
-  AppDeveloperAgentsRoute: typeof AppDeveloperAgentsRoute
-  AppDeveloperAuthHooksRoute: typeof AppDeveloperAuthHooksRoute
-  AppDeveloperBotsRoute: typeof AppDeveloperBotsRoute
-  AppDeveloperCredentialsRoute: typeof AppDeveloperCredentialsRoute
-  AppDeveloperInfrastructureRoute: typeof AppDeveloperInfrastructureRoute
-  AppDirectoryAttributeMappingsRoute: typeof AppDirectoryAttributeMappingsRoute
-  AppDirectoryConnectionsRoute: typeof AppDirectoryConnectionsRoute
-  AppDirectorySyncActivityRoute: typeof AppDirectorySyncActivityRoute
-  AppDirectorySyncErrorsRoute: typeof AppDirectorySyncErrorsRoute
-  AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
-  AppOrganizationsOrgIdRoute: typeof AppOrganizationsOrgIdRoute
-  AppOrganizationsTenantsRoute: typeof AppOrganizationsTenantsRoute
-  AppSecurityAuditIntelligenceRoute: typeof AppSecurityAuditIntelligenceRoute
-  AppSecurityAuditLogsRoute: typeof AppSecurityAuditLogsRoute
-  AppSecurityDeviceAuthorizationsRoute: typeof AppSecurityDeviceAuthorizationsRoute
-  AppSecurityLogStreamingRoute: typeof AppSecurityLogStreamingRoute
-  AppSecurityRateLimitsRoute: typeof AppSecurityRateLimitsRoute
-  AppSecuritySessionsRoute: typeof AppSecuritySessionsRoute
-  AppSettingsBillingRoute: typeof AppSettingsBillingRoute
-  AppSettingsBrandingRoute: typeof AppSettingsBrandingRoute
-  AppSettingsQeetAiRoute: typeof AppSettingsQeetAiRoute
-  AppUsersUserIdRoute: typeof AppUsersUserIdRoute
-  AppUsersDeletedRoute: typeof AppUsersDeletedRoute
-  AppUsersImportRoute: typeof AppUsersImportRoute
-  AppUsersSessionsRoute: typeof AppUsersSessionsRoute
-  AppUsersSuspendedRoute: typeof AppUsersSuspendedRoute
-  AppAuthorizationIndexRoute: typeof AppAuthorizationIndexRoute
-  AppDeveloperIndexRoute: typeof AppDeveloperIndexRoute
-  AppDirectoryIndexRoute: typeof AppDirectoryIndexRoute
-  AppGroupsIndexRoute: typeof AppGroupsIndexRoute
-  AppOrganizationsIndexRoute: typeof AppOrganizationsIndexRoute
-  AppSecurityIndexRoute: typeof AppSecurityIndexRoute
-  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
-  AppUsersIndexRoute: typeof AppUsersIndexRoute
-  AppAuthApiConsentGrantsRoute: typeof AppAuthApiConsentGrantsRoute
-  AppAuthApiKeysRoute: typeof AppAuthApiKeysRoute
-  AppAuthApiMachineIdentitiesRoute: typeof AppAuthApiMachineIdentitiesRoute
-  AppAuthApiSecretsRoute: typeof AppAuthApiSecretsRoute
-  AppAuthApiSigningKeysRoute: typeof AppAuthApiSigningKeysRoute
-  AppAuthApiTokensRoute: typeof AppAuthApiTokensRoute
-  AppAuthConnectionsLdapRoute: typeof AppAuthConnectionsLdapRoute
-  AppAuthConnectionsSamlRoute: typeof AppAuthConnectionsSamlRoute
-  AppAuthConnectionsSamlIdpRoute: typeof AppAuthConnectionsSamlIdpRoute
-  AppAuthConnectionsScimRoute: typeof AppAuthConnectionsScimRoute
-  AppAuthLoginMethodsMagicLinksRoute: typeof AppAuthLoginMethodsMagicLinksRoute
-  AppAuthLoginMethodsPasskeysRoute: typeof AppAuthLoginMethodsPasskeysRoute
-  AppAuthLoginMethodsPasswordRoute: typeof AppAuthLoginMethodsPasswordRoute
-  AppAuthLoginMethodsPasswordlessRoute: typeof AppAuthLoginMethodsPasswordlessRoute
-  AppAuthMfaSmsEmailRoute: typeof AppAuthMfaSmsEmailRoute
-  AppAuthMfaTotpRoute: typeof AppAuthMfaTotpRoute
-  AppDeveloperWebhooksIdRoute: typeof AppDeveloperWebhooksIdRoute
-  AppSecurityComplianceGdprRoute: typeof AppSecurityComplianceGdprRoute
-  AppSecurityComplianceIso27001Route: typeof AppSecurityComplianceIso27001Route
-  AppSecurityComplianceRetentionRoute: typeof AppSecurityComplianceRetentionRoute
-  AppSecurityComplianceSoc2Route: typeof AppSecurityComplianceSoc2Route
-  AppSecurityThreatsAnomaliesRoute: typeof AppSecurityThreatsAnomaliesRoute
-  AppSecurityThreatsBotsRoute: typeof AppSecurityThreatsBotsRoute
-  AppSecurityThreatsIpAllowlistRoute: typeof AppSecurityThreatsIpAllowlistRoute
-  AppSecurityThreatsRateLimitsRoute: typeof AppSecurityThreatsRateLimitsRoute
-  AppSecurityThreatsRiskSettingsRoute: typeof AppSecurityThreatsRiskSettingsRoute
-  AppSettingsOrganizationDomainsRoute: typeof AppSettingsOrganizationDomainsRoute
-  AppSettingsOrganizationEmailTemplatesRoute: typeof AppSettingsOrganizationEmailTemplatesRoute
-  AppSettingsOrganizationGeneralRoute: typeof AppSettingsOrganizationGeneralRoute
-  AppSettingsOrganizationSecurityPolicyRoute: typeof AppSettingsOrganizationSecurityPolicyRoute
-  AppUsersUserIdTimelineRoute: typeof AppUsersUserIdTimelineRoute
-  AppAuthConnectionsIndexRoute: typeof AppAuthConnectionsIndexRoute
-  AppDeveloperWebhooksIndexRoute: typeof AppDeveloperWebhooksIndexRoute
-  AppAuthConnectionsOidcClientIdRoute: typeof AppAuthConnectionsOidcClientIdRoute
-  AppAuthConnectionsOidcIndexRoute: typeof AppAuthConnectionsOidcIndexRoute
+interface appRouteChildren {
+  SplatRoute: typeof SplatRoute
+  ActivityRoute: typeof ActivityRoute
+  AnalyticsRoute: typeof AnalyticsRoute
+  ApplicationsRoute: typeof ApplicationsRoute
+  AuthenticationRoute: typeof AuthenticationRoute
+  InvitationsRoute: typeof InvitationsRoute
+  IndexRoute: typeof IndexRoute
+  AuthSocialRoute: typeof AuthSocialRoute
+  AuthorizationAbacRoute: typeof AuthorizationAbacRoute
+  AuthorizationAccessTesterRoute: typeof AuthorizationAccessTesterRoute
+  AuthorizationAuditRoute: typeof AuthorizationAuditRoute
+  AuthorizationBuilderRoute: typeof AuthorizationBuilderRoute
+  AuthorizationExplorerRoute: typeof AuthorizationExplorerRoute
+  AuthorizationPermissionsRoute: typeof AuthorizationPermissionsRoute
+  AuthorizationRbacRoute: typeof AuthorizationRbacRoute
+  AuthorizationRebacRoute: typeof AuthorizationRebacRoute
+  AuthorizationResourcesRoute: typeof AuthorizationResourcesRoute
+  AuthorizationRolesRoute: typeof AuthorizationRolesRoute
+  AuthorizationSettingsRoute: typeof AuthorizationSettingsRoute
+  AuthorizationSimulatorRoute: typeof AuthorizationSimulatorRoute
+  AuthorizationTemplatesRoute: typeof AuthorizationTemplatesRoute
+  AuthorizationVersionsRoute: typeof AuthorizationVersionsRoute
+  DeveloperAgentsRoute: typeof DeveloperAgentsRoute
+  DeveloperAuthHooksRoute: typeof DeveloperAuthHooksRoute
+  DeveloperBotsRoute: typeof DeveloperBotsRoute
+  DeveloperCredentialsRoute: typeof DeveloperCredentialsRoute
+  DeveloperInfrastructureRoute: typeof DeveloperInfrastructureRoute
+  DirectoryAttributeMappingsRoute: typeof DirectoryAttributeMappingsRoute
+  DirectoryConnectionsRoute: typeof DirectoryConnectionsRoute
+  DirectorySyncActivityRoute: typeof DirectorySyncActivityRoute
+  DirectorySyncErrorsRoute: typeof DirectorySyncErrorsRoute
+  GroupsGroupIdRoute: typeof GroupsGroupIdRoute
+  OrganizationsOrgIdRoute: typeof OrganizationsOrgIdRoute
+  OrganizationsTenantsRoute: typeof OrganizationsTenantsRoute
+  SecurityAuditIntelligenceRoute: typeof SecurityAuditIntelligenceRoute
+  SecurityAuditLogsRoute: typeof SecurityAuditLogsRoute
+  SecurityDeviceAuthorizationsRoute: typeof SecurityDeviceAuthorizationsRoute
+  SecurityLogStreamingRoute: typeof SecurityLogStreamingRoute
+  SecurityRateLimitsRoute: typeof SecurityRateLimitsRoute
+  SecuritySessionsRoute: typeof SecuritySessionsRoute
+  SettingsBillingRoute: typeof SettingsBillingRoute
+  SettingsBrandingRoute: typeof SettingsBrandingRoute
+  SettingsQeetAiRoute: typeof SettingsQeetAiRoute
+  UsersUserIdRoute: typeof UsersUserIdRoute
+  UsersDeletedRoute: typeof UsersDeletedRoute
+  UsersImportRoute: typeof UsersImportRoute
+  UsersSessionsRoute: typeof UsersSessionsRoute
+  UsersSuspendedRoute: typeof UsersSuspendedRoute
+  AuthorizationIndexRoute: typeof AuthorizationIndexRoute
+  DeveloperIndexRoute: typeof DeveloperIndexRoute
+  DirectoryIndexRoute: typeof DirectoryIndexRoute
+  GroupsIndexRoute: typeof GroupsIndexRoute
+  OrganizationsIndexRoute: typeof OrganizationsIndexRoute
+  SecurityIndexRoute: typeof SecurityIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+  UsersIndexRoute: typeof UsersIndexRoute
+  AuthApiConsentGrantsRoute: typeof AuthApiConsentGrantsRoute
+  AuthApiKeysRoute: typeof AuthApiKeysRoute
+  AuthApiMachineIdentitiesRoute: typeof AuthApiMachineIdentitiesRoute
+  AuthApiSecretsRoute: typeof AuthApiSecretsRoute
+  AuthApiSigningKeysRoute: typeof AuthApiSigningKeysRoute
+  AuthApiTokensRoute: typeof AuthApiTokensRoute
+  AuthConnectionsLdapRoute: typeof AuthConnectionsLdapRoute
+  AuthConnectionsSamlRoute: typeof AuthConnectionsSamlRoute
+  AuthConnectionsSamlIdpRoute: typeof AuthConnectionsSamlIdpRoute
+  AuthConnectionsScimRoute: typeof AuthConnectionsScimRoute
+  AuthLoginMethodsMagicLinksRoute: typeof AuthLoginMethodsMagicLinksRoute
+  AuthLoginMethodsPasskeysRoute: typeof AuthLoginMethodsPasskeysRoute
+  AuthLoginMethodsPasswordRoute: typeof AuthLoginMethodsPasswordRoute
+  AuthLoginMethodsPasswordlessRoute: typeof AuthLoginMethodsPasswordlessRoute
+  AuthMfaSmsEmailRoute: typeof AuthMfaSmsEmailRoute
+  AuthMfaTotpRoute: typeof AuthMfaTotpRoute
+  DeveloperWebhooksIdRoute: typeof DeveloperWebhooksIdRoute
+  SecurityComplianceGdprRoute: typeof SecurityComplianceGdprRoute
+  SecurityComplianceIso27001Route: typeof SecurityComplianceIso27001Route
+  SecurityComplianceRetentionRoute: typeof SecurityComplianceRetentionRoute
+  SecurityComplianceSoc2Route: typeof SecurityComplianceSoc2Route
+  SecurityThreatsAnomaliesRoute: typeof SecurityThreatsAnomaliesRoute
+  SecurityThreatsBotsRoute: typeof SecurityThreatsBotsRoute
+  SecurityThreatsIpAllowlistRoute: typeof SecurityThreatsIpAllowlistRoute
+  SecurityThreatsRateLimitsRoute: typeof SecurityThreatsRateLimitsRoute
+  SecurityThreatsRiskSettingsRoute: typeof SecurityThreatsRiskSettingsRoute
+  SettingsOrganizationDomainsRoute: typeof SettingsOrganizationDomainsRoute
+  SettingsOrganizationEmailTemplatesRoute: typeof SettingsOrganizationEmailTemplatesRoute
+  SettingsOrganizationGeneralRoute: typeof SettingsOrganizationGeneralRoute
+  SettingsOrganizationSecurityPolicyRoute: typeof SettingsOrganizationSecurityPolicyRoute
+  UsersUserId_DottimelineRoute: typeof UsersUserId_DottimelineRoute
+  AuthConnectionsIndexRoute: typeof AuthConnectionsIndexRoute
+  DeveloperWebhooksIndexRoute: typeof DeveloperWebhooksIndexRoute
+  AuthConnectionsOidcClientIdRoute: typeof AuthConnectionsOidcClientIdRoute
+  AuthConnectionsOidcIndexRoute: typeof AuthConnectionsOidcIndexRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppSplatRoute: AppSplatRoute,
-  AppActivityRoute: AppActivityRoute,
-  AppAnalyticsRoute: AppAnalyticsRoute,
-  AppApplicationsRoute: AppApplicationsRoute,
-  AppAuthenticationRoute: AppAuthenticationRoute,
-  AppInvitationsRoute: AppInvitationsRoute,
-  AppIndexRoute: AppIndexRoute,
-  AppAuthSocialRoute: AppAuthSocialRoute,
-  AppAuthorizationAbacRoute: AppAuthorizationAbacRoute,
-  AppAuthorizationAccessTesterRoute: AppAuthorizationAccessTesterRoute,
-  AppAuthorizationAuditRoute: AppAuthorizationAuditRoute,
-  AppAuthorizationBuilderRoute: AppAuthorizationBuilderRoute,
-  AppAuthorizationExplorerRoute: AppAuthorizationExplorerRoute,
-  AppAuthorizationPermissionsRoute: AppAuthorizationPermissionsRoute,
-  AppAuthorizationRbacRoute: AppAuthorizationRbacRoute,
-  AppAuthorizationRebacRoute: AppAuthorizationRebacRoute,
-  AppAuthorizationResourcesRoute: AppAuthorizationResourcesRoute,
-  AppAuthorizationRolesRoute: AppAuthorizationRolesRoute,
-  AppAuthorizationSettingsRoute: AppAuthorizationSettingsRoute,
-  AppAuthorizationSimulatorRoute: AppAuthorizationSimulatorRoute,
-  AppAuthorizationTemplatesRoute: AppAuthorizationTemplatesRoute,
-  AppAuthorizationVersionsRoute: AppAuthorizationVersionsRoute,
-  AppDeveloperAgentsRoute: AppDeveloperAgentsRoute,
-  AppDeveloperAuthHooksRoute: AppDeveloperAuthHooksRoute,
-  AppDeveloperBotsRoute: AppDeveloperBotsRoute,
-  AppDeveloperCredentialsRoute: AppDeveloperCredentialsRoute,
-  AppDeveloperInfrastructureRoute: AppDeveloperInfrastructureRoute,
-  AppDirectoryAttributeMappingsRoute: AppDirectoryAttributeMappingsRoute,
-  AppDirectoryConnectionsRoute: AppDirectoryConnectionsRoute,
-  AppDirectorySyncActivityRoute: AppDirectorySyncActivityRoute,
-  AppDirectorySyncErrorsRoute: AppDirectorySyncErrorsRoute,
-  AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
-  AppOrganizationsOrgIdRoute: AppOrganizationsOrgIdRoute,
-  AppOrganizationsTenantsRoute: AppOrganizationsTenantsRoute,
-  AppSecurityAuditIntelligenceRoute: AppSecurityAuditIntelligenceRoute,
-  AppSecurityAuditLogsRoute: AppSecurityAuditLogsRoute,
-  AppSecurityDeviceAuthorizationsRoute: AppSecurityDeviceAuthorizationsRoute,
-  AppSecurityLogStreamingRoute: AppSecurityLogStreamingRoute,
-  AppSecurityRateLimitsRoute: AppSecurityRateLimitsRoute,
-  AppSecuritySessionsRoute: AppSecuritySessionsRoute,
-  AppSettingsBillingRoute: AppSettingsBillingRoute,
-  AppSettingsBrandingRoute: AppSettingsBrandingRoute,
-  AppSettingsQeetAiRoute: AppSettingsQeetAiRoute,
-  AppUsersUserIdRoute: AppUsersUserIdRoute,
-  AppUsersDeletedRoute: AppUsersDeletedRoute,
-  AppUsersImportRoute: AppUsersImportRoute,
-  AppUsersSessionsRoute: AppUsersSessionsRoute,
-  AppUsersSuspendedRoute: AppUsersSuspendedRoute,
-  AppAuthorizationIndexRoute: AppAuthorizationIndexRoute,
-  AppDeveloperIndexRoute: AppDeveloperIndexRoute,
-  AppDirectoryIndexRoute: AppDirectoryIndexRoute,
-  AppGroupsIndexRoute: AppGroupsIndexRoute,
-  AppOrganizationsIndexRoute: AppOrganizationsIndexRoute,
-  AppSecurityIndexRoute: AppSecurityIndexRoute,
-  AppSettingsIndexRoute: AppSettingsIndexRoute,
-  AppUsersIndexRoute: AppUsersIndexRoute,
-  AppAuthApiConsentGrantsRoute: AppAuthApiConsentGrantsRoute,
-  AppAuthApiKeysRoute: AppAuthApiKeysRoute,
-  AppAuthApiMachineIdentitiesRoute: AppAuthApiMachineIdentitiesRoute,
-  AppAuthApiSecretsRoute: AppAuthApiSecretsRoute,
-  AppAuthApiSigningKeysRoute: AppAuthApiSigningKeysRoute,
-  AppAuthApiTokensRoute: AppAuthApiTokensRoute,
-  AppAuthConnectionsLdapRoute: AppAuthConnectionsLdapRoute,
-  AppAuthConnectionsSamlRoute: AppAuthConnectionsSamlRoute,
-  AppAuthConnectionsSamlIdpRoute: AppAuthConnectionsSamlIdpRoute,
-  AppAuthConnectionsScimRoute: AppAuthConnectionsScimRoute,
-  AppAuthLoginMethodsMagicLinksRoute: AppAuthLoginMethodsMagicLinksRoute,
-  AppAuthLoginMethodsPasskeysRoute: AppAuthLoginMethodsPasskeysRoute,
-  AppAuthLoginMethodsPasswordRoute: AppAuthLoginMethodsPasswordRoute,
-  AppAuthLoginMethodsPasswordlessRoute: AppAuthLoginMethodsPasswordlessRoute,
-  AppAuthMfaSmsEmailRoute: AppAuthMfaSmsEmailRoute,
-  AppAuthMfaTotpRoute: AppAuthMfaTotpRoute,
-  AppDeveloperWebhooksIdRoute: AppDeveloperWebhooksIdRoute,
-  AppSecurityComplianceGdprRoute: AppSecurityComplianceGdprRoute,
-  AppSecurityComplianceIso27001Route: AppSecurityComplianceIso27001Route,
-  AppSecurityComplianceRetentionRoute: AppSecurityComplianceRetentionRoute,
-  AppSecurityComplianceSoc2Route: AppSecurityComplianceSoc2Route,
-  AppSecurityThreatsAnomaliesRoute: AppSecurityThreatsAnomaliesRoute,
-  AppSecurityThreatsBotsRoute: AppSecurityThreatsBotsRoute,
-  AppSecurityThreatsIpAllowlistRoute: AppSecurityThreatsIpAllowlistRoute,
-  AppSecurityThreatsRateLimitsRoute: AppSecurityThreatsRateLimitsRoute,
-  AppSecurityThreatsRiskSettingsRoute: AppSecurityThreatsRiskSettingsRoute,
-  AppSettingsOrganizationDomainsRoute: AppSettingsOrganizationDomainsRoute,
-  AppSettingsOrganizationEmailTemplatesRoute:
-    AppSettingsOrganizationEmailTemplatesRoute,
-  AppSettingsOrganizationGeneralRoute: AppSettingsOrganizationGeneralRoute,
-  AppSettingsOrganizationSecurityPolicyRoute:
-    AppSettingsOrganizationSecurityPolicyRoute,
-  AppUsersUserIdTimelineRoute: AppUsersUserIdTimelineRoute,
-  AppAuthConnectionsIndexRoute: AppAuthConnectionsIndexRoute,
-  AppDeveloperWebhooksIndexRoute: AppDeveloperWebhooksIndexRoute,
-  AppAuthConnectionsOidcClientIdRoute: AppAuthConnectionsOidcClientIdRoute,
-  AppAuthConnectionsOidcIndexRoute: AppAuthConnectionsOidcIndexRoute,
+const appRouteChildren: appRouteChildren = {
+  SplatRoute: SplatRoute,
+  ActivityRoute: ActivityRoute,
+  AnalyticsRoute: AnalyticsRoute,
+  ApplicationsRoute: ApplicationsRoute,
+  AuthenticationRoute: AuthenticationRoute,
+  InvitationsRoute: InvitationsRoute,
+  IndexRoute: IndexRoute,
+  AuthSocialRoute: AuthSocialRoute,
+  AuthorizationAbacRoute: AuthorizationAbacRoute,
+  AuthorizationAccessTesterRoute: AuthorizationAccessTesterRoute,
+  AuthorizationAuditRoute: AuthorizationAuditRoute,
+  AuthorizationBuilderRoute: AuthorizationBuilderRoute,
+  AuthorizationExplorerRoute: AuthorizationExplorerRoute,
+  AuthorizationPermissionsRoute: AuthorizationPermissionsRoute,
+  AuthorizationRbacRoute: AuthorizationRbacRoute,
+  AuthorizationRebacRoute: AuthorizationRebacRoute,
+  AuthorizationResourcesRoute: AuthorizationResourcesRoute,
+  AuthorizationRolesRoute: AuthorizationRolesRoute,
+  AuthorizationSettingsRoute: AuthorizationSettingsRoute,
+  AuthorizationSimulatorRoute: AuthorizationSimulatorRoute,
+  AuthorizationTemplatesRoute: AuthorizationTemplatesRoute,
+  AuthorizationVersionsRoute: AuthorizationVersionsRoute,
+  DeveloperAgentsRoute: DeveloperAgentsRoute,
+  DeveloperAuthHooksRoute: DeveloperAuthHooksRoute,
+  DeveloperBotsRoute: DeveloperBotsRoute,
+  DeveloperCredentialsRoute: DeveloperCredentialsRoute,
+  DeveloperInfrastructureRoute: DeveloperInfrastructureRoute,
+  DirectoryAttributeMappingsRoute: DirectoryAttributeMappingsRoute,
+  DirectoryConnectionsRoute: DirectoryConnectionsRoute,
+  DirectorySyncActivityRoute: DirectorySyncActivityRoute,
+  DirectorySyncErrorsRoute: DirectorySyncErrorsRoute,
+  GroupsGroupIdRoute: GroupsGroupIdRoute,
+  OrganizationsOrgIdRoute: OrganizationsOrgIdRoute,
+  OrganizationsTenantsRoute: OrganizationsTenantsRoute,
+  SecurityAuditIntelligenceRoute: SecurityAuditIntelligenceRoute,
+  SecurityAuditLogsRoute: SecurityAuditLogsRoute,
+  SecurityDeviceAuthorizationsRoute: SecurityDeviceAuthorizationsRoute,
+  SecurityLogStreamingRoute: SecurityLogStreamingRoute,
+  SecurityRateLimitsRoute: SecurityRateLimitsRoute,
+  SecuritySessionsRoute: SecuritySessionsRoute,
+  SettingsBillingRoute: SettingsBillingRoute,
+  SettingsBrandingRoute: SettingsBrandingRoute,
+  SettingsQeetAiRoute: SettingsQeetAiRoute,
+  UsersUserIdRoute: UsersUserIdRoute,
+  UsersDeletedRoute: UsersDeletedRoute,
+  UsersImportRoute: UsersImportRoute,
+  UsersSessionsRoute: UsersSessionsRoute,
+  UsersSuspendedRoute: UsersSuspendedRoute,
+  AuthorizationIndexRoute: AuthorizationIndexRoute,
+  DeveloperIndexRoute: DeveloperIndexRoute,
+  DirectoryIndexRoute: DirectoryIndexRoute,
+  GroupsIndexRoute: GroupsIndexRoute,
+  OrganizationsIndexRoute: OrganizationsIndexRoute,
+  SecurityIndexRoute: SecurityIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+  UsersIndexRoute: UsersIndexRoute,
+  AuthApiConsentGrantsRoute: AuthApiConsentGrantsRoute,
+  AuthApiKeysRoute: AuthApiKeysRoute,
+  AuthApiMachineIdentitiesRoute: AuthApiMachineIdentitiesRoute,
+  AuthApiSecretsRoute: AuthApiSecretsRoute,
+  AuthApiSigningKeysRoute: AuthApiSigningKeysRoute,
+  AuthApiTokensRoute: AuthApiTokensRoute,
+  AuthConnectionsLdapRoute: AuthConnectionsLdapRoute,
+  AuthConnectionsSamlRoute: AuthConnectionsSamlRoute,
+  AuthConnectionsSamlIdpRoute: AuthConnectionsSamlIdpRoute,
+  AuthConnectionsScimRoute: AuthConnectionsScimRoute,
+  AuthLoginMethodsMagicLinksRoute: AuthLoginMethodsMagicLinksRoute,
+  AuthLoginMethodsPasskeysRoute: AuthLoginMethodsPasskeysRoute,
+  AuthLoginMethodsPasswordRoute: AuthLoginMethodsPasswordRoute,
+  AuthLoginMethodsPasswordlessRoute: AuthLoginMethodsPasswordlessRoute,
+  AuthMfaSmsEmailRoute: AuthMfaSmsEmailRoute,
+  AuthMfaTotpRoute: AuthMfaTotpRoute,
+  DeveloperWebhooksIdRoute: DeveloperWebhooksIdRoute,
+  SecurityComplianceGdprRoute: SecurityComplianceGdprRoute,
+  SecurityComplianceIso27001Route: SecurityComplianceIso27001Route,
+  SecurityComplianceRetentionRoute: SecurityComplianceRetentionRoute,
+  SecurityComplianceSoc2Route: SecurityComplianceSoc2Route,
+  SecurityThreatsAnomaliesRoute: SecurityThreatsAnomaliesRoute,
+  SecurityThreatsBotsRoute: SecurityThreatsBotsRoute,
+  SecurityThreatsIpAllowlistRoute: SecurityThreatsIpAllowlistRoute,
+  SecurityThreatsRateLimitsRoute: SecurityThreatsRateLimitsRoute,
+  SecurityThreatsRiskSettingsRoute: SecurityThreatsRiskSettingsRoute,
+  SettingsOrganizationDomainsRoute: SettingsOrganizationDomainsRoute,
+  SettingsOrganizationEmailTemplatesRoute:
+    SettingsOrganizationEmailTemplatesRoute,
+  SettingsOrganizationGeneralRoute: SettingsOrganizationGeneralRoute,
+  SettingsOrganizationSecurityPolicyRoute:
+    SettingsOrganizationSecurityPolicyRoute,
+  UsersUserId_DottimelineRoute: UsersUserId_DottimelineRoute,
+  AuthConnectionsIndexRoute: AuthConnectionsIndexRoute,
+  DeveloperWebhooksIndexRoute: DeveloperWebhooksIndexRoute,
+  AuthConnectionsOidcClientIdRoute: AuthConnectionsOidcClientIdRoute,
+  AuthConnectionsOidcIndexRoute: AuthConnectionsOidcIndexRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const appRouteWithChildren = appRoute._addFileChildren(appRouteChildren)
 
 interface AuthRouteChildren {
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthMagicRoute: typeof AuthMagicRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
-  AuthInviteAcceptRoute: typeof AuthInviteAcceptRoute
-  AuthSsoCallbackRoute: typeof AuthSsoCallbackRoute
+  AuthInviteDotacceptRoute: typeof AuthInviteDotacceptRoute
+  AuthSsoDotcallbackRoute: typeof AuthSsoDotcallbackRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
@@ -2344,8 +2332,8 @@ const AuthRouteChildren: AuthRouteChildren = {
   AuthMagicRoute: AuthMagicRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
-  AuthInviteAcceptRoute: AuthInviteAcceptRoute,
-  AuthSsoCallbackRoute: AuthSsoCallbackRoute,
+  AuthInviteDotacceptRoute: AuthInviteDotacceptRoute,
+  AuthSsoDotcallbackRoute: AuthSsoDotcallbackRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
@@ -2368,10 +2356,10 @@ const AccountRouteWithChildren =
   AccountRoute._addFileChildren(AccountRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRouteWithChildren,
+  appRoute: appRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   AccountRoute: AccountRouteWithChildren,
-  HealthzRoute: HealthzRoute,
+  healthzRoute: healthzRoute,
   SelectOrganizationRoute: SelectOrganizationRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   ApiActivityStreamRoute: ApiActivityStreamRoute,

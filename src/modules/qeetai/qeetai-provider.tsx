@@ -45,7 +45,7 @@ interface PendingConfirm {
  * provides the promise-based confirm() and stepUp() dialogs that tools wait on.
  */
 export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
-  const { t } = useTranslation("qeetai");
+  const { t } = useTranslation(["qeetai", "common"]);
   const [pending, setPending] = useState<PendingConfirm | null>(null);
   const [stepUpOpen, setStepUpOpen] = useState(false);
   // Guards against a settle-after-unmount and double-resolve on the same prompt.

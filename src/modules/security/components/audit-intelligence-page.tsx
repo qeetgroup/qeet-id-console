@@ -19,6 +19,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import type { ParseKeys } from "i18next";
 import { DataState } from "@/platform/components/data-state";
 import { Link } from "@tanstack/react-router";
 import {
@@ -84,7 +85,7 @@ export function AuditIntelligencePage() {
       value: sm?.resolved_7d ?? 0,
       icon: <ShieldCheckIcon className="size-4" />,
     },
-  ];
+  ] as const;
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -275,7 +276,7 @@ function SettingsForm({ settings }: { settings: AuditAnomalySettings }) {
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
       await runSensitive({
-        actionLabel: t("auditIntelligence.settings.saveAction").toLowerCase(),
+        actionLabel: t("auditIntelligence.settings.saveAction"),
         run: () =>
           updateM.mutateAsync({
             enabled: value.enabled,
@@ -337,7 +338,7 @@ function SettingsForm({ settings }: { settings: AuditAnomalySettings }) {
 }
 
 // The server's codes for a broken chain, and the sentences a server without them sends instead.
-const BROKEN_REASONS: Record<string, string> = {
+const BROKEN_REASONS: Record<string, ParseKeys<"security">> = {
   "audit.chain_prev_hash_mismatch": "auditIntelligence.verify.brokenLink",
   "audit.chain_row_hash_mismatch": "auditIntelligence.verify.brokenRow",
   "prev_hash does not match preceding row_hash": "auditIntelligence.verify.brokenLink",

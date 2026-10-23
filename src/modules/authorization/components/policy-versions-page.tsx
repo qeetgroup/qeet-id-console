@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@qeetrix/ui";
+import { formatLocale } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import { RotateCcwClockIcon, RotateCcwIcon, SlidersHorizontalIcon } from "@qeetrix/icons";
 import { useState } from "react";
@@ -31,7 +32,7 @@ import { toVersionTimeline, useAuditEvents } from "../api/audit";
 
 /** Renders each policy's change history. */
 export function PolicyVersionsPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const policiesQ = useAbacPolicies();
   const auditQ = useAuditEvents({ resource_type: "abac_policy", limit: 500 });
   const policies = policiesQ.data?.items ?? [];
@@ -143,7 +144,7 @@ export function PolicyVersionsPage() {
                         <TimelineDescription>
                           {t("overview.changes.byActor", { actor: v.actor.slice(0, 8) })}
                         </TimelineDescription>
-                        <TimelineTime>{new Date(v.at).toLocaleString()}</TimelineTime>
+                        <TimelineTime>{new Date(v.at).toLocaleString(formatLocale())}</TimelineTime>
                         {v.metadata && Object.keys(v.metadata).length > 0 && (
                           <div className="mt-2 rounded-md border bg-muted/20 p-2">
                             <JSONTree

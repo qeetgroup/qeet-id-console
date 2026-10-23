@@ -88,8 +88,14 @@ export function updateEmailLocale(
       };
 }
 
-export function emailDraftErrors(draft: EmailTemplateInput, supported: string[]): string[] {
-  const errors: string[] = [];
+/** Why a draft can't be saved; each reads `emails.validation.<issue>`. */
+export type EmailDraftIssue = "required" | "length" | "header" | "variables" | "actionLink";
+
+export function emailDraftErrors(
+  draft: EmailTemplateInput,
+  supported: string[],
+): EmailDraftIssue[] {
+  const errors: EmailDraftIssue[] = [];
   const contents = [
     emailLocaleContent(draft, "en"),
     ...Object.values(draft.options.translations ?? {}),

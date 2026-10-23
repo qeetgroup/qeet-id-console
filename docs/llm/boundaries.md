@@ -1,8 +1,8 @@
 # Boundaries — qeet-id-console
 
-**Level:** L2 · **Last verified:** 2026-08-28
+**Level:** L2 · **Last verified:** 2026-10-23
 **Verification scope:** ownership from `qeet-id-context/REPOSITORIES.md`; layering rules from
-`biome.json`, verified by grep.
+`biome.json` and `src/__tests__/module-boundaries.test.ts`, verified by grep.
 
 ## Owns
 
@@ -34,21 +34,24 @@ unauthenticated federation redirects directly from the browser (e.g. social logi
 An operator web UI. **No public API, no package.** Its only external contract is the set of
 endpoints it calls — so a backend contract change reaches it, not the other way round.
 
-## Internal boundaries — enforced by lint, run in CI
+## Internal boundaries — enforced by lint and tests, run in CI
 
 ```text
-routes  →  modules  →  platform  →  shared
+app  →  modules  →  platform  →  shared
 ```
 
 | Layer | Rule |
 |---|---|
 | `src/shared/**` | may import only `@/shared`, `@/i18n`, external packages |
-| `src/platform/**` | may import only `@/platform`, `@/shared`, `@/i18n` |
-| `src/modules/**` | must not import `@/routes`; reaches another module **only via its barrel** |
-| `src/routes/**` | module barrels and `pages` entries only; never module internals, `api()` or `@tanstack/react-query` (no exemptions) |
-| all | `noImportCycles: "error"`; `@/lib` is retired |
+| `src/platform/**` | may import only `@/platform`, `@/shared`, `@/i18n`; reads modules only through the registry `src/app` fills |
+| `src/modules/**` | must not import `@/routes` or `@/app`; reaches another module **only via its barrel** |
+| route files (`src/modules/*/routes/**`, `src/routes/**`) | module barrels and `pages` entries only; never module internals, `api()` or `@tanstack/react-query` (no exemptions) |
+| `src/app/**` | the composition root; may import anything, and only the router, Vite config and test setup import it |
+| all | `noImportCycles: "error"`; `@/lib` is retired; no import climbs more than one folder (`@/` instead) |
 
-`bun run lint:boundaries` is a CI step — a violation fails the build.
+`bun run lint:boundaries` is a CI step, and so is the test suite that holds the barrel and
+relative-import rules — a violation fails the build. A module's catalogue namespaces are its own:
+`locale-parity.test.ts` fails when two modules claim one.
 
 ## Security boundaries
 

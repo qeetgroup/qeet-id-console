@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { formatLocale } from "@/i18n";
 import { ErrorText } from "@/platform/components/error-reference";
 import {
   settleSensitiveAction,
@@ -39,7 +40,7 @@ export function LinkedPhonesCard({
   const remove = useRemovePushDevice(scope);
   const phones = phonesQ.data?.items ?? [];
   const date = (iso: string) =>
-    new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" });
+    new Date(iso).toLocaleDateString(formatLocale(), { dateStyle: "medium" });
   // A cancelled step-up is not a failure to show: nothing was changed.
   const removeError = remove.error && !isStepUpRequired(remove.error) ? remove.error : null;
 
@@ -56,7 +57,7 @@ export function LinkedPhonesCard({
         confirmLabel: t("security.phones.remove"),
         tone: "destructive",
       },
-      actionLabel: t("security.phones.removeAction").toLowerCase(),
+      actionLabel: t("security.phones.removeAction"),
       run: () => remove.mutateAsync(phone.id),
     })
       .then(() => toast.success(t("security.phones.removed")))

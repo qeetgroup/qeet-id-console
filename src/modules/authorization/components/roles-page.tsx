@@ -61,7 +61,7 @@ const roleCsvColumns: CsvColumn<Role>[] = [
 
 /** Renders the organization's roles, with create and permission grants. */
 export function RolesPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation(["authorization", "common"]);
   const rolesQ = useRoles();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Role | null>(null);
@@ -228,7 +228,7 @@ const ROLE_NAME_MAX = 64;
 const ROLE_DESCRIPTION_MAX = 500;
 
 function CreateRoleForm({ onDone }: { onDone: () => void }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const createM = useCreateRole();
   const schema = useMemo(
     () =>
@@ -301,7 +301,7 @@ function CreateRoleForm({ onDone }: { onDone: () => void }) {
 }
 
 function RolePermissionsSheet({ role, onClose }: { role: Role; onClose: () => void }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const permsQ = useRolePermissions(role.id);
   const grantM = useGrantPermission(role.id);
   const revokeM = useRevokePermission(role.id);
@@ -312,12 +312,12 @@ function RolePermissionsSheet({ role, onClose }: { role: Role; onClose: () => vo
   // first; both are step-up gated.
   const grant = (permId: string) =>
     runSensitive({
-      actionLabel: t("roles.permsSheet.grantAction").toLowerCase(),
+      actionLabel: t("roles.permsSheet.grantAction"),
       run: () => grantM.mutateAsync(permId),
     }).catch(settleSensitiveAction);
   const revoke = (permId: string) =>
     runSensitive({
-      actionLabel: t("roles.permsSheet.revokeAction").toLowerCase(),
+      actionLabel: t("roles.permsSheet.revokeAction"),
       run: () => revokeM.mutateAsync(permId),
     }).catch(settleSensitiveAction);
 
@@ -368,7 +368,7 @@ function PermissionToggleList({
   onRevoke: (id: string) => void;
   currentPermissions: Permission[];
 }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const catalogue = usePermissionsCatalogue(); // to offer permissions not yet granted
   const merged = mergeCatalogue(catalogue, currentPermissions);
   return (

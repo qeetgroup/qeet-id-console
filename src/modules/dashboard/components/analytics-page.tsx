@@ -23,11 +23,12 @@ import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
+import { formatLocale } from "@/i18n";
 import { PageHeader } from "@/platform/components/page-header";
 import { useAnalyticsOverview } from "../api/analytics";
 import { DataState } from "@/platform/components/data-state";
 
-function mauConfig(t: TFunction): ChartConfig {
+function mauConfig(t: TFunction<"dashboard">): ChartConfig {
   return {
     wau: { label: "WAU", color: "var(--chart-1)" },
     dau: { label: t("analyticsPage.dauAvg"), color: "var(--chart-2)" },
@@ -40,7 +41,7 @@ function formatDelta(pct: number, suffix = "%"): string {
 }
 
 function fmtInt(n: number): string {
-  return Math.round(n).toLocaleString("en-US");
+  return Math.round(n).toLocaleString(formatLocale());
 }
 
 function KpiCard({

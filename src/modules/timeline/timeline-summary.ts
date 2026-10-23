@@ -3,20 +3,21 @@ import type { ActivityEvent } from "@/modules/activity";
 export interface TimelineSummary {
   total: number; // Loaded events in the current window
   authentication: number;
-  security: number;
-  admin: number;
-  sessions: number;
+  security: number; // access decisions and security signals
+  directory: number; // people, groups and organization changes
+  developer: number; // developer resources and the platform itself
   uniqueActors: number; // Distinct actors across the loaded events
 }
 
-const AUTH_CATEGORIES = new Set(["authentication", "mfa"]);
-const SECURITY_CATEGORIES = new Set(["security", "authorization"]);
-const SESSION_CATEGORIES = new Set(["session", "sessions"]);
-const ADMIN_ACTOR_TYPES = new Set(["admin", "administrator"]);
+/** The server categories each summary card counts, and filters on when clicked. */
+export const SUMMARY_CATEGORY_FILTERS = {
+  authentication: ["authentication"],
+  security: ["security", "authorization"],
+  directory: ["directory"],
+  developer: ["developer", "system"],
+} as const satisfies Record<string, readonly string[]>;
 
-function normalize(value: string | undefined): string {
-  return (value ?? "").toLowerCase().replace(/[^a-z-]/g, "");
-}
+type SummaryCard = keyof typeof SUMMARY_CATEGORY_FILTERS;
 
 /**
  * Counts the loaded timeline events by kind. There is no per-user summary endpoint (the server
@@ -24,37 +25,21 @@ function normalize(value: string | undefined): string {
  */
 export function computeTimelineSummary(events: ActivityEvent[]): TimelineSummary {
   const actors = new Set<string>();
-  let authentication = 0;
-  let security = 0;
-  let admin = 0;
-  let sessions = 0;
+  const counts: Record<SummaryCard, number> = {
+    authentication: 0,
+    security: 0,
+    directory: 0,
+    developer: 0,
+  };
 
   for (const event of events) {
-    const category = normalize(event.category);
-    if (AUTH_CATEGORIES.has(category)) authentication++;
-    if (SECURITY_CATEGORIES.has(category)) security++;
-    if (SESSION_CATEGORIES.has(category)) sessions++;
-    if (category === "administration" || ADMIN_ACTOR_TYPES.has(normalize(event.actor?.type)))
-      admin++;
-
+    const category = (event.category ?? "").toLowerCase();
+    for (const card of Object.keys(SUMMARY_CATEGORY_FILTERS) as SummaryCard[]) {
+      if ((SUMMARY_CATEGORY_FILTERS[card] as readonly string[]).includes(category)) counts[card]++;
+    }
     const actorKey = event.actor?.id ?? event.actor?.name;
     if (actorKey) actors.add(actorKey);
   }
 
-  return {
-    total: events.length,
-    authentication,
-    security,
-    admin,
-    sessions,
-    uniqueActors: actors.size,
-  };
+  return { total: events.length, ...counts, uniqueActors: actors.size };
 }
-
-/** The category filter each summary card applies when clicked. */
-export const SUMMARY_CATEGORY_FILTERS = {
-  authentication: ["authentication", "mfa"],
-  security: ["security", "authorization"],
-  admin: ["administration"],
-  sessions: ["sessions"],
-} as const satisfies Record<string, string[]>;

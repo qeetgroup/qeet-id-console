@@ -160,7 +160,7 @@ export function useCreateOidcClient() {
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: (input: CreateOidcInput) => createOidcClient(tenantId, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "auth:toast.applicationRegistered", silentError: true }, // the sheet shows it
+    meta: { successMessage: "authentication:toast.applicationRegistered", silentError: true }, // the sheet shows it
   });
 }
 
@@ -176,7 +176,7 @@ export function useUpdateOidcClient(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) });
     },
-    meta: { successMessage: "auth:toast.applicationUpdated", silentError: true },
+    meta: { successMessage: "authentication:toast.applicationUpdated", silentError: true },
   });
 }
 
@@ -186,7 +186,7 @@ export function useDeleteOidcClient() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/oidc/clients/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "auth:toast.applicationDeleted" },
+    meta: { successMessage: "authentication:toast.applicationDeleted" },
   });
 }
 
@@ -197,7 +197,7 @@ export function useRotateClientSecret(id: string) {
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: () => rotateOidcClientSecret(tenantId, id),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "auth:toast.clientSecretRotated" },
+    meta: { successMessage: "authentication:toast.clientSecretRotated" },
   });
 }
 
@@ -233,6 +233,6 @@ export function useReviewShadowAIClient() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.shadowAi(tenantId) }),
-    meta: { successMessage: "auth:toast.acknowledged" },
+    meta: { successMessage: "authentication:toast.acknowledged" },
   });
 }

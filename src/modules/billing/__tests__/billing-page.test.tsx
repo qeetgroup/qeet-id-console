@@ -1,6 +1,14 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
@@ -28,6 +36,7 @@ import {
   type Invoice,
   type Plan,
   type Subscription,
+  usePlanName,
 } from "../api/billing";
 import {
   billingPlanChoices,
@@ -279,6 +288,20 @@ describe("Billing catalogue", () => {
     });
     expect(billingTaxIdValid({ ...profile, tax_id: "invalid" })).toBe(false);
     expect(normalizeBillingProfile({ ...profile, tax_id_type: "none" }).tax_id).toBe("");
+  });
+});
+
+describe("Plan names", () => {
+  it("names a plan from the catalogue and reads an unknown or unloaded code as words", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { result } = renderHook(() => usePlanName(), {
+      wrapper: ({ children }) => (
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      ),
+    });
+    expect(result.current("pro_year")).toBe("Pro Year");
+    await waitFor(() => expect(result.current("pro")).toBe("Pro"));
+    expect(result.current("business_plus")).toBe("Business Plus");
   });
 });
 

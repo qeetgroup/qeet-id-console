@@ -76,7 +76,7 @@ export function useRenamePasskey() {
     mutationFn: ({ id, name }: { id: string; name: string }) =>
       api<Passkey>(`/v1/passkeys/${encodeURIComponent(id)}`, { method: "PATCH", body: { name } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.passkeys() }),
-    meta: { successMessage: "auth:toast.passkeyRenamed", silentError: true },
+    meta: { successMessage: "authentication:toast.passkeyRenamed", silentError: true },
   });
 }
 
@@ -119,6 +119,6 @@ export function useRemovePasskey() {
       void refreshSignInMethods(qc);
       return qc.invalidateQueries({ queryKey: authKeys.passkeys() });
     },
-    meta: { successMessage: "auth:toast.passkeyRemoved" },
+    meta: { successMessage: "authentication:toast.passkeyRemoved" },
   });
 }

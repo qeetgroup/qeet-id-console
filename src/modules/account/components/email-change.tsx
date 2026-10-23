@@ -65,7 +65,7 @@ function NewEmailForm({
   onCancel: () => void;
   resend: boolean;
 }) {
-  const { t } = useTranslation("account");
+  const { t } = useTranslation(["account", "common"]);
   const runSensitive = useSensitiveAction();
   const startM = useStartEmailChange();
   const schema = useMemo(() => z.object({ email: z.email(t("profile.validation.email")) }), [t]);
@@ -75,7 +75,7 @@ function NewEmailForm({
     onSubmit: async ({ value, formApi }) => {
       const email = value.email.trim();
       await runSensitive({
-        actionLabel: t("profile.emailChangeAction").toLowerCase(),
+        actionLabel: t("profile.emailChangeAction"),
         run: () => startM.mutateAsync(email),
       })
         .then((sent) => sent !== undefined && onSent(email))
@@ -162,7 +162,6 @@ function ConfirmCodeForm({ onConfirmed }: { onConfirmed: () => void }) {
                 label={t("profile.emailCode")}
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                maxLength={CODE_LENGTH}
                 required
               />
             )}

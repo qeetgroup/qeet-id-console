@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 
 import { OneTimeSecret } from "@/shared/components/one-time-secret";
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import {
   settleSensitiveAction,
   useSensitiveAction,
@@ -37,11 +38,10 @@ import {
   useScimConfig,
   useScimProvisionedUsers,
 } from "../api/scim";
-import { AuthStatusPill } from "./auth-status-pill";
 
 /** Renders SCIM provisioning: the endpoint and its bearer token, sync stats and provisioned users. */
 export function ScimPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const cfgQ = useScimConfig();
   const usersQ = useScimProvisionedUsers();
@@ -152,7 +152,7 @@ export function ScimPage() {
                 <KeyRoundIcon className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <AuthStatusPill status={enabled ? "active" : "disabled"} />
+                <StatusPill status={enabled ? "active" : "disabled"} />
               </CardContent>
             </Card>
             <Card>
@@ -274,7 +274,7 @@ export function ScimPage() {
                         {u.external_id || "—"}
                       </TableCell>
                       <TableCell>
-                        <AuthStatusPill status={u.status} />
+                        <StatusPill status={u.status} />
                       </TableCell>
                       <TableCell>
                         <TimeSince value={u.created_at} />

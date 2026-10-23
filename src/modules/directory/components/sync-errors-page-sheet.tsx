@@ -28,7 +28,7 @@ export function SyncErrorSheet({
   onAction: (events: DirectoryEvent[], action: "retry" | "resolve") => void;
   onClose: () => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <Sheet open={!!event} onOpenChange={(open) => !open && onClose()}>
       <SheetContent>

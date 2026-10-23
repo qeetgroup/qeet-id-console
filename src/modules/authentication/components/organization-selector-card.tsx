@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage, cn } from "@qeetrix/ui";
 import { CheckIcon, CrownIcon, GlobeIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import type { EligibleOrganization } from "@/platform/auth/organization-selection";
 import { organizationImage, organizationInitials } from "../organization-selection-model";
 import type { OrganizationLayout } from "./organization-selector-toolbar";
@@ -36,7 +37,7 @@ export function OrganizationSelectorCard({
   planLabel: (plan: string) => string;
   onSelect: () => void;
 }) {
-  const { t, i18n } = useTranslation("auth-flow");
+  const { t } = useTranslation("auth-flow");
   const inputId = `${group}-${organization.id}`;
   const color =
     AVATAR_COLORS[
@@ -157,7 +158,7 @@ export function OrganizationSelectorCard({
             )}
             title={
               organization.last_used_at
-                ? new Date(organization.last_used_at).toLocaleString(i18n.language)
+                ? new Date(organization.last_used_at).toLocaleString(formatLocale())
                 : undefined
             }
           >

@@ -57,7 +57,7 @@ type CreateUserSheetProps = {
 
 /** Renders the sheet that creates a password user in the current organization with a role. */
 export function CreateUserSheet({ open, onOpenChange, tenantId }: CreateUserSheetProps) {
-  const { t } = useTranslation("users");
+  const { t } = useTranslation(["users", "common"]);
   const rolesQ = useRoles();
   const roles = useMemo(() => rolesQ.data?.items ?? [], [rolesQ.data?.items]);
   const orgName = useOrgs().data?.items.find((o) => o.id === tenantId)?.name;

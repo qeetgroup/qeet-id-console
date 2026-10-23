@@ -22,7 +22,7 @@ export function ConsoleHeader({
   onOpenShortcuts,
   searchAvailable,
 }: ConsoleHeaderProps) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "common"]);
   return (
     <header className="console-topbar">
       <div className="flex min-w-0 items-center gap-2">

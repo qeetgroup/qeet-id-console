@@ -47,12 +47,12 @@ export function ContactSalesDialog({
   onOpenChange: (o: boolean) => void;
   source: string; // where the form opened, recorded on the lead, e.g. "onboarding"
 }) {
-  const { t } = useTranslation("settings");
+  const { t, i18n } = useTranslation(["billing", "common"]);
   const [teamSize, setTeamSize] = useState("");
   const submitM = useMutation({
     mutationFn: (body: LeadBody) =>
       api<{ status: string }>("/v1/sales/leads", { method: "POST", body }),
-    meta: { successMessage: "settings:toast.thanksOurTeamWill" },
+    meta: { successMessage: "billing:toast.thanksOurTeamWill" },
     onSuccess: () => onOpenChange(false),
   });
 
@@ -113,7 +113,7 @@ export function ContactSalesDialog({
                   <SelectContent>
                     {TEAM_SIZES.map((o) => (
                       <SelectItem key={o.value} value={o.value}>
-                        {t(o.label)}
+                        {i18n.t(o.label)}
                       </SelectItem>
                     ))}
                   </SelectContent>

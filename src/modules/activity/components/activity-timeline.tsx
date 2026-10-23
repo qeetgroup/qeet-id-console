@@ -3,13 +3,15 @@ import { ActivityIcon, RefreshCwIcon, WifiOffIcon } from "@qeetrix/icons";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+
 import type { ActivitySearch } from "../activity-search";
 import type { ActivityEvent, ConnectionStatus, DateGroup } from "../types/activity.types";
 import { ActivityEventRow, ActivityRowHeader } from "./activity-event-row";
 
 function GroupHeader({ label, date }: { label: string; date?: string }) {
   const dateStr = date
-    ? new Date(date).toLocaleDateString(undefined, {
+    ? new Date(date).toLocaleDateString(formatLocale(), {
         month: "short",
         day: "numeric",
         year: "numeric",

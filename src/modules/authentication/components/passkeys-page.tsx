@@ -21,7 +21,7 @@ import { DataState } from "@/platform/components/data-state";
 
 /** Renders the signed-in person's passkeys with register, rename and remove. */
 export function PasskeysPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
 
   const listQ = usePasskeys();

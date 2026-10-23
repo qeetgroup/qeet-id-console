@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { SearchItem } from "../../registry/types/registry.types";
+import type { SearchItem } from "@/modules/search/registry/types/registry.types";
 import { favoritesActions, favoritesStore } from "../favorites-store";
 
 function item(id: string, title: string): SearchItem {

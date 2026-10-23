@@ -14,9 +14,9 @@ import { CalendarClockIcon } from "@qeetrix/icons";
 export type DateRange = NonNullable<DateRangePickerProps["value"]>;
 
 // Each preset's label is `activityTimeRange.presets.<value>`.
-export const TIME_PRESETS = ["all", "15m", "1h", "24h", "7d", "30d", "custom"].map((value) => ({
-  value,
-}));
+export const TIME_PRESETS = (["all", "15m", "1h", "24h", "7d", "30d", "custom"] as const).map(
+  (value) => ({ value }),
+);
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;

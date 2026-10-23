@@ -9,13 +9,13 @@ import {
   FieldDescription,
   FieldLabel,
   Slider,
-  StatusPill,
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import {
   settleSensitiveAction,
@@ -67,7 +67,7 @@ function RetentionForm({ initial }: { initial: RetentionPolicy }) {
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
       await runSensitive({
-        actionLabel: t("retention.deletedUsers.saveAction").toLowerCase(),
+        actionLabel: t("retention.deletedUsers.saveAction"),
         run: () => updateM.mutateAsync(value),
       })
         .then((saved) => saved && formApi.reset(saved))
@@ -156,7 +156,7 @@ function RetentionForm({ initial }: { initial: RetentionPolicy }) {
                       confirmLabel: t("retention.deletedUsers.purgeConfirmLabel"),
                       tone: "destructive",
                     },
-                    actionLabel: t("retention.deletedUsers.purgeAction").toLowerCase(),
+                    actionLabel: t("retention.deletedUsers.purgeAction"),
                     run: () => runM.mutateAsync(),
                   }).catch(settleSensitiveAction)
                 }

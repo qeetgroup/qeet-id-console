@@ -5,12 +5,14 @@ import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart } from "recharts";
 
+import { formatLocale } from "@/i18n";
+
 import type { DeveloperOverviewData } from "../api/overview";
 import { FOCUS, PANEL, RESOURCES } from "./developer-overview-config";
 
 /** Renders one resource's count, its 7-day sparkline and how many were created recently. */
 export function MetricCard({ resource }: { resource: DeveloperOverviewData["resources"][number] }) {
-  const { t, i18n } = useTranslation("developer");
+  const { t } = useTranslation("developer");
   const headingId = useId();
   const specification = RESOURCES[resource.id];
   const Icon = specification.icon;
@@ -53,9 +55,9 @@ export function MetricCard({ resource }: { resource: DeveloperOverviewData["reso
         ) : metric ? (
           <p
             className="font-heading text-2xl leading-7 font-semibold tabular-nums"
-            title={metric.total.toLocaleString(i18n.resolvedLanguage)}
+            title={metric.total.toLocaleString(formatLocale())}
           >
-            {new Intl.NumberFormat(i18n.resolvedLanguage, {
+            {new Intl.NumberFormat(formatLocale(), {
               notation: metric.total >= 10000 ? "compact" : "standard",
               maximumFractionDigits: 1,
             }).format(metric.total)}

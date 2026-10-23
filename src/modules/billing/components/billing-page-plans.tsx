@@ -42,7 +42,7 @@ export function BillingPriceControls({
   onIntervalChange: (interval: BillingInterval) => void;
   onCurrencyChange: (currency: string) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   return (
     <div className="flex max-w-full flex-wrap items-center gap-3">
       <fieldset
@@ -136,7 +136,7 @@ export function BillingPlans({
   onContactSales: () => void;
   onCancel: () => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   return (
     <section
       ref={ref}

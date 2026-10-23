@@ -13,7 +13,7 @@ type Tab = "verified" | "custom";
 
 /** Renders the domains settings: verified email domains and the custom sign-in domain. */
 export function DomainsPage() {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const [tab, setTab] = useState<Tab>("verified");
 
   return (

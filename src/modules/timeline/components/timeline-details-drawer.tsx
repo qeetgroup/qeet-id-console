@@ -21,11 +21,13 @@ import {
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import {
   type ActivityEvent,
   formatEventTitle,
   ResultBadge,
   SeverityBadge,
+  categoryLabel,
 } from "@/modules/activity";
 import { TimelineQuickActions } from "./timeline-details-drawer-actions";
 import {
@@ -58,7 +60,7 @@ export function TimelineDetailsDrawer({
   onSelectPrev,
   onSelectNext,
 }: TimelineDetailsDrawerProps) {
-  const { t } = useTranslation("timeline");
+  const { t } = useTranslation(["timeline", "common"]);
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -89,8 +91,8 @@ export function TimelineDetailsDrawer({
                   {event.description ? (
                     <p className="mt-0.5 text-xs text-muted-foreground">{event.description}</p>
                   ) : null}
-                  <SheetDescription className="mt-0.5 text-xs capitalize">
-                    {event.category} ·{" "}
+                  <SheetDescription className="mt-0.5 text-xs">
+                    {categoryLabel(event.category)} ·{" "}
                     <TimeSince value={event.at} className="inline tabular-nums" />
                   </SheetDescription>
                 </div>
@@ -144,7 +146,7 @@ export function TimelineDetailsDrawer({
                       <Badge variant="muted">{event.type}</Badge>
                     </DetailRow>
                     <DetailRow label={t("timelineDetailsDrawer.category")}>
-                      <span className="capitalize">{event.category}</span>
+                      {categoryLabel(event.category)}
                     </DetailRow>
                     <DetailRow label={t("timelineDetailsDrawer.result")}>
                       <ResultBadge event={event} />
@@ -154,7 +156,7 @@ export function TimelineDetailsDrawer({
                     </DetailRow>
                     <DetailRow label={t("timelineDetailsDrawer.timestamp")}>
                       <time dateTime={event.at}>
-                        {new Date(event.at).toLocaleString(undefined, {
+                        {new Date(event.at).toLocaleString(formatLocale(), {
                           dateStyle: "medium",
                           timeStyle: "long",
                         })}

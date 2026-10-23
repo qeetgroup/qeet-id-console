@@ -1,6 +1,5 @@
 import { assert, describe, expect, it } from "vitest";
 
-import i18n from "@/i18n";
 import { type CondNode, nid, type Operator } from "../api/abac";
 import { policyProblemMessage } from "../components/condition-builder/condition-problem";
 import {
@@ -136,20 +135,19 @@ describe("isReducibleToAbac", () => {
   });
 
   it("reads each problem in the reader's language, naming the operator at fault", () => {
-    const t = i18n.getFixedT("en");
-    expect(policyProblemMessage({ code: "notReferenceable", op: "regex" }, t)).toBe(
+    expect(policyProblemMessage({ code: "notReferenceable", op: "regex" })).toBe(
       "“matches regex” can't compare with another attribute. Compare with a value instead.",
     );
-    expect(policyProblemMessage({ code: "badReference", op: "eq" }, t)).toBe(
+    expect(policyProblemMessage({ code: "badReference", op: "eq" })).toBe(
       "The attribute to compare with must be a subject., resource. or context. path.",
     );
-    expect(policyProblemMessage({ code: "selfReference", op: "eq" }, t)).toBe(
+    expect(policyProblemMessage({ code: "selfReference", op: "eq" })).toBe(
       "A condition can't compare an attribute with itself.",
     );
-    expect(policyProblemMessage({ code: "needsValue", op: "prefix" }, t)).toBe(
+    expect(policyProblemMessage({ code: "needsValue", op: "prefix" })).toBe(
       "“starts with” needs a value.",
     );
-    expect(policyProblemMessage({ code: "mixedEngines" }, t)).toMatch(/combines RBAC\/ReBAC/);
+    expect(policyProblemMessage({ code: "mixedEngines" })).toMatch(/combines RBAC\/ReBAC/);
   });
 });
 

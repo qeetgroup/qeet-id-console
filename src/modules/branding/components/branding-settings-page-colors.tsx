@@ -19,7 +19,7 @@ const BACKGROUNDS = ["#ffffff", "#f4f4f5", "#e4e4e7", "#a1a1aa", "#52525b", "#27
 
 /** The three brand colours, each with a picker, a hex field and presets, plus a contrast check. */
 export function BrandingColorsSection({ fields }: { fields: BrandingFields }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const { id, draft, touched, errors } = fields;
   const primary = normalizeBrandColor(draft.primary_color) ?? BRANDING_COLORS.primary;
   const secondary = normalizeBrandColor(draft.secondary_color) ?? BRANDING_COLORS.secondary;

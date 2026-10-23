@@ -57,7 +57,7 @@ const FILTERS: ProviderFilter[] = ["all", "configured", "notConfigured", "unsupp
 
 /** Renders the social sign-in catalogue: what's configured, filters, and the setup sheet. */
 export function SocialProvidersPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const listQ = useSocialProviders();
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -263,7 +263,7 @@ function ProviderCard({
   loading: boolean;
   onConfigure: () => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const { copy } = useCopyToClipboard();
   const isUnsupported = provider.support === "unsupported";
 

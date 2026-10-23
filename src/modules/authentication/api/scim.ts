@@ -64,7 +64,7 @@ export function useRotateScimToken() {
     mutationFn: () =>
       api(`/v1/tenants/${tenantId}/scim/token`, { method: "POST", schema: scimTokenSchema }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.scim(tenantId) }),
-    meta: { successMessage: "auth:toast.scimBearerTokenGenerated" },
+    meta: { successMessage: "authentication:toast.scimBearerTokenGenerated" },
   });
 }
 
@@ -74,6 +74,6 @@ export function useRevokeScimToken() {
   return useMutation({
     mutationFn: () => api<void>(`/v1/tenants/${tenantId}/scim/token`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.scim(tenantId) }),
-    meta: { successMessage: "auth:toast.scimProvisioningDisabled" },
+    meta: { successMessage: "authentication:toast.scimProvisioningDisabled" },
   });
 }

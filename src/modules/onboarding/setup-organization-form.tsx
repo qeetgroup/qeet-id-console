@@ -62,7 +62,7 @@ export function SetupOrganizationForm({
   onChangePlan: () => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("onboarding");
   const id = useId();
   const submitKey =
     selection.tier === "free"
@@ -142,7 +142,7 @@ export function SetupOrganizationForm({
             <SelectContent>
               {REGIONS.map((item) => (
                 <SelectItem key={item.value} value={item.value}>
-                  {t(item.label)}
+                  {i18n.t(item.label)}
                 </SelectItem>
               ))}
             </SelectContent>

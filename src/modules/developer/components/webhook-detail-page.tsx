@@ -8,7 +8,6 @@ import {
   CardTitle,
   CodeBlock,
   Skeleton,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -17,8 +16,10 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { formatLocale } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import { ErrorText } from "@/platform/components/error-reference";
+import { StatusPill } from "@/platform/components/status-pill";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeftIcon,
@@ -56,7 +57,7 @@ import { WebhookStatusNote, WebhookStatusPill } from "./webhook-status";
  * disable, and signing-secret rotation.
  */
 export function WebhookDetailPage({ id }: { id: string }) {
-  const { t } = useTranslation("developer");
+  const { t } = useTranslation(["developer", "common"]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const runSensitive = useSensitiveAction();
 
@@ -89,7 +90,7 @@ export function WebhookDetailPage({ id }: { id: string }) {
         <OneTimeSecret
           title={t("webhookDetail.rotated.title")}
           description={t("webhookDetail.rotated.description", {
-            until: new Date(rotated.previous_secret_expires_at).toLocaleString(),
+            until: new Date(rotated.previous_secret_expires_at).toLocaleString(formatLocale()),
           })}
           values={[{ value: rotated.secret }]}
           dismissLabel={t("common:actions.dismiss")}
@@ -130,7 +131,9 @@ export function WebhookDetailPage({ id }: { id: string }) {
             <WebhookStatusNote webhook={w} />
             {overlapUntil && (
               <p className="text-sm text-muted-foreground">
-                {t("webhookDetail.overlap", { until: new Date(overlapUntil).toLocaleString() })}
+                {t("webhookDetail.overlap", {
+                  until: new Date(overlapUntil).toLocaleString(formatLocale()),
+                })}
               </p>
             )}
             <div className="flex flex-wrap gap-1">

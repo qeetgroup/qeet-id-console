@@ -33,7 +33,7 @@ describe("policy template catalogue", () => {
     const known = (key: string) => i18n.exists(key, { lng: "en" });
     for (const t of POLICY_TEMPLATES) {
       expect(known(t.name) && known(t.description)).toBe(true);
-      expect(known(`rbac:policyTemplatesPage.categories.${t.category}`)).toBe(true);
+      expect(known(`authorization:policyTemplatesPage.categories.${t.category}`)).toBe(true);
       expect("vendor" in t.source ? t.source.vendor : known(t.source.sector)).toBeTruthy();
       expect(t.tags.length).toBeGreaterThan(0);
     }
@@ -106,7 +106,7 @@ describe("policy template catalogue", () => {
 describe("findTemplate", () => {
   it("looks a template up by id", () => {
     expect(findTemplate("baseline-mfa")?.source).toEqual({
-      sector: "rbac:policyTemplates.sectors.baseline",
+      sector: "authorization:policyTemplates.sectors.baseline",
     });
     expect(findTemplate("github-repo-admin")?.source).toEqual({ vendor: "GitHub" });
     expect(findTemplate("does-not-exist")).toBeUndefined();

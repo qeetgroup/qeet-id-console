@@ -1,6 +1,6 @@
 // What a webhook endpoint's fields say about it, worded by the components.
 
-import i18n from "@/i18n";
+import i18n, { isTranslationKey } from "@/i18n";
 
 import type { Webhook } from "./api/webhooks";
 
@@ -21,5 +21,5 @@ export function webhookState(
 /** Returns the console's description of a catalogue event, or undefined for one it doesn't know. */
 export function webhookEventDescription(name: string): string | undefined {
   const key = `developer:webhookEvents.${name}`;
-  return i18n.exists(key) ? i18n.t(key) : undefined;
+  return isTranslationKey(key) ? i18n.t(key) : undefined;
 }

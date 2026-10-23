@@ -13,7 +13,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -27,6 +26,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import {
   settleSensitiveAction,
   useSensitiveAction,
@@ -45,7 +45,7 @@ import { z } from "zod";
 
 /** Renders the signed-in person's email and SMS factors, with test send, remove and add. */
 export function OtpFactorsPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const listQ = useOtpFactors();
   const challengeM = useChallengeOtpFactor();
@@ -193,7 +193,7 @@ function SheetForm({
   children: ReactNode;
   submit: ReactNode;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   return (
     <form
       className="flex h-full flex-col"
@@ -225,7 +225,7 @@ function StartFactorForm({
 }: {
   onSent: (sent: { factorId: string; destination: string }) => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const enrollM = useEnrollOtpStart();
   const schema = useMemo(
@@ -320,7 +320,7 @@ function ConfirmFactorForm({
   destination: string;
   onDone: () => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const confirmM = useConfirmOtpFactor();
   const schema = useMemo(
     () => z.object({ code: z.string().trim().min(1, t("mfa.smsEmail.sheet.validation.code")) }),

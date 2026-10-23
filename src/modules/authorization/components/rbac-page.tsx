@@ -18,7 +18,7 @@ import { useRolePermissions, useRoles } from "../api/rbac";
 
 /** Renders the role hierarchy and each role's permissions. */
 export function RbacPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const rolesQ = useRoles();
   const roles = rolesQ.data?.items ?? [];
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);

@@ -2,15 +2,15 @@ import { Button, cn, Field, FieldLabel, Textarea } from "@qeetrix/ui";
 import { ArrowDownIcon, PlayIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
-import i18n from "@/i18n";
+import i18n, { isTranslationKey, type TranslationKey } from "@/i18n";
 
 import type { MappingPreview } from "../api/directory";
 import { DIRECTORY_ACTION, DIRECTORY_PANEL } from "./directory-ui";
 
 // A code newer than this console reads as a generic problem rather than a humanised key.
-function issueKey(code: string): string {
-  const key = `directory.mappings.issues.${code.replace(/^directory\.mapping_/, "")}`;
-  return i18n.exists(key, { ns: "dashboard" }) ? key : "directory.mappings.issues.unknown";
+function issueKey(code: string): TranslationKey {
+  const key = `directory:directory.mappings.issues.${code.replace(/^directory\.mapping_/, "")}`;
+  return isTranslationKey(key) ? key : "directory:directory.mappings.issues.unknown";
 }
 
 /** Test data for the active rules, the profile they map it to, and the issues found. */
@@ -29,7 +29,7 @@ export function MappingPreviewPanel({
   previewing: boolean;
   hasActiveRules: boolean;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <aside className={cn(DIRECTORY_PANEL, "p-4")} aria-label={t("directory.mappings.preview")}>
       <header className="mb-3 flex items-center justify-between gap-2">
@@ -88,7 +88,7 @@ export function MappingPreviewPanel({
           <p key={`${issue.mapping_id}:${issue.field}:${issue.code}`} className="mt-1 text-[11px]">
             {issue.field &&
               `${t(`directory.mappings.targets.${issue.field}`, { defaultValue: issue.field })}: `}
-            {t(issueKey(issue.code))}
+            {i18n.t(issueKey(issue.code))}
           </p>
         ))}
       </div>

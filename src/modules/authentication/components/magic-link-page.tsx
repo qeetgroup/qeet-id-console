@@ -4,6 +4,7 @@ import { errorMessage } from "@/platform/errors/user-message";
 import { Link } from "@tanstack/react-router";
 import { CircleCheckIcon, LoaderCircleIcon, MailIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { BrandHero } from "./brand-hero";
@@ -114,7 +115,7 @@ function renderStatus({
   token: string;
   consume: ReturnType<typeof useConsumeMagicLink>;
   resend: ReturnType<typeof useResendMagicLink>;
-  t: (key: string) => string;
+  t: TFunction<"auth-flow">;
 }) {
   if (consume.isPending || consume.isIdle) {
     return (

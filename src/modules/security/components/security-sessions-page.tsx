@@ -29,7 +29,7 @@ export function SecuritySessionsPage() {
         confirmLabel: t("sessions.confirm.revokeLabel"),
         tone: "destructive",
       },
-      actionLabel: t("sessions.confirm.revokeAction").toLowerCase(),
+      actionLabel: t("sessions.confirm.revokeAction"),
       run: () => revokeM.mutateAsync(s.id),
     }).catch(settleSensitiveAction);
 

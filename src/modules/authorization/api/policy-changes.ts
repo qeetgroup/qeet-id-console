@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import i18n from "@/i18n";
+import i18n, { type TranslationKey } from "@/i18n";
 import { DEFAULT_FILTERS, fetchActivityPage } from "@/modules/activity";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -21,26 +21,26 @@ export interface PolicyChange {
 }
 
 // Catalogue keys for the entity an action is about.
-const ENTITY_LABELS: Record<string, string> = {
+const ENTITY_LABELS: Record<string, TranslationKey> = {
   ...RESOURCE_TYPE_LABELS,
-  policy: "rbac:resourceTypes.policy",
-  relation: "rbac:resourceTypes.relationTuple",
+  policy: "authorization:resourceTypes.policy",
+  relation: "authorization:resourceTypes.relationTuple",
 };
 
 // Catalogue keys for a verb, each a title with the entity in it, such as "{{entity}} created".
-const VERB_TITLES: Record<string, string> = {
-  created: "rbac:policyChanges.created",
-  updated: "rbac:policyChanges.updated",
-  deleted: "rbac:policyChanges.deleted",
-  granted: "rbac:policyChanges.granted",
-  revoked: "rbac:policyChanges.revoked",
-  assigned: "rbac:policyChanges.assigned",
-  unassigned: "rbac:policyChanges.unassigned",
-  permission_granted: "rbac:policyChanges.permissionGranted",
-  permission_revoked: "rbac:policyChanges.permissionRevoked",
-  group_assigned: "rbac:policyChanges.groupAssigned",
-  group_unassigned: "rbac:policyChanges.groupUnassigned",
-  assign_refused: "rbac:policyChanges.assignRefused",
+const VERB_TITLES: Record<string, TranslationKey> = {
+  created: "authorization:policyChanges.created",
+  updated: "authorization:policyChanges.updated",
+  deleted: "authorization:policyChanges.deleted",
+  granted: "authorization:policyChanges.granted",
+  revoked: "authorization:policyChanges.revoked",
+  assigned: "authorization:policyChanges.assigned",
+  unassigned: "authorization:policyChanges.unassigned",
+  permission_granted: "authorization:policyChanges.permissionGranted",
+  permission_revoked: "authorization:policyChanges.permissionRevoked",
+  group_assigned: "authorization:policyChanges.groupAssigned",
+  group_unassigned: "authorization:policyChanges.groupUnassigned",
+  assign_refused: "authorization:policyChanges.assignRefused",
 };
 
 // The relationship store names its actions after the engine, not the entity.
@@ -49,7 +49,7 @@ const ACTION_ALIASES: Record<string, string> = {
   "rebac.tuple_deleted": "relation_tuple.deleted",
 };
 
-function own(table: Record<string, string>, key: string): string | undefined {
+function own<T extends string>(table: Record<string, T>, key: string): T | undefined {
   return Object.hasOwn(table, key) ? table[key] : undefined;
 }
 

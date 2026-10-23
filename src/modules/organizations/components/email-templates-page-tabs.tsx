@@ -19,6 +19,7 @@ import {
   TextAlignStartIcon,
   TrashIcon,
 } from "@qeetrix/icons";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import type { EmailTemplateInput, EmailTemplateTranslation } from "../api/email-templates";
@@ -49,7 +50,7 @@ export function EmailEditorTabList({
   tab: EmailTab;
   onChange: (tab: EmailTab) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <div
       role="tablist"
@@ -111,7 +112,7 @@ export function EmailDesignTab({
   brand: EmailBrand;
   onChange: (draft: EmailTemplateInput) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <div className="space-y-5">
       <h3 className="text-xs font-semibold">{t("emails.design.title")}</h3>
@@ -168,13 +169,13 @@ export function EmailDesignTab({
           />
           <code className="text-xs text-muted-foreground">{brand.primary || "#f97316"}</code>
         </div>
-        <a
-          href="/settings/branding"
+        <Link
+          to="/settings/branding"
           className="mt-3 inline-flex items-center gap-1 text-xs text-primary underline-offset-4 hover:underline"
         >
           {t("emails.design.manage")}
           <ArrowUpRightIcon className="size-3" />
-        </a>
+        </Link>
       </div>
     </div>
   );
@@ -201,7 +202,7 @@ export function EmailLocalizationTab({
   onNewLocaleChange: (code: string) => void;
   onEditLocale: (code: string) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const locales = ["en", ...Object.keys(draft.options.translations ?? {})];
   return (
     <div className="space-y-4">
@@ -339,7 +340,7 @@ export function EmailAdvancedTab({
   modern: boolean;
   onUpdate: (patch: Partial<EmailTemplateTranslation>) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <div className="space-y-4">
       <div>

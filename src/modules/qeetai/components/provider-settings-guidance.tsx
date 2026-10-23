@@ -22,7 +22,7 @@ export function ProviderLogo({ provider }: { provider: QeetAIProvider }) {
 }
 
 export function ProviderSettingsGuidance({ fallback }: { fallback?: boolean }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("qeetai");
   const resourceLink =
     "mt-1 inline-flex min-h-6 items-center gap-1.5 rounded-sm text-[11px] font-medium text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:min-h-11";
 
@@ -40,7 +40,7 @@ export function ProviderSettingsGuidance({ fallback }: { fallback?: boolean }) {
           {t("qeetAI.guide.how")}
         </h2>
         <ol className="mt-3 space-y-3">
-          {["key", "account", "organization"].map((step, index) => (
+          {(["key", "account", "organization"] as const).map((step, index) => (
             <li key={step} className="flex items-start gap-3">
               <span
                 aria-hidden="true"
@@ -98,9 +98,9 @@ export function ProviderSettingsGuidance({ fallback }: { fallback?: boolean }) {
         </h2>
         <ul className="mt-2 flex flex-wrap gap-2">
           {[
-            { value: "anthropic" as const, label: t("providerSettingsGuidance.anthropic") },
-            { value: "openai" as const, label: t("providerSettingsGuidance.openai") },
-            { value: "azure" as const, label: t("providerSettingsGuidance.azure") },
+            { value: "anthropic" as const, label: "Anthropic" },
+            { value: "openai" as const, label: "OpenAI" },
+            { value: "azure" as const, label: "Azure" },
           ].map((provider) => (
             <li
               key={provider.value}

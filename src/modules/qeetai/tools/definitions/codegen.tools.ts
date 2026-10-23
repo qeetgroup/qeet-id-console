@@ -137,6 +137,10 @@ export const generateTerraformTool: ToolDefinition<GenerateTerraformInput> = {
     return {
       ok: true,
       summary: `Terraform HCL generated for ${input.resource_type}${input.resource_id ? ` (${input.resource_id})` : "s"}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.terraformGenerated",
+        values: { resource: input.resource_type },
+      },
       data: { hcl, resource_type: input.resource_type, resource_id: input.resource_id },
     };
   },
@@ -230,6 +234,10 @@ export const generateSdkSnippetTool: ToolDefinition<GenerateSdkSnippetInput> = {
     return {
       ok: true,
       summary: `Generated ${input.language} snippet for ${input.endpoint}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.snippetGenerated",
+        values: { language: input.language, endpoint: input.endpoint },
+      },
       data: { snippet, language: input.language, endpoint: input.endpoint },
     };
   },
@@ -279,6 +287,10 @@ export const generateApiExampleTool: ToolDefinition<GenerateApiExampleInput> = {
     return {
       ok: true,
       summary: `Generated ${input.method} ${input.endpoint} example.`,
+      display: {
+        key: "qeetai:toolCallCard.results.exampleGenerated",
+        values: { method: input.method, endpoint: input.endpoint },
+      },
       data: {
         request: example.request,
         response: example.response,

@@ -14,6 +14,8 @@ import {
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+
 import type { Org } from "../api/orgs";
 
 export type OrgKpiFilter = "all" | "active" | "suspended";
@@ -145,7 +147,7 @@ function Kpi({
         <ChevronRightIcon className="size-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
       </div>
       <div className="text-2xl font-semibold tabular-nums tracking-tight">
-        {value.toLocaleString()}
+        {value.toLocaleString(formatLocale())}
       </div>
       {meter !== undefined ? (
         <>

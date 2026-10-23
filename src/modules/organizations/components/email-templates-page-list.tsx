@@ -41,7 +41,7 @@ export function EmailTemplateList({
   disabled: boolean;
   onSelect: (key: string) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <section className={cn(SURFACE, "p-3")} aria-labelledby={`${id}-templates`}>
       <h2 id={`${id}-templates`} className="font-heading text-sm font-semibold">

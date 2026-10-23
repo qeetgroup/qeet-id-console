@@ -3,6 +3,7 @@
 import { Store } from "@tanstack/react-store";
 
 import type { ActivityEvent, ConnectionStatus } from "./types/activity.types";
+import { onSessionClear } from "@/platform/auth/session-store";
 
 const MAX_LIVE = 200;
 const PREFS_KEY = "qeetid.activity.prefs";
@@ -13,7 +14,10 @@ export interface ActivityStoreState {
   unreadCount: number; // Live events added since the last markAllRead()
   paused: boolean; // Incoming events go to pendingBuffer instead of liveEvents
   status: ConnectionStatus; // Stream state, held at "paused" while paused
-  /** Newest SSE frame or event id seen; the stream client sends its own copy as Last-Event-ID. */
+  /**
+   * The newest SSE frame id (`id:`) the stream delivered, never an event's own id: the server's
+   * resume cursor, so a new subscription carries on from it.
+   */
   lastEventId: string | null;
 }
 
@@ -78,13 +82,7 @@ export const activityActions = {
       const fresh = dedupeNew(incoming);
       if (fresh.length === 0) return s;
       const liveEvents = [...fresh, ...s.liveEvents].slice(0, MAX_LIVE);
-      const latestId = fresh[0]?.id ?? s.lastEventId;
-      return {
-        ...s,
-        liveEvents,
-        unreadCount: s.unreadCount + fresh.length,
-        lastEventId: latestId ?? null,
-      };
+      return { ...s, liveEvents, unreadCount: s.unreadCount + fresh.length };
     });
   },
 
@@ -97,7 +95,6 @@ export const activityActions = {
       }
       const fresh = dedupeNew(s.pendingBuffer);
       const liveEvents = [...fresh, ...s.liveEvents].slice(0, MAX_LIVE);
-      const latestId = fresh[0]?.id ?? s.lastEventId;
       savePrefs(false);
       return {
         ...s,
@@ -106,7 +103,6 @@ export const activityActions = {
         pendingBuffer: [],
         liveEvents,
         unreadCount: s.unreadCount + fresh.length,
-        lastEventId: latestId ?? null,
       };
     });
   },
@@ -139,6 +135,9 @@ export const activityActions = {
     }));
   },
 };
+
+// Events belong to the outgoing organisation; another must never see them.
+onSessionClear(() => activityActions.clearAll());
 
 /** For unit tests only. */
 export { seenIds as _seenIds };

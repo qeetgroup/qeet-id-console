@@ -36,7 +36,7 @@ export type ProviderSettingsViewProps = ProviderSettingsActions & {
 };
 
 export function QeetAISettingsPage() {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("qeetai");
   const tenantId = useTenantId();
   const access = useCapabilities();
   const canRead = !!tenantId && access.state === "ready" && access.can("secret.read");
@@ -128,7 +128,7 @@ export function QeetAISettingsPage() {
 }
 
 export function ProviderSettingsView(props: ProviderSettingsViewProps) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("qeetai");
   const configuration = !props.error && props.canRead ? props.config : undefined;
 
   return (

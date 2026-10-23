@@ -3,6 +3,7 @@
 
 import { Store } from "@tanstack/react-store";
 
+import type { TranslationKey } from "@/i18n";
 import { scopedStorage } from "@/platform/auth/scoped-storage";
 
 import type { ActivitySearch } from "./activity-search";
@@ -22,7 +23,12 @@ export const ALL_EVENTS_VIEW_ID = "all-events"; // The id of the unfiltered defa
  * Built-in investigations, listed first and never persisted. They filter on category,
  * severity and free text, which survive renames of individual event types.
  */
-export const PRESET_VIEWS: SavedView[] = [
+/** A built-in view, named by a catalogue key rather than a person's text. */
+export interface PresetView extends SavedView {
+  name: TranslationKey;
+}
+
+export const PRESET_VIEWS: PresetView[] = [
   {
     id: ALL_EVENTS_VIEW_ID,
     name: "activity:savedViews.preset.allEvents",
@@ -36,7 +42,7 @@ export const PRESET_VIEWS: SavedView[] = [
     name: "activity:savedViews.preset.failedLogins",
     builtin: true,
     icon: "LogIn",
-    search: { category: "authentication", q: "login", severity: "warning,error,critical" },
+    search: { category: "authentication", q: "login", severity: "error,critical" },
     createdAt: 0,
   },
   {
@@ -76,7 +82,7 @@ export const PRESET_VIEWS: SavedView[] = [
     name: "activity:savedViews.preset.oauthFailures",
     builtin: true,
     icon: "KeyRound",
-    search: { category: "authentication", q: "oauth", severity: "warning,error,critical" },
+    search: { category: "authentication", q: "oauth", severity: "error,critical" },
     createdAt: 0,
   },
 ];

@@ -47,7 +47,7 @@ export type RoleNodeData = {
 };
 
 export function RoleNode({ data }: NodeProps) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const d = data as RoleNodeData;
   return (
     <div
@@ -78,7 +78,7 @@ export function RoleNode({ data }: NodeProps) {
 export type PermNodeData = { key: string };
 
 export function PermNode({ data }: NodeProps) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const d = data as PermNodeData;
   return (
     <div

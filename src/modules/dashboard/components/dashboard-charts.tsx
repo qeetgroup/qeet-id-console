@@ -28,20 +28,22 @@ import {
   YAxis,
 } from "recharts";
 
-import { AUTH_METHOD_KEYS } from "../dashboard-model";
+import { AUTH_METHOD_KEYS, AUTH_METHOD_STACK } from "../dashboard-model";
 import { DashboardPanel } from "./dashboard-panel";
 
-function activityConfig(t: TFunction) {
+function activityConfig(t: TFunction<"dashboard">) {
   return {
     password: { label: t("dashboardCharts.methods.password"), color: "var(--chart-1)" },
     passkey: { label: t("dashboardCharts.methods.passkey"), color: "var(--chart-2)" },
     social: { label: t("dashboardCharts.methods.social"), color: "var(--chart-3)" },
     saml: { label: "SAML", color: "var(--chart-4)" },
     oidc: { label: "OIDC", color: "var(--chart-5)" },
+    magic_link: { label: t("dashboardCharts.methods.magicLink"), color: "var(--chart-6)" },
+    ldap: { label: "LDAP", color: "var(--chart-7)" },
   } satisfies ChartConfig;
 }
 
-function mfaConfig(t: TFunction) {
+function mfaConfig(t: TFunction<"dashboard">) {
   return {
     users: { label: t("dashboardCharts.users") },
     totp: { label: "TOTP", color: "var(--chart-1)" },
@@ -52,13 +54,13 @@ function mfaConfig(t: TFunction) {
   } satisfies ChartConfig;
 }
 
-function failedConfig(t: TFunction) {
+function failedConfig(t: TFunction<"dashboard">) {
   return {
     attempts: { label: t("dashboardCharts.failedAttempts"), color: "var(--chart-5)" },
   } satisfies ChartConfig;
 }
 
-const MIX_SKELETON_IDS = ["password", "passkey", "social", "saml", "oidc"] as const;
+const MIX_SKELETON_IDS = AUTH_METHOD_KEYS;
 
 export type AuthenticationActivityRow = {
   day: string;
@@ -67,6 +69,8 @@ export type AuthenticationActivityRow = {
   social: number;
   saml: number;
   oidc: number;
+  magic_link: number;
+  ldap: number;
 };
 
 export type MethodMixRow = {
@@ -147,7 +151,7 @@ export function AuthenticationActivityPanel({
               <YAxis tickLine={false} axisLine={false} tickMargin={8} width={38} />
               <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
               <ChartLegend content={<ChartLegendContent />} />
-              {(["oidc", "saml", "social", "passkey", "password"] as const).map((key) => (
+              {AUTH_METHOD_STACK.map((key) => (
                 <Area
                   key={key}
                   type="monotone"

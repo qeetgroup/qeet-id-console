@@ -9,14 +9,14 @@ import {
   toEvalTree,
   toJson,
   toYamlDoc,
-} from "../../utils/policy-codegen";
+} from "@/modules/authorization/utils/policy-codegen";
 import { MonacoPanel } from "../shared/monaco-panel";
 
 type View = "json" | "yaml" | "dsl" | "tree";
 
 /** Renders a live, read-only preview of a PolicyDoc as JSON, YAML, DSL or an evaluation tree. */
 export function CodePreview({ doc, height = 360 }: { doc: PolicyDoc; height?: number }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const [view, setView] = useState<View>("json");
   const json = useMemo(() => toJson(doc), [doc]);
   const yaml = useMemo(() => toYamlDoc(doc), [doc]);
@@ -59,7 +59,7 @@ const KIND_STYLES: Record<EvalTreeNode["kind"], string> = {
 };
 
 function EvalTree({ node, depth = 0 }: { node: EvalTreeNode; depth?: number }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-2" style={{ paddingLeft: depth * 18 }}>

@@ -42,7 +42,7 @@ import { downloadBlob } from "@/shared/utils/data-export";
 
 /** Renders the visual policy builder and its generated code. */
 export function PolicyBuilderPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const runSensitive = useSensitiveAction();
   const handoff = useBuilderDoc();
   const [doc, setDoc] = useState<PolicyDoc>(() => handoff ?? emptyPolicyDoc());
@@ -72,7 +72,7 @@ export function PolicyBuilderPage() {
 
   function saveAsAbac() {
     runSensitive({
-      actionLabel: t("abac.createAction").toLowerCase(),
+      actionLabel: t("abac.createAction"),
       run: () => createM.mutateAsync(toAbacInput(doc)),
     }).catch(settleSensitiveAction);
   }
@@ -157,7 +157,7 @@ export function PolicyBuilderPage() {
       {blocker && (
         <ComingSoon
           title={t("policyBuilderPage.thisPolicyIsnT")}
-          description={policyProblemMessage(blocker, t)}
+          description={policyProblemMessage(blocker)}
           note={t("policyBuilderPage.abacOnlyNote")}
         />
       )}
@@ -189,7 +189,7 @@ function Inspector({
   doc: PolicyDoc;
   onChange: (d: PolicyDoc) => void;
 }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation(["authorization", "common"]);
   if (selected === "decision" || selected === null) {
     return (
       <div className="flex flex-col gap-4">

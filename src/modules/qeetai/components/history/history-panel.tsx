@@ -12,17 +12,18 @@ import {
 import type { TFunction } from "i18next";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useQeetAIRuntime } from "../../qeetai-provider";
+import { formatLocale } from "@/i18n";
+import { useQeetAIRuntime } from "@/modules/qeetai/qeetai-provider";
 import {
   conversationActions,
   conversationStore,
   searchConversations,
   sortConversations,
-} from "../../store/conversation-store";
-import { workspaceActions } from "../../store/workspace-store";
-import type { Conversation } from "../../types/qeetai.types";
+} from "@/modules/qeetai/store/conversation-store";
+import { workspaceActions } from "@/modules/qeetai/store/workspace-store";
+import type { Conversation } from "@/modules/qeetai/types/qeetai.types";
 
-function formatRelative(ts: number, t: TFunction): string {
+function formatRelative(ts: number, t: TFunction<["qeetai", "common"]>): string {
   const diff = Date.now() - ts;
   const min = Math.floor(diff / 60_000);
   if (min < 1) return t("qeetai:historyPanel.justNow");
@@ -31,7 +32,7 @@ function formatRelative(ts: number, t: TFunction): string {
   if (hr < 24) return t("qeetai:historyPanel.hoursAgo", { count: hr });
   const day = Math.floor(hr / 24);
   if (day < 7) return t("qeetai:historyPanel.daysAgo", { count: day });
-  return new Date(ts).toLocaleDateString();
+  return new Date(ts).toLocaleDateString(formatLocale());
 }
 
 /** Renders the conversation history: search, then pin, rename, delete or open. */
@@ -101,7 +102,7 @@ function ConversationRow({
   conversation: Conversation;
   active: boolean;
 }) {
-  const { t } = useTranslation("qeetai");
+  const { t } = useTranslation(["qeetai", "common"]);
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(conversation.title);
   const { confirm } = useQeetAIRuntime();

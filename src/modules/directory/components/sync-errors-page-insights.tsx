@@ -21,7 +21,7 @@ export function SyncErrorInsights({
   page?: DirectoryErrorPage;
   nameFor: (connectionId: string) => string;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <div className="grid gap-3 @min-[850px]/directory-page:grid-cols-3">
       <DirectoryPanel

@@ -12,11 +12,18 @@ import {
   UserPlusIcon,
 } from "@qeetrix/icons";
 import type * as React from "react";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import type { Capability } from "@/platform/security/capability-model";
 import { useCapabilities } from "@/platform/security/capability-provider";
-import { LiveIndicator } from "@/modules/activity";
+import {
+  actorTypeLabel,
+  categoryLabel,
+  formatEventTitle,
+  LiveIndicator,
+  severityLabel,
+} from "@/modules/activity";
 import type { ActivityEvent } from "@/modules/activity";
 import { useDashboardActivity } from "../use-dashboard-activity";
 import { DashboardPanel } from "./dashboard-panel";
@@ -24,7 +31,7 @@ import i18n from "@/i18n";
 
 const ACTIVITY_SKELETON_IDS = ["one", "two", "three", "four", "five"] as const;
 
-function getOperatorActions(t: (key: string) => string) {
+function getOperatorActions(t: TFunction<"dashboard">) {
   return [
     {
       icon: UserPlusIcon,
@@ -158,19 +165,19 @@ export function RecentActivityPanel({ className }: { className?: string }) {
                   {eventIcon(event)}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{event.title}</p>
+                  <p className="truncate text-sm font-medium">{formatEventTitle(event)}</p>
                   <div className="mt-1 flex min-w-0 items-center gap-2">
                     {event.actor?.type && (
                       <Badge variant="muted" className="max-w-32 truncate text-[10px]">
-                        {event.actor.type}
+                        {actorTypeLabel(event.actor.type)}
                       </Badge>
                     )}
                     <span className="truncate text-[11px] text-muted-foreground">
-                      {event.category}
+                      {categoryLabel(event.category)}
                     </span>
                     {isCritical && (
                       <Badge variant="destructive" className="ml-auto text-[10px]">
-                        {event.severity}
+                        {severityLabel(event.severity)}
                       </Badge>
                     )}
                   </div>

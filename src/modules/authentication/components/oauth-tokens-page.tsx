@@ -27,7 +27,7 @@ import { useOAuthGrants, useRevokeOAuthGrant } from "../api/oauth-grants";
 
 /** Renders the OAuth grants issued in the organization, with revoke. */
 export function TokensPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const listQ = useOAuthGrants();
   const revokeM = useRevokeOAuthGrant();

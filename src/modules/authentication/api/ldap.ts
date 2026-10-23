@@ -60,7 +60,7 @@ export function useCreateLdapConnection() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
-    meta: { successMessage: "auth:toast.ldapConnectionCreated", silentError: true },
+    meta: { successMessage: "authentication:toast.ldapConnectionCreated", silentError: true },
   });
 }
 
@@ -74,7 +74,7 @@ export function useUpdateLdapConnection() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
-    meta: { successMessage: "auth:toast.ldapConnectionUpdated" },
+    meta: { successMessage: "authentication:toast.ldapConnectionUpdated" },
   });
 }
 
@@ -85,7 +85,7 @@ export function useDeleteLdapConnection() {
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/ldap/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
-    meta: { successMessage: "auth:toast.ldapConnectionDeleted" },
+    meta: { successMessage: "authentication:toast.ldapConnectionDeleted" },
   });
 }
 
@@ -97,6 +97,6 @@ export function useTestLdapConnection() {
       api<{ ok: boolean }>(`/v1/tenants/${tenantId}/ldap/${id}/test`, {
         method: "POST",
       }),
-    meta: { successMessage: "auth:toast.directoryBindSucceeded" },
+    meta: { successMessage: "authentication:toast.directoryBindSucceeded" },
   });
 }

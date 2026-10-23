@@ -59,7 +59,7 @@ export function ProviderSettingsForm({
   config: QeetAIProviderConfig;
   canWrite: boolean;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("qeetai");
   const formId = useId();
   const [draft, setDraft] = useState(() => providerSettingsDraft(config));
   const [showKey, setShowKey] = useState(false);

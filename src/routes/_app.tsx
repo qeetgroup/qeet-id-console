@@ -19,7 +19,7 @@ import { organizationSelectionBlocksPath } from "@/platform/auth/organization-se
 import { useIdleLogout } from "@/platform/auth/session";
 import { sessionStore } from "@/platform/auth/session-store";
 import { getServerSession } from "@/platform/api/server-proxy";
-import { useGlobalShortcuts } from "@/shared/hooks/use-shortcuts";
+import { useGlobalShortcuts } from "@/platform/keyboard/shortcuts";
 
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
 

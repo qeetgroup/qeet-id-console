@@ -28,7 +28,7 @@ export function IdentityTimelinePage({ userId }: { userId: string }) {
 }
 
 function TimelinePage({ userId }: { userId: string }) {
-  const { t } = useTranslation("timeline");
+  const { t } = useTranslation(["timeline", "common"]);
   const access = useCapabilities();
   const canRead = access.can("audit.read") && access.can("user.read");
 

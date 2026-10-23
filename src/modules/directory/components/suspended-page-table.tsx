@@ -18,6 +18,7 @@ import { EllipsisIcon, FileCheckIcon, RotateCcwIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale, translateDynamic } from "@/i18n";
 import type { SuspendedDirectoryUser, SuspendedFilters, SuspendedUsersPage } from "@/modules/users";
 import { initials } from "@/shared/utils/initials";
 import {
@@ -53,7 +54,7 @@ export function SuspendedTable({
   onReactivate: (users: SuspendedDirectoryUser[]) => void;
   onReview: (user: SuspendedDirectoryUser) => void;
 }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const items = page?.items ?? [];
   const eligible = items.filter(isManageable);
@@ -105,17 +106,19 @@ export function SuspendedTable({
                   />
                 </TableHead>
               ) : null}
-              {[
-                "name",
-                "email",
-                "team",
-                "reason",
-                "source",
-                "since",
-                "status",
-                "lastSignIn",
-                "actions",
-              ].map((column) => (
+              {(
+                [
+                  "name",
+                  "email",
+                  "team",
+                  "reason",
+                  "source",
+                  "since",
+                  "status",
+                  "lastSignIn",
+                  "actions",
+                ] as const
+              ).map((column) => (
                 <TableHead key={column} aria-sort={column === "since" ? "descending" : undefined}>
                   {t(`directory.suspended.${column}`)}
                 </TableHead>
@@ -168,7 +171,7 @@ export function SuspendedTable({
                   </TableCell>
                   <TableCell
                     className="truncate"
-                    title={t(`directory.suspended.reasons.${user.reason}`)}
+                    title={translateDynamic(`directory:directory.suspended.reasons.${user.reason}`)}
                   >
                     {t(`directory.suspended.reasons.${user.reason}`, {
                       defaultValue: user.reason,
@@ -185,12 +188,12 @@ export function SuspendedTable({
                     className="text-muted-foreground"
                     title={
                       user.suspended_at
-                        ? new Date(user.suspended_at).toLocaleString(i18n.resolvedLanguage)
+                        ? new Date(user.suspended_at).toLocaleString(formatLocale())
                         : undefined
                     }
                   >
                     {user.suspended_at
-                      ? new Date(user.suspended_at).toLocaleDateString(i18n.resolvedLanguage, {
+                      ? new Date(user.suspended_at).toLocaleDateString(formatLocale(), {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
@@ -217,7 +220,7 @@ export function SuspendedTable({
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {user.last_sign_in
-                      ? new Date(user.last_sign_in).toLocaleDateString(i18n.resolvedLanguage, {
+                      ? new Date(user.last_sign_in).toLocaleDateString(formatLocale(), {
                           month: "short",
                           day: "numeric",
                           year: "numeric",

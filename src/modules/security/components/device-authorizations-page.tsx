@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -20,6 +19,7 @@ import { LoaderCircleIcon, MonitorSmartphoneIcon, RefreshCwIcon, TrashIcon } fro
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import {
   settleSensitiveAction,
   useSensitiveAction,
@@ -28,7 +28,7 @@ import { type DeviceAuth, useDeviceAuthorizations, useRevokeDeviceAuth } from ".
 
 /** Renders the OAuth device grants, with revoke. */
 export function DeviceAuthorizationsPage() {
-  const { t } = useTranslation("device");
+  const { t } = useTranslation(["device", "common"]);
   const listQ = useDeviceAuthorizations();
   const revokeM = useRevokeDeviceAuth();
   const runSensitive = useSensitiveAction();
@@ -42,7 +42,7 @@ export function DeviceAuthorizationsPage() {
         confirmLabel: t("common:actions.revoke"),
         tone: "destructive",
       },
-      actionLabel: t("revoke.action").toLowerCase(),
+      actionLabel: t("revoke.action"),
       run: () => revokeM.mutateAsync(d.id),
     }).catch(settleSensitiveAction);
 

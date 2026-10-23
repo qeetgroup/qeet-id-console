@@ -87,7 +87,7 @@ export function BulkActions({
   selectedUsers: User[];
   onDone: () => void;
 }) {
-  const { t } = useTranslation("users");
+  const { t } = useTranslation(["users", "common"]);
   const tenantId = useTenantId();
   const qc = useQueryClient();
   const runSensitive = useSensitiveAction();
@@ -119,7 +119,7 @@ export function BulkActions({
   ) {
     void runSensitive({
       confirm,
-      actionLabel: label.toLowerCase(),
+      actionLabel: label,
       run: () => fanOutAll(label, fn),
     }).catch(settleSensitiveAction);
   }

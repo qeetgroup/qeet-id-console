@@ -29,7 +29,7 @@ interface UniversalSearchProps {
  * highlighted item. Choosing an item runs or opens it and records it as recent.
  */
 export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
-  const { t } = useTranslation("search");
+  const { t } = useTranslation(["search", "common"]);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -135,7 +135,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     }
 
     const hits = resourceQuery.data?.results ?? [];
-    const resourceItems = resourceHitsToSearchItems(hits, t);
+    const resourceItems = resourceHitsToSearchItems(hits);
     const byCategory = new Map<string, SearchItem[]>();
     for (const ri of resourceItems) {
       const bucket = byCategory.get(ri.category) ?? [];

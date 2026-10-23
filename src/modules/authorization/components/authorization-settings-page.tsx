@@ -8,7 +8,7 @@ import { PageHeader } from "@/platform/components/page-header";
 
 /** Renders the authorization settings. */
 export function AuthorizationSettingsPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <PageHeader description={t("authorizationSettingsPage.howTheAuthorizationEngine")} />
@@ -83,7 +83,7 @@ function LinkCard({
   to: string;
   badge: string;
 }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   return (
     <Card>
       <CardHeader>

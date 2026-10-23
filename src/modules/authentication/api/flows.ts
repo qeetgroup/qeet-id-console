@@ -45,7 +45,7 @@ export function useLogin() {
 
       navigate({ to: "/" });
     },
-    meta: { successMessage: "auth:toast.signedInSuccessfully" },
+    meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
 }
 
@@ -69,7 +69,7 @@ export function useCompleteMfaLogin() {
       if (res.recovery_codes?.length) return;
       navigate({ to: "/" });
     },
-    meta: { successMessage: "auth:toast.signedInSuccessfully" },
+    meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
 }
 
@@ -121,7 +121,7 @@ export function useConsumeMagicLink() {
       navigate({ to: "/" });
     },
     // The /magic page renders the failure inline, so the global error toast is off.
-    meta: { successMessage: "auth:toast.signedInSuccessfully", silentError: true },
+    meta: { successMessage: "authentication:toast.signedInSuccessfully", silentError: true },
   });
 }
 
@@ -139,7 +139,7 @@ export function useConsumeSamlCode() {
         anonymous: true,
       }),
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "auth:toast.signedInSuccessfully" },
+    meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
 }
 
@@ -175,7 +175,7 @@ export function useResetPassword() {
         anonymous: true,
       }),
     onSuccess: () => navigate({ to: "/sign-in" }),
-    meta: { successMessage: "auth:toast.passwordResetSignIn" },
+    meta: { successMessage: "authentication:toast.passwordResetSignIn" },
   });
 }
 

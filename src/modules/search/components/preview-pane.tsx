@@ -1,6 +1,9 @@
-import { Badge, cn, Separator, StatusPill } from "@qeetrix/ui";
+import { Badge, cn, Separator } from "@qeetrix/ui";
 import { StarIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
+
+import { formatLocale } from "@/i18n";
+import { StatusPill } from "@/platform/components/status-pill";
 
 import type { SearchContext, SearchItem } from "../registry/types/registry.types";
 import { QuickActions } from "./quick-actions";
@@ -79,7 +82,7 @@ export function PreviewPane({ item, ctx, isFavorite, onToggleFavorite }: Preview
       {item.updatedAt != null && (
         <p className="text-xs text-muted-foreground">
           {t("previewPane.updated", {
-            date: new Date(item.updatedAt).toLocaleDateString(undefined, {
+            date: new Date(item.updatedAt).toLocaleDateString(formatLocale(), {
               month: "short",
               day: "numeric",
               year: "numeric",

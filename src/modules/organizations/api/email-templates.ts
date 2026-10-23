@@ -107,8 +107,8 @@ export function usePreviewEmailTemplate() {
 export function sampleVar(name: string): string {
   if (name.endsWith("_url")) return "https://example.invalid/test/preview";
   if (name === "code") return "482913";
-  if (name === "ttl") return i18n.t("settings:emails.sample.ttl");
-  if (name === "tenant_name") return i18n.t("settings:emails.sample.tenantName");
+  if (name === "ttl") return i18n.t("organizations:emails.sample.ttl");
+  if (name === "tenant_name") return i18n.t("organizations:emails.sample.tenantName");
   return name;
 }
 

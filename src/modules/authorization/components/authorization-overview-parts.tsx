@@ -177,7 +177,7 @@ const SEVERITY_META = {
 } as const;
 
 export function InsightRow({ finding, loading }: { finding: PostureFinding; loading: boolean }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const meta = SEVERITY_META[finding.severity];
   const Icon = meta.icon;
 
@@ -227,7 +227,7 @@ export function RecentChanges({
   loading: boolean;
   emptyLabel: string;
 }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   if (loading) {
     return (
       <div className="flex flex-col gap-3">

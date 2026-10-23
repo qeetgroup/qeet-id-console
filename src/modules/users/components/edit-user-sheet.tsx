@@ -58,7 +58,7 @@ function EditUserForm({
   isSelf: boolean;
   onDone: () => void;
 }) {
-  const { t } = useTranslation("users");
+  const { t } = useTranslation(["users", "common"]);
   const updateM = useUpdateUser();
   const runSensitive = useSensitiveAction();
 
@@ -94,7 +94,7 @@ function EditUserForm({
               tone: "destructive",
             }
           : undefined,
-        actionLabel: t("edit.title").toLowerCase(),
+        actionLabel: t("edit.title"),
         run: () =>
           updateM.mutateAsync({
             userId: user.id,

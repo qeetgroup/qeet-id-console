@@ -29,7 +29,7 @@ import {
 
 /** Renders the authorization audit trail with its filters. */
 export function AuthorizationAuditPage() {
-  const { t } = useTranslation("rbac");
+  const { t, i18n } = useTranslation("authorization");
   const [resourceType, setResourceType] = useState("");
   const [action, setAction] = useState("");
   const [q, setQ] = useState("");
@@ -37,9 +37,9 @@ export function AuthorizationAuditPage() {
   const resourceItems = useMemo(
     () => [
       { label: t("authorizationAuditPage.allResources"), value: "" },
-      ...AUTHZ_RESOURCE_TYPES.map((r) => ({ label: t(RESOURCE_TYPE_LABELS[r]), value: r })),
+      ...AUTHZ_RESOURCE_TYPES.map((r) => ({ label: i18n.t(RESOURCE_TYPE_LABELS[r]), value: r })),
     ],
-    [t],
+    [t, i18n],
   );
 
   // When no specific resource type is chosen, keep the view to authz events only.
@@ -120,7 +120,7 @@ export function AuthorizationAuditPage() {
                       </TableCell>
                       <TableCell className="font-mono text-xs">{e.action}</TableCell>
                       <TableCell>
-                        <Badge variant="muted">{typeKey ? t(typeKey) : e.resource_type}</Badge>
+                        <Badge variant="muted">{typeKey ? i18n.t(typeKey) : e.resource_type}</Badge>
                       </TableCell>
                       <TableCell className="font-mono text-[11px] text-muted-foreground">
                         {e.actor_user_id ? e.actor_user_id.slice(0, 8) : e.actor_type}

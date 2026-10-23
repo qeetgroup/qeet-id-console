@@ -24,10 +24,11 @@ import {
   type InsightSeverity,
 } from "../dashboard-insights";
 import { DashboardPanel } from "./dashboard-panel";
+import type { TranslationKey } from "@/i18n";
 
 const severityStyles: Record<
   InsightSeverity,
-  { chip: string; icon: ComponentType<IconProps<"outline">>; badge: string; label: string }
+  { chip: string; icon: ComponentType<IconProps<"outline">>; badge: string; label: TranslationKey }
 > = {
   critical: {
     chip: "bg-destructive/10 text-destructive ring-destructive/15",
@@ -60,7 +61,7 @@ export function AttentionRequiredPanel({
   loading: boolean;
   className?: string;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const items = overview ? deriveAttentionItems(overview) : [];
 
   return (
@@ -120,21 +121,21 @@ export function AttentionRequiredPanel({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold">{t(item.title)}</span>
+                      <span className="truncate text-sm font-semibold">{i18n.t(item.title)}</span>
                       <span
                         className={cn(
                           "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
                           style.badge,
                         )}
                       >
-                        {t(style.label)}
+                        {i18n.t(style.label)}
                       </span>
                     </span>
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      {t(item.detail, item.params)}
+                      {i18n.t(item.detail, item.params)}
                     </span>
                     <span className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-primary">
-                      {t(item.actionLabel)}
+                      {i18n.t(item.actionLabel)}
                       <ChevronRightIcon className="size-3 transition-transform duration-150 group-hover:translate-x-0.5" />
                     </span>
                   </span>
@@ -157,7 +158,7 @@ export function IdentityHealthPanel({
   loading: boolean;
   className?: string;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const health = overview ? computeIdentityHealth(overview) : null;
 
   return (
@@ -196,7 +197,7 @@ export function IdentityHealthPanel({
             {health.areas.map((area) => (
               <li key={area.id}>
                 <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="font-medium">{t(area.label)}</span>
+                  <span className="font-medium">{i18n.t(area.label)}</span>
                   <span className={cn("font-mono tabular-nums", healthText[area.state])}>
                     {area.score}
                   </span>
@@ -228,7 +229,7 @@ export function SessionOverviewPanel({
   loading: boolean;
   className?: string;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const stats = overview ? deriveSessionStats(overview) : [];
 
   return (
@@ -257,11 +258,11 @@ export function SessionOverviewPanel({
             <div key={stat.id} className="flex items-baseline justify-between gap-3">
               <dt className="min-w-0">
                 <span className="block truncate text-xs font-medium text-muted-foreground">
-                  {t(stat.label)}
+                  {i18n.t(stat.label)}
                 </span>
                 {stat.hint ? (
                   <span className="mt-0.5 block truncate text-[10px] text-muted-foreground/70">
-                    {t(stat.hint)}
+                    {i18n.t(stat.hint)}
                   </span>
                 ) : null}
               </dt>
@@ -291,7 +292,7 @@ export function SecurityPosturePanel({
   loading: boolean;
   className?: string;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const signals = overview ? deriveSecuritySignals(overview) : [];
 
   return (
@@ -326,7 +327,7 @@ export function SecurityPosturePanel({
                 className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/25 px-3 py-2.5"
               >
                 <span className="min-w-0 text-xs font-medium text-muted-foreground">
-                  {t(signal.label)}
+                  {i18n.t(signal.label)}
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
                   <span

@@ -189,7 +189,7 @@ function tailor(steps: Step[], useCase?: string): Step[] {
  * are done; a dismissal is kept for this person and organization.
  */
 export function OnboardingChecklist() {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "common"]);
   // The scope is known only once the session hydrates, so the stored dismissal is read with it.
   const scope = useStorageScope();
   const [dismissedIn, setDismissedIn] = useState<string | null>(null);
@@ -199,7 +199,7 @@ export function OnboardingChecklist() {
   const onboarding = tenantQ.data?.metadata?.onboarding as { use_case?: string } | undefined;
   const useCase = onboarding?.use_case;
   const introKey = useCase ? CHECKLIST_INTRO[useCase] : undefined;
-  const intro = introKey ? t(introKey) : undefined;
+  const intro = introKey ? i18n.t(introKey) : undefined;
   const steps = tailor(useSteps(), useCase);
 
   if (dismissed) return null;

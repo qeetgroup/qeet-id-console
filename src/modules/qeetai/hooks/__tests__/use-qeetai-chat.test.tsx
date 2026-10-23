@@ -4,8 +4,8 @@ import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-libr
 import type { ComponentProps, ReactNode } from "react";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AIProvider, SendInput, StreamEvent } from "../../ai/ai-provider";
-import type { ConsoleContext } from "../../context/types/context.types";
+import type { AIProvider, SendInput, StreamEvent } from "@/modules/qeetai/ai/ai-provider";
+import type { ConsoleContext } from "@/modules/qeetai/context/types/context.types";
 
 const runtime = vi.hoisted(() => ({
   confirm: vi.fn(async () => true),
@@ -27,17 +27,17 @@ vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
-vi.mock("../../context/use-console-context", () => ({
+vi.mock("@/modules/qeetai/context/use-console-context", () => ({
   useConsoleContext: () => runtime.context,
 }));
-vi.mock("../../qeetai-provider", () => ({
+vi.mock("@/modules/qeetai/qeetai-provider", () => ({
   useQeetAIRuntime: () => ({ confirm: runtime.confirm, stepUp: runtime.stepUp }),
 }));
-vi.mock("../../ai/use-active-provider", () => ({ useActiveProvider: () => provider }));
+vi.mock("@/modules/qeetai/ai/use-active-provider", () => ({ useActiveProvider: () => provider }));
 
 import { api } from "@/platform/api/client";
-import { ToolCallCard } from "../../components/execution/tool-call-card";
-import { conversationActions, conversationStore } from "../../store/conversation-store";
+import { ToolCallCard } from "@/modules/qeetai/components/execution/tool-call-card";
+import { conversationActions, conversationStore } from "@/modules/qeetai/store/conversation-store";
 import { useQeetAIChat } from "../use-qeetai-chat";
 
 // The model asks for one tool, then answers once the tool result comes back.

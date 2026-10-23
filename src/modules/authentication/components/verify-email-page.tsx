@@ -1,14 +1,17 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useConfirmEmailVerification, useStartEmailVerification } from "@/modules/authentication";
 import { VerifyEmailStep } from "./verify-email-step";
+import type { PublicSession } from "@/platform/auth/server-session";
 import { meKeys, useLogout, useMe } from "@/platform/auth/session";
+import { sessionStore } from "@/platform/auth/session-store";
 import { errorMessage } from "@/platform/errors/user-message";
 
 /** Renders email verification for a signed-in, unverified account. */
-export function VerifyEmailPage() {
+export function VerifyEmailPage({ session }: { session: PublicSession }) {
   const { t } = useTranslation("auth-flow");
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -16,8 +19,14 @@ export function VerifyEmailPage() {
   const logout = useLogout();
   const startVerify = useStartEmailVerification();
   const confirmVerify = useConfirmEmailVerification();
+  // A reload starts with an empty browser session, which would leave the profile unread; this page
+  // sits outside the shell that otherwise hands the server's session over.
+  useEffect(() => {
+    sessionStore.hydrate(session);
+  }, [session]);
 
-  const userId = me.data?.id;
+  // From the server session, so the code can be checked before the profile has loaded.
+  const userId = session.userId;
   const verificationError = confirmVerify.error ?? startVerify.error;
 
   return (

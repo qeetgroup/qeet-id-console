@@ -545,7 +545,7 @@ describe("Branding authorization", () => {
     expect(vi.mocked(api).mock.calls.some(([path]) => path.endsWith("/domains"))).toBe(false);
     expect(sensitiveCalls.at(-1)).toMatchObject({
       capability: "branding.write",
-      actionLabel: "save changes",
+      actionLabel: "Save changes",
     });
   });
 

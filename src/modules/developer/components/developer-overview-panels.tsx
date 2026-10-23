@@ -16,7 +16,14 @@ import { type ReactNode, useId } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { DeveloperOverviewData } from "../api/overview";
-import { CHECKLIST, FOCUS, INLINE_LINK, PANEL, RESOURCES } from "./developer-overview-config";
+import {
+  CHECKLIST,
+  FOCUS,
+  INLINE_LINK,
+  PANEL,
+  type QuickAction,
+  RESOURCES,
+} from "./developer-overview-config";
 
 function OverviewPanel({
   title,
@@ -105,10 +112,7 @@ export function DeveloperActivityPanel({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[11px] leading-3.5 font-medium">
-                      {t("overview.activity.event", {
-                        resource: t(`overview.names.${event.area}`),
-                        action: t(`overview.activity.verbs.${event.verb}`),
-                      })}
+                      {t(`overview.activity.actions.${event.action}`)}
                     </span>
                     <span className="block text-[10px] leading-3 text-muted-foreground">
                       {event.targetId
@@ -137,7 +141,7 @@ export function QuickActions({ data }: { data: DeveloperOverviewData }) {
     FOCUS,
     "flex min-h-8 items-center gap-2.5 rounded-md py-0.5 transition-colors hover:bg-muted/50 pointer-coarse:min-h-11",
   );
-  const content = (id: string, icon: ReactNode) => (
+  const content = (id: QuickAction, icon: ReactNode) => (
     <>
       <span className="grid size-7 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground [&_svg]:size-3.5">
         {icon}
@@ -201,7 +205,7 @@ export function IntegrationChecklist({ data }: { data: DeveloperOverviewData }) 
   const { t } = useTranslation("developer");
   const steps = CHECKLIST.flatMap((id) => {
     const resource = data.resources.find((resource) => resource.id === id && resource.allowed);
-    return resource ? [resource] : [];
+    return resource ? [{ ...resource, id }] : [];
   });
   const completed = steps.filter((step) => step.data?.configured).length;
   return (

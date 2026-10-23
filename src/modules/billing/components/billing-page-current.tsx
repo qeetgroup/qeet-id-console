@@ -11,6 +11,8 @@ import {
 } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+
 import { formatMoney, type Plan, type Subscription } from "../api/billing";
 import { BillingErrorState, PLAN_ICONS } from "./billing-page-parts";
 
@@ -47,7 +49,7 @@ export function BillingCurrentPlan({
   onManagePlan: () => void;
   onViewUsage: () => void;
 }) {
-  const { t, i18n } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   const CurrentIcon = PLAN_ICONS[currentTier as keyof typeof PLAN_ICONS] ?? BoxIcon;
   const isFree = currentTier === "free";
   const recurring =
@@ -67,7 +69,7 @@ export function BillingCurrentPlan({
   function dateLabel(value?: string | null) {
     const date = value ? new Date(value) : null;
     return date && Number.isFinite(date.getTime())
-      ? new Intl.DateTimeFormat(i18n.language, {
+      ? new Intl.DateTimeFormat(formatLocale(), {
           day: "numeric",
           month: "short",
           year: "numeric",
@@ -224,7 +226,7 @@ export function BillingTrialBanner({
   onStart: () => void;
   onCompare: () => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   return (
     <aside className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
       <div className="flex min-w-0 items-start gap-2.5">

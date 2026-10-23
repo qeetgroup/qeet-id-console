@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-import i18n from "@/i18n";
+import i18n, { formatLocale } from "@/i18n";
 import { toastError } from "@/platform/errors/error-toast";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { fetchActivityPage } from "./activity-history";
@@ -74,7 +74,9 @@ export function useActivityExport(filters: ActivityFilters) {
 
         toast.success(i18n.t("activity:export.done", { count: all.length }), {
           description: truncated
-            ? i18n.t("activity:export.capped", { cap: EXPORT_ROW_CAP.toLocaleString() })
+            ? i18n.t("activity:export.capped", {
+                cap: EXPORT_ROW_CAP.toLocaleString(formatLocale()),
+              })
             : undefined,
         });
       } catch (err) {

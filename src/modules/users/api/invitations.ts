@@ -13,7 +13,7 @@ export interface Invitation {
   tenant_id: string;
   email: string;
   role_id?: string | null;
-  status: "pending" | "accepted" | "expired" | "revoked";
+  status: "pending" | "accepted" | "declined" | "expired" | "revoked";
   expires_at: string;
   accepted_at?: string | null;
   created_at: string;

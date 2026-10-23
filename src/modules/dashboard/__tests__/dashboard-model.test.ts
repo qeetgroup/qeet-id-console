@@ -23,6 +23,8 @@ describe("dashboard model", () => {
 
   it("maps authentication and MFA methods onto stable chart tokens", () => {
     expect(authMethodColor("passkey")).toBe("var(--chart-2)");
+    expect(authMethodColor("magic_link")).toBe("var(--chart-6)");
+    expect(authMethodColor("ldap")).toBe("var(--chart-7)");
     expect(authMethodColor("unknown")).toBe("var(--chart-1)");
     expect(mfaMethodColor("Recovery Codes")).toBe("var(--chart-5)");
   });

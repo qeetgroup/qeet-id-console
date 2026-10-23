@@ -15,9 +15,9 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  StatusPill,
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
+import { StatusPill } from "@/platform/components/status-pill";
 import { formatDate } from "@/shared/utils/format";
 import { ArrowRightIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";

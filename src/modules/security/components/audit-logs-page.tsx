@@ -20,6 +20,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { formatLocale } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import { toastError } from "@/platform/errors/error-toast";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
@@ -32,6 +33,8 @@ import {
 } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { actorTypeLabel } from "@/modules/activity";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -98,7 +101,7 @@ export function AuditLogsPage({
       }
       toast.success(t("auditLogs.exported", { count: items.length }), {
         description: truncated
-          ? t("auditLogs.exportCapped", { cap: EXPORT_ROW_CAP.toLocaleString() })
+          ? t("auditLogs.exportCapped", { cap: EXPORT_ROW_CAP.toLocaleString(formatLocale()) })
           : undefined,
       });
     } catch (err) {
@@ -262,7 +265,7 @@ export function AuditLogsPage({
                           <TimeSince value={ev.created_at} className="font-mono text-xs" />
                         </TableCell>
                         <TableCell>
-                          <Badge variant="muted">{ev.actor_type}</Badge>
+                          <Badge variant="muted">{actorTypeLabel(ev.actor_type)}</Badge>
                           {ev.actor_user_id && (
                             <span className="ml-2 font-mono text-xs text-muted-foreground">
                               {ev.actor_user_id.slice(0, 8)}…

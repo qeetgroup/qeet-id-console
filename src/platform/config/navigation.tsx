@@ -1,40 +1,91 @@
-import type { TFunction } from "i18next";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import i18n, { type TranslationKey } from "@/i18n";
+import { navContributions, registeredModules } from "@/platform/modules/registry";
+import type { NavContribution } from "@/platform/modules/manifest";
 import type { Capability } from "@/platform/security/capability-model";
 
-import { navGroups } from "./nav-groups";
+import { NAV_GROUP_DEFINITIONS } from "./nav-groups";
 
-export { navGroups };
-
-export type NavSubItem = {
-  title: string;
+// `Text` is the copy's form: catalogue keys from `getNavGroups()`, translated strings from
+// `useNavGroups()` and `translateNavigation()`.
+export type NavSubItem<Text extends string = string> = {
+  title: Text;
   url: string;
   requiredPermission?: Capability;
   planned?: boolean;
 };
 
-export type NavItem = {
-  title: string;
+export type NavItem<Text extends string = string> = {
+  title: Text;
   url: string;
   icon?: ReactNode;
-  description?: string; // one-line summary on section overview cards
+  description?: Text; // one-line summary on section overview cards
   requiredPermission?: Capability;
-  items?: NavSubItem[];
+  items?: NavSubItem<Text>[];
 };
 
-// In `navGroups` (nav-groups.tsx), every label, title and description is a `nav` catalogue key;
-// `useNavGroups()` returns them translated.
-export type NavGroup = {
+export type NavGroup<Text extends string = string> = {
   id: string; // stable, for comparisons: the label is translated
-  label: string;
+  label: Text;
   icon: ReactNode; // rail icon for the two-pane sidebar switcher
-  items: NavItem[];
+  items: NavItem<Text>[];
 };
 
-/** Returns `groups` with every label, title and description translated. */
-export function translateNavigation(groups: NavGroup[], t: TFunction): NavGroup[] {
+const byOrder = (a: NavContribution, b: NavContribution) => a.order - b.order;
+
+let built: { from: unknown; groups: NavGroup<TranslationKey>[] } | null = null;
+
+/**
+ * Returns the sidebar: each group's entries from the registered modules' manifests, in order,
+ * with entries nested under their `parent`. Throws on an entry naming an unknown group or parent.
+ */
+export function getNavGroups(): NavGroup<TranslationKey>[] {
+  const modules = registeredModules();
+  if (built?.from === modules) return built.groups;
+  const entries = navContributions();
+  const ids = new Set(entries.map((e) => e.id));
+  for (const e of entries) {
+    if (!NAV_GROUP_DEFINITIONS.some((g) => g.id === e.group)) {
+      throw new Error(`Nav entry "${e.id}" names unknown group "${e.group}"`);
+    }
+    if (e.parent && !ids.has(e.parent)) {
+      throw new Error(`Nav entry "${e.id}" names unknown parent "${e.parent}"`);
+    }
+  }
+  const groups = NAV_GROUP_DEFINITIONS.map((group) => ({
+    ...group,
+    items: entries
+      .filter((e) => e.group === group.id && !e.parent)
+      .sort(byOrder)
+      .map(
+        (e): NavItem<TranslationKey> => ({
+          title: e.title,
+          url: e.url,
+          icon: e.icon,
+          description: e.description,
+          requiredPermission: e.capability,
+          items: entries
+            .filter((child) => child.parent === e.id)
+            .sort(byOrder)
+            .map((child) => ({
+              title: child.title,
+              url: child.url,
+              requiredPermission: child.capability,
+              planned: child.planned,
+            })),
+        }),
+      )
+      .map((item) => (item.items?.length ? item : { ...item, items: undefined })),
+  }));
+  built = { from: modules, groups };
+  return groups;
+}
+
+/** Returns `groups` with every label, title and description in the current language. */
+export function translateNavigation(groups: NavGroup<TranslationKey>[]): NavGroup[] {
+  const t = (key: TranslationKey): string => i18n.t(key);
   return groups.map((group) => ({
     ...group,
     label: t(group.label),
@@ -49,8 +100,10 @@ export function translateNavigation(groups: NavGroup[], t: TFunction): NavGroup[
 
 /** Returns the navigation in the current language, re-rendering when it changes. */
 export function useNavGroups(): NavGroup[] {
-  const { t } = useTranslation();
-  return useMemo(() => translateNavigation(navGroups, t), [t]);
+  const { i18n: instance } = useTranslation();
+  const language = instance.resolvedLanguage;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the copy changes with the language
+  return useMemo(() => translateNavigation(getNavGroups()), [language]);
 }
 
 export type NavTitleLookup = {
@@ -58,11 +111,6 @@ export type NavTitleLookup = {
   parent?: { title: string; url: string };
   title: string;
 };
-
-const ROUTE_REQUIREMENT_OVERRIDES: ReadonlyArray<{
-  path: string;
-  requiredPermission: Capability;
-}> = [{ path: "/users/import", requiredPermission: "user.write" }];
 
 const SAFE_DESTINATIONS = new Set(["/", "/organizations"]);
 
@@ -76,20 +124,6 @@ function pathMatchesBranch(pathname: string, destination: string): boolean {
   return (
     pathname === destination || (destination !== "/" && pathname.startsWith(`${destination}/`))
   );
-}
-
-function destinations(): Array<NavItem | NavSubItem> {
-  return navGroups.flatMap((group) => group.items.flatMap((item) => [item, ...(item.items ?? [])]));
-}
-
-export function getRequiredCapabilityForPath(pathname: string): Capability | undefined {
-  const normalized = normalizePathname(pathname);
-  const override = ROUTE_REQUIREMENT_OVERRIDES.find((entry) => entry.path === normalized);
-  if (override) return override.requiredPermission;
-
-  return destinations()
-    .filter((item) => pathMatchesBranch(normalized, item.url))
-    .sort((a, b) => b.url.length - a.url.length)[0]?.requiredPermission;
 }
 
 /**
@@ -164,6 +198,6 @@ export function lookupNavTitle(pathname: string, groups: NavGroup[]): NavTitleLo
       }
     }
   }
-  const segments = pathname.split("/").filter(Boolean);
-  return { title: titleFromSlug(segments[segments.length - 1] ?? "Page") };
+  const slug = pathname.split("/").filter(Boolean).at(-1);
+  return { title: slug ? titleFromSlug(slug) : i18n.t("common:pageTitle.untitled") };
 }

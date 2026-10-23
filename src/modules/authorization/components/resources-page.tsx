@@ -47,7 +47,7 @@ function groupResources(perms: Permission[]): Resource[] {
 
 /** Renders the resources that permissions are defined on. */
 export function ResourcesPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const permsQ = usePermissions();
 
   const perms = permsQ.data?.items ?? [];

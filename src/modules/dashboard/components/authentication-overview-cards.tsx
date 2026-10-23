@@ -56,17 +56,17 @@ export function RecentAuthActivity({
 }: {
   activity: { events: DashboardAuditEvent[]; connecting: boolean };
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("dashboard");
   return (
     <DashboardPanel
-      title={t("overview.activity.title")}
-      description={t("overview.activity.description")}
+      title={t("authOverview.activity.title")}
+      description={t("authOverview.activity.description")}
       action={
         <Link
           to="/activity"
           className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0")}
         >
-          {t("overview.activity.viewAll")} <ChevronRightIcon />
+          {t("authOverview.activity.viewAll")} <ChevronRightIcon />
         </Link>
       }
     >
@@ -79,8 +79,8 @@ export function RecentAuthActivity({
       ) : activity.events.length === 0 ? (
         <EmptyState
           icon={ActivityIcon}
-          title={t("overview.activity.emptyTitle")}
-          description={t("overview.activity.emptyDescription")}
+          title={t("authOverview.activity.emptyTitle")}
+          description={t("authOverview.activity.emptyDescription")}
         />
       ) : (
         <ol className="flex flex-col">
@@ -112,7 +112,7 @@ export function RecentAuthActivity({
 }
 
 export function Callout({ posture }: { posture: AuthPosture }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("dashboard");
   const next = posture.pending[0];
 
   return (
@@ -122,16 +122,18 @@ export function Callout({ posture }: { posture: AuthPosture }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">
-          {next ? t("overview.posture.callout.title") : t("overview.posture.callout.allClear")}
+          {next
+            ? t("authOverview.posture.callout.title")
+            : t("authOverview.posture.callout.allClear")}
         </p>
         <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
           {next
-            ? t(`overview.actions.items.${next.id}.description`)
-            : t("overview.posture.callout.allClearDetail")}
+            ? t(`authOverview.actions.items.${next.id}.description`)
+            : t("authOverview.posture.callout.allClearDetail")}
         </p>
       </div>
       {next ? (
-        <Link to={next.to as never} aria-label={t(`overview.actions.items.${next.id}.title`)}>
+        <Link to={next.to as never} aria-label={t(`authOverview.actions.items.${next.id}.title`)}>
           <ArrowRightIcon className="mt-1 size-4 shrink-0 text-muted-foreground" />
         </Link>
       ) : null}
@@ -158,7 +160,7 @@ export function Kpi({
   error: boolean;
   delta?: { value: number; caption: string };
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("dashboard");
   return (
     <div className="flex items-start gap-3 rounded-xl border bg-card p-4">
       <span
@@ -183,14 +185,14 @@ export function Kpi({
               )}
             >
               <TrendingUpIcon className="size-3" />
-              {t("dashboard:authenticationOverview.deltaPp", {
+              {t("authenticationOverview.deltaPp", {
                 value: `${delta.value >= 0 ? "+" : ""}${delta.value.toFixed(1)}`,
               })}
             </span>
           ) : null}
         </div>
         <p className="mt-1 truncate text-xs text-muted-foreground">
-          {error ? t("overview.states.unavailable") : delta ? delta.caption : detail}
+          {error ? t("authOverview.states.unavailable") : delta ? delta.caption : detail}
         </p>
       </div>
     </div>

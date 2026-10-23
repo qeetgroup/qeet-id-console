@@ -5,11 +5,11 @@ import {
   DescriptionDetails,
   DescriptionList,
   DescriptionTerm,
-  StatusPill,
 } from "@qeetrix/ui";
 import { LinkIcon, NetworkIcon, PlayIcon, ShieldCheckIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import { formatDateTime } from "@/shared/utils/format";
 
 import { socialStartUrl } from "../api/flows";
@@ -25,7 +25,7 @@ export function SocialProviderAdvancedTab({
   provider: SocialProviderMeta;
   existing?: SocialProvider;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const redirectUri = socialRedirectUri(provider.id);
   const isEnabled = !!existing?.enabled;
   return (

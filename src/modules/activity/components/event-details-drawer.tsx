@@ -38,7 +38,9 @@ import { type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ActivitySearch, DrawerTab } from "../activity-search";
+import { formatLocale } from "@/i18n";
 import { formatIp } from "@/shared/utils/ip-format";
+import { actorTypeLabel, categoryLabel, formatEventTitle } from "../event-labels";
 import type { ActivityEvent } from "../types/activity.types";
 import { InvestigateMenu } from "./investigate-menu";
 import { RelatedEventsList } from "./related-events-list";
@@ -125,7 +127,7 @@ export function EventDetailsDrawer({
   onSelectEvent,
   onFilter,
 }: EventDetailsDrawerProps) {
-  const { t } = useTranslation("activity");
+  const { t } = useTranslation(["activity", "common"]);
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!open) onClose();
@@ -142,9 +144,9 @@ export function EventDetailsDrawer({
             <SheetHeader className="border-b border-border/60 p-4">
               <div className="flex items-start gap-3 pr-8">
                 <div className="min-w-0 flex-1">
-                  <SheetTitle className="text-sm">{event.title}</SheetTitle>
+                  <SheetTitle className="text-sm">{formatEventTitle(event)}</SheetTitle>
                   <SheetDescription className="mt-0.5 text-xs">
-                    {event.category} ·{" "}
+                    {categoryLabel(event.category)} ·{" "}
                     <TimeSince value={event.at} className="inline tabular-nums" />
                   </SheetDescription>
                 </div>
@@ -154,10 +156,12 @@ export function EventDetailsDrawer({
               {/* who → action → resource */}
               <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                 <span className="max-w-40 truncate font-medium text-foreground">
-                  {event.actor?.name ?? event.actor?.id ?? event.actor?.type ?? t("actor.system")}
+                  {event.actor?.name ??
+                    event.actor?.id ??
+                    (event.actor?.type ? actorTypeLabel(event.actor.type) : t("actor.system"))}
                 </span>
                 <ArrowRightIcon className="size-3 shrink-0" aria-hidden="true" />
-                <span className="truncate">{event.title}</span>
+                <span className="truncate">{formatEventTitle(event)}</span>
                 {event.target && (
                   <>
                     <ArrowRightIcon className="size-3 shrink-0" aria-hidden="true" />
@@ -230,11 +234,11 @@ export function EventDetailsDrawer({
                         <Badge variant="muted">{event.type}</Badge>
                       </DetailRow>
                       <DetailRow label={t("eventDetailsDrawer.category")}>
-                        {event.category}
+                        {categoryLabel(event.category)}
                       </DetailRow>
                       <DetailRow label={t("eventDetailsDrawer.timestamp")}>
                         <time dateTime={event.at}>
-                          {new Date(event.at).toLocaleString(undefined, {
+                          {new Date(event.at).toLocaleString(formatLocale(), {
                             dateStyle: "medium",
                             timeStyle: "long",
                           })}
@@ -288,7 +292,7 @@ export function EventDetailsDrawer({
                           )}
                           {event.actor.type && (
                             <DetailRow label={t("common:labels.type")}>
-                              <Badge variant="muted">{event.actor.type}</Badge>
+                              <Badge variant="muted">{actorTypeLabel(event.actor.type)}</Badge>
                             </DetailRow>
                           )}
                           {event.actor.id && (

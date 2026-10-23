@@ -1,4 +1,4 @@
-import { Button, cn, StatusPill, TimeSince } from "@qeetrix/ui";
+import { Button, cn, TimeSince } from "@qeetrix/ui";
 import { useNavigate } from "@tanstack/react-router";
 import {
   BellIcon,
@@ -18,6 +18,7 @@ import {
   useMarkAllRead,
   useNotifications,
 } from "@/modules/developer";
+import { StatusPill } from "@/platform/components/status-pill";
 
 const KIND_ICON: Record<NotificationKind, ComponentType<IconProps<"outline">>> = {
   info: InfoIcon,

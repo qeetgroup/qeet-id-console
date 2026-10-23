@@ -57,7 +57,7 @@ const csvColumns: CsvColumn<OidcClient>[] = [
 
 /** Renders the organization's OAuth / OIDC applications, with bulk delete and export. */
 export function OidcApplicationsPage() {
-  const { t } = useTranslation("oidc");
+  const { t } = useTranslation(["oidc", "common"]);
   const { can } = useCapabilities();
   const canWrite = can("connection.write");
   const runSensitive = useSensitiveAction();

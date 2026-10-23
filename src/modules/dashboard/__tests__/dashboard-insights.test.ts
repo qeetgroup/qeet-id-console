@@ -65,11 +65,12 @@ describe("deriveAttentionItems", () => {
 
   it("words an item from its catalogue keys and the measured values", () => {
     const [mfa] = deriveAttentionItems(overview({ mfa_adoption_pct: metric(30) }));
-    expect(i18n.t(mfa?.title ?? "")).toBe("MFA adoption below target");
-    expect(i18n.t(mfa?.detail ?? "", mfa?.params)).toBe(
+    if (!mfa) throw new Error("expected an MFA attention item");
+    expect(i18n.t(mfa.title)).toBe("MFA adoption below target");
+    expect(i18n.t(mfa.detail, mfa.params)).toBe(
       "30.0% of active users have a second factor — short of the 80% target.",
     );
-    expect(i18n.t(mfa?.actionLabel ?? "")).toBe("Strengthen MFA");
+    expect(i18n.t(mfa.actionLabel)).toBe("Strengthen MFA");
   });
 
   it("surfaces rising failed sign-ins", () => {

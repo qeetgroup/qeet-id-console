@@ -44,7 +44,7 @@ export function MappingRulesTable({
   onDelete: (mappings: DirectoryMapping[]) => void;
   onToggle: (mapping: DirectoryMapping) => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [search, setSearch] = useState("");
   const [state, setState] = useState("");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -126,11 +126,19 @@ export function MappingRulesTable({
                   />
                 </TableHead>
               ) : null}
-              {["source", "target", "type", "transform", "previewValue", "status", "actions"].map(
-                (column) => (
-                  <TableHead key={column}>{t(`directory.mappings.${column}`)}</TableHead>
-                ),
-              )}
+              {(
+                [
+                  "source",
+                  "target",
+                  "type",
+                  "transform",
+                  "previewValue",
+                  "status",
+                  "actions",
+                ] as const
+              ).map((column) => (
+                <TableHead key={column}>{t(`directory.mappings.${column}`)}</TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>

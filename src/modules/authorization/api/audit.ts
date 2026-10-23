@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import type { TranslationKey } from "@/i18n";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
@@ -47,18 +48,18 @@ export const AUTHZ_RESOURCE_TYPES = [
 export type AuthzResourceType = (typeof AUTHZ_RESOURCE_TYPES)[number];
 
 /** Catalogue keys for the authorization resource types. */
-export const RESOURCE_TYPE_LABELS: Record<AuthzResourceType, string> = {
-  abac_policy: "rbac:resourceTypes.abacPolicy",
-  role: "rbac:resourceTypes.role",
-  rbac_policy: "rbac:resourceTypes.rbacPolicy",
-  relation_tuple: "rbac:resourceTypes.relationTuple",
-  permission: "rbac:resourceTypes.permission",
-  group_role: "rbac:resourceTypes.groupRole",
-  security_policy: "rbac:resourceTypes.securityPolicy",
+export const RESOURCE_TYPE_LABELS: Record<AuthzResourceType, TranslationKey> = {
+  abac_policy: "authorization:resourceTypes.abacPolicy",
+  role: "authorization:resourceTypes.role",
+  rbac_policy: "authorization:resourceTypes.rbacPolicy",
+  relation_tuple: "authorization:resourceTypes.relationTuple",
+  permission: "authorization:resourceTypes.permission",
+  group_role: "authorization:resourceTypes.groupRole",
+  security_policy: "authorization:resourceTypes.securityPolicy",
 };
 
 /** Returns the catalogue key for a resource type, or null for a type without a label. */
-export function resourceTypeKey(type: string): string | null {
+export function resourceTypeKey(type: string): TranslationKey | null {
   return Object.hasOwn(RESOURCE_TYPE_LABELS, type)
     ? RESOURCE_TYPE_LABELS[type as AuthzResourceType]
     : null;

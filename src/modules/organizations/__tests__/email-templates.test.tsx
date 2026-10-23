@@ -1,11 +1,15 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null, canRead: true }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ to, ...props }: ComponentProps<"a"> & { to: string }) => <a {...props} href={to} />,
+}));
 vi.mock("@/platform/auth/session", () => ({
   useTenantId: () => context.tenantId,
   useMe: () => ({
@@ -374,6 +378,9 @@ describe("Emails workspace", () => {
       "text-align:left",
     );
     expect(screen.getByText("#f97316")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Manage branding" }).getAttribute("href")).toBe(
+      "/settings/branding",
+    );
   });
 
   it("adds localized content and changes the default language", async () => {
@@ -511,7 +518,7 @@ describe("Email template API actions", () => {
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/email-templates/verify_email", {
       method: "DELETE",
     });
-    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("reset to default");
+    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Reset to default");
   });
 
   it("does not allow read-only editing or test sending", async () => {
@@ -539,7 +546,7 @@ describe("Email template API actions", () => {
       method: "POST",
       body: { draft: expect.objectContaining({ subject: "Current draft" }), locale: "en" },
     });
-    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("test email");
+    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Test email");
   });
 
   it("cancels a delayed test confirmation after the organization changes", async () => {

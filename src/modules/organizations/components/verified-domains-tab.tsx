@@ -29,6 +29,7 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { ErrorText } from "@/platform/components/error-reference";
 import {
   settleSensitiveAction,
@@ -46,7 +47,7 @@ import {
 const DOCS = "https://docs.qeet.in/qeet-id/domains";
 
 export function VerifiedDomainsTab() {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const domainsQ = useDomains();
   const addM = useAddDomain();
   const verifyM = useVerifyDomain();
@@ -72,7 +73,7 @@ export function VerifiedDomainsTab() {
 
   const updateSettings = (input: Parameters<typeof settingsM.mutateAsync>[0]) =>
     runSensitive({
-      actionLabel: t("workspace.domains.actionLabels.settings").toLowerCase(),
+      actionLabel: t("workspace.domains.actionLabels.settings"),
       run: () => settingsM.mutateAsync(input),
     }).catch(settleSensitiveAction);
 
@@ -127,7 +128,7 @@ export function VerifiedDomainsTab() {
               const value = draft.trim();
               if (!value) return;
               runSensitive({
-                actionLabel: t("workspace.domains.actionLabels.add").toLowerCase(),
+                actionLabel: t("workspace.domains.actionLabels.add"),
                 run: () => addM.mutateAsync(value),
               })
                 .then(() => setDraft(""))
@@ -238,7 +239,7 @@ export function VerifiedDomainsTab() {
                             )}
                           />
                           {d.last_checked_at
-                            ? new Date(d.last_checked_at).toLocaleString(undefined, {
+                            ? new Date(d.last_checked_at).toLocaleString(formatLocale(), {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
@@ -300,7 +301,7 @@ export function VerifiedDomainsTab() {
                                     confirmLabel: t("workspace.domains.table.remove"),
                                     tone: "destructive",
                                   },
-                                  actionLabel: t("workspace.domains.table.remove").toLowerCase(),
+                                  actionLabel: t("workspace.domains.table.remove"),
                                   run: () => removeM.mutateAsync(d.id),
                                 }).catch(settleSensitiveAction)
                               }
@@ -378,7 +379,7 @@ function DomainKpi({
 }
 
 function StatusPill({ status }: { status: TenantDomain["status"] }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   if (status === "verified") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
@@ -404,7 +405,7 @@ function StatusPill({ status }: { status: TenantDomain["status"] }) {
 }
 
 function YesNo({ on }: { on: boolean }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <span
       className={cn(

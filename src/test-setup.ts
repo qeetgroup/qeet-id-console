@@ -1,5 +1,7 @@
-// Loads the real catalogue, so components under test render their English copy, not raw keys.
+// Loads the real catalogue, so components under test render their English copy, not raw keys,
+// and registers the modules' manifests, as the router does.
 import "@/i18n";
+import "@/app/register";
 
 // Polyfills the browser APIs jsdom lacks and the @qeetrix/ui primitives touch on mount. Each is
 // guarded, so this is a no-op in the default `node` environment.

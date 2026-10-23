@@ -27,7 +27,7 @@ export function DirectoryAlertDialog({
   connections: DirectoryConnection[];
   onClose: () => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [name, setName] = useState("");
   const [connection, setConnection] = useState("");
   const [threshold, setThreshold] = useState(1);

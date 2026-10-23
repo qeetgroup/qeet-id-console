@@ -45,8 +45,8 @@ export interface ImportResult {
   created: number;
   skipped: number;
   failed: number;
-  // Each row's `reason` is the server's own text and isn't shown.
-  rows: { name: string; status: "created" | "skipped" | "failed" }[];
+  // Each row's `reason` is the server's own text and isn't shown; its `code` picks the wording.
+  rows: { name: string; status: "created" | "skipped" | "failed"; code?: string; field?: string }[];
 }
 
 /** A user in a group, as the members endpoint lists them. */

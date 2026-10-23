@@ -1,6 +1,6 @@
 # Repository Context — qeet-id-console
 
-**Level:** L2 · **Status:** active · **Evidence state:** verified · **Last verified:** 2026-08-28
+**Level:** L2 · **Status:** active · **Evidence state:** verified · **Last verified:** 2026-10-23
 **Verification scope:** layering rules read from `biome.json`; session and BFF behaviour from
 `src/platform/{api,auth}`; capability model from `src/platform/security/`; CI from
 `.github/workflows/ci.yml`. Layer compliance verified by grep.
@@ -41,24 +41,27 @@ design system (`qeetrix-ui`).
 ## Layered architecture — enforced by lint
 
 ```text
-routes  →  modules  →  platform  →  shared
+app  →  modules  →  platform  →  shared
 ```
 
-**Evidence:** `biome.json` `noRestrictedImports` overrides, plus `noImportCycles: "error"`.
-Run by CI as `bun run lint:boundaries`.
+**Evidence:** `biome.json` `noRestrictedImports` overrides, plus `noImportCycles: "error"`, run by
+CI as `bun run lint:boundaries`; `src/__tests__/module-boundaries.test.ts` holds the rules Biome
+can't express (barrel-only imports between modules, no import climbing more than one folder).
 
 | Layer | May import |
 |---|---|
 | `src/shared/**` | `@/shared`, `@/i18n`, external packages only |
 | `src/platform/**` | `@/platform`, `@/shared`, `@/i18n` |
-| `src/modules/**` | the above, **plus another module only via its barrel** `@/modules/<name>` |
-| `src/routes/**` | module barrels and `pages` entries, `@/platform/**` (except `api` from the client), `@/shared/**`; not module internals, `api()` or `@tanstack/react-query`. No route is exempt |
+| `src/modules/**` | the above, **plus another module only via its barrel** `@/modules/<name>`; never `@/app` or `@/routes` |
+| route files (`src/modules/*/routes/**`, `src/routes/**`) | module barrels and `pages` entries, `@/platform/**` (except `api` from the client), `@/shared/**`; not module internals, `api()` or `@tanstack/react-query`. No route is exempt |
+| `src/app/**` | anything — it is the composition root |
 
 `@/lib` is **retired** — importing it is a lint error.
 
 **Verified compliance:** 0 cross-module-internal imports, 0 `platform → modules`, 0 `shared → up`.
-Every route file follows the route rule: `createFileRoute`, its guards, a Zod search schema and the
-page from the owning module's `pages.ts`. The pages, their data and their forms live in the modules.
+Every route file follows the route rule: `createFileRoute`, `staticData: { capability }`, its guards,
+a Zod search schema and the page from the owning module's `pages.ts`. The pages, their data and
+their forms live in the modules.
 
 Global `fetch`, `EventSource`, `WebSocket` and `XMLHttpRequest` are lint errors outside
 `src/platform/api/`; the activity and Qeet AI streams use its shared transport
@@ -150,8 +153,10 @@ AccessBoundary gates the page; navigation is filtered
 > The rule: authorization is backend-authoritative; client capabilities are UX only. Never
 > re-implement RBAC/ABAC evaluation on the client.
 >
-> `qeet-id-server` enforces RBAC and tenant isolation in its application layer — there is **no
-> Postgres RLS** (`qeet-id-context/DRIFT-REGISTER.md` **QID-002**). Do not claim RLS.
+> `qeet-id-server` enforces RBAC in its application layer and tenant isolation in both the
+> application and the database: since its 1.0.0 migration 0160, Postgres row-level security
+> (`tenant_isolation`) covers the organization-owned tables, with connections scoped to the
+> request's tenant. None of it is visible to, or replaceable by, the console.
 
 Any 403 triggers `refreshCapabilities()` — invalidating the capability query — so a permission change
 elsewhere self-heals.
@@ -172,11 +177,33 @@ suppressed for step-up.
   email → `[redacted-email]` and IPv4 → `[redacted-ip]`.
 - Opt-in runtime schemas: a mismatch throws `client.schema_mismatch` — fail closed.
 
+## Modules and the shell
+
+The platform never imports a module. `src/app/register.ts` loads every module's `manifest.tsx`
+(`defineModule`, `src/platform/modules/manifest.ts`) into the registry
+(`src/platform/modules/registry.ts`), and the shell reads its parts from there: sidebar entries
+(`getNavGroups`), palette commands, `g` shortcuts, feature flags. A module offers its own extension
+point by augmenting `ModuleExtensions` (Qeet AI's `qeetaiSuggestions`), and other modules fill it
+in their manifests. Adding a module therefore touches its own folder and one line,
+`src/app/modules.ts`; `bun run new-module <id>` writes both.
+
+**Feature flags** are declared in manifests with an owner, a description and an expiry (`null` only
+for a lasting kill switch; a test fails once a date passes). `CONSOLE_FLAGS_OFF=<id>,…` turns any
+off at runtime: the server reads it and hands it to the browser with the API origin
+(`public-config.ts`), so no rebuild is needed.
+
 ## Routing
 
-File-based via `tanstackStart()`. `src/routeTree.gen.ts` is **generated, committed and read-only**.
-Four groups — `_app` (authenticated shell), `_auth` (reverse guard), `account` (end-user
-self-service, deliberately outside the admin shell), `api` (server-only SSE).
+File-based via `tanstackStart()`, from a virtual config: `src/app/routes.ts` mounts the shell
+(`src/routes`: `__root`, `_app`, `healthz`, `api/` for server-only SSE) and every module's
+`routes/public/` at the root and `routes/app/` inside `_app`. `src/routeTree.gen.ts` is
+**generated, committed and read-only**. The groups: `_app` (authenticated shell), `_auth`
+(reverse guard, `authentication`), `account` (end-user self-service, deliberately outside the
+admin shell), `api`.
+
+Each route declares its page's capability as `staticData: { capability }`; the router registers
+them (`route-capability.ts`), and the access boundary and link checks resolve a path against them —
+the whole path first, else the deepest route matching a leading part.
 
 CSRF is applied in `src/start.ts` for all server functions and all non-GET/HEAD/OPTIONS requests.
 
@@ -191,10 +218,12 @@ test:coverage` (what CI runs) enforces the coverage thresholds in `vitest.config
 **Browser tests** (`tests/e2e`, `bun run test:e2e`, CI job "Session E2E") cover the session-boundary
 invariants that only appear in a real browser: anonymous guard, `__Host-` HttpOnly Secure
 `SameSite=Lax` cookie, no token in Web Storage, `document.cookie` or server-rendered HTML, hard
-refresh, cross-site write rejection, cross-tab logout, single-flight refresh, an organization switch
-that moves every tab and stops reading the old organization's data, and two concurrent
-sessions kept apart. They run against the **production build** and a fake backend
-(`tests/e2e/fixtures/fake-backend.mjs`) and wait for `<html data-hydrated>` before typing — the
+refresh, cross-site write rejection, cross-tab logout, two tabs renewing an expired session with
+one rotation, an organization switch that moves every tab and stops reading the old
+organization's data, and two concurrent sessions kept apart. They run against the **production
+build** and a fake backend (`tests/e2e/fixtures/fake-backend.mjs`, which rotates refresh tokens with
+the server's reuse grace, so a request that misses a shared refresh behaves as in production) and
+wait for `<html data-hydrated>` before typing — the
 earlier suite ran against `vite dev`, raced hydration and on-demand compiles, and was removed for
 flaking. No retries: a flake is a bug. Run them after any change to `src/platform/{api,auth}`.
 
@@ -244,7 +273,6 @@ release; reached only through the `shadcn` CLI in `@qeetrix/ui`) is documented i
 - **Icons come only from `@qeetrix/icons`** (`lucide-react` is not a dependency). Type an "any icon"
   prop as `ComponentType<IconProps<"outline">>`, not `typeof SomeIcon`: icons with a filled drawing
   have a wider props type.
-- ~25k LOC in `src/routes` despite the "composition only" rule (being migrated into modules).
 - Biome warnings fail CI (`--error-on-warnings`): fix them, or suppress one with a specific reason.
 - TypeScript runs with `strict` plus `noUncheckedIndexedAccess`, `noImplicitReturns` and
   `noImplicitOverride`. Narrow an indexed value with a guard; `!` is a lint error.
@@ -256,7 +284,7 @@ release; reached only through the `shadcn` CLI in `@qeetrix/ui`) is documented i
 
 | Claim | Reality |
 |---|---|
-| "RBAC + Postgres RLS" (older product docs) | **No RLS exists** — QID-002, critical; Qeet ID enforces tenancy in the application layer |
+| "No Postgres RLS" (QID-002, and this file before 2026-10-24) | **RLS exists** since `qeet-id-server` 1.0.0 (migration 0160, commit ea57c1f): a `tenant_isolation` policy on the organization-owned tables, alongside the application-layer checks |
 
 Product-level drift lives in `qeet-id-context/DRIFT-REGISTER.md`; this table is repository-local.
 

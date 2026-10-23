@@ -1,15 +1,16 @@
 import { cn, Skeleton } from "@qeetrix/ui";
 import {
   ActivityIcon,
-  type IconProps,
+  CodeXmlIcon,
   LogInIcon,
-  MonitorIcon,
   ShieldIcon,
-  SlidersHorizontalIcon,
+  UsersIcon,
+  type IconProps,
 } from "@qeetrix/icons";
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import type { ActivityEvent } from "@/modules/activity";
 import { computeTimelineSummary, SUMMARY_CATEGORY_FILTERS } from "../timeline-summary";
 
@@ -50,7 +51,6 @@ function StatCard({
   active: boolean;
   onClick: () => void;
 }) {
-  const { i18n } = useTranslation("timeline");
   return (
     <button
       type="button"
@@ -74,7 +74,7 @@ function StatCard({
         </span>
       </div>
       <p className="mt-2.5 font-heading text-2xl font-semibold leading-none tabular-nums">
-        {value.toLocaleString(i18n.resolvedLanguage)}
+        {value.toLocaleString(formatLocale())}
       </p>
       <p className="mt-1.5 text-[11px] text-muted-foreground">{sub}</p>
     </button>
@@ -151,22 +151,22 @@ export function TimelineSummaryStrip({
       categories: SUMMARY_CATEGORY_FILTERS.security,
     },
     {
-      key: "admin",
-      icon: SlidersHorizontalIcon,
-      label: t("timelineSummaryStrip.adminActions"),
-      value: s.admin,
-      sub: t("timelineSummaryStrip.share", { percent: sharePercent(s.admin, s.total) }),
+      key: "directory",
+      icon: UsersIcon,
+      label: t("timelineSummaryStrip.directory"),
+      value: s.directory,
+      sub: t("timelineSummaryStrip.share", { percent: sharePercent(s.directory, s.total) }),
       tone: "warning",
-      categories: SUMMARY_CATEGORY_FILTERS.admin,
+      categories: SUMMARY_CATEGORY_FILTERS.directory,
     },
     {
-      key: "sessions",
-      icon: MonitorIcon,
-      label: t("timelineSummaryStrip.sessionEvents"),
-      value: s.sessions,
-      sub: t("timelineSummaryStrip.share", { percent: sharePercent(s.sessions, s.total) }),
+      key: "developer",
+      icon: CodeXmlIcon,
+      label: t("timelineSummaryStrip.developer"),
+      value: s.developer,
+      sub: t("timelineSummaryStrip.share", { percent: sharePercent(s.developer, s.total) }),
       tone: "success",
-      categories: SUMMARY_CATEGORY_FILTERS.sessions,
+      categories: SUMMARY_CATEGORY_FILTERS.developer,
     },
   ];
 

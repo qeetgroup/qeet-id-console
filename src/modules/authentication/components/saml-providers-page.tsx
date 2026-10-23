@@ -30,6 +30,7 @@ import { useTranslation } from "react-i18next";
 
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import {
   settleSensitiveAction,
   useSensitiveAction,
@@ -47,11 +48,10 @@ import {
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import { useMemo } from "react";
 import { z } from "zod";
-import { AuthStatusPill } from "./auth-status-pill";
 
 /** Renders the service providers that sign people in through Qeet ID as their SAML IdP. */
 export function SamlProvidersPage() {
-  const { t } = useTranslation("saml");
+  const { t } = useTranslation(["saml", "common"]);
   const tenantId = useTenantId();
   const runSensitive = useSensitiveAction();
   const listQ = useSamlProviders();
@@ -154,7 +154,7 @@ export function SamlProvidersPage() {
                       {p.acs_url}
                     </TableCell>
                     <TableCell>
-                      <AuthStatusPill status={p.status} />
+                      <StatusPill status={p.status} />
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {p.last_login_at ? <TimeSince value={p.last_login_at} /> : "—"}
@@ -216,7 +216,7 @@ function SamlProviderSheet({
 }
 
 function SamlProviderForm({ provider, onDone }: { provider?: SamlProvider; onDone: () => void }) {
-  const { t } = useTranslation("saml");
+  const { t } = useTranslation(["saml", "common"]);
   const runSensitive = useSensitiveAction();
   const createM = useCreateSamlProvider();
   const updateM = useUpdateSamlProvider();

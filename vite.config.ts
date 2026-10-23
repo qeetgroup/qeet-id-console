@@ -15,7 +15,7 @@ const config = defineConfig({
     // Security headers on every response, for the node-server image and Vercel output alike.
     nitro({ routeRules: { "/**": { headers: { ...SECURITY_HEADERS } } } }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({ router: { virtualRouteConfig: "./src/app/routes.ts" } }),
     viteReact(),
     babel({ presets: [reactCompilerPreset()] }),
   ],

@@ -7,10 +7,10 @@ import {
   CardTitle,
   cn,
   EmptyState,
-  StatusPill,
   TimeSince,
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import {
   ActivityIcon,
   ArrowRightIcon,
@@ -22,6 +22,8 @@ import {
 } from "@qeetrix/icons";
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
+
+import { formatEventTitle } from "@/modules/activity";
 import { formatDateTime } from "@/shared/utils/format";
 
 import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
@@ -290,9 +292,13 @@ function RecentActivityCard({
                     aria-hidden="true"
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{e.title}</div>
+                    <div className="truncate text-sm font-medium">{formatEventTitle(e)}</div>
                     <div className="truncate text-xs text-muted-foreground">
-                      {[e.device || e.browser, e.location, e.ip ? `IP ${e.ip}` : null]
+                      {[
+                        e.device || e.browser,
+                        e.location,
+                        e.ip ? t("detail.activityIp", { ip: e.ip }) : null,
+                      ]
                         .filter(Boolean)
                         .join(" · ") || e.description}
                     </div>

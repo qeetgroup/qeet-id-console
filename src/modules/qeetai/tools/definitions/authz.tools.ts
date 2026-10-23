@@ -161,6 +161,13 @@ export const simulateAuthorizationTool: ToolDefinition<SimulateAuthorizationInpu
     return {
       ok: true,
       summary: `${input.engine.toUpperCase()} decision: ${verdict}${result.reason ? ` — ${result.reason}` : ""}${result.durationMs !== undefined ? ` (${result.durationMs}ms)` : ""}.`,
+      // The card shows the verdict only: `reason` can be the server's own sentence.
+      display: {
+        key: result.allowed
+          ? "qeetai:toolCallCard.results.decisionAllowed"
+          : "qeetai:toolCallCard.results.decisionDenied",
+        values: { engine: input.engine.toUpperCase() },
+      },
       data: {
         engine: input.engine,
         allowed: result.allowed,
@@ -227,6 +234,11 @@ export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
       summary: input.enabled
         ? "Strict MFA enabled — every sign-in must complete MFA (device-remembering disabled)."
         : "Strict MFA disabled — adaptive device-remembering is now allowed.",
+      display: {
+        key: input.enabled
+          ? "qeetai:toolCallCard.results.strictMfaEnabled"
+          : "qeetai:toolCallCard.results.strictMfaDisabled",
+      },
       data: {
         strict_mfa_enabled: input.enabled,
         remember_device_enabled: !input.enabled,

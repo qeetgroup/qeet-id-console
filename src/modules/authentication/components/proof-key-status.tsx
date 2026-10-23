@@ -1,7 +1,8 @@
-import { Badge, Card, CardContent, CardHeader, CardTitle, StatusPill } from "@qeetrix/ui";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@qeetrix/ui";
 import { useTranslation } from "react-i18next";
 
 import { type OidcClient, proofKeyStatus } from "../api/oidc-clients";
+import { StatusPill } from "@/platform/components/status-pill";
 import { formatDate } from "@/shared/utils/format";
 
 /**

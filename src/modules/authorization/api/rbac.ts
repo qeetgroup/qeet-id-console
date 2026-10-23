@@ -51,7 +51,7 @@ export function useCreateRole() {
       return api<Role>(`/v1/tenants/${tenantId}/roles`, { method: "POST", body });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.roles(tenantId) }),
-    meta: { successMessage: "rbac:toast.roleCreated", silentError: true }, // the sheet shows it
+    meta: { successMessage: "authorization:toast.roleCreated", silentError: true }, // the sheet shows it
   });
 }
 
@@ -72,7 +72,7 @@ export function useGrantPermission(roleId: string) {
       api<void>(`/v1/roles/${roleId}/permissions/${permId}`, { method: "POST" }),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: authzKeys.rolePermissions(tenantId, roleId) }),
-    meta: { successMessage: "rbac:toast.permissionGranted" },
+    meta: { successMessage: "authorization:toast.permissionGranted" },
   });
 }
 
@@ -84,7 +84,7 @@ export function useRevokePermission(roleId: string) {
       api<void>(`/v1/roles/${roleId}/permissions/${permId}`, { method: "DELETE" }),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: authzKeys.rolePermissions(tenantId, roleId) }),
-    meta: { successMessage: "rbac:toast.permissionRevoked" },
+    meta: { successMessage: "authorization:toast.permissionRevoked" },
   });
 }
 

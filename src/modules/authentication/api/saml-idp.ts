@@ -59,7 +59,7 @@ export function useCreateSamlProvider() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "auth:toast.serviceProviderAdded", silentError: true },
+    meta: { successMessage: "authentication:toast.serviceProviderAdded", silentError: true },
   });
 }
 
@@ -73,7 +73,7 @@ export function useUpdateSamlProvider() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "auth:toast.serviceProviderUpdated", silentError: true },
+    meta: { successMessage: "authentication:toast.serviceProviderUpdated", silentError: true },
   });
 }
 
@@ -86,6 +86,6 @@ export function useDeleteSamlProvider() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "auth:toast.serviceProviderRemoved" },
+    meta: { successMessage: "authentication:toast.serviceProviderRemoved" },
   });
 }

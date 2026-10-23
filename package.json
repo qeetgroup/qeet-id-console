@@ -16,7 +16,8 @@
     "lint:boundaries": "biome lint --error-on-warnings ./src",
     "format": "biome format --write .",
     "check": "biome check --error-on-warnings .",
-    "audit": "bun audit --audit-level=high --ignore=GHSA-vfj7-8cjw-p6xm"
+    "audit": "bun audit --audit-level=high --ignore=GHSA-vfj7-8cjw-p6xm",
+    "new-module": "node scripts/new-module.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

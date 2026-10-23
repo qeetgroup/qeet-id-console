@@ -1,15 +1,8 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  StatusPill,
-  TimeSince,
-} from "@qeetrix/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, TimeSince } from "@qeetrix/ui";
 import { useTranslation } from "react-i18next";
 
 import { type OidcClient, useClientAuthFailures } from "../api/oidc-clients";
+import { StatusPill } from "@/platform/components/status-pill";
 import { formatDateTime } from "@/shared/utils/format";
 
 /**

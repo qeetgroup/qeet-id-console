@@ -1,11 +1,11 @@
-import i18n from "@/i18n";
+import i18n, { type TranslationKey } from "@/i18n";
 import { type ErrorCode, ERROR_CODES, type ErrorKind } from "@/platform/errors/error-codes";
 import { normalizeError } from "@/platform/errors/normalize-error";
 
 // The leak stop: a backend `error.message` or `detail` can carry internal context, so the UI
 // never renders it. Known codes map to curated copy, the rest to a safe message per kind.
 // Each value is an `errors` catalogue key.
-const CODE_MESSAGES: Record<string, string> = {
+const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.STEP_UP_REQUIRED]: "errors:code.stepUpRequired",
   [ERROR_CODES.SESSION_EXPIRED]: "errors:code.sessionExpired",
   [ERROR_CODES.SESSION_REFRESH_UNAVAILABLE]: "errors:code.sessionRefreshUnavailable",
@@ -79,7 +79,7 @@ const CODE_MESSAGES: Record<string, string> = {
   [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 
-const KIND_FALLBACK: Record<ErrorKind, string> = {
+const KIND_FALLBACK: Record<ErrorKind, TranslationKey> = {
   auth: "errors:kind.auth",
   authz: "errors:kind.authz",
   validation: "errors:kind.validation",
@@ -103,7 +103,7 @@ export function errorMessage(err: unknown): string {
 }
 
 // Per-field copy for the codes the backend's request validation uses.
-const FIELD_MESSAGES: Record<string, string> = {
+const FIELD_MESSAGES: Record<string, TranslationKey> = {
   required: "errors:field.required",
   invalid_email: "errors:field.invalidEmail",
   too_short: "errors:field.tooShort",

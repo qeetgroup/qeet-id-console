@@ -47,23 +47,28 @@ server-side. The browser gets `PublicSession` — no tokens. **Never add a token
 `src/platform/auth/session-store.ts` actively purges the legacy `qeetid.access_token` keys on
 startup. Do not reintroduce them: browser-held tokens were the model this BFF replaced.
 
-### 3. Layering is enforced by lint, and CI runs it
+### 3. Layering is enforced by lint and tests, and CI runs both
 ```text
-routes → modules → platform → shared
+app → modules → platform → shared
 ```
 Biome `noRestrictedImports` overrides in `biome.json` fail the build:
 - `src/shared/**` may import only `@/shared`, `@/i18n`, or external packages
-- `src/platform/**` may import only `@/platform`, `@/shared`, `@/i18n`
-- `src/modules/**` must not import `@/routes`; must reach another module **through its barrel**
-  (`@/modules/<name>`), never its internals
+- `src/platform/**` may import only `@/platform`, `@/shared`, `@/i18n`; it reaches modules only
+  through the registry `src/app` fills (`src/platform/modules/registry.ts`)
+- `src/modules/**` must not import `@/routes` or `@/app`
 - `@/lib` is retired — never import it
 - `noImportCycles` is `error`
 
-`bun run lint:boundaries` is a CI step. Two more import rules:
-- `src/routes/**` must not import module internals (a module's barrel and its `pages` entry are
-  public), `api` from `@/platform/api/client`, or `@tanstack/react-query`: data access belongs to
-  the owning module. No route is exempt; never add an override that exempts one.
-- `DataState` comes from `@/platform/components/data-state`, never `@qeetrix/ui` (rule 5).
+`bun run lint:boundaries` is a CI step. The test suite holds the rest
+(`src/__tests__/module-boundaries.test.ts`):
+- a module reaches another **only through its barrel** (`@/modules/<name>`), never its internals;
+  its own files it imports as `@/modules/<own>/…` (or `./`, `../`)
+- no import climbs more than one folder: anything farther is imported through `@/`
+- a route file (`src/modules/*/routes/**`, and the shell's few in `src/routes`) must not import
+  `api` from `@/platform/api/client` or `@tanstack/react-query`: data access belongs to the
+  module. No route is exempt; never add an override that exempts one.
+- `DataState` comes from `@/platform/components/data-state`, never `@qeetrix/ui` (rule 5), and
+  `StatusPill` from `@/platform/components/status-pill`: the kit's names a status in English.
 
 ### 4. All API traffic goes through one path
 `src/platform/api/client.ts` → server function `proxyApiRequest` → backend. **This is the only place
@@ -116,13 +121,29 @@ module-level variable that server code can reach.
 
 One way to do each thing. `src/modules/users` is the reference implementation.
 
-- **Module layout** — `api/` (data access: a key factory, `queryOptions`, hooks), `components/`
-  (pages and parts), model files at the root, `index.ts` (the barrel other modules import) and
-  `pages.ts` (the pages, for routes only). Keeping pages out of the barrel stops a page that
-  composes another module from creating an import cycle. A route file holds only
-  `createFileRoute`, its guards (`beforeLoad`, `head`), search validation and the page from
-  `@/modules/<name>/pages`; the route reads params and search and passes them to the page as
-  props.
+- **Module layout** — everything a module is lives in `src/modules/<name>/`: `api/` (data access:
+  a key factory, `queryOptions`, hooks), `components/` (pages and parts), model files at the root,
+  `index.ts` (the barrel other modules import), `pages.ts` (the pages, for its routes only),
+  `routes/app/` (its routes inside the signed-in shell) and `routes/public/` (outside it),
+  `locales/<lng>/<namespace>.json` (its copy), and `manifest.tsx` (what it adds to the shell).
+  Keeping pages out of the barrel stops a page that composes another module from creating an
+  import cycle. A route file holds only `createFileRoute`, `staticData: { capability }` when its
+  page requires one, its guards (`beforeLoad`, `head`), search validation and the page; the route
+  reads params and search and passes them to the page as props.
+- **Adding a module** — `bun run new-module <name>` creates a working module from the template
+  (`scripts/new-module.mjs`) and adds its id to `src/app/modules.ts`, the one shared line. The
+  route tree (`src/app/routes.ts`), manifest registry (`src/app/register.ts`) and catalogues pick
+  it up from its folder. `src/__tests__/module-registry.test.ts` holds the wiring.
+- **Manifests** — a module adds sidebar entries, palette commands, `g` shortcuts, feature flags
+  and other modules' extension points (Qeet AI's `qeetaiSuggestions`) in its `manifest.tsx`
+  (`src/platform/modules/manifest.ts`). Never add a module's entry to a platform table.
+- **Route capability** — a route states what its page requires (`staticData: { capability }`);
+  the access boundary and link checks read it (`src/platform/security/route-capability.ts`). A nav
+  entry's `capability` must match its route's (a test holds it).
+- **Feature flags** — declared in the owning module's manifest with an `owner`, a `description`
+  and an `expires` date (`null` only for a lasting kill switch); a test fails once a date passes,
+  and the flag is then removed, keeping the winning path. A deployment turns any flag off at
+  runtime with `CONSOLE_FLAGS_OFF=<id>,<id>`, no rebuild.
 - **Search params** — a Zod schema as `validateSearch`, built from `searchText()` and
   `searchEnum()` (`src/shared/utils/search-params.ts`), so a blank, stale or unknown value
   becomes undefined instead of failing the route.
@@ -154,9 +175,20 @@ One way to do each thing. `src/modules/users` is the reference implementation.
   `i18n.t("<ns>:key")` elsewhere, and a key, not English, in a label table or a mutation's
   `meta.successMessage` (the query client translates it). Brand, protocol and format names, sample
   values, anything sent to the backend or the AI model, and export-file columns stay as they are.
-  `src/i18n/__tests__/catalogue-keys.test.ts` fails on a key missing from `en`. Only
-  `OFFERED_LANGUAGES` (`src/i18n/index.ts`) can be chosen: a locale is offered once it translates
-  every `en` key, so the console never mixes languages (`src/i18n/README.md`).
+  A module owns its namespaces (usually one, named after it) in its `locales/` folder and
+  declares them for typing at the foot of its `manifest.tsx`; the platform owns `common` and
+  `errors`. **Keys are typed**: a key no `en` catalogue holds fails the typecheck. A component
+  names every namespace it reads (`useTranslation(["users", "common"])`); a key held as data is
+  a `TranslationKey` rendered with `i18n.t`; a key built from a value needs the value typed as a
+  known set (`isOneOf`), or `translateDynamic` when only the server knows the values. Never cast
+  a key (`src/i18n/README.md`, Typed keys). `src/i18n/__tests__/catalogue-keys.test.ts` fails on a
+  key missing from `en`, or a section missing for a key built at runtime; `locale-parity.test.ts`
+  on a translation English no longer has. Only `OFFERED_LANGUAGES` (`src/i18n/index.ts`) can be chosen:
+  a locale is offered once it translates every `en` key, so the console never mixes languages
+  (`src/i18n/README.md`).
+- **Numbers and dates** — format with `formatLocale()` (`@/i18n`): the reader's locale when it
+  shares the console's language (en-IN groups 1,23,456), else the console's, so no date carries
+  another language's month names. Words from `Intl` (country names, lists) follow the UI language.
 - **File size** — a source file stays within 500 lines (`src/__tests__/source-files.test.ts`).
   Split by cohesion into siblings named `<file>-<part>`, with pure logic in a `.ts` file.
 - **API contract** — no generated client. Each module types the endpoints it calls by hand from

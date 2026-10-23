@@ -35,7 +35,7 @@ import {
   useUpdateBotSettings,
 } from "../api/bots";
 
-function verdictBadge(v: string, t: TFunction) {
+function verdictBadge(v: string, t: TFunction<"security">) {
   switch (v) {
     case "blocked":
       return <Badge variant="destructive">{t("bots.verdict.blocked")}</Badge>;
@@ -74,13 +74,13 @@ export function BotProtectionPage() {
       value: (s?.threshold ?? 0.7).toFixed(2),
       icon: <BotIcon className="size-4" />,
     },
-  ];
+  ] as const;
 
   // Saves the whole settings object; the scorer enforces only ua_check, the rest are stored.
   function set(patch: Partial<BotSettings>) {
     if (!settings) return;
     runSensitive({
-      actionLabel: t("bots.rules.saveAction").toLowerCase(),
+      actionLabel: t("bots.rules.saveAction"),
       run: () => update.mutateAsync({ ...settings, ...patch }),
     }).catch(settleSensitiveAction);
   }

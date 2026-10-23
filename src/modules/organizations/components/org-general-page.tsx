@@ -38,6 +38,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { formatLocale } from "@/i18n";
 import { useTenantId } from "@/platform/auth/session";
 import { DataState } from "@/platform/components/data-state";
 import { PageHeader } from "@/platform/components/page-header";
@@ -87,7 +88,7 @@ export function OrgGeneralPage() {
 }
 
 function GeneralSettingsForm({ org }: { org: Org }) {
-  const { t } = useTranslation("settings");
+  const { t, i18n } = useTranslation("organizations");
   const runSensitive = useSensitiveAction();
   const saveM = useUpdateOrg({ silentError: true });
   const schema = useMemo(
@@ -121,7 +122,7 @@ function GeneralSettingsForm({ org }: { org: Org }) {
               tone: "destructive",
             }
           : undefined,
-        actionLabel: t("workspace.general.actionLabel").toLowerCase(),
+        actionLabel: t("workspace.general.actionLabel"),
         run: () => saveM.mutateAsync({ id: org.id, body: { ...value, name: value.name.trim() } }),
       }).catch((err: unknown) => {
         applyServerErrors(formApi, err);
@@ -239,7 +240,7 @@ function GeneralSettingsForm({ org }: { org: Org }) {
                             </>
                           }
                           description={t("workspace.general.profile.regionHelp")}
-                          options={REGIONS.map((r) => ({ value: r.value, label: t(r.label) }))}
+                          options={REGIONS.map((r) => ({ value: r.value, label: i18n.t(r.label) }))}
                         />
                       )}
                     </form.AppField>
@@ -318,7 +319,7 @@ function GeneralSettingsForm({ org }: { org: Org }) {
                     {org.created_at ? (
                       <>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(org.created_at).toLocaleString(undefined, {
+                          {new Date(org.created_at).toLocaleString(formatLocale(), {
                             month: "short",
                             day: "numeric",
                             year: "numeric",

@@ -2,6 +2,8 @@
 // `metadata.onboarding` to tailor the first-run checklist. It is stashed in localStorage at submit
 // and applied on the first dashboard load, so free and paid sign-ups behave alike.
 
+import type { TranslationKey } from "@/i18n";
+
 export interface OnboardingProfile {
   use_case?: string;
   team_size?: string;
@@ -10,20 +12,20 @@ export interface OnboardingProfile {
 }
 
 // Option labels are catalogue keys.
-export const USE_CASES: { value: string; label: string }[] = [
-  { value: "b2b_saas", label: "dashboard:setup.profile.useCases.b2bSaas" },
-  { value: "consumer", label: "dashboard:setup.profile.useCases.consumer" },
-  { value: "internal", label: "dashboard:setup.profile.useCases.internal" },
-  { value: "api_platform", label: "dashboard:setup.profile.useCases.apiPlatform" },
-  { value: "other", label: "dashboard:setup.profile.useCases.other" },
+export const USE_CASES: { value: string; label: TranslationKey }[] = [
+  { value: "b2b_saas", label: "onboarding:setup.profile.useCases.b2bSaas" },
+  { value: "consumer", label: "onboarding:setup.profile.useCases.consumer" },
+  { value: "internal", label: "onboarding:setup.profile.useCases.internal" },
+  { value: "api_platform", label: "onboarding:setup.profile.useCases.apiPlatform" },
+  { value: "other", label: "onboarding:setup.profile.useCases.other" },
 ];
 
-export const ROLES: { value: string; label: string }[] = [
-  { value: "founder", label: "dashboard:setup.profile.roles.founder" },
-  { value: "engineer", label: "dashboard:setup.profile.roles.engineer" },
-  { value: "product", label: "dashboard:setup.profile.roles.product" },
-  { value: "security", label: "dashboard:setup.profile.roles.security" },
-  { value: "other", label: "dashboard:setup.profile.roles.other" },
+export const ROLES: { value: string; label: TranslationKey }[] = [
+  { value: "founder", label: "onboarding:setup.profile.roles.founder" },
+  { value: "engineer", label: "onboarding:setup.profile.roles.engineer" },
+  { value: "product", label: "onboarding:setup.profile.roles.product" },
+  { value: "security", label: "onboarding:setup.profile.roles.security" },
+  { value: "other", label: "onboarding:setup.profile.roles.other" },
 ];
 
 /** Checklist step ids per use case, most relevant first; unlisted steps follow in default order. */
@@ -35,11 +37,11 @@ export const CHECKLIST_ORDER: Record<string, string[]> = {
 };
 
 /** The catalogue key of a use-case-specific nudge shown atop the checklist. */
-export const CHECKLIST_INTRO: Record<string, string> = {
-  b2b_saas: "dashboard:setup.checklistIntro.b2bSaas",
-  consumer: "dashboard:setup.checklistIntro.consumer",
-  internal: "dashboard:setup.checklistIntro.internal",
-  api_platform: "dashboard:setup.checklistIntro.apiPlatform",
+export const CHECKLIST_INTRO: Record<string, TranslationKey> = {
+  b2b_saas: "onboarding:setup.checklistIntro.b2bSaas",
+  consumer: "onboarding:setup.checklistIntro.consumer",
+  internal: "onboarding:setup.checklistIntro.internal",
+  api_platform: "onboarding:setup.checklistIntro.apiPlatform",
 };
 
 const STASH_KEY = "qeetid-pending-onboarding";

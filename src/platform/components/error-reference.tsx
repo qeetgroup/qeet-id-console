@@ -13,7 +13,8 @@ export function ErrorReference({ error, className }: { error: unknown; className
   return (
     <span className={cn("block text-xs text-muted-foreground", className)}>
       <Trans
-        i18nKey="errors:referenceLabel"
+        ns="errors"
+        i18nKey="referenceLabel"
         values={{ id: requestId }}
         components={{ id: <span className="select-all font-mono" /> }}
       />

@@ -33,7 +33,7 @@ export function MappingEditor({
   onSave: (mapping: MappingInput) => void;
   onClose: () => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [mapping, setMapping] = useState(initial);
   return (
     <Dialog open onOpenChange={(open) => !open && !busy && onClose()}>
@@ -91,10 +91,12 @@ export function MappingEditor({
                   pattern: transform === "extract" ? mapping.pattern : "",
                 })
               }
-              options={["none", "trim", "lowercase", "uppercase", "extract"].map((value) => ({
-                value,
-                label: t(`directory.mappings.transformOptions.${value}`),
-              }))}
+              options={(["none", "trim", "lowercase", "uppercase", "extract"] as const).map(
+                (value) => ({
+                  value,
+                  label: t(`directory.mappings.transformOptions.${value}`),
+                }),
+              )}
             />
             {mapping.transform === "extract" ? (
               <Field>

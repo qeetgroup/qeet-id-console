@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { formatLocale, humanizeMissingKey } from "@/i18n";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { billingKeys } from "./keys";
@@ -98,7 +99,7 @@ export function useStartTrial() {
     mutationFn: (body: { plan_code: string; currency: string }) =>
       api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "settings:toast.trialStarted", silentError: true },
+    meta: { successMessage: "billing:toast.trialStarted", silentError: true },
   });
 }
 
@@ -118,7 +119,7 @@ export function useSaveBillingProfile() {
     mutationFn: (body: BillingProfile) =>
       api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.profile(tenantId) }),
-    meta: { successMessage: "settings:toast.billingProfileSaved", silentError: true },
+    meta: { successMessage: "billing:toast.billingProfileSaved", silentError: true },
   });
 }
 
@@ -128,7 +129,7 @@ export function useSaveBillingProfile() {
  */
 export function formatMoney(amountMinor: number, currency: string): string {
   try {
-    const fmt = new Intl.NumberFormat(undefined, {
+    const fmt = new Intl.NumberFormat(formatLocale(), {
       style: "currency",
       currency,
     });
@@ -139,11 +140,24 @@ export function formatMoney(amountMinor: number, currency: string): string {
   }
 }
 
+const plansQuery = queryOptions({
+  queryKey: billingKeys.plans(),
+  queryFn: () => api<{ items: Plan[] }>("/v1/billing/plans"),
+});
+
 export function usePlans() {
-  return useQuery({
-    queryKey: billingKeys.plans(),
-    queryFn: () => api<{ items: Plan[] }>("/v1/billing/plans"),
-  });
+  return useQuery(plansQuery);
+}
+
+/**
+ * Returns a function that names a plan code from the plan catalogue. A code the catalogue doesn't
+ * hold, or any code before it loads, reads as words ("pro_year" is "Pro Year"), never raw.
+ */
+export function usePlanName(): (code: string) => string {
+  // The catalogue rarely changes, and a failed load only costs the display name, so it is quiet.
+  const plans = useQuery({ ...plansQuery, staleTime: 5 * 60_000, meta: { silent: true } });
+  return (code) =>
+    plans.data?.items.find((plan) => plan.code === code)?.name || humanizeMissingKey(code);
 }
 
 export function useSubscription(enabled = true) {
@@ -174,7 +188,7 @@ export function useChangePlan() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "settings:toast.subscriptionUpdated", silentError: true },
+    meta: { successMessage: "billing:toast.subscriptionUpdated", silentError: true },
   });
 }
 
@@ -215,7 +229,7 @@ export function useCheckout() {
       }
       qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) });
     },
-    meta: { successMessage: "settings:toast.subscriptionUpdated", silentError: true },
+    meta: { successMessage: "billing:toast.subscriptionUpdated", silentError: true },
   });
 }
 
@@ -229,7 +243,7 @@ export function useCancelSubscription() {
         { method: "POST" },
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "settings:toast.subscriptionWillCancelAt", silentError: true },
+    meta: { successMessage: "billing:toast.subscriptionWillCancelAt", silentError: true },
   });
 }
 

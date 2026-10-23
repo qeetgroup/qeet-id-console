@@ -13,6 +13,8 @@ import {
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+
 import type { UserStats, UserTrends } from "../api/users";
 
 export type KpiFilter = "all" | "active" | "mfa_enabled" | "mfa_missing" | "suspended";
@@ -176,7 +178,7 @@ function KpiCard({
       </div>
 
       <div className="text-2xl font-semibold tabular-nums tracking-tight">
-        {value.toLocaleString()}
+        {value.toLocaleString(formatLocale())}
       </div>
 
       {delta ? (

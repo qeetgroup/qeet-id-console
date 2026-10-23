@@ -35,6 +35,6 @@ export function useRevokeOAuthGrant() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oauthGrants(tenantId) }),
-    meta: { successMessage: "auth:toast.grantRevoked" },
+    meta: { successMessage: "authentication:toast.grantRevoked" },
   });
 }

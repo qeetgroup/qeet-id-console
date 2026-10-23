@@ -96,7 +96,7 @@ describe("ConfigureSocialProviderSheet", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Remove" }));
     await waitFor(() => expect(writes()).toEqual(["DELETE /v1/social/providers/google"]));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "remove this social provider" });
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Remove this social provider" });
   });
 
   it("keeps the provider when the confirmation is cancelled", async () => {
@@ -115,7 +115,7 @@ describe("ConfigureSocialProviderSheet", () => {
     fireEvent.click(await screen.findByRole("switch"));
 
     await waitFor(() => expect(writes()).toEqual(["PATCH /v1/social/providers/google"]));
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "turn this social provider off" });
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Turn this social provider off" });
     expect(sensitiveCalls[0]?.confirm).toBeUndefined();
   });
 
@@ -125,7 +125,7 @@ describe("ConfigureSocialProviderSheet", () => {
 
     await waitFor(() => expect(writes()).toEqual(["POST /v1/social/providers"]));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "save this social provider" });
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Save this social provider" });
     expect(sensitiveCalls[0]?.confirm).toBeUndefined();
   });
 });

@@ -8,7 +8,7 @@ import { type AuthPolicy, useUpdateAuthPolicy } from "../api/auth-policy";
  * slice merged into the latest policy it loaded; `run` resolves with the saved policy.
  */
 export function useSaveAuthPolicy() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const updateM = useUpdateAuthPolicy();
   return {

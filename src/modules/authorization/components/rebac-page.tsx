@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
+import type { ParseKeys } from "i18next";
 import { DataState } from "@/platform/components/data-state";
 import { PageHeader } from "@/platform/components/page-header";
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
@@ -32,7 +33,7 @@ import { DecisionBadge } from "./shared/decision-badge";
 
 /** Renders relationship tuples: write, check, browse and the identity graph. */
 export function RebacPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <PageHeader description={t("relationships.description")} />
@@ -47,13 +48,13 @@ export function RebacPage() {
 }
 
 // The fields every tuple form shares, each required.
-function useTupleSchema<K extends string>(fields: Record<K, string>) {
-  const { t } = useTranslation("rbac");
+function useTupleSchema<K extends string>(fields: Record<K, ParseKeys<"authorization">>) {
+  const { t } = useTranslation("authorization");
   return useMemo(
     () =>
       z.object(
         Object.fromEntries(
-          Object.entries<string>(fields).map(([name, message]) => [
+          Object.entries<ParseKeys<"authorization">>(fields).map(([name, message]) => [
             name,
             z.string().trim().min(1, t(message)),
           ]),
@@ -67,10 +68,10 @@ const WRITE_FIELDS = {
   object: "relationships.validation.object",
   relation: "relationships.validation.relation",
   subject: "relationships.validation.subject",
-};
+} satisfies Record<string, ParseKeys<"authorization">>;
 
 function WriteCard() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const writeM = useWriteTuple();
   const runSensitive = useSensitiveAction();
   const schema = useTupleSchema(WRITE_FIELDS);
@@ -84,7 +85,7 @@ function WriteCard() {
         subject: value.subject.trim(),
       };
       await runSensitive({
-        actionLabel: t("relationships.write.action").toLowerCase(),
+        actionLabel: t("relationships.write.action"),
         run: () => writeM.mutateAsync(tuple),
       })
         .then((written) => written !== undefined && formApi.reset())
@@ -152,10 +153,10 @@ const CHECK_FIELDS = {
   object: "relationships.validation.object",
   relation: "relationships.validation.relation",
   user_id: "relationships.validation.userId",
-};
+} satisfies Record<string, ParseKeys<"authorization">>;
 
 function CheckCard() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const checkM = useRebacSimulate();
   const schema = useTupleSchema(CHECK_FIELDS);
   const form = useAppForm({
@@ -239,10 +240,13 @@ function CheckCard() {
   );
 }
 
-const BROWSE_FIELDS = { object: "relationships.validation.object" };
+const BROWSE_FIELDS = { object: "relationships.validation.object" } satisfies Record<
+  string,
+  ParseKeys<"authorization">
+>;
 
 function BrowseCard() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const [object, setObject] = useState("");
   const tuplesQ = useRelationTuples(object);
   const deleteM = useDeleteTuple();
@@ -317,7 +321,7 @@ function BrowseCard() {
                           confirmLabel: t("relationships.tuples.deleteBtn"),
                           tone: "destructive",
                         },
-                        actionLabel: t("relationships.tuples.deleteAction").toLowerCase(),
+                        actionLabel: t("relationships.tuples.deleteAction"),
                         run: () => deleteM.mutateAsync(tuple.id),
                       }).catch(settleSensitiveAction)
                     }
@@ -337,10 +341,10 @@ function BrowseCard() {
 const GRAPH_FIELDS = {
   object: "relationships.validation.object",
   relation: "relationships.validation.relation",
-};
+} satisfies Record<string, ParseKeys<"authorization">>;
 
 function GraphCard() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const [query, setQuery] = useState<{ object: string; relation: string } | null>(null);
   const graphQ = useRelationGraph(query?.object ?? "", query?.relation ?? "");
   const schema = useTupleSchema(GRAPH_FIELDS);

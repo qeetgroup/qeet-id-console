@@ -60,7 +60,7 @@ export function LinkPhoneDialog({
   function ask() {
     setPairing(null);
     runSensitive({
-      actionLabel: t("security.phones.link").toLowerCase(),
+      actionLabel: t("security.phones.link"),
       run: () =>
         start.mutateAsync(undefined, {
           onError: (err) => {

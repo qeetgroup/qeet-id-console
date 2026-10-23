@@ -27,7 +27,7 @@ import { type OAuthGrant, useOAuthGrants, useRevokeOAuthGrant } from "../api/oau
 
 /** Renders the consents people gave applications, with revoke. */
 export function ConsentGrantsPage() {
-  const { t } = useTranslation("consent");
+  const { t } = useTranslation(["consent", "common"]);
   const runSensitive = useSensitiveAction();
   const listQ = useOAuthGrants();
   const revokeM = useRevokeOAuthGrant();

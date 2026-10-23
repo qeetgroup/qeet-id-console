@@ -1,7 +1,8 @@
-import { Badge, cn, StatusPill } from "@qeetrix/ui";
+import { Badge, cn } from "@qeetrix/ui";
 
 import { useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import type { Severity } from "../types/activity.types";
 
 type BadgeVariant = "destructive" | "warning" | "success" | "muted";

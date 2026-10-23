@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { navGroups } from "@/platform/config/navigation";
+import { getNavGroups } from "@/platform/config/navigation";
 import { buildNavSearchItems } from "../registry/navigation-source";
 
 import {
@@ -21,8 +21,8 @@ const emptyCtx: RankContext = {
 
 describe("navigation candidates", () => {
   it("excludes planned Directory views while keeping implemented destinations searchable", () => {
-    const paths = new Set(buildNavSearchItems(navGroups).map((item) => item.url));
-    const planned = navGroups.flatMap((group) =>
+    const paths = new Set(buildNavSearchItems(getNavGroups()).map((item) => item.url));
+    const planned = getNavGroups().flatMap((group) =>
       group.items.flatMap((item) => item.items?.filter((child) => child.planned) ?? []),
     );
 

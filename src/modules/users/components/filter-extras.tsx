@@ -95,7 +95,7 @@ export function SaveView({
   current: UsersViewState;
   onApply: (v: UsersViewState) => void;
 }) {
-  const { t } = useTranslation("users");
+  const { t } = useTranslation(["users", "common"]);
   const [views, setViews] = useState<Record<string, UsersViewState>>(() => loadViews());
   const storageScope = useStorageScope();
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-read on scope change

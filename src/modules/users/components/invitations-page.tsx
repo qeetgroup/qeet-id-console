@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -31,6 +30,7 @@ import { roleQueries } from "@/modules/authorization";
 import { useTenantId } from "@/platform/auth/session";
 import { DataState } from "@/platform/components/data-state";
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";

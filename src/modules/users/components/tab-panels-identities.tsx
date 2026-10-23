@@ -8,7 +8,6 @@ import {
   CardTitle,
   EmptyState,
   JSONTree,
-  StatusPill,
   TimeSince,
 } from "@qeetrix/ui";
 import {
@@ -22,6 +21,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import { type UserDetail, useUserSocialIdentities } from "../api/user360";
 import { CopyId, InfoRow } from "./user-detail-fields";
 

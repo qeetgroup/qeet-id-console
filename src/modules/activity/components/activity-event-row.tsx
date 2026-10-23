@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, Badge, cn, TimeSince } from "@qeetrix/ui";
+import { formatLocale } from "@/i18n";
 import { initials } from "@/shared/utils/initials";
 import {
   CircleCheckBigIcon,
@@ -15,6 +16,7 @@ import { useTranslation } from "react-i18next";
 
 import type { ActivitySearch } from "../activity-search";
 import { formatIp } from "@/shared/utils/ip-format";
+import { formatEventTitle } from "../event-labels";
 import type { ActivityEvent, Severity } from "../types/activity.types";
 import { CopyIconButton } from "./copy-icon-button";
 import { InvestigateMenu } from "./investigate-menu";
@@ -43,7 +45,7 @@ const SEVERITY_ICON_CLASS: Record<Severity, string> = {
 };
 
 function formatTime(at: string): string {
-  return new Date(at).toLocaleTimeString(undefined, {
+  return new Date(at).toLocaleTimeString(formatLocale(), {
     hour12: false,
     hour: "2-digit",
     minute: "2-digit",
@@ -60,7 +62,7 @@ function shortId(id: string): string {
 // other identified actor, muted when unknown.
 function actorVisual(
   event: ActivityEvent,
-  t: TFunction,
+  t: TFunction<["activity", "common"]>,
 ): {
   cls: string;
   content: ReactNode;
@@ -87,7 +89,7 @@ function actorVisual(
 
 /** Renders the column headers on the row grid; decorative, and shown from `lg` up. */
 export function ActivityRowHeader() {
-  const { t } = useTranslation("activity");
+  const { t } = useTranslation(["activity", "common"]);
   return (
     <div
       aria-hidden="true"
@@ -127,13 +129,13 @@ export function ActivityEventRow({
   onSelect,
   onFilter,
 }: ActivityEventRowProps) {
-  const { t } = useTranslation("activity");
+  const { t } = useTranslation(["activity", "common"]);
   const SevIcon = SEVERITY_ICON[event.severity];
   const isCritical = event.severity === "critical" || event.severity === "error";
   const actor = actorVisual(event, t);
   const resourceType = event.target?.label ?? event.target?.type;
   const resourceId = event.target?.id;
-  const subtitle = event.description ?? event.title;
+  const subtitle = formatEventTitle(event);
 
   return (
     <div
@@ -149,7 +151,7 @@ export function ActivityEventRow({
       <div className="min-w-0">
         <div
           className="text-xs font-medium tabular-nums text-foreground"
-          title={new Date(event.at).toLocaleString()}
+          title={new Date(event.at).toLocaleString(formatLocale())}
         >
           {formatTime(event.at)}
         </div>
@@ -191,7 +193,7 @@ export function ActivityEventRow({
             type="button"
             onClick={onSelect}
             className="block max-w-full truncate text-left text-sm font-medium after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-            aria-label={t("activityEventRow.openDetails", { title: event.title })}
+            aria-label={t("activityEventRow.openDetails", { title: subtitle })}
           >
             {event.type}
           </button>

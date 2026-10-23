@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
   FieldError,
-  StatusPill,
 } from "@qeetrix/ui";
 import {
   FingerprintPatternIcon,
@@ -23,6 +22,7 @@ import { toast } from "sonner";
 import { DataState } from "@/platform/components/data-state";
 import { ErrorText } from "@/platform/components/error-reference";
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import { toastError } from "@/platform/errors/error-toast";
 import {
   settleSensitiveAction,
@@ -49,7 +49,7 @@ const LOW_RECOVERY_CODES = 3;
  * the recovery codes that back it. The codes from a confirmation are shown once, here.
  */
 export function TotpPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const statusQ = useTotpStatus();
   const startM = useStartTotpEnrollment();
@@ -252,7 +252,7 @@ function StartError({ error }: { error: unknown }) {
 
 /** Renders how many recovery codes remain, and regenerates them, showing the new set once. */
 function RecoveryCodesCard() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const runSensitive = useSensitiveAction();
   const recoveryQ = useRecoveryStatus();
   const regenM = useRegenerateRecoveryCodes();

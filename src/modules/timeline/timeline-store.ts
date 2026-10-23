@@ -4,6 +4,7 @@
 import { Store } from "@tanstack/react-store";
 
 import type { Severity } from "@/modules/activity";
+import { onSessionClear } from "@/platform/auth/session-store";
 
 export interface TimelineFilters {
   category: string[]; // Empty matches every category
@@ -30,6 +31,11 @@ export const timelineStore = new Store<TimelineStoreState>({
   filters: DEFAULT_TIMELINE_FILTERS,
   selectedEventId: null,
 });
+
+// The filters and selection describe the outgoing scope's people and events.
+onSessionClear(() =>
+  timelineStore.setState(() => ({ filters: DEFAULT_TIMELINE_FILTERS, selectedEventId: null })),
+);
 
 export const timelineActions = {
   setFilters(patch: Partial<TimelineFilters>) {

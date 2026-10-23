@@ -24,6 +24,7 @@ import {
 import { BotIcon, PlusIcon, RefreshCwIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
+import { formatLocale } from "@/i18n";
 import { useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { useTranslation } from "react-i18next";
 
@@ -47,7 +48,7 @@ import { z } from "zod";
 
 /** Renders the tenant's machine identities with disable, and the sheet that creates one. */
 export function MachineIdentitiesPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("developer");
   const runSensitive = useSensitiveAction();
   const [creating, setCreating] = useCreateIntent(true); // `?action=create` deep-links here
   const [revealed, setRevealed] = useState<CreatedServicePrincipal | null>(null);
@@ -152,7 +153,7 @@ export function MachineIdentitiesPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {new Date(p.created_at).toLocaleDateString()}
+                      {new Date(p.created_at).toLocaleDateString(formatLocale())}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -219,7 +220,7 @@ function CreatePrincipalForm({
 }: {
   onCreated: (created: CreatedServicePrincipal) => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("developer");
   const tenantId = useTenantId();
   const runSensitive = useSensitiveAction();
   const createM = useCreateServicePrincipal();

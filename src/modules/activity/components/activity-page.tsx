@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
+import { isOneOf } from "@/shared/utils/one-of";
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useActivityExport } from "../activity-export";
@@ -30,6 +31,7 @@ import { ActivityPagination } from "./activity-pagination";
 import { ActivitySavedViews } from "./activity-saved-views";
 import { ActivitySummaryStrip } from "./activity-summary-strip";
 import { ActivityTimeRange, type DateRange } from "@/modules/activity";
+import { TIME_PRESETS } from "./activity-time-range";
 import { ActivityTimeline } from "./activity-timeline";
 import { EventDetailsDrawer } from "./event-details-drawer";
 import { LiveIndicator } from "@/modules/activity";
@@ -54,6 +56,8 @@ export interface ActivityPageProps {
   search: ActivitySearch;
   onSearchChange: (update: SearchUpdate, options?: { replace?: boolean }) => void;
 }
+
+const PRESET_VALUES = TIME_PRESETS.map((p) => p.value);
 
 /** Renders the activity feed: live or history, filters, saved views, export and event details. */
 export function ActivityPage({ search, onSearchChange }: ActivityPageProps) {
@@ -175,7 +179,8 @@ function ActivityWorkspace({ search, onSearchChange }: ActivityPageProps) {
   const handlePresetChange = useCallback(
     (p: string) => {
       if (p === "custom") patchFilter({ range: "custom" });
-      else patchFilter({ range: p === "all" ? undefined : p, from: undefined, to: undefined });
+      else if (p === "all") patchFilter({ range: undefined, from: undefined, to: undefined });
+      else if (isOneOf(PRESET_VALUES, p)) patchFilter({ range: p, from: undefined, to: undefined });
     },
     [patchFilter],
   );

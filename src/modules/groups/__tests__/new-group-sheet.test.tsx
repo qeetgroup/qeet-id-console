@@ -80,7 +80,7 @@ describe("New group sheet › default role", () => {
     expect(writes()).toEqual(["POST /v1/groups", "POST /v1/tenants/t-1/groups/g-new/roles/r-1"]);
     // Only the role grant is sensitive; creating the group is not step-up gated.
     expect(sensitiveCalls).toEqual([
-      expect.objectContaining({ actionLabel: "grant the default role to the new group" }),
+      expect.objectContaining({ actionLabel: "Grant the default role to the new group" }),
     ]);
     expect(sensitiveCalls[0]?.confirm).toBeUndefined();
   });

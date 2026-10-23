@@ -1,12 +1,14 @@
 import { cn, TimeSince } from "@qeetrix/ui";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+
 import type { DirectoryEvent } from "../api/directory";
-import { formatDirectoryDuration } from "./directory-ui";
+import { formatDirectoryDuration } from "../directory-model";
 
 /** One sync run's figures and outcome, for the latest-run panel and the details sheet. */
 export function EventDetails({ event, name }: { event: DirectoryEvent; name: string }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <div className="text-xs">
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -19,11 +21,8 @@ export function EventDetails({ event, name }: { event: DirectoryEvent; name: str
       <dl className="divide-y divide-border/50">
         {[
           [t("directory.activity.duration"), formatDirectoryDuration(event.duration_ms)],
-          [t("directory.activity.users"), event.users_synced.toLocaleString(i18n.resolvedLanguage)],
-          [
-            t("directory.activity.groups"),
-            event.groups_synced.toLocaleString(i18n.resolvedLanguage),
-          ],
+          [t("directory.activity.users"), event.users_synced.toLocaleString(formatLocale())],
+          [t("directory.activity.groups"), event.groups_synced.toLocaleString(formatLocale())],
           [t("directory.activity.trigger"), t(`directory.activity.triggerTypes.${event.trigger}`)],
           [t("directory.activity.result"), t(`directory.activity.${event.status}`)],
         ].map(([label, value]) => (

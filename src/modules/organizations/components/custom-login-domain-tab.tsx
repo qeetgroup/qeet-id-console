@@ -42,7 +42,7 @@ import { orgKeys } from "../api/keys";
 const GUIDE = "https://docs.qeet.in/qeet-id/custom-login-domain";
 
 export function CustomLoginDomainTab() {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const tenantId = useTenantId();
   const qc = useQueryClient();
   const statusQ = useLoginDomain();

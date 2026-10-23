@@ -51,7 +51,7 @@ export function EditOrgSheet({
 }
 
 function EditOrgForm({ org, onDone }: { org: Org; onDone: () => void }) {
-  const { t } = useTranslation("organizations");
+  const { t, i18n } = useTranslation("organizations");
   const runSensitive = useSensitiveAction();
   const updateM = useUpdateOrg({ silentError: true });
   const schema = useMemo(
@@ -156,7 +156,7 @@ function EditOrgForm({ org, onDone }: { org: Org; onDone: () => void }) {
             {(field) => (
               <field.SelectField
                 label={t("tenants.edit.region")}
-                options={REGIONS.map((r) => ({ value: r.value, label: t(r.label) }))}
+                options={REGIONS.map((r) => ({ value: r.value, label: i18n.t(r.label) }))}
               />
             )}
           </form.AppField>

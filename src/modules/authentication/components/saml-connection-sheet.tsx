@@ -63,7 +63,8 @@ const EMPTY: Values = {
   status: "draft",
 };
 
-type ValueCheck = { id: string; ok: boolean };
+// Each check reads `samlSp.create.checks.<id>Ok` or `…Failed`.
+type ValueCheck = { id: "name" | "entityId" | "ssoUrl" | "certificate"; ok: boolean };
 
 /** Strips PEM armour and whitespace so a pasted certificate can be decoded. */
 function certificateBody(raw: string): string {
@@ -119,7 +120,7 @@ export function SamlConnectionSheet({
 }
 
 function SamlConnectionForm({ onDone }: { onDone: () => void }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   const createM = useCreateSamlConnection();
   const runSensitive = useSensitiveAction();
   const [mode, setMode] = useState<Mode>("manual");
@@ -430,7 +431,7 @@ function AttributeMapping({
   emailAttribute: string;
   nameAttribute: string;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("authentication");
   return (
     <div className="rounded-lg border bg-muted/40 p-3">
       <div className="flex items-start gap-3">

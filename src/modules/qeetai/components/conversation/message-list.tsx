@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
-import type { UseQeetAIChat } from "../../hooks/use-qeetai-chat";
-import type { Message } from "../../types/qeetai.types";
+import type { UseQeetAIChat } from "@/modules/qeetai/hooks/use-qeetai-chat";
+import type { Message } from "@/modules/qeetai/types/qeetai.types";
 import { MessageItem } from "./message-item";
 
 /**

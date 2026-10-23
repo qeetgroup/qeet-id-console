@@ -75,7 +75,7 @@ function RegisterApplicationForm({
 }: {
   onCreated: (client: OidcClient, secret: string) => void;
 }) {
-  const { t } = useTranslation("oidc");
+  const { t } = useTranslation(["oidc", "common"]);
   const runSensitive = useSensitiveAction();
   const createM = useCreateOidcClient();
   const schema = useMemo(

@@ -22,7 +22,7 @@ import { toast } from "sonner";
 
 import type { ActivitySearch } from "../activity-search";
 import type { ActivityEvent } from "../types/activity.types";
-import i18n from "@/i18n";
+import i18n, { type TranslationKey } from "@/i18n";
 
 type InvestigateMenuProps = {
   event: ActivityEvent;
@@ -47,8 +47,7 @@ export function InvestigateMenu({
   trigger,
 }: InvestigateMenuProps) {
   const { copy } = useCopyToClipboard();
-  // `copiedKey` is the toast's catalogue key.
-  const doCopy = (value: string, copiedKey: string) => {
+  const doCopy = (value: string, copiedKey: TranslationKey) => {
     copy(value);
     toast.success(i18n.t(copiedKey));
   };

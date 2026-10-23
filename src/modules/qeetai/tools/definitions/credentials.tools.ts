@@ -40,6 +40,13 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
     return {
       ok: true,
       summary: `OAuth client "${res.client.name}" registered (client_id: ${res.client.client_id}, type: ${res.client.type}).${input.type === "confidential" ? " The client secret has been shown to the operator separately and cannot be retrieved again." : ""}`,
+      display: {
+        key:
+          input.type === "confidential"
+            ? "qeetai:toolCallCard.results.clientRegisteredWithSecret"
+            : "qeetai:toolCallCard.results.clientRegistered",
+        values: { name: res.client.name },
+      },
       data: {
         id: res.client.id,
         client_id: res.client.client_id,
@@ -88,6 +95,10 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
     return {
       ok: true,
       summary: `Client secret rotated for client ${input.client_id}. The new secret has been shown to the operator separately and cannot be retrieved again.`,
+      display: {
+        key: "qeetai:toolCallCard.results.secretRotated",
+        values: { clientId: input.client_id },
+      },
       data: { client_id: input.client_id },
       sensitiveArtifact: res.client_secret
         ? {

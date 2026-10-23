@@ -12,6 +12,7 @@ import { SearchCodeIcon, TrashIcon } from "@qeetrix/icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { PageHeader } from "@/platform/components/page-header";
 import { DecisionExplain } from "./explain/decision-explain";
 import { DecisionBadge, ENGINE_LABELS } from "./shared/decision-badge";
@@ -19,7 +20,7 @@ import { clearHistory, useDecisionHistory } from "../store/authz-store";
 
 /** Renders the decisions made in this browser session, each explained. */
 export function DecisionExplorerPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const history = useDecisionHistory();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -90,7 +91,7 @@ export function DecisionExplorerPage() {
                       <span className="min-w-0 flex-1">
                         <span className="block text-xs font-medium">{ENGINE_LABELS[r.engine]}</span>
                         <span className="block truncate text-[11px] text-muted-foreground">
-                          {new Date(r.at).toLocaleTimeString()} ·{" "}
+                          {new Date(r.at).toLocaleTimeString(formatLocale())} ·{" "}
                           {t("simulator.batch.ms", { count: r.durationMs })}
                         </span>
                       </span>

@@ -25,7 +25,7 @@ export function useAcceptInvite() {
       }),
 
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "auth:toast.invitationAccepted" },
+    meta: { successMessage: "authentication:toast.invitationAccepted" },
   });
 }
 /** What an invitation link names, before the invitee chooses how to accept. */
@@ -96,7 +96,7 @@ export function useDeclineInvitation() {
     mutationFn: (inviteId: string) =>
       api<{ message: string }>(`/v1/me/invites/${inviteId}/decline`, { method: "POST", body: {} }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.invitations() }),
-    meta: { successMessage: "auth:toast.invitationDeclined" },
+    meta: { successMessage: "authentication:toast.invitationDeclined" },
   });
 }
 
@@ -114,6 +114,6 @@ export function useAcceptInvitation() {
     onSuccess: () => {
       if (typeof window !== "undefined") window.location.assign("/");
     },
-    meta: { successMessage: "auth:toast.invitationAccepted" },
+    meta: { successMessage: "authentication:toast.invitationAccepted" },
   });
 }

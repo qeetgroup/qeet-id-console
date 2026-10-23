@@ -44,8 +44,8 @@ export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) 
       }
     },
     meta: {
-      successMessage: "auth:toast.accountCreatedSuccessfully",
-      successDescription: "auth:toast.checkEmailForCode",
+      successMessage: "authentication:toast.accountCreatedSuccessfully",
+      successDescription: "authentication:toast.checkEmailForCode",
     },
   });
 }
@@ -58,7 +58,7 @@ export function useStartEmailVerification() {
         method: "POST",
         body: {},
       }),
-    meta: { successMessage: "auth:toast.codeSentToEmail", silentError: true },
+    meta: { successMessage: "authentication:toast.codeSentToEmail", silentError: true },
   });
 }
 
@@ -70,7 +70,7 @@ export function useStartEmailChange() {
   return useMutation({
     mutationFn: (email: string) =>
       api<{ message: string }>("/v1/me/email/change/start", { method: "POST", body: { email } }),
-    meta: { successMessage: "auth:toast.codeSentToNewAddress", silentError: true },
+    meta: { successMessage: "authentication:toast.codeSentToNewAddress", silentError: true },
   });
 }
 
@@ -81,7 +81,7 @@ export function useConfirmEmailChange() {
         method: "POST",
         body: { code },
       }),
-    meta: { successMessage: "auth:toast.emailAddressUpdated", silentError: true },
+    meta: { successMessage: "authentication:toast.emailAddressUpdated", silentError: true },
   });
 }
 
@@ -128,6 +128,6 @@ export function useConfirmEmailVerification() {
         method: "POST",
         body: { code: in_.code },
       }),
-    meta: { successMessage: "auth:toast.emailVerified", silentError: true },
+    meta: { successMessage: "authentication:toast.emailVerified", silentError: true },
   });
 }

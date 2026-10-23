@@ -4,10 +4,11 @@
 import { type DateRange, presetToRange, TIME_PRESETS } from "./components/activity-time-range";
 import { z } from "zod";
 
+import { isOneOf } from "@/shared/utils/one-of";
 import { searchEnum, searchText } from "@/shared/utils/search-params";
 import type { ActivityFilters, ActivityMode, Outcome, Severity } from "./types/activity.types";
 
-const RANGE_KEYS = new Set(TIME_PRESETS.map((p) => p.value));
+const RANGE_KEYS = TIME_PRESETS.map((p) => p.value);
 
 /**
  * Activity URL params. severity, category and type are comma-separated lists; `range` is a
@@ -27,7 +28,7 @@ export const activitySearchSchema = z.object({
   status: searchText(),
   range: z
     .string()
-    .refine((v) => RANGE_KEYS.has(v))
+    .refine((v) => isOneOf(RANGE_KEYS, v))
     .optional()
     .catch(undefined),
   from: searchText(),

@@ -51,6 +51,10 @@ export const createOrganizationTool: ToolDefinition<CreateOrgInput> = {
     return {
       ok: true,
       summary: `Organization "${tenant.name}" created (id: ${tenant.id}, slug: ${tenant.slug}).`,
+      display: {
+        key: "qeetai:toolCallCard.results.organizationCreated",
+        values: { name: tenant.name },
+      },
       data: { id: tenant.id, name: tenant.name, slug: tenant.slug },
     };
   },

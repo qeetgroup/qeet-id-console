@@ -14,6 +14,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { translateDynamic } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import {
   MapPinIcon,
@@ -28,9 +29,10 @@ import { PageHeader } from "@/platform/components/page-header";
 import { useAnomalies, useAnomalySummary, useResolveAnomaly } from "@/modules/security";
 
 function severityBadge(s: string) {
-  if (s === "high") return <Badge variant="destructive">{s}</Badge>;
-  if (s === "medium") return <Badge variant="secondary">{s}</Badge>;
-  return <Badge variant="outline">{s}</Badge>;
+  const label = translateDynamic(`security:threats.anomalies.severity.${s}`);
+  if (s === "high") return <Badge variant="destructive">{label}</Badge>;
+  if (s === "medium") return <Badge variant="secondary">{label}</Badge>;
+  return <Badge variant="outline">{label}</Badge>;
 }
 
 /** Renders sign-in anomalies and their summary, with resolve. */
@@ -63,7 +65,7 @@ export function AnomaliesPage() {
       value: sm?.high_severity_24h ?? 0,
       icon: <MapPinIcon className="size-4" />,
     },
-  ];
+  ] as const;
 
   return (
     <div className="flex min-w-0 flex-col gap-6">

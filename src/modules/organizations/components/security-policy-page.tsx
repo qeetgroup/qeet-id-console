@@ -17,6 +17,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
+import { formatLocale } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import { PageHeader } from "@/platform/components/page-header";
 import {
@@ -58,7 +59,7 @@ const DEFAULTS: Omit<SecurityPolicy, "tenant_id"> = {
 
 /** Renders the organization's security policy: passwords, sessions, MFA and step-up. */
 export function SecurityPolicyPage() {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const policyQ = useSecurityPolicy();
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -84,7 +85,7 @@ export function SecurityPolicyPage() {
 }
 
 function PolicyForm({ saved }: { saved: SecurityPolicy }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const runSensitive = useSensitiveAction();
   const saveM = useSaveSecurityPolicy();
   const [savedAt, setSavedAt] = useState<Date | null>(null);
@@ -128,7 +129,7 @@ function PolicyForm({ saved }: { saved: SecurityPolicy }) {
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
       await runSensitive({
-        actionLabel: t("policies.saveAction").toLowerCase(),
+        actionLabel: t("policies.saveAction"),
         run: () => saveM.mutateAsync(value),
       })
         .then(() => setSavedAt(new Date()))
@@ -150,7 +151,7 @@ function PolicyForm({ saved }: { saved: SecurityPolicy }) {
       : null;
   const graceEnds =
     graceEndsAt && graceEndsAt.getTime() > Date.now()
-      ? graceEndsAt.toLocaleDateString(undefined, { dateStyle: "long" })
+      ? graceEndsAt.toLocaleDateString(formatLocale(), { dateStyle: "long" })
       : null;
 
   return (
@@ -340,7 +341,7 @@ function PolicyForm({ saved }: { saved: SecurityPolicy }) {
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
           {savedAt
-            ? t("policies.savedAt", { time: savedAt.toLocaleTimeString() })
+            ? t("policies.savedAt", { time: savedAt.toLocaleTimeString(formatLocale()) })
             : t("policies.unsaved")}
         </p>
         <div className="flex gap-2">
@@ -368,7 +369,7 @@ function PolicyForm({ saved }: { saved: SecurityPolicy }) {
 
 // null means every factor type counts; at least one stays ticked, and ticking them all sends null.
 function StepUpMethods({ selected }: { selected: StepUpMethod[] | null }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const change = useFieldChange<StepUpMethod[] | null>();
   const current = selected ?? STEP_UP_METHODS;
   const toggle = (m: StepUpMethod, on: boolean) => {

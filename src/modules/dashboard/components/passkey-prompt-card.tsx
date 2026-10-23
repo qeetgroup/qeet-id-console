@@ -24,7 +24,7 @@ const dismissStorage = scopedStorage("qeetid-admin-passkey-prompt-dismissed");
  * the organization has passkeys switched off.
  */
 export function PasskeyPromptCard() {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "common"]);
   // The scope is known only once the session hydrates, so the stored dismissal is read with it.
   const scope = useStorageScope();
   const [dismissedIn, setDismissedIn] = useState<string | null>(null);

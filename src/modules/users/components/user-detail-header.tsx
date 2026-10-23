@@ -9,10 +9,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  StatusPill,
   TimeSince,
 } from "@qeetrix/ui";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { StatusPill } from "@/platform/components/status-pill";
 import { initials } from "@/shared/utils/initials";
 import { formatDate } from "@/shared/utils/format";
 import {

@@ -16,7 +16,7 @@ import {
   OPERATORS,
   type Operator,
   REFERENCE_OPERATORS,
-} from "../../api/abac";
+} from "@/modules/authorization/api/abac";
 
 // Namespaces are attribute-path syntax (`subject.dept`), so they show as written.
 const NS_ITEMS = NAMESPACES.map((n) => ({ label: n, value: n }));
@@ -47,7 +47,7 @@ function NodeEditor({
   onRemove?: () => void;
   depth: number;
 }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   if (node.kind === "leaf")
     return <LeafEditor node={node} onChange={onChange} onRemove={onRemove} />;
   if (node.kind === "not") {
@@ -174,17 +174,14 @@ function LeafEditor({
   onChange: (node: CondNode) => void;
   onRemove?: () => void;
 }) {
-  const { t } = useTranslation("rbac");
+  const { t, i18n } = useTranslation("authorization");
   const dot = node.attr.indexOf(".");
   const ns: Namespace = (dot >= 0 ? node.attr.slice(0, dot) : "subject") as Namespace;
   const field = dot >= 0 ? node.attr.slice(dot + 1) : node.attr;
   const isNullary = NULLARY_OPERATORS.includes(node.op);
   const isList = LIST_OPERATORS.includes(node.op);
   const canReference = REFERENCE_OPERATORS.includes(node.op);
-  const opItems = useMemo(
-    () => OPERATORS.map((o) => ({ label: t(OPERATOR_LABELS[o]), value: o })),
-    [t],
-  );
+  const opItems = OPERATORS.map((o) => ({ label: i18n.t(OPERATOR_LABELS[o]), value: o }));
   const operandItems = useMemo(
     () => OPERANDS.map((o) => ({ label: t(`conditionTree.operand.${o}`), value: o })),
     [t],

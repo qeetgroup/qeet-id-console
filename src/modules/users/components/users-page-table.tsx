@@ -3,7 +3,6 @@ import {
   AvatarFallback,
   Badge,
   cn,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -17,6 +16,7 @@ import { CircleCheckIcon, ShieldAlertIcon, ShieldCheckIcon } from "@qeetrix/icon
 import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import { MasterCheckbox, RowCheckbox, SortHeader } from "@/shared/components/data-table";
 import type { SortState } from "@/shared/hooks/use-list-view";
 import { initials } from "@/shared/utils/initials";

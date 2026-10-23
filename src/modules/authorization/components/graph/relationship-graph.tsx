@@ -2,7 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { RelationGraph } from "../../api/relationships";
+import type { RelationGraph } from "@/modules/authorization/api/relationships";
 import { AuthzFlow } from "./authz-flow";
 import { layeredLayout } from "./layout";
 import { relationshipNodeTypes } from "./nodes";
@@ -17,7 +17,7 @@ export function RelationshipGraph({
   rootId: string;
   height?: number;
 }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const { nodes, edges } = useMemo(() => {
     const pos = layeredLayout(
       graph.nodes,

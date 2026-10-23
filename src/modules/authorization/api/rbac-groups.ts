@@ -31,7 +31,7 @@ export function useGrantGroupRole(groupId: string) {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.groupRoles(tenantId, groupId) }),
-    meta: { successMessage: "rbac:toast.roleGrantedToGroup" },
+    meta: { successMessage: "authorization:toast.roleGrantedToGroup" },
   });
 }
 
@@ -46,6 +46,6 @@ export function useRevokeGroupRole(groupId: string) {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.groupRoles(tenantId, groupId) }),
-    meta: { successMessage: "rbac:toast.roleRevokedFromGroup" },
+    meta: { successMessage: "authorization:toast.roleRevokedFromGroup" },
   });
 }

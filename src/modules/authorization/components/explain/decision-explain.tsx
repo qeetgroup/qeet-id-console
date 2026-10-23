@@ -10,8 +10,13 @@ import {
 } from "@qeetrix/ui";
 import { ArrowRightIcon, ClockIcon, GaugeIcon } from "@qeetrix/icons";
 
-import type { AbacDecision } from "../../api/abac";
-import type { DecisionRecord, RbacExplainPath, RebacPathStep } from "../../api/simulate";
+import { formatLocale } from "@/i18n";
+import type { AbacDecision } from "@/modules/authorization/api/abac";
+import type {
+  DecisionRecord,
+  RbacExplainPath,
+  RebacPathStep,
+} from "@/modules/authorization/api/simulate";
 import { DecisionBadge, ENGINE_DESCRIPTIONS, ENGINE_LABELS } from "../shared/decision-badge";
 import { explainDecision, explainedMessage, explainTraceStep } from "./decision-reason";
 
@@ -20,7 +25,7 @@ import { explainDecision, explainedMessage, explainTraceStep } from "./decision-
  * the raw request.
  */
 export function DecisionExplain({ record }: { record: DecisionRecord }) {
-  const { t } = useTranslation("rbac");
+  const { t, i18n } = useTranslation("authorization");
   // Worded from the server's reason code (or a sentence it knows), never its text.
   const reason = explainDecision(record);
   return (
@@ -32,7 +37,7 @@ export function DecisionExplain({ record }: { record: DecisionRecord }) {
             {ENGINE_LABELS[record.engine]}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            {t(ENGINE_DESCRIPTIONS[record.engine])}
+            {i18n.t(ENGINE_DESCRIPTIONS[record.engine])}
           </span>
         </div>
         <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
@@ -41,13 +46,13 @@ export function DecisionExplain({ record }: { record: DecisionRecord }) {
         </span>
         <span className="flex items-center gap-1 text-xs text-muted-foreground">
           <ClockIcon className="size-3.5" aria-hidden />
-          {new Date(record.at).toLocaleTimeString()}
+          {new Date(record.at).toLocaleTimeString(formatLocale())}
         </span>
       </header>
 
       {reason && (
         <p className="rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-          {explainedMessage(reason, t)}
+          {explainedMessage(reason)}
         </p>
       )}
 
@@ -85,7 +90,7 @@ export function DecisionExplain({ record }: { record: DecisionRecord }) {
 }
 
 function RbacExplainView({ paths }: { paths: RbacExplainPath[] }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   if (paths.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">{t("decisionExplain.noGrantPathAccess")}</p>
@@ -135,7 +140,7 @@ function AbacTraceView({
   matched?: string | null;
   effect: AbacDecision["effect"];
 }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   return (
     <section className="space-y-2">
       <div className="flex items-center gap-2">
@@ -167,7 +172,7 @@ function AbacTraceView({
               </TimelineIndicator>
               <TimelineContent>
                 <TimelineTitle className="font-mono text-xs">
-                  {explainedMessage(explainTraceStep(step), t)}
+                  {explainedMessage(explainTraceStep(step))}
                 </TimelineTitle>
               </TimelineContent>
             </TimelineItem>
@@ -179,7 +184,7 @@ function AbacTraceView({
 }
 
 function RebacPathView({ path }: { path: RebacPathStep[] }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   if (path.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">

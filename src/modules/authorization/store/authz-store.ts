@@ -4,6 +4,7 @@
 
 import { Store, useStore } from "@tanstack/react-store";
 
+import { onSessionClear } from "@/platform/auth/session-store";
 import type { PolicyDoc } from "../utils/policy-codegen";
 import type { DecisionRecord } from "../api/simulate";
 
@@ -15,6 +16,9 @@ interface AuthzState {
 const HISTORY_LIMIT = 25;
 
 export const authzStore = new Store<AuthzState>({ history: [], builderDoc: null });
+
+// Decisions and drafts belong to the organisation and person that made them.
+onSessionClear(() => authzStore.setState(() => ({ history: [], builderDoc: null })));
 
 export function pushDecision(record: DecisionRecord): void {
   authzStore.setState((s) => ({

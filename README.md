@@ -35,36 +35,43 @@ Full detail in [`docs/llm/`](docs/llm/) — start with [`context.md`](docs/llm/c
 
 ```text
 src/
-├── routes/         File-based routes — URL concerns + composition (providers are
-│                   composed in __root.tsx and the _app / account layouts)
-├── modules/        One folder per business capability (17): activity, authentication,
-│                   authorization, billing, branding, compliance, dashboard, developer,
-│                   directory, groups, onboarding, organizations, qeetai, search,
-│                   security, timeline, users. Each: api/ components/ hooks/ store/ utils/
+├── app/            The composition root: the module list (modules.ts), the route tree
+│                   (routes.ts) and manifest registration (register.ts)
+├── routes/         The shell's routes: __root.tsx, the _app layout, healthz, api/ (SSE)
+├── modules/        One folder per business capability (18): account, activity,
+│                   authentication, authorization, billing, branding, compliance,
+│                   dashboard, developer, directory, groups, onboarding, organizations,
+│                   qeetai, search, security, timeline, users. Each: api/ components/
+│                   routes/ locales/, a manifest.tsx (what it adds to the shell), an
+│                   index.ts barrel and a pages.ts
 ├── platform/       Cross-cutting infrastructure: api (the one HTTP client), auth
 │                   (server-session, session-store, scoped-storage), errors, query,
-│                   security (capabilities, step-up, response headers), telemetry,
-│                   feature-flags, config (env, server config, navigation), components,
+│                   security (capabilities, route capability, step-up, response headers),
+│                   telemetry, modules (manifest type + registry), feature-flags,
+│                   keyboard, forms, config (env, server config, sidebar), components,
 │                   theme
 ├── shared/         Generic, domain-agnostic: components/ hooks/ utils/ data/
-├── i18n/           Namespaced locale resources
+├── i18n/           i18next setup and the platform's common/errors catalogues
 ├── router.tsx      Router + query integration
 └── styles.css      Console semantic theme and product-level patterns
 ```
 
+`bun run new-module <id>` creates a module from the template and registers it.
+
 ### Boundaries (enforced)
 
 ```text
-routes → modules → platform → shared
+app → modules → platform → shared
 ```
 
-1. **Routes own URL concerns** — validate search params, guards, page composition; no reusable logic. Lint rejects module internals, `api()` and React Query in route files (the files that predate the rule are listed in `biome.json` and are being migrated).
+0. **App composes** — it lists the modules and wires their routes, manifests and catalogues; nothing but the router imports it.
+1. **Routes own URL concerns** — each module's `routes/` validates search params, declares the page's capability, guards and composes the page; no reusable logic. Lint rejects module internals, `api()` and React Query in route files, with no exemptions.
 2. **Modules own product capability** — a module imports another module only via its public barrel (`@/modules/<name>`), never its internals.
-3. **Platform owns cross-cutting infrastructure** — the HTTP client, session, errors, security, telemetry, feature flags, config. Imports only platform + shared.
+3. **Platform owns cross-cutting infrastructure** — the HTTP client, session, errors, security, telemetry, feature flags, config. Imports only platform + shared; it reads modules only through the manifest registry.
 4. **Shared owns generic primitives** — no domain-specific imports.
 5. **Qeetrix owns UI primitives** (`@qeetrix/ui`); **console CSS owns identity** (`styles.css`).
 
-Violations (wrong-direction imports, cross-module internals, import cycles, direct `fetch`) fail CI via Biome.
+Violations (wrong-direction imports, cross-module internals, import cycles, direct `fetch`) fail CI via Biome and `src/__tests__/module-boundaries.test.ts`.
 
 ## Enterprise shell
 

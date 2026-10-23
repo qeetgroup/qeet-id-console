@@ -9,6 +9,7 @@ import {
   CodeBlock,
   TimeSince,
 } from "@qeetrix/ui";
+import type { ParseKeys } from "i18next";
 import { DataState } from "@/platform/components/data-state";
 import { BadgeCheckIcon, CircleCheckIcon, CircleXIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
@@ -33,7 +34,7 @@ import { z } from "zod";
 
 /** Renders verifiable credentials: issue, verify, and the issued list with revoke. */
 export function CredentialsPage() {
-  const { t } = useTranslation("developer");
+  const { t } = useTranslation(["developer", "common"]);
   const runSensitive = useSensitiveAction();
   const listQ = useCredentials();
   const revokeM = useRevokeCredential();
@@ -243,7 +244,7 @@ function IssueCredentialForm({ onIssued }: { onIssued: (result: IssueResult) => 
 }
 
 // The server's verify reason codes, and the sentences a server without them sends instead.
-const VERIFY_REASONS: Record<string, string> = {
+const VERIFY_REASONS: Record<string, ParseKeys<"developer">> = {
   "vc.not_credential": "credentials.verify.reason.notCredential",
   "vc.signature_invalid": "credentials.verify.reason.signature",
   "vc.unknown": "credentials.verify.reason.unknown",

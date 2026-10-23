@@ -56,7 +56,7 @@ import { z } from "zod";
 
 /** Renders the tenant's secrets, masked, with reveal, rotate, delete and create. */
 export function SecretsPage() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("developer");
   const runSensitive = useSensitiveAction();
   const listQ = useSecrets();
   const revealM = useRevealSecret();
@@ -228,7 +228,7 @@ function RotateSecretForm({
   target: { id: string; name: string };
   onDone: () => void;
 }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("developer");
   const rotateM = useRotateSecret();
   const runSensitive = useSensitiveAction();
   const schema = useMemo(
@@ -312,7 +312,7 @@ function CreateSecretSheet({
 }
 
 function CreateSecretForm({ onDone }: { onDone: () => void }) {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation("developer");
   const runSensitive = useSensitiveAction();
   const createM = useCreateSecret();
   const schema = useMemo(

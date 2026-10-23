@@ -38,7 +38,7 @@ export function SetPasswordSheet({ user, onOpenChange }: SetPasswordSheetProps) 
 }
 
 function SetPasswordForm({ user, onDone }: { user: User; onDone: () => void }) {
-  const { t } = useTranslation("users");
+  const { t } = useTranslation(["users", "common"]);
   const setM = useSetUserPassword();
   const runSensitive = useSensitiveAction();
 

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { TranslationKey } from "@/i18n";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import type { ReasonFields } from "./decision";
@@ -44,20 +45,20 @@ export const REFERENCE_OPERATORS: readonly Operator[] = [
 const ATTRIBUTE_PATH = new RegExp(`^(${NAMESPACES.join("|")})(\\.[^.\\s]+)+$`);
 
 // Catalogue keys; the policy DSL keeps its own English keywords (see policy-codegen).
-export const OPERATOR_LABELS: Record<Operator, string> = {
-  eq: "rbac:operators.eq",
-  ne: "rbac:operators.ne",
-  in: "rbac:operators.in",
-  nin: "rbac:operators.nin",
-  contains: "rbac:operators.contains",
-  gt: "rbac:operators.gt",
-  gte: "rbac:operators.gte",
-  lt: "rbac:operators.lt",
-  lte: "rbac:operators.lte",
-  exists: "rbac:operators.exists",
-  prefix: "rbac:operators.prefix",
-  suffix: "rbac:operators.suffix",
-  regex: "rbac:operators.regex",
+export const OPERATOR_LABELS: Record<Operator, TranslationKey> = {
+  eq: "authorization:operators.eq",
+  ne: "authorization:operators.ne",
+  in: "authorization:operators.in",
+  nin: "authorization:operators.nin",
+  contains: "authorization:operators.contains",
+  gt: "authorization:operators.gt",
+  gte: "authorization:operators.gte",
+  lt: "authorization:operators.lt",
+  lte: "authorization:operators.lte",
+  exists: "authorization:operators.exists",
+  prefix: "authorization:operators.prefix",
+  suffix: "authorization:operators.suffix",
+  regex: "authorization:operators.regex",
 };
 
 export type Effect = "allow" | "deny";
@@ -242,7 +243,7 @@ export function fromConditionJson(json: ConditionJson | null | undefined): CondN
 }
 
 /**
- * Why the backend would refuse a condition, as a code translated at `rbac:conditionProblem.<code>`;
+ * Why the backend would refuse a condition, as a code translated at `authorization:conditionProblem.<code>`;
  * `op` is the operator at fault.
  */
 export interface ConditionProblem {
@@ -311,7 +312,7 @@ export function useCreateAbacPolicy() {
       return api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies`, { method: "POST", body });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
-    meta: { successMessage: "rbac:toast.policyCreated", silentError: true }, // its forms show the error
+    meta: { successMessage: "authorization:toast.policyCreated", silentError: true }, // its forms show the error
   });
 }
 
@@ -327,7 +328,7 @@ export function useUpdateAbacPolicy(id: string) {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
-    meta: { successMessage: "rbac:toast.policyUpdated", silentError: true },
+    meta: { successMessage: "authorization:toast.policyUpdated", silentError: true },
   });
 }
 
@@ -340,7 +341,7 @@ export function useDeleteAbacPolicy() {
       return api<void>(`/v1/tenants/${tenantId}/abac/policies/${id}`, { method: "DELETE" });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
-    meta: { successMessage: "rbac:toast.policyDeleted" },
+    meta: { successMessage: "authorization:toast.policyDeleted" },
   });
 }
 

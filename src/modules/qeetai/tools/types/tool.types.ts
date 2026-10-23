@@ -4,8 +4,9 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
 
+import type { TranslationKey } from "@/i18n";
 import type { Capability } from "@/platform/security/capability-model";
-import type { ConsoleContext } from "../../context/types/context.types";
+import type { ConsoleContext } from "@/modules/qeetai/context/types/context.types";
 
 export type ToolCategory = "directory" | "authz" | "credentials" | "audit" | "codegen";
 
@@ -24,7 +25,9 @@ export interface ConfirmRequest {
 
 export interface ToolResult {
   ok: boolean;
-  summary: string; // Model-safe one-line result: sent to the model and rendered
+  summary: string; // Model-safe one-line result, in English for the model; never rendered
+  /** What the tool card tells the operator, in their language; values hold no secret. */
+  display?: { key: TranslationKey; values?: Record<string, string | number> };
   data?: Record<string, unknown>; // Structured result for rendering; never holds a secret
   /** A secret shown to the operator once; never sent to the model or persisted. */
   sensitiveArtifact?: { kind: "secret" | "private_key"; label: string; value: string };
@@ -51,7 +54,7 @@ export interface ToolContext {
 export interface ToolDefinition<I = unknown> {
   name: string; // snake_case; must equal the backend's name for the tool
   category: ToolCategory;
-  title: string; // Catalogue key of the name the tool card shows
+  title: TranslationKey; // of the name the tool card shows
   description: string; // Model-facing description, so English
   input: z.ZodType<I>;
   requiredCapability?: Capability;
@@ -66,7 +69,7 @@ export interface ToolDefinition<I = unknown> {
    * so a withheld tool can point the operator there. `label` is a catalogue key; `hint` goes only
    * to the model.
    */
-  consoleScreen?: { label: string; to: string; hint?: string };
+  consoleScreen?: { label: TranslationKey; to: string; hint?: string };
   confirm?: (input: I, ctx: ToolContext) => ConfirmRequest;
   auditLabel: string;
   run: (ctx: ToolContext, input: I) => Promise<ToolResult>;

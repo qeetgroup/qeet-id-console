@@ -98,7 +98,7 @@ describe("Verified domains › sensitive actions", () => {
       ]),
     );
     await waitFor(() => expect((input as HTMLInputElement).value).toBe(""));
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "add a domain" });
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Add a domain" });
     expect(sensitiveCalls[0]?.confirm).toBeUndefined();
   });
 
@@ -112,7 +112,7 @@ describe("Verified domains › sensitive actions", () => {
       ]),
     );
     expect(screen.queryByRole("alertdialog")).toBeNull();
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "change this domain's settings" });
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Change this domain's settings" });
   });
 
   it("removes a domain only after the destructive confirmation", async () => {
@@ -130,7 +130,7 @@ describe("Verified domains › sensitive actions", () => {
         { path: "/v1/tenants/t-1/domains/d-1", method: "DELETE", body: undefined },
       ]),
     );
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "remove domain" });
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Remove domain" });
   });
 
   it("keeps the domain when the removal is cancelled", async () => {

@@ -23,13 +23,17 @@ export const RESOURCES = {
 };
 
 // The steps of the integration checklist, in order.
-export const CHECKLIST: DeveloperResourceId[] = [
+export const CHECKLIST = [
   "keys",
   "webhooks",
   "hooks",
   "agents",
   "credentials",
-];
+] as const satisfies readonly DeveloperResourceId[];
+export type ChecklistStep = (typeof CHECKLIST)[number];
+
+// The quick actions, each a create shortcut or a documentation link.
+export type QuickAction = "key" | "webhook" | "docs" | "sdks" | "quickstart";
 
 export const PANEL =
   "min-w-0 overflow-hidden rounded-lg border border-border/65 bg-card/90 shadow-xs dark:border-border/80 dark:bg-card/70 dark:shadow-none";

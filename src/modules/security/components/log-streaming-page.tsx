@@ -9,6 +9,7 @@ import {
   Switch,
   TimeSince,
 } from "@qeetrix/ui";
+import type { TranslationKey } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import { RadioTowerIcon, TrashIcon } from "@qeetrix/icons";
 import { useMemo } from "react";
@@ -29,8 +30,7 @@ import {
   useToggleLogSink,
 } from "../api/log-sinks";
 
-// Catalogue keys.
-const TYPE_LABELS: Record<SinkType, string> = {
+const TYPE_LABELS: Record<SinkType, TranslationKey> = {
   splunk_hec: "security:logStreaming.type.splunkHec",
   datadog: "security:logStreaming.type.datadog",
   http: "security:logStreaming.type.http",
@@ -38,7 +38,7 @@ const TYPE_LABELS: Record<SinkType, string> = {
 
 /** Renders the audit log sinks, with add, pause and delete. */
 export function LogStreamingPage() {
-  const { t } = useTranslation("security");
+  const { t, i18n } = useTranslation("security");
   const runSensitive = useSensitiveAction();
   const sinksQ = useLogSinks();
   const toggleM = useToggleLogSink();
@@ -81,7 +81,7 @@ export function LogStreamingPage() {
                 <li key={s.id} className="flex items-center justify-between gap-4 px-6 py-3">
                   <div className="min-w-0">
                     <p className="flex items-center gap-2 text-sm font-medium">
-                      {TYPE_LABELS[s.type] ? t(TYPE_LABELS[s.type]) : s.type}
+                      {TYPE_LABELS[s.type] ? i18n.t(TYPE_LABELS[s.type]) : s.type}
                       {s.last_error ? (
                         <Badge variant="destructive">{t("logStreaming.state.error")}</Badge>
                       ) : s.last_forwarded_at ? (
@@ -107,7 +107,7 @@ export function LogStreamingPage() {
                       disabled={toggleM.isPending}
                       onCheckedChange={(v) =>
                         runSensitive({
-                          actionLabel: t("logStreaming.sinks.toggleAction").toLowerCase(),
+                          actionLabel: t("logStreaming.sinks.toggleAction"),
                           run: () => toggleM.mutateAsync({ id: s.id, enabled: v }),
                         }).catch(settleSensitiveAction)
                       }
@@ -123,7 +123,7 @@ export function LogStreamingPage() {
                             confirmLabel: t("logStreaming.sinks.confirmRemoveLabel"),
                             tone: "destructive",
                           },
-                          actionLabel: t("logStreaming.sinks.removeAction").toLowerCase(),
+                          actionLabel: t("logStreaming.sinks.removeAction"),
                           run: () => deleteM.mutateAsync(s.id),
                         }).catch(settleSensitiveAction)
                       }
@@ -145,7 +145,7 @@ const SINK_TYPES: SinkType[] = ["splunk_hec", "datadog", "http"];
 
 /** Renders the inline form that adds a log sink; its token is write-only. */
 function AddSinkForm() {
-  const { t } = useTranslation("security");
+  const { t, i18n } = useTranslation("security");
   const runSensitive = useSensitiveAction();
   const createM = useCreateLogSink();
   const schema = useMemo(
@@ -165,7 +165,7 @@ function AddSinkForm() {
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
       await runSensitive({
-        actionLabel: t("logStreaming.addSink.addAction").toLowerCase(),
+        actionLabel: t("logStreaming.addSink.addAction"),
         run: () =>
           createM.mutateAsync({
             type: value.type,
@@ -196,7 +196,10 @@ function AddSinkForm() {
             {(field) => (
               <field.SelectField
                 label={t("logStreaming.addSink.type")}
-                options={SINK_TYPES.map((type) => ({ value: type, label: t(TYPE_LABELS[type]) }))}
+                options={SINK_TYPES.map((type) => ({
+                  value: type,
+                  label: i18n.t(TYPE_LABELS[type]),
+                }))}
               />
             )}
           </form.AppField>

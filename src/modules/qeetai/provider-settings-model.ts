@@ -1,13 +1,9 @@
 import type { QeetAIProvider, QeetAIProviderConfig, SetQeetAIProviderInput } from "./api/qeetai";
 
-// Labels are catalogue keys, translated at render.
+// A brand is shown as it is; the generic endpoint's label is a catalogue key, translated at render.
 export const PROVIDER_OPTIONS = [
-  {
-    value: "anthropic",
-    label: "qeetai:providerSettings.providers.anthropic",
-    model: "claude-sonnet-5",
-  },
-  { value: "openai", label: "qeetai:providerSettings.providers.openai", model: "gpt-4o" },
+  { value: "anthropic", brand: "Anthropic (Claude)", model: "claude-sonnet-5" },
+  { value: "openai", brand: "OpenAI", model: "gpt-4o" },
   { value: "azure", label: "qeetai:providerSettings.providers.azure", model: "" },
 ] as const;
 

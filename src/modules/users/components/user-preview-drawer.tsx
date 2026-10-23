@@ -10,7 +10,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  StatusPill,
   Tabs,
   TabsContent,
   TabsList,
@@ -18,9 +17,11 @@ import {
   TimeSince,
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import { Link } from "@tanstack/react-router";
 import { formatDateTime } from "@/shared/utils/format";
 import { ArrowRightIcon, CircleCheckIcon } from "@qeetrix/icons";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { CopyId } from "./user-detail-fields";
@@ -344,7 +345,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function VerifiedBadge({ t }: { t: (k: string) => string }) {
+function VerifiedBadge({ t }: { t: TFunction<"users"> }) {
   return (
     <Badge variant="success" className="gap-1">
       <CircleCheckIcon className="size-3" aria-hidden="true" />
@@ -353,7 +354,7 @@ function VerifiedBadge({ t }: { t: (k: string) => string }) {
   );
 }
 
-function StateValue({ ok, t }: { ok: boolean; t: (k: string) => string }) {
+function StateValue({ ok, t }: { ok: boolean; t: TFunction<"users"> }) {
   return ok ? (
     <span className="inline-flex items-center gap-1 text-success">
       <CircleCheckIcon className="size-3.5" aria-hidden="true" />

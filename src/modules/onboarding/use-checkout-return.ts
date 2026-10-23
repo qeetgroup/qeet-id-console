@@ -34,7 +34,7 @@ export function useCheckoutReturn(): { finalizing: boolean } {
     const cancelled =
       outcome === "cancelled" || (!!rzpLinkId && rzpStatus !== null && rzpStatus !== "paid");
     if (cancelled) {
-      toast.message(i18n.t("dashboard:setup.checkout.cancelled"));
+      toast.message(i18n.t("onboarding:setup.checkout.cancelled"));
       window.history.replaceState({}, "", window.location.pathname);
       return;
     }
@@ -87,7 +87,7 @@ export function useCheckoutReturn(): { finalizing: boolean } {
       // Paid but not provisioned yet: say so, rather than look as if nothing happened.
       setFinalizing(false);
       window.history.replaceState({}, "", window.location.pathname);
-      toast.message(i18n.t("dashboard:setup.checkout.finishing"));
+      toast.message(i18n.t("onboarding:setup.checkout.finishing"));
     })();
   }, [currentTenantId, userId]);
 

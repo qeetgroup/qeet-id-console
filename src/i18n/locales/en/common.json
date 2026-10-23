@@ -5,18 +5,12 @@
     "saving": "Saving…",
     "cancel": "Cancel",
     "delete": "Delete",
-    "deleting": "Deleting…",
-    "create": "Create",
-    "creating": "Creating…",
     "edit": "Edit",
     "remove": "Remove",
-    "removing": "Removing…",
     "refresh": "Refresh",
     "revoke": "Revoke",
-    "revoking": "Revoking…",
     "reset": "Reset",
     "dismiss": "Dismiss",
-    "add": "Add",
     "search": "Search",
     "confirm": "Confirm",
     "tryAgain": "Try again",
@@ -27,21 +21,31 @@
     "name": "Name",
     "created": "Created",
     "actions": "Actions",
-    "user": "User",
     "email": "Email",
-    "scopes": "Scopes",
-    "expires": "Expires",
-    "issued": "Issued",
-    "type": "Type",
-    "tenant": "Organization"
+    "type": "Type"
   },
   "states": {
     "loading": "Loading…",
-    "empty": "Nothing to show yet.",
     "copied": "Copied"
   },
-  "confirm": {
-    "cannotBeUndone": "This can’t be undone."
+  "status": {
+    "active": "Active",
+    "ok": "OK",
+    "accepted": "Accepted",
+    "authorized": "Authorized",
+    "recorded": "Recorded",
+    "invited": "Invited",
+    "pending": "Pending",
+    "inactive": "Inactive",
+    "draft": "Draft",
+    "retired": "Retired",
+    "disabled": "Disabled",
+    "suspended": "Suspended",
+    "revoked": "Revoked",
+    "expired": "Expired",
+    "deleted": "Deleted",
+    "declined": "Declined",
+    "denied": "Denied"
   },
   "language": {
     "label": "Language",
@@ -108,9 +112,7 @@
     "useARecoveryCodeInstead": "Use a recovery code instead",
     "title": "Confirm it's you",
     "confirm": "This action needs a fresh check: confirm with one of your second factors.",
-    "confirmFor": "To {{action}}, confirm with one of your second factors.",
     "needFactor": "This action needs a fresh check: you need a second factor first.",
-    "needFactorFor": "To {{action}}, you need a second factor first.",
     "noFactor": "None of your factors can confirm this. Set up a passkey or an authenticator app in <link>account security</link>, then try again.",
     "codeSentTo": "Code sent to {{destination}}",
     "recoveryCode": "Recovery code",
@@ -252,7 +254,8 @@
     "signIn": "Qeet ID – Sign in",
     "signUp": "Qeet ID – Sign up",
     "selectOrganization": "Qeet ID – Select an organization",
-    "verifyEmail": "Qeet ID – Verify your email"
+    "verifyEmail": "Qeet ID – Verify your email",
+    "untitled": "Page"
   },
   "shortcuts": {
     "group": {
@@ -263,15 +266,17 @@
       "openCommandPaletteSearch": "Open command palette / search",
       "toggleQeetAi": "Toggle Qeet AI",
       "showThisShortcutsPanel": "Show this shortcuts panel",
-      "closeAnyDrawerOrDialog": "Close any drawer or dialog",
-      "dashboard": "Dashboard",
-      "users": "Users",
-      "rolesPermissions": "Roles & permissions",
-      "invitations": "Invitations",
-      "organizations": "Organizations",
-      "webhooks": "Webhooks",
-      "auditLogs": "Audit logs",
-      "organizationSettings": "Organization settings"
+      "closeAnyDrawerOrDialog": "Close any drawer or dialog"
     }
+  },
+  "navGroup": {
+    "overview": "Overview",
+    "directory": "Directory",
+    "applications": "Applications",
+    "authentication": "Authentication",
+    "authorization": "Authorization",
+    "security": "Security",
+    "developer": "Developer",
+    "settings": "Settings"
   }
 }

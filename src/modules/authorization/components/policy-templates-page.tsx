@@ -24,7 +24,7 @@ import {
 
 /** Renders the policy templates, each opening in the builder. */
 export function PolicyTemplatesPage() {
-  const { t } = useTranslation("rbac");
+  const { t, i18n } = useTranslation("authorization");
   const navigate = useNavigate();
   const [category, setCategory] = useState<string>("all");
 
@@ -61,12 +61,12 @@ export function PolicyTemplatesPage() {
             <CardHeader>
               <div className="flex items-center justify-between gap-2">
                 <Badge variant="secondary">
-                  {"vendor" in tpl.source ? tpl.source.vendor : t(tpl.source.sector)}
+                  {"vendor" in tpl.source ? tpl.source.vendor : i18n.t(tpl.source.sector)}
                 </Badge>
                 <Badge variant="muted">{t(`policyTemplatesPage.categories.${tpl.category}`)}</Badge>
               </div>
-              <CardTitle className="text-base">{t(tpl.name)}</CardTitle>
-              <CardDescription>{t(tpl.description)}</CardDescription>
+              <CardTitle className="text-base">{i18n.t(tpl.name)}</CardTitle>
+              <CardDescription>{i18n.t(tpl.description)}</CardDescription>
             </CardHeader>
             <CardContent className="mt-auto flex flex-col gap-3">
               <div className="flex flex-wrap gap-1">

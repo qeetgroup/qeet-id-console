@@ -46,7 +46,7 @@ export function emptyPolicyDoc(): PolicyDoc {
   };
 }
 
-/** Why a doc can't be saved as an ABAC policy, translated at `rbac:conditionProblem.<code>`. */
+/** Why a doc can't be saved as an ABAC policy, translated at `authorization:conditionProblem.<code>`. */
 export type PolicyProblem = ConditionProblem | { code: "mixedEngines" };
 
 /** Returns why a doc can't be saved as an ABAC policy, or null when it can. */
@@ -247,21 +247,23 @@ function condToTree(node: CondNode): EvalTreeNode {
       detail:
         node.op === "exists"
           ? operator
-          : i18n.t("rbac:evalTree.comparison", { operator, value: node.value || "…" }),
+          : i18n.t("authorization:evalTree.comparison", { operator, value: node.value || "…" }),
     };
   }
   if (node.kind === "not") {
     return {
       id: tid(),
       kind: "not",
-      label: i18n.t("rbac:evalTree.not"),
+      label: i18n.t("authorization:evalTree.not"),
       children: [condToTree(node.child)],
     };
   }
   return {
     id: tid(),
     kind: node.combinator === "all" ? "and" : "or",
-    label: i18n.t(node.combinator === "all" ? "rbac:evalTree.all" : "rbac:evalTree.any"),
+    label: i18n.t(
+      node.combinator === "all" ? "authorization:evalTree.all" : "authorization:evalTree.any",
+    ),
     children: node.children.map(condToTree),
   };
 }
@@ -275,14 +277,14 @@ export function toEvalTree(doc: PolicyDoc): EvalTreeNode {
       id: tid(),
       kind: "block",
       label: "RBAC",
-      detail: i18n.t("rbac:evalTree.requireRole", { role: doc.requireRole }),
+      detail: i18n.t("authorization:evalTree.requireRole", { role: doc.requireRole }),
     });
   if (doc.relation)
     children.push({
       id: tid(),
       kind: "block",
       label: "ReBAC",
-      detail: i18n.t("rbac:evalTree.relationOf", {
+      detail: i18n.t("authorization:evalTree.relationOf", {
         relation: doc.relation.relation,
         object: doc.relation.object,
       }),
@@ -291,12 +293,14 @@ export function toEvalTree(doc: PolicyDoc): EvalTreeNode {
   return {
     id: tid(),
     kind: "decision",
-    label: i18n.t("rbac:evalTree.decision", {
-      effect: i18n.t(`rbac:decisionBadge.${doc.effect}`),
+    label: i18n.t("authorization:evalTree.decision", {
+      effect: i18n.t(`authorization:decisionBadge.${doc.effect}`),
       target: `${doc.resourceType || "*"}:${doc.action || "*"}`,
     }),
     detail: i18n.t(
-      children.length ? "rbac:evalTree.whenAllBlocksMatch" : "rbac:evalTree.unconditional",
+      children.length
+        ? "authorization:evalTree.whenAllBlocksMatch"
+        : "authorization:evalTree.unconditional",
     ),
     children,
   };

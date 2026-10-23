@@ -21,7 +21,13 @@ import { PageState } from "@/shared/components/page-state";
 
 // Each card links to a built sub-page: bare parents such as /security/threats are placeholders.
 const SECTIONS: {
-  key: string;
+  key:
+    | "threatProtection"
+    | "sessions"
+    | "deviceAuthorizations"
+    | "rateLimits"
+    | "auditLogs"
+    | "compliance";
   to: string;
   icon: ComponentType<IconProps<"outline">>;
   requiredPermission: Capability;
@@ -62,7 +68,7 @@ const SECTIONS: {
     icon: LockKeyholeIcon,
     requiredPermission: "audit.read",
   },
-];
+] as const;
 
 /** Renders the security overview: every security area and its state. */
 export function SecurityOverviewPage() {

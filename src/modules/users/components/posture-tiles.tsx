@@ -62,7 +62,7 @@ function PostureTile({
   );
 }
 
-function mfaFactorsLabel(s: SecuritySummary, t: TFunction): string {
+function mfaFactorsLabel(s: SecuritySummary, t: TFunction<["users", "common"]>): string {
   const parts: string[] = [];
   if (s.totp_enabled) parts.push(t("postureTiles.mfa.authenticator"));
   if (s.otp_factors > 0) parts.push(t("postureTiles.mfa.otp", { count: s.otp_factors }));
@@ -88,7 +88,7 @@ export function SecurityPosture({
   risk?: UserRisk;
   riskLoading: boolean;
 }) {
-  const { t } = useTranslation("users");
+  const { t } = useTranslation(["users", "common"]);
   const riskTone: Tone =
     risk?.level === "high" ? "danger" : risk?.level === "medium" ? "warning" : "success";
   const riskLabel = risk ? t(`postureTiles.risk.${risk.level}`) : "—";

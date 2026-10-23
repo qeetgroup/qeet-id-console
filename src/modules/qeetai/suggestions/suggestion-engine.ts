@@ -1,31 +1,37 @@
 import type { Capability } from "@/platform/security/capability-model";
 import type { ConsoleContext } from "../context/types/context.types";
 import { getTool, isWithheldChange } from "../tools";
-import { ROUTE_SUGGESTIONS, type Suggestion } from "./route-suggestions";
+import { extensionContributions } from "@/platform/modules/registry";
+import type { Suggestion } from "./route-suggestions";
+
+// True when `pattern` names `pathname` exactly; a `$param` segment matches any one segment.
+function matchesExactly(pattern: string, pathname: string): boolean {
+  const want = pattern.split("/");
+  const have = pathname.split("/");
+  return (
+    want.length === have.length && want.every((seg, i) => seg.startsWith("$") || seg === have[i])
+  );
+}
 
 /** Returns the exact match's suggestions, else the longest matching `/*` prefix's, else none. */
-function matchSuggestions(pathname: string): Suggestion[] {
-  // No entry is undefined, so `undefined` means there is no exact match.
-  const exact = ROUTE_SUGGESTIONS[pathname];
-  if (exact !== undefined) {
-    return exact.suggestions;
-  }
+function matchSuggestions(pathname: string): readonly Suggestion[] {
+  const entries = extensionContributions("qeetaiSuggestions").flatMap((map) => Object.entries(map));
+  const exact = entries.find(
+    ([pattern]) => !pattern.endsWith("/*") && matchesExactly(pattern, pathname),
+  );
+  if (exact) return exact[1];
 
   let bestLen = -1;
-  let bestSuggestions: Suggestion[] = [];
-
-  for (const [pattern, entry] of Object.entries(ROUTE_SUGGESTIONS)) {
+  let best: readonly Suggestion[] = [];
+  for (const [pattern, suggestions] of entries) {
     if (!pattern.endsWith("/*")) continue;
-    const prefix = pattern.slice(0, -2); // strip /*
-    if (pathname.startsWith(prefix)) {
-      if (prefix.length > bestLen) {
-        bestLen = prefix.length;
-        bestSuggestions = entry.suggestions;
-      }
+    const prefix = pattern.slice(0, -2);
+    if ((pathname === prefix || pathname.startsWith(`${prefix}/`)) && prefix.length > bestLen) {
+      bestLen = prefix.length;
+      best = suggestions;
     }
   }
-
-  return bestSuggestions;
+  return best;
 }
 
 /** True for a tool suggestion that acts on the selected kind, e.g. `disable_user` for a user. */

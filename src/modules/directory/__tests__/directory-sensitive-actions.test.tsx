@@ -150,14 +150,14 @@ describe("Attribute mappings › sensitive actions", () => {
     await selectRuleAndDelete();
 
     const dialog = await screen.findByRole("alertdialog");
-    expect(within(dialog).getByText("Delete 1 mapping rules?")).toBeTruthy();
+    expect(within(dialog).getByText("Delete 1 mapping rule?")).toBeTruthy();
     expect(writes()).toEqual([]);
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
 
     await waitFor(() => expect(writes()).toEqual([`DELETE ${MAPPINGS}/mapping-a`]));
     expect(sensitiveCalls[0]).toMatchObject({
       capability: "connection.write",
-      actionLabel: "delete these mapping rules",
+      actionLabel: "Delete these mapping rules",
     });
   });
 
@@ -181,7 +181,7 @@ describe("Attribute mappings › sensitive actions", () => {
     expect(screen.queryByRole("alertdialog")).toBeNull();
     expect(sensitiveCalls[0]).toMatchObject({
       capability: "connection.write",
-      actionLabel: "save mapping",
+      actionLabel: "Save mapping",
     });
   });
   it("opens the rule editor without an earlier action's error", async () => {
@@ -207,14 +207,14 @@ describe("Suspended users › sensitive actions", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Reactivate 1 selected" }));
 
     const dialog = await screen.findByRole("alertdialog");
-    expect(within(dialog).getByText("Reactivate 1 users?")).toBeTruthy();
+    expect(within(dialog).getByText("Reactivate 1 user?")).toBeTruthy();
     expect(writes()).toEqual([]);
     fireEvent.click(within(dialog).getByRole("button", { name: "Reactivate" }));
 
     await waitFor(() => expect(writes()).toEqual(["POST /v1/users/user-a/reactivate"]));
     expect(sensitiveCalls[0]).toMatchObject({
       capability: "user.write",
-      actionLabel: "reactivate these users",
+      actionLabel: "Reactivate these users",
     });
   });
 });

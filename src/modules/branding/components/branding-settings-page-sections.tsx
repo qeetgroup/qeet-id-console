@@ -1,9 +1,10 @@
-import { cn, Field, FieldError, FieldLabel, Input, StatusPill } from "@qeetrix/ui";
+import { cn, Field, FieldError, FieldLabel, Input } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRightIcon, ImageIcon, InfoIcon, LinkIcon, MailIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import type { LoginDomainStatus, TenantDomain } from "@/modules/organizations";
+import { StatusPill } from "@/platform/components/status-pill";
 import { LogoField, type LogoStatus } from "@/shared/components/logo-field";
 import type { Branding, BrandingDraft, BrandingErrors } from "../branding-model";
 
@@ -32,7 +33,7 @@ export function BrandingFieldError({
   fields: BrandingFields;
   name: keyof BrandingDraft;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const error = fields.errors[name];
   return fields.touched[name] && error ? (
     <FieldError id={`${fields.id}-${name}-error`}>
@@ -50,7 +51,7 @@ function BrandingTextField({
   name: TextKey;
   placeholder?: string;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const { id, draft, touched, errors } = fields;
   return (
     <Field>
@@ -88,7 +89,7 @@ export function BrandingIdentitySection({
   onChange: (value: string) => void;
   onStatusChange: (status: LogoStatus) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   return (
     <section className={PANEL} aria-labelledby={`${id}-identity`}>
       <h2
@@ -136,7 +137,7 @@ export function BrandingDomainSection({
   domainsState: "ready" | "loading" | "error" | "denied";
   canManageDomains: boolean;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const { id, draft } = fields;
   const savedDomain = saved.custom_domain?.trim().toLowerCase() ?? "";
   const domainChanged = draft.custom_domain.trim().toLowerCase() !== savedDomain;
@@ -242,7 +243,7 @@ export function BrandingDomainSection({
 }
 
 export function BrandingEmailSection({ fields }: { fields: BrandingFields }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   return (
     <section className={PANEL} aria-labelledby={`${fields.id}-email`}>
       <h2

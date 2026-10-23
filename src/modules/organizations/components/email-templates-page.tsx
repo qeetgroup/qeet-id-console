@@ -64,7 +64,7 @@ export type EmailTemplatesViewProps = {
 export function EmailTemplatesPage({
   onDirtyChange,
 }: Pick<EmailTemplatesViewProps, "onDirtyChange">) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const tenantId = useTenantId();
   const access = useCapabilities();
   const canRead = !!tenantId && access.state === "ready" && access.can("branding.write");
@@ -118,7 +118,7 @@ export function EmailTemplatesPage({
       onSave={async (key, draft) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("emails.save").toLowerCase(),
+          actionLabel: t("emails.save"),
           run: () => saveEmailTemplate(requireScope(), key, draft),
         });
         if (!result) throw new SensitiveActionCancelled();
@@ -128,7 +128,7 @@ export function EmailTemplatesPage({
       onReset={async (key) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("emails.reset").toLowerCase(),
+          actionLabel: t("emails.reset"),
           confirm: {
             title: t("emails.resetTitle"),
             description: t("emails.resetDescription"),
@@ -144,7 +144,7 @@ export function EmailTemplatesPage({
       onTest={async (key, draft, locale) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("emails.test").toLowerCase(),
+          actionLabel: t("emails.test"),
           confirm: {
             title: t("emails.testTitle"),
             description: t("emails.testDescription", { email: me.data?.email }),
@@ -161,7 +161,7 @@ export function EmailTemplatesPage({
 }
 
 export function EmailTemplatesView(props: EmailTemplatesViewProps) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   if (props.loading || props.error || !props.canRead || props.templates.length === 0)
     return (
       <div className="min-w-0 space-y-5">
@@ -211,7 +211,7 @@ export function EmailTemplatesView(props: EmailTemplatesViewProps) {
 }
 
 function EmailPageHeading({ children }: { children?: React.ReactNode }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 py-1">
       <div className="min-w-0">
@@ -228,7 +228,7 @@ function EmailPageHeading({ children }: { children?: React.ReactNode }) {
 function EmailWorkspace(props: EmailTemplatesViewProps) {
   const firstTemplate = props.templates[0]; // the view renders this only with templates
   if (!firstTemplate) throw new Error("EmailWorkspace rendered without any email templates");
-  const { t, i18n } = useTranslation("settings");
+  const { t, i18n } = useTranslation("organizations");
   const id = useId();
   const [selectedKey, setSelectedKey] = useState(firstTemplate.key);
   const [saved, setSaved] = useState<Record<string, EmailTemplate>>(() =>

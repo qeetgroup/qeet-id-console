@@ -25,10 +25,16 @@ import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import i18n from "@/i18n";
+import i18n, { formatLocale, type TranslationKey } from "@/i18n";
 import { getCategoryIcon } from "@/modules/activity";
 import { ResultBadge } from "@/modules/activity";
-import { type EventResult, eventResult, formatEventTitle } from "@/modules/activity";
+import {
+  actorTypeLabel,
+  categoryLabel,
+  type EventResult,
+  eventResult,
+  formatEventTitle,
+} from "@/modules/activity";
 import { formatIp } from "@/shared/utils/ip-format";
 import type { ActivityEvent } from "@/modules/activity";
 
@@ -72,7 +78,7 @@ function MetaColumn({
 }
 
 // `copiedKey` names what was copied, for the toast.
-function copy(text: string, copiedKey: string) {
+function copy(text: string, copiedKey: TranslationKey) {
   void navigator.clipboard.writeText(text);
   toast.success(i18n.t(copiedKey));
 }
@@ -139,13 +145,13 @@ export function TimelineItem({
   posInSet,
   setSize,
 }: TimelineItemProps) {
-  const { t } = useTranslation("timeline");
+  const { t } = useTranslation(["timeline", "activity"]);
   const result = eventResult(event);
   const resultLabel = t(`activity:result.${result}`);
   const CategoryIcon = getCategoryIcon(event.category);
   const title = formatEventTitle(event);
   const actorName = event.actor?.name ?? event.actor?.id ?? t("timelineItem.system");
-  const actorSub = event.actor?.type;
+  const actorSub = event.actor?.type ? actorTypeLabel(event.actor.type) : undefined;
   const locationValue = event.location ?? (event.ip ? formatIp(event.ip) : undefined);
   const locationSub = event.device ?? event.browser ?? event.source ?? undefined;
 
@@ -209,8 +215,8 @@ export function TimelineItem({
                 </span>
               ) : null}
               <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
-                  {event.category}
+                <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {categoryLabel(event.category)}
                 </span>
                 {event.source ? (
                   <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
@@ -256,7 +262,7 @@ export function TimelineItem({
                   }
                 />
                 <TooltipContent>
-                  {new Date(event.at).toLocaleString(undefined, {
+                  {new Date(event.at).toLocaleString(formatLocale(), {
                     dateStyle: "medium",
                     timeStyle: "long",
                   })}

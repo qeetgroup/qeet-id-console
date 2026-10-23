@@ -81,7 +81,7 @@ type BillingPageSelection = Pick<
 >;
 
 export function BillingSettingsPage(selection: BillingPageSelection) {
-  const { t, i18n } = useTranslation("settings");
+  const { t, i18n } = useTranslation("billing");
   const tenantId = useTenantId();
   const access = useCapabilities();
   const canRead = !!tenantId && access.state === "ready" && access.can("billing.read");
@@ -272,7 +272,7 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
 }
 
 export function BillingSettingsView(props: BillingSettingsViewProps) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   const id = useId();
   const [interval, setInterval] = useState<BillingInterval | null>(props.initialInterval ?? null);
   const [currency, setCurrency] = useState<string | null>(null);

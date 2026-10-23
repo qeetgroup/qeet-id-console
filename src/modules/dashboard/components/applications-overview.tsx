@@ -14,6 +14,7 @@ import {
   ZapIcon,
 } from "@qeetrix/icons";
 
+import { formatLocale } from "@/i18n";
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -352,7 +353,7 @@ export function ApplicationsOverview() {
 }
 
 function StatCard({ stat }: { stat: Stat }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "common"]);
   // Percentage against the count before this window, so "3 new on top of 21"
   // reads as +14% rather than +12.5% of the new total.
   const base = stat.added !== undefined ? stat.value - stat.added : 0;
@@ -372,7 +373,7 @@ function StatCard({ stat }: { stat: Stat }) {
         <p className="text-sm text-muted-foreground">{stat.label}</p>
         <div className="mt-0.5 flex items-baseline gap-2">
           <span className="font-heading text-2xl font-semibold tabular-nums">
-            {stat.loading ? "—" : stat.value.toLocaleString()}
+            {stat.loading ? "—" : stat.value.toLocaleString(formatLocale())}
           </span>
           {!stat.loading && stat.added !== undefined && pct > 0 ? (
             <span className="inline-flex items-center gap-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">

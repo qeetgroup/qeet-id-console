@@ -34,7 +34,7 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 export type ActivityStreamCallbacks = {
   onEvents: (events: ActivityEvent[]) => void;
   onStatusChange: (status: "connected" | "reconnecting" | "disconnected") => void;
-  onLastEventId: (id: string) => void;
+  onLastEventId: (id: string) => void; // each new SSE frame id, the server's resume cursor
 };
 
 /**
@@ -42,14 +42,17 @@ export type ActivityStreamCallbacks = {
  * bursts, reconnects with exponential backoff and resumes from Last-Event-ID. `stop()` aborts
  * any in-flight fetch and flushes buffered events.
  */
-export function createActivityStream(callbacks: ActivityStreamCallbacks) {
+export function createActivityStream(
+  callbacks: ActivityStreamCallbacks,
+  resumeFrom: string | null = null, // a frame id from an earlier stream, to replay what it missed
+) {
   let stopped = false;
   let abortController: AbortController | null = null;
   let backoffMs = INITIAL_BACKOFF_MS;
   let backoffTimer: ReturnType<typeof setTimeout> | null = null;
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
   let burstBuffer: ActivityEvent[] = [];
-  let lastEventId: string | null = null;
+  let lastEventId: string | null = resumeFrom;
   let reconnectAttempts = 0;
 
   function flushBurst() {

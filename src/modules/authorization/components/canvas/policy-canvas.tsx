@@ -26,8 +26,8 @@ import {
 import type { TFunction } from "i18next";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { countLeaves } from "../../api/abac";
-import type { PolicyDoc } from "../../utils/policy-codegen";
+import { countLeaves } from "@/modules/authorization/api/abac";
+import type { PolicyDoc } from "@/modules/authorization/utils/policy-codegen";
 import { ClientOnly } from "../shared/client-only";
 
 export type BlockKind = "rbac" | "abac" | "rebac" | "decision";
@@ -36,7 +36,7 @@ type Block = Exclude<BlockKind, "decision">;
 
 const BLOCKS: Block[] = ["rbac", "abac", "rebac"];
 
-// Each block's colours; its title is `rbac:policyCanvas.blocks.<kind>`.
+// Each block's colours; its title is `authorization:policyCanvas.blocks.<kind>`.
 const BLOCK_COLORS: Record<Block, string> = {
   rbac: "border-blue-400 bg-blue-50 dark:border-blue-500/60 dark:bg-blue-950/40",
   abac: "border-emerald-400 bg-emerald-50 dark:border-emerald-500/60 dark:bg-emerald-950/40",
@@ -51,7 +51,7 @@ function isActive(doc: PolicyDoc, kind: Block): boolean {
 }
 
 function BlockNode({ data }: NodeProps) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const d = data as { kind: Block; summary: string; selected?: boolean };
   const Icon =
     d.kind === "rbac" ? ShieldCheckIcon : d.kind === "abac" ? SlidersHorizontalIcon : NetworkIcon;
@@ -70,7 +70,7 @@ function BlockNode({ data }: NodeProps) {
 }
 
 function DecisionNode({ data }: NodeProps) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   const d = data as { effect: PolicyDoc["effect"]; target: string; selected?: boolean };
   const allow = d.effect === "allow";
   return (
@@ -93,7 +93,7 @@ const nodeTypes = { block: BlockNode, decision: DecisionNode };
 function buildGraph(
   doc: PolicyDoc,
   selected: BlockKind | null,
-  t: TFunction,
+  t: TFunction<"authorization">,
 ): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -102,21 +102,23 @@ function buildGraph(
     active.push({
       kind: "rbac",
       y: 10,
-      summary: doc.requireRole || t("rbac:policyCanvas.rolePlaceholder"),
+      summary: doc.requireRole || t("policyCanvas.rolePlaceholder"),
     });
   if (doc.condition != null)
     active.push({
       kind: "abac",
       y: 130,
-      summary: t("rbac:policyCanvas.conditionCount", { count: countLeaves(doc.condition) }),
+      summary: t("policyCanvas.conditionCount", {
+        count: countLeaves(doc.condition),
+      }),
     });
   if (doc.relation != null)
     active.push({
       kind: "rebac",
       y: 250,
-      summary: t("rbac:evalTree.relationOf", {
-        relation: doc.relation.relation || t("rbac:policyCanvas.relationPlaceholder"),
-        object: doc.relation.object || t("rbac:policyCanvas.objectPlaceholder"),
+      summary: t("evalTree.relationOf", {
+        relation: doc.relation.relation || t("policyCanvas.relationPlaceholder"),
+        object: doc.relation.object || t("policyCanvas.objectPlaceholder"),
       }),
     });
 
@@ -161,7 +163,7 @@ function Canvas({
   onSelect: (kind: BlockKind | null) => void;
   onToggleBlock: (kind: Block) => void;
 }) {
-  const { t } = useTranslation("rbac");
+  const { t } = useTranslation("authorization");
   // Memoised: the effects below reseed the flow state, and a fresh graph each render would loop.
   const built = useMemo(() => buildGraph(doc, selected, t), [doc, selected, t]);
   const [nodes, setNodes, onNodesChange] = useNodesState(built.nodes);

@@ -43,6 +43,6 @@ export function useUnlinkIdentity() {
       void refreshSignInMethods(qc);
       return qc.invalidateQueries({ queryKey: authKeys.socialIdentities() });
     },
-    meta: { successMessage: "auth:toast.identityUnlinked" },
+    meta: { successMessage: "authentication:toast.identityUnlinked" },
   });
 }

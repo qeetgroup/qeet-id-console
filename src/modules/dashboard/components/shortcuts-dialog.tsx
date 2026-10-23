@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@qeetrix/ui";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
-import { SHORTCUT_GROUPS } from "@/shared/hooks/use-shortcuts";
+import { shortcutGroups } from "@/platform/keyboard/shortcuts";
 
 type ShortcutsDialogProps = {
   open: boolean;
@@ -10,12 +10,14 @@ type ShortcutsDialogProps = {
 };
 
 export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const access = useCapabilities();
-  const groups = SHORTCUT_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => !item.path || access.canAccessPath(item.path)),
-  })).filter((group) => group.items.length > 0);
+  const groups = shortcutGroups()
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.path || access.canAccessPath(item.path)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -29,7 +31,7 @@ export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
             {groups.map((group) => (
               <div key={group.title}>
                 <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {t(group.title)}
+                  {i18n.t(group.title)}
                 </h3>
                 <ul className="flex flex-col">
                   {group.items.map((item) => (
@@ -37,7 +39,7 @@ export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
                       key={item.description}
                       className="flex items-center justify-between gap-4 border-b border-border/60 py-2 text-sm last:border-0"
                     >
-                      <span className="text-muted-foreground">{t(item.description)}</span>
+                      <span className="text-muted-foreground">{i18n.t(item.description)}</span>
                       <span className="flex items-center gap-1">
                         {item.keys.map((k) => (
                           <kbd

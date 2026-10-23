@@ -1,0 +1,812 @@
+{
+  "overview": {
+    "title": "Overview",
+    "description": "Keys, tokens, webhooks and the building blocks for integrating with Qeet ID.",
+    "createKey": "Create API key",
+    "createWebhook": "Create webhook",
+    "viewAll": "View all",
+    "retry": "Retry",
+    "retryMetric": "Retry {{label}}",
+    "loadingMetric": "Loading {{label}}",
+    "unavailable": "Unavailable",
+    "restricted": "Restricted",
+    "historyUnavailable": "History unavailable",
+    "recentCreations_one": "{{count}} created in 7 days",
+    "recentCreations_other": "{{count}} created in 7 days",
+    "checkingAccess": "Checking developer access",
+    "selectOrganization": "Choose an organization first",
+    "goToOverview": "Go to overview",
+    "metricsLabel": "Developer metrics",
+    "metrics": {
+      "keys": "API keys",
+      "tokens": "Active grants",
+      "webhooks": "Webhooks",
+      "hooks": "Auth hooks",
+      "agents": "Agents",
+      "secrets": "Secrets",
+      "credentials": "Credentials"
+    },
+    "explore": {
+      "title": "Explore and manage",
+      "description": "Manage the developer tools connected to your organization.",
+      "navigation": "Developer areas",
+      "count_one": "{{count}} area",
+      "count_other": "{{count}} areas",
+      "restricted": "Your role does not include access to these developer areas."
+    },
+    "activity": {
+      "title": "Recent developer activity",
+      "loading": "Loading developer activity",
+      "error": "Developer activity is unavailable.",
+      "empty": "No recent developer activity.",
+      "restricted": "Activity access is required to view this feed.",
+      "record": "Record {{id}}",
+      "organization": "Organization activity",
+      "actions": {
+        "keyCreated": "API key created",
+        "keyRevoked": "API key revoked",
+        "webhookCreated": "Webhook created",
+        "webhookEnabled": "Webhook enabled",
+        "webhookDisabled": "Webhook disabled",
+        "webhookAutoDisabled": "Webhook disabled after failed deliveries",
+        "webhookSecretRotated": "Webhook signing secret rotated",
+        "hookCreated": "Auth hook created",
+        "hookUpdated": "Auth hook updated",
+        "hookDeleted": "Auth hook deleted",
+        "agentCreated": "Agent registered",
+        "agentSuspended": "Agent suspended",
+        "agentResumed": "Agent resumed",
+        "agentDecommissioned": "Agent decommissioned",
+        "agentDeleted": "Agent deleted",
+        "agentsSuspended": "All agents suspended",
+        "agentsTransferred": "Agents moved to a new sponsor",
+        "secretCreated": "Secret created",
+        "secretUpdated": "Secret updated",
+        "secretRotated": "Secret rotated",
+        "secretRevealed": "Secret revealed",
+        "secretDeleted": "Secret deleted",
+        "credentialIssued": "Credential issued",
+        "credentialRevoked": "Credential revoked",
+        "changed": "Developer settings changed"
+      }
+    },
+    "quick": {
+      "title": "Quick actions",
+      "key": {
+        "title": "Create API key",
+        "description": "Credentials for API requests."
+      },
+      "webhook": {
+        "title": "Create webhook",
+        "description": "Subscribe to identity events."
+      },
+      "docs": {
+        "title": "Read the documentation",
+        "description": "Guides and API reference."
+      },
+      "sdks": {
+        "title": "View SDKs",
+        "description": "Libraries for your stack."
+      },
+      "quickstart": {
+        "title": "Open the quickstart",
+        "description": "Your first Qeet ID integration."
+      }
+    },
+    "checklist": {
+      "title": "Integration checklist",
+      "progress": "{{completed}} of {{total}} complete",
+      "progressLabel": "Integration setup progress",
+      "complete": "Complete",
+      "pending": "Not complete",
+      "restricted": "No setup steps are available for your role.",
+      "keys": {
+        "title": "Create an API key",
+        "description": "Authenticate API requests."
+      },
+      "webhooks": {
+        "title": "Set up a webhook",
+        "description": "Receive identity events."
+      },
+      "hooks": {
+        "title": "Configure an auth hook",
+        "description": "Connect your sign-in policy."
+      },
+      "agents": {
+        "title": "Register an agent",
+        "description": "Assign an accountable identity."
+      },
+      "credentials": {
+        "title": "Issue a test credential",
+        "description": "Create a verifiable credential."
+      }
+    }
+  },
+  "bots": {
+    "description": "Event-driven automations stitched together from triggers and actions.",
+    "comingSoon": {
+      "title": "Automations are coming soon",
+      "description": "Build no-code automations that react to identity events — sign-ins, role changes, risk signals — and run actions in response. This surface isn't available yet."
+    }
+  },
+  "infrastructure": {
+    "description": "Platform health across services, regions, and datastores.",
+    "comingSoon": {
+      "title": "Infrastructure health is coming soon",
+      "description": "Live service, region, and datastore health will surface here once platform telemetry is wired in. For now, use /readyz and /metrics (Prometheus/OTel) from your own observability stack."
+    }
+  },
+  "authHooks": {
+    "description": "Run a synchronous policy endpoint during sign-in. After credentials verify, Qeet POSTs a signed event to your hook (X-Qeet-Signature, HMAC-SHA256); the hook returns {decision:'allow'|'deny'}. Hooks are bounded by a 3s timeout.",
+    "add": {
+      "title": "Add a login hook",
+      "description": "Fired after a password is verified (the “post_login” trigger).",
+      "url": "Hook URL",
+      "urlPlaceholder": "https://policy.acme.com/qeet/login",
+      "secret": "Signing secret",
+      "secretPlaceholder": "write-only",
+      "submit": "Add",
+      "failOpen": "Fail open",
+      "failOpenDescription": "If the hook errors or times out, allow the sign-in (recommended). Turn off to block sign-ins when the hook is unreachable.",
+      "validation": {
+        "url": "Enter an https:// URL."
+      }
+    },
+    "list": {
+      "title": "Hooks",
+      "description": "Toggle enabled / fail-open per hook.",
+      "empty": "No login hooks configured.",
+      "emptyDescription": "Add a hook above to gate sign-ins with your own policy.",
+      "failOpen": "fail-open",
+      "failClosed": "fail-closed",
+      "enabledAriaLabel": "Enabled",
+      "remove": "Remove",
+      "added": "added"
+    },
+    "confirm": {
+      "removeTitle": "Remove this hook?",
+      "removeLabel": "Remove"
+    },
+    "stepUp": {
+      "add": "Add this hook",
+      "enable": "Turn this hook on",
+      "disable": "Turn this hook off",
+      "remove": "Remove this hook"
+    }
+  },
+  "credentials": {
+    "description": "Issue W3C Verifiable Credentials as ES256-signed JWT-VCs (verifiable via the same JWKS) and revoke them. Relying parties verify a presented credential at POST /v1/credentials/verify.",
+    "issue": {
+      "title": "Issue a credential",
+      "description": "The subject is the credentialSubject id (user uuid, DID, or email). Claims is a JSON object; TTL 0 = non-expiring.",
+      "subject": "Subject",
+      "subjectPlaceholder": "user uuid / did:… / email",
+      "type": "Credential type",
+      "typePlaceholder": "EmploymentCredential",
+      "claims": "Claims (JSON)",
+      "ttl": "TTL (seconds)",
+      "submit": "Issue",
+      "signedLabel": "Signed credential (JWT-VC) — give this to the subject:",
+      "signedOnce": "Copy it now. It won’t be shown again.",
+      "validation": {
+        "subject": "Enter a subject.",
+        "type": "Enter a credential type.",
+        "claims": "Claims must be a JSON object.",
+        "ttl": "Use 0 or more seconds."
+      }
+    },
+    "verify": {
+      "title": "Verify a credential",
+      "description": "Paste a JWT-VC to check its signature, expiry, and revocation.",
+      "submit": "Verify",
+      "credential": "Credential (JWT)",
+      "validation": "Paste a credential.",
+      "reason": {
+        "notCredential": "Not a verifiable credential.",
+        "signature": "The signature or expiry is invalid.",
+        "unknown": "This organization didn't issue it.",
+        "revoked": "It has been revoked."
+      }
+    },
+    "list": {
+      "title": "Issued credentials",
+      "description": "Registry of credentials issued by this organization.",
+      "empty": "No credentials issued yet.",
+      "revoked": "revoked",
+      "issued": "issued",
+      "expires": "expires",
+      "noExpiry": " · no expiry",
+      "revokeButton": "Revoke"
+    },
+    "confirm": {
+      "title": "Revoke this credential?",
+      "label": "Revoke"
+    },
+    "badge": {
+      "valid": "valid",
+      "invalid": "invalid"
+    },
+    "stepUp": {
+      "issue": "Issue this credential",
+      "revoke": "Revoke this credential"
+    }
+  },
+  "agents": {
+    "description": "First-class identities for AI agents / MCP clients, and the primitives that keep them accountable to a human: sponsorship, Shadow-AI discovery, ephemeral tokens, and an organization-wide kill-switch.",
+    "create": {
+      "title": "Create an agent",
+      "description": "The secret is shown once. Scopes are space-separated; token lifetime is clamped to 60–3600s. You’re recorded as the agent’s sponsor — its accountable human owner — and can transfer that later if it changes hands.",
+      "name": "Name",
+      "namePlaceholder": "support-assistant",
+      "scopes": "Scopes",
+      "scopesPlaceholder": "tickets:read kb:read",
+      "ttl": "Token TTL (s)",
+      "submit": "Create",
+      "secretNotice": "Agent {{name}} created — copy its credentials now (the secret won’t be shown again):",
+      "secretTitle": "Agent credentials",
+      "validation": {
+        "name": "Enter a name.",
+        "ttl": "Use 60 to 3,600 seconds."
+      }
+    },
+    "list": {
+      "title": "Agents",
+      "description": "AI-agent identities in this organization.",
+      "suspendAll": "Suspend All",
+      "empty": "No agents yet.",
+      "emptyDescription": "Create an agent above to issue it ephemeral, scoped tokens."
+    },
+    "confirm": {
+      "suspendAll": "Suspend all {{count}} active agent(s)?",
+      "suspendAllDescription": "Their tokens will stop working immediately.",
+      "suspendAllLabel": "Suspend All",
+      "delete": "Delete agent “{{name}}”?",
+      "deleteLabel": "Delete"
+    },
+    "row": {
+      "suspended": "Suspended",
+      "active": "Active",
+      "noScopes": "no scopes",
+      "resume": "Resume",
+      "resumeTitle": "Resume agent",
+      "suspend": "Suspend",
+      "suspendTitle": "Suspend agent",
+      "delete": "Delete"
+    },
+    "sponsor": {
+      "title": "Sponsor transfer",
+      "description": "Every agent has a named human sponsor. When a sponsor is offboarded, reassign everything they own to a new sponsor in one call — no agent is left ownerless.",
+      "from": "From (departing sponsor)",
+      "to": "To (new sponsor)",
+      "search": "Search users…",
+      "noUsers": "No users found.",
+      "transfer": "Transfer",
+      "checking": "Checking…",
+      "count_one": "{{count}} agent sponsored by this user will move.",
+      "count_other": "{{count}} agents sponsored by this user will move.",
+      "confirm": {
+        "title": "Transfer {{count}} agent(s) to the new sponsor?",
+        "description": "This can’t be undone.",
+        "label": "Transfer"
+      },
+      "stepUp": "Transfer these agents"
+    },
+    "shadow": {
+      "title": "Shadow AI discovery",
+      "description": "OAuth clients that picked up a machine grant type (client_credentials / token-exchange) without ever going through the agents/service-accounts registry — unmanaged automation acting under this organization, ranked by live grants.",
+      "empty": "No unreviewed candidates.",
+      "emptyDescription": "Every machine-grant OIDC client has been acknowledged.",
+      "acknowledge": "Acknowledge",
+      "grants_one": "{{count}} live grant",
+      "grants_other": "{{count}} live grants"
+    },
+    "stepUp": {
+      "create": "Create this agent",
+      "suspend": "Suspend this agent",
+      "resume": "Resume this agent",
+      "delete": "Delete this agent",
+      "suspendAll": "Suspend every active agent"
+    }
+  },
+  "webhooks": {
+    "description": "HTTP endpoints we POST events to. Every delivery is signed with HMAC-SHA256 in the X-Qeet-Signature header and retried with exponential backoff.",
+    "refresh": "Refresh",
+    "new": "New webhook",
+    "list": {
+      "title": "Subscriptions",
+      "count_one": "{{shown}} of {{total}} subscription",
+      "count_other": "{{shown}} of {{total}} subscriptions",
+      "searchPlaceholder": "Search URL or event…",
+      "emptyFiltered": "No webhooks match your filters.",
+      "empty": "No webhooks yet.",
+      "filters": {
+        "status": {
+          "label": "Status",
+          "active": "Active",
+          "disabled": "Disabled",
+          "failing": "Failing"
+        }
+      },
+      "columns": {
+        "url": "URL",
+        "events": "Events",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      }
+    },
+    "table": {
+      "test": "Test",
+      "disable": "Disable",
+      "enable": "Enable"
+    },
+    "confirm": {
+      "disableTitle": "Disable webhook?",
+      "disableDescription": "Disable {{url}}?",
+      "disableLabel": "Disable"
+    },
+    "create": {
+      "title": "New webhook subscription",
+      "description": "We'll POST signed JSON to your URL for each selected event.",
+      "url": "URL",
+      "urlPlaceholder": "https://example.com/webhook",
+      "urlHelp": "Must respond 2xx within 10 seconds; we retry up to 10 times with exponential backoff.",
+      "events": "Events",
+      "eventsCount_one": "Selected {{count}} event.",
+      "eventsCount_other": "Selected {{count}} events.",
+      "cancel": "Cancel",
+      "submit": "Create",
+      "submitting": "Creating…",
+      "validation": {
+        "url": "Enter an https:// URL.",
+        "events": "Choose at least one event."
+      },
+      "noEvents": "No events are available to subscribe to."
+    },
+    "stepUp": {
+      "create": "Create this webhook",
+      "disable": "Disable this webhook",
+      "enable": "Enable this webhook",
+      "rotate": "Rotate this webhook's signing secret"
+    },
+    "revealed": {
+      "title": "Signing secret for {{url}}",
+      "description": "Use it to verify the X-Qeet-Signature header on each delivery. It’s shown only once: copy it now."
+    },
+    "state": {
+      "active": "Active",
+      "failing": "Failing",
+      "disabled": "Disabled",
+      "autoDisabled": "Disabled: failing"
+    },
+    "stateNote": {
+      "disabled": "An administrator disabled this endpoint. Enable it to resume deliveries.",
+      "failing": "Deliveries to this endpoint are failing. It's disabled automatically if they keep failing.",
+      "failingSince": "Deliveries to this endpoint started failing <since></since>. It's disabled automatically if they keep failing.",
+      "autoDisabled": "Disabled automatically because its deliveries kept failing. Fix the endpoint, then enable it.",
+      "autoDisabledSince": "Disabled automatically because its deliveries kept failing (they started <since></since>). Fix the endpoint, then enable it."
+    }
+  },
+  "webhookDetail": {
+    "back": "Webhooks",
+    "subscribedCount_one": "Subscribed to {{count}} event.",
+    "subscribedCount_other": "Subscribed to {{count}} events.",
+    "testEvent": "Send test event",
+    "disable": "Disable",
+    "created": "Created",
+    "confirm": {
+      "disableTitle": "Disable webhook?",
+      "disableLabel": "Disable",
+      "rotateTitle": "Rotate the signing secret?",
+      "rotateDescription": "A new secret is issued and shown once. The current one keeps signing deliveries for a while, so your receiver can switch without missing any.",
+      "rotateLabel": "Rotate"
+    },
+    "deliveries": {
+      "title": "Recent deliveries",
+      "description": "Last 50 attempts. Failures are retried with exponential backoff.",
+      "empty": "No deliveries yet.",
+      "emptyDescription": "When this webhook fires, attempts will appear here.",
+      "retry": "Retry",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "requestPayload": "Request payload",
+      "responseBody": "Response body",
+      "statusDelivered": "Delivered",
+      "statusDead": "Dead",
+      "statusPending": "Pending",
+      "columns": {
+        "when": "When",
+        "event": "Event",
+        "status": "Status",
+        "attempts": "Attempts",
+        "actions": "Actions"
+      }
+    },
+    "sample": {
+      "title": "Sample payload",
+      "description": "POSTed to the URL above. X-Qeet-Signature carries sha256= and the HMAC-SHA256, keyed by the signing secret, of X-Qeet-Timestamp, a dot, and the body."
+    },
+    "rotate": "Rotate secret",
+    "enable": "Enable",
+    "overlap": "The previous signing secret still signs deliveries, alongside the new one, until {{until}}.",
+    "rotated": {
+      "title": "New signing secret",
+      "description": "Update your receiver with it. Deliveries carry both signatures until {{until}}, when the previous secret stops signing. It's shown only once: copy it now."
+    },
+    "description": "Webhook endpoint configuration and delivery history."
+  },
+  "agentsPage": {
+    "agentGovernance": "Agent Governance"
+  },
+  "webhooksPage": {
+    "webhooksAreAPaidFeature": "Webhooks are a paid feature",
+    "receiveSignedHttpCallbacks": "Receive signed HTTP callbacks for events like user.created and session.revoked. Upgrade to Starter to create webhook subscriptions."
+  },
+  "toast": {
+    "webhookCreated": "Webhook created",
+    "webhookDisabled": "Webhook disabled",
+    "testEventQueued": "Test event queued",
+    "deliveryReQueued": "Delivery re-queued",
+    "apiKeyCreated": "API key created",
+    "apiKeyRevoked": "API key revoked",
+    "secretCreated": "Secret created",
+    "secretRotated": "Secret rotated",
+    "secretDeleted": "Secret deleted",
+    "agentCreated": "Agent created",
+    "agentDeleted": "Agent deleted",
+    "agentStatusUpdated": "Agent status updated",
+    "allAgentAccessRevoked": "All agent access revoked",
+    "sponsorTransferred": "Sponsor transferred",
+    "hookAdded": "Hook added",
+    "authHookUpdated": "Auth hook updated",
+    "authHookDeleted": "Auth hook deleted",
+    "credentialIssued": "Credential issued",
+    "credentialRevoked": "Credential revoked",
+    "machineIdentityCreated": "Machine identity created",
+    "machineIdentityDisabled": "Machine identity disabled",
+    "webhookEnabled": "Webhook enabled",
+    "webhookSecretRotated": "Signing secret rotated"
+  },
+  "webhookEvents": {
+    "user": {
+      "created": "A person was added to the organization, by an administrator or over SCIM.",
+      "updated": "SCIM changed a person's profile or status.",
+      "suspended": "A person's account was suspended.",
+      "reactivated": "A suspended account was reactivated.",
+      "deleted": "A person was deleted from the organization.",
+      "password_set": "An administrator set a person's password, ending their sessions.",
+      "bulk_imported": "A bulk import of people finished, with how many rows succeeded and failed."
+    },
+    "auth": {
+      "password_changed": "A person changed their own password."
+    },
+    "session": {
+      "revoked": "A session ended, with the reason; its tokens stop working."
+    },
+    "token": {
+      "claims_change": "A person's roles changed, so their next access token carries different claims."
+    },
+    "group": {
+      "created": "A group was created.",
+      "updated": "A group was changed.",
+      "deleted": "A group was deleted.",
+      "member_added": "A person was added to a group.",
+      "member_removed": "A person was removed from a group."
+    },
+    "group_template": {
+      "applied": "A group template was applied, creating its groups."
+    },
+    "domain": {
+      "created": "A domain was added for verification.",
+      "verified": "A domain was verified.",
+      "deleted": "A domain was removed."
+    },
+    "agent": {
+      "created": "An AI agent was registered.",
+      "suspended": "An AI agent was suspended; its tokens stop working.",
+      "resumed": "A suspended AI agent was made active again.",
+      "decommissioned": "An AI agent was decommissioned for good.",
+      "deleted": "An AI agent was deleted.",
+      "sponsor_transferred": "A person's AI agents were given to another sponsor.",
+      "kill_switch": "Every active AI agent of the organization was suspended at once."
+    },
+    "rebac": {
+      "tuple_written": "A relationship was written.",
+      "tuple_deleted": "A relationship was deleted."
+    },
+    "abac_policy": {
+      "created": "An attribute-based access policy was created.",
+      "updated": "An attribute-based access policy was changed.",
+      "deleted": "An attribute-based access policy was deleted."
+    },
+    "auth_hook": {
+      "created": "An authentication hook was created.",
+      "updated": "An authentication hook was enabled, disabled or changed.",
+      "deleted": "An authentication hook was deleted."
+    },
+    "siem": {
+      "sink_created": "A log stream to a SIEM was created.",
+      "sink_updated": "A log stream to a SIEM was enabled or disabled.",
+      "sink_deleted": "A log stream to a SIEM was deleted."
+    },
+    "rate_limits": {
+      "updated": "The organization's rate limits were changed.",
+      "deleted": "The organization's rate limits were reset to the defaults."
+    },
+    "credential": {
+      "issued": "A verifiable credential was issued.",
+      "revoked": "A verifiable credential was revoked."
+    },
+    "oidc": {
+      "client_locked_out": "An application was locked out after too many wrong secrets."
+    },
+    "tenant": {
+      "suspended": "The organization was suspended, ending its sessions.",
+      "reactivated": "The organization was reactivated.",
+      "deleted": "The organization was deleted, ending its sessions."
+    }
+  },
+  "keys": {
+    "description": "Long-lived secrets your apps and scripts use to call the Qeet ID API. Send as Authorization: ApiKey <raw>.",
+    "refreshBtn": "Refresh",
+    "newButton": "New API key",
+    "revealed": {
+      "title": "Your new key — copy it now",
+      "description": "This is the only time we'll show {{name}}. Store it in your secret manager.",
+      "missingTitle": "Key created without its secret",
+      "missingDescription": "{{name}} was created, but its secret didn't come back, so the key can't be used. Revoke it and create a new one.",
+      "dismiss": "Dismiss"
+    },
+    "list": {
+      "title": "Active keys",
+      "count_one": "{{count}} key",
+      "count_other": "{{count}} keys",
+      "empty": "No API keys yet."
+    },
+    "columns": {
+      "name": "Name",
+      "prefix": "Prefix",
+      "scopes": "Scopes",
+      "lastUsed": "Last used",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "lastUsedNever": "Never",
+    "revokeBtn": "Revoke",
+    "confirm": {
+      "title": "Revoke \"{{name}}\"?",
+      "description": "Any service using it will lose access immediately.",
+      "label": "Revoke"
+    },
+    "create": {
+      "title": "New API key",
+      "description": "The full key is shown once after creation — we only store a bcrypt hash.",
+      "nameLabel": "Name",
+      "scopesLabel": "Scopes (space-separated)",
+      "scopesHelp": "Leave empty for full access (least-privilege scoping recommended).",
+      "expiresLabel": "Expires at",
+      "expiresHelp": "Optional. Empty = never expires.",
+      "expiresPast": "The expiry must be in the future.",
+      "cancelBtn": "Cancel",
+      "createBtn": "Create key",
+      "creatingBtn": "Creating…",
+      "validation": {
+        "name": "Enter a name.",
+        "nameTooLong": "Keep the name to 200 characters."
+      }
+    },
+    "stepUp": {
+      "create": "Create this API key",
+      "revoke": "Revoke this API key"
+    }
+  },
+  "machineIds": {
+    "description": "Service accounts for server-to-server calls. Authenticate via POST /v1/oauth/token with grant_type=client_credentials.",
+    "refreshBtn": "Refresh",
+    "newButton": "New identity",
+    "revealed": {
+      "title": "Client credentials for {{name}}",
+      "description": "We'll never show this secret again. Use it as client_id + client_secret on the token endpoint.",
+      "dismiss": "Dismiss"
+    },
+    "list": {
+      "title": "Service principals",
+      "count_one": "{{count}} identity",
+      "count_other": "{{count}} identities",
+      "empty": "No service principals yet."
+    },
+    "columns": {
+      "name": "Name",
+      "clientId": "Client ID",
+      "scopes": "Scopes",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "disableBtn": "Disable",
+    "confirm": {
+      "title": "Disable \"{{name}}\"?",
+      "description": "Token issuance will be blocked immediately.",
+      "label": "Disable"
+    },
+    "create": {
+      "title": "New machine identity",
+      "description": "Creates a service principal usable via OAuth 2.0 client_credentials.",
+      "nameLabel": "Name",
+      "descriptionLabel": "Description",
+      "scopesLabel": "Scopes (space-separated)",
+      "cancelBtn": "Cancel",
+      "createBtn": "Create",
+      "creatingBtn": "Creating…",
+      "validation": {
+        "name": "Enter a name."
+      },
+      "descriptionPlaceholder": "What this identity is used for"
+    },
+    "stepUp": {
+      "create": "Create this machine identity",
+      "disable": "Disable this machine identity"
+    }
+  },
+  "secrets": {
+    "description": "Encrypted vault for integration secrets — 3rd-party API keys, tokens and signing material. Values are AES-256-GCM encrypted at rest and only shown via an audited reveal.",
+    "newButton": "New secret",
+    "list": {
+      "title": "Secrets",
+      "count_one": "{{count}} secret",
+      "count_other": "{{count}} secrets",
+      "empty": "No secrets yet."
+    },
+    "columns": {
+      "name": "Name",
+      "scope": "Scope",
+      "value": "Value",
+      "updated": "Updated",
+      "actions": "Actions"
+    },
+    "hide": "Hide",
+    "reveal": "Reveal",
+    "rotate": "Rotate",
+    "rotateSheet": {
+      "title": "Rotate \"{{name}}\"",
+      "description": "Enter the new value. It's encrypted immediately and replaces the current one — anything still using the old value will break.",
+      "valueLabel": "New value",
+      "valueHelp": "Hidden as you type. It is never shown again after saving.",
+      "cancelBtn": "Cancel",
+      "submitBtn": "Rotate secret",
+      "savingBtn": "Rotating…"
+    },
+    "deleteBtn": "Delete",
+    "confirm": {
+      "title": "Delete secret \"{{name}}\"?",
+      "description": "Anything using it will break.",
+      "label": "Delete"
+    },
+    "create": {
+      "title": "New secret",
+      "description": "The value is encrypted immediately and can't be read back except via reveal.",
+      "nameLabel": "Name",
+      "scopeLabel": "Scope",
+      "scopeHelp": "A free-text label for grouping, e.g. the integration it belongs to.",
+      "valueLabel": "Value",
+      "cancelBtn": "Cancel",
+      "createBtn": "Create secret",
+      "savingBtn": "Saving…"
+    },
+    "stepUp": {
+      "create": "Create this secret",
+      "reveal": "Reveal this secret",
+      "rotate": "Rotate this secret",
+      "delete": "Delete this secret"
+    },
+    "revealed": {
+      "title": "Value of {{name}}",
+      "description": "Shown this once: copy it now, then hide it. Each reveal is recorded in the audit log."
+    },
+    "validation": {
+      "name": "Enter a name.",
+      "value": "Enter the secret's value."
+    }
+  },
+  "apiKeysPage": {
+    "ciDeployKey": "CI deploy key"
+  },
+  "secretsPage": {
+    "billingOptional": "billing (optional)"
+  },
+  "nav": {
+    "applications": {
+      "machineApps": {
+        "title": "Machine apps",
+        "description": "Non-interactive service and machine identities."
+      }
+    },
+    "developer": {
+      "overview": {
+        "title": "Overview"
+      },
+      "apiKeys": {
+        "title": "API keys",
+        "description": "Programmatic access keys for the API."
+      },
+      "signingKeys": {
+        "title": "Signing keys",
+        "description": "JWKS keys that sign your tokens."
+      },
+      "secrets": {
+        "title": "Secrets",
+        "description": "Encrypted secrets for integrations."
+      },
+      "webhooks": {
+        "title": "Webhooks",
+        "description": "Subscribe endpoints to Qeet ID events."
+      },
+      "authHooks": {
+        "title": "Auth hooks",
+        "description": "Run custom logic in the auth pipeline."
+      },
+      "agents": {
+        "title": "Agents",
+        "description": "AI agent identities and credentials."
+      },
+      "credentials": {
+        "title": "Credentials",
+        "description": "Verifiable credential issuance."
+      },
+      "bots": {
+        "title": "Bots",
+        "description": "Automated bot identities."
+      },
+      "infrastructure": {
+        "title": "Infrastructure",
+        "description": "Runtime, regions and system health."
+      }
+    }
+  },
+  "commands": {
+    "apiKeys": {
+      "title": "Generate API Key",
+      "subtitle": "Create a new machine-access API key",
+      "keywords": "api key, machine identity, service account, token"
+    },
+    "signingKeys": {
+      "title": "Rotate Signing Keys",
+      "subtitle": "Manage JWKS signing and encryption keys",
+      "keywords": "jwks, rotate keys, signing, encryption key"
+    },
+    "webhooks": {
+      "title": "Manage Webhooks",
+      "subtitle": "Configure outbound event webhooks",
+      "keywords": "webhooks, events, integrations, outbound"
+    },
+    "authHooks": {
+      "title": "Auth Hooks",
+      "subtitle": "Configure pre/post authentication hooks",
+      "keywords": "hooks, actions, login hook, auth pipeline"
+    },
+    "agents": {
+      "title": "Agent Governance",
+      "subtitle": "Manage machine-to-machine and AI agents",
+      "keywords": "agents, bots, m2m, machine identity, ai agent"
+    },
+    "credentials": {
+      "title": "Verifiable Credentials",
+      "subtitle": "Issue and manage W3C verifiable credentials",
+      "keywords": "vc, credentials, w3c, ssi"
+    }
+  },
+  "shortcuts": {
+    "webhooks": "Webhooks"
+  },
+  "qeetaiSuggestions": {
+    "labels": {
+      "rotateSigningKeys": "Rotate signing keys",
+      "codeSnippet": "Generate a code snippet",
+      "apiExample": "Generate an API example"
+    }
+  }
+}

@@ -79,7 +79,7 @@ export function useConfirmTotpEnrollment() {
       void qc.invalidateQueries({ queryKey: authKeys.totp() });
       void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
     },
-    meta: { successMessage: "auth:mfa.totp.toastEnabled", silentError: true },
+    meta: { successMessage: "authentication:mfa.totp.toastEnabled", silentError: true },
   });
 }
 
@@ -92,7 +92,7 @@ export function useDisableTotp() {
       void qc.invalidateQueries({ queryKey: authKeys.totp() });
       void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
     },
-    meta: { successMessage: "auth:mfa.totp.toastDisabled" },
+    meta: { successMessage: "authentication:mfa.totp.toastDisabled" },
   });
 }
 
@@ -153,7 +153,7 @@ export function useEnrollOtpStart() {
         method: "POST",
         body,
       }),
-    meta: { successMessage: "auth:toast.verificationCodeSent", silentError: true }, // the sheet shows it
+    meta: { successMessage: "authentication:toast.verificationCodeSent", silentError: true }, // the sheet shows it
   });
 }
 
@@ -166,7 +166,7 @@ export function useConfirmOtpFactor() {
         body: { code },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.otpFactors() }),
-    meta: { successMessage: "auth:toast.factorConfirmed", silentError: true },
+    meta: { successMessage: "authentication:toast.factorConfirmed", silentError: true },
   });
 }
 
@@ -176,7 +176,7 @@ export function useChallengeOtpFactor() {
       api<{ message: string }>(`/v1/mfa/otp/factors/${id}/challenge`, {
         method: "POST",
       }),
-    meta: { successMessage: "auth:toast.testCodeSent" },
+    meta: { successMessage: "authentication:toast.testCodeSent" },
   });
 }
 
@@ -185,6 +185,6 @@ export function useDeleteOtpFactor() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/mfa/otp/factors/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.otpFactors() }),
-    meta: { successMessage: "auth:toast.factorRemoved" },
+    meta: { successMessage: "authentication:toast.factorRemoved" },
   });
 }

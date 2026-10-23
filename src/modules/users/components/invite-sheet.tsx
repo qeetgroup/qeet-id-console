@@ -73,7 +73,7 @@ function InviteForm({
     onSubmit: async ({ value, formApi }) => {
       // Inviting someone hands them a role, so the server asks for a step-up.
       await runSensitive({
-        actionLabel: t("create.sendAction").toLowerCase(),
+        actionLabel: t("create.sendAction"),
         run: () =>
           createM.mutateAsync({
             tenant_id: value.tenant_id,

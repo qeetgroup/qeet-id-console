@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import type { PublicSession } from "@/platform/auth/server-session";
 import { sessionStore } from "@/platform/auth/session-store";
-import type { ToolExecution } from "../../tools/types/tool.types";
+import type { ToolExecution } from "@/modules/qeetai/tools/types/tool.types";
 import {
   conversationActions,
   conversationStore,

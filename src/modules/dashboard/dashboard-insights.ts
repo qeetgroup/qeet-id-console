@@ -3,6 +3,7 @@
 // (with their values), so the panels translate it at render.
 
 import type { AnalyticsOverview } from "./api/analytics";
+import { formatLocale, type TranslationKey } from "@/i18n";
 
 export type InsightSeverity = "critical" | "warning" | "info";
 export type HealthState = "healthy" | "attention" | "critical";
@@ -27,7 +28,7 @@ function healthState(score: number): HealthState {
 
 export interface HealthArea {
   id: string;
-  label: string; // catalogue key
+  label: TranslationKey;
   score: number; // 0–100
   state: HealthState;
 }
@@ -83,11 +84,11 @@ export function computeIdentityHealth(overview: AnalyticsOverview): IdentityHeal
 export interface AttentionItem {
   id: string;
   severity: InsightSeverity;
-  title: string; // catalogue key
-  detail: string; // catalogue key, interpolated with `params`
+  title: TranslationKey;
+  detail: TranslationKey; // interpolated with `params`
   params: Record<string, string | number>;
   to: string;
-  actionLabel: string; // catalogue key
+  actionLabel: TranslationKey;
 }
 
 /**
@@ -142,9 +143,9 @@ export function deriveAttentionItems(overview: AnalyticsOverview): AttentionItem
 
 export interface SessionStat {
   id: string;
-  label: string; // catalogue key
+  label: TranslationKey;
   value: string;
-  hint?: string; // catalogue key
+  hint?: TranslationKey;
 }
 
 export function deriveSessionStats(overview: AnalyticsOverview): SessionStat[] {
@@ -154,7 +155,7 @@ export function deriveSessionStats(overview: AnalyticsOverview): SessionStat[] {
     {
       id: "active",
       label: "dashboard:insights.sessions.active",
-      value: active.toLocaleString("en-US"),
+      value: active.toLocaleString(formatLocale()),
       hint: "dashboard:insights.sessions.activeHint",
     },
     {
@@ -165,7 +166,7 @@ export function deriveSessionStats(overview: AnalyticsOverview): SessionStat[] {
     {
       id: "dau",
       label: "dashboard:insights.sessions.dau",
-      value: kpis.dau.value.toLocaleString("en-US"),
+      value: kpis.dau.value.toLocaleString(formatLocale()),
     },
     {
       id: "stickiness",
@@ -177,7 +178,7 @@ export function deriveSessionStats(overview: AnalyticsOverview): SessionStat[] {
 
 export interface SecuritySignal {
   id: string;
-  label: string; // catalogue key
+  label: TranslationKey;
   value: string;
   intent: "success" | "warning" | "danger";
   delta?: number;
@@ -194,7 +195,7 @@ export function deriveSecuritySignals(overview: AnalyticsOverview): SecuritySign
     {
       id: "failed",
       label: "dashboard:insights.signals.failed",
-      value: failed.toLocaleString("en-US"),
+      value: failed.toLocaleString(formatLocale()),
       intent: failed === 0 ? "success" : failed > 100 ? "danger" : "warning",
       delta: kpis.failed_logins_24h.delta_pct,
       favorable: kpis.failed_logins_24h.delta_pct <= 0,

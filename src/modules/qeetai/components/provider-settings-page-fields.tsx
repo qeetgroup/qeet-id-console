@@ -58,7 +58,7 @@ export function ProviderSettingsFields({
   onValidate: (field: keyof ProviderSettingsDraft) => void;
   onShowKeyChange: (show: boolean) => void;
 }) {
-  const { t } = useTranslation("settings");
+  const { t, i18n } = useTranslation("qeetai");
   const provider =
     PROVIDER_OPTIONS.find((option) => option.value === draft.provider) ?? PROVIDER_OPTIONS[0];
 
@@ -95,7 +95,7 @@ export function ProviderSettingsFields({
               {PROVIDER_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   <ProviderLogo provider={option.value} />
-                  {t(option.label)}
+                  {"brand" in option ? option.brand : i18n.t(option.label)}
                 </SelectItem>
               ))}
             </SelectContent>

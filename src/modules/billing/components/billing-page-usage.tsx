@@ -9,6 +9,7 @@ import {
 import type { Ref } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { exportToCsv } from "@/shared/utils/data-export";
 import type { Entitlements } from "../api/billing";
 import { BILLING_RESOURCES, billingUsage } from "../billing-model";
@@ -45,7 +46,7 @@ export function BillingUsage({
   fetching: boolean;
   onRetry: () => unknown;
 }) {
-  const { t, i18n } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   return (
     <section
       ref={ref}
@@ -113,14 +114,14 @@ export function BillingUsage({
                   >
                     {meter.used === null
                       ? t("billing.screen.unavailable")
-                      : meter.used.toLocaleString(i18n.language)}
+                      : meter.used.toLocaleString(formatLocale())}
                   </strong>
                   <span className="text-[11px] text-muted-foreground">
                     {meter.unlimited
                       ? t("billing.screen.usage.unlimited")
                       : meter.limit !== null
                         ? t("billing.screen.usage.limit", {
-                            limit: meter.limit.toLocaleString(i18n.language),
+                            limit: meter.limit.toLocaleString(formatLocale()),
                           })
                         : ""}
                   </span>

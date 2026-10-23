@@ -26,8 +26,26 @@ import {
  */
 export type SocialProviderSupport = "first-party" | "supported" | "unsupported";
 
+/** The providers the catalogue describes; each has `social.providers.<id>` copy. */
+export type SocialProviderId =
+  | "qeet"
+  | "google"
+  | "github"
+  | "microsoft"
+  | "apple"
+  | "facebook"
+  | "x"
+  | "linkedin"
+  | "gitlab"
+  | "bitbucket"
+  | "discord"
+  | "slack"
+  | "twitch"
+  | "spotify"
+  | "reddit";
+
 export type SocialProviderMeta = {
-  id: string;
+  id: SocialProviderId;
   label: string;
   /** Either a @thesvg icon component, or a pair of theme-aware logo srcs (Qeet). */
   Icon?: typeof Google;

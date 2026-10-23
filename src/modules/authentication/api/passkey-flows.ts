@@ -89,7 +89,7 @@ export function useAcceptInviteWithPasskey() {
   return useMutation({
     mutationFn: acceptInviteWithPasskey,
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "auth:toast.invitationAccepted" },
+    meta: { successMessage: "authentication:toast.invitationAccepted" },
   });
 }
 
@@ -165,7 +165,7 @@ export function usePasskeyLogin() {
   return useMutation({
     mutationFn: signInWithPasskey,
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "auth:toast.signedInSuccessfully" },
+    meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
 }
 
@@ -178,8 +178,8 @@ export function usePasskeySignup({
     mutationFn: signUpWithPasskey,
     onSuccess,
     meta: {
-      successMessage: "auth:toast.accountCreatedSuccessfully",
-      successDescription: "auth:toast.checkEmailForCode",
+      successMessage: "authentication:toast.accountCreatedSuccessfully",
+      successDescription: "authentication:toast.checkEmailForCode",
     },
   });
 }

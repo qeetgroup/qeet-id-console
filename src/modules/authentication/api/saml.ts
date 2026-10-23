@@ -56,7 +56,7 @@ export function useCreateSamlConnection() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
-    meta: { successMessage: "auth:toast.samlConnectionCreated", silentError: true },
+    meta: { successMessage: "authentication:toast.samlConnectionCreated", silentError: true },
   });
 }
 
@@ -70,7 +70,7 @@ export function useUpdateSamlConnection() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
-    meta: { successMessage: "auth:toast.samlConnectionUpdated" },
+    meta: { successMessage: "authentication:toast.samlConnectionUpdated" },
   });
 }
 
@@ -81,7 +81,7 @@ export function useDeleteSamlConnection() {
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/saml/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
-    meta: { successMessage: "auth:toast.samlConnectionDeleted" },
+    meta: { successMessage: "authentication:toast.samlConnectionDeleted" },
   });
 }
 

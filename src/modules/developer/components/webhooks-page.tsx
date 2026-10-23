@@ -67,7 +67,7 @@ function statusFilterValue(w: Webhook): "active" | "failing" | "disabled" {
 
 /** Renders the tenant's webhooks with test and disable, and the sheet that creates one. */
 export function WebhooksPage() {
-  const { t } = useTranslation("developer");
+  const { t } = useTranslation(["developer", "common"]);
   const runSensitive = useSensitiveAction();
   const webhooksLocked = useEntitlements().data?.features.webhooks === false;
   const [creating, setCreating] = useCreateIntent(

@@ -9,7 +9,7 @@ export const SETUP_STEPS = ["plan", "profile", "name", "invite", "launch"] as co
  * guidance, not form steps.
  */
 export function SetupProgress({ step }: { step: SetupStep }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   const current = SETUP_STEPS.indexOf(step);
 
   return (

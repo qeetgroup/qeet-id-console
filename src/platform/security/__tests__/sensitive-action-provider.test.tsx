@@ -96,7 +96,7 @@ describe("useSensitiveAction", () => {
     });
     let promise!: Promise<unknown>;
     act(() => {
-      promise = run({ actionLabel: "do the thing", run: action });
+      promise = run({ actionLabel: "Do the thing", run: action });
     });
     // The API client has already asked and the person declined, so nothing is asked again.
     await expect(promise).rejects.toBeInstanceOf(SensitiveActionCancelled);
@@ -116,6 +116,24 @@ describe("step-up prompt", () => {
     await screen.findByText(/code from your authenticator app/i);
     fireEvent.click(screen.getByRole("button", { name: /^cancel$/i }));
     await expect(answer).resolves.toBe(false);
+  });
+
+  it("names the running action exactly as given, beside the copy rather than inside it", async () => {
+    mount();
+    act(() => {
+      void run({
+        actionLabel: "Delete SCIM token",
+        run: () => requestStepUp(new ApiError(403, "step_up_required", "needs mfa")),
+      });
+    });
+    const label = await screen.findByText("Delete SCIM token");
+    // Part of the dialog's accessible description, so a screen reader announces it.
+    const describedBy = screen.getByRole("dialog").getAttribute("aria-describedby");
+    const description = describedBy ? document.getElementById(describedBy) : null;
+    expect(description?.contains(label)).toBe(true);
+    expect(description?.textContent).toBe(
+      "Delete SCIM token This action needs a fresh check: confirm with one of your second factors.",
+    );
   });
 
   it("offers only the factors the organisation counts", async () => {

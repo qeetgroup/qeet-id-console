@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import i18n from "@/i18n";
 
-import type { ConsoleContext } from "../../context/types/context.types";
+import type { ConsoleContext } from "@/modules/qeetai/context/types/context.types";
 import { rankSuggestions } from "../suggestion-engine";
 
 function on(pathname: string, selection?: ConsoleContext["selection"]): ConsoleContext {
@@ -36,6 +36,6 @@ describe("route suggestions while the assistant only reads", () => {
   });
 
   it("offers nothing to rotate on the signing keys page", () => {
-    expect(labels(on("/settings/signing-keys"))).toEqual([]);
+    expect(labels(on("/auth/api/signing-keys"))).toEqual([]);
   });
 });

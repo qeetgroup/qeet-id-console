@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@qeetrix/ui";
+import { formatLocale } from "@/i18n";
 import { ErrorText } from "@/platform/components/error-reference";
 import { PlusIcon, RefreshCwIcon, ScrollTextIcon, ShieldCheckIcon } from "@qeetrix/icons";
 import { useMemo, useState } from "react";
@@ -139,10 +140,10 @@ export function GdprPage() {
                         <Badge variant={variant}>{r.status}</Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {new Date(r.grace_until).toLocaleDateString()}
+                        {new Date(r.grace_until).toLocaleDateString(formatLocale())}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {new Date(r.created_at).toLocaleDateString()}
+                        {new Date(r.created_at).toLocaleDateString(formatLocale())}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
@@ -205,7 +206,7 @@ function CreatePurgeForm({ onDone }: { onDone: () => void }) {
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
       await runSensitive({
-        actionLabel: t("gdpr.create.submitAction").toLowerCase(),
+        actionLabel: t("gdpr.create.submitAction"),
         run: () =>
           createM.mutateAsync({ user_id: value.user_id.trim(), reason: value.reason.trim() }),
       })

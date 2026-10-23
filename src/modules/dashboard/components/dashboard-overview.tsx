@@ -22,6 +22,7 @@ import {
   Skeleton,
   TimeSince,
 } from "@qeetrix/ui";
+import { formatLocale, type TranslationKey } from "@/i18n";
 import { errorMessage } from "@/platform/errors/user-message";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -63,7 +64,7 @@ import {
 import { OnboardingChecklist } from "./onboarding-checklist";
 import { PasskeyPromptCard } from "./passkey-prompt-card";
 
-const ACCESS_MODE_KEYS: Record<AccessMode, string> = {
+const ACCESS_MODE_KEYS: Record<AccessMode, TranslationKey> = {
   setup: "dashboard:dashboardOverview.accessMode.setup",
   full: "dashboard:dashboardOverview.accessMode.full",
   "read-only": "dashboard:dashboardOverview.accessMode.readOnly",
@@ -164,7 +165,7 @@ function DashboardHeading({
 }
 
 export function DashboardOverview() {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   useApplyOnboardingProfile(); // persist creation-time segmentation on first load
   const access = useCapabilities();
   const canViewAnalytics = access.can("analytics.read");
@@ -220,7 +221,7 @@ export function DashboardOverview() {
           id: "mau",
           icon: UsersIcon,
           label: t("kpi.mau"),
-          value: overview.kpis.mau.value.toLocaleString("en-US"),
+          value: overview.kpis.mau.value.toLocaleString(formatLocale()),
           delta: overview.kpis.mau.delta_pct,
           favorable: overview.kpis.mau.delta_pct >= 0,
           data: metricData.users,
@@ -230,7 +231,7 @@ export function DashboardOverview() {
           id: "logins",
           icon: ActivityIcon,
           label: t("kpi.loginsToday"),
-          value: overview.kpis.logins_today.value.toLocaleString("en-US"),
+          value: overview.kpis.logins_today.value.toLocaleString(formatLocale()),
           delta: overview.kpis.logins_today.delta_pct,
           favorable: overview.kpis.logins_today.delta_pct >= 0,
           data: metricData.logins,
@@ -252,7 +253,7 @@ export function DashboardOverview() {
           id: "failed",
           icon: ShieldCheckIcon,
           label: t("kpi.failedLogins24h"),
-          value: overview.kpis.failed_logins_24h.value.toLocaleString("en-US"),
+          value: overview.kpis.failed_logins_24h.value.toLocaleString(formatLocale()),
           delta: overview.kpis.failed_logins_24h.delta_pct,
           favorable: overview.kpis.failed_logins_24h.delta_pct <= 0,
           data: metricData.failed,
@@ -268,13 +269,13 @@ export function DashboardOverview() {
           id: "total",
           icon: <UsersIcon />,
           label: t("stats.totalUsers"),
-          value: overview.kpis.total_users.value.toLocaleString("en-US"),
+          value: overview.kpis.total_users.value.toLocaleString(formatLocale()),
         },
         {
           id: "daily",
           icon: <UserCheckIcon />,
           label: t("stats.dailyActive"),
-          value: overview.kpis.dau.value.toLocaleString("en-US"),
+          value: overview.kpis.dau.value.toLocaleString(formatLocale()),
           detail: formatDelta(overview.kpis.dau.delta_pct),
         },
         {
@@ -299,6 +300,8 @@ export function DashboardOverview() {
     social: point.social,
     saml: point.saml,
     oidc: point.oidc,
+    magic_link: point.magic_link ?? 0,
+    ldap: point.ldap ?? 0,
   }));
   const methodRows = (overview?.login_methods_mix ?? []).map((method) => ({
     method: method.method,
@@ -345,7 +348,7 @@ export function DashboardOverview() {
             </div>
           </div>
           <Badge variant="muted" className="w-fit shrink-0">
-            {t(ACCESS_MODE_KEYS[access.mode])}
+            {i18n.t(ACCESS_MODE_KEYS[access.mode])}
           </Badge>
         </section>
       )}

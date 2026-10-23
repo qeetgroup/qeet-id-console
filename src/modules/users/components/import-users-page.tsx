@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
   cn,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -26,8 +25,10 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import { PageHeader } from "@/platform/components/page-header";
+import { StatusPill } from "@/platform/components/status-pill";
 import { FormError } from "@/platform/forms/app-form";
 
 import { type BulkImportResult, useBulkImportUsers } from "../api/users";
@@ -150,7 +151,7 @@ export function ImportUsersPage() {
           <CardContent className="p-0">
             {tooMany && (
               <p className="border-b p-3 text-sm text-destructive">
-                {t("import.tooMany", { max: MAX_IMPORT_ROWS.toLocaleString() })}
+                {t("import.tooMany", { max: MAX_IMPORT_ROWS.toLocaleString(formatLocale()) })}
               </p>
             )}
             {importM.error ? (
@@ -186,7 +187,7 @@ export function ImportUsersPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         {r.error ? (
-                          <StatusPill kind="danger">{importRowErrorMessage(t, r.error)}</StatusPill>
+                          <StatusPill kind="danger">{importRowErrorMessage(r.error)}</StatusPill>
                         ) : (
                           <StatusPill status="ok" />
                         )}
@@ -237,7 +238,7 @@ export function ImportUsersPage() {
                       <TableCell className="text-muted-foreground">{e.line ?? "—"}</TableCell>
                       <TableCell className="font-mono text-xs">{e.email ?? "—"}</TableCell>
                       <TableCell className="text-rose-600 dark:text-rose-400">
-                        {importRowErrorMessage(t, e)}
+                        {importRowErrorMessage(e)}
                       </TableCell>
                     </TableRow>
                   ))}
