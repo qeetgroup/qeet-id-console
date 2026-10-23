@@ -187,7 +187,8 @@ test:coverage` (what CI runs) enforces the coverage thresholds in `vitest.config
 **Browser tests** (`tests/e2e`, `bun run test:e2e`, CI job "Session E2E") cover the session-boundary
 invariants that only appear in a real browser: anonymous guard, `__Host-` HttpOnly Secure
 `SameSite=Lax` cookie, no token in Web Storage, `document.cookie` or server-rendered HTML, hard
-refresh, cross-site write rejection, cross-tab logout, single-flight refresh, and two concurrent
+refresh, cross-site write rejection, cross-tab logout, single-flight refresh, an organization switch
+that moves every tab and stops reading the old organization's data, and two concurrent
 sessions kept apart. They run against the **production build** and a fake backend
 (`tests/e2e/fixtures/fake-backend.mjs`) and wait for `<html data-hydrated>` before typing — the
 earlier suite ran against `vite dev`, raced hydration and on-demand compiles, and was removed for

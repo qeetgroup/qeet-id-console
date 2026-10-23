@@ -1,6 +1,6 @@
-// A minimal stand-in for qeet-id-server: sign-in, refresh rotation, logout and the reads the
-// console makes, for two operators in two tenants. Test controls: POST /__test__/reset,
-// POST /__test__/expire (access tokens only) and GET /__test__/stats.
+// A minimal stand-in for qeet-id-server: sign-in, refresh rotation, tenant switch, logout and the
+// reads the console makes, for one operator in each of two tenants and one in both. Test
+// controls: POST /__test__/reset, POST /__test__/expire (access tokens only), GET /__test__/stats.
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 
@@ -15,12 +15,17 @@ const users = {
   "operator@example.com": {
     id: "11111111-1111-4111-8111-111111111111",
     name: "Ada Operator",
-    tenantId: "22222222-2222-4222-8222-222222222222",
+    tenantIds: ["22222222-2222-4222-8222-222222222222"],
   },
   "second@example.com": {
     id: "44444444-4444-4444-8444-444444444444",
     name: "Grace Second",
-    tenantId: "33333333-3333-4333-8333-333333333333",
+    tenantIds: ["33333333-3333-4333-8333-333333333333"],
+  },
+  "multi@example.com": {
+    id: "55555555-5555-4555-8555-555555555555",
+    name: "Max Multi",
+    tenantIds: ["22222222-2222-4222-8222-222222222222", "33333333-3333-4333-8333-333333333333"],
   },
 };
 const PASSWORD = "Password123!";
@@ -118,7 +123,7 @@ const server = createServer(async (request, response) => {
     if (!user || body.password !== PASSWORD) {
       return fail(response, 401, "auth.invalid_credentials", "Invalid email or password.");
     }
-    return send(response, 200, issuePair(body.email, user.tenantId));
+    return send(response, 200, issuePair(body.email, user.tenantIds[0]));
   }
   if (path === "/v1/auth/refresh" && method === "POST") {
     refreshCalls += 1;
@@ -154,11 +159,34 @@ const server = createServer(async (request, response) => {
       email_verified_at: "2026-01-01T00:00:00Z",
     });
   }
+  if (path === "/v1/auth/switch-tenant" && method === "POST") {
+    const body = await jsonBody(request);
+    if (!user.tenantIds.includes(body.tenant_id)) {
+      return fail(response, 403, "auth.not_tenant_member", "Not a member of that tenant.");
+    }
+    return send(response, 200, issuePair(principal.email, body.tenant_id));
+  }
   if (path === "/v1/me/organizations") {
-    return send(response, 200, { items: [organization(principal.tenantId)], next_cursor: "" });
+    return send(response, 200, { items: user.tenantIds.map(organization), next_cursor: "" });
   }
   if (path === "/v1/tenants") {
-    return send(response, 200, { items: [{ ...organization(principal.tenantId) }] });
+    return send(response, 200, { items: user.tenantIds.map(organization) });
+  }
+  if (path === "/v1/users" && method === "GET") {
+    const slug = tenants[principal.tenantId].slug; // each tenant has its own member
+    return send(response, 200, {
+      items: [
+        {
+          id: randomUUID(),
+          tenant_id: principal.tenantId,
+          email: `member@${slug}.example`,
+          display_name: `Member of ${tenants[principal.tenantId].name}`,
+          status: "active",
+          created_at: "2026-01-01T00:00:00Z",
+        },
+      ],
+      next_cursor: "",
+    });
   }
   if (/^\/v1\/users\/[^/]+\/tenants\/[^/]+\/permissions$/.test(path)) {
     return send(response, 200, {
