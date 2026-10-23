@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Liveness for container health checks: 200 once the server is serving.
-// version/revision are stamped into container images at build time
-// (QEET_BUILD_VERSION / QEET_BUILD_REVISION) and omitted where unset (Vercel).
+// Liveness for container health checks. version and revision come from QEET_BUILD_VERSION and
+// QEET_BUILD_REVISION, stamped into images at build time, and are omitted where unset.
 export const Route = createFileRoute("/healthz")({
   server: {
     handlers: {

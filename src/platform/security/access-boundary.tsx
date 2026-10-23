@@ -2,18 +2,20 @@ import { Button, buttonVariants, Skeleton } from "@qeetrix/ui";
 import { Link, useLocation } from "@tanstack/react-router";
 import { LockKeyholeIcon, RefreshCwIcon, ShieldAlertIcon } from "@qeetrix/icons";
 import type { ReactNode } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { useEffect, useRef } from "react";
 
 import { useTenantId } from "@/platform/auth/session";
-import { getRequiredCapabilityForPath } from "@/platform/config/navigation";
+import { getRequiredCapabilityForPath } from "@/platform/security/route-capability";
 import { PageState } from "@/shared/components/page-state";
 import { capabilityLabel } from "./capability-model";
 import { useCapabilities } from "./capability-provider";
 
 function AccessLoadingState() {
+  const { t } = useTranslation("common");
   return (
     <div className="flex min-w-0 flex-col gap-6" role="status" aria-live="polite" aria-busy="true">
-      <span className="sr-only">Checking organization access</span>
+      <span className="sr-only">{t("accessBoundary.checkingOrganizationAccess")}</span>
       <div className="flex items-end justify-between gap-4 border-b border-border/70 pb-5">
         <div className="space-y-3">
           <Skeleton className="h-8 w-56 max-w-[70vw]" />
@@ -38,6 +40,7 @@ function focusStateHeading(root: HTMLDivElement | null) {
 }
 
 export function AccessBoundary({ children }: { children: ReactNode }) {
+  const { t } = useTranslation("common");
   const { pathname } = useLocation();
   const access = useCapabilities();
   const hasOrg = !!useTenantId();
@@ -59,11 +62,11 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
         <PageState
           code="—"
           icon={ShieldAlertIcon}
-          title="Organization access could not be verified"
-          description="The console could not confirm your permissions. Retry the check, switch organizations, or use the account menu to sign out."
+          title={t("accessBoundary.organizationAccessCouldNot")}
+          description={t("accessBoundary.theConsoleCouldNot")}
           actions={
             <Button onClick={access.retry}>
-              <RefreshCwIcon /> Retry access check
+              <RefreshCwIcon /> {t("accessBoundary.retryAccessCheck")}
             </Button>
           }
         />
@@ -72,25 +75,29 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
   }
 
   if (denied && required) {
-    // An org-less user is denied because there's no organization yet — not
-    // because of a role. Say so, and point them at onboarding instead of
-    // implying an admin must grant them a capability.
+    // An org-less user is denied for want of an organization, not a role: point them at
+    // onboarding rather than at an admin.
     return (
       <div ref={stateRef}>
         {hasOrg ? (
           <PageState
             code="403"
             icon={LockKeyholeIcon}
-            title="You don’t have access to this page"
+            title={t("accessBoundary.youDonTHave")}
             description={
               <>
-                This organization requires <strong>{capabilityLabel(required)}</strong>.
+                <Trans
+                  t={t}
+                  i18nKey="accessBoundary.requires"
+                  values={{ capability: capabilityLabel(required) }}
+                  components={{ strong: <strong /> }}
+                />
                 <span className="mt-1 block font-mono text-xs">{required}</span>
               </>
             }
             actions={
               <Link to="/" className={buttonVariants()}>
-                Go to overview
+                {t("accessBoundary.goToOverview")}
               </Link>
             }
           />
@@ -98,11 +105,11 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
           <PageState
             code="—"
             icon={LockKeyholeIcon}
-            title="Create an organization to continue"
-            description="This page belongs to an organization. Create or join one first, then you’ll have access."
+            title={t("accessBoundary.createAnOrganizationToContinue")}
+            description={t("accessBoundary.thisPageBelongsTo")}
             actions={
               <Link to="/" className={buttonVariants()}>
-                Go to setup
+                {t("accessBoundary.goToSetup")}
               </Link>
             }
           />

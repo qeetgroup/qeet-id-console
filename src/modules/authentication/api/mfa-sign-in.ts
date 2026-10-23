@@ -1,13 +1,11 @@
-// The helpers of a sign-in's second-factor challenge: send a code to an email
-// or SMS factor, run a passkey assertion, send a push approval request and
-// wait for it, or — for an account that must have a second factor and holds
-// none — set up an authenticator app. The challenge itself is completed at
-// /v1/auth/mfa (see useCompleteMfaLogin), which the BFF turns into the session.
+// Steps within a sign-in's second-factor challenge. useCompleteMfaLogin completes the challenge
+// at /v1/auth/mfa, and the BFF turns the result into the session.
 
 import {
   type PublicKeyCredentialRequestOptionsJSON,
   startAuthentication,
 } from "@simplewebauthn/browser";
+import { z } from "zod";
 
 import { ApiError, api } from "@/platform/api/client";
 
@@ -32,25 +30,29 @@ export async function mfaPasskeyProof(mfaToken: string): Promise<MfaProof> {
   return { passkey: { session_id: begin.session_id, credential } };
 }
 
+const mfaEnrollmentSchema = z.object({
+  secret: z.string().min(1),
+  provisioning_url: z.string().startsWith("otpauth://"),
+});
 /** An authenticator app being set up for an enrolment challenge. */
-export type MfaEnrollment = { secret: string; provisioning_url: string };
+export type MfaEnrollment = z.infer<typeof mfaEnrollmentSchema>;
 
 /** Starts the authenticator app that completes an enrolment challenge. */
 export function startMfaEnrollment(mfaToken: string): Promise<MfaEnrollment> {
-  return api<MfaEnrollment>("/v1/auth/mfa/enroll", {
+  return api("/v1/auth/mfa/enroll", {
     method: "POST",
     body: { mfa_token: mfaToken },
     anonymous: true,
+    schema: mfaEnrollmentSchema,
   });
 }
 
 const PUSH_POLL_MS = 2000;
 
 /**
- * Sends the push approval request and completes the challenge once it is
- * approved, asking every two seconds while it is unanswered (which costs no
- * attempt). Rejects with the server's error when it is denied or expires, and
- * stops quietly when signal aborts.
+ * Sends the push approval request and completes the challenge once it is approved, asking every
+ * two seconds while it is unanswered (which costs no attempt). Rejects with the server's error
+ * when it is denied or expires; resolves false when signal aborts.
  */
 export async function completeWithPush(mfaToken: string, signal: AbortSignal): Promise<boolean> {
   await api("/v1/auth/mfa/push", {

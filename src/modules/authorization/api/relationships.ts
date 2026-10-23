@@ -1,12 +1,10 @@
-// ReBAC relationship-tuple data layer (Access → Relationships). Tuples are
-// "object relation subject" assertions (Zanzibar/OpenFGA style); Check resolves
-// them recursively. Backed by /v1/tenants/{tenantID}/relation-tuples[/check].
-
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authzKeys } from "./keys";
 
+/** A Zanzibar-style "object relation subject" assertion; the server resolves them recursively. */
 export interface RelationTuple {
   id: string;
   object: string;
@@ -14,11 +12,11 @@ export interface RelationTuple {
   subject: string;
 }
 
-/** List tuples on a given object ("type:id"); disabled until an object is set. */
+/** Fetches the tuples on `object` ("type:id"); idle until an object is set. */
 export function useRelationTuples(object: string) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["relation-tuples", tenantId, object],
+    queryKey: authzKeys.relationTuples(tenantId, object),
     enabled: !!tenantId && !!object,
     queryFn: () =>
       api<{ items: RelationTuple[] }>(
@@ -27,17 +25,24 @@ export function useRelationTuples(object: string) {
   });
 }
 
+// A tuple change also moves the expanded graph and the subject reverse-lookup.
+function invalidateTupleViews(qc: QueryClient, tenantId: string | null) {
+  return qc.invalidateQueries({ queryKey: authzKeys.relations(tenantId) });
+}
+
 export function useWriteTuple() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { object: string; relation: string; subject: string }) =>
-      api<RelationTuple>(`/v1/tenants/${tenantId}/relation-tuples`, {
+    mutationFn: (body: { object: string; relation: string; subject: string }) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<RelationTuple>(`/v1/tenants/${tenantId}/relation-tuples`, {
         method: "POST",
         body,
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["relation-tuples"] }),
-    meta: { successMessage: "Tuple written" },
+      });
+    },
+    onSuccess: () => invalidateTupleViews(qc, tenantId),
+    meta: { successMessage: "authorization:toast.tupleWritten", silentError: true }, // the page shows the error
   });
 }
 
@@ -45,28 +50,30 @@ export function useDeleteTuple() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/relation-tuples/${id}`, {
+    mutationFn: (id: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/relation-tuples/${id}`, {
         method: "DELETE",
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["relation-tuples"] }),
-    meta: { successMessage: "Relationship deleted" },
+      });
+    },
+    onSuccess: () => invalidateTupleViews(qc, tenantId),
+    meta: { successMessage: "authorization:toast.relationshipDeleted" },
   });
 }
 
 export function useCheckRelation() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: (body: { object: string; relation: string; user_id: string }) =>
-      api<{ allowed: boolean }>(`/v1/tenants/${tenantId}/relation-tuples/check`, {
+    mutationFn: (body: { object: string; relation: string; user_id: string }) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<{ allowed: boolean }>(`/v1/tenants/${tenantId}/relation-tuples/check`, {
         method: "POST",
         body,
-      }),
+      });
+    },
     meta: { silent: true },
   });
 }
-
-// --- Identity Graph types ---
 
 export interface GraphNode {
   id: string; // "type:id"
@@ -85,7 +92,7 @@ export interface RelationGraph {
   edges: GraphEdge[];
 }
 
-/** Expand the identity graph rooted at object+relation — all reachable subjects. */
+/** Fetches the graph of every subject reachable through `relation` on `object`. */
 export function useRelationGraph(object: string, relation: string, depth?: number) {
   const tenantId = useTenantId();
   const params = new URLSearchParams({
@@ -94,17 +101,17 @@ export function useRelationGraph(object: string, relation: string, depth?: numbe
     ...(depth != null ? { depth: String(depth) } : {}),
   });
   return useQuery({
-    queryKey: ["relation-graph", tenantId, object, relation, depth],
+    queryKey: authzKeys.relationGraph(tenantId, object, relation, depth),
     enabled: !!tenantId && !!object && !!relation,
     queryFn: () => api<RelationGraph>(`/v1/tenants/${tenantId}/relation-tuples/graph?${params}`),
   });
 }
 
-/** Reverse-lookup: all objects a given subject appears in. */
+/** Fetches every tuple whose subject is `subject`: a reverse lookup. */
 export function useSubjectTuples(subject: string) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["relation-tuples-subject", tenantId, subject],
+    queryKey: authzKeys.subjectTuples(tenantId, subject),
     enabled: !!tenantId && !!subject,
     queryFn: () =>
       api<{ items: RelationTuple[] }>(

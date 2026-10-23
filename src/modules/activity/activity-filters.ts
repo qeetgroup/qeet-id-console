@@ -1,9 +1,6 @@
-// Pure filter and grouping functions for the activity feed.
-// No side effects, no imports from React or the store — easy to unit-test.
-
 import type { ActivityEvent, ActivityFilters, DateGroup, Severity } from "./types/activity.types";
 
-/** Returns true if the event matches all active filters. */
+/** Returns true if the event matches every active filter; text filters match case-insensitively. */
 export function matchesFilters(event: ActivityEvent, filters: ActivityFilters): boolean {
   if (filters.types.length > 0 && !filters.types.includes(event.type)) return false;
   if (filters.severity.length > 0 && !filters.severity.includes(event.severity)) return false;
@@ -32,7 +29,6 @@ export function matchesFilters(event: ActivityEvent, filters: ActivityFilters): 
   return true;
 }
 
-/** Returns true when no filters are active (fast-path for no filtering). */
 function hasActiveFilters(filters: ActivityFilters): boolean {
   return (
     filters.types.length > 0 ||
@@ -49,7 +45,7 @@ function hasActiveFilters(filters: ActivityFilters): boolean {
   );
 }
 
-/** Apply filters to an array of events. Returns the same array reference when no filters are active. */
+/** Returns the matching events, or the same array reference when no filter is active. */
 export function applyFilters(events: ActivityEvent[], filters: ActivityFilters): ActivityEvent[] {
   if (!hasActiveFilters(filters)) return events;
   return events.filter((e) => matchesFilters(e, filters));
@@ -62,9 +58,8 @@ function startOfDayMs(now: Date): number {
 }
 
 /**
- * Groups events by relative date bucket: Today / Yesterday / This Week / Older.
- * Expects events in newest-first order; output groups preserve that order.
- * Accepts an optional `now` for deterministic testing.
+ * Groups newest-first events into Today / Yesterday / This Week / Older, keeping their order.
+ * This Week is the five days before yesterday; empty buckets are omitted.
  */
 export function groupByDate(events: ActivityEvent[], now = new Date()): DateGroup[] {
   if (events.length === 0) return [];
@@ -87,31 +82,30 @@ export function groupByDate(events: ActivityEvent[], now = new Date()): DateGrou
   }
 
   const result: DateGroup[] = [];
-  if (today.length > 0) result.push({ label: "Today", events: today });
-  if (yesterday.length > 0) result.push({ label: "Yesterday", events: yesterday });
-  if (thisWeek.length > 0) result.push({ label: "This Week", events: thisWeek });
-  if (older.length > 0) result.push({ label: "Older", events: older });
+  if (today.length > 0) result.push({ key: "today", events: today });
+  if (yesterday.length > 0) result.push({ key: "yesterday", events: yesterday });
+  if (thisWeek.length > 0) result.push({ key: "thisWeek", events: thisWeek });
+  if (older.length > 0) result.push({ key: "older", events: older });
   return result;
 }
 
-/** Extract unique filter option values from the current event set. */
+/** Returns the distinct facet values in `events`, sorted (severities in first-seen order). */
 export function extractFilterOptions(events: ActivityEvent[]): {
   types: string[];
   categories: string[];
   severities: Severity[];
   sources: string[];
   statuses: string[];
-  /** Distinct actors (id → best label), for the "All actors" facet. */
+  /** Actor ids, labelled with a name when any event carries one. */
   actors: { value: string; label: string }[];
-  /** Distinct resource types (event.target.type), for the "All resources" facet. */
-  resources: string[];
+  resources: string[]; // Distinct `target.type` values
 } {
   const types = new Set<string>();
   const categories = new Set<string>();
   const severities = new Set<Severity>();
   const sources = new Set<string>();
   const statuses = new Set<string>();
-  const actors = new Map<string, string>(); // id → label
+  const actors = new Map<string, string>();
   const resources = new Set<string>();
 
   for (const e of events) {

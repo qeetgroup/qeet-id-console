@@ -1,16 +1,11 @@
-// Audit & session tools — search_audit_logs, search_sessions.
-//
-// search_audit_logs: GET /v1/tenants/{tenantId}/audit (tenant-scoped, read-only).
-// search_sessions:   GET /v1/auth/sessions — SELF-SCOPED ONLY. No admin cross-user
-//                    session search endpoint exists. The tool documents this clearly
-//                    so the model never over-promises on its scope.
+// search_sessions lists only the caller's own sessions: there is no cross-user session search,
+// and its description and summary say so, so the model doesn't over-promise.
 
 import { z } from "zod";
 
+import { listSessions } from "@/modules/authentication";
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── search_audit_logs ─────────────────────────────────────────────────────────
 
 const searchAuditLogsInput = z.object({
   q: z.string().optional(),
@@ -34,7 +29,7 @@ interface AuditEvent {
 export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
   name: "search_audit_logs",
   category: "audit",
-  title: "Search audit logs",
+  title: "qeetai:tools.titles.searchAuditLogs",
   description:
     "Search the organization's append-only audit log by free-text, action, resource type, and/or actor. Read-only.",
   input: searchAuditLogsInput,
@@ -57,6 +52,10 @@ export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
     return {
       ok: true,
       summary: `Found ${events.length} audit event${events.length === 1 ? "" : "s"}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.auditEventsFound",
+        values: { count: events.length },
+      },
       data: {
         events: events.map((e) => ({
           id: e.id,
@@ -72,24 +71,13 @@ export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
   },
 };
 
-// ── search_sessions ───────────────────────────────────────────────────────────
-
 const searchSessionsInput = z.object({});
 type SearchSessionsInput = z.infer<typeof searchSessionsInput>;
-
-interface Session {
-  id: string;
-  user_id: string;
-  user_agent?: string | null;
-  ip?: string | null;
-  created_at: string;
-  last_seen_at?: string | null;
-}
 
 export const searchSessionsTool: ToolDefinition<SearchSessionsInput> = {
   name: "search_sessions",
   category: "audit",
-  title: "List sessions",
+  title: "qeetai:tools.titles.listSessions",
   description:
     "List active sessions for the current principal. Note: this endpoint is self-scoped — there is no admin cross-user session search — so it returns the calling operator's own sessions only.",
   input: searchSessionsInput,
@@ -98,15 +86,16 @@ export const searchSessionsTool: ToolDefinition<SearchSessionsInput> = {
   mutates: false,
   auditLabel: "qeetai.search_sessions",
   async run(ctx, input) {
-    // input is {} — satisfy linter
+    // input is always {}; referenced only for the unused-parameter lint.
     void input;
-    const data = await api<{ items: Session[] }>("/v1/auth/sessions", {
-      signal: ctx.signal,
-    });
-    const sessions = data.items ?? [];
+    const { items: sessions } = await listSessions(ctx.signal);
     return {
       ok: true,
       summary: `Found ${sessions.length} active session${sessions.length === 1 ? "" : "s"} for the current operator. (Note: cross-user session search is not available — this returns only your own sessions.)`,
+      display: {
+        key: "qeetai:toolCallCard.results.sessionsFound",
+        values: { count: sessions.length },
+      },
       data: {
         sessions: sessions.map((s) => ({
           id: s.id,

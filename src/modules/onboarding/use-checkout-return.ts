@@ -1,28 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useTenantId, useUserId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
 
-type TenantListItem = { id: string; created_at?: string };
+import { readPendingOnboarding } from "./onboarding-profile";
+
+type TenantListItem = { id: string; slug: string };
 
 /**
- * Handles the browser's return from a hosted payment.
- *
- * On `?checkout=success` (a paid signup checkout completed) the organization now
- * exists but the session is still on the previous/no tenant — so we find the
- * newest org the user owns and switch into it (`switchToTenant` reloads into it).
- * We poll briefly to absorb any webhook lag. `?checkout=cancelled` just clears
- * the flag with a toast — importantly, no organization was created.
- *
- * Returns `finalizing` so the caller can show a "wrapping up" state while the
- * org appears and we switch in.
+ * Handles the return from a hosted payment. On success it polls for the organization just paid for
+ * and switches the session into it; on cancel it toasts that no organization was created.
+ * `finalizing` is true while it waits.
  */
 export function useCheckoutReturn(): { finalizing: boolean } {
   const [finalizing, setFinalizing] = useState(false);
   const started = useRef(false);
   const currentTenantId = useTenantId();
+  const userId = useUserId();
 
   useEffect(() => {
     if (started.current) return;
@@ -37,17 +34,15 @@ export function useCheckoutReturn(): { finalizing: boolean } {
     const cancelled =
       outcome === "cancelled" || (!!rzpLinkId && rzpStatus !== null && rzpStatus !== "paid");
     if (cancelled) {
-      toast.message("Payment cancelled — no organization was created.");
+      toast.message(i18n.t("onboarding:setup.checkout.cancelled"));
       window.history.replaceState({}, "", window.location.pathname);
       return;
     }
 
     setFinalizing(true);
     void (async () => {
-      // A Razorpay redirect carries the signed payment params. Post them so the
-      // server verifies the payment and completes the checkout (creating the
-      // org) — the async webhook can't reach a local server. Idempotent with the
-      // webhook in production.
+      // Posting the signed Razorpay params lets the server verify the payment and create the org
+      // where the webhook can't reach it (a local server); it is idempotent with the webhook.
       if (rzpLinkId) {
         const body: Record<string, string> = {};
         for (const k of [
@@ -65,32 +60,36 @@ export function useCheckoutReturn(): { finalizing: boolean } {
         );
       }
 
-      const current = currentTenantId;
-      // Poll for up to ~45s (webhook + provisioning can lag well past 10s). A
-      // gentle ramp keeps early checks snappy without hammering the API late.
-      const MAX_ATTEMPTS = 30;
+      // The paid organization is the one with the stashed slug. Without a stash, it is one that
+      // wasn't there at the first poll: "the newest" could be another organization of the user's.
+      const pendingSlug = readPendingOnboarding(userId)?.slug;
+      let existing: Set<string> | null = null;
+      const MAX_ATTEMPTS = 30; // ~50s with the ramp below: provisioning can lag past 10s
       for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
         const res = await api<{ items: TenantListItem[] }>("/v1/tenants").catch(() => null);
         const items = res?.items ?? [];
-        const newest = [...items].sort((a, b) =>
-          (b.created_at ?? "").localeCompare(a.created_at ?? ""),
-        )[0];
-        if (newest && newest.id !== current) {
-          await switchToTenant(newest.id); // replaces the scoped session + reloads into the org
+        const seen = existing;
+        const paid = pendingSlug
+          ? items.find((t) => t.slug === pendingSlug)
+          : seen && items.find((t) => !seen.has(t.id));
+        existing ??= new Set(items.map((t) => t.id));
+        if (paid && paid.id === currentTenantId) {
+          setFinalizing(false);
+          window.history.replaceState({}, "", window.location.pathname);
+          return;
+        }
+        if (paid) {
+          await switchToTenant(paid.id); // replaces the scoped session + reloads into the org
           return;
         }
         await new Promise((r) => setTimeout(r, attempt < 10 ? 1000 : 2000));
       }
-      // Still not provisioned — payment succeeded but the org hasn't appeared yet.
-      // Tell the user explicitly (don't silently drop) so a paid signup that's
-      // finalizing doesn't look like nothing happened; it'll appear on reload.
+      // Paid but not provisioned yet: say so, rather than look as if nothing happened.
       setFinalizing(false);
       window.history.replaceState({}, "", window.location.pathname);
-      toast.message(
-        "Payment received — we're finishing your organization setup. This can take a moment; refresh shortly or contact support if it doesn't appear.",
-      );
+      toast.message(i18n.t("onboarding:setup.checkout.finishing"));
     })();
-  }, [currentTenantId]);
+  }, [currentTenantId, userId]);
 
   return { finalizing };
 }

@@ -1,22 +1,19 @@
-// Tool + execution contracts (Phase 0, frozen). Every qeetai action is a
-// ToolDefinition: a Zod-validated input, an optional required Capability, a
-// destructive flag with a confirmation builder, an audit label, and a `run`
-// that executes through the EXISTING authenticated hooks/endpoints — so RBAC,
-// Postgres RLS tenant isolation, and audit are inherited, never reimplemented.
-//
-// Note: the execution-engine *types* (ExecutionStatus, ToolExecution) live here
-// rather than in execution-engine.ts, so the engine implementation can be owned
-// as a single impl file without a types/impl collision.
+// Every assistant action is a ToolDefinition whose `run` calls the existing authenticated
+// endpoints, so the backend's RBAC, tenant isolation and audit apply, never reimplemented.
 
 import type { QueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
 
+import type { TranslationKey } from "@/i18n";
 import type { Capability } from "@/platform/security/capability-model";
-import type { ConsoleContext } from "../../context/types/context.types";
+import type { ConsoleContext } from "@/modules/qeetai/context/types/context.types";
 
 export type ToolCategory = "directory" | "authz" | "credentials" | "audit" | "codegen";
 
-/** A confirmation the user must approve before a destructive tool runs. */
+/**
+ * A confirmation the user must approve before a tool with a `confirm` builder runs. Shown only to
+ * the operator, so its copy is translated.
+ */
 export interface ConfirmRequest {
   title: string;
   body: string;
@@ -28,14 +25,11 @@ export interface ConfirmRequest {
 
 export interface ToolResult {
   ok: boolean;
-  /** Redacted, model-safe one-liner — fed back to the model AND rendered. */
-  summary: string;
-  /** Redacted structured payload for rich rendering. Never secret-bearing. */
-  data?: Record<string, unknown>;
-  /**
-   * Secret material (client secret, private key) that must be shown to the
-   * operator ONCE but NEVER sent to the model or persisted server-side.
-   */
+  summary: string; // Model-safe one-line result, in English for the model; never rendered
+  /** What the tool card tells the operator, in their language; values hold no secret. */
+  display?: { key: TranslationKey; values?: Record<string, string | number> };
+  data?: Record<string, unknown>; // Structured result for rendering; never holds a secret
+  /** A secret shown to the operator once; never sent to the model or persisted. */
   sensitiveArtifact?: { kind: "secret" | "private_key"; label: string; value: string };
   error?: { code: string; message: string };
 }
@@ -44,42 +38,38 @@ export interface ToolContext {
   tenantId: string;
   userId: string;
   console: ConsoleContext;
-  /** Client-side capability hint for enable/disable + pre-flight UX. */
+  /** Client-side capability hint for UX; the backend makes the authorization decision. */
   can: (c?: Capability) => boolean;
-  /** Imperative execution of the existing React Query hooks/`api()` calls. */
-  queryClient: QueryClient;
+  queryClient: QueryClient; // For invalidating the console's cached queries after a change
   signal: AbortSignal;
   /** Opens the confirmation dialog; resolves true on approval. */
   confirm: (req: ConfirmRequest) => Promise<boolean>;
   /**
-   * Opens the step-up re-auth dialog when the backend returns
-   * `step_up_required` mid-tool; resolves true once a fresh factor is verified
-   * so the engine can retry. Backend stays authoritative.
+   * Opens the step-up dialog after a `step_up_required` response; resolves true once a fresh
+   * factor is verified, so the engine can run the tool again.
    */
   stepUp: () => Promise<boolean>;
 }
 
 export interface ToolDefinition<I = unknown> {
-  /** snake_case; MUST equal the manifest entry and the backend tool name. */
-  name: string;
+  name: string; // snake_case; must equal the backend's name for the tool
   category: ToolCategory;
-  title: string;
-  /** Model-facing description. */
-  description: string;
+  title: TranslationKey; // of the name the tool card shows
+  description: string; // Model-facing description, so English
   input: z.ZodType<I>;
   requiredCapability?: Capability;
   destructive: boolean;
   /**
-   * True when the tool changes anything (creates, updates, deletes, rotates),
-   * not only when it is destructive. Change tools are withheld while
-   * `ASSISTANT_CHANGE_TOOLS_ENABLED` is off.
+   * True when the tool changes anything, not only when it is destructive. Change tools are
+   * withheld while `ASSISTANT_CHANGE_TOOLS_ENABLED` is off.
    */
   mutates: boolean;
   /**
-   * Console screen where the operator makes this change themselves. Every
-   * change tool names one, so a withheld tool can point the operator there.
+   * Console screen where the operator makes this change themselves. Every change tool names one,
+   * so a withheld tool can point the operator there. `label` is a catalogue key; `hint` goes only
+   * to the model.
    */
-  consoleScreen?: { label: string; to: string; hint?: string };
+  consoleScreen?: { label: TranslationKey; to: string; hint?: string };
   confirm?: (input: I, ctx: ToolContext) => ConfirmRequest;
   auditLabel: string;
   run: (ctx: ToolContext, input: I) => Promise<ToolResult>;
@@ -98,8 +88,7 @@ export type ExecutionStatus =
   | "timed_out";
 
 export interface ToolExecution {
-  /** Equals the originating tool_call id. */
-  id: string;
+  id: string; // Equals the originating tool_call id
   toolName: string;
   input: unknown;
   status: ExecutionStatus;

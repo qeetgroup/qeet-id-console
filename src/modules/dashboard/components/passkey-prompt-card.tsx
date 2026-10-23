@@ -10,30 +10,25 @@ import {
 import { Link } from "@tanstack/react-router";
 import { FingerprintPatternIcon, XIcon, ZapIcon } from "@qeetrix/icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { canAddPasskey, usePasskeys } from "@/modules/authentication";
+import { scopedStorage, useStorageScope } from "@/platform/auth/scoped-storage";
 
-const DISMISS_KEY = "qeetid-admin-passkey-prompt-dismissed";
+// Dismissed per person, so a shared browser still nudges the next one.
+const dismissStorage = scopedStorage("qeetid-admin-passkey-prompt-dismissed");
 
 /**
- * Soft nudge shown on the dashboard when the signed-in user has no
- * passkey on file. Built as a dismissible card (state persisted in
- * localStorage so it doesn't reappear on every refresh).
- *
- * Hidden in four cases:
- *   1. The user already has at least one passkey.
- *   2. The list query is still loading (avoid flicker).
- *   3. The user has explicitly dismissed it.
- *   4. The user's organization has passkeys switched off.
- *
- * The card renders the nudge and its CTA routes to the user's own security
- * settings, where the register ceremony (backed by the WebAuthn register
- * begin/finish endpoints) runs.
+ * Renders a dismissible nudge to add a passkey, linking to the user's security settings. Hidden
+ * while loading, once dismissed (kept for this person), when the user has a passkey, or when
+ * the organization has passkeys switched off.
  */
 export function PasskeyPromptCard() {
-  const [dismissed, setDismissed] = useState(
-    () => typeof window !== "undefined" && localStorage.getItem(DISMISS_KEY) === "1",
-  );
+  const { t } = useTranslation(["dashboard", "common"]);
+  // The scope is known only once the session hydrates, so the stored dismissal is read with it.
+  const scope = useStorageScope();
+  const [dismissedIn, setDismissedIn] = useState<string | null>(null);
+  const dismissed = scope !== null && (dismissedIn === scope || dismissStorage.read() === true);
   const q = usePasskeys();
 
   if (dismissed) return null;
@@ -42,12 +37,8 @@ export function PasskeyPromptCard() {
   if (!canAddPasskey(q.data)) return null;
 
   function handleDismiss() {
-    setDismissed(true);
-    try {
-      localStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      // Private-mode tolerant: dismissed in-memory for the session.
-    }
+    setDismissedIn(scope);
+    dismissStorage.write(true); // best-effort: without storage it lasts this page
   }
 
   return (
@@ -59,26 +50,29 @@ export function PasskeyPromptCard() {
           </span>
           <div>
             <CardTitle className="text-sm font-semibold">
-              Protect this operator account with a passkey
+              {t("passkeyPromptCard.protectThisOperatorAccount")}
             </CardTitle>
-            <CardDescription>
-              Use Touch ID, Face ID, Windows Hello, or a security key for phishing-resistant access.
-            </CardDescription>
+            <CardDescription>{t("passkeyPromptCard.useTouchIdFace")}</CardDescription>
           </div>
         </div>
-        <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t("common:actions.dismiss")}
+          onClick={handleDismiss}
+        >
           <XIcon />
         </Button>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2 border-t border-info/15 pt-3">
         <Link to="/account/security" className={buttonVariants({ size: "sm" })}>
-          <ZapIcon /> Add a passkey
+          <ZapIcon /> {t("passkeyPromptCard.addPasskey")}
         </Link>
         <Button variant="ghost" size="sm" onClick={handleDismiss}>
-          Not now
+          {t("passkeyPromptCard.notNow")}
         </Button>
         <span className="ms-auto text-[11px] text-muted-foreground">
-          Recommended for privileged operators
+          {t("passkeyPromptCard.recommendedForPrivilegedOperators")}
         </span>
       </CardContent>
     </Card>

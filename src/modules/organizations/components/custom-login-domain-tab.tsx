@@ -10,7 +10,7 @@ import {
   FieldLabel,
   Input,
 } from "@qeetrix/ui";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   BookOpenIcon,
@@ -32,25 +32,22 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { api } from "@/platform/api/client";
+import { toastError } from "@/platform/errors/error-toast";
+
+import { brandingKeys, saveBranding, useBranding } from "@/modules/branding";
 import { useTenantId } from "@/platform/auth/session";
 import { useLoginDomain } from "../api/domains";
+import { orgKeys } from "../api/keys";
 
 const GUIDE = "https://docs.qeet.in/qeet-id/custom-login-domain";
 
-type Branding = { custom_domain?: string | null };
-
 export function CustomLoginDomainTab() {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const tenantId = useTenantId();
   const qc = useQueryClient();
   const statusQ = useLoginDomain();
 
-  const brandingQ = useQuery({
-    queryKey: ["branding", tenantId],
-    enabled: !!tenantId,
-    queryFn: () => api<Branding>(`/v1/tenants/${tenantId}/branding`),
-  });
+  const brandingQ = useBranding();
 
   const [host, setHost] = useState("");
   useEffect(() => {
@@ -67,15 +64,14 @@ export function CustomLoginDomainTab() {
   const save = async () => {
     setSaving(true);
     try {
-      // Full-replace PUT: merge onto the current branding so saving a domain
-      // here can't blank the colours and logo set on the Branding screen.
-      await api(`/v1/tenants/${tenantId}/branding`, {
-        method: "PUT",
-        body: { ...(brandingQ.data ?? {}), custom_domain: host.trim() || null },
-      });
-      toast.success("Login domain saved");
-      await qc.invalidateQueries({ queryKey: ["branding", tenantId] });
-      await qc.invalidateQueries({ queryKey: ["domains"] });
+      if (!tenantId || !brandingQ.data) return;
+      // The PUT replaces all branding: merge onto it so the colours and logo survive.
+      await saveBranding(tenantId, { ...brandingQ.data, custom_domain: host.trim() || null });
+      toast.success(t("customLoginDomainTab.loginDomainSaved"));
+      await qc.invalidateQueries({ queryKey: brandingKeys.tenant(tenantId) });
+      await qc.invalidateQueries({ queryKey: orgKeys.org(tenantId) });
+    } catch (err) {
+      toastError(err);
     } finally {
       setSaving(false);
     }
@@ -346,9 +342,7 @@ export function CustomLoginDomainTab() {
         </div>
       </div>
 
-      {/* In-flow, not `fixed inset-x-0`: a viewport-pinned bar spanned the whole
-          window including under the sidebar, so it never lined up with the
-          content column it belongs to. */}
+      {/* In-flow rather than viewport-pinned, so the bar lines up with the content column. */}
       <div className="flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="min-w-0 text-xs text-muted-foreground">
           {dirty ? (
@@ -373,8 +367,7 @@ export function CustomLoginDomainTab() {
               ? t("workspace.domains.custom.verifying")
               : t("workspace.domains.custom.verifyDns")}
           </Button>
-          {/* A docs link shouldn't compete with Save for emphasis, so it's a
-              quiet link rather than a third solid button. */}
+          {/* A quiet link, so the docs don't compete with Save for emphasis. */}
           <a
             href={GUIDE}
             target="_blank"
@@ -402,11 +395,7 @@ function SectionIcon({ icon }: { icon: React.ReactNode }) {
   );
 }
 
-/**
- * Rows in the provisioning panel share one grid so every value starts at the
- * same x position. `justify-between` pushed each value to the right edge, which
- * left the column ragged because the labels differ in width.
- */
+/** Renders a label/value row on a fixed-width label grid, so the panel's values align. */
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[8rem_1fr] items-start gap-3">

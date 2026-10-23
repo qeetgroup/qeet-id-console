@@ -8,41 +8,43 @@ import {
   TrashIcon,
 } from "@qeetrix/icons";
 import { useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export type LogoStatus = "empty" | "loading" | "ready" | "error";
 
 type LogoFieldProps = {
-  /** Current logo source — a public URL or a data: URL. Empty = no logo. */
-  value: string;
-  /** Emits the new value: a data URL after a file pick, or the typed URL. */
-  onChange: (next: string) => void;
-  /** Max file size in MB before the pick is rejected. Defaults to 2. */
-  maxSizeMB?: number;
-  /** Accepted MIME types for the file input. Defaults to all images. */
-  accept?: string;
+  value: string; // a public URL or a data: URL; empty means no logo
+  onChange: (next: string) => void; // a data URL after a file pick, or the typed URL
+  maxSizeMB?: number; // largest accepted file, in MB; defaults to 2
+  accept?: string; // accepted MIME types; defaults to all images
   disabled?: boolean;
   hint?: string;
   className?: string;
-  /** Heading shown beside the preview. Defaults to "Logo set". */
-  title?: string;
-  /**
-   * Replaces the line under the heading, which otherwise shows the current
-   * source. Distinct from `hint`, which sits below the whole control.
-   */
-  subtitle?: string;
+  title?: string; // heading beside the preview; defaults to "Logo set"
+  subtitle?: string; // replaces the source line under the heading; `hint` goes below all
   layout?: "stacked" | "split";
   onStatusChange?: (status: LogoStatus) => void;
 };
 
 /**
- * Console-local logo picker. Replaces `@qeetrix/ui`'s `LogoUploader`, whose
- * drop-zone doesn't open the file dialog on click (the hidden <input> has no
- * label association). Here the dropzone and the Replace button both call the
- * file input's `.click()` directly, so clicking always opens the picker.
- *
- * Both input paths share the one `value` slot — a file becomes a data URL via
- * FileReader; a pasted URL is emitted verbatim — so callers treat them the same.
+ * Renders a logo picker. Unlike `@qeetrix/ui`'s LogoUploader, clicking the dropzone or Replace
+ * always opens the file dialog, as both call the input's `.click()`. A picked file becomes a data
+ * URL and a pasted URL passes as typed, both through `value`.
  */
+const INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp|svg\+xml);base64,/i;
+
+// Only an http(s) URL or an uploaded image renders; anything else typed into the URL field (a
+// `javascript:` URL, say) never reaches an element.
+function previewSource(value: string): string | undefined {
+  if (INLINE_IMAGE.test(value)) return value;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function LogoField({
   value,
   onChange,
@@ -56,6 +58,7 @@ export function LogoField({
   layout = "stacked",
   onStatusChange,
 }: LogoFieldProps) {
+  const { t } = useTranslation("common");
   const id = useId();
   const [dragOver, setDragOver] = useState(false);
   const [urlOpen, setUrlOpen] = useState(false);
@@ -67,17 +70,22 @@ export function LogoField({
   disabledRef.current = disabled;
   const [imageReady, setImageReady] = useState(false);
 
-  // Attach error listener imperatively to avoid jsx-a11y/no-noninteractive-element-interactions
-  // (onError on <img> is a system event, not a user interaction, but the rule flags all handlers)
+  // Attached imperatively: the a11y lint flags any handler on <img>, though onError is a system
+  // event, not a user interaction.
   useEffect(() => {
     readVersion.current += 1;
     setError(null);
     setImageReady(false);
+    if (value && !previewSource(value)) {
+      setError(t("logoField.errors.unsafeSource"));
+      onStatusChange?.("error");
+      return;
+    }
     onStatusChange?.(value ? "loading" : "empty");
     const el = previewRef.current;
     if (!el) return;
     const handle = () => {
-      setError("Couldn't render that source as an image.");
+      setError(t("logoField.errors.notRenderable"));
       onStatusChange?.("error");
     };
     const loaded = () => {
@@ -92,7 +100,7 @@ export function LogoField({
       el.removeEventListener("error", handle);
       el.removeEventListener("load", loaded);
     };
-  }, [value, onStatusChange]);
+  }, [value, onStatusChange, t]);
 
   const maxBytes = maxSizeMB * 1024 * 1024;
 
@@ -107,12 +115,12 @@ export function LogoField({
           .map((type) => type.trim())
           .includes(file.type))
     ) {
-      setError("That doesn't look like an image file.");
+      setError(t("logoField.errors.notImage"));
       onStatusChange?.("error");
       return;
     }
     if (file.size > maxBytes) {
-      setError(`File is larger than ${maxSizeMB} MB.`);
+      setError(t("logoField.errors.tooLarge", { size: maxSizeMB }));
       onStatusChange?.("error");
       return;
     }
@@ -129,7 +137,7 @@ export function LogoField({
     };
     reader.onerror = () => {
       if (version !== readVersion.current || disabledRef.current) return;
-      setError("Couldn't read that file.");
+      setError(t("logoField.errors.unreadable"));
       onStatusChange?.("error");
     };
     reader.readAsDataURL(file);
@@ -152,7 +160,7 @@ export function LogoField({
     return (
       <div className={cn("grid min-w-0 gap-4 @min-[650px]/branding:grid-cols-2", className)}>
         <div className="min-w-0">
-          <p className="mb-1.5 text-xs font-medium">Logo</p>
+          <p className="mb-1.5 text-xs font-medium">{t("logoField.logo")}</p>
           <button
             type="button"
             disabled={disabled}
@@ -174,9 +182,9 @@ export function LogoField({
             )}
           >
             <ImageIcon className="mb-1 size-5 text-muted-foreground" aria-hidden="true" />
-            <span className="text-xs font-medium">Drop your logo here or click to upload</span>
+            <span className="text-xs font-medium">{t("logoField.dropYourLogoHere")}</span>
             <span className="text-[10px] leading-4 text-muted-foreground">
-              PNG, JPG, SVG, or WEBP (max {maxSizeMB} MB)
+              {t("logoField.formatsMax", { size: maxSizeMB })}
             </span>
           </button>
           <input
@@ -184,7 +192,7 @@ export function LogoField({
             type="file"
             accept={accept}
             disabled={disabled}
-            aria-label="Upload a logo file"
+            aria-label={t("logoField.uploadALogoFile")}
             className="sr-only"
             onChange={(event) => {
               const file = event.target.files?.[0];
@@ -195,7 +203,7 @@ export function LogoField({
         </div>
         <div className="min-w-0 @min-[650px]/branding:border-s @min-[650px]/branding:border-border/60 @min-[650px]/branding:ps-4">
           <label htmlFor={`${id}-url`} className="mb-1.5 block text-xs font-medium">
-            Or provide a logo URL
+            {t("logoField.orProvideALogoUrl")}
           </label>
           <Input
             id={`${id}-url`}
@@ -211,7 +219,7 @@ export function LogoField({
             className="h-8 rounded-md bg-muted/15 text-xs pointer-coarse:min-h-11 pointer-coarse:text-base"
           />
           <p className="mt-1.5 text-[10px] leading-4 text-muted-foreground">
-            {hint ?? "Use a clear logo with a transparent background."}
+            {hint ?? t("logoField.hint")}
           </p>
           {value && (
             <>
@@ -227,13 +235,13 @@ export function LogoField({
                 ) : !error ? (
                   <LoaderCircleIcon className="size-3 animate-spin" aria-hidden="true" />
                 ) : null}
-                {imageReady ? "Logo ready" : !error ? "Loading logo" : ""}
+                {imageReady ? t("logoField.ready") : !error ? t("logoField.loading") : ""}
               </p>
               <div className="mt-2 flex min-h-10 min-w-0 items-center justify-between gap-3">
                 <img
                   ref={previewRef}
-                  src={value}
-                  alt="Logo preview"
+                  src={previewSource(value)}
+                  alt={t("logoField.logoPreview")}
                   referrerPolicy="no-referrer"
                   className="h-9 w-auto max-w-40 object-contain"
                 />
@@ -242,8 +250,8 @@ export function LogoField({
                   variant="outline"
                   size="icon"
                   className="size-8 shrink-0 rounded-md pointer-coarse:min-h-11 pointer-coarse:min-w-11"
-                  aria-label="Remove logo"
-                  title="Remove logo"
+                  aria-label={t("logoField.removeLogo")}
+                  title={t("logoField.removeLogo")}
                   disabled={disabled}
                   onClick={clearLogo}
                 >
@@ -269,15 +277,15 @@ export function LogoField({
           <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-background">
             <img
               ref={previewRef}
-              src={value}
-              alt="Logo preview"
+              src={previewSource(value)}
+              alt={t("logoField.logoPreview")}
               className="h-full w-full object-contain"
             />
           </div>
           <div className="flex flex-1 flex-col gap-1">
-            <p className="text-sm font-medium">{title ?? "Logo set"}</p>
+            <p className="text-sm font-medium">{title ?? t("logoField.title")}</p>
             <p className="line-clamp-1 text-xs text-muted-foreground">
-              {subtitle ?? (value.startsWith("data:") ? "Uploaded file (preview)" : value)}
+              {subtitle ?? (value.startsWith("data:") ? t("logoField.uploadedPreview") : value)}
             </p>
             <div className="mt-1 flex gap-2">
               <Button
@@ -287,7 +295,7 @@ export function LogoField({
                 disabled={disabled}
                 onClick={openPicker}
               >
-                <CloudUploadIcon /> Replace
+                <CloudUploadIcon /> {t("logoField.replace")}
               </Button>
               <Button
                 type="button"
@@ -296,7 +304,7 @@ export function LogoField({
                 disabled={disabled}
                 onClick={clearLogo}
               >
-                <TrashIcon /> Remove
+                <TrashIcon /> {t("logoField.remove")}
               </Button>
               <Button
                 type="button"
@@ -306,7 +314,7 @@ export function LogoField({
                 onClick={() => setUrlOpen((v) => !v)}
                 aria-expanded={urlOpen}
               >
-                <LinkIcon /> Upload via URL
+                <LinkIcon /> {t("logoField.uploadViaUrl")}
               </Button>
             </div>
           </div>
@@ -336,16 +344,15 @@ export function LogoField({
           )}
         >
           <ImageIcon className="size-6 text-muted-foreground" />
-          <span className="text-sm font-medium">Drop a logo here or click to upload</span>
+          <span className="text-sm font-medium">{t("logoField.dropALogoHere")}</span>
           <span className="text-xs text-muted-foreground">
-            PNG, JPG, SVG, or WEBP up to {maxSizeMB} MB
+            {t("logoField.formatsUpTo", { size: maxSizeMB })}
           </span>
         </button>
       )}
 
-      {/* Offered in the empty state too: without it, a logo that already lives
-          at a URL would have to be downloaded and re-uploaded. Wrapped so it
-          reads as one control with its input rather than two stacked blocks. */}
+      {/* Offered when empty too, so a logo already at a URL needn't be re-uploaded; wrapped to
+          read as one control with its input. */}
       {!value ? (
         <div data-slot="logo-url-toggle" className="flex flex-col gap-2">
           <button
@@ -356,7 +363,7 @@ export function LogoField({
             className="inline-flex w-fit items-center gap-1.5 rounded-md text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
           >
             <LinkIcon className="size-3.5" />
-            Upload via URL
+            {t("logoField.uploadViaUrl")}
           </button>
           {urlOpen ? (
             <Input
@@ -366,7 +373,7 @@ export function LogoField({
               value={value && !value.startsWith("data:") ? value : ""}
               onChange={(e) => onChange(e.target.value)}
               disabled={disabled}
-              aria-label="Logo URL"
+              aria-label={t("logoField.logoUrl")}
             />
           ) : null}
         </div>
@@ -377,7 +384,7 @@ export function LogoField({
         type="file"
         accept={accept}
         disabled={disabled}
-        aria-label="Upload a logo file"
+        aria-label={t("logoField.uploadALogoFile")}
         className="sr-only"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -393,7 +400,7 @@ export function LogoField({
           value={value.startsWith("data:") ? "" : value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          aria-label="Logo URL"
+          aria-label={t("logoField.logoUrl")}
         />
       ) : null}
 

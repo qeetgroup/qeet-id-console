@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { SearchItem } from "../../registry/types/registry.types";
+import type { SearchItem } from "@/modules/search/registry/types/registry.types";
 import { recentActions, recentStore } from "../recent-store";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function item(id: string, title: string): SearchItem {
   return {
@@ -15,12 +13,9 @@ function item(id: string, title: string): SearchItem {
   };
 }
 
-// Reset store state before each test to keep tests independent.
 beforeEach(() => {
   recentStore.setState(() => ({ entries: [] }));
 });
-
-// ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe("recentActions.add", () => {
   it("adds a new item to the store", () => {
@@ -34,7 +29,6 @@ describe("recentActions.add", () => {
     recentActions.add(item("users", "Users"));
     const firstTs = recentStore.state.entries[0]?.timestamp ?? 0;
 
-    // Small delay to get a later timestamp.
     recentActions.add(item("users", "Users"));
     expect(recentStore.state.entries).toHaveLength(1);
     expect(recentStore.state.entries[0]?.accessCount).toBe(2);
@@ -45,17 +39,16 @@ describe("recentActions.add", () => {
     recentActions.add(item("roles", "Roles"));
     const tsBefore = recentStore.state.entries[0]?.timestamp ?? 0;
 
-    // A second add on the same id must update the timestamp and increment count.
     recentActions.add(item("roles", "Roles"));
     const entry = recentStore.state.entries.find((e) => e.id === "roles");
     expect(entry?.accessCount).toBe(2);
-    // timestamp must be >= the one we recorded (same ms or later).
+    // Both adds can land in the same millisecond.
     expect((entry?.timestamp ?? -1) >= tsBefore).toBe(true);
   });
 
   it("places the most recently added item first when timestamps differ", () => {
     recentActions.add(item("roles", "Roles"));
-    // Manually bump the timestamp of the next entry to guarantee ordering.
+    // Backdated, so the two adds can't share a millisecond.
     recentStore.setState((s) => ({
       entries: s.entries.map((e) =>
         e.id === "roles" ? { ...e, timestamp: Date.now() - 1000 } : e,

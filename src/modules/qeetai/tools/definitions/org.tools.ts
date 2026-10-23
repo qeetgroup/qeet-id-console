@@ -1,10 +1,9 @@
-// Organization (tenant) tools — create_organization.
-//
-// run() calls POST /v1/tenants via api() so RBAC + RLS + audit are inherited.
+// run() calls the backend through api(), so its RBAC, RLS and audit apply.
 
 import { z } from "zod";
-import { ORG_KEYS } from "@/modules/organizations";
+import { orgKeys } from "@/modules/organizations";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
 
@@ -15,8 +14,6 @@ interface Tenant {
   created_at: string;
 }
 
-// ── create_organization ───────────────────────────────────────────────────────
-
 const createOrgInput = z.object({
   name: z.string(),
   slug: z.string().optional(),
@@ -26,21 +23,21 @@ type CreateOrgInput = z.infer<typeof createOrgInput>;
 export const createOrganizationTool: ToolDefinition<CreateOrgInput> = {
   name: "create_organization",
   category: "directory",
-  title: "Create organization",
+  title: "qeetai:tools.titles.createOrganization",
   description: "Create a new organization (tenant).",
   input: createOrgInput,
   requiredCapability: "tenant.write",
   destructive: false,
   mutates: true,
-  consoleScreen: { label: "Organizations", to: "/organizations" },
+  consoleScreen: { label: "qeetai:tools.screens.organizations", to: "/organizations" },
   confirm: (input) => ({
-    title: "Create organization",
-    body: "Qeet AI will create a new organization (tenant).",
+    title: i18n.t("qeetai:tools.titles.createOrganization"),
+    body: i18n.t("qeetai:tools.confirm.createOrganization.body"),
     affected: [
-      { label: "Name", value: input.name },
-      ...(input.slug ? [{ label: "Slug", value: input.slug }] : []),
+      { label: i18n.t("qeetai:tools.fields.name"), value: input.name },
+      ...(input.slug ? [{ label: i18n.t("qeetai:tools.fields.slug"), value: input.slug }] : []),
     ],
-    confirmText: "Create organization",
+    confirmText: i18n.t("qeetai:tools.titles.createOrganization"),
     tone: "default",
   }),
   auditLabel: "qeetai.create_organization",
@@ -50,10 +47,14 @@ export const createOrganizationTool: ToolDefinition<CreateOrgInput> = {
       body: input,
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ORG_KEYS.all });
+    ctx.queryClient.invalidateQueries({ queryKey: orgKeys.all });
     return {
       ok: true,
       summary: `Organization "${tenant.name}" created (id: ${tenant.id}, slug: ${tenant.slug}).`,
+      display: {
+        key: "qeetai:toolCallCard.results.organizationCreated",
+        values: { name: tenant.name },
+      },
       data: { id: tenant.id, name: tenant.name, slug: tenant.slug },
     };
   },

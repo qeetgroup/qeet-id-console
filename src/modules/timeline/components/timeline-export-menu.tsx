@@ -1,6 +1,4 @@
-// Export control for the identity timeline header. Downloads the currently
-// loaded events as CSV or JSON (see timeline-export.ts).
-
+import { useTranslation } from "react-i18next";
 import {
   Button,
   DropdownMenu,
@@ -13,6 +11,7 @@ import { ChevronDownIcon, DownloadIcon, FileBracesIcon, SheetIcon } from "@qeetr
 import type { ActivityEvent } from "@/modules/activity";
 import { exportTimelineEvents } from "../timeline-export";
 
+/** Renders the menu that downloads the loaded timeline events as CSV or JSON. */
 export function TimelineExportMenu({
   events,
   userId,
@@ -22,13 +21,14 @@ export function TimelineExportMenu({
   userId: string;
   disabled?: boolean;
 }) {
+  const { t } = useTranslation("timeline");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
           <Button variant="outline" size="sm" disabled={disabled || events.length === 0}>
             <DownloadIcon className="size-3.5" aria-hidden="true" />
-            Export
+            {t("timelineExportMenu.export")}
             <ChevronDownIcon className="size-3.5 opacity-70" aria-hidden="true" />
           </Button>
         }
@@ -36,11 +36,11 @@ export function TimelineExportMenu({
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => exportTimelineEvents(events, "csv", userId)}>
           <SheetIcon className="size-3.5" aria-hidden="true" />
-          Export as CSV
+          {t("timelineExportMenu.exportAsCsv")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => exportTimelineEvents(events, "json", userId)}>
           <FileBracesIcon className="size-3.5" aria-hidden="true" />
-          Export as JSON
+          {t("timelineExportMenu.exportAsJson")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

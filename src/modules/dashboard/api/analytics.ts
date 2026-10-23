@@ -1,14 +1,9 @@
-// Dashboard analytics data layer. One round-trip per render —
-// /v1/tenants/{tenantID}/analytics/overview returns every KPI + chart
-// in a single payload so the dashboard doesn't ladder 8 requests at
-// first paint. If the endpoint 404s (e.g. an older backend without
-// IMPROVEMENTS §4.8), the hook falls back to a stable empty shape so
-// the dashboard renders skeletons instead of crashing.
-
 import { useQuery } from "@tanstack/react-query";
 
+import { formatLocale } from "@/i18n";
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { dashboardKeys } from "./keys";
 
 export interface Metric {
   value: number;
@@ -27,6 +22,8 @@ export interface ActivityPoint {
   social: number;
   saml: number;
   oidc: number;
+  magic_link: number;
+  ldap: number;
 }
 
 export interface MethodSlice {
@@ -75,6 +72,7 @@ export interface AnalyticsOverview {
 
 const EMPTY_METRIC: Metric = { value: 0, delta_pct: 0 };
 
+/** Returned when the backend has no overview endpoint; the epoch `generated_at` marks it. */
 export const EMPTY_OVERVIEW: AnalyticsOverview = {
   generated_at: new Date(0).toISOString(),
   kpis: {
@@ -99,28 +97,24 @@ export const EMPTY_OVERVIEW: AnalyticsOverview = {
 };
 
 /**
- * Fetches the dashboard overview for the current tenant. The overview is
- * computed live server-side, so we refetch on every mount and on window focus
- * — returning to the dashboard after changing something elsewhere (e.g. MFA
- * enrolment, a new user) shows fresh KPIs rather than a stale cache. Stale-time
- * stays short so a background focus also re-pulls.
+ * Fetches the tenant's analytics overview: every KPI and chart in one request. It is computed live,
+ * so it refetches on mount, on focus and every minute to show changes made elsewhere.
  */
 export function useAnalyticsOverview(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["analytics", "overview", tenantId],
+    queryKey: dashboardKeys.analytics(tenantId),
     enabled: !!tenantId && enabled,
     staleTime: 15_000,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
-    refetchInterval: 60_000, // keep an open dashboard current without a manual reload
+    refetchInterval: 60_000,
     queryFn: async (): Promise<AnalyticsOverview> => {
       try {
         return await api<AnalyticsOverview>(`/v1/tenants/${tenantId}/analytics/overview`);
       } catch (err) {
-        // Backend without §4.8: surface empty data instead of an error
-        // page. Anything else (auth, server error) bubbles up so the
-        // user sees the real problem.
+        // A backend without the endpoint renders empty skeletons; auth and server errors still
+        // surface so the user sees the real problem.
         if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
           return EMPTY_OVERVIEW;
         }
@@ -131,14 +125,11 @@ export function useAnalyticsOverview(enabled = true) {
   });
 }
 
-/**
- * Friendly short label for a date string ("2026-05-26" → "May 26"). The
- * recharts axis is tight on space; full ISO labels stack vertically.
- */
+/** Returns a short chart-axis label for an ISO date ("2026-05-26" → "May 26"), or the input. */
 export function formatShortDate(iso: string): string {
   const d = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
+  return d.toLocaleDateString(formatLocale(), {
     month: "short",
     day: "numeric",
     timeZone: "UTC",

@@ -1,0 +1,126 @@
+import { Avatar, AvatarFallback, AvatarImage, cn } from "@qeetrix/ui";
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
+import { DatabaseIcon, MonitorSmartphoneIcon, ShieldCheckIcon, UserIcon } from "@qeetrix/icons";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+
+import { getServerSession } from "@/platform/api/server-proxy";
+import { hasVerifiedEmail } from "@/platform/auth/email-verification";
+import { useIdleLogout, useMe } from "@/platform/auth/session";
+import { sessionStore } from "@/platform/auth/session-store";
+import { CapabilityProvider } from "@/platform/security/capability-provider";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
+
+const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+
+export const Route = createFileRoute("/account")({
+  beforeLoad: async ({ context }) => {
+    const session = await getServerSession();
+    if (!session.isAuthenticated) throw redirect({ to: "/sign-in" });
+    // Mirrors `_app`: self-service account pages are part of the console, so an
+    // unverified user must not reach them by URL either.
+    if (!(await hasVerifiedEmail(context.queryClient, session.userId))) {
+      throw redirect({ to: "/verify-email" });
+    }
+    return { session };
+  },
+  component: AccountLayout,
+});
+
+/**
+ * Renders "My Account", the self-service surface for the person Qeet ID manages, apart from the
+ * operator shell. It mounts the sensitive-action providers too, so a `step_up_required` here
+ * opens the step-up dialog.
+ */
+function AccountLayout() {
+  const { session } = Route.useRouteContext();
+
+  useEffect(() => {
+    sessionStore.hydrate(session);
+  }, [session]);
+
+  return (
+    <CapabilityProvider>
+      <SensitiveActionProvider>
+        <AccountFrame />
+      </SensitiveActionProvider>
+    </CapabilityProvider>
+  );
+}
+
+function AccountFrame() {
+  const { t } = useTranslation("account");
+  const me = useMe();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useIdleLogout(IDLE_TIMEOUT_MS);
+
+  const NAV = [
+    { to: "/account/profile", label: t("nav.profile"), icon: UserIcon },
+    {
+      to: "/account/security",
+      label: t("nav.security"),
+      icon: ShieldCheckIcon,
+    },
+    {
+      to: "/account/sessions",
+      label: t("nav.sessions"),
+      icon: MonitorSmartphoneIcon,
+    },
+    { to: "/account/data", label: t("nav.data"), icon: DatabaseIcon },
+  ] as const;
+
+  return (
+    <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 border-b pb-4">
+        <div className="flex items-center gap-3">
+          <Avatar className="size-10">
+            <AvatarImage src={undefined} alt="" />
+            <AvatarFallback>
+              {(me.data?.display_name ?? me.data?.email ?? "?").charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">
+              {me.data?.display_name || me.data?.email || t("nav.yourAccount")}
+            </p>
+            {me.data?.email && me.data.email !== me.data?.display_name && (
+              <p className="truncate text-xs text-muted-foreground">{me.data.email}</p>
+            )}
+          </div>
+        </div>
+        <Link
+          to="/"
+          className="text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        >
+          {t("nav.backToAdmin")}
+        </Link>
+      </div>
+
+      {/* Tabs */}
+      <nav aria-label={t("nav.sections")} className="flex flex-wrap gap-1 border-b">
+        {NAV.map((item) => {
+          const Icon = item.icon;
+          const active = pathname === item.to;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-sm transition-colors",
+                active
+                  ? "border-primary font-medium text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className="size-4" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <Outlet />
+    </div>
+  );
+}

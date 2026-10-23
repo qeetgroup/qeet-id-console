@@ -2,6 +2,7 @@ import { Button, useFloatingWindow, useIsMobile } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
 import { SparklesIcon } from "@qeetrix/icons";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useQeetAIChat } from "../hooks/use-qeetai-chat";
 import { conversationStore } from "../store/conversation-store";
@@ -22,15 +23,12 @@ import { SuggestedActions } from "./suggestions/suggested-actions";
 const RESIZE_STEP = 24;
 
 /**
- * The AI workspace panel. One component, four presentations driven by the
- * workspace store:
- *   • docked     — an in-flow flex sibling of `.console-workspace`, so opening it
- *                  reflows the page instead of covering it; resizable + collapsible.
- *   • floating   — a draggable, non-modal window (useFloatingWindow).
- *   • fullscreen — an immersive overlay.
- *   • collapsed  — a slim rail (docked only) that keeps the panel one click away.
+ * Renders the workspace panel as the store's mode asks: docked (an in-flow sibling that reflows
+ * the page; resizable, collapsible to a rail), floating (a draggable, non-modal window) or
+ * fullscreen. Phones always get fullscreen.
  */
 export function QeetAIWorkspace() {
+  const { t } = useTranslation("qeetai");
   const open = useStore(workspaceStore, (s) => s.open);
   const mode = useStore(workspaceStore, (s) => s.mode);
   const dockWidth = useStore(workspaceStore, (s) => s.dockWidth);
@@ -46,13 +44,11 @@ export function QeetAIWorkspace() {
 
   const body = <PanelBody />;
 
-  // On a phone viewport — or in fullscreen mode — present as a full-screen
-  // overlay. Docked (a ≥340px in-flow sibling) and floating can't fit a small
-  // screen, so mobile always gets the immersive layout.
+  // Docked (at least 340px wide) and floating can't fit a phone screen.
   if (isMobile || mode === "fullscreen") {
     return (
       <section
-        aria-label="Qeet AI"
+        aria-label={t("qeetaiWorkspace.qeetAi")}
         className="fixed inset-0 z-50 flex flex-col bg-background motion-safe:animate-in motion-safe:fade-in-0"
       >
         <QeetAIHeader />
@@ -62,12 +58,12 @@ export function QeetAIWorkspace() {
   }
 
   if (mode === "floating") {
-    // Clamp width to the viewport so the window can't render partly off-screen.
+    // Clamped to the viewport so the window can't render partly off-screen.
     const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
     const width = Math.min(dockWidth, vw - 32);
     return (
       <section
-        aria-label="Qeet AI"
+        aria-label={t("qeetaiWorkspace.qeetAi")}
         style={{ left: floating.position.x, top: floating.position.y, width }}
         className="fixed z-50 flex h-[min(70vh,640px)] flex-col overflow-hidden rounded-xl border bg-background shadow-2xl motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95"
       >
@@ -77,10 +73,9 @@ export function QeetAIWorkspace() {
     );
   }
 
-  // Docked: in-flow flex sibling that reflows the shell.
   return (
     <section
-      aria-label="Qeet AI"
+      aria-label={t("qeetaiWorkspace.qeetAi")}
       style={{ width: dockWidth }}
       className="relative z-30 flex h-dvh shrink-0 flex-col border-s bg-background motion-safe:animate-in motion-safe:slide-in-from-right-4"
     >
@@ -115,15 +110,15 @@ function PanelBody() {
   );
 }
 
-/** Slim rail shown when the docked panel is collapsed. */
 function CollapsedRail() {
+  const { t } = useTranslation("qeetai");
   return (
     <div className="relative z-30 flex h-dvh w-14 shrink-0 flex-col items-center gap-2 border-s bg-card/60 py-3">
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Expand Qeet AI"
-        title="Expand Qeet AI (⌘J)"
+        aria-label={t("qeetaiWorkspace.expandQeetAi")}
+        title={t("qeetaiWorkspace.expandQeetAiJ")}
         onClick={() => workspaceActions.setCollapsed(false)}
         className="text-primary"
       >
@@ -134,11 +129,11 @@ function CollapsedRail() {
 }
 
 /**
- * Draggable divider on the docked panel's inner edge. Pointer drag resizes;
- * ArrowLeft/Right nudge for keyboard users (WCAG 2.2 — the panel must be
- * resizable without a pointer).
+ * Renders the divider on the docked panel's inner edge: dragging resizes, and ArrowLeft/Right
+ * do the same so the panel is resizable without a pointer.
  */
 function DockResizeHandle({ width }: { width: number }) {
+  const { t } = useTranslation("qeetai");
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     const target = e.currentTarget;
@@ -169,11 +164,11 @@ function DockResizeHandle({ width }: { width: number }) {
   );
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: a focusable window-splitter needs role="separator" + tabIndex + aria-valuenow (ARIA APG); <hr> cannot express a resizable value
+    // biome-ignore lint/a11y/useSemanticElements: <hr> can't be a focusable window splitter
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize Qeet AI panel"
+      aria-label={t("qeetaiWorkspace.resizeQeetAiPanel")}
       aria-valuemin={MIN_DOCK_WIDTH}
       aria-valuemax={MAX_DOCK_WIDTH}
       aria-valuenow={clampDockWidth(width)}

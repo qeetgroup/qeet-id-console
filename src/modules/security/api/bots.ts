@@ -1,12 +1,11 @@
-// Bot-detection data layer for the Threats → Bots screen. Backed by
-// GET /v1/tenants/{tenantID}/security/bots (recent verdicts + stats) and
-// GET/PUT .../security/bots/settings. Verdicts are recorded detect-only by the
-// UA scorer on login/session attempts.
+// Bot verdicts the server's user-agent scorer records, detect-only, on sign-in and session
+// attempts.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export interface BotEvent {
   id: string;
@@ -31,12 +30,10 @@ export interface BotSettings {
   score_threshold: number;
 }
 
-const KEY = ["bots"];
-
 export function useBotOverview() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "overview", tenantId],
+    queryKey: securityKeys.botOverview(tenantId),
     queryFn: async (): Promise<{ recent: BotEvent[]; stats: BotStats }> => {
       try {
         return await api<{ recent: BotEvent[]; stats: BotStats }>(
@@ -60,7 +57,7 @@ export function useBotOverview() {
 export function useBotSettings() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "settings", tenantId],
+    queryKey: securityKeys.botSettings(tenantId),
     queryFn: () => api<BotSettings>(`/v1/tenants/${tenantId}/security/bots/settings`),
     enabled: !!tenantId,
     staleTime: 30_000,
@@ -71,12 +68,14 @@ export function useUpdateBotSettings() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (settings: BotSettings) =>
-      api<BotSettings>(`/v1/tenants/${tenantId}/security/bots/settings`, {
+    mutationFn: (settings: BotSettings) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<BotSettings>(`/v1/tenants/${tenantId}/security/bots/settings`, {
         method: "PUT",
         body: settings,
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Bot protection settings saved" },
+      });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.bots(tenantId) }),
+    meta: { successMessage: "security:toast.botProtectionSettingsSaved" },
   });
 }

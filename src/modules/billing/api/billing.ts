@@ -1,12 +1,9 @@
-// Internal billing data layer. Money arrives as integer minor units + an ISO
-// currency code; formatMoney applies the currency's own fraction digits via
-// Intl, so every currency (JPY 0-digit, BHD 3-digit, USD 2-digit, …) renders
-// correctly.
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
+import { formatLocale, humanizeMissingKey } from "@/i18n";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { billingKeys } from "./keys";
 
 export interface Plan {
   id: string;
@@ -35,7 +32,7 @@ export interface Invoice {
   id: string;
   plan_code: string;
   currency: string;
-  amount_minor: number; // total charged (taxable + tax)
+  amount_minor: number; // total charged: taxable amount plus tax
   taxable_amount_minor: number;
   tax_amount_minor: number;
   tax_rate_bps: number;
@@ -48,10 +45,8 @@ export interface Invoice {
 }
 
 /**
- * Entitlements is the tenant's resolved plan capability set — the source of
- * truth for UI gating (mirrors the server's operations/entitlements catalog).
- * `features` are booleans (locked → Upgrade); `limits` are numeric caps where
- * -1 means unlimited.
+ * The tenant's resolved plan capabilities, which drive UI gating. A false `features` entry shows
+ * an Upgrade prompt; `limits` are numeric caps where -1 means unlimited.
  */
 export interface Entitlements {
   plan: string;
@@ -62,21 +57,20 @@ export interface Entitlements {
 export function useEntitlements(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "entitlements", tenantId],
+    queryKey: billingKeys.entitlements(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<Entitlements>(`/v1/tenants/${tenantId}/entitlements`),
   });
 }
 
 /**
- * Current consumption per resource (seats/apps/api_keys/custom_roles), for the
- * billing usage-vs-limits display. Separate from useEntitlements so the count
- * queries only run on the billing page, not on every gated page load.
+ * Fetches current usage per resource (seats, apps, API keys, custom roles). Kept apart from
+ * useEntitlements so the counts run only where usage is shown, not on every gated page.
  */
 export function useUsage(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "usage", tenantId],
+    queryKey: billingKeys.usage(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () =>
       api<{ usage: Record<string, number> }>(`/v1/tenants/${tenantId}/entitlements/usage`),
@@ -97,22 +91,22 @@ export interface BillingProfile {
   tax_id: string;
 }
 
-/** Start a no-card trial of a paid tier. Eligible only when the org has no subscription yet. */
+/** Starts a no-card trial of a paid tier; only an org with no subscription yet is eligible. */
 export function useStartTrial() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { plan_code: string; currency: string }) =>
       api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
-    meta: { successMessage: "Trial started" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
+    meta: { successMessage: "billing:toast.trialStarted", silentError: true },
   });
 }
 
 export function useBillingProfile(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "profile", tenantId],
+    queryKey: billingKeys.profile(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`),
   });
@@ -124,37 +118,52 @@ export function useSaveBillingProfile() {
   return useMutation({
     mutationFn: (body: BillingProfile) =>
       api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing", "profile", tenantId] }),
-    meta: { successMessage: "Billing profile saved" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.profile(tenantId) }),
+    meta: { successMessage: "billing:toast.billingProfileSaved", silentError: true },
   });
 }
 
-/** Format integer minor units in the given ISO currency, for any currency. */
+/**
+ * Formats integer minor units in an ISO currency with its own fraction digits (JPY 0, USD 2,
+ * BHD 3). An unknown code falls back to two decimals followed by the code.
+ */
 export function formatMoney(amountMinor: number, currency: string): string {
   try {
-    const fmt = new Intl.NumberFormat(undefined, {
+    const fmt = new Intl.NumberFormat(formatLocale(), {
       style: "currency",
       currency,
     });
     const digits = fmt.resolvedOptions().maximumFractionDigits ?? 2;
     return fmt.format(amountMinor / 10 ** digits);
   } catch {
-    // Unknown/invalid currency code — fall back to a plain number + code.
     return `${(amountMinor / 100).toFixed(2)} ${currency}`;
   }
 }
 
+const plansQuery = queryOptions({
+  queryKey: billingKeys.plans(),
+  queryFn: () => api<{ items: Plan[] }>("/v1/billing/plans"),
+});
+
 export function usePlans() {
-  return useQuery({
-    queryKey: ["billing", "plans"],
-    queryFn: () => api<{ items: Plan[] }>("/v1/billing/plans"),
-  });
+  return useQuery(plansQuery);
+}
+
+/**
+ * Returns a function that names a plan code from the plan catalogue. A code the catalogue doesn't
+ * hold, or any code before it loads, reads as words ("pro_year" is "Pro Year"), never raw.
+ */
+export function usePlanName(): (code: string) => string {
+  // The catalogue rarely changes, and a failed load only costs the display name, so it is quiet.
+  const plans = useQuery({ ...plansQuery, staleTime: 5 * 60_000, meta: { silent: true } });
+  return (code) =>
+    plans.data?.items.find((plan) => plan.code === code)?.name || humanizeMissingKey(code);
 }
 
 export function useSubscription(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "subscription", tenantId],
+    queryKey: billingKeys.subscription(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<Subscription>(`/v1/tenants/${tenantId}/billing/subscription`),
   });
@@ -163,7 +172,7 @@ export function useSubscription(enabled = true) {
 export function useInvoices(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "invoices", tenantId],
+    queryKey: billingKeys.invoices(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<{ items: Invoice[] }>(`/v1/tenants/${tenantId}/billing/invoices`),
   });
@@ -178,8 +187,8 @@ export function useChangePlan() {
         method: "PUT",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
-    meta: { successMessage: "Subscription updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
+    meta: { successMessage: "billing:toast.subscriptionUpdated", silentError: true },
   });
 }
 
@@ -190,10 +199,9 @@ export interface CheckoutResult {
 }
 
 /**
- * Start a paid plan change. The backend either activates the plan directly
- * (free plan / no card provider for the currency) or returns a hosted-checkout
- * URL (Stripe/Razorpay) to redirect to. success_url / cancel_url are this app's
- * own billing page so the provider returns the admin here after paying.
+ * Starts a plan change. The server either activates it directly (free plan, or no card provider
+ * for the currency) or returns a hosted-checkout URL, which this follows; the provider then
+ * returns the admin to the billing page.
  */
 export function useCheckout() {
   const tenantId = useTenantId();
@@ -216,12 +224,12 @@ export function useCheckout() {
     },
     onSuccess: (res) => {
       if (res.status === "checkout" && res.checkout_url) {
-        window.location.href = res.checkout_url; // redirect to provider
+        window.location.href = res.checkout_url;
         return;
       }
-      qc.invalidateQueries({ queryKey: ["billing"] });
+      qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) });
     },
-    meta: { successMessage: "Subscription updated" },
+    meta: { successMessage: "billing:toast.subscriptionUpdated", silentError: true },
   });
 }
 
@@ -234,31 +242,25 @@ export function useCancelSubscription() {
         `/v1/tenants/${tenantId}/billing/subscription/cancel`,
         { method: "POST" },
       ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
-    meta: { successMessage: "Subscription will cancel at period end" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
+    meta: { successMessage: "billing:toast.subscriptionWillCancelAt", silentError: true },
   });
 }
-
-// ---------------------------------------------------------------------------
-// Signup / create-organization checkout
-// ---------------------------------------------------------------------------
 
 export type BillingInterval = "month" | "year";
 
 /**
- * The plan code for a tier at a billing interval. Free and Enterprise have no
- * annual variant (Free is free; Enterprise is contact-sales), so they always
- * map to the base code; the paid tiers get a "<tier>_year" code.
+ * Returns the plan code for a tier and interval: "<tier>_year" for a paid tier billed yearly.
+ * Free and enterprise have no annual variant.
  */
 export function planCodeForTier(tier: string, interval: BillingInterval): string {
   return interval === "year" && tier !== "free" && tier !== "enterprise" ? `${tier}_year` : tier;
 }
 
 /**
- * Start a paid checkout for a plan chosen during signup, BEFORE any org exists.
- * The org spec rides along and the organization is created only when the payment
- * completes — so an abandoned payment never leaves a dangling org. Returns a
- * hosted-checkout URL (Razorpay / dev sandbox) to redirect the payer to.
+ * Starts a paid checkout for a plan chosen at signup, before any org exists. The org spec rides
+ * along and the org is created only when payment completes, so an abandoned payment leaves
+ * nothing behind. Returns the hosted-checkout URL to redirect to.
  */
 export function startSignupCheckout(input: {
   orgName: string;

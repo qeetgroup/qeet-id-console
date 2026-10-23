@@ -1,0 +1,70 @@
+{
+  "title": "概要",
+  "subtitle": "この組織の認証情報ヘルスを一目で確認。",
+  "range7d": "過去7日間",
+  "range14d": "過去14日間",
+  "error": "ダッシュボードの分析データを読み込めませんでした",
+  "kpi": {
+    "mau": "アクティブユーザー（MAU）",
+    "loginsToday": "本日のログイン",
+    "mfaAdoption": "MFA採用率",
+    "failedLogins24h": "ログイン失敗（24時間）"
+  },
+  "stats": {
+    "totalUsers": "総ユーザー数",
+    "dailyActive": "デイリーアクティブ",
+    "stickiness": "スティッキネス（DAU/MAU）",
+    "avgSessions": "平均セッション数 / ユーザー"
+  },
+  "quickActions": {
+    "heading": "クイックアクション",
+    "inviteLabel": "ユーザーを招待",
+    "inviteDesc": "この組織にチームメイトを追加",
+    "apiKeyLabel": "APIキーを作成",
+    "apiKeyDesc": "アプリ用の認証情報を発行",
+    "threatsLabel": "脅威を確認",
+    "threatsDesc": "過去24時間の異常",
+    "auditLabel": "監査ログ",
+    "auditDesc": "最近のアクティビティを検索"
+  },
+  "charts": {
+    "viewAnalytics": "分析を表示",
+    "viewLogs": "ログを表示",
+    "authActivity": {
+      "title": "認証アクティビティ",
+      "description": "方法別の日次ログイン · 過去{{take}}日間",
+      "emptyTitle": "まだアクティビティがありません",
+      "emptyDescription": "この期間にログインは記録されていません。"
+    },
+    "loginMix": {
+      "title": "ログイン方法の内訳",
+      "description": "過去30日間",
+      "emptyTitle": "まだサインインがありません",
+      "emptyDescription": "ユーザーがサインインするとログイン方法のデータが表示されます。"
+    },
+    "mfa": {
+      "title": "MFA方法の採用状況",
+      "description": "第2要素別ユーザー数",
+      "emptyTitle": "MFA未登録",
+      "emptyDescription": "まだ第2要素を登録したユーザーがいません。"
+    },
+    "failedLogins": {
+      "title": "ログイン失敗の試み",
+      "description": "毎時 · 過去24時間（しきい値250）",
+      "threshold": "しきい値",
+      "emptyTitle": "失敗した試みなし",
+      "emptyDescription": "ログイン失敗のテレメトリはまだ記録されていません。"
+    }
+  },
+  "activity": {
+    "title": "最近のアクティビティ",
+    "description": "この組織の最新5件のイベント",
+    "viewAll": "すべて表示",
+    "emptyTitle": "まだアクティビティがありません",
+    "emptyDescription": "ユーザーが組織と操作するとイベントが表示されます。"
+  },
+  "noWorkspace": {
+    "title": "最初の組織を作成",
+    "cta": "組織を作成"
+  }
+}

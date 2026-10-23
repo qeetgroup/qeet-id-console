@@ -1,45 +1,50 @@
-// URL search-param schema for the Activity workspace — the single source of
-// truth for filters, time range, live/history mode, the applied saved view, and
-// the selected event + drawer tab. Mirrors the audit-logs `validateSearch`
-// pattern so any view is paste-shareable (e.g. Slack triage links) and a
-// malformed URL never crashes the route.
-//
-// Note on time: relative presets (24h, 7d…) are resolved to concrete from/to
-// via presetToRange. searchToFilters is only called inside a useMemo keyed on
-// the router search object, so `now` is captured once per navigation — the
-// window is frozen at selection time (it does not slide every render, which
-// would thrash the query cache).
+// URL search params for the Activity workspace, the source of truth for its filters, mode,
+// saved view and open event, so any view is shareable as a link.
 
 import { type DateRange, presetToRange, TIME_PRESETS } from "./components/activity-time-range";
+import { z } from "zod";
+
+import { isOneOf } from "@/shared/utils/one-of";
+import { searchEnum, searchText } from "@/shared/utils/search-params";
 import type { ActivityFilters, ActivityMode, Outcome, Severity } from "./types/activity.types";
 
-export type DrawerTab = "overview" | "raw" | "related";
+const RANGE_KEYS = TIME_PRESETS.map((p) => p.value);
 
-export interface ActivitySearch {
-  q?: string;
-  severity?: string; // csv, e.g. "error,critical"
-  category?: string; // csv
-  type?: string; // csv of event types
-  actor?: string;
-  ip?: string;
-  resource?: string;
-  source?: string;
-  status?: string;
-  range?: string; // preset key: all|15m|1h|24h|7d|30d|custom
-  from?: string; // RFC3339, only when range=custom
-  to?: string;
-  mode?: ActivityMode; // live | history (default live)
-  view?: string; // applied saved-view id
-  event?: string; // selected event id → opens drawer
-  tab?: DrawerTab; // active drawer tab
-}
+/**
+ * Activity URL params. severity, category and type are comma-separated lists; `range` is a
+ * TIME_PRESETS key, with RFC 3339 `from`/`to` used only when it is "custom"; `view` is the
+ * applied saved view; `event` opens that event's drawer on `tab`. A blank or unknown value is
+ * dropped.
+ */
+export const activitySearchSchema = z.object({
+  q: searchText(),
+  severity: searchText(),
+  category: searchText(),
+  type: searchText(),
+  actor: searchText(),
+  ip: searchText(),
+  resource: searchText(),
+  source: searchText(),
+  status: searchText(),
+  range: z
+    .string()
+    .refine((v) => isOneOf(RANGE_KEYS, v))
+    .optional()
+    .catch(undefined),
+  from: searchText(),
+  to: searchText(),
+  mode: searchEnum(["live", "history"]),
+  view: searchText(),
+  event: searchText(),
+  tab: searchEnum(["overview", "raw", "related"]),
+});
+
+export type ActivitySearch = z.infer<typeof activitySearchSchema>;
+export type DrawerTab = NonNullable<ActivitySearch["tab"]>;
 
 const SEVERITIES: Severity[] = ["info", "success", "warning", "error", "critical"];
-const RANGE_KEYS = new Set(TIME_PRESETS.map((p) => p.value));
-const MODES = new Set<ActivityMode>(["live", "history"]);
-const TABS = new Set<DrawerTab>(["overview", "raw", "related"]);
 
-/** Outcome is a friendly grouping over severity (mirrors the summary's by_outcome). */
+/** The severities behind each outcome, matching the summary's by_outcome buckets. */
 export const OUTCOME_TO_SEVERITY: Record<Outcome, Severity[]> = {
   success: ["success"],
   warning: ["warning"],
@@ -68,36 +73,10 @@ export function arrayToCsv(v: string[]): string | undefined {
   return v.length > 0 ? v.join(",") : undefined;
 }
 
-/** Route validateSearch — every field optional; enums clamped; blanks dropped. */
-export function validateActivitySearch(raw: Record<string, unknown>): ActivitySearch {
-  const str = (k: string): string | undefined => {
-    const v = raw[k];
-    return typeof v === "string" && v.trim() !== "" ? v : undefined;
-  };
-  const range = str("range");
-  const mode = str("mode");
-  const tab = str("tab");
-  return {
-    q: str("q"),
-    severity: str("severity"),
-    category: str("category"),
-    type: str("type"),
-    actor: str("actor"),
-    ip: str("ip"),
-    resource: str("resource"),
-    source: str("source"),
-    status: str("status"),
-    range: range && RANGE_KEYS.has(range) ? range : undefined,
-    from: str("from"),
-    to: str("to"),
-    mode: mode && MODES.has(mode as ActivityMode) ? (mode as ActivityMode) : undefined,
-    view: str("view"),
-    event: str("event"),
-    tab: tab && TABS.has(tab as DrawerTab) ? (tab as DrawerTab) : undefined,
-  };
-}
-
-/** Resolves the URL search into the ActivityFilters the provider/query consume. */
+/**
+ * Resolves the URL search into ActivityFilters. Relative ranges resolve against the current
+ * time, so memoise the result per navigation to keep the window and query key stable.
+ */
 export function searchToFilters(s: ActivitySearch): ActivityFilters {
   const range = s.range ?? "all";
   const custom: DateRange | undefined =

@@ -1,7 +1,3 @@
-// Shared type contracts for the QeetAI workspace. These are the seams every
-// other module (stores, AI provider, tools, UI) compiles against, so they live
-// in one place and stay dependency-free.
-
 import type { ToolExecution } from "../tools/types/tool.types";
 
 /** How the workspace panel is presented. */
@@ -11,9 +7,8 @@ export type QeetAIMode = "docked" | "floating" | "fullscreen";
 export type MessageRole = "user" | "assistant" | "system";
 
 /**
- * Lifecycle of an assistant message as it is produced. `streaming` drives the
- * live typing indicator; `error` renders the retry affordance; `complete` is a
- * settled turn. User/system messages are always `complete`.
+ * An assistant message's lifecycle: `streaming` while it is produced, then `complete`, `error`
+ * or `cancelled`. User messages are always `complete`.
  */
 export type MessageStatus = "streaming" | "complete" | "error" | "cancelled";
 
@@ -23,31 +18,22 @@ export interface Message {
   content: string;
   createdAt: number;
   status: MessageStatus;
-  /** Set when `status === "error"` so the UI can explain what went wrong. */
-  error?: string;
-  /**
-   * The route the user was on when they sent this message. Captured so a
-   * conversation stays intelligible after the operator navigates away.
-   */
-  contextPath?: string;
-  /**
-   * Tool executions the assistant performed on this turn (client-side, under the
-   * operator's own permissions). Rendered as the execution timeline.
-   */
+  error?: string; // What went wrong, when `status` is `error`
+  contextPath?: string; // The route the operator was on when the message was added
+  /** Tools run on this turn, client-side under the operator's own permissions. */
   toolExecutions?: ToolExecution[];
 }
 
 export interface Conversation {
   id: string;
-  title: string;
+  title: string; // Empty until the first user message names it; the UI shows a placeholder
   messages: Message[];
   pinned: boolean;
   createdAt: number;
   updatedAt: number;
   /**
-   * Server-side conversation UUID, assigned lazily the first time a turn streams
-   * from the backend. Absent until then (and always, when no provider is
-   * configured). The local `id` remains the UI's stable key.
+   * The server conversation's id, set when the first turn streams from the backend. The local
+   * `id` stays the UI's key.
    */
   serverId?: string;
 }
@@ -55,8 +41,6 @@ export interface Conversation {
 /** Persisted UI preferences for the panel (mode, width, collapsed rail). */
 export interface WorkspacePrefs {
   mode: QeetAIMode;
-  /** Docked-panel width in px. Clamped to [MIN_DOCK_WIDTH, MAX_DOCK_WIDTH]. */
-  dockWidth: number;
-  /** Collapsed to a slim rail (docked mode only). */
-  collapsed: boolean;
+  dockWidth: number; // Docked-panel width in px. Clamped to [MIN_DOCK_WIDTH, MAX_DOCK_WIDTH]
+  collapsed: boolean; // Collapsed to a slim rail (docked mode only)
 }

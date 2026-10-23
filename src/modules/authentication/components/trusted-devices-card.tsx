@@ -1,17 +1,11 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  StatusPill,
-} from "@qeetrix/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { MonitorIcon, LoaderCircleIcon, SmartphoneIcon, TrashIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { formatLocale } from "@/i18n";
+import { ErrorText } from "@/platform/components/error-reference";
+import { StatusPill } from "@/platform/components/status-pill";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import {
   type TrustedDeviceScope,
@@ -20,11 +14,9 @@ import {
 } from "../api/trusted-devices";
 
 /**
- * The devices remembered so they skip the second factor at sign-in, with when
- * each was remembered, last used and stops being remembered, and forgetting one
- * or all of them. A forgotten device is asked for the second factor at its next
- * sign-in. `scope` is the person's own devices, or — for an administrator — a
- * member's devices remembered in the administrator's organisation.
+ * Renders the devices remembered to skip the second factor, with forgetting one or all; a
+ * forgotten device is asked for the second factor at its next sign-in. `scope` is the person's own
+ * devices or, for an administrator, a member's devices remembered in their organisation.
  */
 export function TrustedDevicesCard({
   scope,
@@ -32,8 +24,7 @@ export function TrustedDevicesCard({
   className,
 }: {
   scope: TrustedDeviceScope;
-  /** False shows the devices without the forget actions. */
-  canForget?: boolean;
+  canForget?: boolean; // False shows the devices without the forget actions
   className?: string;
 }) {
   const { t } = useTranslation("account");
@@ -42,7 +33,7 @@ export function TrustedDevicesCard({
   const forget = useForgetTrustedDevices(scope);
   const devices = devicesQ.data?.items ?? [];
   const date = (iso: string) =>
-    new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" });
+    new Date(iso).toLocaleDateString(formatLocale(), { dateStyle: "medium" });
 
   function forgetDevices(deviceId?: string) {
     forget.mutate(deviceId, {
@@ -93,7 +84,7 @@ export function TrustedDevicesCard({
         )}
         {devicesQ.isError && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(devicesQ.error)}
+            <ErrorText error={devicesQ.error} />
           </p>
         )}
         {devicesQ.isSuccess && devices.length === 0 && (
@@ -153,7 +144,7 @@ export function TrustedDevicesCard({
         )}
         {forget.error ? (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(forget.error)}
+            <ErrorText error={forget.error} />
           </p>
         ) : null}
       </CardContent>

@@ -1,9 +1,3 @@
-// The console-context contract (Phase 0, frozen). This is what the qeetai
-// automatically knows about "where the operator is" — route, tenant, the active
-// selection a page has published, and current filters. It is grounding/context
-// only: the `capabilities` list is a UI/model hint, NEVER an authorization
-// decision (the backend endpoints each tool calls remain the real gate).
-
 import type { Capability } from "@/platform/security/capability-model";
 
 /** A resource the current page has surfaced as "the thing being looked at". */
@@ -13,11 +7,12 @@ export interface ContextSelection {
   label?: string;
 }
 
+/** What the assistant is told about where the operator is: route, tenant, selection, filters. */
 export interface ConsoleContext {
   route: { pathname: string; title: string; group?: string };
   tenantId: string | null;
   userId: string | null;
-  /** Grounding/UI hint only — NOT authorization. */
+  /** A hint for the model and UI, never authorization: the backend each tool calls decides. */
   capabilities: Capability[];
   selection?: ContextSelection;
   filters?: Record<string, string>;

@@ -43,6 +43,37 @@
       },
       "security": {
         "noDangerouslySetInnerHtml": "warn"
+      },
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@qeetrix/ui": {
+                "importNames": ["DataState"],
+                "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+              }
+            },
+            "patterns": [
+              {
+                "group": ["@qeetrix/ui"],
+                "importNamePattern": "StatusPill",
+                "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
+              }
+            ]
+          }
+        },
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "fetch": "Backend traffic goes through api() (src/platform/api/client.ts) and the BFF; never fetch from a module or component.",
+              "EventSource": "Streams go through the BFF stream routes (src/platform/api/server-stream.ts).",
+              "WebSocket": "Backend traffic goes through the BFF (src/platform/api).",
+              "XMLHttpRequest": "Backend traffic goes through api() (src/platform/api/client.ts)."
+            }
+          }
+        }
       }
     }
   },
@@ -68,6 +99,54 @@
                       "@/integrations/**"
                     ],
                     "message": "shared/ is the lowest layer: import only @/shared, @/i18n, or external packages."
+                  },
+                  {
+                    "group": ["@qeetrix/ui"],
+                    "importNamePattern": "StatusPill",
+                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
+                  }
+                ],
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/i18n/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                },
+                "patterns": [
+                  {
+                    "group": [
+                      "@/modules/**",
+                      "@/platform/**",
+                      "@/routes/**",
+                      "@/shared/**",
+                      "@/app/**"
+                    ],
+                    "message": "i18n/ holds locale resources and the i18next setup: it imports only external packages."
+                  },
+                  {
+                    "group": ["@qeetrix/ui"],
+                    "importNamePattern": "StatusPill",
+                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
                   }
                 ]
               }
@@ -87,9 +166,20 @@
                 "patterns": [
                   {
                     "group": ["@/modules/**", "@/routes/**", "@/app/**", "@/lib/**"],
-                    "message": "platform/ may depend only on @/platform, @/shared, @/i18n (never features, routes, app, or the retired @/lib)."
+                    "message": "platform/ may depend only on @/platform, @/shared, @/i18n (never modules, routes, app, or the retired @/lib)."
+                  },
+                  {
+                    "group": ["@qeetrix/ui"],
+                    "importNamePattern": "StatusPill",
+                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
                   }
-                ]
+                ],
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                }
               }
             }
           }
@@ -107,19 +197,91 @@
                 "patterns": [
                   {
                     "group": ["@/routes/**", "@/app/**"],
-                    "message": "features/ must not import routes or app."
-                  },
-                  {
-                    "group": ["@/modules/*/**"],
-                    "message": "Import another feature via its public barrel (@/features/<name>), never its internals. Use a relative path for your own feature."
+                    "message": "modules/ must not import routes or app."
                   },
                   {
                     "group": ["@/lib/**"],
-                    "message": "@/lib is retired — import from the feature/platform/shared home."
+                    "message": "@/lib is retired — import from the module/platform/shared home."
+                  },
+                  {
+                    "group": ["@qeetrix/ui"],
+                    "importNamePattern": "StatusPill",
+                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
+                  }
+                ],
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/routes/**", "src/modules/*/routes/**", "!**/routes/**/-*.test.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  },
+                  "@tanstack/react-query": "Routes compose; data access lives in the owning module (its hooks / queryOptions). Move this into the module.",
+                  "@/platform/api/client": {
+                    "importNames": ["api"],
+                    "message": "Routes don't call the API. Move the request into the owning module's api/ and use its hook."
+                  }
+                },
+                "patterns": [
+                  {
+                    "group": ["@/modules/*/**", "!@/modules/*/pages"],
+                    "message": "A route imports its own module's pages relatively, another module through its barrel (@/modules/<name>) or route entry (@/modules/<name>/pages), never internals."
+                  },
+                  {
+                    "group": ["@qeetrix/ui"],
+                    "importNamePattern": "StatusPill",
+                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
                   }
                 ]
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/platform/api/**",
+        "**/__tests__/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "src/test-setup.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/platform/components/data-state.tsx",
+        "src/platform/components/status-pill.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
           }
         }
       }
@@ -139,6 +301,8 @@
       "!**/.netlify",
       "!**/.vercel",
       "!**/coverage",
+      "!**/playwright-report",
+      "!**/test-results",
       "!**/routeTree.gen.ts",
       "!bun.lock"
     ]

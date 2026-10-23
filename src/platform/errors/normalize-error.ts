@@ -3,8 +3,8 @@ import { AppError } from "@/platform/errors/app-error";
 import { type ErrorKind, ERROR_CODES } from "@/platform/errors/error-codes";
 
 function classifyApiError(err: ApiError): ErrorKind {
-  // Order matters: step-up and 401 are auth; 403 is authz (even for `auth.*`
-  // codes like auth.forbidden); 400/422 are validation; everything else is api.
+  // Order matters: a step-up refusal is auth whatever its status, and a 403 is authz even for
+  // `auth.*` codes such as auth.forbidden.
   if (err.code === ERROR_CODES.STEP_UP_REQUIRED) return "auth";
   if (err.status === 401) return "auth";
   if (err.status === 403) return "authz";
@@ -13,14 +13,9 @@ function classifyApiError(err: ApiError): ErrorKind {
 }
 
 /**
- * Coerce any thrown value into a classified `AppError`. This is the single point
- * where transport/JS errors become UI-actionable ones. Rules:
- *  - AppError            → passthrough
- *  - ApiError            → classify by code/status (auth/authz/validation/api)
- *  - fetch TypeError     → network (the request never got a response)
- *  - anything else       → unknown
- * `message` is preserved for logging; user-facing copy comes from
- * userMessageForCode(), never from the raw message.
+ * Coerces any thrown value into a classified AppError: an ApiError by code and status, a fetch
+ * TypeError as network, anything else as unknown. `message` is kept for logs only; user-facing
+ * copy comes from userMessageForCode().
  */
 export function normalizeError(err: unknown): AppError {
   if (err instanceof AppError) return err;
@@ -30,12 +25,14 @@ export function normalizeError(err: unknown): AppError {
       httpStatus: err.status,
       retryable: err.retryable,
       devDetail: err.detail,
+      requestId: err.requestId,
+      fields: err.fields,
       cause: err,
     });
   }
 
-  // A fetch that never completed (offline, DNS, CORS preflight) rejects with a
-  // TypeError and no Response — treat as a network error, not an API error.
+  // A fetch that never completed (offline, DNS, CORS preflight) rejects with a TypeError and no
+  // Response: a network error, not an API one.
   if (err instanceof TypeError) {
     return new AppError("network", ERROR_CODES.NETWORK, err.message, {
       retryable: true,

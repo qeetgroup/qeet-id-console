@@ -1,11 +1,13 @@
-// Transactional email template data layer. The catalog (keys + default
-// subject/body + variables) lives server-side; tenants store overrides. A
-// missing override means the built-in default is used (custom=false).
+// The server holds the email template catalog (keys, default subject and body, variables); a
+// tenant stores overrides, and a template without one (custom=false) uses the default.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+
+import { orgKeys } from "./keys";
 
 export interface EmailTemplate {
   key: string;
@@ -43,7 +45,7 @@ export type EmailTemplateCapabilities = {
 export function useEmailTemplates(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["email-templates", tenantId],
+    queryKey: orgKeys.emailTemplates(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () =>
       api<{ items: EmailTemplate[]; capabilities?: EmailTemplateCapabilities }>(
@@ -71,8 +73,8 @@ export function useUpsertEmailTemplate() {
         method: "PUT",
         body: { subject, body, options },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["email-templates"] }),
-    meta: { successMessage: "Template saved" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(tenantId) }),
+    meta: { successMessage: "organizations:toast.templateSaved" },
   });
 }
 
@@ -84,8 +86,8 @@ export function useResetEmailTemplate() {
       api<EmailTemplate>(`/v1/tenants/${tenantId}/email-templates/${key}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["email-templates"] }),
-    meta: { successMessage: "Reverted to default" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(tenantId) }),
+    meta: { successMessage: "organizations:toast.revertedToDefault" },
   });
 }
 
@@ -105,8 +107,8 @@ export function usePreviewEmailTemplate() {
 export function sampleVar(name: string): string {
   if (name.endsWith("_url")) return "https://example.invalid/test/preview";
   if (name === "code") return "482913";
-  if (name === "ttl") return "10 minutes";
-  if (name === "tenant_name") return "Your organization";
+  if (name === "ttl") return i18n.t("organizations:emails.sample.ttl");
+  if (name === "tenant_name") return i18n.t("organizations:emails.sample.tenantName");
   return name;
 }
 

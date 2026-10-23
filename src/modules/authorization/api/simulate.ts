@@ -1,21 +1,12 @@
-// Simulation / policy-decision-point data layer. Every authorization engine
-// is exposed as a one-shot mutation that returns a normalised DecisionRecord
-// (allow/deny + engine-specific explain payload + measured latency), so the
-// Simulator and Decision Explorer can render any engine uniformly.
-//
-// Real endpoints only:
-//   • AuthZEN unified PDP  POST /v1/tenants/{t}/access/v1/evaluation
-//   • ABAC engine          POST /v1/tenants/{t}/abac/evaluate?explain=true
-//   • RBAC check           GET  /v1/check?...&explain=true
-//   • ReBAC check          POST /v1/tenants/{t}/relation-tuples/check?explain=true
-// Batch simulation has no server endpoint, so it is a capped client-side
-// fan-out over the real single-eval calls above.
+// Each authorization engine is a one-shot mutation that returns a DecisionRecord, so any
+// engine's answer renders the same way.
 
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import type { AbacDecision } from "./abac";
+import type { DecidedBy, ReasonFields } from "./decision";
 
 export type Engine = "authzen" | "abac" | "rbac" | "rebac";
 
@@ -26,10 +17,12 @@ export interface RbacExplainPath {
   group_id?: string;
   role_id: string;
 }
-export interface RbacExplain {
+/** GET /v1/check?explain=true response; the reason fields are set on a denial. */
+export interface RbacExplain extends ReasonFields {
   allowed: boolean;
   paths: RbacExplainPath[];
-  reason: string;
+  decided_by?: DecidedBy;
+  trace?: string[];
 }
 
 export interface RebacPathStep {
@@ -41,14 +34,16 @@ export interface RebacPathStep {
 export interface RebacExplain {
   allowed: boolean;
   path?: RebacPathStep[];
+  decided_by?: DecidedBy;
+  trace?: string[];
 }
 
 export interface AuthzenResult {
   decision: boolean;
-  context?: Record<string, unknown>;
+  context?: Record<string, unknown> & { decided_by?: DecidedBy };
 }
 
-/** Uniform record every engine produces — the currency of the Explorer. */
+/** One engine's decision in a common shape, with its explain payload and measured latency. */
 export interface DecisionRecord {
   id: string;
   engine: Engine;
@@ -56,6 +51,7 @@ export interface DecisionRecord {
   at: string;
   durationMs: number;
   reason?: string;
+  failed?: boolean; // the request itself failed, so there is no decision
   input: Record<string, unknown>;
   authzen?: AuthzenResult;
   abac?: AbacDecision;
@@ -67,7 +63,7 @@ function rid(): string {
   try {
     if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
   } catch {
-    /* ignore */
+    // fall back to a time-based id
   }
   return `d_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -78,8 +74,6 @@ async function timed<T>(fn: () => Promise<T>): Promise<{ data: T; durationMs: nu
   const t1 = typeof performance !== "undefined" ? performance.now() : Date.now();
   return { data, durationMs: Math.round((t1 - t0) * 10) / 10 };
 }
-
-// ── Engine inputs ─────────────────────────────────────────────────────────────
 
 export interface AuthzenInput {
   subject: { type: string; id: string };
@@ -105,8 +99,6 @@ export interface RebacInput {
   relation: string;
   user_id: string;
 }
-
-// ── Raw calls (also reused by the batch runner) ───────────────────────────────
 
 async function callAuthzen(tenantId: string, input: AuthzenInput): Promise<DecisionRecord> {
   const { data, durationMs } = await timed(() =>
@@ -193,12 +185,13 @@ async function callRebac(tenantId: string, input: RebacInput): Promise<DecisionR
   };
 }
 
-// ── Hooks ─────────────────────────────────────────────────────────────────────
-
 export function useAuthzenEvaluate() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: (input: AuthzenInput) => callAuthzen(tenantId ?? "", input),
+    mutationFn: (input: AuthzenInput) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return callAuthzen(tenantId, input);
+    },
     meta: { silent: true },
   });
 }
@@ -206,7 +199,10 @@ export function useAuthzenEvaluate() {
 export function useAbacSimulate() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: (input: AbacInput) => callAbac(tenantId ?? "", input),
+    mutationFn: (input: AbacInput) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return callAbac(tenantId, input);
+    },
     meta: { silent: true },
   });
 }
@@ -214,7 +210,10 @@ export function useAbacSimulate() {
 export function useRbacSimulate() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: (input: RbacInput) => callRbac(tenantId ?? "", input),
+    mutationFn: (input: RbacInput) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return callRbac(tenantId, input);
+    },
     meta: { silent: true },
   });
 }
@@ -222,7 +221,10 @@ export function useRbacSimulate() {
 export function useRebacSimulate() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: (input: RebacInput) => callRebac(tenantId ?? "", input),
+    mutationFn: (input: RebacInput) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return callRebac(tenantId, input);
+    },
     meta: { silent: true },
   });
 }
@@ -230,8 +232,8 @@ export function useRebacSimulate() {
 export const BATCH_CAP = 50;
 
 /**
- * Capped, concurrency-limited fan-out over the real AuthZEN endpoint — the
- * frontend stand-in for a batch-simulation API that does not exist yet.
+ * Evaluates up to BATCH_CAP subjects against the AuthZEN endpoint, six at a time: there is no
+ * batch API, so this fans out in the browser. A failed request is recorded as a deny.
  */
 export function useBatchSimulate() {
   const tenantId = useTenantId();
@@ -246,19 +248,25 @@ export function useBatchSimulate() {
     context?: Record<string, unknown>,
   ) {
     if (!tenantId) return;
+    // Bound after the guard so the hoisted `worker` below sees the narrowed type.
+    const scopedTenantId = tenantId;
     const capped = subjects.slice(0, BATCH_CAP);
     setRunning(true);
     setResults([]);
     setProgress(0);
     const out: DecisionRecord[] = [];
-    // Bounded concurrency of 6 to stay gentle on the PDP.
-    const concurrency = 6;
-    let cursor = 0;
+    const concurrency = 6; // Six at a time, to stay gentle on the decision point
+    // One iterator shared by every worker, so each [index, subject] is handed out exactly once.
+    const queue = capped.entries();
     async function worker() {
-      while (cursor < capped.length) {
-        const i = cursor++;
+      for (const [i, subject] of queue) {
         try {
-          out[i] = await callAuthzen(tenantId!, { subject: capped[i], resource, action, context });
+          out[i] = await callAuthzen(scopedTenantId, {
+            subject,
+            resource,
+            action,
+            context,
+          });
         } catch {
           out[i] = {
             id: rid(),
@@ -266,8 +274,8 @@ export function useBatchSimulate() {
             allowed: false,
             at: new Date().toISOString(),
             durationMs: 0,
-            reason: "request failed",
-            input: { subject: capped[i], resource, action },
+            failed: true,
+            input: { subject, resource, action },
           };
         }
         setProgress((p) => p + 1);

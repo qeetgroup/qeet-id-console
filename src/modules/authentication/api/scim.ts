@@ -1,21 +1,26 @@
-// SCIM 2.0 provisioning data layer. The admin surface manages the per-tenant
-// bearer token an IdP (Okta / Entra ID / Google) presents to the SCIM
-// endpoints. The SCIM base URL is derived from the API origin — the same
-// host that serves /scim/v2 — so the value shown here is always correct for
-// the deployment the console is talking to.
+// SCIM 2.0 provisioning: the per-tenant bearer token an IdP (Okta, Entra ID, Google) presents to
+// /scim/v2, which the API origin serves.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
-export interface ScimConfig {
-  token_set: boolean;
-  token_prefix?: string;
-  created_at: string | null;
-  last_used_at: string | null;
-  provisioned_count: number;
-}
+const scimConfigSchema = z.object({
+  token_set: z.boolean(),
+  token_prefix: z.string().optional(),
+  created_at: z.string().nullable(),
+  last_used_at: z.string().nullable(),
+  provisioned_count: z.number().int().nonnegative(),
+});
+export type ScimConfig = z.infer<typeof scimConfigSchema>;
+
+const scimTokenSchema = z.object({
+  token: z.string().min(1), // Shown this once
+  config: scimConfigSchema,
+});
 
 export interface ScimProvisionedUser {
   id: string;
@@ -32,7 +37,7 @@ export const scimBaseUrl = () => `${getApiBaseUrl()}/scim/v2`;
 export function useScimConfig(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["scim", "config", tenantId],
+    queryKey: authKeys.scimConfig(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<ScimConfig>(`/v1/tenants/${tenantId}/scim`),
   });
@@ -41,24 +46,25 @@ export function useScimConfig(enabled = true) {
 export function useScimProvisionedUsers() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["scim", "users", tenantId],
+    queryKey: authKeys.scimUsers(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: ScimProvisionedUser[] }>(`/v1/tenants/${tenantId}/scim/users`),
   });
 }
 
-/** Rotate (or first-time generate) the bearer token. The plaintext token is
- *  in the response exactly once — surface it immediately, it can't be reread. */
+/**
+ * Rotates, or first generates, the bearer token. The plaintext token is in the response once:
+ * show it immediately, it can't be read again.
+ */
 export function useRotateScimToken() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
+    gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: () =>
-      api<{ token: string; config: ScimConfig }>(`/v1/tenants/${tenantId}/scim/token`, {
-        method: "POST",
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["scim"] }),
-    meta: { successMessage: "SCIM bearer token generated" },
+      api(`/v1/tenants/${tenantId}/scim/token`, { method: "POST", schema: scimTokenSchema }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.scim(tenantId) }),
+    meta: { successMessage: "authentication:toast.scimBearerTokenGenerated" },
   });
 }
 
@@ -67,7 +73,7 @@ export function useRevokeScimToken() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () => api<void>(`/v1/tenants/${tenantId}/scim/token`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["scim"] }),
-    meta: { successMessage: "SCIM provisioning disabled" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.scim(tenantId) }),
+    meta: { successMessage: "authentication:toast.scimProvisioningDisabled" },
   });
 }

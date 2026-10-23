@@ -6,6 +6,7 @@ import {
   type EligibleOrganization,
   type OrganizationSelectionPage,
 } from "@/platform/auth/organization-selection";
+import { authKeys } from "./keys";
 
 export async function loadEligibleOrganizations(
   signal?: AbortSignal,
@@ -29,7 +30,7 @@ export async function loadEligibleOrganizations(
 
 export function useEligibleOrganizations(userId: string | null) {
   return useQuery({
-    queryKey: ["organization-selection", userId],
+    queryKey: authKeys.eligibleOrganizations(userId),
     queryFn: ({ signal }) => loadEligibleOrganizations(signal),
     enabled: !!userId,
     retry: false,

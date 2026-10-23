@@ -1,19 +1,20 @@
+import { useTranslation } from "react-i18next";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Button } from "@qeetrix/ui";
 import { RefreshCwIcon, TriangleAlertIcon } from "@qeetrix/icons";
 
+import { ErrorReference } from "@/platform/components/error-reference";
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
 import { captureError } from "@/platform/telemetry/errors";
 import { PageState } from "@/shared/components/page-state";
 
 /**
- * Router-level fallback for uncaught render/loader throws. Wired as the router's
- * `defaultErrorComponent`, so a thrown error renders this instead of a blank
- * page. It shows only user-safe copy derived from the error's stable code —
- * never the raw backend message — and reports the detail via telemetry.
+ * Renders the router's fallback for an uncaught render or loader error: user-safe copy from the
+ * error's code, never the backend message, with the error reported to telemetry.
  */
 export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
+  const { t } = useTranslation("common");
   const appError = normalizeError(error);
   captureError(error, { boundary: "root" });
 
@@ -22,11 +23,16 @@ export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
       <PageState
         code="—"
         icon={TriangleAlertIcon}
-        title="Something went wrong"
-        description={userMessageForCode(appError.code, appError.kind)}
+        title={t("errorComponent.somethingWentWrong")}
+        description={
+          <>
+            {userMessageForCode(appError.code, appError.kind)}
+            <ErrorReference error={appError} className="mt-2" />
+          </>
+        }
         actions={
           <Button onClick={reset}>
-            <RefreshCwIcon /> Try again
+            <RefreshCwIcon /> {t("actions.tryAgain")}
           </Button>
         }
       />

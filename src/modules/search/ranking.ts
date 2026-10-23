@@ -1,9 +1,3 @@
-// In-house fuzzy scorer and combined contextual ranker.
-// Zero external dependencies — pure TypeScript, safe in both browser and Node.js
-// (used by the browser runtime AND by Vitest unit tests).
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 export interface RankCandidate {
   id: string;
   title: string;
@@ -14,36 +8,23 @@ export interface RankCandidate {
 }
 
 export interface RankContext {
-  /** IDs present in the recent store (for recency boost). */
+  /** Recent item ids; with no query, only recents and favorites are listed. */
   recentIds: ReadonlySet<string>;
-  /** accessCount per id from the recent store (for frequency boost). */
+  /** Open count per recent id, for the frequency boost. */
   recentAccessCounts: ReadonlyMap<string, number>;
-  /** IDs the operator has favorited (for favorites boost). */
-  favoriteIds: ReadonlySet<string>;
-  /** Current router pathname for route-segment affinity boost. */
-  currentPathname: string;
+  favoriteIds: ReadonlySet<string>; // Pinned item ids, for the favorites boost
+  currentPathname: string; // The current route, for the shared-path-segment boost
 }
 
 export interface RankedItem<T extends RankCandidate> {
   item: T;
-  /** Composite score ≥ 0. Higher is better. */
-  score: number;
+  score: number; // Composite score ≥ 0. Higher is better
 }
 
-// ─── Text Scoring ─────────────────────────────────────────────────────────────
-
 /**
- * Score `query` against a single `text` string.
- * Returns a value in [0, 100]; 0 means no meaningful match.
- *
- * Priority (highest → lowest):
- *   100 exact match
- *    90 prefix match
- *    80 first-word-boundary prefix
- *    70 later-word-boundary prefix
- *    60 substring containment
- *   1-40 subsequence (density-weighted)
- *   5-30 typo-tolerant (edit-distance ≤ 2, queries ≥ 3 chars)
+ * Scores `query` against `text` from 0 (no match) to 100: exact 100, prefix 90, first-word prefix
+ * 80, later-word prefix 70, substring 60, subsequence 1–40 by density, then a typo match 5–30
+ * (edit distance ≤ 2) for queries of 3+ characters.
  */
 export function scoreText(query: string, text: string): number {
   if (!query || !text) return 0;
@@ -70,7 +51,7 @@ function _wordBoundaryScore(q: string, t: string): number {
   const words = t.split(/[\s\-_./]+/);
   for (let i = 0; i < words.length; i++) {
     const w = words[i];
-    if (w && w.startsWith(q)) return i === 0 ? 80 : 70;
+    if (w?.startsWith(q)) return i === 0 ? 80 : 70;
   }
   return 0;
 }
@@ -81,12 +62,11 @@ function _subsequenceScore(q: string, t: string): number {
     if (q[qi] === t[ti]) qi++;
   }
   if (qi < q.length) return 0; // not all chars matched
-  // Density: proportion of text chars that were matched query chars.
   const density = q.length / t.length;
   return Math.max(1, Math.round(40 * density));
 }
 
-/** Rolling-array Levenshtein edit distance — O(m·n) time, O(n) space. */
+/** Returns the Levenshtein distance between `a` and `b`, using O(n) space. */
 export function editDistance(a: string, b: string): number {
   const m = a.length;
   const n = b.length;
@@ -107,7 +87,6 @@ export function editDistance(a: string, b: string): number {
 
 function _typoTolerantScore(q: string, t: string): number {
   const maxDist = q.length <= 4 ? 1 : 2;
-  // Slide a window of `q.length` chars over the text.
   for (let i = 0; i <= t.length - q.length; i++) {
     const window = t.slice(i, i + q.length);
     const dist = editDistance(q, window);
@@ -116,20 +95,14 @@ function _typoTolerantScore(q: string, t: string): number {
   return 0;
 }
 
-// ─── Candidate Scoring ────────────────────────────────────────────────────────
-
 /**
- * Score a search candidate against a query across all its text fields.
- * The title is weighted highest; keywords at 90 %; subtitle at 70 %;
- * category at 50 % (so a category match doesn't surface unrelated items
- * above strong title matches).
- *
- * Returns 0 when there is no meaningful match.
+ * Scores a candidate by its best field, weighting title 1.0, keywords 0.9, subtitle 0.7 and
+ * category 0.5, so a category match can't outrank a strong title match. 0 means no match.
  */
 export function score(query: string, candidate: RankCandidate): number {
   if (!query) return 0;
 
-  let best = scoreText(query, candidate.title); // weight 1.0
+  let best = scoreText(query, candidate.title);
 
   for (const kw of candidate.keywords ?? []) {
     const s = scoreText(query, kw) * 0.9;
@@ -149,15 +122,10 @@ export function score(query: string, candidate: RankCandidate): number {
   return best;
 }
 
-// ─── Combined Ranker ──────────────────────────────────────────────────────────
-
 /**
- * Rank candidates against an optional query with contextual boosts.
- *
- * With `query`:  all candidates are scored; those with score > 0 are returned
- *                sorted descending with recency/frequency/favorites on top.
- * Without query: only recents and favorites are returned (no text scoring),
- *                ordered by favorite > recency, most-recent first.
+ * Ranks candidates best first. With a query only matches are kept; without one, only favorites
+ * and recents, from a base score of 50. Favorites get +30, frequently opened items up to +25,
+ * and items sharing path segments with the current route +2 per segment.
  */
 export function rankItems<T extends RankCandidate>(
   items: T[],
@@ -173,25 +141,19 @@ export function rankItems<T extends RankCandidate>(
       baseScore = score(query, item);
       if (baseScore === 0) continue;
     } else {
-      // No query: only surface items the operator has interacted with.
       const isFav = ctx.favoriteIds.has(item.id);
       const isRecent = ctx.recentIds.has(item.id);
       if (!isFav && !isRecent) continue;
       baseScore = 50;
     }
 
-    // Favorites boost (+30)
     if (ctx.favoriteIds.has(item.id)) baseScore += 30;
 
-    // Recency + frequency boost: log-scaled, capped at +25.
     const accessCount = ctx.recentAccessCounts.get(item.id) ?? 0;
     if (accessCount > 0) {
       baseScore += Math.min(25, Math.floor(Math.log2(accessCount + 1) * 10));
     }
 
-    // Route-segment affinity: items sharing path segments with the current
-    // route float up slightly (+2 per shared segment, e.g. /users matches
-    // /users/sessions because both share "users").
     if (item.url && ctx.currentPathname) {
       const pathSegs = new Set(ctx.currentPathname.split("/").filter(Boolean));
       const itemSegs = item.url.split("/").filter(Boolean);

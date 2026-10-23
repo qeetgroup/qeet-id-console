@@ -1,34 +1,32 @@
-// AI-agent identity data layer (Developer → Agent Governance). Agents authenticate
-// with their secret at POST /v1/agents/token and receive a short-lived, scoped
-// token marked actor_type="agent". Backed by /v1/tenants/{tenantID}/agents.
-// The secret is returned only once, on create.
+// AI agents exchange their secret at POST /v1/agents/token for a short-lived, scoped token marked
+// actor_type="agent". The secret is returned only once, on create.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { developerKeys } from "./keys";
 
-export interface Agent {
-  id: string;
-  name: string;
-  scopes: string[];
-  token_ttl_seconds: number;
-  status: "active" | "suspended" | "decommissioned";
-  disabled: boolean;
-  /** The named human owner accountable for this agent. Absent only for
-   * agents created before the sponsor model existed. */
-  sponsor_user_id?: string;
-  created_at: string;
-  /** Present only in the create response. */
-  secret?: string;
-}
+const agentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  scopes: z.array(z.string()),
+  token_ttl_seconds: z.number().int(),
+  status: z.enum(["active", "suspended", "decommissioned"]),
+  disabled: z.boolean(),
+  sponsor_user_id: z.string().optional(), // the accountable human; absent only on older agents
+  created_at: z.string(),
+  secret: z.string().optional(), // only in the create response
+});
+export type Agent = z.infer<typeof agentSchema>;
 
-const KEY = ["agents"];
+const createdAgentSchema = agentSchema.extend({ secret: z.string().min(1) });
 
 export function useAgents() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: developerKeys.agents(tenantId),
     queryFn: () => api<{ items: Agent[] }>(`/v1/tenants/${tenantId}/agents`),
     enabled: !!tenantId,
   });
@@ -38,14 +36,16 @@ export function useCreateAgent() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
+    gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: (body: {
       name: string;
       scopes: string[];
       token_ttl_seconds: number;
       sponsor_user_id: string;
-    }) => api<Agent>(`/v1/tenants/${tenantId}/agents`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Agent created" },
+    }) =>
+      api(`/v1/tenants/${tenantId}/agents`, { method: "POST", body, schema: createdAgentSchema }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+    meta: { successMessage: "developer:toast.agentCreated", silentError: true }, // the form shows the error
   });
 }
 
@@ -55,8 +55,8 @@ export function useDeleteAgent() {
   return useMutation({
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/agents/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Agent deleted" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+    meta: { successMessage: "developer:toast.agentDeleted" },
   });
 }
 
@@ -69,8 +69,8 @@ export function useSetAgentDisabled() {
         method: "PATCH",
         body: { disabled },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Agent status updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+    meta: { successMessage: "developer:toast.agentStatusUpdated" },
   });
 }
 
@@ -82,24 +82,25 @@ export function useKillAllAgents() {
       api<{ suspended: number }>(`/v1/tenants/${tenantId}/agents/kill-all`, {
         method: "POST",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "All agent access revoked" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+    meta: { successMessage: "developer:toast.allAgentAccessRevoked" },
   });
 }
 
-/** Agents currently sponsored by a given user — used by the sponsor-transfer
- * tool to show what's about to move before the admin confirms. */
+/** Lists the agents a user sponsors, e.g. to preview a sponsor transfer. */
 export function useAgentsSponsoredBy(userId: string | null) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "sponsored-by", tenantId, userId],
+    queryKey: developerKeys.sponsoredAgents(tenantId, userId),
     queryFn: () => api<{ items: Agent[] }>(`/v1/tenants/${tenantId}/agents/sponsored-by/${userId}`),
     enabled: !!tenantId && !!userId,
   });
 }
 
-/** Reassigns every agent sponsored by fromUserId to toUserId in one call —
- * the offboarding path: a departing sponsor's agents don't go orphaned. */
+/**
+ * Reassigns every agent sponsored by `fromUserId` to `toUserId` in one call, so a departing
+ * sponsor leaves no orphaned agents.
+ */
 export function useTransferSponsor() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
@@ -109,7 +110,7 @@ export function useTransferSponsor() {
         `/v1/tenants/${tenantId}/agents/sponsored-by/${fromUserId}/transfer`,
         { method: "POST", body: { to_user_id: toUserId } },
       ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Sponsor transferred" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+    meta: { successMessage: "developer:toast.sponsorTransferred" },
   });
 }

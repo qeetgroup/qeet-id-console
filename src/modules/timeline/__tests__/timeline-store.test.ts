@@ -2,10 +2,6 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { DEFAULT_TIMELINE_FILTERS, timelineActions, timelineStore } from "../timeline-store";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function getState() {
   return timelineStore.state;
 }
@@ -15,23 +11,14 @@ function reset() {
   timelineActions.clearSelection();
 }
 
-// ---------------------------------------------------------------------------
-// Reset between tests
-// ---------------------------------------------------------------------------
-
 beforeEach(() => {
   reset();
 });
-
-// ---------------------------------------------------------------------------
-// setFilters
-// ---------------------------------------------------------------------------
 
 describe("setFilters", () => {
   it("applies a partial filter patch", () => {
     timelineActions.setFilters({ q: "login" });
     expect(getState().filters.q).toBe("login");
-    // Other fields remain at default
     expect(getState().filters.category).toEqual([]);
     expect(getState().filters.severity).toEqual([]);
   });
@@ -60,10 +47,6 @@ describe("setFilters", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// resetFilters
-// ---------------------------------------------------------------------------
-
 describe("resetFilters", () => {
   it("returns filters to DEFAULT_TIMELINE_FILTERS", () => {
     timelineActions.setFilters({ q: "test", category: ["security"], severity: ["error"] });
@@ -78,10 +61,6 @@ describe("resetFilters", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// setSelectedEventId
-// ---------------------------------------------------------------------------
-
 describe("setSelectedEventId", () => {
   it("sets the selected event ID", () => {
     timelineActions.setSelectedEventId("evt-xyz");
@@ -94,10 +73,6 @@ describe("setSelectedEventId", () => {
     expect(getState().selectedEventId).toBeNull();
   });
 });
-
-// ---------------------------------------------------------------------------
-// clearSelection
-// ---------------------------------------------------------------------------
 
 describe("clearSelection", () => {
   it("sets selectedEventId to null", () => {
@@ -112,10 +87,6 @@ describe("clearSelection", () => {
     expect(getState().filters.q).toBe("passkey");
   });
 });
-
-// ---------------------------------------------------------------------------
-// DEFAULT_TIMELINE_FILTERS
-// ---------------------------------------------------------------------------
 
 describe("DEFAULT_TIMELINE_FILTERS", () => {
   it("has empty arrays and blank strings", () => {

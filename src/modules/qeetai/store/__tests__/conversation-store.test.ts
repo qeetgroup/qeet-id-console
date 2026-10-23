@@ -1,10 +1,26 @@
 // @vitest-environment jsdom
+import { act } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { ToolExecution } from "../../tools/types/tool.types";
-import { conversationActions, conversationStore } from "../conversation-store";
+import type { PublicSession } from "@/platform/auth/server-session";
+import { sessionStore } from "@/platform/auth/session-store";
+import type { ToolExecution } from "@/modules/qeetai/tools/types/tool.types";
+import {
+  conversationActions,
+  conversationStore,
+  hydrateConversations,
+} from "../conversation-store";
 
-const STORE_KEY = "qeetid.qeetai.conversations";
+const SESSION: PublicSession = {
+  isAuthenticated: true,
+  expiresAt: "2030-01-01T00:00:00Z",
+  sessionId: "session-a",
+  userId: "user-a",
+  tenantId: "tenant-1",
+  version: 1,
+  impersonationActor: null,
+};
+const STORE_KEY = "qeetid.qeetai.conversations:user-a:tenant-1";
 
 function persistedState() {
   return JSON.parse(window.localStorage.getItem(STORE_KEY) ?? "{}");
@@ -12,7 +28,8 @@ function persistedState() {
 
 beforeEach(() => {
   window.localStorage.clear();
-  conversationActions.clearAll();
+  act(() => sessionStore.hydrate(SESSION));
+  hydrateConversations();
 });
 
 describe("conversation-store persistence sanitization", () => {
@@ -38,11 +55,9 @@ describe("conversation-store persistence sanitization", () => {
     };
     conversationActions.upsertMessageExecution(conversationId, messageId, exec);
 
-    // In-memory store keeps the full data (operator's own screen).
-    const liveExec = conversationStore.state.conversations[0].messages[0].toolExecutions?.[0];
+    const liveExec = conversationStore.state.conversations[0]?.messages[0]?.toolExecutions?.[0];
     expect(liveExec?.result?.sensitiveArtifact?.value).toBe("SUPER-SECRET");
 
-    // Persisted copy is stripped + redacted.
     const raw = window.localStorage.getItem(STORE_KEY) ?? "";
     expect(raw).not.toContain("SUPER-SECRET");
     expect(raw).not.toContain("owner@acme.io");
@@ -59,9 +74,9 @@ describe("conversation-store persistence sanitization", () => {
       role: "user",
       content: "reset the account for owner@acme.io on 10.1.2.3",
     });
-    // In-memory keeps the operator's original text.
-    expect(conversationStore.state.conversations[0].messages[0].content).toContain("owner@acme.io");
-    // Persisted copy is masked.
+    expect(conversationStore.state.conversations[0]?.messages[0]?.content).toContain(
+      "owner@acme.io",
+    );
     const raw = window.localStorage.getItem(STORE_KEY) ?? "";
     expect(raw).not.toContain("owner@acme.io");
     expect(raw).not.toContain("10.1.2.3");
@@ -73,6 +88,90 @@ describe("conversation-store persistence sanitization", () => {
     expect(conversationStore.state.conversations.length).toBe(1);
     conversationActions.clearAll();
     expect(conversationStore.state.conversations).toEqual([]);
-    expect(persistedState().conversations).toEqual([]);
+    expect(window.localStorage.getItem(STORE_KEY)).toBeNull();
+  });
+
+  it("replaces secret-keyed values in persisted tool input, keeping secret metadata", () => {
+    const { conversationId, messageId } = conversationActions.appendMessage({
+      role: "assistant",
+      content: "creating",
+    });
+    const exec: ToolExecution = {
+      id: "call_2",
+      toolName: "create_user",
+      input: {
+        email: "new@acme.io",
+        password: "Hunter2-correct-horse",
+        tenant_id: "tenant-1",
+        policy: { password_min_length: 12, otp_enabled: true },
+      },
+      status: "cancelled",
+      startedAt: 1,
+      endedAt: 2,
+      attempts: 0,
+    };
+    conversationActions.upsertMessageExecution(conversationId, messageId, exec);
+
+    const raw = window.localStorage.getItem(STORE_KEY) ?? "";
+    expect(raw).not.toContain("Hunter2-correct-horse");
+    const input = persistedState().conversations[0].messages[0].toolExecutions[0].input;
+    expect(input.password).toBe("[redacted]");
+    expect(input.tenant_id).toBe("tenant-1");
+    expect(input.policy).toEqual({ password_min_length: 12, otp_enabled: true });
+  });
+});
+
+describe("conversation-store loading", () => {
+  it("restores the signed-in person's history after a reload", () => {
+    conversationActions.appendMessage({ role: "user", content: "tenant one question" });
+    conversationStore.setState(() => ({ conversations: [], activeId: null }));
+
+    hydrateConversations();
+
+    expect(conversationStore.state.conversations[0]?.messages[0]?.content).toBe(
+      "tenant one question",
+    );
+  });
+
+  it("ignores a saved payload from another storage version", () => {
+    window.localStorage.setItem(STORE_KEY, JSON.stringify({ conversations: [{ id: "c1" }] }));
+
+    hydrateConversations();
+
+    expect(conversationStore.state.conversations).toEqual([]);
+  });
+
+  it("drops conversations past the retention period", () => {
+    const stale = Date.now() - 31 * 24 * 60 * 60 * 1000;
+    window.localStorage.setItem(
+      STORE_KEY,
+      JSON.stringify({
+        version: 2,
+        activeId: "old",
+        conversations: [
+          {
+            id: "old",
+            title: "old",
+            messages: [],
+            pinned: false,
+            createdAt: stale,
+            updatedAt: stale,
+          },
+          {
+            id: "new",
+            title: "new",
+            messages: [],
+            pinned: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          },
+        ],
+      }),
+    );
+
+    hydrateConversations();
+
+    expect(conversationStore.state.conversations.map((c) => c.id)).toEqual(["new"]);
+    expect(conversationStore.state.activeId).toBeNull();
   });
 });

@@ -1,13 +1,4 @@
-// Root of the qeetai runtime. Mounted once inside CapabilityProvider (so it can
-// read capabilities) and inside SidebarProvider (so the docked panel can reflow
-// the shell). Responsibilities:
-//   • hydrate the workspace + conversation stores from storage on the client
-//     (never during render — SSR output stays deterministic);
-//   • expose a promise-based confirm() used by destructive tools, backed by the
-//     same AlertDialog the rest of the console uses.
-// The stores themselves are module singletons, so trigger/panel/launcher read
-// them directly without prop-drilling; this provider only owns lifecycle + confirm.
-
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -28,10 +19,10 @@ import {
   useState,
 } from "react";
 
-import { onSessionClear } from "@/platform/auth/session-store";
+import { useStorageScope } from "@/platform/auth/scoped-storage";
 import { StepUpDialog } from "@/platform/security/step-up-dialog";
 
-import { conversationActions, hydrateConversations } from "./store/conversation-store";
+import { hydrateConversations } from "./store/conversation-store";
 import { hydrateWorkspace } from "./store/workspace-store";
 import type { ConfirmRequest } from "./tools/types/tool.types";
 
@@ -49,23 +40,27 @@ interface PendingConfirm {
   resolve: (approved: boolean) => void;
 }
 
+/**
+ * Hydrates the workspace and conversation stores on the client, never during render, and
+ * provides the promise-based confirm() and stepUp() dialogs that tools wait on.
+ */
 export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation(["qeetai", "common"]);
   const [pending, setPending] = useState<PendingConfirm | null>(null);
   const [stepUpOpen, setStepUpOpen] = useState(false);
   // Guards against a settle-after-unmount and double-resolve on the same prompt.
   const settleRef = useRef<((approved: boolean) => void) | null>(null);
   const stepUpSettleRef = useRef<((verified: boolean) => void) | null>(null);
 
+  // History is saved per person and tenant: reload it when the scope changes, which after a
+  // page reload happens only once the session hydrates.
+  const storageScope = useStorageScope();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-read on scope change
   useEffect(() => {
     hydrateConversations();
-    const unsubscribe = hydrateWorkspace();
-    // Wipe conversation history from localStorage on logout (shared machines).
-    const unsubscribeClear = onSessionClear(() => conversationActions.clearAll());
-    return () => {
-      unsubscribe?.();
-      unsubscribeClear();
-    };
-  }, []);
+  }, [storageScope]);
+
+  useEffect(() => hydrateWorkspace(), []);
 
   const settle = useCallback((approved: boolean) => {
     settleRef.current?.(approved);
@@ -121,7 +116,9 @@ export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
               </ul>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => settle(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => settle(false)}>
+                {t("common:actions.cancel")}
+              </AlertDialogCancel>
               <Button
                 variant={req.tone === "destructive" ? "destructive" : "default"}
                 onClick={() => settle(true)}
@@ -138,7 +135,7 @@ export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
           if (!open) settleStepUp(false);
         }}
         onVerified={() => settleStepUp(true)}
-        actionLabel="continue this action"
+        actionLabel={t("qeetaiProvider.continueThisAction")}
       />
     </QeetAIContext.Provider>
   );

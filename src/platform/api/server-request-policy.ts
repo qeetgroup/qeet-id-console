@@ -1,13 +1,12 @@
-// This is the SSRF guard: matching control characters is the entire point, because CR/LF/NUL are
-// precisely what a request-smuggling payload injects into a backend path.
-// biome-ignore lint/suspicious/noControlCharactersInRegex: rejecting control characters is the intent
+// SSRF guard: CR/LF/NUL are what a request-smuggling payload injects into a backend path.
+// biome-ignore lint/suspicious/noControlCharactersInRegex: rejecting them is the point
 const FORBIDDEN_PATH_CHARACTERS = /[\\?#\u0000-\u001f\u007f]/;
 
-// A canonical API path is a plain path. An embedded scheme ("/https://attacker.example/x") stays
-// on our own origin under WHATWG URL parsing, so the canonicalization check below does not catch
-// it - but any downstream parser that re-reads the path could treat it as an absolute URL.
+// An embedded scheme ("/https://attacker.example/x") passes the origin check below under WHATWG
+// parsing, but a downstream parser that re-reads the path could treat it as an absolute URL.
 const EMBEDDED_SCHEME = /:\/\//;
 
+/** Resolves an API path against the backend origin; throws if the path could leave it. */
 export function buildBackendUrl(
   apiBaseUrl: string,
   path: string,
@@ -42,10 +41,8 @@ export function isLocalSessionDestroyRequest(pathname: string, method: string): 
   return method === "POST" && pathname === "/v1/auth/logout";
 }
 
-// Signing out everywhere ends the session behind the console's own credential
-// too, so a successful call must also end the console's encrypted session.
-// Only on success: if the server could not do it, the person stays signed in
-// here and can try again.
+// Signing out everywhere ends the console's own session too, so a successful call clears its
+// cookie; after a failure the person stays signed in here and can retry.
 export function isGlobalSignOutRequest(pathname: string, method: string): boolean {
   return method === "POST" && pathname === "/v1/auth/sessions/revoke-all";
 }

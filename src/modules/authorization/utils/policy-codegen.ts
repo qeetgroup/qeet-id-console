@@ -1,22 +1,22 @@
-// Policy document + code generation. The unified Policy Builder edits a single
-// PolicyDoc; this module turns it into the four preview representations
-// (JSON / YAML / DSL / evaluation tree) and knows when the doc reduces to a
-// real, persistable ABAC policy.
+// Turns the Policy Builder's PolicyDoc into its JSON, YAML, DSL and evaluation-tree previews,
+// and decides whether it can be saved as an ABAC policy.
 
+import i18n from "@/i18n";
 import {
   type AbacPolicyInput,
   type CondNode,
+  type ConditionProblem,
+  conditionProblem,
   type Effect,
   emptyGroup,
   OPERATOR_LABELS,
+  type Operator,
   toConditionJson,
 } from "../api/abac";
 
 /**
- * The composite authoring model. RBAC (`requireRole`) and ReBAC (`relation`)
- * blocks are expressive for simulation + preview but cannot be encoded inside a
- * pure ABAC condition, so a doc is only persistable as an ABAC policy when
- * those blocks are absent (see isReducibleToAbac).
+ * The Policy Builder's authoring model. Its RBAC (`requireRole`) and ReBAC (`relation`) blocks
+ * preview and simulate, but no ABAC condition can encode them, so they block saving.
  */
 export interface PolicyDoc {
   name: string;
@@ -46,9 +46,19 @@ export function emptyPolicyDoc(): PolicyDoc {
   };
 }
 
-/** A doc is persistable as ABAC iff it has no RBAC/ReBAC block. */
+/** Why a doc can't be saved as an ABAC policy, translated at `authorization:conditionProblem.<code>`. */
+export type PolicyProblem = ConditionProblem | { code: "mixedEngines" };
+
+/** Returns why a doc can't be saved as an ABAC policy, or null when it can. */
+export function abacSaveBlocker(doc: PolicyDoc): PolicyProblem | null {
+  // An RBAC or ReBAC block has no ABAC equivalent, so the backend has nothing to store it in.
+  if (doc.requireRole || doc.relation) return { code: "mixedEngines" };
+  return doc.condition ? conditionProblem(doc.condition) : null;
+}
+
+/** Returns whether a doc can be saved as an ABAC policy (see abacSaveBlocker). */
 export function isReducibleToAbac(doc: PolicyDoc): boolean {
-  return !doc.requireRole && !doc.relation;
+  return abacSaveBlocker(doc) === null;
 }
 
 export function toAbacInput(doc: PolicyDoc): AbacPolicyInput {
@@ -63,8 +73,6 @@ export function toAbacInput(doc: PolicyDoc): AbacPolicyInput {
     enabled: doc.enabled,
   };
 }
-
-// ── JSON ──────────────────────────────────────────────────────────────────────
 
 export function toJsonObject(doc: PolicyDoc): Record<string, unknown> {
   const obj: Record<string, unknown> = {
@@ -85,12 +93,11 @@ export function toJson(doc: PolicyDoc): string {
   return JSON.stringify(toJsonObject(doc), null, 2);
 }
 
-// ── YAML (minimal, dependency-free serializer for plain JSON values) ──────────
-
 function needsQuote(s: string): boolean {
   return (
     s === "" ||
     /[:#{}[\],&*!|>'"%@`]/.test(s) ||
+    /[\n\r\t]/.test(s) ||
     /^[\s-]/.test(s) ||
     /\s$/.test(s) ||
     ["true", "false", "null", "yes", "no", "~"].includes(s.toLowerCase()) ||
@@ -105,6 +112,7 @@ function yamlScalar(v: unknown): string {
   return needsQuote(s) ? JSON.stringify(s) : s;
 }
 
+/** Returns YAML for a plain JSON value; a minimal serializer, to avoid a YAML dependency. */
 export function toYaml(value: unknown, indent = 0): string {
   const pad = "  ".repeat(indent);
   if (Array.isArray(value)) {
@@ -141,29 +149,51 @@ export function toYamlDoc(doc: PolicyDoc): string {
   return toYaml(toJsonObject(doc));
 }
 
-// ── DSL (a readable, Cedar/Rego-adjacent authoring format) ────────────────────
+// The DSL's operator keywords: syntax, so they stay English whatever the reader's language.
+const DSL_OPERATORS: Record<Operator, string> = {
+  eq: "equals",
+  ne: "not equals",
+  in: "in",
+  nin: "not in",
+  contains: "contains",
+  gt: "greater than",
+  gte: "greater or equal",
+  lt: "less than",
+  lte: "less or equal",
+  exists: "exists",
+  prefix: "starts with",
+  suffix: "ends with",
+  regex: "matches regex",
+};
 
 function dslValue(node: Extract<CondNode, { kind: "leaf" }>): string {
   if (node.op === "exists") return "";
-  return ` ${JSON.stringify(node.value)}`;
+  // An attribute reference stays bare, so it reads apart from a quoted literal.
+  return node.ref ? ` ${node.value.trim()}` : ` ${JSON.stringify(node.value)}`;
 }
 
 function dslCondition(node: CondNode, indent: number): string {
   const pad = "  ".repeat(indent);
   if (node.kind === "leaf") {
-    return `${pad}${node.attr} ${OPERATOR_LABELS[node.op]}${dslValue(node)}`;
+    return `${pad}${node.attr} ${DSL_OPERATORS[node.op]}${dslValue(node)}`;
   }
   if (node.kind === "not") {
     return `${pad}NOT (\n${dslCondition(node.child, indent + 1)}\n${pad})`;
   }
   const joiner = node.combinator === "all" ? "AND" : "OR";
   return node.children
-    .map((c, i) =>
-      i === 0 ? dslCondition(c, indent) : `${pad}${joiner}\n${dslCondition(c, indent)}`,
-    )
+    .map((c, i) => {
+      // Parenthesise a multi-child subgroup: "a AND b OR c" would hide which binds first.
+      const body =
+        c.kind === "group" && c.children.length > 1
+          ? `${pad}(\n${dslCondition(c, indent + 1)}\n${pad})`
+          : dslCondition(c, indent);
+      return i === 0 ? body : `${pad}${joiner}\n${body}`;
+    })
     .join("\n");
 }
 
+/** Returns the doc in the console's readable, Cedar-like policy DSL. */
 export function toDsl(doc: PolicyDoc): string {
   const lines: string[] = [];
   lines.push(`POLICY ${JSON.stringify(doc.name || "unnamed")}`);
@@ -174,7 +204,16 @@ export function toDsl(doc: PolicyDoc): string {
   if (doc.requireRole) clauses.push(`  subject HAS ROLE ${JSON.stringify(doc.requireRole)}`);
   if (doc.relation)
     clauses.push(`  subject IS ${doc.relation.relation} OF ${JSON.stringify(doc.relation.object)}`);
-  if (doc.condition) clauses.push(dslCondition(doc.condition, 1));
+  if (doc.condition) {
+    const condition = doc.condition;
+    // Beside a role or relation clause, a multi-child OR group needs parentheses to bind first.
+    const grouped =
+      clauses.length > 0 &&
+      condition.kind === "group" &&
+      condition.combinator === "any" &&
+      condition.children.length > 1;
+    clauses.push(grouped ? `  (\n${dslCondition(condition, 2)}\n  )` : dslCondition(condition, 1));
+  }
   if (clauses.length) {
     lines.push("WHEN");
     lines.push(clauses.join("\n  AND\n"));
@@ -183,8 +222,7 @@ export function toDsl(doc: PolicyDoc): string {
   return lines.join("\n");
 }
 
-// ── Evaluation tree (structured, for the interactive tree view) ───────────────
-
+/** One node of the evaluation tree; `label` and `detail` are in the reader's language. */
 export interface EvalTreeNode {
   id: string;
   kind: "decision" | "and" | "or" | "not" | "leaf" | "block";
@@ -201,24 +239,36 @@ function tid() {
 
 function condToTree(node: CondNode): EvalTreeNode {
   if (node.kind === "leaf") {
+    const operator = i18n.t(OPERATOR_LABELS[node.op]);
     return {
       id: tid(),
       kind: "leaf",
       label: node.attr,
-      detail: `${OPERATOR_LABELS[node.op]}${node.op === "exists" ? "" : ` ${node.value || "…"}`}`,
+      detail:
+        node.op === "exists"
+          ? operator
+          : i18n.t("authorization:evalTree.comparison", { operator, value: node.value || "…" }),
     };
   }
   if (node.kind === "not") {
-    return { id: tid(), kind: "not", label: "NOT", children: [condToTree(node.child)] };
+    return {
+      id: tid(),
+      kind: "not",
+      label: i18n.t("authorization:evalTree.not"),
+      children: [condToTree(node.child)],
+    };
   }
   return {
     id: tid(),
     kind: node.combinator === "all" ? "and" : "or",
-    label: node.combinator === "all" ? "ALL of" : "ANY of",
+    label: i18n.t(
+      node.combinator === "all" ? "authorization:evalTree.all" : "authorization:evalTree.any",
+    ),
     children: node.children.map(condToTree),
   };
 }
 
+/** Returns the doc's evaluation tree, translated when called: build it at render. */
 export function toEvalTree(doc: PolicyDoc): EvalTreeNode {
   _t = 0;
   const children: EvalTreeNode[] = [];
@@ -227,21 +277,31 @@ export function toEvalTree(doc: PolicyDoc): EvalTreeNode {
       id: tid(),
       kind: "block",
       label: "RBAC",
-      detail: `require role “${doc.requireRole}”`,
+      detail: i18n.t("authorization:evalTree.requireRole", { role: doc.requireRole }),
     });
   if (doc.relation)
     children.push({
       id: tid(),
       kind: "block",
       label: "ReBAC",
-      detail: `${doc.relation.relation} of ${doc.relation.object}`,
+      detail: i18n.t("authorization:evalTree.relationOf", {
+        relation: doc.relation.relation,
+        object: doc.relation.object,
+      }),
     });
   if (doc.condition) children.push(condToTree(doc.condition));
   return {
     id: tid(),
     kind: "decision",
-    label: `${doc.effect.toUpperCase()} ${doc.resourceType || "*"}:${doc.action || "*"}`,
-    detail: children.length ? "when all blocks match" : "unconditional",
+    label: i18n.t("authorization:evalTree.decision", {
+      effect: i18n.t(`authorization:decisionBadge.${doc.effect}`),
+      target: `${doc.resourceType || "*"}:${doc.action || "*"}`,
+    }),
+    detail: i18n.t(
+      children.length
+        ? "authorization:evalTree.whenAllBlocksMatch"
+        : "authorization:evalTree.unconditional",
+    ),
     children,
   };
 }

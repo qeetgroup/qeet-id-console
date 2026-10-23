@@ -11,11 +11,8 @@ const TONE_CLASSES = {
 export type PostureRingTone = keyof typeof TONE_CLASSES;
 
 /**
- * Donut gauge for the Authorization surfaces (health score, resource coverage).
- *
- * The kit's ProgressCircle hard-codes `text-primary` on its indicator, and these
- * rings are colour-coded by what they report — so this owns the SVG and takes
- * both the tone and arbitrary centre content.
+ * Renders a donut gauge with any centre content. It owns its SVG because the kit's
+ * ProgressCircle hard-codes `text-primary`, and these rings are coloured by what they report.
  */
 export function PostureRing({
   value,
@@ -25,8 +22,7 @@ export function PostureRing({
   ariaLabel,
   children,
 }: {
-  /** 0–100; clamped. */
-  value: number;
+  value: number; // 0–100, clamped
   tone?: PostureRingTone;
   size?: number;
   strokeWidth?: number;

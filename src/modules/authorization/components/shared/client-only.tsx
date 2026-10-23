@@ -1,11 +1,8 @@
 import { type ReactNode, useEffect, useState } from "react";
 
 /**
- * Renders children only after the component has mounted on the client. The
- * console is server-rendered (TanStack Start), and React Flow / Monaco both
- * touch `window`/`document` at module or render time — wrapping them here keeps
- * the server render (and the first hydration pass) safe, showing `fallback`
- * until the browser takes over.
+ * Renders `fallback` until mounted in the browser, then `children`. React Flow and Monaco touch
+ * `window` and `document`, which neither the server render nor the first hydration pass has.
  */
 export function ClientOnly({
   children,

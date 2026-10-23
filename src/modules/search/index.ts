@@ -1,5 +1,4 @@
-// Public surface of the universal search feature.
-// The command-palette launcher is the only caller outside this module.
+// Public API of the search module; other modules import from here only.
 
 export { UniversalSearch } from "./components/universal-search";
 export { SearchProvider } from "./search-provider";

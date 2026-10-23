@@ -1,28 +1,23 @@
-// Recent-search store: persists the last N items the operator opened via
-// universal search (pages, commands, resources). Uses TanStack Store as the
-// reactive layer; localStorage for cross-session persistence. Guards all
-// localStorage access with typeof window checks so the module is safe in
-// server/test environments.
+// The items last opened from universal search. Entries carry tenant resource titles, so they are
+// saved per person and tenant and wiped on sign-out.
 
 import { Store } from "@tanstack/react-store";
 
+import { scopedStorage } from "@/platform/auth/scoped-storage";
+
 import type { SearchItem, SearchItemKind } from "../registry/types/registry.types";
 
-const STORE_KEY = "qeetid.search.recent";
 const MAX_ENTRIES = 50;
 
 export interface RecentEntry {
-  /** Matches the SearchItem.id that was opened. */
-  id: string;
+  id: string; // Matches the SearchItem.id that was opened
   kind: SearchItemKind;
   category: string;
   title: string;
   subtitle?: string;
   url?: string;
-  /** Unix ms — used for recency ordering. */
-  timestamp: number;
-  /** How many times this id has been opened — used for frequency boost. */
-  accessCount: number;
+  timestamp: number; // Unix ms of the last open, which orders the list
+  accessCount: number; // Times opened, for the ranking's frequency boost
 }
 
 export interface RecentState {
@@ -31,17 +26,16 @@ export interface RecentState {
 
 export const recentStore = new Store<RecentState>({ entries: [] });
 
+const storage = scopedStorage("qeetid.search.recent", {
+  onScopeChange: () => recentStore.setState(() => ({ entries: [] })),
+});
+
 function persist(state: RecentState): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORE_KEY, JSON.stringify(state));
-  } catch {
-    /* storage quota or private mode — best-effort */
-  }
+  storage.write(state);
 }
 
 export const recentActions = {
-  /** Add or upsert an item into the recent list. */
+  /** Records an open: the item moves to the front and its count rises. Keeps MAX_ENTRIES. */
   add(item: SearchItem): void {
     recentStore.setState((s) => {
       const now = Date.now();
@@ -64,7 +58,6 @@ export const recentActions = {
         };
         entries = [entry, ...s.entries].slice(0, MAX_ENTRIES);
       }
-      // Keep sorted newest-first after upsert.
       const sorted = [...entries].sort((a, b) => b.timestamp - a.timestamp);
       const next: RecentState = { entries: sorted };
       persist(next);
@@ -89,18 +82,11 @@ export const recentActions = {
 };
 
 /**
- * Rehydrate from localStorage. Call once from a client-side mount effect,
- * never during render (keeps SSR output deterministic).
+ * Loads the signed-in person's entries (none when signed out). Call from an effect keyed on
+ * useStorageScope(), never during render, so SSR output stays deterministic.
  */
 export function hydrateRecent(): void {
-  if (typeof window === "undefined") return;
-  try {
-    const raw = window.localStorage.getItem(STORE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw) as Partial<RecentState>;
-    if (!parsed || !Array.isArray(parsed.entries)) return;
-    recentStore.setState(() => ({ entries: parsed.entries as RecentEntry[] }));
-  } catch {
-    /* corrupt payload — start clean */
-  }
+  const parsed = storage.read() as Partial<RecentState> | null;
+  const entries = Array.isArray(parsed?.entries) ? (parsed.entries as RecentEntry[]) : [];
+  recentStore.setState(() => ({ entries }));
 }

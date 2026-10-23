@@ -1,9 +1,7 @@
-// Summary metric strip — a server-computed windowed snapshot
-// (GET /v1/activity/summary) rendered as six KPI cards, each with its own
-// sparkline drawn from the per-outcome time series. Clicking an outcome card
-// applies the matching severity filter. Built on the .dashboard-metric helpers.
-
+import { useTranslation } from "react-i18next";
 import { cn, Skeleton, Sparkline } from "@qeetrix/ui";
+
+import { formatLocale } from "@/i18n";
 
 import type { ActivitySearch } from "../activity-search";
 import type { ActivitySummary, Outcome } from "../types/activity.types";
@@ -25,7 +23,9 @@ function pctLabel(share: number): string {
 }
 
 function compact(n: number): string {
-  return n >= 10_000 ? n.toLocaleString(undefined, { notation: "compact" }) : n.toLocaleString();
+  return n >= 10_000
+    ? n.toLocaleString(formatLocale(), { notation: "compact" })
+    : n.toLocaleString(formatLocale());
 }
 
 const RAIL_CLASS =
@@ -44,7 +44,7 @@ function MetricCard({
   value: number;
   tone: Tone;
   series: number[];
-  share?: number; // 0..1, shown as a % next to the label
+  share?: number; // 0..1, shown as a percentage beside the label
   onClick?: () => void;
   active?: boolean;
 }) {
@@ -104,6 +104,7 @@ function StripSkeleton() {
   );
 }
 
+/** Renders the summary as six KPI cards with sparklines; an outcome card applies its filter. */
 export function ActivitySummaryStrip({
   summary,
   isLoading,
@@ -112,11 +113,12 @@ export function ActivitySummaryStrip({
 }: {
   summary: ActivitySummary | undefined;
   isLoading: boolean;
-  /** Apply a filter patch when an outcome card is clicked. */
+  /** Receives the severity filter of a clicked card. */
   onApplyFilter?: (patch: Partial<ActivitySearch>) => void;
-  /** The currently-applied outcome (drives the pressed state), if any. */
+  /** The applied outcome, whose card renders pressed; "" presses Total events. */
   activeOutcome?: Outcome | "";
 }) {
+  const { t } = useTranslation("activity");
   if (isLoading && !summary) return <StripSkeleton />;
   if (!summary) return null;
 
@@ -125,7 +127,7 @@ export function ActivitySummaryStrip({
   const warning = summary.by_outcome.warning ?? 0;
   const failed = summary.by_outcome.failed ?? 0;
   const s = summary.series;
-  // Coalesce to 0 so an older backend (total-only series) still renders.
+  // A bucket may carry only `count`; missing breakdowns plot as 0.
   const seriesOf = (key: keyof (typeof s)[number]) => s.map((b) => Number(b[key] ?? 0));
 
   const apply = (patch: Partial<ActivitySearch>) => onApplyFilter?.(patch);
@@ -133,7 +135,7 @@ export function ActivitySummaryStrip({
   return (
     <div className={RAIL_CLASS}>
       <MetricCard
-        label="Total events"
+        label={t("activitySummaryStrip.totalEvents")}
         value={total}
         tone="brand"
         series={seriesOf("count")}
@@ -141,7 +143,7 @@ export function ActivitySummaryStrip({
         active={activeOutcome === ""}
       />
       <MetricCard
-        label="Success"
+        label={t("activitySummaryStrip.success")}
         value={success}
         tone="success"
         series={seriesOf("success")}
@@ -150,7 +152,7 @@ export function ActivitySummaryStrip({
         active={activeOutcome === "success"}
       />
       <MetricCard
-        label="Warnings"
+        label={t("activitySummaryStrip.warnings")}
         value={warning}
         tone="warning"
         series={seriesOf("warning")}
@@ -159,7 +161,7 @@ export function ActivitySummaryStrip({
         active={activeOutcome === "warning"}
       />
       <MetricCard
-        label="Failed"
+        label={t("activitySummaryStrip.failed")}
         value={failed}
         tone="danger"
         series={seriesOf("failed")}
@@ -168,13 +170,13 @@ export function ActivitySummaryStrip({
         active={activeOutcome === "failed"}
       />
       <MetricCard
-        label="Unique actors"
+        label={t("activitySummaryStrip.uniqueActors")}
         value={summary.unique_actors}
         tone="info"
         series={seriesOf("count")}
       />
       <MetricCard
-        label="Security alerts"
+        label={t("activitySummaryStrip.securityAlerts")}
         value={summary.security_alerts}
         tone="danger"
         series={seriesOf("critical")}

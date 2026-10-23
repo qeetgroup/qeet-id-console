@@ -1,14 +1,3 @@
-// Dashboard activity widget data source.
-//
-// Reads from two sources and merges them so the widget is populated and fresh
-// regardless of SSE health:
-//   1. Recent history via GET /v1/activity (react-query, short interval) — this
-//      is what makes the widget show recent events on load and refresh when the
-//      operator changes something elsewhere, even when the live stream is down.
-//   2. Live SSE events from the shared activityStore — instant updates while the
-//      stream is connected.
-// The two are de-duped by id and shown newest-first.
-
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@tanstack/react-store";
 import { useEffect, useMemo } from "react";
@@ -19,6 +8,7 @@ import { activityStore } from "@/modules/activity";
 import { acquireSubscription } from "@/modules/activity";
 import { type ActivityEvent, type ConnectionStatus, DEFAULT_FILTERS } from "@/modules/activity";
 import { useTenantId } from "@/platform/auth/session";
+import { dashboardKeys } from "./api/keys";
 
 const DASHBOARD_LIMIT = 10;
 const REFRESH_MS = 20_000;
@@ -28,14 +18,13 @@ export type { ActivityEvent as DashboardAuditEvent };
 export type DashboardActivityResult = {
   events: ActivityEvent[];
   status: ConnectionStatus;
-  /** True while loading with nothing to show yet. */
-  connecting: boolean;
+  connecting: boolean; // loading with nothing to show yet
 };
 
 /**
- * Hook for the dashboard activity widget. Merges recently-loaded history with
- * live SSE events (deduped, newest-first). History refetches on an interval and
- * on window focus, so the widget stays current even without a live stream.
+ * Returns the dashboard's latest activity: polled history merged with live SSE events, de-duped and
+ * newest-first. Polling keeps it current while the stream is down. `_tenantId` is ignored; the
+ * tenant comes from the session.
  */
 export function useDashboardActivity(_tenantId?: string, enabled = true): DashboardActivityResult {
   const access = useCapabilities();
@@ -46,9 +35,8 @@ export function useDashboardActivity(_tenantId?: string, enabled = true): Dashbo
   const liveEvents = useStore(activityStore, (s) => s.liveEvents);
   const status = useStore(activityStore, (s) => s.status);
 
-  // Recent history — keeps the widget populated + fresh independent of SSE.
   const history = useQuery({
-    queryKey: ["dashboard-activity", tenantId] as const,
+    queryKey: dashboardKeys.activity(tenantId),
     queryFn: () => fetchActivityPage(DEFAULT_FILTERS, "", DASHBOARD_LIMIT),
     enabled: active && !!tenantId,
     staleTime: 10_000,
@@ -64,7 +52,7 @@ export function useDashboardActivity(_tenantId?: string, enabled = true): Dashbo
 
   const events = useMemo(() => {
     const merged = new Map<string, ActivityEvent>();
-    // Live first (freshest), then history; the Map keeps the first-seen entry.
+    // Live events go in first, so they win over the history copy of the same event.
     for (const e of liveEvents) merged.set(e.id, e);
     for (const e of history.data?.events ?? []) if (!merged.has(e.id)) merged.set(e.id, e);
     return Array.from(merged.values())

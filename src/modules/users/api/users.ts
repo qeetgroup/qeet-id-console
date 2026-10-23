@@ -1,17 +1,18 @@
-// User CRUD data layer — thin React Query hooks over the existing
-// /v1/users/* endpoints. Extracted from routes/_app/users/index.tsx and
-// routes/_app/users/$userId.tsx so that both the route pages (UI path) and
-// the qeetai tools (tool-call path) share one authenticated hook.
-//
-// Tool run() functions call api() directly; these hooks are the UI layer.
-// Follow the house pattern: useMutation + api() + onSuccess invalidate + meta.
-
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
-// ── Shared types ──────────────────────────────────────────────────────────────
+import type { ImportRowError } from "../import-errors";
+import type { ImportRow } from "../import-file";
+import { type UserListParams, userKeys } from "./keys";
+import type { UserDetail } from "./user360";
 
 export type UserStatus = "active" | "invited" | "suspended" | "deleted";
 
@@ -27,14 +28,15 @@ export interface User {
   roles?: string[] | null;
   created_at: string;
   updated_at?: string;
-  // List-only enrichment (populated by GET /v1/users; absent on single fetches).
-  mfa_enabled?: boolean;
+  mfa_enabled?: boolean; // Only the list endpoint fills these; a single-user read omits them
   groups_count?: number;
   last_seen_at?: string | null;
   last_seen_ip?: string | null;
 }
 
-/** Tenant-wide member counts for the Users KPI cards (GET /v1/users/stats). */
+export type UserPage = { items: User[]; next_cursor?: string };
+
+/** Tenant-wide member counts. */
 export interface UserStats {
   total: number;
   active: number;
@@ -42,36 +44,92 @@ export interface UserStats {
   invited: number;
   mfa_enabled: number;
   mfa_missing: number;
-  /** Members created in the last 30 days — the Total card's delta baseline. */
   new_last_30d: number;
 }
 
-/** 30-day daily series (oldest → newest) for the KPI sparklines. */
+/** Daily counts over the last 30 days, oldest first. */
 export interface UserTrends {
   total: number[];
   mfa_enabled: number[];
 }
 
-/** Directory summary counts. */
-export function useUserStats(enabled = true) {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: ["user-stats", tenantId],
-    queryFn: () => api<UserStats>("/v1/users/stats"),
-    enabled: !!tenantId && enabled,
-    staleTime: 30_000,
-  });
+/** A soft-deleted user, restorable until purged. */
+export interface DeletedUser {
+  id: string;
+  email: string;
+  display_name: string | null;
+  deleted_at: string;
+  created_at: string;
 }
 
-/** 30-day trend series for the KPI sparklines. */
+/** Query definitions for the users reads, shared by hooks, prefetches and cache reads. */
+export const userQueries = {
+  list: (tenantId: string | null, params: UserListParams) =>
+    queryOptions({
+      queryKey: userKeys.list(tenantId, params),
+      queryFn: () => api<UserPage>("/v1/users", { query: params }),
+      enabled: !!tenantId,
+    }),
+  detail: (tenantId: string | null, userId: string) =>
+    queryOptions({
+      queryKey: userKeys.detail(tenantId, userId),
+      queryFn: () => api<UserDetail>(`/v1/users/${userId}`),
+      enabled: !!tenantId && !!userId,
+    }),
+  stats: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: userKeys.stats(tenantId),
+      queryFn: () => api<UserStats>("/v1/users/stats"),
+      enabled: !!tenantId,
+      staleTime: 30_000,
+    }),
+  trends: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: userKeys.trends(tenantId),
+      queryFn: () => api<UserTrends>("/v1/users/trends"),
+      enabled: !!tenantId,
+      staleTime: 60_000,
+    }),
+  deleted: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: userKeys.deleted(tenantId),
+      queryFn: () => api<{ items: DeletedUser[] }>("/v1/users/deleted"),
+      enabled: !!tenantId,
+    }),
+};
+
+/** Refreshes what a change to who's in the tenant can move: the lists and the counts. */
+function refreshMembership(qc: QueryClient, tenantId: string | null) {
+  void qc.invalidateQueries({ queryKey: userKeys.lists(tenantId) });
+  void qc.invalidateQueries({ queryKey: userKeys.stats(tenantId) });
+  void qc.invalidateQueries({ queryKey: userKeys.trends(tenantId) });
+}
+
+/** Refreshes the membership views and every view of one user. */
+function refreshUser(qc: QueryClient, tenantId: string | null, userId: string) {
+  refreshMembership(qc, tenantId);
+  void qc.invalidateQueries({ queryKey: userKeys.user(tenantId, userId) });
+}
+
+export function useUsers(params: UserListParams) {
+  return useQuery(userQueries.list(useTenantId(), params));
+}
+
+export function useUser(userId: string) {
+  return useQuery(userQueries.detail(useTenantId(), userId));
+}
+
+export function useUserStats(enabled = true) {
+  const options = userQueries.stats(useTenantId());
+  return useQuery({ ...options, enabled: options.enabled && enabled });
+}
+
 export function useUserTrends() {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: ["user-trends", tenantId],
-    queryFn: () => api<UserTrends>("/v1/users/trends"),
-    enabled: !!tenantId,
-    staleTime: 60_000,
-  });
+  return useQuery(userQueries.trends(useTenantId()));
+}
+
+export function useDeletedUsers() {
+  return useQuery(userQueries.deleted(useTenantId()));
 }
 
 export interface CreateUserInput {
@@ -80,8 +138,7 @@ export interface CreateUserInput {
   password?: string;
   display_name?: string;
   phone?: string;
-  /** Optional role to assign immediately after creation. */
-  role_id?: string;
+  role_id?: string; // assigned straight after the user is created
 }
 
 export interface UpdateUserBody {
@@ -90,104 +147,124 @@ export interface UpdateUserBody {
   status?: "active" | "suspended";
 }
 
-// Stable React Query key roots for cache invalidation.
-export const USER_KEYS = {
-  all: ["users"] as const,
-  detail: (id: string) => ["user", id] as const,
-  activity: (id: string, tenantId: string | null) => ["user-activity", id, tenantId] as const,
-};
-
-// ── Mutations ─────────────────────────────────────────────────────────────────
-
 /**
- * Create a new user (POST /v1/users). Optionally assigns an initial role via
- * POST /v1/users/{id}/tenants/{tenantId}/roles/{roleId}.
+ * Creates a user, then assigns `role_id` when given. If the assignment fails the mutation
+ * rejects, but the user still exists.
  */
 export function useCreateUser() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateUserInput) => {
       const { role_id, ...body } = input;
       const user = await api<User>("/v1/users", { method: "POST", body });
       if (role_id) {
-        await api<void>(`/v1/users/${user.id}/tenants/${body.tenant_id}/roles/${role_id}`, {
-          method: "POST",
-        });
+        try {
+          await api<void>(`/v1/users/${user.id}/tenants/${body.tenant_id}/roles/${role_id}`, {
+            method: "POST",
+          });
+        } catch (err) {
+          // The user exists even though the role didn't stick, so the list must show it.
+          refreshMembership(qc, tenantId);
+          throw err;
+        }
       }
       return user;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: USER_KEYS.all }),
-    meta: { successMessage: "User created" },
+    onSuccess: () => refreshMembership(qc, tenantId),
+    meta: { successMessage: "users:toast.created" },
   });
 }
 
-/**
- * Update a user's mutable profile fields (PATCH /v1/users/{id}).
- * Accepts display_name, phone, and/or status in one call.
- */
 export function useUpdateUser() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, body }: { userId: string; body: UpdateUserBody }) =>
       api<User>(`/v1/users/${userId}`, { method: "PATCH", body }),
-    onSuccess: (_, { userId }) => {
-      qc.invalidateQueries({ queryKey: USER_KEYS.all });
-      qc.invalidateQueries({ queryKey: USER_KEYS.detail(userId) });
-    },
-    meta: { successMessage: "User updated" },
+    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
+    meta: { successMessage: "users:toast.updated" },
   });
 }
 
-/**
- * Set a user's status to "active" or "suspended" (PATCH /v1/users/{id}).
- * Used by the qeetai's disable_user / enable_user tools.
- */
 export function useSetUserStatus() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, status }: { userId: string; status: "active" | "suspended" }) =>
       api<User>(`/v1/users/${userId}`, { method: "PATCH", body: { status } }),
     onSuccess: (_, { userId }) => {
-      qc.invalidateQueries({ queryKey: USER_KEYS.all });
-      qc.invalidateQueries({ queryKey: USER_KEYS.detail(userId) });
+      refreshUser(qc, tenantId, userId);
+      void qc.invalidateQueries({ queryKey: userKeys.suspended(tenantId) });
     },
-    meta: { successMessage: "User status updated" },
+    meta: { successMessage: "users:toast.userStatusUpdated" },
   });
 }
 
-/**
- * Soft-delete a user (DELETE /v1/users/{id}).
- */
+/** Soft-deletes a user; it stays restorable until purged. */
 export function useDeleteUser() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => api<void>(`/v1/users/${userId}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: USER_KEYS.all }),
-    meta: { successMessage: "User deleted" },
+    onSuccess: (_, userId) => {
+      refreshUser(qc, tenantId, userId);
+      void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
+    },
+    meta: { successMessage: "users:toast.deleted" },
+  });
+}
+
+/** Restores a soft-deleted user. */
+export function useRestoreUser() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => api<void>(`/v1/users/${userId}/restore`, { method: "POST" }),
+    onSuccess: () => {
+      refreshMembership(qc, tenantId);
+      void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
+    },
+    meta: { successMessage: "users:toast.userRestored" },
+  });
+}
+
+/** Erases a soft-deleted user for good. */
+export function usePurgeUser() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => api<void>(`/v1/users/${userId}/purge`, { method: "DELETE" }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) }),
+    meta: { successMessage: "users:toast.userPermanentlyDeleted" },
   });
 }
 
 /**
- * Admin MFA reset: clears all enrolled factors for a user, forcing
- * re-enrollment at next sign-in (DELETE /v1/users/{id}/mfa).
- * Gated server-side on user.write; audited as mfa.admin_reset.
+ * Clears every MFA factor the user enrolled, so they enroll again at next sign-in. The server
+ * requires user.write and audits the reset.
  */
 export function useResetUserMfa() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) =>
       api<{ message: string }>(`/v1/users/${userId}/mfa`, { method: "DELETE" }),
-    onSuccess: (_, userId) => {
-      qc.invalidateQueries({ queryKey: USER_KEYS.detail(userId) });
-    },
-    meta: { successMessage: "Multi-factor authentication reset for this user" },
+    onSuccess: (_, userId) => refreshUser(qc, tenantId, userId),
+    meta: { successMessage: "users:toast.mfaReset" },
   });
 }
 
-/**
- * Assign a role to a user within the current tenant
- * (POST /v1/users/{userID}/tenants/{tenantID}/roles/{roleID}).
- */
+/** Sets a user's password; the person isn't told it changed. */
+export function useSetUserPassword() {
+  return useMutation({
+    mutationFn: ({ userId, password }: { userId: string; password: string }) =>
+      api<void>(`/v1/users/${userId}/password`, { method: "POST", body: { password } }),
+    meta: { successMessage: "users:toast.passwordUpdated" },
+  });
+}
+
+/** Assigns a role to a user in the current tenant. */
 export function useAssignRole() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
@@ -198,7 +275,64 @@ export function useAssignRole() {
         method: "POST",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: USER_KEYS.all }),
-    meta: { successMessage: "Role assigned" },
+    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
+    meta: { successMessage: "users:toast.roleAssigned" },
   });
 }
+
+/** The per-row outcome of a bulk import. */
+export interface BulkImportResult {
+  succeeded: number;
+  failed: number;
+  errors?: ImportRowError[];
+}
+
+/** Creates the rows' users in one request; each row succeeds or fails on its own. */
+export function useBulkImportUsers() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rows: ImportRow[]): Promise<BulkImportResult> => {
+      const res = await api<BulkImportResult>("/v1/users/bulk", {
+        method: "POST",
+        body: {
+          tenant_id: tenantId,
+          users: rows.map(({ email, password, display_name, phone }) => ({
+            email,
+            password,
+            display_name,
+            phone,
+          })),
+        },
+      });
+      // The backend numbers rows by their place in the batch; name the file's line instead.
+      const errors = res.errors?.map(({ line, email, code, field }) => ({
+        line: line ? rows[line - 1]?.line : undefined,
+        email,
+        code,
+        field,
+      }));
+      return { ...res, errors };
+    },
+    onSuccess: () => refreshMembership(qc, tenantId),
+    meta: { silent: true }, // the page shows the outcome, and any error, itself
+  });
+}
+
+/**
+ * The per-user calls a bulk action makes for each selected user; there is no batch endpoint.
+ * The caller refreshes the users views once the batch is done.
+ */
+export const perUserCalls = {
+  assignRole: (tenantId: string, roleId: string) => (userId: string) =>
+    api<void>(`/v1/users/${userId}/tenants/${tenantId}/roles/${roleId}`, { method: "POST" }),
+  addToGroup: (groupId: string) => (userId: string) =>
+    api<void>(`/v1/groups/${groupId}/members/${userId}`, { method: "POST" }),
+  requireMfa: (userId: string) =>
+    api<void>(`/v1/users/${userId}/mfa-required`, { method: "PUT", body: { required: true } }),
+  revokeSessions: (userId: string) =>
+    api<void>(`/v1/users/${userId}/sessions/revoke-all`, { method: "POST" }),
+  suspend: (userId: string) =>
+    api<void>(`/v1/users/${userId}`, { method: "PATCH", body: { status: "suspended" } }),
+  remove: (userId: string) => api<void>(`/v1/users/${userId}`, { method: "DELETE" }),
+};

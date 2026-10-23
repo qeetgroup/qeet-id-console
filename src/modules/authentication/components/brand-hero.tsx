@@ -3,7 +3,12 @@ import { ShieldCheckIcon, UserRoundIcon, UsersRoundIcon } from "@qeetrix/icons";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 
-const FEATURE_ICONS = [UserRoundIcon, ShieldCheckIcon, UsersRoundIcon] as const;
+// Each slot names its copy: `hero.features.<slot>` and, signing up, `hero.signup.*.<slot>`.
+const FEATURES = [
+  { slot: "first", Icon: UserRoundIcon },
+  { slot: "second", Icon: ShieldCheckIcon },
+  { slot: "third", Icon: UsersRoundIcon },
+] as const;
 
 export function BrandHero({
   intent = "signin",
@@ -39,23 +44,23 @@ export function BrandHero({
         {isSignup && <span className="auth-copy-dark">{t("hero.signup.description")}</span>}
       </p>
       <ul className="auth-features">
-        {FEATURE_ICONS.map((Icon, index) => (
-          <li key={t(`hero.features.${index}.title`)} className="auth-feature">
+        {FEATURES.map(({ slot, Icon }) => (
+          <li key={slot} className="auth-feature">
             <Icon className="auth-feature-icon" strokeWidth={1.8} aria-hidden="true" />
             <div className={isSignup ? "auth-copy-light" : undefined}>
-              <h3>{t(`hero.features.${index}.title`)}</h3>
+              <h3>{t(`hero.features.${slot}.title`)}</h3>
               <p>
                 {t(
                   isSignup
-                    ? `hero.signup.lightFeatures.${index}`
-                    : `hero.features.${index}.description`,
+                    ? `hero.signup.lightFeatures.${slot}`
+                    : `hero.features.${slot}.description`,
                 )}
               </p>
             </div>
             {isSignup && (
               <div className="auth-copy-dark">
-                <h3>{t(`hero.signup.features.${index}.title`)}</h3>
-                <p>{t(`hero.signup.features.${index}.description`)}</p>
+                <h3>{t(`hero.signup.features.${slot}.title`)}</h3>
+                <p>{t(`hero.signup.features.${slot}.description`)}</p>
               </div>
             )}
           </li>

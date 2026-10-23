@@ -1,9 +1,9 @@
-// PreviewPane: shows metadata, status, and quick actions for the selected item.
-// Rendered in the right column of the universal search dialog when an item is
-// highlighted.
-
-import { Badge, cn, Separator, StatusPill } from "@qeetrix/ui";
+import { Badge, cn, Separator } from "@qeetrix/ui";
 import { StarIcon } from "@qeetrix/icons";
+import { useTranslation } from "react-i18next";
+
+import { formatLocale } from "@/i18n";
+import { StatusPill } from "@/platform/components/status-pill";
 
 import type { SearchContext, SearchItem } from "../registry/types/registry.types";
 import { QuickActions } from "./quick-actions";
@@ -15,7 +15,9 @@ interface PreviewPaneProps {
   onToggleFavorite(): void;
 }
 
+/** Renders the highlighted item's details, favorite toggle and quick actions. */
 export function PreviewPane({ item, ctx, isFavorite, onToggleFavorite }: PreviewPaneProps) {
+  const { t } = useTranslation("search");
   return (
     <div className="flex h-full flex-col gap-3 p-4">
       {/* Header */}
@@ -36,13 +38,12 @@ export function PreviewPane({ item, ctx, isFavorite, onToggleFavorite }: Preview
         </div>
         <button
           type="button"
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          aria-label={t(isFavorite ? "previewPane.removeFavorite" : "previewPane.addFavorite")}
           aria-pressed={isFavorite}
           onClick={onToggleFavorite}
           className={cn(
             "shrink-0 rounded p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            // When starred: always show the warning/amber accent so the filled state reads as "active".
-            // When not starred: muted by default, warning accent on hover.
+            // A starred item stays amber so the filled star reads as active.
             isFavorite ? "text-warning" : "text-muted-foreground hover:text-warning",
           )}
         >
@@ -80,11 +81,12 @@ export function PreviewPane({ item, ctx, isFavorite, onToggleFavorite }: Preview
       {/* Updated timestamp */}
       {item.updatedAt != null && (
         <p className="text-xs text-muted-foreground">
-          Updated{" "}
-          {new Date(item.updatedAt).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
+          {t("previewPane.updated", {
+            date: new Date(item.updatedAt).toLocaleDateString(formatLocale(), {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }),
           })}
         </p>
       )}

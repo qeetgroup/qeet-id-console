@@ -1,10 +1,9 @@
-// Graceful-degradation provider. When no server-side model is configured
-// (`/v1/qeetai/status` → configured:false, or the endpoint isn't deployed yet),
-// the workspace stays fully usable: the panel, history, and composer all work,
-// and a turn streams a helpful "connect a provider" explanation instead of
-// pretending to be intelligent. This mirrors the existing ComingSoon pattern the
-// console already ships for the authorization assistant.
+// Provider used while Qeet AI isn't usable: the workspace still works, and each turn streams an
+// explanation of how to connect a provider instead of an answer.
 
+import i18n from "@/i18n";
+
+import { ASSISTANT_CHANGE_TOOLS_ENABLED } from "../tools/tool-registry";
 import {
   type AIProvider,
   ChatAbortError,
@@ -13,13 +12,23 @@ import {
   type StreamEvent,
 } from "./ai-provider";
 
-const SETUP_MESSAGE =
-  "Qeet AI is ready, but no AI provider is connected for this organization yet.\n\n" +
-  "Once an owner or admin adds an AI provider key under **Settings → Qeet AI** (or an operator sets a platform key on the Qeet ID server), I'll be able to:\n\n" +
-  "- **Answer questions** about users, roles, policies, connections, and audit events in this tenant\n" +
-  "- **Run actions as tools** — create users, rotate signing keys, simulate authorization, search audit logs — always through your own permissions, with a confirmation step before anything destructive\n" +
-  "- **Generate** Terraform, SDK snippets, and API examples from your live configuration\n\n" +
-  "Everything I do runs under your access and is written to the audit log. Nothing here bypasses authorization.";
+/** The Markdown explanation each turn streams, in the operator's language. */
+function setupMessage(): string {
+  const abilities = [
+    i18n.t("qeetai:unconfigured.answer"),
+    // Promise only what this version can do: change tools may be switched off.
+    ASSISTANT_CHANGE_TOOLS_ENABLED
+      ? i18n.t("qeetai:unconfigured.act")
+      : i18n.t("qeetai:unconfigured.lookUp"),
+    i18n.t("qeetai:unconfigured.generate"),
+  ];
+  return [
+    i18n.t("qeetai:unconfigured.notConnected"),
+    i18n.t("qeetai:unconfigured.onceConnected"),
+    abilities.map((ability) => `- ${ability}`).join("\n"),
+    i18n.t("qeetai:unconfigured.audit"),
+  ].join("\n\n");
+}
 
 function delay(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -39,10 +48,7 @@ function delay(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 
-/**
- * Split into word-plus-trailing-space chunks so the message streams with the
- * same cadence a real model would, giving the UI something honest to render.
- */
+/** Splits text into word-plus-whitespace chunks, so it streams at a model's cadence. */
 function chunk(text: string): string[] {
   return text.match(/\S+\s*/g) ?? [text];
 }
@@ -59,7 +65,7 @@ export const unconfiguredProvider: AIProvider = {
     try {
       yield { type: "thinking" };
       await delay(120, signal);
-      for (const piece of chunk(SETUP_MESSAGE)) {
+      for (const piece of chunk(setupMessage())) {
         yield { type: "token", text: piece };
         await delay(12, signal);
       }
@@ -69,7 +75,11 @@ export const unconfiguredProvider: AIProvider = {
         yield { type: "done", reason: "stopped" };
         return;
       }
-      yield { type: "error", code: "unconfigured_stream_failed", message: "Stream failed" };
+      yield {
+        type: "error",
+        code: "unconfigured_stream_failed",
+        message: i18n.t("qeetai:stream.interrupted"),
+      };
     }
   },
 };

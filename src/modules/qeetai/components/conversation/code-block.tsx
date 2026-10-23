@@ -1,6 +1,7 @@
 import { Button, cn } from "@qeetrix/ui";
 import { CheckIcon, CopyIcon } from "@qeetrix/icons";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface CodeBlockProps {
   code: string;
@@ -8,13 +9,9 @@ interface CodeBlockProps {
   className?: string;
 }
 
-/**
- * Fenced code block with a copy button and a language chip. Rendered as
- * monospace with horizontal scroll; token-level syntax highlighting (shiki) is a
- * deferred enhancement tracked in the qeetai spec — the block is fully usable
- * (readable + copyable) without it.
- */
+/** Renders a fenced code block with a language chip and a copy button, without highlighting. */
 export function CodeBlock({ code, lang, className }: CodeBlockProps) {
+  const { t } = useTranslation(["qeetai", "common"]);
   const [copied, setCopied] = useState(false);
 
   const copy = useCallback(() => {
@@ -33,13 +30,13 @@ export function CodeBlock({ code, lang, className }: CodeBlockProps) {
     >
       <div className="flex items-center justify-between border-b bg-muted/60 px-3 py-1">
         <span className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
-          {lang || "code"}
+          {lang || t("codeBlock.code")}
         </span>
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label={copied ? "Copied" : "Copy code"}
-          title="Copy code"
+          aria-label={t(copied ? "common:states.copied" : "codeBlock.copyCode")}
+          title={t("codeBlock.copyCode")}
           onClick={copy}
         >
           {copied ? (

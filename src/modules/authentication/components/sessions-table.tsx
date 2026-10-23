@@ -1,8 +1,7 @@
+import { useTranslation } from "react-i18next";
 import {
   Badge,
   Button,
-  DataState,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -11,6 +10,8 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
+import { StatusPill } from "@/platform/components/status-pill";
 import { MonitorSmartphoneIcon, ShieldIcon } from "@qeetrix/icons";
 import type { UseQueryResult } from "@tanstack/react-query";
 
@@ -28,18 +29,17 @@ type SessionsTableProps = {
 };
 
 /**
- * Shared active-sessions table (device · IP · created · last seen · status ·
- * revoke). Presentational only — confirmation and step-up are the caller's
- * responsibility via `onRevoke` (see useSensitiveAction). Used by the security,
- * users, and account session views so they can't drift apart.
+ * Renders the active-sessions table that every session view shares. Presentational only:
+ * confirmation and step-up are the caller's, through `onRevoke` (see useSensitiveAction).
  */
 export function SessionsTable({
   query,
   currentSessionId,
   onRevoke,
   isRevoking,
-  emptyLabel = "No active sessions.",
+  emptyLabel,
 }: SessionsTableProps) {
+  const { t } = useTranslation(["authentication", "common"]);
   const items = query.data?.items ?? [];
   return (
     <DataState
@@ -48,18 +48,18 @@ export function SessionsTable({
       error={query.error}
       isEmpty={items.length === 0}
       emptyIcon={ShieldIcon}
-      emptyTitle={emptyLabel}
+      emptyTitle={emptyLabel ?? t("sessionsTable.empty")}
       skeletonRows={3}
     >
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Device</TableHead>
-            <TableHead>IP address</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Last seen</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("sessionsTable.device")}</TableHead>
+            <TableHead>{t("sessionsTable.ipAddress")}</TableHead>
+            <TableHead>{t("common:labels.created")}</TableHead>
+            <TableHead>{t("sessionsTable.lastSeen")}</TableHead>
+            <TableHead>{t("common:labels.status")}</TableHead>
+            <TableHead className="text-right">{t("common:labels.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -78,7 +78,7 @@ export function SessionsTable({
                   {country && <span className="ml-1">· {country}</span>}
                   {isCurrent && (
                     <Badge variant="secondary" className="ml-2">
-                      This device
+                      {t("sessionsTable.thisDevice")}
                     </Badge>
                   )}
                 </TableCell>
@@ -101,7 +101,7 @@ export function SessionsTable({
                     disabled={sessionStatus(s) !== "active" || isCurrent || isRevoking}
                     onClick={() => onRevoke(s)}
                   >
-                    Revoke
+                    {t("common:actions.revoke")}
                   </Button>
                 </TableCell>
               </TableRow>

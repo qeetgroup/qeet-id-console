@@ -11,8 +11,7 @@ type SortHeaderProps = {
   className?: string;
 };
 
-// A TableHead whose label is a button that cycles asc → desc → none and
-// shows the active direction. Pairs with useListView's sort state.
+/** Renders a table head whose label button cycles the sort asc → desc → none. */
 export function SortHeader({ columnKey, sort, onToggle, children, className }: SortHeaderProps) {
   const active = sort?.key === columnKey;
   return (

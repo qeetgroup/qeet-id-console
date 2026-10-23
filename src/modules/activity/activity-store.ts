@@ -1,30 +1,27 @@
-// TanStack Store for live activity events streamed via SSE.
-// Holds ONLY live events (newest-first, rolling buffer).
-// Historical pages are managed separately by TanStack Query.
+// Live activity events from the SSE stream only; history pages live in TanStack Query.
 
 import { Store } from "@tanstack/react-store";
 
 import type { ActivityEvent, ConnectionStatus } from "./types/activity.types";
+import { onSessionClear } from "@/platform/auth/session-store";
 
 const MAX_LIVE = 200;
 const PREFS_KEY = "qeetid.activity.prefs";
 
 export interface ActivityStoreState {
-  /** Newest-first live events from the SSE stream. Capped at MAX_LIVE. */
-  liveEvents: ActivityEvent[];
-  /** Events queued while paused; flushed on resume. */
-  pendingBuffer: ActivityEvent[];
-  /** Count of live events added since the last markAllRead(). */
-  unreadCount: number;
-  /** When true, incoming live events go to pendingBuffer instead of liveEvents. */
-  paused: boolean;
-  /** SSE connection state. */
-  status: ConnectionStatus;
-  /** Last received SSE event id — sent as Last-Event-ID on reconnect. */
+  liveEvents: ActivityEvent[]; // Newest first, capped at MAX_LIVE
+  pendingBuffer: ActivityEvent[]; // Events queued while paused; flushed on resume
+  unreadCount: number; // Live events added since the last markAllRead()
+  paused: boolean; // Incoming events go to pendingBuffer instead of liveEvents
+  status: ConnectionStatus; // Stream state, held at "paused" while paused
+  /**
+   * The newest SSE frame id (`id:`) the stream delivered, never an event's own id: the server's
+   * resume cursor, so a new subscription carries on from it.
+   */
   lastEventId: string | null;
 }
 
-/** Module-level deduplication cache. Cleared by clearAll(). */
+/** Ids already added to liveEvents, so replayed or repeated events aren't shown twice. */
 const seenIds = new Set<string>();
 
 export const activityStore = new Store<ActivityStoreState>({
@@ -36,7 +33,7 @@ export const activityStore = new Store<ActivityStoreState>({
   lastEventId: null,
 });
 
-/** Load lightweight prefs from localStorage. Call once from the provider's mount effect. */
+/** Restores the persisted paused preference. */
 export function initActivityPrefs() {
   if (typeof window === "undefined") return;
   try {
@@ -47,7 +44,7 @@ export function initActivityPrefs() {
       activityStore.setState((s) => ({ ...s, paused: true, status: "paused" as ConnectionStatus }));
     }
   } catch {
-    /* corrupt payload — start with defaults */
+    // corrupt payload — start with defaults
   }
 }
 
@@ -56,11 +53,11 @@ function savePrefs(paused: boolean) {
   try {
     window.localStorage.setItem(PREFS_KEY, JSON.stringify({ paused }));
   } catch {
-    /* best-effort */
+    // best-effort
   }
 }
 
-/** Returns events not already seen, preserving order. */
+/** Returns the unseen events in order and marks them seen. */
 function dedupeNew(incoming: ActivityEvent[]): ActivityEvent[] {
   const fresh: ActivityEvent[] = [];
   for (const e of incoming) {
@@ -73,16 +70,11 @@ function dedupeNew(incoming: ActivityEvent[]): ActivityEvent[] {
 }
 
 export const activityActions = {
-  /**
-   * Add live events from the SSE stream.
-   * When paused, events are queued in pendingBuffer.
-   * When active, events are prepended to liveEvents.
-   */
+  /** Prepends unseen events to liveEvents, or queues them in pendingBuffer while paused. */
   addLiveEvents(incoming: ActivityEvent[]) {
     activityStore.setState((s) => {
       if (s.paused) {
-        // Check seenIds without adding — IDs are committed to seenIds on flush,
-        // so that dedupeNew in setPaused(false) can still mark them properly.
+        // Not marked seen yet: dedupeNew on resume would otherwise drop them.
         const trulyNew = incoming.filter((e) => !seenIds.has(e.id));
         if (trulyNew.length === 0) return s;
         return { ...s, pendingBuffer: [...trulyNew, ...s.pendingBuffer] };
@@ -90,13 +82,7 @@ export const activityActions = {
       const fresh = dedupeNew(incoming);
       if (fresh.length === 0) return s;
       const liveEvents = [...fresh, ...s.liveEvents].slice(0, MAX_LIVE);
-      const latestId = fresh[0]?.id ?? s.lastEventId;
-      return {
-        ...s,
-        liveEvents,
-        unreadCount: s.unreadCount + fresh.length,
-        lastEventId: latestId ?? null,
-      };
+      return { ...s, liveEvents, unreadCount: s.unreadCount + fresh.length };
     });
   },
 
@@ -107,10 +93,8 @@ export const activityActions = {
         savePrefs(true);
         return { ...s, paused: true, status: "paused" as ConnectionStatus };
       }
-      // Resume: flush pending buffer
       const fresh = dedupeNew(s.pendingBuffer);
       const liveEvents = [...fresh, ...s.liveEvents].slice(0, MAX_LIVE);
-      const latestId = fresh[0]?.id ?? s.lastEventId;
       savePrefs(false);
       return {
         ...s,
@@ -119,14 +103,13 @@ export const activityActions = {
         pendingBuffer: [],
         liveEvents,
         unreadCount: s.unreadCount + fresh.length,
-        lastEventId: latestId ?? null,
       };
     });
   },
 
   setStatus(status: ConnectionStatus) {
     activityStore.setState((s) => {
-      // Don't overwrite the "paused" status with stream connection changes
+      // While paused, the status stays "paused" whatever the stream reports.
       if (s.paused && status !== "paused") return s;
       return { ...s, status };
     });
@@ -153,5 +136,8 @@ export const activityActions = {
   },
 };
 
-/** Exported for unit tests only. */
+// Events belong to the outgoing organisation; another must never see them.
+onSessionClear(() => activityActions.clearAll());
+
+/** For unit tests only. */
 export { seenIds as _seenIds };

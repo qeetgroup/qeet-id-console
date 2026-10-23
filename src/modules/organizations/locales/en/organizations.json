@@ -1,0 +1,604 @@
+{
+  "tenants": {
+    "description": "Every organization your account has access to. Click an organization to switch into it, or create a new one — you become its owner automatically.",
+    "refresh": "Refresh",
+    "new": "New organization",
+    "list": {
+      "count_one": "{{shown}} of {{total}} organization",
+      "count_other": "{{shown}} of {{total}} organizations",
+      "searchPlaceholder": "Search name, slug, region…",
+      "emptyFiltered": "No organizations match your filters.",
+      "empty": "No organizations yet."
+    },
+    "filters": {
+      "status": {
+        "label": "Status",
+        "active": "Active",
+        "suspended": "Suspended",
+        "deleted": "Deleted"
+      },
+      "plan": {
+        "label": "Plan",
+        "free": "Free",
+        "starter": "Starter",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
+    },
+    "columns": {
+      "plan": "Plan",
+      "region": "Region",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "table": {
+      "current": "Current",
+      "switch": "Switch"
+    },
+    "delete": {
+      "title": "Delete this organization?",
+      "delete": "Delete"
+    },
+    "create": {
+      "title": "New organization",
+      "description": "You'll become the owner of this organization and switch into it once it's created."
+    },
+    "edit": {
+      "title": "Edit organization",
+      "description": "Slug can't be changed once an organization is created.",
+      "name": "Name",
+      "slug": "Slug",
+      "slugHelp": "Immutable after creation.",
+      "plan": "Plan",
+      "status": "Status",
+      "statusActive": "Active",
+      "statusSuspended": "Suspended",
+      "statusHelp": "Use the Delete action to soft-delete an organization.",
+      "region": "Region",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "logo": "Logo",
+      "logoHelp": "Shown across the console. Leave empty to use an initials avatar.",
+      "planHelp": "Plan changes are made through billing.",
+      "editAction": "Edit this organization",
+      "validation": {
+        "name": "Enter a name.",
+        "nameTooLong": "Keep the name to 200 characters."
+      }
+    }
+  },
+  "kpi": {
+    "total": "Organizations",
+    "active": "Active",
+    "suspended": "Suspended",
+    "members": "Members",
+    "mfaMembers": "MFA-enabled members",
+    "ofTotal": "{{pct}}% of total"
+  },
+  "table": {
+    "organization": "Organization",
+    "members": "Members",
+    "withMfa": "{{n}} with MFA"
+  },
+  "rowActions": {
+    "open": "Open organization",
+    "edit": "Edit organization",
+    "suspend": "Suspend",
+    "activate": "Reactivate",
+    "delete": "Delete organization"
+  },
+  "actionLabels": {
+    "suspend": "Suspend this organization",
+    "reactivate": "Reactivate this organization"
+  },
+  "preview": {
+    "copyId": "Copy organization ID",
+    "plan": "Plan",
+    "region": "Region",
+    "members": "Members",
+    "mfaMembers": "MFA-enabled members",
+    "created": "Created",
+    "switchHint": "Switch to this organization to view members, activity, and billing.",
+    "open": "Open Org 360"
+  },
+  "suspend": {
+    "title": "Suspend this organization?",
+    "description": "Members of {{name}} won’t be able to sign in until it’s reactivated."
+  },
+  "delete": {
+    "description": "This soft-deletes {{name}} ({{slug}}). Audit history is preserved."
+  },
+  "detail": {
+    "back": "Back to organizations",
+    "notFound": "Organization not found, or you don’t have access to it.",
+    "actions": "Actions",
+    "orgId": "Org ID",
+    "tabs": {
+      "overview": "Overview",
+      "members": "Members",
+      "security": "Security",
+      "billing": "Billing",
+      "activity": "Activity"
+    },
+    "switchGateTitle": "Switch to view this organization",
+    "switchGateDesc": "Members, security, billing and activity for {{name}} are only available while it’s your active organization.",
+    "identity": "Identity",
+    "updated": "Last updated",
+    "membersSummary": "Members",
+    "membersSummaryDesc": "Directory size and MFA coverage.",
+    "mau": "Monthly active",
+    "mfaAdoption": "MFA adoption",
+    "overviewSwitchHint": "Switch to this organization for live analytics (active users, MFA adoption).",
+    "membersDesc": "People who belong to this organization.",
+    "membersEmpty": "No members found.",
+    "memberCols": {
+      "user": "User",
+      "roles": "Roles",
+      "mfa": "MFA"
+    },
+    "on": "On",
+    "off": "Off",
+    "manageMembers": "Manage members",
+    "loginMethods": "Login methods",
+    "loginMethodsDesc": "Authentication methods enabled for this organization.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "password": "Password",
+    "passkeys": "Passkeys",
+    "magicLink": "Magic link",
+    "selfReg": "Self-registration",
+    "passwordPolicy": "Password policy",
+    "minLength": "Minimum length",
+    "reqUpper": "Require uppercase",
+    "reqNumber": "Require number",
+    "reqSymbol": "Require symbol",
+    "subscription": "Subscription",
+    "noSubscription": "No active subscription.",
+    "amount": "Amount",
+    "renews": "Renews",
+    "invoices": "Invoices",
+    "noInvoices": "No invoices yet.",
+    "invoiceCols": {
+      "date": "Date",
+      "amount": "Amount"
+    },
+    "activityDesc": "Recent audit events across this organization.",
+    "activityEmpty": "No activity recorded.",
+    "auditCols": {
+      "action": "Action",
+      "resource": "Resource",
+      "ip": "IP",
+      "when": "When"
+    }
+  },
+  "members": {
+    "description": "Users who are members of this organisation."
+  },
+  "toast": {
+    "securityPolicySaved": "Security policy saved",
+    "domainAdded": "Domain added",
+    "domainVerified": "Domain verified",
+    "domainRemoved": "Domain removed",
+    "domainUpdated": "Domain updated",
+    "organizationUpdated": "Organization updated",
+    "organizationDeleted": "Organization deleted",
+    "templateSaved": "Template saved",
+    "revertedToDefault": "Reverted to default"
+  },
+  "emails": {
+    "delivery": {
+      "tenant": "Saved templates apply to this organization's invitations and magic links.",
+      "platform": "Platform-account verification, recovery, and MFA use Qeet-managed emails. This template can be saved, previewed, and tested."
+    },
+    "title": "Emails",
+    "description": "Customize your organization's email templates with your own content, language, and brand.",
+    "list": "Email templates",
+    "listDescription": "Transactional email templates in Qeet ID.",
+    "loading": "Loading email templates",
+    "loadError": "Email templates couldn't be loaded.",
+    "empty": "No email templates available.",
+    "noAccess": "You don't have access to email templates.",
+    "retry": "Retry",
+    "previewAll": "Preview all",
+    "test": "Test email",
+    "templateTitle": "{{name}} template",
+    "custom": "Customized",
+    "default": "Default",
+    "reset": "Reset to default",
+    "resetTitle": "Reset this email template?",
+    "resetDescription": "This removes the saved content, design overrides, and translations for this template.",
+    "resetDone": "Template reset to default.",
+    "testTitle": "Send a test email?",
+    "testDescription": "A sample of the current draft will be sent to {{email}}. It contains sample values, not real sign-in links or codes.",
+    "testSend": "Send test email",
+    "testRecipient": "Send a sample to {{email}}",
+    "testUnavailable": "An email provider and a verified account email are required.",
+    "testAccepted": "Test email accepted by the mail provider.",
+    "editorTabs": "Email template editor",
+    "tabs": {
+      "content": "Content",
+      "design": "Design",
+      "localization": "Localization",
+      "advanced": "Advanced"
+    },
+    "fields": {
+      "subject": "Subject",
+      "preheader": "Preheader (optional)",
+      "body": "Email body"
+    },
+    "variables": "Variables",
+    "language": "Language: {{name}}",
+    "editLanguage": "Editing language",
+    "characters_one": "{{count}} character",
+    "characters_other": "{{count}} characters",
+    "toolbar": {
+      "label": "Email formatting",
+      "format": "Paragraph style",
+      "paragraph": "Paragraph",
+      "heading": "Heading {{level}}",
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "link": "Insert link",
+      "image": "Insert image",
+      "bullet": "Bullet list",
+      "ordered": "Numbered list",
+      "quote": "Quote",
+      "code": "Code block",
+      "undo": "Undo",
+      "redo": "Redo",
+      "url": "URL",
+      "alt": "Image description",
+      "linkLabel": "Link text (optional)",
+      "insert": "Insert"
+    },
+    "design": {
+      "title": "Email design",
+      "logo": "Show organization logo",
+      "alignment": "Header alignment",
+      "left": "Align left",
+      "center": "Align center",
+      "brand": "Brand color",
+      "manage": "Manage branding"
+    },
+    "localization": {
+      "title": "Languages",
+      "remove": "Remove {{language}} translation",
+      "addLanguage": "New language",
+      "add": "Add",
+      "default": "Default language",
+      "note": "New language variants start with your English content. Review each translation before saving."
+    },
+    "advanced": {
+      "key": "Template key",
+      "text": "Plain-text alternative",
+      "html": "HTML source",
+      "safety": "Scripts, embedded forms, unsafe links, and event handlers are removed from email HTML."
+    },
+    "legacy": "Update the email-template API to enable rich text, preheaders, and translations. Plain-text editing remains available.",
+    "validation": {
+      "actionLink": "Keep the template's action URL variable in both the email body and plain-text alternative.",
+      "required": "Every language needs a subject and email body.",
+      "length": "Subjects and preheaders are limited to 200 characters. The template body is too large.",
+      "header": "Subjects and preheaders cannot contain line breaks.",
+      "variables": "Use only the variables listed for this template."
+    },
+    "previewPanel": "Email preview",
+    "livePreview": "Live preview",
+    "previewDescription": "Current draft with sample values.",
+    "previewSize": "Preview size",
+    "desktop": "Desktop",
+    "mobile": "Mobile",
+    "previewTitle": "{{name}} email preview",
+    "previewAllDescription": "All templates, including your unsaved drafts, with sample values.",
+    "summary": {
+      "brand": "Organization branding",
+      "languages": "Localized content",
+      "secure": "Protected test delivery"
+    },
+    "localeCount_one": "{{count}} language configured",
+    "localeCount_other": "{{count}} languages configured",
+    "selfOnly": "Test messages go only to your verified email.",
+    "cancel": "Cancel",
+    "save": "Save template",
+    "saving": "Saving...",
+    "saved": "Email template saved.",
+    "unsaved": "Unsaved changes",
+    "noChanges": "No unsaved changes",
+    "leaveTitle": "Discard email changes?",
+    "leaveDescription": "You have unsaved template changes. Leave this page without saving?",
+    "keepEditing": "Keep editing",
+    "discard": "Discard and leave",
+    "leave": {
+      "title": "Discard template changes?",
+      "description": "Your unsaved changes will be lost when you leave this page.",
+      "stay": "Keep editing",
+      "discard": "Discard and leave"
+    },
+    "preview": {
+      "now": "now",
+      "noSubject": "(no subject)",
+      "noPreheader": "No preheader — the client will fall back to the first line of the body.",
+      "linksTitle": "Links in this email",
+      "linksHint": "Links are inert in the preview. Check each destination here.",
+      "noLinks": "This template contains no links."
+    },
+    "sample": {
+      "ttl": "10 minutes",
+      "tenantName": "Your organization"
+    }
+  },
+  "workspace": {
+    "general": {
+      "description": "Manage your organization profile, plan, region, and identity settings.",
+      "profile": {
+        "title": "Organization profile",
+        "description": "Basic information about your organization. This is visible to members of your organization.",
+        "slug": "Slug",
+        "slugHelp": "Immutable. Used in organization URLs and SCIM/SAML metadata.",
+        "name": "Organization name",
+        "plan": "Plan",
+        "region": "Region",
+        "status": "Status",
+        "statusActive": "Active",
+        "statusSuspended": "Suspended",
+        "statusHelp": "Suspending blocks new logins for everyone in this organization.",
+        "nameHelp": "This name will be shown across the console to your team members.",
+        "slugTooltip": "Set when the organization was created and cannot be changed.",
+        "logo": "Logo",
+        "logoTitle": "Organization logo",
+        "logoHint": "A square image works best. Recommended size is 512 × 512px.",
+        "planHelp": "Your current plan. Manage your plan in",
+        "planHelpLink": "billing",
+        "regionHelp": "Determines where your organization's data is stored."
+      },
+      "tenantId": {
+        "title": "Organization identity",
+        "description": "Technical details about your organization.",
+        "created": "Created",
+        "idLabel": "Organization ID",
+        "copy": "Copy organization ID",
+        "copied": "Organization ID copied"
+      },
+      "footer": {
+        "unsaved": "Unsaved changes",
+        "reset": "Reset",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "unsavedDetail": "You have made changes to this page."
+      },
+      "tagline": "Secure identity for modern teams.",
+      "actionLabel": "Save your organization details",
+      "notes": {
+        "title": "Operational notes",
+        "description": "Important things to know about your organization settings.",
+        "slug": {
+          "title": "Slug is immutable",
+          "detail": "Your organization slug cannot be changed after creation as it's used in URLs and SSO metadata."
+        },
+        "region": {
+          "title": "Region impacts data residency",
+          "detail": "Your region determines where your organization's data is stored and processed."
+        },
+        "status": {
+          "title": "Status controls access",
+          "detail": "Suspending your organization will block new logins for everyone, but keep existing sessions active."
+        }
+      },
+      "validation": {
+        "name": "Enter the organization's name."
+      },
+      "suspend": {
+        "title": "Suspend this organization?",
+        "description": "No one in {{name}} can sign in until it is reactivated, including you.",
+        "confirm": "Suspend"
+      }
+    },
+    "domains": {
+      "description": "Prove ownership of domains your members use, and — on paid plans — serve the hosted login from your own URL.",
+      "tabs": {
+        "verified": "Verified domains",
+        "custom": "Custom login domain"
+      },
+      "custom": {
+        "bannerTitle": "Custom hosted login in progress",
+        "bannerDetail": "You're setting up a custom login domain for your organization. Complete the DNS setup below to enable Sign in at",
+        "bannerPending": "DNS pending",
+        "bannerActive": "Active",
+        "bannerNone": "Not configured",
+        "bannerSub": "DNS records added · Waiting for verification",
+        "bannerNote": "This usually takes a few minutes, but can take up to 24 hours.",
+        "title": "Custom login domain",
+        "detail": "Use your own domain for hosted login pages (e.g. auth.acme.com). One domain per organization. Leave blank to use the default Qeet ID-hosted URL.",
+        "label": "Login domain",
+        "placeholder": "auth.acme.com",
+        "hint": "This will be used for your organization's hosted login, e.g.",
+        "steps": {
+          "title": "Setup steps",
+          "1": {
+            "title": "Enter hostname",
+            "detail": "Add your login domain above."
+          },
+          "2": {
+            "title": "Configure DNS",
+            "detail": "Add CNAME and TXT records."
+          },
+          "3": {
+            "title": "TLS provisioning",
+            "detail": "We'll issue a certificate (after DNS is verified)."
+          },
+          "4": {
+            "title": "Validate routing",
+            "detail": "We'll confirm everything is working."
+          }
+        },
+        "records": {
+          "title": "Required DNS records",
+          "detail": "Add these records to your DNS provider. Records may take a few minutes to propagate.",
+          "guide": "View setup guide",
+          "copy": "Copy",
+          "copied": "Copied",
+          "note": "Keep these records in place. They're used to verify domain ownership and enable automatic certificate provisioning.",
+          "none": "Add a login domain above to see the records you need to publish."
+        },
+        "provisioning": {
+          "title": "Provisioning status",
+          "inProgress": "In progress",
+          "loginDomain": "Login domain",
+          "dns": "DNS verification",
+          "tls": "TLS certificate",
+          "endpoint": "Login endpoint",
+          "pending": "Pending",
+          "verified": "Verified",
+          "tlsNotStarted": "Not started",
+          "tlsPending": "In progress",
+          "endpointNone": "Not available",
+          "endpointNoneDetail": "Will be enabled after provisioning completes."
+        },
+        "helpful": {
+          "title": "Helpful information",
+          "q1": {
+            "title": "How long does this take?",
+            "detail": "DNS verification usually takes a few minutes, but can take up to 24 hours depending on your DNS provider."
+          },
+          "q2": {
+            "title": "Is this secure?",
+            "detail": "Yes. We automatically provision and renew TLS certificates using industry-standard automation (ACME)."
+          },
+          "q3": {
+            "title": "Need help?",
+            "detail": "See the step-by-step guide or contact our support team.",
+            "cta": "View setup guide"
+          }
+        },
+        "footerNote": "For colors and logo, see",
+        "footerBranding": "Branding",
+        "verifyDns": "Verify DNS",
+        "verifying": "Checking…",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "guide": "View setup guide"
+      },
+      "help": {
+        "title": "Need help?",
+        "detail": "Follow our domain verification guide.",
+        "cta": "View documentation"
+      },
+      "kpis": {
+        "verified": "Verified domains",
+        "verifiedHint": "Domains ready to use",
+        "pending": "Pending verification",
+        "pendingHint": "Awaiting DNS verification",
+        "attention": "Attention required",
+        "attentionHint": "Needs your attention",
+        "default": "Default domain",
+        "defaultHint": "Used for Qeet ID links"
+      },
+      "add": {
+        "title": "Add a domain",
+        "detail": "Enter the email domain your members use, e.g. acme.com. We'll add a DNS TXT record for verification.",
+        "placeholder": "example.com",
+        "submit": "Add domain",
+        "submitting": "Adding…"
+      },
+      "table": {
+        "title": "Domains",
+        "subtitle": "Manage and monitor your domains. Verify domains to enable organization SSO and just-in-time provisioning.",
+        "search": "Search domains...",
+        "domain": "Domain",
+        "status": "Verification status",
+        "sso": "SSO eligible",
+        "jit": "JIT provisioning",
+        "lastChecked": "Last checked",
+        "actions": "Actions",
+        "default": "Default",
+        "yes": "Yes",
+        "no": "No",
+        "never": "Never checked",
+        "statusVerified": "Verified",
+        "statusPending": "Pending DNS",
+        "statusAttention": "Attention required",
+        "empty": "No domains yet. Add one above to get started.",
+        "verify": "Verify now",
+        "makeDefault": "Make default",
+        "toggleSso": "Toggle SSO eligibility",
+        "toggleJit": "Toggle JIT provisioning",
+        "remove": "Remove domain"
+      },
+      "remove": {
+        "title": "Remove this domain?",
+        "description": "{{domain}} will no longer route sign-ins to single sign-on or provision people just in time. To use it again, add it and verify it again."
+      },
+      "actionLabels": {
+        "add": "Add a domain",
+        "settings": "Change this domain's settings"
+      },
+      "how": {
+        "title": "How domain verification works",
+        "detail": "We add a DNS TXT record to your domain to verify ownership. After verification, you can enable organization SSO and, on paid plans, use a custom login domain.",
+        "cta": "View documentation"
+      }
+    }
+  },
+  "customLoginDomainTab": {
+    "loginDomainSaved": "Login domain saved"
+  },
+  "nav": {
+    "directory": {
+      "organizations": {
+        "title": "Organizations",
+        "description": "Organization boundaries, plans and regions."
+      }
+    },
+    "settings": {
+      "general": {
+        "title": "General",
+        "description": "Organization name, profile and defaults."
+      },
+      "domains": {
+        "title": "Domains",
+        "description": "Verified domains and the custom login URL."
+      },
+      "emails": {
+        "title": "Emails",
+        "description": "Customize transactional email templates."
+      },
+      "security": {
+        "title": "Security",
+        "description": "Org-wide security and session policy."
+      }
+    }
+  },
+  "commands": {
+    "createOrganization": {
+      "title": "Create Organization",
+      "subtitle": "Add a new organization or sub-organization",
+      "keywords": "add org, new organization, create organization, new tenant, create tenant"
+    },
+    "organizationSettings": {
+      "title": "Organization Settings",
+      "subtitle": "General, domains, security policy",
+      "keywords": "settings, organization, general, config"
+    }
+  },
+  "shortcuts": {
+    "organizations": "Organizations",
+    "organizationSettings": "Organization settings"
+  },
+  "qeetaiSuggestions": {
+    "labels": {
+      "configureStrictMfa": "Configure strict MFA",
+      "explainSecurity": "Explain security settings",
+      "createOrganization": "Create an organization",
+      "terraformTenant": "Generate Terraform for tenant"
+    },
+    "prompts": {
+      "explainSecurity": "Explain the current authentication policy and its security implications."
+    }
+  },
+  "domains": {
+    "description": "Prove ownership of your email domains to enable organization SSO and just-in-time provisioning. Add a DNS TXT record, then verify."
+  }
+}

@@ -25,10 +25,9 @@ import { completeWithPush, mfaPasskeyProof, sendMfaCode } from "../api/mfa-sign-
 import { MfaEnrollmentStep, RecoveryCodesStep } from "./mfa-enrollment-step";
 
 /**
- * A sign-in's second-factor challenge, however the first factor was proven (a
- * password or a magic link): the factor step, or — for an account that must
- * have a second factor and holds none — the setup of an authenticator app and
- * then its recovery codes. Completing it opens the console.
+ * Renders a sign-in's second-factor challenge after a password or magic link: the factor step or,
+ * for an account that must have a second factor and holds none, authenticator setup and then its
+ * recovery codes. Completing it opens the console.
  */
 export function MfaChallengeStep({ challenge }: { challenge: MfaChallenge }) {
   const mfa = useCompleteMfaLogin();
@@ -65,9 +64,9 @@ export function MfaChallengeStep({ challenge }: { challenge: MfaChallenge }) {
 }
 
 /**
- * The second-factor step: a code field (authenticator app, recovery code, or a
- * code sent to an email or SMS factor) and, for the factors this person
- * holds, sending a code, using a passkey, or approving on their phone.
+ * Renders the second-factor step: a code field (authenticator app, recovery code, or a code sent
+ * by email or SMS) and, for the factors this person holds, sending a code, using a passkey, or
+ * approving on their phone.
  */
 export function MfaStep({
   mfaToken,
@@ -90,8 +89,8 @@ export function MfaStep({
   const [pending, setPending] = useState<"passkey" | "push" | "send" | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
   const pushAbort = useRef<AbortController | null>(null);
-  // Move focus to the verification code field on mount — replaces autoFocus
-  // (flagged by jsx-a11y/no-autofocus) with an explicit effect.
+  // Focus the code field from an effect, since the a11y lint rule forbids autoFocus. Unmounting
+  // also stops waiting for a push approval.
   const codeRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     codeRef.current?.focus();

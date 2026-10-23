@@ -1,9 +1,3 @@
-// Event details drawer — a right-side Sheet that turns a selected event into an
-// investigation surface: an Overview tab (human context first, IDs second, all
-// copyable), a Raw event tab (full JSON), and a Related events tab (correlated
-// by request_id / same actor). The header carries an Investigate menu and
-// prev/next navigation within the loaded feed.
-
 import {
   Badge,
   Button,
@@ -41,19 +35,17 @@ import {
   ServerIcon,
 } from "@qeetrix/icons";
 import { type ReactNode, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ActivitySearch, DrawerTab } from "../activity-search";
+import { formatLocale } from "@/i18n";
 import { formatIp } from "@/shared/utils/ip-format";
+import { actorTypeLabel, categoryLabel, formatEventTitle } from "../event-labels";
 import type { ActivityEvent } from "../types/activity.types";
 import { InvestigateMenu } from "./investigate-menu";
 import { RelatedEventsList } from "./related-events-list";
 import { SeverityBadge } from "./severity-badge";
 
-// ---------------------------------------------------------------------------
-// Shared sub-components
-// ---------------------------------------------------------------------------
-
-/** Icon-only copy control built on the shared useCopyToClipboard hook. */
 function CopyIconButton({ text, label }: { text: string; label: string }) {
   const { copied, copy } = useCopyToClipboard();
   return (
@@ -105,10 +97,6 @@ function MonoId({ value, label }: { value: string; label: string }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main drawer
-// ---------------------------------------------------------------------------
-
 type EventDetailsDrawerProps = {
   event: ActivityEvent | null;
   prevEvent?: ActivityEvent | null;
@@ -118,12 +106,15 @@ type EventDetailsDrawerProps = {
   onClose: () => void;
   onSelectPrev?: () => void;
   onSelectNext?: () => void;
-  /** Select a related event (swaps the drawer to it). */
-  onSelectEvent?: (event: ActivityEvent) => void;
-  /** Apply a filter patch from the Investigate menu. */
+  onSelectEvent?: (event: ActivityEvent) => void; // Called with the event chosen in the Related tab
+  /** Receives filter patches from the investigate menu. */
   onFilter?: (patch: Partial<ActivitySearch>) => void;
 };
 
+/**
+ * Renders the selected event in a side sheet with Overview, Raw event and Related tabs, an
+ * investigate menu, and prev/next navigation through the loaded feed.
+ */
 export function EventDetailsDrawer({
   event,
   prevEvent,
@@ -136,6 +127,7 @@ export function EventDetailsDrawer({
   onSelectEvent,
   onFilter,
 }: EventDetailsDrawerProps) {
+  const { t } = useTranslation(["activity", "common"]);
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!open) onClose();
@@ -152,9 +144,9 @@ export function EventDetailsDrawer({
             <SheetHeader className="border-b border-border/60 p-4">
               <div className="flex items-start gap-3 pr-8">
                 <div className="min-w-0 flex-1">
-                  <SheetTitle className="text-sm">{event.title}</SheetTitle>
+                  <SheetTitle className="text-sm">{formatEventTitle(event)}</SheetTitle>
                   <SheetDescription className="mt-0.5 text-xs">
-                    {event.category} ·{" "}
+                    {categoryLabel(event.category)} ·{" "}
                     <TimeSince value={event.at} className="inline tabular-nums" />
                   </SheetDescription>
                 </div>
@@ -164,10 +156,12 @@ export function EventDetailsDrawer({
               {/* who → action → resource */}
               <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                 <span className="max-w-40 truncate font-medium text-foreground">
-                  {event.actor?.name ?? event.actor?.id ?? event.actor?.type ?? "System"}
+                  {event.actor?.name ??
+                    event.actor?.id ??
+                    (event.actor?.type ? actorTypeLabel(event.actor.type) : t("actor.system"))}
                 </span>
                 <ArrowRightIcon className="size-3 shrink-0" aria-hidden="true" />
-                <span className="truncate">{event.title}</span>
+                <span className="truncate">{formatEventTitle(event)}</span>
                 {event.target && (
                   <>
                     <ArrowRightIcon className="size-3 shrink-0" aria-hidden="true" />
@@ -187,7 +181,7 @@ export function EventDetailsDrawer({
                   trigger={
                     <Button variant="outline" size="sm">
                       <SearchIcon className="size-3.5" aria-hidden="true" />
-                      Investigate
+                      {t("eventDetailsDrawer.investigate")}
                     </Button>
                   }
                 />
@@ -197,7 +191,7 @@ export function EventDetailsDrawer({
                     size="icon-sm"
                     onClick={onSelectPrev}
                     disabled={!prevEvent || !onSelectPrev}
-                    aria-label="Previous event"
+                    aria-label={t("eventDetailsDrawer.previousEvent")}
                     className="size-7"
                   >
                     <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
@@ -207,7 +201,7 @@ export function EventDetailsDrawer({
                     size="icon-sm"
                     onClick={onSelectNext}
                     disabled={!nextEvent || !onSelectNext}
-                    aria-label="Next event"
+                    aria-label={t("eventDetailsDrawer.nextEvent")}
                     className="size-7"
                   >
                     <ChevronRightIcon className="size-3.5" aria-hidden="true" />
@@ -223,43 +217,48 @@ export function EventDetailsDrawer({
               className="flex min-h-0 flex-1 flex-col"
             >
               <TabsList className="mx-4 mt-3 w-[calc(100%-2rem)] justify-start">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="raw">Raw event</TabsTrigger>
-                <TabsTrigger value="related">Related</TabsTrigger>
+                <TabsTrigger value="overview">{t("eventDetailsDrawer.overview")}</TabsTrigger>
+                <TabsTrigger value="raw">{t("eventDetailsDrawer.rawEvent")}</TabsTrigger>
+                <TabsTrigger value="related">{t("eventDetailsDrawer.related")}</TabsTrigger>
               </TabsList>
 
               <ScrollArea className="min-h-0 flex-1">
                 {/* Overview */}
                 <TabsContent value="overview" className="flex flex-col gap-5 p-4">
-                  <section aria-label="Event details">
+                  <section aria-label={t("eventDetailsDrawer.eventDetails")}>
                     <dl className="flex flex-col gap-2.5">
-                      <DetailRow label="Event ID">
-                        <MonoId value={event.id} label="Copy event ID" />
+                      <DetailRow label={t("eventDetailsDrawer.eventId")}>
+                        <MonoId value={event.id} label={t("eventDetailsDrawer.copyEventId")} />
                       </DetailRow>
-                      <DetailRow label="Type">
+                      <DetailRow label={t("common:labels.type")}>
                         <Badge variant="muted">{event.type}</Badge>
                       </DetailRow>
-                      <DetailRow label="Category">{event.category}</DetailRow>
-                      <DetailRow label="Timestamp">
+                      <DetailRow label={t("eventDetailsDrawer.category")}>
+                        {categoryLabel(event.category)}
+                      </DetailRow>
+                      <DetailRow label={t("eventDetailsDrawer.timestamp")}>
                         <time dateTime={event.at}>
-                          {new Date(event.at).toLocaleString(undefined, {
+                          {new Date(event.at).toLocaleString(formatLocale(), {
                             dateStyle: "medium",
                             timeStyle: "long",
                           })}
                         </time>
                       </DetailRow>
                       {event.request_id && (
-                        <DetailRow label="Request ID">
-                          <MonoId value={event.request_id} label="Copy request ID" />
+                        <DetailRow label={t("eventDetailsDrawer.requestId")}>
+                          <MonoId
+                            value={event.request_id}
+                            label={t("eventDetailsDrawer.copyRequestId")}
+                          />
                         </DetailRow>
                       )}
                       {event.status && (
-                        <DetailRow label="Status">
+                        <DetailRow label={t("common:labels.status")}>
                           <Badge variant="outline">{event.status}</Badge>
                         </DetailRow>
                       )}
                       {event.source && (
-                        <DetailRow label="Source">
+                        <DetailRow label={t("eventDetailsDrawer.source")}>
                           <span className="flex items-center gap-1">
                             <ServerIcon
                               className="size-3 text-muted-foreground"
@@ -275,24 +274,29 @@ export function EventDetailsDrawer({
                   {event.actor && (
                     <>
                       <Separator />
-                      <section aria-label="Actor">
-                        <SectionHeading>Actor</SectionHeading>
+                      <section aria-label={t("eventDetailsDrawer.actor")}>
+                        <SectionHeading>{t("eventDetailsDrawer.actor")}</SectionHeading>
                         <dl className="flex flex-col gap-2.5">
                           {event.actor.name && (
-                            <DetailRow label="Name">{event.actor.name}</DetailRow>
+                            <DetailRow label={t("common:labels.name")}>
+                              {event.actor.name}
+                            </DetailRow>
                           )}
                           {event.actor.id && (
                             <DetailRow label="ID">
-                              <MonoId value={event.actor.id} label="Copy actor ID" />
+                              <MonoId
+                                value={event.actor.id}
+                                label={t("eventDetailsDrawer.copyActorId")}
+                              />
                             </DetailRow>
                           )}
                           {event.actor.type && (
-                            <DetailRow label="Type">
-                              <Badge variant="muted">{event.actor.type}</Badge>
+                            <DetailRow label={t("common:labels.type")}>
+                              <Badge variant="muted">{actorTypeLabel(event.actor.type)}</Badge>
                             </DetailRow>
                           )}
                           {event.actor.id && (
-                            <DetailRow label="Links">
+                            <DetailRow label={t("eventDetailsDrawer.links")}>
                               <span className="flex flex-wrap gap-2">
                                 <Link
                                   to="/users/$userId"
@@ -300,14 +304,14 @@ export function EventDetailsDrawer({
                                   className={buttonVariants({ variant: "outline", size: "sm" })}
                                 >
                                   <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-                                  View user
+                                  {t("eventDetailsDrawer.viewUser")}
                                 </Link>
                                 <Link
                                   to="/users/$userId/timeline"
                                   params={{ userId: event.actor.id }}
                                   className={buttonVariants({ variant: "ghost", size: "sm" })}
                                 >
-                                  Timeline
+                                  {t("eventDetailsDrawer.timeline")}
                                 </Link>
                               </span>
                             </DetailRow>
@@ -320,19 +324,24 @@ export function EventDetailsDrawer({
                   {event.target && (
                     <>
                       <Separator />
-                      <section aria-label="Affected resource">
-                        <SectionHeading>Affected resource</SectionHeading>
+                      <section aria-label={t("eventDetailsDrawer.affectedResource")}>
+                        <SectionHeading>{t("eventDetailsDrawer.affectedResource")}</SectionHeading>
                         <dl className="flex flex-col gap-2.5">
                           {event.target.label && (
-                            <DetailRow label="Label">{event.target.label}</DetailRow>
+                            <DetailRow label={t("eventDetailsDrawer.label")}>
+                              {event.target.label}
+                            </DetailRow>
                           )}
                           {event.target.id && (
                             <DetailRow label="ID">
-                              <MonoId value={event.target.id} label="Copy resource ID" />
+                              <MonoId
+                                value={event.target.id}
+                                label={t("eventDetailsDrawer.copyResourceId")}
+                              />
                             </DetailRow>
                           )}
                           {event.target.type && (
-                            <DetailRow label="Type">
+                            <DetailRow label={t("common:labels.type")}>
                               <Badge variant="muted">{event.target.type}</Badge>
                             </DetailRow>
                           )}
@@ -344,19 +353,22 @@ export function EventDetailsDrawer({
                   {(event.ip ?? event.location ?? event.device ?? event.browser) && (
                     <>
                       <Separator />
-                      <section aria-label="Request context">
-                        <SectionHeading>Request context</SectionHeading>
+                      <section aria-label={t("eventDetailsDrawer.requestContext")}>
+                        <SectionHeading>{t("eventDetailsDrawer.requestContext")}</SectionHeading>
                         <dl className="flex flex-col gap-2.5">
                           {event.ip && (
-                            <DetailRow label="IP address">
+                            <DetailRow label={t("eventDetailsDrawer.ipAddress")}>
                               <span className="flex items-center gap-1.5">
                                 <span className="font-mono text-[11px]">{formatIp(event.ip)}</span>
-                                <CopyIconButton text={event.ip} label="Copy IP address" />
+                                <CopyIconButton
+                                  text={event.ip}
+                                  label={t("eventDetailsDrawer.copyIpAddress")}
+                                />
                               </span>
                             </DetailRow>
                           )}
                           {event.location && (
-                            <DetailRow label="Location">
+                            <DetailRow label={t("eventDetailsDrawer.location")}>
                               <span className="flex items-center gap-1">
                                 <GlobeIcon
                                   className="size-3 text-muted-foreground"
@@ -367,7 +379,7 @@ export function EventDetailsDrawer({
                             </DetailRow>
                           )}
                           {event.device && (
-                            <DetailRow label="Device">
+                            <DetailRow label={t("eventDetailsDrawer.device")}>
                               <span className="flex items-center gap-1">
                                 <MonitorIcon
                                   className="size-3 text-muted-foreground"
@@ -377,7 +389,11 @@ export function EventDetailsDrawer({
                               </span>
                             </DetailRow>
                           )}
-                          {event.browser && <DetailRow label="Browser">{event.browser}</DetailRow>}
+                          {event.browser && (
+                            <DetailRow label={t("eventDetailsDrawer.browser")}>
+                              {event.browser}
+                            </DetailRow>
+                          )}
                         </dl>
                       </section>
                     </>
@@ -386,8 +402,8 @@ export function EventDetailsDrawer({
                   {event.metadata && Object.keys(event.metadata).length > 0 && (
                     <>
                       <Separator />
-                      <section aria-label="Event metadata">
-                        <SectionHeading>Metadata</SectionHeading>
+                      <section aria-label={t("eventDetailsDrawer.eventMetadata")}>
+                        <SectionHeading>{t("eventDetailsDrawer.metadata")}</SectionHeading>
                         <JSONTree value={event.metadata} rootLabel="payload" initialOpenDepth={1} />
                       </section>
                     </>
@@ -397,13 +413,13 @@ export function EventDetailsDrawer({
                 {/* Raw event */}
                 <TabsContent value="raw" className="flex flex-col gap-3 p-4">
                   <div className="flex items-center justify-between">
-                    <SectionHeading>Raw event</SectionHeading>
+                    <SectionHeading>{t("eventDetailsDrawer.rawEvent")}</SectionHeading>
                     <CopyButton
                       value={JSON.stringify(event, null, 2)}
                       variant="outline"
                       size="sm"
-                      label="Copy JSON"
-                      copiedLabel="Copied"
+                      label={t("eventDetailsDrawer.copyJson")}
+                      copiedLabel={t("common:states.copied")}
                     />
                   </div>
                   <JSONTree value={event} rootLabel="event" initialOpenDepth={2} />

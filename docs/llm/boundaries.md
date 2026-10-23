@@ -1,8 +1,8 @@
 # Boundaries — qeet-id-console
 
-**Level:** L2 · **Last verified:** 2026-08-28
+**Level:** L2 · **Last verified:** 2026-10-23
 **Verification scope:** ownership from `qeet-id-context/REPOSITORIES.md`; layering rules from
-`biome.json`, verified by grep.
+`biome.json` and `src/__tests__/module-boundaries.test.ts`, verified by grep.
 
 ## Owns
 
@@ -16,7 +16,7 @@ sensitive-action/step-up primitive.
 |---|---|
 | **Every authorization decision** | `qeet-id-server` |
 | Tenant scoping, token validation, business rules | `qeet-id-server` |
-| The API contract | `qeet-id-server` — see its OpenAPI documents |
+| The API contract | `qeet-id-server` — see its OpenAPI documents; the console types what it calls by hand (no generated client) |
 | End-user sign-in UI | `qeet-id-login` |
 | Marketing | `qeet-id-website` |
 | SDKs | `qeet-id-{go,node,react}` |
@@ -34,20 +34,24 @@ unauthenticated federation redirects directly from the browser (e.g. social logi
 An operator web UI. **No public API, no package.** Its only external contract is the set of
 endpoints it calls — so a backend contract change reaches it, not the other way round.
 
-## Internal boundaries — enforced by lint, run in CI
+## Internal boundaries — enforced by lint and tests, run in CI
 
 ```text
-routes  →  modules  →  platform  →  shared
+app  →  modules  →  platform  →  shared
 ```
 
 | Layer | Rule |
 |---|---|
 | `src/shared/**` | may import only `@/shared`, `@/i18n`, external packages |
-| `src/platform/**` | may import only `@/platform`, `@/shared`, `@/i18n` |
-| `src/modules/**` | must not import `@/routes`; reaches another module **only via its barrel** |
-| all | `noImportCycles: "error"`; `@/lib` is retired |
+| `src/platform/**` | may import only `@/platform`, `@/shared`, `@/i18n`; reads modules only through the registry `src/app` fills |
+| `src/modules/**` | must not import `@/routes` or `@/app`; reaches another module **only via its barrel** |
+| route files (`src/modules/*/routes/**`, `src/routes/**`) | module barrels and `pages` entries only; never module internals, `api()` or `@tanstack/react-query` (no exemptions) |
+| `src/app/**` | the composition root; may import anything, and only the router, Vite config and test setup import it |
+| all | `noImportCycles: "error"`; `@/lib` is retired; no import climbs more than one folder (`@/` instead) |
 
-`bun run lint:boundaries` is a CI step — a violation fails the build.
+`bun run lint:boundaries` is a CI step, and so is the test suite that holds the barrel and
+relative-import rules — a violation fails the build. A module's catalogue namespaces are its own:
+`locale-parity.test.ts` fails when two modules claim one.
 
 ## Security boundaries
 
@@ -58,8 +62,10 @@ routes  →  modules  →  platform  →  shared
 | Browser ↔ tokens | **Tokens never cross.** Encrypted `__Host-` cookie, read server-side only |
 | BFF → backend origin | `server-request-policy.ts` — SSRF guard on every proxied path |
 | Credential responses | `session-response.ts` allowlist; anything else → `502` |
-| Server functions | CSRF middleware in `src/start.ts` |
-| Capability → UI | **UX only.** ADR-0003 — the backend decides |
+| Server functions, unsafe server-route requests | CSRF middleware in `src/start.ts`, policy in `src/platform/security/csrf-policy.ts` (tested) |
+| Browser storage | `src/platform/auth/scoped-storage.ts` — per person and tenant, wiped on sign-out |
+| Response headers | `src/platform/security/security-headers.ts` — HSTS, `frame-ancestors 'none'`, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag` |
+| Capability → UI | **UX only.** The backend decides |
 | Backend message → user | `errors/user-message.ts` — the leak stop |
 | Payload → telemetry | `telemetry/redact.ts` — denylist + email/IP masking |
 
@@ -98,8 +104,8 @@ Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.
 ## Hard limits
 
 1. **Never put a token in the browser** — not in state, not in storage, not in a server-function
-   return. ADR-0009.
-2. **Never treat a UI capability as enforcement.** ADR-0003.
+   return.
+2. **Never treat a UI capability as enforcement.**
 3. **Never bypass `proxyApiRequest`** — no direct `fetch` to the backend from a component.
 4. **Never relax the SSRF guard** in `server-request-policy.ts`.
 5. **Never render a backend `error.message`** — use `userMessageForCode`.
@@ -107,5 +113,6 @@ Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.
 7. **Never hand-edit `src/routeTree.gen.ts`** — it is generated and marked read-only.
 8. **Never import across a layer boundary** — lint will fail, and the rule exists to keep the
    extraction seams intact.
-9. **Never reintroduce `localStorage` token keys** — ADR-0002 is superseded and actively purged.
+9. **Never reintroduce `localStorage` token keys** is superseded and actively purged.
+   Person or tenant data in browser storage goes only through `scopedStorage`.
 10. **Never change another repository** from a task scoped to this one.

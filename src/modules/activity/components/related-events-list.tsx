@@ -1,8 +1,4 @@
-// Related-events list for the drawer's "Related events" tab. Correlates the
-// selected event by shared request_id and same-actor time window
-// (GET /v1/activity/{id}/related). Selecting a related event swaps the drawer to
-// it. Reuses the compact EventCard so rows match the dashboard widget.
-
+import { useTranslation } from "react-i18next";
 import { EmptyState, Skeleton } from "@qeetrix/ui";
 import { LinkIcon } from "@qeetrix/icons";
 
@@ -41,6 +37,7 @@ function Section({
   );
 }
 
+/** Renders the events sharing this event's request, and the same actor's nearby events. */
 export function RelatedEventsList({
   eventId,
   onSelect,
@@ -48,6 +45,7 @@ export function RelatedEventsList({
   eventId: string;
   onSelect?: (e: ActivityEvent) => void;
 }) {
+  const { t } = useTranslation("activity");
   const { data, isLoading } = useRelatedEvents(eventId);
 
   if (isLoading) {
@@ -67,8 +65,8 @@ export function RelatedEventsList({
     return (
       <EmptyState
         icon={LinkIcon}
-        title="No related events"
-        description="Nothing else shares this event's request or actor in the surrounding window."
+        title={t("relatedEventsList.noRelatedEvents")}
+        description={t("relatedEventsList.nothingElseSharesThis")}
       />
     );
   }
@@ -76,13 +74,13 @@ export function RelatedEventsList({
   return (
     <div className="flex flex-col gap-4">
       <Section
-        title="Same request"
+        title={t("relatedEventsList.sameRequest")}
         hint={`${byRequest.length} event${byRequest.length === 1 ? "" : "s"}`}
         events={byRequest}
         onSelect={onSelect}
       />
       <Section
-        title="Same actor nearby"
+        title={t("relatedEventsList.sameActorNearby")}
         hint={`${byActor.length} event${byActor.length === 1 ? "" : "s"}`}
         events={byActor}
         onSelect={onSelect}

@@ -6,10 +6,10 @@ import "@/i18n";
 
 import { errorMessage } from "@/platform/errors/user-message";
 
-import { startMfaEnrollment } from "../../api/mfa-sign-in";
+import { startMfaEnrollment } from "@/modules/authentication/api/mfa-sign-in";
 import { MfaEnrollmentStep, RecoveryCodesStep } from "../mfa-enrollment-step";
 
-vi.mock("../../api/mfa-sign-in", () => ({ startMfaEnrollment: vi.fn() }));
+vi.mock("@/modules/authentication/api/mfa-sign-in", () => ({ startMfaEnrollment: vi.fn() }));
 
 beforeEach(() => {
   vi.clearAllMocks();

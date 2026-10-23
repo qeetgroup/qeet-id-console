@@ -1,13 +1,11 @@
-// Tenant authentication-policy data layer: password complexity rules and which
-// login methods are permitted. The whole policy is read and written as one
-// object (PUT is a full replace), so each page loads it, edits its slice, and
-// saves the merged result.
+// The tenant's authentication policy: password rules and permitted sign-in methods. PUT replaces
+// the whole object, so each page loads it, edits its slice and saves the merged result.
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-export const AUTH_POLICY_KEY = ["auth-policy"] as const;
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export interface AuthPolicy {
   password_enabled: boolean;
@@ -20,20 +18,17 @@ export interface AuthPolicy {
   passkey_enabled: boolean;
   otp_email_enabled: boolean;
   otp_sms_enabled: boolean;
-  // Hosted end-user self-registration (B2C signup). Full-replace PUT preserves
-  // it even on pages that don't edit it.
-  self_registration_enabled: boolean;
-  // Adaptive MFA: allow skipping the second factor on a trusted device.
-  remember_device_enabled: boolean;
-  // Sign-in lockout: this many failed sign-ins to one account from one network,
-  // each within the window of the last, lock it for that network for the
-  // duration. null = the platform default (see lockout_limits). The server
-  // refuses a value outside the bounds.
+  self_registration_enabled: boolean; // Hosted end-user self-registration (B2C sign-up)
+  remember_device_enabled: boolean; // Adaptive MFA: a trusted device may skip the second factor
+  /**
+   * Sign-in lockout: this many failed sign-ins to one account from one network, each within the
+   * window of the last, lock it for that network for the duration. null: the platform default.
+   * The server refuses a value outside lockout_limits.
+   */
   lockout_threshold: number | null;
   lockout_window_minutes: number | null;
   lockout_duration_minutes: number | null;
-  // Read-only: the platform defaults and the inclusive bounds for the three
-  // settings above. Sent back unchanged by the full-replace PUT (ignored there).
+  /** Read-only platform defaults and inclusive bounds for the lockout settings; PUT ignores it. */
   lockout_limits?: LockoutLimits;
 }
 
@@ -49,13 +44,17 @@ export interface LockoutLimits {
   max: LockoutSettings;
 }
 
+export const authPolicyQueries = {
+  detail: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: authKeys.policy(tenantId),
+      queryFn: () => api<AuthPolicy>(`/v1/tenants/${tenantId}/auth-policy`),
+      enabled: !!tenantId,
+    }),
+};
+
 export function useAuthPolicy() {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: [...AUTH_POLICY_KEY, tenantId],
-    enabled: !!tenantId,
-    queryFn: () => api<AuthPolicy>(`/v1/tenants/${tenantId}/auth-policy`),
-  });
+  return useQuery(authPolicyQueries.detail(useTenantId()));
 }
 
 export function useUpdateAuthPolicy() {
@@ -67,10 +66,7 @@ export function useUpdateAuthPolicy() {
         method: "PUT",
         body,
       }),
-    onSuccess: (data) => {
-      qc.setQueryData([...AUTH_POLICY_KEY, tenantId], data);
-      qc.invalidateQueries({ queryKey: AUTH_POLICY_KEY });
-    },
-    meta: { successMessage: "Authentication policy saved" },
+    onSuccess: (data) => qc.setQueryData(authKeys.policy(tenantId), data), // PUT returns the whole policy
+    meta: { successMessage: "authentication:toast.authenticationPolicySaved", silentError: true }, // pages show it
   });
 }

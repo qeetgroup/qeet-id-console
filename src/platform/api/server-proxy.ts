@@ -23,6 +23,7 @@ import {
   isLocalSessionDestroyRequest,
 } from "@/platform/api/server-request-policy";
 import { relayHeaders } from "@/platform/api/relay";
+import { ERROR_CODES } from "@/platform/errors/error-codes";
 import { logger } from "@/platform/telemetry/logger";
 import {
   requiresOrganizationSelection,
@@ -38,7 +39,7 @@ const requestSchema = z.object({
         path.startsWith("/") &&
         !path.startsWith("//") &&
         // Mirrors FORBIDDEN_PATH_CHARACTERS in server-request-policy.ts.
-        // biome-ignore lint/suspicious/noControlCharactersInRegex: rejecting control characters is the intent
+        // biome-ignore lint/suspicious/noControlCharactersInRegex: rejecting them is the point
         !/[\\?#\u0000-\u001f\u007f]/.test(path) &&
         !path.includes("://"),
       "Invalid API path",
@@ -56,6 +57,24 @@ export type ServerProxyResponse = {
   session: PublicSession;
   sessionChanged: boolean;
 };
+
+/**
+ * - `refreshed`: new tokens are in the session.
+ * - `rejected`: the backend refused the refresh token; the session is cleared.
+ * - `unavailable`: the backend couldn't answer (timeout, network, 5xx, 429). The
+ *   token wasn't judged, so the session is kept and the caller may retry.
+ */
+export type RefreshOutcome = "refreshed" | "rejected" | "unavailable";
+
+export type SessionRefreshResult = {
+  session: PublicSession;
+  unavailable: boolean; // no verdict was reached; the session is unchanged
+};
+
+// Upper bounds on backend calls, so a hung upstream fails the request instead
+// of holding the server function open. Streams are excluded (long-lived).
+const BACKEND_TIMEOUT_MS = 30_000;
+const AUTH_CALL_TIMEOUT_MS = 10_000;
 
 // relayed names the person's address to the API (see relay.ts).
 function relayed(): Record<string, string> {
@@ -86,51 +105,87 @@ async function parseResponse(response: Response): Promise<JsonValue> {
   }
 }
 
-// relay: the headers naming the person's address (relayed()), computed by the
-// server-function caller: this function is exported, so it reaches the client
-// bundle and can't read the request itself.
+/**
+ * True for a 401 saying the backend ended the session (signed out everywhere, suspended, removed,
+ * password reset): no refresh can renew it.
+ */
+export async function isSessionEnded(response: Response): Promise<boolean> {
+  if (response.status !== 401) return false;
+  const data = await parseResponse(response.clone()).catch(() => null);
+  const error = data && typeof data === "object" && !Array.isArray(data) ? data.error : null;
+  return (
+    !!error &&
+    typeof error === "object" &&
+    !Array.isArray(error) &&
+    error.code === ERROR_CODES.SESSION_REVOKED
+  );
+}
+
+// Concurrent refreshes that spend the same refresh token share one backend call. A later request
+// still carrying a rotated token (one aborted mid-refresh never got its new cookie) gets the same
+// pair from the backend's reuse grace. `relay` comes from the caller: this function is exported,
+// so it reaches the client bundle and can't read the request itself.
 async function refreshSession(
   session: Awaited<ReturnType<typeof openServerSession>>,
   requestId: string,
   relay: Record<string, string> = {},
-): Promise<boolean> {
-  if (!session.data.refreshToken) return false;
-  const flightKey = session.data.sessionId ?? session.data.refreshToken;
-  let flight = refreshFlights.get(flightKey);
+): Promise<RefreshOutcome> {
+  const refreshToken = session.data.refreshToken;
+  if (!refreshToken) return "rejected";
+  let flight = refreshFlights.get(refreshToken);
   if (!flight) {
-    const refreshToken = session.data.refreshToken;
-    flight = (async () => {
-      const response = await fetch(`${getServerApiBaseUrl()}/v1/auth/refresh`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "X-Request-Id": requestId,
-          ...relay,
-        },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      });
-      const data = await parseResponse(response);
-      return response.ok && isBackendTokenResponse(data) ? serverSessionData(data) : null;
-    })().finally(() => {
-      refreshFlights.delete(flightKey);
+    flight = (async (): Promise<RefreshResult> => {
+      let response: Response;
+      let data: JsonValue;
+      try {
+        response = await fetch(`${getServerApiBaseUrl()}/v1/auth/refresh`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-Request-Id": requestId,
+            ...relay,
+          },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+          signal: AbortSignal.timeout(AUTH_CALL_TIMEOUT_MS),
+        });
+        data = await parseResponse(response);
+      } catch {
+        return "unavailable";
+      }
+      // Only a definite answer about the token ends the session: an overloaded
+      // or failing backend (5xx, 429) hasn't judged it.
+      if (response.status >= 500 || response.status === 429) return "unavailable";
+      return response.ok && isBackendTokenResponse(data) ? serverSessionData(data) : "rejected";
+    })();
+    refreshFlights.set(refreshToken, flight);
+    const settled = flight;
+    void settled.finally(() => {
+      if (refreshFlights.get(refreshToken) === settled) refreshFlights.delete(refreshToken);
     });
-    refreshFlights.set(flightKey, flight);
   }
   const refreshed = await flight;
-  if (!refreshed) {
+  if (refreshed === "unavailable") return "unavailable";
+  if (refreshed === "rejected") {
     await session.clear();
-    return false;
+    return "rejected";
   }
   await session.update({
     ...refreshed,
     organizationSelectionRequired: session.data.organizationSelectionRequired === true,
     version: (session.data.version ?? 0) + 1,
   });
-  return true;
+  return "refreshed";
 }
 
-const refreshFlights = new Map<string, Promise<ServerSessionData | null>>();
+type RefreshResult = ServerSessionData | "rejected" | "unavailable";
+
+const refreshFlights = new Map<string, Promise<RefreshResult>>(); // in flight, by the token spent
+
+/** Forgets every refresh in flight; for tests. */
+export function _resetRefreshFlightsForTest() {
+  refreshFlights.clear();
+}
 
 export const refreshServerSession = refreshSession;
 
@@ -154,19 +209,13 @@ async function forwardRequest(
     method: input.method,
     headers,
     body: input.body !== undefined ? JSON.stringify(input.body) : undefined,
+    signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS),
   });
 }
 
-// Dev-only trace of the real outbound call. The browser's Network tab stops at
-// the server function, so without this the upstream endpoint, status and bodies
-// are invisible in both the browser and the dev-server terminal.
-//
-// Bodies go through `bodies`, never the message string: `logger` deep-redacts
-// its context argument, so denylisted keys (password, *token*, otp, recovery,
-// cookie, credential, …) are dropped and emails/IPs masked before anything
-// prints. The query string is still excluded entirely — it can carry one-time
-// tokens under key names redact() doesn't know. `logger` is DEV-gated and
-// no-ops in production, so this cannot become a prod log sink by accident.
+// Dev-only trace of the upstream call, which the browser's Network tab can't see. Bodies go in
+// the context argument, which `logger` redacts (the message isn't); the query string is left out
+// as it can carry one-time tokens under unknown keys. `logger` no-ops in production.
 function traceBackendCall(
   method: string,
   pathname: string,
@@ -191,6 +240,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
     const pathname = target.pathname;
     const destroysLocalSession = isLocalSessionDestroyRequest(pathname, input.method);
     let response: Response;
+    let sessionChanged = false;
     const startedAt = Date.now();
     try {
       response = await forwardRequest(
@@ -198,6 +248,38 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
         target,
         input.anonymous ? undefined : sessionData.accessToken,
       );
+      // The BFF holds the refresh token, so it renews the session here, for server renders too,
+      // and retries once: a refused request never ran. Only a rejected refresh token ends the
+      // session; an unreachable backend leaves it intact. An ended session isn't renewed.
+      if (
+        response.status === 401 &&
+        !input.anonymous &&
+        sessionData.refreshToken &&
+        !destroysLocalSession &&
+        !(await isSessionEnded(response))
+      ) {
+        const session = await openServerSession();
+        const outcome = await refreshServerSession(session, input.requestId, relayed());
+        if (outcome === "unavailable") {
+          return {
+            status: 503,
+            data: {
+              error: {
+                code: ERROR_CODES.SESSION_REFRESH_UNAVAILABLE,
+                message: "The session could not be renewed right now.",
+                retryable: true,
+              },
+            },
+            session: toPublicSession(sessionData),
+            sessionChanged: false,
+          };
+        }
+        sessionData = outcome === "refreshed" ? session.data : {};
+        sessionChanged = true;
+        if (outcome === "refreshed") {
+          response = await forwardRequest(input, target, sessionData.accessToken);
+        }
+      }
     } catch (error) {
       traceBackendCall(input.method, pathname, "ERR", Date.now() - startedAt, input.requestId, {
         request: input.body,
@@ -205,13 +287,17 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       if (destroysLocalSession) await clearServerSessionCookie();
       throw error;
     }
-    // Measured here so the timing stays the upstream round trip, not the
-    // session bookkeeping that follows.
-    const elapsedMs = Date.now() - startedAt;
+    const elapsedMs = Date.now() - startedAt; // the upstream round trip, before session bookkeeping
+
+    // Signed out here at once, so neither this request nor the browser tries to renew it.
+    if (!input.anonymous && sessionData.accessToken && (await isSessionEnded(response))) {
+      await clearServerSessionCookie();
+      sessionData = {};
+      sessionChanged = true;
+    }
 
     const responseData = await parseResponse(response);
     let safeData = responseData;
-    let sessionChanged = false;
     if (
       destroysLocalSession ||
       (response.ok &&
@@ -238,6 +324,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
             "X-Request-Id": input.requestId,
             ...relayed(),
           },
+          signal: AbortSignal.timeout(AUTH_CALL_TIMEOUT_MS),
         }).catch(() => undefined);
       }
       const session = await openServerSession();
@@ -326,20 +413,20 @@ export const refreshServerSessionNow = createServerFn({ method: "POST" })
       force: z.boolean(),
     }),
   )
-  .handler(async ({ data }): Promise<PublicSession> => {
+  .handler(async ({ data }): Promise<SessionRefreshResult> => {
     preventSharedCaching();
     const sessionData = await readServerSession();
     const current = toPublicSession(sessionData);
-    if (!current.isAuthenticated) return current;
-    if (current.version !== data.expectedVersion) return current;
+    if (!current.isAuthenticated) return { session: current, unavailable: false };
+    if (current.version !== data.expectedVersion) return { session: current, unavailable: false };
 
     const expiresAt = current.expiresAt ? Date.parse(current.expiresAt) : Number.NaN;
     if (!data.force && Number.isFinite(expiresAt) && expiresAt > Date.now() + 60_000)
-      return current;
+      return { session: current, unavailable: false };
 
     const session = await openServerSession();
-    await refreshServerSession(session, crypto.randomUUID(), relayed());
-    return toPublicSession(session.data);
+    const outcome = await refreshServerSession(session, crypto.randomUUID(), relayed());
+    return { session: toPublicSession(session.data), unavailable: outcome === "unavailable" };
   });
 
 export const clearServerSession = createServerFn({ method: "POST" }).handler(async () => {

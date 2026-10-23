@@ -1,12 +1,5 @@
-// A single activity row, styled as a dense two-line data-table row:
-//   TIME · ACTOR · ACTION · RESOURCE · OUTCOME · IP ADDRESS
-// Each cell stacks a primary value over a muted secondary (relative time, actor
-// id, action description, resource id, geo location). The whole row is one
-// clickable target (stretched-link) that opens the details drawer; copy buttons
-// and the ⋯ Investigate menu sit above the hit area. Columns collapse below `lg`
-// into a compact two-line layout.
-
 import { Avatar, AvatarFallback, Badge, cn, TimeSince } from "@qeetrix/ui";
+import { formatLocale } from "@/i18n";
 import { initials } from "@/shared/utils/initials";
 import {
   CircleCheckBigIcon,
@@ -18,16 +11,19 @@ import {
   TriangleAlertIcon,
 } from "@qeetrix/icons";
 import type { ComponentType, ReactNode } from "react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 
 import type { ActivitySearch } from "../activity-search";
 import { formatIp } from "@/shared/utils/ip-format";
+import { formatEventTitle } from "../event-labels";
 import type { ActivityEvent, Severity } from "../types/activity.types";
 import { CopyIconButton } from "./copy-icon-button";
 import { InvestigateMenu } from "./investigate-menu";
 import { SeverityBadge } from "./severity-badge";
 
-// Shared responsive grid template — the header row uses the same tracks so
-// columns line up. Mobile collapses to time · action · outcome · ⋯.
+// Shared with the header row so columns line up; below `lg` only time, action, outcome and ⋯
+// remain.
 const ROW_COLS =
   "grid-cols-[4.25rem_minmax(0,1fr)_auto_1.75rem] " +
   "lg:grid-cols-[6.5rem_minmax(0,1.25fr)_minmax(0,1.55fr)_minmax(0,1.15fr)_6.5rem_minmax(0,1.1fr)_2rem]";
@@ -49,7 +45,7 @@ const SEVERITY_ICON_CLASS: Record<Severity, string> = {
 };
 
 function formatTime(at: string): string {
-  return new Date(at).toLocaleTimeString(undefined, {
+  return new Date(at).toLocaleTimeString(formatLocale(), {
     hour12: false,
     hour: "2-digit",
     minute: "2-digit",
@@ -57,25 +53,28 @@ function formatTime(at: string): string {
   });
 }
 
-/** Middle-truncate a long id like "6607bc8c…f61" / "ses_01J2a…8f7d". */
+/** Middle-truncates ids over 16 characters to the first 8 and last 3, e.g. "6607bc8c…f61". */
 function shortId(id: string): string {
   return id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-3)}` : id;
 }
 
-// Actor avatar tone by actor type (org/user = brand, service/agent = info,
-// system = a server glyph, unknown = muted).
-function actorVisual(event: ActivityEvent): {
+// A server glyph for system actors, info tone for services and agents, brand tone for any
+// other identified actor, muted when unknown.
+function actorVisual(
+  event: ActivityEvent,
+  t: TFunction<["activity", "common"]>,
+): {
   cls: string;
   content: ReactNode;
   name: string;
 } {
   const type = (event.actor?.type ?? "").toLowerCase();
-  const name = event.actor?.name ?? event.actor?.id ?? (type ? type : "Unknown");
+  const name = event.actor?.name ?? event.actor?.id ?? (type ? type : t("actor.unknown"));
   if (type.includes("system")) {
     return {
       cls: "bg-muted text-muted-foreground",
       content: <ServerIcon className="size-3.5" />,
-      name: event.actor?.name ?? "System",
+      name: event.actor?.name ?? t("actor.system"),
     };
   }
   const tone =
@@ -88,8 +87,9 @@ function actorVisual(event: ActivityEvent): {
   return { cls: tone, content, name };
 }
 
-/** Column header aligned to the row grid. Decorative; wide viewports only. */
+/** Renders the column headers on the row grid; decorative, and shown from `lg` up. */
 export function ActivityRowHeader() {
+  const { t } = useTranslation(["activity", "common"]);
   return (
     <div
       aria-hidden="true"
@@ -98,13 +98,13 @@ export function ActivityRowHeader() {
         ROW_COLS,
       )}
     >
-      <span>Time</span>
-      <span>Actor</span>
-      <span>Action</span>
-      <span>Resource</span>
-      <span>Outcome</span>
-      <span>IP address</span>
-      <span className="sr-only">Actions</span>
+      <span>{t("activityEventRow.time")}</span>
+      <span>{t("activityEventRow.actor")}</span>
+      <span>{t("activityEventRow.action")}</span>
+      <span>{t("activityEventRow.resource")}</span>
+      <span>{t("activityEventRow.outcome")}</span>
+      <span>{t("activityEventRow.ipAddress")}</span>
+      <span className="sr-only">{t("common:labels.actions")}</span>
     </div>
   );
 }
@@ -117,6 +117,11 @@ type ActivityEventRowProps = {
   onFilter?: (patch: Partial<ActivitySearch>) => void;
 };
 
+/**
+ * Renders one event as a dense two-line row that collapses below `lg`. The action button's
+ * stretched link makes the whole row open the details drawer; copy buttons and the investigate
+ * menu sit above that hit area.
+ */
 export function ActivityEventRow({
   event,
   isNew = false,
@@ -124,12 +129,13 @@ export function ActivityEventRow({
   onSelect,
   onFilter,
 }: ActivityEventRowProps) {
+  const { t } = useTranslation(["activity", "common"]);
   const SevIcon = SEVERITY_ICON[event.severity];
   const isCritical = event.severity === "critical" || event.severity === "error";
-  const actor = actorVisual(event);
+  const actor = actorVisual(event, t);
   const resourceType = event.target?.label ?? event.target?.type;
   const resourceId = event.target?.id;
-  const subtitle = event.description ?? event.title;
+  const subtitle = formatEventTitle(event);
 
   return (
     <div
@@ -145,7 +151,7 @@ export function ActivityEventRow({
       <div className="min-w-0">
         <div
           className="text-xs font-medium tabular-nums text-foreground"
-          title={new Date(event.at).toLocaleString()}
+          title={new Date(event.at).toLocaleString(formatLocale())}
         >
           {formatTime(event.at)}
         </div>
@@ -166,7 +172,11 @@ export function ActivityEventRow({
               <span className="truncate font-mono text-[11px] text-muted-foreground">
                 {shortId(event.actor.id)}
               </span>
-              <CopyIconButton text={event.actor.id} label="Copy actor ID" revealOnHover />
+              <CopyIconButton
+                text={event.actor.id}
+                label={t("activityEventRow.copyActorId")}
+                revealOnHover
+              />
             </div>
           )}
         </div>
@@ -183,13 +193,13 @@ export function ActivityEventRow({
             type="button"
             onClick={onSelect}
             className="block max-w-full truncate text-left text-sm font-medium after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-            aria-label={`Open details for ${event.title}`}
+            aria-label={t("activityEventRow.openDetails", { title: subtitle })}
           >
             {event.type}
           </button>
           {isNew && (
             <Badge variant="success" className="shrink-0 text-[9px]">
-              New
+              {t("activityEventRow.new")}
             </Badge>
           )}
         </div>
@@ -214,7 +224,11 @@ export function ActivityEventRow({
                 <span className="truncate font-mono text-[11px] text-muted-foreground">
                   {shortId(resourceId)}
                 </span>
-                <CopyIconButton text={resourceId} label="Copy resource ID" revealOnHover />
+                <CopyIconButton
+                  text={resourceId}
+                  label={t("activityEventRow.copyResourceId")}
+                  revealOnHover
+                />
               </div>
             )}
           </>

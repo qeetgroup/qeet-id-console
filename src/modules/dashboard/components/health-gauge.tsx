@@ -2,18 +2,6 @@ import type { ReactNode } from "react";
 
 import type { HealthState } from "../dashboard-insights";
 
-/**
- * Ring gauge with a centre readout.
- *
- * Extracted from dashboard-insights.tsx so the Authentication overview can use
- * it without a second copy of the arc maths and the colour map. Every prop
- * except `score` and `ariaLabel` defaults to the original dashboard's values, so
- * that page renders identically.
- *
- * `@qeetrix/ui`'s ProgressCircle isn't used here: it has no colour prop
- * (progressCircleVariants varies only on size), and the state colour is the
- * point of this gauge.
- */
 export const healthColor: Record<HealthState, string> = {
   healthy: "var(--success)",
   attention: "var(--warning)",
@@ -32,6 +20,10 @@ export function stateFromScore(score: number): HealthState {
   return "critical";
 }
 
+/**
+ * Renders a ring gauge coloured by the score's health state, with a centre readout. Not
+ * `@qeetrix/ui`'s ProgressCircle: that has no colour prop, and the state colour is the point.
+ */
 export function HealthGauge({
   score,
   size = 116,

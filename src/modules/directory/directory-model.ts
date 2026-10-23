@@ -1,3 +1,4 @@
+import { formatLocale } from "@/i18n";
 import type { LdapConnection, ScimConfig } from "@/modules/authentication";
 
 export type ConnectionHealth = "healthy" | "warning" | "failed" | "unknown";
@@ -91,6 +92,21 @@ export function coveragePercent(count: number | null, total: number | undefined)
   }
   if (total <= 0 || count < 0 || count > total) return null;
   return Math.round((count / total) * 100);
+}
+
+/** Formats a duration in the reader's locale, in milliseconds, seconds or minutes and seconds. */
+export function formatDirectoryDuration(milliseconds: number | null | undefined): string | null {
+  if (milliseconds == null) return null;
+  const locale = formatLocale();
+  const unit = (value: number, unit: "millisecond" | "second" | "minute") =>
+    new Intl.NumberFormat(locale, { style: "unit", unit, unitDisplay: "narrow" }).format(value);
+  if (milliseconds < 1000) return unit(Math.round(milliseconds), "millisecond");
+  const seconds = Math.round(milliseconds / 1000);
+  if (seconds < 60) return unit(seconds, "second");
+  return new Intl.ListFormat(locale, { style: "narrow", type: "unit" }).format([
+    unit(Math.floor(seconds / 60), "minute"),
+    unit(seconds % 60, "second"),
+  ]);
 }
 
 export function parseMappingSource(text: string): Record<string, unknown> {

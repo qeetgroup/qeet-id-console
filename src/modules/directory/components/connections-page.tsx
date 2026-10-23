@@ -1,6 +1,5 @@
 import {
   Button,
-  cn,
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -20,11 +19,9 @@ import {
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import {
-  ArrowRightIcon,
   CircleCheckIcon,
   CircleXIcon,
   Clock3Icon,
-  EllipsisIcon,
   FunnelIcon,
   LinkIcon,
   NetworkIcon,
@@ -36,6 +33,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { useUserStats } from "@/modules/users";
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -45,6 +43,7 @@ import {
   type DirectoryConnection,
   summarizeConnectionHealth,
 } from "../directory-model";
+import { ConnectionRow } from "./connections-page-row";
 import {
   DIRECTORY_ACTION,
   DIRECTORY_PAGE,
@@ -53,7 +52,6 @@ import {
   DirectoryPanel,
   DirectoryQueryError,
   DirectoryStat,
-  DirectoryStatus,
 } from "./directory-ui";
 
 export function ConnectionsPage() {
@@ -73,6 +71,8 @@ export function ConnectionsPage() {
   );
 }
 
+const SKELETON_COLUMNS = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+
 export function ConnectionsView({
   connections,
   loading,
@@ -90,7 +90,7 @@ export function ConnectionsView({
   canWrite: boolean;
   totalUsers?: number;
 }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [search, setSearch] = useState("");
   const [type, setType] = useState<"all" | "scim" | "ldap">("all");
   const records = connections ?? [];
@@ -104,7 +104,7 @@ export function ConnectionsView({
   );
   const scimUsers = records.find((connection) => connection.type === "scim")?.userCount ?? null;
   const coverage = coveragePercent(scimUsers, totalUsers);
-  const number = (value: number) => value.toLocaleString(i18n.resolvedLanguage);
+  const number = (value: number) => value.toLocaleString(formatLocale());
   const share = (count: number | null) =>
     count == null || summary.total === 0
       ? t("directory.connectionsPage.awaiting")
@@ -237,8 +237,8 @@ export function ConnectionsView({
               {loading
                 ? [0, 1, 2].map((row) => (
                     <TableRow key={row}>
-                      {Array.from({ length: 8 }, (_, column) => (
-                        <TableCell key={`${row}-${column}`}>
+                      {SKELETON_COLUMNS.map((column) => (
+                        <TableCell key={column}>
                           <Skeleton className="h-6 w-full" />
                         </TableCell>
                       ))}
@@ -295,17 +295,25 @@ export function ConnectionsView({
               label={t("directory.connectionsPage.healthy")}
               values={[
                 {
-                  label: "Healthy",
+                  label: t("directory.connectionsPage.healthy"),
                   count: summary.healthy ?? 0,
                   color: "var(--color-emerald-500)",
                 },
                 {
-                  label: "Warnings",
+                  label: t("directory.connectionsPage.warnings"),
                   count: summary.warnings ?? 0,
                   color: "var(--color-amber-500)",
                 },
-                { label: "Failed", count: summary.failed ?? 0, color: "var(--color-rose-500)" },
-                { label: "Unknown", count: summary.unknown, color: "var(--muted)" },
+                {
+                  label: t("directory.connectionsPage.failed"),
+                  count: summary.failed ?? 0,
+                  color: "var(--color-rose-500)",
+                },
+                {
+                  label: t("directory.connectionsPage.unknown"),
+                  count: summary.unknown,
+                  color: "var(--muted)",
+                },
               ]}
             />
             <dl className="min-w-28 flex-1 space-y-2 text-xs">
@@ -372,7 +380,7 @@ export function ConnectionsView({
 }
 
 function AddConnection() {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button className={DIRECTORY_ACTION} />}>
@@ -387,128 +395,5 @@ function AddConnection() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-function ConnectionRow({ connection }: { connection: DirectoryConnection }) {
-  const { t, i18n } = useTranslation("dashboard");
-  const destination =
-    connection.type === "scim" ? "/auth/connections/scim" : "/auth/connections/ldap";
-  const tone =
-    connection.health === "failed"
-      ? "danger"
-      : connection.health === "warning"
-        ? "warning"
-        : connection.health === "healthy"
-          ? "success"
-          : "neutral";
-  return (
-    <TableRow>
-      <TableCell>
-        <div className="flex items-center gap-3">
-          <span
-            className={cn(
-              "grid size-8 shrink-0 place-items-center rounded-lg",
-              connection.type === "scim"
-                ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                : "bg-cyan-500/10 text-cyan-700 dark:text-cyan-400",
-            )}
-          >
-            {connection.type === "scim" ? (
-              <NetworkIcon className="size-4" />
-            ) : (
-              <ServerIcon className="size-4" />
-            )}
-          </span>
-          <div>
-            <Link to={destination} className="font-medium hover:text-primary">
-              {connection.name}
-            </Link>
-            <p
-              className="mt-0.5 max-w-44 truncate text-[10px] text-muted-foreground"
-              title={connection.reference}
-            >
-              {connection.reference}
-            </p>
-          </div>
-        </div>
-      </TableCell>
-      <TableCell>
-        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px]">
-          {connection.type === "scim" ? "SCIM" : "LDAP / AD"}
-        </span>
-      </TableCell>
-      <TableCell>
-        {connection.environment ? (
-          <span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-700 dark:text-emerald-400">
-            {connection.environment}
-          </span>
-        ) : (
-          <span className="text-muted-foreground">{t("directory.notSet")}</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <p>{t(`directory.connectionsPage.${connection.scope}`)}</p>
-        <p className="mt-0.5 text-[10px] text-muted-foreground">
-          {t(
-            connection.type === "scim"
-              ? "directory.connectionsPage.push"
-              : "directory.connectionsPage.jit",
-          )}
-        </p>
-      </TableCell>
-      <TableCell>
-        <DirectoryStatus
-          label={t(
-            `directory.connectionsPage.${connection.health === "unknown" ? connection.status : connection.health}`,
-          )}
-          tone={tone}
-        />
-      </TableCell>
-      <TableCell>
-        {connection.lastSyncAt ? (
-          <>
-            <TimeSince value={connection.lastSyncAt} />
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              {new Date(connection.lastSyncAt).toLocaleString(i18n.resolvedLanguage)}
-            </p>
-          </>
-        ) : (
-          <span className="text-muted-foreground">{t("directory.notReported")}</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <p>
-          {connection.userCount == null
-            ? "--"
-            : connection.userCount.toLocaleString(i18n.resolvedLanguage)}{" "}
-          {t("directory.connectionsPage.users")}
-        </p>
-        <p className="mt-0.5 text-[10px] text-muted-foreground">
-          {connection.groupCount ?? "--"} {t("directory.connectionsPage.groups")}
-        </p>
-      </TableCell>
-      <TableCell>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t("directory.connectionsPage.rowActions", { name: connection.name })}
-                className="size-7"
-              />
-            }
-          >
-            <EllipsisIcon />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem render={<Link to={destination} />}>
-              <ArrowRightIcon /> {t("directory.connectionsPage.view")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
-    </TableRow>
   );
 }

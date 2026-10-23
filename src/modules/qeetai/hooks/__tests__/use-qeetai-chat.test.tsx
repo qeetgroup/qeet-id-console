@@ -2,10 +2,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AIProvider, SendInput, StreamEvent } from "../../ai/ai-provider";
-import type { ConsoleContext } from "../../context/types/context.types";
+import type { AIProvider, SendInput, StreamEvent } from "@/modules/qeetai/ai/ai-provider";
+import type { ConsoleContext } from "@/modules/qeetai/context/types/context.types";
 
 const runtime = vi.hoisted(() => ({
   confirm: vi.fn(async () => true),
@@ -27,17 +27,17 @@ vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
-vi.mock("../../context/use-console-context", () => ({
+vi.mock("@/modules/qeetai/context/use-console-context", () => ({
   useConsoleContext: () => runtime.context,
 }));
-vi.mock("../../qeetai-provider", () => ({
+vi.mock("@/modules/qeetai/qeetai-provider", () => ({
   useQeetAIRuntime: () => ({ confirm: runtime.confirm, stepUp: runtime.stepUp }),
 }));
-vi.mock("../../ai/use-active-provider", () => ({ useActiveProvider: () => provider }));
+vi.mock("@/modules/qeetai/ai/use-active-provider", () => ({ useActiveProvider: () => provider }));
 
 import { api } from "@/platform/api/client";
-import { ToolCallCard } from "../../components/execution/tool-call-card";
-import { conversationActions, conversationStore } from "../../store/conversation-store";
+import { ToolCallCard } from "@/modules/qeetai/components/execution/tool-call-card";
+import { conversationActions, conversationStore } from "@/modules/qeetai/store/conversation-store";
 import { useQeetAIChat } from "../use-qeetai-chat";
 
 // The model asks for one tool, then answers once the tool result comes back.
@@ -65,7 +65,7 @@ async function ask(text: string) {
   act(() => result.current.send(text));
   await waitFor(() => expect(runtime.sent).toHaveLength(2));
   await waitFor(() => expect(result.current.isStreaming).toBe(false));
-  const [toolResult] = runtime.sent[1].toolResults ?? [];
+  const [toolResult] = runtime.sent[1]?.toolResults ?? [];
   return toolResult;
 }
 
@@ -74,7 +74,9 @@ function lastExecution() {
     (c) => c.id === conversationStore.state.activeId,
   );
   const executions = conversation?.messages.flatMap((m) => m.toolExecutions ?? []) ?? [];
-  return executions[executions.length - 1];
+  const execution = executions[executions.length - 1];
+  assert(execution, "expected a tool execution in the active conversation");
+  return execution;
 }
 
 beforeEach(() => {
@@ -92,6 +94,7 @@ describe("Qeet AI change requests in 1.0", () => {
     runtime.toolCall = { name: "disable_user", input: { user_id: "user-7" } };
 
     const toolResult = await ask("Disable user-7");
+    assert(toolResult, "expected a tool result to be sent back");
 
     expect(api).not.toHaveBeenCalled();
     expect(runtime.confirm).not.toHaveBeenCalled();
@@ -118,9 +121,10 @@ describe("Qeet AI change requests in 1.0", () => {
     vi.mocked(api).mockResolvedValue({ items: [] });
 
     const toolResult = await ask("Find alice");
+    assert(toolResult, "expected a tool result to be sent back");
 
     expect(api).toHaveBeenCalledOnce();
-    expect(vi.mocked(api).mock.calls[0][0]).toBe("/v1/users");
+    expect(vi.mocked(api).mock.calls[0]?.[0]).toBe("/v1/users");
     expect(toolResult.error).toBeUndefined();
     expect(toolResult.output).toBeDefined();
   });

@@ -4,18 +4,25 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { formatLocale } from "@/i18n";
+import { ErrorText } from "@/platform/components/error-reference";
+import {
+  settleSensitiveAction,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { isStepUpRequired } from "@/platform/security/step-up";
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
-import { type PushDeviceScope, usePushDevices, useRemovePushDevice } from "../api/push-devices";
+import {
+  type PushDevice,
+  type PushDeviceScope,
+  usePushDevices,
+  useRemovePushDevice,
+} from "../api/push-devices";
 import { LinkPhoneDialog } from "./link-phone-dialog";
 
 /**
- * The phones linked to approve sign-ins with Qeet Auth, with when each was
- * linked and last used, and removing one — a removed phone stops approving at
- * once. `scope` is the person's own phones, where a phone can also be linked
- * with a pairing code, or — for an administrator — a member's phones, removed
- * one at a time without touching the member's other factors.
+ * Renders the phones linked to approve sign-ins with Qeet Auth; a removed phone stops approving at
+ * once. `scope` is the person's own phones, where one can also be linked by pairing code, or an
+ * administrator's view of a member's, removed without touching the member's other factors.
  */
 export function LinkedPhonesCard({
   scope,
@@ -23,28 +30,42 @@ export function LinkedPhonesCard({
   className,
 }: {
   scope: PushDeviceScope;
-  /** False shows the phones without the remove action. */
-  canRemove?: boolean;
+  canRemove?: boolean; // False shows the phones without the remove action
   className?: string;
 }) {
   const { t } = useTranslation("account");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
+  const runSensitive = useSensitiveAction();
   const [linking, setLinking] = useState(false);
   const phonesQ = usePushDevices(scope);
   const remove = useRemovePushDevice(scope);
   const phones = phonesQ.data?.items ?? [];
   const date = (iso: string) =>
-    new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" });
+    new Date(iso).toLocaleDateString(formatLocale(), { dateStyle: "medium" });
   // A cancelled step-up is not a failure to show: nothing was changed.
   const removeError = remove.error && !isStepUpRequired(remove.error) ? remove.error : null;
 
-  function removePhone(id: string) {
-    remove.mutate(id, { onSuccess: () => toast.success(t("security.phones.removed")) });
+  function removePhone(phone: PushDevice) {
+    const name = phone.name || t(`security.phones.platform.${phone.platform}`);
+    runSensitive({
+      confirm: {
+        title: t("security.phones.removeConfirm", { name }),
+        description: t(
+          scope.kind === "self"
+            ? "security.phones.removeDescription"
+            : "security.phones.removeMemberDescription",
+        ),
+        confirmLabel: t("security.phones.remove"),
+        tone: "destructive",
+      },
+      actionLabel: t("security.phones.removeAction"),
+      run: () => remove.mutateAsync(phone.id),
+    })
+      .then(() => toast.success(t("security.phones.removed")))
+      .catch(settleSensitiveAction);
   }
 
   return (
     <Card className={className}>
-      {confirmDialog}
       {scope.kind === "self" && <LinkPhoneDialog open={linking} onOpenChange={setLinking} />}
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -72,7 +93,7 @@ export function LinkedPhonesCard({
         )}
         {phonesQ.isError && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(phonesQ.error)}
+            <ErrorText error={phonesQ.error} />
           </p>
         )}
         {phonesQ.isSuccess && phones.length === 0 && (
@@ -102,21 +123,7 @@ export function LinkedPhonesCard({
                     variant="ghost"
                     size="sm"
                     disabled={remove.isPending}
-                    onClick={() =>
-                      openConfirm({
-                        title: t("security.phones.removeConfirm", {
-                          name: p.name || t(`security.phones.platform.${p.platform}`),
-                        }),
-                        description: t(
-                          scope.kind === "self"
-                            ? "security.phones.removeDescription"
-                            : "security.phones.removeMemberDescription",
-                        ),
-                        variant: "destructive",
-                        confirmLabel: t("security.phones.remove"),
-                        onConfirm: () => removePhone(p.id),
-                      })
-                    }
+                    onClick={() => removePhone(p)}
                   >
                     <TrashIcon /> {t("security.phones.remove")}
                   </Button>
@@ -127,7 +134,7 @@ export function LinkedPhonesCard({
         )}
         {removeError ? (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(removeError)}
+            <ErrorText error={removeError} />
           </p>
         ) : null}
       </CardContent>

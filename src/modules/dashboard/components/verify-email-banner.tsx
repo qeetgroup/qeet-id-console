@@ -2,23 +2,19 @@ import { Button, OTPInput } from "@qeetrix/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { LoaderCircleIcon, MailWarningIcon } from "@qeetrix/icons";
 import { useState } from "react";
-import { toast } from "sonner";
+import { Trans, useTranslation } from "react-i18next";
 
-import { errorMessage } from "@/platform/errors/user-message";
-import { useMe } from "@/platform/auth/session";
+import { toastError } from "@/platform/errors/error-toast";
+import { meKeys, useMe } from "@/platform/auth/session";
 import { useConfirmEmailVerification, useStartEmailVerification } from "@/modules/authentication";
 
 /**
- * Sticky banner shown whenever the signed-in user's email is not yet verified.
- * Covers the paths the signup OTP screen misses — social login (lands verified
- * = never, so it shows here) and a user who closed the signup verify step —
- * and it's the nudge that unblocks org creation (the server gates
- * `POST /v1/tenants` on a verified email).
- *
- * Returns null when verified (or while /me is loading), so it's safe to render
- * unconditionally near the top of the layout.
+ * Renders a sticky banner while the user's email is unverified, catching paths the signup OTP step
+ * misses (social sign-in, a skipped step); the server requires a verified email to create an
+ * organization. Renders nothing once verified or while the profile loads.
  */
 export function VerifyEmailBanner() {
+  const { t } = useTranslation("dashboard");
   const meQ = useMe();
   const qc = useQueryClient();
   const start = useStartEmailVerification();
@@ -31,10 +27,8 @@ export function VerifyEmailBanner() {
 
   const resend = () => {
     start.mutate(me.id, {
-      // The success toast comes from the mutation's meta; only the panel
-      // needs opening here.
-      onSuccess: () => setOpen(true),
-      onError: (err) => toast.error(errorMessage(err)),
+      onSuccess: () => setOpen(true), // the success toast comes from the mutation's meta
+      onError: (err) => toastError(err),
     });
   };
 
@@ -45,11 +39,9 @@ export function VerifyEmailBanner() {
         onSuccess: () => {
           setOpen(false);
           setCode("");
-          void qc.invalidateQueries({ queryKey: ["me"] });
+          void qc.invalidateQueries({ queryKey: meKeys.all });
         },
-        // Was a fixed "incorrect or expired" string, which hid the specific
-        // reason — a superseded code, a spent guess budget, a throttled resend.
-        onError: (err) => toast.error(errorMessage(err)),
+        onError: (err) => toastError(err), // keeps the specific reason
       },
     );
   };
@@ -62,7 +54,13 @@ export function VerifyEmailBanner() {
       <div className="flex items-center gap-2">
         <MailWarningIcon className="size-4 shrink-0" />
         <span>
-          Verify <span className="font-medium">{me.email}</span> to unlock organization creation.
+          <Trans
+            t={t}
+            shouldUnescape
+            i18nKey="verifyEmailBanner.message"
+            values={{ email: me.email }}
+            components={{ email: <span className="font-medium" /> }}
+          />
         </span>
       </div>
 
@@ -78,17 +76,17 @@ export function VerifyEmailBanner() {
             value={code}
             onChange={setCode}
             onComplete={submit}
-            aria-label="Email verification code"
+            aria-label={t("verifyEmailBanner.emailVerificationCode")}
           />
           <Button type="submit" size="sm" disabled={confirm.isPending || code.length !== 6}>
             {confirm.isPending && <LoaderCircleIcon className="animate-spin" />}
-            Verify
+            {t("verifyEmailBanner.verify")}
           </Button>
         </form>
       ) : (
         <Button size="sm" variant="outline" onClick={resend} disabled={start.isPending}>
           {start.isPending && <LoaderCircleIcon className="animate-spin" />}
-          Send verification code
+          {t("verifyEmailBanner.sendCode")}
         </Button>
       )}
     </div>

@@ -1,11 +1,3 @@
-// TimelineItem — one row of the identity timeline. A dense, columned card:
-// category icon + human title + tags on the left, Actor and Location columns in
-// the middle, and the outcome badge + timestamp + a ⋮ actions menu on the right.
-// The card is a single button (opens the details drawer); the ⋮ menu is a
-// sibling so we never nest interactive controls.
-//
-// REUSE: category icon + severity/result helpers from the activity feature.
-
 import {
   cn,
   DropdownMenu,
@@ -30,37 +22,37 @@ import {
   UserIcon,
 } from "@qeetrix/icons";
 import type { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import i18n, { formatLocale, type TranslationKey } from "@/i18n";
 import { getCategoryIcon } from "@/modules/activity";
 import { ResultBadge } from "@/modules/activity";
-import { type EventResult, eventResult, formatEventTitle } from "@/modules/activity";
+import {
+  actorTypeLabel,
+  categoryLabel,
+  type EventResult,
+  eventResult,
+  formatEventTitle,
+} from "@/modules/activity";
 import { formatIp } from "@/shared/utils/ip-format";
 import type { ActivityEvent } from "@/modules/activity";
 
-// ---------------------------------------------------------------------------
-// Result → connector node colour + icon-chip tone
-// ---------------------------------------------------------------------------
-
 const RESULT_NODE: Record<EventResult, string> = {
-  Success: "bg-success ring-success/25",
-  Failed: "bg-destructive ring-destructive/25",
-  Blocked: "bg-warning ring-warning/25",
-  Warning: "bg-warning ring-warning/25",
-  Info: "bg-info ring-info/25",
+  success: "bg-success ring-success/25",
+  failed: "bg-destructive ring-destructive/25",
+  blocked: "bg-warning ring-warning/25",
+  warning: "bg-warning ring-warning/25",
+  info: "bg-info ring-info/25",
 };
 
-/** Icon chips stay neutral except for outcomes that warrant attention. */
+// Icon chips stay neutral except for outcomes that need attention.
 function iconTone(result: EventResult): string {
-  if (result === "Failed") return "bg-destructive/10 text-destructive ring-destructive/15";
-  if (result === "Blocked" || result === "Warning")
+  if (result === "failed") return "bg-destructive/10 text-destructive ring-destructive/15";
+  if (result === "blocked" || result === "warning")
     return "bg-warning/10 text-warning ring-warning/15";
   return "bg-muted text-muted-foreground ring-foreground/6";
 }
-
-// ---------------------------------------------------------------------------
-// Meta column (Actor / Location)
-// ---------------------------------------------------------------------------
 
 function MetaColumn({
   label,
@@ -85,23 +77,21 @@ function MetaColumn({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Row actions menu (⋮)
-// ---------------------------------------------------------------------------
-
-function copy(text: string, what: string) {
+// `copiedKey` names what was copied, for the toast.
+function copy(text: string, copiedKey: TranslationKey) {
   void navigator.clipboard.writeText(text);
-  toast.success(`Copied ${what}`);
+  toast.success(i18n.t(copiedKey));
 }
 
 function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () => void }) {
+  const { t } = useTranslation("timeline");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
           <button
             type="button"
-            aria-label="Event actions"
+            aria-label={t("timelineItem.eventActions")}
             className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/item:opacity-100 data-popup-open:opacity-100"
           >
             <EllipsisVerticalIcon className="size-4" aria-hidden="true" />
@@ -109,29 +99,29 @@ function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () =>
         }
       />
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onOpen}>View details</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => copy(event.id, "event ID")}>
+        <DropdownMenuItem onClick={onOpen}>{t("timelineItem.viewDetails")}</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => copy(event.id, "timeline:timelineItem.copiedEventId")}>
           <ClipboardIcon className="size-3.5" aria-hidden="true" />
-          Copy event ID
+          {t("timelineItem.copyEventId")}
         </DropdownMenuItem>
         {event.request_id ? (
-          <DropdownMenuItem onClick={() => copy(event.request_id ?? "", "request ID")}>
+          <DropdownMenuItem
+            onClick={() => copy(event.request_id ?? "", "timeline:timelineItem.copiedRequestId")}
+          >
             <ClipboardIcon className="size-3.5" aria-hidden="true" />
-            Copy request ID
+            {t("timelineItem.copyRequestId")}
           </DropdownMenuItem>
         ) : null}
-        <DropdownMenuItem onClick={() => copy(JSON.stringify(event, null, 2), "event JSON")}>
+        <DropdownMenuItem
+          onClick={() => copy(JSON.stringify(event, null, 2), "timeline:timelineItem.copiedJson")}
+        >
           <FileBracesIcon className="size-3.5" aria-hidden="true" />
-          Copy JSON
+          {t("timelineItem.copyJson")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
-
-// ---------------------------------------------------------------------------
-// TimelineItem
-// ---------------------------------------------------------------------------
 
 type TimelineItemProps = {
   event: ActivityEvent;
@@ -142,6 +132,11 @@ type TimelineItemProps = {
   setSize?: number;
 };
 
+/**
+ * Renders one timeline row: a card button that opens the details drawer, with the outcome as
+ * the connector node's colour. The ⋮ menu is a sibling of the button so interactive controls
+ * never nest.
+ */
 export function TimelineItem({
   event,
   isSelected = false,
@@ -150,11 +145,13 @@ export function TimelineItem({
   posInSet,
   setSize,
 }: TimelineItemProps) {
+  const { t } = useTranslation(["timeline", "activity"]);
   const result = eventResult(event);
+  const resultLabel = t(`activity:result.${result}`);
   const CategoryIcon = getCategoryIcon(event.category);
   const title = formatEventTitle(event);
-  const actorName = event.actor?.name ?? event.actor?.id ?? "System";
-  const actorSub = event.actor?.type;
+  const actorName = event.actor?.name ?? event.actor?.id ?? t("timelineItem.system");
+  const actorSub = event.actor?.type ? actorTypeLabel(event.actor.type) : undefined;
   const locationValue = event.location ?? (event.ip ? formatIp(event.ip) : undefined);
   const locationSub = event.device ?? event.browser ?? event.source ?? undefined;
 
@@ -176,11 +173,11 @@ export function TimelineItem({
                   "z-10 mt-3.5 size-2.5 rounded-full ring-4 ring-background transition-transform duration-150 group-hover/item:scale-125",
                   RESULT_NODE[result],
                 )}
-                aria-label={`Outcome: ${result}`}
+                aria-label={t("timelineItem.outcome", { result: resultLabel })}
               />
             }
           />
-          <TooltipContent>{result}</TooltipContent>
+          <TooltipContent>{resultLabel}</TooltipContent>
         </Tooltip>
       </TimelineIndicator>
 
@@ -195,7 +192,7 @@ export function TimelineItem({
           <button
             type="button"
             onClick={() => onClick(event)}
-            aria-label={`${title}, ${result} — open details`}
+            aria-label={t("timelineItem.openDetails", { title, result: resultLabel })}
             className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
           >
             {/* Category icon */}
@@ -218,8 +215,8 @@ export function TimelineItem({
                 </span>
               ) : null}
               <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
-                  {event.category}
+                <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {categoryLabel(event.category)}
                 </span>
                 {event.source ? (
                   <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
@@ -237,9 +234,14 @@ export function TimelineItem({
             </span>
 
             {/* Actor + Location columns (lg+) */}
-            <MetaColumn label="Actor" icon={UserIcon} value={actorName} sub={actorSub} />
             <MetaColumn
-              label="Location"
+              label={t("timelineItem.actor")}
+              icon={UserIcon}
+              value={actorName}
+              sub={actorSub}
+            />
+            <MetaColumn
+              label={t("timelineItem.location")}
               icon={locationValue ? GlobeIcon : MonitorIcon}
               value={locationValue}
               sub={locationSub}
@@ -260,7 +262,7 @@ export function TimelineItem({
                   }
                 />
                 <TooltipContent>
-                  {new Date(event.at).toLocaleString(undefined, {
+                  {new Date(event.at).toLocaleString(formatLocale(), {
                     dateStyle: "medium",
                     timeStyle: "long",
                   })}
@@ -269,7 +271,7 @@ export function TimelineItem({
             </span>
           </button>
 
-          {/* Row actions (sibling of the card button) */}
+          {/* A sibling of the card button, so interactive controls don't nest */}
           <div className="flex items-center pe-1.5">
             <RowActionsMenu event={event} onOpen={() => onClick(event)} />
           </div>

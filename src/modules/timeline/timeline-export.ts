@@ -1,11 +1,6 @@
-// Client-side export of the identity timeline. Exports the events currently
-// loaded into the view (scroll to load more before exporting for a longer
-// range). Scoped to a single user's timeline — deliberately not the tenant-wide
-// activity exporter, which walks a different endpoint. CSV escaping + download
-// are the shared helpers (shared/utils/data-export).
-
 import { toast } from "sonner";
 
+import i18n from "@/i18n";
 import type { ActivityEvent } from "@/modules/activity";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 
@@ -30,13 +25,17 @@ const CSV_COLUMNS: CsvColumn<ActivityEvent>[] = [
   { header: "request_id", value: (e) => e.request_id },
 ];
 
+/**
+ * Downloads the timeline events loaded in the view as CSV or JSON. Unlike the activity export
+ * it doesn't page the server, so a longer range needs more scrolling first.
+ */
 export function exportTimelineEvents(
   events: ActivityEvent[],
   format: TimelineExportFormat,
   userId: string,
 ) {
   if (events.length === 0) {
-    toast.error("No events to export in the current view.");
+    toast.error(i18n.t("timeline:timelineExport.empty"));
     return;
   }
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -48,8 +47,7 @@ export function exportTimelineEvents(
     downloadBlob(JSON.stringify(events, null, 2), "application/json", name);
   }
 
-  const noun = events.length === 1 ? "event" : "events";
-  toast.success(`Exported ${events.length.toLocaleString()} ${noun}`, {
-    description: "Loaded events only — scroll to load more before exporting a longer range.",
+  toast.success(i18n.t("timeline:timelineExport.exported", { count: events.length }), {
+    description: i18n.t("timeline:timelineExport.loadedOnly"),
   });
 }

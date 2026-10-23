@@ -1,16 +1,22 @@
-// Best-effort User-Agent parsing for the User 360 sessions view (the sessions
-// model stores only the raw UA string). Intentionally small — not a UA database.
+import i18n from "@/i18n";
+
+// Sessions store only the raw User-Agent, so this names its browser and OS on a best-effort basis;
+// it is deliberately small, not a UA database.
 
 export interface ParsedUserAgent {
   browser: string;
   os: string;
-  /** "Chrome on macOS" */
-  label: string;
+  label: string; // e.g. "Chrome on macOS"
 }
 
-/** Best-effort UA → {browser, os, label}. */
 export function parseUserAgent(ua?: string | null): ParsedUserAgent {
-  if (!ua) return { browser: "Unknown", os: "device", label: "Unknown device" };
+  if (!ua) {
+    return {
+      browser: i18n.t("users:userAgent.unknown"),
+      os: i18n.t("users:userAgent.device"),
+      label: i18n.t("users:userAgent.unknownDevice"),
+    };
+  }
   const browser = /Edg\//.test(ua)
     ? "Edge"
     : /OPR\/|Opera/.test(ua)
@@ -22,8 +28,8 @@ export function parseUserAgent(ua?: string | null): ParsedUserAgent {
           : /Version\/.*Safari/.test(ua)
             ? "Safari"
             : /curl|wget|python|Go-http|PostmanRuntime|okhttp/i.test(ua)
-              ? "API client"
-              : "Browser";
+              ? i18n.t("users:userAgent.apiClient")
+              : i18n.t("users:userAgent.browser");
   const os = /iPhone|iPad|iPod/.test(ua)
     ? "iOS"
     : /Android/.test(ua)
@@ -36,6 +42,6 @@ export function parseUserAgent(ua?: string | null): ParsedUserAgent {
             ? "ChromeOS"
             : /Linux/.test(ua)
               ? "Linux"
-              : "Unknown OS";
-  return { browser, os, label: `${browser} on ${os}` };
+              : i18n.t("users:userAgent.unknownOs");
+  return { browser, os, label: i18n.t("users:userAgent.label", { browser, os }) };
 }

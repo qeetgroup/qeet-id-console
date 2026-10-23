@@ -1,22 +1,19 @@
-// Display metadata for the plan tiers. Names, descriptions, feature lists, and
-// prices all come from the billing API (GET /v1/billing/plans) so the catalog
-// stays in sync with the backend; this file only adds presentation-layer
-// decoration the API doesn't carry (which tier is featured, contact-sales, …).
+// Presentation-only plan metadata the billing API doesn't carry (featured tier, contact sales).
+// Names, prices and features come from GET /v1/billing/plans.
 
 export const TIER_ORDER = ["free", "starter", "pro", "enterprise"] as const;
 export type Tier = (typeof TIER_ORDER)[number];
 
 export interface TierMeta {
-  badge?: string;
+  popular?: boolean; // marked "Most popular"
   featured?: boolean;
-  /** Enterprise: no self-serve checkout — talk to sales instead. */
-  contactSales?: boolean;
+  contactSales?: boolean; // no self-serve checkout: talk to sales instead
 }
 
 export const TIER_META: Record<Tier, TierMeta> = {
   free: {},
   starter: {},
-  pro: { badge: "Most popular", featured: true },
+  pro: { popular: true, featured: true },
   enterprise: { contactSales: true },
 };
 
@@ -27,9 +24,10 @@ export function tierOfCode(code: string): Tier {
   return code.replace(/_year$/, "") as Tier;
 }
 
-// Default billing country for a currency, so provider routing
-// (backend PAYMENT_COUNTRY_ROUTES, e.g. IN → Razorpay) picks the right
-// processor without making the user choose a country up front.
+/**
+ * Default billing country per currency, so the server routes the payment to the right processor
+ * (IN → Razorpay) without asking the user for a country up front.
+ */
 export const CURRENCY_COUNTRY: Record<string, string> = {
   USD: "US",
   EUR: "DE",
@@ -40,7 +38,7 @@ export const CURRENCY_COUNTRY: Record<string, string> = {
   CAD: "CA",
 };
 
-/** Turn a name into a URL-safe org slug (lowercase, hyphenated, a–z0–9 only). */
+/** Turns a name into a URL-safe org slug (lowercase, hyphenated, a–z0–9 only). */
 export function slugify(name: string): string {
   return name
     .toLowerCase()

@@ -1,0 +1,77 @@
+{
+  "list": {
+    "description": "Alle Personen, die Zugang zu diesem Organisation haben. Laden Sie Mitglieder hier direkt ein oder erstellen Sie sie.",
+    "import": "Importieren",
+    "newUser": "Neuer Benutzer",
+    "searchPlaceholder": "E-Mail, Name, Telefon suchen…",
+    "emptyTitleFiltered": "Keine Benutzer entsprechen Ihren Filtern.",
+    "emptyTitle": "Noch keine Benutzer.",
+    "emptyDescriptionFiltered": "Passen Sie die obigen Filter an oder löschen Sie sie.",
+    "emptyDescription": "Klicken Sie auf Neuer Benutzer, um den ersten hinzuzufügen.",
+    "selectAll": "Alle Benutzer auswählen",
+    "selectOne": "{{email}} auswählen",
+    "you": "Sie"
+  },
+  "table": {
+    "name": "Name",
+    "role": "Rolle",
+    "status": "Status",
+    "created": "Erstellt",
+    "actions": "Aktionen",
+    "setPassword": "Passwort festlegen",
+    "deleteUser": "Benutzer löschen"
+  },
+  "status": {
+    "active": "Aktiv",
+    "invited": "Eingeladen",
+    "suspended": "Gesperrt",
+    "deleted": "Gelöscht"
+  },
+  "delete": {
+    "title": "Diesen Benutzer löschen?"
+  },
+  "bulk": {
+    "confirm_one": "{{count}} Benutzer löschen? Dies kann nicht rückgängig gemacht werden.",
+    "confirm_other": "{{count}} Benutzer löschen? Dies kann nicht rückgängig gemacht werden."
+  },
+  "create": {
+    "title": "Neuer Benutzer",
+    "description": "Erstellt einen Benutzer unter dem aktuellen Mandanten mit einem Passwort-Credential.",
+    "email": "E-Mail",
+    "displayName": "Anzeigename",
+    "displayNameHelp": "Optional. Wird in der Benutzerliste und in Audit-Protokollen angezeigt.",
+    "phone": "Telefon",
+    "phoneHelp": "E.164-Format. Wird für SMS-OTP verwendet, wenn MFA aktiviert ist.",
+    "password": "Erstkennwort",
+    "passwordHelp": "Mindestens 8 Zeichen. Der Benutzer kann es später ändern.",
+    "submit": "Benutzer erstellen",
+    "submitting": "Wird erstellt…"
+  },
+  "edit": {
+    "title": "Benutzer bearbeiten",
+    "description": "Die E-Mail ist unveränderlich. Um ein Passwort zu ändern, verwenden Sie die Aktion Passwort festlegen.",
+    "email": "E-Mail",
+    "displayName": "Anzeigename",
+    "phone": "Telefon",
+    "phoneHelp": "E.164-Format. Leer lassen zum Löschen.",
+    "status": "Status",
+    "statusActive": "Aktiv",
+    "statusSuspended": "Gesperrt",
+    "statusSelfHelp": "Sie können Ihr eigenes Konto von diesem Bildschirm nicht sperren.",
+    "statusHelp": "Sperren verhindert die Anmeldung, behält aber das Konto."
+  },
+  "setPassword": {
+    "title": "Neues Passwort festlegen",
+    "newPassword": "Neues Passwort",
+    "newPasswordHelp": "Mindestens 8 Zeichen.",
+    "confirmPassword": "Neues Passwort bestätigen",
+    "mismatch": "Passwörter stimmen nicht überein",
+    "submit": "Passwort aktualisieren"
+  },
+  "toast": {
+    "created": "Benutzer erstellt",
+    "updated": "Benutzer aktualisiert",
+    "deleted": "Benutzer gelöscht",
+    "passwordUpdated": "Passwort aktualisiert"
+  }
+}

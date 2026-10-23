@@ -1,7 +1,5 @@
-// Translates a SendInput into the wire body the backend `…/messages` endpoint
-// expects. The server owns the system prompt; the client only forwards the raw
-// user message (or tool results) plus the grounding context, converting the
-// frontend's camelCase tool-result shape to the backend's snake_case.
+// Builds the body of a backend `…/messages` request. The server owns the system prompt: the
+// client sends only the user message or tool results (in snake_case) and grounding context.
 
 import type { SendInput } from "./ai-provider";
 

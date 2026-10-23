@@ -1,0 +1,291 @@
+{
+  "activityEventRow": {
+    "time": "Time",
+    "actor": "Actor",
+    "action": "Action",
+    "resource": "Resource",
+    "outcome": "Outcome",
+    "ipAddress": "IP address",
+    "copyActorId": "Copy actor ID",
+    "new": "New",
+    "copyResourceId": "Copy resource ID",
+    "openDetails": "Open details for {{title}}"
+  },
+  "activityModeToggle": {
+    "feedMode": "Feed mode",
+    "mode": {
+      "live": "Live",
+      "history": "History"
+    },
+    "jumpToNew_one": "Jump to {{count}} new event",
+    "jumpToNew_other": "Jump to {{count}} new events",
+    "new": "{{count}} new"
+  },
+  "activityPage": {
+    "activityNotAvailable": "Activity not available",
+    "monitorAuthenticationIdentityAccess": "Monitor authentication, identity, access, and security events across your organization.",
+    "allEvents": "All events",
+    "allOutcomes": "All outcomes",
+    "allActors": "All actors",
+    "allResources": "All resources",
+    "searchEventsByKeyword": "Search events by keyword, ID, IP, user… (press Enter)",
+    "searchActivityEvents": "Search activity events",
+    "clearAll": "Clear all",
+    "noPermission": "You don't have permission to view the activity feed. Contact your organization admin to request the <code>audit.read</code> capability.",
+    "criticalAlert_one": "{{count}} critical or error event requires attention",
+    "criticalAlert_other": "{{count}} critical or error events require attention"
+  },
+  "activityPagination": {
+    "pagination": "Pagination",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "rowsPerPage": "Rows per page",
+    "showing": "Showing <n>{{from}}</n> to <n>{{to}}</n> of <n>{{total}}</n> events",
+    "page": "Page {{page}}",
+    "perPage": "{{count}} / page"
+  },
+  "activitySavedViews": {
+    "savedViews": "Saved views",
+    "saveCurrentView": "Save current view",
+    "snapshotsTheActiveFilters": "Snapshots the active filters, time range, and search as a reusable view.",
+    "viewName": "View name"
+  },
+  "activitySummaryStrip": {
+    "totalEvents": "Total events",
+    "success": "Success",
+    "warnings": "Warnings",
+    "failed": "Failed",
+    "uniqueActors": "Unique actors",
+    "securityAlerts": "Security alerts"
+  },
+  "activityTimeRange": {
+    "timeRange": "Time range",
+    "pickDates": "Pick dates",
+    "presets": {
+      "all": "All time",
+      "15m": "Last 15 minutes",
+      "1h": "Last hour",
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "custom": "Custom range…"
+    }
+  },
+  "activityTimeline": {
+    "couldnTLoadActivityHistory": "Couldn't load activity history",
+    "thereWasAProblem": "There was a problem fetching the event log. Your live stream may still be working.",
+    "retry": "Retry",
+    "reconnectingToLiveStream": "Reconnecting to live stream…",
+    "streamUnavailable": "Stream unavailable",
+    "theLiveEventStream": "The live event stream could not be established after several attempts.",
+    "retryConnection": "Retry connection",
+    "noEventsYet": "No events yet",
+    "liveEventsWillAppear": "Live events will appear here as they stream in. Historical events load as you scroll.",
+    "activityEventFeed": "Activity event feed",
+    "allEventsLoaded": "All events loaded"
+  },
+  "eventCard": {
+    "new": "New",
+    "openEventDetails": "Open event details",
+    "details": "Details",
+    "actorType": "Type: {{type}}",
+    "actorId": "ID: {{id}}",
+    "metadata": "Metadata",
+    "titleBy": "{{title}}, by {{actor}}"
+  },
+  "eventDetailsDrawer": {
+    "investigate": "Investigate",
+    "previousEvent": "Previous event",
+    "nextEvent": "Next event",
+    "overview": "Overview",
+    "rawEvent": "Raw event",
+    "related": "Related",
+    "eventDetails": "Event details",
+    "eventId": "Event ID",
+    "copyEventId": "Copy event ID",
+    "category": "Category",
+    "timestamp": "Timestamp",
+    "requestId": "Request ID",
+    "copyRequestId": "Copy request ID",
+    "source": "Source",
+    "actor": "Actor",
+    "copyActorId": "Copy actor ID",
+    "links": "Links",
+    "viewUser": "View user",
+    "timeline": "Timeline",
+    "affectedResource": "Affected resource",
+    "label": "Label",
+    "copyResourceId": "Copy resource ID",
+    "requestContext": "Request context",
+    "ipAddress": "IP address",
+    "copyIpAddress": "Copy IP address",
+    "location": "Location",
+    "device": "Device",
+    "browser": "Browser",
+    "eventMetadata": "Event metadata",
+    "metadata": "Metadata",
+    "copyJson": "Copy JSON"
+  },
+  "investigateMenu": {
+    "investigateEvent": "Investigate event",
+    "investigate": "Investigate",
+    "viewDetails": "View details",
+    "viewUser": "View user",
+    "viewUserTimeline": "View user timeline",
+    "viewGroup": "View group",
+    "viewWebhook": "View webhook",
+    "viewOidcClient": "View OIDC client",
+    "correlateInAuditLog": "Correlate in audit log",
+    "filterByThisActor": "Filter by this actor",
+    "filterByEventType": "Filter by event type",
+    "filterByThisIp": "Filter by this IP",
+    "copyEventId": "Copy event ID",
+    "copyRequestId": "Copy request ID",
+    "copyActorId": "Copy actor ID",
+    "copyIpAddress": "Copy IP address",
+    "copied": {
+      "eventId": "Event ID copied",
+      "requestId": "Request ID copied",
+      "actorId": "Actor ID copied",
+      "ip": "IP address copied"
+    }
+  },
+  "relatedEventsList": {
+    "noRelatedEvents": "No related events",
+    "nothingElseSharesThis": "Nothing else shares this event's request or actor in the surrounding window.",
+    "sameRequest": "Same request",
+    "sameActorNearby": "Same actor nearby"
+  },
+  "category": {
+    "authentication": "Authentication",
+    "authorization": "Authorization",
+    "security": "Security",
+    "directory": "Directory",
+    "developer": "Developer",
+    "system": "System"
+  },
+  "outcome": {
+    "success": "Success",
+    "warning": "Warning",
+    "failed": "Failed",
+    "info": "Info"
+  },
+  "severity": {
+    "critical": "Critical",
+    "error": "Error",
+    "warning": "Warning",
+    "success": "Success",
+    "info": "Info"
+  },
+  "export": {
+    "button": "Export",
+    "running": "Exporting {{format}}…",
+    "done_one": "Exported {{count}} event",
+    "done_other": "Exported {{count}} events",
+    "capped": "Capped at {{cap}} rows. Narrow the filter or time range to capture more."
+  },
+  "dateGroup": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This Week",
+    "lastWeek": "Last Week",
+    "lastMonth": "Last Month",
+    "older": "Older",
+    "events": "{{label}} events"
+  },
+  "eventType": {
+    "auth_login": "Sign-in attempt",
+    "auth_login_succeeded": "Successful sign-in",
+    "auth_login_failed": "Sign-in failed",
+    "auth_logout": "Signed out",
+    "auth_mfa_challenge_created": "MFA challenge issued",
+    "auth_mfa_challenged": "MFA challenge issued",
+    "auth_mfa_verified": "MFA verification succeeded",
+    "auth_mfa_enrollment_deferred": "MFA setup postponed",
+    "auth_mfa_challenge_expired": "MFA challenge expired",
+    "auth_mfa_succeeded": "MFA verification succeeded",
+    "auth_mfa_verification_succeeded": "MFA verification succeeded",
+    "auth_mfa_failed": "MFA verification failed",
+    "auth_password_reset_requested": "Password reset requested",
+    "auth_suspicious_detected": "Suspicious sign-in detected",
+    "user_login": "Signed in",
+    "user_created": "User created",
+    "user_updated": "User updated",
+    "user_deleted": "User deleted",
+    "user_restored": "User restored",
+    "user_suspended": "User suspended",
+    "user_password_changed": "Password changed",
+    "user_mfa_required_set": "MFA requirement enabled",
+    "user_mfa_required_enabled": "MFA requirement enabled",
+    "user_mfa_required_disabled": "MFA requirement disabled",
+    "user_mfa_reset": "MFA reset",
+    "user_group_added": "Added to group",
+    "user_group_removed": "Removed from group",
+    "user_role_assigned": "Role assigned",
+    "user_role_removed": "Role removed",
+    "session_created": "New session created",
+    "session_revoked": "Session revoked",
+    "session_expired": "Session expired",
+    "token_issued": "Token issued",
+    "token_revoked": "Token revoked",
+    "device_registered": "Device registered",
+    "device_removed": "Device removed",
+    "api_token_created": "API token created",
+    "api_token_revoked": "API token revoked",
+    "apikey_created": "API key created",
+    "apikey_revoked": "API key revoked",
+    "tenant_created": "Organization created",
+    "webhook_delivery_failed": "Webhook delivery failed",
+    "fallback": "Event"
+  },
+  "result": {
+    "success": "Success",
+    "failed": "Failed",
+    "blocked": "Blocked",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "actor": {
+    "unknown": "Unknown",
+    "system": "System"
+  },
+  "liveIndicator": {
+    "status": {
+      "connected": "Live",
+      "reconnecting": "Reconnecting…",
+      "disconnected": "Disconnected",
+      "paused": "Paused"
+    }
+  },
+  "savedViews": {
+    "preset": {
+      "allEvents": "All events",
+      "failedLogins": "Failed logins",
+      "adminActions": "Admin actions",
+      "mfaChanges": "MFA changes",
+      "securityAlerts": "Security alerts",
+      "suspendedUsers": "Suspended users",
+      "oauthFailures": "OAuth failures"
+    }
+  },
+  "actorType": {
+    "user": "User",
+    "system": "System",
+    "client": "Application",
+    "admin_portal": "Admin portal",
+    "anonymous": "Anonymous",
+    "service": "Service",
+    "scim": "SCIM",
+    "oidc_client": "Application",
+    "device": "Device",
+    "api_key": "API key",
+    "agent": "AI agent"
+  },
+  "nav": {
+    "overview": {
+      "activity": {
+        "title": "Activity"
+      }
+    }
+  }
+}

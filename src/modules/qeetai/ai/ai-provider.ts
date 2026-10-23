@@ -1,17 +1,11 @@
-// The AI provider seam (Phase 0, frozen contract). Everything the workspace
-// needs from "the model" is a typed async stream, so the conversation UI is
-// identical whether tokens come from the server-side SSE endpoint
-// (backend-provider) or the graceful-degradation stub (unconfigured-provider).
-// Swapping providers never touches the UI.
+// The model seam: every provider yields a typed async stream, so the conversation UI is the
+// same for the backend SSE provider and the unconfigured stub.
 
 import type { ConsoleContext } from "../context/types/context.types";
 
 /**
- * Discriminated stream of everything one turn can emit. `token` carries visible
- * text; `thinking` drives the pre-text indicator; `tool_call`/`tool_result`
- * feed the execution timeline; `error`/`done` are terminal. `done.reason`
- * distinguishes a finished answer (`end_turn`) from a pause for client-side
- * tool execution (`tool_use`).
+ * Everything one turn can emit. `done.reason` tells a finished answer (`end_turn`) from a pause
+ * for client-side tools (`tool_use`).
  */
 export type StreamEvent =
   | { type: "thinking"; text?: string }
@@ -36,9 +30,8 @@ export interface ToolResultInput {
 }
 
 /**
- * One `send`: either a new user message, or the results of tools the previous
- * turn requested (to resume orchestration). `context` grounds the model and is
- * treated as untrusted on the server.
+ * A new user message, or the results of the tools the model requested. `context` grounds the
+ * model, and the server treats it as untrusted.
  */
 export interface SendInput {
   conversationId: string;
@@ -54,15 +47,14 @@ export interface ProviderStatus {
 }
 
 export interface AIProvider {
-  /** Stable identifier, e.g. "backend" or "unconfigured". */
-  readonly id: string;
-  /** Whether real inference is wired up (drives the connect-a-provider CTA). */
+  readonly id: string; // Stable identifier, e.g. "backend" or "unconfigured"
+  /** Reports whether a model is configured. */
   status(signal?: AbortSignal): Promise<ProviderStatus>;
-  /** Stream a turn. Implementations must honour `opts.signal` (stop generation). */
+  /** Streams a turn; must stop when `opts.signal` aborts. */
   send(input: SendInput, opts: { signal: AbortSignal }): AsyncIterable<StreamEvent>;
 }
 
-/** Raised when a turn is aborted via its AbortSignal — callers treat as cancel. */
+/** Thrown when a turn's AbortSignal aborts; treated as a cancel, not a failure. */
 export class ChatAbortError extends Error {
   constructor() {
     super("Generation stopped");

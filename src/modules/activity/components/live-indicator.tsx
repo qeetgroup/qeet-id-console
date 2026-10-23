@@ -1,6 +1,8 @@
-import { cn, StatusPill } from "@qeetrix/ui";
+import { cn } from "@qeetrix/ui";
 import { RadioIcon } from "@qeetrix/icons";
+import { useTranslation } from "react-i18next";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import type { ConnectionStatus } from "../types/activity.types";
 
 const STATUS_RING_CLASS: Record<ConnectionStatus, string> = {
@@ -17,23 +19,13 @@ const STATUS_ICON_CLASS: Record<ConnectionStatus, string> = {
   paused: "text-muted-foreground",
 };
 
-const STATUS_LABEL: Record<ConnectionStatus, string> = {
-  connected: "Live",
-  reconnecting: "Reconnecting…",
-  disconnected: "Disconnected",
-  paused: "Paused",
-};
-
 const UNREAD_KIND: Partial<Record<ConnectionStatus, "success" | "warning" | "danger" | "muted">> = {
   connected: "success",
   reconnecting: "warning",
   paused: "muted",
 };
 
-/**
- * Compact connection status indicator for the activity feed header.
- * Shows the SSE connection state and an unread-event count badge.
- */
+/** Renders the stream's connection state and, when non-zero, the unread event count. */
 export function LiveIndicator({
   status,
   unreadCount,
@@ -43,7 +35,8 @@ export function LiveIndicator({
   unreadCount?: number;
   className?: string;
 }) {
-  const label = STATUS_LABEL[status];
+  const { t } = useTranslation("activity");
+  const label = t(`liveIndicator.status.${status}`);
   const isPulsing = status === "connected" || status === "reconnecting";
 
   return (
@@ -64,7 +57,7 @@ export function LiveIndicator({
 
       {unreadCount !== undefined && unreadCount > 0 && (
         <StatusPill kind={UNREAD_KIND[status] ?? "neutral"} dot={false}>
-          {unreadCount > 99 ? "99+" : unreadCount} new
+          {t("activityModeToggle.new", { count: unreadCount > 99 ? "99+" : unreadCount })}
         </StatusPill>
       )}
     </div>

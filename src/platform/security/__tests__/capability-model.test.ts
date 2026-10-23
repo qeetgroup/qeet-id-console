@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import i18n from "@/i18n";
 import {
   CONSOLE_CAPABILITIES,
+  capabilityLabel,
   classifyAccessMode,
   createCapabilitySet,
   hasAllCapabilities,
@@ -10,6 +12,13 @@ import {
 } from "../capability-model";
 
 describe("console capability model", () => {
+  it("names every capability in the catalogue", () => {
+    for (const capability of CONSOLE_CAPABILITIES) {
+      expect(i18n.exists(`common:capability.${capability}`)).toBe(true);
+    }
+    expect(capabilityLabel("user.read")).toBe("View users");
+  });
+
   it("matches effective permissions exactly without inferring read from write", () => {
     const permissions = createCapabilitySet(["user.write"]);
 

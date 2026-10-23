@@ -1,6 +1,3 @@
-// Public surface of the qeetai tool system. Re-exports the registry and
-// engine so callers have a single import point.
-
 export type { ExecuteToolOptions } from "./execution-engine";
 export { executeTool } from "./execution-engine";
 export {

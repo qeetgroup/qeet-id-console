@@ -25,7 +25,7 @@ open a public issue). Include reproduction steps and impact.
 - Conversations and other session-scoped client state are cleared on logout via
   the `onSessionClear` registry. Logout and tenant transitions propagate to
   other tabs through `BroadcastChannel` with a storage-event fallback.
-- See `docs/adr/0009-server-resolved-bff-session.md`.
+- See `docs/llm/context.md` (the BFF) and `docs/llm/boundaries.md`.
 
 ## Authorization
 

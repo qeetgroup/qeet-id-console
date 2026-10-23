@@ -1,12 +1,12 @@
-// IP allow/deny rule data layer. Rules are CIDR ranges (or bare IPs); deny wins
-// over allow, and if any allow rule exists an address must match one. A
-// per-tenant enable flag gates enforcement so a tenant can't lock itself out by
-// accident.
+// IP rules are CIDR ranges or bare IPs. Deny wins over allow, and once any allow rule exists an
+// address must match one. Rules apply only once the tenant turns enforcement on, so adding them
+// can't lock it out by accident.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export type IpAction = "allow" | "deny";
 
@@ -22,7 +22,7 @@ export interface IpRule {
 export function useIpRules() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["ip-rules", tenantId],
+    queryKey: securityKeys.ipRules(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ enabled: boolean; items: IpRule[] }>(`/v1/tenants/${tenantId}/ip-rules`),
   });
@@ -32,13 +32,15 @@ export function useSetIpEnforcement() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (enabled: boolean) =>
-      api<{ enabled: boolean }>(`/v1/tenants/${tenantId}/ip-rules/config`, {
+    mutationFn: (enabled: boolean) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<{ enabled: boolean }>(`/v1/tenants/${tenantId}/ip-rules/config`, {
         method: "PUT",
         body: { enabled },
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ip-rules"] }),
-    meta: { successMessage: "Enforcement updated" },
+      });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
+    meta: { successMessage: "security:toast.enforcementUpdated" },
   });
 }
 
@@ -46,10 +48,12 @@ export function useAddIpRule() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { cidr: string; label: string; action: IpAction }) =>
-      api<IpRule>(`/v1/tenants/${tenantId}/ip-rules`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ip-rules"] }),
-    meta: { successMessage: "Rule added" },
+    mutationFn: (body: { cidr: string; label: string; action: IpAction }) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<IpRule>(`/v1/tenants/${tenantId}/ip-rules`, { method: "POST", body });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
+    meta: { successMessage: "security:toast.ruleAdded", silentError: true }, // the form shows it
   });
 }
 
@@ -57,28 +61,37 @@ export function useDeleteIpRule() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/ip-rules/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ip-rules"] }),
-    meta: { successMessage: "Rule removed" },
+    mutationFn: (id: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/ip-rules/${id}`, { method: "DELETE" });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
+    meta: { successMessage: "security:toast.ruleRemoved" },
   });
 }
 
 export function useCheckIp() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: (ip: string) =>
-      api<{ enabled: boolean; allowed: boolean; reason: string }>(
-        `/v1/tenants/${tenantId}/ip-rules/check`,
-        { method: "POST", body: { ip } },
-      ),
+    mutationFn: (ip: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<{
+        enabled: boolean;
+        allowed: boolean;
+        reason: string; // English, or a bare code from a server without reason_code; never shown
+        reason_code?: string; // ip.allowed, ip.deny_rule, ip.not_in_allow_rules, ...
+        reason_params?: { cidr?: string }; // the deny rule that refused it
+      }>(`/v1/tenants/${tenantId}/ip-rules/check`, { method: "POST", body: { ip } });
+    },
     meta: { silent: true },
   });
 }
 
-// A sign-in or renewal the rules refused, as the audit log records it
-// (auth.address_refused). rule_id and cidr are the deny rule responsible; an
-// address outside every allow rule, or one that couldn't be read, has none.
+/**
+ * A sign-in or renewal the IP rules refused, from its auth.address_refused audit event. `ruleId`
+ * and `cidr` name the deny rule; both are null when no allow rule matched or the address was
+ * unreadable.
+ */
 export interface AddressRefusal {
   id: string;
   at: string;
@@ -113,11 +126,11 @@ export function toAddressRefusal(row: AuditRow): AddressRefusal {
   };
 }
 
-/** The organisation's most recent address-rule refusals, newest first. */
+/** Fetches the organisation's most recent address-rule refusals, newest first. */
 export function useAddressRefusals(limit = 20) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["ip-rules", "refusals", tenantId, limit],
+    queryKey: securityKeys.addressRefusals(tenantId, limit),
     enabled: !!tenantId,
     queryFn: async () => {
       const res = await api<{ items: AuditRow[] }>(`/v1/tenants/${tenantId}/audit`, {

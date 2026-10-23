@@ -62,7 +62,7 @@ export function SetupOrganizationForm({
   onChangePlan: () => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("onboarding");
   const id = useId();
   const submitKey =
     selection.tier === "free"
@@ -142,7 +142,7 @@ export function SetupOrganizationForm({
             <SelectContent>
               {REGIONS.map((item) => (
                 <SelectItem key={item.value} value={item.value}>
-                  {item.label}
+                  {i18n.t(item.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -158,9 +158,8 @@ export function SetupOrganizationForm({
             onChange={onLogoChange}
             disabled={busy}
             hint={t("setup.organization.logoHint")}
-            // Targets the dropzone by slot. `[&>button]` matched every direct button
-            // child, so the "Upload via URL" toggle inherited the dropzone's
-            // dashed border, min-height and padding and rendered as a second box.
+            // Targets the dropzone by slot: `[&>button]` would also give the "Upload via URL"
+            // toggle the dropzone's border and padding, rendering a second box.
             className="gap-1.5 [&_[data-slot=logo-dropzone]]:min-h-20 [&_[data-slot=logo-dropzone]]:gap-1 [&_[data-slot=logo-dropzone]]:rounded-lg [&_[data-slot=logo-dropzone]]:border [&_[data-slot=logo-dropzone]]:border-dashed [&_[data-slot=logo-dropzone]]:border-(--setup-muted)/45 [&_[data-slot=logo-dropzone]]:bg-(--setup-soft)/25 [&_[data-slot=logo-dropzone]]:p-2 [&_[data-slot=logo-dropzone]>svg]:size-5 [&_[data-slot=logo-dropzone]>span:first-of-type]:text-xs [&_[data-slot=logo-dropzone]>span:last-of-type]:text-[10px] [&>p]:text-[10px] [&>p]:leading-3"
           />
         </Field>

@@ -6,7 +6,7 @@ import "@/i18n";
 
 import { ApiError } from "@/platform/errors/api-error";
 
-import type { Passkey } from "../../api/passkeys";
+import type { Passkey } from "@/modules/authentication/api/passkeys";
 import { PasskeysTable, passkeyDisplayName } from "../passkeys-table";
 
 afterEach(cleanup);

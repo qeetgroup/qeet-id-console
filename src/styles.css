@@ -74,6 +74,8 @@
   --chart-3: oklch(0.55 0.125 162); /* Success green */
   --chart-4: oklch(0.61 0.13 82); /* Warning amber */
   --chart-5: oklch(0.54 0.18 292); /* Analytical purple */
+  --chart-6: oklch(0.58 0.17 355); /* Rose */
+  --chart-7: oklch(0.54 0.12 215); /* Teal */
 
   /* Shape + elevation */
   --radius: 0.6rem;
@@ -162,11 +164,14 @@
   --info-foreground: oklch(0.83 0.11 239);
 
   /* Data visualization */
-  --chart-1: oklch(0.75 0.155 48);
-  --chart-2: oklch(0.71 0.135 239);
-  --chart-3: oklch(0.72 0.13 162);
-  --chart-4: oklch(0.77 0.135 82);
-  --chart-5: oklch(0.7 0.145 292);
+  /* Within the dark lightness band, so adjacent series stay apart under colour-vision deficiency */
+  --chart-1: oklch(0.66 0.16 48);
+  --chart-2: oklch(0.64 0.14 239);
+  --chart-3: oklch(0.65 0.13 162);
+  --chart-4: oklch(0.66 0.13 82);
+  --chart-5: oklch(0.64 0.16 292);
+  --chart-6: oklch(0.65 0.16 355);
+  --chart-7: oklch(0.65 0.12 210);
 
   /* Sidebar */
   --sidebar: oklch(0.105 0.013 258);

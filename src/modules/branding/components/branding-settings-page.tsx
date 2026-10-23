@@ -1,25 +1,11 @@
-import {
-  Button,
-  buttonVariants,
-  cn,
-  Field,
-  FieldError,
-  FieldLabel,
-  Input,
-  Skeleton,
-  StatusPill,
-} from "@qeetrix/ui";
+import { Button, buttonVariants, cn, Skeleton } from "@qeetrix/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowUpRightIcon,
   CircleCheckIcon,
   FileTextIcon,
-  ImageIcon,
-  InfoIcon,
-  LinkIcon,
   LoaderCircleIcon,
-  MailIcon,
   PaletteIcon,
   RefreshCwIcon,
   RotateCcwIcon,
@@ -32,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { useEntitlements } from "@/modules/billing";
 import {
   type LoginDomainStatus,
+  orgKeys,
   type TenantDomain,
   useDomains,
   useLoginDomain,
@@ -43,29 +30,29 @@ import {
   SensitiveActionCancelled,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
-import { LogoField, type LogoStatus } from "@/shared/components/logo-field";
-import { BRANDING_KEY, saveBranding, useBranding } from "../api/branding";
+import type { LogoStatus } from "@/shared/components/logo-field";
+import { saveBranding, useBranding } from "../api/branding";
+import { brandingKeys } from "../api/keys";
 import {
-  BRANDING_COLORS,
   type Branding,
   type BrandingDraft,
-  brandingContrast,
   brandingDraft,
-  brandingForeground,
   brandingInput,
-  normalizeBrandColor,
   validateBranding,
 } from "../branding-model";
 import { BrandingPreview } from "./branding-preview";
+import { BrandingColorsSection } from "./branding-settings-page-colors";
+import {
+  BrandingDomainSection,
+  BrandingEmailSection,
+  type BrandingFields,
+  BrandingIdentitySection,
+} from "./branding-settings-page-sections";
 
 const PANEL =
   "min-w-0 rounded-lg border border-border/70 bg-card/90 p-3.5 shadow-xs dark:bg-card/70 dark:shadow-none";
-const INPUT =
-  "h-8 min-w-0 rounded-md bg-muted/15 text-xs pointer-coarse:min-h-11 pointer-coarse:text-base";
 const ACTION =
   "h-8 rounded-md px-3 text-xs focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11";
-const ACCENTS = ["#f97316", "#ef4444", "#d946ef", "#8b5cf6", "#3b82f6", "#06b6d4", "#10b981"];
-const BACKGROUNDS = ["#ffffff", "#f4f4f5", "#e4e4e7", "#a1a1aa", "#52525b", "#27272a", "#09090b"];
 
 export type BrandingSettingsViewProps = {
   branding?: Branding;
@@ -88,7 +75,7 @@ export type BrandingSettingsViewProps = {
 export function BrandingSettingsPage({
   onDirtyChange,
 }: Pick<BrandingSettingsViewProps, "onDirtyChange">) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const tenantId = useTenantId();
   const access = useCapabilities();
   const canRead = !!tenantId && access.state === "ready" && access.can("tenant.read");
@@ -149,10 +136,10 @@ export function BrandingSettingsPage({
           },
         });
         if (!result) throw new SensitiveActionCancelled();
-        queryClient.setQueryData([...BRANDING_KEY, tenantId], result);
+        queryClient.setQueryData(brandingKeys.tenant(tenantId), result);
         await Promise.all([
-          queryClient.invalidateQueries({ queryKey: [...BRANDING_KEY, tenantId] }),
-          queryClient.invalidateQueries({ queryKey: ["domains", "login", tenantId] }),
+          queryClient.invalidateQueries({ queryKey: brandingKeys.tenant(tenantId) }),
+          queryClient.invalidateQueries({ queryKey: orgKeys.loginDomain(tenantId) }),
         ]);
         return result;
       }}
@@ -161,7 +148,7 @@ export function BrandingSettingsPage({
 }
 
 export function BrandingSettingsView(props: BrandingSettingsViewProps) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   return (
     <div className="@container/branding relative isolate flex min-w-0 flex-col gap-4 before:pointer-events-none before:absolute before:-inset-4 before:-z-10 before:bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] before:bg-size-[32px_32px] before:opacity-10 dark:before:opacity-5">
       <header className="flex flex-wrap items-center justify-between gap-4 py-1">
@@ -232,7 +219,7 @@ export function BrandingSettingsView(props: BrandingSettingsViewProps) {
 }
 
 function BrandingForm({ branding, ...props }: BrandingSettingsViewProps & { branding: Branding }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const id = useId();
   const [savedBranding, setSavedBranding] = useState(branding);
   const [draft, setDraft] = useState(() => brandingDraft(branding));
@@ -250,22 +237,6 @@ function BrandingForm({ branding, ...props }: BrandingSettingsViewProps & { bran
   );
   const errors = validateBranding(draft);
   const valid = Object.keys(errors).length === 0;
-  const primary = normalizeBrandColor(draft.primary_color) ?? BRANDING_COLORS.primary;
-  const secondary = normalizeBrandColor(draft.secondary_color) ?? BRANDING_COLORS.secondary;
-  const buttonContrast = brandingContrast(primary, brandingForeground(primary));
-  const linkContrast = brandingContrast(primary, "#ffffff");
-  const savedDomain = savedBranding.custom_domain?.trim().toLowerCase() ?? "";
-  const domainChanged = draft.custom_domain.trim().toLowerCase() !== savedDomain;
-  const hostStatus =
-    !domainChanged && props.loginDomain?.login_domain.toLowerCase() === savedDomain
-      ? props.loginDomain
-      : undefined;
-  const verifiedDomain = props.domains?.find(
-    (domain) =>
-      domain.domain.toLowerCase() === savedDomain &&
-      !!domain.verified_at &&
-      Number.isFinite(Date.parse(domain.verified_at)),
-  );
 
   useEffect(() => {
     setSavedBranding(branding);
@@ -331,34 +302,14 @@ function BrandingForm({ branding, ...props }: BrandingSettingsViewProps & { bran
     }
   }
 
-  const fieldError = (key: keyof BrandingDraft) =>
-    touched[key] && errors[key] ? (
-      <FieldError id={`${id}-${key}-error`}>
-        {t(`branding.workspace.validation.${errors[key]}`)}
-      </FieldError>
-    ) : null;
-  const textField = (
-    key: "custom_domain" | "email_from_name" | "email_from_address" | "email_reply_to",
-    placeholder?: string,
-  ) => (
-    <Field>
-      <FieldLabel htmlFor={`${id}-${key}`}>{t(`branding.workspace.fields.${key}`)}</FieldLabel>
-      <Input
-        id={`${id}-${key}`}
-        name={key}
-        type={key === "email_from_address" || key === "email_reply_to" ? "email" : "text"}
-        value={draft[key]}
-        onChange={(event) => update(key, event.target.value)}
-        onBlur={() => setTouched((previous) => ({ ...previous, [key]: true }))}
-        aria-invalid={!!(touched[key] && errors[key])}
-        aria-describedby={touched[key] && errors[key] ? `${id}-${key}-error` : undefined}
-        placeholder={placeholder}
-        className={INPUT}
-        maxLength={key === "email_from_name" ? 128 : 254}
-      />
-      {fieldError(key)}
-    </Field>
-  );
+  const fields: BrandingFields = {
+    id,
+    draft,
+    touched,
+    errors,
+    onChange: update,
+    onTouch: (key) => setTouched((previous) => ({ ...previous, [key]: true })),
+  };
 
   return (
     <>
@@ -391,268 +342,24 @@ function BrandingForm({ branding, ...props }: BrandingSettingsViewProps & { bran
             disabled={!props.canWrite || pending}
             className="min-w-0 space-y-4 **:data-[slot=field]:gap-1.5 **:data-[slot=field-label]:text-[11px]"
           >
-            <section className={PANEL} aria-labelledby={`${id}-identity`}>
-              <h2
-                id={`${id}-identity`}
-                className="flex items-center gap-2 font-heading text-sm font-semibold"
-              >
-                <ImageIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-                {t("branding.workspace.identity.title")}
-              </h2>
-              <p className="mb-3 mt-1 text-[11px] leading-4 text-muted-foreground">
-                {t("branding.workspace.identity.description")}
-              </p>
-              <LogoField
-                value={draft.logo_url}
-                onChange={(value) => update("logo_url", value)}
-                onStatusChange={setLogoStatus}
-                disabled={!props.canWrite || pending}
-                layout="split"
-                accept="image/png,image/jpeg,image/svg+xml,image/webp"
-                maxSizeMB={2}
-                hint={t("branding.workspace.identity.hint")}
-              />
-              {errors.logo_url && (
-                <p role="alert" className="mt-2 text-xs text-destructive">
-                  {t("branding.workspace.validation.logo")}
-                </p>
-              )}
-            </section>
-            <section className={PANEL} aria-labelledby={`${id}-colors`}>
-              <h2
-                id={`${id}-colors`}
-                className="flex items-center gap-2 font-heading text-sm font-semibold"
-              >
-                <PaletteIcon className="size-4 text-info" aria-hidden="true" />
-                {t("branding.workspace.colors.title")}
-              </h2>
-              <p className="mb-3 mt-1 text-[11px] leading-4 text-muted-foreground">
-                {t("branding.workspace.colors.description")}
-              </p>
-              <div className="grid grid-cols-1 gap-4 @min-[650px]/branding:grid-cols-3">
-                {(["primary_color", "secondary_color", "background_color"] as const).map((key) => {
-                  const color =
-                    normalizeBrandColor(draft[key]) ??
-                    (key === "background_color"
-                      ? "#ffffff"
-                      : BRANDING_COLORS[key === "primary_color" ? "primary" : "secondary"]);
-                  const label = t(`branding.workspace.fields.${key}`);
-                  return (
-                    <Field key={key}>
-                      <FieldLabel htmlFor={`${id}-${key}`}>{label}</FieldLabel>
-                      <p className="min-h-4 text-[10px] leading-4 text-muted-foreground">
-                        {t(`branding.workspace.colors.${key}`)}
-                      </p>
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span
-                          className="relative size-7 shrink-0 overflow-hidden rounded-full border border-border/70"
-                          style={{ backgroundColor: color }}
-                        >
-                          <input
-                            type="color"
-                            value={color}
-                            aria-label={t("branding.workspace.colors.pick", { color: label })}
-                            onChange={(event) => update(key, event.target.value)}
-                            className="absolute inset-0 size-full cursor-pointer opacity-0"
-                          />
-                        </span>
-                        <Input
-                          id={`${id}-${key}`}
-                          value={draft[key]}
-                          placeholder={
-                            key === "background_color"
-                              ? t("branding.workspace.colors.automatic")
-                              : color
-                          }
-                          onChange={(event) => update(key, event.target.value)}
-                          onBlur={() => setTouched((previous) => ({ ...previous, [key]: true }))}
-                          aria-invalid={!!(touched[key] && errors[key])}
-                          aria-describedby={
-                            touched[key] && errors[key] ? `${id}-${key}-error` : undefined
-                          }
-                          className={cn(INPUT, "font-mono text-[11px]")}
-                          maxLength={7}
-                        />
-                      </div>
-                      <div className="mt-1 flex min-h-5 flex-wrap items-center gap-1.5">
-                        {(key === "background_color" ? BACKGROUNDS : ACCENTS).map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            aria-label={t("branding.workspace.colors.swatch", {
-                              color: label,
-                              hex: preset,
-                            })}
-                            aria-pressed={normalizeBrandColor(draft[key]) === preset}
-                            onClick={() => update(key, preset)}
-                            className={cn(
-                              "relative size-4 cursor-pointer rounded border border-border/50 outline-offset-2 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring pointer-coarse:size-8",
-                              normalizeBrandColor(draft[key]) === preset &&
-                                "ring-1 ring-foreground ring-offset-2 ring-offset-card",
-                            )}
-                            style={{ backgroundColor: preset }}
-                          />
-                        ))}
-                        {key === "background_color" && (
-                          <button
-                            type="button"
-                            title={t("branding.workspace.colors.resetBackground")}
-                            aria-label={t("branding.workspace.colors.resetBackground")}
-                            onClick={() => update(key, "")}
-                            className="grid size-5 cursor-pointer place-items-center rounded text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring pointer-coarse:size-8"
-                          >
-                            <RotateCcwIcon className="size-3" />
-                          </button>
-                        )}
-                      </div>
-                      {fieldError(key)}
-                    </Field>
-                  );
-                })}
-              </div>
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/50 bg-muted/20 px-3 py-2.5">
-                <div className="flex items-start gap-2">
-                  <PaletteIcon className="mt-0.5 size-3.5 shrink-0 text-info" aria-hidden="true" />
-                  <div>
-                    <p className="text-[11px] font-medium">
-                      {t("branding.workspace.colors.preview")}
-                    </p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">
-                      {t("branding.workspace.colors.contrast", {
-                        ratio: buttonContrast.toFixed(1),
-                      })}
-                    </p>
-                  </div>
-                </div>
-                <div aria-hidden="true" className="flex flex-wrap items-center gap-2">
-                  <span
-                    className="rounded px-3 py-1.5 text-[10px] font-medium"
-                    style={{ backgroundColor: primary, color: brandingForeground(primary) }}
-                  >
-                    {t("branding.workspace.colors.primaryButton")}
-                  </span>
-                  <span
-                    className="rounded px-3 py-1.5 text-[10px] font-medium"
-                    style={{ backgroundColor: secondary, color: brandingForeground(secondary) }}
-                  >
-                    {t("branding.workspace.colors.secondaryButton")}
-                  </span>
-                </div>
-              </div>
-              {linkContrast < 4.5 && (
-                <p className="mt-2 flex items-start gap-1.5 text-[10px] leading-4 text-warning">
-                  <InfoIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-                  {t("branding.workspace.colors.linkWarning", { ratio: linkContrast.toFixed(1) })}
-                </p>
-              )}
-            </section>
-            <section className={PANEL} aria-labelledby={`${id}-domain`}>
-              <h2
-                id={`${id}-domain`}
-                className="flex items-center gap-2 font-heading text-sm font-semibold"
-              >
-                <LinkIcon className="size-4 text-info" aria-hidden="true" />
-                {t("branding.customDomain.title")}
-              </h2>
-              <p className="mb-3 mt-1 text-[11px] leading-4 text-muted-foreground">
-                {t("branding.workspace.domain.description")}
-              </p>
-              <div className="grid gap-3 @min-[720px]/branding:grid-cols-[1.6fr_1fr]">
-                <div>
-                  {textField("custom_domain", "auth.example.com")}
-                  <p className="mt-1.5 text-[10px] leading-4 text-muted-foreground">
-                    {t("branding.workspace.domain.setup")}
-                  </p>
-                </div>
-                <div className="flex flex-col items-start justify-between gap-2 @min-[720px]/branding:border-s @min-[720px]/branding:border-border/60 @min-[720px]/branding:ps-3">
-                  <StatusPill
-                    kind={
-                      domainChanged
-                        ? "warning"
-                        : !savedDomain || props.domainsState !== "ready"
-                          ? "neutral"
-                          : verifiedDomain
-                            ? "success"
-                            : "warning"
-                    }
-                  >
-                    {t(
-                      domainChanged
-                        ? "branding.workspace.domain.unsaved"
-                        : !savedDomain
-                          ? "branding.workspace.domain.notConfigured"
-                          : props.domainsState !== "ready"
-                            ? "branding.workspace.domain.unknown"
-                            : verifiedDomain
-                              ? "branding.workspace.domain.verified"
-                              : "branding.workspace.domain.pending",
-                    )}
-                  </StatusPill>
-                  <p
-                    className={cn(
-                      "flex items-center gap-1.5 text-[10px]",
-                      hostStatus?.tls_state === "issued" ? "text-success" : "text-muted-foreground",
-                    )}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "size-1.5 rounded-full",
-                        hostStatus?.tls_state === "issued"
-                          ? "bg-success"
-                          : hostStatus?.tls_state === "pending"
-                            ? "bg-warning"
-                            : "bg-muted-foreground/60",
-                      )}
-                    />
-                    {t(
-                      hostStatus
-                        ? `branding.workspace.domain.tlsStates.${hostStatus.tls_state}`
-                        : "branding.workspace.domain.tls",
-                    )}
-                  </p>
-                  {hostStatus && (
-                    <p className="text-[10px] text-muted-foreground">
-                      {t(
-                        hostStatus.endpoint_state === "live"
-                          ? "branding.workspace.domain.live"
-                          : "branding.workspace.domain.notLive",
-                      )}
-                    </p>
-                  )}
-                  {props.canManageDomains && (
-                    <Link
-                      to="/settings/organization/domains"
-                      className="inline-flex items-center gap-1 text-[10px] text-info underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
-                    >
-                      {t("branding.workspace.domain.instructions")}
-                      <ArrowUpRightIcon className="size-3" aria-hidden="true" />
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </section>
-            <section className={PANEL} aria-labelledby={`${id}-email`}>
-              <h2
-                id={`${id}-email`}
-                className="flex items-center gap-2 font-heading text-sm font-semibold"
-              >
-                <MailIcon className="size-4 text-info" aria-hidden="true" />
-                {t("branding.workspace.email.title")}
-              </h2>
-              <p className="mb-3 mt-1 text-[11px] leading-4 text-muted-foreground">
-                {t("branding.workspace.email.description")}
-              </p>
-              <div className="grid gap-3 @min-[720px]/branding:grid-cols-3">
-                {textField("email_from_name", "Example Auth")}
-                {textField("email_from_address", "noreply@example.com")}
-                {textField("email_reply_to", "support@example.com")}
-              </div>
-              <p className="mt-3 flex items-start gap-1.5 text-[10px] leading-4 text-muted-foreground">
-                <InfoIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-                {t("branding.workspace.email.providerNote")}
-              </p>
-            </section>
+            <BrandingIdentitySection
+              id={id}
+              logo={draft.logo_url}
+              invalid={!!errors.logo_url}
+              disabled={!props.canWrite || pending}
+              onChange={(value) => update("logo_url", value)}
+              onStatusChange={setLogoStatus}
+            />
+            <BrandingColorsSection fields={fields} />
+            <BrandingDomainSection
+              fields={fields}
+              saved={savedBranding}
+              domains={props.domains}
+              loginDomain={props.loginDomain}
+              domainsState={props.domainsState}
+              canManageDomains={props.canManageDomains}
+            />
+            <BrandingEmailSection fields={fields} />
           </fieldset>
           <BrandingPreview draft={draft} logoReady={logoStatus === "ready"} />
         </div>

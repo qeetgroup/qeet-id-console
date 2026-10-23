@@ -2,23 +2,16 @@ import { cn } from "@qeetrix/ui";
 import type * as React from "react";
 
 type PageStateProps = Omit<React.ComponentProps<"div">, "title"> & {
-  /** Large status code or short marker, e.g. `403`. */
-  code?: React.ReactNode;
+  code?: React.ReactNode; // large status code or short marker, e.g. `403`
   icon?: React.ComponentType<{ className?: string }>;
   title: React.ReactNode;
   description?: React.ReactNode;
-  /** Action buttons, e.g. "Go to overview" or "Retry". */
-  actions?: React.ReactNode;
+  actions?: React.ReactNode; // buttons such as "Go to overview" or "Retry"
 };
 
 /**
- * Full-page status layout for access, error and empty-area screens: a centred
- * column with an optional code and icon, a title, supporting text and actions.
- *
- * Console-local copy of the `PageState` block that `@qeetrix/ui` 1.x exported
- * from `@qeetrix/ui/blocks`. 2.0 removed that subpath (blocks are application
- * compositions, not library components), so the console keeps its own, built
- * only on the library's public API.
+ * Renders a full-page status layout for access, error and empty-area screens: a centred column
+ * with an optional code and icon, a title, supporting text and actions.
  */
 export function PageState({
   code,

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 vi.mock("@/modules/users", async (importOriginal) => ({
@@ -18,7 +18,8 @@ import type { DirectoryConnection } from "../directory-model";
 import { ConnectionsView } from "../components/connections-page";
 import { SyncActivityView } from "../components/sync-activity-page";
 import { SyncErrorsView } from "../components/sync-errors-page";
-import { MappingEditor, MappingsView } from "../components/mappings-page";
+import { MappingsView } from "../components/mappings-page";
+import { MappingEditor } from "../components/mappings-page-editor";
 import type { DirectoryMappings } from "../api/directory";
 import { parseMappingSource } from "../directory-model";
 import { DEFAULT_ERROR_FILTERS, type DirectoryErrorPage } from "../api/directory";
@@ -34,7 +35,8 @@ import {
   safeSuspendedCsvValue,
   type SuspendedUsersPage,
 } from "@/modules/users";
-import { SuspendedView, SuspensionReviewDialog } from "../components/suspended-page";
+import { SuspendedView } from "../components/suspended-page";
+import { SuspensionReviewDialog } from "../components/suspended-page-review-dialog";
 
 function connections(): DirectoryConnection[] {
   return [
@@ -101,6 +103,7 @@ describe("Connections page", () => {
       expect(screen.getByRole("region", { name: "Provisioning coverage" })).toBeTruthy();
       expect(screen.getByRole("region", { name: "Recent sync events" })).toBeTruthy();
       expect(screen.getByText("80%")).toBeTruthy();
+      expect(screen.getByRole("img", { name: "Healthy: --" })).toBeTruthy();
       expect(screen.queryByText("Production")).toBeNull();
       expect(screen.getByRole("article", { name: "Healthy" }).textContent).toContain(
         "Not reported",
@@ -275,7 +278,8 @@ describe("Sync activity page", () => {
 });
 
 function errorFixture(): DirectoryErrorPage {
-  const event = activityFixture().items[0];
+  const [event] = activityFixture().items;
+  assert(event, "expected an activity fixture event");
   return {
     items: [
       {
@@ -454,6 +458,26 @@ describe("Mappings page", () => {
     expect(screen.getByRole("textbox", { name: "Source data (JSON)" })).toBeTruthy();
   });
 
+  it("explains each preview issue by its code, never by the backend's message", () => {
+    const preview = {
+      valid: false,
+      profile: {},
+      values: {},
+      issues: [
+        { mapping_id: "mapping-a", field: "department", code: "directory.mapping_source_missing" },
+        { mapping_id: "", field: "", code: "directory.mapping_preview_too_large" },
+        { mapping_id: "mapping-a", field: "department", code: "directory.mapping_new_rule" },
+      ],
+    };
+    render(<MappingsView {...mappingProps()} preview={preview} />);
+    const status = screen.getByRole("status").textContent ?? "";
+    expect(status).toContain(
+      "Department: The required source attribute is missing from the test data.",
+    );
+    expect(status).toContain("The test data or the mappings are too large to preview.");
+    expect(status).toContain("Department: This mapping can't be applied as configured.");
+  });
+
   it("does not claim a valid mapping before a current preview exists", () => {
     render(<MappingsView {...mappingProps()} preview={undefined} />);
     expect(screen.getByRole("status").textContent).toBe("Not validated");
@@ -487,10 +511,12 @@ describe("Mappings page", () => {
 
   it("edits a rule while retaining its optimistic version", () => {
     const state = mappingProps();
+    const [rule] = state.data.items;
+    assert(rule, "expected a mapping rule fixture");
     const save = vi.fn();
     render(
       <MappingEditor
-        initial={state.data.items[0]}
+        initial={rule}
         targets={state.data.targets}
         busy={false}
         onSave={save}
@@ -670,6 +696,17 @@ describe("Suspended users page", () => {
     expect(state.onExport).toHaveBeenCalledOnce();
   });
 
+  it("names the pending-review filter chip by what it does", () => {
+    const state = suspendedProps();
+    render(<SuspendedView {...state} filters={{ ...state.filters, review: "pending" }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Clear the pending review filter" }));
+    expect(state.onFiltersChange).toHaveBeenLastCalledWith({
+      ...state.filters,
+      review: "",
+      offset: 0,
+    });
+  });
+
   it("keeps unknown summaries distinct from zero or no pending reviews when loading fails", () => {
     const state = suspendedProps();
     render(<SuspendedView {...state} page={undefined} error />);
@@ -684,7 +721,8 @@ describe("Suspended users page", () => {
 
   it("saves a review without silently reactivating the user", () => {
     const save = vi.fn();
-    const user = suspendedFixture().items[0];
+    const [user] = suspendedFixture().items;
+    assert(user, "expected a suspended user fixture");
     const { rerender } = render(
       <SuspensionReviewDialog user={user} busy={false} onSave={save} onClose={vi.fn()} />,
     );

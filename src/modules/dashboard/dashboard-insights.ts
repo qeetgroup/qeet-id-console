@@ -1,17 +1,14 @@
-// Derived dashboard insights. Every value here is a pure function of the live
-// analytics overview (the one payload the dashboard already fetches), so the
-// new operations panels never invent numbers — they re-express real telemetry
-// as health scores, attention items, and posture signals. Keeping the math out
-// of the components makes it testable and honest.
+// Pure functions of the analytics overview: health scores, attention items and posture signals
+// that re-express real telemetry rather than invent numbers. Copy is returned as catalogue keys
+// (with their values), so the panels translate it at render.
 
 import type { AnalyticsOverview } from "./api/analytics";
+import { formatLocale, type TranslationKey } from "@/i18n";
 
 export type InsightSeverity = "critical" | "warning" | "info";
 export type HealthState = "healthy" | "attention" | "critical";
 
-/** Adoption/engagement targets we grade against. Mirrors the security guidance
- * surfaced elsewhere in the console (MFA is expected to reach 80%+). */
-export const MFA_TARGET_PCT = 80;
+export const MFA_TARGET_PCT = 80; // % of users with a second factor
 export const STICKINESS_TARGET_PCT = 40; // DAU/MAU that reads as "great engagement"
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
@@ -29,32 +26,30 @@ function healthState(score: number): HealthState {
   return "critical";
 }
 
-// ---------------------------------------------------------------------------
-// Identity health — a composite index + per-subsystem breakdown
-// ---------------------------------------------------------------------------
-
 export interface HealthArea {
   id: string;
-  label: string;
-  score: number; // 0-100
+  label: TranslationKey;
+  score: number; // 0–100
   state: HealthState;
 }
 
 export interface IdentityHealth {
-  score: number; // 0-100 composite
-  grade: "Excellent" | "Good" | "Fair" | "At risk";
+  score: number; // 0–100 composite
+  grade: "excellent" | "good" | "fair" | "atRisk";
   areas: HealthArea[];
 }
 
 function grade(score: number): IdentityHealth["grade"] {
-  if (score >= 85) return "Excellent";
-  if (score >= 70) return "Good";
-  if (score >= 50) return "Fair";
-  return "At risk";
+  if (score >= 85) return "excellent";
+  if (score >= 70) return "good";
+  if (score >= 50) return "fair";
+  return "atRisk";
 }
 
-/** Weighted health index. MFA coverage is weighted highest because it's the
- * single biggest lever on account-takeover risk. */
+/**
+ * Returns a weighted health index of sign-in success, MFA adoption and engagement. MFA weighs most:
+ * it is the biggest single lever on account-takeover risk.
+ */
 export function computeIdentityHealth(overview: AnalyticsOverview): IdentityHealth {
   const { kpis } = overview;
   const authScore = clamp(successRate(overview));
@@ -64,14 +59,19 @@ export function computeIdentityHealth(overview: AnalyticsOverview): IdentityHeal
   const areas: HealthArea[] = [
     {
       id: "authentication",
-      label: "Authentication",
+      label: "dashboard:insights.areas.authentication",
       score: Math.round(authScore),
       state: healthState(authScore),
     },
-    { id: "mfa", label: "MFA adoption", score: Math.round(mfaScore), state: healthState(mfaScore) },
+    {
+      id: "mfa",
+      label: "dashboard:insights.areas.mfa",
+      score: Math.round(mfaScore),
+      state: healthState(mfaScore),
+    },
     {
       id: "engagement",
-      label: "Engagement",
+      label: "dashboard:insights.areas.engagement",
       score: Math.round(engagementScore),
       state: healthState(engagementScore),
     },
@@ -81,21 +81,20 @@ export function computeIdentityHealth(overview: AnalyticsOverview): IdentityHeal
   return { score, grade: grade(score), areas };
 }
 
-// ---------------------------------------------------------------------------
-// Attention required — actionable items surfaced from real thresholds
-// ---------------------------------------------------------------------------
-
 export interface AttentionItem {
   id: string;
   severity: InsightSeverity;
-  title: string;
-  detail: string;
+  title: TranslationKey;
+  detail: TranslationKey; // interpolated with `params`
+  params: Record<string, string | number>;
   to: string;
-  actionLabel: string;
+  actionLabel: TranslationKey;
 }
 
-/** Only emits an item when a real signal crosses a threshold — an empty array
- * means the panel shows an "all clear" state rather than manufactured noise. */
+/**
+ * Returns an item only for a signal past its threshold; an empty array renders the panel's
+ * "all clear" state rather than manufactured noise.
+ */
 export function deriveAttentionItems(overview: AnalyticsOverview): AttentionItem[] {
   const { kpis } = overview;
   const items: AttentionItem[] = [];
@@ -105,10 +104,11 @@ export function deriveAttentionItems(overview: AnalyticsOverview): AttentionItem
     items.push({
       id: "mfa-adoption",
       severity: mfa < 50 ? "critical" : "warning",
-      title: "MFA adoption below target",
-      detail: `${mfa.toFixed(1)}% of active users have a second factor — short of the ${MFA_TARGET_PCT}% target.`,
+      title: "dashboard:insights.attention.mfaAdoption.title",
+      detail: "dashboard:insights.attention.mfaAdoption.detail",
+      params: { pct: mfa.toFixed(1), target: MFA_TARGET_PCT },
       to: "/authentication",
-      actionLabel: "Strengthen MFA",
+      actionLabel: "dashboard:insights.attention.mfaAdoption.action",
     });
   }
 
@@ -117,10 +117,11 @@ export function deriveAttentionItems(overview: AnalyticsOverview): AttentionItem
     items.push({
       id: "failed-logins",
       severity: failedDelta > 40 ? "critical" : "warning",
-      title: "Failed sign-ins are rising",
-      detail: `Failed authentication attempts are up ${failedDelta.toFixed(1)}% over the last 24 hours.`,
+      title: "dashboard:insights.attention.failedLogins.title",
+      detail: "dashboard:insights.attention.failedLogins.detail",
+      params: { pct: failedDelta.toFixed(1) },
       to: "/security/threats/anomalies",
-      actionLabel: "Review anomalies",
+      actionLabel: "dashboard:insights.attention.failedLogins.action",
     });
   }
 
@@ -129,25 +130,22 @@ export function deriveAttentionItems(overview: AnalyticsOverview): AttentionItem
     items.push({
       id: "engagement",
       severity: "info",
-      title: "Daily engagement is low",
-      detail: `Only ${stickiness.toFixed(0)}% of monthly users returned today (DAU/MAU).`,
+      title: "dashboard:insights.attention.engagement.title",
+      detail: "dashboard:insights.attention.engagement.detail",
+      params: { pct: stickiness.toFixed(0) },
       to: "/analytics",
-      actionLabel: "Open analytics",
+      actionLabel: "dashboard:insights.attention.engagement.action",
     });
   }
 
   return items;
 }
 
-// ---------------------------------------------------------------------------
-// Session overview — estimated live footprint from active users
-// ---------------------------------------------------------------------------
-
 export interface SessionStat {
   id: string;
-  label: string;
+  label: TranslationKey;
   value: string;
-  hint?: string;
+  hint?: TranslationKey;
 }
 
 export function deriveSessionStats(overview: AnalyticsOverview): SessionStat[] {
@@ -156,35 +154,31 @@ export function deriveSessionStats(overview: AnalyticsOverview): SessionStat[] {
   return [
     {
       id: "active",
-      label: "Active sessions",
-      value: active.toLocaleString("en-US"),
-      hint: "Estimated from daily active users",
+      label: "dashboard:insights.sessions.active",
+      value: active.toLocaleString(formatLocale()),
+      hint: "dashboard:insights.sessions.activeHint",
     },
     {
       id: "avg",
-      label: "Avg sessions / user",
+      label: "dashboard:insights.sessions.avg",
       value: kpis.avg_sessions_per_user.value.toFixed(1),
     },
     {
       id: "dau",
-      label: "Daily active users",
-      value: kpis.dau.value.toLocaleString("en-US"),
+      label: "dashboard:insights.sessions.dau",
+      value: kpis.dau.value.toLocaleString(formatLocale()),
     },
     {
       id: "stickiness",
-      label: "Stickiness (DAU/MAU)",
+      label: "dashboard:insights.sessions.stickiness",
       value: `${kpis.stickiness_pct.value.toFixed(0)}%`,
     },
   ];
 }
 
-// ---------------------------------------------------------------------------
-// Security posture — real/derived signals with an intent colour
-// ---------------------------------------------------------------------------
-
 export interface SecuritySignal {
   id: string;
-  label: string;
+  label: TranslationKey;
   value: string;
   intent: "success" | "warning" | "danger";
   delta?: number;
@@ -200,21 +194,21 @@ export function deriveSecuritySignals(overview: AnalyticsOverview): SecuritySign
   return [
     {
       id: "failed",
-      label: "Failed sign-ins (24h)",
-      value: failed.toLocaleString("en-US"),
+      label: "dashboard:insights.signals.failed",
+      value: failed.toLocaleString(formatLocale()),
       intent: failed === 0 ? "success" : failed > 100 ? "danger" : "warning",
       delta: kpis.failed_logins_24h.delta_pct,
       favorable: kpis.failed_logins_24h.delta_pct <= 0,
     },
     {
       id: "success",
-      label: "Sign-in success rate",
+      label: "dashboard:insights.signals.success",
       value: `${rate.toFixed(1)}%`,
       intent: rate >= 98 ? "success" : rate >= 90 ? "warning" : "danger",
     },
     {
       id: "mfa",
-      label: "MFA coverage",
+      label: "dashboard:insights.signals.mfa",
       value: `${mfa.toFixed(1)}%`,
       intent: mfa >= MFA_TARGET_PCT ? "success" : mfa >= 50 ? "warning" : "danger",
     },

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "@/i18n";
 
@@ -72,13 +72,15 @@ describe("TrustedDevicesCard", () => {
     expect(await screen.findByText("Chrome on macOS")).toBeTruthy();
     expect(screen.getByText("Safari on iPhone")).toBeTruthy();
     expect(screen.getByText("This device")).toBeTruthy();
-    expect(vi.mocked(api).mock.calls[0][0]).toBe("/v1/auth/trusted-devices");
+    expect(vi.mocked(api).mock.calls[0]?.[0]).toBe("/v1/auth/trusted-devices");
   });
 
   it("forgets one device after a confirmation", async () => {
     renderCard({ scope: { kind: "self" } });
     await screen.findByText("Safari on iPhone");
-    fireEvent.click(screen.getAllByRole("button", { name: /^forget$/i })[1]);
+    const secondForget = screen.getAllByRole("button", { name: /^forget$/i })[1];
+    assert(secondForget, "expected a second Forget button");
+    fireEvent.click(secondForget);
     fireEvent.click(await screen.findByRole("button", { name: /^forget$/i, hidden: false }));
     await waitFor(() => expect(deleted).toContain("/v1/auth/trusted-devices/d2"));
   });
@@ -86,7 +88,7 @@ describe("TrustedDevicesCard", () => {
   it("shows a member's devices to an administrator who cannot change them, without the actions", async () => {
     renderCard({ scope: { kind: "member", userId: "u1" }, canForget: false });
     expect(await screen.findByText("Chrome on macOS")).toBeTruthy();
-    expect(vi.mocked(api).mock.calls[0][0]).toBe("/v1/users/u1/trusted-devices");
+    expect(vi.mocked(api).mock.calls[0]?.[0]).toBe("/v1/users/u1/trusted-devices");
     expect(screen.queryByRole("button", { name: /forget/i })).toBeNull();
   });
 });

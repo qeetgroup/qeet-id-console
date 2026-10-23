@@ -1,12 +1,11 @@
-// Favorites store: lets operators pin search items (navigation pages, commands,
-// resources) for quick access without a query. Same pattern as recent-store:
-// TanStack Store for reactivity, localStorage for persistence, SSR-safe guards.
+// Search items the person has pinned. They can carry tenant resource titles, so they are saved
+// per person and tenant and wiped on sign-out.
 
 import { Store } from "@tanstack/react-store";
 
-import type { SearchItem, SearchItemKind } from "../registry/types/registry.types";
+import { scopedStorage } from "@/platform/auth/scoped-storage";
 
-const STORE_KEY = "qeetid.search.favorites";
+import type { SearchItem, SearchItemKind } from "../registry/types/registry.types";
 
 export interface FavoriteEntry {
   id: string;
@@ -15,8 +14,7 @@ export interface FavoriteEntry {
   title: string;
   subtitle?: string;
   url?: string;
-  /** Unix ms of when the item was pinned. */
-  pinnedAt: number;
+  pinnedAt: number; // Unix ms when pinned
 }
 
 export interface FavoritesState {
@@ -25,17 +23,16 @@ export interface FavoritesState {
 
 export const favoritesStore = new Store<FavoritesState>({ entries: [] });
 
+const storage = scopedStorage("qeetid.search.favorites", {
+  onScopeChange: () => favoritesStore.setState(() => ({ entries: [] })),
+});
+
 function persist(state: FavoritesState): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORE_KEY, JSON.stringify(state));
-  } catch {
-    /* best-effort */
-  }
+  storage.write(state);
 }
 
 export const favoritesActions = {
-  /** Add if not favorited; remove if already favorited. */
+  /** Pins the item, or unpins it if already pinned. */
   toggle(item: SearchItem): void {
     favoritesStore.setState((s) => {
       const exists = s.entries.some((e) => e.id === item.id);
@@ -60,7 +57,7 @@ export const favoritesActions = {
     });
   },
 
-  /** Synchronous read — safe to call outside React (e.g. in action handlers). */
+  /** Reads the store directly, so it works outside React. */
   isFavorite(id: string): boolean {
     return favoritesStore.state.entries.some((e) => e.id === id);
   },
@@ -72,15 +69,9 @@ export const favoritesActions = {
   },
 };
 
+/** Loads the signed-in person's favorites (none when signed out), like hydrateRecent. */
 export function hydrateFavorites(): void {
-  if (typeof window === "undefined") return;
-  try {
-    const raw = window.localStorage.getItem(STORE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw) as Partial<FavoritesState>;
-    if (!parsed || !Array.isArray(parsed.entries)) return;
-    favoritesStore.setState(() => ({ entries: parsed.entries as FavoriteEntry[] }));
-  } catch {
-    /* corrupt payload */
-  }
+  const parsed = storage.read() as Partial<FavoritesState> | null;
+  const entries = Array.isArray(parsed?.entries) ? (parsed.entries as FavoriteEntry[]) : [];
+  favoritesStore.setState(() => ({ entries }));
 }

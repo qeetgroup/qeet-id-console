@@ -83,8 +83,6 @@ describe("AuthenticationOverviewView", () => {
   });
 
   it("shows NO trend when MFA falls back to user stats", () => {
-    // The guard for "arrows only where real": the fallback has no history, so
-    // an arrow here would be indistinguishable from the genuine one above.
     render(<AuthenticationOverviewView data={fixture({ analytics: settled(EMPTY_OVERVIEW) })} />);
     expect(screen.getByText("68%")).toBeTruthy();
     expect(screen.queryByText(/pp$/)).toBeNull();

@@ -16,29 +16,33 @@ function event(partial: Partial<ActivityEvent>): ActivityEvent {
 }
 
 describe("computeTimelineSummary", () => {
-  it("buckets events by category family", () => {
+  it("buckets events by the server's categories", () => {
     const summary = computeTimelineSummary([
       event({ id: "1", category: "authentication" }),
-      event({ id: "2", category: "mfa" }),
-      event({ id: "3", category: "security" }),
-      event({ id: "4", category: "authorization" }),
-      event({ id: "5", category: "sessions" }),
-      event({ id: "6", category: "administration" }),
+      event({ id: "2", category: "security" }),
+      event({ id: "3", category: "authorization" }),
+      event({ id: "4", category: "directory" }),
+      event({ id: "5", category: "developer" }),
+      event({ id: "6", category: "system" }),
     ]);
-    expect(summary.total).toBe(6);
-    expect(summary.authentication).toBe(2);
-    expect(summary.security).toBe(2);
-    expect(summary.sessions).toBe(1);
-    expect(summary.admin).toBe(1);
+    expect(summary).toMatchObject({
+      total: 6,
+      authentication: 1,
+      security: 2,
+      directory: 1,
+      developer: 2,
+    });
   });
 
-  it("counts admin actions by actor type as well as category", () => {
-    const summary = computeTimelineSummary([
-      event({ id: "1", category: "user", actor: { type: "administrator", id: "a1" } }),
-      event({ id: "2", category: "user", actor: { type: "user", id: "u1" } }),
-    ]);
-    expect(summary.admin).toBe(1);
-    expect(summary.uniqueActors).toBe(2);
+  it("leaves a category the server doesn't send out of every card", () => {
+    const summary = computeTimelineSummary([event({ id: "1", category: "provisioning" })]);
+    expect(summary).toMatchObject({
+      total: 1,
+      authentication: 0,
+      security: 0,
+      directory: 0,
+      developer: 0,
+    });
   });
 
   it("dedupes actors and handles an empty list", () => {

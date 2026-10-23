@@ -231,7 +231,7 @@ export function SignupForm({
             disabled={isDisabled || !onPasskeySignup}
           />
 
-          <SocialButtons verb={t("signIn.signupLink")} intent="signup" disabled={isDisabled} />
+          <SocialButtons action="signUp" intent="signup" disabled={isDisabled} />
 
           <p className="auth-form-switch">
             {t("signUp.hasAccount")}{" "}

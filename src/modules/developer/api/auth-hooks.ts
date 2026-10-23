@@ -1,12 +1,11 @@
-// Auth Actions/Hooks data layer (Developer → Auth Hooks). A synchronous
-// post-credential policy gate: Qeet POSTs a signed event to the hook URL and
-// honours its allow/deny. Backed by /v1/tenants/{tenantID}/auth-hooks. The
-// secret is write-only (sent on create, never returned).
+// An auth hook is a synchronous policy gate after the credential check: Qeet POSTs a signed event
+// to the hook URL and honours its allow or deny. The secret is write-only.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { developerKeys } from "./keys";
 
 export interface AuthHook {
   id: string;
@@ -17,12 +16,10 @@ export interface AuthHook {
   created_at: string;
 }
 
-const KEY = ["auth-hooks"];
-
 export function useAuthHooks() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: developerKeys.authHooks(tenantId),
     queryFn: () => api<{ items: AuthHook[] }>(`/v1/tenants/${tenantId}/auth-hooks`),
     enabled: !!tenantId,
   });
@@ -37,8 +34,8 @@ export function useCreateAuthHook() {
         method: "POST",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Hook added" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
+    meta: { successMessage: "developer:toast.hookAdded", silentError: true },
   });
 }
 
@@ -59,8 +56,8 @@ export function useUpdateAuthHook() {
         method: "PATCH",
         body: { enabled, fail_open },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Auth hook updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
+    meta: { successMessage: "developer:toast.authHookUpdated" },
   });
 }
 
@@ -72,7 +69,7 @@ export function useDeleteAuthHook() {
       api<void>(`/v1/tenants/${tenantId}/auth-hooks/${id}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Auth hook deleted" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
+    meta: { successMessage: "developer:toast.authHookDeleted" },
   });
 }

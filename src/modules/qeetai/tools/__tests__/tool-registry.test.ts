@@ -2,9 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { ASSISTANT_CHANGE_TOOLS_ENABLED, enabledTools, listTools } from "../tool-registry";
 
-// For 1.0 the assistant only reads and explains (owner decision). Every tool
-// declares whether it changes anything, and none that does may run while change
-// tools are switched off.
+// A tool named with one of these verbs changes something, so it must declare `mutates`.
 const MUTATION_VERB =
   /^(create|update|delete|enable|disable|assign|grant|rotate|revoke|set|reset)_/;
 const allowAll = () => true;

@@ -1,0 +1,403 @@
+{
+  "codeBlock": {
+    "copyCode": "Copy code",
+    "code": "code"
+  },
+  "composer": {
+    "askQeetAiOr": "Ask Qeet AI, or describe an action…",
+    "messageQeetAi": "Message Qeet AI",
+    "stopGenerating": "Stop generating",
+    "sendMessage": "Send message",
+    "sendEnter": "Send (Enter)"
+  },
+  "emptyState": {
+    "howCanIHelp": "How can I help?",
+    "intro": "Ask about your tenant, look things up, or generate code — all under your own permissions. In this version the assistant reads and explains; it doesn't make changes.",
+    "prompts": {
+      "newDevices": "Show users who signed in from a new device this week",
+      "leastPrivilegeRole": "Draft a least-privilege role for support engineers",
+      "simulateBilling": "Simulate whether alice@acme.com can delete billing settings",
+      "terraformOidc": "Generate Terraform for our production OIDC client"
+    }
+  },
+  "messageItem": {
+    "regenerate": "Regenerate",
+    "thinking": "Thinking…",
+    "editMessage": "Edit message",
+    "send": "Send"
+  },
+  "toolCallCard": {
+    "nothingWasChangedThe": "Nothing was changed. The assistant can't make changes in this version.",
+    "status": {
+      "queued": "Queued",
+      "validating": "Validating input",
+      "awaitingConfirmation": "Awaiting confirmation",
+      "authorizing": "Checking permissions",
+      "executing": "Executing",
+      "awaitingStepUp": "Awaiting identity check",
+      "succeeded": "Done",
+      "failed": "Failed",
+      "timedOut": "Timed out",
+      "cancelled": "Cancelled",
+      "withheld": "Not available in this version"
+    },
+    "showInput": "Show input",
+    "hideInput": "Hide input",
+    "retry": "Retry",
+    "openScreen": "Open {{screen}}",
+    "secretNotice": "{{label}} — shown once, never sent to the model. Store it securely now.",
+    "reveal": "Reveal",
+    "hide": "Hide",
+    "errors": {
+      "failed": "The action could not be completed.",
+      "capabilityDenied": "This action requires the \"{{capability}}\" capability, which is not granted to your account.",
+      "invalidInput": "The assistant sent input this action doesn't accept.",
+      "timedOut": "The action took too long and was stopped.",
+      "unknownTool": "The assistant asked for an action that doesn't exist.",
+      "notEnabled": "This action isn't available with your current permissions."
+    },
+    "results": {
+      "done": "Done.",
+      "clientRegistered": "OAuth client “{{name}}” registered.",
+      "clientRegisteredWithSecret": "OAuth client “{{name}}” registered. Copy its secret now: it can't be shown again.",
+      "secretRotated": "Client secret rotated for {{clientId}}. Copy the new secret now: it can't be shown again.",
+      "terraformGenerated": "Terraform generated for {{resource}}.",
+      "snippetGenerated": "{{language}} snippet generated for {{endpoint}}.",
+      "exampleGenerated": "Example request generated for {{method}} {{endpoint}}.",
+      "roleCreated": "Role “{{name}}” created.",
+      "roleAssigned": "Role {{roleId}} assigned to user {{userId}}.",
+      "permissionGranted": "Permission {{permission}} granted to role {{roleId}}.",
+      "auditEventsFound_one": "Found {{count}} audit event.",
+      "auditEventsFound_other": "Found {{count}} audit events.",
+      "sessionsFound_one": "Found {{count}} active session of yours.",
+      "sessionsFound_other": "Found {{count}} active sessions of yours.",
+      "organizationCreated": "Organization “{{name}}” created.",
+      "decisionAllowed": "{{engine}} decision: allowed.",
+      "decisionDenied": "{{engine}} decision: denied.",
+      "strictMfaEnabled": "Strict MFA is on: every sign-in must complete MFA.",
+      "strictMfaDisabled": "Strict MFA is off: a remembered device can skip MFA.",
+      "usersFound_one": "Found {{count}} user.",
+      "usersFound_other": "Found {{count}} users.",
+      "userCreated": "User {{email}} created.",
+      "userCreatedWithRole": "User {{email}} created and given the requested role.",
+      "displayNameUpdated": "Display name updated for user {{userId}}.",
+      "userSuspended": "User {{userId}} suspended: they can no longer sign in.",
+      "userReactivated": "User {{userId}} reactivated: they can sign in again.",
+      "userDeleted": "User {{userId}} deleted.",
+      "mfaReset": "MFA reset for user {{userId}}: they'll be asked to enroll again."
+    }
+  },
+  "historyPanel": {
+    "searchConversations": "Search conversations…",
+    "searchConversations2": "Search conversations",
+    "closeHistory": "Close history",
+    "deleteConversation": "Delete conversation?",
+    "conversation": "Conversation",
+    "conversationTitle": "Conversation title",
+    "saveTitle": "Save title",
+    "pinned": "Pinned",
+    "rename": "Rename",
+    "deleteConversation2": "Delete conversation",
+    "noMatches": "No conversations match your search.",
+    "empty": "No conversations yet.",
+    "deleteBody": "This permanently removes the conversation and its messages from this browser.",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "untitled": "New conversation",
+    "justNow": "just now",
+    "minutesAgo_one": "{{count}}m ago",
+    "minutesAgo_other": "{{count}}m ago",
+    "hoursAgo_one": "{{count}}h ago",
+    "hoursAgo_other": "{{count}}h ago",
+    "daysAgo_one": "{{count}}d ago",
+    "daysAgo_other": "{{count}}d ago",
+    "details_one": "{{time}} · {{count}} message",
+    "details_other": "{{time}} · {{count}} messages"
+  },
+  "qeetaiHeader": {
+    "askQeet": "Ask Qeet",
+    "conversationHistory": "Conversation history",
+    "history": "History",
+    "newConversation": "New conversation",
+    "collapsePanel": "Collapse panel",
+    "collapse": "Collapse",
+    "closeQeetAi": "Close Qeet AI",
+    "closeJ": "Close (⌘J)",
+    "modes": {
+      "docked": "Dock to side",
+      "floating": "Float",
+      "fullscreen": "Full screen"
+    }
+  },
+  "qeetaiTrigger": {
+    "toggleQeetAi": "Toggle Qeet AI",
+    "qeetAiJ": "Qeet AI (⌘J)"
+  },
+  "qeetaiWorkspace": {
+    "qeetAi": "Qeet AI",
+    "expandQeetAi": "Expand Qeet AI",
+    "expandQeetAiJ": "Expand Qeet AI (⌘J)",
+    "resizeQeetAiPanel": "Resize Qeet AI panel"
+  },
+  "qeetaiProvider": {
+    "continueThisAction": "Continue this action"
+  },
+  "chat": {
+    "turnFailed": "The assistant could not complete this turn."
+  },
+  "stream": {
+    "conversationUnavailable": "Could not open a conversation on the server.",
+    "unreachable": "Could not reach Qeet AI.",
+    "interrupted": "The response stream was interrupted."
+  },
+  "unconfigured": {
+    "notConnected": "Qeet AI is ready, but no AI provider is connected for this organization yet.",
+    "onceConnected": "Once an owner or admin adds an AI provider key under **Settings → Qeet AI** (or an operator sets a platform key on the Qeet ID server), I'll be able to:",
+    "answer": "**Answer questions** about users, roles, policies, connections, and audit events in this tenant",
+    "act": "**Run actions as tools** — create users, rotate signing keys, simulate authorization, search audit logs — always through your own permissions, with a confirmation step before anything destructive",
+    "lookUp": "**Look things up** — search users and audit logs, simulate authorization — always through your own permissions, and explain where to make a change yourself",
+    "generate": "**Generate** Terraform, SDK snippets, and API examples from your live configuration",
+    "audit": "Everything I do runs under your access and is written to the audit log. Nothing here bypasses authorization."
+  },
+  "providerSettings": {
+    "providers": {
+      "azure": "Azure / OpenAI-compatible"
+    }
+  },
+  "tools": {
+    "titles": {
+      "searchUsers": "Search users",
+      "createUser": "Create user",
+      "updateUser": "Update user",
+      "disableUser": "Disable user",
+      "enableUser": "Enable user",
+      "deleteUser": "Delete user",
+      "resetUserMfa": "Reset user MFA",
+      "createOrganization": "Create organization",
+      "createRole": "Create role",
+      "assignRole": "Assign role to user",
+      "grantPermission": "Grant permission to role",
+      "setStrictMfa": "Set strict MFA",
+      "simulateAuthorization": "Simulate authorization",
+      "createOAuthClient": "Create OAuth client",
+      "rotateOAuthClientSecret": "Rotate OAuth client secret",
+      "rotateSigningKeys": "Rotate signing keys",
+      "searchAuditLogs": "Search audit logs",
+      "listSessions": "List sessions",
+      "generateTerraform": "Generate Terraform",
+      "generateSdkSnippet": "Generate SDK snippet",
+      "generateApiExample": "Generate API example"
+    },
+    "screens": {
+      "users": "Users",
+      "organizations": "Organizations",
+      "roles": "Roles",
+      "applications": "Applications",
+      "signingKeys": "Signing keys",
+      "passwordless": "Passwordless"
+    },
+    "fields": {
+      "email": "Email",
+      "tenant": "Tenant",
+      "initialRole": "Initial role",
+      "user": "User",
+      "userId": "User ID",
+      "displayName": "Display name",
+      "name": "Name",
+      "slug": "Slug",
+      "roleName": "Role name",
+      "role": "Role",
+      "permission": "Permission",
+      "strictMfa": "Strict MFA",
+      "clientName": "Client name",
+      "clientId": "Client ID",
+      "action": "Action"
+    },
+    "values": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "none": "None"
+    },
+    "confirm": {
+      "createUser": {
+        "body": "Qeet AI will create a new user account in this tenant."
+      },
+      "updateUser": {
+        "body": "Qeet AI will change this user's profile."
+      },
+      "disableUser": {
+        "body": "This will immediately block the user from signing in. They can be re-enabled later.",
+        "action": "Disable"
+      },
+      "enableUser": {
+        "body": "This re-activates the user and restores their ability to sign in."
+      },
+      "deleteUser": {
+        "body": "This will permanently soft-delete the user. This action cannot be easily reversed."
+      },
+      "resetUserMfa": {
+        "title": "Reset MFA",
+        "body": "This will clear all enrolled MFA factors. The user must re-enroll at their next sign-in."
+      },
+      "createOrganization": {
+        "body": "Qeet AI will create a new organization (tenant)."
+      },
+      "createRole": {
+        "body": "Qeet AI will create a new role in this organization."
+      },
+      "assignRole": {
+        "title": "Assign role",
+        "body": "This grants the role's permissions to the user — a privilege change."
+      },
+      "grantPermission": {
+        "body": "This broadens what every user holding the role can do — a privilege change.",
+        "action": "Grant permission"
+      },
+      "setStrictMfa": {
+        "enforceTitle": "Enforce strict MFA",
+        "enforceBody": "Every member will be required to complete MFA on each sign-in.",
+        "enforceAction": "Enforce",
+        "disableTitle": "Disable strict MFA",
+        "disableBody": "This weakens tenant security: members will be able to skip MFA on trusted devices."
+      },
+      "createOAuthClient": {
+        "body": "This registers a new OAuth/OIDC client. Confidential clients mint a client secret shown once.",
+        "action": "Create client"
+      },
+      "rotateOAuthClientSecret": {
+        "title": "Rotate client secret",
+        "body": "The existing client secret will stop working immediately. Update your application before confirming. The new secret is shown once only.",
+        "action": "Rotate"
+      },
+      "rotateSigningKeys": {
+        "body": "Signing keys rotate by deployment, not from the console. Nothing will be changed.",
+        "action": "OK"
+      }
+    },
+    "secrets": {
+      "clientSecret": "Client secret for \"{{name}}\"",
+      "newClientSecret": "New client secret for {{clientId}}"
+    }
+  },
+  "qeetAI": {
+    "title": "Qeet AI",
+    "description": "Connect your own AI provider so Qeet AI runs on your account. Bringing your own key unlocks the assistant on any plan.",
+    "tagline": {
+      "data": "Your data.",
+      "ai": "Your AI.",
+      "control": "Your control."
+    },
+    "configuration": {
+      "title": "AI provider configuration",
+      "description": "Choose a provider and add your API credentials. Qeet AI uses this configuration for your organization."
+    },
+    "source": {
+      "tenant": "Key saved",
+      "platform": "Qeet-managed",
+      "none": "Not configured"
+    },
+    "loading": "Loading AI provider settings",
+    "loadError": "Provider settings couldn't be loaded",
+    "noAccess": "Provider settings are not available for your account",
+    "readOnly": "You have read-only access to this configuration.",
+    "retry": "Retry",
+    "learnMore": "Learn more",
+    "optional": "(optional)",
+    "required": "(required)",
+    "provider": {
+      "label": "Provider",
+      "anthropic": "Uses api.anthropic.com unless you set a custom base URL.",
+      "openai": "Uses api.openai.com/v1, or your OpenAI-compatible base URL.",
+      "azure": "Requires your Azure or OpenAI-compatible base URL."
+    },
+    "model": {
+      "label": "Model",
+      "hint": "Choose a suggestion or enter a custom model ID.",
+      "azure": "Enter your deployment or model ID.",
+      "placeholder": "deployment / model ID"
+    },
+    "key": {
+      "label": "API key",
+      "placeholder": "Enter your provider API key",
+      "stored": "Stored key is hidden. Enter a new key.",
+      "last4": "Ends in {{last4}}",
+      "hint": "Write-only. Re-enter your key to save changes or rotate it. The stored key is never returned.",
+      "show": "Show entered API key",
+      "hide": "Hide entered API key"
+    },
+    "endpoint": {
+      "label": "Base URL",
+      "hint": "Use a compatible gateway, self-hosted service, or Azure endpoint."
+    },
+    "tokens": {
+      "label": "Max output tokens",
+      "hint": "Limit each response to 1-200,000 tokens. Leave empty to use the default of 4,096."
+    },
+    "encrypted": {
+      "title": "Your key is encrypted and stored securely",
+      "description": "The saved key is never shown again and is used only for your organization's provider requests."
+    },
+    "actions": {
+      "test": "Test connection",
+      "testing": "Testing connection",
+      "save": "Save key",
+      "saving": "Saving key",
+      "reset": "Reset",
+      "remove": "Remove key",
+      "menu": "Provider actions"
+    },
+    "feedback": {
+      "tested": "Connection test passed. The key and endpoint were accepted. Save to apply these settings.",
+      "testFailed": "The connection test did not succeed. Check the key and endpoint, then try again.",
+      "saved": "Provider settings saved. Your entered key has been cleared from the form.",
+      "removed": "Your organization's provider key has been removed."
+    },
+    "validation": {
+      "required": "This field is required.",
+      "url": "Enter a complete HTTP or HTTPS URL without embedded credentials.",
+      "tokens": "Enter a whole number from 1 to 200,000."
+    },
+    "remove": {
+      "title": "Remove the organization's provider key?",
+      "fallback": "Qeet AI will return to the Qeet-managed provider, subject to your plan.",
+      "unavailable": "No Qeet-managed fallback is available. Qeet AI will be unavailable until a new provider key is saved."
+    },
+    "guide": {
+      "label": "Qeet AI provider guidance",
+      "how": "How it works",
+      "key": {
+        "title": "Add your provider key",
+        "description": "Use your existing AI provider account and enter its API key."
+      },
+      "account": {
+        "title": "Run on your account",
+        "description": "Qeet sends requests from its backend to your chosen provider using your key."
+      },
+      "organization": {
+        "title": "Use across your organization",
+        "description": "Your configuration enables Qeet AI for organization members on any Qeet ID plan."
+      },
+      "security": {
+        "title": "Security & compliance",
+        "description": "Your key is encrypted at rest and never returned. Prompts and selected context go to your provider under its data policies."
+      },
+      "providers": "Supported providers",
+      "compatible": "OpenAI-compatible endpoints",
+      "billing": {
+        "title": "Usage & billing",
+        "description": "Provider usage is billed to your provider account. Set an output limit to help manage response size and costs."
+      },
+      "fallback": "A Qeet-managed fallback is available, subject to your plan.",
+      "noFallback": "This deployment has no Qeet-managed fallback. Add a key to enable Qeet AI.",
+      "fallbackUnknown": "Fallback availability appears after your configuration loads."
+    }
+  },
+  "nav": {
+    "settings": {
+      "qeetAi": {
+        "title": "Qeet AI",
+        "description": "Bring your own AI provider key."
+      }
+    }
+  }
+}

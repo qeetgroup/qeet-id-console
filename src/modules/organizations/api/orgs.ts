@@ -1,12 +1,12 @@
-// Organizations (tenants) data layer. `GET /v1/tenants` is caller-scoped (the
-// orgs you belong to) and now enriched with per-org member counts. Per-org
-// DETAIL surfaces (members, analytics, billing, audit, auth-policy) are locked
-// by the server to the *active* org, so the Org 360 renders them only for the
-// current tenant and offers a "switch" CTA otherwise.
+// `GET /v1/tenants` lists only the caller's orgs. The server locks per-org detail (members,
+// analytics, billing, audit, auth policy) to the active org, so detail queries are enabled for it
+// alone.
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
+
+import { orgKeys } from "./keys";
 
 export type OrgStatus = "active" | "suspended" | "deleted";
 
@@ -21,57 +21,35 @@ export interface Org {
   metadata?: Record<string, unknown> | null;
   created_at: string;
   updated_at?: string;
-  // List-only enrichment.
-  member_count?: number;
-  mfa_enabled_count?: number;
+  member_count?: number; // list responses only
+  mfa_enabled_count?: number; // list responses only
 }
 
-export const ORG_KEYS = {
-  all: ["tenants"] as const,
-  authPolicy: (id: string) => ["org-auth-policy", id] as const,
-  audit: (id: string) => ["org-audit", id] as const,
-  members: (id: string) => ["org-members", id] as const,
+export const orgQueries = {
+  /** The orgs the caller belongs to, with member and MFA counts. */
+  list: () =>
+    queryOptions({
+      queryKey: orgKeys.list(),
+      queryFn: () => api<{ items: Org[] }>("/v1/tenants"),
+      staleTime: 30_000,
+    }),
+  /** One org's own record; the server serves it for the active org only. */
+  record: (orgId: string | null) =>
+    queryOptions({
+      queryKey: orgKeys.record(orgId),
+      queryFn: () => api<Org>(`/v1/tenants/${orgId}`),
+      enabled: !!orgId,
+    }),
 };
 
-/** All orgs the caller belongs to (enriched with member/MFA counts). */
 export function useOrgs(enabled = true) {
-  return useQuery({
-    queryKey: ORG_KEYS.all,
-    queryFn: () => api<{ items: Org[] }>("/v1/tenants"),
-    enabled,
-    staleTime: 30_000,
-  });
+  return useQuery({ ...orgQueries.list(), enabled });
 }
 
-/** A single org, sourced from the caller-scoped list (the by-id GET is locked to the active org). */
+/** Returns one org from the caller's list, since the by-id GET serves only the active org. */
 export function useOrg(orgId: string) {
   const q = useOrgs();
   return { ...q, org: q.data?.items.find((o) => o.id === orgId) };
-}
-
-// ── Detail surfaces (active-org only; caller gates `enabled` on isActiveOrg) ──
-
-export interface OrgAuthPolicy {
-  password_enabled: boolean;
-  password_min_length: number;
-  password_require_uppercase: boolean;
-  password_require_number: boolean;
-  password_require_symbol: boolean;
-  magic_link_enabled: boolean;
-  passkey_enabled: boolean;
-  otp_email_enabled: boolean;
-  otp_sms_enabled: boolean;
-  self_registration_enabled: boolean;
-  remember_device_enabled: boolean;
-}
-
-export function useOrgAuthPolicy(orgId: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ORG_KEYS.authPolicy(orgId),
-    queryFn: () => api<OrgAuthPolicy>(`/v1/tenants/${orgId}/auth-policy`),
-    enabled: enabled && !!orgId,
-    staleTime: 60_000,
-  });
 }
 
 export interface OrgAuditEvent {
@@ -87,7 +65,7 @@ export interface OrgAuditEvent {
 
 export function useOrgAudit(orgId: string, enabled: boolean) {
   return useQuery({
-    queryKey: ORG_KEYS.audit(orgId),
+    queryKey: orgKeys.audit(orgId),
     queryFn: () =>
       api<{ items: OrgAuditEvent[] }>(`/v1/tenants/${orgId}/audit`, { query: { limit: 20 } }),
     enabled: enabled && !!orgId,
@@ -105,17 +83,15 @@ export interface OrgMember {
   last_seen_at?: string | null;
 }
 
-/** Members of the ACTIVE org (GET /v1/users is JWT-tenant-scoped). */
+/** Lists members of the active org; `/v1/users` is scoped by the session, not by `orgId`. */
 export function useOrgMembers(orgId: string, enabled: boolean) {
   return useQuery({
-    queryKey: ORG_KEYS.members(orgId),
+    queryKey: orgKeys.members(orgId),
     queryFn: () => api<{ items: OrgMember[] }>("/v1/users", { query: { limit: 50 } }),
     enabled: enabled && !!orgId,
     staleTime: 15_000,
   });
 }
-
-// ── Mutations ───────────────────────────────────────────────────────────────
 
 export interface UpdateOrgBody {
   name?: string;
@@ -124,13 +100,14 @@ export interface UpdateOrgBody {
   logo_url?: string;
 }
 
-export function useUpdateOrg() {
+/** Updates an org. `silentError` drops the error toast, for a form that shows it itself. */
+export function useUpdateOrg({ silentError = false }: { silentError?: boolean } = {}) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: UpdateOrgBody }) =>
       api<Org>(`/v1/tenants/${id}`, { method: "PATCH", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ORG_KEYS.all }),
-    meta: { successMessage: "Organization updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.all }),
+    meta: { successMessage: "organizations:toast.organizationUpdated", silentError },
   });
 }
 
@@ -138,7 +115,7 @@ export function useDeleteOrg() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/tenants/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ORG_KEYS.all }),
-    meta: { successMessage: "Organization deleted" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.all }),
+    meta: { successMessage: "organizations:toast.organizationDeleted" },
   });
 }

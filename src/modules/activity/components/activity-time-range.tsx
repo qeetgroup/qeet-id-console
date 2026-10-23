@@ -1,9 +1,4 @@
-// Enterprise time-range control for the Activity Center.
-// A preset dropdown (the primary, most-used activity filter) plus a custom
-// date-range picker — the pattern used by Datadog / Auth0 / Stripe / Okta.
-// Emits RFC3339 from/to strings via presetToRange(), matching the shape the
-// activity filter-manager and GET /v1/activity already expect.
-
+import { useTranslation } from "react-i18next";
 import {
   DateRangePicker,
   type DateRangePickerProps,
@@ -15,29 +10,22 @@ import {
 } from "@qeetrix/ui";
 import { CalendarClockIcon } from "@qeetrix/icons";
 
-// Re-exported so callers can hold the custom-range state without depending on
-// react-day-picker directly.
+// Lets callers hold a custom range without depending on react-day-picker.
 export type DateRange = NonNullable<DateRangePickerProps["value"]>;
 
-export const TIME_PRESETS: { value: string; label: string }[] = [
-  { value: "all", label: "All time" },
-  { value: "15m", label: "Last 15 minutes" },
-  { value: "1h", label: "Last hour" },
-  { value: "24h", label: "Last 24 hours" },
-  { value: "7d", label: "Last 7 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "custom", label: "Custom range…" },
-];
+// Each preset's label is `activityTimeRange.presets.<value>`.
+export const TIME_PRESETS = (["all", "15m", "1h", "24h", "7d", "30d", "custom"] as const).map(
+  (value) => ({ value }),
+);
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 /**
- * Resolves a preset (+ optional custom range) to an RFC3339 { from, to } window.
- * Relative presets leave `to` open so events streaming in still pass the filter;
- * a custom range spans the full start day → end day inclusive. "all" / an
- * incomplete custom range clears the window (no time filtering).
+ * Resolves a preset (and custom range) to an RFC 3339 window. Relative presets leave `to` open
+ * so newly streamed events still match; a custom range covers whole local days. "all" or a
+ * range without a start returns an empty window.
  */
 export function presetToRange(preset: string, custom?: DateRange): { from: string; to: string } {
   const now = Date.now();
@@ -73,16 +61,18 @@ interface ActivityTimeRangeProps {
   onCustomRangeChange: (range: DateRange | undefined) => void;
 }
 
+/** Renders the time-range preset select, plus a date-range picker for "custom". */
 export function ActivityTimeRange({
   preset,
   customRange,
   onPresetChange,
   onCustomRangeChange,
 }: ActivityTimeRangeProps) {
+  const { t } = useTranslation("activity");
   return (
     <div className="flex items-center gap-2">
       <Select value={preset} onValueChange={(v) => v && onPresetChange(v)}>
-        <SelectTrigger className="w-44 gap-2" aria-label="Time range">
+        <SelectTrigger className="w-44 gap-2" aria-label={t("activityTimeRange.timeRange")}>
           <CalendarClockIcon
             className="size-3.5 shrink-0 text-muted-foreground"
             aria-hidden="true"
@@ -92,7 +82,7 @@ export function ActivityTimeRange({
         <SelectContent>
           {TIME_PRESETS.map((p) => (
             <SelectItem key={p.value} value={p.value}>
-              {p.label}
+              {t(`activityTimeRange.presets.${p.value}`)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -102,7 +92,7 @@ export function ActivityTimeRange({
         <DateRangePicker
           value={customRange}
           onValueChange={onCustomRangeChange}
-          placeholder="Pick dates"
+          placeholder={t("activityTimeRange.pickDates")}
           numberOfMonths={2}
         />
       )}

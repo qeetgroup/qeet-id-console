@@ -1,6 +1,4 @@
-// Public surface for the timeline feature module.
-// Import from here; don't reach into sub-modules directly.
-// Components
+// Public API of the timeline module; other modules import from here only.
 export { IdentityTimeline } from "./components/identity-timeline";
 export { TimelineDetailsDrawer } from "./components/timeline-details-drawer";
 export { TimelineFilters as TimelineFilterBar } from "./components/timeline-filters";

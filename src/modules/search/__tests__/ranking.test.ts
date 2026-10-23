@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { navGroups } from "@/platform/config/navigation";
+import { getNavGroups } from "@/platform/config/navigation";
 import { buildNavSearchItems } from "../registry/navigation-source";
 
 import {
@@ -12,8 +12,6 @@ import {
   scoreText,
 } from "../ranking";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const emptyCtx: RankContext = {
   recentIds: new Set(),
   recentAccessCounts: new Map(),
@@ -23,8 +21,8 @@ const emptyCtx: RankContext = {
 
 describe("navigation candidates", () => {
   it("excludes planned Directory views while keeping implemented destinations searchable", () => {
-    const paths = new Set(buildNavSearchItems(navGroups).map((item) => item.url));
-    const planned = navGroups.flatMap((group) =>
+    const paths = new Set(buildNavSearchItems(getNavGroups()).map((item) => item.url));
+    const planned = getNavGroups().flatMap((group) =>
       group.items.flatMap((item) => item.items?.filter((child) => child.planned) ?? []),
     );
 
@@ -50,8 +48,6 @@ function candidate(
   return { keywords: [], ...overrides };
 }
 
-// ─── scoreText ────────────────────────────────────────────────────────────────
-
 describe("scoreText", () => {
   it("returns 100 for an exact match", () => {
     expect(scoreText("users", "users")).toBe(100);
@@ -62,15 +58,12 @@ describe("scoreText", () => {
   });
 
   it("returns a word-boundary score for a first-word match that is also a prefix", () => {
-    // "audit logs" starts with "audit", so prefix (90) wins over word-boundary.
-    // The important property: score is >= 70 (word found) and > substring (60).
+    // Also a prefix, so 90 wins; what matters is that it scores at least 70.
     const s = scoreText("audit", "audit logs");
     expect(s).toBeGreaterThanOrEqual(70);
   });
 
   it("returns 70 for a later-word boundary match", () => {
-    // "logs" does NOT start the full string, so prefix (90) is skipped.
-    // Word boundary at index 1 → 70.
     expect(scoreText("logs", "audit logs")).toBe(70);
   });
 
@@ -85,7 +78,6 @@ describe("scoreText", () => {
   });
 
   it("returns > 0 for a typo-tolerant match (1 substitution)", () => {
-    // "usars" vs "users" — edit distance 1
     expect(scoreText("usars", "users")).toBeGreaterThan(0);
   });
 
@@ -105,8 +97,6 @@ describe("scoreText", () => {
     expect(scoreText("USERS", "Users")).toBe(100);
   });
 });
-
-// ─── editDistance ─────────────────────────────────────────────────────────────
 
 describe("editDistance", () => {
   it("returns 0 for identical strings", () => {
@@ -132,8 +122,6 @@ describe("editDistance", () => {
   });
 });
 
-// ─── score (multi-field) ──────────────────────────────────────────────────────
-
 describe("score", () => {
   it("returns 0 for an empty query", () => {
     expect(score("", candidate({ id: "a", title: "Users" }))).toBe(0);
@@ -147,7 +135,6 @@ describe("score", () => {
     const c = candidate({ id: "a", title: "Settings", keywords: ["users"] });
     const titleScore = score("settings", c);
     const keywordScore = score("users", c);
-    // Title match = 100, keyword match = 90 % of some value
     expect(titleScore).toBeGreaterThan(keywordScore);
   });
 
@@ -165,8 +152,6 @@ describe("score", () => {
     expect(score("zqxjkl", c)).toBe(0);
   });
 });
-
-// ─── rankItems ────────────────────────────────────────────────────────────────
 
 describe("rankItems", () => {
   const items: RankCandidate[] = [

@@ -1,17 +1,7 @@
 import {
   Button,
   Callout,
-  Field,
-  FieldDescription,
-  FieldError,
   FieldGroup,
-  FieldLabel,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Sheet,
   SheetClose,
   SheetContent,
@@ -19,17 +9,22 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  Textarea,
 } from "@qeetrix/ui";
-import { InfoIcon, LoaderCircleIcon } from "@qeetrix/icons";
-import { useState } from "react";
+import { InfoIcon } from "@qeetrix/icons";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
+import {
+  settleSensitiveAction,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 
 import { type OidcClient, useCreateOidcClient } from "../api/oidc-clients";
 
-type ClientType = "public" | "confidential";
+const NAME_MAX_LENGTH = 200;
+const DEFAULT_SCOPES = "openid profile email";
 
 type RegisterApplicationSheetProps = {
   open: boolean;
@@ -39,150 +34,200 @@ type RegisterApplicationSheetProps = {
 };
 
 /** Splits a textarea into trimmed, non-empty lines. */
-function lines(value: FormDataEntryValue | null): string[] {
-  return String(value ?? "")
+function lines(value: string): string[] {
+  return value
     .split(/\n+/)
     .map((s) => s.trim())
     .filter(Boolean);
 }
 
+function isUrl(value: string): boolean {
+  return URL.canParse(value);
+}
+
 /**
- * The "Register OAuth / OIDC application" slide-over.
- *
- * Uncontrolled inputs read through FormData on submit, per the house form
- * convention; only the type Select needs state, because the PKCE / client-secret
- * callout switches on it. There is no description field — `auth.oidc_clients`
- * has no column to store one.
+ * Renders the "Register OAuth / OIDC application" slide-over. There is no description field: the
+ * server has nowhere to store one.
  */
 export function RegisterApplicationSheet({
   open,
   onOpenChange,
   onCreated,
 }: RegisterApplicationSheetProps) {
-  const { t } = useTranslation("oidc");
-  const [type, setType] = useState<ClientType>("public");
-  const createM = useCreateOidcClient();
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-lg">
-        <form
-          className="flex h-full flex-col"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const data = new FormData(e.currentTarget);
-            const scopesRaw = String(data.get("scopes") ?? "openid profile email").trim();
-            createM.mutate(
-              {
-                name: String(data.get("name") ?? "").trim(),
-                type,
-                redirect_uris: lines(data.get("redirect_uris")),
-                post_logout_uris: lines(data.get("post_logout_uris")),
-                grant_types: ["authorization_code", "refresh_token"],
-                scopes: scopesRaw.split(/\s+/).filter(Boolean),
-              },
-              {
-                onSuccess: (res) => {
-                  onCreated(res.client, res.client_secret ?? "");
-                  onOpenChange(false);
-                },
-              },
-            );
-          }}
-        >
-          <SheetHeader>
-            <SheetTitle>{t("create.title")}</SheetTitle>
-            <SheetDescription>{t("create.description")}</SheetDescription>
-          </SheetHeader>
-
-          <div className="flex-1 overflow-y-auto p-4">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="name">{t("create.name")}</FieldLabel>
-                <Input id="name" name="name" placeholder="My SPA" required maxLength={200} />
-                <FieldDescription>{t("create.nameHelp")}</FieldDescription>
-              </Field>
-
-              <Field>
-                <FieldLabel id="oidc-type-label">{t("create.type")}</FieldLabel>
-                <Select value={type} onValueChange={(v) => v && setType(v as ClientType)}>
-                  <SelectTrigger aria-labelledby="oidc-type-label">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">{t("create.typePublic")}</SelectItem>
-                    <SelectItem value="confidential">{t("create.typeConfidential")}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FieldDescription>
-                  {type === "public"
-                    ? t("create.typePublicHelp")
-                    : t("create.typeConfidentialHelp")}
-                </FieldDescription>
-              </Field>
-
-              <Callout
-                variant="info"
-                icon={<InfoIcon />}
-                title={
-                  type === "public"
-                    ? t("create.publicCalloutTitle")
-                    : t("create.confidentialCalloutTitle")
-                }
-              >
-                {type === "public"
-                  ? t("create.publicCalloutBody")
-                  : t("create.confidentialCalloutBody")}
-              </Callout>
-
-              <Field>
-                <FieldLabel htmlFor="redirect_uris">{t("create.redirectUris")}</FieldLabel>
-                <Textarea
-                  id="redirect_uris"
-                  name="redirect_uris"
-                  rows={3}
-                  placeholder={"http://localhost:3000/callback\nhttps://app.acme.com/callback"}
-                  required
-                />
-                <FieldDescription>{t("create.redirectUrisHelp")}</FieldDescription>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="post_logout_uris">{t("create.postLogoutUris")}</FieldLabel>
-                <Textarea
-                  id="post_logout_uris"
-                  name="post_logout_uris"
-                  rows={2}
-                  placeholder="https://app.acme.com/"
-                />
-                <FieldDescription>{t("create.postLogoutUrisHelp")}</FieldDescription>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="scopes">{t("create.scopes")}</FieldLabel>
-                <Input id="scopes" name="scopes" defaultValue="openid profile email" />
-                <FieldDescription>{t("create.scopesHelp")}</FieldDescription>
-              </Field>
-
-              {createM.error && (
-                <Field>
-                  <FieldError>{errorMessage(createM.error)}</FieldError>
-                </Field>
-              )}
-            </FieldGroup>
-          </div>
-
-          <SheetFooter className="flex-row justify-end gap-2 border-t">
-            <SheetClose render={<Button type="button" variant="outline" />}>
-              {t("common:actions.cancel")}
-            </SheetClose>
-            <Button type="submit" disabled={createM.isPending}>
-              {createM.isPending && <LoaderCircleIcon className="animate-spin" />}
-              {createM.isPending ? t("create.submitting") : t("create.submit")}
-            </Button>
-          </SheetFooter>
-        </form>
+        {open && (
+          <RegisterApplicationForm
+            onCreated={(client, secret) => {
+              onCreated(client, secret);
+              onOpenChange(false);
+            }}
+          />
+        )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function RegisterApplicationForm({
+  onCreated,
+}: {
+  onCreated: (client: OidcClient, secret: string) => void;
+}) {
+  const { t } = useTranslation(["oidc", "common"]);
+  const runSensitive = useSensitiveAction();
+  const createM = useCreateOidcClient();
+  const schema = useMemo(
+    () =>
+      z.object({
+        name: z.string().trim().min(1, t("create.validation.name")).max(NAME_MAX_LENGTH),
+        type: z.enum(["public", "confidential"]),
+        redirect_uris: z
+          .string()
+          .refine((v) => lines(v).length > 0, t("create.validation.redirectUris"))
+          .refine((v) => lines(v).every(isUrl), t("create.validation.uri")),
+        post_logout_uris: z
+          .string()
+          .refine((v) => lines(v).every(isUrl), t("create.validation.uri")),
+        scopes: z.string(),
+      }),
+    [t],
+  );
+  const form = useAppForm({
+    defaultValues: {
+      name: "",
+      type: "public" as "public" | "confidential",
+      redirect_uris: "",
+      post_logout_uris: "",
+      scopes: DEFAULT_SCOPES,
+    },
+    validators: { onSubmit: schema },
+    onSubmit: async ({ value, formApi }) => {
+      const body = {
+        name: value.name.trim(),
+        type: value.type,
+        redirect_uris: lines(value.redirect_uris),
+        post_logout_uris: lines(value.post_logout_uris),
+        grant_types: ["authorization_code", "refresh_token"],
+        scopes: (value.scopes.trim() || DEFAULT_SCOPES).split(/\s+/),
+      };
+      await runSensitive({ actionLabel: t("create.stepUp"), run: () => createM.mutateAsync(body) })
+        .then((res) => res && onCreated(res.client, res.client_secret ?? ""))
+        .catch((err: unknown) => {
+          applyServerErrors(formApi, err);
+          settleSensitiveAction(err);
+        });
+    },
+  });
+
+  return (
+    <form
+      className="flex h-full flex-col"
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
+      <SheetHeader>
+        <SheetTitle>{t("create.title")}</SheetTitle>
+        <SheetDescription>{t("create.description")}</SheetDescription>
+      </SheetHeader>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        <FieldGroup>
+          <form.AppField name="name">
+            {(field) => (
+              <field.TextField
+                label={t("create.name")}
+                description={t("create.nameHelp")}
+                placeholder={t("create.namePlaceholder")}
+                maxLength={NAME_MAX_LENGTH}
+                required
+              />
+            )}
+          </form.AppField>
+
+          <form.Subscribe selector={(state) => state.values.type}>
+            {(type) => (
+              <>
+                <form.AppField name="type">
+                  {(field) => (
+                    <field.SelectField
+                      label={t("create.type")}
+                      description={
+                        type === "public"
+                          ? t("create.typePublicHelp")
+                          : t("create.typeConfidentialHelp")
+                      }
+                      options={[
+                        { value: "public", label: t("create.typePublic") },
+                        { value: "confidential", label: t("create.typeConfidential") },
+                      ]}
+                    />
+                  )}
+                </form.AppField>
+                <Callout
+                  variant="info"
+                  icon={<InfoIcon />}
+                  title={
+                    type === "public"
+                      ? t("create.publicCalloutTitle")
+                      : t("create.confidentialCalloutTitle")
+                  }
+                >
+                  {type === "public"
+                    ? t("create.publicCalloutBody")
+                    : t("create.confidentialCalloutBody")}
+                </Callout>
+              </>
+            )}
+          </form.Subscribe>
+
+          <form.AppField name="redirect_uris">
+            {(field) => (
+              <field.TextareaField
+                label={t("create.redirectUris")}
+                description={t("create.redirectUrisHelp")}
+                placeholder={"http://localhost:3000/callback\nhttps://app.acme.com/callback"}
+                rows={3}
+                required
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="post_logout_uris">
+            {(field) => (
+              <field.TextareaField
+                label={t("create.postLogoutUris")}
+                description={t("create.postLogoutUrisHelp")}
+                placeholder="https://app.acme.com/"
+                rows={2}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="scopes">
+            {(field) => (
+              <field.TextField label={t("create.scopes")} description={t("create.scopesHelp")} />
+            )}
+          </form.AppField>
+
+          <FormError error={createM.error} />
+        </FieldGroup>
+      </div>
+
+      <SheetFooter className="flex-row justify-end gap-2 border-t">
+        <SheetClose render={<Button type="button" variant="outline" />}>
+          {t("common:actions.cancel")}
+        </SheetClose>
+        <form.AppForm>
+          <form.SubmitButton pendingLabel={t("create.submitting")}>
+            {t("create.submit")}
+          </form.SubmitButton>
+        </form.AppForm>
+      </SheetFooter>
+    </form>
   );
 }

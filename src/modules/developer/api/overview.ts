@@ -3,18 +3,19 @@ import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
-import { filterNavigation, navGroups } from "@/platform/config/navigation";
+import { filterNavigation, useNavGroups } from "@/platform/config/navigation";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { isCurrentCredential, summarizeDeveloperRecords } from "../overview-model";
+import { developerKeys } from "./keys";
 
 const SOURCES = [
-  { id: "keys", key: "api-keys", path: "api-keys", permission: "apikey.read" },
-  { id: "tokens", key: "oauth-grants", path: "oauth/grants", permission: "connection.read" },
-  { id: "webhooks", key: "webhooks", path: "webhooks", permission: "webhook.read" },
-  { id: "hooks", key: "auth-hooks", path: "auth-hooks", permission: "connection.read" },
-  { id: "agents", key: "agents", path: "agents", permission: "apikey.read" },
-  { id: "secrets", key: "secrets", path: "secrets", permission: "secret.read" },
-  { id: "credentials", key: "credentials", path: "credentials", permission: "apikey.read" },
+  { id: "keys", path: "api-keys", permission: "apikey.read" },
+  { id: "tokens", path: "oauth/grants", permission: "connection.read" },
+  { id: "webhooks", path: "webhooks", permission: "webhook.read" },
+  { id: "hooks", path: "auth-hooks", permission: "connection.read" },
+  { id: "agents", path: "agents", permission: "apikey.read" },
+  { id: "secrets", path: "secrets", permission: "secret.read" },
+  { id: "credentials", path: "credentials", permission: "apikey.read" },
 ] as const;
 
 export type DeveloperResourceId = (typeof SOURCES)[number]["id"];
@@ -57,24 +58,48 @@ const ACTIVITY_AREAS: Record<string, DeveloperResourceId> = {
   credential: "credentials",
   vc: "credentials",
 };
-const ACTIVITY_VERBS = new Set([
-  "created",
-  "updated",
-  "rotated",
-  "revoked",
-  "deleted",
-  "enabled",
-  "disabled",
-  "issued",
-  "delivered",
-  "suspended",
-  "decommissioned",
-]);
+// The developer audit actions the server records, each read as one whole sentence; any other
+// action of a known area reads as a generic change.
+const ACTIVITY_ACTIONS = {
+  "apikey.created": "keyCreated",
+  "apikey.revoked": "keyRevoked",
+  "api_key.created": "keyCreated",
+  "api_key.revoked": "keyRevoked",
+  "webhook.subscription_created": "webhookCreated",
+  "webhook.subscription_enabled": "webhookEnabled",
+  "webhook.subscription_disabled": "webhookDisabled",
+  "webhook.subscription_auto_disabled": "webhookAutoDisabled",
+  "webhook.secret_rotated": "webhookSecretRotated",
+  "auth_hook.created": "hookCreated",
+  "auth_hook.updated": "hookUpdated",
+  "auth_hook.deleted": "hookDeleted",
+  "agent.created": "agentCreated",
+  "agent.suspended": "agentSuspended",
+  "agent.resumed": "agentResumed",
+  "agent.decommissioned": "agentDecommissioned",
+  "agent.deleted": "agentDeleted",
+  "agent.kill_switch": "agentsSuspended",
+  "agent.sponsor_transferred": "agentsTransferred",
+  "secret.created": "secretCreated",
+  "secret.updated": "secretUpdated",
+  "secret.rotated": "secretRotated",
+  "secret.revealed": "secretRevealed",
+  "secret.deleted": "secretDeleted",
+  "credential.issued": "credentialIssued",
+  "credential.revoked": "credentialRevoked",
+} as const;
+
+/** What a developer activity row says happened; `changed` for an action it doesn't name. */
+export type DeveloperActivityAction =
+  | (typeof ACTIVITY_ACTIONS)[keyof typeof ACTIVITY_ACTIONS]
+  | "changed";
+
+const activityActions = new Map<string, DeveloperActivityAction>(Object.entries(ACTIVITY_ACTIONS));
 
 export type DeveloperActivity = {
   id: string;
   area: DeveloperResourceId;
-  verb: string;
+  action: DeveloperActivityAction;
   at: string;
   targetId?: string;
 };
@@ -97,10 +122,11 @@ function resourceSummary(id: DeveloperResourceId, response: z.infer<typeof recor
 export function useDeveloperOverview() {
   const tenantId = useTenantId();
   const access = useCapabilities();
+  const navGroups = useNavGroups();
   const ready = !!tenantId && access.state === "ready";
   const requests = useQueries({
     queries: SOURCES.map((source) => ({
-      queryKey: [source.key, tenantId],
+      queryKey: developerKeys.overview(tenantId, source.id),
       queryFn: () => api(`/v1/tenants/${tenantId}/${source.path}`, { schema: recordsSchema }),
       select: (response: z.infer<typeof recordsSchema>) => resourceSummary(source.id, response),
       enabled: ready && access.can(source.permission),
@@ -110,6 +136,8 @@ export function useDeveloperOverview() {
   });
   const resources = SOURCES.map((source, index) => {
     const request = requests[index];
+    // Unreachable: useQueries returns one result per source; this narrows the type.
+    if (!request) throw new Error(`Missing query result for developer source ${source.id}`);
     const allowed = ready && access.can(source.permission);
     return {
       id: source.id,
@@ -124,7 +152,7 @@ export function useDeveloperOverview() {
 
   const canReadActivity = ready && access.can("audit.read");
   const activity = useQuery({
-    queryKey: ["developer-overview", "activity", tenantId],
+    queryKey: developerKeys.overview(tenantId, "activity"),
     queryFn: () =>
       api("/v1/activity", {
         query: { category: "developer", limit: 30 },
@@ -133,8 +161,9 @@ export function useDeveloperOverview() {
     select: (response: z.infer<typeof activitySchema>) =>
       response.events
         .flatMap((event) => {
-          const [prefix, action] = event.type.split(".");
-          const area = ACTIVITY_AREAS[prefix];
+          const [prefix] = event.type.split(".");
+          // split() always yields a first element; the check only narrows the type.
+          const area = prefix === undefined ? undefined : ACTIVITY_AREAS[prefix];
           if (!area || !resources.some((resource) => resource.id === area && resource.allowed))
             return [];
           if (!Number.isFinite(Date.parse(event.at))) return [];
@@ -142,7 +171,7 @@ export function useDeveloperOverview() {
             {
               id: event.id,
               area,
-              verb: ACTIVITY_VERBS.has(action) ? action : "changed",
+              action: activityActions.get(event.type) ?? "changed",
               at: event.at,
               targetId: event.target?.id,
             } satisfies DeveloperActivity,
@@ -155,7 +184,7 @@ export function useDeveloperOverview() {
   });
 
   const developerGroup = filterNavigation(navGroups, access.can).find(
-    (group) => group.label === "Developer",
+    (group) => group.id === "developer",
   );
 
   return {

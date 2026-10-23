@@ -3,11 +3,14 @@ import { describe, expect, it } from "vitest";
 import {
   filterNavigation,
   findNavGroupForPath,
-  getRequiredCapabilityForPath,
-  navGroups,
+  getNavGroups,
   safeNavigation,
+  translateNavigation,
 } from "../navigation";
 import { isNavBranchActive, isNavPathActive, type NavTreeItem } from "../navigation-state";
+
+// The navigation as the sidebar shows it.
+const navGroups = translateNavigation(getNavGroups());
 
 const users: NavTreeItem = {
   url: "/users",
@@ -15,8 +18,21 @@ const users: NavTreeItem = {
 };
 
 describe("console navigation state", () => {
+  it("translates every label, title and description, and keeps group ids unique", () => {
+    const copy = navGroups.flatMap((group) => [
+      group.label,
+      ...group.items.flatMap((item) => [
+        item.title,
+        item.description ?? "",
+        ...(item.items?.map((sub) => sub.title) ?? []),
+      ]),
+    ]);
+    expect(copy.filter((text) => text.startsWith("nav:"))).toEqual([]);
+    expect(new Set(navGroups.map((group) => group.id)).size).toBe(navGroups.length);
+  });
+
   it("keeps Directory focused on people, groups, organizations and sync", () => {
-    const directory = navGroups.find((group) => group.label === "Directory");
+    const directory = navGroups.find((group) => group.id === "directory");
 
     expect(directory?.items.map((item) => item.title)).toEqual([
       "Overview",
@@ -28,7 +44,7 @@ describe("console navigation state", () => {
   });
 
   it("exposes the completed Directory views with short labels and scoped access", () => {
-    const directory = navGroups.find((group) => group.label === "Directory");
+    const directory = navGroups.find((group) => group.id === "directory");
     const users = directory?.items.find((item) => item.title === "Users");
     const directories = directory?.items.find((item) => item.title === "Directories");
 
@@ -47,12 +63,10 @@ describe("console navigation state", () => {
       "Mappings",
     ]);
     expect(users?.items?.find((item) => item.title === "Suspended")?.planned).toBeUndefined();
-    expect(getRequiredCapabilityForPath("/users/suspended")).toBe("user.read");
     for (const item of directories?.items ?? []) {
       expect(item.title.length).toBeLessThanOrEqual(13);
       expect(item.requiredPermission).toBe("connection.read");
-      expect(findNavGroupForPath(navGroups, item.url)).toBe("Directory");
-      expect(getRequiredCapabilityForPath(item.url)).toBe("connection.read");
+      expect(findNavGroupForPath(navGroups, item.url)).toBe("directory");
       expect(item.planned).toBeUndefined();
     }
   });
@@ -70,39 +84,26 @@ describe("console navigation state", () => {
     expect(isNavBranchActive("/groups", users)).toBe(false);
   });
 
-  it("resolves exact routes before detail-route inheritance", () => {
-    expect(getRequiredCapabilityForPath("/users/import")).toBe("user.write");
-    expect(getRequiredCapabilityForPath("/users/4c1f")).toBe("user.read");
-    expect(getRequiredCapabilityForPath("/auth/connections/oidc/client-1")).toBe("connection.read");
-  });
-
-  it("normalizes trailing slashes without matching lookalike prefixes", () => {
-    expect(getRequiredCapabilityForPath("/users/")).toBe("user.read");
-    expect(getRequiredCapabilityForPath("/users?status=active")).toBe("user.read");
-    expect(getRequiredCapabilityForPath("/users-archive")).toBeUndefined();
-    expect(getRequiredCapabilityForPath("/unknown")).toBeUndefined();
-  });
-
   it("removes denied destinations while retaining a branch with an allowed child", () => {
     const visible = filterNavigation(
       navGroups,
       (permission) => permission === undefined || permission === "policy.read",
     );
-    const authorization = visible.find((group) => group.label === "Authorization");
+    const authorization = visible.find((group) => group.id === "authorization");
     const models = authorization?.items.find((item) => item.title === "Models");
 
     expect(models?.items?.map((item) => item.title)).toEqual(["ABAC"]);
     expect(
-      visible.find((group) => group.label === "Overview")?.items.map((item) => item.title),
+      visible.find((group) => group.id === "overview")?.items.map((item) => item.title),
     ).toEqual(["Dashboard"]);
   });
 
   it("resolves the rail's active group by longest matching destination", () => {
-    expect(findNavGroupForPath(navGroups, "/")).toBe("Overview");
-    expect(findNavGroupForPath(navGroups, "/authorization/roles/42")).toBe("Authorization");
-    expect(findNavGroupForPath(navGroups, "/security/audit-logs")).toBe("Security");
+    expect(findNavGroupForPath(navGroups, "/")).toBe("overview");
+    expect(findNavGroupForPath(navGroups, "/authorization/roles/42")).toBe("authorization");
+    expect(findNavGroupForPath(navGroups, "/security/audit-logs")).toBe("security");
     // SCIM lives under Directory even though /auth/connections/oidc is Applications.
-    expect(findNavGroupForPath(navGroups, "/auth/connections/scim")).toBe("Directory");
+    expect(findNavGroupForPath(navGroups, "/auth/connections/scim")).toBe("directory");
     expect(findNavGroupForPath(navGroups, "/unmapped-route")).toBeUndefined();
   });
 

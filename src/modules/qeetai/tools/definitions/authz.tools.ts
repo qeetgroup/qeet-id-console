@@ -1,21 +1,10 @@
-// Authorization tools — simulate_authorization, set_strict_mfa.
-//
-// simulate_authorization: routes to the real engine endpoints (AuthZEN/ABAC/RBAC/ReBAC)
-//   following the same call patterns as lib/authz-simulate.ts (not exported from there,
-//   so we call api() directly with the same paths).
-//
-// set_strict_mfa: GET current auth policy, then PUT with remember_device_enabled toggled.
-//   strict_mfa.enabled=true  → remember_device_enabled=false (force MFA every sign-in)
-//   strict_mfa.enabled=false → remember_device_enabled=true  (allow adaptive skip)
-
 import { z } from "zod";
-import { AUTH_POLICY_KEY } from "@/modules/authentication";
+import { authKeys } from "@/modules/authentication";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import type { AuthPolicy } from "@/modules/authentication";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── simulate_authorization ────────────────────────────────────────────────────
 
 const simulateAuthorizationInput = z.object({
   engine: z.enum(["authzen", "abac", "rbac", "rebac"]),
@@ -88,7 +77,7 @@ async function runRbacCheck(
   signal: AbortSignal,
 ): Promise<SimulateResult> {
   const t0 = Date.now();
-  // RBAC check uses subject as a user_id string and action as permission key.
+  // RBAC takes the subject as a user id (or an object's `id`) and the action as a permission.
   const userId =
     typeof input.subject === "string"
       ? input.subject
@@ -144,7 +133,7 @@ async function runRebacCheck(
 export const simulateAuthorizationTool: ToolDefinition<SimulateAuthorizationInput> = {
   name: "simulate_authorization",
   category: "authz",
-  title: "Simulate authorization",
+  title: "qeetai:tools.titles.simulateAuthorization",
   description:
     "Evaluate whether a subject may perform an action on a resource using a chosen decision engine (AuthZEN/ABAC/RBAC/ReBAC). Returns the decision plus an explain trace. Read-only — nothing is changed.",
   input: simulateAuthorizationInput,
@@ -172,6 +161,13 @@ export const simulateAuthorizationTool: ToolDefinition<SimulateAuthorizationInpu
     return {
       ok: true,
       summary: `${input.engine.toUpperCase()} decision: ${verdict}${result.reason ? ` — ${result.reason}` : ""}${result.durationMs !== undefined ? ` (${result.durationMs}ms)` : ""}.`,
+      // The card shows the verdict only: `reason` can be the server's own sentence.
+      display: {
+        key: result.allowed
+          ? "qeetai:toolCallCard.results.decisionAllowed"
+          : "qeetai:toolCallCard.results.decisionDenied",
+        values: { engine: input.engine.toUpperCase() },
+      },
       data: {
         engine: input.engine,
         allowed: result.allowed,
@@ -183,36 +179,46 @@ export const simulateAuthorizationTool: ToolDefinition<SimulateAuthorizationInpu
   },
 };
 
-// ── set_strict_mfa ────────────────────────────────────────────────────────────
-
 const setStrictMfaInput = z.object({ enabled: z.boolean() });
 type SetStrictMfaInput = z.infer<typeof setStrictMfaInput>;
 
 export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
   name: "set_strict_mfa",
   category: "authz",
-  title: "Set strict MFA",
+  title: "qeetai:tools.titles.setStrictMfa",
   description:
     "Toggle strict MFA for the tenant by disabling adaptive device-remembering (remember_device_enabled). When strict, every sign-in must complete MFA with no adaptive skip.",
   input: setStrictMfaInput,
   requiredCapability: "policy.write",
   destructive: false,
   mutates: true,
-  consoleScreen: { label: "Passwordless", to: "/auth/login-methods/passwordless" },
+  consoleScreen: {
+    label: "qeetai:tools.screens.passwordless",
+    to: "/auth/login-methods/passwordless",
+  },
   confirm: (input) => ({
-    title: input.enabled ? "Enforce strict MFA" : "Disable strict MFA",
+    title: input.enabled
+      ? i18n.t("qeetai:tools.confirm.setStrictMfa.enforceTitle")
+      : i18n.t("qeetai:tools.confirm.setStrictMfa.disableTitle"),
     body: input.enabled
-      ? "Every member will be required to complete MFA on each sign-in."
-      : "This weakens tenant security: members will be able to skip MFA on trusted devices.",
-    affected: [{ label: "Strict MFA", value: input.enabled ? "Enabled" : "Disabled" }],
-    confirmText: input.enabled ? "Enforce" : "Disable strict MFA",
+      ? i18n.t("qeetai:tools.confirm.setStrictMfa.enforceBody")
+      : i18n.t("qeetai:tools.confirm.setStrictMfa.disableBody"),
+    affected: [
+      {
+        label: i18n.t("qeetai:tools.fields.strictMfa"),
+        value: input.enabled
+          ? i18n.t("qeetai:tools.values.enabled")
+          : i18n.t("qeetai:tools.values.disabled"),
+      },
+    ],
+    confirmText: input.enabled
+      ? i18n.t("qeetai:tools.confirm.setStrictMfa.enforceAction")
+      : i18n.t("qeetai:tools.confirm.setStrictMfa.disableTitle"),
     tone: input.enabled ? "default" : "destructive",
   }),
   auditLabel: "qeetai.set_strict_mfa",
   async run(ctx, input) {
-    // Full-replace PUT: GET current policy, flip remember_device_enabled, PUT back.
-    // strict enabled=true → remember_device_enabled=false (force MFA every sign-in)
-    // strict enabled=false → remember_device_enabled=true (allow adaptive skip)
+    // The PUT replaces the whole policy, so read it first. Strict MFA = no remembered devices.
     const current = await api<AuthPolicy>(`/v1/tenants/${ctx.tenantId}/auth-policy`, {
       signal: ctx.signal,
     });
@@ -222,12 +228,17 @@ export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
       body: next,
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: AUTH_POLICY_KEY });
+    ctx.queryClient.invalidateQueries({ queryKey: authKeys.policy(ctx.tenantId) });
     return {
       ok: true,
       summary: input.enabled
         ? "Strict MFA enabled — every sign-in must complete MFA (device-remembering disabled)."
         : "Strict MFA disabled — adaptive device-remembering is now allowed.",
+      display: {
+        key: input.enabled
+          ? "qeetai:toolCallCard.results.strictMfaEnabled"
+          : "qeetai:toolCallCard.results.strictMfaDisabled",
+      },
       data: {
         strict_mfa_enabled: input.enabled,
         remember_device_enabled: !input.enabled,

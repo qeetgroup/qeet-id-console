@@ -1,11 +1,12 @@
-// Domain-verification data layer (Organizations → Domains). A tenant claims an
-// email domain, publishes the returned DNS TXT record, then verifies it.
-// Backed by /v1/tenants/{tenantID}/domains[/{id}/verify].
+// Domain verification: a tenant claims an email domain, publishes the returned DNS TXT record, then
+// verifies it.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+
+import { orgKeys } from "./keys";
 
 export interface TenantDomain {
   id: string;
@@ -16,14 +17,12 @@ export interface TenantDomain {
   dns_record_value: string;
   verified_at?: string | null;
   created_at: string;
-  /** Outcome of the most recent verification attempt. */
-  last_checked_at?: string | null;
-  last_error?: string;
+  last_checked_at?: string | null; // when the latest verification attempt ran
+  last_error?: string; // why that attempt failed
   sso_enabled: boolean;
   jit_enabled: boolean;
   is_default: boolean;
-  /** Derived server-side: a failed check is "attention", an unchecked one "pending". */
-  status: "verified" | "pending" | "attention";
+  status: "verified" | "pending" | "attention"; // server-derived; a failed check is attention
 }
 
 export interface DNSRecord {
@@ -45,12 +44,10 @@ export interface LoginDomainStatus {
   records: DNSRecord[];
 }
 
-const KEY = ["domains"];
-
 export function useDomains(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: orgKeys.domains(tenantId),
     queryFn: () => api<{ items: TenantDomain[] }>(`/v1/tenants/${tenantId}/domains`),
     enabled: !!tenantId && enabled,
   });
@@ -65,8 +62,8 @@ export function useAddDomain() {
         method: "POST",
         body: { domain },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Domain added" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
+    meta: { successMessage: "organizations:toast.domainAdded" },
   });
 }
 
@@ -78,8 +75,8 @@ export function useVerifyDomain() {
       api<TenantDomain>(`/v1/tenants/${tenantId}/domains/${id}/verify`, {
         method: "POST",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Domain verified" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
+    meta: { successMessage: "organizations:toast.domainVerified" },
   });
 }
 
@@ -89,8 +86,8 @@ export function useRemoveDomain() {
   return useMutation({
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/domains/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Domain removed" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
+    meta: { successMessage: "organizations:toast.domainRemoved" },
   });
 }
 
@@ -110,8 +107,8 @@ export function useUpdateDomainSettings() {
         body,
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Domain updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
+    meta: { successMessage: "organizations:toast.domainUpdated" },
   });
 }
 
@@ -119,7 +116,7 @@ export function useUpdateDomainSettings() {
 export function useLoginDomain(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "login", tenantId],
+    queryKey: orgKeys.loginDomain(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<LoginDomainStatus>(`/v1/tenants/${tenantId}/login-domain`),
   });

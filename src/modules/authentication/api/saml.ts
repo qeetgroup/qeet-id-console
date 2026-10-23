@@ -1,11 +1,11 @@
-// SAML 2.0 connection data layer. Connections are managed under the tenant;
-// the SP metadata + login URLs an IdP needs live at the API origin's /saml/*
-// routes, so they're derived from the API base URL.
+// SAML connections to a tenant's identity providers. The SP metadata and login URLs an IdP needs
+// are served at the API origin, so they derive from the API base URL.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export type SamlStatus = "draft" | "active" | "disabled";
 
@@ -40,7 +40,7 @@ export const samlLoginUrl = (id: string) => `${getApiBaseUrl()}/saml/login/${id}
 export function useSamlConnections() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["saml", tenantId],
+    queryKey: authKeys.saml(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: SamlConnection[] }>(`/v1/tenants/${tenantId}/saml`),
   });
@@ -55,8 +55,8 @@ export function useCreateSamlConnection() {
         method: "POST",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml"] }),
-    meta: { successMessage: "SAML connection created" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
+    meta: { successMessage: "authentication:toast.samlConnectionCreated", silentError: true },
   });
 }
 
@@ -69,8 +69,8 @@ export function useUpdateSamlConnection() {
         method: "PATCH",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml"] }),
-    meta: { successMessage: "SAML connection updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
+    meta: { successMessage: "authentication:toast.samlConnectionUpdated" },
   });
 }
 
@@ -80,8 +80,8 @@ export function useDeleteSamlConnection() {
   return useMutation({
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/saml/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml"] }),
-    meta: { successMessage: "SAML connection deleted" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
+    meta: { successMessage: "authentication:toast.samlConnectionDeleted" },
   });
 }
 
@@ -95,7 +95,7 @@ export interface SamlTestResult {
   checks: SamlTestCheck[];
 }
 
-/** Preflight a connection's config (offline checks) before enabling it. */
+/** Runs offline checks on a connection's configuration before it is enabled. */
 export function useTestSamlConnection() {
   const tenantId = useTenantId();
   return useMutation({

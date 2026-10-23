@@ -4,13 +4,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "@/i18n";
 
-import { useCompleteMfaLogin } from "../../api/flows";
+import { useCompleteMfaLogin } from "@/modules/authentication/api/flows";
 import { MfaChallengeStep } from "../mfa-challenge-step";
 
 const navigate = vi.fn();
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => navigate }));
-vi.mock("../../api/flows", () => ({ useCompleteMfaLogin: vi.fn() }));
-vi.mock("../../api/mfa-sign-in", () => ({
+vi.mock("@/modules/authentication/api/flows", () => ({ useCompleteMfaLogin: vi.fn() }));
+vi.mock("@/modules/authentication/api/mfa-sign-in", () => ({
   completeWithPush: vi.fn(),
   mfaPasskeyProof: vi.fn(),
   sendMfaCode: vi.fn(),

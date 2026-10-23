@@ -1,6 +1,6 @@
 # Repository Context — qeet-id-console
 
-**Level:** L2 · **Status:** active · **Evidence state:** verified · **Last verified:** 2026-08-28
+**Level:** L2 · **Status:** active · **Evidence state:** verified · **Last verified:** 2026-10-23
 **Verification scope:** layering rules read from `biome.json`; session and BFF behaviour from
 `src/platform/{api,auth}`; capability model from `src/platform/security/`; CI from
 `.github/workflows/ci.yml`. Layer compliance verified by grep.
@@ -9,7 +9,7 @@
 
 The **operator console for Qeet ID**, served at `console.id.qeet.in`. TanStack Start ^1.168 +
 TanStack Router ^1.170, React 19, Vite 8 + Nitro, Tailwind v4, `@qeetrix/ui`, bun 1.3.14.
-~65k LOC, 550 tracked files, 14 modules.
+18 modules under `src/modules/`.
 
 **It has a server side.** TanStack Start acts as a same-origin backend-for-frontend. That is the
 single most important architectural fact here.
@@ -41,26 +41,31 @@ design system (`qeetrix-ui`).
 ## Layered architecture — enforced by lint
 
 ```text
-routes  →  modules  →  platform  →  shared
+app  →  modules  →  platform  →  shared
 ```
 
-**Evidence:** `biome.json` `noRestrictedImports` overrides, plus `noImportCycles: "error"`.
-Run by CI as `bun run lint:boundaries`.
+**Evidence:** `biome.json` `noRestrictedImports` overrides, plus `noImportCycles: "error"`, run by
+CI as `bun run lint:boundaries`; `src/__tests__/module-boundaries.test.ts` holds the rules Biome
+can't express (barrel-only imports between modules, no import climbing more than one folder).
 
 | Layer | May import |
 |---|---|
 | `src/shared/**` | `@/shared`, `@/i18n`, external packages only |
 | `src/platform/**` | `@/platform`, `@/shared`, `@/i18n` |
-| `src/modules/**` | the above, **plus another module only via its barrel** `@/modules/<name>` |
-| `src/routes/**` | anything below (the module override applies only under `src/modules/**`) |
+| `src/modules/**` | the above, **plus another module only via its barrel** `@/modules/<name>`; never `@/app` or `@/routes` |
+| route files (`src/modules/*/routes/**`, `src/routes/**`) | module barrels and `pages` entries, `@/platform/**` (except `api` from the client), `@/shared/**`; not module internals, `api()` or `@tanstack/react-query`. No route is exempt |
+| `src/app/**` | anything — it is the composition root |
 
 `@/lib` is **retired** — importing it is a lint error.
 
 **Verified compliance:** 0 cross-module-internal imports, 0 `platform → modules`, 0 `shared → up`.
-`src/routes` imports module internals 167 times, which is permitted.
+Every route file follows the route rule: `createFileRoute`, `staticData: { capability }`, its guards,
+a Zod search schema and the page from the owning module's `pages.ts`. The pages, their data and
+their forms live in the modules.
 
-> The lint messages still say **"features/"** — stale wording from before the rename to `modules/`.
-> The rule is correct; only the message is dated.
+Global `fetch`, `EventSource`, `WebSocket` and `XMLHttpRequest` are lint errors outside
+`src/platform/api/`; the activity and Qeet AI streams use its shared transport
+(`event-stream.ts`).
 
 ## The BFF — how a request reaches the backend
 
@@ -93,14 +98,23 @@ unauthenticated federation redirects (e.g. starting a social login).
 
 - **Client**: `navigator.locks.request("qeetid-session-refresh", …)` serialises tabs, sending
   `expectedVersion`.
-- **Server**: `refreshServerSessionNow` rejects stale callers on version mismatch; `refreshSession`
-  single-flights in-process via a `Map` keyed on session/refresh token.
-- **Replay**: on 401, refresh once and re-issue with the **same** `requestId`. A final 401 clears
-  the cookie and redirects to `/sign-in`.
+- **Server**: `refreshServerSessionNow` rejects stale callers on version mismatch. `refreshSession`
+  shares one backend call between concurrent refreshes of the same token. A request aborted
+  mid-refresh (the browser navigated) never delivered its new cookie, so the next one arrives with
+  the rotated token; the backend's reuse grace (`REFRESH_TOKEN_REUSE_GRACE`, default 30 s) answers
+  it with the same pair while that pair's refresh token is unused.
+- **Ended session**: a 401 `auth.session_revoked` (signed out everywhere, suspended, removed,
+  password reset) is final. `proxyApiRequest` clears the cookie without trying a refresh, the
+  browser client and `openEventStream` don't retry, and the signed-out session is broadcast, so
+  other tabs go to `/sign-in` too.
+- **Replay**: on a backend 401, `proxyApiRequest` renews the session itself (it holds the refresh
+  token) and re-issues once with the **same** `requestId` — this is what keeps server-side renders
+  from ending a valid session. A rejected refresh token clears the cookie (the browser then goes to
+  `/sign-in`); an unreachable backend answers a retryable 503 and keeps the session.
 
 Multi-tab clients must serialise refresh or they trigger the backend's own theft detection.
 
-### Token containment — ADR-0009
+### Token containment
 
 ```ts
 PublicSession = { isAuthenticated, expiresAt, sessionId, userId, tenantId,
@@ -117,11 +131,11 @@ credentials; tokens are stripped from the browser-bound JSON. A token-shaped res
 endpoint is refused with `502 client.unexpected_token_response`.
 
 `session-store.ts` purges legacy `qeetid.access_token` / `refresh_token` keys at import — the
-superseded ADR-0002 model. Do not reintroduce them.
+browser-held-token model the BFF replaced. Do not reintroduce them.
 
 ## Authorization — UX only
 
-**Evidence:** `src/platform/security/`, ADR-0003
+**Evidence:** `src/platform/security/`
 
 ```text
 GET /v1/users/{userId}/tenants/{tenantId}/permissions
@@ -136,18 +150,18 @@ AccessBoundary gates the page; navigation is filtered
 **Nothing is granted while resolving or errored.** A 403 on the capability query itself sets
 `state = "error"`, `mode = "unknown"`.
 
-> ADR-0003 is titled *"Backend-authoritative authorization; client capabilities are UX-only"*:
-> *"Never re-implement RBAC/ABAC evaluation on the client."*
+> The rule: authorization is backend-authoritative; client capabilities are UX only. Never
+> re-implement RBAC/ABAC evaluation on the client.
 >
-> **Caveat:** ADR-0003 and ADR-0009 both describe the backend as "RBAC + Postgres **RLS**".
-> `qeet-id-server` has **no RLS** — isolation is application-layer. Recorded as
-> `qeet-id-context/DRIFT-REGISTER.md` **QID-002 (critical)**. The RBAC half is right; do not repeat
-> the RLS claim.
+> `qeet-id-server` enforces RBAC in its application layer and tenant isolation in both the
+> application and the database: since its 1.0.0 migration 0160, Postgres row-level security
+> (`tenant_isolation`) covers the organization-owned tables, with connections scoped to the
+> request's tenant. None of it is visible to, or replaceable by, the console.
 
 Any 403 triggers `refreshCapabilities()` — invalidating the capability query — so a permission change
 elsewhere self-heals.
 
-## Sensitive actions and step-up — ADR-0005
+## Sensitive actions and step-up
 
 `useSensitiveAction()` is the one path: capability pre-check (UX) → confirm → step-up → retry once.
 A backend `403 step_up_required` opens the re-auth dialog instead of dead-ending in a toast.
@@ -161,40 +175,81 @@ suppressed for step-up.
 - **`src/platform/telemetry/redact.ts`** — denylist regex (token, authorization, secret, password,
   refresh, client_secret, private_key, api-key, otp, recovery, cookie, credential, ssn) plus
   email → `[redacted-email]` and IPv4 → `[redacted-ip]`.
-- Opt-in runtime schemas (ADR-0007): a mismatch throws `client.schema_mismatch` — fail closed.
+- Opt-in runtime schemas: a mismatch throws `client.schema_mismatch` — fail closed.
+
+## Modules and the shell
+
+The platform never imports a module. `src/app/register.ts` loads every module's `manifest.tsx`
+(`defineModule`, `src/platform/modules/manifest.ts`) into the registry
+(`src/platform/modules/registry.ts`), and the shell reads its parts from there: sidebar entries
+(`getNavGroups`), palette commands, `g` shortcuts, feature flags. A module offers its own extension
+point by augmenting `ModuleExtensions` (Qeet AI's `qeetaiSuggestions`), and other modules fill it
+in their manifests. Adding a module therefore touches its own folder and one line,
+`src/app/modules.ts`; `bun run new-module <id>` writes both.
+
+**Feature flags** are declared in manifests with an owner, a description and an expiry (`null` only
+for a lasting kill switch; a test fails once a date passes). `CONSOLE_FLAGS_OFF=<id>,…` turns any
+off at runtime: the server reads it and hands it to the browser with the API origin
+(`public-config.ts`), so no rebuild is needed.
 
 ## Routing
 
-File-based via `tanstackStart()`. `src/routeTree.gen.ts` is **generated, committed and read-only**.
-Four groups — `_app` (authenticated shell), `_auth` (reverse guard), `account` (end-user
-self-service, deliberately outside the admin shell), `api` (server-only SSE).
+File-based via `tanstackStart()`, from a virtual config: `src/app/routes.ts` mounts the shell
+(`src/routes`: `__root`, `_app`, `healthz`, `api/` for server-only SSE) and every module's
+`routes/public/` at the root and `routes/app/` inside `_app`. `src/routeTree.gen.ts` is
+**generated, committed and read-only**. The groups: `_app` (authenticated shell), `_auth`
+(reverse guard, `authentication`), `account` (end-user self-service, deliberately outside the
+admin shell), `api`.
+
+Each route declares its page's capability as `staticData: { capability }`; the router registers
+them (`route-capability.ts`), and the access boundary and link checks resolve a path against them —
+the whole path first, else the deepest route matching a leading part.
 
 CSRF is applied in `src/start.ts` for all server functions and all non-GET/HEAD/OPTIONS requests.
 
 ## Testing
 
-29 unit test files, Vitest only. It defaults to `environment: "node"`; seven files opt into jsdom
-with a `// @vitest-environment jsdom` pragma. `vitest.config.ts` deliberately does **not** reuse
-`vite.config.ts` — unit tests stay independent of Start/Nitro plugins.
+Vitest only. It defaults to `environment: "node"`; component and browser-storage tests opt into
+jsdom with a `// @vitest-environment jsdom` pragma. `vitest.config.ts` deliberately does **not**
+reuse `vite.config.ts` — unit tests stay independent of Start/Nitro plugins. `bun run
+test:coverage` (what CI runs) enforces the coverage thresholds in `vitest.config.ts`: a floor for
+`src/**` and higher floors for `src/platform/{api,auth,security}`. Thresholds only go up.
 
-**There is no browser-level test cover.** The Playwright session-boundary suite was removed in
-2026-08 after persistent CI flake. Nothing now automatically verifies the ADR-0009 invariants that
-only appear in a real browser: absence of localStorage tokens, HttpOnly + `SameSite=Lax` cookie
-flags, cross-origin BFF rejection (the CSRF middleware in `src/start.ts` has **no** test at all),
-cross-tab logout, and single-flighted refresh. Verify these by hand when touching
-`src/platform/{api,auth}`.
+**Browser tests** (`tests/e2e`, `bun run test:e2e`, CI job "Session E2E") cover the session-boundary
+invariants that only appear in a real browser: anonymous guard, `__Host-` HttpOnly Secure
+`SameSite=Lax` cookie, no token in Web Storage, `document.cookie` or server-rendered HTML, hard
+refresh, cross-site write rejection, cross-tab logout, two tabs renewing an expired session with
+one rotation, an organization switch that moves every tab and stops reading the old
+organization's data, and two concurrent sessions kept apart. They run against the **production
+build** and a fake backend (`tests/e2e/fixtures/fake-backend.mjs`, which rotates refresh tokens with
+the server's reuse grace, so a request that misses a shared refresh behaves as in production) and
+wait for `<html data-hydrated>` before typing — the
+earlier suite ran against `vite dev`, raced hydration and on-demand compiles, and was removed for
+flaking. No retries: a flake is a bug. Run them after any change to `src/platform/{api,auth}`.
 
-**No tests** for `billing`, `compliance`, `developer`, `onboarding`, `organizations`, `users`,
-`authorization`, or `src/routes/**`.
+Every module has tests; `users`, `security`, `compliance` and `authorization` pin their request
+contracts, cache refreshes and tenant guards.
 
 ## CI/CD
 
-`ci.yml`, one job `verify` on `ubuntu-latest`, 15-minute timeout:
+`ci.yml` job `verify` (name **Verify**, the required check on `main`), 20-minute timeout:
 checkout → bun 1.3.14 → `install --frozen-lockfile` → `typecheck` → `check` →
-**`lint:boundaries`** → `test` → `build`.
+**`lint:boundaries`** → `test:coverage` → `build`. A `dependency-review` job runs on pull requests;
+`release/**` pushes also publish the test-kit image. `codeql.yml` scans TypeScript and the
+workflows. Actions are pinned to commit SHAs; workflows default to read-only permissions.
 
-No deploy workflow — Vercel deploys from its own Git integration (`vercel.json` pins the install and
-build commands).
+`deploy.yml` deploys production on every push to `main` (same gate, `vercel build`/`deploy --prod`,
+then the version tag and GitHub release). Vercel's Git integration is off for `main` and still builds
+PR and `develop` previews. Dependabot (`.github/dependabot.yml`) and `bunfig.toml` both hold new
+releases back for 3 days. `dependency-audit.yml` runs `bun run audit` (high and critical) on pushes,
+PRs and daily; it is not a required check, so a newly published advisory shows red without blocking
+merges. `docker.yml` builds and smoke-tests the image on PRs that touch it.
+
+**Dependency overrides** (`package.json` `overrides`) hold only security floors: transitive packages
+pinned at or above their first patched release because a parent still allowed a vulnerable one. Remove
+an entry once every parent requires a fixed version. The single audit ignore (`braces`, no fixed
+release; reached only through the `shadcn` CLI in `@qeetrix/ui`) is documented in
+`dependency-audit.yml` and goes when QTRX-4 lands.
 
 ## Security-critical areas
 
@@ -207,7 +262,9 @@ build commands).
 | Capability model | `src/platform/security/` | High | Review — UX only, never enforcement |
 | Telemetry redaction | `src/platform/telemetry/redact.ts` | High | Security review |
 | Error copy | `src/platform/errors/user-message.ts` | High | Review — leak stop |
-| CSRF middleware | `src/start.ts` | High | Security review |
+| CSRF middleware, production config check | `src/start.ts`, `src/platform/config/server-config.ts` | High | Security review |
+| Per-person browser storage | `src/platform/auth/scoped-storage.ts` | High | Security review |
+| Response headers | `src/platform/security/security-headers.ts` | High | Security review |
 
 ## Known constraints
 
@@ -216,26 +273,21 @@ build commands).
 - **Icons come only from `@qeetrix/icons`** (`lucide-react` is not a dependency). Type an "any icon"
   prop as `ComponentType<IconProps<"outline">>`, not `typeof SomeIcon`: icons with a filled drawing
   have a wider props type.
-- 25k LOC in `src/routes` despite the "composition only" rule.
-- Two modules have no barrel, so they cannot be imported by another module.
-- Seven modules and all routes have no tests.
-- Non-`error` Biome rules (`useExhaustiveDependencies`, `noArrayIndexKey`, a11y,
-  `noDangerouslySetInnerHtml`) are **warnings** and do not fail `--diagnostic-level=error`.
+- Biome warnings fail CI (`--error-on-warnings`): fix them, or suppress one with a specific reason.
+- TypeScript runs with `strict` plus `noUncheckedIndexedAccess`, `noImplicitReturns` and
+  `noImplicitOverride`. Narrow an indexed value with a guard; `!` is a lint error.
+- `@qeetrix/ui`'s root import is slow to load in tests (each jsdom file pays it); the fix belongs in
+  `qeetrix` (QTRX-5). Its `DataState` prints `error.message` by default (QTRX-3), hence the platform
+  wrapper.
 
 ## Known documentation drift
 
 | Claim | Reality |
 |---|---|
-| README + `docs/architecture/target-architecture.md` describe `src/app/` | **`src/app/` does not exist** |
-| README cites `features/dashboard/components/...` | The real path is under `src/modules/dashboard/components/` |
-| Biome messages say "features/" | The layer was renamed to `modules/` |
-| ADR-0003 cites "runtime-validated (ADR-0006)" | The runtime-schema ADR is **0007** |
-| ADR-0003 / ADR-0009 say "RBAC + Postgres RLS" | **No RLS exists** — QID-002, critical |
-| `project.tree` lists `.cta.json`, `.cursorrules`, `.dockerignore` | None exist; the file is stale |
+| "No Postgres RLS" (QID-002, and this file before 2026-10-24) | **RLS exists** since `qeet-id-server` 1.0.0 (migration 0160, commit ea57c1f): a `tenant_isolation` policy on the organization-owned tables, alongside the application-layer checks |
 
 Product-level drift lives in `qeet-id-context/DRIFT-REGISTER.md`; this table is repository-local.
 
 ## Documentation authority
 
-Source > tests > `biome.json` (the layering rules are executable) > ADRs >
-`docs/engineering-standards.md` > README. The **API contract** is owned by `qeet-id-server`.
+Source > tests > `biome.json` (the layering rules are executable) > `docs/llm/*` > README. The **API contract** is owned by `qeet-id-server`.

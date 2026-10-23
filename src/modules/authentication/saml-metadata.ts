@@ -1,13 +1,6 @@
-// IdP metadata parsing for the "Import metadata" path of the New SAML
-// connection sheet.
-//
-// The XML is read in the browser and mapped onto the three fields the backend
-// stores (entity ID, SSO URL, signing certificate) — nothing is uploaded, and
-// the console never fetches a metadata URL itself (the SSRF guard in
-// `platform/api/server-request-policy.ts` exists precisely to stop that).
-//
-// Parsing is namespace-agnostic: IdPs ship metadata under `md:`, `saml2:` or no
-// prefix at all, so every lookup goes through `getElementsByTagNameNS("*", …)`.
+// Reads IdP metadata XML in the browser into the fields a SAML connection stores. Nothing is
+// uploaded and no metadata URL is fetched: the SSRF guard in server-request-policy.ts forbids it.
+// Lookups ignore the namespace, since IdPs use the `md:` prefix, `saml2:` or none.
 
 const REDIRECT_BINDING = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect";
 const POST_BINDING = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
@@ -34,9 +27,8 @@ function elements(doc: Document, tag: string): Element[] {
 }
 
 /**
- * The signing key, when the metadata says which is which. `use` is optional in
- * the spec and a key with no `use` serves both purposes, so those count too;
- * an encryption-only key is the last resort rather than a hard failure.
+ * Returns the signing certificate: a key marked "signing", else one with no `use` (it serves
+ * both), else any key, so an encryption-only key is a last resort rather than a failure.
  */
 function signingCertificate(doc: Document): string {
   const descriptors = elements(doc, "KeyDescriptor");

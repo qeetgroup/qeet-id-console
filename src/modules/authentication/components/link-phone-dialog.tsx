@@ -14,7 +14,11 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorText } from "@/platform/components/error-reference";
+import {
+  settleSensitiveAction,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { isStepUpRequired } from "@/platform/security/step-up";
 import {
   type PushPairing,
@@ -23,6 +27,7 @@ import {
   useStartPairing,
   useWithdrawPairing,
 } from "../api/push-devices";
+import { authKeys } from "../api/keys";
 
 // "4:05" — minutes and seconds left.
 function clock(seconds: number): string {
@@ -30,11 +35,9 @@ function clock(seconds: number): string {
 }
 
 /**
- * Links a phone running Qeet Auth to the caller's own account with a one-time
- * pairing code, shown as a QR code to scan and as text to type. Asking for the
- * code needs a step-up, which the API client asks for. The dialog watches the
- * code until the phone has linked, offers a new one when it expires, and
- * withdraws an unused code when it closes, so nobody can scan it afterwards.
+ * Links a phone running Qeet Auth to the caller's account with a one-time pairing code, shown as a
+ * QR code and as text; requesting it needs a step-up. Watches the code until the phone links,
+ * offers a new one on expiry, and withdraws an unused code on close so nobody can scan it later.
  */
 export function LinkPhoneDialog({
   open,
@@ -45,34 +48,39 @@ export function LinkPhoneDialog({
 }) {
   const { t } = useTranslation("account");
   const qc = useQueryClient();
+  const runSensitive = useSensitiveAction();
   const start = useStartPairing();
   const withdraw = useWithdrawPairing();
   const [pairing, setPairing] = useState<(PushPairing & { code: string }) | null>(null);
   const status = usePairingStatus(pairing?.id ?? null);
   const [now, setNow] = useState(() => Date.now());
-  // Whether the dialog is still open when a code arrives.
-  const openRef = useRef(open);
+  const openRef = useRef(open); // Whether the dialog is still open when a code arrives
   openRef.current = open;
 
   function ask() {
     setPairing(null);
-    start.mutate(undefined, {
-      onSuccess: (p) => {
+    runSensitive({
+      actionLabel: t("security.phones.link"),
+      run: () =>
+        start.mutateAsync(undefined, {
+          onError: (err) => {
+            // A cancelled step-up: the provider has said nothing was changed.
+            if (isStepUpRequired(err)) onOpenChange(false);
+          },
+        }),
+    })
+      .then((p) => {
+        if (!p) return;
         if (openRef.current) {
           setNow(Date.now());
           setPairing(p);
         } else {
           withdraw.mutate(p.id);
         }
-      },
-      onError: (err) => {
-        // A cancelled step-up: the provider has said nothing was changed.
-        if (isStepUpRequired(err)) onOpenChange(false);
-      },
-    });
+      })
+      .catch(settleSensitiveAction);
   }
 
-  // Ask for a code each time the dialog opens.
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs on opening only
   useEffect(() => {
     if (open) ask();
@@ -84,8 +92,7 @@ export function LinkPhoneDialog({
   const state = status.data?.status ?? (pairing ? "pending" : undefined);
   const expired = state === "expired" || (state === "pending" && secondsLeft === 0);
 
-  // Count down while the code can still be used.
-  const live = state === "pending" && !expired;
+  const live = state === "pending" && !expired; // Count down while the code can still be used
   useEffect(() => {
     if (!live) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -95,7 +102,7 @@ export function LinkPhoneDialog({
   // The phone scanned it: done.
   useEffect(() => {
     if (state !== "linked") return;
-    void qc.invalidateQueries({ queryKey: ["push-devices", "self"] });
+    void qc.invalidateQueries({ queryKey: authKeys.pushDevices() });
     toast.success(t("security.phones.dialog.linked"));
     setPairing(null);
     onOpenChange(false);
@@ -128,7 +135,7 @@ export function LinkPhoneDialog({
 
         {failure && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(failure)}
+            <ErrorText error={failure} />
           </p>
         )}
 

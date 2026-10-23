@@ -1,13 +1,11 @@
-// SAML IdP data layer — the *inverse* of src/lib/saml.ts. Here Qeet ID acts as
-// the Identity Provider and the rows are the Service Providers (SPs) that trust
-// us: the apps that consume our assertions. SPs import a single shared IdP
-// metadata document (idpMetadataUrl()) served at the API origin's /saml/idp
-// route, so that URL is derived from the API base URL rather than per-row.
+// Qeet ID as a SAML identity provider: the rows are the service providers that consume its
+// assertions (the inverse of saml.ts). Each organisation is its own IdP, with its own URLs.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export interface SamlProvider {
   id: string;
@@ -33,13 +31,19 @@ export interface CreateSamlProviderInput {
   certificate?: string;
 }
 
-/** The single IdP metadata document an SP imports to trust this deployment. */
-export const idpMetadataUrl = () => `${getApiBaseUrl()}/saml/idp/metadata`;
+/** The organisation's IdP entity ID, which its metadata and assertions carry. */
+export const idpEntityId = (tenantId: string) => `${getApiBaseUrl()}/saml/idp/${tenantId}`;
+
+/** The organisation's IdP metadata document, which an SP imports to trust it. */
+export const idpMetadataUrl = (tenantId: string) => `${idpEntityId(tenantId)}/metadata`;
+
+/** The organisation's SingleSignOnService URL, for an SP configured by hand. */
+export const idpSsoUrl = (tenantId: string) => `${idpEntityId(tenantId)}/sso`;
 
 export function useSamlProviders() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["saml-providers", tenantId],
+    queryKey: authKeys.samlProviders(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: SamlProvider[] }>(`/v1/tenants/${tenantId}/saml-providers`),
   });
@@ -54,8 +58,8 @@ export function useCreateSamlProvider() {
         method: "POST",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml-providers"] }),
-    meta: { successMessage: "Service provider added" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
+    meta: { successMessage: "authentication:toast.serviceProviderAdded", silentError: true },
   });
 }
 
@@ -68,8 +72,8 @@ export function useUpdateSamlProvider() {
         method: "PATCH",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml-providers"] }),
-    meta: { successMessage: "Service provider updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
+    meta: { successMessage: "authentication:toast.serviceProviderUpdated", silentError: true },
   });
 }
 
@@ -81,7 +85,7 @@ export function useDeleteSamlProvider() {
       api<void>(`/v1/tenants/${tenantId}/saml-providers/${id}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml-providers"] }),
-    meta: { successMessage: "Service provider removed" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
+    meta: { successMessage: "authentication:toast.serviceProviderRemoved" },
   });
 }

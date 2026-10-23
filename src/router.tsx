@@ -1,13 +1,15 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
-// Side-effect import: initializes the shared i18next instance at module load,
-// before any component renders. Static `en` resources keep init synchronous
-// and SSR-safe, so the first server render already has translations.
-import "./i18n";
+// Initializes i18next at module load, before any component renders.
+import i18n from "./i18n";
+
+// Registers the modules' manifests, which the shell's navigation and commands read.
+import "./app/register";
 
 import { RootErrorComponent } from "@/platform/errors/error-component";
 import { getContext } from "@/platform/query/query-client";
+import { registerRouteRequirements } from "@/platform/security/route-capability";
 import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
@@ -19,12 +21,22 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
-    // Fallback for uncaught render/loader throws — renders user-safe copy
-    // instead of a blank page, never leaking raw backend detail.
     defaultErrorComponent: RootErrorComponent,
+    // A language other than the bundled English is fetched before the page hydrates, so the
+    // first client render shows the same copy as the server's.
+    dehydrate: () => ({ language: i18n.resolvedLanguage ?? "en" }),
+    hydrate: async () => {
+      await i18n.loadLanguages(i18n.resolvedLanguage ?? i18n.language);
+    },
   });
 
   setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });
+  registerRouteRequirements(
+    Object.values(router.routesById).map((route) => ({
+      fullPath: route.fullPath,
+      capability: route.options.staticData?.capability,
+    })),
+  );
 
   return router;
 }

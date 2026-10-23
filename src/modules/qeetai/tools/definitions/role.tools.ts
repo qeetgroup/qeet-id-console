@@ -1,15 +1,12 @@
-// RBAC role tools — create_role, assign_role, grant_permission.
-//
-// Reuse patterns from lib/authz-rbac.ts; run() calls api() directly with
-// ctx.tenantId so RBAC + RLS + audit are inherited.
+// run() calls the backend through api(), so its RBAC, RLS and audit apply.
 
 import { z } from "zod";
-import { ROLES_KEY } from "@/modules/authorization";
+import { authzKeys } from "@/modules/authorization";
+import { userKeys } from "@/modules/users";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── create_role ───────────────────────────────────────────────────────────────
 
 const createRoleInput = z.object({
   name: z.string(),
@@ -20,19 +17,19 @@ type CreateRoleInput = z.infer<typeof createRoleInput>;
 export const createRoleTool: ToolDefinition<CreateRoleInput> = {
   name: "create_role",
   category: "directory",
-  title: "Create role",
+  title: "qeetai:tools.titles.createRole",
   description:
     "Create a role in the current organization. Permissions are granted separately with grant_permission.",
   input: createRoleInput,
   requiredCapability: "role.write",
   destructive: false,
   mutates: true,
-  consoleScreen: { label: "Roles", to: "/authorization/roles" },
+  consoleScreen: { label: "qeetai:tools.screens.roles", to: "/authorization/roles" },
   confirm: (input) => ({
-    title: "Create role",
-    body: "Qeet AI will create a new role in this organization.",
-    affected: [{ label: "Role name", value: input.name }],
-    confirmText: "Create role",
+    title: i18n.t("qeetai:tools.titles.createRole"),
+    body: i18n.t("qeetai:tools.confirm.createRole.body"),
+    affected: [{ label: i18n.t("qeetai:tools.fields.roleName"), value: input.name }],
+    confirmText: i18n.t("qeetai:tools.titles.createRole"),
     tone: "default",
   }),
   auditLabel: "qeetai.create_role",
@@ -45,16 +42,15 @@ export const createRoleTool: ToolDefinition<CreateRoleInput> = {
         signal: ctx.signal,
       },
     );
-    ctx.queryClient.invalidateQueries({ queryKey: ROLES_KEY });
+    ctx.queryClient.invalidateQueries({ queryKey: authzKeys.roles(ctx.tenantId) });
     return {
       ok: true,
       summary: `Role "${role.name}" created (id: ${role.id}).`,
+      display: { key: "qeetai:toolCallCard.results.roleCreated", values: { name: role.name } },
       data: { id: role.id, name: role.name, description: role.description },
     };
   },
 };
-
-// ── assign_role ───────────────────────────────────────────────────────────────
 
 const assignRoleInput = z.object({
   user_id: z.string(),
@@ -65,21 +61,21 @@ type AssignRoleInput = z.infer<typeof assignRoleInput>;
 export const assignRoleTool: ToolDefinition<AssignRoleInput> = {
   name: "assign_role",
   category: "directory",
-  title: "Assign role to user",
+  title: "qeetai:tools.titles.assignRole",
   description: "Assign an existing role to a user within the current organization.",
   input: assignRoleInput,
   requiredCapability: "role.write",
   destructive: false,
   mutates: true,
-  consoleScreen: { label: "Users", to: "/users" },
+  consoleScreen: { label: "qeetai:tools.screens.users", to: "/users" },
   confirm: (input) => ({
-    title: "Assign role",
-    body: "This grants the role's permissions to the user — a privilege change.",
+    title: i18n.t("qeetai:tools.confirm.assignRole.title"),
+    body: i18n.t("qeetai:tools.confirm.assignRole.body"),
     affected: [
-      { label: "User", value: input.user_id },
-      { label: "Role", value: input.role_id },
+      { label: i18n.t("qeetai:tools.fields.user"), value: input.user_id },
+      { label: i18n.t("qeetai:tools.fields.role"), value: input.role_id },
     ],
-    confirmText: "Assign role",
+    confirmText: i18n.t("qeetai:tools.confirm.assignRole.title"),
     tone: "destructive",
   }),
   auditLabel: "qeetai.assign_role",
@@ -88,17 +84,18 @@ export const assignRoleTool: ToolDefinition<AssignRoleInput> = {
       method: "POST",
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ["users"] });
-    ctx.queryClient.invalidateQueries({ queryKey: ["user", input.user_id] });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
     return {
       ok: true,
       summary: `Role ${input.role_id} assigned to user ${input.user_id} in tenant ${ctx.tenantId}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.roleAssigned",
+        values: { roleId: input.role_id, userId: input.user_id },
+      },
       data: { user_id: input.user_id, role_id: input.role_id, tenant_id: ctx.tenantId },
     };
   },
 };
-
-// ── grant_permission ──────────────────────────────────────────────────────────
 
 const grantPermissionInput = z.object({
   role_id: z.string(),
@@ -109,21 +106,21 @@ type GrantPermissionInput = z.infer<typeof grantPermissionInput>;
 export const grantPermissionTool: ToolDefinition<GrantPermissionInput> = {
   name: "grant_permission",
   category: "directory",
-  title: "Grant permission to role",
+  title: "qeetai:tools.titles.grantPermission",
   description: "Grant a permission to a role. Broadens what every user holding the role can do.",
   input: grantPermissionInput,
   requiredCapability: "role.write",
   destructive: false,
   mutates: true,
-  consoleScreen: { label: "Roles", to: "/authorization/roles" },
+  consoleScreen: { label: "qeetai:tools.screens.roles", to: "/authorization/roles" },
   confirm: (input) => ({
-    title: "Grant permission to role",
-    body: "This broadens what every user holding the role can do — a privilege change.",
+    title: i18n.t("qeetai:tools.titles.grantPermission"),
+    body: i18n.t("qeetai:tools.confirm.grantPermission.body"),
     affected: [
-      { label: "Role", value: input.role_id },
-      { label: "Permission", value: input.permission_id },
+      { label: i18n.t("qeetai:tools.fields.role"), value: input.role_id },
+      { label: i18n.t("qeetai:tools.fields.permission"), value: input.permission_id },
     ],
-    confirmText: "Grant permission",
+    confirmText: i18n.t("qeetai:tools.confirm.grantPermission.action"),
     tone: "destructive",
   }),
   auditLabel: "qeetai.grant_permission",
@@ -132,10 +129,16 @@ export const grantPermissionTool: ToolDefinition<GrantPermissionInput> = {
       method: "POST",
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ["role-permissions", input.role_id] });
+    ctx.queryClient.invalidateQueries({
+      queryKey: authzKeys.rolePermissions(ctx.tenantId, input.role_id),
+    });
     return {
       ok: true,
       summary: `Permission ${input.permission_id} granted to role ${input.role_id}.`,
+      display: {
+        key: "qeetai:toolCallCard.results.permissionGranted",
+        values: { permission: input.permission_id, roleId: input.role_id },
+      },
       data: { role_id: input.role_id, permission_id: input.permission_id },
     };
   },

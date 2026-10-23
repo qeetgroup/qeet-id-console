@@ -1,9 +1,3 @@
-// Investigate menu — the per-event "⋯" action menu that turns an activity row
-// into an investigation hub: jump to the related entity, pivot the feed to a
-// facet, or copy correlation IDs. Deep-links only to routes that actually exist
-// ($id detail pages for user/group/webhook/oidc); other resources fall back to
-// the audit log. Filter actions patch the URL search via onFilter.
-
 import {
   Button,
   DropdownMenu,
@@ -28,21 +22,23 @@ import { toast } from "sonner";
 
 import type { ActivitySearch } from "../activity-search";
 import type { ActivityEvent } from "../types/activity.types";
+import i18n, { type TranslationKey } from "@/i18n";
 
 type InvestigateMenuProps = {
   event: ActivityEvent;
-  /** Apply a filter patch to the feed (URL search params). */
-  onFilter?: (patch: Partial<ActivitySearch>) => void;
-  /** Open the details drawer for this event. */
+  onFilter?: (patch: Partial<ActivitySearch>) => void; // Patches the feed's URL search
   onViewDetails?: () => void;
   align?: "start" | "center" | "end";
-  /** Override the trigger; defaults to a ghost "⋯" icon button. */
-  trigger?: ReactElement;
+  trigger?: ReactElement; // Replaces the default ghost "⋯" icon button
 };
 
 const targetIs = (event: ActivityEvent, ...types: string[]) =>
   !!event.target?.type && types.includes(event.target.type.toLowerCase());
 
+/**
+ * Renders an event's "⋯" menu: links to its actor and to a target that has a detail page
+ * (group, webhook, OIDC client), the audit log, feed filters, and copy-ID actions.
+ */
 export function InvestigateMenu({
   event,
   onFilter,
@@ -51,15 +47,15 @@ export function InvestigateMenu({
   trigger,
 }: InvestigateMenuProps) {
   const { copy } = useCopyToClipboard();
-  const doCopy = (value: string, label: string) => {
+  const doCopy = (value: string, copiedKey: TranslationKey) => {
     copy(value);
-    toast.success(`${label} copied`);
+    toast.success(i18n.t(copiedKey));
   };
 
   const actorId = event.actor?.id;
   const targetId = event.target?.id;
-  // The audit Reader filters by actor (not request_id); request_id correlation
-  // lives in the drawer's Related tab. Pivot the audit log to this actor.
+  // The audit log filters by actor, not request_id; request correlation is the drawer's
+  // Related tab.
   const auditSearch = actorId ? { actor_user_id: actorId } : {};
 
   return (
@@ -71,7 +67,7 @@ export function InvestigateMenu({
               variant="ghost"
               size="icon-sm"
               className="size-7 text-muted-foreground"
-              aria-label="Investigate event"
+              aria-label={i18n.t("activity:investigateMenu.investigateEvent")}
               onClick={(e) => e.stopPropagation()}
             >
               <EllipsisIcon className="size-4" aria-hidden="true" />
@@ -81,11 +77,11 @@ export function InvestigateMenu({
       />
       <DropdownMenuContent align={align} sideOffset={4} className="min-w-56">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Investigate</DropdownMenuLabel>
+          <DropdownMenuLabel>{i18n.t("activity:investigateMenu.investigate")}</DropdownMenuLabel>
           {onViewDetails && (
             <DropdownMenuItem onClick={onViewDetails}>
               <PanelRightOpenIcon className="size-3.5" aria-hidden="true" />
-              View details
+              {i18n.t("activity:investigateMenu.viewDetails")}
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
@@ -95,20 +91,20 @@ export function InvestigateMenu({
           <>
             <DropdownMenuItem render={<Link to="/users/$userId" params={{ userId: actorId }} />}>
               <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-              View user
+              {i18n.t("activity:investigateMenu.viewUser")}
             </DropdownMenuItem>
             <DropdownMenuItem
               render={<Link to="/users/$userId/timeline" params={{ userId: actorId }} />}
             >
               <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-              View user timeline
+              {i18n.t("activity:investigateMenu.viewUserTimeline")}
             </DropdownMenuItem>
           </>
         )}
         {targetIs(event, "group") && targetId && (
           <DropdownMenuItem render={<Link to="/groups/$groupId" params={{ groupId: targetId }} />}>
             <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-            View group
+            {i18n.t("activity:investigateMenu.viewGroup")}
           </DropdownMenuItem>
         )}
         {targetIs(event, "webhook") && targetId && (
@@ -116,7 +112,7 @@ export function InvestigateMenu({
             render={<Link to="/developer/webhooks/$id" params={{ id: targetId }} />}
           >
             <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-            View webhook
+            {i18n.t("activity:investigateMenu.viewWebhook")}
           </DropdownMenuItem>
         )}
         {targetIs(event, "oidc_client", "client", "application") && targetId && (
@@ -124,12 +120,12 @@ export function InvestigateMenu({
             render={<Link to="/auth/connections/oidc/$clientId" params={{ clientId: targetId }} />}
           >
             <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-            View OIDC client
+            {i18n.t("activity:investigateMenu.viewOidcClient")}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem render={<Link to="/security/audit-logs" search={auditSearch} />}>
           <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-          Correlate in audit log
+          {i18n.t("activity:investigateMenu.correlateInAuditLog")}
         </DropdownMenuItem>
 
         {onFilter && (
@@ -138,43 +134,53 @@ export function InvestigateMenu({
             {(actorId || event.actor?.name) && (
               <DropdownMenuItem onClick={() => onFilter({ actor: actorId ?? event.actor?.name })}>
                 <FunnelIcon className="size-3.5" aria-hidden="true" />
-                Filter by this actor
+                {i18n.t("activity:investigateMenu.filterByThisActor")}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => onFilter({ type: event.type })}>
               <FunnelIcon className="size-3.5" aria-hidden="true" />
-              Filter by event type
+              {i18n.t("activity:investigateMenu.filterByEventType")}
             </DropdownMenuItem>
             {event.ip && (
               <DropdownMenuItem onClick={() => onFilter({ ip: event.ip })}>
                 <FunnelIcon className="size-3.5" aria-hidden="true" />
-                Filter by this IP
+                {i18n.t("activity:investigateMenu.filterByThisIp")}
               </DropdownMenuItem>
             )}
           </>
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => doCopy(event.id, "Event ID")}>
+        <DropdownMenuItem
+          onClick={() => doCopy(event.id, "activity:investigateMenu.copied.eventId")}
+        >
           <ClipboardIcon className="size-3.5" aria-hidden="true" />
-          Copy event ID
+          {i18n.t("activity:investigateMenu.copyEventId")}
         </DropdownMenuItem>
         {event.request_id && (
-          <DropdownMenuItem onClick={() => doCopy(event.request_id as string, "Request ID")}>
+          <DropdownMenuItem
+            onClick={() =>
+              doCopy(event.request_id as string, "activity:investigateMenu.copied.requestId")
+            }
+          >
             <ClipboardIcon className="size-3.5" aria-hidden="true" />
-            Copy request ID
+            {i18n.t("activity:investigateMenu.copyRequestId")}
           </DropdownMenuItem>
         )}
         {actorId && (
-          <DropdownMenuItem onClick={() => doCopy(actorId, "Actor ID")}>
+          <DropdownMenuItem
+            onClick={() => doCopy(actorId, "activity:investigateMenu.copied.actorId")}
+          >
             <ClipboardIcon className="size-3.5" aria-hidden="true" />
-            Copy actor ID
+            {i18n.t("activity:investigateMenu.copyActorId")}
           </DropdownMenuItem>
         )}
         {event.ip && (
-          <DropdownMenuItem onClick={() => doCopy(event.ip as string, "IP address")}>
+          <DropdownMenuItem
+            onClick={() => doCopy(event.ip as string, "activity:investigateMenu.copied.ip")}
+          >
             <ClipboardIcon className="size-3.5" aria-hidden="true" />
-            Copy IP address
+            {i18n.t("activity:investigateMenu.copyIpAddress")}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

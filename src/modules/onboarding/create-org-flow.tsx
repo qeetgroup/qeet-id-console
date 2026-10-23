@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { api } from "@/platform/api/client";
+import { useUserId } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
 import { startSignupCheckout } from "@/modules/billing";
 
@@ -23,27 +24,17 @@ type CreateTenantResponse = {
 };
 
 interface CreateOrgFlowProps {
-  /**
-   * Runs after the org is created and a free/enterprise plan is settled. Paid
-   * plans redirect to the payment provider instead and never reach here — the
-   * provider returns the browser to successUrl ("/"). Defaults to a hard nav to
-   * the dashboard, which enters the freshly-created (now session-scoped) org.
-   */
-  onDone?: () => void;
-  /** Optional cancel affordance (e.g. close a sheet) shown on the plan step. */
-  onCancel?: () => void;
-  /** Force single-column plan cards (for narrow containers like a sheet). */
-  planStacked?: boolean;
-  /** Full-page composition stays separate from the reusable sheet flow. */
-  renderHeader?: (step: SetupStep) => ReactNode;
+  onDone?: () => void; // after a free or enterprise create; paid plans leave for checkout
+  onCancel?: () => void; // shown on the plan step, e.g. to close a sheet
+  planStacked?: boolean; // single-column plan cards for narrow containers
+  renderHeader?: (step: SetupStep) => ReactNode; // a header above the step, for full-page hosts
   showGuidance?: boolean;
   className?: string;
 }
 
 /**
- * Choose a plan, optionally describe the project, then enter organization details.
- * Free plans create inline via the BFF; paid plans are provisioned after checkout.
- * Shared by first-run onboarding and the "create another organization" action.
+ * Renders the create-organization flow: pick a plan, optionally describe the project, then enter
+ * organization details. Free plans create inline; paid plans are created after checkout.
  */
 export function CreateOrgFlow({
   onDone,
@@ -53,7 +44,7 @@ export function CreateOrgFlow({
   showGuidance = false,
   className,
 }: CreateOrgFlowProps) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   const done = onDone ?? (() => window.location.assign("/"));
 
   const [step, setStep] = useState<SetupStep>("plan");
@@ -74,12 +65,10 @@ export function CreateOrgFlow({
       region: string;
       logo_url?: string;
     }) => api<CreateTenantResponse>("/v1/tenants", { method: "POST", body }),
-    // Own UX (redirect / inline error / toast) — skip the global error toast so
-    // a "slug taken" doesn't double up with the inline message.
-    meta: { silent: true },
+    meta: { silent: true }, // errors show inline, so a taken slug isn't also toasted
   });
 
-  // busy across both the create mutation and the checkout round-trip.
+  const userId = useUserId();
   const [paying, setPaying] = useState(false);
   const busy = createM.isPending || paying;
 
@@ -97,15 +86,19 @@ export function CreateOrgFlow({
     const isPaid = selection.tier !== "free" && selection.tier !== "enterprise";
     const origin = window.location.origin;
 
-    // Stash the segmentation (+ logo) so it's applied to the org on first
-    // dashboard load — uniform for free (created inline) and paid (provisioned
-    // after checkout). See useApplyOnboardingProfile.
-    stashOnboardingProfile({ ...profile, logo_url: logo || undefined });
+    // Stashed for the new organization's first dashboard load, whether it is created now or after
+    // checkout; the slug ties it to that organization.
+    if (userId) {
+      stashOnboardingProfile({
+        profile: { ...profile, logo_url: logo || undefined },
+        slug: slug.trim(),
+        userId,
+      });
+    }
 
     try {
-      // Paid plans: DON'T create the org yet. Stage a checkout that carries the
-      // org spec; the organization is created only when the payment completes,
-      // so abandoning the payment leaves nothing behind.
+      // Paid plans stage a checkout carrying the org spec; the organization is created only when
+      // payment completes, so an abandoned payment leaves nothing behind.
       if (isPaid) {
         setPaying(true);
         const co = await startSignupCheckout({
@@ -122,12 +115,12 @@ export function CreateOrgFlow({
           window.location.href = co.checkout_url; // hand off to Razorpay / sandbox
           return;
         }
-        done(); // defensive — a paid plan should always return a checkout URL
+        done(); // defensive: a paid plan should always get a checkout URL
         return;
       }
 
-      // Free / Enterprise: no self-serve payment, so create the org now. The
-      // BFF consumes the tenant-scoped token response and updates the session.
+      // Free and enterprise plans have no self-serve payment, so create now; the BFF moves the
+      // session onto the new organization.
       await createM.mutateAsync({
         slug: slug.trim(),
         name: name.trim(),
@@ -136,7 +129,7 @@ export function CreateOrgFlow({
         logo_url: logo || undefined,
       });
       if (selection.tier === "enterprise") {
-        toast.success("Organization created — our team will reach out about Enterprise setup.");
+        toast.success(t("createOrgFlow.organizationCreatedOurTeam"));
       }
       done();
     } catch (err) {

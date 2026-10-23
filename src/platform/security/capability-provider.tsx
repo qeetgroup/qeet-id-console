@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-import { getRequiredCapabilityForPath } from "@/platform/config/navigation";
+import { getRequiredCapabilityForPath } from "@/platform/security/route-capability";
 import { sessionStore } from "@/platform/auth/session-store";
 import { ApiError } from "@/platform/errors/api-error";
 import { useTenantId } from "@/platform/auth/session";
