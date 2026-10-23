@@ -1,6 +1,4 @@
-// The User 360 workspace tabs, in display order. The route deep-links the active
-// tab via a `?tab=` search param so any view is shareable.
-
+/** The User 360 tabs in display order; the route deep-links the active one as `?tab=`. */
 export const USER360_TABS = [
   "overview",
   "security",

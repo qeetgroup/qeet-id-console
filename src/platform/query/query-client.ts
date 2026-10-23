@@ -5,18 +5,11 @@ import { ApiError } from "@/platform/errors/api-error";
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
 
-// Per-mutation overrides go on the `meta` object. `silent: true` opts out
-// of both the success toast and the error toast (e.g. background polls
-// where a toast would be noisy). `successMessage` overrides the default
-// "Saved" string; `successDescription` adds a second line.
 interface MutationMeta {
-  silent?: boolean;
-  // Opt out of the error toast only, keeping the success one. For screens that
-  // render the failure themselves (inline field error, a widget's own message)
-  // and would otherwise show it twice.
-  silentError?: boolean;
-  successMessage?: string;
-  successDescription?: string;
+  silent?: boolean; // drops both toasts, as for a background poll
+  silentError?: boolean; // drops only the error toast, for a screen that shows it itself
+  successMessage?: string; // replaces the default "Saved"
+  successDescription?: string; // a second line for the success toast
 }
 
 declare module "@tanstack/react-query" {
@@ -26,18 +19,13 @@ declare module "@tanstack/react-query" {
   }
 }
 
-// Surface backend errors via a single toast handler. 401 is excluded because
-// api.ts already redirects to /sign-in after a failed refresh, and 400/422
-// is excluded so form validation can render inline messages without a
-// duplicate toast. Individual mutations can opt out by setting
-// `meta: { silent: true }`.
+// Toasts backend errors in one place. A 401 has already sent the person to /sign-in, and
+// 400/422 are left to inline form messages.
 function reportError(error: unknown, meta?: Record<string, unknown>) {
   if (meta?.silent || meta?.silentError) return;
   if (!(error instanceof ApiError)) return;
-  // Plan-entitlement errors: a numeric cap reached (plan_limit) or a locked
-  // feature (upgrade_required). Show an actionable "Upgrade" toast instead of a
-  // generic error. Keyed on the stable code so it's independent of HTTP status
-  // (the backend uses 402) and never masked by the 403 branch below.
+  // Plan limits get an actionable Upgrade toast, keyed on the code so neither the status (402)
+  // nor the 403 branch below can mask it.
   if (error.code === "billing.plan_limit" || error.code === "billing.upgrade_required") {
     const atLimit = error.code === "billing.plan_limit";
     toast.error(atLimit ? "Plan limit reached" : "Upgrade to unlock this", {
@@ -54,8 +42,8 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
     return;
   }
   if (error.status === 401 || error.status === 400 || error.status === 422) return;
-  // Step-up is handled at the call site by useSensitiveAction (open dialog +
-  // retry). Don't fire the misleading generic 403 toast for it.
+  // The API client has already prompted for the step-up; a refusal that still lands here was
+  // cancelled, and the generic 403 toast would mislead.
   if (error.code === "step_up_required") return;
   if (error.status === 403) {
     toast.error("This action is no longer available", {
@@ -63,16 +51,12 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
     });
     return;
   }
-  // Leak stop: never surface the raw backend message. Map the stable code to
-  // curated, user-safe copy (generic fallback for unknown codes).
+  // Leak stop: curated copy for the code, never the backend message.
   const appError = normalizeError(error);
   toast.error(userMessageForCode(appError.code, appError.kind));
 }
 
-// Success-side toast: emitted for every mutation that doesn't opt out.
-// Default message is intentionally generic ("Saved"); screens that want
-// a better word ("Created user", "Revoked session") set
-// `meta: { successMessage: "..." }` on the useMutation call.
+// Toasts every mutation that doesn't opt out; the default "Saved" is generic on purpose.
 function reportSuccess(meta?: MutationMeta) {
   if (meta?.silent) return;
   toast.success(meta?.successMessage ?? "Saved", {

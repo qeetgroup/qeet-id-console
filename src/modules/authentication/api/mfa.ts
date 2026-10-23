@@ -1,28 +1,24 @@
-// MFA data layer. These endpoints are scoped to the authenticated user (the
-// API derives the user from the JWT), so no tenant id is needed in the path.
+// The signed-in user's MFA factors. The server takes the user from the session, so paths carry
+// no user or tenant id.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 
-// ---- TOTP ----
-
 export interface TotpStatus {
-  /** True once the account has a *confirmed* TOTP factor. */
-  enrolled: boolean;
+  enrolled: boolean; // True once the account has a *confirmed* TOTP factor
 }
 
-// Lets the TOTP screen render an "active" state on load instead of always
-// re-offering enrollment: re-running enroll/start rotates the secret and clears
-// confirmation server-side, so a stale prompt could break a working factor.
+/**
+ * Returns whether TOTP is enrolled, so the screen can show it as active rather than re-offer
+ * setup: restarting enrolment rotates the secret and would break a working factor.
+ */
 export function useTotpStatus() {
   return useQuery({
     queryKey: ["mfa", "totp"],
     queryFn: () => api<TotpStatus>("/v1/mfa/totp"),
   });
 }
-
-// ---- Recovery codes ----
 
 export interface RecoveryStatus {
   enrolled: boolean;
@@ -45,28 +41,21 @@ export function useRegenerateRecoveryCodes() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["mfa", "recovery-codes"] }),
-    // silent: a 403 step_up_required is handled locally by opening the step-up
-    // dialog rather than surfacing a dead-end toast (QID-17). The success toast
-    // is emitted by the screen after the (possibly re-run) mutation resolves.
+    // The screen opens step-up on a 403 instead of a dead-end toast, and shows its own success
+    // toast once the (possibly retried) call resolves.
     meta: { silent: true },
   });
 }
 
-// ---- Step-up verification ----
-//
-// Step-up is a cross-cutting security gate (paired with the platform step-up
-// dialog + useSensitiveAction), so it now lives in platform/security. Re-exported
-// here so existing former @/lib/mfa importers keep working during migration.
+// Step-up verification is a platform security gate, owned by @/platform/security.
 export { isStepUpRequired, useStepUpVerify } from "@/platform/security/step-up";
-
-// ---- Email / SMS OTP factors ----
 
 export type OtpChannel = "email" | "sms";
 
 export interface OtpFactor {
   id: string;
   channel: OtpChannel;
-  destination: string; // masked
+  destination: string; // Masked for display
   verified: boolean;
   created_at: string;
 }

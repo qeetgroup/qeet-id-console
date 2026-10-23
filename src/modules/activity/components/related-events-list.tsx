@@ -1,8 +1,3 @@
-// Related-events list for the drawer's "Related events" tab. Correlates the
-// selected event by shared request_id and same-actor time window
-// (GET /v1/activity/{id}/related). Selecting a related event swaps the drawer to
-// it. Reuses the compact EventCard so rows match the dashboard widget.
-
 import { EmptyState, Skeleton } from "@qeetrix/ui";
 import { LinkIcon } from "@qeetrix/icons";
 
@@ -41,6 +36,7 @@ function Section({
   );
 }
 
+/** Renders the events sharing this event's request, and the same actor's nearby events. */
 export function RelatedEventsList({
   eventId,
   onSelect,

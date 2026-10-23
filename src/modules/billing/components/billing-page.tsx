@@ -198,9 +198,10 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
           throw new SensitiveActionCancelled();
         const over =
           choice.tier === "free"
-            ? BILLING_RESOURCES.filter(
-                (resource) => (usage.data?.usage[resource] ?? 0) > FREE_DOWNGRADE_LIMITS[resource],
-              )
+            ? BILLING_RESOURCES.filter((resource) => {
+                const limit = FREE_DOWNGRADE_LIMITS[resource];
+                return limit !== undefined && (usage.data?.usage[resource] ?? 0) > limit;
+              })
             : [];
         const downgrade = over.length > 0;
         return sensitive({

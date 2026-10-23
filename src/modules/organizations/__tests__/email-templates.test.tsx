@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null, canRead: true }));
@@ -36,6 +36,12 @@ import {
   updateEmailLocale,
   validEmailTemplateLink,
 } from "../email-template-model";
+
+function templateAt(index: number): EmailTemplate {
+  const template = templates()[index];
+  assert(template, `no email template fixture at ${index}`);
+  return template;
+}
 
 function templates(): EmailTemplate[] {
   return [
@@ -157,7 +163,7 @@ async function selectOption(label: string, option: string) {
 
 describe("Email template draft preview", () => {
   it("requires the action URL in both email alternatives", () => {
-    const draft = emailTemplateInput(templates()[2]);
+    const draft = emailTemplateInput(templateAt(2));
     expect(emailDraftErrors({ ...draft, body: "No link" }, ["magic_url"])).toContain("actionLink");
     expect(
       emailDraftErrors({ ...draft, options: { ...draft.options, body_html: "<p>No link</p>" } }, [
@@ -171,7 +177,7 @@ describe("Email template draft preview", () => {
     expect(emailHTMLText(html)).toContain("{{magic_url}}");
     expect(validEmailTemplateLink("{{magic_url}}", ["magic_url"])).toBe(true);
     expect(validEmailTemplateLink("{{unknown_url}}", ["magic_url"])).toBe(false);
-    const draft = emailTemplateInput(templates()[2]);
+    const draft = emailTemplateInput(templateAt(2));
     draft.options.body_html = html;
     expect(emailPreviewDocument(draft, "en", ["magic_url"], { name: "Qeet ID" })).toContain(
       'href="https://example.invalid/test/preview"',
@@ -179,7 +185,7 @@ describe("Email template draft preview", () => {
   });
 
   it("sanitizes rich markup and keeps the preview sandbox document brand-colored", () => {
-    const draft = emailTemplateInput(templates()[0]);
+    const draft = emailTemplateInput(templateAt(0));
     draft.options.body_html =
       '<p onclick="steal()">{{code}}</p><script>steal()</script><a href="javascript:steal()">Bad</a>';
     const html = emailPreviewDocument(draft, "en", ["code", "ttl"], {
@@ -194,7 +200,7 @@ describe("Email template draft preview", () => {
   });
 
   it("keeps each locale separate and validates every saved language", () => {
-    const base = emailTemplateInput(templates()[0]);
+    const base = emailTemplateInput(templateAt(0));
     const translated = updateEmailLocale(base, "fr", {
       subject: "Votre code",
       body: "Code {{code}}",
@@ -380,17 +386,12 @@ describe("Emails workspace", () => {
   });
 
   it("shows the subject and preheader as an inbox row above the frame", () => {
-    // What a recipient sees before opening anything. A too-long subject or a
-    // missing preheader is only obvious here, not in the rendered body.
     render(<EmailTemplatesView {...viewProps()} />);
     expect(screen.getAllByText("Qeet ID").length).toBeGreaterThan(0);
     expect(screen.getByText(/No preheader — the client will fall back/)).toBeTruthy();
   });
 
   it("lists resolved link destinations, since preview links are inert", () => {
-    // The iframe is sandbox="" and sets pointer-events:none on purpose — it
-    // renders tenant-authored markup. This list is how an operator checks where
-    // a link actually points without being able to navigate.
     render(<EmailTemplatesView {...viewProps()} />);
     expect(screen.getAllByText("Links in this email").length).toBeGreaterThan(0);
   });
@@ -398,9 +399,7 @@ describe("Emails workspace", () => {
   it("opens all previews and changes preview size without dirtying the template", () => {
     render(<EmailTemplatesView {...viewProps()} />);
     const frame = () => screen.getByTitle("Email verification email preview");
-    // Desktop fills the panel; mobile constrains to a phone-ish column. Assert
-    // the constraint appears and disappears rather than a specific rem value,
-    // so retuning the width doesn't break the test.
+    // Asserts that a width constraint appears, not its rem value, so retuning the width is safe.
     expect(frame().className).not.toMatch(/max-w-/);
     fireEvent.click(screen.getByRole("button", { name: "Mobile" }));
     expect(frame().className).toMatch(/max-w-/);

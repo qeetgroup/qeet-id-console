@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
@@ -29,8 +29,7 @@ import { Route } from "./keys";
 
 const ApiKeysPage = Route.options.component as () => React.JSX.Element;
 
-// The 201 body as the published contract (developer.yaml, POST /v1/api-keys)
-// describes it: the key, its plaintext secret once, and a warning.
+// The 201 body of POST /v1/api-keys: the key, its plaintext secret once, and a warning.
 function created(name: string, secret?: string) {
   return {
     api_key: {
@@ -150,7 +149,7 @@ describe("API keys — choosing an expiry", () => {
     await createKey("expiring", localInput(tomorrow));
 
     expect(posted).toHaveLength(1);
-    expect(posted[0].expires_at).toBe(tomorrow.toISOString());
+    expect(posted[0]?.expires_at).toBe(tomorrow.toISOString());
     expect(await screen.findByText("qk_expiring_secret")).toBeTruthy();
   });
 
@@ -185,6 +184,8 @@ describe("API keys — choosing an expiry", () => {
     await createKey("forever");
 
     expect(posted).toHaveLength(1);
-    expect(posted[0].expires_at).toBeUndefined();
+    const [body] = posted;
+    assert(body, "expected the posted key body");
+    expect(body.expires_at).toBeUndefined();
   });
 });

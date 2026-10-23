@@ -1,20 +1,8 @@
-// Credentials tools — create_oauth_client, rotate_oauth_client_secret,
-// rotate_signing_keys. The OAuth client tools are secret-bearing: any secret
-// material (client_secret) goes into ToolResult.sensitiveArtifact and is NEVER
-// included in summary/data or sent back to the model.
-//
-// Endpoints:
-//   POST /v1/oidc/clients                                          — create_oauth_client
-//   POST /v1/tenants/{id}/oidc/clients/{cid}/rotate-secret        — rotate_oauth_client_secret
-//   (none: signing keys rotate by deployment)                      — rotate_signing_keys
-
 import { z } from "zod";
 import { OIDC_CLIENTS_KEY } from "@/modules/authentication";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── create_oauth_client ───────────────────────────────────────────────────────
 
 const createOAuthClientInput = z.object({
   name: z.string(),
@@ -63,7 +51,7 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
     });
     ctx.queryClient.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
 
-    // Redact: secret never in summary or data — goes to sensitiveArtifact only.
+    // The secret goes only to sensitiveArtifact, so it never reaches the model.
     return {
       ok: true,
       summary: `OAuth client "${res.client.name}" registered (client_id: ${res.client.client_id}, type: ${res.client.type}).${input.type === "confidential" ? " The client secret has been shown to the operator separately and cannot be retrieved again." : ""}`,
@@ -84,8 +72,6 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
     };
   },
 };
-
-// ── rotate_oauth_client_secret ────────────────────────────────────────────────
 
 const rotateOAuthClientSecretInput = z.object({ client_id: z.string() });
 type RotateOAuthClientSecretInput = z.infer<typeof rotateOAuthClientSecretInput>;
@@ -124,7 +110,7 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
     );
     ctx.queryClient.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
 
-    // Redact: new secret goes to sensitiveArtifact only, never in summary/data.
+    // The new secret goes only to sensitiveArtifact, so it never reaches the model.
     return {
       ok: true,
       summary: `Client secret rotated for client ${input.client_id}. The new secret has been shown to the operator separately and cannot be retrieved again.`,
@@ -139,8 +125,6 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
     };
   },
 };
-
-// ── rotate_signing_keys ───────────────────────────────────────────────────────
 
 const rotateSigningKeysInput = z.object({});
 type RotateSigningKeysInput = z.infer<typeof rotateSigningKeysInput>;
@@ -168,8 +152,8 @@ export const rotateSigningKeysTool: ToolDefinition<RotateSigningKeysInput> = {
     tone: "default",
   }),
   auditLabel: "qeetai.rotate_signing_keys",
-  // The rotate route was removed from the server: keys rotate by deployment only.
-  // The tool stays so a request for it is answered, not met with "unknown tool".
+  // Keys rotate by deployment only; the tool exists so a request to rotate gets that answer
+  // rather than "unknown tool".
   async run() {
     const message = "Signing keys rotate by deployment, not from the console. Nothing was changed.";
     return { ok: false, summary: message, error: { code: "rotation_by_deployment", message } };

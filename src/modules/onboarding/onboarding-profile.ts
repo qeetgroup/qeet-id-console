@@ -1,16 +1,12 @@
-// Segmentation captured during org creation ("what are you building / team size
-// / your role"). Stored on the tenant as `metadata.onboarding` and used to
-// tailor the first-run checklist and invite copy. It's stashed in localStorage
-// at submit time and applied to the org's metadata on the first dashboard load
-// (uniform for free — created inline — and paid — provisioned post-checkout).
+// Segmentation captured at org creation (use case, team size, role), stored on the tenant as
+// `metadata.onboarding` to tailor the first-run checklist. It is stashed in localStorage at submit
+// and applied on the first dashboard load, so free and paid sign-ups behave alike.
 
 export interface OnboardingProfile {
   use_case?: string;
   team_size?: string;
   role?: string;
-  // Optional org logo captured at creation; applied to the tenant on first load
-  // for the paid path (the free path sends it in the create body directly).
-  logo_url?: string;
+  logo_url?: string; // applied on first load for paid plans; free plans send it on create
 }
 
 export const USE_CASES: { value: string; label: string }[] = [
@@ -37,8 +33,7 @@ export const ROLES: { value: string; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-// Per use-case ordering of the first-run checklist step ids, most-relevant
-// first. Steps not listed keep their default order after the listed ones.
+/** Checklist step ids per use case, most relevant first; unlisted steps follow in default order. */
 export const CHECKLIST_ORDER: Record<string, string[]> = {
   b2b_saas: ["oauth-app", "invite", "branding", "webhook", "api-key"],
   consumer: ["oauth-app", "branding", "invite", "api-key", "webhook"],
@@ -46,7 +41,7 @@ export const CHECKLIST_ORDER: Record<string, string[]> = {
   api_platform: ["api-key", "oauth-app", "webhook", "invite", "branding"],
 };
 
-// A short, use-case-specific nudge shown atop the checklist.
+/** A use-case-specific nudge shown atop the checklist. */
 export const CHECKLIST_INTRO: Record<string, string> = {
   b2b_saas: "Get customers signing into your product — register your app first.",
   consumer: "Wire up sign-in and make it yours — start with your app and branding.",
@@ -55,20 +50,41 @@ export const CHECKLIST_INTRO: Record<string, string> = {
 };
 
 const STASH_KEY = "qeetid-pending-onboarding";
+const STASH_TTL_MS = 24 * 60 * 60 * 1000; // an abandoned checkout's profile expires
 
-export function stashOnboardingProfile(p: OnboardingProfile) {
+/** A profile waiting for the organization it was entered for, which may not exist yet. */
+export interface PendingOnboarding {
+  profile: OnboardingProfile;
+  slug: string; // the organization it belongs to
+  userId: string; // the person who entered it
+  stashedAt: number;
+}
+
+export function stashOnboardingProfile(pending: Omit<PendingOnboarding, "stashedAt">) {
   try {
-    localStorage.setItem(STASH_KEY, JSON.stringify(p));
+    localStorage.setItem(STASH_KEY, JSON.stringify({ ...pending, stashedAt: Date.now() }));
   } catch {
-    // localStorage disabled (private mode) — segmentation tailoring is a
-    // nice-to-have, so silently skip persistence.
+    // Storage disabled (private mode): tailoring is a nice-to-have, so skip it.
   }
 }
 
-export function readStashedProfile(): OnboardingProfile | null {
+/** Returns the profile `userId` stashed for a new organization, or null; drops an expired one. */
+export function readPendingOnboarding(userId: string | null): PendingOnboarding | null {
   try {
     const raw = localStorage.getItem(STASH_KEY);
-    return raw ? (JSON.parse(raw) as OnboardingProfile) : null;
+    if (!raw) return null;
+    const pending = JSON.parse(raw) as Partial<PendingOnboarding>;
+    const valid =
+      !!pending.profile &&
+      typeof pending.slug === "string" &&
+      typeof pending.userId === "string" &&
+      typeof pending.stashedAt === "number" &&
+      Date.now() - pending.stashedAt < STASH_TTL_MS;
+    if (!valid) {
+      localStorage.removeItem(STASH_KEY);
+      return null;
+    }
+    return pending.userId === userId ? (pending as PendingOnboarding) : null;
   } catch {
     return null;
   }
@@ -78,6 +94,6 @@ export function clearStashedProfile() {
   try {
     localStorage.removeItem(STASH_KEY);
   } catch {
-    // ignore
+    // best-effort
   }
 }

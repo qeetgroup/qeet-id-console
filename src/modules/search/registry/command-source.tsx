@@ -1,7 +1,3 @@
-// Command registry: executable admin commands with capability gating.
-// Self-contained — no imports from features/qeetai/* (the qeetai registry
-// reconciliation is a future task tracked in the spec §15).
-
 import {
   ArchiveIcon,
   BadgeCheckIcon,
@@ -41,10 +37,7 @@ interface CommandDef {
   run(ctx: SearchContext): void;
 }
 
-// ─── Command definitions ──────────────────────────────────────────────────────
-// Each command navigates to the appropriate route (the target screen manages
-// the create/action flow with URL-driven drawers or modals, consistent with
-// how the rest of the console works).
+// Commands only navigate; the target screen runs the create or action flow itself.
 
 const COMMANDS: CommandDef[] = [
   {

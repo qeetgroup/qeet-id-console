@@ -1,6 +1,3 @@
-// The ⋯ row-actions menu. Navigation items are Links into User 360; mutating
-// actions call up to page-level handlers (which own the hooks + confirm dialog).
-
 import {
   Button,
   DropdownMenu,
@@ -38,6 +35,10 @@ export interface RowActionHandlers {
   onDelete: (u: User) => void;
 }
 
+/**
+ * Renders a user row's ⋯ menu. Navigation items link into User 360; mutating items call the
+ * page's handlers, which own the mutations and their confirmation.
+ */
 export function UserRowActions({
   user,
   canWrite,

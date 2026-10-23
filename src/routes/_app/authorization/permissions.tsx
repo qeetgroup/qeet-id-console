@@ -5,9 +5,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Input,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { KeyRoundIcon, TriangleAlertIcon } from "@qeetrix/icons";
 import { useMemo, useState } from "react";

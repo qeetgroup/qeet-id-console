@@ -1,19 +1,12 @@
-// Identity-timeline summary — computed client-side from the events currently
-// loaded into the timeline. There is no per-user summary endpoint (the server
-// summary is tenant-wide), so these counts are an honest reflection of the
-// loaded/filtered window, not the user's entire lifetime. Pure + testable.
-
 import type { ActivityEvent } from "@/modules/activity";
 
 export interface TimelineSummary {
-  /** Total loaded events in the current window. */
-  total: number;
+  total: number; // Loaded events in the current window
   authentication: number;
   security: number;
   admin: number;
   sessions: number;
-  /** Distinct actors seen across the loaded events. */
-  uniqueActors: number;
+  uniqueActors: number; // Distinct actors across the loaded events
 }
 
 const AUTH_CATEGORIES = new Set(["authentication", "mfa"]);
@@ -25,6 +18,10 @@ function normalize(value: string | undefined): string {
   return (value ?? "").toLowerCase().replace(/[^a-z-]/g, "");
 }
 
+/**
+ * Counts the loaded timeline events by kind. There is no per-user summary endpoint (the server
+ * summary is tenant-wide), so the counts cover only the loaded, filtered events.
+ */
 export function computeTimelineSummary(events: ActivityEvent[]): TimelineSummary {
   const actors = new Set<string>();
   let authentication = 0;
@@ -54,7 +51,7 @@ export function computeTimelineSummary(events: ActivityEvent[]): TimelineSummary
   };
 }
 
-/** Category values a summary card maps to when clicked (drives the category filter). */
+/** The category filter each summary card applies when clicked. */
 export const SUMMARY_CATEGORY_FILTERS = {
   authentication: ["authentication", "mfa"],
   security: ["security", "authorization"],

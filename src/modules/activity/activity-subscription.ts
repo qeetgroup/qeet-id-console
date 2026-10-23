@@ -1,9 +1,3 @@
-// Ref-counted SSE subscription singleton.
-// The first acquirer starts the stream; subsequent acquirers share it.
-// When the last acquirer releases, the stream is stopped.
-// This ensures the dashboard widget and the full activity page share
-// exactly one SSE connection, regardless of mount order.
-
 import { activityActions } from "./activity-store";
 import { createActivityStream } from "./activity-stream";
 import type { ActivityEvent, ConnectionStatus } from "./types/activity.types";
@@ -24,19 +18,13 @@ function onLastEventId(id: string) {
 }
 
 /**
- * Acquire a reference to the shared SSE subscription.
- * Returns a cleanup function — call it on unmount to release.
- *
- * Usage (in a React useEffect):
- * ```ts
- * useEffect(() => acquireSubscription(), []);
- * ```
+ * Takes a reference to the ref-counted SSE subscription, so every view shares one connection.
+ * The first reference starts the stream; the returned release function stops it after the last.
  */
 export function acquireSubscription(): () => void {
   refCount++;
 
   if (refCount === 1) {
-    // First subscriber — create and start the stream
     client = createActivityStream({ onEvents, onStatusChange, onLastEventId });
     client.start();
   }
@@ -53,17 +41,14 @@ export function acquireSubscription(): () => void {
   };
 }
 
-/**
- * Restart the shared SSE stream after it has given up (MAX_RECONNECT_ATTEMPTS exceeded).
- * Safe to call even if the stream is already running — start() resets the backoff.
- */
+/** Restarts the shared stream after it has given up reconnecting; a no-op with no subscribers. */
 export function restartStream(): void {
   if (client) {
     client.start();
   }
 }
 
-/** Visible for tests — resets the singleton state between test runs. */
+/** Stops the stream and resets the ref count between tests. */
 export function _resetSubscriptionForTest() {
   if (client) {
     client.stop();

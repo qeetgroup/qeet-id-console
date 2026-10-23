@@ -1,6 +1,5 @@
-// OAuth grant administration. Access tokens themselves are stateless JWTs;
-// what's listable/revocable is the stored OIDC refresh-token grant per
-// (client, user). Revoking a grant invalidates the whole rotation chain.
+// OAuth grant administration. Access tokens are stateless JWTs, so what can be listed and revoked
+// is the stored refresh-token grant per (client, user); revoking it ends the rotation chain.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

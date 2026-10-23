@@ -1,6 +1,3 @@
-// User 360 hero header: identity, status, quick meta strip, and the contextual
-// "Actions" menu (with confirmation on anything destructive).
-
 import {
   Avatar,
   AvatarFallback,
@@ -50,6 +47,7 @@ export interface HeaderUser {
   updated_at?: string | null;
 }
 
+/** Renders the User 360 header: identity, status, a meta strip and the Actions menu. */
 export function UserDetailHeader({
   user,
   lastSeenAt,

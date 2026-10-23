@@ -21,10 +21,9 @@ import { type MfaEnrollment, startMfaEnrollment } from "../api/mfa-sign-in";
 import type { MfaProof } from "../api/flows";
 
 /**
- * The sign-in step for an account that must have a second factor and holds
- * none: set up an authenticator app, then confirm it with a code, which
- * completes the sign-in. While the organisation's grace period runs
- * (dueAt), the setup can be put off.
+ * Renders the sign-in step for an account that must have a second factor and holds none: set up
+ * an authenticator app, then confirm it with a code to complete the sign-in. Until `dueAt`, the
+ * end of the organisation's grace period, the setup can be put off.
  */
 export function MfaEnrollmentStep({
   mfaToken,
@@ -169,8 +168,8 @@ export function MfaEnrollmentStep({
 }
 
 /**
- * The recovery codes minted when a sign-in set up an authenticator app, shown
- * once before the person continues into the console.
+ * Renders the recovery codes minted when a sign-in set up an authenticator app, shown once before
+ * the person continues into the console.
  */
 export function RecoveryCodesStep({
   codes,

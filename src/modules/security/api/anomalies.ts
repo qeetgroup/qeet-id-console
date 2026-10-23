@@ -1,7 +1,4 @@
-// Security-anomaly data layer for the Threats → Anomalies screen. Backed by
-// GET /v1/tenants/{tenantID}/security/anomalies (+ /summary) and
-// POST .../anomalies/{id}/resolve. Detections are written server-side (e.g.
-// brute-force / credential-stuffing on account lockout).
+// Sign-in anomalies the server detects, such as brute force or credential stuffing.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -61,10 +58,12 @@ export function useResolveAnomaly() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/security/anomalies/${id}/resolve`, {
+    mutationFn: (id: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/security/anomalies/${id}/resolve`, {
         method: "POST",
-      }),
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
     meta: { successMessage: "Anomaly resolved" },
   });

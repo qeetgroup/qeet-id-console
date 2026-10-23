@@ -44,12 +44,9 @@ type Policy = {
   session_limit_action: string;
   mfa_enforcement: string;
   mfa_grace_days: number;
-  /** When the requirement was turned on (read-only); null while optional. */
-  mfa_enforced_since?: string | null;
-  /** How long a step-up keeps sensitive actions unlocked, e.g. "5m" or "1h". */
-  step_up_window: string;
-  /** The factor types that count as a step-up; null = every one. */
-  step_up_methods: StepUpMethod[] | null;
+  mfa_enforced_since?: string | null; // read-only: when it was turned on; null while optional
+  step_up_window: string; // how long a step-up unlocks sensitive actions, e.g. "5m"
+  step_up_methods: StepUpMethod[] | null; // factor types that count as a step-up; null = all
   settings?: Record<string, unknown> | null;
 };
 
@@ -58,8 +55,7 @@ type StepUpMethod = "totp" | "recovery_code" | "otp" | "webauthn" | "push";
 // The factor types a step-up may be met with, in the order shown.
 const STEP_UP_METHODS: StepUpMethod[] = ["webauthn", "totp", "recovery_code", "otp", "push"];
 
-// The step-up windows offered (the server accepts 1m–60m).
-const STEP_UP_WINDOWS = ["1m", "5m", "10m", "15m", "30m", "1h"];
+const STEP_UP_WINDOWS = ["1m", "5m", "10m", "15m", "30m", "1h"]; // the server accepts 1m–60m
 
 const empty: Policy = {
   tenant_id: "",
@@ -74,6 +70,8 @@ const empty: Policy = {
   step_up_window: "5m",
   step_up_methods: null,
 };
+
+const SKELETON_IDS = ["a", "b", "c", "d", "e"] as const;
 
 function PoliciesPage() {
   const { t } = useTranslation("rbac");
@@ -134,8 +132,8 @@ function PoliciesPage() {
       {policyQ.isLoading ? (
         <Card>
           <CardContent className="space-y-3 p-6">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
+            {SKELETON_IDS.map((id) => (
+              <Skeleton key={id} className="h-10 w-full" />
             ))}
           </CardContent>
         </Card>

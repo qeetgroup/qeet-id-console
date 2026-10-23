@@ -13,16 +13,18 @@ export function previewEmailDraft(
   variables: Record<string, string>,
 ): EmailTemplateDraft {
   const render = (value: string) =>
-    value.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (match, key: string) =>
-      Object.hasOwn(variables, key) ? variables[key] : match,
-    );
+    value.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (match, key: string) => {
+      const replacement = variables[key];
+      return Object.hasOwn(variables, key) && replacement !== undefined ? replacement : match;
+    });
   return { subject: render(draft.subject), body: render(draft.body) };
 }
 
 export function unknownEmailVariables(draft: EmailTemplateDraft, supported: string[]): string[] {
+  // Group 1 is not optional, so every match has a name; the undefined check only narrows the type.
   const names = [
     ...`${draft.subject}\n${draft.body}`.matchAll(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g),
-  ].map((match) => match[1]);
+  ].flatMap((match) => (match[1] === undefined ? [] : [match[1]]));
   return [...new Set(names.filter((name) => !supported.includes(name)))];
 }
 
@@ -208,20 +210,9 @@ export function validEmailAssetURL(value: string): boolean {
 }
 
 /**
- * Subject and preheader with variables filled in, as the inbox row shows them.
- *
- * Shares `previewEmailDraft` with the document so the header line can never
- * drift from the rendered email — the two are the same substitution.
- */
-/**
- * Every link the rendered email contains, with variables resolved.
- *
- * The preview iframe is `sandbox=""` and sets `pointer-events:none`, so links
- * are deliberately inert there — it renders tenant-authored markup, and a live
- * anchor would let a template navigate the operator's session. Listing the
- * resolved destinations gives the thing clicking was for (checking where a link
- * goes) without granting navigation, and shows every link at once rather than
- * one at a time.
+ * Returns every distinct link in the rendered email, variables resolved. The sandboxed preview
+ * keeps links inert, since a live anchor in tenant-authored markup could navigate the operator's
+ * session; this list shows where each one goes without granting navigation.
  */
 export function emailPreviewLinks(
   draft: EmailTemplateInput,
@@ -248,6 +239,10 @@ export function emailPreviewLinks(
   return out;
 }
 
+/**
+ * Returns the subject and preheader with variables filled in, as an inbox row shows them. It uses
+ * the rendered email's substitution, so the two never drift.
+ */
 export function emailPreviewHeader(
   draft: EmailTemplateInput,
   locale: string,
@@ -292,14 +287,9 @@ export function emailPreviewDocument(
   const preheader = previewEmailDraft({ subject: "", body: content.preheader ?? "" }, samples).body;
   const align = draft.options.alignment === "left" ? "left" : "center";
 
-  // Rendered as a real transactional email rather than a bare document: a
-  // 600px card centred on a neutral page, the width every mail client and
-  // template framework converges on. Inline styles and table-free flow are kept
-  // simple because this is a preview, not the sent artefact.
-  //
-  // The CSP, sanitizeEmailHTML() and escapeEmailHTML() calls above are load
-  // bearing — the iframe renders tenant-authored markup, so links are inert
-  // (pointer-events:none) and scripts/handlers are stripped before they arrive.
+  // A 600px card on a neutral page, like a real transactional email. The CSP, sanitizeEmailHTML()
+  // and escapeEmailHTML() are load-bearing: the iframe renders tenant-authored markup, so scripts
+  // and handlers are stripped first and links are inert (pointer-events:none).
   return `<!doctype html><html lang="${escapeEmailHTML(locale)}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><style>
 :root{color-scheme:light}
 body{margin:0;padding:24px 16px;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#27272a;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}

@@ -8,12 +8,7 @@ interface CodeBlockProps {
   className?: string;
 }
 
-/**
- * Fenced code block with a copy button and a language chip. Rendered as
- * monospace with horizontal scroll; token-level syntax highlighting (shiki) is a
- * deferred enhancement tracked in the qeetai spec — the block is fully usable
- * (readable + copyable) without it.
- */
+/** Renders a fenced code block with a language chip and a copy button, without highlighting. */
 export function CodeBlock({ code, lang, className }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
 

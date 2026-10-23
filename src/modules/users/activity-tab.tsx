@@ -1,6 +1,3 @@
-// Activity tab — the full identity timeline, embedded in-place (rather than
-// navigating to /users/$userId/timeline). Reuses the timeline feature verbatim.
-
 import { EmptyState } from "@qeetrix/ui";
 import { ShieldIcon } from "@qeetrix/icons";
 import { useCallback, useMemo, useState } from "react";
@@ -12,6 +9,7 @@ import { TimelineDetailsDrawer } from "@/modules/timeline";
 import { TimelineFilterBar as TimelineFilters } from "@/modules/timeline";
 import { TimelineProvider, useTimeline } from "@/modules/timeline";
 
+/** Renders the user's full identity timeline inside the tab, or a notice if it can't be viewed. */
 export function ActivityTab({ userId, canView }: { userId: string; canView: boolean }) {
   const { t } = useTranslation("users");
   if (!canView) {

@@ -12,9 +12,8 @@ function client() {
 
 describe("hasVerifiedEmail (route guard)", () => {
   beforeEach(() => {
-    // Block body on purpose: `mockReset()` returns the mock, and Vitest treats a
-    // function returned from a hook as its teardown callback — so an implicit
-    // return here makes it invoke `api()` after every test.
+    // Block body on purpose: `mockReset()` returns the mock, which Vitest would run as the
+    // hook's teardown, calling `api()` after every test.
     api.mockReset();
   });
 
@@ -29,8 +28,6 @@ describe("hasVerifiedEmail (route guard)", () => {
   });
 
   it("fails OPEN when /me is unreachable, rather than locking the console", async () => {
-    // Failing closed would turn a backend blip into a console-wide lockout for
-    // every operator. The real gate is server-side (POST /v1/tenants).
     api.mockRejectedValue(new Error("network down"));
     expect(await hasVerifiedEmail(client(), "u1")).toBe(true);
   });

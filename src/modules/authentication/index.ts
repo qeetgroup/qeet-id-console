@@ -1,8 +1,5 @@
-// Public API of the auth module. Covers both the pre-login flows (sign-in/up,
-// invites, magic-link, password reset, social/SAML callback) and authenticated
-// authentication-method management (OIDC clients, SAML/SCIM/LDAP, SSO, passkeys,
-// MFA, auth policy, OAuth grants). Session identity is NOT here — it's platform
-// state at @/platform/auth/session.
+// Public API of the authentication module: pre-sign-in flows and sign-in method management.
+// Session identity is not here; it is platform state in @/platform/auth/session.
 export * from "./api/flows";
 export * from "./api/mfa-sign-in";
 export * from "./api/auth-policy";

@@ -29,9 +29,7 @@ import { useLogout, useMe, useTenantId } from "@/platform/auth/session";
 export function HeaderUser() {
   const meQ = useMe();
   const logout = useLogout();
-  // Org-scoped destinations 403 without a selected organization. Hide them for
-  // an org-less user so the menu never dead-ends (they see only self-service).
-  const hasOrg = !!useTenantId();
+  const hasOrg = !!useTenantId(); // org-scoped items 403 without an org, so they're hidden
 
   const name = meQ.data?.display_name || meQ.data?.email?.split("@")[0] || "—";
   const email = meQ.data?.email ?? "";

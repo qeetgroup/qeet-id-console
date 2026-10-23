@@ -16,19 +16,9 @@ import { canAddPasskey, usePasskeys } from "@/modules/authentication";
 const DISMISS_KEY = "qeetid-admin-passkey-prompt-dismissed";
 
 /**
- * Soft nudge shown on the dashboard when the signed-in user has no
- * passkey on file. Built as a dismissible card (state persisted in
- * localStorage so it doesn't reappear on every refresh).
- *
- * Hidden in four cases:
- *   1. The user already has at least one passkey.
- *   2. The list query is still loading (avoid flicker).
- *   3. The user has explicitly dismissed it.
- *   4. The user's organization has passkeys switched off.
- *
- * The card renders the nudge and its CTA routes to the user's own security
- * settings, where the register ceremony (backed by the WebAuthn register
- * begin/finish endpoints) runs.
+ * Renders a dismissible nudge to add a passkey, linking to the user's security settings. Hidden
+ * while loading, once dismissed (persisted in localStorage), when the user has a passkey, or when
+ * the organization has passkeys switched off.
  */
 export function PasskeyPromptCard() {
   const [dismissed, setDismissed] = useState(
@@ -46,7 +36,7 @@ export function PasskeyPromptCard() {
     try {
       localStorage.setItem(DISMISS_KEY, "1");
     } catch {
-      // Private-mode tolerant: dismissed in-memory for the session.
+      // Storage may be disabled (private mode); the in-memory dismissal lasts this session.
     }
   }
 

@@ -1,7 +1,5 @@
-// Catalogue of console feature flags + their safe defaults. Flags gate the
-// gradual rollout of major surfaces (new authorization builder, Qeet AI, risk
-// engine, new dashboard) without hard-coding availability across components.
-// Keep this list small and intentional.
+// Console feature flags and their safe defaults, gating the rollout of major surfaces. Keep the
+// list small.
 export type FeatureFlag = "qeetai" | "authorization-builder" | "risk-engine" | "new-dashboard";
 
 export const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {

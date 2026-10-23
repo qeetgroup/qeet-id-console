@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   StatusPill,
   Table,
   TableBody,
@@ -14,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { InfoIcon, KeyRoundIcon } from "@qeetrix/icons";
 import { Trans, useTranslation } from "react-i18next";

@@ -1,7 +1,6 @@
-// Self-serve Admin Portal data layer. A link is a capability-scoped
-// ("saml"/"scim"), time-limited token an external IT admin — no Qeet ID
-// account — follows to configure this tenant's SSO themselves. The raw
-// token/url is returned exactly once, on generate.
+// Self-serve Admin Portal links: a time-limited token, scoped to SAML or SCIM, that lets an
+// external IT admin with no Qeet ID account configure this tenant's SSO. The raw token and URL are
+// returned once, on generate.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

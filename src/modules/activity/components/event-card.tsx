@@ -32,10 +32,6 @@ import { type ComponentType, useState } from "react";
 import type { ActivityEvent, Severity } from "../types/activity.types";
 import { SeverityBadge } from "./severity-badge";
 
-// ---------------------------------------------------------------------------
-// Category → icon mapping
-// ---------------------------------------------------------------------------
-
 const CATEGORY_ICONS: Record<string, ComponentType<IconProps<"outline">>> = {
   authentication: LogInIcon,
   authorization: ShieldAlertIcon,
@@ -70,10 +66,6 @@ export function getCategoryIcon(category: string): ComponentType<IconProps<"outl
   return CATEGORY_ICONS[key] ?? ActivityIcon;
 }
 
-// ---------------------------------------------------------------------------
-// EventCard
-// ---------------------------------------------------------------------------
-
 type EventCardProps = {
   event: ActivityEvent;
   isNew?: boolean;
@@ -82,10 +74,7 @@ type EventCardProps = {
   onClick?: () => void;
 };
 
-/**
- * A single activity event row. Supports a compact mode (dashboard widget)
- * and a full mode (activity page timeline). Keyboard-accessible.
- */
+/** Renders an event as a compact clickable row, or as a full card with expandable metadata. */
 export function EventCard({
   event,
   isNew = false,
@@ -147,7 +136,6 @@ export function EventCard({
     );
   }
 
-  // Full event card (activity page timeline)
   return (
     <article
       className={cn(
@@ -188,7 +176,7 @@ export function EventCard({
           )}
         </div>
 
-        {/* Timestamp + expand toggle */}
+        {/* Timestamp + details button */}
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <TimeSince value={event.at} className="text-[11px] text-muted-foreground tabular-nums" />
           {onClick && (
@@ -204,7 +192,7 @@ export function EventCard({
         </div>
       </div>
 
-      {/* Meta row: actor, target, source */}
+      {/* Meta row: actor, target, source, IP */}
       <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
         {event.actor && (
           <div className="flex items-center gap-1.5">

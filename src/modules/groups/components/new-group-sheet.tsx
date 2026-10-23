@@ -34,8 +34,7 @@ type Props = {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   groups: Group[];
-  /** Candidates for "initial members"; the caller already has the directory loaded. */
-  users: DirectoryUser[];
+  users: DirectoryUser[]; // initial-member candidates, already loaded by the caller
 };
 
 const NONE = "__none__";

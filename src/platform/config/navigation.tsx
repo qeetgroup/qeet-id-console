@@ -54,16 +54,14 @@ export type NavItem = {
   title: string;
   url: string;
   icon?: ReactNode;
-  /** One-line summary shown on section overview cards. */
-  description?: string;
+  description?: string; // one-line summary on section overview cards
   requiredPermission?: Capability;
   items?: NavSubItem[];
 };
 
 export type NavGroup = {
   label: string;
-  /** Rail icon for the two-pane sidebar switcher; required for every group. */
-  icon: ReactNode;
+  icon: ReactNode; // rail icon for the two-pane sidebar switcher
   items: NavItem[];
 };
 
@@ -117,16 +115,14 @@ export const navGroups: NavGroup[] = [
         requiredPermission: "group.read",
       },
       {
-        // Domain verification moved into Settings › Domains (tabbed with the
-        // custom login domain), so Organizations is now a single destination.
+        // Domain verification lives in Settings › Domains, so Organizations has no sub-items.
         title: "Organizations",
         url: "/organizations",
         icon: <BuildingComplexIcon />,
         description: "Organization boundaries, plans and regions.",
       },
       {
-        // SCIM / LDAP are directory-sync connections, so they live under
-        // Directory rather than buried in the auth-connections catalogue.
+        // SCIM and LDAP sync directories, so they sit here, not in the auth-connections catalogue.
         title: "Directories",
         url: "/directory/connections",
         icon: <NetworkIcon />,
@@ -169,7 +165,6 @@ export const navGroups: NavGroup[] = [
     items: [
       { title: "Overview", url: "/applications", icon: <GaugeIcon /> },
       {
-        // The OIDC/OAuth client registry — your registered relying-party apps.
         title: "Applications",
         url: "/auth/connections/oidc",
         icon: <AppWindowIcon />,
@@ -223,8 +218,7 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        // Single catalogue page — individual providers (Google, Microsoft,
-        // Apple, GitHub, …) are configured within it, not as nav entries.
+        // One catalogue page: each provider is configured inside it, not as a nav entry.
         title: "Social",
         url: "/auth/social",
         icon: <Share2Icon />,
@@ -257,8 +251,7 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        // Personal sessions live in the account/profile area; this is the
-        // OAuth device-authorization surface.
+        // OAuth device authorization; a person's own sessions are in the account area.
         title: "Devices",
         url: "/security/device-authorizations",
         icon: <MonitorSmartphoneIcon />,
@@ -595,9 +588,8 @@ export function getRequiredCapabilityForPath(pathname: string): Capability | und
 }
 
 /**
- * Resolves which group the two-pane rail should highlight for a route, using the
- * longest matching destination so `/authorization/roles/42` selects Authorization
- * rather than a shorter-prefixed sibling. Returns undefined for unmapped routes.
+ * Returns the group the two-pane rail highlights for a route, by the longest matching
+ * destination (so `/authorization/roles/42` selects Authorization), or undefined if unmapped.
  */
 export function findNavGroupForPath(groups: NavGroup[], pathname: string): string | undefined {
   const normalized = normalizePathname(pathname);

@@ -4,7 +4,7 @@ import { SparklesIcon } from "@qeetrix/icons";
 
 import { workspaceActions, workspaceStore } from "../store/workspace-store";
 
-/** Header affordance that toggles the QeetAI workspace (also bound to ⌘J). */
+/** Renders the header button that toggles the Qeet AI workspace (also ⌘J). */
 export function QeetAITrigger() {
   const open = useStore(workspaceStore, (s) => s.open);
   return (

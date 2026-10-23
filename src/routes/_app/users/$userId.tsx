@@ -20,7 +20,7 @@ import {
 import { isUser360Tab, USER360_TABS, type User360Tab } from "@/modules/users/tabs";
 import { UserDetailHeader } from "@/modules/users/user-detail-header";
 import { deriveUserRisk } from "@/modules/users/user-risk";
-import { useAnomalies } from "@/modules/security/api/anomalies";
+import { useAnomalies } from "@/modules/security";
 import { api } from "@/platform/api/client";
 import {
   type UserDetail,
@@ -32,8 +32,7 @@ import {
 } from "@/modules/users/api/user360";
 
 export const Route = createFileRoute("/_app/users/$userId")({
-  // tab is optional so existing `<Link to="/users/$userId">` call sites need not
-  // pass a search param; it defaults to the Overview tab.
+  // `tab` is optional, so a plain link opens the Overview tab.
   validateSearch: (search: Record<string, unknown>): { tab?: User360Tab } => ({
     tab: isUser360Tab(search.tab) ? search.tab : "overview",
   }),
@@ -65,8 +64,7 @@ function UserDetailPage() {
   const sessionsQ = useUserSessions(userId);
   const anomaliesQ = useAnomalies();
 
-  // Publish the current user as the qeetai's selection context (kept from the
-  // original page so the assistant still knows which user is on screen).
+  // Tells Qeet AI which user is on screen.
   const qeetaiCtx = useMemo(
     () => ({ selection: { kind: "user" as const, id: userId, label: userQ.data?.email } }),
     [userId, userQ.data?.email],
@@ -80,10 +78,11 @@ function UserDetailPage() {
 
   const lastSeenAt = useMemo(() => {
     const items = sessionsQ.data?.items ?? [];
-    if (items.length === 0) return null;
+    const first = items[0];
+    if (!first) return null;
     return items.reduce(
       (max, s) => (s.last_seen_at > max ? s.last_seen_at : max),
-      items[0].last_seen_at,
+      first.last_seen_at,
     );
   }, [sessionsQ.data]);
 

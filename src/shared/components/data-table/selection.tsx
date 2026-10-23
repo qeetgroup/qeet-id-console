@@ -7,9 +7,10 @@ type MasterCheckboxProps = {
   label?: string;
 };
 
-// Header checkbox: selects every selectable row, renders indeterminate when
-// only some are checked. `selectableIds` lets callers exclude protected rows
-// (e.g. the signed-in admin) from select-all.
+/**
+ * Renders the select-all checkbox, indeterminate when only some rows are checked.
+ * `selectableIds` leaves protected rows, such as the signed-in admin, out of select-all.
+ */
 export function MasterCheckbox({
   selectableIds,
   selectedIds,

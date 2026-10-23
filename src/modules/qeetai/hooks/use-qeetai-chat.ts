@@ -1,13 +1,3 @@
-// Turn orchestration for the conversation UI. A turn can span multiple "legs":
-// the model streams text, then (if it wants to act) pauses with `done: tool_use`
-// and a set of tool_call requests. We execute those tools CLIENT-SIDE through the
-// execution engine — under the operator's own token, so RBAC + Postgres RLS +
-// audit are inherited and destructive ops are confirmed — then post the redacted
-// results back to continue the turn. Loops until `end_turn` (capped). Secret
-// artifacts from a tool NEVER flow back to the model; only the redacted summary
-// and structured data do. Stop-generation aborts both the stream and any
-// in-flight tool.
-
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -35,23 +25,20 @@ interface PendingToolCall {
 
 export interface UseQeetAIChat {
   isStreaming: boolean;
-  /** True between send and the first streamed token. */
-  isThinking: boolean;
+  isThinking: boolean; // True between send and the first streamed token
   send: (text: string) => void;
   regenerate: () => void;
   editAndResend: (messageId: string, text: string) => void;
   stop: () => void;
 }
 
-/** Map a settled execution to the tool_result posted back — redacted, model-safe. */
+/** Returns the redacted, model-safe tool result to post back for a settled execution. */
 function toToolResult(exec: ToolExecution): ToolResultInput {
   if (exec.status === "succeeded" && exec.result) {
     return {
       toolCallId: exec.id,
       name: exec.toolName,
-      // summary + structured data only; sensitiveArtifact is never sent onward.
-      // PII (emails/IPs) is masked before it reaches the model provider; opaque
-      // IDs are preserved so the model can still make follow-up tool calls.
+      // Never the sensitiveArtifact, and with emails and IPs masked before the model sees them.
       output: redactPII({ summary: exec.result.summary, ...(exec.result.data ?? {}) }),
     };
   }
@@ -73,9 +60,8 @@ function refusal(name: string, tool: ToolDefinition | undefined): ToolExecution[
 }
 
 /**
- * Persist an execution to the conversation store — but FIRST divert any secret
- * artifact (OAuth secret, signing private key) to the in-memory secrets store and
- * strip it from the persisted copy. Secrets must never reach localStorage.
+ * Saves an execution to the conversation store after moving any secret to the in-memory
+ * secrets store: the conversation store persists to localStorage, which must never hold one.
  */
 function recordExecution(conversationId: string, messageId: string, exec: ToolExecution) {
   let safe = exec;
@@ -86,6 +72,11 @@ function recordExecution(conversationId: string, messageId: string, exec: ToolEx
   conversationActions.upsertMessageExecution(conversationId, messageId, safe);
 }
 
+/**
+ * Runs conversation turns. When the model pauses with `tool_use`, the requested tools run
+ * client-side under the operator's own session and their redacted results continue the turn,
+ * at most MAX_TOOL_LEGS times. `stop` aborts both the stream and any running tool.
+ */
 export function useQeetAIChat(): UseQeetAIChat {
   const provider = useActiveProvider();
   const context = useConsoleContext();
@@ -96,7 +87,6 @@ export function useQeetAIChat(): UseQeetAIChat {
   const [isThinking, setThinking] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Abort any in-flight turn if the component using this hook unmounts.
   useEffect(() => () => abortRef.current?.abort(), []);
 
   const stop = useCallback(() => {
@@ -128,14 +118,10 @@ export function useQeetAIChat(): UseQeetAIChat {
         stepUp,
       };
 
-      // Only tools the operator can actually use are executable. `getTool`
-      // resolves any registered tool, so gate on the enabled set here too —
-      // the model can't invoke a tool outside the operator's capabilities, or
-      // any change tool while those are switched off (defence-in-depth; the
-      // backend remains authoritative).
+      // getTool resolves any registered tool, so also gate on the enabled set: the model can't run
+      // a tool beyond the operator's capabilities, or a withheld change. The backend still decides.
       const enabled = new Set(enabledTools(access.can).map((t) => t.name));
 
-      // Consume one streamed leg; collect any tool_call requests + the stop reason.
       const streamLeg = async (
         input: SendInput,
       ): Promise<{ calls: PendingToolCall[]; reason: DoneReason }> => {
@@ -192,7 +178,6 @@ export function useQeetAIChat(): UseQeetAIChat {
               return;
             }
 
-            // Execute the requested tools client-side, streaming status into the timeline.
             const results: ToolResultInput[] = [];
             for (const call of calls) {
               if (controller.signal.aborted) break;
@@ -228,7 +213,7 @@ export function useQeetAIChat(): UseQeetAIChat {
             input = { conversationId, toolResults: results, context };
           }
 
-          // Reached the tool-leg cap — settle gracefully rather than loop forever.
+          // Out of tool legs: settle the turn as it stands rather than loop.
           conversationActions.updateMessage(conversationId, assistantId, { status: "complete" });
         } catch {
           conversationActions.updateMessage(conversationId, assistantId, {

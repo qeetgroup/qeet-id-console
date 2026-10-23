@@ -29,8 +29,8 @@ import { ConditionTree } from "@/modules/authorization/components/condition-buil
 import { ComingSoon } from "@/modules/authorization/components/shared/coming-soon";
 import { type Effect, emptyGroup, useCreateAbacPolicy } from "@/modules/authorization/api/abac";
 import {
+  abacSaveBlocker,
   emptyPolicyDoc,
-  isReducibleToAbac,
   type PolicyDoc,
   toAbacInput,
   toJson,
@@ -57,7 +57,8 @@ function BuilderPage() {
   }, []);
 
   const createM = useCreateAbacPolicy();
-  const reducible = isReducibleToAbac(doc);
+  const blocker = abacSaveBlocker(doc);
+  const reducible = blocker === null;
 
   function toggleBlock(kind: Exclude<BlockKind, "decision">) {
     setDoc((d) => {
@@ -147,10 +148,10 @@ function BuilderPage() {
         </Card>
       </div>
 
-      {!reducible && (
+      {blocker && (
         <ComingSoon
-          title="Composite policies aren't persistable yet"
-          description="This policy combines RBAC/ReBAC with ABAC, which has no single backend object. You can export it or simulate it now; remove the RBAC/ReBAC blocks to save it as a real ABAC policy."
+          title="This policy isn't persistable yet"
+          description={blocker}
           note="POST /abac/policies accepts ABAC-only policies"
         />
       )}
@@ -162,7 +163,7 @@ function BuilderPage() {
             <CardDescription>JSON · YAML · DSL · evaluation tree</CardDescription>
           </div>
           <Badge variant={reducible ? "success" : "warning"}>
-            {reducible ? "ABAC-persistable" : "composite (preview only)"}
+            {reducible ? "ABAC-persistable" : "preview only"}
           </Badge>
         </CardHeader>
         <CardContent>

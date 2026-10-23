@@ -7,7 +7,6 @@ import {
   CardTitle,
   Checkbox,
   CopyableSecret,
-  DataState,
   Field,
   FieldLabel,
   Select,
@@ -17,6 +16,7 @@ import {
   SelectValue,
   StatusPill,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
@@ -44,7 +44,12 @@ export const Route = createFileRoute("/_app/auth/connections/")({
   component: ConnectionsPage,
 });
 
-const TTL_SECONDS = [60 * 60, 24 * 60 * 60, 3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
+const TTL_SECONDS: readonly [number, number, number, number] = [
+  60 * 60,
+  24 * 60 * 60,
+  3 * 24 * 60 * 60,
+  7 * 24 * 60 * 60,
+];
 
 function ConnectionsPage() {
   const { t } = useTranslation("auth");
@@ -119,7 +124,10 @@ function AdminPortalCard({ ttlOptions }: { ttlOptions: { label: string; seconds:
   const [capabilities, setCapabilities] = useState<Set<AdminPortalCapability>>(
     () => new Set(["saml", "scim"]),
   );
-  const [ttl, setTtl] = useState(String(ttlOptions[1].seconds));
+  const defaultTtl = ttlOptions[1];
+  // Callers pass TTL_OPTIONS, whose second entry (24h) is the default.
+  if (!defaultTtl) throw new Error("AdminPortalCard needs at least two TTL options");
+  const [ttl, setTtl] = useState(String(defaultTtl.seconds));
 
   const toggle = (cap: AdminPortalCapability, checked: boolean) => {
     setCapabilities((prev) => {
@@ -146,9 +154,8 @@ function AdminPortalCard({ ttlOptions }: { ttlOptions: { label: string; seconds:
             <Field>
               <FieldLabel>{t("connections.portal.capabilities")}</FieldLabel>
               <div className="flex items-center gap-4 pt-1">
-                {/* Checkbox is a @base-ui custom element (not a native input),
-                  so label+htmlFor association doesn't apply. Use aria-label
-                  on the Checkbox and a sibling span for the visual text. */}
+                {/* A @base-ui custom element, so label/htmlFor doesn't apply: aria-label on the
+                  Checkbox, and a sibling span for the visible text. */}
                 <div className="flex items-center gap-2 text-sm">
                   <Checkbox
                     aria-label={t("connections.portal.samlCapability")}

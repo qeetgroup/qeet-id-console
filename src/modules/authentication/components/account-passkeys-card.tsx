@@ -30,9 +30,8 @@ import { isLastSignInMethod, useSignInMethods } from "../api/sign-in-methods";
 import { PasskeysTable, passkeyDisplayName } from "./passkeys-table";
 
 /**
- * The Passkeys card of the user's own security settings: their passkeys, with
- * rename and remove, and adding a new one with an optional name. Adding is
- * offered only when their organization allows passkeys.
+ * Renders the Passkeys card of the user's own security settings: rename, remove, and add with an
+ * optional name. Adding is offered only when their organization allows passkeys.
  */
 export function AccountPasskeysCard({ className }: { className?: string }) {
   const { t } = useTranslation("account");

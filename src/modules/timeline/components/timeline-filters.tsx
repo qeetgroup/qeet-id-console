@@ -1,9 +1,3 @@
-// Timeline filter bar — a compact, dropdown-driven control surface.
-// Primary row: full-text search + time-range preset. Secondary row: Category
-// and Severity multi-select dropdowns. Active selections render as removable
-// chips so the applied filter set is always legible without reopening menus.
-// Capability-aware: requires audit.read + user.read to be interactive.
-
 import {
   Button,
   cn,
@@ -22,10 +16,6 @@ import { useCapabilities } from "@/platform/security/capability-provider";
 import { ActivityTimeRange, type DateRange, presetToRange, TIME_PRESETS } from "@/modules/activity";
 import type { Severity } from "@/modules/activity";
 import { useTimeline } from "../timeline-provider";
-
-// ---------------------------------------------------------------------------
-// Options
-// ---------------------------------------------------------------------------
 
 const CATEGORY_OPTIONS = [
   { value: "authentication", label: "Authentication" },
@@ -59,10 +49,6 @@ const SEVERITY_LABEL: Record<string, string> = Object.fromEntries(
 const PRESET_LABEL: Record<string, string> = Object.fromEntries(
   TIME_PRESETS.map((p) => [p.value, p.label]),
 );
-
-// ---------------------------------------------------------------------------
-// Dropdown + chip primitives
-// ---------------------------------------------------------------------------
 
 function FilterDropdown({
   label,
@@ -115,18 +101,17 @@ function ActiveChip({ label, onRemove }: { label: string; onRemove: () => void }
   );
 }
 
-// ---------------------------------------------------------------------------
-// TimelineFilters
-// ---------------------------------------------------------------------------
-
+/**
+ * Renders the timeline filter bar: search, time range, category and severity menus, and a
+ * removable chip per active filter. Disabled without audit.read and user.read.
+ */
 export function TimelineFilters() {
   const access = useCapabilities();
   const disabled = !access.can("audit.read") || !access.can("user.read");
 
   const { filters, setFilters, resetFilters } = useTimeline();
 
-  // Local UI state for the time-range control; the resolved { from, to } window
-  // lives in the shared filter store.
+  // The preset is local UI state; only its resolved from/to window goes into the filter store.
   const [preset, setPreset] = useState("all");
   const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
 
@@ -193,9 +178,10 @@ export function TimelineFilters() {
     resetFilters();
   }, [resetFilters]);
 
+  // An unknown preset gets an empty chip label.
   const dateChipLabel =
     preset !== "all" && preset !== "custom"
-      ? PRESET_LABEL[preset]
+      ? (PRESET_LABEL[preset] ?? "")
       : preset === "custom"
         ? "Custom range"
         : "Date range";

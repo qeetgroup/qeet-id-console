@@ -31,11 +31,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const groups =
     access.state === "ready" ? filterNavigation(navGroups, access.can) : safeNavigation(navGroups);
 
-  // The rail follows the current route by default; picking a rail icon lets you
-  // preview another section's items without navigating. Any route change (e.g.
-  // clicking an item) drops the manual pick so the panel tracks the route again.
+  // The panel follows the route; picking a rail icon previews another section without
+  // navigating, until the next route change drops the pick.
   const routeLabel = findNavGroupForPath(groups, pathname) ?? groups[0]?.label;
   const [picked, setPicked] = React.useState<string | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a route change resets the pick
   React.useEffect(() => {
     setPicked(null);
   }, [routeLabel]);
@@ -52,7 +52,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" className="console-sidebar" {...props}>
       <div className="console-dual flex h-full min-h-0 flex-1">
-        {/* Rail: the eight section icons, always visible even when collapsed. */}
+        {/* Rail: the section icons, visible even when collapsed. */}
         <div className="console-rail flex h-full w-(--sidebar-width-icon) shrink-0 flex-col items-center gap-1 border-e border-sidebar-border/60 py-3">
           <a href="/" aria-label="Qeet ID overview" className="console-rail-logo">
             {/* No forced variant → the mark stays theme-adaptive on the sidebar. */}

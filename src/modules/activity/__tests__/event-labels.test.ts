@@ -46,7 +46,6 @@ describe("eventResult", () => {
   });
 
   it("derives the outcome from the action verb even at info severity", () => {
-    // A successful login is logged at info severity — it must still read Success.
     expect(eventResult({ type: "auth.login_succeeded", severity: "info" })).toBe("Success");
     expect(eventResult({ type: "tenant.created", severity: "info" })).toBe("Success");
     expect(eventResult({ type: "auth.login_failed", severity: "warning" })).toBe("Failed");

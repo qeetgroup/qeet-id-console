@@ -1,5 +1,4 @@
-// Secrets vault data layer. The API returns only metadata (never the value)
-// except via an explicit, audited reveal.
+// The secrets API returns metadata only; a value comes back only from an explicit, audited reveal.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

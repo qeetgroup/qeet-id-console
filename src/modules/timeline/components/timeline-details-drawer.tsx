@@ -1,14 +1,3 @@
-// TimelineDetailsDrawer — extended event details drawer for the identity timeline.
-// Extends the activity event-details-drawer concept with:
-//   • Correlation / trace ID from event metadata
-//   • Related events (link to filtered timeline)
-//   • Destructive quick actions (Reset MFA, Disable user, Terminate session)
-//     guarded by capability
-//   • Prev / next event navigation (mirrors EventDetailsDrawer)
-//
-// REUSE: imports SeverityBadge from the activity feature (not re-implemented).
-// Shares Sheet, ScrollArea, Separator, Button, Badge, Tooltip from @qeetrix/ui.
-
 import {
   Badge,
   Button,
@@ -46,10 +35,6 @@ import { SeverityBadge } from "@/modules/activity";
 import { formatEventTitle } from "@/modules/activity";
 import type { ActivityEvent } from "@/modules/activity";
 import { useResetUserMfa, useSetUserStatus } from "@/modules/users";
-
-// ---------------------------------------------------------------------------
-// Shared sub-components (mirrored from EventDetailsDrawer, not copy-pasted)
-// ---------------------------------------------------------------------------
 
 function CopyButton({ text, label }: { text: string; label: string }) {
   const handleCopy = useCallback(() => {
@@ -92,10 +77,6 @@ function SectionHeading({ children }: { children: ReactNode }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Changes — before → after diff extracted from event metadata
-// ---------------------------------------------------------------------------
-
 interface FieldChange {
   field: string;
   before: unknown;
@@ -114,10 +95,8 @@ function formatChangeValue(value: unknown): string {
 }
 
 /**
- * Pull a before → after list out of common audit-metadata shapes:
- *   • metadata.changes = { field: { from, to } | [old, new] }
- *   • metadata.before / metadata.after = { field: value }
- * Returns only fields that actually changed. Empty → the section is hidden.
+ * Returns before → after changes from `metadata.changes` entries ({ from, to } or [old, new])
+ * and from the fields that differ between `metadata.before` and `metadata.after`.
  */
 function extractChanges(metadata: Record<string, unknown> | undefined): FieldChange[] {
   if (!metadata) return [];
@@ -151,18 +130,10 @@ function extractChanges(metadata: Record<string, unknown> | undefined): FieldCha
   return out;
 }
 
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
-
 type TimelineDetailsDrawerProps = {
-  /** Currently selected event. Pass null to close the drawer. */
-  event: ActivityEvent | null;
-  /** The user this timeline belongs to (for quick actions). */
-  userId: string;
-  /** Event immediately before this one (for prev navigation). */
+  event: ActivityEvent | null; // The open event; null closes the drawer
+  userId: string; // The timeline's user, whom the quick actions act on
   prevEvent?: ActivityEvent | null;
-  /** Event immediately after this one (for next navigation). */
   nextEvent?: ActivityEvent | null;
   onClose: () => void;
   onSelectPrev?: () => void;
@@ -170,14 +141,9 @@ type TimelineDetailsDrawerProps = {
 };
 
 /**
- * Slide-in Sheet showing the full event payload for the identity timeline.
- * Extends the activity event-details concept with:
- *   - Correlation / trace ID section (from metadata)
- *   - Timeline-scoped quick actions (reset MFA, disable user, terminate session)
- *   - Prev / next event navigation
- *
- * The destructive actions (Reset MFA, Disable user) are guarded by user.write
- * capability. Terminate session is guarded by session management capability.
+ * Renders a timeline event in a side sheet: its fields, before → after changes, correlation IDs,
+ * actor, resource, request context and metadata, with prev/next navigation and quick actions.
+ * Reset MFA and Disable user show only with user.write.
  */
 export function TimelineDetailsDrawer({
   event,
@@ -209,7 +175,6 @@ export function TimelineDetailsDrawer({
     resetMfa.mutate(userId);
   }, [resetMfa, userId]);
 
-  // Derive correlation / trace ID from event metadata if present.
   const correlationId =
     typeof event?.metadata?.correlation_id === "string"
       ? event.metadata.correlation_id
@@ -217,11 +182,9 @@ export function TimelineDetailsDrawer({
         ? event.metadata.trace_id
         : null;
 
-  // Derive session ID from metadata (if present) for session-level actions.
   const sessionId =
     typeof event?.metadata?.session_id === "string" ? event.metadata.session_id : null;
 
-  // Before → after field changes, when the event carries them.
   const changes = extractChanges(event?.metadata);
 
   return (
@@ -496,7 +459,7 @@ export function TimelineDetailsDrawer({
 
                 <Separator />
 
-                {/* Quick actions — extended over EventDetailsDrawer */}
+                {/* Quick actions */}
                 <section aria-label="Quick actions">
                   <SectionHeading>Quick actions</SectionHeading>
                   <div className="flex flex-wrap gap-2">

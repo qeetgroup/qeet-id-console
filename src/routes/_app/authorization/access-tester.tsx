@@ -93,8 +93,7 @@ function AccessCheckPage() {
             <CardTitle className="text-base">{t("check.resultTitle")}</CardTitle>
             <CardDescription>{t("check.resultDescription")}</CardDescription>
           </CardHeader>
-          {/* Async result panel has no toast, so announce the allow/deny
-              outcome to assistive tech via a polite live region. */}
+          {/* No toast for the result, so a polite live region announces allow or deny. */}
           <CardContent aria-live="polite">
             {!result ? (
               <div className="flex flex-col items-center gap-2 py-12 text-center">
@@ -135,8 +134,9 @@ function AccessCheckPage() {
                       <p className="text-sm text-muted-foreground">{t("check.noGrantPath")}</p>
                     ) : (
                       <ul className="flex flex-col gap-2">
-                        {result.paths.map((p, i) => (
-                          <GrantPathRow key={`${p.role_id}-${p.via}-${i}`} path={p} />
+                        {result.paths.map((p) => (
+                          // One path per role, directly or per group (unique server-side).
+                          <GrantPathRow key={`${p.role_id}-${p.group_id ?? p.via}`} path={p} />
                         ))}
                       </ul>
                     )}

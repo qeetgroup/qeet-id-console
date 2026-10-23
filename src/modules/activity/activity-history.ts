@@ -1,8 +1,3 @@
-// TanStack Query hook for fetching the historical activity event log
-// via GET /v1/activity with cursor-based pagination.
-// 404 and network errors are treated as empty pages to prevent console crashes
-// when the backend endpoint is not yet deployed.
-
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
@@ -16,8 +11,7 @@ export type ActivityHistoryPage = {
 
 const HISTORY_LIMIT = 50;
 
-/** Builds the /v1/activity query string for a filter set + cursor. Exported so
- *  the export loop (activity-export.ts) sends exactly the same predicates. */
+/** Returns the /v1/activity query for filters and a cursor; exports reuse it to match the view. */
 export function buildActivityQuery(
   filters: ActivityFilters,
   cursor: string,
@@ -40,9 +34,8 @@ export function buildActivityQuery(
 }
 
 /**
- * Fetches one page of history from GET /v1/activity. Treats 404 (not deployed)
- * and network errors as empty pages so the page degrades gracefully while the
- * backend is being rolled out. Shared by the infinite query and the exporter.
+ * Fetches one page of GET /v1/activity. A 404, 503 or network error yields an empty page so
+ * the view degrades gracefully while the endpoint is unavailable; other errors throw.
  */
 export async function fetchActivityPage(
   filters: ActivityFilters,
@@ -62,9 +55,7 @@ export async function fetchActivityPage(
   }
 }
 
-/**
- * Loads paginated historical activity events from GET /v1/activity.
- */
+/** Loads the cursor-paginated activity history for `filters`. */
 export function useActivityHistory(filters: ActivityFilters, enabled = true) {
   return useInfiniteQuery({
     queryKey: ["activity-history", filters] as const,

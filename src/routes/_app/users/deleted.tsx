@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Table,
   TableBody,
   TableCell,
@@ -14,6 +13,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { RotateCcwIcon, TrashIcon, UserMinusIcon } from "@qeetrix/icons";

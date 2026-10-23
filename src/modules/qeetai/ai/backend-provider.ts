@@ -1,7 +1,5 @@
-// AIProvider backed by the live Go qeetai service. A turn streams over SSE from
-// `POST /v1/qeetai/conversations/{id}/messages`. Because the workspace's
-// conversations are local-first, the server-side conversation is created lazily
-// on the first streamed turn and its UUID is remembered on the local record.
+// Provider backed by the qeetai service: each turn streams over SSE. Conversations are
+// local-first, so the server one is created on the first turn and its id kept on the local one.
 
 import { api } from "@/platform/api/client";
 import { createQeetAIConversation } from "../api/qeetai";
@@ -11,7 +9,7 @@ import type { AIProvider, ProviderStatus, SendInput, StreamEvent } from "./ai-pr
 import { buildTurnBody } from "./prompt-builder";
 import { streamQeetAITurn } from "./streaming-client";
 
-/** Resolve (creating if needed) the server conversation id for a local one. */
+/** Returns the server conversation id for a local one, creating it if needed; null on failure. */
 async function ensureServerConversation(localId: string): Promise<string | null> {
   const existing = conversationStore.state.conversations.find((c) => c.id === localId);
   if (existing?.serverId) return existing.serverId;

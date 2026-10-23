@@ -8,12 +8,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
 
-// Step-up re-verification. Sensitive actions are gated server-side and answer
-// 403 `step_up_required` when the calling session hasn't confirmed a second
-// factor recently. The step-up dialog confirms one of the person's factors that
-// the organisation counts — a passkey, an authenticator-app or recovery code,
-// or a code sent to an email or SMS factor — so the action can be sent again
-// (see step-up-gate and useSensitiveAction). The backend remains authoritative.
+// Step-up re-verification. A sensitive action answers 403 `step_up_required` until the session
+// has recently confirmed a factor the organisation counts; these hooks confirm one so the action
+// can be resent. The backend decides.
 
 /** True when an error is the backend's step-up-required signal. */
 export function isStepUpRequired(err: unknown): boolean {
@@ -37,7 +34,7 @@ function counts(allowed: string[] | null, ...methods: string[]): boolean {
   return allowed === null || methods.some((m) => allowed.includes(m));
 }
 
-/** What the person can step up with, read when the dialog opens. */
+/** Returns what the person can step up with, read when the dialog opens. */
 export function useStepUpOptions(open: boolean, allowed: string[] | null) {
   return useQuery({
     queryKey: ["step-up", "options", allowed],
@@ -65,7 +62,10 @@ export function useStepUpOptions(open: boolean, allowed: string[] | null) {
   });
 }
 
-/** Confirms an authenticator-app or recovery code (`authenticator`), or a code sent to an email/SMS factor (`otp`). */
+/**
+ * Confirms an authenticator-app or recovery code (`authenticator`), or a code sent to an email or
+ * SMS factor (`otp`).
+ */
 export function useStepUpVerify() {
   return useMutation({
     mutationFn: ({

@@ -41,7 +41,7 @@ function RocketIcon() {
   );
 }
 
-/** Educational context only; no fabricated security certification or setup state. */
+/** Renders educational guidance for a setup step; it claims no certification or setup state. */
 export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
   const { t } = useTranslation("dashboard");
   const titleId = useId();

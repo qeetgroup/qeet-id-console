@@ -1,8 +1,3 @@
-// Summary metric strip — a server-computed windowed snapshot
-// (GET /v1/activity/summary) rendered as six KPI cards, each with its own
-// sparkline drawn from the per-outcome time series. Clicking an outcome card
-// applies the matching severity filter. Built on the .dashboard-metric helpers.
-
 import { cn, Skeleton, Sparkline } from "@qeetrix/ui";
 
 import type { ActivitySearch } from "../activity-search";
@@ -44,7 +39,7 @@ function MetricCard({
   value: number;
   tone: Tone;
   series: number[];
-  share?: number; // 0..1, shown as a % next to the label
+  share?: number; // 0..1, shown as a percentage beside the label
   onClick?: () => void;
   active?: boolean;
 }) {
@@ -104,6 +99,7 @@ function StripSkeleton() {
   );
 }
 
+/** Renders the summary as six KPI cards with sparklines; an outcome card applies its filter. */
 export function ActivitySummaryStrip({
   summary,
   isLoading,
@@ -112,9 +108,9 @@ export function ActivitySummaryStrip({
 }: {
   summary: ActivitySummary | undefined;
   isLoading: boolean;
-  /** Apply a filter patch when an outcome card is clicked. */
+  /** Receives the severity filter of a clicked card. */
   onApplyFilter?: (patch: Partial<ActivitySearch>) => void;
-  /** The currently-applied outcome (drives the pressed state), if any. */
+  /** The applied outcome, whose card renders pressed; "" presses Total events. */
   activeOutcome?: Outcome | "";
 }) {
   if (isLoading && !summary) return <StripSkeleton />;
@@ -125,7 +121,7 @@ export function ActivitySummaryStrip({
   const warning = summary.by_outcome.warning ?? 0;
   const failed = summary.by_outcome.failed ?? 0;
   const s = summary.series;
-  // Coalesce to 0 so an older backend (total-only series) still renders.
+  // A bucket may carry only `count`; missing breakdowns plot as 0.
   const seriesOf = (key: keyof (typeof s)[number]) => s.map((b) => Number(b[key] ?? 0));
 
   const apply = (patch: Partial<ActivitySearch>) => onApplyFilter?.(patch);

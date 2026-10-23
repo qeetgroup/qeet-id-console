@@ -422,7 +422,7 @@ export function SyncErrorsView({
               values={(page?.categories ?? []).map((category, index) => ({
                 label: category.key,
                 count: category.count,
-                color: colors[index % colors.length],
+                color: colors[index % colors.length] ?? "var(--muted)", // fallback unreachable
               }))}
             />
             <dl className="min-w-28 flex-1 space-y-2 text-xs">

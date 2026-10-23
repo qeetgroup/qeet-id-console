@@ -128,8 +128,7 @@ describe("Account › Sessions › sign out other sessions", () => {
   });
 });
 
-// Opens the confirmation for signing out everywhere, returns its text, and
-// confirms it.
+// Opens the sign-out-everywhere confirmation, confirms it and returns its text.
 async function signOutEverywhere(): Promise<string> {
   const trigger = await screen.findByRole("button", { name: /sign out everywhere/i });
   fireEvent.click(trigger);

@@ -1,50 +1,37 @@
-// Central catalogue of the stable machine error codes the console reacts to.
-// The backend `error.code` and a few client-synthesised codes flow through
-// here so branching/localisation happens on one source instead of scattered
-// string literals. Add a code here + copy in user-message.ts to give a flow a
-// meaningful message; anything unlisted falls back to generic per-kind copy.
+// The stable error codes the console branches on: backend `error.code`s plus a few the client
+// synthesises. Give a flow a meaningful message by adding its code here and its copy in
+// user-message.ts; anything unlisted gets the generic per-kind copy.
 
 export type ErrorKind = "auth" | "authz" | "validation" | "network" | "api" | "unknown";
 
 export const ERROR_CODES = {
-  // auth (session / step-up)
-  STEP_UP_REQUIRED: "step_up_required",
+  STEP_UP_REQUIRED: "step_up_required", // auth (session / step-up)
   SESSION_EXPIRED: "auth.session_expired",
+  // Client-synthesised: Qeet ID was unreachable or overloaded (timeout, 5xx, 429). The refresh
+  // token wasn't rejected, so the person stays signed in and can retry.
+  SESSION_REFRESH_UNAVAILABLE: "client.session_refresh_unavailable",
   INVALID_STATE: "auth.invalid_state",
-  // account / signup
-  EMAIL_EXISTS: "auth.email_exists",
-  // sign-in credentials + account state. Statuses come from the auth domain's
-  // own table (error_status_auth.go), so several land on 401 -> `auth`, whose
-  // fallback ("Please sign in again") is wrong for every one of them.
+  EMAIL_EXISTS: "auth.email_exists", // sign-up
+  // sign-in credentials and account state: several are 401s, whose `auth` fallback ("Please
+  // sign in again") is wrong for each of them
   INVALID_CREDENTIALS: "auth.invalid_credentials",
   ACCOUNT_LOCKED: "auth.account_locked",
-  // 503: the server could not check or record failed sign-ins, so it refused
-  // the sign-in (fail closed). Retrying shortly is the right advice.
-  SIGN_IN_UNAVAILABLE: "auth.sign_in_unavailable",
+  SIGN_IN_UNAVAILABLE: "auth.sign_in_unavailable", // 503: lockout state unreadable, so fail closed
   ACCOUNT_SUSPENDED: "auth.account_suspended",
   ACCOUNT_INACTIVE: "auth.account_inactive",
   SESSION_REVOKED: "auth.session_revoked",
-  // 401 from a renewal: the session reached its maximum age or idle timeout.
-  SESSION_TIMED_OUT: "auth.session_timed_out",
-  // 409 when removing an account's last way to sign in.
-  LAST_SIGN_IN_METHOD: "auth.last_sign_in_method",
-  // 403 when a sign-in would exceed the organisation's limit on sessions.
-  SESSION_LIMIT: "auth.session_limit",
-  // 403 when the organisation's address rules refuse the network signed in
-  // from; renewals too. Retrying from the same network cannot help.
-  ADDRESS_NOT_ALLOWED: "auth.address_not_allowed",
-  // 409 when an address-rule change would block the address it comes from.
-  RULES_LOCK_OUT_CALLER: "risk.rules_lock_out_caller",
-  // 409 when removing a social provider some people can sign in only through.
-  SOCIAL_PROVIDER_IN_USE: "social.provider_in_use",
+  SESSION_TIMED_OUT: "auth.session_timed_out", // 401 on renewal: past the maximum age or idle limit
+  LAST_SIGN_IN_METHOD: "auth.last_sign_in_method", // 409: removing the last way to sign in
+  SESSION_LIMIT: "auth.session_limit", // 403: past the organisation's limit on sessions
+  ADDRESS_NOT_ALLOWED: "auth.address_not_allowed", // 403: the address rules refuse this network
+  RULES_LOCK_OUT_CALLER: "risk.rules_lock_out_caller", // 409: the change would block the caller
+  SOCIAL_PROVIDER_IN_USE: "social.provider_in_use", // 409: some people sign in only through it
   NOT_TENANT_MEMBER: "auth.not_tenant_member",
   SELF_REGISTRATION_DISABLED: "auth.self_registration_disabled",
   PASSWORD_WEAK: "auth.password_weak",
   PASSWORD_BREACHED: "auth.password_breached",
-  // Password rules. Every path that sets a password — sign-up,
-  // change, reset, invite accept, admin create/set — answers 422 with the rule
-  // that failed; 422 -> `validation`, whose fallback names no rule at all.
-  // A breached password now always arrives as authpolicy.password_breached.
+  // Password rules: every path that sets a password answers 422 with the rule that failed, and
+  // the `validation` fallback names no rule.
   PASSWORD_TOO_SHORT: "authpolicy.password_too_short",
   PASSWORD_NO_UPPERCASE: "authpolicy.password_no_uppercase",
   PASSWORD_NO_NUMBER: "authpolicy.password_no_number",
@@ -60,34 +47,20 @@ export const ERROR_CODES = {
   VERIFY_NO_EMAIL: "verification.no_email",
   VERIFY_EMAIL_TAKEN: "verification.email_taken",
   VERIFY_EMAIL_NOT_VERIFIED: "verification.email_not_verified",
-  // authz
-  FORBIDDEN: "auth.forbidden",
-  // organization / tenant. Only `slug` is unique (uq_tenants_slug on
-  // LOWER(slug)); org names are free to repeat. The console auto-derives the
-  // slug from the name, so typing an existing org's name silently reuses its
-  // slug and trips this on submit.
-  ORG_SLUG_TAKEN: "tenant.slug_taken",
-  // billing entitlements (surfaced as actionable upgrade prompts elsewhere)
-  BILLING_PLAN_LIMIT: "billing.plan_limit",
+  FORBIDDEN: "auth.forbidden", // authz
+  ORG_SLUG_TAKEN: "tenant.slug_taken", // a reused name derives a slug already taken
+  BILLING_PLAN_LIMIT: "billing.plan_limit", // billing entitlements
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
-  // mfa
-  MFA_CODE_INVALID: "mfa.code_invalid",
+  MFA_CODE_INVALID: "mfa.code_invalid", // mfa
   MFA_CODE_SEND_LIMITED: "mfa.code_send_limited",
   MFA_FACTOR_LIMIT: "mfa.factor_limit",
   MFA_DELIVERY_UNAVAILABLE: "mfa.delivery_unavailable",
   MFA_DELIVERY_FAILED: "mfa.delivery_failed",
   // a risky sign-in that cannot be confirmed (no second factor, no verified email)
   AUTH_RISK_VERIFICATION_UNAVAILABLE: "auth.risk_verification_unavailable",
-  // throttling
-  TOO_MANY_REQUESTS: "too_many_requests",
-  // Synthesised by client.ts as `http_${status}` when a response carries no
-  // error envelope at all. The rate limiters used to reject with a bare 429 and
-  // an empty body, so this was the only code the console ever saw for a
-  // throttled request. Kept as a safety net: any future body-less 429 still
-  // reads as rate limiting rather than "Something went wrong".
-  HTTP_429: "http_429",
-  // client-synthesised
-  NETWORK: "network_error",
+  TOO_MANY_REQUESTS: "too_many_requests", // throttling
+  HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
+  NETWORK: "network_error", // client-synthesised
   UNKNOWN: "unknown_error",
 } as const;
 

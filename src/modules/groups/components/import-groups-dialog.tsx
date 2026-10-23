@@ -20,10 +20,8 @@ import { errorMessage } from "@/platform/errors/user-message";
 import { type ImportRow, useImportGroups } from "../api/groups";
 
 /**
- * Parses pasted CSV-ish lines into import rows: `name, description, parent`.
- *
- * Only the first two commas split — a description may legitimately contain
- * commas, and losing the tail would silently corrupt the import.
+ * Parses pasted `name, description, parent` lines into import rows. Only the first and last commas
+ * split, so a description may contain commas without being truncated.
  */
 export function parseImportRows(text: string): ImportRow[] {
   return text

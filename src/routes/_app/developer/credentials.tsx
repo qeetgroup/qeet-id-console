@@ -8,7 +8,6 @@ import {
   CardTitle,
   CodeBlock,
   CopyableSecret,
-  DataState,
   Field,
   FieldDescription,
   FieldLabel,
@@ -16,6 +15,7 @@ import {
   Textarea,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
@@ -196,7 +196,7 @@ function CredentialsPage() {
                           · expires <TimeSince value={c.expires_at} />
                         </>
                       ) : (
-                        <>{t("credentials.list.noExpiry")}</>
+                        t("credentials.list.noExpiry")
                       )}
                     </p>
                   </div>

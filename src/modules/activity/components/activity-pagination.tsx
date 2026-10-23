@@ -1,7 +1,3 @@
-// Numbered pagination footer for the Activity table — "Showing X to Y of N",
-// windowed page buttons (1 … 4 5 6 … 249), prev/next, and a page-size selector.
-// Pages are 0-based in props; labels are 1-based.
-
 import {
   Button,
   cn,
@@ -15,7 +11,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@qeetrix/icons";
 
 export const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
 
-/** Windowed page list: first, last, current ±1, with "…" gaps. 1-based. */
+/** Returns the 1-based pages to show (first, last, current ±1) with "…" for each gap. */
 function pageWindow(current: number, count: number): (number | "…")[] {
   const wanted = new Set<number>([1, count, current, current - 1, current + 1]);
   const pages = [...wanted].filter((p) => p >= 1 && p <= count).sort((a, b) => a - b);
@@ -29,6 +25,7 @@ function pageWindow(current: number, count: number): (number | "…")[] {
   return out;
 }
 
+/** Renders the Activity table footer: row range, windowed page buttons and page size. */
 export function ActivityPagination({
   page,
   pageCount,
@@ -39,7 +36,7 @@ export function ActivityPagination({
   onPageSizeChange,
   loading = false,
 }: {
-  page: number; // 0-based
+  page: number; // 0-based; labels are 1-based
   pageCount: number;
   pageSize: number;
   total: number;

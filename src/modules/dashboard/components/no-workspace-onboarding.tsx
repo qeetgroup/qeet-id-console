@@ -148,7 +148,14 @@ function ReadinessMark({ state }: { state: Readiness }) {
       aria-hidden="true"
     >
       {state === "complete" ? (
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          aria-hidden="true"
+          focusable="false"
+        >
           <path d="m5.5 10 3 3 6-6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ) : state === "loading" ? (
@@ -182,8 +189,7 @@ function GettingStarted({ onStart }: { onStart?: () => void }) {
           <span>
             {t("welcome.checklist.progress", { completed: 0, total: SETUP_STEPS.length })}
           </span>
-          {/* This view is only mounted without a tenant. Organization setup has
-              not begun; its real post-creation checklist lives in DashboardOverview. */}
+          {/* Always 0: this view mounts only before an organization exists. */}
           <progress
             className="h-1.75 w-full appearance-none overflow-clip rounded-full border-0 bg-(--welcome-progress) [&::-moz-progress-bar]:bg-(--welcome-orange) [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-(--welcome-progress) [&::-webkit-progress-value]:bg-(--welcome-orange)"
             max={SETUP_STEPS.length}
@@ -282,9 +288,7 @@ function AccountReadiness() {
       : passkeys.data.items.length > 0
         ? "complete"
         : "pending";
-  // A summary of confirmed email + an enrolled passkey, not a security guarantee
-  // or a client-side authorization decision. Unknown/error data never turns green.
-  const account: Readiness =
+  const account: Readiness = // a UX summary, not an auth decision; unknown data never turns green
     identity === "unavailable" || passkey === "unavailable"
       ? "unavailable"
       : identity === "loading" || passkey === "loading"
@@ -474,8 +478,10 @@ function PendingInvitations() {
   );
 }
 
-/** Only the tenant-less dashboard center. AppSidebar, ConsoleHeader and the
- *  existing organization creation / checkout routes remain outside this view. */
+/**
+ * Renders the dashboard centre for a user with no organization yet; the sidebar, header and
+ * organization-creation routes stay outside it.
+ */
 export function NoWorkspaceOnboarding({ onStart }: { onStart?: () => void }) {
   const { t } = useTranslation("dashboard");
   const id = useId();

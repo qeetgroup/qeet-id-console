@@ -30,11 +30,8 @@ function DataPage() {
   const hasPassword = usePasswordStatus().data?.has_password ?? true;
   const [password, setPassword] = useState("");
 
-  // Self-service data export (§B9) and account erasure (§B10). Export returns
-  // the user's portable data synchronously and downloads it as a JSON file.
-  // Delete purges PII + credentials immediately (audit refs kept, redacted),
-  // then — since the session is revoked server-side — drops the local session
-  // and sends the user to sign-up.
+  // Export downloads the person's portable data as JSON. Delete purges PII and credentials at
+  // once (audit references stay, redacted) and revokes the session, so the local one goes too.
 
   const exportM = useMutation({
     mutationFn: async () => {

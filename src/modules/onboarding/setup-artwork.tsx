@@ -24,7 +24,7 @@ const PLAN_ITEMS = [
   ["setup.artwork.more", EllipsisIcon],
 ] as const;
 
-/** Original, non-interactive artwork; all copy is decorative and localized by the caller's i18n. */
+/** Renders decorative plan artwork, hidden from assistive tech; its copy is localized. */
 export function SetupPlanArtwork({ className }: SetupArtworkProps = {}) {
   const { t } = useTranslation("dashboard");
   const globeId = useId();

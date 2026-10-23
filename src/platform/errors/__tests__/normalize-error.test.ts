@@ -55,9 +55,6 @@ describe("normalizeError", () => {
 
 describe("userMessageForCode (leak stop)", () => {
   it("names the password rule that refused a password", () => {
-    // Every path that sets a password answers 422 with the rule that
-    // failed (length, character class, breach). The user must see which rule,
-    // not the generic "details aren't valid" validation copy.
     const shown = (code: string) => {
       const app = normalizeError(new ApiError(422, code, "backend copy"));
       return userMessageForCode(app.code, app.kind);
@@ -76,9 +73,6 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("says sign-in is temporarily unavailable when the lockout cannot be checked", () => {
-    // The server refuses a password sign-in with 503 when its failed-attempt
-    // counters cannot be read or written; retrying shortly is the right advice,
-    // not "something went wrong".
     const app = normalizeError(
       new ApiError(503, "auth.sign_in_unavailable", "backend copy", undefined, true),
     );
@@ -91,8 +85,6 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("names the duplicate-email case on signup instead of the generic fallback", () => {
-    // The signup conflict arrives as 409 auth.email_exists, which classifies as
-    // `api`; without curated copy the user only sees "Something went wrong".
     const app = normalizeError(
       new ApiError(409, "auth.email_exists", "An account with this email already exists."),
     );
@@ -102,8 +94,6 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("distinguishes the three OTP failures instead of one generic validation message", () => {
-    // All three are HTTP 400 -> `validation`; the fallback cannot tell the user
-    // whether to retype the code or request a new one.
     const shown = (code: string) => {
       const app = normalizeError(new ApiError(400, code, "backend copy"));
       return userMessageForCode(app.code, app.kind);
@@ -121,8 +111,6 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("tells a locked-out code holder to request a new code, not to retry", () => {
-    // 429 -> `api`, whose fallback is "Something went wrong"; and "try again"
-    // is wrong advice here because the code is retired.
     const app = normalizeError(
       new ApiError(429, "verification.attempts_exceeded", "too many attempts"),
     );
@@ -137,8 +125,7 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("still explains a 429 that arrives with no error envelope", () => {
-    // client.ts synthesises `http_${status}` when the body has no `error` key —
-    // which is what a bare rate-limiter rejection looks like.
+    // client.ts synthesises `http_${status}` for a body with no `error` envelope.
     const app = normalizeError(new ApiError(429, "http_429", "Request failed"));
     const shown = userMessageForCode(app.code, app.kind);
     expect(shown).toMatch(/too many attempts/i);
@@ -146,8 +133,6 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("names a bad password instead of blaming the session", () => {
-    // auth.invalid_credentials is a 401 -> `auth`, whose fallback is "Please
-    // sign in again to continue." — a session message for a credentials error.
     const app = normalizeError(
       new ApiError(401, "auth.invalid_credentials", "Invalid email or password."),
     );
@@ -157,7 +142,6 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("never tells a suspended account to just sign in again", () => {
-    // Also a 401, but retrying cannot possibly help.
     const app = normalizeError(new ApiError(401, "auth.account_suspended", "suspended"));
     const shown = userMessageForCode(app.code, app.kind);
     expect(shown).toMatch(/administrator/i);
@@ -165,9 +149,6 @@ describe("userMessageForCode (leak stop)", () => {
   });
 
   it("names a taken org slug instead of saying 'try again'", () => {
-    // 409 classifies as `api`, whose fallback invites a retry that resubmits
-    // the same slug and fails identically. Must point at the slug, and must
-    // not imply the org *name* is the problem — names aren't unique.
     const app = normalizeError(new ApiError(409, "tenant.slug_taken", "slug taken"));
     expect(app.kind).toBe("api");
     const shown = userMessageForCode(app.code, app.kind);

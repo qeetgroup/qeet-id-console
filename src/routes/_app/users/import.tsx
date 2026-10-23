@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
   cn,
-  DataState,
   StatusPill,
   Table,
   TableBody,
@@ -16,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -37,25 +37,16 @@ export const Route = createFileRoute("/_app/users/import")({
   component: ImportUsersPage,
 });
 
-// ---------------------------------------------------------------------------
-// Parsers
-//
-// CSV is a tiny format here — header row + comma-separated values, double-
-// quote escapes per RFC 4180. We don't need a heavyweight library for the
-// shapes the bulk endpoint accepts (email/password/display_name/phone).
-// NDJSON is one JSON object per line. Either way we end up with a homogeneous
-// `Row[]` ready to POST.
-// ---------------------------------------------------------------------------
+// A small CSV parser (header row, RFC 4180 quote escapes) covers the bulk endpoint's few fields;
+// NDJSON is one object per line. Both produce the same `Row[]`.
 
 interface Row {
   email: string;
   password?: string;
   display_name?: string;
   phone?: string;
-  /** Raw line number from the source file, for error reporting. */
-  _line: number;
-  /** Per-row validation error surfaced in the preview. */
-  _error?: string;
+  _line: number; // source line number, for error reporting
+  _error?: string; // validation error shown in the preview
 }
 
 function parseCSVLine(line: string): string[] {
@@ -91,9 +82,10 @@ function parseCSV(text: string): Row[] {
     .replace(/\r\n?/g, "\n")
     .split("\n")
     .filter((l) => l.trim() !== "");
-  if (lines.length === 0) return [];
-  const header = parseCSVLine(lines[0]).map((h) => h.toLowerCase());
-  return lines.slice(1).map((line, idx) => {
+  const [headerLine, ...dataLines] = lines;
+  if (headerLine === undefined) return [];
+  const header = parseCSVLine(headerLine).map((h) => h.toLowerCase());
+  return dataLines.map((line, idx) => {
     const cols = parseCSVLine(line);
     const get = (key: string) => {
       const i = header.indexOf(key);
@@ -210,9 +202,8 @@ function ImportUsersPage() {
         <Card>
           <CardContent
             className="p-0"
-            // Drag-and-drop is a progressive enhancement on top of the real
-            // <input type="file"> below; the wrapper holds the drop handlers so
-            // the <label> stays a pure label for the file control.
+            // Drag-and-drop enhances the real file input below; the wrapper takes the drop
+            // handlers so the <label> stays a pure label.
             onDragOver={(e) => {
               e.preventDefault();
               setDragOver(true);
@@ -305,8 +296,8 @@ function ImportUsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows!.slice(0, 100).map((r, idx) => (
-                    <TableRow key={idx}>
+                  {rows.slice(0, 100).map((r) => (
+                    <TableRow key={r._line}>
                       <TableCell className="text-muted-foreground">{r._line}</TableCell>
                       <TableCell className="font-mono text-xs">{r.email || "—"}</TableCell>
                       <TableCell>{r.display_name || "—"}</TableCell>
@@ -326,9 +317,9 @@ function ImportUsersPage() {
                 </TableBody>
               </Table>
             </DataState>
-            {rows!.length > 100 && (
+            {rows.length > 100 && (
               <div className="border-t p-2 text-center text-xs text-muted-foreground">
-                {t("import.showingFirst", { total: rows!.length })}
+                {t("import.showingFirst", { total: rows.length })}
               </div>
             )}
           </CardContent>
@@ -362,6 +353,7 @@ function ImportUsersPage() {
                 </TableHeader>
                 <TableBody>
                   {result.errors.map((e, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: no id; never reordered
                     <TableRow key={i}>
                       <TableCell className="text-muted-foreground">{e.line ?? "—"}</TableCell>
                       <TableCell className="font-mono text-xs">{e.email ?? "—"}</TableCell>

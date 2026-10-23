@@ -85,8 +85,7 @@ function OverviewPage() {
   const rolesQ = useRoles();
   const permsQ = usePermissions();
   const policiesQ = useAbacPolicies();
-  // The window's authorization events, for the KPI trends.
-  const auditQ = useAuditEvents({ limit: 200 });
+  const auditQ = useAuditEvents({ limit: 200 }); // the window's authz events, for the KPI trends
   const changesQ = usePolicyChanges(from.toISOString());
 
   const roles = rolesQ.data?.items ?? [];

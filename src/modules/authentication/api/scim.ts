@@ -1,8 +1,5 @@
-// SCIM 2.0 provisioning data layer. The admin surface manages the per-tenant
-// bearer token an IdP (Okta / Entra ID / Google) presents to the SCIM
-// endpoints. The SCIM base URL is derived from the API origin — the same
-// host that serves /scim/v2 — so the value shown here is always correct for
-// the deployment the console is talking to.
+// SCIM 2.0 provisioning: the per-tenant bearer token an IdP (Okta, Entra ID, Google) presents to
+// /scim/v2, which the API origin serves.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -47,8 +44,10 @@ export function useScimProvisionedUsers() {
   });
 }
 
-/** Rotate (or first-time generate) the bearer token. The plaintext token is
- *  in the response exactly once — surface it immediately, it can't be reread. */
+/**
+ * Rotates, or first generates, the bearer token. The plaintext token is in the response once:
+ * show it immediately, it can't be read again.
+ */
 export function useRotateScimToken() {
   const tenantId = useTenantId();
   const qc = useQueryClient();

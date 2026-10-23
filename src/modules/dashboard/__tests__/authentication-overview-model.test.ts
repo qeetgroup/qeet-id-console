@@ -32,8 +32,7 @@ const GREENFIELD = {
 
 describe("countSignInMethods", () => {
   it("counts only the three sign-in toggles", () => {
-    // The email and SMS one-time-code flags are not sign-in methods (no such
-    // sign-in exists), so a stray one is not counted.
+    // Stray email/SMS one-time-code flags: no such sign-in exists.
     expect(
       countSignInMethods({
         password_enabled: true,
@@ -44,8 +43,6 @@ describe("countSignInMethods", () => {
   });
 
   it("does not count remember-device as a sign-in method", () => {
-    // Adaptive MFA skips the second factor on a known device; it is not a way
-    // to sign in, and counting it would show four methods out of three.
     expect(
       countSignInMethods({
         password_enabled: true,
@@ -66,8 +63,6 @@ describe("resolveMfaCoverage", () => {
   });
 
   it("falls back to user stats with NO delta when analytics is the degraded sentinel", () => {
-    // This is the assertion that enforces "arrows only where real": the
-    // fallback has no history, so it must not produce a trend.
     const got = resolveMfaCoverage(EMPTY_OVERVIEW, { total: 200, mfa_enabled: 50 });
     expect(got.source).toBe("users");
     expect(got.pct).toBe(25);
@@ -112,12 +107,10 @@ describe("deriveAuthPosture", () => {
 
   it("puts MFA first in pending, because it carries the most weight", () => {
     const got = deriveAuthPosture({ ...CONFIGURED, mfaCoveragePct: 10, socialEnabled: 0 });
-    expect(got.pending[0].id).toBe("mfa");
+    expect(got.pending[0]?.id).toBe("mfa");
   });
 
   it("keeps the badge count and the checklist in sync", () => {
-    // The "N pending" badge and the ticks are rendered from the same object, so
-    // this invariant is what stops them ever disagreeing.
     for (const input of [CONFIGURED, GREENFIELD, { ...CONFIGURED, ssoConnections: 0 }]) {
       const got = deriveAuthPosture(input);
       expect(got.items.filter((i) => !i.ok)).toHaveLength(got.pending.length);
@@ -125,7 +118,7 @@ describe("deriveAuthPosture", () => {
   });
 
   it("treats MFA at the target as met, and clamps absurd input", () => {
-    expect(deriveAuthPosture({ ...GREENFIELD, mfaCoveragePct: 80 }).items[2].ok).toBe(true);
+    expect(deriveAuthPosture({ ...GREENFIELD, mfaCoveragePct: 80 }).items[2]?.ok).toBe(true);
     expect(deriveAuthPosture({ ...CONFIGURED, mfaCoveragePct: 999 }).score).toBeLessThanOrEqual(
       100,
     );

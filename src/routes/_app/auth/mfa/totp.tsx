@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
   CopyableSecret,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -16,6 +15,7 @@ import {
   OTPInput,
   StatusPill,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
@@ -54,8 +54,7 @@ export const Route = createFileRoute("/_app/auth/mfa/totp")({
 type EnrollStart = {
   secret: string;
   provisioning_url: string;
-  /** The account holds a confirmed app, which keeps working until this one is confirmed. */
-  replacing?: boolean;
+  replacing?: boolean; // a confirmed app exists and works until this one is confirmed
 };
 type ConfirmResult = { recovery_codes: string[] };
 
@@ -96,17 +95,14 @@ function MfaTotpPage() {
       cancelled = true;
     };
   }, [enrollment?.provisioning_url]);
-  // Focus the OTP input when the enrolling stage becomes active.
-  // Replaces autoFocus (flagged by jsx-a11y/no-autofocus) with an explicit
-  // effect so focus transfers after the card animation settles.
+  // Focuses the code input once the card animation settles, in place of autoFocus.
   const otpWrapperRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (stage === "enrolling") {
-      const id = setTimeout(() => {
-        otpWrapperRef.current?.querySelector<HTMLInputElement>("input:not([disabled])")?.focus();
-      }, 50);
-      return () => clearTimeout(id);
-    }
+    if (stage !== "enrolling") return undefined;
+    const id = setTimeout(() => {
+      otpWrapperRef.current?.querySelector<HTMLInputElement>("input:not([disabled])")?.focus();
+    }, 50);
+    return () => clearTimeout(id);
   }, [stage]);
 
   const startM = useMutation({
@@ -125,8 +121,7 @@ function MfaTotpPage() {
     meta: { silent: true },
   });
 
-  // Starting a replacement needs a step-up while an app is confirmed: the
-  // shared step-up dialog asks for it, worded for this action.
+  // Replacing a confirmed app needs a step-up, which the shared dialog asks for.
   function startEnrollment() {
     // A failure shows on the card (startM.error); a cancel changes nothing.
     sensitive({
@@ -160,14 +155,11 @@ function MfaTotpPage() {
       void qc.invalidateQueries({ queryKey: ["mfa", "totp"] });
       void qc.invalidateQueries({ queryKey: ["mfa", "recovery-codes"] });
     },
-    // silent: a 403 step_up_required opens the step-up dialog instead of a
-    // dead-end toast (QID-17); success/other errors are toasted below.
-    meta: { silent: true },
+    meta: { silent: true }, // disableTotp toasts the outcome itself
   });
 
-  // Disabling the app and regenerating recovery codes both need a step-up:
-  // the shared step-up dialog asks for it, worded for the action, and the
-  // request is sent again once the person confirms.
+  // Disabling the app and regenerating recovery codes need a step-up, which the shared dialog
+  // asks for, worded for the action.
   function disableTotp() {
     sensitive({ actionLabel: t("mfa.totp.stepUpLabel"), run: () => disableM.mutateAsync() })
       .then(() => toast.success(t("mfa.totp.toastDisabled")))
@@ -216,11 +208,8 @@ function MfaTotpPage() {
           skeletonRows={2}
         >
           {statusQ.data?.enrolled ? (
-            // Already enrolled — reflect the server state instead of re-offering
-            // enrollment. Re-running start would rotate the secret and break the
-            // user's existing authenticator, so replacing is gated by a confirm.
-            // Recovery codes are managed inline here (not a separate tab) since
-            // they exist only to back this factor and are wiped when it's removed.
+            // Already enrolled: replacing is confirmed first, and recovery codes are managed
+            // here because they only back this factor and go with it.
             <>
               <Card className="border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/20">
                 <CardHeader>

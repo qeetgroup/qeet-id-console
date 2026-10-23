@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -34,6 +33,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import { LoaderCircleIcon, PlugIcon, PlusIcon, ServerIcon, TrashIcon } from "@qeetrix/icons";
@@ -43,7 +43,7 @@ import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { PageHeader } from "@/platform/components/page-header";
 import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
-import { useEntitlements } from "@/modules/billing/api/billing";
+import { useEntitlements } from "@/modules/billing";
 import {
   type LdapConnection,
   useCreateLdapConnection,

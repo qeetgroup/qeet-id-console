@@ -1,8 +1,5 @@
-// SAML IdP data layer — the *inverse* of src/lib/saml.ts. Here Qeet ID acts as
-// the Identity Provider and the rows are the Service Providers (SPs) that trust
-// us: the apps that consume our assertions. SPs import a single shared IdP
-// metadata document (idpMetadataUrl()) served at the API origin's /saml/idp
-// route, so that URL is derived from the API base URL rather than per-row.
+// Qeet ID as a SAML identity provider: the rows are the service providers that consume its
+// assertions (the inverse of saml.ts). Every SP imports one shared IdP metadata document.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

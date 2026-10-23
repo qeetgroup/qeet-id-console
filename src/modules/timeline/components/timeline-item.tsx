@@ -1,11 +1,3 @@
-// TimelineItem — one row of the identity timeline. A dense, columned card:
-// category icon + human title + tags on the left, Actor and Location columns in
-// the middle, and the outcome badge + timestamp + a ⋮ actions menu on the right.
-// The card is a single button (opens the details drawer); the ⋮ menu is a
-// sibling so we never nest interactive controls.
-//
-// REUSE: category icon + severity/result helpers from the activity feature.
-
 import {
   cn,
   DropdownMenu,
@@ -38,10 +30,6 @@ import { type EventResult, eventResult, formatEventTitle } from "@/modules/activ
 import { formatIp } from "@/shared/utils/ip-format";
 import type { ActivityEvent } from "@/modules/activity";
 
-// ---------------------------------------------------------------------------
-// Result → connector node colour + icon-chip tone
-// ---------------------------------------------------------------------------
-
 const RESULT_NODE: Record<EventResult, string> = {
   Success: "bg-success ring-success/25",
   Failed: "bg-destructive ring-destructive/25",
@@ -50,17 +38,13 @@ const RESULT_NODE: Record<EventResult, string> = {
   Info: "bg-info ring-info/25",
 };
 
-/** Icon chips stay neutral except for outcomes that warrant attention. */
+// Icon chips stay neutral except for outcomes that need attention.
 function iconTone(result: EventResult): string {
   if (result === "Failed") return "bg-destructive/10 text-destructive ring-destructive/15";
   if (result === "Blocked" || result === "Warning")
     return "bg-warning/10 text-warning ring-warning/15";
   return "bg-muted text-muted-foreground ring-foreground/6";
 }
-
-// ---------------------------------------------------------------------------
-// Meta column (Actor / Location)
-// ---------------------------------------------------------------------------
 
 function MetaColumn({
   label,
@@ -84,10 +68,6 @@ function MetaColumn({
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Row actions menu (⋮)
-// ---------------------------------------------------------------------------
 
 function copy(text: string, what: string) {
   void navigator.clipboard.writeText(text);
@@ -129,10 +109,6 @@ function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () =>
   );
 }
 
-// ---------------------------------------------------------------------------
-// TimelineItem
-// ---------------------------------------------------------------------------
-
 type TimelineItemProps = {
   event: ActivityEvent;
   isSelected?: boolean;
@@ -142,6 +118,11 @@ type TimelineItemProps = {
   setSize?: number;
 };
 
+/**
+ * Renders one timeline row: a card button that opens the details drawer, with the outcome as
+ * the connector node's colour. The ⋮ menu is a sibling of the button so interactive controls
+ * never nest.
+ */
 export function TimelineItem({
   event,
   isSelected = false,
@@ -269,7 +250,7 @@ export function TimelineItem({
             </span>
           </button>
 
-          {/* Row actions (sibling of the card button) */}
+          {/* A sibling of the card button, so interactive controls don't nest */}
           <div className="flex items-center pe-1.5">
             <RowActionsMenu event={event} onOpen={() => onClick(event)} />
           </div>

@@ -12,8 +12,10 @@ import { useTranslation } from "react-i18next";
 import { type OidcClient, useClientAuthFailures } from "../api/oidc-clients";
 import { formatDateTime } from "@/shared/utils/format";
 
-// A confidential application's wrong-secret attempts and any lockout, so an
-// administrator can see an attack, and why an integration is failing.
+/**
+ * Renders a confidential application's wrong-secret attempts and any lockout, so an administrator
+ * can see an attack and why an integration is failing.
+ */
 export function SecretFailuresCard({ client }: { client: OidcClient }) {
   const { t } = useTranslation("oidc");
   const q = useClientAuthFailures(client.id, client.type === "confidential");

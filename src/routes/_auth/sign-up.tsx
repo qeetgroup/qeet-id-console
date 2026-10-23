@@ -14,10 +14,8 @@ function SignupPage() {
   const navigate = useNavigate();
   const startVerify = useStartEmailVerification();
 
-  // Signup creates the account and persists a tenant-less session, so the user
-  // is authenticated but unverified. Send the first OTP, then hand off to
-  // /verify-email — a real route, so a refresh returns there instead of
-  // dropping the step and falling through to the dashboard.
+  // Sign-up leaves a tenant-less, unverified session: send the first code, then hand off to
+  // /verify-email, a real route, so a refresh returns there rather than to the dashboard.
   const handoff = (userId: string) => {
     startVerify.mutate(userId);
     navigate({ to: "/verify-email" });

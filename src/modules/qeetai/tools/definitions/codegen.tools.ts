@@ -1,17 +1,10 @@
-// Code-generation tools — generate_terraform, generate_sdk_snippet,
-// generate_api_example. All are pure client-side templating; nothing is applied
-// or mutated. They reuse the authz-codegen.ts patterns where applicable.
-//
-// generate_terraform: reads live resource config via api() then emits HCL.
-// generate_sdk_snippet: templated snippet for a known endpoint (no network call).
-// generate_api_example: example request/response from the OpenAPI shape (no call).
+// Client-side templating that applies nothing. generate_terraform reads live config through
+// api(); the SDK snippet and API example are generic templates that make no request.
 
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function hclString(value: string | null | undefined): string {
   if (!value) return '""';
@@ -22,8 +15,6 @@ function hclList(items: string[] | null | undefined): string {
   if (!items || items.length === 0) return "[]";
   return `[${items.map((v) => JSON.stringify(v)).join(", ")}]`;
 }
-
-// ── generate_terraform ────────────────────────────────────────────────────────
 
 const generateTerraformInput = z.object({
   resource_type: z.enum(["oidc_client", "tenant", "role"]),
@@ -122,7 +113,6 @@ export const generateTerraformTool: ToolDefinition<GenerateTerraformInput> = {
         });
         hcl = tenantHcl(tenant);
       } else {
-        // Generate for the current tenant.
         const tenant = await api<Tenant>(`/v1/tenants/${ctx.tenantId}`, { signal: ctx.signal });
         hcl = tenantHcl(tenant);
       }
@@ -151,8 +141,6 @@ export const generateTerraformTool: ToolDefinition<GenerateTerraformInput> = {
     };
   },
 };
-
-// ── generate_sdk_snippet ──────────────────────────────────────────────────────
 
 const generateSdkSnippetInput = z.object({
   endpoint: z.string(),
@@ -220,8 +208,7 @@ export const generateSdkSnippetTool: ToolDefinition<GenerateSdkSnippetInput> = {
   description:
     "Generate a client code snippet (curl/TypeScript/Go/Python) for a known Qeet ID endpoint. Informational; client-side.",
   input: generateSdkSnippetInput,
-  // No requiredCapability — informational
-  destructive: false,
+  destructive: false, // No requiredCapability: it only fills in a template and makes no request
   mutates: false,
   auditLabel: "qeetai.generate_sdk_snippet",
   async run(_ctx, input) {
@@ -247,8 +234,6 @@ export const generateSdkSnippetTool: ToolDefinition<GenerateSdkSnippetInput> = {
     };
   },
 };
-
-// ── generate_api_example ──────────────────────────────────────────────────────
 
 const generateApiExampleInput = z.object({
   endpoint: z.string(),
@@ -286,8 +271,7 @@ export const generateApiExampleTool: ToolDefinition<GenerateApiExampleInput> = {
   description:
     "Generate an example request/response for a Qeet ID endpoint derived from its OpenAPI shape. Informational; client-side.",
   input: generateApiExampleInput,
-  // No requiredCapability — informational
-  destructive: false,
+  destructive: false, // No requiredCapability: it only fills in a template and makes no request
   mutates: false,
   auditLabel: "qeetai.generate_api_example",
   async run(_ctx, input) {

@@ -1,9 +1,3 @@
-// Investigate menu — the per-event "⋯" action menu that turns an activity row
-// into an investigation hub: jump to the related entity, pivot the feed to a
-// facet, or copy correlation IDs. Deep-links only to routes that actually exist
-// ($id detail pages for user/group/webhook/oidc); other resources fall back to
-// the audit log. Filter actions patch the URL search via onFilter.
-
 import {
   Button,
   DropdownMenu,
@@ -31,18 +25,19 @@ import type { ActivityEvent } from "../types/activity.types";
 
 type InvestigateMenuProps = {
   event: ActivityEvent;
-  /** Apply a filter patch to the feed (URL search params). */
-  onFilter?: (patch: Partial<ActivitySearch>) => void;
-  /** Open the details drawer for this event. */
+  onFilter?: (patch: Partial<ActivitySearch>) => void; // Patches the feed's URL search
   onViewDetails?: () => void;
   align?: "start" | "center" | "end";
-  /** Override the trigger; defaults to a ghost "⋯" icon button. */
-  trigger?: ReactElement;
+  trigger?: ReactElement; // Replaces the default ghost "⋯" icon button
 };
 
 const targetIs = (event: ActivityEvent, ...types: string[]) =>
   !!event.target?.type && types.includes(event.target.type.toLowerCase());
 
+/**
+ * Renders an event's "⋯" menu: links to its actor and to a target that has a detail page
+ * (group, webhook, OIDC client), the audit log, feed filters, and copy-ID actions.
+ */
 export function InvestigateMenu({
   event,
   onFilter,
@@ -58,8 +53,8 @@ export function InvestigateMenu({
 
   const actorId = event.actor?.id;
   const targetId = event.target?.id;
-  // The audit Reader filters by actor (not request_id); request_id correlation
-  // lives in the drawer's Related tab. Pivot the audit log to this actor.
+  // The audit log filters by actor, not request_id; request correlation is the drawer's
+  // Related tab.
   const auditSearch = actorId ? { actor_user_id: actorId } : {};
 
   return (

@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 import { type OidcClient, proofKeyStatus } from "../api/oidc-clients";
 import { formatDate } from "@/shared/utils/format";
 
-// Whether the app must send a proof key (PKCE) and a nonce, the rule for every
-// app, or holds an exemption, and until when.
+/**
+ * Renders whether the app must send a proof key (PKCE) and a nonce, the rule for every app, or
+ * holds an exemption, and until when.
+ */
 export function ProofKeyCard({ client }: { client: OidcClient }) {
   const { t } = useTranslation("oidc");
   const status = proofKeyStatus(client);
@@ -36,8 +38,10 @@ export function ProofKeyCard({ client }: { client: OidcClient }) {
   );
 }
 
-// Marks an app exempt from sending a proof key, and one whose exemption ends
-// soon, so an exemption can't quietly become permanent or run out unnoticed.
+/**
+ * Marks an app exempt from sending a proof key, and one whose exemption ends soon, so an exemption
+ * can't quietly become permanent or run out unnoticed.
+ */
 export function ProofKeyBadge({ client }: { client: OidcClient }) {
   const { t } = useTranslation("oidc");
   const status = proofKeyStatus(client);

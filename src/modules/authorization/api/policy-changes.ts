@@ -1,16 +1,3 @@
-// "Recent policy changes" for the Authorization overview.
-//
-// Two sources, in preference order:
-//   1. GET /v1/activity — resolves the actor's display name / email server-side,
-//      which is what the overview wants to show. It 404s where the activity
-//      service isn't deployed, and the activity module already turns that into
-//      an empty page rather than an error.
-//   2. GET /v1/tenants/{t}/audit — always present, but carries only an actor
-//      UUID, so the byline degrades to a short id.
-//
-// Both are filtered to authorization actions with the same predicate, and
-// normalised to one shape so the card doesn't care which answered.
-
 import { useQuery } from "@tanstack/react-query";
 
 import { DEFAULT_FILTERS, fetchActivityPage } from "@/modules/activity";
@@ -23,12 +10,9 @@ export type PolicyChangeKind = "created" | "updated" | "deleted" | "other";
 
 export interface PolicyChange {
   id: string;
-  /** Humanised action, e.g. "Permission updated". */
-  title: string;
-  /** What it happened to — a key, name or short id. */
-  target: string;
-  /** Display name, email, or short actor id; null for system actions. */
-  actor: string | null;
+  title: string; // e.g. "Permission updated"
+  target: string; // a key, name or short id
+  actor: string | null; // name, email or short id; null for a system action
   at: string;
   kind: PolicyChangeKind;
 }
@@ -46,17 +30,18 @@ const ENTITY_LABELS: Record<string, string> = {
 };
 
 function kindOf(verb: string): PolicyChangeKind {
-  if (verb.startsWith("creat") || verb.endsWith("granted") || verb.endsWith("assigned")) {
-    return "created";
-  }
+  // Deletions first: "unassigned" also ends with "assigned".
   if (verb.startsWith("delet") || verb.endsWith("revoked") || verb.endsWith("unassigned")) {
     return "deleted";
+  }
+  if (verb.startsWith("creat") || verb.endsWith("granted") || verb.endsWith("assigned")) {
+    return "created";
   }
   if (verb.startsWith("updat")) return "updated";
   return "other";
 }
 
-/** "abac_policy.created" → { title: "Policy created", kind: "created" }. */
+/** Returns an action's title and change kind: "abac_policy.created" → "Policy created". */
 export function describePolicyAction(action: string): { title: string; kind: PolicyChangeKind } {
   const dot = action.indexOf(".");
   const entity = dot === -1 ? action : action.slice(0, dot);
@@ -84,10 +69,9 @@ function fromAudit(event: AuditEvent): PolicyChange {
 }
 
 /**
- * Recent authorization changes since `from` (RFC3339). `limit` caps what the
- * card renders, not what is fetched — both feeds are filtered client-side,
- * because an `abac_policy.*` action doesn't match the activity service's
- * `abac.` category prefix and would be dropped by a server-side filter.
+ * Returns up to `limit` authorization changes since `from` (RFC3339). Prefers the activity feed,
+ * which resolves actor names, and falls back to the audit log when it is empty or undeployed.
+ * Both are filtered here: the activity service's `abac.` category would drop `abac_policy.*`.
  */
 export function usePolicyChanges(from: string, limit = 5) {
   const tenantId = useTenantId();
@@ -112,7 +96,6 @@ export function usePolicyChanges(from: string, limit = 5) {
         });
       if (activity.length > 0) return activity.slice(0, limit);
 
-      // Activity is empty or undeployed — fall back to the audit log.
       const audit = await api<{ items: AuditEvent[] }>(`/v1/tenants/${tenantId}/audit`, {
         query: { limit: 100 },
       });

@@ -4,7 +4,10 @@ import { useTranslation } from "react-i18next";
 export type SetupStep = "plan" | "profile" | "name";
 export const SETUP_STEPS = ["plan", "profile", "name", "invite", "launch"] as const;
 
-/** Invitations and launch happen after creation; they are guidance, not fake form steps. */
+/**
+ * Renders the setup progress. Its last two steps, invite and launch, come after creation: they are
+ * guidance, not form steps.
+ */
 export function SetupProgress({ step }: { step: SetupStep }) {
   const { t } = useTranslation("dashboard");
   const current = SETUP_STEPS.indexOf(step);

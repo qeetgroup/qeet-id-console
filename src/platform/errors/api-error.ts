@@ -1,17 +1,13 @@
-// Transport-level error thrown by the platform HTTP client. Normalises the
-// backend's `error` envelope into a typed shape so React Query / form handlers
-// can switch on `err.status` / `err.code`. Higher-level classification (auth vs
-// authz vs validation vs network) is layered on top in `normalize-error.ts`.
+/**
+ * The backend's `error` envelope as thrown by the API client; normalizeError() classifies it.
+ * `message` is the backend's own text: never render it, use userMessageForCode().
+ */
 export class ApiError extends Error {
   status: number;
-  /** Stable machine code from the API (e.g. "mfa.code_invalid") — branch/localize on this. */
-  code: string;
-  /** Developer-facing context from the API's `detail` field, when present. */
-  detail?: string;
-  /** True when the API marks the failure as safe to retry (e.g. session refresh). */
-  retryable: boolean;
-  /** Structured context from the API's `metadata` field (e.g. `retry_after`, `allowed_methods`). */
-  metadata?: Record<string, unknown>;
+  code: string; // stable code, e.g. "mfa.code_invalid": branch and localize on it
+  detail?: string; // developer context from the API's `detail` field
+  retryable: boolean; // the API marks the failure safe to retry
+  metadata?: Record<string, unknown>; // structured context such as `retry_after`
 
   constructor(
     status: number,

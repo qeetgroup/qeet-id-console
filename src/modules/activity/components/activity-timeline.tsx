@@ -1,7 +1,3 @@
-// Activity Timeline — virtualized (CSS windowing) infinite list of events
-// grouped by date bucket. Renders live events first, then history pages
-// on demand via an IntersectionObserver sentinel.
-
 import { Button, cn, EmptyState, ScrollArea, Skeleton, usePrefersReducedMotion } from "@qeetrix/ui";
 import { ActivityIcon, RefreshCwIcon, WifiOffIcon } from "@qeetrix/icons";
 import { useEffect, useRef } from "react";
@@ -9,10 +5,6 @@ import { useEffect, useRef } from "react";
 import type { ActivitySearch } from "../activity-search";
 import type { ActivityEvent, ConnectionStatus, DateGroup } from "../types/activity.types";
 import { ActivityEventRow, ActivityRowHeader } from "./activity-event-row";
-
-// ---------------------------------------------------------------------------
-// Date-group header
-// ---------------------------------------------------------------------------
 
 function GroupHeader({ label, date }: { label: string; date?: string }) {
   const dateStr = date
@@ -31,10 +23,6 @@ function GroupHeader({ label, date }: { label: string; date?: string }) {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Loading skeletons
-// ---------------------------------------------------------------------------
 
 const SKELETON_IDS = ["a", "b", "c", "d", "e"] as const;
 
@@ -55,53 +43,29 @@ function EventSkeletons() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// ActivityTimeline
-// ---------------------------------------------------------------------------
-
 type ActivityTimelineProps = {
-  /** Date-grouped events in display order. */
   groups: DateGroup[];
-  /** Set of event IDs that arrived after the page mounted (highlighted). */
-  newEventIds: ReadonlySet<string>;
-  /** Connection status for the "reconnecting" overlay. */
+  newEventIds: ReadonlySet<string>; // Events to highlight as newly arrived
   status: ConnectionStatus;
-  /** Whether the first history page is loading. */
-  isLoadingHistory: boolean;
-  /** Whether a subsequent history page is loading. */
-  isFetchingNextPage: boolean;
-  /** Whether there are more history pages to load. */
+  isLoadingHistory: boolean; // The first history page is loading
+  isFetchingNextPage: boolean; // A later history page is loading
   hasNextPage: boolean;
-  /** Called when the bottom sentinel enters the viewport (infinite scroll). */
-  onLoadMore: () => void;
-  /** Called when an event is selected (opens the details drawer). */
+  onLoadMore: () => void; // Called when the bottom sentinel comes within 200px of the viewport
   onSelectEvent: (event: ActivityEvent) => void;
-  /** Apply a filter patch from a row's Investigate menu. */
+  /** Receives filter patches from a row's investigate menu. */
   onFilter?: (patch: Partial<ActivitySearch>) => void;
-  /** The currently selected event (for aria-selected highlight). */
-  selectedEventId?: string | null;
-  /** True when the history fetch failed with a non-graceful error. */
-  isError?: boolean;
-  /** Re-fetch history after a hard error. */
+  selectedEventId?: string | null; // The row to mark as selected
+  isError?: boolean; // History failed with an error that isn't degraded to an empty page
   onRetryHistory?: () => void;
-  /** Restart the SSE stream after it has given up. */
   onRetryStream?: () => void;
-  /** Hide the "All events loaded" end marker (the route renders a pager instead). */
+  /** Hides the "All events loaded" marker, e.g. when a pager follows the feed. */
   hideEndMarker?: boolean;
 };
 
 /**
- * The main activity feed. Groups events by date, highlights new arrivals,
- * and triggers history loading via IntersectionObserver.
- *
- * Virtualization: CSS overflow-y scroll + IntersectionObserver sentinel.
- * @tanstack/react-virtual is not in the console's deps; the store caps live
- * events at 200 and history pages are paginated, so DOM size stays bounded.
- *
- * ARIA: The feed uses role="feed" (APG Feed pattern) without aria-live on the
- * same element — that combination is contradictory per the APG spec. Critical
- * events are announced by the separate visually-hidden assertive region in the
- * parent page (activity.tsx).
+ * Renders the date-grouped activity feed, highlighting new arrivals and loading more history
+ * as the bottom sentinel scrolls into view. It isn't virtualized: live events are capped at
+ * MAX_LIVE and history loads a page at a time.
  */
 export function ActivityTimeline({
   groups,
@@ -122,7 +86,6 @@ export function ActivityTimeline({
   const reducedMotion = usePrefersReducedMotion();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // IntersectionObserver sentinel: load more history when the bottom is visible
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || !hasNextPage) return;
@@ -138,8 +101,6 @@ export function ActivityTimeline({
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasNextPage, onLoadMore]);
-
-  // ── Early-return states ────────────────────────────────────────────────────
 
   if (isLoadingHistory && groups.length === 0) {
     return (
@@ -220,14 +181,12 @@ export function ActivityTimeline({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* Column header (wide viewports only; decorative) */}
+      {/* Decorative; wide viewports only */}
       <ActivityRowHeader />
       <ScrollArea className="flex-1">
         {/*
-          APG Feed pattern: role="feed" manages aria-posinset/setsize per article.
-          aria-live must NOT be on the same element — the Feed role is not a live
-          region. Critical-event announcements are handled by the assertive
-          visually-hidden region in activity.tsx.
+          A feed is not a live region, so it carries no aria-live; the page announces
+          critical events in its own assertive region.
         */}
         <div
           role="feed"
@@ -249,7 +208,7 @@ export function ActivityTimeline({
                       className={cn(
                         isNew && !reducedMotion && "motion-safe:animate-in motion-safe:fade-in-0",
                       )}
-                      // Stagger new events slightly so they don't all pop in at once
+                      // Staggered so a burst of new events doesn't pop in all at once
                       style={
                         isNew && !reducedMotion
                           ? { animationDelay: `${Math.min(index * 40, 400)}ms` }

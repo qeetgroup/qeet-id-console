@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   JSONTree,
   Timeline,
   TimelineContent,
@@ -20,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { RotateCcwClockIcon, RotateCcwIcon, SlidersHorizontalIcon } from "@qeetrix/icons";
 import { useState } from "react";

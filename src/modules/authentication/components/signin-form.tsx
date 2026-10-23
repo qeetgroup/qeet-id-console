@@ -43,8 +43,7 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
-  // Debounce the email value used to drive SSO discovery so we don't
-  // hammer the discovery endpoint on every keystroke.
+  // Debounce the email that drives SSO discovery, so typing isn't a request per keystroke.
   const [debouncedEmail, setDebouncedEmail] = useState("");
   useEffect(() => {
     const t = setTimeout(() => setDebouncedEmail(email), 350);

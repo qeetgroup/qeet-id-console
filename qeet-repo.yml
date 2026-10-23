@@ -3,7 +3,7 @@
 
 schema_version: 1
 
-context: {type: repository, level: L2, canonical: true, last_verified: "2026-08-28"}
+context: {type: repository, level: L2, canonical: true, last_verified: "2026-10-23"}
 
 inheritance:
   organization: {repository: qeetgroup/qeet-context, level: L0}
@@ -15,8 +15,9 @@ repository:
   type: frontend
   role: primary
   status: active
-  visibility: private
-  default_branch: main
+  visibility: public
+  default_branch: develop
+  production_branch: main
   working_branch: develop
   host: console.id.qeet.in
 
@@ -36,11 +37,13 @@ architecture:
     mechanism: biome-noRestrictedImports        # + noImportCycles: error
     config: biome.json
     command: bun run lint:boundaries
-  modules: 14                                   # src/modules/
-  platform_dirs: [api, auth, components, config, errors, feature-flags, query, security, telemetry]
+  modules: 17                                   # src/modules/, each with an index.ts barrel
+  platform_dirs: [api, auth, components, config, errors, feature-flags, query, security, telemetry, theme]
+  route_ratchet: "src/routes/** may not import module internals, api() or @tanstack/react-query; the files that still do are listed in biome.json and shrink to zero in the route-to-module migration"
+  network_exits: "global fetch/EventSource/WebSocket/XMLHttpRequest are banned outside src/platform/api (plus the two SSE clients, until a shared stream transport exists)"
 
 session:
-  model: server-resolved-BFF                    # ADR-0009
+  model: server-resolved-BFF                    # tokens stay in the encrypted cookie
   cookie: __Host-qeet_console                   # qeet_console_dev when not secure
   chunked: true                                 # __chunked__<n> + name.1..N
   tokens_reach_browser: false                   # PublicSession only
@@ -49,30 +52,40 @@ session:
   idle_logout_minutes: 10
 
 authorization:
-  model: UX-only                                # ADR-0003 — backend is authoritative
+  model: UX-only                                # the backend is authoritative
   capabilities: 25
   source: GET /v1/users/{userId}/tenants/{tenantId}/permissions
   fails: closed                                 # malformed payload throws
-  step_up: RequireRecentMFA on the backend      # ADR-0005
+  step_up_prompt: SensitiveActionProvider        # mounted in _app and /account
+  step_up: RequireRecentMFA on the backend      # prompt: SensitiveActionProvider
 
 contracts:
   consumes: {api: qeet-id-server}
   browser_base_url_env: PUBLIC_API_URL          # runtime (platform/config/api-base-url.ts), falls back to build-time VITE_API_URL (Vercel); federation/metadata URLs only
   server_base_url_env: SERVER_URL               # the BFF's backend origin
   ssrf_guard: src/platform/api/server-request-policy.ts
+  production_config_check: src/platform/config/server-config.ts   # called from src/start.ts; every request fails with a named problem until fixed
 
 commands:
-  dev:   bun run dev          # vite dev — NO port configured (Vite default 5173)
+  dev:   bun run dev          # vite dev on port 3002 (matches qeet-id-server APP_BASE_URL)
   build: bun run build
   test:  bun run test
+  coverage: bun run test:coverage   # thresholds in vitest.config.ts; CI runs this
+  e2e: bun run test:e2e             # build + Playwright session suite (tests/e2e); CI job "Session E2E"
+  audit: bun run audit              # known high/critical vulnerabilities; one documented ignore (QTRX-4)
   check: bun run check
   boundaries: bun run lint:boundaries
 
 ci:
-  workflows: [ci.yml, deploy.yml]
-  job: verify                 # typecheck, check, lint:boundaries, test, build
+  workflows: [ci.yml, deploy.yml, codeql.yml, dependency-audit.yml, docker.yml]
+  job: verify                 # name "Verify" is the required check on main; typecheck, check, lint:boundaries, test:coverage, build
+  dependency_review: ci.yml job on pull requests (fails on high/critical)
+  dependency_audit: dependency-audit.yml — push, PR and daily; not a required check
+  image_check: docker.yml — builds and smoke-tests the image on PRs that touch it
+  dependency_updates: .github/dependabot.yml (bun, github-actions, docker; 3-day cooldown)
+  actions_pinned_to_sha: true
   runner: ubuntu-latest
-  deploy: push main -> gate -> vercel build/deploy --prod -> tag vX.Y.Z + GitHub release (release/x.y.z merge -> exactly vx.y.z; job runs only on main)
+  deploy: push main -> gate (same as Verify) -> vercel build/deploy --prod -> tag vX.Y.Z + GitHub release (release/x.y.z merge -> exactly vx.y.z; job runs only on main)
   release_image: "ci.yml job `image` — push to release/** after verify: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, linux/amd64+arm64 (consumed by the qeet-id-deploy test kit)"
 container:
   dockerfile: Dockerfile      # Nitro node-server; not used by Vercel production
@@ -87,7 +100,10 @@ security:
     - src/platform/security/                    # capability model, step-up
     - src/platform/telemetry/redact.ts          # PII/secret redaction
     - src/platform/errors/user-message.ts       # backend message leak-stop
-  never: [render backend error.message, store a token in the browser, treat UI capabilities as enforcement]
+    - src/platform/auth/scoped-storage.ts       # per-person/tenant browser storage, wiped on sign-out
+    - src/platform/security/security-headers.ts # response headers (applied via Nitro route rules)
+    - src/platform/config/server-config.ts      # production config check
+  never: [render backend error.message, store a token in the browser, treat UI capabilities as enforcement, keep person or tenant data in unscoped browser storage]
 
 llm_context:
   primary_instructions: AGENTS.md

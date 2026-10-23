@@ -34,6 +34,8 @@ export const Route = createFileRoute("/_app/auth/login-methods/passkeys")({
   component: PasskeysPage,
 });
 
+const SKELETON_IDS = ["a", "b", "c"] as const;
+
 function PasskeysPage() {
   const { t } = useTranslation("auth");
   const [confirmDialog, openConfirm] = useConfirmDialog();
@@ -46,11 +48,8 @@ function PasskeysPage() {
   const deleteM = useRemovePasskey();
   const renameM = useRenamePasskey();
 
-  // Registration ceremony (creation options → browser WebAuthn → attestation).
-  // No name is asked for here: the server names the passkey after this browser
-  // (e.g. "Chrome on macOS") and it can be renamed inline from the list. The
-  // hook leaves errors to the caller; toast user-safe copy for both ApiError
-  // and WebAuthn browser errors without leaking raw text.
+  // No name is asked for: the server names the passkey after this browser, and it can be renamed
+  // in the list. API and WebAuthn errors alike are toasted as user-safe copy.
   const registerM = useRegisterPasskey();
   const register = () =>
     registerM.mutate(undefined, {
@@ -104,8 +103,8 @@ function PasskeysPage() {
         <CardContent className="p-0">
           {listQ.isLoading ? (
             <div className="space-y-3 p-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
+              {SKELETON_IDS.map((id) => (
+                <Skeleton key={id} className="h-10 w-full" />
               ))}
             </div>
           ) : listQ.isError ? (

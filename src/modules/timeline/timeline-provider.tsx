@@ -1,7 +1,3 @@
-// TimelineProvider — context for the per-user identity timeline.
-// Wraps the TanStack Query infinite hook, client-side filtering, and
-// date-grouping into a single context consumed by the timeline components.
-
 import { useStore } from "@tanstack/react-store";
 import {
   createContext,
@@ -20,52 +16,36 @@ import { groupTimelineByDate } from "./grouping";
 import { type TimelineFilters, timelineActions, timelineStore } from "./timeline-store";
 import { useIdentityTimeline } from "./use-identity-timeline";
 
-// ---------------------------------------------------------------------------
-// Context contract
-// ---------------------------------------------------------------------------
-
 export type TimelineContextValue = {
-  /** Filtered events (newest-first). */
-  events: ActivityEvent[];
-  /** Events grouped by date bucket for the vertical timeline display. */
-  groups: DateGroup[];
-  /** Currently active filter values. */
+  events: ActivityEvent[]; // Loaded events after filtering, newest first
+  groups: DateGroup[]; // `events` in date buckets
   filters: TimelineFilters;
-  /** ID of the selected event (drives the details drawer). */
-  selectedEventId: string | null;
+  selectedEventId: string | null; // The event open in the details drawer
   setFilters: (patch: Partial<TimelineFilters>) => void;
   resetFilters: () => void;
   setSelectedEventId: (id: string | null) => void;
-  /** Whether the first page is loading. */
-  isLoading: boolean;
-  /** Whether a subsequent page is loading. */
-  isFetchingNextPage: boolean;
-  /** Whether more pages are available. */
+  isLoading: boolean; // The first page is loading
+  isFetchingNextPage: boolean; // A later page is loading
   hasNextPage: boolean;
-  /** Trigger loading the next page (for IntersectionObserver sentinel). */
   fetchNextPage: () => void;
-  /** True when the history fetch failed with a non-graceful error. */
-  isError: boolean;
-  /** Re-fetch the current pages. */
+  isError: boolean; // A fetch failed with an error that isn't degraded to an empty page
   retry: () => void;
 };
 
 const TimelineContext = createContext<TimelineContextValue | null>(null);
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
-
+/**
+ * Provides a user's identity timeline: the loaded events, filtered client-side and grouped by
+ * date, with the shared filter and selection state.
+ */
 export function TimelineProvider({ userId, children }: { userId: string; children: ReactNode }) {
   const access = useCapabilities();
-  // Both audit.read AND user.read are required to view the timeline.
   const canRead = access.can("audit.read") && access.can("user.read");
 
   const filters = useStore(timelineStore, (s) => s.filters);
   const selectedEventId = useStore(timelineStore, (s) => s.selectedEventId);
 
-  // Clear the drawer selection when the target user changes mid-session.
-  // prevUserIdRef lets us skip the initial mount (selection is null already).
+  // Clears the drawer selection when the viewed user changes; skipped on the first render.
   const prevUserIdRef = useRef(userId);
   useEffect(() => {
     if (prevUserIdRef.current === userId) return;
@@ -75,11 +55,9 @@ export function TimelineProvider({ userId, children }: { userId: string; childre
 
   const query = useIdentityTimeline(userId, filters, canRead);
 
-  // Flatten all loaded pages into a single event array.
   const allEvents = useMemo(() => query.data?.pages.flatMap((p) => p.events) ?? [], [query.data]);
 
-  // Convert TimelineFilters to ActivityFilters shape so we can reuse applyFilters.
-  // The unused ActivityFilters fields (actor, source, status, types) are zeroed out.
+  // TimelineFilters in ActivityFilters shape, to reuse applyFilters; the other fields stay empty.
   const activityFilters = useMemo(
     () => ({
       types: [] as string[],
@@ -97,7 +75,7 @@ export function TimelineProvider({ userId, children }: { userId: string; childre
     [filters],
   );
 
-  // Client-side filter pass for instant feedback on chip toggles.
+  // Filtering the loaded events here gives instant feedback before the refetch lands.
   const filteredEvents = useMemo(
     () => applyFilters(allEvents, activityFilters),
     [allEvents, activityFilters],

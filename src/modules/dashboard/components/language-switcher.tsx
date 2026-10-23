@@ -15,11 +15,8 @@ import { useTranslation } from "react-i18next";
 import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 
 /**
- * Language picker for the top header. A globe icon button opens a dropdown of
- * every locale the app ships catalogs for (`SUPPORTED_LANGUAGES`); the choice
- * persists via the i18next language detector (`localStorage: qeetid.lang`).
- * New locales appear automatically once their JSON catalogs register in
- * `src/i18n`.
+ * Renders the header's language picker over `SUPPORTED_LANGUAGES`. The i18next detector persists
+ * the choice in `localStorage` (`qeetid.lang`).
  */
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();

@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldLabel,
@@ -20,6 +19,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckIcon, CopyIcon, KeyRoundIcon, RefreshCwIcon, UsersIcon } from "@qeetrix/icons";
 import { useState } from "react";
@@ -28,14 +28,14 @@ import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { PageHeader } from "@/platform/components/page-header";
 import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
-import { useEntitlements } from "@/modules/billing/api/billing";
+import { useEntitlements } from "@/modules/billing";
 import {
   scimBaseUrl,
   useRevokeScimToken,
   useRotateScimToken,
   useScimConfig,
   useScimProvisionedUsers,
-} from "@/modules/authentication/api/scim";
+} from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/auth/connections/scim")({
   component: ScimPage,

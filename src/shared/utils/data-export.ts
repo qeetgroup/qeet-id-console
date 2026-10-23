@@ -1,7 +1,3 @@
-// Shared client-side export helpers used by every list page's toolbar.
-// Generalised from the original audit-logs implementation so a single,
-// well-tested CSV escaper backs every "Download as CSV/JSON" action.
-
 export type CsvColumn<T> = {
   header: string;
   value: (row: T) => unknown;

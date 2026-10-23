@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -32,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import {

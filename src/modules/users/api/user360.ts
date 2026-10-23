@@ -1,16 +1,9 @@
-// User 360 data layer — React Query hooks over the per-user admin read surfaces
-// added to the server (GET /v1/users/{id}/security | /sessions | /access), plus
-// the existing effective-permissions, social-identities and activity endpoints.
-// Follows the house pattern: useQuery/useMutation + api() + graceful degradation.
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
-// ── Types (mirror the Go response structs in internal/identity/users) ──────────
-
-/** Full user record as returned by GET /v1/users/{id}. */
+/** The full user record from GET /v1/users/{id}. */
 export interface UserDetail {
   id: string;
   tenant_id: string;
@@ -73,12 +66,9 @@ export interface AccessSummary {
   groups: GroupInfo[];
   applications_count: number;
   policies_count: number;
-  /** Distinct permissions from directly-assigned roles. */
-  permissions_direct: number;
-  /** Permissions gained only through group membership (= total − direct). */
-  permissions_inherited: number;
-  /** Distinct effective permissions (direct ∪ inherited). */
-  permissions_total: number;
+  permissions_direct: number; // distinct, from directly assigned roles
+  permissions_inherited: number; // only through group membership: total − direct
+  permissions_total: number; // distinct effective permissions: direct ∪ inherited
 }
 
 export interface SocialIdentity {
@@ -101,9 +91,6 @@ export const USER360_KEYS = {
   recentActivity: (id: string) => ["user360", "recent-activity", id] as const,
 };
 
-// ── Reads ──────────────────────────────────────────────────────────────────────
-
-/** Authentication posture — the six "Security posture" tiles. */
 export function useUserSecurity(userId: string, enabled = true) {
   return useQuery({
     queryKey: USER360_KEYS.security(userId),
@@ -113,7 +100,6 @@ export function useUserSecurity(userId: string, enabled = true) {
   });
 }
 
-/** Live sessions for the user (admin view). */
 export function useUserSessions(userId: string, enabled = true) {
   return useQuery({
     queryKey: USER360_KEYS.sessions(userId),
@@ -123,7 +109,6 @@ export function useUserSessions(userId: string, enabled = true) {
   });
 }
 
-/** Access summary — organization, roles, groups, applications, policies. */
 export function useUserAccess(userId: string, enabled = true) {
   return useQuery({
     queryKey: USER360_KEYS.access(userId),
@@ -134,9 +119,8 @@ export function useUserAccess(userId: string, enabled = true) {
 }
 
 /**
- * Effective permission strings for the user in the current tenant. The server
- * returns `{ permissions: string[] }` (folds in group-inherited roles). Degrades
- * to an empty list when the caller lacks role.read (403).
+ * Fetches the user's effective permissions in the current tenant, including those inherited
+ * through groups. A 403 (no role.read) or 404 yields an empty list rather than an error.
  */
 export function useUserPermissions(userId: string) {
   const tenantId = useTenantId();
@@ -159,7 +143,7 @@ export function useUserPermissions(userId: string) {
   });
 }
 
-/** Linked social / OIDC identities (Google, Microsoft, GitHub, …). */
+/** Fetches the user's linked social identities; a 403 or 404 yields an empty list. */
 export function useUserSocialIdentities(userId: string) {
   return useQuery({
     queryKey: USER360_KEYS.identities(userId),
@@ -179,8 +163,8 @@ export function useUserSocialIdentities(userId: string) {
 }
 
 /**
- * Recent lifecycle events for the Overview "Recent activity" card. Sourced from
- * GET /v1/activity?subject={id}; degrades to empty on 404/503 like the timeline.
+ * Fetches the user's most recent activity events. A 404 or 503, where the activity service is
+ * absent or down, yields an empty list.
  */
 export function useUserRecentActivity(userId: string, limit = 6, enabled = true) {
   return useQuery({
@@ -191,8 +175,9 @@ export function useUserRecentActivity(userId: string, limit = 6, enabled = true)
           query: { subject: userId, limit },
         });
       } catch (err) {
-        const status = err instanceof ApiError ? err.status : undefined;
-        if (!status || status === 404 || status === 503) return { events: [] };
+        if (err instanceof ApiError && (err.status === 404 || err.status === 503)) {
+          return { events: [] };
+        }
         throw err;
       }
     },
@@ -201,7 +186,7 @@ export function useUserRecentActivity(userId: string, limit = 6, enabled = true)
   });
 }
 
-/** Minimal projection of an activity event used by the Overview card. */
+/** The subset of an activity event's fields the user overview reads. */
 export interface RecentActivityEvent {
   id: string;
   category?: string;
@@ -216,9 +201,7 @@ export interface RecentActivityEvent {
   status?: string | null;
 }
 
-// ── Mutations ───────────────────────────────────────────────────────────────────
-
-/** Force sign-out: revoke every live session for the user (user.write). */
+/** Signs the user out everywhere by revoking all their live sessions; needs user.write. */
 export function useRevokeAllUserSessions() {
   const qc = useQueryClient();
   return useMutation({
@@ -232,7 +215,7 @@ export function useRevokeAllUserSessions() {
   });
 }
 
-/** Toggle the per-user MFA-required policy flag (user.write). */
+/** Sets whether this user must use MFA; needs user.write. */
 export function useSetMfaRequired() {
   const qc = useQueryClient();
   return useMutation({
@@ -249,8 +232,8 @@ export function useSetMfaRequired() {
 }
 
 /**
- * Send the user a password-reset email by triggering the public recovery flow
- * with their address. The endpoint always 200s (no user enumeration).
+ * Sends a password-reset email through the public recovery flow. The endpoint always answers
+ * 200, so it can't reveal whether an account exists.
  */
 export function useSendPasswordReset() {
   return useMutation({

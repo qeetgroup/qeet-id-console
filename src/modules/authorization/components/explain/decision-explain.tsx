@@ -13,8 +13,8 @@ import type { DecisionRecord, RbacExplainPath, RebacPathStep } from "../../api/s
 import { DecisionBadge, ENGINE_DESCRIPTIONS, ENGINE_LABELS } from "../shared/decision-badge";
 
 /**
- * The full "DevTools for authorization" view of one decision: outcome, engine,
- * latency, and the engine-specific grant-path / trace, plus the raw request.
+ * Renders one decision in full: outcome, engine, latency, the engine's grant paths or trace, and
+ * the raw request.
  */
 export function DecisionExplain({ record }: { record: DecisionRecord }) {
   return (
@@ -90,11 +90,12 @@ function RbacExplainView({ paths }: { paths: RbacExplainPath[] }) {
     <section className="space-y-2">
       <h3 className="text-sm font-medium">Grant paths</h3>
       <ul className="flex flex-col gap-2">
-        {paths.map((p, i) => {
+        {paths.map((p) => {
           const isGroup = p.via.startsWith("group:");
           return (
             <li
-              key={`${p.role_id}-${p.via}-${i}`}
+              // The server returns one path per role and grant source, so this key is unique.
+              key={`${p.role_id}-${p.group_id ?? p.via}`}
               className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/20 p-3"
             >
               <Badge variant="default" className="font-mono">
@@ -141,6 +142,7 @@ function AbacTraceView({
       ) : (
         <Timeline>
           {trace.map((step, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: steps can repeat; the order is fixed
             <TimelineItem key={i}>
               <TimelineIndicator>
                 <span className="flex size-5 items-center justify-center rounded-full border bg-background text-[10px] font-medium">
@@ -168,8 +170,12 @@ function RebacPathView({ path }: { path: RebacPathStep[] }) {
     <section className="space-y-2">
       <h3 className="text-sm font-medium">Relationship path</h3>
       <ol className="flex flex-col gap-1">
-        {path.map((step, i) => (
-          <li key={i} className="flex items-center gap-2 font-mono text-xs">
+        {path.map((step) => (
+          // A resolved path has one hop per depth, so this key is unique.
+          <li
+            key={`${step.depth}:${step.object}#${step.relation}`}
+            className="flex items-center gap-2 font-mono text-xs"
+          >
             <Badge variant="muted" className="text-[10px]">
               hop {step.depth}
             </Badge>

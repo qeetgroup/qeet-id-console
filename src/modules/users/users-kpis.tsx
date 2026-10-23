@@ -1,9 +1,3 @@
-// The five KPI cards atop the Users table. Numbers and percentages are real
-// (from /v1/users/stats); Total and the MFA cards carry real 30-day sparklines
-// (/v1/users/trends), while the ratio-only cards (Active, Suspended) show a
-// proportion meter (there is no reconstructable status history). Each card is a
-// button that filters the table.
-
 import { cn, Skeleton, Sparkline } from "@qeetrix/ui";
 import {
   ArrowDownRightIcon,
@@ -56,6 +50,13 @@ function pct(n: number, total: number): number {
   return total > 0 ? Math.round((n / total) * 1000) / 10 : 0;
 }
 
+const SKELETON_IDS = ["a", "b", "c", "d", "e"] as const;
+
+/**
+ * Renders the five member KPI cards, each a button that filters the table. Total and the MFA
+ * cards show 30-day sparklines; Active and Suspended show a share meter, as there is no status
+ * history to plot.
+ */
 export function UsersKpis({
   stats,
   trends,
@@ -72,8 +73,8 @@ export function UsersKpis({
   if (loading && !stats) {
     return (
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-32 rounded-xl" />
+        {SKELETON_IDS.map((id) => (
+          <Skeleton key={id} className="h-32 rounded-xl" />
         ))}
       </div>
     );
@@ -82,9 +83,10 @@ export function UsersKpis({
 
   const prev = Math.max(0, stats.total - stats.new_last_30d);
   const growth = prev > 0 ? Math.round((stats.new_last_30d / prev) * 1000) / 10 : 0;
+  // The lengths are checked equal, so the NaN fallback is unreachable.
   const mfaMissingSeries =
     trends && trends.total.length === trends.mfa_enabled.length
-      ? trends.total.map((v, i) => Math.max(0, v - trends.mfa_enabled[i]))
+      ? trends.total.map((v, i) => Math.max(0, v - (trends.mfa_enabled[i] ?? Number.NaN)))
       : undefined;
 
   return (

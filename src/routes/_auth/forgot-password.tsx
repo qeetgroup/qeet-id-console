@@ -23,19 +23,14 @@ export const Route = createFileRoute("/_auth/forgot-password")({
   component: ForgotPasswordPage,
 });
 
-// The page has two modes on one route: no ?token= → request a reset link; with
-// ?token= → set a new password. This keeps the whole flow in the console (no
-// hosted-login app) and avoids adding a second route.
+// One route, two modes: without ?token= request a reset link; with it, set a new password.
 function ForgotPasswordPage() {
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
     setToken(new URLSearchParams(window.location.search).get("token"));
   }, []);
 
-  // Same shell as /sign-in and /sign-up: `auth-entry` is the two-column grid
-  // that sizes the hero against a fixed-width card. This route previously
-  // hand-rolled a Card with `md:grid-cols-2`, which split the space evenly and
-  // left the form a different width and offset from every other auth page.
+  // The `auth-entry` shell of every auth page, so the card's width and offset match theirs.
   return (
     <div className="auth-entry">
       <BrandHero />
@@ -64,8 +59,7 @@ function RequestPanel() {
         const data = new FormData(e.currentTarget);
         const email = String(data.get("email") ?? "").trim();
         if (!email) return;
-        // Always show success — the endpoint is constant-time so a 4xx must not
-        // leak whether the email exists.
+        // Always show success: a 4xx must not reveal whether the email exists.
         forgot.mutate({ email }, { onSettled: () => setSubmitted(true) });
       }}
     >

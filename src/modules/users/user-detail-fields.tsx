@@ -1,14 +1,9 @@
-// Small shared UI atoms for the User 360 workspace.
-
 import { Tooltip, TooltipContent, TooltipTrigger, useCopyToClipboard } from "@qeetrix/ui";
 import { CheckIcon, CopyIcon } from "@qeetrix/icons";
 
 import { truncateId } from "./user-display";
 
-/**
- * A copyable identifier — shows the id (optionally truncated, monospace) with a
- * small copy affordance that always copies the *full* value.
- */
+/** Renders an id, truncated by default, with a button that always copies the full value. */
 export function CopyId({
   value,
   truncate = true,
@@ -46,7 +41,7 @@ export function CopyId({
   );
 }
 
-/** A labelled key/value row used across the Overview cards. */
+/** Renders a label and its value on one row. */
 export function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5">
@@ -56,7 +51,7 @@ export function InfoRow({ label, children }: { label: string; children: React.Re
   );
 }
 
-/** A count row (label on the left, big number on the right) for Access summary. */
+/** Renders a label, an optional sub-line and a count on one row. */
 export function CountRow({
   label,
   value,

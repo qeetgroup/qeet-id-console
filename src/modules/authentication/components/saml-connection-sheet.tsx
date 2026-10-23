@@ -75,10 +75,8 @@ function certificateBody(raw: string): string {
 }
 
 /**
- * The same shape of offline checks the server runs in `POST /saml/{id}/test`,
- * but against values that have no connection row yet — that endpoint needs an
- * id, so before creation the browser is the only thing that can look at these.
- * It is feedback, never a gate: the backend validates again on create.
+ * Mirrors in the browser the server's offline connection checks, for values with no connection
+ * yet (the test endpoint needs an id). Feedback, never a gate: the server validates on create.
  */
 function checkValues(form: FormState): ValueCheck[] {
   const checks: ValueCheck[] = [];

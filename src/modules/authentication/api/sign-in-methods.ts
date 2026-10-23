@@ -1,7 +1,5 @@
-// How many ways the signed-in account can sign in — its password, passkeys and
-// linked identities that still work. The server refuses removing the last one
-// (auth.last_sign_in_method); this lets the security page disable and explain
-// that action before it is tried.
+// How many ways the signed-in account can sign in. The server refuses to remove the last one
+// (auth.last_sign_in_method); this lets the security page disable and explain that beforehand.
 
 import { type QueryClient, useQuery } from "@tanstack/react-query";
 

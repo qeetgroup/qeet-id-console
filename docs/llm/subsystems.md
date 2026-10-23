@@ -10,11 +10,13 @@ A **navigation layer**: it answers *"where do I look next?"* and stops. Architec
 ## Layer weights
 
 ```text
-src/routes/     101 files   25,362 LOC
-src/modules/    249 files   32,173 LOC   (14 modules)
-src/platform/    48 files    3,746 LOC   (9 dirs)
-src/shared/      14 files      891 LOC
+src/routes/     110 files   24,794 LOC
+src/modules/    311 files   52,143 LOC   (17 modules)
+src/platform/    49 files    4,306 LOC   (10 dirs)
+src/shared/      18 files    1,291 LOC
 ```
+
+Production files only (tests and `routeTree.gen.ts` excluded), counted 2026-10-23.
 
 > `src/routes` holds 25k LOC despite the stated "URL concerns + composition only" rule — the largest
 > gap between the documented architecture and the tree.
@@ -29,30 +31,37 @@ src/shared/      14 files      891 LOC
 | Dir | Purpose |
 |---|---|
 | `api/` | The single HTTP path: browser client, server proxy, SSRF policy, SSE |
-| `auth/` | Encrypted server session, client store, cross-tab transitions |
-| `security/` | Capability model, access boundary, step-up, sensitive action |
-| `config/` | Env schema, API origin, navigation tree + path→capability map |
-| `errors/` | Error taxonomy and user-safe copy (ADR-0004) |
-| `telemetry/` | Redaction, logger, events, tracing (ADR-0008) |
+| `auth/` | Encrypted server session, client store (inert on the server), cross-tab transitions, per-person scoped browser storage |
+| `security/` | Capability model, access boundary, step-up, sensitive action, response headers |
+| `config/` | Client env schema, production server-config check, API origin, navigation tree + path→capability map |
+| `errors/` | Error taxonomy and user-safe copy |
+| `telemetry/` | Redaction, logger, events, tracing |
 | `query/` | QueryClient, global 403 recapability handler |
 | `feature-flags/` | `qeetai`, `authorization-builder` on; `risk-engine`, `new-dashboard` off |
-| `components/` | `page-header.tsx` only |
+| `components/` | `page-header.tsx`, `theme-toggle.tsx`, and the leak-safe `data-state.tsx` |
+| `theme/` | Theme provider wiring |
 
 **L4 pointers**
 
 ```text
 api/client.ts                  browser entry — the ONLY request path
-api/server-proxy.ts            bearer attachment, single-flight refresh
+api/server-proxy.ts            bearer attachment, single-flight refresh, renews and replays once on a
+                               backend 401 (signs out only on a rejected refresh token; timeouts on
+                               every backend call)
 api/server-request-policy.ts   SSRF guard — "escaped its configured origin"
 api/server-stream.ts           SSE proxies (activity, qeetai)
 auth/server-session.ts         __Host-qeet_console, chunked, PublicSession
-auth/session-store.ts          BroadcastChannel, legacy-key purge
+auth/session-store.ts          BroadcastChannel, legacy-key purge; ignores writes on the server
+auth/scoped-storage.ts         localStorage keyed by person + tenant, wiped on sign-out
 auth/session-response.ts       token-issuing endpoint allowlist + stripBackendTokens
 security/capability-model.ts   25 capabilities, classifyAccessMode
 security/effective-permissions.ts   the source — parsing FAILS CLOSED
 telemetry/redact.ts            denylist + email/IP masking
 errors/user-message.ts         the leak stop
-config/navigation.tsx          nav tree + getRequiredCapabilityForPath (645 lines)
+components/data-state.tsx      DataState that maps errors through the leak stop (lint-enforced)
+config/server-config.ts        production config check, called from src/start.ts
+security/security-headers.ts   response headers, applied by Nitro route rules (vite.config.ts)
+config/navigation.tsx          nav tree + getRequiredCapabilityForPath
 ```
 
 **Tests** `api/__tests__/{client,server-request-policy}.test.ts` ·
@@ -63,31 +72,32 @@ config/navigation.tsx          nav tree + getRequiredCapabilityForPath (645 line
 
 ---
 
-## modules/ — 14 feature modules
+## modules/ — 17 feature modules
 
 **Path** `src/modules/` · **May import** `@/platform`, `@/shared`, `@/i18n`, and another module
 **only through its barrel** (`@/modules/<name>`). Must not import `@/routes`.
 
-| Module | Subdirs | Barrel | Tests |
+| Module | Subdirs | Barrel | Test files |
 |---|---|---|---|
-| `activity` | `components`, `types`, `__tests__` | yes | 6 |
-| `authentication` | `api`, `components` | yes | 1 |
-| `authorization` | `api`, `components`, `store`, `utils` | yes | — |
-| `billing` | `api`, `components` | yes | — |
-| `compliance` | `api` | **no** | — |
-| `dashboard` | `api`, `components`, `__tests__` | **no** | 2 |
-| `developer` | `api` | yes | — |
-| `onboarding` | flat | yes | — |
-| `organizations` | `api` | yes | — |
-| `qeetai` | 9 dirs, 49 files — **largest** | yes | 3 |
-| `search` | `components`, `registry`, `store`, `__tests__` | yes | 3 |
-| `security` | `api` | yes | — |
-| `timeline` | `components`, `__tests__` | yes | 3 |
-| `users` | `api` | yes | — |
+| `activity` | `components`, `types` | yes | 7 |
+| `authentication` | `api`, `components` | yes | 16 |
+| `authorization` | `api`, `components`, `store`, `utils` | yes | 12 |
+| `billing` | `api`, `components` | yes | 1 |
+| `branding` | `api`, `components` | yes | 1 |
+| `compliance` | `api` | yes | 2 |
+| `dashboard` | `api`, `components` | yes | 7 |
+| `developer` | `api`, `components` | yes | 1 |
+| `directory` | `api`, `components` | yes | 2 |
+| `groups` | `api`, `components` | yes | 1 |
+| `onboarding` | flat | yes | 3 |
+| `organizations` | `api`, `components` | yes | 1 |
+| `qeetai` | `ai`, `api`, `components`, `context`, `hooks`, `store`, `suggestions`, `tools`, `types` | yes | 12 |
+| `search` | `components`, `registry`, `store` | yes | 3 |
+| `security` | `api` | yes | 2 |
+| `timeline` | `components` | yes | 3 |
+| `users` | `api` | yes | 7 |
 
-**Two modules have no barrel** (`compliance`, `dashboard`) — so they cannot be imported by another
-module without violating the layering rule. **Seven have no tests**: `authorization`, `billing`,
-`compliance`, `developer`, `onboarding`, `organizations`, `security`, `users`.
+Every module has an `index.ts` barrel (named exports) and tests.
 
 **L4 pointer pattern** — every module follows `api/` (query/mutation fns) + `components/` +
 an `index.ts` barrel. Example: `src/modules/dashboard/use-dashboard-activity.ts` reaches
@@ -111,7 +121,7 @@ override applies only to files *under* `src/modules/**`).
 `groups/`, `organizations/`, `developer/`, plus `$.tsx` — a catch-all "Coming soon" that resolves
 its title from `navGroups`.
 
-**No tests exist for `src/routes/**`.**
+Route tests (8 files) sit beside their route as `-<name>.test.tsx`, which the router generator ignores.
 
 ---
 

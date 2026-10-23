@@ -50,9 +50,8 @@ const DOCS = "https://docs.qeet.in/qeet-id/authentication";
 type QueryState = { isPending: boolean; isError: boolean };
 
 /**
- * Everything the view renders. The view calls no hook but `useTranslation`, so
- * every state below is reachable from a fixture in a test — the split
- * `directory-overview.tsx` uses for the same reason.
+ * Everything the view renders. The view calls no hook but `useTranslation`, so every state below
+ * is reachable from a test fixture.
  */
 export type AuthOverviewViewData = {
   tenantId: string | null;
@@ -199,8 +198,7 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
           detail={t("overview.kpi.mfa.detail")}
           loading={data.analytics.isPending && data.userStats.isPending}
           error={false}
-          // The ONLY trend on this page. It is a percentage-point move against
-          // 7 days ago, not a 30-day percent change, so it says so.
+          // The page's only trend: a percentage-point move over 7 days, captioned as such.
           delta={
             mfa.deltaPp !== undefined && Math.abs(mfa.deltaPp) >= 0.1
               ? { value: mfa.deltaPp, caption: t("overview.kpi.mfa.delta") }
@@ -450,8 +448,6 @@ export function AuthenticationOverviewView({ data }: { data: AuthOverviewViewDat
   );
 }
 
-// ---------------------------------------------------------------------------
-
 const TONES = {
   brand: "bg-primary/10 text-primary",
   success: "bg-success/10 text-success",
@@ -483,10 +479,7 @@ function actionIcon(id: AuthPostureId): ReactNode {
   }
 }
 
-/**
- * "github" is not "Github". Title-casing the raw id gets the common cases wrong,
- * so the handful with internal capitals are spelled out.
- */
+/** Display names that title-casing the raw id would get wrong ("github" → "GitHub"). */
 const PROVIDER_LABELS: Record<string, string> = {
   github: "GitHub",
   linkedin: "LinkedIn",

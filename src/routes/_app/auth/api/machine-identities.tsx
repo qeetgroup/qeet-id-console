@@ -65,6 +65,8 @@ type Principal = {
   created_at: string;
 };
 
+const SKELETON_IDS = ["a", "b", "c"] as const;
+
 function MachineIdentitiesPage() {
   const { t } = useTranslation("auth");
   const runSensitive = useSensitiveAction();
@@ -73,9 +75,7 @@ function MachineIdentitiesPage() {
   };
   const tenantId = useTenantId();
   const qc = useQueryClient();
-  // `?action=create` opens this drawer, so the Applications overview can
-  // deep-link straight into it.
-  const [creating, setCreating] = useCreateIntent(true);
+  const [creating, setCreating] = useCreateIntent(true); // `?action=create` deep-links here
   const [revealed, setRevealed] = useState<{
     principal: Principal;
     secret: string;
@@ -169,8 +169,8 @@ function MachineIdentitiesPage() {
         <CardContent className="p-0">
           {listQ.isLoading ? (
             <div className="space-y-3 p-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
+              {SKELETON_IDS.map((id) => (
+                <Skeleton key={id} className="h-10 w-full" />
               ))}
             </div>
           ) : listQ.isError ? (

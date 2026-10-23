@@ -1,7 +1,3 @@
-// ResultBadge — the event *outcome* (Success / Failed / Blocked / …), a
-// separate axis from severity. Kept visually distinct so security operators
-// can scan outcomes at a glance.
-
 import { Badge, cn } from "@qeetrix/ui";
 
 import { type EventResult, eventResult } from "../event-labels";
@@ -14,10 +10,10 @@ const RESULT_VARIANT: Record<EventResult, BadgeVariant> = {
   Warning: "warning",
   Blocked: "warning",
   Failed: "destructive",
-  // Info is a neutral, non-outcome state — a muted grey, never the brand colour.
-  Info: "muted",
+  Info: "muted", // Info isn't an outcome, so it stays neutral grey rather than the brand colour
 };
 
+/** Renders the event's outcome (Success, Failed, Blocked…), a separate axis from severity. */
 export function ResultBadge({
   event,
   className,

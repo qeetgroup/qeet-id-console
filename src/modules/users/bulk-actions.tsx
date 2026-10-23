@@ -1,12 +1,11 @@
-// Bulk-action bar contents. There is no batch API, so each action fans out over
-// the selected users' per-user endpoints (bounded concurrency), reporting a
-// combined success/failure toast. Assign-role / Add-to-group pick a target from
-// a submenu; destructive actions confirm first.
+// There is no batch API, so each bulk action calls the per-user endpoint for every selected user,
+// five at a time, and reports one combined toast. Destructive actions confirm first.
 
 import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -140,21 +139,24 @@ export function BulkActions({
           }
         />
         <DropdownMenuContent align="start" className="max-h-72 overflow-y-auto">
-          <DropdownMenuLabel>{t("bulk.pickRole")}</DropdownMenuLabel>
-          {(rolesQ.data?.items ?? []).map((r) => (
-            <DropdownMenuItem
-              key={r.id}
-              onClick={() =>
-                run(t("bulk.assignRole"), (uid) =>
-                  api<void>(`/v1/users/${uid}/tenants/${tenantId}/roles/${r.id}`, {
-                    method: "POST",
-                  }),
-                )
-              }
-            >
-              {r.name}
-            </DropdownMenuItem>
-          ))}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>{t("bulk.pickRole")}</DropdownMenuLabel>
+            {(rolesQ.data?.items ?? []).map((r) => (
+              <DropdownMenuItem
+                key={r.id}
+                onClick={() =>
+                  run(t("bulk.assignRole"), async (uid) => {
+                    if (!tenantId) throw new Error("No tenant selected");
+                    await api<void>(`/v1/users/${uid}/tenants/${tenantId}/roles/${r.id}`, {
+                      method: "POST",
+                    });
+                  })
+                }
+              >
+                {r.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -170,23 +172,25 @@ export function BulkActions({
           }
         />
         <DropdownMenuContent align="start" className="max-h-72 overflow-y-auto">
-          <DropdownMenuLabel>{t("bulk.pickGroup")}</DropdownMenuLabel>
-          {(groupsQ.data?.items ?? []).length === 0 ? (
-            <DropdownMenuItem disabled>{t("bulk.noGroups")}</DropdownMenuItem>
-          ) : (
-            (groupsQ.data?.items ?? []).map((g) => (
-              <DropdownMenuItem
-                key={g.id}
-                onClick={() =>
-                  run(t("bulk.addToGroup"), (uid) =>
-                    api<void>(`/v1/groups/${g.id}/members/${uid}`, { method: "POST" }),
-                  )
-                }
-              >
-                {g.name}
-              </DropdownMenuItem>
-            ))
-          )}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>{t("bulk.pickGroup")}</DropdownMenuLabel>
+            {(groupsQ.data?.items ?? []).length === 0 ? (
+              <DropdownMenuItem disabled>{t("bulk.noGroups")}</DropdownMenuItem>
+            ) : (
+              (groupsQ.data?.items ?? []).map((g) => (
+                <DropdownMenuItem
+                  key={g.id}
+                  onClick={() =>
+                    run(t("bulk.addToGroup"), (uid) =>
+                      api<void>(`/v1/groups/${g.id}/members/${uid}`, { method: "POST" }),
+                    )
+                  }
+                >
+                  {g.name}
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 

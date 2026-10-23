@@ -6,7 +6,7 @@ import { AuthzFlow } from "./authz-flow";
 import { layeredLayout } from "./layout";
 import { relationshipNodeTypes } from "./nodes";
 
-/** ReBAC identity graph rendered with React Flow (replaces the SVG canvas). */
+/** Renders the ReBAC identity graph laid out from `rootId`. */
 export function RelationshipGraph({
   graph,
   rootId,

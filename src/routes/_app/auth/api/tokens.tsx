@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Table,
   TableBody,
   TableCell,
@@ -15,6 +14,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { KeyRoundIcon, TrashIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
@@ -24,7 +24,7 @@ import {
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import { PageHeader } from "@/platform/components/page-header";
-import { useOAuthGrants, useRevokeOAuthGrant } from "@/modules/authentication/api/oauth-grants";
+import { useOAuthGrants, useRevokeOAuthGrant } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/auth/api/tokens")({
   component: TokensPage,

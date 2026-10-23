@@ -18,6 +18,9 @@ import { useSensitiveArtifact } from "../../store/secrets-store";
 import { CHANGE_TOOLS_DISABLED, getTool } from "../../tools";
 import type { ExecutionStatus, ToolExecution } from "../../tools/types/tool.types";
 
+// A missing capability or invalid input fails the same way on every retry.
+const PERMANENT_ERRORS = new Set(["capability_denied", "validation_error"]);
+
 type Tone = "pending" | "running" | "success" | "error";
 
 const STATUS_META: Record<ExecutionStatus, { label: string; tone: Tone }> = {
@@ -42,7 +45,7 @@ const TONE_TEXT: Record<Tone, string> = {
   error: "text-destructive",
 };
 
-/** snake_case tool name → readable label (registry-free, so this stays decoupled). */
+/** Turns a snake_case tool name into a title-cased label. */
 function humanize(name: string): string {
   return name
     .split("_")
@@ -58,9 +61,8 @@ function StatusGlyph({ tone }: { tone: Tone }) {
 }
 
 /**
- * One tool execution rendered inline in the transcript: the action, its live
- * status, the (redacted) result, and — for secret-bearing tools — a one-time
- * reveal of the sensitive artifact that is NEVER sent back to the model.
+ * Renders one tool execution in the transcript: its live status, redacted result and, for a
+ * secret-bearing tool, a one-time reveal of the secret, which is never sent to the model.
  */
 export function ToolCallCard({
   execution,
@@ -74,10 +76,12 @@ export function ToolCallCard({
   const withheld = execution.error?.code === CHANGE_TOOLS_DISABLED;
   const meta = withheld ? WITHHELD_META : STATUS_META[execution.status];
   const result = execution.result;
-  // Secret artifacts live in the in-memory secrets store (never localStorage).
+  // Secrets come from the in-memory secrets store, never localStorage.
   const artifact = useSensitiveArtifact(execution.id);
   const retryable =
-    !withheld && (execution.status === "failed" || execution.status === "timed_out");
+    !withheld &&
+    (execution.status === "failed" || execution.status === "timed_out") &&
+    !PERMANENT_ERRORS.has(execution.error?.code ?? "");
 
   return (
     <div className="rounded-lg border bg-card/50 text-sm">
@@ -136,7 +140,7 @@ export function ToolCallCard({
   );
 }
 
-/** The assistant only reads in this version: say nothing changed, and where to do it. */
+/** Renders "nothing was changed", since the assistant only reads, with a link to where to do it. */
 function ChangeRefusal({ toolName }: { toolName: string }) {
   const screen = getTool(toolName)?.consoleScreen;
   return (

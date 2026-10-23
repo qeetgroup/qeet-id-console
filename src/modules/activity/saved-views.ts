@@ -1,15 +1,9 @@
-// Saved views for the Activity workspace: a built-in catalog of common security
-// investigations plus user-defined views persisted to localStorage. A view is
-// just a set of URL search params (ActivitySearch), so applying one is a
-// navigate() and every view stays paste-shareable. TanStack Store for
-// reactivity, localStorage for persistence, SSR-safe guards — same shape as the
-// search feature's favorites-store.
-//
-// Preset facet values are best-effort against the current event taxonomy (they
-// lean on category + severity + free-text `q`, which is resilient to exact
-// action-name drift). Tune them as the taxonomy settles.
+// Saved views for the Activity workspace: built-in investigations plus the person's own views.
+// A view is a set of URL search params, so applying one is a navigation.
 
 import { Store } from "@tanstack/react-store";
+
+import { scopedStorage } from "@/platform/auth/scoped-storage";
 
 import type { ActivitySearch } from "./activity-search";
 
@@ -18,15 +12,16 @@ export interface SavedView {
   name: string;
   search: ActivitySearch;
   builtin?: boolean;
-  /** Optional icon name, e.g. "ShieldCheck" (resolved by the saved-views bar). */
-  icon?: string;
+  icon?: string; // Icon name such as "ShieldCheck"; the saved-views bar doesn't render it
   createdAt: number;
 }
 
-/** The id of the "everything, no filters" default view. */
-export const ALL_EVENTS_VIEW_ID = "all-events";
+export const ALL_EVENTS_VIEW_ID = "all-events"; // The id of the unfiltered default view
 
-/** Built-in investigations. Not persisted; always shown first. */
+/**
+ * Built-in investigations, listed first and never persisted. They filter on category,
+ * severity and free text, which survive renames of individual event types.
+ */
 export const PRESET_VIEWS: SavedView[] = [
   {
     id: ALL_EVENTS_VIEW_ID,
@@ -86,21 +81,20 @@ export const PRESET_VIEWS: SavedView[] = [
   },
 ];
 
-const STORE_KEY = "qeetid.activity.views";
-
 export interface SavedViewsState {
   views: SavedView[];
 }
 
 export const savedViewsStore = new Store<SavedViewsState>({ views: [] });
 
+// Views capture filters (actors, IPs, resources), so they are saved per person
+// and tenant and wiped on sign-out.
+const storage = scopedStorage("qeetid.activity.views", {
+  onScopeChange: () => savedViewsStore.setState(() => ({ views: [] })),
+});
+
 function persist(state: SavedViewsState): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORE_KEY, JSON.stringify(state));
-  } catch {
-    /* best-effort */
-  }
+  storage.write(state);
 }
 
 function makeId(name: string): string {
@@ -113,8 +107,7 @@ function makeId(name: string): string {
 
 export const savedViewsActions = {
   add(name: string, search: ActivitySearch): SavedView {
-    // Strip transient params (selected event / drawer tab / applied view id)
-    // so a saved view only captures the filter intent.
+    // A view keeps only the filters, not the open event, drawer tab or applied view.
     const { event: _e, tab: _t, view: _v, ...filterSearch } = search;
     const view: SavedView = {
       id: makeId(name),
@@ -147,15 +140,9 @@ export const savedViewsActions = {
   },
 };
 
+/** Loads the signed-in person's views (none when signed out); re-run on storage scope change. */
 export function hydrateSavedViews(): void {
-  if (typeof window === "undefined") return;
-  try {
-    const raw = window.localStorage.getItem(STORE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw) as Partial<SavedViewsState>;
-    if (!parsed || !Array.isArray(parsed.views)) return;
-    savedViewsStore.setState(() => ({ views: parsed.views as SavedView[] }));
-  } catch {
-    /* corrupt payload */
-  }
+  const parsed = storage.read() as Partial<SavedViewsState> | null;
+  const views = Array.isArray(parsed?.views) ? (parsed.views as SavedView[]) : [];
+  savedViewsStore.setState(() => ({ views }));
 }

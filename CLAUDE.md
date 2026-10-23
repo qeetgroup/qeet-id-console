@@ -24,12 +24,14 @@ Read them when a task needs organization or product understanding; this reposito
 
 ## The things most likely to trip you up here
 
-1. **The backend is the authority** (ADR-0003). Client capabilities are UX only — never re-implement RBAC/ABAC in the browser.
-2. **Tokens never reach the browser** (ADR-0009). They live in an encrypted, chunked `__Host-qeet_console` cookie read server-side. Never add one to client state or `localStorage`.
+1. **The backend is the authority**. Client capabilities are UX only — never re-implement RBAC/ABAC in the browser.
+2. **Tokens never reach the browser**. They live in an encrypted, chunked `__Host-qeet_console` cookie read server-side. Never add one to client state or `localStorage`.
 3. **All backend traffic goes through `src/platform/api/client.ts` → `proxyApiRequest`.** Never `fetch` the backend from a component.
 4. **Never render a backend `error.message`** — use `userMessageForCode`. Never log an unredacted payload.
 5. **Never relax the SSRF guard** in `server-request-policy.ts`, and never exempt a server function from CSRF.
 6. **Never hand-edit `src/routeTree.gen.ts`**, and never import across a layer boundary.
+7. **Person or tenant data in browser storage goes through `scopedStorage`** (`src/platform/auth/scoped-storage.ts`) — never an unscoped `localStorage` key.
+8. **Use the platform `DataState`** (`@/platform/components/data-state`), not `@qeetrix/ui`'s: the design-system default prints the raw error message.
 
 ## Working style
 
@@ -41,7 +43,7 @@ Read them when a task needs organization or product understanding; this reposito
 
 ```bash
 bun run typecheck && bun run check && bun run lint:boundaries && bun run test
-# src/platform/{api,auth} has no browser-level test cover - verify the session boundary by hand
+bun run test:e2e   # after touching src/platform/{api,auth}: the browser session suite
 git diff
 ```
 

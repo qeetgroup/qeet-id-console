@@ -53,9 +53,8 @@ function SignInPage() {
     social.mutate(code);
   }, [social]);
 
-  // Returning from a social sign-in that had no matching account: the provider
-  // authenticated, but we don't create accounts on sign-in — tell the user to
-  // sign up first, then strip the param so a reload won't re-toast.
+  // Back from a social sign-in with no matching account: sign-in never creates one, so say to
+  // sign up first, then strip the param so a reload won't toast again.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("social_error") !== "no_account") return;
@@ -76,9 +75,8 @@ function SignInPage() {
     );
   }
 
-  // After a correct password, an account that holds a second factor — or must
-  // have one — returns a challenge instead of tokens; show the second-factor
-  // step, or the setup of an authenticator app.
+  // After a correct password, an account that holds or must have a second factor gets a
+  // challenge instead of tokens: the second-factor step, or setting up an authenticator app.
   const challenge = login.data && isMfaChallenge(login.data) ? login.data : null;
   if (challenge) return <MfaChallengeStep challenge={challenge} />;
 

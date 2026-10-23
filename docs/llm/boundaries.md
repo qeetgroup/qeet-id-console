@@ -58,8 +58,10 @@ routes  →  modules  →  platform  →  shared
 | Browser ↔ tokens | **Tokens never cross.** Encrypted `__Host-` cookie, read server-side only |
 | BFF → backend origin | `server-request-policy.ts` — SSRF guard on every proxied path |
 | Credential responses | `session-response.ts` allowlist; anything else → `502` |
-| Server functions | CSRF middleware in `src/start.ts` |
-| Capability → UI | **UX only.** ADR-0003 — the backend decides |
+| Server functions, unsafe server-route requests | CSRF middleware in `src/start.ts`, policy in `src/platform/security/csrf-policy.ts` (tested) |
+| Browser storage | `src/platform/auth/scoped-storage.ts` — per person and tenant, wiped on sign-out |
+| Response headers | `src/platform/security/security-headers.ts` — HSTS, `frame-ancestors 'none'`, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag` |
+| Capability → UI | **UX only.** The backend decides |
 | Backend message → user | `errors/user-message.ts` — the leak stop |
 | Payload → telemetry | `telemetry/redact.ts` — denylist + email/IP masking |
 
@@ -98,8 +100,8 @@ Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.
 ## Hard limits
 
 1. **Never put a token in the browser** — not in state, not in storage, not in a server-function
-   return. ADR-0009.
-2. **Never treat a UI capability as enforcement.** ADR-0003.
+   return.
+2. **Never treat a UI capability as enforcement.**
 3. **Never bypass `proxyApiRequest`** — no direct `fetch` to the backend from a component.
 4. **Never relax the SSRF guard** in `server-request-policy.ts`.
 5. **Never render a backend `error.message`** — use `userMessageForCode`.
@@ -107,5 +109,6 @@ Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.
 7. **Never hand-edit `src/routeTree.gen.ts`** — it is generated and marked read-only.
 8. **Never import across a layer boundary** — lint will fail, and the rule exists to keep the
    extraction seams intact.
-9. **Never reintroduce `localStorage` token keys** — ADR-0002 is superseded and actively purged.
+9. **Never reintroduce `localStorage` token keys** is superseded and actively purged.
+   Person or tenant data in browser storage goes only through `scopedStorage`.
 10. **Never change another repository** from a task scoped to this one.

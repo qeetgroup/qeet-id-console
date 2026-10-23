@@ -1,9 +1,3 @@
-// Passkey data layer. The full WebAuthn flow is implemented backend-side —
-// list/rename/delete plus register and login ceremonies (register/begin+finish,
-// login/begin+finish via go-webauthn). list still returns [] gracefully if the
-// endpoint isn't deployed, so the UI can render the "you have no passkeys yet"
-// nudge without erroring out.
-
 import {
   type PublicKeyCredentialCreationOptionsJSON,
   startRegistration,
@@ -19,9 +13,8 @@ export interface Passkey {
   id: string;
   user_id: string;
   /**
-   * User-supplied text: render it as text, never as markup. The server names
-   * every new passkey (after the enrolling browser, e.g. "Chrome on macOS");
-   * passkeys enrolled before that may have no name.
+   * User-supplied text: render it as text, never as markup. The server names a new passkey after
+   * the enrolling browser (e.g. "Chrome on macOS"); older passkeys may have no name.
    */
   name?: string | null;
   transports?: string[] | null;
@@ -33,8 +26,8 @@ export interface Passkey {
 export interface PasskeyList {
   items: Passkey[];
   /**
-   * False when the user's organization has passkeys switched off; the server
-   * then refuses to add one. Missing from servers that predate the flag.
+   * False when the user's organization has passkeys switched off; the server then refuses to add
+   * one. Absent means allowed.
    */
   enrollment_allowed?: boolean;
 }
@@ -57,9 +50,8 @@ export function usePasskeys() {
       try {
         return await api<PasskeyList>("/v1/passkeys");
       } catch (err) {
-        // 404 = endpoint not deployed; 501 = endpoint stubbed (ceremony
-        // missing); treat both as "no passkeys" so the prompt-card
-        // surface remains usable.
+        // A server without passkey support (404/501) means "no passkeys", so the prompt card
+        // still renders.
         if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
           return { items: [] };
         }
@@ -73,9 +65,8 @@ export function usePasskeys() {
 }
 
 /**
- * Renames one of the signed-in user's passkeys (PATCH /v1/passkeys/{id}). The
- * server trims and checks the name; errors are left to the caller to show
- * inline, next to the name being edited.
+ * Renames one of the signed-in user's passkeys. The server trims and checks the name; errors are
+ * left to the caller to show inline, next to the name being edited.
  */
 export function useRenamePasskey() {
   const qc = useQueryClient();
@@ -96,7 +87,7 @@ export function useRenamePasskey() {
 export function useRegisterPasskey() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { name?: string } | void) => {
+    mutationFn: async (input: { name?: string } | undefined) => {
       const begin = await api<{
         session_id: string;
         publicKey: PublicKeyCredentialCreationOptionsJSON;
@@ -116,7 +107,7 @@ export function useRegisterPasskey() {
   });
 }
 
-/** Removes one of the signed-in user's passkeys (DELETE /v1/passkeys/{id}). */
+/** Removes one of the signed-in user's passkeys. */
 export function useRemovePasskey() {
   const qc = useQueryClient();
   return useMutation({

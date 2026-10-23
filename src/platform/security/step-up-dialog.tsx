@@ -30,12 +30,9 @@ import {
 type StepUpDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Called after a successful step-up — retry the gated action here. */
-  onVerified: () => void;
-  /** What the user is about to do, e.g. "regenerate your recovery codes". */
-  actionLabel?: string;
-  /** The factor types the organisation counts (from the refusal); null when every one does. */
-  allowedMethods?: string[] | null;
+  onVerified: () => void; // after a successful step-up: retry the gated action here
+  actionLabel?: string; // what the person is about to do, e.g. "delete this user"
+  allowedMethods?: string[] | null; // factor types the organisation counts; null = all
 };
 
 // How the code being typed is checked: an authenticator-app code, a recovery
@@ -46,11 +43,9 @@ type CodeMode =
   | { kind: "otp"; factor: StepUpCodeFactor };
 
 /**
- * StepUpDialog meets a `step_up_required` (403) gate with any of the person's
- * factors that the organisation counts: a passkey, an authenticator-app or
- * recovery code, or a code sent to an email or SMS factor. Once confirmed it
- * calls onVerified so the action can be sent again. Someone with no factor that
- * counts is told what to set up.
+ * Renders the prompt for a `step_up_required` refusal, offering each of the person's factors the
+ * organisation counts: passkey, authenticator or recovery code, or an emailed or texted code.
+ * Calls onVerified once confirmed; someone with no counted factor is told what to set up.
  */
 export function StepUpDialog({
   open,
@@ -76,16 +71,17 @@ export function StepUpDialog({
     !opts.recoveryCode &&
     opts.codeFactors.length === 0;
 
-  // Focus the first code input when one appears (replaces autoFocus, which
-  // jsx-a11y/no-autofocus flags).
+  // Focuses the first code input when one appears, in place of autoFocus. Keyed on the mode's
+  // kind: `active` is a new object each render while the default applies, and would re-focus.
   const inputRef = useRef<HTMLDivElement>(null);
+  const activeKind = active?.kind;
   useEffect(() => {
-    if (!open || !active) return;
+    if (!open || !activeKind) return;
     const id = setTimeout(() => {
       inputRef.current?.querySelector<HTMLInputElement>("input:not([disabled])")?.focus();
     }, 50);
     return () => clearTimeout(id);
-  }, [open, active?.kind]);
+  }, [open, activeKind]);
 
   function reset() {
     setCode("");

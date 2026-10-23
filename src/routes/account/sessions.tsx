@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   StatusPill,
   Table,
   TableBody,
@@ -15,6 +14,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   revokeOtherSessions,
@@ -69,8 +69,7 @@ function SessionsPage() {
 
   const revokeM = useMutation({
     mutationFn: (id: string) => api<void>(`/v1/auth/sessions/${id}`, { method: "DELETE" }),
-    // Optimistic revoke: stamp `revoked_at` on the local row so the
-    // status pill flips immediately. Roll back if the server rejects.
+    // Optimistic: stamp `revoked_at` locally so the pill flips at once; roll back on failure.
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ["account-sessions"] });
       const snapshots = qc.getQueriesData<{ items: Session[] }>({
@@ -90,16 +89,16 @@ function SessionsPage() {
       return { snapshots };
     },
     onError: (_err, _id, ctx) => {
-      ctx?.snapshots.forEach(([key, snap]) => qc.setQueryData(key, snap));
+      ctx?.snapshots.forEach(([key, snap]) => {
+        qc.setQueryData(key, snap);
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["account-sessions"] }),
     meta: { successMessage: t("sessions.toast.revoked") },
   });
 
-  // One server call, all or nothing: the server keeps the session behind this
-  // console's own credential and ends every other one — including any this
-  // page has not loaded — then says how many it ended. So the action is always
-  // offered, whatever the loaded list shows.
+  // One all-or-nothing call: the server ends every session but the console's own, including any
+  // not loaded here, so the action is always offered.
   const revokeOthersM = useMutation({
     mutationFn: revokeOtherSessions,
     onSuccess: ({ revoked }) => {
@@ -117,9 +116,8 @@ function SessionsPage() {
     meta: { silent: true }, // this screen reports both outcomes itself
   });
 
-  // Signing out everywhere ends this console's own session too: on success the
-  // server-side session is already gone, so drop the cached data and go to
-  // sign-in. On failure the person is still signed in here and can retry.
+  // This ends the console's own session too: on success drop the cache and go to sign-in; on
+  // failure the person is still signed in and can retry.
   const signOutEverywhereM = useMutation({
     mutationFn: signOutEverywhere,
     onSuccess: ({ revoked }) => {
@@ -198,9 +196,7 @@ function SessionsPage() {
                           <DeviceIcon kind={s.device_kind} />
                           <span
                             className="text-sm font-medium"
-                            // Keep the raw UA on hover for support, but don't
-                            // surface the noisy string as visible text.
-                            title={s.user_agent ?? ""}
+                            title={s.user_agent ?? ""} // raw user agent on hover, for support
                           >
                             {sessionDevice(s)}
                             {country && (

@@ -16,8 +16,7 @@ export function DynamicBreadcrumb() {
   const access = useCapabilities();
   const meta = lookupNavTitle(pathname);
 
-  // Show at most 2 levels: prefer parent for sub-items, else group for top-level.
-  const lead = meta.parent
+  const lead = meta.parent // at most 2 levels: the parent for sub-items, else the group
     ? { title: meta.parent.title, url: meta.parent.url }
     : meta.group
       ? { title: meta.group }

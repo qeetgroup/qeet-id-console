@@ -1,9 +1,3 @@
-// Event details drawer — a right-side Sheet that turns a selected event into an
-// investigation surface: an Overview tab (human context first, IDs second, all
-// copyable), a Raw event tab (full JSON), and a Related events tab (correlated
-// by request_id / same actor). The header carries an Investigate menu and
-// prev/next navigation within the loaded feed.
-
 import {
   Badge,
   Button,
@@ -49,11 +43,6 @@ import { InvestigateMenu } from "./investigate-menu";
 import { RelatedEventsList } from "./related-events-list";
 import { SeverityBadge } from "./severity-badge";
 
-// ---------------------------------------------------------------------------
-// Shared sub-components
-// ---------------------------------------------------------------------------
-
-/** Icon-only copy control built on the shared useCopyToClipboard hook. */
 function CopyIconButton({ text, label }: { text: string; label: string }) {
   const { copied, copy } = useCopyToClipboard();
   return (
@@ -105,10 +94,6 @@ function MonoId({ value, label }: { value: string; label: string }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main drawer
-// ---------------------------------------------------------------------------
-
 type EventDetailsDrawerProps = {
   event: ActivityEvent | null;
   prevEvent?: ActivityEvent | null;
@@ -118,12 +103,15 @@ type EventDetailsDrawerProps = {
   onClose: () => void;
   onSelectPrev?: () => void;
   onSelectNext?: () => void;
-  /** Select a related event (swaps the drawer to it). */
-  onSelectEvent?: (event: ActivityEvent) => void;
-  /** Apply a filter patch from the Investigate menu. */
+  onSelectEvent?: (event: ActivityEvent) => void; // Called with the event chosen in the Related tab
+  /** Receives filter patches from the investigate menu. */
   onFilter?: (patch: Partial<ActivitySearch>) => void;
 };
 
+/**
+ * Renders the selected event in a side sheet with Overview, Raw event and Related tabs, an
+ * investigate menu, and prev/next navigation through the loaded feed.
+ */
 export function EventDetailsDrawer({
   event,
   prevEvent,

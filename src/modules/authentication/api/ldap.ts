@@ -1,5 +1,5 @@
-// LDAP / Active Directory connection data layer. bind_password is write-only:
-// it's accepted on create/update but never returned by the API.
+// LDAP / Active Directory connections. bind_password is write-only: accepted on create and update,
+// never returned.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -88,7 +88,7 @@ export function useDeleteLdapConnection() {
   });
 }
 
-/** Service-account bind test — proves the connection settings reach the directory. */
+/** Tests the service-account bind, proving the connection settings reach the directory. */
 export function useTestLdapConnection() {
   const tenantId = useTenantId();
   return useMutation({

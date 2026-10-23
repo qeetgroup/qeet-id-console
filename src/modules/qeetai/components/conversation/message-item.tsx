@@ -33,8 +33,8 @@ interface MessageItemProps {
 }
 
 /**
- * A single turn. User messages sit in a right-aligned bubble (editable inline);
- * assistant messages render as Markdown with hover actions (copy, regenerate).
+ * Renders one turn: a user message as an inline-editable bubble, an assistant message as
+ * Markdown with copy and regenerate actions.
  */
 export function MessageItem({ message, isLast, chat }: MessageItemProps) {
   const { copied, copy } = useCopy(message.content);

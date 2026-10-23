@@ -13,8 +13,7 @@ export interface Group {
   name: string;
   description: string;
   created_at: string;
-  /** Populated by the list endpoint only; create/update return 0. */
-  member_count: number;
+  member_count: number; // set by the list endpoint only; create and update return 0
 }
 
 export interface GroupTemplateNode {
@@ -30,15 +29,13 @@ export interface GroupTemplate {
   description: string;
   nodes: GroupTemplateNode[];
   created_at: string;
-  /** How many groups applying this template would create. */
-  group_count: number;
+  group_count: number; // groups that applying the template would create
 }
 
 export interface ImportRow {
   name: string;
   description?: string;
-  /** Parent group NAME — resolved server-side against existing and imported rows. */
-  parent?: string;
+  parent?: string; // parent group name, resolved against existing and imported rows
 }
 
 export interface ImportResult {
@@ -77,18 +74,13 @@ export function useAddGroupMember() {
     mutationFn: (in_: { groupId: string; userId: string }) =>
       api<void>(`/v1/groups/${in_.groupId}/members/${in_.userId}`, { method: "POST" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: GROUPS_KEY }),
-    // The create flow adds several members in a row; one toast per member would
-    // bury the "group created" confirmation.
-    meta: { silent: true },
+    meta: { silent: true }, // a toast per added member would bury "Group created"
   });
 }
 
 /**
- * Grant a role to a newly created group, so its members inherit it.
- *
- * Separate from authorization's `useGrantGroupRole`, which binds the group id at
- * hook-creation time — the create flow doesn't know the id until the group
- * exists.
+ * Grants a role to a newly created group so its members inherit it. Unlike `useGrantGroupRole`,
+ * it takes the group id per call: the create flow learns the id only after creating.
  */
 export function useAssignGroupRole() {
   const tenantId = useTenantId();
@@ -99,8 +91,7 @@ export function useAssignGroupRole() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["group-roles"] }),
-    // Part of the create flow; "Group created" is the confirmation that matters.
-    meta: { silent: true },
+    meta: { silent: true }, // part of the create flow, which toasts "Group created"
   });
 }
 
@@ -151,8 +142,6 @@ export function useImportGroups() {
     mutationFn: (groups: ImportRow[]) =>
       api<ImportResult>("/v1/groups/import", { method: "POST", body: { groups } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: GROUPS_KEY }),
-    // The dialog renders a per-row breakdown; a toast saying "Saved" on top of
-    // "3 created, 1 skipped, 2 failed" would be noise at best.
-    meta: { silent: true },
+    meta: { silent: true }, // the dialog shows a per-row breakdown instead
   });
 }

@@ -1,6 +1,5 @@
-// Identity Timeline route — /users/$userId/timeline
-// A per-user, git-history-style chronological view of a user's entire lifecycle.
-// Capability-gated on audit.read + user.read (server enforces tenant isolation).
+// A chronological view of one user's whole lifecycle, gated on audit.read and user.read; the
+// server enforces tenant isolation.
 
 import { EmptyState } from "@qeetrix/ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -20,10 +19,6 @@ import { TimelineProvider, useTimeline } from "@/modules/timeline/timeline-provi
 export const Route = createFileRoute("/_app/users/$userId_/timeline")({
   component: TimelinePageWrapper,
 });
-
-// ---------------------------------------------------------------------------
-// Inner page (requires TimelineProvider)
-// ---------------------------------------------------------------------------
 
 function TimelinePage() {
   const { userId } = Route.useParams();
@@ -60,7 +55,6 @@ function TimelinePage() {
     setSelectedEventId(null);
   }, [setSelectedEventId]);
 
-  // Derive prev/next for drawer navigation
   const selectedIndex = useMemo(
     () => events.findIndex((e) => e.id === selectedEvent?.id),
     [events, selectedEvent],
@@ -120,7 +114,7 @@ function TimelinePage() {
         }
       />
 
-      {/* Identity summary — computed from loaded events; cards toggle category */}
+      {/* Computed from the loaded events only; a card toggles its category. */}
       <TimelineSummaryStrip
         events={events}
         loading={isLoading}
@@ -148,7 +142,7 @@ function TimelinePage() {
         />
       </div>
 
-      {/* Details drawer — always in DOM for transition animation */}
+      {/* Always mounted, so it can animate its transitions. */}
       <TimelineDetailsDrawer
         event={selectedEvent}
         userId={userId}
@@ -161,10 +155,6 @@ function TimelinePage() {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Wrapper: mounts the TimelineProvider for the route
-// ---------------------------------------------------------------------------
 
 function TimelinePageWrapper() {
   const { userId } = Route.useParams();

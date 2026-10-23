@@ -3,22 +3,20 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { publicConfigScript } from "@/platform/config/api-base-url";
 
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import { queryDevtoolsPlugin } from "@/platform/query/query-devtools";
 
 import appCss from "../styles.css?url";
 
 const THEME_STORAGE_KEY = "qeetid-admin-theme";
 const DEVTOOLS_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEVTOOLS === "true";
 
-// Synchronous head script: runs while the browser is parsing <head>, before
-// any of <body> renders. Reads the saved theme (or falls back to the system
-// preference) and writes the matching class onto <html> so the very first
-// paint is correct. Without this, ThemeProvider only applies the class in a
-// useEffect after hydration — causing a visible light→dark flash on refresh.
+// Runs while <head> parses and puts the saved (or system) theme class on <html>, so the first
+// paint is right; ThemeProvider alone would apply it after hydration, with a visible flash.
 const themeFlashScript = `(function(){try{var k="${THEME_STORAGE_KEY}";var t=localStorage.getItem(k);if(t!=="dark"&&t!=="light"&&t!=="system")t="system";var resolved=t==="system"?(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;var h=document.documentElement;h.classList.remove("light","dark");h.classList.add(resolved);h.style.colorScheme=resolved;}catch(e){}})();`;
 
 interface MyRouterContext {
@@ -41,7 +39,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      // Theme-adaptive Qeet favicon, with the branded .ico as universal fallback.
+      // Theme-adaptive favicon, with the .ico as the universal fallback.
       {
         rel: "icon",
         href: "/qeet-logo-on-light.svg",
@@ -65,9 +63,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static, source-controlled anti-flash script must execute before hydration */}
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static anti-flash script */}
         <script dangerouslySetInnerHTML={{ __html: themeFlashScript }} />
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-escaped public runtime config (API origin) the browser needs before hydration — see platform/config/api-base-url.ts */}
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: escaped public config only */}
         <script dangerouslySetInnerHTML={{ __html: publicConfigScript() }} />
         <HeadContent />
       </head>
@@ -83,13 +81,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   name: "Tanstack Router",
                   render: <TanStackRouterDevtoolsPanel />,
                 },
-                TanStackQueryDevtools,
+                queryDevtoolsPlugin,
               ]}
             />
           ) : null}
         </ThemeProvider>
+        <HydrationMarker />
         <Scripts />
       </body>
     </html>
   );
+}
+
+// Marks <html data-hydrated> once React owns the document: input typed before hydration is
+// discarded, so browser tests wait for this marker.
+function HydrationMarker() {
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "true";
+  }, []);
+  return null;
 }

@@ -10,7 +10,6 @@ import {
 import {
   Button,
   cn,
-  DataState,
   Select,
   SelectContent,
   SelectItem,
@@ -18,6 +17,7 @@ import {
   SelectValue,
   Skeleton,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -70,27 +70,19 @@ export interface PlanSelection {
 }
 
 interface PlanSelectProps {
-  /** Called when a plan card's CTA is clicked. */
   onSelect: (sel: PlanSelection) => void;
-  /** Tier currently being processed — shows a spinner and disables its CTA. */
-  busyTier?: Tier | null;
-  /** CTA label per tier; defaults to a sensible verb. */
-  ctaLabel?: (tier: Tier) => string;
-  /** When set, the matching tier is marked as the current plan and disabled. */
-  currentTier?: Tier | null;
-  /** Force a single-column card layout (for narrow containers like a sheet). */
-  stacked?: boolean;
-  /** Restore the billing choice when returning from a later setup step. */
-  initialSelection?: PlanSelection | null;
+  busyTier?: Tier | null; // shows a spinner on that tier and disables its CTA
+  ctaLabel?: (tier: Tier) => string; // defaults to a sensible verb
+  currentTier?: Tier | null; // marked as the current plan and disabled
+  stacked?: boolean; // single-column cards for narrow containers
+  initialSelection?: PlanSelection | null; // restores the choice when coming back a step
   className?: string;
 }
 
 /**
- * Presentational plan picker: four tier cards with a Monthly/Yearly toggle and
- * a currency selector, driven by the live billing catalog. Reused by first-run
- * onboarding and the create-organization flow. Selecting a card hands the full
- * selection (tier, resolved plan code, interval, currency, country) to the
- * parent — this component takes no payment itself.
+ * Renders the plan picker over the live billing catalog: tier cards, a billing-cycle toggle and a
+ * currency selector. A selection (tier, plan code, interval, currency, country) goes to
+ * `onSelect`; it takes no payment itself.
  */
 export function PlanSelect({
   onSelect,
@@ -149,8 +141,7 @@ export function PlanSelect({
   return (
     <div className={cn(SETUP_THEME, "@container/plans flex min-w-0 flex-col gap-2.5", className)}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        {/* Self-contained segmented toggle: the active background is driven
-            directly by state so it always tracks the selection. */}
+        {/* The active background is driven by state so it always tracks the selection. */}
         <fieldset
           aria-label={t("setup.plans.billingCycle")}
           className="inline-flex h-7 items-center gap-0.5 rounded-xl border border-(--setup-border)/60 bg-(--setup-border)/45 p-0.5 text-[11px] text-(--setup-muted) dark:bg-(--setup-soft)/80 pointer-coarse:min-h-11"
@@ -374,8 +365,8 @@ export function PlanSelect({
                   )}
                   disabled={isCurrent || unavailable || !!busyTier}
                   onClick={() =>
-                    // Enterprise is contact-sales, not self-serve: the server
-                    // won't provision a paid/enterprise org via POST /v1/tenants.
+                    // Enterprise is contact-sales: the server won't create a paid or enterprise
+                    // org through POST /v1/tenants.
                     tier === "enterprise"
                       ? setSalesOpen(true)
                       : onSelect({

@@ -1,8 +1,6 @@
 import { SparklesIcon } from "@qeetrix/icons";
 
-// Starter prompts shown on an empty conversation. These are generic defaults;
-// the suggestions feature replaces them with route-aware actions derived from
-// the current ConsoleContext.
+// Generic, not route-aware: route suggestions appear only once a conversation has messages.
 const STARTER_PROMPTS = [
   "Show users who signed in from a new device this week",
   "Draft a least-privilege role for support engineers",

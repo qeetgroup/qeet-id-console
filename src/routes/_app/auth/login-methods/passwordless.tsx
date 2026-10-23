@@ -5,9 +5,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Switch,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   FingerprintPatternIcon,
@@ -20,11 +20,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
-import {
-  type AuthPolicy,
-  useAuthPolicy,
-  useUpdateAuthPolicy,
-} from "@/modules/authentication/api/auth-policy";
+import { type AuthPolicy, useAuthPolicy, useUpdateAuthPolicy } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/auth/login-methods/passwordless")({
   component: PasswordlessPage,

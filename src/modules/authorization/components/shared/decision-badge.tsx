@@ -17,7 +17,7 @@ export const ENGINE_DESCRIPTIONS: Record<Engine, string> = {
   rebac: "Relationship / tuple traversal",
 };
 
-/** ALLOW / DENY pill with icon — the single visual for every decision. */
+/** Renders the ALLOW or DENY pill used for every decision. */
 export function DecisionBadge({ allowed, className }: { allowed: boolean; className?: string }) {
   return (
     <Badge variant={allowed ? "success" : "destructive"} className={className}>

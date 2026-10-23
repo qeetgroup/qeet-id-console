@@ -1,11 +1,3 @@
-// A single activity row, styled as a dense two-line data-table row:
-//   TIME · ACTOR · ACTION · RESOURCE · OUTCOME · IP ADDRESS
-// Each cell stacks a primary value over a muted secondary (relative time, actor
-// id, action description, resource id, geo location). The whole row is one
-// clickable target (stretched-link) that opens the details drawer; copy buttons
-// and the ⋯ Investigate menu sit above the hit area. Columns collapse below `lg`
-// into a compact two-line layout.
-
 import { Avatar, AvatarFallback, Badge, cn, TimeSince } from "@qeetrix/ui";
 import { initials } from "@/shared/utils/initials";
 import {
@@ -26,8 +18,8 @@ import { CopyIconButton } from "./copy-icon-button";
 import { InvestigateMenu } from "./investigate-menu";
 import { SeverityBadge } from "./severity-badge";
 
-// Shared responsive grid template — the header row uses the same tracks so
-// columns line up. Mobile collapses to time · action · outcome · ⋯.
+// Shared with the header row so columns line up; below `lg` only time, action, outcome and ⋯
+// remain.
 const ROW_COLS =
   "grid-cols-[4.25rem_minmax(0,1fr)_auto_1.75rem] " +
   "lg:grid-cols-[6.5rem_minmax(0,1.25fr)_minmax(0,1.55fr)_minmax(0,1.15fr)_6.5rem_minmax(0,1.1fr)_2rem]";
@@ -57,13 +49,13 @@ function formatTime(at: string): string {
   });
 }
 
-/** Middle-truncate a long id like "6607bc8c…f61" / "ses_01J2a…8f7d". */
+/** Middle-truncates ids over 16 characters to the first 8 and last 3, e.g. "6607bc8c…f61". */
 function shortId(id: string): string {
   return id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-3)}` : id;
 }
 
-// Actor avatar tone by actor type (org/user = brand, service/agent = info,
-// system = a server glyph, unknown = muted).
+// A server glyph for system actors, info tone for services and agents, brand tone for any
+// other identified actor, muted when unknown.
 function actorVisual(event: ActivityEvent): {
   cls: string;
   content: ReactNode;
@@ -88,7 +80,7 @@ function actorVisual(event: ActivityEvent): {
   return { cls: tone, content, name };
 }
 
-/** Column header aligned to the row grid. Decorative; wide viewports only. */
+/** Renders the column headers on the row grid; decorative, and shown from `lg` up. */
 export function ActivityRowHeader() {
   return (
     <div
@@ -117,6 +109,11 @@ type ActivityEventRowProps = {
   onFilter?: (patch: Partial<ActivitySearch>) => void;
 };
 
+/**
+ * Renders one event as a dense two-line row that collapses below `lg`. The action button's
+ * stretched link makes the whole row open the details drawer; copy buttons and the investigate
+ * menu sit above that hit area.
+ */
 export function ActivityEventRow({
   event,
   isNew = false,

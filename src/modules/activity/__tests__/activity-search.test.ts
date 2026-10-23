@@ -76,7 +76,8 @@ describe("outcome ⇄ severity mapping", () => {
 
   it("reverse-maps an exact severity set to an outcome", () => {
     expect(severityToOutcome(["error", "critical"] as Severity[])).toBe("failed");
-    expect(severityToOutcome(["critical", "error"] as Severity[])).toBe("failed"); // order-insensitive
+    // Order-insensitive.
+    expect(severityToOutcome(["critical", "error"] as Severity[])).toBe("failed");
     expect(severityToOutcome(["success"] as Severity[])).toBe("success");
   });
 

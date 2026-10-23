@@ -3,8 +3,6 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { SearchItem } from "../../registry/types/registry.types";
 import { favoritesActions, favoritesStore } from "../favorites-store";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function item(id: string, title: string): SearchItem {
   return {
     id,
@@ -18,8 +16,6 @@ function item(id: string, title: string): SearchItem {
 beforeEach(() => {
   favoritesStore.setState(() => ({ entries: [] }));
 });
-
-// ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe("favoritesActions.toggle", () => {
   it("adds an item when it is not yet a favorite", () => {

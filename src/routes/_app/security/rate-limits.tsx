@@ -19,10 +19,8 @@ export const Route = createFileRoute("/_app/security/rate-limits")({
   component: RateLimitsPage,
 });
 
-// These are the per-IP defaults baked into platform/cache/ratelimit/limiter.go.
-// Per-tenant / per-user / per-api-key overrides now ship backend-side
-// (migration 0064_rate_limit_overrides, domains/operations/ratelimits); this
-// admin screen isn't wired to that override API yet.
+// The server's per-IP defaults. The API also takes per-tenant, per-user and per-key overrides,
+// which this screen doesn't manage.
 const STATIC_LIMITS: { endpoint: string; limit: string; window: string }[] = [
   {
     endpoint: "POST /v1/auth/login",
@@ -54,8 +52,7 @@ const STATIC_LIMITS: { endpoint: string; limit: string; window: string }[] = [
 
 function RateLimitsPage() {
   const { t } = useTranslation("security");
-  // Which networks may sign in is the IP rules' job; this page only points there.
-  const rulesQ = useIpRules();
+  const rulesQ = useIpRules(); // IP rules decide who may sign in; this page only links there
   const rules = rulesQ.data?.items ?? [];
 
   return (

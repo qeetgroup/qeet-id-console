@@ -1,10 +1,3 @@
-// Client-side export of the current activity filter to CSV / JSON / NDJSON.
-// Walks the cursor pages of GET /v1/activity (via the shared fetchActivityPage)
-// starting from the newest matching event, capped at EXPORT_ROW_CAP rows so an
-// open-ended loop can't run forever on huge tenants. CSV escaping + download are
-// the shared helpers (shared/utils/data-export); export is client-side, so
-// gating is UI-only (see the route's audit_export entitlement check).
-
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
@@ -18,8 +11,7 @@ export type ExportFormat = "csv" | "json" | "ndjson";
 const EXPORT_ROW_CAP = 10_000;
 const EXPORT_PAGE = 200;
 
-// Flat, spreadsheet-friendly columns. Nested objects are JSON-encoded per cell
-// by the shared csvCell escaper.
+// Flat columns for spreadsheets; the shared CSV escaper JSON-encodes `metadata` into one cell.
 const CSV_COLUMNS: CsvColumn<ActivityEvent>[] = [
   { header: "id", value: (e) => e.id },
   { header: "at", value: (e) => e.at },
@@ -44,8 +36,9 @@ const MIME: Record<ExportFormat, string> = {
 };
 
 /**
- * Returns an `exportAll(format)` action that downloads the current filter set,
- * plus an `exporting` flag (the in-flight format, or null).
+ * Returns `exportAll(format)`, which pages GET /v1/activity in the browser and downloads every
+ * matching event up to EXPORT_ROW_CAP, and `exporting`, the in-flight format or null. Because
+ * the export runs client-side, the route's audit_export entitlement check is UI-only gating.
  */
 export function useActivityExport(filters: ActivityFilters) {
   const [exporting, setExporting] = useState<ExportFormat | null>(null);

@@ -12,36 +12,23 @@ import { useEffect, useId, useRef, useState } from "react";
 export type LogoStatus = "empty" | "loading" | "ready" | "error";
 
 type LogoFieldProps = {
-  /** Current logo source — a public URL or a data: URL. Empty = no logo. */
-  value: string;
-  /** Emits the new value: a data URL after a file pick, or the typed URL. */
-  onChange: (next: string) => void;
-  /** Max file size in MB before the pick is rejected. Defaults to 2. */
-  maxSizeMB?: number;
-  /** Accepted MIME types for the file input. Defaults to all images. */
-  accept?: string;
+  value: string; // a public URL or a data: URL; empty means no logo
+  onChange: (next: string) => void; // a data URL after a file pick, or the typed URL
+  maxSizeMB?: number; // largest accepted file, in MB; defaults to 2
+  accept?: string; // accepted MIME types; defaults to all images
   disabled?: boolean;
   hint?: string;
   className?: string;
-  /** Heading shown beside the preview. Defaults to "Logo set". */
-  title?: string;
-  /**
-   * Replaces the line under the heading, which otherwise shows the current
-   * source. Distinct from `hint`, which sits below the whole control.
-   */
-  subtitle?: string;
+  title?: string; // heading beside the preview; defaults to "Logo set"
+  subtitle?: string; // replaces the source line under the heading; `hint` goes below all
   layout?: "stacked" | "split";
   onStatusChange?: (status: LogoStatus) => void;
 };
 
 /**
- * Console-local logo picker. Replaces `@qeetrix/ui`'s `LogoUploader`, whose
- * drop-zone doesn't open the file dialog on click (the hidden <input> has no
- * label association). Here the dropzone and the Replace button both call the
- * file input's `.click()` directly, so clicking always opens the picker.
- *
- * Both input paths share the one `value` slot — a file becomes a data URL via
- * FileReader; a pasted URL is emitted verbatim — so callers treat them the same.
+ * Renders a logo picker. Unlike `@qeetrix/ui`'s LogoUploader, clicking the dropzone or Replace
+ * always opens the file dialog, as both call the input's `.click()`. A picked file becomes a data
+ * URL and a pasted URL passes as typed, both through `value`.
  */
 export function LogoField({
   value,
@@ -67,8 +54,8 @@ export function LogoField({
   disabledRef.current = disabled;
   const [imageReady, setImageReady] = useState(false);
 
-  // Attach error listener imperatively to avoid jsx-a11y/no-noninteractive-element-interactions
-  // (onError on <img> is a system event, not a user interaction, but the rule flags all handlers)
+  // Attached imperatively: the a11y lint flags any handler on <img>, though onError is a system
+  // event, not a user interaction.
   useEffect(() => {
     readVersion.current += 1;
     setError(null);
@@ -343,9 +330,8 @@ export function LogoField({
         </button>
       )}
 
-      {/* Offered in the empty state too: without it, a logo that already lives
-          at a URL would have to be downloaded and re-uploaded. Wrapped so it
-          reads as one control with its input rather than two stacked blocks. */}
+      {/* Offered when empty too, so a logo already at a URL needn't be re-uploaded; wrapped to
+          read as one control with its input. */}
       {!value ? (
         <div data-slot="logo-url-toggle" className="flex flex-col gap-2">
           <button

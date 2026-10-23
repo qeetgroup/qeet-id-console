@@ -8,15 +8,13 @@
 | Repository identity | [`qeet-repo.yml`](../../qeet-repo.yml) |
 | Agent instructions | [`AGENTS.md`](../../AGENTS.md) |
 | Subsystem map + real paths | [`subsystems.md`](subsystems.md) |
-| 42 numbered conventions | `docs/engineering-standards.md` |
-| Nine ADRs | `docs/adr/` |
 
 ## Entry points
 
 | Concern | Path |
 |---|---|
 | Router construction | `src/router.tsx` |
-| **CSRF middleware, Start instance** | `src/start.ts` |
+| **Start instance: CSRF middleware + production config check** | `src/start.ts` |
 | Generated route tree — **never hand-edit** | `src/routeTree.gen.ts` |
 | Root layout, theme, toaster | `src/routes/__root.tsx` |
 | Global styles | `src/styles.css` |
@@ -40,7 +38,8 @@
 | **SSRF guard** | `src/platform/api/server-request-policy.ts` |
 | SSE proxying | `src/platform/api/server-stream.ts` |
 | **Encrypted session cookie** | `src/platform/auth/server-session.ts` |
-| Client session store, cross-tab | `src/platform/auth/session-store.ts` |
+| Client session store, cross-tab (inert on the server) | `src/platform/auth/session-store.ts` |
+| **Per-person browser storage, wiped on sign-out** | `src/platform/auth/scoped-storage.ts` |
 | Token-issuing endpoint allowlist | `src/platform/auth/session-response.ts` |
 | Session helpers / auth-lost | `src/platform/auth/session.ts`, `auth-lost.ts` |
 
@@ -57,23 +56,29 @@
 | Read-only + mode indicators | `src/platform/security/read-only-notice.tsx`, `access-mode-indicator.tsx` |
 | **Telemetry redaction** | `src/platform/telemetry/redact.ts` |
 | **Backend-message leak stop** | `src/platform/errors/user-message.ts` |
+| Leak-safe `DataState` (lint-enforced) | `src/platform/components/data-state.tsx` |
+| **CSRF policy** | `src/platform/security/csrf-policy.ts` |
+| **Response headers** (applied via `vite.config.ts`) | `src/platform/security/security-headers.ts` |
 
 ## Platform support
 
 | Concern | Path |
 |---|---|
-| Env schema | `src/platform/config/env.ts` |
+| Client env schema | `src/platform/config/env.ts` |
+| **Production config check** | `src/platform/config/server-config.ts` |
 | Public API origin | `src/platform/config/api-base-url.ts` |
 | **Nav tree + path→capability map** | `src/platform/config/navigation.tsx` |
 | Error taxonomy | `src/platform/errors/` |
 | Query client, 403 recapability | `src/platform/query/query-client.ts` |
+| Query devtools plugin (dev only) | `src/platform/query/query-devtools.tsx` |
 | Feature flags | `src/platform/feature-flags/` |
 | Page chrome | `src/platform/components/page-header.tsx` |
 
 ## Modules
 
-14 under `src/modules/`: `activity` `authentication` `authorization` `billing` `compliance`
-`dashboard` `developer` `onboarding` `organizations` `qeetai` `search` `security` `timeline` `users`.
+17 under `src/modules/`, each with an `index.ts` barrel: `activity` `authentication`
+`authorization` `billing` `branding` `compliance` `dashboard` `developer` `directory` `groups`
+`onboarding` `organizations` `qeetai` `search` `security` `timeline` `users`.
 Details and barrels: [`subsystems.md`](subsystems.md).
 
 ## Shared
@@ -83,7 +88,8 @@ Details and barrels: [`subsystems.md`](subsystems.md).
 
 ## i18n
 
-`src/i18n/` — 8 languages. `en` has 20 namespaces; the others have 10 and fall back to `en`.
+`src/i18n/` — 8 languages. `en` has 19 namespaces; the others have 10 (about 8% of the keys) and
+fall back to `en`.
 
 ## Build, test, CI
 
@@ -91,15 +97,15 @@ Details and barrels: [`subsystems.md`](subsystems.md).
 |---|---|
 | Scripts | `package.json` |
 | **Layering rules** | `biome.json` |
-| Vite plugins | `vite.config.ts` — **no `server.port`** |
-| Unit tests | `vitest.config.ts` — `environment: "node"`, jsdom via per-file pragma |
-| CI | `.github/workflows/ci.yml` |
+| Vite plugins, security-header route rules | `vite.config.ts` (dev port 3002 is set in the `dev` script) |
+| Unit tests + coverage thresholds | `vitest.config.ts` — `environment: "node"`, jsdom via per-file pragma |
+| CI (required check **Verify**) | `.github/workflows/ci.yml` |
+| Static analysis | `.github/workflows/codeql.yml` |
+| Known-vulnerability audit | `.github/workflows/dependency-audit.yml` (`bun run audit`) |
+| Image build + smoke test on PRs | `.github/workflows/docker.yml` |
+| Dependency updates | `.github/dependabot.yml`, `bunfig.toml` (3-day minimum release age) |
 | Deploy | `.github/workflows/deploy.yml` + `vercel.json` |
+| Container image | `Dockerfile` (health check on `/healthz`) |
 
-## Architecture docs
-
-`docs/architecture/current-state.md` · `target-architecture.md` · `audit-2026-08.md` ·
-`enterprise-modernization-plan.md`
-
-> **`src/app/` does not exist**, though the README and `docs/architecture/target-architecture.md`
-> both reference it. See [context.md](context.md#known-documentation-drift).
+> **`src/app/` does not exist.** Providers are composed in `__root.tsx` and the `_app` / `account`
+> layouts.

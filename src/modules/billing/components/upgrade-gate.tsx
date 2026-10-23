@@ -5,12 +5,7 @@ import type { ComponentType } from "react";
 
 import { useEntitlements } from "../api/billing";
 
-/**
- * UpgradeGate is the locked-feature placeholder for plan-gated surfaces: a
- * dashed card (house style, matching ComingSoon) that names the feature and
- * links to the billing page. Used when a boolean plan feature (SSO, SCIM,
- * LDAP, …) isn't included in the tenant's plan.
- */
+/** Renders the placeholder for a feature the plan lacks: a dashed card linking to billing. */
 export function UpgradeGate({
   icon: Icon = LockIcon,
   title,
@@ -20,8 +15,7 @@ export function UpgradeGate({
   icon?: ComponentType<IconProps<"outline">>;
   title: string;
   description: string;
-  /** Recommended tier to preselect on the billing page (in-context deep-link). */
-  plan?: string;
+  plan?: string; // tier to preselect on the billing page
 }) {
   return (
     <Card className="border-dashed">
@@ -45,8 +39,8 @@ export function UpgradeGate({
   );
 }
 
-// Which tier first unlocks each gated feature — used to deep-link the Upgrade CTA
-// straight to the right plan (mirrors the server entitlements catalog).
+// The tier that first unlocks each feature, so Upgrade deep-links to the right plan. Mirrors the
+// server's entitlements catalog.
 const FEATURE_PLAN: Record<string, string> = {
   sms_mfa: "starter",
   custom_branding: "starter",
@@ -61,10 +55,8 @@ const FEATURE_PLAN: Record<string, string> = {
 };
 
 /**
- * FeatureGate renders its children only when the current tenant's plan includes
- * `feature`; otherwise it renders an UpgradeGate. The backend still enforces the
- * gate (a 402 on any create), so while entitlements are loading we render the
- * children optimistically rather than blocking paying customers on a spinner.
+ * Renders `children`, or an UpgradeGate once entitlements show the plan lacks `feature`. While they
+ * load it renders children optimistically: the server still enforces the gate with a 402.
  */
 export function FeatureGate({
   feature,

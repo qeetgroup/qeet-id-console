@@ -30,10 +30,7 @@ const UNREAD_KIND: Partial<Record<ConnectionStatus, "success" | "warning" | "dan
   paused: "muted",
 };
 
-/**
- * Compact connection status indicator for the activity feed header.
- * Shows the SSE connection state and an unread-event count badge.
- */
+/** Renders the stream's connection state and, when non-zero, the unread event count. */
 export function LiveIndicator({
   status,
   unreadCount,

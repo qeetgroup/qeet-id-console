@@ -1,4 +1,4 @@
-// Public API of the activity feature. Cross-feature consumers import from here.
+// Public API of the activity module; other modules import from here only.
 export * from "./activity-history";
 export * from "./activity-store";
 export * from "./components/activity-time-range";

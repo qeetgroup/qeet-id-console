@@ -1,7 +1,3 @@
-// Resource source helpers: convert API SearchHit[] → SearchItem[].
-// The actual async query lives in UniversalSearch (useQuery); this module
-// provides the pure transformation so it can be reused or tested independently.
-
 import type { SearchHit, SearchItem } from "./types/registry.types";
 
 function typeToCategory(type: string): string {
@@ -10,11 +6,7 @@ function typeToCategory(type: string): string {
   return s.endsWith("s") ? s : `${s}s`;
 }
 
-/**
- * Convert raw API search hits into canonical SearchItem objects.
- * Resource items have `kind: "resource"` and carry status/metadata for the
- * preview pane.
- */
+/** Maps GET /v1/search hits to `resource` items, keeping status and metadata for the preview. */
 export function resourceHitsToSearchItems(hits: SearchHit[]): SearchItem[] {
   return hits.map(
     (hit): SearchItem => ({

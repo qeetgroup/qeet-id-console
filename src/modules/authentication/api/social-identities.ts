@@ -1,7 +1,5 @@
-// Connected-account (social identity) self-service data layer. Lists the
-// external identities linked to the current user and unlinks them. Backed by
-// the self-service, tenant-independent GET /v1/me/social/identities and
-// DELETE /v1/me/social/identities/{id} — so this works before joining any org.
+// The signed-in user's linked social identities. The endpoints are tenant-independent, so this
+// works before the user joins an organization.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -18,9 +16,7 @@ export interface SocialIdentity {
 
 const KEY = ["social-identities"];
 
-// useSocialIdentities lists the current user's linked social accounts via the
-// self endpoint (resolves the caller from the token, no tenant needed). Returns
-// [] gracefully when the endpoint is absent so the card still renders empty.
+/** Returns the current user's linked social accounts; [] when the server lacks the endpoint. */
 export function useSocialIdentities() {
   return useQuery({
     queryKey: KEY,

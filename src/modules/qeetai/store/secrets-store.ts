@@ -1,9 +1,6 @@
-// In-memory ONLY (never persisted) store for secret material a tool surfaces for
-// a one-time reveal — OAuth client secrets, OIDC signing private keys. Keyed by
-// tool-execution id. This exists BECAUSE the conversation store persists to
-// localStorage: secrets must never be written there (a leaked signing key = token
-// forgery for the whole tenant), so they live here, in memory, and are gone on
-// reload — genuinely "shown once". Security review HIGH finding.
+// In-memory store, keyed by execution id, for secrets a tool surfaces for one-time reveal. The
+// conversation store persists to localStorage, and a signing key read from there could forge
+// tokens for the whole tenant, so secrets live only here and are gone on reload.
 
 import { Store, useStore } from "@tanstack/react-store";
 
@@ -14,11 +11,9 @@ export type SensitiveArtifact = NonNullable<ToolResult["sensitiveArtifact"]>;
 const secretsStore = new Store<Record<string, SensitiveArtifact>>({});
 
 export const secretsActions = {
-  /** Record a secret artifact for one-time reveal (in memory only). */
   set(executionId: string, artifact: SensitiveArtifact) {
     secretsStore.setState((s) => ({ ...s, [executionId]: artifact }));
   },
-  /** Drop a secret (e.g. after the user has copied/dismissed it). */
   clear(executionId: string) {
     secretsStore.setState((s) => {
       if (!(executionId in s)) return s;
@@ -29,7 +24,6 @@ export const secretsActions = {
   },
 };
 
-/** Reactively read the (in-memory) secret artifact for an execution, if any. */
 export function useSensitiveArtifact(executionId: string): SensitiveArtifact | undefined {
   return useStore(secretsStore, (s) => s[executionId]);
 }

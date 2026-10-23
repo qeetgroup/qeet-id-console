@@ -2,10 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
-import {
-  DashboardOverview,
-  NoWorkspaceOnboarding,
-} from "@/modules/dashboard/components/dashboard-overview";
+import { DashboardOverview, NoWorkspaceOnboarding } from "@/modules/dashboard";
 import { OrgOnboarding } from "@/modules/onboarding/org-onboarding";
 import { useCheckoutReturn } from "@/modules/onboarding/use-checkout-return";
 import { useTenantId } from "@/platform/auth/session";
@@ -13,11 +10,9 @@ import { useTenantId } from "@/platform/auth/session";
 export const Route = createFileRoute("/_app/")({ component: DashboardPage });
 
 /**
- * Route boundary only; dashboard composition lives in the dashboard feature.
- * A tenant-less user (fresh signup) first sees the organization-initialization
- * overview; clicking "Create organization" starts the plan → name → pay flow.
- * A paid plan only creates the org after payment — on return we finalize and
- * switch into it.
+ * Renders the dashboard, or for a user with no organization the onboarding that runs the plan →
+ * name → pay flow. A paid plan creates the organization only after payment, so the checkout
+ * return is finalized here first.
  */
 function DashboardPage() {
   const tenantId = useTenantId();

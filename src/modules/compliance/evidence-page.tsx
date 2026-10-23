@@ -1,7 +1,3 @@
-// Shared evidence-generation screen backing both the SOC 2 and ISO 27001
-// compliance route files.  All data-fetching and layout logic lives here
-// to avoid duplicating ~150 lines; translations come from the "compliance" ns.
-
 import {
   Badge,
   Button,
@@ -11,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
   cn,
-  DataState,
   Skeleton,
   Table,
   TableBody,
@@ -21,6 +16,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
@@ -40,21 +36,15 @@ import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { exportToJson } from "@/shared/utils/data-export";
 
-// --------------------------------------------------------------------------
-// Domain types (mirror the Go EvidenceRun / ControlResult structs)
-// --------------------------------------------------------------------------
-
 type ControlStatus = "pass" | "fail" | "na";
 
 type ControlResult = {
   id: string;
   name: string;
   category: string;
-  /** Framework reference code, e.g. "CC6.1" or "A.9.4". */
-  criteria: string;
+  criteria: string; // the framework's reference, e.g. "CC6.1" or "A.9.4"
   status: ControlStatus;
-  /** Human-readable description of what was found; never empty. */
-  detail: string;
+  detail: string; // what was found; never empty
 };
 
 type EvidenceRun = {
@@ -66,13 +56,8 @@ type EvidenceRun = {
   pass_count: number;
   fail_count: number;
   na_count: number;
-  /** Populated on the detail endpoint; omitted on the list endpoint. */
-  controls?: ControlResult[];
+  controls?: ControlResult[]; // sent by the detail endpoint, not the list
 };
-
-// --------------------------------------------------------------------------
-// Helpers
-// --------------------------------------------------------------------------
 
 function statusBadge(status: ControlStatus) {
   if (status === "pass") {
@@ -99,26 +84,20 @@ function statusBadge(status: ControlStatus) {
   );
 }
 
-// --------------------------------------------------------------------------
-// Component
-// --------------------------------------------------------------------------
+const SKELETON_IDS = ["a", "b", "c"] as const;
 
 type ComplianceEvidencePageProps = {
   framework: "soc2" | "iso27001";
 };
 
+/** Renders the SOC 2 or ISO 27001 evidence screen: generate a run, then review its controls. */
 export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProps) {
   const { t } = useTranslation("compliance");
   const tenantId = useTenantId();
   const qc = useQueryClient();
 
-  // Tracks which run the user has clicked in the history card.
-  // null = auto-select newest (first item returned by the list query).
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
 
-  // ---------- List query -------------------------------------------------
-  // GET /v1/tenants/{tenantId}/compliance/{framework}/evidence
-  // → { items: EvidenceRun[] }  (controls omitted)
   const listQ = useQuery({
     queryKey: ["compliance-evidence-list", tenantId, framework],
     queryFn: () =>
@@ -126,17 +105,11 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
     enabled: !!tenantId,
   });
 
-  // Go initialises the slice as make([]EvidenceRun, 0) so the JSON never
-  // returns null; coerce anyway so the UI is robust against any server change.
   const items: EvidenceRun[] = listQ.data?.items ?? [];
 
-  // Effective selection: explicit user choice, else the newest run (index 0 —
-  // the list is returned most-recent-first by the backend).
+  // The run the user picked, else the newest: the list arrives newest first.
   const effectiveSelectedId = selectedRunId ?? items[0]?.id ?? null;
 
-  // ---------- Detail query -----------------------------------------------
-  // GET /v1/tenants/{tenantId}/compliance/evidence/{id}
-  // → EvidenceRun with controls populated
   const runQ = useQuery({
     queryKey: ["compliance-evidence-run", tenantId, effectiveSelectedId],
     queryFn: () =>
@@ -149,21 +122,18 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
   const total =
     (selectedRun?.pass_count ?? 0) + (selectedRun?.fail_count ?? 0) + (selectedRun?.na_count ?? 0);
 
-  // ---------- Generate mutation ------------------------------------------
-  // POST /v1/tenants/{tenantId}/compliance/{framework}/evidence
-  // → EvidenceRun (with controls)
   const generateM = useMutation({
-    mutationFn: () =>
-      api<EvidenceRun>(`/v1/tenants/${tenantId}/compliance/${framework}/evidence`, {
+    mutationFn: () => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<EvidenceRun>(`/v1/tenants/${tenantId}/compliance/${framework}/evidence`, {
         method: "POST",
-      }),
+      });
+    },
     onSuccess: (run) => {
-      // Refresh the list so the new run appears in the history card.
       qc.invalidateQueries({
         queryKey: ["compliance-evidence-list", tenantId, framework],
       });
-      // Also seed the detail cache so we don't need a round-trip —
-      // the POST response already includes controls.
+      // The POST answer already carries the controls, so it seeds the detail cache.
       qc.setQueryData(["compliance-evidence-run", tenantId, run.id], run);
       setSelectedRunId(run.id);
     },
@@ -178,10 +148,9 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
     }
   };
 
-  // ---------- Render -----------------------------------------------------
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      {/* Header --------------------------------------------------------- */}
+      {/* Header */}
       <PageHeader
         title={t(`${framework}.title`)}
         description={t(`${framework}.description`)}
@@ -193,16 +162,16 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
         }
       />
 
-      {/* List loading skeletons ----------------------------------------- */}
+      {/* List loading skeletons */}
       {listQ.isLoading && (
         <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full rounded-lg" />
+          {SKELETON_IDS.map((id) => (
+            <Skeleton key={id} className="h-24 w-full rounded-lg" />
           ))}
         </div>
       )}
 
-      {/* List error ----------------------------------------------------- */}
+      {/* List error */}
       {listQ.isError && (
         <Card className="border-destructive">
           <CardContent className="p-4 text-sm text-destructive">
@@ -211,7 +180,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
         </Card>
       )}
 
-      {/* Empty state — no runs yet -------------------------------------- */}
+      {/* Empty state: no runs yet */}
       {!listQ.isLoading && !listQ.isError && items.length === 0 && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
@@ -228,10 +197,10 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
         </Card>
       )}
 
-      {/* Main content — shown once there is at least one run ------------ */}
+      {/* Shown once there is at least one run */}
       {items.length > 0 && (
         <>
-          {/* Stat cards ------------------------------------------------- */}
+          {/* Stat cards */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
@@ -293,7 +262,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
             </Card>
           </div>
 
-          {/* Controls table --------------------------------------------- */}
+          {/* Controls table */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between gap-3">
               <div>
@@ -351,7 +320,7 @@ export function ComplianceEvidencePage({ framework }: ComplianceEvidencePageProp
             </CardContent>
           </Card>
 
-          {/* Report history card ---------------------------------------- */}
+          {/* Report history card */}
           <Card>
             <CardHeader>
               <CardTitle>{t("evidence.history.title")}</CardTitle>

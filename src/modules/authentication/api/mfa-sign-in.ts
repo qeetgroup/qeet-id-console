@@ -1,8 +1,5 @@
-// The helpers of a sign-in's second-factor challenge: send a code to an email
-// or SMS factor, run a passkey assertion, send a push approval request and
-// wait for it, or — for an account that must have a second factor and holds
-// none — set up an authenticator app. The challenge itself is completed at
-// /v1/auth/mfa (see useCompleteMfaLogin), which the BFF turns into the session.
+// Steps within a sign-in's second-factor challenge. useCompleteMfaLogin completes the challenge
+// at /v1/auth/mfa, and the BFF turns the result into the session.
 
 import {
   type PublicKeyCredentialRequestOptionsJSON,
@@ -47,10 +44,9 @@ export function startMfaEnrollment(mfaToken: string): Promise<MfaEnrollment> {
 const PUSH_POLL_MS = 2000;
 
 /**
- * Sends the push approval request and completes the challenge once it is
- * approved, asking every two seconds while it is unanswered (which costs no
- * attempt). Rejects with the server's error when it is denied or expires, and
- * stops quietly when signal aborts.
+ * Sends the push approval request and completes the challenge once it is approved, asking every
+ * two seconds while it is unanswered (which costs no attempt). Rejects with the server's error
+ * when it is denied or expires; resolves false when signal aborts.
  */
 export async function completeWithPush(mfaToken: string, signal: AbortSignal): Promise<boolean> {
   await api("/v1/auth/mfa/push", {

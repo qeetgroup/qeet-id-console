@@ -1,17 +1,12 @@
-// Derived dashboard insights. Every value here is a pure function of the live
-// analytics overview (the one payload the dashboard already fetches), so the
-// new operations panels never invent numbers — they re-express real telemetry
-// as health scores, attention items, and posture signals. Keeping the math out
-// of the components makes it testable and honest.
+// Pure functions of the analytics overview: health scores, attention items and posture signals
+// that re-express real telemetry rather than invent numbers.
 
 import type { AnalyticsOverview } from "./api/analytics";
 
 export type InsightSeverity = "critical" | "warning" | "info";
 export type HealthState = "healthy" | "attention" | "critical";
 
-/** Adoption/engagement targets we grade against. Mirrors the security guidance
- * surfaced elsewhere in the console (MFA is expected to reach 80%+). */
-export const MFA_TARGET_PCT = 80;
+export const MFA_TARGET_PCT = 80; // % of users with a second factor
 export const STICKINESS_TARGET_PCT = 40; // DAU/MAU that reads as "great engagement"
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
@@ -29,19 +24,15 @@ function healthState(score: number): HealthState {
   return "critical";
 }
 
-// ---------------------------------------------------------------------------
-// Identity health — a composite index + per-subsystem breakdown
-// ---------------------------------------------------------------------------
-
 export interface HealthArea {
   id: string;
   label: string;
-  score: number; // 0-100
+  score: number; // 0–100
   state: HealthState;
 }
 
 export interface IdentityHealth {
-  score: number; // 0-100 composite
+  score: number; // 0–100 composite
   grade: "Excellent" | "Good" | "Fair" | "At risk";
   areas: HealthArea[];
 }
@@ -53,8 +44,10 @@ function grade(score: number): IdentityHealth["grade"] {
   return "At risk";
 }
 
-/** Weighted health index. MFA coverage is weighted highest because it's the
- * single biggest lever on account-takeover risk. */
+/**
+ * Returns a weighted health index of sign-in success, MFA adoption and engagement. MFA weighs most:
+ * it is the biggest single lever on account-takeover risk.
+ */
 export function computeIdentityHealth(overview: AnalyticsOverview): IdentityHealth {
   const { kpis } = overview;
   const authScore = clamp(successRate(overview));
@@ -81,10 +74,6 @@ export function computeIdentityHealth(overview: AnalyticsOverview): IdentityHeal
   return { score, grade: grade(score), areas };
 }
 
-// ---------------------------------------------------------------------------
-// Attention required — actionable items surfaced from real thresholds
-// ---------------------------------------------------------------------------
-
 export interface AttentionItem {
   id: string;
   severity: InsightSeverity;
@@ -94,8 +83,10 @@ export interface AttentionItem {
   actionLabel: string;
 }
 
-/** Only emits an item when a real signal crosses a threshold — an empty array
- * means the panel shows an "all clear" state rather than manufactured noise. */
+/**
+ * Returns an item only for a signal past its threshold; an empty array renders the panel's
+ * "all clear" state rather than manufactured noise.
+ */
 export function deriveAttentionItems(overview: AnalyticsOverview): AttentionItem[] {
   const { kpis } = overview;
   const items: AttentionItem[] = [];
@@ -139,10 +130,6 @@ export function deriveAttentionItems(overview: AnalyticsOverview): AttentionItem
   return items;
 }
 
-// ---------------------------------------------------------------------------
-// Session overview — estimated live footprint from active users
-// ---------------------------------------------------------------------------
-
 export interface SessionStat {
   id: string;
   label: string;
@@ -177,10 +164,6 @@ export function deriveSessionStats(overview: AnalyticsOverview): SessionStat[] {
     },
   ];
 }
-
-// ---------------------------------------------------------------------------
-// Security posture — real/derived signals with an intent colour
-// ---------------------------------------------------------------------------
 
 export interface SecuritySignal {
   id: string;

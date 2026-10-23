@@ -26,18 +26,15 @@ export const Route = createFileRoute("/_auth/magic")({
   }),
 });
 
-// One route, two modes, as /forgot-password: without ?token= ask for a link;
-// with it, sign in with the link (and, if it no longer works, send a new one
-// to the same address).
+// One route, two modes, like /forgot-password: without ?token= ask for a link; with it, sign in
+// with the link, or send a new one to the same address if it no longer works.
 function MagicLinkPage() {
   const { t } = useTranslation("auth-flow");
   const { token } = useSearch({ from: "/_auth/magic" });
   const consume = useConsumeMagicLink();
   const resend = useResendMagicLink();
 
-  // Auto-consume on mount when the URL carries a token. useRef guards
-  // against double-fire from React 19 strict mode.
-  const firedRef = useRef(false);
+  const firedRef = useRef(false); // stops strict mode's second run spending the token
   useEffect(() => {
     if (!token || firedRef.current) return;
     firedRef.current = true;
@@ -75,7 +72,7 @@ function RequestLink() {
         <MailIcon className="size-10 text-sky-500" />
         <h1 className="text-2xl font-bold">{t("magic.sentTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("magic.sentText")}</p>
-        <Link to="/sign-in" className={buttonVariants({ variant: "outline" }) + " mt-2"}>
+        <Link to="/sign-in" className={`${buttonVariants({ variant: "outline" })} mt-2`}>
           {t("magic.backToSignIn")}
         </Link>
       </>
@@ -149,8 +146,7 @@ function renderStatus({
     );
   }
 
-  // Error path. Distinguish expired/used vs everything else so the user
-  // sees actionable copy.
+  // An expired or used link (400) gets its own, actionable copy.
   const status = consume.error instanceof ApiError ? consume.error.status : undefined;
   const detail = consume.error ? errorMessage(consume.error) : "Unknown error";
   const isExpiredOrUsed = status === 400;

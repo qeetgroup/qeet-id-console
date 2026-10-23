@@ -73,6 +73,8 @@ export function ConnectionsPage() {
   );
 }
 
+const SKELETON_COLUMNS = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+
 export function ConnectionsView({
   connections,
   loading,
@@ -237,8 +239,8 @@ export function ConnectionsView({
               {loading
                 ? [0, 1, 2].map((row) => (
                     <TableRow key={row}>
-                      {Array.from({ length: 8 }, (_, column) => (
-                        <TableCell key={`${row}-${column}`}>
+                      {SKELETON_COLUMNS.map((column) => (
+                        <TableCell key={column}>
                           <Skeleton className="h-6 w-full" />
                         </TableCell>
                       ))}

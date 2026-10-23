@@ -1,21 +1,12 @@
-// Keyboard utilities for the universal search palette.
-// Pure functions — no DOM dependency so they are safe to unit-test in Node.
-
 export type NavigationDirection = "up" | "down";
 
-/**
- * Clamp an index within [0, totalItems - 1].
- * Returns 0 when totalItems is 0.
- */
+/** Clamps an index to [0, totalItems - 1], or 0 for an empty list. */
 export function clampHighlight(index: number, totalItems: number): number {
   if (totalItems === 0) return 0;
   return Math.min(totalItems - 1, Math.max(0, index));
 }
 
-/**
- * Move the highlight index by one step, clamped at the list boundaries
- * (no wrapping — matches the Linear / GitHub command-palette style).
- */
+/** Moves the highlight one step, stopping at either end rather than wrapping. */
 export function moveHighlight(
   current: number,
   direction: NavigationDirection,

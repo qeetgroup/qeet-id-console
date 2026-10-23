@@ -44,7 +44,7 @@ import {
   type SocialProvider,
   socialRedirectUri,
   useSocialProviders,
-} from "@/modules/authentication/api/social";
+} from "@/modules/authentication";
 import { ConfigureSocialProviderSheet } from "@/modules/authentication/components/configure-social-provider-sheet";
 import {
   SOCIAL_PROVIDERS,

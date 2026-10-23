@@ -1,9 +1,3 @@
-// RBAC: group → role grants. A group can be granted any number of roles; every
-// member of the group then inherits that role's permissions. Roles themselves
-// are tenant-scoped (some are system roles that can't be deleted). Grants are
-// keyed by (group, role) and toggled via PUT/DELETE-style POST/DELETE on the
-// nested /roles/{roleId} path.
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
@@ -19,7 +13,7 @@ export interface Role {
   id: string;
   name: string;
   description: string;
-  is_system: boolean;
+  is_system: boolean; // a built-in role, which can't be deleted
   created_at: string;
 }
 
@@ -41,14 +35,17 @@ export function useGroupRoles(groupId: string) {
   });
 }
 
+/** Grants a role to a group; every member of the group inherits the role's permissions. */
 export function useGrantGroupRole(groupId: string) {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (roleId: string) =>
-      api<void>(`/v1/tenants/${tenantId}/groups/${groupId}/roles/${roleId}`, {
+    mutationFn: (roleId: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/groups/${groupId}/roles/${roleId}`, {
         method: "POST",
-      }),
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["group-roles", tenantId, groupId] }),
     meta: { successMessage: "Role granted to group" },
   });
@@ -58,10 +55,12 @@ export function useRevokeGroupRole(groupId: string) {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (roleId: string) =>
-      api<void>(`/v1/tenants/${tenantId}/groups/${groupId}/roles/${roleId}`, {
+    mutationFn: (roleId: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/groups/${groupId}/roles/${roleId}`, {
         method: "DELETE",
-      }),
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["group-roles", tenantId, groupId] }),
     meta: { successMessage: "Role revoked from group" },
   });

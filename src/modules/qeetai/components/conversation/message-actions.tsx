@@ -7,7 +7,7 @@ export interface MessageAction {
   onClick: () => void;
 }
 
-/** Compact, hover-revealed action row shared by user and assistant messages. */
+/** Renders the compact, hover-revealed action row of a user or assistant message. */
 export function MessageActions({
   actions,
   className,

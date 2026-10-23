@@ -1,13 +1,5 @@
-// Static route → suggestion map. Each entry is keyed by a route pattern
-// (exact path or prefix) and lists Suggestion objects that make sense on that
-// page. Suggestions may reference a tool name + prefilled input (so the engine
-// can run them directly) or a prompt string (so the model replies naturally).
-//
-// Rules:
-//   • tool reference: { type: "tool", toolName, prefillInput? } — matched against
-//     the canonical tool name from tools.manifest.json.
-//   • prompt reference: { type: "prompt", text } — opened as a new chat message.
-//   • group: optional visual grouping (shown as section headers in the UI).
+// Suggestions per route. A tool suggestion names a registered tool and, when picked, sends its
+// label as a message; a prompt suggestion sends its text.
 
 import type { Capability } from "@/platform/security/capability-model";
 
@@ -32,16 +24,14 @@ export interface PromptSuggestion {
 export type Suggestion = ToolSuggestion | PromptSuggestion;
 
 export interface RouteSuggestionEntry {
-  /** Ordered list of suggestions for this route. */
-  suggestions: Suggestion[];
+  suggestions: Suggestion[]; // Ordered list of suggestions for this route
 }
 
-// Exact match wins; prefix match (pattern ending with /*) is the fallback.
+// An exact path, or a prefix ending in `/*`; an exact match wins.
 type RoutePattern = string;
 type SuggestionMap = Record<RoutePattern, RouteSuggestionEntry>;
 
 export const ROUTE_SUGGESTIONS: SuggestionMap = {
-  // ── Users list ────────────────────────────────────────────────────────────
   "/users": {
     suggestions: [
       {
@@ -72,7 +62,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── User detail ───────────────────────────────────────────────────────────
   "/users/$userId": {
     suggestions: [
       {
@@ -110,7 +99,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Roles ─────────────────────────────────────────────────────────────────
   "/authorization/roles": {
     suggestions: [
       {
@@ -141,7 +129,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Authorization — policies ───────────────────────────────────────────────
   "/authorization/policies": {
     suggestions: [
       {
@@ -160,7 +147,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Authorization — general ────────────────────────────────────────────────
   "/authorization/*": {
     suggestions: [
       {
@@ -179,7 +165,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Security / Audit logs ─────────────────────────────────────────────────
   "/security/audit-logs": {
     suggestions: [
       {
@@ -209,7 +194,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Security — general ────────────────────────────────────────────────────
   "/security/*": {
     suggestions: [
       {
@@ -227,7 +211,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Applications / OIDC ───────────────────────────────────────────────────
   "/applications": {
     suggestions: [
       {
@@ -251,7 +234,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Settings / Signing keys ───────────────────────────────────────────────
   "/settings/signing-keys": {
     suggestions: [
       {
@@ -263,7 +245,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Settings — general ────────────────────────────────────────────────────
   "/settings/*": {
     suggestions: [
       {
@@ -281,7 +262,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Organizations ─────────────────────────────────────────────────────────
   "/organizations": {
     suggestions: [
       {
@@ -300,7 +280,6 @@ export const ROUTE_SUGGESTIONS: SuggestionMap = {
     ],
   },
 
-  // ── Codegen / Developer ────────────────────────────────────────────────────
   "/developer/*": {
     suggestions: [
       {

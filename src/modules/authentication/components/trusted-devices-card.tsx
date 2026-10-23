@@ -20,11 +20,9 @@ import {
 } from "../api/trusted-devices";
 
 /**
- * The devices remembered so they skip the second factor at sign-in, with when
- * each was remembered, last used and stops being remembered, and forgetting one
- * or all of them. A forgotten device is asked for the second factor at its next
- * sign-in. `scope` is the person's own devices, or — for an administrator — a
- * member's devices remembered in the administrator's organisation.
+ * Renders the devices remembered to skip the second factor, with forgetting one or all; a
+ * forgotten device is asked for the second factor at its next sign-in. `scope` is the person's own
+ * devices or, for an administrator, a member's devices remembered in their organisation.
  */
 export function TrustedDevicesCard({
   scope,
@@ -32,8 +30,7 @@ export function TrustedDevicesCard({
   className,
 }: {
   scope: TrustedDeviceScope;
-  /** False shows the devices without the forget actions. */
-  canForget?: boolean;
+  canForget?: boolean; // False shows the devices without the forget actions
   className?: string;
 }) {
   const { t } = useTranslation("account");

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { AnchorHTMLAttributes } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "sonner";
 
 import "@/i18n";
@@ -260,7 +260,9 @@ describe("pending organization invitations", () => {
   it("does not expose raw invitation errors", () => {
     render(<NoWorkspaceOnboarding onStart={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "Accept & join" }));
-    accept.mock.calls[0][1].onError(new Error("internal database host and secret details"));
+    const [call] = accept.mock.calls;
+    assert(call, "accept was not called");
+    call[1].onError(new Error("internal database host and secret details"));
     expect(toast.error).toHaveBeenCalledWith("Something went wrong. Please try again.");
   });
 });

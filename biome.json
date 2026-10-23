@@ -43,6 +43,30 @@
       },
       "security": {
         "noDangerouslySetInnerHtml": "warn"
+      },
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@qeetrix/ui": {
+                "importNames": ["DataState"],
+                "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+              }
+            }
+          }
+        },
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "fetch": "Backend traffic goes through api() (src/platform/api/client.ts) and the BFF; never fetch from a module or component.",
+              "EventSource": "Streams go through the BFF stream routes (src/platform/api/server-stream.ts).",
+              "WebSocket": "Backend traffic goes through the BFF (src/platform/api).",
+              "XMLHttpRequest": "Backend traffic goes through api() (src/platform/api/client.ts)."
+            }
+          }
+        }
       }
     }
   },
@@ -69,6 +93,44 @@
                     ],
                     "message": "shared/ is the lowest layer: import only @/shared, @/i18n, or external packages."
                   }
+                ],
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/i18n/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                },
+                "patterns": [
+                  {
+                    "group": [
+                      "@/modules/**",
+                      "@/platform/**",
+                      "@/routes/**",
+                      "@/shared/**",
+                      "@/app/**"
+                    ],
+                    "message": "i18n/ holds locale resources and the i18next setup: it imports only external packages."
+                  }
                 ]
               }
             }
@@ -87,9 +149,15 @@
                 "patterns": [
                   {
                     "group": ["@/modules/**", "@/routes/**", "@/app/**", "@/lib/**"],
-                    "message": "platform/ may depend only on @/platform, @/shared, @/i18n (never features, routes, app, or the retired @/lib)."
+                    "message": "platform/ may depend only on @/platform, @/shared, @/i18n (never modules, routes, app, or the retired @/lib)."
                   }
-                ]
+                ],
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                }
               }
             }
           }
@@ -107,19 +175,182 @@
                 "patterns": [
                   {
                     "group": ["@/routes/**", "@/app/**"],
-                    "message": "features/ must not import routes or app."
+                    "message": "modules/ must not import routes or app."
                   },
                   {
                     "group": ["@/modules/*/**"],
-                    "message": "Import another feature via its public barrel (@/features/<name>), never its internals. Use a relative path for your own feature."
+                    "message": "Import another module via its public barrel (@/modules/<name>), never its internals. Use a relative path inside your own module."
                   },
                   {
                     "group": ["@/lib/**"],
-                    "message": "@/lib is retired — import from the feature/platform/shared home."
+                    "message": "@/lib is retired \u2014 import from the module/platform/shared home."
+                  }
+                ],
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/routes/**", "!src/routes/**/-*.test.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  },
+                  "@tanstack/react-query": "Routes compose; data access lives in the owning module (its hooks / queryOptions). Move this into the module.",
+                  "@/platform/api/client": {
+                    "importNames": ["api"],
+                    "message": "Routes don't call the API. Move the request into the owning module's api/ and use its hook."
+                  }
+                },
+                "patterns": [
+                  {
+                    "group": ["@/modules/*/**"],
+                    "message": "Import a module through its public barrel (@/modules/<name>), never its internals."
                   }
                 ]
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/routes/__root.tsx",
+        "src/routes/_app/activity.tsx",
+        "src/routes/_app/auth/api/keys.tsx",
+        "src/routes/_app/auth/api/machine-identities.tsx",
+        "src/routes/_app/auth/api/secrets.tsx",
+        "src/routes/_app/auth/api/signing-keys.tsx",
+        "src/routes/_app/auth/connections/index.tsx",
+        "src/routes/_app/auth/connections/ldap.tsx",
+        "src/routes/_app/auth/connections/oidc/$clientId.tsx",
+        "src/routes/_app/auth/connections/oidc/index.tsx",
+        "src/routes/_app/auth/connections/saml.tsx",
+        "src/routes/_app/auth/connections/scim.tsx",
+        "src/routes/_app/auth/login-methods/passkeys.tsx",
+        "src/routes/_app/auth/mfa/sms-email.tsx",
+        "src/routes/_app/auth/mfa/totp.tsx",
+        "src/routes/_app/auth/social.tsx",
+        "src/routes/_app/authorization/abac.tsx",
+        "src/routes/_app/authorization/access-tester.tsx",
+        "src/routes/_app/authorization/audit.tsx",
+        "src/routes/_app/authorization/builder.tsx",
+        "src/routes/_app/authorization/explorer.tsx",
+        "src/routes/_app/authorization/index.tsx",
+        "src/routes/_app/authorization/permissions.tsx",
+        "src/routes/_app/authorization/rbac.tsx",
+        "src/routes/_app/authorization/rebac.tsx",
+        "src/routes/_app/authorization/resources.tsx",
+        "src/routes/_app/authorization/roles.tsx",
+        "src/routes/_app/authorization/simulator.tsx",
+        "src/routes/_app/authorization/templates.tsx",
+        "src/routes/_app/authorization/versions.tsx",
+        "src/routes/_app/developer/agents.tsx",
+        "src/routes/_app/developer/auth-hooks.tsx",
+        "src/routes/_app/developer/credentials.tsx",
+        "src/routes/_app/developer/index.tsx",
+        "src/routes/_app/developer/webhooks/$id.tsx",
+        "src/routes/_app/developer/webhooks/index.tsx",
+        "src/routes/_app/groups/$groupId.tsx",
+        "src/routes/_app/groups/index.tsx",
+        "src/routes/_app/index.tsx",
+        "src/routes/_app/invitations.tsx",
+        "src/routes/_app/organizations/$orgId.tsx",
+        "src/routes/_app/organizations/index.tsx",
+        "src/routes/_app/security/audit-intelligence.tsx",
+        "src/routes/_app/security/audit-logs.tsx",
+        "src/routes/_app/security/compliance/gdpr.tsx",
+        "src/routes/_app/security/device-authorizations.tsx",
+        "src/routes/_app/security/log-streaming.tsx",
+        "src/routes/_app/security/rate-limits.tsx",
+        "src/routes/_app/security/threats/bots.tsx",
+        "src/routes/_app/security/threats/ip-allowlist.tsx",
+        "src/routes/_app/security/threats/rate-limits.tsx",
+        "src/routes/_app/security/threats/risk-settings.tsx",
+        "src/routes/_app/settings/billing.tsx",
+        "src/routes/_app/settings/branding.tsx",
+        "src/routes/_app/settings/organization/domains.tsx",
+        "src/routes/_app/settings/organization/email-templates.tsx",
+        "src/routes/_app/settings/organization/general.tsx",
+        "src/routes/_app/settings/organization/security-policy.tsx",
+        "src/routes/_app/settings/qeet-ai.tsx",
+        "src/routes/_app/users/$userId.tsx",
+        "src/routes/_app/users/$userId_.timeline.tsx",
+        "src/routes/_app/users/deleted.tsx",
+        "src/routes/_app/users/import.tsx",
+        "src/routes/_app/users/index.tsx",
+        "src/routes/_auth.tsx",
+        "src/routes/_auth/forgot-password.tsx",
+        "src/routes/_auth/invite.accept.tsx",
+        "src/routes/_auth/magic.tsx",
+        "src/routes/_auth/sign-in.tsx",
+        "src/routes/_auth/sign-up.tsx",
+        "src/routes/_auth/sso.callback.tsx",
+        "src/routes/account/data.tsx",
+        "src/routes/account/profile.tsx",
+        "src/routes/account/security.tsx",
+        "src/routes/account/sessions.tsx",
+        "src/routes/select-organization.tsx",
+        "src/routes/verify-email.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@qeetrix/ui": {
+                    "importNames": ["DataState"],
+                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/platform/api/**",
+        "src/modules/activity/activity-stream.ts",
+        "src/modules/qeetai/ai/streaming-client.ts",
+        "**/__tests__/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "src/test-setup.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/platform/components/data-state.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
           }
         }
       }
@@ -139,6 +370,8 @@
       "!**/.netlify",
       "!**/.vercel",
       "!**/coverage",
+      "!**/playwright-report",
+      "!**/test-results",
       "!**/routeTree.gen.ts",
       "!bun.lock"
     ]

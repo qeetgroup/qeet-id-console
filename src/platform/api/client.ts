@@ -1,12 +1,6 @@
-// The single browser request path to the same-origin TanStack Start BFF.
-// Access and refresh tokens remain in an encrypted HttpOnly cookie; the BFF
-// attaches the Bearer token, refreshes once on 401, and returns only safe
-// session metadata to the browser.
-// - Normalises failures into a typed `ApiError` (platform/errors/api-error).
-//
-// This is the ONE place requests leave the app; cross-cutting concerns
-// (correlation ids, opt-in runtime schema parsing, telemetry) are added here so
-// every caller inherits them without change.
+// The browser's only request path. The same-origin BFF attaches the token from the encrypted
+// HttpOnly cookie, refreshes once on a 401 and returns only safe session metadata; failures
+// become a typed ApiError. Request ids and schema checks added here reach every caller.
 import type { ZodType } from "zod";
 
 import { onAuthLost } from "@/platform/auth/auth-lost";
@@ -17,12 +11,11 @@ import {
   refreshServerSessionNow,
 } from "@/platform/api/server-proxy";
 import { ApiError } from "@/platform/errors/api-error";
+import { ERROR_CODES } from "@/platform/errors/error-codes";
 import { requestStepUp } from "@/platform/security/step-up-gate";
 import { newRequestId } from "@/platform/telemetry/tracing";
 
-// Convenience re-exports so callers can import the request essentials from one
-// module (mirrors the old single-module ergonomics). Canonical homes remain
-// @/platform/errors, @/platform/config, and @/platform/auth.
+// Re-exported so callers get the request essentials from one module.
 export { sessionStore } from "@/platform/auth/session-store";
 export { getApiBaseUrl } from "@/platform/config/api-base-url";
 export { ApiError } from "@/platform/errors/api-error";
@@ -32,21 +25,9 @@ type RequestOpts<T = unknown> = {
   body?: unknown;
   query?: Record<string, string | number | undefined>;
   signal?: AbortSignal;
-  /** Skip the auth header (used for public endpoints like signup/login). */
-  anonymous?: boolean;
-  /**
-   * Optional runtime schema. When provided, the JSON response is parsed with it
-   * and the inferred type is returned; a mismatch throws an ApiError so it
-   * surfaces like any other failure. Opt-in — omit to keep the raw `T` cast.
-   * Adopt for security-sensitive endpoints first (effective-permissions,
-   * refresh, MFA, signing keys, OAuth clients).
-   */
-  schema?: ZodType<T>;
-  /**
-   * Set on the one retry after a step-up, so a second refusal surfaces instead
-   * of prompting again. Callers leave it unset.
-   */
-  afterStepUp?: boolean;
+  anonymous?: boolean; // no session token, for public endpoints such as sign-up
+  schema?: ZodType<T>; // checks the response, throwing ApiError on a mismatch
+  afterStepUp?: boolean; // internal: the one retry after a step-up
 };
 
 let localRefresh: Promise<void> | null = null;
@@ -58,18 +39,39 @@ function needsRefresh(): boolean {
   return !Number.isFinite(expiresAt) || expiresAt <= Date.now() + 60_000;
 }
 
+function isRefreshUnavailable(error: unknown): boolean {
+  return error instanceof ApiError && error.code === ERROR_CODES.SESSION_REFRESH_UNAVAILABLE;
+}
+
+/**
+ * Renews the session when it is near expiry, or always with `force`, and resolves false only
+ * when the session is gone. Throws a retryable `client.session_refresh_unavailable` ApiError
+ * when Qeet ID can't be reached: the refresh token wasn't rejected, so the person stays signed in.
+ */
 export async function refreshSessionForRequest(
   signal?: AbortSignal,
   force = false,
 ): Promise<boolean> {
-  if ((!force && !needsRefresh()) || typeof window === "undefined") return true;
+  // On the server, proxyApiRequest has already renewed the session for a 401,
+  // so a forced refresh has nothing left to try.
+  if (typeof window === "undefined") return !force;
+  if (!force && !needsRefresh()) return true;
 
   const refresh = async () => {
     const expectedVersion = sessionStore.getSnapshot().version;
-    const session = await refreshServerSessionNow({
+    const { session, unavailable } = await refreshServerSessionNow({
       data: { expectedVersion, force },
       signal,
     });
+    if (unavailable) {
+      throw new ApiError(
+        503,
+        ERROR_CODES.SESSION_REFRESH_UNAVAILABLE,
+        "The session could not be renewed right now.",
+        undefined,
+        true,
+      );
+    }
     sessionStore.set(session);
     return session.isAuthenticated;
   };
@@ -94,7 +96,8 @@ export async function refreshSessionForRequest(
   try {
     await localRefresh;
     return sessionStore.getSnapshot().isAuthenticated;
-  } catch {
+  } catch (error) {
+    if (isRefreshUnavailable(error)) throw error;
     return false;
   }
 }
@@ -188,8 +191,7 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
     throw apiError;
   }
 
-  // Opt-in runtime validation. A mismatch means the backend contract drifted —
-  // fail closed with an ApiError instead of handing garbage to the UI.
+  // A mismatch means the backend contract drifted: fail closed rather than hand the UI bad data.
   if (schema) {
     const parsed = schema.safeParse(data);
     if (!parsed.success) {

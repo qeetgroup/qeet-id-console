@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 vi.mock("@/modules/users", async (importOriginal) => ({
@@ -275,7 +275,8 @@ describe("Sync activity page", () => {
 });
 
 function errorFixture(): DirectoryErrorPage {
-  const event = activityFixture().items[0];
+  const [event] = activityFixture().items;
+  assert(event, "expected an activity fixture event");
   return {
     items: [
       {
@@ -487,10 +488,12 @@ describe("Mappings page", () => {
 
   it("edits a rule while retaining its optimistic version", () => {
     const state = mappingProps();
+    const [rule] = state.data.items;
+    assert(rule, "expected a mapping rule fixture");
     const save = vi.fn();
     render(
       <MappingEditor
-        initial={state.data.items[0]}
+        initial={rule}
         targets={state.data.targets}
         busy={false}
         onSave={save}
@@ -684,7 +687,8 @@ describe("Suspended users page", () => {
 
   it("saves a review without silently reactivating the user", () => {
     const save = vi.fn();
-    const user = suspendedFixture().items[0];
+    const [user] = suspendedFixture().items;
+    assert(user, "expected a suspended user fixture");
     const { rerender } = render(
       <SuspensionReviewDialog user={user} busy={false} onSave={save} onClose={vi.fn()} />,
     );

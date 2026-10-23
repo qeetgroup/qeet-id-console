@@ -1,6 +1,3 @@
-// Core type contracts for the universal search feature.
-// Every module in features/search/ compiles against these.
-
 import type { ReactNode } from "react";
 
 import type { Capability } from "@/platform/security/capability-model";
@@ -15,8 +12,7 @@ export interface QuickAction {
 }
 
 export interface SearchItem {
-  /** Stable unique key across all sources. */
-  id: string;
+  id: string; // Stable unique key across all sources
   kind: SearchItemKind;
   category: string;
   title: string;
@@ -25,15 +21,10 @@ export interface SearchItem {
   keywords?: string[];
   url?: string;
   capability?: Capability;
-  /** Well-known status string (passed to StatusPill). */
-  status?: string;
-  /** ISO 8601 timestamp for display in the preview pane. */
-  updatedAt?: string;
+  status?: string; // A well-known status, rendered by StatusPill
+  updatedAt?: string; // ISO 8601, shown in the preview pane
   metadata?: Record<string, string>;
-  /**
-   * Execute the item. When absent the launcher navigates to `url`.
-   * Commands that do more than navigate (API calls, create flows) supply this.
-   */
+  /** Runs the item; without it, selecting the item navigates to `url`. */
   run?(ctx: SearchContext): void;
   quickActions?: QuickAction[];
 }
@@ -41,8 +32,7 @@ export interface SearchItem {
 export interface SearchContext {
   pathname: string;
   tenantId: string | null;
-  /** Read-only view of the current capability set (permission strings). */
-  capabilities: ReadonlySet<string>;
+  capabilities: ReadonlySet<string>; // The person's current permission strings
   navigate(url: string): void;
 }
 
@@ -56,9 +46,7 @@ export type SearchResultGroup = {
   items: SearchItem[];
 };
 
-// ─── Resource search API types ───────────────────────────────────────────────
-
-/** A single hit from GET /v1/search */
+/** One hit from GET /v1/search. */
 export type SearchHit = {
   type: string;
   id: string;

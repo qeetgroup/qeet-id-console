@@ -1,4 +1,4 @@
-# i18n (apps/console)
+# i18n
 
 Internationalization scaffold built on
 [`i18next`](https://www.i18next.com/) + [`react-i18next`](https://react.i18next.com/),
@@ -13,17 +13,12 @@ src/i18n/
   index.ts            initializes the shared i18next instance (exported default)
   README.md           this file
   locales/
-    en/
-      common.json     cross-screen buttons & labels (save, cancel, delete, status, …)
-      oidc.json       OIDC / OAuth client screens
-      saml.json       SAML IdP service-provider screen
-      rbac.json       Access Tester + group-roles
-      device.json     device authorizations
-      signing-keys.json signing keys (JWKS)
-      consent.json    OAuth consent grants
-      auth.json       login-method policy screens (password, …)
-      users.json      users list + create/edit/set-password sheets
+    en/               the source locale: account, auth, auth-flow, common, compliance, consent, dashboard, developer, device, groups, invitations, oidc, organizations, rbac, saml, security, settings, signing-keys, users
+    <lng>/            the same namespaces, translated
 ```
+
+English is the source locale (4077 keys in 19 namespaces). The other locales are
+partial; their key coverage on 2026-10-23: de 8%, es 8%, fr 8%, hi 8%, ja 8%, pt 8%, zh 8%. Missing keys fall back to English.
 
 Each top-level JSON file is an i18next **namespace**. Keys are grouped by the
 sub-area of the screen (e.g. `oidc.list.*`, `oidc.create.*`, `users.table.*`)

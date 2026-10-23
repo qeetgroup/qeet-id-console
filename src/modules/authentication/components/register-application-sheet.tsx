@@ -47,12 +47,9 @@ function lines(value: FormDataEntryValue | null): string[] {
 }
 
 /**
- * The "Register OAuth / OIDC application" slide-over.
- *
- * Uncontrolled inputs read through FormData on submit, per the house form
- * convention; only the type Select needs state, because the PKCE / client-secret
- * callout switches on it. There is no description field — `auth.oidc_clients`
- * has no column to store one.
+ * Renders the "Register OAuth / OIDC application" slide-over. Inputs are uncontrolled, read from
+ * FormData on submit; only the type Select has state, since the PKCE / client-secret callout
+ * depends on it. There is no description field: the server has nowhere to store one.
  */
 export function RegisterApplicationSheet({
   open,

@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Combobox,
-  DataState,
   Input,
   Table,
   TableBody,
@@ -14,6 +13,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { RefreshCwIcon, ScrollTextIcon } from "@qeetrix/icons";
 import { useState } from "react";

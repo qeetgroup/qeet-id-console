@@ -1,6 +1,4 @@
-// Organization (tenant) tools — create_organization.
-//
-// run() calls POST /v1/tenants via api() so RBAC + RLS + audit are inherited.
+// run() calls the backend through api(), so its RBAC, RLS and audit apply.
 
 import { z } from "zod";
 import { ORG_KEYS } from "@/modules/organizations";
@@ -14,8 +12,6 @@ interface Tenant {
   slug: string;
   created_at: string;
 }
-
-// ── create_organization ───────────────────────────────────────────────────────
 
 const createOrgInput = z.object({
   name: z.string(),

@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldError,
   FieldGroup,
@@ -29,6 +28,7 @@ import {
   Textarea,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import { LoaderCircleIcon, PlusIcon, RefreshCwIcon, ShieldCheckIcon } from "@qeetrix/icons";
@@ -67,8 +67,8 @@ function RolesPage() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Role | null>(null);
 
-  // Publish the currently-viewed role as the qeetai's selection context so
-  // suggestions like "Grant permission to this role" are auto-prefilled.
+  // Tells Qeet AI which role is on screen, so suggestions such as "Grant permission to this
+  // role" are prefilled.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const qeetaiCtx = useMemo(
     () =>
@@ -326,8 +326,7 @@ function PermissionToggleList({
   onRevoke: (id: string) => void;
   currentPermissions: Permission[];
 }) {
-  // Load the full catalogue to offer permissions not yet granted.
-  const catalogue = usePermissionsCatalogue();
+  const catalogue = usePermissionsCatalogue(); // to offer permissions not yet granted
   const merged = mergeCatalogue(catalogue, currentPermissions);
   return (
     <ul className="flex flex-col gap-2">
@@ -352,7 +351,7 @@ function PermissionToggleList({
   );
 }
 
-// Small helpers to reuse the cached permissions catalogue without prop-drilling.
+// Reads the cached permissions catalogue, to avoid prop-drilling it.
 function usePermissionsCatalogue(): Permission[] {
   const q = usePermissions();
   return q.data?.items ?? [];

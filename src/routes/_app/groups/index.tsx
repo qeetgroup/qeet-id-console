@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldError,
   FieldGroup,
@@ -28,6 +27,7 @@ import {
   Textarea,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import {
   DownloadIcon,
   FileTextIcon,
@@ -135,7 +135,9 @@ function GroupsPage() {
       return { snapshots };
     },
     onError: (_err, _id, ctx) => {
-      ctx?.snapshots.forEach(([key, snap]) => qc.setQueryData(key, snap));
+      ctx?.snapshots.forEach(([key, snap]) => {
+        qc.setQueryData(key, snap);
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["groups"] }),
     meta: { successMessage: "Group deleted" },
@@ -324,7 +326,7 @@ function GroupsPage() {
                       )}
                       {lv.isVisible("parent") && (
                         <TableCell className="font-mono text-xs text-muted-foreground">
-                          {g.parent_id ? g.parent_id.slice(0, 8) + "…" : "—"}
+                          {g.parent_id ? `${g.parent_id.slice(0, 8)}…` : "—"}
                         </TableCell>
                       )}
                       {lv.isVisible("created") && (
@@ -445,7 +447,7 @@ function EditGroupSheet({ group, onOpenChange, groups, onSaved }: EditGroupSheet
                   id="edit-name"
                   name="name"
                   defaultValue={group?.name ?? ""}
-                  key={group?.id + "-name"}
+                  key={`${group?.id}-name`}
                   required
                 />
               </Field>
@@ -456,7 +458,7 @@ function EditGroupSheet({ group, onOpenChange, groups, onSaved }: EditGroupSheet
                   name="description"
                   rows={3}
                   defaultValue={group?.description ?? ""}
-                  key={group?.id + "-desc"}
+                  key={`${group?.id}-desc`}
                 />
               </Field>
               <Field>
@@ -464,7 +466,7 @@ function EditGroupSheet({ group, onOpenChange, groups, onSaved }: EditGroupSheet
                 <select
                   id="edit-parent_id"
                   name="parent_id"
-                  key={group?.id + "-parent"}
+                  key={`${group?.id}-parent`}
                   defaultValue={group?.parent_id ?? ""}
                   className="h-9 rounded-md border bg-background px-3 text-sm"
                 >
@@ -507,6 +509,8 @@ type MembersSheetProps = {
 };
 
 type PickUser = { id: string; email: string; display_name?: string | null };
+
+const SKELETON_IDS = ["a", "b", "c"] as const;
 
 function MembersSheet({ groupId, groupName, onClose }: MembersSheetProps) {
   const { t } = useTranslation("groups");
@@ -602,7 +606,7 @@ function MembersSheet({ groupId, groupName, onClose }: MembersSheetProps) {
           {addM.error && <FieldError>{errorMessage(addM.error)}</FieldError>}
 
           {membersQ.isLoading ? (
-            [...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
+            SKELETON_IDS.map((id) => <Skeleton key={id} className="h-10 w-full" />)
           ) : !membersQ.data?.items?.length ? (
             <p className="text-sm text-muted-foreground text-center py-6">
               {t("members.noMembers")}

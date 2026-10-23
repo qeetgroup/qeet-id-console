@@ -18,9 +18,8 @@ const NS_ITEMS = NAMESPACES.map((n) => ({ label: n, value: n }));
 const OP_ITEMS = OPERATORS.map((o) => ({ label: OPERATOR_LABELS[o], value: o }));
 
 /**
- * Visual, no-code editor for an ABAC condition tree. Nested AND (`all`) / OR
- * (`any`) groups, NOT wrappers, and comparison leaves across 13 operators.
- * Emits the editable CondNode form; callers serialize with toConditionJson.
+ * Renders a no-code editor for an ABAC condition: nested ALL/ANY groups, NOT wrappers and
+ * comparison leaves. Emits the editable CondNode form; serialize it with toConditionJson.
  */
 export function ConditionTree({
   value,
@@ -65,14 +64,12 @@ function NodeEditor({
     );
   }
 
-  // group
   const combinatorColor =
     node.combinator === "all"
       ? "border-blue-500/30 bg-blue-500/5"
       : "border-amber-500/30 bg-amber-500/5";
 
-  // `node` is narrowed to the group variant here; capture it so the closures
-  // below (which TypeScript would otherwise widen) keep the narrowed type.
+  // `node` is narrowed to a group here; capturing it keeps that type inside the closures below.
   const group = node;
   const updateChild = (index: number, child: CondNode) => {
     onChange({ ...group, children: group.children.map((c, i) => (i === index ? child : c)) });

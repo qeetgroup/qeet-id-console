@@ -9,11 +9,7 @@ export const Route = createFileRoute("/_app/developer/infrastructure")({
   component: InfrastructurePage,
 });
 
-// QID-05: this page previously rendered hardcoded latency/services/datastore
-// arrays feeding real-looking charts and tables, despite claiming "real-time
-// platform health" — with no backend behind it. Replaced with an honest
-// placeholder until platform-health telemetry is actually wired, rather than
-// present fabricated metrics an operator might trust.
+// A placeholder until platform-health telemetry exists: no metrics an operator might trust.
 function InfrastructurePage() {
   const { t } = useTranslation("developer");
   return (

@@ -18,10 +18,8 @@ export const Route = createFileRoute("/_app/settings/organization/email-template
 });
 
 /**
- * Mirrors the branding route: the page reports its dirty state, and navigating
- * away mid-edit is blocked behind a confirm. Without this the editor silently
- * discards an unsaved template on any nav click — which is why the component
- * exposes `onDirtyChange` in the first place.
+ * Renders the email template editor and, as the branding page does, asks to confirm before
+ * navigating away from unsaved changes, which the editor would otherwise discard silently.
  */
 function EmailTemplatesRoute() {
   const { t } = useTranslation("settings");

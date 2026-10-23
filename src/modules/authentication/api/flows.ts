@@ -1,5 +1,6 @@
-// Auth hooks built on top of api(). The same-origin BFF stores token responses
-// in an encrypted HttpOnly session and returns only safe session metadata.
+// Sign-in, sign-up, invitation and recovery flows. The BFF keeps token responses in its encrypted
+// HttpOnly session and returns only safe session metadata; session identity lives in
+// @/platform/auth/session.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -25,35 +26,34 @@ type User = {
 };
 
 type LoginInput = { email: string; password: string };
-// When the account holds a second factor, or must have one, /v1/auth/login
-// returns this challenge instead of tokens; complete it at /v1/auth/mfa.
+/**
+ * What /v1/auth/login returns instead of a session when the account holds, or must have, a
+ * second factor; complete it at /v1/auth/mfa.
+ */
 export type MfaChallenge = {
   mfa_required: true;
   mfa_token: string;
   methods: string[];
-  /** Exactly the second factors this person can complete the challenge with. */
-  factors?: LoginFactor[];
+  factors?: LoginFactor[]; // Exactly the second factors this person can complete the challenge with
   /**
-   * The account must have a second factor and holds none: set up an
-   * authenticator app (startMfaEnrollment) and complete with a code from it.
+   * The account must have a second factor and holds none: set up an authenticator app
+   * (startMfaEnrollment) and complete with a code from it.
    */
   enrollment_required?: boolean;
-  /** While the organisation's grace period runs: when it ends; until then the setup can be skipped. */
+  /** When the organisation's grace period ends; until then the setup can be skipped. */
   enrollment_due_at?: string;
 };
 
 /** One way to complete a sign-in's second-factor challenge. */
 export type LoginFactor = {
   type: "totp" | "recovery_code" | "email" | "sms" | "passkey" | "push";
-  /** An email or SMS factor's id, to send it a code. */
-  id?: string;
-  /** An email or SMS factor's masked address or number. */
-  destination?: string;
+  id?: string; // An email or SMS factor's id, to send it a code
+  destination?: string; // An email or SMS factor's masked address or number
 };
 
 /**
- * How a challenge is completed: a code, a passkey assertion, or an approved
- * push — or, for an enrolment challenge in its grace period, a skip.
+ * How a challenge is completed: a code, a passkey assertion, an approved push or, for an
+ * enrolment challenge in its grace period, a skip.
  */
 export type MfaProof =
   | { code: string }
@@ -78,9 +78,7 @@ export function useLogin() {
       }),
 
     onSuccess: (res) => {
-      // A second factor is required — no session is issued yet. The sign-in
-      // page reads this mutation's data and renders the code step, completed
-      // via useCompleteMfaLogin.
+      // No session yet: the sign-in page renders the second-factor step from this mutation's data.
       if (isMfaChallenge(res)) return;
 
       navigate({ to: "/" });
@@ -90,10 +88,9 @@ export function useLogin() {
 }
 
 /**
- * Complete a two-step login: exchange the mfa_token from useLogin plus a proof
- * for a server-owned session. When the proof set up an authenticator app the
- * response carries its new recovery codes, which the sign-in page shows once
- * before continuing.
+ * Exchanges the mfa_token from useLogin plus a proof for a server-owned session. When the proof
+ * set up an authenticator app, the response carries its new recovery codes and navigation waits
+ * so the sign-in page can show them once.
  */
 export function useCompleteMfaLogin() {
   const navigate = useNavigate();
@@ -115,9 +112,9 @@ export function useCompleteMfaLogin() {
 }
 
 /**
- * Accept an organization invite: exchange the emailed token + a chosen password for
- * a session (the backend creates/sets up the user and grants the invited role),
- * then land on the dashboard. Anonymous like login — there's no session yet.
+ * Accepts an organization invite anonymously: exchanges the emailed token and a chosen password
+ * for a session (the backend creates the user and grants the invited role), then opens the
+ * dashboard.
  */
 export function useAcceptInvite() {
   const navigate = useNavigate();
@@ -139,13 +136,11 @@ export interface InvitePreview {
   organization: { name: string; slug: string };
   email: string;
   expires_at: string;
-  /** An account already holds the address: sign in and accept as yourself. */
-  account_exists: boolean;
-  /** The ways a new account may accept. */
-  methods: { password: boolean; passkey: boolean };
+  account_exists: boolean; // An account already holds the address: sign in and accept as yourself
+  methods: { password: boolean; passkey: boolean }; // The ways a new account may accept
 }
 
-/** Look an invitation up by its emailed token (sent in the body, not the URL). */
+/** Looks up an invitation by its emailed token, sent in the body rather than the URL. */
 export function useInvitePreview(token: string) {
   return useQuery({
     queryKey: ["invite-preview", token],
@@ -174,14 +169,14 @@ export interface ReceivedInvite {
 }
 
 /**
- * Pending invitations addressed to the current user's email. Lets an org-less
- * user discover invites in-app instead of depending on the original email link.
+ * Returns pending invitations addressed to the current user's email, so a user with no
+ * organization can find them in-app rather than only through the email link.
  */
 export function useMyInvitations() {
   return useQuery({
     queryKey: ["invites", "mine"],
-    // Degrade gracefully if the endpoint isn't deployed yet — this renders on the
-    // pre-org landing screen, so a 404/501 must not throw a red error toast.
+    // A server without this endpoint (404/501) yields no invites: this renders on the pre-org
+    // landing screen, where an error toast would be noise.
     queryFn: async (): Promise<{ items: ReceivedInvite[] }> => {
       try {
         return await api<{ items: ReceivedInvite[] }>("/v1/me/invites");
@@ -197,7 +192,7 @@ export function useMyInvitations() {
   });
 }
 
-/** Decline (dismiss) a pending invitation addressed to me. */
+/** Declines a pending invitation addressed to the current user. */
 export function useDeclineInvitation() {
   const qc = useQueryClient();
   return useMutation({
@@ -209,8 +204,8 @@ export function useDeclineInvitation() {
 }
 
 /**
- * Accept a pending invitation with the *existing* signed-in account (no new
- * user, no password) and switch into the newly-joined organization.
+ * Accepts a pending invitation as the *existing* signed-in account (no new user or password),
+ * then reloads into the joined organization.
  */
 export function useAcceptInvitation() {
   return useMutation({
@@ -227,8 +222,8 @@ export function useAcceptInvitation() {
 }
 
 /**
- * Ask for a one-time sign-in link for an address, from the console's sign-in
- * page. The server answers the same whether or not the address has an account.
+ * Requests a one-time sign-in link for an address. The server answers the same whether or not
+ * the address has an account.
  */
 export function useRequestMagicLink() {
   return useMutation({
@@ -242,7 +237,7 @@ export function useRequestMagicLink() {
   });
 }
 
-/** Send a new link in place of a used or expired one, to the same address. */
+/** Sends a new sign-in link, to the same address, in place of a used or expired one. */
 export function useResendMagicLink() {
   return useMutation({
     mutationFn: (token: string) =>
@@ -256,12 +251,9 @@ export function useResendMagicLink() {
 }
 
 /**
- * Consume a magic-link token and exchange it for a Qeet ID session.
- * Called by the public /magic landing page. The BFF consumes the returned
- * token pair and establishes the HttpOnly session before this resolves. When
- * the account holds a second factor, or must have one, the link answers a
- * challenge instead; the page reads it from this mutation's data and
- * completes it like a password sign-in's.
+ * Exchanges a magic-link token for a session; the BFF stores the token pair in the HttpOnly
+ * session before this resolves. An account that holds, or must have, a second factor gets an
+ * MFA challenge instead, completed like a password sign-in's.
  */
 export function useConsumeMagicLink() {
   const navigate = useNavigate();
@@ -276,14 +268,14 @@ export function useConsumeMagicLink() {
       if (isMfaChallenge(res)) return;
       navigate({ to: "/" });
     },
-    // The /magic page surfaces the error inline; no global toast.
-    meta: { successMessage: "Signed in successfully" },
+    // The /magic page renders the failure inline, so the global error toast is off.
+    meta: { successMessage: "Signed in successfully", silentError: true },
   });
 }
 
 /**
- * Exchange a one-time SAML login code (delivered to /sso/callback in the URL
- * fragment after a successful assertion) for a Qeet ID session.
+ * Exchanges a one-time SAML login code (delivered to /sso/callback in the URL fragment after a
+ * successful assertion) for a Qeet ID session.
  */
 export function useConsumeSamlCode() {
   const navigate = useNavigate();
@@ -300,17 +292,13 @@ export function useConsumeSamlCode() {
 }
 
 /**
- * Kick off a password-reset email. Endpoint returns 200 regardless of
- * whether the email exists (constant-time no-leak design), so the
- * caller can unconditionally show "check your inbox" UX. The mutation
- * is marked silent so failures don't surface a toast — surfacing a
- * "user not found" error would defeat the enumeration-protection
- * design of the endpoint.
+ * Requests a password-reset email. The endpoint answers 200 whether or not the address exists,
+ * and the mutation is silent, so the page always shows "check your inbox": a "user not found"
+ * error would reveal which addresses have accounts.
  */
 export function useForgotPassword() {
   return useMutation({
-    // In dev (SERVICE_ENV=dev) the backend returns dev_reset_token so the reset
-    // link is usable without a real email provider; prod omits it.
+    // Only a dev backend returns dev_reset_token, so a reset works without an email provider.
     mutationFn: (in_: { email: string }) =>
       api<{ message: string; dev_reset_token?: string }>("/v1/auth/forgot-password", {
         method: "POST",
@@ -322,8 +310,8 @@ export function useForgotPassword() {
 }
 
 /**
- * Complete a password reset: exchange the emailed token + a new password, then
- * send the user to sign-in. Anonymous — there's no session yet.
+ * Completes a password reset with the emailed token and a new password, then opens sign-in.
+ * Anonymous: there is no session yet.
  */
 export function useResetPassword() {
   const navigate = useNavigate();
@@ -345,15 +333,18 @@ type SignupInput = {
   display_name?: string;
 };
 
-// Signup is tenant-less. Token material is consumed by the BFF; the user and
-// safe session identifiers remain available for the verification step.
+/**
+ * A tenant-less sign-up's result. The BFF keeps the tokens; the user and safe session ids remain
+ * for the email verification step.
+ */
 export type SignupResponse = SessionResponse & {
   user: User;
 };
 
-// useSignup establishes the new tenant-less server session, then either runs a caller
-// supplied onSuccess (e.g. to kick off email OTP verification) or, by default,
-// navigates straight to the dashboard.
+/**
+ * Signs up into a new tenant-less server session, then runs `opts.onSuccess` if given (e.g. to
+ * start email verification) or opens the dashboard.
+ */
 export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) {
   const navigate = useNavigate();
   return useMutation({
@@ -377,9 +368,7 @@ export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) 
   });
 }
 
-// Email OTP verification (self-service, uses the just-issued signup token).
-// StartEmail sends a 6-digit code to the address on file; ConfirmEmail marks
-// the email verified. Both are backed by /v1/users/{id}/verify/email/*.
+/** Sends a code to the user's address on file; useConfirmEmailVerification checks it. */
 export function useStartEmailVerification() {
   return useMutation({
     mutationFn: (userId: string) =>
@@ -392,8 +381,8 @@ export function useStartEmailVerification() {
 }
 
 /**
- * Email-change flow: send a code to a *new* address, then confirm it to swap the
- * login email. Backed by `POST /v1/me/email/change/{start,confirm}`.
+ * Sends a code to a *new* address; confirming it with useConfirmEmailChange makes it the sign-in
+ * email.
  */
 export function useStartEmailChange() {
   return useMutation({
@@ -414,7 +403,7 @@ export function useConfirmEmailChange() {
   });
 }
 
-/** Whether the current account has a password set (vs social/passkey-only). */
+/** Returns whether the current account has a password (rather than social or passkey only). */
 export function usePasswordStatus() {
   return useQuery({
     queryKey: ["auth", "password-status"],
@@ -434,17 +423,15 @@ export function usePasswordStatus() {
 }
 
 /**
- * Change (or set) the signed-in user's password. Backed by `POST /v1/auth/password`;
- * `current_password` is only required when the account already has one — a
- * social/passkey account may set one by leaving it empty. Tenant-independent.
+ * Changes or sets the signed-in user's password. `current_password` is required only when the
+ * account has one; a social or passkey account sets a first password by leaving it empty.
  */
 export function useChangePassword() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { current_password: string; new_password: string }) =>
       api<{ message: string }>("/v1/auth/password", { method: "POST", body: in_ }),
-    // Setting a first password adds a way to sign in.
-    onSuccess: () => refreshSignInMethods(qc),
+    onSuccess: () => refreshSignInMethods(qc), // Setting a first password adds a way to sign in
     meta: { successMessage: "Password changed" },
   });
 }
@@ -460,7 +447,7 @@ export function useConfirmEmailVerification() {
   });
 }
 
-// Switch organization: the BFF replaces the encrypted session, then reload.
+/** Switches organization: the BFF replaces the encrypted session, then the page reloads. */
 export async function switchToTenant(tenantId: string): Promise<void> {
   await api<SessionResponse & { tenant_id: string }>("/v1/auth/switch-tenant", {
     method: "POST",
@@ -469,11 +456,9 @@ export async function switchToTenant(tenantId: string): Promise<void> {
   if (typeof window !== "undefined") window.location.assign("/");
 }
 
-// ---------------------------------------------------------------------------
-// Platform social login (the console's own Qeet ID accounts, tenant-less)
-// ---------------------------------------------------------------------------
+// Platform social sign-in: the console's own Qeet ID accounts, tenant-less.
 
-/** Which platform-level social providers are configured (e.g. ["google"]). */
+/** Returns which platform-level social providers are configured (e.g. ["google"]). */
 export function usePlatformSocialProviders() {
   return useQuery({
     queryKey: ["social", "platform-providers"],
@@ -484,20 +469,18 @@ export function usePlatformSocialProviders() {
 }
 
 /**
- * Full backend URL to begin a platform social ceremony (browser redirect).
- * intent="signup" permits just-in-time account creation; "login" (default)
- * requires an existing account, so signing in never silently creates one.
+ * Returns the backend URL that starts a platform social sign-in (a browser redirect).
+ * intent="signup" may create an account; "login" requires an existing one, so signing in never
+ * silently creates an account.
  */
 export function socialStartUrl(provider: string, intent: "login" | "signup" = "login"): string {
   return `${getApiBaseUrl()}/v1/social/${provider}/start?intent=${intent}`;
 }
 
 /**
- * Begin linking a social provider to the *current* signed-in account. Unlike
- * login, this is authenticated: the server stashes our identity in the OAuth
- * state (so the callback attaches the provider to us, never creating/switching
- * an account) and returns the provider authorize URL to hand the browser to.
- * The provider callback returns to /account/security.
+ * Starts linking a social provider to the signed-in account and redirects to the provider. The
+ * request is authenticated, so the server keeps our identity in the OAuth state and the callback
+ * attaches the provider to this account, never creating or switching one.
  */
 export async function startSocialLink(provider: string): Promise<void> {
   const res = await api<{ authorize_url: string }>(`/v1/social/${provider}/link/start`, {
@@ -510,9 +493,8 @@ export async function startSocialLink(provider: string): Promise<void> {
 }
 
 /**
- * Trade the one-time social login code (delivered to /sign-in?social_code=…
- * after the provider redirect) for a Qeet session. Tenant-less, like signup —
- * the user creates their first organization from the dashboard.
+ * Exchanges the one-time social login code (delivered to /sign-in?social_code=… after the
+ * provider redirect) for a tenant-less session, like sign-up's.
  */
 export function useConsumeSocialCode() {
   const navigate = useNavigate();
@@ -527,6 +509,3 @@ export function useConsumeSocialCode() {
     meta: { successMessage: "Signed in successfully" },
   });
 }
-
-// Session identity lives in @/platform/auth/session (imported directly by
-// consumers). This module owns only the pre-login auth *flows*.

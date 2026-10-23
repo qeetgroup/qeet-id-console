@@ -1,37 +1,33 @@
-// URL search-param schema for the Activity workspace — the single source of
-// truth for filters, time range, live/history mode, the applied saved view, and
-// the selected event + drawer tab. Mirrors the audit-logs `validateSearch`
-// pattern so any view is paste-shareable (e.g. Slack triage links) and a
-// malformed URL never crashes the route.
-//
-// Note on time: relative presets (24h, 7d…) are resolved to concrete from/to
-// via presetToRange. searchToFilters is only called inside a useMemo keyed on
-// the router search object, so `now` is captured once per navigation — the
-// window is frozen at selection time (it does not slide every render, which
-// would thrash the query cache).
+// URL search params for the Activity workspace, the source of truth for its filters, mode,
+// saved view and open event, so any view is shareable as a link.
 
 import { type DateRange, presetToRange, TIME_PRESETS } from "./components/activity-time-range";
 import type { ActivityFilters, ActivityMode, Outcome, Severity } from "./types/activity.types";
 
 export type DrawerTab = "overview" | "raw" | "related";
 
+/**
+ * Activity URL params. severity, category and type are comma-separated lists; `range` is a
+ * TIME_PRESETS key, with RFC 3339 `from`/`to` used only when it is "custom"; `view` is the
+ * applied saved view; `event` opens that event's drawer on `tab`.
+ */
 export interface ActivitySearch {
   q?: string;
-  severity?: string; // csv, e.g. "error,critical"
-  category?: string; // csv
-  type?: string; // csv of event types
+  severity?: string;
+  category?: string;
+  type?: string;
   actor?: string;
   ip?: string;
   resource?: string;
   source?: string;
   status?: string;
-  range?: string; // preset key: all|15m|1h|24h|7d|30d|custom
-  from?: string; // RFC3339, only when range=custom
+  range?: string;
+  from?: string;
   to?: string;
-  mode?: ActivityMode; // live | history (default live)
-  view?: string; // applied saved-view id
-  event?: string; // selected event id → opens drawer
-  tab?: DrawerTab; // active drawer tab
+  mode?: ActivityMode;
+  view?: string;
+  event?: string;
+  tab?: DrawerTab;
 }
 
 const SEVERITIES: Severity[] = ["info", "success", "warning", "error", "critical"];
@@ -39,7 +35,7 @@ const RANGE_KEYS = new Set(TIME_PRESETS.map((p) => p.value));
 const MODES = new Set<ActivityMode>(["live", "history"]);
 const TABS = new Set<DrawerTab>(["overview", "raw", "related"]);
 
-/** Outcome is a friendly grouping over severity (mirrors the summary's by_outcome). */
+/** The severities behind each outcome, matching the summary's by_outcome buckets. */
 export const OUTCOME_TO_SEVERITY: Record<Outcome, Severity[]> = {
   success: ["success"],
   warning: ["warning"],
@@ -68,7 +64,7 @@ export function arrayToCsv(v: string[]): string | undefined {
   return v.length > 0 ? v.join(",") : undefined;
 }
 
-/** Route validateSearch — every field optional; enums clamped; blanks dropped. */
+/** Validates raw route search params: blanks and unknown enum values become undefined. */
 export function validateActivitySearch(raw: Record<string, unknown>): ActivitySearch {
   const str = (k: string): string | undefined => {
     const v = raw[k];
@@ -97,7 +93,10 @@ export function validateActivitySearch(raw: Record<string, unknown>): ActivitySe
   };
 }
 
-/** Resolves the URL search into the ActivityFilters the provider/query consume. */
+/**
+ * Resolves the URL search into ActivityFilters. Relative ranges resolve against the current
+ * time, so memoise the result per navigation to keep the window and query key stable.
+ */
 export function searchToFilters(s: ActivitySearch): ActivityFilters {
   const range = s.range ?? "all";
   const custom: DateRange | undefined =

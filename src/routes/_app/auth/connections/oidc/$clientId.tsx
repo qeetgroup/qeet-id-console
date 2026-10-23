@@ -14,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
   CopyableSecret,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -25,6 +24,7 @@ import {
   Textarea,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
@@ -50,7 +50,7 @@ import {
   useOidcClients,
   useRotateClientSecret,
   useUpdateOidcClient,
-} from "@/modules/authentication/api/oidc-clients";
+} from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/auth/connections/oidc/$clientId")({
   component: OidcClientDetailPage,

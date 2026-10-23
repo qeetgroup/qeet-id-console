@@ -5,8 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import type { OidcClient } from "../api/oidc-clients";
 
-// Tinted icon squares, matching the StatCard tones used on the Applications
-// section hub (modules/dashboard/components/applications-overview.tsx).
+// Tinted icon squares, matching the StatCard tones on the Applications hub.
 const TONES = {
   neutral: "bg-muted text-muted-foreground",
   emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
@@ -50,11 +49,8 @@ type ApplicationStatsProps = {
 };
 
 /**
- * The four-up summary above the applications table.
- *
- * Deliberately derived entirely from the list response — `auth.oidc_clients`
- * has no `updated_at`, so the fourth card reports the most recently *created*
- * client rather than the most recently modified one.
+ * Renders the four-up summary above the applications table, derived from the list response.
+ * Clients have no `updated_at`, so the fourth card shows the most recently *created* client.
  */
 export function ApplicationStats({ clients, isLoading }: ApplicationStatsProps) {
   const { t } = useTranslation("oidc");
@@ -72,8 +68,7 @@ export function ApplicationStats({ clients, isLoading }: ApplicationStatsProps) 
   const publicCount = clients.filter((c) => c.type === "public").length;
   const confidentialCount = clients.filter((c) => c.type === "confidential").length;
 
-  // The backend already orders the list created_at DESC, but don't rely on it
-  // for a headline number — pick the newest explicitly.
+  // Pick the newest explicitly rather than rely on the server's created_at DESC order.
   const newest = clients.reduce<OidcClient | null>(
     (best, c) => (!best || c.created_at > best.created_at ? c : best),
     null,

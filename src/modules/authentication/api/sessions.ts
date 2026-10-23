@@ -3,9 +3,7 @@ import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 
-// The active-session list (GET /v1/auth/sessions) + revoke. One typed source for
-// every session view — the tenant/security list, the users-nav list, and the
-// account self-view all render the same shape from the same endpoint.
+/** A sign-in session as GET /v1/auth/sessions returns it; every session view renders this shape. */
 export type Session = {
   id: string;
   user_id: string;
@@ -15,26 +13,21 @@ export type Session = {
   created_at: string;
   last_seen_at: string;
   revoked_at?: string | null;
-  /** When the session ends however active it is. */
-  expires_at?: string;
-  /** When the session ends unless it is renewed first. */
-  idle_expires_at?: string;
+  expires_at?: string; // When the session ends however active it is
+  idle_expires_at?: string; // When the session ends unless it is renewed first
   status?: SessionStatus;
-  /** The device and browser in words, from the server ("Chrome on macOS"). */
-  device?: string;
+  device?: string; // The device and browser in words, from the server ("Chrome on macOS")
   device_kind?: "desktop" | "mobile" | "tablet" | "unknown";
-  /** Where the session was opened (ISO 3166-1 alpha-2), when known. */
-  country?: string;
-  /** True for the session the list was requested with. */
-  current?: boolean;
+  country?: string; // Where the session was opened (ISO 3166-1 alpha-2), when known
+  current?: boolean; // True for the session the list was requested with
 };
 
-/** The session's device in words; the server describes it, never the browser. */
+/** Returns the session's device in words, as the server describes it (never the browser). */
 export function sessionDevice(s: Session): string {
   return s.device || "Unknown device";
 }
 
-/** The country a session was opened from, by name, or "" when unknown. */
+/** Returns the name of the country a session was opened from, or "" when unknown. */
 export function sessionCountry(s: Session, locale = "en"): string {
   if (!s.country) return "";
   try {
@@ -45,8 +38,8 @@ export function sessionCountry(s: Session, locale = "en"): string {
 }
 
 /**
- * active, revoked (ended by sign-out or revocation) or expired (reached its
- * maximum age or idle timeout first). Only an active session can be revoked.
+ * active, revoked (ended by sign-out or revocation) or expired (reached its maximum age or idle
+ * timeout first). Only an active session can be revoked.
  */
 export type SessionStatus = "active" | "revoked" | "expired";
 
@@ -75,12 +68,11 @@ export function useRevokeSession() {
 const revokeOtherSessionsSchema = z.object({ revoked: z.number().int().nonnegative() });
 export type RevokeOtherSessionsResult = z.infer<typeof revokeOtherSessionsSchema>;
 
-// Ends every one of the caller's sessions except the current one, in a single
-// all-or-nothing server call (POST /v1/auth/sessions/revoke-others). The server
-// keeps the session behind this console's own credential and ends the rest —
-// including any the session list has not loaded — so nothing here names a
-// session. Resolves with how many sessions ended (0 when there were none);
-// rejects when the call fails — the server ends all of them or none.
+/**
+ * Ends all of the caller's sessions except the current one, all or nothing. The server keeps the
+ * session behind this console's credential, so it also ends sessions the list hasn't loaded.
+ * Resolves with how many ended (0 when there were none).
+ */
 export function revokeOtherSessions(): Promise<RevokeOtherSessionsResult> {
   return api("/v1/auth/sessions/revoke-others", {
     method: "POST",
@@ -96,13 +88,12 @@ const signOutEverywhereSchema = z.object({
 });
 export type SignOutEverywhereResult = z.infer<typeof signOutEverywhereSchema>;
 
-// Signs the caller out everywhere in one all-or-nothing server call
-// (POST /v1/auth/sessions/revoke-all): every session including the one this
-// console uses, the hosted sign-in in every browser, and the apps signed in
-// with this account. Resolves with how many sign-ins ended (`revoked`, all
-// places together); on success the console's own session has ended as well, so
-// the caller must send the person to sign in again. Rejects when the call fails
-// — the person is then still signed in here.
+/**
+ * Signs the caller out everywhere, all or nothing: every session including this console's, the
+ * hosted sign-in in every browser, and apps signed in with this account. Resolves with how many
+ * sign-ins ended, after which the caller must send the person to sign in again; on rejection
+ * they are still signed in here.
+ */
 export function signOutEverywhere(): Promise<SignOutEverywhereResult> {
   return api("/v1/auth/sessions/revoke-all", {
     method: "POST",

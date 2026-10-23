@@ -1,0 +1,12 @@
+# Requests reviewers automatically; code-owner review is not required on main.
+* @msboffl
+
+# Security-sensitive areas.
+/src/platform/api/ @msboffl
+/src/platform/auth/ @msboffl
+/src/platform/security/ @msboffl
+/src/start.ts @msboffl
+/src/modules/qeetai/tools/ @msboffl
+/.github/ @msboffl
+/Dockerfile @msboffl
+/vercel.json @msboffl

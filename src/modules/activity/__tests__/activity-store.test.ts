@@ -8,10 +8,6 @@ import {
 } from "../activity-store";
 import type { ActivityEvent } from "../types/activity.types";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 let eventCounter = 0;
 
 function makeEvent(overrides: Partial<ActivityEvent> = {}): ActivityEvent {
@@ -31,21 +27,11 @@ function getState(): ActivityStoreState {
   return activityStore.state;
 }
 
-// ---------------------------------------------------------------------------
-// Reset store + seenIds between tests
-// ---------------------------------------------------------------------------
-
 beforeEach(() => {
   activityActions.clearAll();
-  // clearAll already calls seenIds.clear(), but let's be explicit
   _seenIds.clear();
-  // Reset to clean disconnected state
   activityActions.setStatus("disconnected");
 });
-
-// ---------------------------------------------------------------------------
-// addLiveEvents
-// ---------------------------------------------------------------------------
 
 describe("addLiveEvents", () => {
   it("prepends new events newest-first", () => {
@@ -71,7 +57,6 @@ describe("addLiveEvents", () => {
 
   it("caps liveEvents at MAX_LIVE (200)", () => {
     const events = Array.from({ length: 220 }, () => makeEvent());
-    // Feed all at once to avoid dedupe on individual calls
     activityActions.addLiveEvents(events);
     expect(getState().liveEvents.length).toBeLessThanOrEqual(200);
   });
@@ -86,10 +71,6 @@ describe("addLiveEvents", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// setPaused / resume flushing
-// ---------------------------------------------------------------------------
-
 describe("setPaused", () => {
   it("flushes pendingBuffer into liveEvents on resume", () => {
     activityActions.setPaused(true);
@@ -100,7 +81,6 @@ describe("setPaused", () => {
     activityActions.setPaused(false);
     expect(getState().liveEvents).toHaveLength(3);
     expect(getState().pendingBuffer).toHaveLength(0);
-    // unreadCount incremented on flush
     expect(getState().unreadCount).toBe(3);
   });
 
@@ -108,9 +88,8 @@ describe("setPaused", () => {
     const shared = makeEvent();
     activityActions.addLiveEvents([shared]); // add to live first
     activityActions.setPaused(true);
-    activityActions.addLiveEvents([shared]); // add same to pending
+    activityActions.addLiveEvents([shared]); // already seen, so never queued
     activityActions.setPaused(false);
-    // shared was already seen, pendingBuffer flush adds 0 new
     expect(getState().liveEvents).toHaveLength(1);
   });
 
@@ -122,10 +101,6 @@ describe("setPaused", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// markAllRead
-// ---------------------------------------------------------------------------
-
 describe("markAllRead", () => {
   it("resets unreadCount to 0", () => {
     activityActions.addLiveEvents([makeEvent(), makeEvent()]);
@@ -134,10 +109,6 @@ describe("markAllRead", () => {
     expect(getState().unreadCount).toBe(0);
   });
 });
-
-// ---------------------------------------------------------------------------
-// clearAll
-// ---------------------------------------------------------------------------
 
 describe("clearAll", () => {
   it("empties liveEvents, pendingBuffer, and resets counters", () => {
@@ -161,10 +132,6 @@ describe("clearAll", () => {
     expect(getState().liveEvents).toHaveLength(1);
   });
 });
-
-// ---------------------------------------------------------------------------
-// setStatus
-// ---------------------------------------------------------------------------
 
 describe("setStatus", () => {
   it("updates the connection status", () => {

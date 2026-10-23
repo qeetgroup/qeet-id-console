@@ -1,10 +1,3 @@
-// CommandPaletteLauncher — global ⌘K / Ctrl-K entry point.
-//
-// Preserves the original open/onOpenChange contract so _app.tsx requires no
-// changes. Renders UniversalSearch (the evolved palette) wrapped in
-// SearchProvider, which assembles navigation + command sources and builds
-// SearchContext from the router + capability hooks.
-
 import type { CommandPaletteItem } from "@qeetrix/ui";
 import { useEffect } from "react";
 
@@ -14,9 +7,8 @@ import { useCapabilities } from "@/platform/security/capability-provider";
 import { SearchProvider, UniversalSearch } from "@/modules/search";
 
 /**
- * Flatten the sidebar nav tree into a CommandPaletteItem[] list.
- * Kept here for backward-compatibility; the universal search uses
- * buildNavSearchItems from registry/navigation-source.tsx instead.
+ * Flattens the sidebar nav tree into command-palette items; `can` filters only parents that have
+ * children. The universal search builds its own list with `buildNavSearchItems`.
  */
 export function buildCommandPaletteItems(
   groups: NavGroup[],
@@ -64,15 +56,12 @@ interface CommandPaletteLauncherProps {
 }
 
 /**
- * CommandPaletteLauncher wires the ⌘K / Ctrl-K shortcut to the UniversalSearch
- * palette. Lives inside CapabilityProvider (via the ConsoleFrame in _app.tsx)
- * so the shortcut can gate on access.state before opening.
+ * Renders the universal search palette and toggles it on ⌘K / Ctrl-K. Must sit inside
+ * CapabilityProvider: until capabilities are ready the shortcut is off and the palette closes.
  */
 export function CommandPaletteLauncher({ open, onOpenChange }: CommandPaletteLauncherProps) {
   const access = useCapabilities();
 
-  // Own the ⌘K shortcut here — same design as the original launcher so the
-  // keyboard behaviour is unchanged from the operator's perspective.
   useEffect(() => {
     if (access.state !== "ready") {
       if (open) onOpenChange(false);

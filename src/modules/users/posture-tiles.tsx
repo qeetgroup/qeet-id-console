@@ -1,5 +1,3 @@
-// The six "Security posture" tiles at the top of the Overview tab.
-
 import { cn, Skeleton, TimeSince } from "@qeetrix/ui";
 import {
   GaugeIcon,

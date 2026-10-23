@@ -6,11 +6,8 @@ import { AuthzFlow } from "./authz-flow";
 import { rbacNodeTypes } from "./nodes";
 
 /**
- * RBAC visual: roles in the left column, and — for the selected role — the
- * permissions it grants in the right column, connected by edges. Clicking a
- * role selects it. The backend has no role parent-child relation, so this
- * shows the real role→permission grant graph rather than fabricating a
- * hierarchy.
+ * Renders the roles in one column and the selected role's permissions in the next. The backend
+ * has no role inheritance, so this shows real grants rather than a made-up hierarchy.
  */
 export function RoleHierarchyGraph({
   roles,

@@ -308,10 +308,7 @@ export function EmailPreview({
     setDocument(emailPreviewDocument(draft, locale, variables, brand));
   }, [draft, locale, variables, brand]);
 
-  // The subject and preheader are what a recipient actually sees first, in the
-  // message list, before they open anything. Showing them as an inbox row makes
-  // the preview answer "how does this land?" rather than only "how does the
-  // body look?" — and it's where a too-long subject or an empty preheader
+  // An inbox row shows what recipients see first, where a too-long subject or an empty preheader
   // becomes obvious.
   const samples = emailPreviewHeader(draft, locale, variables, brand);
   const links = emailPreviewLinks(draft, locale, variables, brand);
@@ -351,9 +348,7 @@ export function EmailPreview({
             srcDoc={document}
             className={cn(
               "block w-full rounded border border-border/50 bg-white",
-              // Taller than the old h-87: a real template needs room before the
-              // reader has to scroll inside a preview.
-              mode === "mobile" ? "h-120 max-w-[22rem]" : "h-140",
+              mode === "mobile" ? "h-120 max-w-[22rem]" : "h-140", // room for a real template
             )}
           />
         ) : (
@@ -388,9 +383,11 @@ export function EmailPreview({
 }
 
 function EmailWorkspace(props: EmailTemplatesViewProps) {
+  const firstTemplate = props.templates[0]; // the view renders this only with templates
+  if (!firstTemplate) throw new Error("EmailWorkspace rendered without any email templates");
   const { t, i18n } = useTranslation("settings");
   const id = useId();
-  const [selectedKey, setSelectedKey] = useState(props.templates[0].key);
+  const [selectedKey, setSelectedKey] = useState(firstTemplate.key);
   const [saved, setSaved] = useState<Record<string, EmailTemplate>>(() =>
     Object.fromEntries(props.templates.map((item) => [item.key, item])),
   );
@@ -408,15 +405,15 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
   const subjectRef = useRef<HTMLInputElement>(null);
   const preheaderRef = useRef<HTMLInputElement>(null);
   const activeField = useRef<"subject" | "preheader" | "body">("body");
-  const template = saved[selectedKey] ?? props.templates[0];
+  const template = saved[selectedKey] ?? firstTemplate;
   const draft = drafts[template.key] ?? emailTemplateInput(template);
   const currentLocale = locale === "en" || draft.options.translations?.[locale] ? locale : "en";
   const content = emailLocaleContent(draft, currentLocale);
   const dirty = JSON.stringify(draft) !== JSON.stringify(emailTemplateInput(template));
-  const anyDirty = Object.entries(drafts).some(
-    ([key, value]) =>
-      saved[key] && JSON.stringify(value) !== JSON.stringify(emailTemplateInput(saved[key])),
-  );
+  const anyDirty = Object.entries(drafts).some(([key, value]) => {
+    const stored = saved[key];
+    return stored && JSON.stringify(value) !== JSON.stringify(emailTemplateInput(stored));
+  });
   const errors = emailDraftErrors(draft, template.variables);
   const modern = props.capabilities?.rich_text === true;
   const tenantDelivery =
@@ -655,8 +652,11 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
                         ? TABS.length - 1
                         : (index + (event.key === "ArrowRight" ? 1 : -1) + TABS.length) %
                           TABS.length;
-                  setTab(TABS[next]);
-                  document.getElementById(`${id}-${TABS[next]}-tab`)?.focus();
+                  const nextTab = TABS[next];
+                  // Unreachable: every branch yields an index in [0, TABS.length).
+                  if (nextTab === undefined) return;
+                  setTab(nextTab);
+                  document.getElementById(`${id}-${nextTab}-tab`)?.focus();
                 }}
                 onClick={() => setTab(value)}
                 className={cn(

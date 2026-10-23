@@ -1,6 +1,3 @@
-// Export control for the identity timeline header. Downloads the currently
-// loaded events as CSV or JSON (see timeline-export.ts).
-
 import {
   Button,
   DropdownMenu,
@@ -13,6 +10,7 @@ import { ChevronDownIcon, DownloadIcon, FileBracesIcon, SheetIcon } from "@qeetr
 import type { ActivityEvent } from "@/modules/activity";
 import { exportTimelineEvents } from "../timeline-export";
 
+/** Renders the menu that downloads the loaded timeline events as CSV or JSON. */
 export function TimelineExportMenu({
   events,
   userId,

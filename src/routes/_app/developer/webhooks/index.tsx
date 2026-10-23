@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -29,6 +28,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -49,7 +49,7 @@ import { PageHeader } from "@/platform/components/page-header";
 import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
-import { useEntitlements } from "@/modules/billing/api/billing";
+import { useEntitlements } from "@/modules/billing";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
 import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
@@ -117,8 +117,7 @@ function WebhooksPage() {
 
   const disableM = useMutation({
     mutationFn: (id: string) => api<void>(`/v1/webhooks/${id}`, { method: "DELETE" }),
-    // Optimistic remove: drop from every active webhooks-query cache,
-    // snapshot for rollback. Same pattern as users.tsx.
+    // Optimistic: drop it from every webhooks cache, keeping snapshots for rollback.
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ["webhooks"] });
       const snapshots = qc.getQueriesData<{ items: Webhook[] }>({
@@ -130,7 +129,9 @@ function WebhooksPage() {
       return { snapshots };
     },
     onError: (_err, _id, ctx) => {
-      ctx?.snapshots.forEach(([key, snap]) => qc.setQueryData(key, snap));
+      ctx?.snapshots.forEach(([key, snap]) => {
+        qc.setQueryData(key, snap);
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks"] }),
     meta: { successMessage: t("webhooks.toast.disabled") },

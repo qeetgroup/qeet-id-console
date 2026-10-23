@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldLabel,
@@ -19,6 +18,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { BotIcon, RefreshCwIcon, ShieldOffIcon, ZapIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
@@ -74,8 +74,7 @@ function BotsPage() {
     },
   ];
 
-  // Toggling a switch persists the full settings object (the scorer only
-  // enforces ua_check today; the others are stored for future enforcement).
+  // Saves the whole settings object; the scorer enforces only ua_check, the rest are stored.
   function set(patch: Partial<BotSettings>) {
     if (!settings) return;
     update.mutate({ ...settings, ...patch });

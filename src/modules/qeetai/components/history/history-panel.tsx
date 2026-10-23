@@ -32,7 +32,7 @@ function formatRelative(ts: number): string {
   return new Date(ts).toLocaleDateString();
 }
 
-/** Conversation history: search, then pin / rename / delete / select. */
+/** Renders the conversation history: search, then pin, rename, delete or open. */
 export function HistoryPanel() {
   const conversations = useStore(conversationStore, (s) => s.conversations);
   const activeId = useStore(conversationStore, (s) => s.activeId);

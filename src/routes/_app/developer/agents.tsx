@@ -8,11 +8,11 @@ import {
   CardTitle,
   Combobox,
   CopyableSecret,
-  DataState,
   Field,
   FieldLabel,
   Input,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
@@ -43,10 +43,7 @@ import {
 } from "@/modules/developer/api/agents";
 import { api } from "@/platform/api/client";
 import { useMe, useTenantId } from "@/platform/auth/session";
-import {
-  useReviewShadowAIClient,
-  useShadowAICandidates,
-} from "@/modules/authentication/api/oidc-clients";
+import { useReviewShadowAIClient, useShadowAICandidates } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/developer/agents")({
   component: AgentsPage,

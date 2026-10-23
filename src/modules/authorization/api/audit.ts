@@ -1,8 +1,4 @@
-// Audit-derived data for the Authorization section. The audit log is the only
-// real source of "who changed what, when" for policies/roles/relations, so the
-// Audit surface reads it directly and Version History reconstructs a read-only
-// change timeline from it. There is no server-side rollback endpoint.
-// Backed by GET /v1/tenants/{tenantID}/audit. See domains/operations/audit.
+// The audit log is the only record of who changed which policy, role or relation, and when.
 
 import { useQuery } from "@tanstack/react-query";
 
@@ -38,7 +34,6 @@ export interface AuditFilter {
   cursor?: string;
 }
 
-/** Resource types that belong to the authorization domain. */
 export const AUTHZ_RESOURCE_TYPES = [
   "abac_policy",
   "role",
@@ -68,12 +63,14 @@ export function useAuditEvents(filter: AuditFilter = {}) {
   });
 }
 
-/** Whether an audit/activity action belongs to the authorization domain. */
+/** Returns whether an audit or activity action belongs to the authorization domain. */
 export function isAuthzAction(action: string): boolean {
-  return /^(abac|rbac|role|permission|relation|policy)[._]/i.test(action);
+  return /^(abac|rbac|role|group_role|permission|relation|policy|security_policy)[._]/i.test(
+    action,
+  );
 }
 
-/** Whether an event is authorization-related (by resource type or action prefix). */
+/** Returns whether an event is about authorization, by resource type or action prefix. */
 export function isAuthzEvent(e: AuditEvent): boolean {
   if ((AUTHZ_RESOURCE_TYPES as readonly string[]).includes(e.resource_type)) return true;
   return isAuthzAction(e.action);
@@ -88,9 +85,8 @@ export interface VersionEntry {
 }
 
 /**
- * Reconstruct a chronological change timeline for one resource from the audit
- * log. Read-only — there is no rollback endpoint, so the UI surfaces this as
- * history + diff only.
+ * Returns one resource's audit events as a newest-first timeline. There is no rollback
+ * endpoint, so this history is read-only.
  */
 export function toVersionTimeline(events: AuditEvent[], resourceId: string): VersionEntry[] {
   return events

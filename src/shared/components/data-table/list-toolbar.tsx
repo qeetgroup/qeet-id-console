@@ -51,13 +51,13 @@ type ListToolbarProps = {
   exportDisabled?: boolean;
   hasActiveFilters?: boolean;
   onClear?: () => void;
-  /** Primary actions (e.g. a "New …" button) rendered at the far right. */
-  children?: ReactNode;
+  children?: ReactNode; // primary actions such as "New …", at the far right
 };
 
-// Shared toolbar for every list page: search + faceted filters on the left,
-// view controls (density, column visibility), export, and page actions on
-// the right. Each control is opt-in — omit a prop and its control hides.
+/**
+ * Renders the list-page toolbar: search and facet filters on the left; view controls, export and
+ * page actions on the right. Each control appears only when its props are given.
+ */
 export function ListToolbar({
   search,
   onSearchChange,

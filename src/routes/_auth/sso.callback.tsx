@@ -13,9 +13,8 @@ export const Route = createFileRoute("/_auth/sso/callback")({
   component: SsoCallbackPage,
 });
 
-// The SAML ACS redirects here with the one-time code in the URL fragment
-// (#saml_code=…), which — unlike a query string — is never sent to the server
-// or written to access logs.
+// The SAML ACS passes the one-time code in the fragment (#saml_code=…), which, unlike a query
+// string, never reaches the server or its access logs.
 function readSamlCode(): string | null {
   if (typeof window === "undefined") return null;
   const hash = window.location.hash.replace(/^#/, "");
@@ -65,7 +64,7 @@ function renderStatus({
         <TriangleAlertIcon className="size-10 text-amber-500" />
         <h1 className="text-2xl font-bold">{t("sso.noCodeTitle")}</h1>
         <p className="text-balance text-muted-foreground">{t("sso.noCodeText")}</p>
-        <Link to="/sign-in" className={buttonVariants({ variant: "outline" }) + " mt-2"}>
+        <Link to="/sign-in" className={`${buttonVariants({ variant: "outline" })} mt-2`}>
           {t("sso.backToSignIn")}
         </Link>
       </>

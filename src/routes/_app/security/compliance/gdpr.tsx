@@ -62,6 +62,8 @@ type PurgeRequest = {
   created_at: string;
 };
 
+const SKELETON_IDS = ["a", "b", "c"] as const;
+
 function GdprPage() {
   const { t } = useTranslation("compliance");
   const [confirmDialog, openConfirm] = useConfirmDialog();
@@ -124,8 +126,8 @@ function GdprPage() {
         <CardContent className="p-0">
           {listQ.isLoading ? (
             <div className="space-y-3 p-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
+              {SKELETON_IDS.map((id) => (
+                <Skeleton key={id} className="h-10 w-full" />
               ))}
             </div>
           ) : listQ.isError ? (

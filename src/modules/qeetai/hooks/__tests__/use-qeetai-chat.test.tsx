@@ -2,7 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AIProvider, SendInput, StreamEvent } from "../../ai/ai-provider";
 import type { ConsoleContext } from "../../context/types/context.types";
@@ -65,7 +65,7 @@ async function ask(text: string) {
   act(() => result.current.send(text));
   await waitFor(() => expect(runtime.sent).toHaveLength(2));
   await waitFor(() => expect(result.current.isStreaming).toBe(false));
-  const [toolResult] = runtime.sent[1].toolResults ?? [];
+  const [toolResult] = runtime.sent[1]?.toolResults ?? [];
   return toolResult;
 }
 
@@ -74,7 +74,9 @@ function lastExecution() {
     (c) => c.id === conversationStore.state.activeId,
   );
   const executions = conversation?.messages.flatMap((m) => m.toolExecutions ?? []) ?? [];
-  return executions[executions.length - 1];
+  const execution = executions[executions.length - 1];
+  assert(execution, "expected a tool execution in the active conversation");
+  return execution;
 }
 
 beforeEach(() => {
@@ -92,6 +94,7 @@ describe("Qeet AI change requests in 1.0", () => {
     runtime.toolCall = { name: "disable_user", input: { user_id: "user-7" } };
 
     const toolResult = await ask("Disable user-7");
+    assert(toolResult, "expected a tool result to be sent back");
 
     expect(api).not.toHaveBeenCalled();
     expect(runtime.confirm).not.toHaveBeenCalled();
@@ -118,9 +121,10 @@ describe("Qeet AI change requests in 1.0", () => {
     vi.mocked(api).mockResolvedValue({ items: [] });
 
     const toolResult = await ask("Find alice");
+    assert(toolResult, "expected a tool result to be sent back");
 
     expect(api).toHaveBeenCalledOnce();
-    expect(vi.mocked(api).mock.calls[0][0]).toBe("/v1/users");
+    expect(vi.mocked(api).mock.calls[0]?.[0]).toBe("/v1/users");
     expect(toolResult.error).toBeUndefined();
     expect(toolResult.output).toBeDefined();
   });

@@ -1,9 +1,6 @@
-// SSE reader for a qeetai turn. POSTs to the streaming endpoint and turns the
-// backend's `event: <type>\ndata: <json>` frames into the typed StreamEvent
-// stream the conversation UI consumes. Keep-alive comments (": ping") are
-// skipped, and an aborted turn resolves to a clean `done: stopped`.
-
 import { clearBrowserSession, refreshSessionForRequest } from "@/platform/api/client";
+import { ApiError } from "@/platform/errors/api-error";
+import { errorMessage } from "@/platform/errors/user-message";
 import { newRequestId } from "@/platform/telemetry/tracing";
 
 import type { StreamEvent } from "./ai-provider";
@@ -29,12 +26,11 @@ function mapEvent(name: string, data: Record<string, unknown>): StreamEvent | nu
         status: data.status === "succeeded" ? "succeeded" : "failed",
         summary: typeof data.summary === "string" ? data.summary : "",
       };
-    case "error":
-      return {
-        type: "error",
-        code: String(data.code ?? "error"),
-        message: String(data.message ?? "The assistant hit an error."),
-      };
+    case "error": {
+      // The frame's own message is backend text: show copy keyed on the code.
+      const code = String(data.code ?? "error");
+      return { type: "error", code, message: errorMessage(new ApiError(0, code, "")) };
+    }
     case "done": {
       const reason = data.reason;
       return {
@@ -65,6 +61,10 @@ function parseFrame(frame: string): StreamEvent | null {
   }
 }
 
+/**
+ * Streams one turn through the same-origin `/api/qeetai-stream` proxy as StreamEvents. Retries
+ * once after a session refresh on 401; an aborted turn ends with `done: stopped`.
+ */
 export async function* streamQeetAITurn(
   path: string,
   body: unknown,
@@ -104,17 +104,14 @@ export async function* streamQeetAITurn(
   if (!res.ok || !res.body) {
     if (res.status === 401) await clearBrowserSession();
     let code = `http_${res.status}`;
-    let message = res.statusText || "Request failed";
     try {
-      const parsed = (await res.json()) as { error?: { code?: string; message?: string } };
-      if (parsed?.error) {
-        code = parsed.error.code ?? code;
-        message = parsed.error.message ?? message;
-      }
+      const parsed = (await res.json()) as { error?: { code?: string } };
+      if (parsed?.error?.code) code = parsed.error.code;
     } catch {
-      /* non-JSON error body — keep the status-derived message */
+      // non-JSON error body — keep the status-derived code
     }
-    yield { type: "error", code, message };
+    // Copy keyed on the code; the body's message is backend text.
+    yield { type: "error", code, message: errorMessage(new ApiError(res.status, code, "")) };
     yield { type: "done", reason: "error" };
     return;
   }
@@ -148,7 +145,7 @@ export async function* streamQeetAITurn(
     try {
       await reader.cancel();
     } catch {
-      /* reader already released */
+      // reader already released
     }
   }
 }

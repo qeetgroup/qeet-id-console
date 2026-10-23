@@ -4,10 +4,6 @@ import { applyFilters, groupByDate, matchesFilters } from "../activity-filters";
 import type { ActivityEvent, ActivityFilters } from "../types/activity.types";
 import { DEFAULT_FILTERS } from "../types/activity.types";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 let counter = 0;
 
 function makeEvent(overrides: Partial<ActivityEvent> = {}): ActivityEvent {
@@ -26,10 +22,6 @@ function makeEvent(overrides: Partial<ActivityEvent> = {}): ActivityEvent {
 function filters(patch: Partial<ActivityFilters> = {}): ActivityFilters {
   return { ...DEFAULT_FILTERS, ...patch };
 }
-
-// ---------------------------------------------------------------------------
-// matchesFilters
-// ---------------------------------------------------------------------------
 
 describe("matchesFilters", () => {
   it("returns true when no filters are active", () => {
@@ -91,20 +83,13 @@ describe("matchesFilters", () => {
   it("filters by date range (ISO strings)", () => {
     const ts = "2024-06-15T12:00:00Z";
     const evt = makeEvent({ at: ts });
-    // within range
     expect(
       matchesFilters(evt, filters({ from: "2024-06-01T00:00:00Z", to: "2024-06-30T23:59:59Z" })),
     ).toBe(true);
-    // before range
     expect(matchesFilters(evt, filters({ from: "2024-07-01T00:00:00Z" }))).toBe(false);
-    // after range
     expect(matchesFilters(evt, filters({ to: "2024-06-01T00:00:00Z" }))).toBe(false);
   });
 });
-
-// ---------------------------------------------------------------------------
-// applyFilters
-// ---------------------------------------------------------------------------
 
 describe("applyFilters", () => {
   it("returns the same array reference when no filters are active", () => {
@@ -124,10 +109,6 @@ describe("applyFilters", () => {
     expect(result[0]?.severity).toBe("critical");
   });
 });
-
-// ---------------------------------------------------------------------------
-// groupByDate
-// ---------------------------------------------------------------------------
 
 describe("groupByDate", () => {
   it("produces no groups for an empty array", () => {

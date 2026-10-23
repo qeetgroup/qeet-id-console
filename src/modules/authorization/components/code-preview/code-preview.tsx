@@ -13,11 +13,7 @@ import { MonacoPanel } from "../shared/monaco-panel";
 
 type View = "json" | "yaml" | "dsl" | "tree";
 
-/**
- * Live, read-only preview of the current PolicyDoc in four representations.
- * JSON/YAML/DSL render through Monaco (client-only, lazy); the tree is an
- * interactive evaluation view derived purely on the client.
- */
+/** Renders a live, read-only preview of a PolicyDoc as JSON, YAML, DSL or an evaluation tree. */
 export function CodePreview({ doc, height = 360 }: { doc: PolicyDoc; height?: number }) {
   const [view, setView] = useState<View>("json");
   const json = useMemo(() => toJson(doc), [doc]);

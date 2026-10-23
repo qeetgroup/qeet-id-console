@@ -19,9 +19,8 @@ const SEVERITY_LABEL: Record<Severity, string> = {
   info: "Info",
 };
 
-/** A Badge that maps ActivityEvent severity onto a consistent visual variant. */
 export function SeverityBadge({ severity, className }: { severity: Severity; className?: string }) {
-  // "info" maps to the info token (blue) via StatusPill, not the brand-orange "default" Badge.
+  // Info uses the blue info pill, not the default Badge's brand orange.
   if (severity === "info") {
     return (
       <StatusPill kind="info" dot={false} className={className}>

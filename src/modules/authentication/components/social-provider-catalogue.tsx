@@ -1,14 +1,6 @@
-// The social-provider catalogue: logos, dark-mode icon handling and the
-// discovery URL we can pre-fill. This is presentation, not data — the tenant's
-// saved credentials come from `api/social.ts`.
-//
-// Only providers we actually surface in the console live here. The backend
-// (`domains/federation/social/social.go`) requires a `discovery_url` on every
-// provider unconditionally — there is no plain-OAuth-2.0 fallback path
-// (QID-03) — so a blank `discovery` here means the admin has to supply that URL
-// themselves before sign-in will work. `support` follows the product comps:
-// GitHub, Facebook, X and Discord stay configurable even though they publish no
-// discovery document of their own.
+// Social-provider presentation: logos, dark-mode icon handling and pre-fillable discovery URLs.
+// The server requires a discovery URL for every provider, so a blank `discovery` means the admin
+// must supply one before sign-in works.
 
 import { cn } from "@qeetrix/ui";
 import {
@@ -29,9 +21,8 @@ import {
 } from "@thesvg/react";
 
 /**
- * `first-party` is Qeet's own IdP, `supported` can be configured today, and
- * `unsupported` needs a custom OIDC discovery configuration Qeet ID can't work
- * with yet, so its card stays read-only.
+ * `first-party` is Qeet's own IdP, `supported` can be configured, and `unsupported` needs a
+ * custom OIDC discovery configuration Qeet ID doesn't support, so its card stays read-only.
  */
 export type SocialProviderSupport = "first-party" | "supported" | "unsupported";
 
@@ -47,8 +38,7 @@ export type SocialProviderMeta = {
    * white-only marks (Apple) invert in light.
    */
   iconClass: string;
-  /** Set only for icons that ship without a baked colour, so they take currentColor. */
-  fill?: string;
+  fill?: string; // Set only for icons that ship without a baked colour, so they take currentColor
   /** Pre-filled for providers with a stable, tenant-independent well-known endpoint. */
   discovery: string;
   support: SocialProviderSupport;
@@ -189,9 +179,8 @@ const MARK_SIZES = {
 } as const;
 
 /**
- * The provider logo. Qeet ships as a full-bleed app icon (its own background,
- * theme-swapped like the favicons in `__root.tsx`); vendor marks render bare,
- * the way each brand's guidelines expect.
+ * Renders the provider logo. Qeet is a full-bleed, theme-swapped app icon with its own
+ * background; vendor marks render bare, as each brand's guidelines expect.
  */
 export function SocialProviderMark({
   provider,

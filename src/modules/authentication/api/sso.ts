@@ -1,8 +1,3 @@
-// Email-domain SSO discovery. The endpoint is part of the §8.4 frontend
-// scope; backend implementation is forthcoming. We surface SSO redirect
-// hints to the sign-in form so corporate emails skip password entry and
-// jump straight to their IdP.
-
 import { useQuery } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
@@ -20,13 +15,9 @@ function emailLooksValid(email: string): boolean {
 }
 
 /**
- * Look up whether a given email's domain has SSO configured. Returns
- * `null` when no SSO is configured for the domain (404 from backend or
- * endpoint not deployed yet); throws for transport / 5xx errors so
- * callers can decide whether to fall back silently.
- *
- * Caller is expected to debounce — pass the value already debounced so
- * we don't hammer the discovery endpoint on every keystroke.
+ * Looks up SSO for an email's domain, so a corporate email can go straight to its IdP: null when
+ * the domain has none, a query error for other failures. Pass an already-debounced email: every
+ * change is a request.
  */
 export function useSSODiscovery(email: string) {
   const trimmed = email.trim().toLowerCase();
@@ -42,9 +33,7 @@ export function useSSODiscovery(email: string) {
           anonymous: true,
         });
       } catch (err) {
-        // 404 → no SSO configured. 501 → endpoint not deployed yet.
-        // Either way return null and let the form keep its
-        // password-based code path.
+        // 404: no SSO for the domain; 501: a server without discovery. Both keep the password path.
         if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
           return null;
         }

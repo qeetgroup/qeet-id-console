@@ -3,24 +3,26 @@ import { type ReactNode, useMemo } from "react";
 
 import { CodeBlock } from "../conversation/code-block";
 
-// Link targets come from model output (which may echo attacker-controlled tool
-// data via prompt injection). Only allow safe schemes; reject javascript:/data:
-// and anything else so a `[x](javascript:…)` link can't execute.
-function safeHref(raw: string): string | undefined {
+// Sentinel origin for resolving relative links with the browser's own URL parser.
+const RELATIVE_BASE = "https://relative.invalid";
+
+/**
+ * Returns a link target that is safe to render, or undefined. Targets come from model output,
+ * which can echo attacker-controlled tool data, so only http(s), mailto and same-origin paths
+ * pass; the URL parser resolves paths, so "//host", "/\host" and other spellings are caught.
+ */
+export function safeHref(raw: string): string | undefined {
   const href = raw.trim();
   if (/^(https?:|mailto:)/i.test(href)) return href;
-  // Allow same-origin relative links (start with "/" but not "//").
-  if (href.startsWith("/") && !href.startsWith("//")) return href;
-  return undefined;
+  if (!href.startsWith("/")) return undefined;
+  try {
+    const url = new URL(href, RELATIVE_BASE);
+    if (url.origin !== RELATIVE_BASE) return undefined;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return undefined;
+  }
 }
-
-// A small, safe, dependency-free Markdown renderer for streamed assistant
-// output. It parses to React elements (never raw HTML / dangerouslySetInnerHTML),
-// so there is no injection surface, and it tolerates a half-finished document —
-// an unterminated code fence mid-stream simply renders as an open code block.
-// Covers the subset assistants actually emit: headings, bold/italic, inline and
-// fenced code, links, ordered/unordered lists, and blockquotes. (Full CommonMark
-// + shiki highlighting via react-markdown is a documented follow-up.)
 
 type Block =
   | { kind: "code"; lang?: string; code: string }
@@ -39,14 +41,30 @@ const RE = {
   quote: /^\s*>\s?/,
 };
 
+// Every group read through this is non-optional in its pattern, so a successful
+// match always captured it. A miss means the pattern and the code disagree.
+function capture(match: RegExpMatchArray, group: number): string {
+  const value = match[group];
+  if (value === undefined) throw new Error(`Markdown pattern did not capture group ${group}`);
+  return value;
+}
+
 function parseBlocks(source: string): Block[] {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
   const blocks: Block[] = [];
   let i = 0;
+  // split() leaves no holes, so lines[i] is undefined exactly when i is past the end.
+  // Consumes lines from the cursor while `accept` holds, advancing `i` past them.
+  const takeWhile = (accept: (line: string) => boolean): string[] => {
+    const taken: string[] = [];
+    for (let line = lines[i]; line !== undefined && accept(line); line = lines[i]) {
+      taken.push(line);
+      i++;
+    }
+    return taken;
+  };
 
-  while (i < lines.length) {
-    const line = lines[i];
-
+  for (let line = lines[i]; line !== undefined; line = lines[i]) {
     if (line.trim() === "") {
       i++;
       continue;
@@ -54,12 +72,8 @@ function parseBlocks(source: string): Block[] {
 
     const fence = line.match(RE.fenceOpen);
     if (fence) {
-      const code: string[] = [];
       i++;
-      while (i < lines.length && !RE.fenceClose.test(lines[i])) {
-        code.push(lines[i]);
-        i++;
-      }
+      const code = takeWhile((next) => !RE.fenceClose.test(next));
       i++; // consume the closing fence (or fall off the end mid-stream)
       blocks.push({ kind: "code", lang: fence[1], code: code.join("\n") });
       continue;
@@ -67,54 +81,44 @@ function parseBlocks(source: string): Block[] {
 
     const heading = line.match(RE.heading);
     if (heading) {
-      blocks.push({ kind: "heading", level: heading[1].length, text: heading[2] });
+      blocks.push({
+        kind: "heading",
+        level: capture(heading, 1).length,
+        text: capture(heading, 2),
+      });
       i++;
       continue;
     }
 
     if (RE.ul.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && RE.ul.test(lines[i])) {
-        items.push(lines[i].replace(RE.ul, ""));
-        i++;
-      }
+      const items = takeWhile((next) => RE.ul.test(next)).map((item) => item.replace(RE.ul, ""));
       blocks.push({ kind: "ul", items });
       continue;
     }
 
     if (RE.ol.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && RE.ol.test(lines[i])) {
-        items.push(lines[i].replace(RE.ol, ""));
-        i++;
-      }
+      const items = takeWhile((next) => RE.ol.test(next)).map((item) => item.replace(RE.ol, ""));
       blocks.push({ kind: "ol", items });
       continue;
     }
 
     if (RE.quote.test(line)) {
-      const quote: string[] = [];
-      while (i < lines.length && RE.quote.test(lines[i])) {
-        quote.push(lines[i].replace(RE.quote, ""));
-        i++;
-      }
+      const quote = takeWhile((next) => RE.quote.test(next)).map((item) =>
+        item.replace(RE.quote, ""),
+      );
       blocks.push({ kind: "quote", lines: quote });
       continue;
     }
 
-    const paragraph: string[] = [];
-    while (
-      i < lines.length &&
-      lines[i].trim() !== "" &&
-      !RE.fenceOpen.test(lines[i]) &&
-      !RE.heading.test(lines[i]) &&
-      !RE.ul.test(lines[i]) &&
-      !RE.ol.test(lines[i]) &&
-      !RE.quote.test(lines[i])
-    ) {
-      paragraph.push(lines[i]);
-      i++;
-    }
+    const paragraph = takeWhile(
+      (next) =>
+        next.trim() !== "" &&
+        !RE.fenceOpen.test(next) &&
+        !RE.heading.test(next) &&
+        !RE.ul.test(next) &&
+        !RE.ol.test(next) &&
+        !RE.quote.test(next),
+    );
     blocks.push({ kind: "p", text: paragraph.join(" ") });
   }
 
@@ -132,16 +136,19 @@ const INLINE_PATTERNS: { re: RegExp; render: (m: RegExpMatchArray, key: string) 
   },
   {
     re: /\*\*([^*]+)\*\*/,
-    render: (m, key) => <strong key={key}>{renderInline(m[1], key)}</strong>,
+    render: (m, key) => <strong key={key}>{renderInline(capture(m, 1), key)}</strong>,
   },
-  { re: /__([^_]+)__/, render: (m, key) => <strong key={key}>{renderInline(m[1], key)}</strong> },
-  { re: /\*([^*]+)\*/, render: (m, key) => <em key={key}>{renderInline(m[1], key)}</em> },
-  { re: /_([^_]+)_/, render: (m, key) => <em key={key}>{renderInline(m[1], key)}</em> },
+  {
+    re: /__([^_]+)__/,
+    render: (m, key) => <strong key={key}>{renderInline(capture(m, 1), key)}</strong>,
+  },
+  { re: /\*([^*]+)\*/, render: (m, key) => <em key={key}>{renderInline(capture(m, 1), key)}</em> },
+  { re: /_([^_]+)_/, render: (m, key) => <em key={key}>{renderInline(capture(m, 1), key)}</em> },
   {
     re: /\[([^\]]+)\]\(([^)\s]+)\)/,
     render: (m, key) => {
-      const href = safeHref(m[2]);
-      // Unsafe scheme (javascript:/data:/…) → render the label as plain text.
+      const href = safeHref(capture(m, 2));
+      // Unsafe target: render the label as plain text.
       if (!href) return <span key={key}>{m[1]}</span>;
       return (
         <a
@@ -204,6 +211,7 @@ function BlockView({ block, id }: { block: Block; id: string }) {
       return (
         <ul className="list-disc space-y-1 ps-5">
           {block.items.map((item, j) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: re-parsed text; streaming only appends
             <li key={`${id}-${j}`}>{renderInline(item, `${id}-${j}`)}</li>
           ))}
         </ul>
@@ -212,6 +220,7 @@ function BlockView({ block, id }: { block: Block; id: string }) {
       return (
         <ol className="list-decimal space-y-1 ps-5">
           {block.items.map((item, j) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: re-parsed text; streaming only appends
             <li key={`${id}-${j}`}>{renderInline(item, `${id}-${j}`)}</li>
           ))}
         </ol>
@@ -220,6 +229,7 @@ function BlockView({ block, id }: { block: Block; id: string }) {
       return (
         <blockquote className="border-s-2 ps-3 text-muted-foreground italic">
           {block.lines.map((line, j) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: re-parsed text; streaming only appends
             <p key={`${id}-${j}`}>{renderInline(line, `${id}-${j}`)}</p>
           ))}
         </blockquote>
@@ -229,11 +239,17 @@ function BlockView({ block, id }: { block: Block; id: string }) {
   }
 }
 
+/**
+ * Renders streamed assistant Markdown as React elements, never raw HTML, so there is no injection
+ * surface. Covers headings, emphasis, code, links, lists and quotes, and tolerates a half-finished
+ * document: an unterminated fence renders as an open code block.
+ */
 export function MarkdownMessage({ content }: { content: string }) {
   const blocks = useMemo(() => parseBlocks(content), [content]);
   return (
     <div className="flex flex-col gap-2.5 text-sm leading-relaxed text-foreground">
       {blocks.map((block, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: content keys would remount on every token
         <BlockView key={`b-${i}`} block={block} id={`b-${i}`} />
       ))}
     </div>

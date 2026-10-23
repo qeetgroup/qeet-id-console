@@ -1,22 +1,16 @@
-// TanStack Store for timeline filter state and event selection.
-// Historical events themselves are managed by TanStack Query (use-identity-timeline.ts).
-// Filters are not persisted — they reset when the page is unmounted.
+// Filter and selection state for the identity timeline; the events live in TanStack Query.
+// Held in memory only, so it outlives the page within the tab but not a reload.
 
 import { Store } from "@tanstack/react-store";
 
 import type { Severity } from "@/modules/activity";
 
 export interface TimelineFilters {
-  /** Category chips filter — empty means "everything". */
-  category: string[];
-  /** Severity badges filter — empty means "all severities". */
-  severity: Severity[];
-  /** Full-text search query (debounced before sending to the API). */
-  q: string;
-  /** ISO 8601 date lower bound (from). */
-  from: string;
-  /** ISO 8601 date upper bound (to). */
-  to: string;
+  category: string[]; // Empty matches every category
+  severity: Severity[]; // Empty matches every severity
+  q: string; // Full-text search, debounced before it reaches the API
+  from: string; // ISO 8601 lower bound; empty for none
+  to: string; // ISO 8601 upper bound; empty for none
 }
 
 export const DEFAULT_TIMELINE_FILTERS: TimelineFilters = {
@@ -29,8 +23,7 @@ export const DEFAULT_TIMELINE_FILTERS: TimelineFilters = {
 
 export interface TimelineStoreState {
   filters: TimelineFilters;
-  /** ID of the currently selected event; drives the details drawer. */
-  selectedEventId: string | null;
+  selectedEventId: string | null; // The event open in the details drawer
 }
 
 export const timelineStore = new Store<TimelineStoreState>({
@@ -57,7 +50,6 @@ export const timelineActions = {
     timelineStore.setState((s) => ({ ...s, selectedEventId: id }));
   },
 
-  /** Called when navigating to a new user's timeline to clear stale selection. */
   clearSelection() {
     timelineStore.setState((s) => ({ ...s, selectedEventId: null }));
   },

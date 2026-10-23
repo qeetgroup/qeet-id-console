@@ -1,6 +1,5 @@
-// Domain-verification data layer (Organizations → Domains). A tenant claims an
-// email domain, publishes the returned DNS TXT record, then verifies it.
-// Backed by /v1/tenants/{tenantID}/domains[/{id}/verify].
+// Domain verification: a tenant claims an email domain, publishes the returned DNS TXT record, then
+// verifies it.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -16,14 +15,12 @@ export interface TenantDomain {
   dns_record_value: string;
   verified_at?: string | null;
   created_at: string;
-  /** Outcome of the most recent verification attempt. */
-  last_checked_at?: string | null;
-  last_error?: string;
+  last_checked_at?: string | null; // when the latest verification attempt ran
+  last_error?: string; // why that attempt failed
   sso_enabled: boolean;
   jit_enabled: boolean;
   is_default: boolean;
-  /** Derived server-side: a failed check is "attention", an unchecked one "pending". */
-  status: "verified" | "pending" | "attention";
+  status: "verified" | "pending" | "attention"; // server-derived; a failed check is attention
 }
 
 export interface DNSRecord {

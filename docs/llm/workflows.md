@@ -40,7 +40,7 @@ bun run dev                    # serves on 3002 — see the port note below
 1  VERIFY IT EXISTS in qeet-id-server — never invent one
 2  add a function in the module's api/ dir
 3  call api(path, opts) from src/platform/api/client.ts — the ONLY request path
-4  optional: pass a Zod `schema` to fail closed on contract drift (ADR-0007)
+4  optional: pass a Zod `schema` to fail closed on contract drift
 5  map errors through the module; never render error.message
 6  test
 ```
@@ -58,8 +58,13 @@ bun run dev                    # serves on 3002 — see the port note below
 4  bun run lint:boundaries      ← the gate
 ```
 
-`compliance` and `dashboard` currently have **no barrel**, so nothing can import them. Adding one is
-the fix if you need to.
+Every module has a barrel. Export from it only what another module or a route needs, by name (no
+new `export *`).
+
+A **route** stays thin: it may import a module's barrel, but not its internals, `api()` or
+`@tanstack/react-query` (lint). If a route needs data, add the hook or page to the owning module and
+export it from the barrel. Never add a route file to the exemption list in `biome.json`; when you
+migrate an exempt route, remove it from that list.
 
 ## Change session or auth behaviour
 
@@ -69,9 +74,9 @@ the fix if you need to.
 1  src/platform/auth/server-session.ts   (cookie, sealing, PublicSession)
    src/platform/api/server-proxy.ts      (bearer, refresh, single-flight)
    src/platform/auth/session-response.ts (token-issuing allowlist)
-2  TOKENS MUST NOT REACH THE BROWSER — ADR-0009
+2  TOKENS MUST NOT REACH THE BROWSER
 3  keep unseal failures FAIL-CLOSED (clear the session, return {})
-4  test/unit only — NO browser-level cover; verify this invariant by hand
+4  bun run test:e2e — the browser suite checks the session boundary end to end
 ```
 
 Never add a token to `PublicSession`. Never reintroduce localStorage token keys.
@@ -81,7 +86,7 @@ Never add a token to `PublicSession`. Never reintroduce localStorage token keys.
 ```text
 1  src/platform/security/capability-model.ts   (the 25 capabilities)
 2  src/platform/config/navigation.tsx          (path → capability)
-3  remember: UX ONLY. The backend decides — ADR-0003
+3  remember: UX ONLY. The backend decides
 4  a new capability must exist in qeet-id-server first
 5  test capability-model + navigation
 ```
@@ -119,9 +124,9 @@ bun run typecheck && bun run check && bun run lint:boundaries && bun run test
 git diff
 ```
 
-If you touched `src/platform/{api,auth}`, verify the session boundary manually — there is no
-automated browser test for it. Sign in and confirm: no token in `localStorage` or `document.cookie`,
-the session cookie is HttpOnly + `SameSite=Lax`, and the session survives a hard refresh.
+If you touched `src/platform/{api,auth}`, run `bun run test:e2e` (builds, then runs the Playwright
+session suite). It checks that no token reaches `localStorage`, `document.cookie` or the rendered
+HTML, the cookie flags, hard refresh, CSRF, cross-tab logout and refresh coordination.
 
 ### Escalate rather than proceed
 

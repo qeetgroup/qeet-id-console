@@ -9,15 +9,9 @@ import { useLogout, useMe } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
 
 /**
- * Standalone holding page for an authenticated-but-unverified account.
- *
- * Deliberately NOT under `_auth` (that layout bounces authenticated users) and
- * NOT under `_app` (that layout is what we're gating). A fresh signup holds a
- * real tenant-less session, so it is authenticated the whole time it sits here.
- *
- * This route never auto-sends a code: sign-up sends the first one before
- * redirecting here, and resends are explicit. Otherwise every refresh would
- * fire another email and trip the send throttle.
+ * Holds a signed-in but unverified account, outside `_auth` (which bounces signed-in users) and
+ * `_app` (which it gates). It never sends a code by itself: sign-up sends the first and resends
+ * are explicit, so a refresh can't trip the send throttle.
  */
 export const Route = createFileRoute("/verify-email")({
   head: () => ({ meta: [{ title: "Qeet ID – Verify your email" }] }),

@@ -1,7 +1,5 @@
-// In-app "Contact sales" form (Enterprise). Replaces the old mailto: link —
-// submits a lead to the backend (persisted + emailed to sales) so nothing is
-// lost to an unopened mail client. Used from the onboarding plan picker and the
-// billing page; each caller owns the open/close state.
+// Enterprise contact-sales form: submits a lead the server stores and emails to sales, so nothing
+// is lost to an unopened mail client. The caller owns the open state.
 
 import {
   Button,
@@ -46,8 +44,7 @@ export function ContactSalesDialog({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  /** Where the form was opened from, recorded on the lead (e.g. "onboarding"). */
-  source: string;
+  source: string; // where the form opened, recorded on the lead, e.g. "onboarding"
 }) {
   const [teamSize, setTeamSize] = useState("");
   const submitM = useMutation({

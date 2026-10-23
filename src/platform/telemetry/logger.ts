@@ -1,15 +1,12 @@
 import { redact } from "@/platform/telemetry/redact";
 
-// Minimal leveled logger. Every payload passes through `redact` so tokens,
-// secrets, credentials and PII can never reach a log sink. In DEV it writes to
-// the console; in production it's a no-op sink by default (wire a real transport
-// here later — still behind redact()).
+// Writes to the console in DEV and nowhere in production. The context argument is redacted;
+// the message string is not, so it must never carry data.
 type Level = "debug" | "info" | "warn" | "error";
 
 function emit(level: Level, message: string, context?: Record<string, unknown>) {
   const safe = context ? (redact(context) as Record<string, unknown>) : undefined;
   if (import.meta.env?.DEV) {
-    // eslint-disable-next-line no-console
     console[level === "debug" ? "log" : level](`[${level}] ${message}`, safe ?? "");
   }
 }

@@ -10,8 +10,7 @@ export interface PushDevice {
   id: string;
   name: string;
   platform: "ios" | "android";
-  /** When it was linked (or last linked again). */
-  created_at: string;
+  created_at: string; // When it was linked (or last linked again)
   last_seen_at: string;
 }
 
@@ -52,17 +51,15 @@ export function useRemovePushDevice(scope: PushDeviceScope) {
 /** A pairing code: it links one phone, once, before it expires. */
 export interface PushPairing {
   id: string;
-  /** Shown only when issued, grouped for reading ("ABCDE-FGHJK"). */
-  code?: string;
+  code?: string; // Shown only when issued, grouped for reading ("ABCDE-FGHJK")
   status: "pending" | "linked" | "expired";
   expires_at: string;
-  /** The phone it linked. */
-  device_id?: string;
+  device_id?: string; // The phone it linked
 }
 
 /**
- * What the pairing QR code holds: a link that opens Qeet Auth on the phone
- * with the code filled in. The app can also scan it, or the code can be typed.
+ * Returns what the pairing QR code holds: a link that opens Qeet Auth on the phone with the code
+ * filled in. The app can also scan it, or the code can be typed.
  */
 export function pairingLink(code: string): string {
   return `qeetidauth://pair?code=${encodeURIComponent(code)}`;

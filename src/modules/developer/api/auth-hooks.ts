@@ -1,7 +1,5 @@
-// Auth Actions/Hooks data layer (Developer → Auth Hooks). A synchronous
-// post-credential policy gate: Qeet POSTs a signed event to the hook URL and
-// honours its allow/deny. Backed by /v1/tenants/{tenantID}/auth-hooks. The
-// secret is write-only (sent on create, never returned).
+// An auth hook is a synchronous policy gate after the credential check: Qeet POSTs a signed event
+// to the hook URL and honours its allow or deny. The secret is write-only.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

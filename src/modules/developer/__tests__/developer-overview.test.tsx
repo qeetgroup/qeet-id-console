@@ -10,7 +10,7 @@ import {
   within,
 } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({
@@ -93,7 +93,7 @@ describe("Developer overview metrics", () => {
     expect(metric.total).toBe(5);
     expect(metric.recent).toBe(3);
     expect(metric.series.map((point) => point.count)).toEqual([1, 0, 0, 0, 0, 1, 1]);
-    expect(metric.series[0].date).toBe("2026-09-06");
+    expect(metric.series[0]?.date).toBe("2026-09-06");
   });
 
   it("distinguishes empty lists from missing history", () => {
@@ -245,7 +245,15 @@ describe("Developer overview data", () => {
 
 function viewData(): DeveloperOverviewData {
   const ids = ["keys", "tokens", "webhooks", "hooks", "agents", "secrets", "credentials"] as const;
-  const totals = [18, 126, 6, 4, 9, 23, 1];
+  const totals: Record<(typeof ids)[number], number> = {
+    keys: 18,
+    tokens: 126,
+    webhooks: 6,
+    hooks: 4,
+    agents: 9,
+    secrets: 23,
+    credentials: 1,
+  };
   return {
     tenantId: "tenant-a",
     accessState: "ready",
@@ -255,7 +263,7 @@ function viewData(): DeveloperOverviewData {
       navGroups
         .find((group) => group.label === "Developer")
         ?.items.filter((item) => item.url !== "/developer") ?? [],
-    resources: ids.map((id, index) => ({
+    resources: ids.map((id) => ({
       id,
       allowed: true,
       loading: false,
@@ -263,7 +271,7 @@ function viewData(): DeveloperOverviewData {
       busy: false,
       retry: vi.fn(),
       data: {
-        total: totals[index],
+        total: totals[id],
         recent: 2,
         configured: id === "keys" || id === "webhooks",
         series: [
@@ -349,6 +357,7 @@ describe("Developer overview layout", () => {
   it("shows safe failures with working retries instead of zero totals", () => {
     const data = viewData();
     const resource = data.resources[0];
+    assert(resource, "expected the API keys resource");
     resource.error = true;
     resource.data = undefined;
     data.activity.error = true;
@@ -365,7 +374,9 @@ describe("Developer overview layout", () => {
 
   it("does not render denied cached counters or activity", () => {
     const data = viewData();
-    data.resources[5].allowed = false;
+    const secretsResource = data.resources[5];
+    assert(secretsResource, "expected the secrets resource");
+    secretsResource.allowed = false;
     data.activity.allowed = false;
     render(<DeveloperOverviewView data={data} />);
     const secrets = within(screen.getByRole("article", { name: "Secrets" }));

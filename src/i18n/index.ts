@@ -91,15 +91,11 @@ import zhSaml from "./locales/zh/saml.json";
 import zhSigningKeys from "./locales/zh/signing-keys.json";
 import zhUsers from "./locales/zh/users.json";
 
-// Languages the UI ships catalogs for. Adding a locale is a two-step change:
-//  1. drop `src/i18n/locales/<lng>/*.json` (mirror the `en` namespaces),
-//  2. add the code here and register it in `resources` below.
-// Everything else (the switcher, the `t()` calls) picks it up automatically.
+// To add a locale, add `locales/<lng>/*.json` mirroring the `en` namespaces, then its code here
+// and its entry in `resources`; the switcher picks it up.
 export const SUPPORTED_LANGUAGES = ["en", "hi", "fr", "de", "es", "pt", "ja", "zh"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
-// Human-readable label per language, shown in the switcher. Keyed by the
-// same codes as SUPPORTED_LANGUAGES so a new locale only needs one entry.
 export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   en: "English",
   hi: "हिन्दी",
@@ -111,13 +107,8 @@ export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   zh: "中文",
 };
 
-// Static resources. Bundling them (rather than HTTP-loading) keeps init
-// synchronous, which matters under SSR: i18next is ready at import time,
-// so the first server render already has translations and there is no
-// async gate before React mounts.
-// New namespaces (settings, security, organizations, groups, invitations,
-// developer, account) are English-only. Other locales fall back to "en" via
-// fallbackLng — this is the intentional professional rollout strategy.
+// Bundled rather than fetched, so init is synchronous and the first server render already has
+// translations. These namespaces are English-only; other locales fall back to "en".
 const newNs = {
   settings,
   security,
@@ -230,10 +221,10 @@ const resources = {
   },
 } as const;
 
-// Fallback shown when a key is missing from *every* loaded locale (including the
-// `en` source of truth). Turns the last segment of a dotted/namespaced key into
-// readable Title Case so an operator never sees a raw `secrets.rotateSheet.title`
-// string — a broken-looking leak of internal key names in an enterprise console.
+/**
+ * Returns the last segment of a key missing from every locale in Title Case, so an operator
+ * never sees a raw key such as `secrets.rotateSheet.title`.
+ */
 export function humanizeMissingKey(key: string): string {
   const last = key.split(/[.:]/).pop() ?? key;
   const spaced = last
@@ -256,18 +247,15 @@ i18n
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
     defaultNS: "common",
     interpolation: {
-      // React already escapes interpolated values, so i18next must not.
-      escapeValue: false,
+      escapeValue: false, // React already escapes interpolated values
     },
     detection: {
       order: ["localStorage", "navigator"],
       lookupLocalStorage: "qeetid.lang",
       caches: ["localStorage"],
     },
-    // Never render a raw dotted key: fall back to a humanized last segment.
-    parseMissingKeyHandler: (key) => humanizeMissingKey(key),
-    // Surface missing keys to developers (dev only — no prod overhead, no network:
-    // there is no backend loader, so this is a pure console signal).
+    parseMissingKeyHandler: (key) => humanizeMissingKey(key), // never render a raw dotted key
+    // Logs missing keys in dev only; with no backend loader, nothing is sent anywhere.
     saveMissing: import.meta.env?.DEV,
     missingKeyHandler: import.meta.env?.DEV
       ? (lngs, ns, key) => {

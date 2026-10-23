@@ -1,7 +1,5 @@
-// Tenant authentication-policy data layer: password complexity rules and which
-// login methods are permitted. The whole policy is read and written as one
-// object (PUT is a full replace), so each page loads it, edits its slice, and
-// saves the merged result.
+// The tenant's authentication policy: password rules and permitted sign-in methods. PUT replaces
+// the whole object, so each page loads it, edits its slice and saves the merged result.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const AUTH_POLICY_KEY = ["auth-policy"] as const;
@@ -20,20 +18,17 @@ export interface AuthPolicy {
   passkey_enabled: boolean;
   otp_email_enabled: boolean;
   otp_sms_enabled: boolean;
-  // Hosted end-user self-registration (B2C signup). Full-replace PUT preserves
-  // it even on pages that don't edit it.
-  self_registration_enabled: boolean;
-  // Adaptive MFA: allow skipping the second factor on a trusted device.
-  remember_device_enabled: boolean;
-  // Sign-in lockout: this many failed sign-ins to one account from one network,
-  // each within the window of the last, lock it for that network for the
-  // duration. null = the platform default (see lockout_limits). The server
-  // refuses a value outside the bounds.
+  self_registration_enabled: boolean; // Hosted end-user self-registration (B2C sign-up)
+  remember_device_enabled: boolean; // Adaptive MFA: a trusted device may skip the second factor
+  /**
+   * Sign-in lockout: this many failed sign-ins to one account from one network, each within the
+   * window of the last, lock it for that network for the duration. null: the platform default.
+   * The server refuses a value outside lockout_limits.
+   */
   lockout_threshold: number | null;
   lockout_window_minutes: number | null;
   lockout_duration_minutes: number | null;
-  // Read-only: the platform defaults and the inclusive bounds for the three
-  // settings above. Sent back unchanged by the full-replace PUT (ignored there).
+  /** Read-only platform defaults and inclusive bounds for the lockout settings; PUT ignores it. */
   lockout_limits?: LockoutLimits;
 }
 

@@ -1,6 +1,5 @@
-// Data-retention policy. Currently governs how long soft-deleted users are
-// kept before being permanently purged. Opt-in per tenant; a background sweeper
-// applies it, and preview/run let an admin see and trigger it on demand.
+// The tenant's opt-in retention policy: how long soft-deleted users are kept before they are
+// purged. A background sweeper applies it; preview and run let an admin check or trigger it.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -25,11 +24,13 @@ export function useUpdateRetentionPolicy() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: RetentionPolicy) =>
-      api<RetentionPolicy>(`/v1/tenants/${tenantId}/retention`, {
+    mutationFn: (body: RetentionPolicy) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<RetentionPolicy>(`/v1/tenants/${tenantId}/retention`, {
         method: "PUT",
         body,
-      }),
+      });
+    },
     onSuccess: (data) => qc.setQueryData(["retention", tenantId], data),
     meta: { successMessage: "Retention policy saved" },
   });
@@ -38,11 +39,13 @@ export function useUpdateRetentionPolicy() {
 export function useRetentionPreview() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: () =>
-      api<{ ripe_deleted_users: number; deleted_users_days: number }>(
+    mutationFn: () => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<{ ripe_deleted_users: number; deleted_users_days: number }>(
         `/v1/tenants/${tenantId}/retention/preview`,
         { method: "POST" },
-      ),
+      );
+    },
     meta: { silent: true },
   });
 }
@@ -51,10 +54,12 @@ export function useRunRetention() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () =>
-      api<{ purged: number }>(`/v1/tenants/${tenantId}/retention/run`, {
+    mutationFn: () => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<{ purged: number }>(`/v1/tenants/${tenantId}/retention/run`, {
         method: "POST",
-      }),
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["users", "deleted"] }),
     meta: { successMessage: "Retention purge complete" },
   });

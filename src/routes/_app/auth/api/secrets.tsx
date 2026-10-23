@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -28,6 +27,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   CheckIcon,
@@ -250,8 +250,7 @@ function RotateSecretSheet({
             if (!target) return;
             const value = String(new FormData(e.currentTarget).get("value") ?? "").trim();
             if (!value) return;
-            // Route through the sensitive-action pipeline so a backend
-            // step_up_required opens the re-auth dialog and retries the rotation.
+            // Through the sensitive-action runner, so a step-up prompt names this action.
             runSensitive({
               actionLabel: "rotate this secret",
               run: () => rotateM.mutateAsync({ id: target.id, value }),

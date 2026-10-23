@@ -40,7 +40,7 @@ describe("canAddPasskey", () => {
   it("offers adding a passkey unless the organization has passkeys switched off", () => {
     expect(canAddPasskey({ items: [], enrollment_allowed: true })).toBe(true);
     expect(canAddPasskey({ items: [], enrollment_allowed: false })).toBe(false);
-    // A server that predates the flag never refused, so keep offering.
+    // An absent flag means passkeys are allowed.
     expect(canAddPasskey({ items: [] })).toBe(true);
     // Nothing loaded yet: nothing to offer.
     expect(canAddPasskey(undefined)).toBe(false);

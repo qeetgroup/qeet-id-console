@@ -6,22 +6,15 @@ import { api } from "@/platform/api/client";
 import { useImpersonationActor, useLogout } from "@/platform/auth/session";
 
 /**
- * Sticky banner shown whenever the current access token carries an RFC
- * 8693 `act` claim, i.e. the admin is signed in as another user. The
- * banner is deliberately loud (rose background, prominent exit button)
- * so the admin can't forget they're acting on behalf of someone else.
- *
- * Returns null when not impersonating, so it's safe to render
- * unconditionally near the top of the layout.
+ * Renders a deliberately loud sticky banner while the access token carries an RFC 8693 `act` claim
+ * (an admin acting as another user), so they can't forget; renders nothing otherwise.
  */
 export function ImpersonationBanner() {
   const actor = useImpersonationActor();
   const logout = useLogout();
 
-  // POST /v1/admin/impersonate/exit is the planned endpoint (IMPROVEMENTS
-  // §4.5). Until it ships, fall back to a hard logout: the admin signs in
-  // again as themselves. The exit mutation is suppressed from the global
-  // success toast — the page reload is feedback enough.
+  // A failed exit call is ignored: a logout always follows, so the admin signs in again as
+  // themselves. Silent, since the reload is feedback enough.
   const exit = useMutation({
     mutationFn: () =>
       api<void>("/v1/admin/impersonate/exit", { method: "POST" }).catch(() => undefined),

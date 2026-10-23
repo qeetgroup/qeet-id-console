@@ -1,15 +1,10 @@
-// RBAC role tools — create_role, assign_role, grant_permission.
-//
-// Reuse patterns from lib/authz-rbac.ts; run() calls api() directly with
-// ctx.tenantId so RBAC + RLS + audit are inherited.
+// run() calls the backend through api(), so its RBAC, RLS and audit apply.
 
 import { z } from "zod";
 import { ROLES_KEY } from "@/modules/authorization";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── create_role ───────────────────────────────────────────────────────────────
 
 const createRoleInput = z.object({
   name: z.string(),
@@ -54,8 +49,6 @@ export const createRoleTool: ToolDefinition<CreateRoleInput> = {
   },
 };
 
-// ── assign_role ───────────────────────────────────────────────────────────────
-
 const assignRoleInput = z.object({
   user_id: z.string(),
   role_id: z.string(),
@@ -97,8 +90,6 @@ export const assignRoleTool: ToolDefinition<AssignRoleInput> = {
     };
   },
 };
-
-// ── grant_permission ──────────────────────────────────────────────────────────
 
 const grantPermissionInput = z.object({
   role_id: z.string(),

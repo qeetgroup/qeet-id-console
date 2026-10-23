@@ -1,11 +1,8 @@
-// SearchProvider: assembles navigation and command sources, builds the
-// SearchContext from router + capabilities, hydrates persistent stores on
-// mount, and exposes useUniversalSearch() to any child.
-
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
 
+import { useStorageScope } from "@/platform/auth/scoped-storage";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
 import type { RankContext } from "./ranking";
@@ -18,12 +15,9 @@ import type { RecentEntry } from "./store/recent-store";
 import { hydrateRecent, recentActions, recentStore } from "./store/recent-store";
 
 export interface UniversalSearchContextValue {
-  /** The current search context (pathname, tenantId, capabilities, navigate). */
   searchCtx: SearchContext;
-  /** All navigation items from the sidebar, capability-filtered. */
-  navigationItems: SearchItem[];
-  /** All executable command items, capability-filtered. */
-  commandItems: SearchItem[];
+  navigationItems: SearchItem[]; // Sidebar pages the person's capabilities allow
+  commandItems: SearchItem[]; // Commands the person's capabilities allow
   recentEntries: RecentEntry[];
   favoriteEntries: FavoriteEntry[];
   addRecent(item: SearchItem): void;
@@ -31,29 +25,34 @@ export interface UniversalSearchContextValue {
   clearRecent(): void;
   toggleFavorite(item: SearchItem): void;
   isFavorite(id: string): boolean;
-  /** Snapshot of rank context — call inside useMemo for stable references. */
+  /** Builds a fresh RankContext; call it inside useMemo to keep references stable. */
   getRankContext(): RankContext;
 }
 
 const UniversalSearchContext = createContext<UniversalSearchContextValue | null>(null);
 
-// Module-level source singletons: built once, never rebuilt. The items they
-// return are capability-filtered at call time via ctx.capabilities.
+// Built once; the items they return are capability-filtered per call via ctx.capabilities.
 const navSource = createNavigationSource();
 const cmdSource = createCommandSource();
 
+/**
+ * Provides universal search: capability-filtered pages and commands, the search context, and the
+ * signed-in person's recents and favorites.
+ */
 export function SearchProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const access = useCapabilities();
 
-  // Hydrate persistent stores on the client (never during render).
+  // Recents and favorites are scoped per person and tenant, so re-read them on the client
+  // (never during render) whenever that scope changes.
+  const storageScope = useStorageScope();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-read on scope change
   useEffect(() => {
     hydrateRecent();
     hydrateFavorites();
-  }, []);
+  }, [storageScope]);
 
-  // Reactive store subscriptions.
   const recentEntries = useStore(recentStore, (s) => s.entries);
   const favoriteEntries = useStore(favoritesStore, (s) => s.entries);
 
@@ -64,12 +63,11 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       capabilities: access.permissions,
       navigate: (url: string) => navigate({ to: url }),
     }),
-    // navigate is stable across renders (TanStack Router guarantee).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pathname, access.tenantId, access.permissions],
+    // useNavigate returns a stable callback, so listing it never recomputes the context.
+    [pathname, access.tenantId, access.permissions, navigate],
   );
 
-  // Build items only when access is ready (avoids empty results on first mount).
+  // Until capabilities load there is nothing to filter against, so no items are offered.
   const navigationItems = useMemo(
     () => (access.state === "ready" ? navSource.getItems("", searchCtx) : []),
     [access.state, searchCtx],

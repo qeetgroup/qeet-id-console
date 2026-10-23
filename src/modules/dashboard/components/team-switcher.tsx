@@ -30,7 +30,6 @@ type Tenant = {
   logo_url?: string;
 };
 
-// GET /v1/tenants is scoped to the caller; clicking one switches via switchToTenant().
 function initialOf(name: string) {
   const trimmed = name.trim();
   return trimmed ? trimmed.charAt(0).toUpperCase() : "?";
@@ -42,7 +41,7 @@ export function TeamSwitcher() {
 
   const tenantsQ = useQuery({
     queryKey: ["tenants", "switcher"],
-    queryFn: () => api<{ items: Tenant[] }>("/v1/tenants"),
+    queryFn: () => api<{ items: Tenant[] }>("/v1/tenants"), // only the caller's orgs
     staleTime: 60_000,
   });
 

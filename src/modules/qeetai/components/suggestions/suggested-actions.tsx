@@ -8,11 +8,9 @@ import { useConsoleContext } from "../../context/use-console-context";
 import { rankSuggestions } from "../../suggestions/suggestion-engine";
 
 /**
- * Proactive, route-aware suggestions (spec §7): the capability-visible, ranked
- * actions for wherever the operator currently is — selection-boosted (e.g. on a
- * user page, "Disable user" floats up). Picking one seeds a turn: prompt
- * suggestions send their text; tool suggestions send their label as a natural
- * trigger. Renders nothing when the current route has no relevant suggestions.
+ * Renders the ranked suggestions for the current route. Picking one sends a prompt
+ * suggestion's text, or a tool suggestion's label, as a message. Renders nothing when the
+ * route has none.
  */
 export function SuggestedActions({
   onPick,
@@ -29,9 +27,10 @@ export function SuggestedActions({
 
   return (
     <div className={cn("flex flex-wrap gap-1.5 px-3 pt-2", className)}>
-      {suggestions.map((suggestion, i) => (
+      {suggestions.map((suggestion) => (
         <button
-          key={`${suggestion.type}-${suggestion.label}-${i}`}
+          // Labels are unique within a route's suggestion list.
+          key={`${suggestion.type}-${suggestion.label}`}
           type="button"
           title={suggestion.description}
           onClick={() => onPick(suggestion.type === "prompt" ? suggestion.text : suggestion.label)}

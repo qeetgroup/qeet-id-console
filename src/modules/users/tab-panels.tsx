@@ -1,5 +1,4 @@
-// Secondary User 360 tabs: Security, Access, Sessions, Identities, Developer.
-// (Overview lives in overview-tab.tsx, Activity in activity-tab.tsx.)
+// The User 360 Security, Access, Sessions, Identities and Developer tabs.
 
 import {
   Badge,
@@ -9,7 +8,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   EmptyState,
   JSONTree,
   StatusPill,
@@ -22,6 +20,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import {
   BuildingComplexIcon,
   FingerprintPatternIcon,
@@ -47,8 +46,6 @@ import {
 } from "./api/user360";
 import { CopyId, InfoRow } from "./user-detail-fields";
 import { parseUserAgent } from "./user-agent";
-
-// ── Security tab ─────────────────────────────────────────────────────────────
 
 export function SecurityTab({
   userId,
@@ -193,8 +190,6 @@ export function SecurityTab({
   );
 }
 
-// ── Access tab ───────────────────────────────────────────────────────────────
-
 export function AccessTab({
   access,
   loading,
@@ -327,8 +322,6 @@ export function AccessTab({
   );
 }
 
-// ── Sessions tab ─────────────────────────────────────────────────────────────
-
 export function SessionsTab({ userId, canWrite }: { userId: string; canWrite: boolean }) {
   const { t } = useTranslation("users");
   const sessionsQ = useUserSessions(userId);
@@ -422,8 +415,6 @@ export function SessionsTab({ userId, canWrite }: { userId: string; canWrite: bo
   );
 }
 
-// ── Identities tab ───────────────────────────────────────────────────────────
-
 export function IdentitiesTab({ userId, passwordSet }: { userId: string; passwordSet?: boolean }) {
   const { t } = useTranslation("users");
   const identitiesQ = useUserSocialIdentities(userId);
@@ -494,8 +485,6 @@ function IdentityRow({
     </div>
   );
 }
-
-// ── Developer tab ────────────────────────────────────────────────────────────
 
 export function DeveloperTab({ user }: { user: UserDetail }) {
   const { t } = useTranslation("users");

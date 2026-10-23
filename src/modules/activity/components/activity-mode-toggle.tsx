@@ -1,14 +1,3 @@
-// Live vs History mode toggle + "N new events" jump affordance.
-// Live streams SSE events into the feed; History freezes the stream so an
-// operator can investigate a pinned window without rows shifting underfoot.
-// When live events buffer up, the jump button scrolls to the top and marks read.
-//
-// This is a hand-rolled segmented control rather than @qeetrix/ui's
-// SegmentedControl: that component positions its sliding highlight in a
-// useLayoutEffect keyed only on `orientation`, so a controlled `value` change
-// (Live→History) never moves the highlight. Reflecting `mode` directly on each
-// button avoids that.
-
 import { Button, cn } from "@qeetrix/ui";
 import { ArrowUpIcon } from "@qeetrix/icons";
 
@@ -19,6 +8,10 @@ const MODES: { value: ActivityMode; label: string }[] = [
   { value: "history", label: "History" },
 ];
 
+/**
+ * Renders the Live / History toggle and, in live mode, a "N new" jump button. History freezes
+ * the feed so a pinned window can be investigated without rows shifting.
+ */
 export function ActivityModeToggle({
   mode,
   onModeChange,
@@ -32,6 +25,8 @@ export function ActivityModeToggle({
   onJumpToNew?: () => void;
   className?: string;
 }) {
+  // Hand-rolled: @qeetrix/ui's SegmentedControl doesn't move its highlight when a controlled
+  // `value` changes.
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <div className="inline-flex h-8 items-center rounded-lg bg-muted p-1 text-xs">

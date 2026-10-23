@@ -32,15 +32,7 @@ const KIND_PILL: Record<NotificationKind, "info" | "warning" | "danger" | "succe
   success: "success",
 };
 
-/**
- * NotificationsInbox is the bell-icon-anchored popover in the admin
- * header. Renders the unread badge (red dot when count > 0), and a
- * 360px-wide panel listing the most-recent notifications when opened.
- *
- * The backend endpoint isn't shipped yet (IMPROVEMENTS §8.7); the
- * hook gracefully falls back to an empty list so the UI is forward-
- * compatible — once the API ships, no call-site change is needed.
- */
+/** Renders the header's notification bell: an unread dot and a popover of recent notifications. */
 export function NotificationsInbox() {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -48,7 +40,6 @@ export function NotificationsInbox() {
   const q = useNotifications();
   const markAll = useMarkAllRead();
 
-  // Outside-click + Esc to dismiss.
   useEffect(() => {
     if (!open) return;
     function onClick(e: MouseEvent) {

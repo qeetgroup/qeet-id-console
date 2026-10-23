@@ -22,13 +22,9 @@ import { SuggestedActions } from "./suggestions/suggested-actions";
 const RESIZE_STEP = 24;
 
 /**
- * The AI workspace panel. One component, four presentations driven by the
- * workspace store:
- *   • docked     — an in-flow flex sibling of `.console-workspace`, so opening it
- *                  reflows the page instead of covering it; resizable + collapsible.
- *   • floating   — a draggable, non-modal window (useFloatingWindow).
- *   • fullscreen — an immersive overlay.
- *   • collapsed  — a slim rail (docked only) that keeps the panel one click away.
+ * Renders the workspace panel as the store's mode asks: docked (an in-flow sibling that reflows
+ * the page; resizable, collapsible to a rail), floating (a draggable, non-modal window) or
+ * fullscreen. Phones always get fullscreen.
  */
 export function QeetAIWorkspace() {
   const open = useStore(workspaceStore, (s) => s.open);
@@ -46,9 +42,7 @@ export function QeetAIWorkspace() {
 
   const body = <PanelBody />;
 
-  // On a phone viewport — or in fullscreen mode — present as a full-screen
-  // overlay. Docked (a ≥340px in-flow sibling) and floating can't fit a small
-  // screen, so mobile always gets the immersive layout.
+  // Docked (at least 340px wide) and floating can't fit a phone screen.
   if (isMobile || mode === "fullscreen") {
     return (
       <section
@@ -62,7 +56,7 @@ export function QeetAIWorkspace() {
   }
 
   if (mode === "floating") {
-    // Clamp width to the viewport so the window can't render partly off-screen.
+    // Clamped to the viewport so the window can't render partly off-screen.
     const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
     const width = Math.min(dockWidth, vw - 32);
     return (
@@ -77,7 +71,6 @@ export function QeetAIWorkspace() {
     );
   }
 
-  // Docked: in-flow flex sibling that reflows the shell.
   return (
     <section
       aria-label="Qeet AI"
@@ -115,7 +108,6 @@ function PanelBody() {
   );
 }
 
-/** Slim rail shown when the docked panel is collapsed. */
 function CollapsedRail() {
   return (
     <div className="relative z-30 flex h-dvh w-14 shrink-0 flex-col items-center gap-2 border-s bg-card/60 py-3">
@@ -134,9 +126,8 @@ function CollapsedRail() {
 }
 
 /**
- * Draggable divider on the docked panel's inner edge. Pointer drag resizes;
- * ArrowLeft/Right nudge for keyboard users (WCAG 2.2 — the panel must be
- * resizable without a pointer).
+ * Renders the divider on the docked panel's inner edge: dragging resizes, and ArrowLeft/Right
+ * do the same so the panel is resizable without a pointer.
  */
 function DockResizeHandle({ width }: { width: number }) {
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -169,7 +160,7 @@ function DockResizeHandle({ width }: { width: number }) {
   );
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: a focusable window-splitter needs role="separator" + tabIndex + aria-valuenow (ARIA APG); <hr> cannot express a resizable value
+    // biome-ignore lint/a11y/useSemanticElements: <hr> can't be a focusable window splitter
     <div
       role="separator"
       aria-orientation="vertical"

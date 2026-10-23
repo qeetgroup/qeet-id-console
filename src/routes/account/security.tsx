@@ -54,8 +54,7 @@ function titleCase(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// Brand marks for the social providers (same set as the sign-in screen). Falls
-// back to a generic link glyph for anything without a dedicated icon.
+// A provider without an entry gets a generic link glyph.
 const PROVIDER_ICONS: Record<string, ReactNode> = {
   google: <Google />,
   microsoft: <Microsoft />,
@@ -76,11 +75,9 @@ function SecurityPage() {
   // before the button is pressed.
   const lastMethod = isLastSignInMethod(useSignInMethods().data);
 
-  // One row per provider: every configured platform provider, plus any already
-  // linked (in case a provider was later unconfigured). Each row shows Unlink
-  // when linked, or Link otherwise — so a linked provider always has an unlink
-  // action. "Linking" = signing in with that provider using the same email,
-  // which the callback attaches to this account (findOrCreateUser).
+  // A row per configured provider plus any linked one since unconfigured, so a linked provider
+  // can always be unlinked. Linking signs in with that provider under the same email, and the
+  // callback attaches it to this account.
   const providersQ = usePlatformSocialProviders();
   const linkedByProvider = new Map(identities.map((i) => [i.provider.toLowerCase(), i]));
   const providerRows = [
@@ -90,9 +87,8 @@ function SecurityPage() {
     ]),
   ];
 
-  // Returning from a link ceremony: the provider callback bounced back here with
-  // ?linked=<provider> (success) or ?link_error=already_linked. Surface it,
-  // refresh the connected list, and strip the query so a reload won't re-toast.
+  // Back from a link ceremony with ?linked=<provider> or ?link_error=already_linked: report it,
+  // refresh the list and strip the query, so a reload won't toast again.
   const refetchIdentities = identitiesQ.refetch;
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -114,9 +110,8 @@ function SecurityPage() {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
 
-  // "Forgot password?" for an already-signed-in user: email a reset link to
-  // their own address instead of routing to the /forgot-password page (which
-  // lives under the unauthenticated layout and bounces them to the dashboard).
+  // A signed-in person is emailed the reset link: /forgot-password sits under the signed-out
+  // layout, which would bounce them to the dashboard.
   const me = useMe();
   const forgot = useForgotPassword();
   const emailResetLink = () =>
@@ -250,8 +245,7 @@ function SecurityPage() {
         </CardContent>
       </Card>
 
-      {/* Passkeys: listed, renamed, removed and added right here — the user's own
-          settings, not the Authentication › Login methods admin screen. */}
+      {/* The person's own passkeys, not the Login methods admin screen. */}
       <AccountPasskeysCard className="md:col-span-2" />
 
       {/* Phones that approve sign-ins with Qeet Auth, linked with a pairing code. */}

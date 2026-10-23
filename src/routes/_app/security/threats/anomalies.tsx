@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Table,
   TableBody,
   TableCell,
@@ -15,6 +14,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   MapPinIcon,
@@ -26,11 +26,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
-import {
-  useAnomalies,
-  useAnomalySummary,
-  useResolveAnomaly,
-} from "@/modules/security/api/anomalies";
+import { useAnomalies, useAnomalySummary, useResolveAnomaly } from "@/modules/security";
 
 export const Route = createFileRoute("/_app/security/threats/anomalies")({
   component: AnomaliesPage,

@@ -76,16 +76,7 @@ function eventIcon(event: ActivityEvent): React.ReactNode {
   return <ActivityIcon />;
 }
 
-// ---------------------------------------------------------------------------
-// RecentActivityPanel — now self-contained, reads from the shared activity store
-// ---------------------------------------------------------------------------
-
-/**
- * Dashboard widget showing the latest ~10 live activity events.
- * Acquires the shared SSE subscription so events arrive in real-time.
- * When the stream is connecting, shows loading skeletons.
- * Links to the full Live Activity Center at /activity.
- */
+/** Renders the latest activity events, updated live, with a link to the full activity center. */
 export function RecentActivityPanel({ className }: { className?: string }) {
   const { t } = useTranslation("dashboard");
   const { events, status, connecting } = useDashboardActivity(undefined, true);
@@ -113,7 +104,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
         </Link>
       }
     >
-      {/* Disconnected / reconnecting with no events yet → show skeletons */}
+      {/* Skeletons while history loads and nothing has arrived yet. */}
       {connecting ? (
         <ul
           className="divide-y divide-border/60"
@@ -193,7 +184,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
         </ol>
       )}
 
-      {/* Unread / critical alert for screen readers */}
+      {/* Announces critical or error events to screen readers. */}
       {hasCritical && (
         <div role="alert" className="sr-only">
           Critical security events detected in the activity feed
@@ -202,10 +193,6 @@ export function RecentActivityPanel({ className }: { className?: string }) {
     </DashboardPanel>
   );
 }
-
-// ---------------------------------------------------------------------------
-// OperatorActionsPanel — unchanged from original
-// ---------------------------------------------------------------------------
 
 const actionTone = {
   brand: "bg-primary/10 text-primary",

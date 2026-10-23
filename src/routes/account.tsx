@@ -8,6 +8,8 @@ import { getServerSession } from "@/platform/api/server-proxy";
 import { hasVerifiedEmail } from "@/platform/auth/email-verification";
 import { useIdleLogout, useMe } from "@/platform/auth/session";
 import { sessionStore } from "@/platform/auth/session-store";
+import { CapabilityProvider } from "@/platform/security/capability-provider";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -26,17 +28,28 @@ export const Route = createFileRoute("/account")({
 });
 
 /**
- * AccountLayout hosts the end-user self-service surface ("My Account").
- * It's intentionally separate from the admin `_app` shell — no
- * sidebar, simpler chrome — because the audience is the human whose
- * identity Qeet ID manages, not a tenant operator.
- *
- * Auth guard mirrors `_app`: a stored access token is required;
- * otherwise route to sign-in.
+ * Renders "My Account", the self-service surface for the person Qeet ID manages, apart from the
+ * operator shell. It mounts the sensitive-action providers too, so a `step_up_required` here
+ * opens the step-up dialog.
  */
 function AccountLayout() {
-  const { t } = useTranslation("account");
   const { session } = Route.useRouteContext();
+
+  useEffect(() => {
+    sessionStore.hydrate(session);
+  }, [session]);
+
+  return (
+    <CapabilityProvider>
+      <SensitiveActionProvider>
+        <AccountFrame />
+      </SensitiveActionProvider>
+    </CapabilityProvider>
+  );
+}
+
+function AccountFrame() {
+  const { t } = useTranslation("account");
   const me = useMe();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useIdleLogout(IDLE_TIMEOUT_MS);
@@ -55,10 +68,6 @@ function AccountLayout() {
     },
     { to: "/account/data", label: t("nav.data"), icon: DatabaseIcon },
   ] as const;
-
-  useEffect(() => {
-    sessionStore.hydrate(session);
-  }, [session]);
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6">

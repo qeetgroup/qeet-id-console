@@ -1,6 +1,5 @@
-// Verifiable Credentials data layer (Developer → Verifiable Credentials). Qeet
-// issues ES256-signed W3C JWT-VCs; relying parties verify them at
-// /v1/credentials/verify. Backed by /v1/tenants/{tenantID}/credentials.
+// Qeet issues ES256-signed W3C JWT verifiable credentials; relying parties verify them at
+// /v1/credentials/verify.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

@@ -1,7 +1,5 @@
-// Bot-detection data layer for the Threats → Bots screen. Backed by
-// GET /v1/tenants/{tenantID}/security/bots (recent verdicts + stats) and
-// GET/PUT .../security/bots/settings. Verdicts are recorded detect-only by the
-// UA scorer on login/session attempts.
+// Bot verdicts the server's user-agent scorer records, detect-only, on sign-in and session
+// attempts.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -71,11 +69,13 @@ export function useUpdateBotSettings() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (settings: BotSettings) =>
-      api<BotSettings>(`/v1/tenants/${tenantId}/security/bots/settings`, {
+    mutationFn: (settings: BotSettings) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<BotSettings>(`/v1/tenants/${tenantId}/security/bots/settings`, {
         method: "PUT",
         body: settings,
-      }),
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
     meta: { successMessage: "Bot protection settings saved" },
   });

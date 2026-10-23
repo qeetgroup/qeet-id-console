@@ -58,15 +58,9 @@ function InviteNotice({ title, description }: { title: string; description?: str
 }
 
 /**
- * Accepting an invite is a sign-up, so it uses the same shell as /sign-up:
- * `auth-entry` (hero + fixed-width card) rather than a bare <Card>, which
- * rendered as a narrow panel floating at a different width and offset from
- * every other auth route.
- *
- * The invitation is looked up first: it names the organisation and address,
- * says whether an account already holds the address, and which ways of
- * accepting the organisation allows — a password always, a passkey where the
- * organisation allows passkeys.
+ * Renders invite acceptance, a sign-up in the shared `auth-entry` shell. The invitation is read
+ * first: it names the organisation and address, says whether an account holds the address, and
+ * which ways to accept are allowed (a password always, a passkey if the organisation allows it).
  */
 function AcceptInvitePage() {
   const { t } = useTranslation("auth-flow");
@@ -160,9 +154,8 @@ function AcceptInvitePage() {
             </Field>
           </div>
 
-          {/* An existing account isn't a failure to retype — it needs a
-              different route entirely, so it gets a recovery action rather than
-              a red error line. */}
+          {/* An existing account needs another route, not a retype, so it gets a recovery
+              action rather than a red error line. */}
           {accountExists ? (
             <div className="mt-4 rounded-lg border bg-muted/40 p-3">
               <p className="text-sm font-medium">{t("invite.accountExistsTitle")}</p>

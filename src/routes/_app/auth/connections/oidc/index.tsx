@@ -13,7 +13,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   EmptyState,
   Table,
   TableBody,
@@ -23,6 +22,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AppWindowIcon,
@@ -39,11 +39,7 @@ import { ApplicationStats } from "@/modules/authentication/components/applicatio
 import { OidcQuickstart } from "@/modules/authentication/components/oidc-quickstart";
 import { ProofKeyBadge } from "@/modules/authentication/components/proof-key-status";
 import { RegisterApplicationSheet } from "@/modules/authentication/components/register-application-sheet";
-import {
-  type OidcClient,
-  useDeleteOidcClient,
-  useOidcClients,
-} from "@/modules/authentication/api/oidc-clients";
+import { type OidcClient, useDeleteOidcClient, useOidcClients } from "@/modules/authentication";
 import { PageHeader } from "@/platform/components/page-header";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -59,8 +55,7 @@ import { useListView } from "@/shared/hooks/use-list-view";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 
 export const Route = createFileRoute("/_app/auth/connections/oidc/")({
-  // `?action=create` deep-links from the Applications hub straight into the drawer.
-  validateSearch: parseCreateIntent,
+  validateSearch: parseCreateIntent, // `?action=create` opens the create drawer
   component: OidcPage,
 });
 
@@ -244,8 +239,7 @@ function OidcPage() {
           <DataState
             isLoading={listQ.isLoading}
             isError={listQ.isError}
-            // AGENTS.md rule 5: DataState's default slot would render the raw
-            // backend error.message, so map the code to curated copy instead.
+            // Curated copy for the failure, never the backend message.
             errorFallback={listQ.error ? errorMessage(listQ.error) : null}
             isEmpty={rows.length === 0}
             skeletonRows={3}

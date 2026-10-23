@@ -1,15 +1,9 @@
-// Row-preview slide-over — a condensed User 360 so an admin can investigate a
-// user without leaving the table. Overview matches the mockup's right panel
-// (Profile / Security / Access summary); the Access / Security / Activity tabs
-// show focused real data. Reuses the User 360 endpoints.
-
 import {
   Avatar,
   AvatarFallback,
   Badge,
   buttonVariants,
   cn,
-  DataState,
   Separator,
   Sheet,
   SheetContent,
@@ -23,6 +17,7 @@ import {
   TabsTrigger,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { Link } from "@tanstack/react-router";
 import { formatDateTime } from "@/shared/utils/format";
 import { ArrowRightIcon, CircleCheckIcon } from "@qeetrix/icons";
@@ -42,6 +37,7 @@ import type { User } from "./api/users";
 import { primaryRole } from "./user-display";
 import { initials } from "@/shared/utils/initials";
 
+/** Renders a condensed User 360 in a slide-over, so an admin can inspect a user from the table. */
 export function UserPreviewDrawer({ user, onClose }: { user: User | null; onClose: () => void }) {
   const { t } = useTranslation("users");
   const id = user?.id ?? "";

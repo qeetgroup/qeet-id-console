@@ -1,7 +1,6 @@
 import {
   Badge,
   Button,
-  DataState,
   StatusPill,
   Table,
   TableBody,
@@ -11,6 +10,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { MonitorSmartphoneIcon, ShieldIcon } from "@qeetrix/icons";
 import type { UseQueryResult } from "@tanstack/react-query";
 
@@ -28,10 +28,8 @@ type SessionsTableProps = {
 };
 
 /**
- * Shared active-sessions table (device · IP · created · last seen · status ·
- * revoke). Presentational only — confirmation and step-up are the caller's
- * responsibility via `onRevoke` (see useSensitiveAction). Used by the security,
- * users, and account session views so they can't drift apart.
+ * Renders the active-sessions table that every session view shares. Presentational only:
+ * confirmation and step-up are the caller's, through `onRevoke` (see useSensitiveAction).
  */
 export function SessionsTable({
   query,

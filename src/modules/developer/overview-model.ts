@@ -26,7 +26,10 @@ export function summarizeDeveloperRecords(
   }));
   for (const timestamp of timestamps) {
     if (timestamp < start || timestamp > now) continue;
-    series[Math.floor((timestamp - start) / day)].count += 1;
+    const point = series[Math.floor((timestamp - start) / day)];
+    // start <= timestamp <= now < today + day, so the bucket is one of the seven.
+    if (!point) throw new Error("Developer activity timestamp fell outside the 7-day series");
+    point.count += 1;
   }
   return {
     total: records.length,

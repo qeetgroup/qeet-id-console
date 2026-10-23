@@ -110,6 +110,8 @@ export function useDeveloperOverview() {
   });
   const resources = SOURCES.map((source, index) => {
     const request = requests[index];
+    // Unreachable: useQueries returns one result per source; this narrows the type.
+    if (!request) throw new Error(`Missing query result for developer source ${source.id}`);
     const allowed = ready && access.can(source.permission);
     return {
       id: source.id,
@@ -134,7 +136,8 @@ export function useDeveloperOverview() {
       response.events
         .flatMap((event) => {
           const [prefix, action] = event.type.split(".");
-          const area = ACTIVITY_AREAS[prefix];
+          // split() always yields a first element; the check only narrows the type.
+          const area = prefix === undefined ? undefined : ACTIVITY_AREAS[prefix];
           if (!area || !resources.some((resource) => resource.id === area && resource.allowed))
             return [];
           if (!Number.isFinite(Date.parse(event.at))) return [];
@@ -142,7 +145,7 @@ export function useDeveloperOverview() {
             {
               id: event.id,
               area,
-              verb: ACTIVITY_VERBS.has(action) ? action : "changed",
+              verb: action !== undefined && ACTIVITY_VERBS.has(action) ? action : "changed",
               at: event.at,
               targetId: event.target?.id,
             } satisfies DeveloperActivity,

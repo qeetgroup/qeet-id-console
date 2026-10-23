@@ -1,13 +1,3 @@
-// UniversalSearch: the Raycast/Linear-class command palette for the Qeet ID
-// admin console. Evolves the existing CommandPalette with:
-//   • Navigation (sidebar tree, capability-filtered)
-//   • Commands (executable admin actions, capability-gated)
-//   • Resources (async GET /v1/search, gracefully degraded)
-//   • Recents + Favorites (from TanStack Store, localStorage-persisted)
-//   • In-house fuzzy ranking with recency/frequency/favorites boosts
-//   • Preview pane with quick actions on the highlighted item
-//   • Full keyboard (↑↓ Enter Esc Tab) + WCAG 2.2 AA combobox/listbox ARIA
-
 import { cn, EmptyState, Kbd, ScrollArea, Separator, Skeleton, Spinner } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
 import { RotateCcwClockIcon, SearchIcon, XIcon } from "@qeetrix/icons";
@@ -27,7 +17,6 @@ import { useUniversalSearch } from "../search-provider";
 import { PreviewPane } from "./preview-pane";
 import { ResultGroups } from "./result-groups";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 const LISTBOX_ID = "us-listbox";
 const MAX_NAV_RESULTS = 20;
 const MAX_CMD_RESULTS = 10;
@@ -35,13 +24,16 @@ const MAX_RESOURCE_RESULTS = 10;
 const MAX_RECENT_SHOWN = 8;
 const DEBOUNCE_MS = 200;
 
-// ─── Props ────────────────────────────────────────────────────────────────────
 interface UniversalSearchProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+/**
+ * Renders the universal search palette in a native <dialog>: ranked pages, commands and
+ * GET /v1/search resources, or favorites and recents with no query, plus a preview of the
+ * highlighted item. Choosing an item runs or opens it and records it as recent.
+ */
 export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,13 +55,11 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     getRankContext,
   } = useUniversalSearch();
 
-  // ── Debounce ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [query]);
 
-  // ── Reset on open ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (open) {
       setQuery("");
@@ -78,7 +68,6 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     }
   }, [open]);
 
-  // ── Drive native <dialog> ─────────────────────────────────────────────────
   useEffect(() => {
     const d = dialogRef.current;
     if (!d) return;
@@ -90,7 +79,6 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     }
   }, [open]);
 
-  // ── Resource search ───────────────────────────────────────────────────────
   const resourceQuery = useQuery({
     queryKey: ["universal-search", debouncedQuery],
     queryFn: async ({ signal }) => {
@@ -100,10 +88,9 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
           signal,
         });
       } catch (err) {
-        // Re-throw so TanStack Query cancels correctly on abort.
+        // An abort must propagate so TanStack Query treats the request as cancelled.
         if (err instanceof Error && err.name === "AbortError") throw err;
-        // Graceful degradation: /v1/search may not be deployed yet.
-        // Treat any error (404, 501, network) as empty results.
+        // Any other failure means no resource results rather than a broken palette.
         if (err instanceof ApiError || err instanceof Error) {
           return { results: [], next_cursor: undefined } satisfies SearchResponse;
         }
@@ -111,14 +98,13 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
       }
     },
     enabled: open && debouncedQuery.length >= 2,
-    // Keep previous data visible while the new query loads (avoids list flicker).
+    // Keeps the previous results visible while a new query loads, avoiding flicker.
     placeholderData: (prev) => prev,
     staleTime: 10_000,
     retry: false,
     meta: { silent: true },
   });
 
-  // ── Rank + group results ──────────────────────────────────────────────────
   const rankCtx = useMemo(() => getRankContext(), [getRankContext]);
 
   const { groups, allItems } = useMemo<{
@@ -129,7 +115,6 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     const all: SearchItem[] = [];
 
     if (!query) {
-      // No query: surface pinned favorites then recent history.
       if (favoriteEntries.length > 0) {
         const items: SearchItem[] = favoriteEntries.map(
           (e): SearchItem => ({
@@ -164,7 +149,6 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
       return { groups: grouped, allItems: all };
     }
 
-    // With query: rank each source and group the winners.
     const navRanked = rankItems(navigationItems, query, rankCtx).slice(0, MAX_NAV_RESULTS);
     if (navRanked.length > 0) {
       const items = navRanked.map((r) => r.item);
@@ -179,7 +163,6 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
       all.push(...items);
     }
 
-    // Resource results: group by type returned from the API.
     const hits = resourceQuery.data?.results ?? [];
     const resourceItems = resourceHitsToSearchItems(hits);
     const byCategory = new Map<string, SearchItem[]>();
@@ -204,7 +187,6 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     favoriteEntries,
   ]);
 
-  // ── Keyboard ──────────────────────────────────────────────────────────────
   const clampedHighlight = Math.min(highlightIndex, Math.max(0, allItems.length - 1));
   const selectedItem: SearchItem | null = allItems[clampedHighlight] ?? null;
 
@@ -236,7 +218,6 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     }
   }
 
-  // ── Display state ─────────────────────────────────────────────────────────
   const isLoadingResources = resourceQuery.isFetching && debouncedQuery.length >= 2;
   const hasResults = allItems.length > 0;
   const showEmpty = query.length >= 2 && !isLoadingResources && !hasResults;
@@ -245,22 +226,19 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
   const getItemId = (idx: number) => `us-item-${idx}`;
   const highlightedItemId = hasResults ? getItemId(clampedHighlight) : undefined;
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <dialog
       ref={dialogRef}
       onKeyDown={handleKeyDown}
       onClose={() => onOpenChange(false)}
       onClick={(e) => {
-        // Clicking the native backdrop (the dialog element itself, outside its
-        // content box) closes the palette — same as CommandPalette.
+        // A click whose target is the dialog itself landed on the backdrop.
         if (e.target === dialogRef.current) onOpenChange(false);
       }}
       aria-label="Universal search"
       className={cn(
         "fixed left-1/2 top-[8vh] -translate-x-1/2",
-        // Wider than the legacy CommandPalette (32 rem → 52 rem) to accommodate
-        // the preview pane while remaining within a 1024 px viewport.
+        // Wide enough for the preview pane while fitting a 1024px viewport.
         "w-[min(52rem,calc(100%-2rem))]",
         "rounded-xl border bg-popover p-0 text-popover-foreground shadow-modal",
         "backdrop:bg-foreground/30 backdrop:backdrop-blur-sm",
@@ -268,7 +246,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
       )}
     >
       <div className="flex flex-col" style={{ maxHeight: "80vh" }}>
-        {/* ── Search input ─────────────────────────────────────────────── */}
+        {/* Search input */}
         <div className="flex items-center gap-2 border-b px-3">
           <SearchIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           <input
@@ -308,7 +286,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
           )}
         </div>
 
-        {/* ── Content area ─────────────────────────────────────────────── */}
+        {/* Content area */}
         <div className="flex min-h-0 flex-1 overflow-hidden">
           {/* Results list */}
           <ScrollArea className="min-w-0 flex-1">
@@ -355,7 +333,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
             </div>
           </ScrollArea>
 
-          {/* Preview pane — hidden on small viewports to avoid squashing the results list */}
+          {/* Preview pane, hidden on small viewports so the results keep their width */}
           {showPreview && selectedItem !== null && (
             <>
               <Separator orientation="vertical" className="hidden sm:block" />
@@ -371,7 +349,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
           )}
         </div>
 
-        {/* ── Footer ───────────────────────────────────────────────────── */}
+        {/* Footer */}
         <div className="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-3">
             <span>
@@ -395,7 +373,6 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
   );
 }
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
 function SearchSkeleton() {
   return (
     <div

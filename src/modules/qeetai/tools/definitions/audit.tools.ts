@@ -1,16 +1,10 @@
-// Audit & session tools — search_audit_logs, search_sessions.
-//
-// search_audit_logs: GET /v1/tenants/{tenantId}/audit (tenant-scoped, read-only).
-// search_sessions:   GET /v1/auth/sessions — SELF-SCOPED ONLY. No admin cross-user
-//                    session search endpoint exists. The tool documents this clearly
-//                    so the model never over-promises on its scope.
+// search_sessions lists only the caller's own sessions: there is no cross-user session search,
+// and its description and summary say so, so the model doesn't over-promise.
 
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── search_audit_logs ─────────────────────────────────────────────────────────
 
 const searchAuditLogsInput = z.object({
   q: z.string().optional(),
@@ -72,8 +66,6 @@ export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
   },
 };
 
-// ── search_sessions ───────────────────────────────────────────────────────────
-
 const searchSessionsInput = z.object({});
 type SearchSessionsInput = z.infer<typeof searchSessionsInput>;
 
@@ -98,7 +90,7 @@ export const searchSessionsTool: ToolDefinition<SearchSessionsInput> = {
   mutates: false,
   auditLabel: "qeetai.search_sessions",
   async run(ctx, input) {
-    // input is {} — satisfy linter
+    // input is always {}; referenced only for the unused-parameter lint.
     void input;
     const data = await api<{ items: Session[] }>("/v1/auth/sessions", {
       signal: ctx.signal,

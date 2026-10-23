@@ -1,8 +1,3 @@
-// RBAC data layer for the Authorization section. Wraps the role / permission
-// endpoints so the Roles, Permissions and RBAC-graph surfaces share one typed
-// source. Backed by /v1/permissions, /v1/tenants/{t}/roles and
-// /v1/roles/{id}/permissions. See domains/access/authorization/rbac/http.go.
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const ROLES_KEY = ["roles"] as const;
 
@@ -44,14 +39,15 @@ export function useCreateRole() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { name: string; description: string }) =>
-      api<Role>(`/v1/tenants/${tenantId}/roles`, { method: "POST", body }),
+    mutationFn: (body: { name: string; description: string }) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<Role>(`/v1/tenants/${tenantId}/roles`, { method: "POST", body });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ROLES_KEY }),
     meta: { successMessage: "Role created" },
   });
 }
 
-/** Permissions currently granted to a role. */
 export function useRolePermissions(roleId: string | null) {
   return useQuery({
     queryKey: ["role-permissions", roleId],
@@ -80,14 +76,9 @@ export function useRevokePermission(roleId: string) {
   });
 }
 
-// The operator's own effective-permission set moved to platform/security (it is
-// the session capability source, not a management screen). Re-exported here so
-// existing former @/lib/authz-rbac importers keep working during migration.
 export { useEffectivePermissions } from "@/platform/security/effective-permissions";
 
-// ── Derived catalogue helpers (shared by Permissions + Dashboard) ─────────────
-
-/** Group permissions by their `resource` prefix (the part before the dot). */
+/** Returns permissions grouped by resource: the part of the key before the first dot. */
 export function groupPermissionsByResource(perms: Permission[]): Map<string, Permission[]> {
   const groups = new Map<string, Permission[]>();
   for (const p of perms) {
@@ -99,7 +90,7 @@ export function groupPermissionsByResource(perms: Permission[]): Map<string, Per
   return groups;
 }
 
-/** Permission keys containing a wildcard — flagged as a security risk. */
+/** Returns the permissions whose key contains a wildcard, which the console flags as a risk. */
 export function wildcardPermissions(perms: Permission[]): Permission[] {
   return perms.filter((p) => p.key.includes("*"));
 }

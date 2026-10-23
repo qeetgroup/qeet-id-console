@@ -30,11 +30,9 @@ function clock(seconds: number): string {
 }
 
 /**
- * Links a phone running Qeet Auth to the caller's own account with a one-time
- * pairing code, shown as a QR code to scan and as text to type. Asking for the
- * code needs a step-up, which the API client asks for. The dialog watches the
- * code until the phone has linked, offers a new one when it expires, and
- * withdraws an unused code when it closes, so nobody can scan it afterwards.
+ * Links a phone running Qeet Auth to the caller's account with a one-time pairing code, shown as a
+ * QR code and as text; requesting it needs a step-up. Watches the code until the phone links,
+ * offers a new one on expiry, and withdraws an unused code on close so nobody can scan it later.
  */
 export function LinkPhoneDialog({
   open,
@@ -50,8 +48,7 @@ export function LinkPhoneDialog({
   const [pairing, setPairing] = useState<(PushPairing & { code: string }) | null>(null);
   const status = usePairingStatus(pairing?.id ?? null);
   const [now, setNow] = useState(() => Date.now());
-  // Whether the dialog is still open when a code arrives.
-  const openRef = useRef(open);
+  const openRef = useRef(open); // Whether the dialog is still open when a code arrives
   openRef.current = open;
 
   function ask() {
@@ -72,7 +69,6 @@ export function LinkPhoneDialog({
     });
   }
 
-  // Ask for a code each time the dialog opens.
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs on opening only
   useEffect(() => {
     if (open) ask();
@@ -84,8 +80,7 @@ export function LinkPhoneDialog({
   const state = status.data?.status ?? (pairing ? "pending" : undefined);
   const expired = state === "expired" || (state === "pending" && secondsLeft === 0);
 
-  // Count down while the code can still be used.
-  const live = state === "pending" && !expired;
+  const live = state === "pending" && !expired; // Count down while the code can still be used
   useEffect(() => {
     if (!live) return;
     const id = setInterval(() => setNow(Date.now()), 1000);

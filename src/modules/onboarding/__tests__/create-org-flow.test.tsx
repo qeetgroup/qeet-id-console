@@ -9,11 +9,11 @@ import { type Plan, startSignupCheckout, usePlans } from "@/modules/billing";
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
 import { CreateOrgFlow } from "../create-org-flow";
-import { readStashedProfile } from "../onboarding-profile";
+import { readPendingOnboarding } from "../onboarding-profile";
 import { OrgOnboarding } from "../org-onboarding";
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => null }));
+vi.mock("@/platform/auth/session", () => ({ useTenantId: () => null, useUserId: () => "user-1" }));
 vi.mock("@/modules/billing", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/modules/billing")>();
   return {
@@ -62,11 +62,7 @@ let client: QueryClient;
 const mount = (ui: ReactNode = <CreateOrgFlow onDone={onDone} onCancel={onCancel} />) =>
   render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
 const input = (name: string) => screen.getByRole<HTMLInputElement>("textbox", { name });
-/**
- * Reveals the logo URL field. It's behind an "Upload via URL" toggle so the
- * form offers one URL input rather than a permanently visible second box next
- * to the file picker.
- */
+/** Reveals the logo URL field behind the "Upload via URL" toggle. */
 const revealLogoUrl = () => {
   const toggle = screen.queryByRole("button", { name: "Upload via URL" });
   if (toggle) fireEvent.click(toggle);
@@ -135,10 +131,8 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     expect(api).not.toHaveBeenCalled();
   });
 
-  // The only test that walks the whole wizard forward, back and forward again,
-  // with four async select interactions: ~2s here, ~6s on CI's slower runners,
-  // so the 5s default is not enough. Every other test in this file stays under
-  // 600ms — raise this one rather than relaxing the default for all of them.
+  // Walks the whole wizard forward, back and forward again: ~6s on slower CI runners, past the
+  // 5s default timeout, which the other tests here don't need raised.
   it("preserves project, details, logo and manual slug through Back", async () => {
     mount(<OrgOnboarding onDone={onDone} onCancel={onCancel} />);
     expect(screen.getByRole("listitem", { current: "step" }).textContent).toContain("Choose plan");
@@ -194,11 +188,10 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
         logo_url: logo,
       },
     });
-    expect(readStashedProfile()).toEqual({
-      use_case: "b2b_saas",
-      team_size: "2-10",
-      role: "engineer",
-      logo_url: logo,
+    expect(readPendingOnboarding("user-1")).toMatchObject({
+      profile: { use_case: "b2b_saas", team_size: "2-10", role: "engineer", logo_url: logo },
+      slug: "custom-org",
+      userId: "user-1",
     });
     expect(startSignupCheckout).not.toHaveBeenCalled();
     expect(onCancel).toHaveBeenCalledOnce();
@@ -270,7 +263,7 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
       });
       expect(api).not.toHaveBeenCalled();
     }
-    expect(readStashedProfile()).toEqual({});
+    expect(readPendingOnboarding("user-1")).toMatchObject({ profile: {}, slug: "pending-org" });
   });
 
   it.each([
@@ -300,9 +293,8 @@ describe("CreateOrgFlow / OrgOnboarding", () => {
     expect(onDone).not.toHaveBeenCalled();
   });
 
-  // Reusing an existing org's name auto-derives that org's slug (the slug field
-  // mirrors the name until edited), so this is the collision users actually hit.
-  // Both paths reach it: Free inserts directly, paid pre-checks before charging.
+  // Reusing an org's name derives its slug, the collision users actually hit. Free plans meet it
+  // on create, paid plans on the check before charging.
   it.each(["Free", "Pro"] as const)("names the taken org URL on the %s path", async (tier) => {
     const error = new ApiError(409, "tenant.slug_taken", "slug taken", "uq_tenants_slug");
     vi.mocked(tier === "Free" ? api : startSignupCheckout).mockRejectedValueOnce(error);

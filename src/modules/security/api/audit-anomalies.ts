@@ -1,8 +1,5 @@
-// Audit-intelligence data layer: behavioral-baseline anomaly detection over
-// the hash-chained audit log (distinct from Threats → Anomalies, which is
-// auth-time signals like credential stuffing — see lib/anomalies.ts).
-// Backed by GET /v1/tenants/{tenantID}/audit/anomalies (+ /summary),
-// POST .../anomalies/{id}/resolve, and the anomaly-settings pair.
+// Departures from each actor's usual behaviour in the hash-chained audit log; the sign-in
+// anomalies in anomalies.ts are a separate feed.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -71,10 +68,12 @@ export function useResolveAuditAnomaly() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/audit/anomalies/${id}/resolve`, {
+    mutationFn: (id: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/audit/anomalies/${id}/resolve`, {
         method: "POST",
-      }),
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
     meta: { successMessage: "Anomaly resolved" },
   });
@@ -93,11 +92,13 @@ export function useUpdateAuditAnomalySettings() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: Omit<AuditAnomalySettings, "tenant_id">) =>
-      api<AuditAnomalySettings>(`/v1/tenants/${tenantId}/audit/anomaly-settings`, {
+    mutationFn: (body: Omit<AuditAnomalySettings, "tenant_id">) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<AuditAnomalySettings>(`/v1/tenants/${tenantId}/audit/anomaly-settings`, {
         method: "PUT",
         body,
-      }),
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: [...KEY, "settings"] }),
     meta: { successMessage: "Anomaly-detection settings updated" },
   });
@@ -106,14 +107,16 @@ export function useUpdateAuditAnomalySettings() {
 export function useVerifyAuditChain() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: () =>
-      api<{
+    mutationFn: () => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<{
         ok: boolean;
         rows_checked: number;
         last_verified_id?: string;
         broken_at_id?: string;
         broken_reason?: string;
-      }>(`/v1/tenants/${tenantId}/audit/verify`),
+      }>(`/v1/tenants/${tenantId}/audit/verify`);
+    },
     meta: { silent: true },
   });
 }

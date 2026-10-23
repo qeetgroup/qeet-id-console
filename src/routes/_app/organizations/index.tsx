@@ -6,7 +6,6 @@ import {
   Button,
   Card,
   CardContent,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -35,6 +34,7 @@ import {
   TimeSince,
   TooltipProvider,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -358,9 +358,8 @@ type CreateTenantSheetProps = {
   onCreated: () => void;
 };
 
-// Creating an additional organization runs the same plan → name → pay flow as
-// first-run onboarding (CreateOrgFlow), so a paid org actually charges through
-// Razorpay instead of just setting a plan label.
+// Runs the same plan → name → pay flow as onboarding, so a paid organization is actually
+// charged rather than just labelled.
 function CreateTenantSheet({ open, onOpenChange }: CreateTenantSheetProps) {
   const { t } = useTranslation("organizations");
   return (
@@ -408,8 +407,10 @@ function EditTenantSheet({ tenant, onOpenChange, onSaved }: EditTenantSheetProps
   }
 
   const updateM = useMutation({
-    mutationFn: (body: UpdateBody) =>
-      api<Org>(`/v1/tenants/${tenant!.id}`, { method: "PATCH", body }),
+    mutationFn: (body: UpdateBody) => {
+      if (!tenant) throw new Error("No tenant selected");
+      return api<Org>(`/v1/tenants/${tenant.id}`, { method: "PATCH", body });
+    },
     onSuccess: onSaved,
     meta: { successMessage: "Tenant updated" },
   });

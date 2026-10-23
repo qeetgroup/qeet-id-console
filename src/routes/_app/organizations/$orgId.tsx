@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
   cn,
-  DataState,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -34,6 +33,7 @@ import {
   TimeSince,
   TooltipProvider,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { formatDateTime } from "@/shared/utils/format";
 import {
@@ -49,12 +49,12 @@ import { useTranslation } from "react-i18next";
 
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import { useCapabilities } from "@/platform/security/capability-provider";
-import { CopyId } from "@/modules/users/user-detail-fields";
+import { CopyId } from "@/modules/users";
 import { initials } from "@/shared/utils/initials";
-import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
+import { useAnalyticsOverview } from "@/modules/dashboard";
 import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
-import { formatMoney, useInvoices, useSubscription } from "@/modules/billing/api/billing";
+import { formatMoney, useInvoices, useSubscription } from "@/modules/billing";
 import {
   type Org,
   useDeleteOrg,
@@ -177,8 +177,6 @@ function OrgDetailPage() {
   );
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
-
 function OrgHeader({
   org,
   isActive,
@@ -274,7 +272,7 @@ function MetaCell({ label, children }: { label: string; children: React.ReactNod
   );
 }
 
-// ── Switch gate (non-active org) ──────────────────────────────────────────────
+// Shown for an organization other than the active one.
 
 function SwitchGate({ org }: { org: Org }) {
   const { t } = useTranslation("organizations");
@@ -294,8 +292,6 @@ function SwitchGate({ org }: { org: Org }) {
     </div>
   );
 }
-
-// ── Overview ──────────────────────────────────────────────────────────────────
 
 function OverviewTab({ org, isActive }: { org: Org; isActive: boolean }) {
   const { t } = useTranslation("organizations");
@@ -372,8 +368,6 @@ function OverviewTab({ org, isActive }: { org: Org; isActive: boolean }) {
   );
 }
 
-// ── Members (active org) ──────────────────────────────────────────────────────
-
 function MembersTab({ orgId }: { orgId: string }) {
   const { t } = useTranslation("organizations");
   const membersQ = useOrgMembers(orgId, true);
@@ -442,8 +436,6 @@ function MembersTab({ orgId }: { orgId: string }) {
   );
 }
 
-// ── Security (active org) ─────────────────────────────────────────────────────
-
 function SecurityTab({ orgId }: { orgId: string }) {
   const { t } = useTranslation("organizations");
   const policyQ = useOrgAuthPolicy(orgId, true);
@@ -496,8 +488,6 @@ function SecurityTab({ orgId }: { orgId: string }) {
     </div>
   );
 }
-
-// ── Billing (active org) ──────────────────────────────────────────────────────
 
 function BillingTab() {
   const { t } = useTranslation("organizations");
@@ -576,8 +566,6 @@ function BillingTab() {
   );
 }
 
-// ── Activity (active org) ─────────────────────────────────────────────────────
-
 function ActivityTab({ orgId }: { orgId: string }) {
   const { t } = useTranslation("organizations");
   const auditQ = useOrgAudit(orgId, true);
@@ -630,8 +618,6 @@ function ActivityTab({ orgId }: { orgId: string }) {
     </Card>
   );
 }
-
-// ── Small shared bits ─────────────────────────────────────────────────────────
 
 function InfoRow({
   label,

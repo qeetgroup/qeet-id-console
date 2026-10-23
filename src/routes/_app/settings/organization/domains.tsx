@@ -45,9 +45,8 @@ function DomainsPage() {
         </div>
       </div>
 
-      {/* Tabs as a segmented control with local state, not a route param: the
-          two panes are one settings screen, and a URL segment would imply the
-          custom-domain pane is separately linkable. */}
+      {/* Local state, not a route param: the two panes are one settings screen, and a URL
+          segment would imply the custom-domain pane is separately linkable. */}
       <div
         role="tablist"
         aria-label={t("workspace.domains.description")}
@@ -62,9 +61,7 @@ function DomainsPage() {
             onClick={() => setTab(id)}
             className={cn(
               "rounded-md px-3 py-1.5 text-sm transition-colors",
-              // The selected pill is tinted rather than just a lighter grey:
-              // bg-background against bg-muted/40 is nearly indistinguishable in
-              // dark mode, so the active tab was invisible there.
+              // Tinted, as bg-background on bg-muted/40 is nearly invisible in dark mode.
               tab === id
                 ? "bg-primary/12 font-semibold text-primary ring-1 ring-primary/25"
                 : "font-medium text-muted-foreground hover:bg-background/60 hover:text-foreground",

@@ -27,7 +27,7 @@ export function SetupPlanSummary({
   const plans = usePlans();
   const plan = plans.data?.items.find((item) => item.code === selection.planCode);
   const Icon = ICONS[selection.tier];
-  const name = plan?.name ?? selection.tier[0].toUpperCase() + selection.tier.slice(1);
+  const name = plan?.name ?? selection.tier.charAt(0).toUpperCase() + selection.tier.slice(1);
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border border-orange-100/60 bg-orange-50/60 px-3 py-2 dark:border-(--setup-border) dark:bg-(--setup-soft)/30">

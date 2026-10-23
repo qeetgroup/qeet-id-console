@@ -11,9 +11,8 @@ interface ComposerProps {
 const MAX_TEXTAREA_HEIGHT = 200;
 
 /**
- * The message input. Enter sends; Shift+Enter inserts a newline. While a turn is
- * streaming the send button becomes a stop button. The textarea auto-grows up to
- * a cap, then scrolls.
+ * Renders the message input: Enter sends, Shift+Enter adds a newline, and send becomes stop
+ * while a turn streams. The textarea grows up to a cap, then scrolls.
  */
 export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
   const [draft, setDraft] = useState("");
@@ -26,6 +25,7 @@ export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
     el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-measure after every draft change
   useLayoutEffect(autosize, [autosize, draft]);
 
   const submit = useCallback(() => {

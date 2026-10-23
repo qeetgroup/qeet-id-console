@@ -1,5 +1,5 @@
-// Filter-bar extras: a "More filters" popover (extra client-side facets) and a
-// "Save view" popover that snapshots the current filter state to localStorage.
+// The users filter bar's "More filters" popover, and its "Save view" popover, which stores named
+// snapshots of the filters.
 
 import {
   Button,
@@ -14,8 +14,10 @@ import {
   SelectValue,
 } from "@qeetrix/ui";
 import { BookmarkIcon, SlidersHorizontalIcon, TrashIcon } from "@qeetrix/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { scopedStorage, useStorageScope } from "@/platform/auth/scoped-storage";
 
 export interface UsersViewState {
   search: string;
@@ -25,17 +27,16 @@ export interface UsersViewState {
   emailVerified: string;
 }
 
-const VIEWS_KEY = "qeetid.users.savedViews";
+// Views capture filters, so they are saved per person and tenant and wiped on
+// sign-out (scopedStorage).
+const viewsStorage = scopedStorage("qeetid.users.savedViews");
 
 function loadViews(): Record<string, UsersViewState> {
-  try {
-    return JSON.parse(localStorage.getItem(VIEWS_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
+  const saved = viewsStorage.read();
+  return saved && typeof saved === "object" ? (saved as Record<string, UsersViewState>) : {};
 }
 function persistViews(v: Record<string, UsersViewState>) {
-  localStorage.setItem(VIEWS_KEY, JSON.stringify(v));
+  viewsStorage.write(v);
 }
 
 export function MoreFilters({
@@ -96,8 +97,13 @@ export function SaveView({
 }) {
   const { t } = useTranslation("users");
   const [views, setViews] = useState<Record<string, UsersViewState>>(() => loadViews());
+  const storageScope = useStorageScope();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-read on scope change
+  useEffect(() => {
+    setViews(loadViews());
+  }, [storageScope]);
   const [name, setName] = useState("");
-  const names = Object.keys(views);
+  const entries = Object.entries(views);
 
   function save() {
     const n = name.trim();
@@ -136,13 +142,13 @@ export function SaveView({
             {t("filters.save")}
           </Button>
         </div>
-        {names.length > 0 ? (
+        {entries.length > 0 ? (
           <ul className="space-y-1">
-            {names.map((n) => (
+            {entries.map(([n, view]) => (
               <li key={n} className="flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => onApply(views[n])}
+                  onClick={() => onApply(view)}
                   className="flex-1 truncate rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
                 >
                   {n}

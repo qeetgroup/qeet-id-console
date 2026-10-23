@@ -1,6 +1,5 @@
-// KPI cards atop the Organizations table. All counts are real (computed from the
-// enriched caller-scoped tenant list). No sparklines — there is no meaningful
-// per-day org trend; proportion cards show a meter instead.
+// KPI cards above the Organizations table, computed from the caller's org list. No sparklines:
+// there is no meaningful per-day org trend, so proportion cards show a meter.
 
 import { cn, Skeleton } from "@qeetrix/ui";
 import {
@@ -40,6 +39,8 @@ function pct(n: number, total: number): number {
   return total > 0 ? Math.round((n / total) * 1000) / 10 : 0;
 }
 
+const SKELETON_IDS = ["a", "b", "c", "d", "e"] as const;
+
 export function OrgsKpis({
   orgs,
   loading,
@@ -54,8 +55,8 @@ export function OrgsKpis({
   if (loading && orgs.length === 0) {
     return (
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 rounded-xl" />
+        {SKELETON_IDS.map((id) => (
+          <Skeleton key={id} className="h-28 rounded-xl" />
         ))}
       </div>
     );

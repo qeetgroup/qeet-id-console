@@ -7,10 +7,8 @@ import { socialStartUrl, usePlatformSocialProviders } from "../api/flows";
 
 import { AuthDivider } from "./auth-form-card";
 
-// Display catalog for the platform social providers. A button is rendered ONLY
-// when the backend reports the provider as configured (its keys are set) — see
-// usePlatformSocialProviders → GET /v1/social/platform/providers. Nothing is
-// shown as a disabled placeholder.
+// Platform social providers the console can show. A button renders only when the server reports
+// the provider as configured, never as a disabled placeholder.
 const CATALOG: { id: string; label: string; icon: ReactNode }[] = [
   { id: "google", label: "Google", icon: <Google /> },
   { id: "github", label: "GitHub", icon: <Github className="dark:invert" /> },
@@ -19,9 +17,8 @@ const CATALOG: { id: string; label: string; icon: ReactNode }[] = [
 ];
 
 /**
- * The "Or continue with" divider + one button per configured social provider.
- * Renders nothing at all when no providers are configured, so the auth forms
- * show only what actually works.
+ * Renders the "Or continue with" divider and one button per configured social provider, or
+ * nothing when none is configured, so the forms show only what works.
  */
 export function SocialButtons({
   verb = "Continue",
@@ -30,9 +27,7 @@ export function SocialButtons({
 }: {
   verb?: string;
   disabled?: boolean;
-  // "signup" permits just-in-time account creation; "login" (default) requires
-  // an existing account.
-  intent?: "login" | "signup";
+  intent?: "login" | "signup"; // "signup" may create an account; "login" requires an existing one
 }) {
   const { t } = useTranslation("auth-flow");
   const q = usePlatformSocialProviders();

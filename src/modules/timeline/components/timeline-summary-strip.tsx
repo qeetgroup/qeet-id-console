@@ -1,7 +1,3 @@
-// Identity summary strip — five stat cards computed from the loaded timeline
-// events. Cards toggle the category filter (Total clears it). Built on the
-// shared .dashboard-metric helpers so it matches the rest of the console.
-
 import { cn, Skeleton } from "@qeetrix/ui";
 import {
   ActivityIcon,
@@ -84,6 +80,10 @@ function StatCard({
   );
 }
 
+/**
+ * Renders five stat cards counted from the loaded timeline events. A card applies its category
+ * filter when clicked; Total clears it.
+ */
 export function TimelineSummaryStrip({
   events,
   loading,

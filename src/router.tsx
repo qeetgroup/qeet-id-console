@@ -1,9 +1,7 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
-// Side-effect import: initializes the shared i18next instance at module load,
-// before any component renders. Static `en` resources keep init synchronous
-// and SSR-safe, so the first server render already has translations.
+// Initializes i18next at module load, before any component renders.
 import "./i18n";
 
 import { RootErrorComponent } from "@/platform/errors/error-component";
@@ -19,8 +17,6 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
-    // Fallback for uncaught render/loader throws — renders user-safe copy
-    // instead of a blank page, never leaking raw backend detail.
     defaultErrorComponent: RootErrorComponent,
   });
 

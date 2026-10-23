@@ -1,17 +1,9 @@
-// User CRUD data layer — thin React Query hooks over the existing
-// /v1/users/* endpoints. Extracted from routes/_app/users/index.tsx and
-// routes/_app/users/$userId.tsx so that both the route pages (UI path) and
-// the qeetai tools (tool-call path) share one authenticated hook.
-//
-// Tool run() functions call api() directly; these hooks are the UI layer.
-// Follow the house pattern: useMutation + api() + onSuccess invalidate + meta.
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
-// ── Shared types ──────────────────────────────────────────────────────────────
+import { USER360_KEYS } from "./user360";
 
 export type UserStatus = "active" | "invited" | "suspended" | "deleted";
 
@@ -27,14 +19,13 @@ export interface User {
   roles?: string[] | null;
   created_at: string;
   updated_at?: string;
-  // List-only enrichment (populated by GET /v1/users; absent on single fetches).
-  mfa_enabled?: boolean;
+  mfa_enabled?: boolean; // Only the list endpoint fills these; a single-user read omits them
   groups_count?: number;
   last_seen_at?: string | null;
   last_seen_ip?: string | null;
 }
 
-/** Tenant-wide member counts for the Users KPI cards (GET /v1/users/stats). */
+/** Tenant-wide member counts. */
 export interface UserStats {
   total: number;
   active: number;
@@ -42,17 +33,15 @@ export interface UserStats {
   invited: number;
   mfa_enabled: number;
   mfa_missing: number;
-  /** Members created in the last 30 days — the Total card's delta baseline. */
   new_last_30d: number;
 }
 
-/** 30-day daily series (oldest → newest) for the KPI sparklines. */
+/** Daily counts over the last 30 days, oldest first. */
 export interface UserTrends {
   total: number[];
   mfa_enabled: number[];
 }
 
-/** Directory summary counts. */
 export function useUserStats(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
@@ -63,7 +52,6 @@ export function useUserStats(enabled = true) {
   });
 }
 
-/** 30-day trend series for the KPI sparklines. */
 export function useUserTrends() {
   const tenantId = useTenantId();
   return useQuery({
@@ -80,8 +68,7 @@ export interface CreateUserInput {
   password?: string;
   display_name?: string;
   phone?: string;
-  /** Optional role to assign immediately after creation. */
-  role_id?: string;
+  role_id?: string; // assigned straight after the user is created
 }
 
 export interface UpdateUserBody {
@@ -90,18 +77,15 @@ export interface UpdateUserBody {
   status?: "active" | "suspended";
 }
 
-// Stable React Query key roots for cache invalidation.
 export const USER_KEYS = {
   all: ["users"] as const,
   detail: (id: string) => ["user", id] as const,
   activity: (id: string, tenantId: string | null) => ["user-activity", id, tenantId] as const,
 };
 
-// ── Mutations ─────────────────────────────────────────────────────────────────
-
 /**
- * Create a new user (POST /v1/users). Optionally assigns an initial role via
- * POST /v1/users/{id}/tenants/{tenantId}/roles/{roleId}.
+ * Creates a user, then assigns `role_id` when given. If the assignment fails the mutation
+ * rejects, but the user still exists.
  */
 export function useCreateUser() {
   const qc = useQueryClient();
@@ -110,9 +94,15 @@ export function useCreateUser() {
       const { role_id, ...body } = input;
       const user = await api<User>("/v1/users", { method: "POST", body });
       if (role_id) {
-        await api<void>(`/v1/users/${user.id}/tenants/${body.tenant_id}/roles/${role_id}`, {
-          method: "POST",
-        });
+        try {
+          await api<void>(`/v1/users/${user.id}/tenants/${body.tenant_id}/roles/${role_id}`, {
+            method: "POST",
+          });
+        } catch (err) {
+          // The user exists even though the role didn't stick, so the list must show it.
+          qc.invalidateQueries({ queryKey: USER_KEYS.all });
+          throw err;
+        }
       }
       return user;
     },
@@ -121,10 +111,6 @@ export function useCreateUser() {
   });
 }
 
-/**
- * Update a user's mutable profile fields (PATCH /v1/users/{id}).
- * Accepts display_name, phone, and/or status in one call.
- */
 export function useUpdateUser() {
   const qc = useQueryClient();
   return useMutation({
@@ -138,10 +124,6 @@ export function useUpdateUser() {
   });
 }
 
-/**
- * Set a user's status to "active" or "suspended" (PATCH /v1/users/{id}).
- * Used by the qeetai's disable_user / enable_user tools.
- */
 export function useSetUserStatus() {
   const qc = useQueryClient();
   return useMutation({
@@ -155,9 +137,7 @@ export function useSetUserStatus() {
   });
 }
 
-/**
- * Soft-delete a user (DELETE /v1/users/{id}).
- */
+/** Soft-deletes a user. */
 export function useDeleteUser() {
   const qc = useQueryClient();
   return useMutation({
@@ -168,9 +148,8 @@ export function useDeleteUser() {
 }
 
 /**
- * Admin MFA reset: clears all enrolled factors for a user, forcing
- * re-enrollment at next sign-in (DELETE /v1/users/{id}/mfa).
- * Gated server-side on user.write; audited as mfa.admin_reset.
+ * Clears every MFA factor the user enrolled, so they enroll again at next sign-in. The server
+ * requires user.write and audits the reset.
  */
 export function useResetUserMfa() {
   const qc = useQueryClient();
@@ -178,16 +157,17 @@ export function useResetUserMfa() {
     mutationFn: (userId: string) =>
       api<{ message: string }>(`/v1/users/${userId}/mfa`, { method: "DELETE" }),
     onSuccess: (_, userId) => {
+      // MFA state also shows in the security posture, the list and the stats.
       qc.invalidateQueries({ queryKey: USER_KEYS.detail(userId) });
+      qc.invalidateQueries({ queryKey: USER360_KEYS.security(userId) });
+      qc.invalidateQueries({ queryKey: USER_KEYS.all });
+      qc.invalidateQueries({ queryKey: ["user-stats"] });
     },
     meta: { successMessage: "Multi-factor authentication reset for this user" },
   });
 }
 
-/**
- * Assign a role to a user within the current tenant
- * (POST /v1/users/{userID}/tenants/{tenantID}/roles/{roleID}).
- */
+/** Assigns a role to a user in the current tenant. */
 export function useAssignRole() {
   const tenantId = useTenantId();
   const qc = useQueryClient();

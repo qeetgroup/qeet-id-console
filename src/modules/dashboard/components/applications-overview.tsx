@@ -44,8 +44,7 @@ function recentCount(dates: (string | undefined | null)[]): number {
 type Stat = {
   label: string;
   value: number;
-  /** New in the last 30 days. Undefined when the source carries no timestamp. */
-  added?: number;
+  added?: number; // new in the last 30 days; undefined when the source has no timestamps
   icon: React.ReactNode;
   tone: "primary" | "neutral" | "indigo";
   loading: boolean;
@@ -123,8 +122,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
     },
     {
       label: "Custom scopes",
-      value: customScopes,
-      // Derived from the apps' scope lists, which carry no per-scope date.
+      value: customScopes, // no `added`: scope lists carry no per-scope date
       icon: <LayersIcon />,
       tone: "indigo",
       loading: clientsQ.isPending,

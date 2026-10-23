@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -14,6 +13,7 @@ import {
   Slider,
   Switch,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,7 +25,7 @@ import {
   type LockoutSettings,
   useAuthPolicy,
   useUpdateAuthPolicy,
-} from "@/modules/authentication/api/auth-policy";
+} from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/auth/login-methods/password")({
   component: PasswordPage,

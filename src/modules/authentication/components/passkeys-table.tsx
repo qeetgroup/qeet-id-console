@@ -16,10 +16,7 @@ import { useTranslation } from "react-i18next";
 import { errorMessage } from "@/platform/errors/user-message";
 import { PASSKEY_NAME_MAX_LENGTH, type Passkey } from "../api/passkeys";
 
-/**
- * The name to show for a passkey. Passkeys enrolled before the server named
- * every new one have none and get `unnamed` (a translated label) instead.
- */
+/** Returns the name to show for a passkey, or `unnamed` (a translated label) when it has none. */
 export function passkeyDisplayName(passkey: Passkey, unnamed: string): string {
   return passkey.name?.trim() || unnamed;
 }
@@ -31,14 +28,13 @@ type PasskeysTableProps = {
   /** Called when the user asks to remove a passkey — the caller confirms. */
   onRemove: (passkey: Passkey) => void;
   isRemoving?: boolean;
-  /** Set when no passkey may be removed (it would be the account's last way to sign in): shown as the reason. */
+  /** Why no passkey may be removed (it would be the last way to sign in); shown when set. */
   removeBlockedReason?: string;
 };
 
 /**
- * The signed-in user's passkeys (name · transports · last used · created ·
- * actions) with an inline rename. Names are user-supplied, so they are only
- * ever rendered as text.
+ * Renders the signed-in user's passkeys with an inline rename. Names are user-supplied, so they
+ * are only ever rendered as text.
  */
 export function PasskeysTable({
   passkeys,

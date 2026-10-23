@@ -1,8 +1,3 @@
-// Saved-views bar: quick-apply chips for the built-in investigation presets and
-// any user-saved views, plus a "Save view" popover that snapshots the current
-// filter set. Applying a view navigates the URL (see the route), so every view
-// stays paste-shareable.
-
 import {
   Button,
   Chip,
@@ -21,6 +16,7 @@ import { useState } from "react";
 import type { ActivitySearch } from "../activity-search";
 import { PRESET_VIEWS, type SavedView, savedViewsActions, savedViewsStore } from "../saved-views";
 
+/** Renders the saved-view chips and a popover that saves the current search as a new view. */
 export function ActivitySavedViews({
   activeViewId,
   currentSearch,
@@ -72,7 +68,7 @@ export function ActivitySavedViews({
         </ChipGroup>
 
         <Popover>
-          {/* Save-current-view control, pushed to the trailing edge */}
+          {/* Pushed to the trailing edge of the bar */}
           <PopoverTrigger
             render={
               <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground">

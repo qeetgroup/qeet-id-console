@@ -10,7 +10,7 @@ import {
   within,
 } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const intent = vi.hoisted(() => ({ action: undefined as string | undefined, navigate: vi.fn() }));
@@ -153,7 +153,9 @@ describe("Directory overview", () => {
 
   it("offers both supported connection destinations", async () => {
     render(<DirectoryOverviewView data={fixture()} />);
-    fireEvent.click(screen.getAllByRole("button", { name: "Add directory connection" })[0]);
+    const add = screen.getAllByRole("button", { name: "Add directory connection" })[0];
+    assert(add, "expected an Add directory connection button");
+    fireEvent.click(add);
     expect((await screen.findByRole("menuitem", { name: "SCIM" })).getAttribute("href")).toBe(
       "/auth/connections/scim",
     );
@@ -242,7 +244,7 @@ describe("Directory overview", () => {
     expect(intent.navigate).not.toHaveBeenCalled();
     rerender({ enabled: true });
     expect(result.current[0]).toBe(true);
-    const navigation = intent.navigate.mock.calls[0][0];
+    const navigation = intent.navigate.mock.calls[0]?.[0];
     expect(navigation.replace).toBe(true);
     expect(navigation.href).toBe("/directory?sort=name");
     act(() => result.current[1](false));

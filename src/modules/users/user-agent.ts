@@ -1,14 +1,12 @@
-// Best-effort User-Agent parsing for the User 360 sessions view (the sessions
-// model stores only the raw UA string). Intentionally small — not a UA database.
+// Sessions store only the raw User-Agent, so this names its browser and OS on a best-effort basis;
+// it is deliberately small, not a UA database.
 
 export interface ParsedUserAgent {
   browser: string;
   os: string;
-  /** "Chrome on macOS" */
-  label: string;
+  label: string; // e.g. "Chrome on macOS"
 }
 
-/** Best-effort UA → {browser, os, label}. */
 export function parseUserAgent(ua?: string | null): ParsedUserAgent {
   if (!ua) return { browser: "Unknown", os: "device", label: "Unknown device" };
   const browser = /Edg\//.test(ua)

@@ -1,6 +1,3 @@
-// The Overview tab — the "answer the 5 questions at a glance" surface: security
-// posture, identity, access, recent activity, recommendations, and danger zone.
-
 import {
   Badge,
   Button,
@@ -9,11 +6,11 @@ import {
   CardHeader,
   CardTitle,
   cn,
-  DataState,
   EmptyState,
   StatusPill,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import {
   ActivityIcon,
   ArrowRightIcon,
@@ -127,8 +124,6 @@ export function OverviewTab({
   );
 }
 
-// ── Identity card ───────────────────────────────────────────────────────────────
-
 function IdentityCard({ user, onTab }: { user: UserDetail; onTab: (t: User360Tab) => void }) {
   const { t } = useTranslation("users");
   return (
@@ -183,8 +178,6 @@ function IdentityCard({ user, onTab }: { user: UserDetail; onTab: (t: User360Tab
     </Card>
   );
 }
-
-// ── Access summary card ─────────────────────────────────────────────────────────
 
 function AccessSummaryCard({
   access,
@@ -241,8 +234,6 @@ function AccessSummaryCard({
     </Card>
   );
 }
-
-// ── Recent activity card ────────────────────────────────────────────────────────
 
 function RecentActivityCard({
   recent,
@@ -325,8 +316,6 @@ function RecentActivityCard({
     </Card>
   );
 }
-
-// ── Security recommendations ────────────────────────────────────────────────────
 
 interface Rec {
   key: string;

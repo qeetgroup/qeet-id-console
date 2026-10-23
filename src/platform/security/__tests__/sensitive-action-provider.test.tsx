@@ -69,7 +69,6 @@ describe("useSensitiveAction", () => {
         run: action,
       });
     });
-    // Confirm dialog is shown; action not called yet.
     const confirmBtn = await screen.findByRole("button", { name: "Delete" });
     expect(action).not.toHaveBeenCalled();
     fireEvent.click(confirmBtn);

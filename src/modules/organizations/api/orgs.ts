@@ -1,8 +1,6 @@
-// Organizations (tenants) data layer. `GET /v1/tenants` is caller-scoped (the
-// orgs you belong to) and now enriched with per-org member counts. Per-org
-// DETAIL surfaces (members, analytics, billing, audit, auth-policy) are locked
-// by the server to the *active* org, so the Org 360 renders them only for the
-// current tenant and offers a "switch" CTA otherwise.
+// `GET /v1/tenants` lists only the caller's orgs. The server locks per-org detail (members,
+// analytics, billing, audit, auth policy) to the active org, so detail queries are enabled for it
+// alone.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -21,9 +19,8 @@ export interface Org {
   metadata?: Record<string, unknown> | null;
   created_at: string;
   updated_at?: string;
-  // List-only enrichment.
-  member_count?: number;
-  mfa_enabled_count?: number;
+  member_count?: number; // list responses only
+  mfa_enabled_count?: number; // list responses only
 }
 
 export const ORG_KEYS = {
@@ -33,7 +30,7 @@ export const ORG_KEYS = {
   members: (id: string) => ["org-members", id] as const,
 };
 
-/** All orgs the caller belongs to (enriched with member/MFA counts). */
+/** Lists the orgs the caller belongs to, with member and MFA counts. */
 export function useOrgs(enabled = true) {
   return useQuery({
     queryKey: ORG_KEYS.all,
@@ -43,13 +40,11 @@ export function useOrgs(enabled = true) {
   });
 }
 
-/** A single org, sourced from the caller-scoped list (the by-id GET is locked to the active org). */
+/** Returns one org from the caller's list, since the by-id GET serves only the active org. */
 export function useOrg(orgId: string) {
   const q = useOrgs();
   return { ...q, org: q.data?.items.find((o) => o.id === orgId) };
 }
-
-// ── Detail surfaces (active-org only; caller gates `enabled` on isActiveOrg) ──
 
 export interface OrgAuthPolicy {
   password_enabled: boolean;
@@ -105,7 +100,7 @@ export interface OrgMember {
   last_seen_at?: string | null;
 }
 
-/** Members of the ACTIVE org (GET /v1/users is JWT-tenant-scoped). */
+/** Lists members of the active org; `/v1/users` is scoped by the session, not by `orgId`. */
 export function useOrgMembers(orgId: string, enabled: boolean) {
   return useQuery({
     queryKey: ORG_KEYS.members(orgId),
@@ -114,8 +109,6 @@ export function useOrgMembers(orgId: string, enabled: boolean) {
     staleTime: 15_000,
   });
 }
-
-// ── Mutations ───────────────────────────────────────────────────────────────
 
 export interface UpdateOrgBody {
   name?: string;

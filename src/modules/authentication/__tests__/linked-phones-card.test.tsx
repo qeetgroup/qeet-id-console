@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "@/i18n";
 
@@ -80,14 +80,16 @@ describe("LinkedPhonesCard", () => {
     wrap(<LinkedPhonesCard scope={{ kind: "self" }} />);
     expect(await screen.findByText("Sai's iPhone")).toBeTruthy();
     expect(screen.getAllByText("Android").length).toBeGreaterThan(0);
-    expect(calls[0].path).toBe("/v1/mfa/push/devices");
+    expect(calls[0]?.path).toBe("/v1/mfa/push/devices");
     expect(screen.getByRole("button", { name: /link a phone/i })).toBeTruthy();
   });
 
   it("removes one of the person's phones after a confirmation", async () => {
     wrap(<LinkedPhonesCard scope={{ kind: "self" }} />);
     await screen.findByText("Sai's iPhone");
-    fireEvent.click(screen.getAllByRole("button", { name: /^remove$/i })[1]);
+    const secondRemove = screen.getAllByRole("button", { name: /^remove$/i })[1];
+    assert(secondRemove, "expected a second Remove button");
+    fireEvent.click(secondRemove);
     fireEvent.click(await screen.findByRole("button", { name: /^remove$/i, hidden: false }));
     await waitFor(() => expect(deleted()).toContain("/v1/mfa/push/devices/p2"));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Phone removed"));
@@ -96,9 +98,11 @@ describe("LinkedPhonesCard", () => {
   it("lets an administrator remove one of a member's phones, and cannot link one for them", async () => {
     wrap(<LinkedPhonesCard scope={{ kind: "member", userId: "u1" }} />);
     await screen.findByText("Sai's iPhone");
-    expect(calls[0].path).toBe("/v1/users/u1/push-devices");
+    expect(calls[0]?.path).toBe("/v1/users/u1/push-devices");
     expect(screen.queryByRole("button", { name: /link a phone/i })).toBeNull();
-    fireEvent.click(screen.getAllByRole("button", { name: /^remove$/i })[0]);
+    const firstRemove = screen.getAllByRole("button", { name: /^remove$/i })[0];
+    assert(firstRemove, "expected a Remove button");
+    fireEvent.click(firstRemove);
     fireEvent.click(await screen.findByRole("button", { name: /^remove$/i, hidden: false }));
     await waitFor(() => expect(deleted()).toContain("/v1/users/u1/push-devices/p1"));
   });
@@ -134,7 +138,9 @@ describe("LinkPhoneDialog", () => {
       expect(calls).toContainEqual({ path: "/v1/mfa/push/pairing/pair-1", method: "GET" }),
     );
     // The footer's Close and the dialog's own close button both close it.
-    fireEvent.click(screen.getAllByRole("button", { name: /^close$/i })[0]);
+    const close = screen.getAllByRole("button", { name: /^close$/i })[0];
+    assert(close, "expected a Close button");
+    fireEvent.click(close);
     await waitFor(() => expect(deleted()).toContain("/v1/mfa/push/pairing/pair-1"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });

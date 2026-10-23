@@ -1,9 +1,5 @@
-// Graceful-degradation provider. When no server-side model is configured
-// (`/v1/qeetai/status` → configured:false, or the endpoint isn't deployed yet),
-// the workspace stays fully usable: the panel, history, and composer all work,
-// and a turn streams a helpful "connect a provider" explanation instead of
-// pretending to be intelligent. This mirrors the existing ComingSoon pattern the
-// console already ships for the authorization assistant.
+// Provider used while Qeet AI isn't usable: the workspace still works, and each turn streams an
+// explanation of how to connect a provider instead of an answer.
 
 import {
   type AIProvider,
@@ -39,10 +35,7 @@ function delay(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 
-/**
- * Split into word-plus-trailing-space chunks so the message streams with the
- * same cadence a real model would, giving the UI something honest to render.
- */
+/** Splits text into word-plus-whitespace chunks, so it streams at a model's cadence. */
 function chunk(text: string): string[] {
   return text.match(/\S+\s*/g) ?? [text];
 }

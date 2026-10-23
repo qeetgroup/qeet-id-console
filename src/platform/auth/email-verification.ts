@@ -3,7 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { api } from "@/platform/api/client";
 import type { Me } from "@/platform/auth/session";
 
-/** Shared with `useMe()` so a guard hit costs one request, not two. */
+/** Returns the `/v1/me` query, keyed like useMe() so a guard and the page share one request. */
 export function meQueryOptions(userId: string) {
   return {
     queryKey: ["me", userId] as const,
@@ -13,15 +13,9 @@ export function meQueryOptions(userId: string) {
 }
 
 /**
- * Route-guard read of the signed-in user's email verification state, used to
- * keep an unverified account on /verify-email instead of the console.
- *
- * Fails OPEN. If `/v1/me` can't be reached we report "verified" and let the
- * navigation through, because this guard is UX rather than security (ADR-0003 —
- * the backend is the authority, and `POST /v1/tenants` enforces the real gate
- * server-side). Failing closed would turn any backend blip into a console-wide
- * lockout. `VerifyEmailBanner` stays mounted as the visible fallback for
- * exactly that window.
+ * Returns whether the signed-in user's email is verified, for the guard that holds an unverified
+ * account on /verify-email. Fails open: the guard is UX, the backend enforces the real gate, and
+ * failing closed would turn a backend blip into a console-wide lockout.
  */
 export async function hasVerifiedEmail(
   queryClient: QueryClient,

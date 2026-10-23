@@ -1,6 +1,5 @@
-// SAML 2.0 connection data layer. Connections are managed under the tenant;
-// the SP metadata + login URLs an IdP needs live at the API origin's /saml/*
-// routes, so they're derived from the API base URL.
+// SAML connections to a tenant's identity providers. The SP metadata and login URLs an IdP needs
+// are served at the API origin, so they derive from the API base URL.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -95,7 +94,7 @@ export interface SamlTestResult {
   checks: SamlTestCheck[];
 }
 
-/** Preflight a connection's config (offline checks) before enabling it. */
+/** Runs offline checks on a connection's configuration before it is enabled. */
 export function useTestSamlConnection() {
   const tenantId = useTenantId();
   return useMutation({

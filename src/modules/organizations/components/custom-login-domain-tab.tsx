@@ -67,8 +67,7 @@ export function CustomLoginDomainTab() {
   const save = async () => {
     setSaving(true);
     try {
-      // Full-replace PUT: merge onto the current branding so saving a domain
-      // here can't blank the colours and logo set on the Branding screen.
+      // The PUT replaces all branding: merge onto it so the colours and logo survive.
       await api(`/v1/tenants/${tenantId}/branding`, {
         method: "PUT",
         body: { ...(brandingQ.data ?? {}), custom_domain: host.trim() || null },
@@ -346,9 +345,7 @@ export function CustomLoginDomainTab() {
         </div>
       </div>
 
-      {/* In-flow, not `fixed inset-x-0`: a viewport-pinned bar spanned the whole
-          window including under the sidebar, so it never lined up with the
-          content column it belongs to. */}
+      {/* In-flow rather than viewport-pinned, so the bar lines up with the content column. */}
       <div className="flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="min-w-0 text-xs text-muted-foreground">
           {dirty ? (
@@ -373,8 +370,7 @@ export function CustomLoginDomainTab() {
               ? t("workspace.domains.custom.verifying")
               : t("workspace.domains.custom.verifyDns")}
           </Button>
-          {/* A docs link shouldn't compete with Save for emphasis, so it's a
-              quiet link rather than a third solid button. */}
+          {/* A quiet link, so the docs don't compete with Save for emphasis. */}
           <a
             href={GUIDE}
             target="_blank"
@@ -402,11 +398,7 @@ function SectionIcon({ icon }: { icon: React.ReactNode }) {
   );
 }
 
-/**
- * Rows in the provisioning panel share one grid so every value starts at the
- * same x position. `justify-between` pushed each value to the right edge, which
- * left the column ragged because the labels differ in width.
- */
+/** Renders a label/value row on a fixed-width label grid, so the panel's values align. */
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[8rem_1fr] items-start gap-3">

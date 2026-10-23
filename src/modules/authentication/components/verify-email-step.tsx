@@ -13,10 +13,8 @@ import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 
 /**
- * The signup OTP step. Rendered by the standalone `/verify-email` route, which
- * is where an unverified account is held until the code is confirmed — the
- * state used to live in the sign-up component, so a refresh dropped it and let
- * the (already authenticated) user straight into the console.
+ * Renders the sign-up email code step. The standalone `/verify-email` route holds an unverified
+ * account here until the code is confirmed, so a page refresh can't skip verification.
  */
 export function VerifyEmailStep({
   email,
@@ -36,8 +34,7 @@ export function VerifyEmailStep({
   footer?: React.ReactNode;
 }) {
   const [code, setCode] = useState("");
-  // Focus the code field on mount (explicit effect instead of autoFocus, which
-  // jsx-a11y/no-autofocus flags).
+  // Focus the code field from an effect, since the a11y lint rule forbids autoFocus.
   const codeRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     codeRef.current?.focus();

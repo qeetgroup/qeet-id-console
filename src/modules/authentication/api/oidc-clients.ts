@@ -1,9 +1,6 @@
-// OIDC / OAuth 2.0 client (application) administration. Clients are registered
-// per tenant; the list/read/update/rotate endpoints are tenant-scoped while
-// create/delete operate on the global /v1/oidc/clients collection (the body /
-// the row already carries the tenant). Client secrets are returned exactly
-// once (on create + on rotate) and are bcrypt-hashed server-side after that —
-// surface them via CopyableSecret immediately; they can't be re-read.
+// OIDC client (application) administration: list, read, update and rotate are tenant-scoped;
+// create and delete use /v1/oidc/clients. A client secret is returned once, on create or rotate,
+// and stored hashed, so show it immediately: it can't be read again.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const OIDC_CLIENTS_KEY = ["oidc-clients"] as const;
@@ -22,7 +19,7 @@ export interface OidcClient {
   grant_types: string[];
   scopes: string[];
   created_at: string;
-  /** When a confidential app's exemption from sending a proof key (and a nonce) ends; null: none. */
+  /** When a confidential app's exemption from sending a proof key and nonce ends; null: none. */
   pkce_exempt_until?: string | null;
 }
 
@@ -30,10 +27,9 @@ export interface OidcClient {
 export const PKCE_EXEMPTION_ENDING_SOON_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
- * Whether an app must send a proof key (PKCE, S256) and a nonce on every
- * sign-in, the server's rule for every app, or holds an exemption until a date.
- * A public app never does; an exemption that has ended is reported as such, so
- * its owner can see why sign-ins now fail.
+ * Whether an app must send a proof key (PKCE, S256) and a nonce on every sign-in, the server's
+ * rule for every app, or holds an exemption until a date. A public app never holds one; an
+ * ended exemption is reported as such, so its owner can see why sign-ins now fail.
  */
 export type ProofKeyStatus =
   | { kind: "required" }
@@ -81,9 +77,8 @@ export interface RotateSecretResponse {
 }
 
 /**
- * A confidential application's wrong-secret lockout (server QTID-215): the
- * lockout in force, if any, and its recent failed authentications, each with
- * its time and the caller's address. No secret material is ever recorded.
+ * A confidential application's wrong-secret lockout: the lockout in force, if any, and its recent
+ * failed authentications with their time and caller address. No secret material is recorded.
  */
 export interface ClientAuthFailures {
   locked_until: string | null;
@@ -171,9 +166,10 @@ export function useRotateClientSecret(id: string) {
   });
 }
 
-/** An OIDC client that picked up a machine grant type (client_credentials /
- * token-exchange) without going through the agents/service-accounts registry
- * — i.e. a piece of software that can act without a human, unmanaged. */
+/**
+ * An OIDC client holding a machine grant type (client_credentials, token-exchange) outside the
+ * agents and service-accounts registry: unmanaged software that can act without a human.
+ */
 export interface ShadowAICandidate {
   id: string;
   client_id: string;

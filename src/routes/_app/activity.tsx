@@ -1,8 +1,5 @@
-// Activity & Audit — enterprise investigation workspace.
-// A live SSE feed + historical audit log, rendered as: a summary metric strip,
-// a sticky filter/saved-view toolbar, dense grouped rows, and a right-side
-// details drawer. All filter/time/mode/view/selection state lives in the URL
-// (validateSearch), so any view is paste-shareable.
+// Activity and audit investigation: the live SSE feed plus the audit history. All filter, time,
+// mode, view and selection state lives in the URL, so any view can be shared by pasting it.
 
 import {
   Button,
@@ -52,32 +49,25 @@ import { ActivityModeToggle } from "@/modules/activity/components/activity-mode-
 import { ActivityPagination } from "@/modules/activity/components/activity-pagination";
 import { ActivitySavedViews } from "@/modules/activity/components/activity-saved-views";
 import { ActivitySummaryStrip } from "@/modules/activity/components/activity-summary-strip";
-import {
-  ActivityTimeRange,
-  type DateRange,
-} from "@/modules/activity/components/activity-time-range";
+import { ActivityTimeRange, type DateRange } from "@/modules/activity";
 import { ActivityTimeline } from "@/modules/activity/components/activity-timeline";
 import { EventDetailsDrawer } from "@/modules/activity/components/event-details-drawer";
-import { LiveIndicator } from "@/modules/activity/components/live-indicator";
-import { extractFilterOptions, groupByDate } from "@/modules/activity/activity-filters";
+import { LiveIndicator } from "@/modules/activity";
+import { extractFilterOptions, groupByDate } from "@/modules/activity";
 import {
   ALL_EVENTS_VIEW_ID,
   hydrateSavedViews,
   type SavedView,
 } from "@/modules/activity/saved-views";
-import type {
-  ActivityFilters,
-  ActivityMode,
-  Outcome,
-} from "@/modules/activity/types/activity.types";
-import { useEntitlements } from "@/modules/billing/api/billing";
+import type { ActivityFilters, ActivityMode, Outcome } from "@/modules/activity";
+import { useEntitlements } from "@/modules/billing";
+import { useStorageScope } from "@/platform/auth/scoped-storage";
 
 export const Route = createFileRoute("/_app/activity")({
   component: ActivityRouteComponent,
   validateSearch: validateActivitySearch,
 });
 
-// Fixed catalogs for the quick-filter dropdowns.
 const CATEGORY_OPTIONS = [
   { value: "authentication", label: "Authentication" },
   { value: "authorization", label: "Authorization" },
@@ -99,8 +89,7 @@ function prettify(v: string): string {
   return v.charAt(0).toUpperCase() + v.slice(1).replace(/[_-]/g, " ");
 }
 
-// Maps an ActivityFilters patch (from context setFilters) onto URL search params.
-// Time (from/to) is owned by the range control and intentionally excluded.
+// Time (from/to) is left out: the range control owns it.
 function filtersPatchToSearch(patch: Partial<ActivityFilters>): Partial<ActivitySearch> {
   const s: Partial<ActivitySearch> = {};
   if (patch.types !== undefined) s.type = arrayToCsv(patch.types);
@@ -114,10 +103,6 @@ function filtersPatchToSearch(patch: Partial<ActivityFilters>): Partial<Activity
   if (patch.q !== undefined) s.q = patch.q || undefined;
   return s;
 }
-
-// ---------------------------------------------------------------------------
-// Small inline controls
-// ---------------------------------------------------------------------------
 
 function FacetSelect({
   label,
@@ -180,20 +165,18 @@ function ExportMenu({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Route component (owns URL ⇄ filters) + provider
-// ---------------------------------------------------------------------------
-
 function ActivityRouteComponent() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const filters = useMemo(() => searchToFilters(search), [search]);
 
+  const storageScope = useStorageScope();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-read on scope change
   useEffect(() => {
     hydrateSavedViews();
-  }, []);
+  }, [storageScope]);
 
-  // Context consumers (e.g. FilterBar via setFilters) route through the URL.
+  // Filter changes from context consumers go through the URL too.
   const onFiltersChange = useCallback(
     (patch: Partial<ActivityFilters>) => {
       navigate({
@@ -210,10 +193,6 @@ function ActivityRouteComponent() {
     </ActivityProvider>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Workspace (inside the provider)
-// ---------------------------------------------------------------------------
 
 function ActivityWorkspace() {
   const access = useCapabilities();
@@ -243,14 +222,11 @@ function ActivityWorkspace() {
   const mode: ActivityMode = search.mode ?? DEFAULT_MODE;
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  // Summary snapshot (windowed; polled only in live mode).
   const summaryQ = useActivitySummary(filters, { live: mode === "live", enabled: canRead });
   const activeOutcome = severityToOutcome(filters.severity);
 
-  // ── Numbered pagination over the loaded (filtered) events ──────────────────
   const [pageSize, setPageSize] = useState(100);
   const [page, setPage] = useState(0);
-  // Reset to the first page whenever the filter set changes.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset on filter identity
   useEffect(() => setPage(0), [filters]);
 
@@ -277,7 +253,7 @@ function ActivityWorkspace() {
     }
   }, [page, pageSize, filteredEvents.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Export (paid feature; export is client-side so the gate is UI-only).
+  // Export is a paid feature, but it runs client-side, so this gate is UI only.
   const canExport = useEntitlements().data?.features.audit_export !== false;
   const { exportAll, exporting } = useActivityExport(filters);
 
@@ -287,7 +263,6 @@ function ActivityWorkspace() {
     else resume();
   }, [mode, pause, resume]);
 
-  // ── URL mutation helpers ───────────────────────────────────────────────────
   const patchFilter = useCallback(
     (partial: Partial<ActivitySearch>) => {
       // A filter change deselects any applied saved view unless the patch sets one.
@@ -305,7 +280,6 @@ function ActivityWorkspace() {
     [navigate],
   );
 
-  // ── Time range ─────────────────────────────────────────────────────────────
   const preset = search.range ?? "all";
   const customRange = useMemo<DateRange | undefined>(
     () =>
@@ -332,7 +306,6 @@ function ActivityWorkspace() {
     [patchFilter],
   );
 
-  // ── Quick facets ───────────────────────────────────────────────────────────
   const handleCategory = useCallback(
     (v: string) => patchFilter({ category: v || undefined }),
     [patchFilter],
@@ -343,11 +316,10 @@ function ActivityWorkspace() {
     [patchFilter],
   );
 
-  // ── Search (committed on submit to avoid per-keystroke navigations) ─────────
+  // Search is committed on submit, to avoid a navigation per keystroke.
   const [searchDraft, setSearchDraft] = useState(filters.q);
   useEffect(() => setSearchDraft(filters.q), [filters.q]);
 
-  // Actor / resource facet options are derived from the loaded events.
   const facetOptions = useMemo(() => extractFilterOptions(allEvents), [allEvents]);
   const actorOptions = facetOptions.actors;
   const resourceOptions = useMemo(
@@ -363,7 +335,6 @@ function ActivityWorkspace() {
     [patchFilter],
   );
 
-  // ── Saved views ────────────────────────────────────────────────────────────
   const applyView = useCallback(
     (view: SavedView) => {
       // Apply with a normal push so Back returns to the previous view.
@@ -372,7 +343,6 @@ function ActivityWorkspace() {
     [navigate],
   );
 
-  // ── Clear all ──────────────────────────────────────────────────────────────
   const hasAnyFilter =
     !!filters.q ||
     !!filters.ip ||
@@ -388,7 +358,6 @@ function ActivityWorkspace() {
     navigate({ search: (prev) => ({ mode: prev.mode }) });
   }, [navigate]);
 
-  // ── Drawer / selection ─────────────────────────────────────────────────────
   const selectedEvent = useMemo(
     () => allEvents.find((e) => e.id === search.event) ?? null,
     [allEvents, search.event],
@@ -415,7 +384,6 @@ function ActivityWorkspace() {
     [patchDrawer],
   );
 
-  // ── Live/history + jump-to-new ─────────────────────────────────────────────
   const handleModeChange = useCallback(
     (m: ActivityMode) => patchFilter({ mode: m }),
     [patchFilter],

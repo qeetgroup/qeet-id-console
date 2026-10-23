@@ -1,10 +1,6 @@
-// Posture maths for the Authorization overview.
-//
-// Everything here is derived in the browser from configuration the API already
-// returns — roles, permissions and ABAC policies. The backend exposes no
-// posture score, no resource-coverage figure and no historical counts, so these
-// are presentation-level summaries of live config, not server verdicts. Keep
-// them pure and testable: the route only renders what these functions return.
+// Authorization posture figures derived in the browser from roles, permissions and ABAC
+// policies. The backend has no posture score, coverage or history, so these summarise live
+// configuration; they are not server verdicts.
 
 import type { AbacPolicy } from "./api/abac";
 import type { AuditEvent } from "./api/audit";
@@ -19,7 +15,7 @@ export interface PostureFinding {
   count: number;
 }
 
-/** The four checks the overview reports on, in display order. */
+/** Returns the four posture checks, in display order. */
 export function postureFindings(perms: Permission[], policies: AbacPolicy[]): PostureFinding[] {
   return [
     { id: "wildcard", severity: "high", count: wildcardPermissions(perms).length },
@@ -37,20 +33,16 @@ export function postureFindings(perms: Permission[], policies: AbacPolicy[]): Po
 export type HealthBand = "good" | "fair" | "atRisk";
 
 export interface PolicyHealth {
-  /** 0–100. */
-  score: number;
+  score: number; // 0–100
   band: HealthBand;
-  /** Number of *findings* (not items) at each level. */
-  critical: number;
+  critical: number; // Counts of findings, not of the items behind them
   warnings: number;
   info: number;
 }
 
-// Deduction weights. A finding costs a base amount for existing at all, plus a
-// smaller amount per extra item so ten wildcards read worse than one — capped so
-// a single noisy check can't zero the score on its own. Info-level findings
-// (disabled and deny policies) are reported but never deducted: they describe
-// configuration, not risk.
+// A finding costs a base amount plus a capped amount per extra item, so ten wildcards read worse
+// than one but one noisy check can't zero the score. Info findings describe configuration, not
+// risk, so they cost nothing.
 const BASE_DEDUCTION: Record<PostureSeverity, number> = { high: 15, medium: 8, info: 0 };
 const PER_EXTRA_ITEM: Record<PostureSeverity, number> = { high: 3, medium: 2, info: 0 };
 const MAX_EXTRA_ITEMS = 5;
@@ -76,10 +68,7 @@ export function policyHealth(findings: PostureFinding[]): PolicyHealth {
   return { score, band, critical, warnings, info };
 }
 
-/**
- * Resource types, taken from permission keys the way the Resources page does
- * it: the part before the first separator ("projects:read" → "projects").
- */
+/** Returns the sorted resource types in permission keys: the part before the first `.` or `:`. */
 export function resourceTypes(perms: Permission[]): string[] {
   const seen = new Set<string>();
   for (const p of perms) {
@@ -96,7 +85,7 @@ export interface ResourceCoverage {
   percent: number;
 }
 
-/** How many resource types an enabled ABAC policy actually covers. */
+/** Returns how many resource types at least one enabled ABAC policy covers. */
 export function resourceCoverage(perms: Permission[], policies: AbacPolicy[]): ResourceCoverage {
   const total = resourceTypes(perms);
   const enabled = policies.filter((p) => p.enabled);
@@ -117,17 +106,13 @@ export function resourceCoverage(perms: Permission[], policies: AbacPolicy[]): R
 }
 
 export interface CountTrend {
-  /** Net change across the window (creates minus deletes). */
-  delta: number;
-  /** Change against the count at the start of the window. */
-  percent: number;
+  delta: number; // creates minus deletes across the window
+  percent: number; // against the count at the start of the window
 }
 
 /**
- * Reconstructs a trend from the audit log, which is the only record of what
- * changed: there are no historical count snapshots. Returns null when the
- * window holds no create/delete events for the entity — the caller shows no
- * trend at all rather than implying a flat line it cannot evidence.
+ * Returns an entity's net change over the window from its audit create and delete events, as
+ * there are no count snapshots. Returns null when there are none, rather than a flat trend.
  */
 export function auditTrend(
   events: AuditEvent[],

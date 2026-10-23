@@ -72,9 +72,8 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
   }
 
   if (denied && required) {
-    // An org-less user is denied because there's no organization yet — not
-    // because of a role. Say so, and point them at onboarding instead of
-    // implying an admin must grant them a capability.
+    // An org-less user is denied for want of an organization, not a role: point them at
+    // onboarding rather than at an admin.
     return (
       <div ref={stateRef}>
         {hasOrg ? (

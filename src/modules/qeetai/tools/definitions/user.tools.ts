@@ -1,17 +1,10 @@
-// User directory tools — search_users, create_user, update_user, disable_user,
-// enable_user, delete_user, reset_user_mfa.
-//
-// Every run() calls the EXISTING authenticated endpoint via api() using
-// ctx.tenantId, so RBAC + Postgres RLS + audit are inherited unchanged.
-// Secret material: none (user operations don't produce secrets).
+// run() calls the backend through api(), so its RBAC, RLS and audit apply.
 
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import { USER_KEYS, type User } from "@/modules/users";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── search_users ──────────────────────────────────────────────────────────────
 
 const searchUsersInput = z.object({
   q: z.string().optional(),
@@ -55,8 +48,6 @@ export const searchUsersTool: ToolDefinition<SearchUsersInput> = {
     };
   },
 };
-
-// ── create_user ───────────────────────────────────────────────────────────────
 
 const createUserInput = z.object({
   email: z.string().email(),
@@ -112,8 +103,6 @@ export const createUserTool: ToolDefinition<CreateUserInput> = {
   },
 };
 
-// ── update_user ───────────────────────────────────────────────────────────────
-
 const updateUserInput = z.object({
   user_id: z.string(),
   name: z.string().optional(),
@@ -157,8 +146,6 @@ export const updateUserTool: ToolDefinition<UpdateUserInput> = {
   },
 };
 
-// ── disable_user ──────────────────────────────────────────────────────────────
-
 const disableUserInput = z.object({ user_id: z.string() });
 type DisableUserInput = z.infer<typeof disableUserInput>;
 
@@ -197,8 +184,6 @@ export const disableUserTool: ToolDefinition<DisableUserInput> = {
   },
 };
 
-// ── enable_user ───────────────────────────────────────────────────────────────
-
 const enableUserInput = z.object({ user_id: z.string() });
 type EnableUserInput = z.infer<typeof enableUserInput>;
 
@@ -236,8 +221,6 @@ export const enableUserTool: ToolDefinition<EnableUserInput> = {
   },
 };
 
-// ── delete_user ───────────────────────────────────────────────────────────────
-
 const deleteUserInput = z.object({ user_id: z.string() });
 type DeleteUserInput = z.infer<typeof deleteUserInput>;
 
@@ -273,8 +256,6 @@ export const deleteUserTool: ToolDefinition<DeleteUserInput> = {
     };
   },
 };
-
-// ── reset_user_mfa ────────────────────────────────────────────────────────────
 
 const resetUserMfaInput = z.object({ user_id: z.string() });
 type ResetUserMfaInput = z.infer<typeof resetUserMfaInput>;

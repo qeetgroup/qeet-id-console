@@ -69,6 +69,8 @@ type ApiKey = {
 
 type ApiKeysResponse = { items: ApiKey[] };
 
+const SKELETON_IDS = ["a", "b", "c"] as const;
+
 function ApiKeysPage() {
   const { t } = useTranslation("auth");
   const runSensitive = useSensitiveAction();
@@ -77,8 +79,7 @@ function ApiKeysPage() {
   };
   const tenantId = useTenantId();
   const qc = useQueryClient();
-  // `?action=create` opens this drawer, so the Applications overview can
-  // deep-link straight into it.
+  // `?action=create` opens this drawer, so the Applications overview can deep-link into it.
   const [creating, setCreating] = useCreateIntent(useCapabilities().can("apikey.write"));
   const [revealed, setRevealed] = useState<{
     name: string;
@@ -93,9 +94,7 @@ function ApiKeysPage() {
 
   const revokeM = useMutation({
     mutationFn: (id: string) => api<void>(`/v1/api-keys/${id}`, { method: "DELETE" }),
-    // Optimistic revoke: stamp `revoked_at = now()` on the local row so
-    // the UI flips to its revoked state instantly. Roll back if the
-    // server rejects.
+    // Optimistic: stamp `revoked_at` locally so the row flips at once; roll back on failure.
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ["api-keys"] });
       const snapshots = qc.getQueriesData<ApiKeysResponse>({
@@ -113,7 +112,9 @@ function ApiKeysPage() {
       return { snapshots };
     },
     onError: (_err, _id, ctx) => {
-      ctx?.snapshots.forEach(([key, snap]) => qc.setQueryData(key, snap));
+      ctx?.snapshots.forEach(([key, snap]) => {
+        qc.setQueryData(key, snap);
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["api-keys"] }),
     meta: { successMessage: "API key revoked" },
@@ -141,7 +142,7 @@ function ApiKeysPage() {
         }
       />
 
-      {revealed && revealed.secret ? (
+      {revealed?.secret ? (
         <Card className="border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/20">
           <CardHeader>
             <CardTitle className="text-base">{t("keys.revealed.title")}</CardTitle>
@@ -183,8 +184,8 @@ function ApiKeysPage() {
         <CardContent className="p-0">
           {keysQ.isLoading ? (
             <div className="space-y-3 p-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
+              {SKELETON_IDS.map((id) => (
+                <Skeleton key={id} className="h-10 w-full" />
               ))}
             </div>
           ) : keysQ.isError ? (
@@ -291,8 +292,8 @@ type CreateApiKeySheetProps = {
   onCreated: (k: { name: string; secret: string }) => void;
 };
 
-// The 201 body of POST /v1/api-keys (developer.yaml): the key, plus its
-// plaintext secret, returned this once and never stored.
+// The 201 body of POST /v1/api-keys: the key plus its plaintext secret, returned this once and
+// never stored.
 type CreateApiKeyResponse = {
   api_key: ApiKey;
   secret?: string;

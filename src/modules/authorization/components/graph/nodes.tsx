@@ -3,8 +3,7 @@ import { KeyRoundIcon, ShieldCheckIcon } from "@qeetrix/icons";
 
 import { NODE_W } from "./layout";
 
-// Type → colour mapping mirrors the original ReBAC SVG so the visual language
-// carries over. Tailwind classes (not inline colours) keep dark-mode correct.
+// Tailwind classes rather than inline colours, so each type keeps its colour in dark mode.
 const TYPE_STYLES: Record<string, string> = {
   user: "border-blue-400 bg-blue-50 dark:border-blue-500/60 dark:bg-blue-950/40",
   group: "border-purple-400 bg-purple-50 dark:border-purple-500/60 dark:bg-purple-950/40",

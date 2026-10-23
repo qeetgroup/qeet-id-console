@@ -1,6 +1,5 @@
-// Transactional email template data layer. The catalog (keys + default
-// subject/body + variables) lives server-side; tenants store overrides. A
-// missing override means the built-in default is used (custom=false).
+// The server holds the email template catalog (keys, default subject and body, variables); a
+// tenant stores overrides, and a template without one (custom=false) uses the default.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

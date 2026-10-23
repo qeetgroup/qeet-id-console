@@ -687,8 +687,11 @@ export function MappingsView({
                     : "directory.mappings.review",
               )}
             </p>
-            {preview?.issues.map((issue, index) => (
-              <p key={`${issue.mapping_id}-${index}`} className="mt-1 text-[11px]">
+            {preview?.issues.map((issue) => (
+              <p
+                key={`${issue.mapping_id}:${issue.field}:${issue.message}`}
+                className="mt-1 text-[11px]"
+              >
                 {issue.field}: {issue.message}
               </p>
             ))}

@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
   CopyableSecret,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -37,6 +36,7 @@ import {
   Textarea,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import { LoaderCircleIcon, PencilIcon, PlusIcon, ServerIcon, TrashIcon } from "@qeetrix/icons";
@@ -52,7 +52,7 @@ import {
   useDeleteSamlProvider,
   useSamlProviders,
   useUpdateSamlProvider,
-} from "@/modules/authentication/api/saml-idp";
+} from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/auth/connections/saml-idp")({
   component: SamlIdpPage,

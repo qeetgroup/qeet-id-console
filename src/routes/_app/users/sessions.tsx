@@ -1,6 +1,5 @@
-// Alias view onto the same sessions endpoint used by /security/sessions, framed
-// from the Users perspective in the navigation. Shares the sessions data layer
-// and SessionsTable so the two views can't drift apart.
+// The sessions view under Users; it shares the data layer and SessionsTable with
+// /security/sessions, so the two can't drift apart.
 
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { createFileRoute } from "@tanstack/react-router";

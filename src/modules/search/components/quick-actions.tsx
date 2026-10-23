@@ -1,7 +1,3 @@
-// QuickActions: per-item action buttons shown in the preview pane.
-// Standard actions (Open, Copy URL, Copy ID, New tab) are added automatically;
-// custom item.quickActions are prepended in front of them.
-
 import { cn } from "@qeetrix/ui";
 import { ArrowRightIcon, CopyIcon, ExternalLinkIcon, LinkIcon } from "@qeetrix/icons";
 import type { ReactNode } from "react";
@@ -30,15 +26,12 @@ function copyToClipboard(text: string): void {
 function resolveActions(item: SearchItem, _ctx: SearchContext): ResolvedAction[] {
   const acts: ResolvedAction[] = [];
 
-  // Custom item-level actions first (e.g. "Disable user").
   for (const qa of item.quickActions ?? []) {
     acts.push({ id: qa.id, label: qa.label, icon: qa.icon ?? null, run: qa.run });
   }
 
-  // Standard actions based on what the item exposes.
   if (item.url != null) {
-    // Capture url into a local const so closures reference a string, not
-    // the optional field — avoids non-null assertions inside the lambdas.
+    // A const, so the closures see a string rather than the optional field.
     const itemUrl = item.url;
     acts.push({
       id: "open",
@@ -74,6 +67,7 @@ function resolveActions(item: SearchItem, _ctx: SearchContext): ResolvedAction[]
   return acts;
 }
 
+/** Renders the item's own actions, then Open, Copy URL and New tab if it has a url, and Copy ID. */
 export function QuickActions({ item, ctx, className }: QuickActionsProps) {
   const actions = resolveActions(item, ctx);
   if (actions.length === 0) return null;

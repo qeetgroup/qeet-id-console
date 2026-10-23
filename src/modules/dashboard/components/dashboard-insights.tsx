@@ -34,10 +34,6 @@ import {
 } from "../dashboard-insights";
 import { DashboardPanel } from "./dashboard-panel";
 
-// ---------------------------------------------------------------------------
-// Shared tone maps — kept in one place so every insight panel reads the same
-// ---------------------------------------------------------------------------
-
 const severityStyles: Record<
   InsightSeverity,
   { chip: string; icon: ComponentType<IconProps<"outline">>; badge: string; label: string }
@@ -63,10 +59,6 @@ const severityStyles: Record<
 };
 
 const SKELETON_ROWS = ["a", "b", "c", "d"] as const;
-
-// ---------------------------------------------------------------------------
-// Attention required
-// ---------------------------------------------------------------------------
 
 export function AttentionRequiredPanel({
   overview,
@@ -161,10 +153,6 @@ export function AttentionRequiredPanel({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Identity health — composite gauge + subsystem breakdown
-// ---------------------------------------------------------------------------
-
 export function IdentityHealthPanel({
   overview,
   loading,
@@ -235,10 +223,6 @@ export function IdentityHealthPanel({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Session overview
-// ---------------------------------------------------------------------------
-
 export function SessionOverviewPanel({
   overview,
   loading,
@@ -294,10 +278,6 @@ export function SessionOverviewPanel({
     </DashboardPanel>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Security posture
-// ---------------------------------------------------------------------------
 
 const securityText: Record<"success" | "warning" | "danger", string> = {
   success: "text-success",
@@ -381,10 +361,6 @@ export function SecurityPosturePanel({
     </DashboardPanel>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Enterprise connectivity — real federation & provisioning counts
-// ---------------------------------------------------------------------------
 
 type EnterpriseTile = {
   id: string;
@@ -479,10 +455,6 @@ export function EnterpriseOverviewPanel({ className }: { className?: string }) {
     </DashboardPanel>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Plan usage — real consumption vs plan limits
-// ---------------------------------------------------------------------------
 
 const USAGE_RESOURCES: { key: string; label: string; icon: ComponentType<IconProps<"outline">> }[] =
   [

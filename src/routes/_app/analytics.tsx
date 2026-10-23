@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import { PageHeader } from "@/platform/components/page-header";
-import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
+import { useAnalyticsOverview } from "@/modules/dashboard";
 
 export const Route = createFileRoute("/_app/analytics")({
   component: AnalyticsPage,
@@ -132,9 +132,8 @@ function AnalyticsPage() {
     );
   }
 
-  // Coalesce every KPI individually so an older backend (one that
-  // hasn't been redeployed with the §4.8 extra fields) renders zeros
-  // and skeleton-deltas instead of crashing the whole page.
+  // Each KPI falls back to zero on its own, so a backend missing a field renders zeros rather
+  // than crashing the page.
   const ZERO = { value: 0, delta_pct: 0 };
   const k = data?.kpis;
   const kpis = data

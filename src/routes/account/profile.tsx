@@ -40,7 +40,7 @@ export const Route = createFileRoute("/account/profile")({
 });
 
 const AVATAR_PX = 192; // displayed at ≤64px; 192 keeps it crisp on retina
-const MAX_FILE_BYTES = 8 * 1024 * 1024;
+const MAX_FILE_BYTES = 8 * 1024 * 1024; // largest pick accepted, before resizing
 
 // Resize + center-crop to a square JPEG data-URL. Keeps the payload tiny
 // (~15–30 KB) so it fits the inline avatar_url column without object storage.

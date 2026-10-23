@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import type { LdapConnection, ScimConfig } from "@/modules/authentication";
 import {
   buildDirectoryConnections,
@@ -67,9 +67,11 @@ describe("Directory connections", () => {
 
   it("summarizes health only when it is explicitly reported", () => {
     const records = buildDirectoryConnections("tenant-a", scim, [ldap]);
-    records[0].health = "healthy";
-    records[0].lastSyncAt = "2026-09-12T10:00:00Z";
-    records[1].health = "failed";
+    const [scimRecord, ldapRecord] = records;
+    assert(scimRecord && ldapRecord, "expected the SCIM and LDAP connections");
+    scimRecord.health = "healthy";
+    scimRecord.lastSyncAt = "2026-09-12T10:00:00Z";
+    ldapRecord.health = "failed";
     expect(summarizeConnectionHealth(records)).toMatchObject({
       healthy: 1,
       warnings: 0,

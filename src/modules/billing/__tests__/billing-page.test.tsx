@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({
@@ -188,7 +188,7 @@ function catalogue(): Plan[] {
   ].map(({ code, amount }) => ({
     id: code,
     code,
-    name: code[0].toUpperCase() + code.split("_")[0].slice(1),
+    name: code.charAt(0).toUpperCase() + (code.split("_")[0] ?? "").slice(1),
     description: `Catalogue description for ${code}`,
     interval: code.endsWith("_year") ? "year" : "month",
     prices: { INR: amount, USD: amount / 100 },
@@ -227,17 +227,17 @@ describe("Billing catalogue", () => {
       "pro_year",
       "enterprise",
     ]);
-    expect(choices[2].amount).toBe(8000000);
-    expect(choices[2].plan.features).toEqual(["Catalogue feature for pro_year"]);
-    expect(choices[3].contactSales).toBe(true);
+    expect(choices[2]?.amount).toBe(8000000);
+    expect(choices[2]?.plan.features).toEqual(["Catalogue feature for pro_year"]);
+    expect(choices[3]?.contactSales).toBe(true);
   });
 
   it("never bills a monthly fallback under an annual code or missing currency", () => {
     const plans = catalogue().filter((plan) => plan.code !== "pro_year");
     const choice = billingPlanChoices(plans, "year", "INR")[2];
-    expect(choice.amount).toBeNull();
-    expect(choice.plan.features).toEqual(["Catalogue feature for pro"]);
-    expect(billingPlanChoices(plans, "month", "EUR")[1].amount).toBeNull();
+    expect(choice?.amount).toBeNull();
+    expect(choice?.plan.features).toEqual(["Catalogue feature for pro"]);
+    expect(billingPlanChoices(plans, "month", "EUR")[1]?.amount).toBeNull();
     expect(billingSavings(plans, "INR")).toBe(0);
   });
 
@@ -245,6 +245,7 @@ describe("Billing catalogue", () => {
     const current = subscription();
     const month = billingPlanChoices(catalogue(), "month", "INR")[2];
     const year = billingPlanChoices(catalogue(), "year", "INR")[2];
+    assert(month && year, "expected a third monthly and yearly plan choice");
     expect(isCurrentBillingChoice(month, current, "INR")).toBe(true);
     expect(isCurrentBillingChoice(year, current, "INR")).toBe(false);
     expect(isCurrentBillingChoice(month, current, "USD")).toBe(false);
@@ -310,8 +311,10 @@ describe("Billing profile and invoices", () => {
         surface: "text-foreground",
       },
     ];
+    const [baseInvoice] = invoiceFixtures();
+    assert(baseInvoice, "expected an invoice fixture");
     const invoices = cases.map(({ status }, index) => ({
-      ...invoiceFixtures()[0],
+      ...baseInvoice,
       id: `invoice-status-${index}`,
       status,
     }));

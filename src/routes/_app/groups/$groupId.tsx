@@ -16,7 +16,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Select,
   SelectContent,
   SelectItem,
@@ -30,6 +29,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useQuery } from "@tanstack/react-query";
 import { initials } from "@/shared/utils/initials";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -51,7 +51,7 @@ import {
   useGroupRoles,
   useRevokeGroupRole,
   useRoles,
-} from "@/modules/authorization/api/rbac-groups";
+} from "@/modules/authorization";
 
 export const Route = createFileRoute("/_app/groups/$groupId")({
   component: GroupDetailPage,
@@ -77,9 +77,7 @@ function GroupDetailPage() {
   const { groupId } = Route.useParams();
   const tenantId = useTenantId();
 
-  // Same pattern as the OIDC client detail page: read the tenant list
-  // and filter locally, because the backend doesn't yet ship
-  // GET /v1/groups/{id}. Members come from a separate endpoint.
+  // There is no GET /v1/groups/{id}, so read the tenant's list and pick the group locally.
   const listQ = useQuery({
     queryKey: ["groups", tenantId],
     queryFn: () => api<{ items: Group[] }>(`/v1/tenants/${tenantId}/groups`),
@@ -121,7 +119,7 @@ function GroupDetailPage() {
         error={listQ.error}
         isEmpty={listQ.isSuccess && !group}
         emptyIcon={FolderIcon}
-        emptyTitle={t("detail.notFound", { id: groupId.slice(0, 8) + "…" })}
+        emptyTitle={t("detail.notFound", { id: `${groupId.slice(0, 8)}…` })}
         emptyDescription={t("detail.notFoundDescription")}
       >
         {group && (

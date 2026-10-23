@@ -14,3 +14,6 @@ __unconfig*
 todos.json
 mcp-todos.json
 .env*
+coverage
+test-results
+playwright-report

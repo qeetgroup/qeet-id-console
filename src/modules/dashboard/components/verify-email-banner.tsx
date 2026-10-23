@@ -9,14 +9,9 @@ import { useMe } from "@/platform/auth/session";
 import { useConfirmEmailVerification, useStartEmailVerification } from "@/modules/authentication";
 
 /**
- * Sticky banner shown whenever the signed-in user's email is not yet verified.
- * Covers the paths the signup OTP screen misses — social login (lands verified
- * = never, so it shows here) and a user who closed the signup verify step —
- * and it's the nudge that unblocks org creation (the server gates
- * `POST /v1/tenants` on a verified email).
- *
- * Returns null when verified (or while /me is loading), so it's safe to render
- * unconditionally near the top of the layout.
+ * Renders a sticky banner while the user's email is unverified, catching paths the signup OTP step
+ * misses (social sign-in, a skipped step); the server requires a verified email to create an
+ * organization. Renders nothing once verified or while the profile loads.
  */
 export function VerifyEmailBanner() {
   const meQ = useMe();
@@ -31,9 +26,7 @@ export function VerifyEmailBanner() {
 
   const resend = () => {
     start.mutate(me.id, {
-      // The success toast comes from the mutation's meta; only the panel
-      // needs opening here.
-      onSuccess: () => setOpen(true),
+      onSuccess: () => setOpen(true), // the success toast comes from the mutation's meta
       onError: (err) => toast.error(errorMessage(err)),
     });
   };
@@ -47,9 +40,7 @@ export function VerifyEmailBanner() {
           setCode("");
           void qc.invalidateQueries({ queryKey: ["me"] });
         },
-        // Was a fixed "incorrect or expired" string, which hid the specific
-        // reason — a superseded code, a spent guess budget, a throttled resend.
-        onError: (err) => toast.error(errorMessage(err)),
+        onError: (err) => toast.error(errorMessage(err)), // keeps the specific reason
       },
     );
   };

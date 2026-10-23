@@ -9,12 +9,7 @@ export const Route = createFileRoute("/_app/developer/bots")({
   component: BotsPage,
 });
 
-// QID-04: this page previously rendered a fabricated dashboard (hardcoded
-// "Runs (24h): 3,420" stats, a seeded automations table, and New/Play/Edit
-// buttons with no handlers) against no backend at all. A convincing fake is
-// worse than an honest placeholder for an enterprise evaluator, so until the
-// automations backend exists this is a clear "coming soon" surface with no
-// fake data and no dead controls.
+// A placeholder until the automations backend exists: no fake data and no dead controls.
 function BotsPage() {
   const { t } = useTranslation("developer");
   return (

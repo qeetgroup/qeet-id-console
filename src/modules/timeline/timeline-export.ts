@@ -1,9 +1,3 @@
-// Client-side export of the identity timeline. Exports the events currently
-// loaded into the view (scroll to load more before exporting for a longer
-// range). Scoped to a single user's timeline — deliberately not the tenant-wide
-// activity exporter, which walks a different endpoint. CSV escaping + download
-// are the shared helpers (shared/utils/data-export).
-
 import { toast } from "sonner";
 
 import type { ActivityEvent } from "@/modules/activity";
@@ -30,6 +24,10 @@ const CSV_COLUMNS: CsvColumn<ActivityEvent>[] = [
   { header: "request_id", value: (e) => e.request_id },
 ];
 
+/**
+ * Downloads the timeline events loaded in the view as CSV or JSON. Unlike the activity export
+ * it doesn't page the server, so a longer range needs more scrolling first.
+ */
 export function exportTimelineEvents(
   events: ActivityEvent[],
   format: TimelineExportFormat,

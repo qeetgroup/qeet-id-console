@@ -1,9 +1,5 @@
-// Which product is on the other end of a SAML connection.
-//
-// A connection stores no vendor field — the backend only keeps the entity ID,
-// SSO URL and certificate — so the IdP type shown in the Connections filter is
-// inferred from the SSO URL's host, falling back to the entity ID. Anything we
-// don't recognise is "other": this drives a filter, never a security decision.
+// Infers which product is on the other end of a SAML connection, which stores no vendor, from the
+// SSO URL's host and then the entity ID. It drives a filter, never a security decision.
 
 export type SamlIdpVendor = "okta" | "entra" | "onelogin" | "google" | "pingidentity" | "other";
 

@@ -1,6 +1,3 @@
-// ResultRow: a single search result rendered inside the listbox.
-// Uses @qeetrix/ui Highlight for match emphasis and StatusPill for status display.
-
 import { Badge, cn, Highlight, StatusPill } from "@qeetrix/ui";
 
 import type { SearchItem } from "../registry/types/registry.types";
@@ -14,6 +11,7 @@ interface ResultRowProps {
   id: string;
 }
 
+/** Renders one result as a listbox option, highlighting the query match. */
 export function ResultRow({
   item,
   query,

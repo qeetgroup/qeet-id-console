@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldLabel,
@@ -13,6 +12,7 @@ import {
   StatusPill,
   Switch,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,7 +25,7 @@ import {
   useRetentionPreview,
   useRunRetention,
   useUpdateRetentionPolicy,
-} from "@/modules/compliance/api/retention";
+} from "@/modules/compliance";
 
 export const Route = createFileRoute("/_app/security/compliance/retention")({
   component: RetentionPage,

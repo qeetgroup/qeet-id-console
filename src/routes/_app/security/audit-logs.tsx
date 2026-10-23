@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -21,6 +20,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
@@ -39,13 +39,10 @@ import { toast } from "sonner";
 import { PageHeader } from "@/platform/components/page-header";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
-import { useEntitlements } from "@/modules/billing/api/billing";
+import { useEntitlements } from "@/modules/billing";
 
-// URL-driven filter state — the audit-logs view bookmarks any filter
-// combination as `/_app/security/audit-logs?action=user.create` so
-// engineers can paste-share a triage view in Slack. `validateSearch`
-// keeps every field optional + string so a malformed URL never crashes
-// the route.
+// Filters live in the URL so a triage view can be shared. Every field is an optional string,
+// so a malformed URL never crashes the route.
 type AuditSearch = {
   q?: string;
   action?: string;
@@ -87,11 +84,7 @@ type AuditEvent = {
 
 type AuditResponse = { items: AuditEvent[]; next_cursor?: string };
 
-// Cap exports so an open-ended fetch loop can't run forever on enormous
-// tenants. Users hitting the cap get a warning toast; for larger exports
-// they should narrow the filter range or use a future server-side
-// streaming endpoint.
-const EXPORT_ROW_CAP = 10_000;
+const EXPORT_ROW_CAP = 10_000; // so the fetch loop can't run forever; hitting it shows a warning
 
 type ExportFormat = "csv" | "json";
 
@@ -108,8 +101,6 @@ const CSV_HEADERS = [
   "metadata",
 ] as const;
 
-// Audit fields map flatly onto the header names; the shared exporter handles
-// escaping + download.
 const CSV_COLUMNS: CsvColumn<AuditEvent>[] = CSV_HEADERS.map((h) => ({
   header: h,
   value: (ev: AuditEvent) => (ev as Record<string, unknown>)[h],
@@ -124,9 +115,8 @@ function AuditLogsPage() {
   const tenantId = useTenantId();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  // Mirror URL → form state. Empty strings (vs undefined) are how the
-  // <Input> tracks "unfiltered" — the validateSearch normalises both
-  // directions so the URL doesn't accumulate trailing `?action=`.
+  // An empty string means unfiltered to the inputs; validateSearch drops it, so the URL never
+  // gathers a trailing `?action=`.
   const filters = {
     q: search.q ?? "",
     action: search.action ?? "",
@@ -155,9 +145,8 @@ function AuditLogsPage() {
       const all: AuditEvent[] = [];
       let next: string | undefined;
       let truncated = false;
-      // Walk the cursor pages with the current filter set. The first call
-      // intentionally skips the cursor so we always start from the newest
-      // matching event rather than wherever the UI currently sits.
+      // Starts without a cursor, so the export begins at the newest matching event, not at the
+      // page on screen.
       do {
         const page: AuditResponse = await api<AuditResponse>(`/v1/tenants/${tenantId}/audit`, {
           query: {
@@ -215,9 +204,8 @@ function AuditLogsPage() {
   const hasFilters = Object.values(filters).some(Boolean);
   const [searchDraft, setSearchDraft] = useState(filters.q);
   const itemCount = auditQ.data?.items?.length ?? 0;
-  // Audit export is a paid feature. The log VIEW stays available on every plan;
-  // only the export control is gated (export is client-side, so there's nothing
-  // to enforce server-side — hiding the button is the honest gate).
+  // Export is a paid feature; viewing is not. It runs client-side, so hiding the button is the
+  // gate.
   const canExport = useEntitlements().data?.features.audit_export !== false;
 
   return (
@@ -266,7 +254,7 @@ function AuditLogsPage() {
       {/* Filter bar */}
       <Card>
         <CardContent className="flex flex-col gap-3 p-4">
-          {/* Free-text search — committed on Enter; supports quoted phrases, -exclusions, OR */}
+          {/* Committed on Enter; supports quoted phrases, -exclusions and OR. */}
           <form
             onSubmit={(e) => {
               e.preventDefault();

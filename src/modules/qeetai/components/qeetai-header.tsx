@@ -24,16 +24,15 @@ const MODES: { mode: QeetAIMode; label: string; icon: ComponentType<IconProps<"o
   { mode: "fullscreen", label: "Full screen", icon: Maximize2Icon },
 ];
 
-/** The workspace title bar: identity, new-chat, mode switch, collapse, close. */
+/** Renders the workspace title bar: title, new chat, history, mode switch, collapse, close. */
 export function QeetAIHeader({ dragHandleProps }: { dragHandleProps?: Record<string, unknown> }) {
   const mode = useStore(workspaceStore, (s) => s.mode);
   const historyOpen = useStore(workspaceStore, (s) => s.historyOpen);
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-1 border-b bg-card/60 px-2 ps-3">
-      {/* Only the title is the drag handle — spreading the pointer handlers over
-          the whole header would let useFloatingWindow start a drag on button
-          pointer-down and swallow the click (breaking close / mode / history). */}
+      {/* Only the title drags: on the whole header, a drag would start on a button's
+          pointer-down and swallow its click. */}
       <span
         className={cn(
           "flex min-w-0 flex-1 items-center gap-2",

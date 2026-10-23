@@ -29,8 +29,9 @@ function ExplorerPage() {
 
   // Default-select the newest decision as it arrives.
   useEffect(() => {
-    if (history.length && !history.some((r) => r.id === selectedId)) {
-      setSelectedId(history[0].id);
+    const newest = history[0];
+    if (newest && !history.some((r) => r.id === selectedId)) {
+      setSelectedId(newest.id);
     }
   }, [history, selectedId]);
 

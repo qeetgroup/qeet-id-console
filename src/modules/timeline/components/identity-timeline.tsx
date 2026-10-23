@@ -1,11 +1,3 @@
-// Identity Timeline — git-history-style vertical timeline of a user's lifecycle.
-// Groups events by date bucket (Today → Older), virtualises with
-// IntersectionObserver + bounded DOM (cap via cursor pagination), supports
-// infinite scroll, keyboard nav, and motion-safe animations.
-//
-// ARIA: The outer list is a semantic <ol> (historical data, not a live region).
-//       Individual items use aria-posinset / aria-setsize per APG guidelines.
-
 import {
   Button,
   cn,
@@ -22,10 +14,6 @@ import { useEffect, useRef } from "react";
 import type { ActivityEvent, DateGroup } from "@/modules/activity";
 import { TimelineItem } from "./timeline-item";
 
-// ---------------------------------------------------------------------------
-// Date-group header
-// ---------------------------------------------------------------------------
-
 function GroupHeader({ label }: { label: string }) {
   return (
     <div className="sticky top-0 z-10 flex items-center gap-3 bg-background/90 py-2 backdrop-blur-sm">
@@ -37,15 +25,10 @@ function GroupHeader({ label }: { label: string }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Skeleton placeholders
-// ---------------------------------------------------------------------------
-
 const SKELETON_IDS = ["a", "b", "c", "d"] as const;
 
 function TimelineSkeletons() {
   return (
-    /* role="status" supports aria-label; aria-busy signals loading in progress */
     <div role="status" aria-label="Loading timeline events" className="flex flex-col gap-3 pl-5">
       {SKELETON_IDS.map((id) => (
         <div key={id} className="flex gap-3">
@@ -61,10 +44,6 @@ function TimelineSkeletons() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// IdentityTimeline
-// ---------------------------------------------------------------------------
-
 type IdentityTimelineProps = {
   groups: DateGroup[];
   isLoadingHistory: boolean;
@@ -78,12 +57,9 @@ type IdentityTimelineProps = {
 };
 
 /**
- * The main identity timeline component.
- *
- * Virtualization approach: cursor-based pagination (50 events/page) keeps the
- * DOM bounded without adding a new virtualizer dependency.
- * IntersectionObserver at the bottom sentinel triggers the next page load
- * (mirroring the activity feed's approach).
+ * Renders a user's date-grouped timeline as an ordered list, loading the next page as the
+ * bottom sentinel comes within 200px of the viewport. It isn't virtualized; the list grows a
+ * page at a time.
  */
 export function IdentityTimeline({
   groups,
@@ -99,7 +75,6 @@ export function IdentityTimeline({
   const reducedMotion = usePrefersReducedMotion();
   const sentinelRef = useRef<HTMLLIElement>(null);
 
-  // IntersectionObserver: load next page when the sentinel enters the viewport.
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || !hasNextPage) return;
@@ -115,8 +90,6 @@ export function IdentityTimeline({
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasNextPage, onLoadMore]);
-
-  // ── Early-return states ─────────────────────────────────────────────────
 
   if (isLoadingHistory && groups.length === 0) {
     return (
@@ -158,16 +131,13 @@ export function IdentityTimeline({
     );
   }
 
-  // Flatten all events for aria-posinset / aria-setsize totals
+  // aria-posinset / aria-setsize count across all groups.
   const totalEvents = groups.reduce((acc, g) => acc + g.events.length, 0);
   let globalIndex = 0;
 
   return (
     <ScrollArea className="flex-1">
-      {/*
-        Semantic <ol> — this is historical data, not a live region.
-        aria-live must NOT be on historical content (APG spec).
-      */}
+      {/* Historical data: an ordered list, deliberately not a live region */}
       <ol aria-label="Identity timeline events" className="flex flex-col gap-0 px-1 pb-6">
         {groups.map((group) => (
           <li key={group.label}>

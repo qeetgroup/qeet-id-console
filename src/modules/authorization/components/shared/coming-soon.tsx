@@ -2,11 +2,7 @@ import { Card, CardContent } from "@qeetrix/ui";
 import { ConstructionIcon, type IconProps } from "@qeetrix/icons";
 import type { ComponentType } from "react";
 
-/**
- * Honest placeholder for surfaces whose backend does not exist yet (batch
- * simulation history, authorization analytics time-series, server-side
- * rollback, AI provider). We never fabricate data — we say so and explain why.
- */
+/** Renders a placeholder that explains a missing backend, instead of fabricated data. */
 export function ComingSoon({
   icon: Icon = ConstructionIcon,
   title,

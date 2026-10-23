@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   cn,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -37,6 +36,7 @@ import {
   TimeSince,
   TooltipProvider,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -72,7 +72,7 @@ import { useCapabilities } from "@/platform/security/capability-provider";
 import { ReadOnlyNotice } from "@/platform/security/read-only-notice";
 import { BulkActions } from "@/modules/users/bulk-actions";
 import { MoreFilters, SaveView } from "@/modules/users/filter-extras";
-import { primaryRole } from "@/modules/users/user-display";
+import { primaryRole } from "@/modules/users";
 import { DEFAULT_DIAL_COUNTRY, DIAL_CODES, toE164 } from "@/shared/data/country-dial-codes";
 import { initials } from "@/shared/utils/initials";
 import { UserPreviewDrawer } from "@/modules/users/user-preview-drawer";
@@ -83,7 +83,7 @@ import { useTenantId } from "@/platform/auth/session";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
 import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
-import { useRoles } from "@/modules/authorization/api/rbac-groups";
+import { useRoles } from "@/modules/authorization";
 import { useRevokeAllUserSessions } from "@/modules/users/api/user360";
 import {
   type User,
@@ -94,7 +94,7 @@ import {
   useUpdateUser,
   useUserStats,
   useUserTrends,
-} from "@/modules/users/api/users";
+} from "@/modules/users";
 
 export const Route = createFileRoute("/_app/users/")({
   validateSearch: parseCreateIntent,
@@ -136,8 +136,7 @@ function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
   const [pageSize, setPageSize] = useState(50);
-  // Offset (page-number) paging so the console can jump to any page.
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(0); // offset paging, so the console can jump to any page
 
   const usersQ = useQuery({
     queryKey: ["users", tenantId, pageSize, page],
@@ -188,9 +187,9 @@ function UsersPage() {
       setSelectedIds(new Set());
     }
     if (!canCreateUsers) setCreating(false);
-  }, [canCreateUsers, canWriteUsers]);
+    // setCreating is a useState setter, so it is stable and never re-triggers this.
+  }, [canCreateUsers, canWriteUsers, setCreating]);
 
-  // Page-level mutation hooks shared by the ⋯ row menu (via rowHandlers).
   const resetMfa = useResetUserMfa();
   const revokeAll = useRevokeAllUserSessions();
   const setStatus = useSetUserStatus();
@@ -259,7 +258,6 @@ function UsersPage() {
   const hasActiveFilters = lv.hasActiveFilters || roleFilter !== "" || emailFilter !== "";
   const denseCls = lv.density === "compact" ? "[&_td]:py-1.5 [&_th]:py-2" : undefined;
 
-  // Numbered paging over the known total ("Showing 1–50 of 1,284").
   const total = statsQ.data?.total;
   const totalPages = total !== undefined ? Math.max(1, Math.ceil(total / pageSize)) : undefined;
   const rangeStart = items.length ? page * pageSize + 1 : 0;
@@ -276,8 +274,7 @@ function UsersPage() {
     setPage(0);
     setSelectedIds(new Set());
   }
-  // KPI card → table filter (client-side over the current page, matching the
-  // existing facet behaviour).
+  // A KPI card filters the current page client-side, as the facets do.
   function handleKpiFilter(f: KpiFilter) {
     setPage(0);
     setRoleFilter("");
@@ -587,10 +584,8 @@ function UsersPage() {
                 </TableBody>
               </Table>
 
-              {/* Three tracks so the page controls sit centred on the table
-                  regardless of how wide the range label or size select get;
-                  justify-center on a single row would drift off-centre. Stacks
-                  to one column below sm. */}
+              {/* Three tracks keep the page controls centred on the table however wide the range
+                  label or size select gets; one column below sm. */}
               <div className="grid grid-cols-1 items-center gap-3 border-t px-4 py-3 sm:grid-cols-[1fr_auto_1fr]">
                 <span className="text-sm text-muted-foreground">
                   {total !== undefined
@@ -615,7 +610,7 @@ function UsersPage() {
                     ? pageWindow(page + 1, totalPages).map((p, i) =>
                         p === "…" ? (
                           <span
-                            // biome-ignore lint/suspicious/noArrayIndexKey: ellipsis markers are positional
+                            // biome-ignore lint/suspicious/noArrayIndexKey: positional markers
                             key={`ellipsis-${i}`}
                             className="px-1.5 text-sm text-muted-foreground"
                           >
@@ -762,10 +757,12 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
   });
   const orgName = tenantsQ.data?.items.find((o) => o.id === tenantId)?.name;
 
-  const dial = useMemo(
-    () => DIAL_CODES.find((c) => c.code === country) ?? DIAL_CODES[0],
-    [country],
-  );
+  const dial = useMemo(() => {
+    const match = DIAL_CODES.find((c) => c.code === country) ?? DIAL_CODES[0];
+    // DIAL_CODES is a non-empty static table; the form cannot render without a dial code.
+    if (!match) throw new Error("DIAL_CODES is empty");
+    return match;
+  }, [country]);
 
   // Default to a "member"-type role (else the least-privileged/last one) so a
   // created user is an organization member out of the box.
@@ -776,7 +773,6 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
     }
   }, [roles, roleId]);
 
-  // Extracted to lib/users.ts so the qeetai create_user tool shares the same hook.
   const createM = useCreateUser();
 
   return (
@@ -794,9 +790,7 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
                 email: String(data.get("email") ?? "").trim(),
                 password: String(data.get("password") ?? ""),
                 display_name: String(data.get("display_name") ?? "").trim() || undefined,
-                // The field is split into a dial code and a national number for
-                // entry; the API wants one E.164 string.
-                phone: toE164(dial.dial, phone),
+                phone: toE164(dial.dial, phone), // split for entry; the API takes one E.164 string
                 role_id: roleId || undefined,
               },
               {
@@ -854,9 +848,8 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
                   <Field>
                     <FieldLabel htmlFor="phone">{t("create.phone")}</FieldLabel>
                     <div className="flex items-center gap-2">
-                      {/* One control, not a flag picker plus a dial picker:
-                          both would set the same country. The trigger shows the
-                          flag and the dial code it resolves to. */}
+                      {/* One control, as a flag picker and a dial picker would both set the
+                          country; the trigger shows the flag and its dial code. */}
                       <Select value={country} onValueChange={(v) => v && setCountry(v)}>
                         <SelectTrigger
                           className="w-28 shrink-0"
@@ -993,7 +986,6 @@ function CreateUserSheet({ open, onOpenChange, tenantId, onCreated }: CreateUser
   );
 }
 
-/** Small red asterisk marking a required field, matching the comps. */
 function RequiredMark() {
   return (
     <span aria-hidden="true" className="text-destructive">
@@ -1041,7 +1033,6 @@ function EditUserSheet({ user, isSelf, onOpenChange, onSaved }: EditUserSheetPro
     setStatus(user.status === "suspended" ? "suspended" : "active");
   }
 
-  // Extracted to lib/users.ts so the qeetai update_user tool shares the same hook.
   const updateM = useUpdateUser();
 
   return (
@@ -1061,8 +1052,7 @@ function EditUserSheet({ user, isSelf, onOpenChange, onSaved }: EditUserSheetPro
                   body: {
                     display_name: displayName || null,
                     phone: phone || null,
-                    // Don't allow suspending yourself.
-                    ...(isSelf ? {} : { status }),
+                    ...(isSelf ? {} : { status }), // nobody can suspend themselves
                   },
                 },
                 { onSuccess: onSaved },

@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldDescription,
   FieldError,
@@ -34,6 +33,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorMessage } from "@/platform/errors/user-message";
 import { createFileRoute } from "@tanstack/react-router";
@@ -90,7 +90,8 @@ function InvitationsPage() {
 
   useEffect(() => {
     if (!canCreateInvites) setCreating(false);
-  }, [canCreateInvites]);
+    // setCreating is a useState setter, so it is stable and never re-triggers this.
+  }, [canCreateInvites, setCreating]);
 
   const listQ = useQuery({
     queryKey: ["invites", tenantId],
@@ -110,8 +111,8 @@ function InvitationsPage() {
     meta: { successMessage: t("toast.revoked") },
   });
 
-  // Resend rotates the token + expiry server-side and re-sends the email; a
-  // fresh link is issued, so the invite returns to pending and its expiry moves.
+  // Resend issues a fresh token and expiry and re-sends the email, so the invite returns to
+  // pending.
   const resendM = useMutation({
     mutationFn: (id: string) =>
       api<{ token: string }>(`/v1/invites/${id}/resend`, { method: "POST" }),
@@ -347,9 +348,8 @@ function CreateInviteSheet({
 }: CreateInviteSheetProps) {
   const { t } = useTranslation("invitations");
 
-  // Which organization the invitee joins. Defaults to the current one; admins who
-  // belong to several can target another. Roles are tenant-scoped, so the role
-  // list (and its default) follow this selection.
+  // The organization the invitee joins: the current one, or another the admin belongs to. Roles
+  // are tenant-scoped, so the role list and its default follow it.
   const [tenantId, setTenantId] = useState<string>(currentTenantId ?? "");
   const [roleId, setRoleId] = useState<string>("");
 

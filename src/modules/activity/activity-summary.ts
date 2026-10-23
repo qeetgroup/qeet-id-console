@@ -1,10 +1,3 @@
-// TanStack Query hook for the aggregate summary strip (GET /v1/activity/summary).
-// The summary is a server-computed windowed snapshot — it is NEVER incremented
-// from the live SSE stream (that would double-count and drift from the server).
-// In live mode it is polled on an interval; in history mode the window is pinned
-// so the query is static. 404 (not yet deployed) resolves to undefined so the
-// strip hides gracefully rather than crashing the page.
-
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
@@ -13,8 +6,8 @@ import type { ActivityFilters, ActivitySummary } from "./types/activity.types";
 
 const LIVE_REFETCH_MS = 30_000;
 
-// The summary honours the same SQL-pushable predicates as history, but ignores
-// severity/category (it produces that distribution). We send only what it uses.
+// Only the predicates the summary accepts; it ignores severity and category because it
+// reports their distribution.
 function summaryQuery(filters: ActivityFilters): Record<string, string | number | undefined> {
   return {
     types: filters.types.join(",") || undefined,
@@ -26,9 +19,9 @@ function summaryQuery(filters: ActivityFilters): Record<string, string | number 
 }
 
 /**
- * Loads the aggregate activity summary for the current filter window. Returns
- * `undefined` (not an error) when the endpoint is unavailable so callers can
- * hide the strip. In live mode it refetches every 30s.
+ * Loads the server-computed activity summary for the filter window, polling in live mode. It is
+ * never incremented from the SSE stream, which would double-count and drift. Resolves to
+ * undefined on a 404, 503 or network error so callers can hide the strip.
  */
 export function useActivitySummary(
   filters: ActivityFilters,

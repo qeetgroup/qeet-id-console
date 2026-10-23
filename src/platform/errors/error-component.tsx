@@ -8,10 +8,8 @@ import { captureError } from "@/platform/telemetry/errors";
 import { PageState } from "@/shared/components/page-state";
 
 /**
- * Router-level fallback for uncaught render/loader throws. Wired as the router's
- * `defaultErrorComponent`, so a thrown error renders this instead of a blank
- * page. It shows only user-safe copy derived from the error's stable code —
- * never the raw backend message — and reports the detail via telemetry.
+ * Renders the router's fallback for an uncaught render or loader error: user-safe copy from the
+ * error's code, never the backend message, with the error reported to telemetry.
  */
 export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
   const appError = normalizeError(error);

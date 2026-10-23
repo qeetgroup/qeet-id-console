@@ -17,7 +17,6 @@ describe("telemetry redact", () => {
     expect(out.client_secret).toBe("[redacted]");
     expect(out.password).toBe("[redacted]");
     expect(out.api_key).toBe("[redacted]");
-    // non-sensitive ids are preserved for correlation
     expect(out.user_id).toBe("u_123");
   });
 
@@ -33,9 +32,8 @@ describe("telemetry redact", () => {
     const out = redact({ items: [{ secret: "x", note: "a@b.co" }] }) as {
       items: Record<string, unknown>[];
     };
-    // "secret" key is denylisted → dropped; string value PII is masked.
-    expect(out.items[0].secret).toBe("[redacted]");
-    expect(out.items[0].note).toBe("[redacted-email]");
+    expect(out.items[0]?.secret).toBe("[redacted]");
+    expect(out.items[0]?.note).toBe("[redacted-email]");
   });
 
   it("preserves opaque ids and non-sensitive scalars", () => {

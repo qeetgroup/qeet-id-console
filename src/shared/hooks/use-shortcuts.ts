@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 
-// Global keyboard layer for power users: `?` opens the cheat-sheet and a
-// `g`-prefixed sequence jumps between sections (GitHub/Linear style). Keys
-// are ignored while typing in a field so they never hijack form input.
+// Global keyboard layer: `?` opens the cheat-sheet and a `g`-prefixed sequence jumps between
+// sections. Keys are ignored while typing in a field, so they never hijack form input.
 
 export type ShortcutGroup = {
   title: string;

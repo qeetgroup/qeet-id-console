@@ -23,8 +23,7 @@ export const Route = createFileRoute("/_app/security/")({
   component: SecurityOverviewPage,
 });
 
-// Each card deep-links into a real sub-page (the bare parent paths like
-// /security/threats are themselves placeholders, so we jump to a built child).
+// Each card links to a built sub-page: bare parents such as /security/threats are placeholders.
 const SECTIONS: {
   key: string;
   to: string;

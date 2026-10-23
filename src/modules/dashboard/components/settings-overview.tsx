@@ -25,13 +25,10 @@ const OVERVIEW_URL = "/settings";
 
 /** Status line rendered under a card's description. */
 type CardStatus = {
-  /** Left-hand label; a green check precedes it when `done`. */
-  label?: string;
-  done?: boolean;
-  /** Right-aligned supporting detail. */
-  meta?: string;
-  /** Branding shows its palette instead of a meta string. */
-  swatches?: string[];
+  label?: string; // left-hand label
+  done?: boolean; // puts a green check before the label
+  meta?: string; // right-aligned supporting detail
+  swatches?: string[]; // branding shows its palette instead of `meta`
 };
 
 function monthYear(iso?: string | null): string | undefined {
@@ -61,9 +58,8 @@ export function SettingsOverview({ description }: { description: string }) {
   const access = useCapabilities();
   const tenantId = useTenantId();
 
-  // Same key as the sidebar's switcher, so this is a cache read.
   const orgsQ = useQuery({
-    queryKey: ["tenants", "switcher"],
+    queryKey: ["tenants", "switcher"], // the sidebar switcher's key, so a cache read
     queryFn: () =>
       api<{
         items: { id: string; name: string; plan: string; region: string; created_at: string }[];

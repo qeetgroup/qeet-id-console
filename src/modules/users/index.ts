@@ -1,4 +1,4 @@
-// Public API of the users feature. Cross-feature consumers import from here.
+// Public API of the users module; other modules import from here only.
 export * from "./api/users";
 export * from "./api/suspended";
 export * from "./user-display";

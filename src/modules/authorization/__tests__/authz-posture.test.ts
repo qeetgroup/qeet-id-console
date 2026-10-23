@@ -40,7 +40,8 @@ function event(action: string, at = "2026-01-05T00:00:00Z"): AuditEvent {
     actor_user_id: "u",
     actor_type: "user",
     action,
-    resource_type: action.split(".")[0],
+    // split() always yields a first element; the fallback is never used.
+    resource_type: action.split(".")[0] ?? "",
     resource_id: null,
     ip: null,
     user_agent: null,

@@ -1,6 +1,5 @@
-// Row-preview slide-over for an organization — a quick look sourced from the
-// (enriched) caller-scoped list. Deeper per-org data lives behind "Open Org 360"
-// / switching, since the server locks detail surfaces to the active org.
+// Row-preview drawer for an organization, built from the caller's org list alone: the server
+// serves deeper per-org detail only for the active org.
 
 import {
   Avatar,

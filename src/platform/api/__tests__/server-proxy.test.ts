@@ -45,7 +45,11 @@ vi.mock("@/platform/auth/server-session", async (importOriginal) => {
 });
 vi.mock("@/platform/telemetry/logger", () => ({ logger: { debug: vi.fn() } }));
 
-import { proxyApiRequest, refreshServerSessionNow } from "../server-proxy";
+import {
+  _resetRefreshFlightsForTest,
+  proxyApiRequest,
+  refreshServerSessionNow,
+} from "../server-proxy";
 
 const tokens = {
   access_token: "access-secret",
@@ -81,6 +85,7 @@ function request(
 beforeEach(() => {
   store.data = {};
   store.fetch.mockReset();
+  _resetRefreshFlightsForTest();
   vi.stubGlobal("fetch", store.fetch);
 });
 afterEach(() => vi.unstubAllGlobals());
@@ -102,7 +107,7 @@ describe("Organization-selection session boundary", () => {
     expect(result.session.organizationSelectionRequired).toBe(true);
     expect(JSON.stringify(result)).not.toContain("access-secret");
     expect(JSON.stringify(result)).not.toContain("refresh-secret");
-    expect(store.fetch.mock.calls[1][1].headers.Authorization).toBe("Bearer access-secret");
+    expect(store.fetch.mock.calls[1]?.[1].headers.Authorization).toBe("Bearer access-secret");
   });
 
   it.each([{ items: [] }, { items: [first] }])(
@@ -156,7 +161,7 @@ describe("Organization-selection session boundary", () => {
     };
     store.fetch.mockResolvedValueOnce(Response.json(tokens));
     const result = await refreshServerSessionNow({ data: { expectedVersion: 1, force: true } });
-    expect(result.organizationSelectionRequired).toBe(true);
+    expect(result.session.organizationSelectionRequired).toBe(true);
     expect(store.data.refreshToken).toBe("refresh-secret");
   });
 
@@ -219,8 +224,8 @@ describe("Sign-out-everywhere session boundary", () => {
     );
     const result = await request("/v1/auth/sessions/revoke-all");
 
-    expect(String(store.fetch.mock.calls[0][0])).toMatch(/\/v1\/auth\/sessions\/revoke-all$/);
-    expect(store.fetch.mock.calls[0][1].headers.Authorization).toBe("Bearer access-secret");
+    expect(String(store.fetch.mock.calls[0]?.[0])).toMatch(/\/v1\/auth\/sessions\/revoke-all$/);
+    expect(store.fetch.mock.calls[0]?.[1].headers.Authorization).toBe("Bearer access-secret");
     expect(store.data).toEqual({});
     expect(result.session.isAuthenticated).toBe(false);
     expect(result.sessionChanged).toBe(true);
@@ -255,7 +260,7 @@ describe("Relaying the person's address", () => {
     };
     store.fetch.mockResolvedValueOnce(Response.json({ items: [] }));
     await request("/v1/users", "GET");
-    const headers = store.fetch.mock.calls[0][1].headers;
+    const headers = store.fetch.mock.calls[0]?.[1].headers;
     expect(headers["X-Qeet-Relay-Key"]).toBe("relay-key-for-tests-0123456789abcdef");
     expect(headers["X-Qeet-Client-IP"]).toBe("203.0.113.7");
   });
@@ -269,8 +274,175 @@ describe("Relaying the person's address", () => {
     };
     store.fetch.mockResolvedValueOnce(Response.json({ items: [] }));
     await request("/v1/users", "GET");
-    const headers = store.fetch.mock.calls[0][1].headers;
+    const headers = store.fetch.mock.calls[0]?.[1].headers;
     expect(headers["X-Qeet-Relay-Key"]).toBeUndefined();
     expect(headers["X-Qeet-Client-IP"]).toBeUndefined();
+  });
+});
+
+describe("Refreshing the session", () => {
+  const signedIn = (): ServerSessionData => ({
+    accessToken: "old-access",
+    refreshToken: "old-refresh",
+    userId: "user-a",
+    sessionId: "session-a",
+    version: 1,
+  });
+
+  it("ends the session when the backend rejects the refresh token", async () => {
+    store.data = signedIn();
+    store.fetch.mockResolvedValueOnce(
+      Response.json({ error: { code: "auth.session_revoked" } }, { status: 401 }),
+    );
+
+    const result = await refreshServerSessionNow({ data: { expectedVersion: 1, force: true } });
+
+    expect(result).toMatchObject({ unavailable: false, session: { isAuthenticated: false } });
+    expect(store.data.refreshToken).toBeUndefined();
+  });
+
+  it.each([
+    ["a 503", () => Promise.resolve(new Response("unavailable", { status: 503 }))],
+    ["a 429", () => Promise.resolve(Response.json({}, { status: 429 }))],
+    ["a network failure", () => Promise.reject(new TypeError("fetch failed"))],
+  ])("keeps the session when the backend returns %s", async (_label, respond) => {
+    store.data = signedIn();
+    store.fetch.mockImplementationOnce(respond);
+
+    const result = await refreshServerSessionNow({ data: { expectedVersion: 1, force: true } });
+
+    expect(result).toMatchObject({ unavailable: true, session: { isAuthenticated: true } });
+    expect(store.data.refreshToken).toBe("old-refresh");
+  });
+
+  it("bounds the refresh call with a timeout", async () => {
+    store.data = signedIn();
+    store.fetch.mockResolvedValueOnce(Response.json(tokens));
+
+    await refreshServerSessionNow({ data: { expectedVersion: 1, force: true } });
+
+    expect(store.fetch.mock.calls[0]?.[1].signal).toBeInstanceOf(AbortSignal);
+  });
+});
+
+describe("A request whose access token has expired", () => {
+  const signedIn = (): ServerSessionData => ({
+    accessToken: "expired-access",
+    refreshToken: "old-refresh",
+    userId: "user-a",
+    sessionId: "session-a",
+    version: 1,
+  });
+  const expired = () => Response.json({ error: { code: "auth.session_expired" } }, { status: 401 });
+
+  it("renews the session in the BFF and sends the request once more", async () => {
+    store.data = signedIn();
+    store.fetch
+      .mockResolvedValueOnce(expired())
+      .mockResolvedValueOnce(Response.json(tokens))
+      .mockResolvedValueOnce(Response.json({ id: "user-a" }));
+
+    const result = await request("/v1/me", "GET");
+
+    expect(result).toMatchObject({ status: 200, data: { id: "user-a" }, sessionChanged: true });
+    expect(result.session.isAuthenticated).toBe(true);
+    expect(store.data.refreshToken).toBe("refresh-secret");
+    expect(store.fetch).toHaveBeenCalledTimes(3);
+    expect(store.fetch.mock.calls[2]?.[1]?.headers.Authorization).toBe("Bearer access-secret");
+  });
+
+  it("ends the session when the refresh token is rejected", async () => {
+    store.data = signedIn();
+    store.fetch
+      .mockResolvedValueOnce(expired())
+      .mockResolvedValueOnce(
+        Response.json({ error: { code: "auth.session_revoked" } }, { status: 401 }),
+      );
+
+    const result = await request("/v1/me", "GET");
+
+    expect(result).toMatchObject({ status: 401, sessionChanged: true });
+    expect(result.session.isAuthenticated).toBe(false);
+    expect(store.data.refreshToken).toBeUndefined();
+    expect(store.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps the session and answers retryable when the refresh can't be reached", async () => {
+    store.data = signedIn();
+    store.fetch
+      .mockResolvedValueOnce(expired())
+      .mockResolvedValueOnce(new Response("", { status: 503 }));
+
+    const result = await request("/v1/me", "GET");
+
+    expect(result).toMatchObject({
+      status: 503,
+      data: { error: { code: "client.session_refresh_unavailable", retryable: true } },
+      sessionChanged: false,
+    });
+    expect(result.session.isAuthenticated).toBe(true);
+    expect(store.data.refreshToken).toBe("old-refresh");
+  });
+
+  // A navigation can abort the request that refreshed, so the browser never gets the new cookie
+  // and comes back with the rotated token; the backend would refuse it.
+  it("reuses a just-completed refresh for a request that still carries the rotated token", async () => {
+    store.data = signedIn();
+    store.fetch
+      .mockResolvedValueOnce(expired())
+      .mockResolvedValueOnce(Response.json(tokens))
+      .mockResolvedValueOnce(Response.json({ id: "user-a" }));
+    await request("/v1/me", "GET");
+    await new Promise((resolve) => setTimeout(resolve, 0)); // a later request, not the same tick
+
+    store.data = signedIn(); // the response with the new cookie never arrived
+    store.fetch
+      .mockResolvedValueOnce(expired())
+      .mockResolvedValueOnce(Response.json({ id: "user-a" }));
+    const result = await request("/v1/me", "GET");
+
+    expect(result.status).toBe(200);
+    expect(store.data.refreshToken).toBe("refresh-secret");
+    const refreshCalls = store.fetch.mock.calls.filter(([url]) =>
+      String(url).endsWith("/v1/auth/refresh"),
+    );
+    expect(refreshCalls).toHaveLength(1);
+  });
+
+  it("asks the backend again after a rejected refresh", async () => {
+    const rejected = () =>
+      Response.json({ error: { code: "auth.session_revoked" } }, { status: 401 });
+    store.data = signedIn();
+    store.fetch.mockResolvedValueOnce(expired()).mockResolvedValueOnce(rejected());
+    await request("/v1/me", "GET");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    store.data = signedIn();
+    store.fetch.mockResolvedValueOnce(expired()).mockResolvedValueOnce(rejected());
+    await request("/v1/me", "GET");
+
+    const refreshCalls = store.fetch.mock.calls.filter(([url]) =>
+      String(url).endsWith("/v1/auth/refresh"),
+    );
+    expect(refreshCalls).toHaveLength(2);
+  });
+
+  it("never refreshes for an anonymous request", async () => {
+    store.data = signedIn();
+    store.fetch.mockResolvedValueOnce(expired());
+
+    const result = await proxyApiRequest({
+      data: {
+        path: "/v1/auth/login",
+        method: "POST",
+        query: {},
+        anonymous: true,
+        requestId: "fixture-request",
+      },
+    });
+
+    expect(result.status).toBe(401);
+    expect(store.fetch).toHaveBeenCalledTimes(1);
+    expect(store.data.refreshToken).toBe("old-refresh");
   });
 });

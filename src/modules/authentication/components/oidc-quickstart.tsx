@@ -1,9 +1,5 @@
-// Integration quickstart for a registered OIDC application: a framework picker
-// with a copy-paste "add login" snippet pre-filled with the app's real values
-// (issuer, client_id, redirect URI, scopes), plus a one-click "Test login" that
-// opens the hosted authorize flow (PKCE S256) against the app's first redirect
-// URI. This is the activation surface — time-to-first-login — shown right after
-// creation and again on the app's detail page.
+// Integration quickstart for a registered OIDC application: a sign-in snippet per framework,
+// pre-filled with the app's real values, and a "Test login" that opens the hosted authorize flow.
 
 import {
   Button,
@@ -23,9 +19,8 @@ import { toast } from "sonner";
 import { getApiBaseUrl } from "@/platform/api/client";
 import type { OidcClient } from "../api/oidc-clients";
 
-// The OIDC issuer (authority) is the API origin; SDKs discover the rest at
-// {issuer}/.well-known/openid-configuration (see the server's discovery handler).
-// Resolved per call: the API origin is runtime configuration.
+// The issuer is the API origin, where SDKs find /.well-known/openid-configuration. Resolved per
+// call because the API origin is runtime configuration.
 const issuer = () => new URL(getApiBaseUrl()).origin;
 
 type Framework = "config" | "nextjs" | "react" | "go";
@@ -132,9 +127,8 @@ function base64url(bytes: Uint8Array): string {
     .replace(/=+$/, "");
 }
 
-// Opens the hosted authorize flow for this client with a fresh PKCE challenge.
-// We don't complete the exchange in the console — the point is to prove login
-// works end-to-end and land on the app's own redirect URI.
+// Opens the hosted authorize flow with a fresh PKCE challenge. The console never completes the
+// exchange: the point is to prove sign-in works and land on the app's own redirect URI.
 async function testLogin(client: OidcClient) {
   const redirectUri = client.redirect_uris[0];
   if (!redirectUri) {
@@ -187,9 +181,8 @@ function CodeBlock({ code }: { code: string }) {
 }
 
 /**
- * OidcQuickstart renders the integration quickstart for one client. Pass
- * `secret` right after creation to reveal the one-time client secret alongside
- * the snippet; omit it elsewhere (the snippet references it from an env var).
+ * Renders the integration quickstart for one client. Pass `secret` right after creation to show
+ * the one-time client secret beside the snippet; omit it elsewhere (the snippet reads an env var).
  */
 export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?: string }) {
   const [fw, setFw] = useState<Framework>("config");

@@ -1,8 +1,3 @@
-// Selects the AIProvider the workspace talks to: the live backend SSE provider
-// whenever `/v1/qeetai/status` reports `configured: true`, otherwise the
-// graceful-degradation stub. Isolated here so the switch touches one file, never
-// the conversation UI.
-
 import { useMemo } from "react";
 
 import { useQeetAIStatus } from "../api/qeetai";
@@ -11,10 +6,10 @@ import type { AIProvider } from "./ai-provider";
 import { backendProvider } from "./backend-provider";
 import { unconfiguredProvider } from "./unconfigured-provider";
 
+/** Returns the backend provider when the status endpoint reports Qeet AI usable, else the stub. */
 export function useActiveProvider(): AIProvider {
   const status = useQeetAIStatus();
-  // Prefer `available` (server configured AND plan includes qeetai); fall back
-  // to `configured` for older servers that don't send `available`.
+  // `available` also needs a plan that includes Qeet AI; servers that omit it send `configured`.
   const usable = status.data?.available ?? status.data?.configured;
   return useMemo(() => (usable ? backendProvider : unconfiguredProvider), [usable]);
 }

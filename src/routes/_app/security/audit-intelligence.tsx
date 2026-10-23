@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldLabel,
   Input,
@@ -24,6 +23,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import {

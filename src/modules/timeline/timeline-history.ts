@@ -1,7 +1,3 @@
-// Base fetch logic for the identity timeline.
-// Builds the query string, calls the API, and normalises 404/503 as empty pages
-// (graceful degradation while the backend `subject` filter is being deployed).
-
 import type { ActivityEvent } from "@/modules/activity";
 import { api } from "@/platform/api/client";
 import type { TimelineFilters } from "./timeline-store";
@@ -13,10 +9,7 @@ export type TimelinePage = {
 
 export const TIMELINE_LIMIT = 50;
 
-/**
- * Builds the query params for GET /v1/activity?subject={userId}.
- * Arrays are joined as comma-separated strings; empty strings are omitted.
- */
+/** Returns the GET /v1/activity query for one user's timeline; empty filters are omitted. */
 export function buildTimelineQuery(
   userId: string,
   filters: TimelineFilters,
@@ -35,9 +28,8 @@ export function buildTimelineQuery(
 }
 
 /**
- * Fetches one page of timeline events from GET /v1/activity?subject={userId}.
- * Returns an empty page on 404 (endpoint not yet deployed), 503, or network
- * failure — the timeline degrades gracefully in those cases.
+ * Fetches one page of a user's timeline. A 404, 503 or network error yields an empty page so the
+ * timeline degrades gracefully; other errors throw.
  */
 export async function fetchTimelinePage(
   userId: string,
@@ -49,7 +41,6 @@ export async function fetchTimelinePage(
     return await api<TimelinePage>("/v1/activity", { query });
   } catch (err) {
     const status = (err as { status?: number }).status;
-    // Treat "not deployed yet" and service-unavailable as empty (never crash).
     if (!status || status === 404 || status === 503) {
       return { events: [], next_cursor: undefined };
     }

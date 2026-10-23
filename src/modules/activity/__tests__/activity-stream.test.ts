@@ -2,10 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { parseActivityFrame } from "../activity-stream";
 
-// ---------------------------------------------------------------------------
-// parseActivityFrame — unit tests for the SSE frame parser
-// ---------------------------------------------------------------------------
-
 describe("parseActivityFrame", () => {
   it("returns null for keep-alive comment frames", () => {
     expect(parseActivityFrame(": keep-alive")).toBeNull();
@@ -64,7 +60,6 @@ describe("parseActivityFrame", () => {
       title: "Webhook failed",
       at: "2024-06-15T12:00:00Z",
     };
-    // No "event:" line — should still parse as activity event (default type)
     const frame = `data: ${JSON.stringify(payload)}`;
     const result = parseActivityFrame(frame);
     expect(result?.id).toBe("evt-xyz");
@@ -79,22 +74,18 @@ describe("parseActivityFrame", () => {
       title: "Session created",
       at: "2024-06-15T12:00:00Z",
     };
-    // Comment injected between event and data
     const frame = `: retry hint\nevent: activity\n: another comment\ndata: ${JSON.stringify(payload)}`;
     const result = parseActivityFrame(frame);
     expect(result?.id).toBe("evt-1");
   });
 
   it("joins multi-line data fields", () => {
-    // SSE allows multiple data: lines — they're concatenated with "\n".
-    // A JSON object split across two data: lines still parses correctly
-    // because JSON tolerates whitespace (including newlines) between tokens.
+    // Data lines join with "\n", which JSON accepts between tokens.
     const part1 = '{"id":"evt-multi","type":"user.created",';
     const part2 =
       '"category":"identity","severity":"success","title":"User created","at":"2024-01-01T00:00:00Z"}';
     const frame = `event: activity\ndata: ${part1}\ndata: ${part2}`;
     const result = parseActivityFrame(frame);
-    // The newline-joined string is valid JSON — expect a parsed event
     expect(result).not.toBeNull();
     expect(result?.id).toBe("evt-multi");
     expect(result?.type).toBe("user.created");

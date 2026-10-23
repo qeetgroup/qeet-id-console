@@ -1,7 +1,5 @@
-// jsdom polyfills for component tests. jsdom lacks several browser APIs that the
-// @qeetrix/ui (base-ui) primitives touch on mount (media queries, resize/observe,
-// pointer capture, scrolling). Each is guarded so this is a no-op under the
-// default `node` test environment.
+// Polyfills the browser APIs jsdom lacks and the @qeetrix/ui primitives touch on mount. Each is
+// guarded, so this is a no-op in the default `node` environment.
 if (typeof window !== "undefined") {
   if (!window.matchMedia) {
     window.matchMedia = (query: string) =>

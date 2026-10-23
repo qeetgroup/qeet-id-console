@@ -1,8 +1,3 @@
-// Layered left-to-right BFS layout for the relationship / hierarchy graphs.
-// Ported from the original hand-rolled SVG layout in access/relationships.tsx,
-// but returns absolute positions that feed React Flow nodes. Root sits in the
-// left column; each hop moves one column right, siblings stack vertically.
-
 export const NODE_W = 190;
 export const NODE_H = 62;
 const LAYER_GAP_X = 260;
@@ -13,6 +8,10 @@ export interface XY {
   y: number;
 }
 
+/**
+ * Returns absolute positions for a left-to-right layered layout: the root in the first column,
+ * each hop one column right, siblings stacked. Nodes the root can't reach go in a last column.
+ */
 export function layeredLayout(
   nodes: { id: string }[],
   edges: { from: string; to: string }[],
@@ -20,8 +19,9 @@ export function layeredLayout(
 ): Map<string, XY> {
   const adj = new Map<string, string[]>();
   for (const e of edges) {
-    if (!adj.has(e.from)) adj.set(e.from, []);
-    adj.get(e.from)!.push(e.to);
+    const out = adj.get(e.from);
+    if (out) out.push(e.to);
+    else adj.set(e.from, [e.to]);
   }
 
   const layer = new Map<string, number>();
@@ -30,9 +30,9 @@ export function layeredLayout(
     layer.set(rootId, 0);
     queue.push(rootId);
   }
-  while (queue.length) {
-    const cur = queue.shift()!;
-    const cl = layer.get(cur)!;
+  for (let cur = queue.shift(); cur !== undefined; cur = queue.shift()) {
+    // Every queued id had its layer set before it was pushed, so the fallback never applies.
+    const cl = layer.get(cur) ?? 0;
     for (const nxt of adj.get(cur) ?? []) {
       if (!layer.has(nxt)) {
         layer.set(nxt, cl + 1);
@@ -46,8 +46,9 @@ export function layeredLayout(
   const byLayer = new Map<number, string[]>();
   for (const n of nodes) {
     const l = layer.get(n.id) ?? 0;
-    if (!byLayer.has(l)) byLayer.set(l, []);
-    byLayer.get(l)!.push(n.id);
+    const ids = byLayer.get(l);
+    if (ids) ids.push(n.id);
+    else byLayer.set(l, [n.id]);
   }
 
   const pos = new Map<string, XY>();

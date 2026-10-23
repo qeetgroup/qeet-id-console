@@ -1,20 +1,10 @@
-// SSE activity stream client. Mirrors the proven pattern from
-// features/qeetai/ai/streaming-client.ts but for GET-based SSE,
-// with reconnect + exponential backoff and Last-Event-ID replay.
-// Do NOT import from features/qeetai — this is a standalone client.
-
 import { clearBrowserSession, refreshSessionForRequest } from "@/platform/api/client";
 
 import type { ActivityEvent } from "./types/activity.types";
 
-// ---------------------------------------------------------------------------
-// Frame parsing
-// ---------------------------------------------------------------------------
-
 /**
- * Parse a single SSE frame (the text between two double-newlines) into an
- * ActivityEvent. Returns null for keep-alive comments (": …"), unknown
- * event types, or malformed JSON.
+ * Parses one SSE frame (the text between blank lines) into an ActivityEvent. Returns null for
+ * keep-alives, other event types, and malformed or id-less JSON.
  */
 export function parseActivityFrame(frame: string): ActivityEvent | null {
   let eventType = "activity";
@@ -38,14 +28,13 @@ export function parseActivityFrame(frame: string): ActivityEvent | null {
     const data = JSON.parse(dataLines.join("\n")) as Partial<ActivityEvent>;
     if (typeof data.id !== "string" || !data.id) return null;
     if (typeof data.type !== "string") return null;
-    // Minimal validation — backend enforces the full schema
+    // Only id and type are checked; the backend owns the full schema.
     return data as ActivityEvent;
   } catch {
     return null;
   }
 }
 
-/** Extract the SSE `id:` field from a frame string. */
 function extractFrameId(frame: string): string | null {
   for (const line of frame.split("\n")) {
     if (line.startsWith("id:")) return line.slice(3).trim();
@@ -53,16 +42,11 @@ function extractFrameId(frame: string): string | null {
   return null;
 }
 
-// ---------------------------------------------------------------------------
-// Stream client
-// ---------------------------------------------------------------------------
-
 const INITIAL_BACKOFF_MS = 1_000;
 const MAX_BACKOFF_MS = 30_000;
 const BACKOFF_MULTIPLIER = 2;
 const BURST_FLUSH_MS = 50;
-/** After this many consecutive failed reconnect attempts the stream gives up and
- *  calls onStatusChange("disconnected"). Call start() again to retry. */
+/** Consecutive reconnects tried before the stream gives up as "disconnected"; start() retries. */
 const MAX_RECONNECT_ATTEMPTS = 5;
 
 export type ActivityStreamCallbacks = {
@@ -72,9 +56,9 @@ export type ActivityStreamCallbacks = {
 };
 
 /**
- * Creates an SSE activity stream client. Returns an object with `start()` and
- * `stop()` methods. The callbacks are called from within the async loop.
- * Safe to call `stop()` from any context — it aborts any in-flight fetch.
+ * Returns a `start()`/`stop()` client for the activity SSE stream. It delivers events in short
+ * bursts, reconnects with exponential backoff and resumes from Last-Event-ID. `stop()` aborts
+ * any in-flight fetch and flushes buffered events.
  */
 export function createActivityStream(callbacks: ActivityStreamCallbacks) {
   let stopped = false;
@@ -84,7 +68,6 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
   let burstBuffer: ActivityEvent[] = [];
   let lastEventId: string | null = null;
-  /** Consecutive failed reconnect attempts. Reset on successful connection or explicit start(). */
   let reconnectAttempts = 0;
 
   function flushBurst() {
@@ -106,8 +89,6 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
     if (stopped) return;
     reconnectAttempts++;
     if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
-      // Give up after MAX_RECONNECT_ATTEMPTS consecutive failures.
-      // The caller can restart by calling start() again.
       stopped = true;
       callbacks.onStatusChange("disconnected");
       return;
@@ -147,19 +128,27 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
     if (!res.ok || !res.body) {
       if (stopped) return;
       if (res.status === 401) {
-        if (!hasRetriedAuth && (await refreshSessionForRequest(signal, true))) {
+        let refreshed = false;
+        try {
+          refreshed = !hasRetriedAuth && (await refreshSessionForRequest(signal, true));
+        } catch {
+          // Qeet ID couldn't renew the session right now but didn't reject it:
+          // stay signed in and back off, as for any other unavailable stream.
+          if (!stopped && !signal.aborted) scheduleReconnect();
+          return;
+        }
+        if (refreshed) {
           await connect(true);
           return;
         }
         await clearBrowserSession();
         return;
       }
-      // 404 / 503 = backend not yet deployed; back off and retry silently
+      // Any other error status (e.g. 404/503 from an undeployed backend) retries silently.
       scheduleReconnect();
       return;
     }
 
-    // Successful connection — reset backoff and consecutive-failure counter
     backoffMs = INITIAL_BACKOFF_MS;
     reconnectAttempts = 0;
     callbacks.onStatusChange("connected");
@@ -180,7 +169,7 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
           const frame = buffer.slice(0, sep);
           buffer = buffer.slice(sep + 2);
 
-          // Track the SSE event id for Last-Event-ID replay
+          // Remembered so a reconnect resumes from here via Last-Event-ID.
           const frameId = extractFrameId(frame);
           if (frameId) {
             lastEventId = frameId;
@@ -199,7 +188,7 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
       try {
         await reader.cancel();
       } catch {
-        /* reader already released */
+        // reader already released
       }
     }
 
@@ -208,6 +197,12 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
 
   return {
     start() {
+      // Restarting replaces a live connection or pending retry instead of opening a second one.
+      if (backoffTimer !== null) {
+        clearTimeout(backoffTimer);
+        backoffTimer = null;
+      }
+      abortController?.abort();
       stopped = false;
       backoffMs = INITIAL_BACKOFF_MS;
       reconnectAttempts = 0;
@@ -221,7 +216,7 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
       }
       if (flushTimer !== null) {
         clearTimeout(flushTimer);
-        // Flush any buffered events synchronously so nothing is dropped
+        // Deliver buffered events now so stopping drops nothing.
         flushBurst();
       }
       abortController?.abort();

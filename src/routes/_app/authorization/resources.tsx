@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Table,
   TableBody,
   TableCell,
@@ -13,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { BoxesIcon, KeyRoundIcon, ShieldCheckIcon } from "@qeetrix/icons";
@@ -40,8 +40,9 @@ function groupResources(perms: Permission[]): Resource[] {
     const dot = p.key.indexOf(".");
     const resource = dot === -1 ? p.key : p.key.slice(0, dot);
     const action = dot === -1 ? "*" : p.key.slice(dot + 1);
-    if (!map.has(resource)) map.set(resource, new Set());
-    map.get(resource)!.add(action);
+    const actions = map.get(resource);
+    if (actions) actions.add(action);
+    else map.set(resource, new Set([action]));
   }
   return [...map.entries()]
     .map(([name, actions]) => ({

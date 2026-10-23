@@ -1,6 +1,5 @@
-// Starter policy templates. There is no template backend, so this is a curated
-// static catalogue; "Use template" hydrates the Policy Builder with a real,
-// persistable PolicyDoc that writes via the live ABAC endpoints on save.
+// Static starter templates for the Policy Builder; there is no template backend. A template the
+// engine can't store, such as one comparing two attributes, opens preview-only (abacSaveBlocker).
 
 import { type CondNode, nid, type Operator } from "../api/abac";
 import type { PolicyDoc } from "./policy-codegen";

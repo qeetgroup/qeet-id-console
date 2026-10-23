@@ -11,11 +11,9 @@ import { type PushDeviceScope, usePushDevices, useRemovePushDevice } from "../ap
 import { LinkPhoneDialog } from "./link-phone-dialog";
 
 /**
- * The phones linked to approve sign-ins with Qeet Auth, with when each was
- * linked and last used, and removing one — a removed phone stops approving at
- * once. `scope` is the person's own phones, where a phone can also be linked
- * with a pairing code, or — for an administrator — a member's phones, removed
- * one at a time without touching the member's other factors.
+ * Renders the phones linked to approve sign-ins with Qeet Auth; a removed phone stops approving at
+ * once. `scope` is the person's own phones, where one can also be linked by pairing code, or an
+ * administrator's view of a member's, removed without touching the member's other factors.
  */
 export function LinkedPhonesCard({
   scope,
@@ -23,8 +21,7 @@ export function LinkedPhonesCard({
   className,
 }: {
   scope: PushDeviceScope;
-  /** False shows the phones without the remove action. */
-  canRemove?: boolean;
+  canRemove?: boolean; // False shows the phones without the remove action
   className?: string;
 }) {
   const { t } = useTranslation("account");

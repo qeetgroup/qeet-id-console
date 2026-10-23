@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "@/i18n";
 import { formatMoney, type Plan, usePlans } from "@/modules/billing";
@@ -28,6 +28,13 @@ vi.mock("@/modules/billing", async (importOriginal) => {
       ) : null,
   };
 });
+
+// Every catalogue plan below is built with both an INR and a USD price.
+function price(entry: Plan, currency: "INR" | "USD"): number {
+  const amount = entry.prices[currency];
+  assert(amount !== undefined, `${entry.code} has no ${currency} price`);
+  return amount;
+}
 
 function plan(code: string, name: string, inr: number, usd: number): Plan {
   return {
@@ -114,16 +121,16 @@ describe("PlanSelect", () => {
     const annual = catalogue[`${tier}_year`];
     const panel = card(monthly.name);
     const selection = { tier, planCode: tier, interval: "month", currency, country };
-    expect(panel.getByText(formatMoney(monthly.prices[currency], currency))).toBeTruthy();
+    expect(panel.getByText(formatMoney(price(monthly, currency), currency))).toBeTruthy();
     expect(panel.getByText("/ month")).toBeTruthy();
     fireEvent.click(cta(monthly.name));
     expect(onSelect).toHaveBeenNthCalledWith(1, selection);
     fireEvent.click(yearly());
     expect(yearly().getAttribute("aria-pressed")).toBe("true");
     expect(cycle().getByRole("button", { name: "Monthly", pressed: false })).toBeTruthy();
-    expect(panel.getByText(formatMoney(annual.prices[currency], currency))).toBeTruthy();
+    expect(panel.getByText(formatMoney(price(annual, currency), currency))).toBeTruthy();
     expect(panel.getByText("/ year")).toBeTruthy();
-    const equivalent = formatMoney(Math.round(annual.prices[currency] / 12), currency);
+    const equivalent = formatMoney(Math.round(price(annual, currency) / 12), currency);
     expect(panel.getByText(`≈ ${equivalent} / month, billed yearly`)).toBeTruthy();
     fireEvent.click(cta(annual.name));
     const annualSelection = { ...selection, planCode: `${tier}_year`, interval: "year" };
@@ -142,7 +149,9 @@ describe("PlanSelect", () => {
     mount({ initialSelection: saved });
     expect(yearly().getAttribute("aria-pressed")).toBe("true");
     expect(within(currencySelect()).getByText("USD ($)")).toBeTruthy();
-    expect(card("Pro").getByText(formatMoney(catalogue.pro_year.prices.USD, "USD"))).toBeTruthy();
+    expect(
+      card("Pro").getByText(formatMoney(price(catalogue.pro_year, "USD"), "USD")),
+    ).toBeTruthy();
     fireEvent.click(cta("Pro"));
     expect(onSelect).toHaveBeenLastCalledWith(saved);
     fireEvent.click(cta("Free"));
@@ -156,7 +165,7 @@ describe("PlanSelect", () => {
   ] as const)("blocks a missing %s %s without a monthly price fallback", (code, missing) => {
     const items = Object.values(catalogue).filter((entry) => entry.code !== code);
     if (missing === "currency price") {
-      items.push({ ...catalogue[code], prices: { USD: catalogue[code].prices.USD } });
+      items.push({ ...catalogue[code], prices: { USD: price(catalogue[code], "USD") } });
     }
     mockPlans(items);
     mount();
@@ -164,7 +173,7 @@ describe("PlanSelect", () => {
     expect(cta("Starter").matches(":disabled")).toBe(true);
     expect(cta("Starter").textContent).toBe("Unavailable in this currency or cycle");
     expect(card("Starter").getByText("—")).toBeTruthy();
-    const monthlyPrice = formatMoney(catalogue.starter.prices.INR, "INR");
+    const monthlyPrice = formatMoney(price(catalogue.starter, "INR"), "INR");
     expect(card("Starter").queryByText(monthlyPrice)).toBeNull();
     expect(card("Starter").queryByText(/billed yearly/)).toBeNull();
     expect(card("Starter").getAllByRole("listitem")).toHaveLength(2);
@@ -206,7 +215,7 @@ describe("PlanSelect", () => {
     const error = new Error("private backend database host: billing.internal");
     mockPlans([], { isError: true, error });
     const { container } = mount();
-    expect(screen.getAllByRole("alert")[0].textContent).toContain(
+    expect(screen.getAllByRole("alert")[0]?.textContent).toContain(
       "We couldn’t load the plans. Please try again.",
     );
     expect(container.textContent).not.toContain(error.message);
@@ -234,7 +243,7 @@ describe("PlanSelect", () => {
   it.each([false, true])("keeps one responsive or stacked grid (stacked=%s)", (stacked) => {
     mount({ stacked });
     const cards = screen.getAllByRole("article");
-    const grid = cards[0].parentElement;
+    const grid = cards[0]?.parentElement;
     expect(cards).toHaveLength(4);
     expect(cards.every((article) => article.parentElement === grid)).toBe(true);
     expect(grid?.classList.contains("grid-cols-1")).toBe(true);

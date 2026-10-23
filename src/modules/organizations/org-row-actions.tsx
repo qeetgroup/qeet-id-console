@@ -1,5 +1,3 @@
-// The ⋯ row-actions menu for an organization.
-
 import {
   Button,
   DropdownMenu,

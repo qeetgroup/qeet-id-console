@@ -32,7 +32,6 @@ function NavigationBadge({ badge }: { badge: NavBadge }) {
   return (
     <span
       title={badge.description}
-      aria-label={badge.description}
       className={cn(
         "ms-auto shrink-0 rounded-sm px-1.5 py-0.5 text-[10px] leading-3 font-medium tabular-nums",
         badge.tone === "neutral" && "bg-sidebar-accent text-sidebar-foreground/75",
@@ -152,9 +151,8 @@ function NavMenuItem({
 }
 
 /**
- * Renders one group's items — the body of the two-pane sidebar's section panel.
- * The rail (in AppSidebar) selects which group lands here, so only a single
- * group is ever visible at once, which is what keeps the panel short.
+ * Renders one nav group's items: the body of the sidebar's section panel. The rail picks the
+ * group, so only one is ever visible and the panel stays short.
  */
 export function SectionNav({
   group,

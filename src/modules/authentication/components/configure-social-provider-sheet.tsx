@@ -76,20 +76,9 @@ type ConfigureSocialProviderSheetProps = {
 };
 
 /**
- * The "Configure <provider>" slide-over: client credentials, endpoints and the
- * read-only diagnostics under Advanced.
- *
- * Inputs are controlled rather than read from FormData on submit (the house
- * form convention) because the panels are tabbed: a hidden panel unmounts, and
- * native `required` validation cannot focus a control inside one. Validation
- * therefore happens here — `canSave` gates the submit button.
- *
- * Saving goes through `POST /v1/social/providers`, which keeps whether the
- * provider is switched on and, for one already configured, keeps the stored
- * secret when the field is left blank. A configured provider can be switched
- * off or on (`PATCH`) and removed (`DELETE`, refused while someone can sign in
- * only through it). The comps' Scopes field and "Test configuration" button
- * are left out until the server has endpoints for them.
+ * Renders the "Configure <provider>" slide-over. Inputs are controlled, not read from FormData,
+ * because a hidden tab unmounts and native `required` can't focus into it, so `canSave` validates.
+ * Saving keeps whether the provider is switched on and, if the secret is blank, the stored one.
  */
 export function ConfigureSocialProviderSheet({
   provider,
@@ -120,9 +109,8 @@ export function ConfigureSocialProviderSheet({
 
   return (
     <Sheet open onOpenChange={(o) => !o && onClose()}>
-      {/* The kit caps a right-side sheet at 24rem through
-          `data-[side=right]:sm:max-w-sm`, whose attribute selector outweighs a
-          plain utility — hence the important modifier to reach the comps' 40rem. */}
+      {/* The kit caps a right sheet at 24rem with an attribute selector that outweighs a plain
+          utility, hence the important modifier. */}
       <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-[40rem]!">
         <form
           className="flex h-full min-h-0 flex-col"
@@ -499,7 +487,7 @@ function CopyableUrlPanel({
   );
 }
 
-/** Small red asterisk marking a required field, matching the comps. */
+/** Marks a required field with a small red asterisk. */
 function RequiredMark() {
   return (
     <span aria-hidden="true" className="text-destructive">

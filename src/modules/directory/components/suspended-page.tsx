@@ -624,7 +624,7 @@ export function SuspendedView({
               values={(page?.reasons ?? []).map((reason, index) => ({
                 label: reason.key,
                 count: reason.count,
-                color: colors[index % colors.length],
+                color: colors[index % colors.length] ?? "var(--muted)", // fallback unreachable
               }))}
             />
             <dl className="min-w-32 flex-1 space-y-2 text-[11px]">

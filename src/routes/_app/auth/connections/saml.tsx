@@ -5,7 +5,6 @@ import {
   CardFooter,
   CardHeader,
   cn,
-  DataState,
   Input,
   Select,
   SelectContent,
@@ -26,6 +25,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRightIcon,
@@ -49,7 +49,7 @@ import {
 import { type ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useEntitlements } from "@/modules/billing/api/billing";
+import { useEntitlements } from "@/modules/billing";
 import { FeatureGate } from "@/modules/billing/components/upgrade-gate";
 import {
   type SamlConnection,
@@ -59,7 +59,7 @@ import {
   useSamlConnections,
   useTestSamlConnection,
   useUpdateSamlConnection,
-} from "@/modules/authentication/api/saml";
+} from "@/modules/authentication";
 import { SamlConnectionSheet } from "@/modules/authentication/components/saml-connection-sheet";
 import {
   SAML_IDP_VENDOR_LABELS,
@@ -515,9 +515,8 @@ function ConnectionRow({
   );
 }
 
-// ValidateConnection runs an offline config preflight (POST .../saml/{id}/test)
-// and shows the per-check results in a side panel — complementary to "Test SSO"
-// (a live IdP round-trip), this catches config errors before any login.
+// An offline config preflight with per-check results, catching errors before any sign-in;
+// "Test SSO" is the live IdP round trip.
 function ValidateConnection({ id }: { id: string }) {
   const { t } = useTranslation("auth");
   const testM = useTestSamlConnection();

@@ -30,13 +30,8 @@ import { useTenantId } from "@/platform/auth/session";
 
 const DISMISS_KEY = "qeetid-admin-onboarding-dismissed";
 
-// ---- Backend probes ----
-//
-// Each step is "done" when a simple existence query against the
-// backend succeeds. Queries that return 404 (endpoint not shipped
-// yet) treat the step as not-done so the checklist quietly waits for
-// the backend rather than throwing.
-
+// A step is done when its existence probe matches. Any error, including a 404 from an absent
+// endpoint, reads as not done, so the checklist waits instead of throwing.
 function isDoneSafe<T>(
   data: T | undefined,
   err: unknown,
@@ -80,10 +75,7 @@ function useSteps(): Step[] {
   });
   const users = useQuery({
     queryKey: ["onboarding", "users", tenantId],
-    // Tenant is scoped via the JWT principal, not the URL — there is no
-    // /v1/tenants/{tenantId}/users route (QID-02: the checklist previously
-    // called that nonexistent path, so "Invite your team" could never
-    // check itself off).
+    // Users are tenant-scoped by the session, not the URL: there is no /v1/tenants/{id}/users.
     queryFn: () =>
       apiClient.api<{ items: unknown[] }>(`/v1/users`, {
         query: { limit: 2 },
@@ -204,12 +196,9 @@ function tailor(steps: Step[], useCase?: string): Step[] {
 }
 
 /**
- * OnboardingChecklist nudges a fresh organization through the five most
- * common first-day tasks. It introspects existing API queries to mark
- * steps done — no backend coordination required. Auto-hides once
- * every step is complete; the user can also dismiss it explicitly
- * (state persisted in localStorage so it doesn't reappear on refresh).
- * Step order + intro are tailored to the segmentation captured at org creation.
+ * Renders the first-day setup tasks the operator can act on, ticked off by probing existing APIs
+ * and ordered for the use case chosen at organization creation. Shows a completion card once all
+ * are done; a dismissal persists in localStorage.
  */
 export function OnboardingChecklist() {
   const [dismissed, setDismissed] = useState(
@@ -244,8 +233,7 @@ export function OnboardingChecklist() {
     try {
       localStorage.setItem(DISMISS_KEY, "1");
     } catch {
-      // localStorage may be disabled (private mode); accept the in-memory
-      // dismissal for this session and move on.
+      // Storage may be disabled (private mode); the in-memory dismissal lasts this session.
     }
   }
 

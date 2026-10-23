@@ -123,4 +123,18 @@ describe("executeTool", () => {
     expect(exec.status).toBe("failed");
     expect(exec.error?.code).toBe("execution_error");
   });
+
+  // The failure is shown, persisted, and sent to the model as the tool result,
+  // so the backend's own message must not travel with it.
+  it("keeps the backend message out of a failed execution", async () => {
+    const tool = makeTool({
+      run: async () => {
+        throw new ApiError(500, "internal", 'pq: relation "tenant_users" does not exist');
+      },
+    });
+    const exec = await executeTool(tool, {}, makeCtx(), opts);
+    expect(exec.status).toBe("failed");
+    expect(exec.error?.message).toBe("Something went wrong. Please try again.");
+    expect(JSON.stringify(exec)).not.toContain("tenant_users");
+  });
 });

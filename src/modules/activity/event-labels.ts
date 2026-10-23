@@ -1,12 +1,9 @@
-// Product-facing event vocabulary. The backend emits machine event enums in a
-// mixed `domain.action_with_underscores` shape (auth.login_succeeded,
-// user.mfa_required_set); the console must never show those raw. We normalize
-// separators, map known events to human titles, and derive a real *outcome*
-// (Success / Failed / Blocked) that is distinct from log severity.
+// Product wording for backend event enums such as `auth.login_succeeded`, which the console
+// never shows raw, and the event outcome, which is distinct from log severity.
 
 import type { Severity } from "./types/activity.types";
 
-/** Canonicalize an event type: lowercase, unify `_`/`.`/whitespace to dots. */
+/** Lowercases an event type and joins its words with single dots. */
 function normalizeType(type: string): string {
   return type
     .toLowerCase()
@@ -15,7 +12,7 @@ function normalizeType(type: string): string {
     .replace(/^\.|\.$/g, "");
 }
 
-/** Curated (normalized) enum → human title. Extend as new event types ship. */
+/** Titles for known event types, keyed by normalized type. */
 const EVENT_LABELS: Record<string, string> = {
   "auth.login": "Sign-in attempt",
   "auth.login.succeeded": "Successful sign-in",
@@ -66,7 +63,7 @@ function looksLikeEnum(value: string): boolean {
   return /[._]/.test(value);
 }
 
-/** "user.mfa_required_set" → "User mfa required set" (sentence case). */
+/** Sentence-cases an event type: "user.mfa_required_set" → "User mfa required set". */
 export function humanizeEventType(type: string): string {
   const words = normalizeType(type).replace(/\./g, " ").trim();
   if (!words) return "Event";
@@ -74,9 +71,8 @@ export function humanizeEventType(type: string): string {
 }
 
 /**
- * The label to show as an event's primary title. Prefers the curated map
- * (matched on the normalized type), then a human-looking server title, then a
- * humanized enum — so a weak or enum-shaped server title never leaks through.
+ * Returns an event's display title: the curated label, else the server title if it reads as
+ * prose, else the humanized type, so an enum-shaped title never shows.
  */
 export function formatEventTitle(event: { type: string; title?: string }): string {
   const mapped = EVENT_LABELS[normalizeType(event.type)];
@@ -102,9 +98,8 @@ const SUCCESS_RE =
   /(success|succeed|created|enabled|disabled|added|assigned|granted|issued|verified|completed|updated|changed|removed|revoked|deleted|restored|registered|rotated|\bset\b|reset|logout)/;
 
 /**
- * The event's outcome, distinct from its severity. Prefers an explicit status,
- * then the action verb in the event type (a "succeeded"/"created" event is a
- * Success even when logged at info severity), then falls back to severity.
+ * Returns the event's outcome, which can differ from its severity: Blocked, Failed or Success
+ * when its status or type says so (checked in that order), else the severity's result.
  */
 export function eventResult(event: {
   status?: string;

@@ -13,7 +13,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   StatusPill,
   Table,
   TableBody,
@@ -23,6 +22,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { LoaderCircleIcon, MonitorSmartphoneIcon, RefreshCwIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";

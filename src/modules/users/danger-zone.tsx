@@ -1,7 +1,3 @@
-// Danger zone — destructive lifecycle actions, each with an explained
-// confirmation. Only rendered for user.write; otherwise the caller shows a
-// read-only notice instead.
-
 import { Button } from "@qeetrix/ui";
 import { useNavigate } from "@tanstack/react-router";
 import { type IconProps, MonitorXIcon, TrashIcon, UserCheckIcon, UserXIcon } from "@qeetrix/icons";
@@ -15,6 +11,10 @@ import {
 import { useDeleteUser, useSetUserStatus } from "./api/users";
 import { useRevokeAllUserSessions } from "./api/user360";
 
+/**
+ * Renders the suspend or reactivate, revoke-sessions and delete actions; all but reactivate
+ * confirm first. Render it only for user.write; the backend enforces that regardless.
+ */
 export function DangerZone({
   userId,
   email,
@@ -31,9 +31,8 @@ export function DangerZone({
   const del = useDeleteUser();
   const revokeAll = useRevokeAllUserSessions();
 
-  // Sensitive actions flow through the shared confirm → step-up → api pipeline.
-  // A backend `step_up_required` re-auth is handled by the provider (dialog +
-  // retry) instead of dead-ending. Cancellation is expected and swallowed.
+  // runSensitive confirms, and re-authenticates and retries when the backend asks for step-up.
+  // A cancelled confirmation or step-up is expected, so only other errors propagate.
   const ignoreCancel = (err: unknown) => {
     if (!(err instanceof SensitiveActionCancelled)) throw err;
   };

@@ -1,9 +1,3 @@
-// Enterprise time-range control for the Activity Center.
-// A preset dropdown (the primary, most-used activity filter) plus a custom
-// date-range picker — the pattern used by Datadog / Auth0 / Stripe / Okta.
-// Emits RFC3339 from/to strings via presetToRange(), matching the shape the
-// activity filter-manager and GET /v1/activity already expect.
-
 import {
   DateRangePicker,
   type DateRangePickerProps,
@@ -15,8 +9,7 @@ import {
 } from "@qeetrix/ui";
 import { CalendarClockIcon } from "@qeetrix/icons";
 
-// Re-exported so callers can hold the custom-range state without depending on
-// react-day-picker directly.
+// Lets callers hold a custom range without depending on react-day-picker.
 export type DateRange = NonNullable<DateRangePickerProps["value"]>;
 
 export const TIME_PRESETS: { value: string; label: string }[] = [
@@ -34,10 +27,9 @@ const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 /**
- * Resolves a preset (+ optional custom range) to an RFC3339 { from, to } window.
- * Relative presets leave `to` open so events streaming in still pass the filter;
- * a custom range spans the full start day → end day inclusive. "all" / an
- * incomplete custom range clears the window (no time filtering).
+ * Resolves a preset (and custom range) to an RFC 3339 window. Relative presets leave `to` open
+ * so newly streamed events still match; a custom range covers whole local days. "all" or a
+ * range without a start returns an empty window.
  */
 export function presetToRange(preset: string, custom?: DateRange): { from: string; to: string } {
   const now = Date.now();
@@ -73,6 +65,7 @@ interface ActivityTimeRangeProps {
   onCustomRangeChange: (range: DateRange | undefined) => void;
 }
 
+/** Renders the time-range preset select, plus a date-range picker for "custom". */
 export function ActivityTimeRange({
   preset,
   customRange,

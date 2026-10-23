@@ -1,7 +1,5 @@
-// AI-agent identity data layer (Developer → Agent Governance). Agents authenticate
-// with their secret at POST /v1/agents/token and receive a short-lived, scoped
-// token marked actor_type="agent". Backed by /v1/tenants/{tenantID}/agents.
-// The secret is returned only once, on create.
+// AI agents exchange their secret at POST /v1/agents/token for a short-lived, scoped token marked
+// actor_type="agent". The secret is returned only once, on create.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -15,12 +13,9 @@ export interface Agent {
   token_ttl_seconds: number;
   status: "active" | "suspended" | "decommissioned";
   disabled: boolean;
-  /** The named human owner accountable for this agent. Absent only for
-   * agents created before the sponsor model existed. */
-  sponsor_user_id?: string;
+  sponsor_user_id?: string; // the accountable human; absent only on agents predating sponsors
   created_at: string;
-  /** Present only in the create response. */
-  secret?: string;
+  secret?: string; // only in the create response
 }
 
 const KEY = ["agents"];
@@ -87,8 +82,7 @@ export function useKillAllAgents() {
   });
 }
 
-/** Agents currently sponsored by a given user — used by the sponsor-transfer
- * tool to show what's about to move before the admin confirms. */
+/** Lists the agents a user sponsors, e.g. to preview a sponsor transfer. */
 export function useAgentsSponsoredBy(userId: string | null) {
   const tenantId = useTenantId();
   return useQuery({
@@ -98,8 +92,10 @@ export function useAgentsSponsoredBy(userId: string | null) {
   });
 }
 
-/** Reassigns every agent sponsored by fromUserId to toUserId in one call —
- * the offboarding path: a departing sponsor's agents don't go orphaned. */
+/**
+ * Reassigns every agent sponsored by `fromUserId` to `toUserId` in one call, so a departing
+ * sponsor leaves no orphaned agents.
+ */
 export function useTransferSponsor() {
   const tenantId = useTenantId();
   const qc = useQueryClient();

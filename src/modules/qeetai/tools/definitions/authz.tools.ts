@@ -1,21 +1,9 @@
-// Authorization tools — simulate_authorization, set_strict_mfa.
-//
-// simulate_authorization: routes to the real engine endpoints (AuthZEN/ABAC/RBAC/ReBAC)
-//   following the same call patterns as lib/authz-simulate.ts (not exported from there,
-//   so we call api() directly with the same paths).
-//
-// set_strict_mfa: GET current auth policy, then PUT with remember_device_enabled toggled.
-//   strict_mfa.enabled=true  → remember_device_enabled=false (force MFA every sign-in)
-//   strict_mfa.enabled=false → remember_device_enabled=true  (allow adaptive skip)
-
 import { z } from "zod";
 import { AUTH_POLICY_KEY } from "@/modules/authentication";
 
 import { api } from "@/platform/api/client";
 import type { AuthPolicy } from "@/modules/authentication";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── simulate_authorization ────────────────────────────────────────────────────
 
 const simulateAuthorizationInput = z.object({
   engine: z.enum(["authzen", "abac", "rbac", "rebac"]),
@@ -88,7 +76,7 @@ async function runRbacCheck(
   signal: AbortSignal,
 ): Promise<SimulateResult> {
   const t0 = Date.now();
-  // RBAC check uses subject as a user_id string and action as permission key.
+  // RBAC takes the subject as a user id (or an object's `id`) and the action as a permission.
   const userId =
     typeof input.subject === "string"
       ? input.subject
@@ -183,8 +171,6 @@ export const simulateAuthorizationTool: ToolDefinition<SimulateAuthorizationInpu
   },
 };
 
-// ── set_strict_mfa ────────────────────────────────────────────────────────────
-
 const setStrictMfaInput = z.object({ enabled: z.boolean() });
 type SetStrictMfaInput = z.infer<typeof setStrictMfaInput>;
 
@@ -210,9 +196,7 @@ export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
   }),
   auditLabel: "qeetai.set_strict_mfa",
   async run(ctx, input) {
-    // Full-replace PUT: GET current policy, flip remember_device_enabled, PUT back.
-    // strict enabled=true → remember_device_enabled=false (force MFA every sign-in)
-    // strict enabled=false → remember_device_enabled=true (allow adaptive skip)
+    // The PUT replaces the whole policy, so read it first. Strict MFA = no remembered devices.
     const current = await api<AuthPolicy>(`/v1/tenants/${ctx.tenantId}/auth-policy`, {
       signal: ctx.signal,
     });

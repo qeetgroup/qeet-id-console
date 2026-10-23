@@ -13,7 +13,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Table,
   TableBody,
   TableCell,
@@ -22,17 +21,14 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { KeyRoundIcon, LoaderCircleIcon, RefreshCwIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
-import {
-  type OAuthGrant,
-  useOAuthGrants,
-  useRevokeOAuthGrant,
-} from "@/modules/authentication/api/oauth-grants";
+import { type OAuthGrant, useOAuthGrants, useRevokeOAuthGrant } from "@/modules/authentication";
 
 export const Route = createFileRoute("/_app/auth/api/consent-grants")({
   component: ConsentGrantsPage,

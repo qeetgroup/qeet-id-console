@@ -2,16 +2,12 @@ import { describe, expect, it } from "vitest";
 import type { ActivityEvent } from "@/modules/activity";
 import { groupTimelineByDate } from "../grouping";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 let counter = 0;
 
 function makeEvent(daysAgo: number, overrides: Partial<ActivityEvent> = {}): ActivityEvent {
   counter++;
   const at = new Date(
-    // Base date is fixed to a known Monday to avoid DST edge cases in CI
+    // Offset from the fixed NOW, so buckets don't depend on the real clock.
     new Date("2025-06-16T12:00:00.000Z").getTime() - daysAgo * 86_400_000,
   ).toISOString();
   return {
@@ -25,12 +21,7 @@ function makeEvent(daysAgo: number, overrides: Partial<ActivityEvent> = {}): Act
   };
 }
 
-/** Fixed "now" for all tests: 2025-06-16 at noon UTC */
 const NOW = new Date("2025-06-16T12:00:00.000Z");
-
-// ---------------------------------------------------------------------------
-// groupTimelineByDate
-// ---------------------------------------------------------------------------
 
 describe("groupTimelineByDate", () => {
   it("returns an empty array for no events", () => {
@@ -97,10 +88,8 @@ describe("groupTimelineByDate", () => {
   });
 
   it("preserves newest-first order within each group", () => {
-    // Events at different offsets within "Last Week" (3 days ago, 4 days ago)
     const newer = makeEvent(3);
     const older = makeEvent(4);
-    // Pass newest-first (as the timeline would)
     const groups = groupTimelineByDate([newer, older], NOW);
     const lastWeek = groups.find((g) => g.label === "Last Week");
     expect(lastWeek?.events[0]).toBe(newer);

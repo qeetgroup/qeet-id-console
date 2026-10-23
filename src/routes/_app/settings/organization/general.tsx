@@ -65,6 +65,8 @@ type Tenant = {
   created_at: string;
 };
 
+const SKELETON_IDS = ["a", "b", "c", "d"] as const;
+
 function WorkspaceGeneralPage() {
   const { t } = useTranslation("settings");
   const tenantId = useTenantId();
@@ -82,8 +84,7 @@ function WorkspaceGeneralPage() {
   }, [tenantQ.data]);
 
   const saveM = useMutation({
-    // plan is intentionally omitted — it's changed through billing, not here
-    // (the backend no longer accepts plan on PATCH /v1/tenants).
+    // No plan: it changes through billing, and PATCH /v1/tenants doesn't accept it.
     mutationFn: (body: { name?: string; region?: string; status?: string; logo_url?: string }) =>
       api<Tenant>(`/v1/tenants/${tenantId}`, { method: "PATCH", body }),
     onSuccess: () => {
@@ -93,9 +94,8 @@ function WorkspaceGeneralPage() {
     meta: { successMessage: "Organization details saved" },
   });
 
-  // Comparing against the server copy is what drives the unsaved-changes bar;
-  // tracking a separate "dirty" flag would drift the moment a field is edited
-  // back to its original value.
+  // Compared with the server copy, so editing a field back to its original value clears the
+  // unsaved-changes bar; a separate flag would drift.
   const dirty =
     !!tenantQ.data &&
     (draft.name !== tenantQ.data.name ||
@@ -127,8 +127,8 @@ function WorkspaceGeneralPage() {
       {tenantQ.isLoading ? (
         <Card>
           <CardContent className="space-y-3 p-6">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
+            {SKELETON_IDS.map((id) => (
+              <Skeleton key={id} className="h-10 w-full" />
             ))}
           </CardContent>
         </Card>

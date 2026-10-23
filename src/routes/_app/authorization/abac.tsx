@@ -6,7 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataState,
   Field,
   FieldLabel,
   Input,
@@ -15,6 +14,7 @@ import {
   Switch,
   Textarea,
 } from "@qeetrix/ui";
+import { DataState } from "@/platform/components/data-state";
 import { createFileRoute } from "@tanstack/react-router";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
@@ -33,7 +33,7 @@ import { ConditionTree } from "@/modules/authorization/components/condition-buil
 import { DecisionExplain } from "@/modules/authorization/components/explain/decision-explain";
 import { MonacoPanel } from "@/modules/authorization/components/shared/monaco-panel";
 import type { ApiError } from "@/platform/api/client";
-import { useEntitlements } from "@/modules/billing/api/billing";
+import { useEntitlements } from "@/modules/billing";
 import {
   type AbacPolicy,
   type CondNode,
