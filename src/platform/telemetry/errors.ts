@@ -11,6 +11,7 @@ export function captureError(error: unknown, context?: Record<string, unknown>) 
     ...context,
     httpStatus: appError.httpStatus,
     retryable: appError.retryable,
+    requestId: appError.requestId,
     ...(import.meta.env?.DEV ? { devDetail: appError.devDetail } : {}),
   });
 }

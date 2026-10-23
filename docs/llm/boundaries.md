@@ -16,7 +16,7 @@ sensitive-action/step-up primitive.
 |---|---|
 | **Every authorization decision** | `qeet-id-server` |
 | Tenant scoping, token validation, business rules | `qeet-id-server` |
-| The API contract | `qeet-id-server` — see its OpenAPI documents |
+| The API contract | `qeet-id-server` — see its OpenAPI documents; the console types what it calls by hand (no generated client) |
 | End-user sign-in UI | `qeet-id-login` |
 | Marketing | `qeet-id-website` |
 | SDKs | `qeet-id-{go,node,react}` |
@@ -45,6 +45,7 @@ routes  →  modules  →  platform  →  shared
 | `src/shared/**` | may import only `@/shared`, `@/i18n`, external packages |
 | `src/platform/**` | may import only `@/platform`, `@/shared`, `@/i18n` |
 | `src/modules/**` | must not import `@/routes`; reaches another module **only via its barrel** |
+| `src/routes/**` | module barrels and `pages` entries only; never module internals, `api()` or `@tanstack/react-query` (no exemptions) |
 | all | `noImportCycles: "error"`; `@/lib` is retired |
 
 `bun run lint:boundaries` is a CI step — a violation fails the build.

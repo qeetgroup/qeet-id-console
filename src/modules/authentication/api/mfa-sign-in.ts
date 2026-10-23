@@ -5,6 +5,7 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
   startAuthentication,
 } from "@simplewebauthn/browser";
+import { z } from "zod";
 
 import { ApiError, api } from "@/platform/api/client";
 
@@ -29,15 +30,20 @@ export async function mfaPasskeyProof(mfaToken: string): Promise<MfaProof> {
   return { passkey: { session_id: begin.session_id, credential } };
 }
 
+const mfaEnrollmentSchema = z.object({
+  secret: z.string().min(1),
+  provisioning_url: z.string().startsWith("otpauth://"),
+});
 /** An authenticator app being set up for an enrolment challenge. */
-export type MfaEnrollment = { secret: string; provisioning_url: string };
+export type MfaEnrollment = z.infer<typeof mfaEnrollmentSchema>;
 
 /** Starts the authenticator app that completes an enrolment challenge. */
 export function startMfaEnrollment(mfaToken: string): Promise<MfaEnrollment> {
-  return api<MfaEnrollment>("/v1/auth/mfa/enroll", {
+  return api("/v1/auth/mfa/enroll", {
     method: "POST",
     body: { mfa_token: mfaToken },
     anonymous: true,
+    schema: mfaEnrollmentSchema,
   });
 }
 

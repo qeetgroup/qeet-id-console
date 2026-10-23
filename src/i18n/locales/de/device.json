@@ -21,8 +21,6 @@
     "actions": "Aktionen"
   },
   "revoke": {
-    "title": "Diese Geräteautorisierung widerrufen?",
-    "descriptionNamed": "Das Gerät, das mit dem Benutzercode <code>{{code}}</code> abfragt, wird abgelehnt und kann nicht mehr genehmigt werden. Dies kann nicht rückgängig gemacht werden.",
-    "descriptionFallback": "Der Geräteablauf wird abgelehnt und kann nicht mehr genehmigt werden."
+    "title": "Diese Geräteautorisierung widerrufen?"
   }
 }

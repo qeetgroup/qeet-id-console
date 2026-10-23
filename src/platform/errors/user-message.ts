@@ -89,6 +89,12 @@ const CODE_MESSAGES: Record<string, string> = {
     "We couldn't confirm this sign-in. Ask your administrator for help.",
   [ERROR_CODES.BILLING_PLAN_LIMIT]: "You've reached your plan's limit.",
   [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "This feature isn't included in your plan.",
+  [ERROR_CODES.USER_IMPORT_EMPTY]: "The file has no users to import.",
+  [ERROR_CODES.USER_IMPORT_BATCH_TOO_LARGE]:
+    "An import can add at most 1,000 users. Split the file and import each part.",
+  [ERROR_CODES.USER_IMPORT_FILE_TOO_LARGE]:
+    "That file is too large to import. The maximum is 10 MB.",
+  [ERROR_CODES.USER_IMPORT_SOURCE_INVALID]: "This export format isn't supported.",
   [ERROR_CODES.NETWORK]: "Can't reach the server. Check your connection and try again.",
 };
 
@@ -113,4 +119,36 @@ export function userMessageForCode(code: ErrorCode, kind: ErrorKind): string {
 export function errorMessage(err: unknown): string {
   const app = normalizeError(err);
   return userMessageForCode(app.code, app.kind);
+}
+
+// Per-field copy for the codes the backend's request validation uses.
+const FIELD_MESSAGES: Record<string, string> = {
+  required: "This field is required.",
+  invalid_email: "Enter a valid email address.",
+  too_short: "This is too short.",
+  too_long: "This is too long.",
+  invalid_url: "Enter a valid URL.",
+  invalid_phone: "Enter a valid phone number, including the country code.",
+  invalid_uuid: "This isn't a valid identifier.",
+  not_allowed: "Choose one of the allowed values.",
+  out_of_range: "This value is out of range.",
+};
+
+/** Returns user-safe copy for a field's validation code; never the backend's own text. */
+export function fieldMessageForCode(code: string): string {
+  return FIELD_MESSAGES[code] ?? "This value isn't valid.";
+}
+
+/** Returns copy for each field a 422 rejected, keyed by the request body's JSON name. */
+export function fieldErrorMessages(err: unknown): Record<string, string> {
+  const messages: Record<string, string> = {};
+  for (const { field, code } of normalizeError(err).fields) {
+    messages[field] ??= fieldMessageForCode(code);
+  }
+  return messages;
+}
+
+/** Returns the failed request's id, for the person to quote to support. */
+export function errorReference(err: unknown): string | undefined {
+  return normalizeError(err).requestId;
 }

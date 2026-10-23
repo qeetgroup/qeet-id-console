@@ -20,7 +20,6 @@
   },
   "revoke": {
     "title": "Diesen Grant widerrufen?",
-    "descriptionNamed": "Damit wird die Refresh-Token-Kette für <strong>{{email}}</strong> in dieser Anwendung sofort ungültig gemacht. Beim nächsten Anmelden wird eine erneute Zustimmung angefordert.",
     "descriptionFallback": "Damit wird die Refresh-Token-Kette für diesen Grant ungültig gemacht."
   }
 }

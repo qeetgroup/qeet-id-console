@@ -6,7 +6,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api } from "@/platform/api/client";
 
-import { canAddPasskey, PASSKEYS_KEY, useRenamePasskey } from "../passkeys";
+import { authKeys } from "../keys";
+import { canAddPasskey, useRenamePasskey } from "../passkeys";
 
 vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
@@ -32,7 +33,7 @@ describe("useRenamePasskey", () => {
       method: "PATCH",
       body: { name: "Work laptop" },
     });
-    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: PASSKEYS_KEY }));
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: authKeys.passkeys() }));
   });
 });
 

@@ -22,7 +22,7 @@
   },
   "revoke": {
     "title": "Revoke this device authorization?",
-    "descriptionNamed": "The device polling with user code <code>{{code}}</code> will be denied and can no longer be approved. This can’t be undone.",
-    "descriptionFallback": "The device flow will be denied and can no longer be approved."
+    "descriptionPlain": "The device polling with user code {{code}} will be denied and can no longer be approved. This can’t be undone.",
+    "action": "Revoke this device authorization"
   }
 }

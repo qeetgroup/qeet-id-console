@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authzKeys } from "./keys";
 
 export interface GroupRole {
   role_id: string;
@@ -9,27 +10,10 @@ export interface GroupRole {
   granted_at: string;
 }
 
-export interface Role {
-  id: string;
-  name: string;
-  description: string;
-  is_system: boolean; // a built-in role, which can't be deleted
-  created_at: string;
-}
-
-export function useRoles() {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: ["roles", tenantId],
-    enabled: !!tenantId,
-    queryFn: () => api<{ items: Role[] }>(`/v1/tenants/${tenantId}/roles`),
-  });
-}
-
 export function useGroupRoles(groupId: string) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["group-roles", tenantId, groupId],
+    queryKey: authzKeys.groupRoles(tenantId, groupId),
     enabled: !!tenantId && !!groupId,
     queryFn: () => api<{ items: GroupRole[] }>(`/v1/tenants/${tenantId}/groups/${groupId}/roles`),
   });
@@ -46,7 +30,7 @@ export function useGrantGroupRole(groupId: string) {
         method: "POST",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["group-roles", tenantId, groupId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.groupRoles(tenantId, groupId) }),
     meta: { successMessage: "Role granted to group" },
   });
 }
@@ -61,7 +45,7 @@ export function useRevokeGroupRole(groupId: string) {
         method: "DELETE",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["group-roles", tenantId, groupId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.groupRoles(tenantId, groupId) }),
     meta: { successMessage: "Role revoked from group" },
   });
 }

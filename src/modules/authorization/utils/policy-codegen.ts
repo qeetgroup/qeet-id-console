@@ -4,11 +4,9 @@
 import {
   type AbacPolicyInput,
   type CondNode,
+  conditionProblem,
   type Effect,
   emptyGroup,
-  LIST_OPERATORS,
-  NAMESPACES,
-  NULLARY_OPERATORS,
   OPERATOR_LABELS,
   toConditionJson,
 } from "../api/abac";
@@ -45,26 +43,12 @@ export function emptyPolicyDoc(): PolicyDoc {
   };
 }
 
-// The engine compares a leaf's value as a literal, so an attribute path there never matches.
-const ATTRIBUTE_PATH = new RegExp(`^(${NAMESPACES.join("|")})\\.\\w[\\w.]*$`);
-
-function comparesAttributes(node: CondNode): boolean {
-  if (node.kind === "group") return node.children.some(comparesAttributes);
-  if (node.kind === "not") return comparesAttributes(node.child);
-  if (NULLARY_OPERATORS.includes(node.op)) return false;
-  const values = LIST_OPERATORS.includes(node.op) ? node.value.split(",") : [node.value];
-  return values.some((v) => ATTRIBUTE_PATH.test(v.trim()));
-}
-
 /** Returns why a doc can't be saved as an ABAC policy, or null when it can. */
 export function abacSaveBlocker(doc: PolicyDoc): string | null {
   if (doc.requireRole || doc.relation) {
     return "This policy combines RBAC/ReBAC with ABAC, which has no single backend object. You can export it or simulate it now; remove the RBAC/ReBAC blocks to save it as a real ABAC policy.";
   }
-  if (doc.condition && comparesAttributes(doc.condition)) {
-    return "Compares two attributes, which the policy engine doesn't support yet. Compare against a literal value to save it as an ABAC policy.";
-  }
-  return null;
+  return doc.condition ? conditionProblem(doc.condition) : null;
 }
 
 /** Returns whether a doc can be saved as an ABAC policy (see abacSaveBlocker). */
@@ -162,7 +146,8 @@ export function toYamlDoc(doc: PolicyDoc): string {
 
 function dslValue(node: Extract<CondNode, { kind: "leaf" }>): string {
   if (node.op === "exists") return "";
-  return ` ${JSON.stringify(node.value)}`;
+  // An attribute reference stays bare, so it reads apart from a quoted literal.
+  return node.ref ? ` ${node.value.trim()}` : ` ${JSON.stringify(node.value)}`;
 }
 
 function dslCondition(node: CondNode, indent: number): string {

@@ -12,10 +12,15 @@ import {
   OPERATOR_LABELS,
   OPERATORS,
   type Operator,
+  REFERENCE_OPERATORS,
 } from "../../api/abac";
 
 const NS_ITEMS = NAMESPACES.map((n) => ({ label: n, value: n }));
 const OP_ITEMS = OPERATORS.map((o) => ({ label: OPERATOR_LABELS[o], value: o }));
+const OPERAND_ITEMS = [
+  { label: "value", value: "value" },
+  { label: "attribute", value: "attribute" },
+];
 
 /**
  * Renders a no-code editor for an ABAC condition: nested ALL/ANY groups, NOT wrappers and
@@ -166,6 +171,7 @@ function LeafEditor({
   const field = dot >= 0 ? node.attr.slice(dot + 1) : node.attr;
   const isNullary = NULLARY_OPERATORS.includes(node.op);
   const isList = LIST_OPERATORS.includes(node.op);
+  const canReference = REFERENCE_OPERATORS.includes(node.op);
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md border bg-background p-2">
@@ -188,16 +194,29 @@ function LeafEditor({
         <Combobox
           items={OP_ITEMS}
           value={node.op}
-          onValueChange={(v) => onChange({ ...node, op: (v ?? "eq") as Operator })}
+          onValueChange={(v) => {
+            const op = (v ?? "eq") as Operator;
+            onChange({ ...node, op, ref: REFERENCE_OPERATORS.includes(op) && node.ref });
+          }}
           aria-label="Operator"
         />
       </div>
+      {canReference && (
+        <div className="w-28 shrink-0">
+          <Combobox
+            items={OPERAND_ITEMS}
+            value={node.ref ? "attribute" : "value"}
+            onValueChange={(v) => onChange({ ...node, ref: v === "attribute" })}
+            aria-label="Compare with"
+          />
+        </div>
+      )}
       {!isNullary && (
         <Input
           className="w-44 font-mono text-xs"
-          placeholder={isList ? "a, b, c" : "value"}
+          placeholder={node.ref ? "resource.owner_id" : isList ? "a, b, c" : "value"}
           value={node.value}
-          aria-label="Value"
+          aria-label={node.ref ? "Attribute to compare with" : "Value"}
           onChange={(e) => onChange({ ...node, value: e.target.value })}
         />
       )}

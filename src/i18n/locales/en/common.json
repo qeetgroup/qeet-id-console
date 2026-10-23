@@ -38,5 +38,10 @@
   },
   "confirm": {
     "cannotBeUndone": "This can’t be undone."
+  },
+  "language": {
+    "label": "Language",
+    "change": "Change language",
+    "current": "Language: {{language}}"
   }
 }

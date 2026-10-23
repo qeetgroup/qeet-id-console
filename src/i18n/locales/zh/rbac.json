@@ -35,8 +35,6 @@
     "roleHeader": "角色",
     "grantedHeader": "授予时间",
     "actionsHeader": "操作",
-    "revokeTitle": "从群组中移除此角色？",
-    "revokeDescriptionNamed": "成员将失去 <strong>{{name}}</strong> 授予的权限，除非他们通过另一个群组或直接分配持有该权限。",
-    "revokeDescriptionFallback": "成员将失去此角色的权限。"
+    "revokeTitle": "从群组中移除此角色？"
   }
 }

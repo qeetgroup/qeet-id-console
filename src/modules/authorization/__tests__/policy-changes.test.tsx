@@ -16,6 +16,7 @@ vi.mock("@/modules/activity", () => ({
 import { type ActivityEvent, fetchActivityPage } from "@/modules/activity";
 import { api } from "@/platform/api/client";
 import type { AuditEvent } from "../api/audit";
+import { authzKeys } from "../api/keys";
 import { describePolicyAction, usePolicyChanges } from "../api/policy-changes";
 
 const FROM = "2026-10-01T00:00:00Z";
@@ -135,7 +136,7 @@ describe("usePolicyChanges", () => {
         kind: "updated",
       },
     ]);
-    expect(client.getQueryData(["authz-policy-changes", "tenant-a", FROM, 2])).toEqual(
+    expect(client.getQueryData(authzKeys.policyChanges("tenant-a", FROM, 2))).toEqual(
       result.current.data,
     );
   });

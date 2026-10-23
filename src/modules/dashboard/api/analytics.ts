@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { dashboardKeys } from "./keys";
 
 export interface Metric {
   value: number;
@@ -99,7 +100,7 @@ export const EMPTY_OVERVIEW: AnalyticsOverview = {
 export function useAnalyticsOverview(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["analytics", "overview", tenantId],
+    queryKey: dashboardKeys.analytics(tenantId),
     enabled: !!tenantId && enabled,
     staleTime: 15_000,
     refetchOnMount: "always",

@@ -12,18 +12,21 @@ import { FingerprintPatternIcon, XIcon, ZapIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
 import { canAddPasskey, usePasskeys } from "@/modules/authentication";
+import { scopedStorage, useStorageScope } from "@/platform/auth/scoped-storage";
 
-const DISMISS_KEY = "qeetid-admin-passkey-prompt-dismissed";
+// Dismissed per person, so a shared browser still nudges the next one.
+const dismissStorage = scopedStorage("qeetid-admin-passkey-prompt-dismissed");
 
 /**
  * Renders a dismissible nudge to add a passkey, linking to the user's security settings. Hidden
- * while loading, once dismissed (persisted in localStorage), when the user has a passkey, or when
+ * while loading, once dismissed (kept for this person), when the user has a passkey, or when
  * the organization has passkeys switched off.
  */
 export function PasskeyPromptCard() {
-  const [dismissed, setDismissed] = useState(
-    () => typeof window !== "undefined" && localStorage.getItem(DISMISS_KEY) === "1",
-  );
+  // The scope is known only once the session hydrates, so the stored dismissal is read with it.
+  const scope = useStorageScope();
+  const [dismissedIn, setDismissedIn] = useState<string | null>(null);
+  const dismissed = scope !== null && (dismissedIn === scope || dismissStorage.read() === true);
   const q = usePasskeys();
 
   if (dismissed) return null;
@@ -32,12 +35,8 @@ export function PasskeyPromptCard() {
   if (!canAddPasskey(q.data)) return null;
 
   function handleDismiss() {
-    setDismissed(true);
-    try {
-      localStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      // Storage may be disabled (private mode); the in-memory dismissal lasts this session.
-    }
+    setDismissedIn(scope);
+    dismissStorage.write(true); // best-effort: without storage it lasts this page
   }
 
   return (

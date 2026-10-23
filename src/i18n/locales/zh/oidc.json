@@ -21,9 +21,7 @@
     "description": "现在复制密钥 — 之后服务器端会进行 bcrypt 哈希处理，无法再次显示。"
   },
   "delete": {
-    "title": "删除此应用程序？",
-    "descriptionNamed": "使用 <strong>{{name}}</strong> 客户端 ID 的应用程序将立即无法进行身份验证。此操作无法撤销。",
-    "descriptionFallback": "使用此客户端 ID 的应用程序将停止工作。"
+    "title": "删除此应用程序？"
   },
   "create": {
     "title": "注册 OAuth / OIDC 应用程序",
@@ -65,7 +63,6 @@
     "dangerZoneTitle": "危险区域",
     "dangerZoneDescription": "删除将阻止所有使用此客户端 ID 的应用程序进行身份验证。",
     "deleteApplication": "删除应用程序",
-    "deleteTitle": "删除此应用程序？",
-    "deleteDescription": "使用 <strong>{{name}}</strong> 客户端 ID 的应用程序将立即无法进行身份验证。此操作无法撤销。"
+    "deleteTitle": "删除此应用程序？"
   }
 }

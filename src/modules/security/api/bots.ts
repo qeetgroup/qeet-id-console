@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export interface BotEvent {
   id: string;
@@ -29,12 +30,10 @@ export interface BotSettings {
   score_threshold: number;
 }
 
-const KEY = ["bots"];
-
 export function useBotOverview() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "overview", tenantId],
+    queryKey: securityKeys.botOverview(tenantId),
     queryFn: async (): Promise<{ recent: BotEvent[]; stats: BotStats }> => {
       try {
         return await api<{ recent: BotEvent[]; stats: BotStats }>(
@@ -58,7 +57,7 @@ export function useBotOverview() {
 export function useBotSettings() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "settings", tenantId],
+    queryKey: securityKeys.botSettings(tenantId),
     queryFn: () => api<BotSettings>(`/v1/tenants/${tenantId}/security/bots/settings`),
     enabled: !!tenantId,
     staleTime: 30_000,
@@ -76,7 +75,7 @@ export function useUpdateBotSettings() {
         body: settings,
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.bots(tenantId) }),
     meta: { successMessage: "Bot protection settings saved" },
   });
 }

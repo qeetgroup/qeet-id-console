@@ -2,6 +2,7 @@ import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Button } from "@qeetrix/ui";
 import { RefreshCwIcon, TriangleAlertIcon } from "@qeetrix/icons";
 
+import { ErrorReference } from "@/platform/components/error-reference";
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
 import { captureError } from "@/platform/telemetry/errors";
@@ -21,7 +22,12 @@ export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
         code="—"
         icon={TriangleAlertIcon}
         title="Something went wrong"
-        description={userMessageForCode(appError.code, appError.kind)}
+        description={
+          <>
+            {userMessageForCode(appError.code, appError.kind)}
+            <ErrorReference error={appError} className="mt-2" />
+          </>
+        }
         actions={
           <Button onClick={reset}>
             <RefreshCwIcon /> Try again

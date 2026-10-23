@@ -8,6 +8,7 @@ import { activityStore } from "@/modules/activity";
 import { acquireSubscription } from "@/modules/activity";
 import { type ActivityEvent, type ConnectionStatus, DEFAULT_FILTERS } from "@/modules/activity";
 import { useTenantId } from "@/platform/auth/session";
+import { dashboardKeys } from "./api/keys";
 
 const DASHBOARD_LIMIT = 10;
 const REFRESH_MS = 20_000;
@@ -35,7 +36,7 @@ export function useDashboardActivity(_tenantId?: string, enabled = true): Dashbo
   const status = useStore(activityStore, (s) => s.status);
 
   const history = useQuery({
-    queryKey: ["dashboard-activity", tenantId] as const,
+    queryKey: dashboardKeys.activity(tenantId),
     queryFn: () => fetchActivityPage(DEFAULT_FILTERS, "", DASHBOARD_LIMIT),
     enabled: active && !!tenantId,
     staleTime: 10_000,

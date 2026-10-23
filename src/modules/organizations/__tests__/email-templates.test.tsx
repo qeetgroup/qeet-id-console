@@ -15,6 +15,21 @@ vi.mock("@/platform/auth/session", () => ({
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => context.canRead }),
 }));
+const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string }[]);
+vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/platform/security/sensitive-action-provider")>();
+  return {
+    ...actual,
+    useSensitiveAction: () => {
+      const run = actual.useSensitiveAction();
+      return (options: Parameters<typeof run>[0]) => {
+        sensitiveCalls.push(options);
+        return run(options);
+      };
+    },
+  };
+});
 
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
@@ -489,6 +504,7 @@ describe("Email template API actions", () => {
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/email-templates/verify_email", {
       method: "DELETE",
     });
+    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("reset to default");
   });
 
   it("does not allow read-only editing or test sending", async () => {
@@ -516,6 +532,7 @@ describe("Email template API actions", () => {
       method: "POST",
       body: { draft: expect.objectContaining({ subject: "Current draft" }), locale: "en" },
     });
+    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("test email");
   });
 
   it("cancels a delayed test confirmation after the organization changes", async () => {

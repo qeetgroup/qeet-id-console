@@ -1,11 +1,11 @@
 // The tenant's authentication policy: password rules and permitted sign-in methods. PUT replaces
 // the whole object, so each page loads it, edits its slice and saves the merged result.
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-export const AUTH_POLICY_KEY = ["auth-policy"] as const;
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export interface AuthPolicy {
   password_enabled: boolean;
@@ -44,13 +44,17 @@ export interface LockoutLimits {
   max: LockoutSettings;
 }
 
+export const authPolicyQueries = {
+  detail: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: authKeys.policy(tenantId),
+      queryFn: () => api<AuthPolicy>(`/v1/tenants/${tenantId}/auth-policy`),
+      enabled: !!tenantId,
+    }),
+};
+
 export function useAuthPolicy() {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: [...AUTH_POLICY_KEY, tenantId],
-    enabled: !!tenantId,
-    queryFn: () => api<AuthPolicy>(`/v1/tenants/${tenantId}/auth-policy`),
-  });
+  return useQuery(authPolicyQueries.detail(useTenantId()));
 }
 
 export function useUpdateAuthPolicy() {
@@ -62,10 +66,7 @@ export function useUpdateAuthPolicy() {
         method: "PUT",
         body,
       }),
-    onSuccess: (data) => {
-      qc.setQueryData([...AUTH_POLICY_KEY, tenantId], data);
-      qc.invalidateQueries({ queryKey: AUTH_POLICY_KEY });
-    },
-    meta: { successMessage: "Authentication policy saved" },
+    onSuccess: (data) => qc.setQueryData(authKeys.policy(tenantId), data), // PUT returns the whole policy
+    meta: { successMessage: "Authentication policy saved", silentError: true }, // pages show it
   });
 }

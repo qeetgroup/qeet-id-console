@@ -9,7 +9,7 @@
 
 The **operator console for Qeet ID**, served at `console.id.qeet.in`. TanStack Start ^1.168 +
 TanStack Router ^1.170, React 19, Vite 8 + Nitro, Tailwind v4, `@qeetrix/ui`, bun 1.3.14.
-17 modules under `src/modules/`.
+18 modules under `src/modules/`.
 
 **It has a server side.** TanStack Start acts as a same-origin backend-for-frontend. That is the
 single most important architectural fact here.
@@ -52,17 +52,17 @@ Run by CI as `bun run lint:boundaries`.
 | `src/shared/**` | `@/shared`, `@/i18n`, external packages only |
 | `src/platform/**` | `@/platform`, `@/shared`, `@/i18n` |
 | `src/modules/**` | the above, **plus another module only via its barrel** `@/modules/<name>` |
-| `src/routes/**` | module barrels, `@/platform/**` (except `api` from the client), `@/shared/**`; not module internals, `api()` or `@tanstack/react-query`. Files that predate the rule are listed in a `biome.json` override that only shrinks |
+| `src/routes/**` | module barrels and `pages` entries, `@/platform/**` (except `api` from the client), `@/shared/**`; not module internals, `api()` or `@tanstack/react-query`. No route is exempt |
 
 `@/lib` is **retired** — importing it is a lint error.
 
 **Verified compliance:** 0 cross-module-internal imports, 0 `platform → modules`, 0 `shared → up`.
-Route files outside the exemption list follow the route rule; the exempt ones are migrated module by
-module (route-to-module migration), each removal from the list enforcing the rule for that file.
+Every route file follows the route rule: `createFileRoute`, its guards, a Zod search schema and the
+page from the owning module's `pages.ts`. The pages, their data and their forms live in the modules.
 
 Global `fetch`, `EventSource`, `WebSocket` and `XMLHttpRequest` are lint errors outside
-`src/platform/api/` (the `activity` and `qeetai` SSE clients are exempt until a shared stream
-transport replaces them).
+`src/platform/api/`; the activity and Qeet AI streams use its shared transport
+(`event-stream.ts`).
 
 ## The BFF — how a request reaches the backend
 
@@ -96,10 +96,11 @@ unauthenticated federation redirects (e.g. starting a social login).
 - **Client**: `navigator.locks.request("qeetid-session-refresh", …)` serialises tabs, sending
   `expectedVersion`.
 - **Server**: `refreshServerSessionNow` rejects stale callers on version mismatch. `refreshSession`
-  shares one backend call per refresh token spent, and keeps a successful result for 60 s: a request
-  aborted mid-refresh (the browser navigated) never delivered its new cookie, so the next request
-  arrives with the rotated token and reuses the result instead of being refused. The cache is
-  per process; across serverless instances the backend needs a rotation grace period.
+  shares one backend call per refresh token spent, and keeps a successful result for 30 s while
+  the token it issued is unspent: a request aborted mid-refresh (the browser navigated) never
+  delivered its new cookie, so the next request arrives with the rotated token and reuses the
+  result instead of being refused. The cache is per process; another instance gets the same pair
+  from the backend's reuse grace (`REFRESH_TOKEN_REUSE_GRACE`, default 30 s), under the same rule.
 - **Replay**: on a backend 401, `proxyApiRequest` renews the session itself (it holds the refresh
   token) and re-issues once with the **same** `requestId` — this is what keeps server-side renders
   from ending a valid session. A rejected refresh token clears the cookie (the browser then goes to

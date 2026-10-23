@@ -26,8 +26,8 @@
   },
   "delete": {
     "title": "Remove this service provider?",
-    "descriptionNamed": "<strong>{{name}}</strong> will no longer accept SSO from this IdP. This can’t be undone.",
-    "descriptionFallback": "It will no longer accept SSO from this IdP."
+    "confirmDescription": "{{name}} will no longer accept SSO from this IdP. This can’t be undone.",
+    "stepUp": "remove this service provider"
   },
   "form": {
     "addTitle": "Add service provider",
@@ -44,6 +44,13 @@
     "certificate": "SP certificate",
     "certificateHelp": "Optional. Required only if the SP signs its requests.",
     "addSubmit": "Add provider",
-    "addSubmitting": "Adding…"
+    "addSubmitting": "Adding…",
+    "stepUpAdd": "add this service provider",
+    "stepUpEdit": "update this service provider",
+    "validation": {
+      "name": "Enter a name.",
+      "entityId": "Enter the service provider's entity ID.",
+      "acsUrl": "Enter the assertion consumer service URL."
+    }
   }
 }

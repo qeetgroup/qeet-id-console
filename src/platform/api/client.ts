@@ -10,7 +10,7 @@ import {
   proxyApiRequest,
   refreshServerSessionNow,
 } from "@/platform/api/server-proxy";
-import { ApiError } from "@/platform/errors/api-error";
+import { ApiError, type ApiFieldError } from "@/platform/errors/api-error";
 import { ERROR_CODES } from "@/platform/errors/error-codes";
 import { requestStepUp } from "@/platform/security/step-up-gate";
 import { newRequestId } from "@/platform/telemetry/tracing";
@@ -29,6 +29,26 @@ type RequestOpts<T = unknown> = {
   schema?: ZodType<T>; // checks the response, throwing ApiError on a mismatch
   afterStepUp?: boolean; // internal: the one retry after a step-up
 };
+
+type ErrorEnvelope = {
+  code?: string;
+  message?: string;
+  detail?: string;
+  retryable?: boolean;
+  metadata?: Record<string, unknown>;
+  request_id?: string;
+  fields?: unknown;
+};
+
+// Keeps each field's name and code; the backend's per-field message is never shown.
+function fieldErrorsOf(fields: unknown): ApiFieldError[] {
+  if (!Array.isArray(fields)) return [];
+  return fields.flatMap((f) =>
+    f && typeof f.field === "string" && typeof f.code === "string"
+      ? [{ field: f.field, code: f.code }]
+      : [],
+  );
+}
 
 let localRefresh: Promise<void> | null = null;
 
@@ -159,17 +179,7 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
   const data = res.data;
 
   if (res.status < 200 || res.status >= 300) {
-    const err = (
-      data as {
-        error?: {
-          code?: string;
-          message?: string;
-          detail?: string;
-          retryable?: boolean;
-          metadata?: Record<string, unknown>;
-        };
-      } | null
-    )?.error;
+    const err = (data as { error?: ErrorEnvelope } | null)?.error;
     const apiError = new ApiError(
       res.status,
       err?.code ?? `http_${res.status}`,
@@ -177,6 +187,7 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
       err?.detail,
       err?.retryable ?? false,
       err?.metadata,
+      { requestId: err?.request_id || requestId, fields: fieldErrorsOf(err?.fields) },
     );
     if (res.status === 401 && !anonymous) await clearBrowserSession();
     // A sensitive action refused for want of a step-up: ask for one, then send
@@ -201,6 +212,8 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
         "The server returned an unexpected response.",
         parsed.error.message,
         false,
+        undefined,
+        { requestId },
       );
     }
     return parsed.data;

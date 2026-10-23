@@ -11,7 +11,7 @@ import { MonitorIcon, LoaderCircleIcon, SmartphoneIcon, TrashIcon } from "@qeetr
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorText } from "@/platform/components/error-reference";
 import { useConfirmDialog } from "@/shared/components/confirm-dialog";
 import {
   type TrustedDeviceScope,
@@ -90,7 +90,7 @@ export function TrustedDevicesCard({
         )}
         {devicesQ.isError && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(devicesQ.error)}
+            <ErrorText error={devicesQ.error} />
           </p>
         )}
         {devicesQ.isSuccess && devices.length === 0 && (
@@ -150,7 +150,7 @@ export function TrustedDevicesCard({
         )}
         {forget.error ? (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(forget.error)}
+            <ErrorText error={forget.error} />
           </p>
         ) : null}
       </CardContent>

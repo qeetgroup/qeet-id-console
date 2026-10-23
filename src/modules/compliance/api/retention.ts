@@ -3,8 +3,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { userKeys } from "@/modules/users";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { complianceKeys } from "./keys";
 
 export interface RetentionPolicy {
   deleted_users_enabled: boolean;
@@ -14,7 +16,7 @@ export interface RetentionPolicy {
 export function useRetentionPolicy() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["retention", tenantId],
+    queryKey: complianceKeys.retention(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<RetentionPolicy>(`/v1/tenants/${tenantId}/retention`),
   });
@@ -31,8 +33,8 @@ export function useUpdateRetentionPolicy() {
         body,
       });
     },
-    onSuccess: (data) => qc.setQueryData(["retention", tenantId], data),
-    meta: { successMessage: "Retention policy saved" },
+    onSuccess: (data) => qc.setQueryData(complianceKeys.retention(tenantId), data),
+    meta: { successMessage: "Retention policy saved", silentError: true }, // the form shows it
   });
 }
 
@@ -60,7 +62,7 @@ export function useRunRetention() {
         method: "POST",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["users", "deleted"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) }),
     meta: { successMessage: "Retention purge complete" },
   });
 }

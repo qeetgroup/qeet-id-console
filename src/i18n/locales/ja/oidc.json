@@ -21,9 +21,7 @@
     "description": "シークレットを今すぐコピーしてください — その後サーバー側でbcryptハッシュ化され、再表示できなくなります。"
   },
   "delete": {
-    "title": "このアプリケーションを削除しますか？",
-    "descriptionNamed": "<strong>{{name}}</strong>のクライアントIDを使用しているアプリは直ちに認証できなくなります。この操作は元に戻せません。",
-    "descriptionFallback": "このクライアントIDを使用しているアプリは動作しなくなります。"
+    "title": "このアプリケーションを削除しますか？"
   },
   "create": {
     "title": "OAuth / OIDCアプリケーションを登録",
@@ -65,7 +63,6 @@
     "dangerZoneTitle": "危険ゾーン",
     "dangerZoneDescription": "削除すると、このクライアントIDを使用するすべてのアプリが認証できなくなります。",
     "deleteApplication": "アプリケーションを削除",
-    "deleteTitle": "このアプリケーションを削除しますか？",
-    "deleteDescription": "<strong>{{name}}</strong>のクライアントIDを使用しているアプリは直ちに認証できなくなります。この操作は元に戻せません。"
+    "deleteTitle": "このアプリケーションを削除しますか？"
   }
 }

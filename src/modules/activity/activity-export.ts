@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { toastError } from "@/platform/errors/error-toast";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { fetchActivityPage } from "./activity-history";
 import type { ActivityEvent, ActivityFilters } from "./types/activity.types";
@@ -78,7 +78,7 @@ export function useActivityExport(filters: ActivityFilters) {
             : undefined,
         });
       } catch (err) {
-        toast.error(errorMessage(err));
+        toastError(err);
       } finally {
         setExporting(null);
       }

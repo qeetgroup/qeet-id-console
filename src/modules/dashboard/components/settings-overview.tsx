@@ -10,14 +10,14 @@ import {
   MapPinIcon,
 } from "@qeetrix/icons";
 
-import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
 import { filterNavigation, type NavItem, navGroups } from "@/platform/config/navigation";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useAuthPolicy } from "@/modules/authentication";
+import { brandingQueries } from "@/modules/branding";
 import { useSubscription } from "@/modules/billing";
-import { useDomains, useEmailTemplates } from "@/modules/organizations";
+import { orgQueries, useDomains, useEmailTemplates } from "@/modules/organizations";
 import { useQeetAIProviderConfig } from "@/modules/qeetai";
 import { REGIONS } from "@/shared/data/regions";
 
@@ -58,14 +58,7 @@ export function SettingsOverview({ description }: { description: string }) {
   const access = useCapabilities();
   const tenantId = useTenantId();
 
-  const orgsQ = useQuery({
-    queryKey: ["tenants", "switcher"], // the sidebar switcher's key, so a cache read
-    queryFn: () =>
-      api<{
-        items: { id: string; name: string; plan: string; region: string; created_at: string }[];
-      }>("/v1/tenants"),
-    staleTime: 60_000,
-  });
+  const orgsQ = useQuery(orgQueries.list()); // shared with the sidebar switcher, so a cache read
   const org = orgsQ.data?.items.find((o) => o.id === tenantId);
 
   const domainsQ = useDomains();
@@ -73,16 +66,7 @@ export function SettingsOverview({ description }: { description: string }) {
   const policyQ = useAuthPolicy();
   const subQ = useSubscription();
   const aiQ = useQeetAIProviderConfig();
-  const brandingQ = useQuery({
-    queryKey: ["branding", tenantId],
-    enabled: !!tenantId,
-    queryFn: () =>
-      api<{
-        logo_url?: string | null;
-        primary_color?: string | null;
-        secondary_color?: string | null;
-      }>(`/v1/tenants/${tenantId}/branding`),
-  });
+  const brandingQ = useQuery(brandingQueries.detail(tenantId));
 
   const verifiedDomains = (domainsQ.data?.items ?? []).filter((d) => d.verified_at).length;
   const customTemplates = (templatesQ.data?.items ?? []).filter((t) => t.custom).length;

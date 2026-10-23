@@ -21,8 +21,6 @@
     "actions": "Actions"
   },
   "revoke": {
-    "title": "Révoquer cette autorisation d'appareil ?",
-    "descriptionNamed": "L'appareil interrogeant avec le code utilisateur <code>{{code}}</code> sera refusé et ne pourra plus être approuvé. Cette action est irréversible.",
-    "descriptionFallback": "Le flux d'appareil sera refusé et ne pourra plus être approuvé."
+    "title": "Révoquer cette autorisation d'appareil ?"
   }
 }

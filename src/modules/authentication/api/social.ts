@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export interface SocialProvider {
   tenant_id: string;
@@ -14,8 +15,6 @@ export interface SocialProvider {
   enabled: boolean;
   updated_at: string;
 }
-
-export const SOCIAL_PROVIDERS_KEY = ["social-providers"] as const;
 
 /**
  * Returns the redirect URI the upstream IdP must allowlist. The backend owns the callback leg of
@@ -28,7 +27,7 @@ export const socialRedirectUri = (provider: string) =>
 export function useSocialProviders(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...SOCIAL_PROVIDERS_KEY, tenantId],
+    queryKey: authKeys.socialProviders(tenantId),
     enabled: enabled && !!tenantId,
     queryFn: () => api<{ items: SocialProvider[] }>(`/v1/tenants/${tenantId}/social/providers`),
   });
@@ -58,8 +57,8 @@ export function useUpsertSocialProvider() {
         method: "POST",
         body: { tenant_id: tenantId, ...input },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: SOCIAL_PROVIDERS_KEY }),
-    meta: { successMessage: "Social provider saved" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
+    meta: { successMessage: "Social provider saved", silentError: true }, // the sheet shows it
   });
 }
 
@@ -72,6 +71,7 @@ export interface UpdateSocialProviderInput {
 }
 
 export function useUpdateSocialProvider() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ provider, ...input }: UpdateSocialProviderInput & { provider: string }) =>
@@ -79,8 +79,8 @@ export function useUpdateSocialProvider() {
         method: "PATCH",
         body: input,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: SOCIAL_PROVIDERS_KEY }),
-    meta: { successMessage: "Social provider updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
+    meta: { successMessage: "Social provider updated", silentError: true }, // the sheet shows it
   });
 }
 
@@ -89,11 +89,12 @@ export function useUpdateSocialProvider() {
  * (social.provider_in_use) while someone can sign in only through it.
  */
 export function useDeleteSocialProvider() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (provider: string) =>
       api<void>(`/v1/social/providers/${encodeURIComponent(provider)}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: SOCIAL_PROVIDERS_KEY }),
-    meta: { successMessage: "Social provider removed" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
+    meta: { successMessage: "Social provider removed", silentError: true }, // the sheet shows it
   });
 }

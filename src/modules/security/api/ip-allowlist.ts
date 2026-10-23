@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export type IpAction = "allow" | "deny";
 
@@ -21,7 +22,7 @@ export interface IpRule {
 export function useIpRules() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["ip-rules", tenantId],
+    queryKey: securityKeys.ipRules(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ enabled: boolean; items: IpRule[] }>(`/v1/tenants/${tenantId}/ip-rules`),
   });
@@ -38,7 +39,7 @@ export function useSetIpEnforcement() {
         body: { enabled },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ip-rules"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
     meta: { successMessage: "Enforcement updated" },
   });
 }
@@ -51,8 +52,8 @@ export function useAddIpRule() {
       if (!tenantId) throw new Error("No tenant selected");
       return api<IpRule>(`/v1/tenants/${tenantId}/ip-rules`, { method: "POST", body });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ip-rules"] }),
-    meta: { successMessage: "Rule added" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
+    meta: { successMessage: "Rule added", silentError: true }, // the form shows it
   });
 }
 
@@ -64,7 +65,7 @@ export function useDeleteIpRule() {
       if (!tenantId) throw new Error("No tenant selected");
       return api<void>(`/v1/tenants/${tenantId}/ip-rules/${id}`, { method: "DELETE" });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ip-rules"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
     meta: { successMessage: "Rule removed" },
   });
 }
@@ -126,7 +127,7 @@ export function toAddressRefusal(row: AuditRow): AddressRefusal {
 export function useAddressRefusals(limit = 20) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["ip-rules", "refusals", tenantId, limit],
+    queryKey: securityKeys.addressRefusals(tenantId, limit),
     enabled: !!tenantId,
     queryFn: async () => {
       const res = await api<{ items: AuditRow[] }>(`/v1/tenants/${tenantId}/audit`, {

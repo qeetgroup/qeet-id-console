@@ -2,10 +2,9 @@ import { Button, OTPInput } from "@qeetrix/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { LoaderCircleIcon, MailWarningIcon } from "@qeetrix/icons";
 import { useState } from "react";
-import { toast } from "sonner";
 
-import { errorMessage } from "@/platform/errors/user-message";
-import { useMe } from "@/platform/auth/session";
+import { toastError } from "@/platform/errors/error-toast";
+import { meKeys, useMe } from "@/platform/auth/session";
 import { useConfirmEmailVerification, useStartEmailVerification } from "@/modules/authentication";
 
 /**
@@ -27,7 +26,7 @@ export function VerifyEmailBanner() {
   const resend = () => {
     start.mutate(me.id, {
       onSuccess: () => setOpen(true), // the success toast comes from the mutation's meta
-      onError: (err) => toast.error(errorMessage(err)),
+      onError: (err) => toastError(err),
     });
   };
 
@@ -38,9 +37,9 @@ export function VerifyEmailBanner() {
         onSuccess: () => {
           setOpen(false);
           setCode("");
-          void qc.invalidateQueries({ queryKey: ["me"] });
+          void qc.invalidateQueries({ queryKey: meKeys.all });
         },
-        onError: (err) => toast.error(errorMessage(err)), // keeps the specific reason
+        onError: (err) => toastError(err), // keeps the specific reason
       },
     );
   };

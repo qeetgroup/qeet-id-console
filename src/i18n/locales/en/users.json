@@ -173,7 +173,15 @@
     "summaryTitle": "A user will be added to {{org}}",
     "summaryDescription": "They will have access based on the selected role.",
     "countryLabel": "Country",
-    "thisOrganization": "this organization"
+    "thisOrganization": "this organization",
+    "actionLabel": "create this user",
+    "validation": {
+      "email": "Enter a valid email address.",
+      "displayName": "Keep the display name to 200 characters.",
+      "phone": "Enter digits only; the country code comes from the list.",
+      "password": "Use at least 8 characters.",
+      "role": "Choose a role."
+    }
   },
   "edit": {
     "title": "Edit user",
@@ -186,7 +194,11 @@
     "statusActive": "Active",
     "statusSuspended": "Suspended",
     "statusSelfHelp": "You can’t suspend your own account from this screen.",
-    "statusHelp": "Suspending prevents sign-in but keeps the account."
+    "statusHelp": "Suspending prevents sign-in but keeps the account.",
+    "validation": {
+      "displayName": "Keep the display name to 200 characters.",
+      "phone": "Use E.164 format, such as +15555550100."
+    }
   },
   "setPassword": {
     "title": "Set new password",
@@ -196,8 +208,11 @@
     "newPasswordHelp": "Minimum 8 characters.",
     "confirmPassword": "Confirm new password",
     "mismatch": "Passwords don’t match",
-    "success": "Password updated.",
-    "submit": "Update password"
+    "submit": "Update password",
+    "actionLabel": "set this user's password",
+    "validation": {
+      "password": "Use 8 to 256 characters."
+    }
   },
   "toast": {
     "created": "User created",
@@ -222,7 +237,8 @@
     "statusActive": "Active",
     "confirmTitle": "Revoke this session?",
     "confirmLabel": "Revoke",
-    "revokeBtn": "Revoke"
+    "revokeBtn": "Revoke",
+    "actionLabel": "revoke this session"
   },
   "deleted": {
     "description": "Soft-deleted users. Restore brings an account back; permanent deletion removes it and its sessions for good.",
@@ -238,7 +254,9 @@
     "purgeTitle": "Permanently delete {{email}}?",
     "purgeDescription": "This removes the account and its sessions and cannot be undone.",
     "purgeLabel": "Delete forever",
-    "purgeBtn": "Delete forever"
+    "purgeBtn": "Delete forever",
+    "restoreAction": "restore this user",
+    "purgeAction": "permanently delete this user"
   },
   "detail": {
     "backLink": "Back to users",
@@ -407,6 +425,24 @@
     "errorColEmail": "Email",
     "errorColError": "Error",
     "importAnotherBtn": "Import another file",
-    "viewUsersBtn": "View users"
+    "viewUsersBtn": "View users",
+    "rowErrors": {
+      "fieldMissing": "{{field}} is missing.",
+      "fieldInvalid": "{{field}} isn't valid.",
+      "fieldTooLong": "{{field}} is too long.",
+      "rowMalformed": "This line couldn't be read.",
+      "fileMalformed": "The file couldn't be read.",
+      "sourceInvalid": "This export format isn't supported.",
+      "emailExists": "A user with this email already exists.",
+      "passwordTooShort": "The password is too short.",
+      "passwordNoUppercase": "The password needs an uppercase letter.",
+      "passwordNoNumber": "The password needs a number.",
+      "passwordNoSymbol": "The password needs a symbol.",
+      "passwordBreached": "The password appears in known data breaches.",
+      "passwordWeak": "The password is too weak.",
+      "unknown": "This user couldn't be created.",
+      "aField": "A field"
+    },
+    "tooMany": "An import can add at most {{max}} users. Split the file and import each part."
   }
 }

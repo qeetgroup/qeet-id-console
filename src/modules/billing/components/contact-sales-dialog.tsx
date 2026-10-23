@@ -25,7 +25,7 @@ import { useMutation } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useState } from "react";
 
-import { TEAM_SIZES } from "@/modules/onboarding";
+import { TEAM_SIZES } from "@/shared/data/team-sizes";
 import { api } from "@/platform/api/client";
 
 type LeadBody = {

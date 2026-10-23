@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export interface Anomaly {
   id: string;
@@ -25,12 +26,10 @@ export interface AnomalySummary {
   high_severity_24h: number;
 }
 
-const KEY = ["anomalies"];
-
 export function useAnomalies() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: securityKeys.anomalyList(tenantId),
     queryFn: async (): Promise<{ items: Anomaly[] }> => {
       try {
         return await api<{ items: Anomaly[] }>(`/v1/tenants/${tenantId}/security/anomalies`);
@@ -47,7 +46,7 @@ export function useAnomalies() {
 export function useAnomalySummary() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "summary", tenantId],
+    queryKey: securityKeys.anomalySummary(tenantId),
     queryFn: () => api<AnomalySummary>(`/v1/tenants/${tenantId}/security/anomalies/summary`),
     enabled: !!tenantId,
     staleTime: 30_000,
@@ -64,7 +63,7 @@ export function useResolveAnomaly() {
         method: "POST",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.anomalies(tenantId) }),
     meta: { successMessage: "Anomaly resolved" },
   });
 }

@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { developerKeys } from "./keys";
 
 export type NotificationKind = "info" | "warning" | "alert" | "success";
 
@@ -27,7 +29,7 @@ const EMPTY: NotificationsResponse = { items: [], unread_count: 0 };
  */
 export function useNotifications() {
   return useQuery({
-    queryKey: ["notifications"],
+    queryKey: developerKeys.notifications(useTenantId()),
     queryFn: async (): Promise<NotificationsResponse> => {
       try {
         return await api<NotificationsResponse>("/v1/notifications");
@@ -46,6 +48,7 @@ export function useNotifications() {
 
 /** Marks all in-app notifications read; a backend without the endpoint (404) is a no-op. */
 export function useMarkAllRead() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () =>
@@ -53,7 +56,7 @@ export function useMarkAllRead() {
         if (err instanceof ApiError && err.status === 404) return;
         throw err;
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.notifications(tenantId) }),
     meta: { silent: true },
   });
 }

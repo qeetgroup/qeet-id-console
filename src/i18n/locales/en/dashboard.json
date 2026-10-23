@@ -51,6 +51,7 @@
       "reactivateSelected": "Reactivate {{count}} selected",
       "reactivateTitle": "Reactivate {{count}} users?",
       "reactivateDescription": "These users can sign in again. Existing sessions remain revoked.",
+      "reactivateActionLabel": "Reactivate these users",
       "review": "Review suspension",
       "reviewState": "Review state",
       "reviewed": "Reviewed",
@@ -100,6 +101,7 @@
       "save": "Save mapping",
       "delete": "Delete",
       "deleteTitle": "Delete {{count}} mapping rules?",
+      "deleteActionLabel": "Delete these mapping rules",
       "sourceConnection": "Source connection",
       "noConnection": "No connections",
       "summary": "Mapping summary",
@@ -160,6 +162,27 @@
         "title": "Title",
         "manager_id": "Manager ID",
         "groups": "Group labels"
+      },
+      "issues": {
+        "preview_too_large": "The test data or the mappings are too large to preview.",
+        "source_invalid": "The source attribute isn't a valid attribute name.",
+        "source_credential": "The source attribute names a credential, which can't be mapped.",
+        "target_unsupported": "This isn't a profile field that can be mapped.",
+        "target_duplicate": "Another active mapping already sets this field.",
+        "value_type_mismatch": "This field takes a different value type.",
+        "transform_unsupported": "This transform isn't supported.",
+        "pattern_unexpected": "A pattern applies only to the extract transform.",
+        "pattern_invalid": "The pattern must be 1 to 256 characters with one capture group.",
+        "source_missing": "The required source attribute is missing from the test data.",
+        "source_empty": "The required source attribute is empty.",
+        "value_not_string": "The source value must be text.",
+        "value_not_array": "The source value must be a list of text values.",
+        "value_too_long": "A source value is longer than 2,048 characters.",
+        "value_too_many": "The source list has more than 100 entries.",
+        "value_unmatched": "The source value doesn't match the extract pattern.",
+        "email_invalid": "The mapped email isn't a valid address.",
+        "display_name_too_long": "The mapped display name is longer than 200 characters.",
+        "unknown": "This mapping can't be applied as configured."
       }
     },
     "errors": {
@@ -754,5 +777,6 @@
     "appsTitle": "Top applications",
     "appsDesc": "Ranked by logins in the selected period",
     "emptyApps": "Requires per-application login tagging on auth events."
-  }
+  },
+  "finalizingSubscription": "Finalizing your subscription…"
 }

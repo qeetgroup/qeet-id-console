@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authzKeys } from "./keys";
 
 export const NAMESPACES = ["subject", "resource", "context"] as const;
 export type Namespace = (typeof NAMESPACES)[number];
@@ -25,6 +26,21 @@ export type Operator = (typeof OPERATORS)[number];
 
 export const NULLARY_OPERATORS: readonly Operator[] = ["exists"]; // take no right-hand value
 export const LIST_OPERATORS: readonly Operator[] = ["in", "nin"]; // comma-separated in the UI
+const STRING_OPERATORS: readonly Operator[] = ["prefix", "suffix", "regex"]; // value stays a string
+// Operators whose value may name another attribute; never regex, so a pattern can't come from
+// request data.
+export const REFERENCE_OPERATORS: readonly Operator[] = [
+  "eq",
+  "ne",
+  "gt",
+  "gte",
+  "lt",
+  "lte",
+  "in",
+  "nin",
+  "contains",
+];
+const ATTRIBUTE_PATH = new RegExp(`^(${NAMESPACES.join("|")})(\\.[^.\\s]+)+$`);
 
 export const OPERATOR_LABELS: Record<Operator, string> = {
   eq: "equals",
@@ -44,15 +60,29 @@ export const OPERATOR_LABELS: Record<Operator, string> = {
 
 export type Effect = "allow" | "deny";
 
+/** A leaf value naming another attribute, compared with the leaf's own. */
+export type AttributeRef = { attr: string };
+
 /**
  * A stored policy condition: `all` (AND), `any` (OR), `not`, or a comparison leaf whose `attr`
- * is a dot path under `subject.`, `resource.` or `context.`.
+ * is a dot path under `subject.`, `resource.` or `context.`, and whose `value` is a literal or
+ * an AttributeRef. A comparison with an absent attribute matches a deny and never an allow.
  */
 export type ConditionJson =
   | { all: ConditionJson[] }
   | { any: ConditionJson[] }
   | { not: ConditionJson }
   | { attr: string; op: Operator; value?: unknown };
+
+function isAttributeRef(value: unknown): value is AttributeRef {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.keys(value).length === 1 &&
+    typeof (value as { attr?: unknown }).attr === "string"
+  );
+}
 
 /** A stored ABAC policy. Deny wins, and policies are evaluated by descending priority. */
 export interface AbacPolicy {
@@ -113,7 +143,14 @@ export function nid(prefix = "n"): string {
 export type CondNode =
   | { id: string; kind: "group"; combinator: "all" | "any"; children: CondNode[] }
   | { id: string; kind: "not"; child: CondNode }
-  | { id: string; kind: "leaf"; attr: string; op: Operator; value: string };
+  | {
+      id: string;
+      kind: "leaf";
+      attr: string;
+      op: Operator;
+      value: string;
+      ref?: boolean; // `value` names another attribute rather than a literal
+    };
 
 export function emptyLeaf(): CondNode {
   return { id: nid("leaf"), kind: "leaf", attr: "subject.", op: "eq", value: "" };
@@ -134,6 +171,10 @@ export function toConditionJson(node: CondNode): ConditionJson {
       return { not: toConditionJson(node.child) };
     case "leaf": {
       if (NULLARY_OPERATORS.includes(node.op)) return { attr: node.attr, op: node.op };
+      if (node.ref) return { attr: node.attr, op: node.op, value: { attr: node.value.trim() } };
+      if (STRING_OPERATORS.includes(node.op)) {
+        return { attr: node.attr, op: node.op, value: node.value.trim() };
+      }
       if (LIST_OPERATORS.includes(node.op)) {
         return {
           attr: node.attr,
@@ -181,12 +222,53 @@ export function fromConditionJson(json: ConditionJson | null | undefined): CondN
   if ("not" in json) {
     return { id: nid("not"), kind: "not", child: fromConditionJson(json.not) };
   }
+  if (isAttributeRef(json.value)) {
+    return {
+      id: nid("leaf"),
+      kind: "leaf",
+      attr: json.attr,
+      op: json.op,
+      value: json.value.attr,
+      ref: true,
+    };
+  }
   const value = Array.isArray(json.value)
     ? json.value.join(", ")
     : json.value == null
       ? ""
       : String(json.value);
   return { id: nid("leaf"), kind: "leaf", attr: json.attr, op: json.op, value };
+}
+
+/**
+ * Returns why the backend would refuse a condition, in the person's terms, or null when it can
+ * be saved. Mirrors the engine's validation, so the form says so before the request does.
+ */
+export function conditionProblem(node: CondNode): string | null {
+  if (node.kind === "group") {
+    for (const child of node.children) {
+      const problem = conditionProblem(child);
+      if (problem) return problem;
+    }
+    return null;
+  }
+  if (node.kind === "not") return conditionProblem(node.child);
+  const label = OPERATOR_LABELS[node.op];
+  if (node.ref) {
+    if (!REFERENCE_OPERATORS.includes(node.op)) {
+      return `“${label}” can't compare with another attribute. Compare with a value instead.`;
+    }
+    const other = node.value.trim();
+    if (!ATTRIBUTE_PATH.test(other)) {
+      return "The attribute to compare with must be a subject., resource. or context. path.";
+    }
+    if (other === node.attr) return "A condition can't compare an attribute with itself.";
+    return null;
+  }
+  // An empty affix, substring or pattern would match every string.
+  const needsValue = STRING_OPERATORS.includes(node.op) || node.op === "contains";
+  if (needsValue && node.value.trim() === "") return `“${label}” needs a value.`;
+  return null;
 }
 
 /** Returns the number of comparison leaves in a condition. */
@@ -199,7 +281,7 @@ export function countLeaves(node: CondNode): number {
 export function useAbacPolicies() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["abac-policies", tenantId],
+    queryKey: authzKeys.abacPolicies(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: AbacPolicy[] }>(`/v1/tenants/${tenantId}/abac/policies`),
   });
@@ -208,7 +290,7 @@ export function useAbacPolicies() {
 export function useAbacPolicy(id: string | null) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["abac-policy", tenantId, id],
+    queryKey: authzKeys.abacPolicy(tenantId, id),
     enabled: !!tenantId && !!id,
     queryFn: () => api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies/${id}`),
   });
@@ -222,8 +304,8 @@ export function useCreateAbacPolicy() {
       if (!tenantId) throw new Error("No tenant selected");
       return api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies`, { method: "POST", body });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["abac-policies"] }),
-    meta: { successMessage: "Policy created" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
+    meta: { successMessage: "Policy created", silentError: true }, // its forms show the error
   });
 }
 
@@ -238,11 +320,8 @@ export function useUpdateAbacPolicy(id: string) {
         body,
       });
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["abac-policies"] });
-      qc.invalidateQueries({ queryKey: ["abac-policy"] });
-    },
-    meta: { successMessage: "Policy updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
+    meta: { successMessage: "Policy updated", silentError: true },
   });
 }
 
@@ -254,7 +333,7 @@ export function useDeleteAbacPolicy() {
       if (!tenantId) throw new Error("No tenant selected");
       return api<void>(`/v1/tenants/${tenantId}/abac/policies/${id}`, { method: "DELETE" });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["abac-policies"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
     meta: { successMessage: "Policy deleted" },
   });
 }

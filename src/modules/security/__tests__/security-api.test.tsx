@@ -35,6 +35,7 @@ import {
   useLogSinks,
   useToggleLogSink,
 } from "../api/log-sinks";
+import { securityKeys } from "../api/keys";
 
 /** Renders the hook; mutation tests seed the caches it may refresh, query tests start empty. */
 function setup<T>(hook: () => T, seed: QueryKey[] = []) {
@@ -196,9 +197,9 @@ describe("useAnomalies", () => {
 
 describe("useResolveAnomaly", () => {
   it("resolves the anomaly and refreshes the feed and its summary", async () => {
-    const list: QueryKey = ["anomalies", "tenant-a"];
-    const summary: QueryKey = ["anomalies", "summary", "tenant-a"];
-    const audit: QueryKey = ["audit-anomalies", "tenant-a", "all"];
+    const list: QueryKey = securityKeys.anomalyList("tenant-a");
+    const summary: QueryKey = securityKeys.anomalySummary("tenant-a");
+    const audit: QueryKey = securityKeys.auditAnomalyList("tenant-a", "all");
     const { result, client } = setup(() => useResolveAnomaly(), [list, summary, audit]);
 
     await act(async () => {
@@ -235,10 +236,10 @@ describe("useAuditAnomalies", () => {
 });
 
 describe("audit anomaly mutations", () => {
-  const all: QueryKey = ["audit-anomalies", "tenant-a", "all"];
-  const open: QueryKey = ["audit-anomalies", "tenant-a", "open"];
-  const summary: QueryKey = ["audit-anomalies", "summary", "tenant-a"];
-  const settings: QueryKey = ["audit-anomalies", "settings", "tenant-a"];
+  const all: QueryKey = securityKeys.auditAnomalyList("tenant-a", "all");
+  const open: QueryKey = securityKeys.auditAnomalyList("tenant-a", "open");
+  const summary: QueryKey = securityKeys.auditAnomalySummary("tenant-a");
+  const settings: QueryKey = securityKeys.auditAnomalySettings("tenant-a");
 
   it("resolves an audit anomaly and refreshes every audit-anomaly view", async () => {
     const { result, client } = setup(
@@ -335,8 +336,8 @@ describe("useBotOverview", () => {
 
 describe("useUpdateBotSettings", () => {
   it("PUTs the settings and refreshes the overview and settings", async () => {
-    const overview: QueryKey = ["bots", "overview", "tenant-a"];
-    const settingsKey: QueryKey = ["bots", "settings", "tenant-a"];
+    const overview: QueryKey = securityKeys.botOverview("tenant-a");
+    const settingsKey: QueryKey = securityKeys.botSettings("tenant-a");
     const settings: BotSettings = {
       ua_check: true,
       honeypot: false,
@@ -361,7 +362,7 @@ describe("useUpdateBotSettings", () => {
 });
 
 describe("log sink mutations", () => {
-  const sinks: QueryKey = ["log-sinks", "tenant-a"];
+  const sinks: QueryKey = securityKeys.logSinks("tenant-a");
 
   it("creates a sink, sending the write-only token, and refreshes the list", async () => {
     const body = { type: "splunk_hec" as const, endpoint: "https://hec.example.test", token: "t" };
@@ -405,7 +406,7 @@ describe("log sink mutations", () => {
 
 describe("useRevokeDeviceAuth", () => {
   it("revokes the device flow and refreshes the list", async () => {
-    const devices: QueryKey = ["device-auth", "tenant-a"];
+    const devices: QueryKey = securityKeys.deviceAuthorizations("tenant-a");
     const { result, client } = setup(() => useRevokeDeviceAuth(), [devices]);
 
     await act(async () => {
@@ -419,7 +420,7 @@ describe("useRevokeDeviceAuth", () => {
   });
 
   it("leaves the list alone when the revocation fails", async () => {
-    const devices: QueryKey = ["device-auth", "tenant-a"];
+    const devices: QueryKey = securityKeys.deviceAuthorizations("tenant-a");
     vi.mocked(api).mockRejectedValue(new ApiError(500, "internal", "backend text"));
     const { result, client } = setup(() => useRevokeDeviceAuth(), [devices]);
 

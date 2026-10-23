@@ -1,25 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 
-import { BillingSettingsPage } from "@/modules/billing/components/billing-page";
+import { BillingSettingsPage } from "@/modules/billing/pages";
+import { searchEnum, searchText } from "@/shared/utils/search-params";
 
-type BillingSearch = {
-  plan?: string;
-  interval?: "month" | "year";
-  checkout?: "success" | "cancelled";
-};
+// A plan link preselects the plan and interval; the payment provider returns with `checkout`.
+const billingSearch = z.object({
+  plan: searchText(),
+  interval: searchEnum(["month", "year"]),
+  checkout: searchEnum(["success", "cancelled"]),
+});
 
 export const Route = createFileRoute("/_app/settings/billing")({
   component: BillingPage,
-  validateSearch: (raw: Record<string, unknown>): BillingSearch => ({
-    plan: typeof raw.plan === "string" ? raw.plan : undefined,
-    interval: raw.interval === "year" ? "year" : raw.interval === "month" ? "month" : undefined,
-    checkout:
-      raw.checkout === "success"
-        ? "success"
-        : raw.checkout === "cancelled"
-          ? "cancelled"
-          : undefined,
-  }),
+  validateSearch: billingSearch,
 });
 
 function BillingPage() {

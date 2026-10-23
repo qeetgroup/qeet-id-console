@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/platform/api/client";
 
 import type { ActivityFilters, ActivitySummary } from "./types/activity.types";
+import { useTenantId } from "@/platform/auth/session";
+import { activityKeys } from "./api/keys";
 
 const LIVE_REFETCH_MS = 30_000;
 
@@ -28,8 +30,9 @@ export function useActivitySummary(
   opts: { live?: boolean; enabled?: boolean } = {},
 ) {
   const { live = true, enabled = true } = opts;
+  const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["activity-summary", summaryQuery(filters)] as const,
+    queryKey: activityKeys.summary(tenantId, summaryQuery(filters)),
     queryFn: async (): Promise<ActivitySummary | undefined> => {
       try {
         return await api<ActivitySummary>("/v1/activity/summary", { query: summaryQuery(filters) });

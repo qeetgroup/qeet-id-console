@@ -18,7 +18,7 @@ import { LoaderCircleIcon, PlayIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorText } from "@/platform/components/error-reference";
 import {
   type GroupTemplateNode,
   useApplyGroupTemplate,
@@ -159,7 +159,9 @@ export function GroupTemplatesDialog({
             </Field>
             {createM.error ? (
               <Field>
-                <FieldError>{errorMessage(createM.error)}</FieldError>
+                <FieldError>
+                  <ErrorText error={createM.error} />
+                </FieldError>
               </Field>
             ) : null}
             <Button type="submit" size="sm" disabled={createM.isPending}>

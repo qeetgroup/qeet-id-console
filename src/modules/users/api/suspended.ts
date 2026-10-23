@@ -5,6 +5,8 @@ import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
+import { userKeys } from "./keys";
+
 const suspendedUserSchema = z.object({
   id: z.string(),
   email: z.string(),
@@ -75,7 +77,7 @@ export function useSuspendedUsers(filters: SuspendedFilters) {
   const tenantId = useTenantId();
   const access = useCapabilities();
   return useQuery({
-    queryKey: ["users", "suspended", tenantId, filters],
+    queryKey: [...userKeys.suspended(tenantId), filters],
     queryFn: () => api("/v1/users/suspended", { query: filters, schema: suspendedPageSchema }),
     enabled: !!tenantId && access.can("user.read"),
     staleTime: 15_000,
@@ -83,24 +85,27 @@ export function useSuspendedUsers(filters: SuspendedFilters) {
 }
 
 export function useReactivateUsers() {
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (ids: string[]) => {
       for (const id of ids) await api(`/v1/users/${id}/reactivate`, { method: "POST" });
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["users"] });
-      await queryClient.invalidateQueries({ queryKey: ["user-stats"] });
+      await queryClient.invalidateQueries({ queryKey: userKeys.tenant(tenantId) });
     },
+    meta: { successMessage: "Users reactivated", silentError: true }, // the page shows the error
   });
 }
 
 export function useReviewSuspension() {
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, review }: { id: string; review: SuspensionReview }) =>
       api(`/v1/users/${id}/suspension`, { method: "PUT", body: review }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users", "suspended"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.suspended(tenantId) }),
+    meta: { successMessage: "Review saved", silentError: true }, // the page shows the error
   });
 }
 

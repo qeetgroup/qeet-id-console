@@ -1,7 +1,7 @@
 // run() calls the backend through api(), so its RBAC, RLS and audit apply.
 
 import { z } from "zod";
-import { ORG_KEYS } from "@/modules/organizations";
+import { orgKeys } from "@/modules/organizations";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
@@ -46,7 +46,7 @@ export const createOrganizationTool: ToolDefinition<CreateOrgInput> = {
       body: input,
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ORG_KEYS.all });
+    ctx.queryClient.invalidateQueries({ queryKey: orgKeys.all });
     return {
       ok: true,
       summary: `Organization "${tenant.name}" created (id: ${tenant.id}, slug: ${tenant.slug}).`,

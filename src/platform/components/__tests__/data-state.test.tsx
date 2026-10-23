@@ -23,6 +23,30 @@ describe("DataState", () => {
     expect(screen.queryByText(/tenant_users/)).toBeNull();
   });
 
+  it("shows the failed request's support reference beside the copy", () => {
+    const error = new ApiError(503, "internal", "upstream", undefined, true, undefined, {
+      requestId: "3f2a-req",
+    });
+
+    render(
+      <DataState isError error={error}>
+        <p>loaded</p>
+      </DataState>,
+    );
+
+    expect(screen.getByRole("alert").textContent).toContain("Reference: 3f2a-req");
+  });
+
+  it("keeps a caller's own error slot", () => {
+    render(
+      <DataState isError error={new Error("x")} errorFallback={<p>custom</p>}>
+        <p>loaded</p>
+      </DataState>,
+    );
+
+    expect(screen.getByRole("alert").textContent).toBe("custom");
+  });
+
   it("maps a known code to its message", () => {
     const error = new ApiError(401, "auth.session_expired", "token exp 1730000000 < now");
 

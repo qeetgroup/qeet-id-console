@@ -7,7 +7,7 @@ here and add nothing architectural.
 ## What this repository is
 
 The **operator console for Qeet ID** — `console.id.qeet.in`. TanStack Start + TanStack Router,
-React 19, Vite 8 + Nitro, Tailwind v4, `@qeetrix/ui`, bun. 17 modules under `src/modules/`.
+React 19, Vite 8 + Nitro, Tailwind v4, `@qeetrix/ui`, bun. 18 modules under `src/modules/`.
 
 It is a **client with a server side**: TanStack Start acts as a same-origin
 backend-for-frontend (BFF). **Backend tokens never reach the browser.**
@@ -26,7 +26,7 @@ qeet-context (L0)  →  qeet-id-context (L1)  →  qeet-id-server (the contract 
 | [qeet-repo.yml](qeet-repo.yml) | Machine-readable identity |
 | [docs/llm/architecture-map.md](docs/llm/architecture-map.md) | "Where is X?" |
 | [docs/llm/context.md](docs/llm/context.md) | How the console works |
-| [docs/llm/subsystems.md](docs/llm/subsystems.md) | The 17 modules + platform, with real paths |
+| [docs/llm/subsystems.md](docs/llm/subsystems.md) | The 18 modules + platform, with real paths |
 | [docs/llm/boundaries.md](docs/llm/boundaries.md) | Layering rules and what must not change |
 | [docs/llm/workflows.md](docs/llm/workflows.md) | Step-by-step for common changes |
 
@@ -60,18 +60,18 @@ Biome `noRestrictedImports` overrides in `biome.json` fail the build:
 - `noImportCycles` is `error`
 
 `bun run lint:boundaries` is a CI step. Two more import rules:
-- `src/routes/**` must not import module internals, `api` from `@/platform/api/client`, or
-  `@tanstack/react-query`: data access belongs to the owning module. The route files that still do
-  are listed in a `biome.json` override; that list only shrinks (route-to-module migration). Never
-  add a file to it.
+- `src/routes/**` must not import module internals (a module's barrel and its `pages` entry are
+  public), `api` from `@/platform/api/client`, or `@tanstack/react-query`: data access belongs to
+  the owning module. No route is exempt; never add an override that exempts one.
 - `DataState` comes from `@/platform/components/data-state`, never `@qeetrix/ui` (rule 5).
 
 ### 4. All API traffic goes through one path
 `src/platform/api/client.ts` → server function `proxyApiRequest` → backend. **This is the only place
 requests leave the app.** Correlation IDs, schema parsing and telemetry are added there so every
-caller inherits them. Biome bans the global `fetch`, `EventSource`, `WebSocket` and
-`XMLHttpRequest` outside `src/platform/api/` (the two SSE clients in `activity` and `qeetai` are
-exempt until a shared stream transport replaces them).
+caller inherits them. Server-sent events go through `openEventStream` / `readServerSentEvents`
+(`src/platform/api/event-stream.ts`) to the BFF stream routes, with the same session renewal.
+Biome bans the global `fetch`, `EventSource`, `WebSocket` and `XMLHttpRequest` outside
+`src/platform/api/`.
 
 ### 5. Never render a backend `error.message`
 `src/platform/errors/user-message.ts` is "the leak stop" — backend messages may carry internal
@@ -86,10 +86,16 @@ otp, …) plus email/IP masking. Never log a raw payload around it.
 ### 7. Sensitive actions go through the shared primitive
 `useSensitiveAction()` gives one capability → confirm → step-up → retry path. Backend
 `RequireRecentMFA` stays authoritative. Do not hand-roll a confirm dialog for a sensitive mutation.
+A mutation is sensitive when the backend gates it behind a step-up
+(`qeet-id-server/internal/bootstrap/stepup.go`) or it ends someone's access (revoke, suspend,
+delete, purge, disable SSO). Run it as a mutation, pass an `actionLabel`, `confirm` only what is
+destructive, and end the chain with `.catch(settleSensitiveAction)`.
 
-### 8. Runtime schemas are opt-in
-Pass `schema` to `api()` at boundaries you care about. A mismatch throws
-`client.schema_mismatch` — **fail closed rather than hand garbage to the UI.**
+### 8. Runtime schemas guard the critical boundaries
+Pass `schema` to `api()` where wrong data would do harm: MFA, credentials and secrets, sessions,
+the tenant switch. Derive the type from the schema (`z.infer`), and match the server's Go struct:
+`omitempty` is optional. A mismatch throws `client.schema_mismatch` — **fail closed rather than
+hand garbage to the UI.**
 
 ### 9. `routeTree.gen.ts` is generated
 Committed, and marked read-only in `.vscode/settings.json`. **Never hand-edit it.**
@@ -97,13 +103,60 @@ Committed, and marked read-only in `.vscode/settings.json`. **Never hand-edit it
 ### 10. Person or tenant data in browser storage goes through `scopedStorage`
 `src/platform/auth/scoped-storage.ts` keys every value by person and tenant, so a shared browser
 never shows one person's data to another, and wipes it on sign-out. Never write AI history, search
-history, saved views or any backend-derived data to an unscoped `localStorage` key. UI preferences
-(theme, a dismissed banner) may stay unscoped.
+history, saved views or any backend-derived data to an unscoped `localStorage` key. Device
+preferences (theme, language, a panel's width) may stay unscoped; a dismissal about the person or
+the organization, such as the setup checklist, is scoped.
 
 ### 11. The server holds no per-person state in module scope
 On the server one module instance serves every concurrent request. The session store ignores
 writes there; resolve the session per request (`getServerSession`). Never cache a person's data in a
 module-level variable that server code can reach.
+
+## Conventions
+
+One way to do each thing. `src/modules/users` is the reference implementation.
+
+- **Module layout** — `api/` (data access: a key factory, `queryOptions`, hooks), `components/`
+  (pages and parts), model files at the root, `index.ts` (the barrel other modules import) and
+  `pages.ts` (the pages, for routes only). Keeping pages out of the barrel stops a page that
+  composes another module from creating an import cycle. A route file holds only
+  `createFileRoute`, its guards (`beforeLoad`, `head`), search validation and the page from
+  `@/modules/<name>/pages`; the route reads params and search and passes them to the page as
+  props.
+- **Search params** — a Zod schema as `validateSearch`, built from `searchText()` and
+  `searchEnum()` (`src/shared/utils/search-params.ts`), so a blank, stale or unknown value
+  becomes undefined instead of failing the route.
+- **Query keys** — one factory per module (`userKeys` in `src/modules/users/api/keys.ts`). Every key
+  starts `[module, tenantId, …]`, so one organization's entries never mix with another's and a
+  prefix refreshes a tenant's lists or one record's views together. Define reads with
+  `queryOptions` (`userQueries`) so hooks, prefetches and other modules share one cache entry. A
+  mutation refreshes what it changed; its callers don't.
+- **Forms** — `useAppForm` from `src/platform/forms/app-form.tsx` (TanStack Form bound to the
+  `@qeetrix/ui` fields) with a Zod schema as the `onSubmit` validator. On a refusal call
+  `applyServerErrors(formApi, err)` so a 422 marks the fields it names, and render
+  `<FormError error={mutation.error} />`; give that mutation `meta: { silentError: true }` so the
+  error isn't toasted as well. A settings form keys on the loaded data (`dataUpdatedAt`) and saves
+  with `requireChanges`, so a failed load never shows a form of made-up values. Two kinds keep
+  their own markup: the signed-out screens (sign-in, sign-up, reset, magic link, invitation),
+  whose `auth-*` styling and native fields serve password managers and passkey autofill, and
+  state a form can't type, such as the ABAC condition tree, which sits beside its form.
+- **Loading and errors** — the platform `DataState` for every query-backed surface. It prints curated
+  copy and the request's support reference (`ErrorReference`). Toast a failure with
+  `toastError(err)` (`src/platform/errors/error-toast.ts`), never `toast.error(errorMessage(err))`.
+- **Confirmations** — a sensitive action through `useSensitiveAction` (rule 7); any other yes/no
+  through `useConfirmDialog` (`src/shared/components/confirm-dialog.tsx`). A raw `AlertDialog` is
+  only for a dialog with its own content, such as a form or typed confirmation.
+- **One-time secrets** — `OneTimeSecret` (`src/shared/components/one-time-secret.tsx`). Keep the
+  value in component state only, and give the mutation that returns it `gcTime: 0`.
+- **Server wording** — render a fixed set of server values (a verify reason, a check result) by
+  mapping each to a key; never print the server's own sentence.
+- **Copy and locales** — screen copy goes through `t()`. Only `OFFERED_LANGUAGES`
+  (`src/i18n/index.ts`) can be chosen: a locale is offered once it translates every `en` key, so
+  the console never mixes languages (`src/i18n/README.md`).
+- **API contract** — no generated client. Each module types the endpoints it calls by hand from
+  the server's Go structs and OpenAPI, and parses with a Zod `schema` where a wrong shape would
+  mislead (a one-time secret, a status). A server contract change is a cross-repository change
+  (see "Escalate rather than proceed").
 
 ## Commands
 
@@ -206,5 +259,5 @@ git diff
 
 Weakening the session model · putting a token in the browser · treating a UI capability as
 enforcement · bypassing `proxyApiRequest` · relaxing the SSRF guard · editing `routeTree.gen.ts` ·
-adding a file to the route-rule exemption list in `biome.json` · anything requiring another
+exempting a route from the route rule in `biome.json` · anything requiring another
 repository.

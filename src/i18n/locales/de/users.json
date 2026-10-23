@@ -83,7 +83,6 @@
     "newPasswordHelp": "Mindestens 8 Zeichen.",
     "confirmPassword": "Neues Passwort bestätigen",
     "mismatch": "Passwörter stimmen nicht überein",
-    "success": "Passwort aktualisiert.",
     "submit": "Passwort aktualisieren"
   },
   "toast": {

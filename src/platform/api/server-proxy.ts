@@ -117,42 +117,51 @@ async function refreshSession(
   if (!refreshToken) return "rejected";
   let flight = refreshFlights.get(refreshToken);
   if (!flight) {
-    flight = (async (): Promise<RefreshResult> => {
-      let response: Response;
-      let data: JsonValue;
-      try {
-        response = await fetch(`${getServerApiBaseUrl()}/v1/auth/refresh`, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            "X-Request-Id": requestId,
-            ...relay,
-          },
-          body: JSON.stringify({ refresh_token: refreshToken }),
-          signal: AbortSignal.timeout(AUTH_CALL_TIMEOUT_MS),
-        });
-        data = await parseResponse(response);
-      } catch {
-        return "unavailable";
-      }
-      // Only a definite answer about the token ends the session: an overloaded
-      // or failing backend (5xx, 429) hasn't judged it.
-      if (response.status >= 500 || response.status === 429) return "unavailable";
-      return response.ok && isBackendTokenResponse(data) ? serverSessionData(data) : "rejected";
-    })();
-    const current = flight;
+    // Spending a token a kept refresh issued ends that reuse, as on the backend: its pair would
+    // put a spent refresh token back in a cookie.
+    for (const [spent, kept] of refreshFlights) {
+      if (kept.issued === refreshToken) refreshFlights.delete(spent);
+    }
+    const current: RefreshFlight = {
+      result: (async (): Promise<RefreshResult> => {
+        let response: Response;
+        let data: JsonValue;
+        try {
+          response = await fetch(`${getServerApiBaseUrl()}/v1/auth/refresh`, {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              "X-Request-Id": requestId,
+              ...relay,
+            },
+            body: JSON.stringify({ refresh_token: refreshToken }),
+            signal: AbortSignal.timeout(AUTH_CALL_TIMEOUT_MS),
+          });
+          data = await parseResponse(response);
+        } catch {
+          return "unavailable";
+        }
+        // Only a definite answer about the token ends the session: an overloaded
+        // or failing backend (5xx, 429) hasn't judged it.
+        if (response.status >= 500 || response.status === 429) return "unavailable";
+        return response.ok && isBackendTokenResponse(data) ? serverSessionData(data) : "rejected";
+      })(),
+    };
+    flight = current;
     refreshFlights.set(refreshToken, current);
     // A successful result is kept briefly: a request aborted mid-refresh (the browser navigated)
     // never delivered its new cookie, and the next request still carries the rotated token.
-    void current.then((result) => {
+    // Another instance gets the same answer from the backend's reuse grace.
+    void current.result.then((result) => {
+      if (typeof result === "object") current.issued = result.refreshToken;
       const keepMs = typeof result === "object" ? REFRESH_REUSE_MS : 0;
       setTimeout(() => {
         if (refreshFlights.get(refreshToken) === current) refreshFlights.delete(refreshToken);
       }, keepMs).unref?.();
     });
   }
-  const refreshed = await flight;
+  const refreshed = await flight.result;
   if (refreshed === "unavailable") return "unavailable";
   if (refreshed === "rejected") {
     await session.clear();
@@ -167,9 +176,13 @@ async function refreshSession(
 }
 
 type RefreshResult = ServerSessionData | "rejected" | "unavailable";
+type RefreshFlight = {
+  result: Promise<RefreshResult>;
+  issued?: string; // the refresh token a success issued
+};
 
-const REFRESH_REUSE_MS = 60_000;
-const refreshFlights = new Map<string, Promise<RefreshResult>>(); // by the refresh token spent
+const REFRESH_REUSE_MS = 30_000; // the backend's default reuse grace
+const refreshFlights = new Map<string, RefreshFlight>(); // by the refresh token spent
 
 /** Forgets every refresh in flight or kept for reuse; for tests. */
 export function _resetRefreshFlightsForTest() {

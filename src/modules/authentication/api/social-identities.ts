@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, api } from "@/platform/api/client";
 
 import { refreshSignInMethods } from "./sign-in-methods";
+import { authKeys } from "./keys";
 
 export interface SocialIdentity {
   id: string;
@@ -14,12 +15,10 @@ export interface SocialIdentity {
   linked_at: string;
 }
 
-const KEY = ["social-identities"];
-
 /** Returns the current user's linked social accounts; [] when the server lacks the endpoint. */
 export function useSocialIdentities() {
   return useQuery({
-    queryKey: KEY,
+    queryKey: authKeys.socialIdentities(),
     queryFn: async (): Promise<{ items: SocialIdentity[] }> => {
       try {
         return await api<{ items: SocialIdentity[] }>(`/v1/me/social/identities`);
@@ -42,7 +41,7 @@ export function useUnlinkIdentity() {
     mutationFn: (id: string) => api<void>(`/v1/me/social/identities/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       void refreshSignInMethods(qc);
-      return qc.invalidateQueries({ queryKey: KEY });
+      return qc.invalidateQueries({ queryKey: authKeys.socialIdentities() });
     },
     meta: { successMessage: "Identity unlinked" },
   });

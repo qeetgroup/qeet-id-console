@@ -14,7 +14,11 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorText } from "@/platform/components/error-reference";
+import {
+  settleSensitiveAction,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { isStepUpRequired } from "@/platform/security/step-up";
 import {
   type PushPairing,
@@ -23,6 +27,7 @@ import {
   useStartPairing,
   useWithdrawPairing,
 } from "../api/push-devices";
+import { authKeys } from "../api/keys";
 
 // "4:05" — minutes and seconds left.
 function clock(seconds: number): string {
@@ -43,6 +48,7 @@ export function LinkPhoneDialog({
 }) {
   const { t } = useTranslation("account");
   const qc = useQueryClient();
+  const runSensitive = useSensitiveAction();
   const start = useStartPairing();
   const withdraw = useWithdrawPairing();
   const [pairing, setPairing] = useState<(PushPairing & { code: string }) | null>(null);
@@ -53,20 +59,26 @@ export function LinkPhoneDialog({
 
   function ask() {
     setPairing(null);
-    start.mutate(undefined, {
-      onSuccess: (p) => {
+    runSensitive({
+      actionLabel: t("security.phones.link").toLowerCase(),
+      run: () =>
+        start.mutateAsync(undefined, {
+          onError: (err) => {
+            // A cancelled step-up: the provider has said nothing was changed.
+            if (isStepUpRequired(err)) onOpenChange(false);
+          },
+        }),
+    })
+      .then((p) => {
+        if (!p) return;
         if (openRef.current) {
           setNow(Date.now());
           setPairing(p);
         } else {
           withdraw.mutate(p.id);
         }
-      },
-      onError: (err) => {
-        // A cancelled step-up: the provider has said nothing was changed.
-        if (isStepUpRequired(err)) onOpenChange(false);
-      },
-    });
+      })
+      .catch(settleSensitiveAction);
   }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs on opening only
@@ -90,7 +102,7 @@ export function LinkPhoneDialog({
   // The phone scanned it: done.
   useEffect(() => {
     if (state !== "linked") return;
-    void qc.invalidateQueries({ queryKey: ["push-devices", "self"] });
+    void qc.invalidateQueries({ queryKey: authKeys.pushDevices() });
     toast.success(t("security.phones.dialog.linked"));
     setPairing(null);
     onOpenChange(false);
@@ -123,7 +135,7 @@ export function LinkPhoneDialog({
 
         {failure && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(failure)}
+            <ErrorText error={failure} />
           </p>
         )}
 

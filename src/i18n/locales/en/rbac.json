@@ -33,12 +33,17 @@
       "descLabel": "Description",
       "cancelBtn": "Cancel",
       "createBtn": "Create",
-      "creatingBtn": "Creating…"
+      "creatingBtn": "Creating…",
+      "validation": {
+        "name": "Enter a name."
+      }
     },
     "permsSheet": {
       "title": "Permissions — {{name}}",
       "description": "Toggle to grant or revoke. Changes apply immediately to every user holding this role.",
-      "closeBtn": "Close"
+      "closeBtn": "Close",
+      "grantAction": "Grant this permission to the role",
+      "revokeAction": "Revoke this permission from the role"
     },
     "detail": {
       "backLink": "Back to roles",
@@ -144,40 +149,64 @@
     "unsaved": "Unsaved changes",
     "resetBtn": "Reset",
     "savingBtn": "Saving…",
-    "saveBtn": "Save policy"
+    "saveBtn": "Save policy",
+    "saveAction": "Save the security policy",
+    "validation": {
+      "whole": "Enter a whole number.",
+      "passwordLength": "Use 8 to 128 characters.",
+      "maxSessions": "Use a number from 1 to 1,000, or leave it empty for no limit.",
+      "graceDays": "Use 0 to 90 days.",
+      "duration": "Enter a duration, such as 24h or 30m."
+    }
   },
   "relationships": {
-    "description": "Fine-grained, relationship-based access (ReBAC). Tuples assert \"object relation subject\"; a check resolves direct grants and usersets (e.g. group:eng#member) recursively. Complements roles (RBAC) and policies (ABAC).",
+    "description": "Zanzibar-style relationship tuples: object #relation subject. Write relationships, browse them, and expand the identity graph.",
     "write": {
-      "title": "Write a tuple",
+      "title": "Write relationship",
       "objectLabel": "Object",
       "relationLabel": "Relation",
       "subjectLabel": "Subject",
-      "subjectHelp": "A user, or a userset (object#relation).",
-      "writeBtn": "Write tuple"
+      "subjectHelp": "A user, or a userset such as group:eng#member, which expands recursively.",
+      "writeBtn": "Write tuple",
+      "action": "Write this relationship",
+      "description": "For example object document:readme, relation viewer, subject user:… or group:eng#member."
     },
     "check": {
-      "title": "Check access",
-      "description": "Does a user have a relation on an object? (resolves usersets)",
+      "title": "Check relationship",
+      "description": "Resolve whether a user has a relation to an object; the decision is kept in the Decision Explorer.",
       "objectLabel": "Object",
       "relationLabel": "Relation",
       "userLabel": "User ID",
-      "checkBtn": "Check"
+      "checkBtn": "Check",
+      "hops_one": "{{count}} hop",
+      "hops_other": "{{count}} hops"
     },
     "tuples": {
-      "title": "Tuples on an object",
-      "description": "Enter an object to list its relationship tuples.",
+      "title": "Browse tuples",
+      "description": "List every relationship stored on an object.",
       "empty": "No tuples on this object.",
-      "deleteBtn": "Delete"
+      "deleteBtn": "Delete",
+      "deleteTitle": "Delete this relationship?",
+      "deleteDescription": "{{tuple}} is removed, and any access it granted ends at once.",
+      "deleteAction": "Delete this relationship",
+      "objectLabel": "Object",
+      "showBtn": "Show"
     },
     "graph": {
-      "title": "Identity Graph",
-      "description": "Expand all subjects reachable from an object+relation — a privilege-path graph showing who/what can reach a resource and through which chain of relationships.",
-      "expandBtn": "Expand",
+      "title": "Identity graph",
+      "description": "Expand every subject reachable from an object and relation, with cycle-safe traversal.",
+      "expandBtn": "Expand graph",
       "empty": "No relationships found from this object+relation.",
       "objectAriaLabel": "Object",
       "relationAriaLabel": "Relation",
-      "svgAriaLabel": "Identity relationship graph"
+      "svgAriaLabel": "Identity relationship graph",
+      "size": "{{nodes}} nodes · {{edges}} edges"
+    },
+    "validation": {
+      "object": "Enter an object, such as document:readme.",
+      "relation": "Enter a relation, such as viewer.",
+      "subject": "Enter a subject.",
+      "userId": "Enter a user ID."
     }
   },
   "resources": {
@@ -213,13 +242,18 @@
     "resultPlaceholder": "Run a check to see the allow/deny decision and how it was reached.",
     "allowed": "Access allowed",
     "denied": "Access denied",
+    "deniedReason": "No role grants this permission to this person in this organization.",
     "grantPathsTitle": "Grant paths",
     "grantPathsHint": "Each path is an independent reason the permission is held.",
     "noGrantPath": "Allowed, but no explicit grant path was returned.",
     "directAssignment": "Direct assignment",
     "viaGroup": "Group · {{group}}",
     "grantedBy": "granted by",
-    "roleShort": "role {{id}}…"
+    "roleShort": "role {{id}}…",
+    "validation": {
+      "userId": "Enter the person's user ID (a UUID).",
+      "permission": "Enter a permission."
+    }
   },
   "groupRoles": {
     "title": "Roles",
@@ -235,8 +269,9 @@
     "grantedHeader": "Granted",
     "actionsHeader": "Actions",
     "revokeTitle": "Remove this role from the group?",
-    "revokeDescriptionNamed": "Members will lose the permissions granted by <strong>{{name}}</strong> unless they hold it through another group or a direct assignment.",
-    "revokeDescriptionFallback": "Members will lose this role’s permissions."
+    "revokeDescriptionPlain": "Members will lose the permissions granted by {{name}} unless they hold it through another group or a direct assignment.",
+    "grantAction": "Grant this role to the group",
+    "revokeAction": "Remove this role from the group"
   },
   "overview": {
     "description": "A single view of your authorization posture: what's configured, what's risky, and what changed.",
@@ -337,6 +372,108 @@
       "unavailableTitle": "Decision metrics aren't being collected yet",
       "unavailableBody": "Allow-vs-deny volume, p95 decision latency and policy-evaluation counts will appear here once the authorization engine emits decision metrics. Everything above is read from live configuration and the audit log.",
       "note": "no authz metrics endpoint yet"
+    }
+  },
+  "abac": {
+    "deleteTitle": "Delete this policy?",
+    "deleteDescription": "“{{name}}” stops applying to access decisions at once. This can’t be undone.",
+    "deleteLabel": "Delete policy",
+    "deleteAction": "Delete this policy",
+    "createAction": "Create this policy",
+    "updateAction": "Save this policy",
+    "editor": {
+      "newTitle": "New policy",
+      "editTitle": "Edit policy",
+      "description": "Define the effect, target and condition.",
+      "create": "Create policy",
+      "name": "Name",
+      "effect": "Effect",
+      "allow": "Allow",
+      "deny": "Deny",
+      "resourceType": "Resource type",
+      "action": "Action",
+      "priority": "Priority",
+      "enabled": "Enabled",
+      "descriptionLabel": "Description",
+      "condition": "Condition",
+      "previewTitle": "Preview",
+      "previewDescription": "Generated representations of this policy."
+    },
+    "test": {
+      "title": "Test against the live engine",
+      "description": "Evaluates a request against every enabled policy and explains the decision.",
+      "run": "Test",
+      "input": "Evaluation input",
+      "invalidJson": "The input isn't valid JSON."
+    },
+    "validation": {
+      "name": "Enter a name.",
+      "priority": "Enter a whole number."
+    }
+  },
+  "simulator": {
+    "description": "Ask a what-if question of any engine and see the exact allow or deny decision, explained.",
+    "engine": "Engine",
+    "engines": {
+      "authzen": {
+        "label": "Unified (AuthZEN)",
+        "description": "Unified policy decision point (RBAC + ReBAC)"
+      },
+      "abac": {
+        "label": "ABAC",
+        "description": "Attribute-based conditions"
+      },
+      "rbac": {
+        "label": "RBAC",
+        "description": "Role and permission check"
+      },
+      "rebac": {
+        "label": "ReBAC",
+        "description": "Relationship and tuple traversal"
+      }
+    },
+    "request": {
+      "title": "Request",
+      "description": "Fill in the subject, resource and action to evaluate."
+    },
+    "decision": {
+      "title": "Decision",
+      "description": "The outcome and its explanation.",
+      "empty": "Run a simulation to see the decision."
+    },
+    "fields": {
+      "subjectType": "Subject type",
+      "subjectId": "Subject ID",
+      "resourceType": "Resource type",
+      "resourceId": "Resource ID",
+      "action": "Action",
+      "userId": "User ID",
+      "permission": "Permission",
+      "object": "Object",
+      "relation": "Relation",
+      "abacInput": "ABAC evaluation input"
+    },
+    "run": "Simulate",
+    "batch": {
+      "title": "Batch simulation",
+      "description": "Evaluate one resource and action for up to {{cap}} subjects, against the live decision point.",
+      "subjects": "Subjects (one per line, type:id)",
+      "run": "Run batch",
+      "progress": "Progress",
+      "allowCount": "{{count}} allow",
+      "denyCount": "{{count}} deny",
+      "failedCount_one": "{{count}} failed",
+      "failedCount_other": "{{count}} failed",
+      "subject": "Subject",
+      "decision": "Decision",
+      "latency": "Latency",
+      "failed": "Failed",
+      "ms": "{{count}} ms"
+    },
+    "validation": {
+      "required": "Fill in this field.",
+      "json": "The input isn't a valid JSON object.",
+      "subjects": "Add at least one subject."
     }
   }
 }

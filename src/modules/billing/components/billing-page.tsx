@@ -32,7 +32,8 @@ import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useTenantId } from "@/platform/auth/session";
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorReference } from "@/platform/components/error-reference";
+import { ErrorText } from "@/platform/components/error-reference";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   SensitiveActionCancelled,
@@ -73,6 +74,7 @@ import {
 import { BillingDetails } from "./billing-details";
 import { BillingInvoices } from "./billing-invoices";
 import { ContactSalesDialog } from "./contact-sales-dialog";
+import { billingKeys } from "../api/keys";
 
 const SURFACE =
   "min-w-0 rounded-lg border border-border/70 bg-card/90 shadow-xs dark:bg-card/70 dark:shadow-none";
@@ -206,7 +208,7 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
         const downgrade = over.length > 0;
         return sensitive({
           capability: "billing.write",
-          actionLabel: t("billing.plan.switchTo", { name: choice.plan.name }),
+          actionLabel: t("billing.stepUp.switchPlan", { name: choice.plan.name }),
           confirm: {
             title: t(
               downgrade
@@ -252,7 +254,7 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
       onCancel={() =>
         sensitive({
           capability: "billing.write",
-          actionLabel: t("billing.currentPlan.cancelPlan"),
+          actionLabel: t("billing.stepUp.cancelPlan"),
           confirm: {
             title: t("billing.currentPlan.cancelConfirmTitle"),
             description: t("billing.currentPlan.cancelConfirmDescription"),
@@ -268,7 +270,7 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
       onStartTrial={(currency) =>
         sensitive({
           capability: "billing.write",
-          actionLabel: t("billing.screen.trial.start"),
+          actionLabel: t("billing.stepUp.startTrial"),
           run: () => {
             requireCurrentContext();
             return trial.mutateAsync({ plan_code: "pro", currency });
@@ -286,14 +288,14 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
         onSave={async (input) => {
           const result = await sensitive({
             capability: "billing.write",
-            actionLabel: t("billing.screen.profile.save"),
+            actionLabel: t("billing.stepUp.saveProfile"),
             run: () => {
               requireCurrentContext();
               return saveProfile.mutateAsync(input);
             },
           });
           if (!result) throw new SensitiveActionCancelled();
-          queryClient.setQueryData(["billing", "profile", tenantId], result);
+          queryClient.setQueryData(billingKeys.profile(tenantId), result);
           return result;
         }}
       />
@@ -316,7 +318,7 @@ export function BillingSettingsView(props: BillingSettingsViewProps) {
   const [currency, setCurrency] = useState<string | null>(null);
   const [salesOpen, setSalesOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<unknown>(null);
   const busy = useRef(false);
   const planSection = useRef<HTMLElement>(null);
   const usageSection = useRef<HTMLElement>(null);
@@ -376,7 +378,7 @@ export function BillingSettingsView(props: BillingSettingsViewProps) {
     try {
       await action();
     } catch (error) {
-      if (!(error instanceof SensitiveActionCancelled)) setActionError(errorMessage(error));
+      if (!(error instanceof SensitiveActionCancelled)) setActionError(error);
     } finally {
       busy.current = false;
       setPending(null);
@@ -490,14 +492,15 @@ export function BillingSettingsView(props: BillingSettingsViewProps) {
         </section>
       ) : (
         <>
-          {actionError && (
+          {actionError ? (
             <p
               role="alert"
               className="rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive"
             >
-              {actionError}
+              <ErrorText error={actionError} />
+              <ErrorReference error={actionError} className="mt-1" />
             </p>
-          )}
+          ) : null}
           {props.checkoutResult && (
             <p
               role="status"

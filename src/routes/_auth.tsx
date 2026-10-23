@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 
-import { AuthShell } from "@/modules/authentication/components/auth-shell";
+import { AuthShell } from "@/modules/authentication/pages";
 import { getServerSession } from "@/platform/api/server-proxy";
 
 export const Route = createFileRoute("/_auth")({

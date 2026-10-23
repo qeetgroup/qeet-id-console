@@ -63,10 +63,11 @@
     "title": "Delete this application?",
     "titleBulk_one": "Delete {{count}} application?",
     "titleBulk_other": "Delete {{count}} applications?",
-    "descriptionNamed": "Apps using the client ID for <strong>{{name}}</strong> will immediately stop being able to authenticate. This can’t be undone.",
-    "descriptionFallback": "Apps using this client ID will stop working.",
     "descriptionBulk_one": "{{count}} application will be deleted. Every app using its client ID will immediately stop being able to authenticate. This can’t be undone.",
-    "descriptionBulk_other": "{{count}} applications will be deleted. Every app using their client IDs will immediately stop being able to authenticate. This can’t be undone."
+    "descriptionBulk_other": "{{count}} applications will be deleted. Every app using their client IDs will immediately stop being able to authenticate. This can’t be undone.",
+    "confirmDescription": "Apps using the client ID for {{name}} will immediately stop being able to authenticate. This can’t be undone.",
+    "stepUp": "delete this application",
+    "stepUpBulk": "delete these applications"
   },
   "create": {
     "title": "Register OAuth / OIDC application",
@@ -89,7 +90,13 @@
     "scopes": "Scopes",
     "scopesHelp": "Space-separated list of OAuth scopes. Common scopes include openid, profile, and email.",
     "submit": "Register application",
-    "submitting": "Registering…"
+    "submitting": "Registering…",
+    "stepUp": "register this application",
+    "validation": {
+      "name": "Enter a name.",
+      "redirectUris": "Add at least one redirect URI.",
+      "uri": "Enter one full URL per line."
+    }
   },
   "detail": {
     "backToList": "All applications",
@@ -116,7 +123,6 @@
     "dangerZoneDescription": "Deleting stops every app using this client ID from authenticating.",
     "deleteApplication": "Delete application",
     "deleteTitle": "Delete this application?",
-    "deleteDescription": "Apps using the client ID for <strong>{{name}}</strong> will immediately stop being able to authenticate. This can’t be undone.",
     "proofKey": {
       "title": "Proof key (PKCE)",
       "required": "Every sign-in must send a proof key (PKCE, S256) and, when it asks for openid, a nonce. Requests without them are refused.",
@@ -132,6 +138,20 @@
       "lockedUntil": "Locked out until {{date}}: every request authenticating as this application is refused until then.",
       "none": "No recent failed attempts.",
       "error": "Couldn't load the recent attempts."
+    },
+    "deleteConfirmDescription": "Apps using the client ID for {{name}} will immediately stop being able to authenticate. This can’t be undone.",
+    "rotateConfirm": {
+      "title": "Rotate client secret?",
+      "description": "A new client secret is generated immediately and the current one stops working. Update the client application with the new secret.",
+      "label": "Rotate secret"
+    },
+    "stepUp": {
+      "update": "update this application",
+      "rotate": "rotate this client secret",
+      "delete": "delete this application"
+    },
+    "validation": {
+      "name": "Enter a name."
     }
   }
 }

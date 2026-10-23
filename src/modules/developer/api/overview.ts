@@ -6,15 +6,16 @@ import { useTenantId } from "@/platform/auth/session";
 import { filterNavigation, navGroups } from "@/platform/config/navigation";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { isCurrentCredential, summarizeDeveloperRecords } from "../overview-model";
+import { developerKeys } from "./keys";
 
 const SOURCES = [
-  { id: "keys", key: "api-keys", path: "api-keys", permission: "apikey.read" },
-  { id: "tokens", key: "oauth-grants", path: "oauth/grants", permission: "connection.read" },
-  { id: "webhooks", key: "webhooks", path: "webhooks", permission: "webhook.read" },
-  { id: "hooks", key: "auth-hooks", path: "auth-hooks", permission: "connection.read" },
-  { id: "agents", key: "agents", path: "agents", permission: "apikey.read" },
-  { id: "secrets", key: "secrets", path: "secrets", permission: "secret.read" },
-  { id: "credentials", key: "credentials", path: "credentials", permission: "apikey.read" },
+  { id: "keys", path: "api-keys", permission: "apikey.read" },
+  { id: "tokens", path: "oauth/grants", permission: "connection.read" },
+  { id: "webhooks", path: "webhooks", permission: "webhook.read" },
+  { id: "hooks", path: "auth-hooks", permission: "connection.read" },
+  { id: "agents", path: "agents", permission: "apikey.read" },
+  { id: "secrets", path: "secrets", permission: "secret.read" },
+  { id: "credentials", path: "credentials", permission: "apikey.read" },
 ] as const;
 
 export type DeveloperResourceId = (typeof SOURCES)[number]["id"];
@@ -100,7 +101,7 @@ export function useDeveloperOverview() {
   const ready = !!tenantId && access.state === "ready";
   const requests = useQueries({
     queries: SOURCES.map((source) => ({
-      queryKey: [source.key, tenantId],
+      queryKey: developerKeys.overview(tenantId, source.id),
       queryFn: () => api(`/v1/tenants/${tenantId}/${source.path}`, { schema: recordsSchema }),
       select: (response: z.infer<typeof recordsSchema>) => resourceSummary(source.id, response),
       enabled: ready && access.can(source.permission),
@@ -126,7 +127,7 @@ export function useDeveloperOverview() {
 
   const canReadActivity = ready && access.can("audit.read");
   const activity = useQuery({
-    queryKey: ["developer-overview", "activity", tenantId],
+    queryKey: developerKeys.overview(tenantId, "activity"),
     queryFn: () =>
       api("/v1/activity", {
         query: { category: "developer", limit: 30 },

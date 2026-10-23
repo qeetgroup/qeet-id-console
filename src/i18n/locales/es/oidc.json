@@ -21,9 +21,7 @@
     "description": "Copie el secreto ahora — se aplica hash bcrypt en el servidor después de esto y no puede mostrarse de nuevo."
   },
   "delete": {
-    "title": "¿Eliminar esta aplicación?",
-    "descriptionNamed": "Las aplicaciones que usan el ID de cliente para <strong>{{name}}</strong> dejarán de poder autenticarse inmediatamente. No se puede deshacer.",
-    "descriptionFallback": "Las aplicaciones que usan este ID de cliente dejarán de funcionar."
+    "title": "¿Eliminar esta aplicación?"
   },
   "create": {
     "title": "Registrar aplicación OAuth / OIDC",
@@ -65,7 +63,6 @@
     "dangerZoneTitle": "Zona de peligro",
     "dangerZoneDescription": "Eliminar impide que cualquier aplicación que use este ID de cliente se autentique.",
     "deleteApplication": "Eliminar aplicación",
-    "deleteTitle": "¿Eliminar esta aplicación?",
-    "deleteDescription": "Las aplicaciones que usan el ID de cliente para <strong>{{name}}</strong> dejarán de poder autenticarse inmediatamente. No se puede deshacer."
+    "deleteTitle": "¿Eliminar esta aplicación?"
   }
 }

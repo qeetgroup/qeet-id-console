@@ -43,6 +43,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
+import { ErrorText } from "@/platform/components/error-reference";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { exportToCsv } from "@/shared/utils/data-export";
@@ -593,7 +594,11 @@ function DirectoryAlertDialog({
                 onChange={(event) => setThreshold(Number(event.target.value))}
               />
             </Field>
-            {mutation.isError ? <FieldError>{errorMessage(mutation.error)}</FieldError> : null}
+            {mutation.isError ? (
+              <FieldError>
+                <ErrorText error={mutation.error} />
+              </FieldError>
+            ) : null}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>
                 {t("directory.cancel")}

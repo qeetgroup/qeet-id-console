@@ -22,14 +22,20 @@ bun run dev                    # serves on 3002 — see the port note below
 
 ```text
 1  find the subsystem        docs/llm/subsystems.md
-2  route file                src/routes/_app/<area>/<page>.tsx
-3  navigation entry          src/platform/config/navigation.tsx — sets the required capability
-4  data access               a module's api/ dir, NEVER fetch from the component
-5  compose                   import the module through its BARREL: @/modules/<name>
-6  i18n                      add strings; en is required, others fall back
-7  test
-8  bun run typecheck && bun run check && bun run lint:boundaries && bun run test
+2  page component            src/modules/<name>/components/<page>.tsx, exported from the
+                             module's pages.ts (routes only), not its barrel
+3  route file                src/routes/_app/<area>/<page>.tsx — createFileRoute, search
+                             validation and the page from @/modules/<name>/pages; params reach
+                             the page as props
+4  navigation entry          src/platform/config/navigation.tsx — sets the required capability
+5  data access               the module's api/ dir, NEVER fetch from the component
+6  states                    the platform DataState for loading, empty and error
+7  i18n                      add strings; en is required, others fall back
+8  test
+9  bun run typecheck && bun run check && bun run lint:boundaries && bun run test
 ```
+
+`src/modules/users` is the reference: `UsersPage`, `UserDetailPage` and their thin routes.
 
 **The navigation entry is what gates the page.** `getRequiredCapabilityForPath` reads it, and
 `AccessBoundary` enforces it in the UI. Both are UX — the backend still decides.
@@ -38,11 +44,13 @@ bun run dev                    # serves on 3002 — see the port note below
 
 ```text
 1  VERIFY IT EXISTS in qeet-id-server — never invent one
-2  add a function in the module's api/ dir
-3  call api(path, opts) from src/platform/api/client.ts — the ONLY request path
-4  optional: pass a Zod `schema` to fail closed on contract drift
-5  map errors through the module; never render error.message
-6  test
+2  key: add it to the module's key factory, under [module, tenantId, …]
+3  read: a queryOptions entry (see userQueries) and a hook that uses it
+   write: a mutation that refreshes what it changed, by key prefix
+4  call api(path, opts) from src/platform/api/client.ts — the ONLY request path
+5  a Zod `schema` for anything critical (MFA, secrets, sessions, tenant switch)
+6  map errors through the module; never render error.message
+7  test
 ```
 
 **If the endpoint issues credentials**, it must be in the allowlist in
@@ -61,10 +69,11 @@ bun run dev                    # serves on 3002 — see the port note below
 Every module has a barrel. Export from it only what another module or a route needs, by name (no
 new `export *`).
 
-A **route** stays thin: it may import a module's barrel, but not its internals, `api()` or
-`@tanstack/react-query` (lint). If a route needs data, add the hook or page to the owning module and
-export it from the barrel. Never add a route file to the exemption list in `biome.json`; when you
-migrate an exempt route, remove it from that list.
+A **route** stays thin: `createFileRoute`, its guards (`beforeLoad`, `head`), a Zod search schema
+(`searchText()` / `searchEnum()` from `src/shared/utils/search-params.ts`) and the page from the
+owning module's `pages.ts`. It may import a module's barrel and its `pages` entry, but not its
+internals, `api()` or `@tanstack/react-query` (lint); it reads params and search and passes them
+to the page as props. No route is exempt from this, and none may be.
 
 ## Change session or auth behaviour
 
@@ -96,10 +105,35 @@ Never add a token to `PublicSession`. Never reintroduce localStorage token keys.
 ## Add a sensitive action
 
 ```text
-1  use useSensitiveAction() — do NOT hand-roll a confirm dialog
-2  it gives: capability pre-check (UX) → confirm → step-up → retry once
-3  a backend 403 step_up_required opens the re-auth dialog automatically
-4  RequireRecentMFA on the backend stays authoritative
+1  sensitive = gated in qeet-id-server/internal/bootstrap/stepup.go, or it ends someone's access
+2  use useSensitiveAction() — do NOT hand-roll a confirm dialog
+3  run: a mutation's mutateAsync · actionLabel: names it in the step-up dialog
+   confirm: only when destructive or irreversible
+4  end the promise with .catch(settleSensitiveAction)
+5  it gives: capability pre-check (UX) → confirm → step-up → retry once
+6  RequireRecentMFA on the backend stays authoritative
+```
+
+A non-sensitive yes/no goes through `useConfirmDialog`. The users actions repeat on several
+surfaces, so `useUserActions` holds them once.
+
+## Build a form
+
+```text
+1  useAppForm from src/platform/forms/app-form.tsx; fields via form.AppField + field.TextField,
+   PasswordField or SelectField; a composite control inside FieldFrame
+2  validators: { onSubmit: <Zod schema> }, built with the page's t() for its messages
+3  onSubmit: run the mutation (through useSensitiveAction when sensitive); on a refusal call
+   applyServerErrors(formApi, err) — a 422 marks the fields it names
+4  render <FormError error={mutation.error} /> and form.SubmitButton
+```
+
+## Show a one-time secret
+
+```text
+1  OneTimeSecret from src/shared/components/one-time-secret.tsx
+2  the value lives in component state only — never the query cache or browser storage
+3  the mutation that returns it: gcTime 0
 ```
 
 ## Change the SSRF guard or CSRF

@@ -144,7 +144,10 @@
       "submit": "Add",
       "failOpen": "Fail open",
       "failOpenAriaLabel": "Fail open",
-      "failOpenDescription": "If the hook errors or times out, allow the sign-in (recommended). Turn off to block sign-ins when the hook is unreachable."
+      "failOpenDescription": "If the hook errors or times out, allow the sign-in (recommended). Turn off to block sign-ins when the hook is unreachable.",
+      "validation": {
+        "url": "Enter an https:// URL."
+      }
     },
     "list": {
       "title": "Hooks",
@@ -159,6 +162,12 @@
     "confirm": {
       "removeTitle": "Remove this hook?",
       "removeLabel": "Remove"
+    },
+    "stepUp": {
+      "add": "add this hook",
+      "enable": "turn this hook on",
+      "disable": "turn this hook off",
+      "remove": "remove this hook"
     }
   },
   "credentials": {
@@ -171,21 +180,37 @@
       "type": "Credential type",
       "typePlaceholder": "EmploymentCredential",
       "claims": "Claims (JSON)",
-      "claimsError": "Claims must be valid JSON.",
       "ttl": "TTL (seconds)",
       "submit": "Issue",
-      "signedLabel": "Signed credential (JWT-VC) — give this to the subject:"
+      "signedLabel": "Signed credential (JWT-VC) — give this to the subject:",
+      "signedOnce": "Copy it now. It won’t be shown again.",
+      "validation": {
+        "subject": "Enter a subject.",
+        "type": "Enter a credential type.",
+        "claims": "Claims must be a JSON object.",
+        "ttl": "Use 0 or more seconds."
+      }
     },
     "verify": {
       "title": "Verify a credential",
       "description": "Paste a JWT-VC to check its signature, expiry, and revocation.",
-      "submit": "Verify"
+      "submit": "Verify",
+      "credential": "Credential (JWT)",
+      "validation": "Paste a credential.",
+      "reason": {
+        "notCredential": "Not a verifiable credential.",
+        "signature": "The signature or expiry is invalid.",
+        "unknown": "This organization didn't issue it.",
+        "revoked": "It has been revoked."
+      }
     },
     "list": {
       "title": "Issued credentials",
       "description": "Registry of credentials issued by this organization.",
       "empty": "No credentials issued yet.",
       "revoked": "revoked",
+      "issued": "issued",
+      "expires": "expires",
       "noExpiry": " · no expiry",
       "revokeButton": "Revoke"
     },
@@ -200,6 +225,10 @@
     "toast": {
       "issued": "Credential issued",
       "revoked": "Credential revoked"
+    },
+    "stepUp": {
+      "issue": "issue this credential",
+      "revoke": "revoke this credential"
     }
   },
   "agents": {
@@ -213,7 +242,12 @@
       "scopesPlaceholder": "tickets:read kb:read",
       "ttl": "Token TTL (s)",
       "submit": "Create",
-      "secretNotice": "Agent {{name}} created — copy its credentials now (the secret won’t be shown again):"
+      "secretNotice": "Agent {{name}} created — copy its credentials now (the secret won’t be shown again):",
+      "secretTitle": "Agent credentials",
+      "validation": {
+        "name": "Enter a name.",
+        "ttl": "Use 60 to 3,600 seconds."
+      }
     },
     "list": {
       "title": "Agents",
@@ -254,7 +288,8 @@
         "title": "Transfer {{count}} agent(s) to the new sponsor?",
         "description": "This can’t be undone.",
         "label": "Transfer"
-      }
+      },
+      "stepUp": "transfer these agents"
     },
     "shadow": {
       "title": "Shadow AI discovery",
@@ -272,6 +307,13 @@
       "resumed": "Agent resumed",
       "killAll": "All agents suspended",
       "transferred": "Sponsor transferred"
+    },
+    "stepUp": {
+      "create": "create this agent",
+      "suspend": "suspend this agent",
+      "resume": "resume this agent",
+      "delete": "delete this agent",
+      "suspendAll": "suspend every active agent"
     }
   },
   "webhooks": {
@@ -320,12 +362,24 @@
       "eventsCount_other": "Selected {{count}} events.",
       "cancel": "Cancel",
       "submit": "Create",
-      "submitting": "Creating…"
+      "submitting": "Creating…",
+      "validation": {
+        "url": "Enter an https:// URL.",
+        "events": "Choose at least one event."
+      }
     },
     "toast": {
       "created": "Webhook created",
       "disabled": "Webhook disabled",
       "testQueued": "Test event queued"
+    },
+    "stepUp": {
+      "create": "create this webhook",
+      "disable": "disable this webhook"
+    },
+    "revealed": {
+      "title": "Signing secret for {{url}}",
+      "description": "Use it to verify the X-Qeet-Signature header on each delivery. It’s shown only once: copy it now."
     }
   },
   "webhookDetail": {

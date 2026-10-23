@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export type SinkType = "splunk_hec" | "datadog" | "http";
 
@@ -18,12 +19,10 @@ export interface LogSink {
   created_at: string;
 }
 
-const KEY = ["log-sinks"];
-
 export function useLogSinks() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: securityKeys.logSinks(tenantId),
     queryFn: () => api<{ items: LogSink[] }>(`/v1/tenants/${tenantId}/log-sinks`),
     enabled: !!tenantId,
   });
@@ -40,8 +39,8 @@ export function useCreateLogSink() {
         body,
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Log sink added" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
+    meta: { successMessage: "Log sink added", silentError: true }, // the form shows it
   });
 }
 
@@ -56,7 +55,7 @@ export function useToggleLogSink() {
         body: { enabled },
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
     meta: { successMessage: "Log sink updated" },
   });
 }
@@ -71,7 +70,7 @@ export function useDeleteLogSink() {
         method: "DELETE",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
     meta: { successMessage: "Log sink deleted" },
   });
 }

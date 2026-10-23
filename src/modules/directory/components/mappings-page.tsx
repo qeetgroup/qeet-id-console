@@ -44,6 +44,8 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import i18n from "@/i18n";
+
 import { PageHeader } from "@/platform/components/page-header";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -130,7 +132,7 @@ function MappingsWorkspace({
     try {
       await sensitive({
         capability: "connection.write",
-        actionLabel: t("directory.mappings.save"),
+        actionLabel: t("directory.mappings.save").toLowerCase(),
         run: () => save.mutateAsync(mapping),
       });
       setDraft(null);
@@ -150,6 +152,7 @@ function MappingsWorkspace({
           confirmLabel: t("directory.mappings.delete"),
           tone: "destructive",
         },
+        actionLabel: t("directory.mappings.deleteActionLabel").toLowerCase(),
         run: () => remove.mutateAsync(mappings.map((mapping) => mapping.id)),
       });
       preview.reset();
@@ -217,6 +220,12 @@ function MappingsWorkspace({
       ) : null}
     </>
   );
+}
+
+// A code newer than this console reads as a generic problem rather than a humanised key.
+function issueKey(code: string): string {
+  const key = `directory.mappings.issues.${code.replace(/^directory\.mapping_/, "")}`;
+  return i18n.exists(key, { ns: "dashboard" }) ? key : "directory.mappings.issues.unknown";
 }
 
 export function MappingsView({
@@ -689,10 +698,12 @@ export function MappingsView({
             </p>
             {preview?.issues.map((issue) => (
               <p
-                key={`${issue.mapping_id}:${issue.field}:${issue.message}`}
+                key={`${issue.mapping_id}:${issue.field}:${issue.code}`}
                 className="mt-1 text-[11px]"
               >
-                {issue.field}: {issue.message}
+                {issue.field &&
+                  `${t(`directory.mappings.targets.${issue.field}`, { defaultValue: issue.field })}: `}
+                {t(issueKey(issue.code))}
               </p>
             ))}
           </div>

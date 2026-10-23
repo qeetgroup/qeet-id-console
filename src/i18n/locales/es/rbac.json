@@ -35,8 +35,6 @@
     "roleHeader": "Rol",
     "grantedHeader": "Concedido",
     "actionsHeader": "Acciones",
-    "revokeTitle": "¿Quitar este rol del grupo?",
-    "revokeDescriptionNamed": "Los miembros perderán los permisos concedidos por <strong>{{name}}</strong> a menos que lo tengan a través de otro grupo o una asignación directa.",
-    "revokeDescriptionFallback": "Los miembros perderán los permisos de este rol."
+    "revokeTitle": "¿Quitar este rol del grupo?"
   }
 }

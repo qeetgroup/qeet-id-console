@@ -117,7 +117,7 @@ export function SuspendedPage() {
     try {
       await sensitive({
         capability: "user.write",
-        actionLabel: t("directory.suspended.reactivate"),
+        actionLabel: t("directory.suspended.reactivateActionLabel").toLowerCase(),
         confirm: {
           title: t("directory.suspended.reactivateTitle", { count: users.length }),
           description: t("directory.suspended.reactivateDescription"),
@@ -137,7 +137,7 @@ export function SuspendedPage() {
     try {
       await sensitive({
         capability: "user.write",
-        actionLabel: t("directory.suspended.saveReview"),
+        actionLabel: t("directory.suspended.saveReview").toLowerCase(),
         run: () => review.mutateAsync({ id: reviewing.id, review: input }),
       });
       setReviewing(null);

@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { OIDC_CLIENTS_KEY } from "@/modules/authentication";
+import { createOidcClient, authKeys, rotateOidcClientSecret } from "@/modules/authentication";
 
-import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
 
 const createOAuthClientInput = z.object({
@@ -12,17 +11,6 @@ const createOAuthClientInput = z.object({
   scopes: z.array(z.string()).optional(),
 });
 type CreateOAuthClientInput = z.infer<typeof createOAuthClientInput>;
-
-interface CreateOidcResponse {
-  client: {
-    id: string;
-    client_id: string;
-    name: string;
-    type: string;
-  };
-  client_secret: string;
-  warning: string;
-}
 
 export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
   name: "create_oauth_client",
@@ -44,12 +32,8 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
   }),
   auditLabel: "qeetai.create_oauth_client",
   async run(ctx, input) {
-    const res = await api<CreateOidcResponse>("/v1/oidc/clients", {
-      method: "POST",
-      body: { tenant_id: ctx.tenantId, ...input },
-      signal: ctx.signal,
-    });
-    ctx.queryClient.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
+    const res = await createOidcClient(ctx.tenantId, input, ctx.signal);
+    ctx.queryClient.invalidateQueries({ queryKey: authKeys.oidcClients(ctx.tenantId) });
 
     // The secret goes only to sensitiveArtifact, so it never reaches the model.
     return {
@@ -76,11 +60,6 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
 const rotateOAuthClientSecretInput = z.object({ client_id: z.string() });
 type RotateOAuthClientSecretInput = z.infer<typeof rotateOAuthClientSecretInput>;
 
-interface RotateSecretResponse {
-  client_secret: string;
-  warning: string;
-}
-
 export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecretInput> = {
   name: "rotate_oauth_client_secret",
   category: "credentials",
@@ -101,14 +80,8 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
   }),
   auditLabel: "qeetai.rotate_oauth_client_secret",
   async run(ctx, input) {
-    const res = await api<RotateSecretResponse>(
-      `/v1/tenants/${ctx.tenantId}/oidc/clients/${input.client_id}/rotate-secret`,
-      {
-        method: "POST",
-        signal: ctx.signal,
-      },
-    );
-    ctx.queryClient.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
+    const res = await rotateOidcClientSecret(ctx.tenantId, input.client_id, ctx.signal);
+    ctx.queryClient.invalidateQueries({ queryKey: authKeys.oidcClients(ctx.tenantId) });
 
     // The new secret goes only to sensitiveArtifact, so it never reaches the model.
     return {

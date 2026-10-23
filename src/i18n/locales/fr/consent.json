@@ -20,7 +20,6 @@
   },
   "revoke": {
     "title": "Révoquer cette autorisation ?",
-    "descriptionNamed": "Cela invalide immédiatement la chaîne de jeton d'actualisation pour <strong>{{email}}</strong> sur cette application. Il sera invité à re-consentir lors de la prochaine connexion.",
     "descriptionFallback": "Cela invalide la chaîne de jeton d'actualisation pour cette autorisation."
   }
 }

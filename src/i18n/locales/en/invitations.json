@@ -49,11 +49,11 @@
     "roleHelp": "Granted on acceptance — required for the user to become a member.",
     "cancel": "Cancel",
     "submit": "Send invite",
-    "submitting": "Sending…"
-  },
-  "toast": {
-    "sent": "Invitation sent",
-    "resent": "Invitation resent",
-    "revoked": "Invitation revoked"
+    "submitting": "Sending…",
+    "sendAction": "Send this invitation",
+    "validation": {
+      "email": "Enter a valid email address.",
+      "workspace": "Choose an organization."
+    }
   }
 }

@@ -46,6 +46,7 @@ export interface DecisionRecord {
   at: string;
   durationMs: number;
   reason?: string;
+  failed?: boolean; // the request itself failed, so there is no decision
   input: Record<string, unknown>;
   authzen?: AuthzenResult;
   abac?: AbacDecision;
@@ -268,7 +269,7 @@ export function useBatchSimulate() {
             allowed: false,
             at: new Date().toISOString(),
             durationMs: 0,
-            reason: "request failed",
+            failed: true,
             input: { subject, resource, action },
           };
         }

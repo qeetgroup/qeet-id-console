@@ -6,6 +6,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
+import { orgKeys } from "./keys";
+
 export interface TenantDomain {
   id: string;
   domain: string;
@@ -42,12 +44,10 @@ export interface LoginDomainStatus {
   records: DNSRecord[];
 }
 
-const KEY = ["domains"];
-
 export function useDomains(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: orgKeys.domains(tenantId),
     queryFn: () => api<{ items: TenantDomain[] }>(`/v1/tenants/${tenantId}/domains`),
     enabled: !!tenantId && enabled,
   });
@@ -62,7 +62,7 @@ export function useAddDomain() {
         method: "POST",
         body: { domain },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
     meta: { successMessage: "Domain added" },
   });
 }
@@ -75,7 +75,7 @@ export function useVerifyDomain() {
       api<TenantDomain>(`/v1/tenants/${tenantId}/domains/${id}/verify`, {
         method: "POST",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
     meta: { successMessage: "Domain verified" },
   });
 }
@@ -86,7 +86,7 @@ export function useRemoveDomain() {
   return useMutation({
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/domains/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
     meta: { successMessage: "Domain removed" },
   });
 }
@@ -107,7 +107,7 @@ export function useUpdateDomainSettings() {
         body,
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
     meta: { successMessage: "Domain updated" },
   });
 }
@@ -116,7 +116,7 @@ export function useUpdateDomainSettings() {
 export function useLoginDomain(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "login", tenantId],
+    queryKey: orgKeys.loginDomain(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<LoginDomainStatus>(`/v1/tenants/${tenantId}/login-domain`),
   });

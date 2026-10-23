@@ -44,7 +44,8 @@ import {
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import { LogoField, type LogoStatus } from "@/shared/components/logo-field";
-import { BRANDING_KEY, saveBranding, useBranding } from "../api/branding";
+import { saveBranding, useBranding } from "../api/branding";
+import { brandingKeys } from "../api/keys";
 import {
   BRANDING_COLORS,
   type Branding,
@@ -57,6 +58,7 @@ import {
   validateBranding,
 } from "../branding-model";
 import { BrandingPreview } from "./branding-preview";
+import { orgKeys } from "@/modules/organizations";
 
 const PANEL =
   "min-w-0 rounded-lg border border-border/70 bg-card/90 p-3.5 shadow-xs dark:bg-card/70 dark:shadow-none";
@@ -141,7 +143,7 @@ export function BrandingSettingsPage({
       onSave={async (input) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("branding.footer.save"),
+          actionLabel: t("branding.footer.save").toLowerCase(),
           run: () => {
             if (!tenantId || active.current?.tenantId !== tenantId || !active.current.canWrite)
               throw new SensitiveActionCancelled();
@@ -149,10 +151,10 @@ export function BrandingSettingsPage({
           },
         });
         if (!result) throw new SensitiveActionCancelled();
-        queryClient.setQueryData([...BRANDING_KEY, tenantId], result);
+        queryClient.setQueryData(brandingKeys.tenant(tenantId), result);
         await Promise.all([
-          queryClient.invalidateQueries({ queryKey: [...BRANDING_KEY, tenantId] }),
-          queryClient.invalidateQueries({ queryKey: ["domains", "login", tenantId] }),
+          queryClient.invalidateQueries({ queryKey: brandingKeys.tenant(tenantId) }),
+          queryClient.invalidateQueries({ queryKey: orgKeys.loginDomain(tenantId) }),
         ]);
         return result;
       }}

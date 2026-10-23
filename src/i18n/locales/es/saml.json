@@ -25,9 +25,7 @@
     "actions": "Acciones"
   },
   "delete": {
-    "title": "¿Eliminar este proveedor de servicios?",
-    "descriptionNamed": "<strong>{{name}}</strong> ya no aceptará SSO de este IdP. No se puede deshacer.",
-    "descriptionFallback": "Ya no aceptará SSO de este IdP."
+    "title": "¿Eliminar este proveedor de servicios?"
   },
   "form": {
     "addTitle": "Agregar proveedor de servicios",

@@ -25,9 +25,7 @@
     "actions": "Aktionen"
   },
   "delete": {
-    "title": "Diesen Service-Provider entfernen?",
-    "descriptionNamed": "<strong>{{name}}</strong> wird SSO von diesem IdP nicht mehr akzeptieren. Dies kann nicht rückgängig gemacht werden.",
-    "descriptionFallback": "Er wird SSO von diesem IdP nicht mehr akzeptieren."
+    "title": "Diesen Service-Provider entfernen?"
   },
   "form": {
     "addTitle": "Service-Provider hinzufügen",

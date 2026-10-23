@@ -35,8 +35,6 @@
     "roleHeader": "Rolle",
     "grantedHeader": "Gewährt",
     "actionsHeader": "Aktionen",
-    "revokeTitle": "Diese Rolle aus der Gruppe entfernen?",
-    "revokeDescriptionNamed": "Mitglieder verlieren die von <strong>{{name}}</strong> gewährten Berechtigungen, es sei denn, sie halten sie über eine andere Gruppe oder eine direkte Zuweisung.",
-    "revokeDescriptionFallback": "Mitglieder verlieren die Berechtigungen dieser Rolle."
+    "revokeTitle": "Diese Rolle aus der Gruppe entfernen?"
   }
 }

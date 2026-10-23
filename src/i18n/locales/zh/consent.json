@@ -20,7 +20,6 @@
   },
   "revoke": {
     "title": "撤销此授权？",
-    "descriptionNamed": "这将立即使此应用程序上 <strong>{{email}}</strong> 的刷新令牌链失效。他们在下次登录时将被要求重新授权。",
     "descriptionFallback": "这将使此授权的刷新令牌链失效。"
   }
 }

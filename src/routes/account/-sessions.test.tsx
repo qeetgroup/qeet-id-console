@@ -10,7 +10,12 @@ vi.mock("@/platform/auth/session", () => ({
   useSessionId: () => "current",
   useUserId: () => "user-1",
 }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+vi.mock("@/platform/security/capability-provider", () => ({
+  useCapabilities: () => ({ state: "ready", can: () => true }),
+}));
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() },
+}));
 const navigate = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-router")>()),
@@ -21,6 +26,7 @@ import { toast } from "sonner";
 import type { Session } from "@/modules/authentication";
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./sessions";
 
 const SessionsPage = Route.options.component as () => React.JSX.Element;
@@ -58,6 +64,7 @@ beforeEach(() => {
     if (path === "/v1/auth/sessions/revoke-others" && options?.method === "POST")
       return revokeOthers();
     if (path === "/v1/auth/sessions/revoke-all" && options?.method === "POST") return revokeAll();
+    if (path.startsWith("/v1/auth/sessions/") && options?.method === "DELETE") return undefined;
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });
   vi.mocked(toast.success).mockReset();
@@ -73,7 +80,9 @@ function renderPage() {
   });
   render(
     <QueryClientProvider client={client}>
-      <SessionsPage />
+      <SensitiveActionProvider>
+        <SessionsPage />
+      </SensitiveActionProvider>
     </QueryClientProvider>,
   );
 }
@@ -170,5 +179,35 @@ describe("Account › Sessions › sign out everywhere", () => {
     expect(toast.success).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
     expect(JSON.stringify(vi.mocked(toast.error).mock.calls)).not.toContain("boom");
+  });
+});
+
+// Opens the confirmation for revoking the session at `row` and returns its dialog.
+async function openRevokeConfirmation(row: number): Promise<HTMLElement> {
+  const revoke = (await screen.findAllByRole("button", { name: /^revoke$/i }))[row];
+  if (!revoke) throw new Error("Revoke button is missing");
+  fireEvent.click(revoke);
+  return screen.findByRole("alertdialog");
+}
+
+describe("Account › Sessions › revoke one session", () => {
+  it("asks for confirmation before revoking the session", async () => {
+    renderPage();
+    const dialog = await openRevokeConfirmation(1);
+
+    expect(within(dialog).getByText("Revoke this session?")).toBeTruthy();
+    expect(requests()).not.toContain("DELETE /v1/auth/sessions/other-1");
+    fireEvent.click(within(dialog).getByRole("button", { name: /^revoke$/i }));
+
+    await waitFor(() => expect(requests()).toContain("DELETE /v1/auth/sessions/other-1"));
+  });
+
+  it("changes nothing when the confirmation is cancelled", async () => {
+    renderPage();
+    const dialog = await openRevokeConfirmation(1);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    expect(requests().filter((r) => !r.startsWith("GET "))).toEqual([]);
   });
 });

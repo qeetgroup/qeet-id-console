@@ -3,7 +3,7 @@
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
-import { USER_KEYS, type User } from "@/modules/users";
+import { type User, userKeys } from "@/modules/users";
 import type { ToolDefinition } from "../types/tool.types";
 
 const searchUsersInput = z.object({
@@ -94,7 +94,7 @@ export const createUserTool: ToolDefinition<CreateUserInput> = {
         signal: ctx.signal,
       });
     }
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.all });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
     return {
       ok: true,
       summary: `Created user ${user.email} (id: ${user.id})${role_id ? " and assigned the requested role" : ""}.`,
@@ -136,8 +136,7 @@ export const updateUserTool: ToolDefinition<UpdateUserInput> = {
       body: { display_name: input.name ?? null },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.all });
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.detail(input.user_id) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
     return {
       ok: true,
       summary: `Updated display name for user ${input.user_id}.`,
@@ -174,8 +173,7 @@ export const disableUserTool: ToolDefinition<DisableUserInput> = {
       body: { status: "suspended" },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.all });
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.detail(input.user_id) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been suspended and can no longer sign in.`,
@@ -211,8 +209,7 @@ export const enableUserTool: ToolDefinition<EnableUserInput> = {
       body: { status: "active" },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.all });
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.detail(input.user_id) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been re-activated and can sign in again.`,
@@ -248,7 +245,7 @@ export const deleteUserTool: ToolDefinition<DeleteUserInput> = {
       method: "DELETE",
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.all });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been deleted.`,
@@ -284,7 +281,7 @@ export const resetUserMfaTool: ToolDefinition<ResetUserMfaInput> = {
       method: "DELETE",
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: USER_KEYS.detail(input.user_id) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.user(ctx.tenantId, input.user_id) });
     return {
       ok: true,
       summary: `MFA has been reset for user ${input.user_id}. They will be prompted to re-enroll.`,

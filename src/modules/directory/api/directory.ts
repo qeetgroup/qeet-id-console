@@ -5,6 +5,7 @@ import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import type { DirectoryConnection } from "../directory-model";
+import { directoryKeys } from "./keys";
 
 const connectionSchema = z.object({
   id: z.string(),
@@ -24,12 +25,6 @@ const connectionSchema = z.object({
 });
 
 const connectionsSchema = z.object({ items: z.array(connectionSchema) });
-
-export const DIRECTORY_QUERY_KEYS = {
-  connections: (tenantId: string | null) => ["directory", "connections", tenantId] as const,
-  events: (tenantId: string | null, filters: EventFilters) =>
-    ["directory", "events", tenantId, filters] as const,
-};
 
 export type EventFilters = {
   days: number;
@@ -136,7 +131,8 @@ const mappingsSchema = z.object({
 const mappingPreviewSchema = z.object({
   profile: z.record(z.string(), z.unknown()),
   values: z.record(z.string(), z.unknown()),
-  issues: z.array(z.object({ mapping_id: z.string(), field: z.string(), message: z.string() })),
+  // Each issue's `message` is backend text, so the schema drops it; the code carries the meaning.
+  issues: z.array(z.object({ mapping_id: z.string(), field: z.string(), code: z.string() })),
   valid: z.boolean(),
 });
 export type DirectoryMapping = z.infer<typeof mappingSchema>;
@@ -155,7 +151,7 @@ export function useDirectoryMappings(connectionId: string) {
   const tenantId = useTenantId();
   const access = useCapabilities();
   return useQuery({
-    queryKey: ["directory", "mappings", tenantId, connectionId],
+    queryKey: directoryKeys.mappings(tenantId, connectionId),
     queryFn: () => api(mappingPath(tenantId, connectionId), { schema: mappingsSchema }),
     enabled: !!tenantId && !!connectionId && access.can("connection.read"),
   });
@@ -175,8 +171,9 @@ export function useSaveDirectoryMapping(connectionId: string) {
     },
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ["directory", "mappings", tenantId, connectionId],
+        queryKey: directoryKeys.mappings(tenantId, connectionId),
       }),
+    meta: { successMessage: "Mapping saved", silentError: true }, // the page shows the error
   });
 }
 
@@ -190,8 +187,9 @@ export function useDeleteDirectoryMappings(connectionId: string) {
     },
     onSettled: () =>
       queryClient.invalidateQueries({
-        queryKey: ["directory", "mappings", tenantId, connectionId],
+        queryKey: directoryKeys.mappings(tenantId, connectionId),
       }),
+    meta: { successMessage: "Mappings deleted", silentError: true }, // the page shows the error
   });
 }
 
@@ -204,6 +202,7 @@ export function usePreviewDirectoryMappings(connectionId: string) {
         body: { source },
         schema: mappingPreviewSchema,
       }),
+    meta: { silent: true }, // the page shows the result and any error
   });
 }
 
@@ -211,7 +210,7 @@ export function useDirectoryErrors(filters: ErrorFilters) {
   const tenantId = useTenantId();
   const access = useCapabilities();
   return useQuery({
-    queryKey: ["directory", "errors", tenantId, filters],
+    queryKey: directoryKeys.errors(tenantId, filters),
     queryFn: () =>
       api(`/v1/tenants/${tenantId}/directory/errors`, { query: filters, schema: errorPageSchema }),
     enabled: !!tenantId && access.can("connection.read"),
@@ -243,7 +242,7 @@ export function useDirectoryErrorAction() {
       }
       return { succeeded, total: events.length };
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["directory"] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
   });
 }
 
@@ -266,7 +265,7 @@ export function useDirectoryEvents(filters: EventFilters, enabled = true) {
   const tenantId = useTenantId();
   const access = useCapabilities();
   return useQuery({
-    queryKey: DIRECTORY_QUERY_KEYS.events(tenantId, filters),
+    queryKey: directoryKeys.events(tenantId, filters),
     queryFn: () =>
       api(`/v1/tenants/${tenantId}/directory/activity`, {
         query: filters,
@@ -294,11 +293,9 @@ export async function fetchDirectoryExport(tenantId: string, filters: EventFilte
 
 export function useCreateDirectoryAlert() {
   const tenantId = useTenantId();
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: { name: string; connection_id: string | null; threshold: number }) =>
       api(`/v1/tenants/${tenantId}/directory/alerts`, { method: "POST", body }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["directory", "alerts", tenantId] }),
     meta: { successMessage: "Directory alert created" },
   });
 }
@@ -307,7 +304,7 @@ export function useDirectoryConnections() {
   const tenantId = useTenantId();
   const access = useCapabilities();
   return useQuery({
-    queryKey: DIRECTORY_QUERY_KEYS.connections(tenantId),
+    queryKey: directoryKeys.connections(tenantId),
     queryFn: () =>
       api(`/v1/tenants/${tenantId}/directory/connections`, { schema: connectionsSchema }),
     select: (response): DirectoryConnection[] =>

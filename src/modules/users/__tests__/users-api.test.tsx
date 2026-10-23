@@ -9,9 +9,13 @@ vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
 
 import { api } from "@/platform/api/client";
+import { userKeys } from "../api/keys";
 import {
-  USER_KEYS,
   useAssignRole,
+  useBulkImportUsers,
+  usePurgeUser,
+  useRestoreUser,
+  useSetUserPassword,
   useCreateUser,
   useDeleteUser,
   useResetUserMfa,
@@ -20,18 +24,20 @@ import {
   useUserStats,
   useUserTrends,
 } from "../api/users";
-import { USER360_KEYS } from "../api/user360";
 
 // Cache entries a mutation should, or should not, refresh.
-const USERS_LIST: QueryKey = ["users", "tenant-a", 25, 1];
-const USER_ONE: QueryKey = USER_KEYS.detail("user-1");
-const USER_TWO: QueryKey = USER_KEYS.detail("user-2");
+const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25, offset: 0 });
+const USER_ONE: QueryKey = userKeys.detail("tenant-a", "user-1");
+const USER_TWO: QueryKey = userKeys.detail("tenant-a", "user-2");
+const OTHER_TENANT: QueryKey = userKeys.list("tenant-b", { limit: 25, offset: 0 });
 
 function setup<T>(hook: () => T) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  for (const key of [USERS_LIST, USER_ONE, USER_TWO]) client.setQueryData(key, { seeded: true });
+  for (const key of [USERS_LIST, USER_ONE, USER_TWO, OTHER_TENANT]) {
+    client.setQueryData(key, { seeded: true });
+  }
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
@@ -268,7 +274,7 @@ describe("useResetUserMfa", () => {
   it("DELETEs the user's factors and refreshes every view of their MFA state", async () => {
     vi.mocked(api).mockResolvedValue({ message: "ok" });
     const { result, client } = setup(() => useResetUserMfa());
-    const posture = USER360_KEYS.security("user-1");
+    const posture = userKeys.view("tenant-a", "user-1", "security");
     client.setQueryData(posture, { seeded: true });
 
     await act(async () => {
@@ -309,5 +315,104 @@ describe("useAssignRole", () => {
 
     expect(api).not.toHaveBeenCalled();
     expect(invalidated(client, USERS_LIST)).toBe(false);
+  });
+});
+
+describe("tenant scoping", () => {
+  it("never refreshes another organization's users", async () => {
+    const { result, client } = setup(() => useDeleteUser());
+
+    await act(async () => {
+      await result.current.mutateAsync("user-1");
+    });
+
+    expect(invalidated(client, USERS_LIST)).toBe(true);
+    expect(invalidated(client, OTHER_TENANT)).toBe(false);
+  });
+});
+
+describe("useRestoreUser and usePurgeUser", () => {
+  it("restores a deleted user and refreshes the bin and the list", async () => {
+    const { result, client } = setup(() => useRestoreUser());
+    const bin = userKeys.deleted("tenant-a");
+    client.setQueryData(bin, { items: [] });
+
+    await act(async () => {
+      await result.current.mutateAsync("user-1");
+    });
+
+    expect(api).toHaveBeenCalledWith("/v1/users/user-1/restore", { method: "POST" });
+    expect(invalidated(client, bin)).toBe(true);
+    expect(invalidated(client, USERS_LIST)).toBe(true);
+  });
+
+  it("purges a deleted user and refreshes the bin only", async () => {
+    const { result, client } = setup(() => usePurgeUser());
+    const bin = userKeys.deleted("tenant-a");
+    client.setQueryData(bin, { items: [] });
+
+    await act(async () => {
+      await result.current.mutateAsync("user-1");
+    });
+
+    expect(api).toHaveBeenCalledWith("/v1/users/user-1/purge", { method: "DELETE" });
+    expect(invalidated(client, bin)).toBe(true);
+    expect(invalidated(client, USERS_LIST)).toBe(false);
+  });
+});
+
+describe("useSetUserPassword", () => {
+  it("POSTs the new password for that user", async () => {
+    const { result } = setup(() => useSetUserPassword());
+
+    await act(async () => {
+      await result.current.mutateAsync({ userId: "user-1", password: "correct horse" });
+    });
+
+    expect(api).toHaveBeenCalledWith("/v1/users/user-1/password", {
+      method: "POST",
+      body: { password: "correct horse" },
+    });
+  });
+});
+
+describe("useBulkImportUsers", () => {
+  it("sends only the user fields and names each refused row by its line in the file", async () => {
+    vi.mocked(api).mockResolvedValue({
+      succeeded: 1,
+      failed: 1,
+      errors: [
+        {
+          line: 2,
+          email: "b@example.test",
+          code: "auth.email_exists",
+          field: "email",
+          message: "backend text",
+        },
+      ],
+    });
+    const { result, client } = setup(() => useBulkImportUsers());
+
+    let outcome: unknown;
+    await act(async () => {
+      outcome = await result.current.mutateAsync([
+        { email: "a@example.test", line: 4 },
+        { email: "b@example.test", display_name: "Bea", line: 9 },
+      ]);
+    });
+
+    expect(api).toHaveBeenCalledWith("/v1/users/bulk", {
+      method: "POST",
+      body: {
+        tenant_id: "tenant-a",
+        users: [{ email: "a@example.test" }, { email: "b@example.test", display_name: "Bea" }],
+      },
+    });
+    expect(outcome).toEqual({
+      succeeded: 1,
+      failed: 1,
+      errors: [{ line: 9, email: "b@example.test", code: "auth.email_exists", field: "email" }],
+    });
+    expect(invalidated(client, USERS_LIST)).toBe(true);
   });
 });

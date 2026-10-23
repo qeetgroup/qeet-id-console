@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+
+import { userKeys } from "./keys";
 
 /** The full user record from GET /v1/users/{id}. */
 export interface UserDetail {
@@ -34,13 +37,16 @@ export interface SecuritySummary {
   distinct_devices: number;
 }
 
-export interface UserSession {
-  id: string;
-  ip?: string | null;
-  user_agent?: string | null;
-  created_at: string;
-  last_seen_at: string;
-}
+const userSessionSchema = z.object({
+  id: z.string(),
+  ip: z.string().nullable(),
+  user_agent: z.string().nullable(),
+  created_at: z.string(),
+  last_seen_at: z.string(),
+});
+export type UserSession = z.infer<typeof userSessionSchema>;
+
+const userSessionsSchema = z.object({ items: z.array(userSessionSchema) });
 
 export interface RoleInfo {
   id: string;
@@ -81,19 +87,9 @@ export interface SocialIdentity {
   linked_at: string;
 }
 
-export const USER360_KEYS = {
-  security: (id: string) => ["user360", "security", id] as const,
-  sessions: (id: string) => ["user360", "sessions", id] as const,
-  access: (id: string) => ["user360", "access", id] as const,
-  permissions: (id: string, tenantId: string | null) =>
-    ["user360", "permissions", id, tenantId] as const,
-  identities: (id: string) => ["user360", "identities", id] as const,
-  recentActivity: (id: string) => ["user360", "recent-activity", id] as const,
-};
-
 export function useUserSecurity(userId: string, enabled = true) {
   return useQuery({
-    queryKey: USER360_KEYS.security(userId),
+    queryKey: userKeys.view(useTenantId(), userId, "security"),
     queryFn: () => api<SecuritySummary>(`/v1/users/${userId}/security`),
     enabled: enabled && !!userId,
     staleTime: 30_000,
@@ -102,8 +98,8 @@ export function useUserSecurity(userId: string, enabled = true) {
 
 export function useUserSessions(userId: string, enabled = true) {
   return useQuery({
-    queryKey: USER360_KEYS.sessions(userId),
-    queryFn: () => api<{ items: UserSession[] }>(`/v1/users/${userId}/sessions`),
+    queryKey: userKeys.view(useTenantId(), userId, "sessions"),
+    queryFn: () => api(`/v1/users/${userId}/sessions`, { schema: userSessionsSchema }),
     enabled: enabled && !!userId,
     staleTime: 15_000,
   });
@@ -111,7 +107,7 @@ export function useUserSessions(userId: string, enabled = true) {
 
 export function useUserAccess(userId: string, enabled = true) {
   return useQuery({
-    queryKey: USER360_KEYS.access(userId),
+    queryKey: userKeys.view(useTenantId(), userId, "access"),
     queryFn: () => api<AccessSummary>(`/v1/users/${userId}/access`),
     enabled: enabled && !!userId,
     staleTime: 30_000,
@@ -125,7 +121,7 @@ export function useUserAccess(userId: string, enabled = true) {
 export function useUserPermissions(userId: string) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: USER360_KEYS.permissions(userId, tenantId),
+    queryKey: userKeys.view(tenantId, userId, "permissions"),
     queryFn: async (): Promise<{ permissions: string[] }> => {
       try {
         return await api<{ permissions: string[] }>(
@@ -146,7 +142,7 @@ export function useUserPermissions(userId: string) {
 /** Fetches the user's linked social identities; a 403 or 404 yields an empty list. */
 export function useUserSocialIdentities(userId: string) {
   return useQuery({
-    queryKey: USER360_KEYS.identities(userId),
+    queryKey: userKeys.view(useTenantId(), userId, "identities"),
     queryFn: async (): Promise<{ items: SocialIdentity[] }> => {
       try {
         return await api<{ items: SocialIdentity[] }>(`/v1/users/${userId}/social/identities`);
@@ -168,7 +164,7 @@ export function useUserSocialIdentities(userId: string) {
  */
 export function useUserRecentActivity(userId: string, limit = 6, enabled = true) {
   return useQuery({
-    queryKey: [...USER360_KEYS.recentActivity(userId), limit],
+    queryKey: [...userKeys.view(useTenantId(), userId, "recent-activity"), limit],
     queryFn: async (): Promise<{ events: RecentActivityEvent[] }> => {
       try {
         return await api<{ events: RecentActivityEvent[] }>("/v1/activity", {
@@ -203,13 +199,14 @@ export interface RecentActivityEvent {
 
 /** Signs the user out everywhere by revoking all their live sessions; needs user.write. */
 export function useRevokeAllUserSessions() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) =>
       api<{ revoked: number }>(`/v1/users/${userId}/sessions/revoke-all`, { method: "POST" }),
     onSuccess: (_res, userId) => {
-      qc.invalidateQueries({ queryKey: USER360_KEYS.sessions(userId) });
-      qc.invalidateQueries({ queryKey: USER360_KEYS.security(userId) });
+      void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "sessions") });
+      void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "security") });
     },
     meta: { successMessage: "All sessions revoked" },
   });
@@ -217,6 +214,7 @@ export function useRevokeAllUserSessions() {
 
 /** Sets whether this user must use MFA; needs user.write. */
 export function useSetMfaRequired() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, required }: { userId: string; required: boolean }) =>
@@ -225,7 +223,7 @@ export function useSetMfaRequired() {
         body: { required },
       }),
     onSuccess: (_res, { userId }) => {
-      qc.invalidateQueries({ queryKey: USER360_KEYS.security(userId) });
+      void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "security") });
     },
     meta: { successMessage: "MFA requirement updated" },
   });

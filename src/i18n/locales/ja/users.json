@@ -83,7 +83,6 @@
     "newPasswordHelp": "最低8文字。",
     "confirmPassword": "新しいパスワードを確認",
     "mismatch": "パスワードが一致しません",
-    "success": "パスワードを更新しました。",
     "submit": "パスワードを更新"
   },
   "toast": {

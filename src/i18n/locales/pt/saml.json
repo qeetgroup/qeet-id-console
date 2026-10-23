@@ -25,9 +25,7 @@
     "actions": "Ações"
   },
   "delete": {
-    "title": "Remover este provedor de serviço?",
-    "descriptionNamed": "<strong>{{name}}</strong> não aceitará mais SSO deste IdP. Esta ação não pode ser desfeita.",
-    "descriptionFallback": "Ele não aceitará mais SSO deste IdP."
+    "title": "Remover este provedor de serviço?"
   },
   "form": {
     "addTitle": "Adicionar provedor de serviço",

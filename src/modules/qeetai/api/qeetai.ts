@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { qeetaiKeys } from "./keys";
 
 export interface QeetAIStatus {
   configured: boolean;
@@ -52,15 +53,13 @@ export interface ServerConversation {
   updated_at: string;
 }
 
-export const QEETAI_STATUS_KEY = ["qeetai", "status"] as const;
-
 /**
  * Returns whether Qeet AI is configured. Cached for minutes, never retried and silent: an
  * unconfigured deployment is a normal state, not an error to toast.
  */
 export function useQeetAIStatus() {
   return useQuery({
-    queryKey: QEETAI_STATUS_KEY,
+    queryKey: qeetaiKeys.status(),
     queryFn: ({ signal }) => api<QeetAIStatus>("/v1/qeetai/status", { signal }),
     staleTime: 5 * 60_000,
     retry: false,
@@ -78,13 +77,11 @@ export function createQeetAIConversation(title?: string): Promise<ServerConversa
 
 // The tenant's own provider key (BYOK): the server requires secret.write.
 
-export const QEETAI_PROVIDER_CONFIG_KEY = ["qeetai", "provider-config"] as const;
-
 /** Returns the tenant's effective provider config, with the key masked. */
 export function useQeetAIProviderConfig(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...QEETAI_PROVIDER_CONFIG_KEY, tenantId],
+    queryKey: qeetaiKeys.providerConfig(tenantId),
     queryFn: ({ signal }) => api<QeetAIProviderConfig>("/v1/qeetai/provider-config", { signal }),
     enabled: !!tenantId && enabled,
     staleTime: 30_000,

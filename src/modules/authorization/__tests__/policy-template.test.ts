@@ -60,28 +60,38 @@ describe("policy template catalogue", () => {
     }
   });
 
-  it("marks the RBAC/ReBAC and attribute-comparison templates as not persistable as ABAC", () => {
+  it("marks only the RBAC/ReBAC templates as not persistable as ABAC", () => {
     const notReducible = POLICY_TEMPLATES.filter((t) => !isReducibleToAbac(t.build())).map(
       (t) => t.id,
     );
     expect(notReducible.sort()).toEqual([
       "baseline-owner",
-      "finance-sod",
       "github-repo-admin",
-      "gov-clearance",
-      "healthcare-phi",
       "jira-project-lead",
-      "salesforce-region",
       "slack-channel-owner",
     ]);
   });
 
-  it.each(["salesforce-region", "healthcare-phi", "finance-sod", "gov-clearance"])(
-    "does not offer %s, which compares two attributes, as a saveable ABAC policy",
-    (id) => {
-      expect(abacSaveBlocker(build(id))).toMatch(/^Compares two attributes/);
-    },
-  );
+  it.each([
+    ["salesforce-region", { attr: "subject.region", op: "eq", value: { attr: "resource.region" } }],
+    [
+      "healthcare-phi",
+      { attr: "subject.care_team_ids", op: "contains", value: { attr: "resource.patient_id" } },
+    ],
+    ["finance-sod", { attr: "subject.id", op: "eq", value: { attr: "resource.created_by" } }],
+    [
+      "gov-clearance",
+      {
+        attr: "subject.clearance_level",
+        op: "gte",
+        value: { attr: "resource.classification_level" },
+      },
+    ],
+  ])("saves %s, comparing two attributes, as an attribute reference", (id, leaf) => {
+    const t = build(id);
+    expect(abacSaveBlocker(t)).toBeNull();
+    expect(JSON.stringify(toAbacInput(t).condition)).toContain(JSON.stringify(leaf));
+  });
 
   it("makes exactly the guard-rail templates deny policies", () => {
     const deny = POLICY_TEMPLATES.filter((t) => t.build().effect === "deny").map((t) => t.id);

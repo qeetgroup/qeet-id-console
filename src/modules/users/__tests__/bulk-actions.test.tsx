@@ -5,7 +5,12 @@ import { toast } from "sonner";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
+const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
+vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/security/capability-provider", () => ({
+  useCapabilities: () => ({ state: "ready", can: () => true }),
+}));
 vi.mock("@/modules/authorization", () => ({
   useRoles: () => ({
     data: {
@@ -18,12 +23,14 @@ vi.mock("@/modules/authorization", () => ({
 }));
 
 import { api } from "@/platform/api/client";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import * as dataExport from "@/shared/utils/data-export";
+import { userKeys } from "../api/keys";
 import type { User } from "../api/users";
-import { BulkActions } from "../bulk-actions";
+import { BulkActions } from "../components/bulk-actions";
 
-const USERS_LIST: QueryKey = ["users", "tenant-a", 25, 1];
-const USER_STATS: QueryKey = ["user-stats", "tenant-a"];
+const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25, offset: 0 });
+const USER_STATS: QueryKey = userKeys.stats("tenant-a");
 
 function user(id: string, overrides: Partial<User> = {}): User {
   return {
@@ -41,6 +48,7 @@ function users(count: number) {
 }
 
 function renderBulk(selected: User[], tenantId: string | null = "tenant-a") {
+  context.tenantId = tenantId;
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -48,7 +56,9 @@ function renderBulk(selected: User[], tenantId: string | null = "tenant-a") {
   const onDone = vi.fn();
   render(
     <QueryClientProvider client={client}>
-      <BulkActions selectedUsers={selected} tenantId={tenantId} onDone={onDone} />
+      <SensitiveActionProvider>
+        <BulkActions selectedUsers={selected} onDone={onDone} />
+      </SensitiveActionProvider>
     </QueryClientProvider>,
   );
   return { client, onDone };
@@ -205,13 +215,15 @@ describe("BulkActions", () => {
     expect(success).toHaveBeenCalledWith("Updated 2 users");
   });
 
-  it("assigns no role at all when no tenant is selected", async () => {
+  it("offers no role to assign when no tenant is selected", async () => {
     const { onDone } = renderBulk(users(2), null);
 
     fireEvent.click(screen.getByRole("button", { name: "Assign role" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: "Viewer" }));
+    const viewer = await screen.findByRole("menuitem", { name: "Viewer" });
+    expect(viewer.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(viewer);
 
-    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
+    expect(onDone).not.toHaveBeenCalled();
     expect(actionCalls()).toEqual([]);
   });
 

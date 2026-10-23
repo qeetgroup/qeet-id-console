@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 import { fetchTimelinePage } from "./timeline-history";
 import type { TimelineFilters } from "./timeline-store";
+import { useTenantId } from "@/platform/auth/session";
+import { timelineKeys } from "./api/keys";
 
 const DEBOUNCE_MS = 400;
 
@@ -20,9 +22,10 @@ export function useIdentityTimeline(userId: string, filters: TimelineFilters, en
   }, [filters.q, debouncedQ]);
 
   const effectiveFilters: TimelineFilters = { ...filters, q: debouncedQ };
+  const tenantId = useTenantId();
 
   return useInfiniteQuery({
-    queryKey: ["identity-timeline", userId, effectiveFilters] as const,
+    queryKey: timelineKeys.person(tenantId, userId, effectiveFilters),
     queryFn: ({ pageParam }: { pageParam: string }) =>
       fetchTimelinePage(userId, effectiveFilters, pageParam),
     initialPageParam: "",

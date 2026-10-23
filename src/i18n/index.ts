@@ -91,10 +91,18 @@ import zhSaml from "./locales/zh/saml.json";
 import zhSigningKeys from "./locales/zh/signing-keys.json";
 import zhUsers from "./locales/zh/users.json";
 
-// To add a locale, add `locales/<lng>/*.json` mirroring the `en` namespaces, then its code here
-// and its entry in `resources`; the switcher picks it up.
+// Every locale with translation files. To add one, add `locales/<lng>/*.json` mirroring the `en`
+// namespaces, then its code here and its entry in `resources`.
 export const SUPPORTED_LANGUAGES = ["en", "hi", "fr", "de", "es", "pt", "ja", "zh"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
+/**
+ * The locales people can choose. One is offered only once it translates every `en` key (a test
+ * holds this), so the console never shows a mix of languages; a saved or detected choice outside
+ * the list resolves to English.
+ */
+export const OFFERED_LANGUAGES = ["en"] as const satisfies readonly SupportedLanguage[];
+export type OfferedLanguage = (typeof OFFERED_LANGUAGES)[number];
 
 export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   en: "English",
@@ -244,7 +252,7 @@ i18n
   .init({
     resources,
     fallbackLng: "en",
-    supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
+    supportedLngs: [...OFFERED_LANGUAGES],
     defaultNS: "common",
     interpolation: {
       escapeValue: false, // React already escapes interpolated values

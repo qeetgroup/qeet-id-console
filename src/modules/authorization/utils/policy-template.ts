@@ -1,11 +1,15 @@
 // Static starter templates for the Policy Builder; there is no template backend. A template the
-// engine can't store, such as one comparing two attributes, opens preview-only (abacSaveBlocker).
+// engine can't store, one with an RBAC or ReBAC block, opens preview-only (abacSaveBlocker).
 
 import { type CondNode, nid, type Operator } from "../api/abac";
 import type { PolicyDoc } from "./policy-codegen";
 
 function leaf(attr: string, op: Operator, value = ""): CondNode {
   return { id: nid("leaf"), kind: "leaf", attr, op, value };
+}
+// Compares `attr` with another attribute rather than a literal.
+function compare(attr: string, op: Operator, other: string): CondNode {
+  return { id: nid("leaf"), kind: "leaf", attr, op, value: other, ref: true };
 }
 function all(children: CondNode[]): CondNode {
   return { id: nid("grp"), kind: "group", combinator: "all", children };
@@ -163,7 +167,7 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
         description: "Reps read accounts within their own region.",
         resourceType: "account",
         action: "read",
-        condition: all([leaf("subject.region", "eq", "resource.region")]),
+        condition: all([compare("subject.region", "eq", "resource.region")]),
         priority: 30,
       }),
   },
@@ -182,7 +186,7 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
         action: "read",
         condition: all([
           leaf("subject.role", "eq", "clinician"),
-          leaf("subject.care_team_ids", "contains", "resource.patient_id"),
+          compare("subject.care_team_ids", "contains", "resource.patient_id"),
         ]),
         priority: 70,
       }),
@@ -201,7 +205,7 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
         effect: "deny",
         resourceType: "payment",
         action: "approve",
-        condition: all([leaf("subject.id", "eq", "resource.created_by")]),
+        condition: all([compare("subject.id", "eq", "resource.created_by")]),
         priority: 95,
       }),
   },
@@ -218,7 +222,9 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
         description: "Subjects access documents at or below their clearance level.",
         resourceType: "document",
         action: "read",
-        condition: all([leaf("subject.clearance_level", "gte", "resource.classification_level")]),
+        condition: all([
+          compare("subject.clearance_level", "gte", "resource.classification_level"),
+        ]),
         priority: 80,
       }),
   },

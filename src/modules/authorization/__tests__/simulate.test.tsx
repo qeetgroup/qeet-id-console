@@ -400,7 +400,7 @@ describe("useBatchSimulate", () => {
       engine: "authzen",
       allowed: false,
       durationMs: 0,
-      reason: "request failed",
+      failed: true,
       input: { subject: { type: "user", id: "b-err" }, resource: RESOURCE, action: "read" },
     });
     expect(failed?.authzen).toBeUndefined();

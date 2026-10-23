@@ -13,11 +13,11 @@ import {
   ZapIcon,
 } from "@qeetrix/icons";
 
-import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useOAuthGrants, useOidcClients } from "@/modules/authentication";
+import { apiKeyQueries, servicePrincipalQueries } from "@/modules/developer";
 
 /** Scopes every OIDC deployment ships with; anything else a tenant defines is custom. */
 const STANDARD_SCOPES = new Set([
@@ -62,19 +62,9 @@ export function ApplicationsOverview({ description }: { description: string }) {
 
   const clientsQ = useOidcClients();
   const grantsQ = useOAuthGrants();
-  const machineQ = useQuery({
-    queryKey: ["service-principals", tenantId],
-    enabled: !!tenantId && access.can("apikey.read"),
-    queryFn: () => api<{ items: { id: string; created_at: string }[] }>("/v1/service-principals"),
-  });
-  const keysQ = useQuery({
-    queryKey: ["api-keys", tenantId],
-    enabled: !!tenantId && access.can("apikey.read"),
-    queryFn: () =>
-      api<{ items: { id: string; created_at: string; revoked_at?: string | null }[] }>(
-        "/v1/api-keys",
-      ),
-  });
+  const canReadKeys = !!tenantId && access.can("apikey.read");
+  const machineQ = useQuery({ ...servicePrincipalQueries.list(tenantId), enabled: canReadKeys });
+  const keysQ = useQuery({ ...apiKeyQueries.list(tenantId), enabled: canReadKeys });
 
   const clients = clientsQ.data?.items ?? [];
   const grants = grantsQ.data?.items ?? [];

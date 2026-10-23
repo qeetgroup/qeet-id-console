@@ -23,7 +23,8 @@ vi.mock("@/platform/security/capability-provider", () => ({
 
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
-import { QEETAI_PROVIDER_CONFIG_KEY, type QeetAIProviderConfig } from "../api/qeetai";
+import { qeetaiKeys } from "../api/keys";
+import type { QeetAIProviderConfig } from "../api/qeetai";
 import {
   ProviderSettingsView,
   type ProviderSettingsViewProps,
@@ -297,7 +298,7 @@ describe("Provider settings integration", () => {
         body: expect.objectContaining({ api_key: "fixture-key-not-for-cache" }),
       }),
     );
-    expect(client.getQueryData([...QEETAI_PROVIDER_CONFIG_KEY, "tenant-a"])).toEqual(savedConfig());
+    expect(client.getQueryData(qeetaiKeys.providerConfig("tenant-a"))).toEqual(savedConfig());
     const cachedData = client
       .getQueryCache()
       .getAll()
@@ -374,7 +375,7 @@ describe("Provider settings integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Remove key" }));
     await screen.findByText(/provider key has been removed/);
     expect(screen.getByText("Qeet-managed")).toBeTruthy();
-    expect(client.getQueryData([...QEETAI_PROVIDER_CONFIG_KEY, "tenant-a"])).toEqual(remoteConfig);
+    expect(client.getQueryData(qeetaiKeys.providerConfig("tenant-a"))).toEqual(remoteConfig);
     expect(screen.queryByText("Ends in test")).toBeNull();
   });
 

@@ -1,6 +1,5 @@
 import { ThemeProvider } from "@qeetrix/ui";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
@@ -8,6 +7,7 @@ import { Toaster } from "sonner";
 
 import { publicConfigScript } from "@/platform/config/api-base-url";
 
+import type { RouterContext } from "@/platform/query/query-client";
 import { queryDevtoolsPlugin } from "@/platform/query/query-devtools";
 
 import appCss from "../styles.css?url";
@@ -19,11 +19,7 @@ const DEVTOOLS_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEVT
 // paint is right; ThemeProvider alone would apply it after hydration, with a visible flash.
 const themeFlashScript = `(function(){try{var k="${THEME_STORAGE_KEY}";var t=localStorage.getItem(k);if(t!=="dark"&&t!=="light"&&t!=="system")t="system";var resolved=t==="system"?(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;var h=document.documentElement;h.classList.remove("light","dark");h.classList.add(resolved);h.style.colorScheme=resolved;}catch(e){}})();`;
 
-interface MyRouterContext {
-  queryClient: QueryClient;
-}
-
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },

@@ -1,8 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-export const ROLES_KEY = ["roles"] as const;
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authzKeys } from "./keys";
 
 export interface Permission {
   id: string;
@@ -15,23 +15,30 @@ export interface Role {
   tenant_id: string;
   name: string;
   description: string;
-  is_system: boolean;
+  is_system: boolean; // a built-in role, which can't be deleted
   created_at: string;
 }
 
-export function usePermissions() {
-  return useQuery({
-    queryKey: ["permissions"],
-    queryFn: () => api<{ items: Permission[] }>("/v1/permissions"),
-  });
-}
+/** Query definitions for role reads; `list` takes any tenant the caller belongs to. */
+export const roleQueries = {
+  list: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: authzKeys.roles(tenantId),
+      queryFn: () => api<{ items: Role[] }>(`/v1/tenants/${tenantId}/roles`),
+      enabled: !!tenantId,
+    }),
+};
 
 export function useRoles() {
+  return useQuery(roleQueries.list(useTenantId()));
+}
+
+/** The permissions a role can be granted. */
+export function usePermissions() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...ROLES_KEY, tenantId],
-    enabled: !!tenantId,
-    queryFn: () => api<{ items: Role[] }>(`/v1/tenants/${tenantId}/roles`),
+    queryKey: authzKeys.permissions(tenantId),
+    queryFn: () => api<{ items: Permission[] }>("/v1/permissions"),
   });
 }
 
@@ -43,35 +50,40 @@ export function useCreateRole() {
       if (!tenantId) throw new Error("No tenant selected");
       return api<Role>(`/v1/tenants/${tenantId}/roles`, { method: "POST", body });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ROLES_KEY }),
-    meta: { successMessage: "Role created" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.roles(tenantId) }),
+    meta: { successMessage: "Role created", silentError: true }, // the sheet shows it
   });
 }
 
 export function useRolePermissions(roleId: string | null) {
+  const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["role-permissions", roleId],
+    queryKey: authzKeys.rolePermissions(tenantId, roleId),
     enabled: !!roleId,
     queryFn: () => api<{ items: Permission[] }>(`/v1/roles/${roleId}/permissions`),
   });
 }
 
 export function useGrantPermission(roleId: string) {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (permId: string) =>
       api<void>(`/v1/roles/${roleId}/permissions/${permId}`, { method: "POST" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["role-permissions", roleId] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: authzKeys.rolePermissions(tenantId, roleId) }),
     meta: { successMessage: "Permission granted" },
   });
 }
 
 export function useRevokePermission(roleId: string) {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (permId: string) =>
       api<void>(`/v1/roles/${roleId}/permissions/${permId}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["role-permissions", roleId] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: authzKeys.rolePermissions(tenantId, roleId) }),
     meta: { successMessage: "Permission revoked" },
   });
 }

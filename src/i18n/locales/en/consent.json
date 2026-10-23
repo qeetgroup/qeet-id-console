@@ -20,7 +20,8 @@
   },
   "revoke": {
     "title": "Revoke this grant?",
-    "descriptionNamed": "This immediately invalidates the refresh-token chain for <strong>{{email}}</strong> on this application. They’ll be prompted to re-consent on next sign-in.",
-    "descriptionFallback": "This invalidates the refresh-token chain for this grant."
+    "descriptionFallback": "This invalidates the refresh-token chain for this grant.",
+    "confirmDescription": "This immediately invalidates the refresh-token chain for {{email}} on this application. They’ll be prompted to re-consent on next sign-in.",
+    "stepUp": "revoke this grant"
   }
 }

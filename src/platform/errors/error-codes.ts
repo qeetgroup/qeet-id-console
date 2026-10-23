@@ -58,6 +58,11 @@ export const ERROR_CODES = {
   MFA_DELIVERY_FAILED: "mfa.delivery_failed",
   // a risky sign-in that cannot be confirmed (no second factor, no verified email)
   AUTH_RISK_VERIFICATION_UNAVAILABLE: "auth.risk_verification_unavailable",
+  // Bulk user import: a whole batch refused. 422s, whose `validation` fallback names no fix.
+  USER_IMPORT_EMPTY: "user.import_empty",
+  USER_IMPORT_BATCH_TOO_LARGE: "user.import_batch_too_large",
+  USER_IMPORT_FILE_TOO_LARGE: "user.import_file_too_large",
+  USER_IMPORT_SOURCE_INVALID: "user.import_source_invalid",
   TOO_MANY_REQUESTS: "too_many_requests", // throttling
   HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
   NETWORK: "network_error", // client-synthesised

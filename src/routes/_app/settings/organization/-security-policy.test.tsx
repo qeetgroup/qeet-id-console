@@ -5,8 +5,27 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
+const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
+
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/security/capability-provider", () => ({
+  useCapabilities: () => ({ state: "ready", can: () => true }),
+}));
+vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/platform/security/sensitive-action-provider")>();
+  return {
+    ...actual,
+    useSensitiveAction: () => {
+      const run = actual.useSensitiveAction();
+      return (options: Parameters<typeof run>[0]) => {
+        sensitiveCalls.push(options);
+        return run(options);
+      };
+    },
+  };
+});
 vi.mock("@/platform/components/page-header", () => ({ PageHeader: () => null }));
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-router")>()),
@@ -16,6 +35,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
 }));
 
 import { api } from "@/platform/api/client";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./security-policy";
 
 const SecurityPolicyPage = Route.options.component as () => React.JSX.Element;
@@ -35,6 +55,7 @@ const policy = {
 };
 
 beforeEach(() => {
+  sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     if (path === "/v1/tenants/t-1/policy") return options?.method === "PUT" ? options.body : policy;
@@ -48,7 +69,9 @@ describe("Security policy — address rules are the one place for networks", () 
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <QueryClientProvider client={client}>
-        <SecurityPolicyPage />
+        <SensitiveActionProvider>
+          <SecurityPolicyPage />
+        </SensitiveActionProvider>
       </QueryClientProvider>,
     );
 
@@ -65,5 +88,10 @@ describe("Security policy — address rules are the one place for networks", () 
     const body = put?.[1]?.body as Record<string, unknown>;
     expect(body).not.toHaveProperty("ip_allowlist");
     expect(body).not.toHaveProperty("ip_denylist");
+    // The policy save is step-up gated, so it runs as a sensitive action; the submit confirms it.
+    expect(sensitiveCalls).toEqual([
+      expect.objectContaining({ actionLabel: "save the security policy" }),
+    ]);
+    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
   });
 });

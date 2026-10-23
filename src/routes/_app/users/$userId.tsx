@@ -1,194 +1,26 @@
-import { Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TooltipProvider } from "@qeetrix/ui";
-import { errorMessage } from "@/platform/errors/user-message";
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "@qeetrix/icons";
-import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 
-import { useCapabilities } from "@/platform/security/capability-provider";
-import { useRegisterContext } from "@/modules/qeetai/context/context-registry";
-import { ActivityTab } from "@/modules/users/activity-tab";
-import { OverviewTab } from "@/modules/users/overview-tab";
-import {
-  AccessTab,
-  DeveloperTab,
-  IdentitiesTab,
-  SecurityTab,
-  SessionsTab,
-} from "@/modules/users/tab-panels";
-import { isUser360Tab, USER360_TABS, type User360Tab } from "@/modules/users/tabs";
-import { UserDetailHeader } from "@/modules/users/user-detail-header";
-import { deriveUserRisk } from "@/modules/users/user-risk";
-import { useAnomalies } from "@/modules/security";
-import { api } from "@/platform/api/client";
-import {
-  type UserDetail,
-  useUserAccess,
-  useUserPermissions,
-  useUserRecentActivity,
-  useUserSecurity,
-  useUserSessions,
-} from "@/modules/users/api/user360";
+import { USER360_TABS } from "@/modules/users";
+import { UserDetailPage } from "@/modules/users/pages";
+import { searchEnum } from "@/shared/utils/search-params";
 
 export const Route = createFileRoute("/_app/users/$userId")({
-  // `tab` is optional, so a plain link opens the Overview tab.
-  validateSearch: (search: Record<string, unknown>): { tab?: User360Tab } => ({
-    tab: isUser360Tab(search.tab) ? search.tab : "overview",
-  }),
-  component: UserDetailPage,
+  validateSearch: z.object({ tab: searchEnum(USER360_TABS) }), // no tab opens Overview
+  component: UserDetailRoute,
 });
 
-function UserDetailPage() {
-  const { t } = useTranslation("users");
+function UserDetailRoute() {
   const { userId } = Route.useParams();
   const tab = Route.useSearch().tab ?? "overview";
   const navigate = Route.useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const access = useCapabilities();
-  const canWrite = access.can("user.write");
-  const canViewActivity = access.can("audit.read");
-
-  const setTab = (next: User360Tab) =>
-    navigate({ search: (prev) => ({ ...prev, tab: next }), replace: true });
-
-  const userQ = useQuery({
-    queryKey: ["user", userId],
-    queryFn: () => api<UserDetail>(`/v1/users/${userId}`),
-  });
-
-  const securityQ = useUserSecurity(userId);
-  const accessQ = useUserAccess(userId);
-  const permissionsQ = useUserPermissions(userId);
-  const recentQ = useUserRecentActivity(userId, 6, canViewActivity);
-  const sessionsQ = useUserSessions(userId);
-  const anomaliesQ = useAnomalies();
-
-  // Tells Qeet AI which user is on screen.
-  const qeetaiCtx = useMemo(
-    () => ({ selection: { kind: "user" as const, id: userId, label: userQ.data?.email } }),
-    [userId, userQ.data?.email],
-  );
-  useRegisterContext(pathname, qeetaiCtx);
-
-  const risk = useMemo(
-    () => deriveUserRisk(anomaliesQ.data?.items ?? [], userId),
-    [anomaliesQ.data, userId],
-  );
-
-  const lastSeenAt = useMemo(() => {
-    const items = sessionsQ.data?.items ?? [];
-    const first = items[0];
-    if (!first) return null;
-    return items.reduce(
-      (max, s) => (s.last_seen_at > max ? s.last_seen_at : max),
-      first.last_seen_at,
-    );
-  }, [sessionsQ.data]);
-
   return (
-    <TooltipProvider>
-      <div className="flex min-w-0 flex-col gap-5">
-        <Link
-          to="/users"
-          className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-        >
-          <ArrowLeftIcon className="size-3" aria-hidden="true" /> {t("detail.backLink")}
-        </Link>
-
-        {userQ.isLoading ? (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <Skeleton className="size-14 rounded-xl" />
-              <div className="flex flex-col gap-2">
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-4 w-64" />
-              </div>
-            </div>
-            <Skeleton className="h-16 w-full rounded-xl" />
-          </div>
-        ) : userQ.isError ? (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-            {errorMessage(userQ.error)}
-          </div>
-        ) : userQ.data ? (
-          <>
-            <UserDetailHeader
-              user={userQ.data}
-              lastSeenAt={lastSeenAt}
-              canWrite={canWrite}
-              onViewRaw={() => setTab("developer")}
-            />
-
-            <Tabs
-              value={tab}
-              onValueChange={(v) => setTab(v as User360Tab)}
-              className="flex min-w-0 flex-col gap-5"
-            >
-              <TabsList className="w-full justify-start overflow-x-auto">
-                {USER360_TABS.map((k) => (
-                  <TabsTrigger key={k} value={k}>
-                    {t(`detail.tabs.${k}`)}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              <TabsContent value="overview" className="flex min-w-0 flex-col">
-                <OverviewTab
-                  user={userQ.data}
-                  security={securityQ.data}
-                  securityLoading={securityQ.isLoading}
-                  risk={risk}
-                  riskLoading={anomaliesQ.isLoading}
-                  access={accessQ.data}
-                  accessLoading={accessQ.isLoading}
-                  permissionsCount={permissionsQ.data?.permissions.length ?? 0}
-                  recent={recentQ.data?.events ?? []}
-                  recentLoading={recentQ.isLoading}
-                  recentError={recentQ.isError}
-                  canWrite={canWrite}
-                  canViewActivity={canViewActivity}
-                  onTab={setTab}
-                />
-              </TabsContent>
-
-              <TabsContent value="security" className="flex min-w-0 flex-col">
-                <SecurityTab
-                  userId={userId}
-                  security={securityQ.data}
-                  loading={securityQ.isLoading}
-                  canWrite={canWrite}
-                />
-              </TabsContent>
-
-              <TabsContent value="access" className="flex min-w-0 flex-col">
-                <AccessTab
-                  access={accessQ.data}
-                  loading={accessQ.isLoading}
-                  permissions={permissionsQ.data?.permissions ?? []}
-                  permissionsLoading={permissionsQ.isLoading}
-                />
-              </TabsContent>
-
-              <TabsContent value="sessions" className="flex min-w-0 flex-col">
-                <SessionsTab userId={userId} canWrite={canWrite} />
-              </TabsContent>
-
-              <TabsContent value="activity" className="flex min-w-0 flex-col">
-                <ActivityTab userId={userId} canView={canViewActivity} />
-              </TabsContent>
-
-              <TabsContent value="identities" className="flex min-w-0 flex-col">
-                <IdentitiesTab userId={userId} passwordSet={securityQ.data?.password_set} />
-              </TabsContent>
-
-              <TabsContent value="developer" className="flex min-w-0 flex-col">
-                <DeveloperTab user={userQ.data} />
-              </TabsContent>
-            </Tabs>
-          </>
-        ) : null}
-      </div>
-    </TooltipProvider>
+    <UserDetailPage
+      userId={userId}
+      tab={tab}
+      onTabChange={(next) =>
+        navigate({ search: (prev) => ({ ...prev, tab: next }), replace: true })
+      }
+    />
   );
 }

@@ -71,6 +71,7 @@ import {
   testEmailTemplate,
   useEmailTemplates,
 } from "../api/email-templates";
+import { orgKeys } from "../api/keys";
 import {
   EMAIL_LOCALES,
   type EmailBrand,
@@ -149,7 +150,7 @@ export function EmailTemplatesPage({
   }
   function cache(template: EmailTemplate) {
     queryClient.setQueryData<{ items: EmailTemplate[]; capabilities?: EmailTemplateCapabilities }>(
-      ["email-templates", tenantId],
+      orgKeys.emailTemplates(tenantId),
       (previous) =>
         previous
           ? {
@@ -180,7 +181,7 @@ export function EmailTemplatesPage({
       onSave={async (key, draft) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("emails.save"),
+          actionLabel: t("emails.save").toLowerCase(),
           run: () => saveEmailTemplate(requireScope(), key, draft),
         });
         if (!result) throw new SensitiveActionCancelled();
@@ -190,7 +191,7 @@ export function EmailTemplatesPage({
       onReset={async (key) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("emails.reset"),
+          actionLabel: t("emails.reset").toLowerCase(),
           confirm: {
             title: t("emails.resetTitle"),
             description: t("emails.resetDescription"),
@@ -206,7 +207,7 @@ export function EmailTemplatesPage({
       onTest={async (key, draft, locale) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("emails.test"),
+          actionLabel: t("emails.test").toLowerCase(),
           confirm: {
             title: t("emails.testTitle"),
             description: t("emails.testDescription", { email: me.data?.email }),

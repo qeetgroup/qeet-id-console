@@ -77,7 +77,15 @@
       "region": "Region",
       "cancel": "Cancel",
       "save": "Save changes",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "logo": "Logo",
+      "logoHelp": "Shown across the console. Leave empty to use an initials avatar.",
+      "planHelp": "Plan changes are made through billing.",
+      "editAction": "edit this organization",
+      "validation": {
+        "name": "Enter a name.",
+        "nameTooLong": "Keep the name to 200 characters."
+      }
     },
     "toast": {
       "deleted": "Organization deleted",
@@ -104,6 +112,10 @@
     "suspend": "Suspend",
     "activate": "Reactivate",
     "delete": "Delete organization"
+  },
+  "actionLabels": {
+    "suspend": "Suspend this organization",
+    "reactivate": "Reactivate this organization"
   },
   "preview": {
     "copyId": "Copy organization ID",

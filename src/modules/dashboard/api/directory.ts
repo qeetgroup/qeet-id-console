@@ -6,9 +6,9 @@ import {
   useLdapConnections,
   useScimConfig,
 } from "@/modules/authentication";
+import { groupQueries } from "@/modules/groups";
 import { useOrgs } from "@/modules/organizations";
-import { useUserStats } from "@/modules/users";
-import { api } from "@/platform/api/client";
+import { invitationQueries, userQueries, useUserStats } from "@/modules/users";
 import { useTenantId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
@@ -19,12 +19,6 @@ type DirectoryInvitation = {
 };
 
 type DirectoryGroup = { id: string; parent_id?: string | null };
-
-export const DIRECTORY_KEYS = {
-  invitations: (tenantId: string | null) => ["invites", tenantId] as const,
-  groups: (tenantId: string | null) => ["groups", tenantId] as const,
-  deleted: (tenantId: string | null) => ["users", "deleted", tenantId] as const,
-};
 
 export function countPendingInvitations(
   invitations: DirectoryInvitation[],
@@ -77,22 +71,19 @@ export function useDirectoryData(includeOverview = true) {
   const scim = useScimConfig(permissions.connections);
   const ldap = useLdapConnections(permissions.connections);
   const invitations = useQuery({
-    queryKey: DIRECTORY_KEYS.invitations(tenantId),
-    queryFn: () => api<{ items: DirectoryInvitation[] }>(`/v1/tenants/${tenantId}/invites`),
+    ...invitationQueries.list(tenantId),
     select: (response) => countPendingInvitations(response.items),
     enabled: permissions.invitations,
     staleTime: 30_000,
   });
   const groups = useQuery({
-    queryKey: DIRECTORY_KEYS.groups(tenantId),
-    queryFn: () => api<{ items: DirectoryGroup[] }>(`/v1/tenants/${tenantId}/groups`),
+    ...groupQueries.list(tenantId),
     select: (response) => summarizeGroups(response.items),
     enabled: permissions.groups && includeOverview,
     staleTime: 30_000,
   });
   const deleted = useQuery({
-    queryKey: DIRECTORY_KEYS.deleted(tenantId),
-    queryFn: () => api<{ items: { id: string }[] }>("/v1/users/deleted"),
+    ...userQueries.deleted(tenantId),
     select: (response) => response.items.length,
     enabled: permissions.users && includeOverview,
     staleTime: 30_000,

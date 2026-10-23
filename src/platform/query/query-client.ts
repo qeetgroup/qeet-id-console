@@ -2,8 +2,7 @@ import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { ApiError } from "@/platform/errors/api-error";
-import { normalizeError } from "@/platform/errors/normalize-error";
-import { userMessageForCode } from "@/platform/errors/user-message";
+import { toastError } from "@/platform/errors/error-toast";
 
 interface MutationMeta {
   silent?: boolean; // drops both toasts, as for a background poll
@@ -51,9 +50,7 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
     });
     return;
   }
-  // Leak stop: curated copy for the code, never the backend message.
-  const appError = normalizeError(error);
-  toast.error(userMessageForCode(appError.code, appError.kind));
+  toastError(error);
 }
 
 // Toasts every mutation that doesn't opt out; the default "Saved" is generic on purpose.
@@ -64,7 +61,10 @@ function reportSuccess(meta?: MutationMeta) {
   });
 }
 
-export function getContext() {
+/** What every route can read from the router context: the app's one query client. */
+export type RouterContext = { queryClient: QueryClient };
+
+export function getContext(): RouterContext {
   let queryClient: QueryClient;
   const refreshCapabilities = (error: unknown, sourceQueryKey?: readonly unknown[]) => {
     if (!(error instanceof ApiError) || error.status !== 403) return;

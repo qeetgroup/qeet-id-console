@@ -8,9 +8,31 @@ import "@/i18n";
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
 vi.mock("@/platform/components/page-header", () => ({ PageHeader: () => null }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
+}));
+vi.mock("@/platform/security/capability-provider", () => ({
+  useCapabilities: () => ({ state: "ready", can: () => true }),
+}));
+// Records what each action asks the shared sensitive-action runner for, then runs it for real.
+const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
+vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/platform/security/sensitive-action-provider")>();
+  return {
+    ...actual,
+    useSensitiveAction: () => {
+      const run = actual.useSensitiveAction();
+      return (o: Parameters<typeof run>[0]) => {
+        sensitiveCalls.push(o);
+        return run(o);
+      };
+    },
+  };
+});
 
 import { api } from "@/platform/api/client";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./password";
 
 const PasswordPage = Route.options.component as () => React.JSX.Element;
@@ -51,6 +73,7 @@ let saved: Record<string, unknown> | undefined;
 beforeEach(() => {
   stored = storedPolicy();
   saved = undefined;
+  sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     if (path === POLICY_PATH && (options?.method ?? "GET") === "GET") return stored;
@@ -70,7 +93,9 @@ function renderPage() {
   });
   render(
     <QueryClientProvider client={client}>
-      <PasswordPage />
+      <SensitiveActionProvider>
+        <PasswordPage />
+      </SensitiveActionProvider>
     </QueryClientProvider>,
   );
 }
@@ -104,6 +129,16 @@ describe("Password settings — sign-in lockout", () => {
     });
   });
 
+  it("saves through the step-up path, the save being the confirmation", async () => {
+    renderPage();
+    fireEvent.change(await threshold(), { target: { value: "3" } });
+    fireEvent.click(screen.getByRole("button", { name: /save/i }));
+    await waitFor(() => expect(saved).toBeDefined());
+    expect(sensitiveCalls).toHaveLength(1);
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "change how people sign in" });
+    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
+  });
+
   it("goes back to the platform default when a setting is cleared", async () => {
     stored = storedPolicy({ lockout_threshold: 4 });
     renderPage();
@@ -118,10 +153,8 @@ describe("Password settings — sign-in lockout", () => {
   it("does not save a value outside the allowed range", async () => {
     renderPage();
     fireEvent.change(await threshold(), { target: { value: "2" } });
+    fireEvent.click(screen.getByRole("button", { name: /save/i }));
     expect(await screen.findByText(/must be between 3 and 20/i)).toBeTruthy();
-    const save = screen.getByRole("button", { name: /save/i }) as HTMLButtonElement;
-    expect(save.disabled).toBe(true);
-    fireEvent.click(save);
     expect(saved).toBeUndefined();
   });
 });

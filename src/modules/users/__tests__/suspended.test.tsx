@@ -18,6 +18,7 @@ vi.mock("@/platform/security/capability-provider", () => ({
 }));
 
 import { api } from "@/platform/api/client";
+import { userKeys } from "../api/keys";
 import {
   DEFAULT_SUSPENDED_FILTERS,
   fetchSuspendedExport,
@@ -29,9 +30,9 @@ import {
   useSuspendedUsers,
 } from "../api/suspended";
 
-const SUSPENDED_LIST: QueryKey = ["users", "suspended", "tenant-a", DEFAULT_SUSPENDED_FILTERS];
-const USERS_LIST: QueryKey = ["users", "tenant-a", 25, 1];
-const USER_STATS: QueryKey = ["user-stats", "tenant-a"];
+const SUSPENDED_LIST: QueryKey = [...userKeys.suspended("tenant-a"), DEFAULT_SUSPENDED_FILTERS];
+const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25, offset: 0 });
+const USER_STATS: QueryKey = userKeys.stats("tenant-a");
 
 function member(id: string, overrides: Partial<SuspendedDirectoryUser> = {}) {
   return {

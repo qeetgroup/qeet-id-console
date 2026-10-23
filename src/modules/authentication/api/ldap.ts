@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export type LdapStatus = "draft" | "active" | "disabled";
 
@@ -43,7 +44,7 @@ export interface CreateLdapInput {
 export function useLdapConnections(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["ldap", tenantId],
+    queryKey: authKeys.ldap(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<{ items: LdapConnection[] }>(`/v1/tenants/${tenantId}/ldap`),
   });
@@ -58,8 +59,8 @@ export function useCreateLdapConnection() {
         method: "POST",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ldap"] }),
-    meta: { successMessage: "LDAP connection created" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
+    meta: { successMessage: "LDAP connection created", silentError: true },
   });
 }
 
@@ -72,7 +73,7 @@ export function useUpdateLdapConnection() {
         method: "PATCH",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ldap"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
     meta: { successMessage: "LDAP connection updated" },
   });
 }
@@ -83,7 +84,7 @@ export function useDeleteLdapConnection() {
   return useMutation({
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/ldap/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ldap"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
     meta: { successMessage: "LDAP connection deleted" },
   });
 }

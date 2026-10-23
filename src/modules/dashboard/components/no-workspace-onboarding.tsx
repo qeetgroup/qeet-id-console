@@ -26,7 +26,7 @@ import {
   usePasskeys,
 } from "@/modules/authentication";
 import { useMe } from "@/platform/auth/session";
-import { errorMessage } from "@/platform/errors/user-message";
+import { toastError } from "@/platform/errors/error-toast";
 import { QeetMark } from "@/shared/components/qeet-mark";
 
 import { OrganizationIllustration } from "./organization-illustration";
@@ -449,7 +449,7 @@ function PendingInvitations() {
                   if (busy) return;
                   decline.mutate(invite.id, {
                     onSuccess: () => toast.message(t("invites.dismissed")),
-                    onError: (err) => toast.error(errorMessage(err)),
+                    onError: (err) => toastError(err),
                   });
                 }}
               >
@@ -462,7 +462,7 @@ function PendingInvitations() {
                 className={FOCUS}
                 onClick={() => {
                   if (busy) return;
-                  accept.mutate(invite.id, { onError: (err) => toast.error(errorMessage(err)) });
+                  accept.mutate(invite.id, { onError: (err) => toastError(err) });
                 }}
               >
                 {accept.isPending && (

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AUTH_POLICY_KEY } from "@/modules/authentication";
+import { authKeys } from "@/modules/authentication";
 
 import { api } from "@/platform/api/client";
 import type { AuthPolicy } from "@/modules/authentication";
@@ -206,7 +206,7 @@ export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
       body: next,
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: AUTH_POLICY_KEY });
+    ctx.queryClient.invalidateQueries({ queryKey: authKeys.policy(ctx.tenantId) });
     return {
       ok: true,
       summary: input.enabled

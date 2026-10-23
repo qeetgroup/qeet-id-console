@@ -35,8 +35,6 @@
     "roleHeader": "भूमिका",
     "grantedHeader": "प्रदत्त",
     "actionsHeader": "क्रियाएँ",
-    "revokeTitle": "इस भूमिका को समूह से हटाएँ?",
-    "revokeDescriptionNamed": "सदस्य <strong>{{name}}</strong> द्वारा दी गई अनुमतियाँ खो देंगे जब तक कि वे इसे किसी अन्य समूह या प्रत्यक्ष असाइनमेंट के माध्यम से न रखते हों।",
-    "revokeDescriptionFallback": "सदस्य इस भूमिका की अनुमतियाँ खो देंगे।"
+    "revokeTitle": "इस भूमिका को समूह से हटाएँ?"
   }
 }

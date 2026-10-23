@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export interface OAuthGrant {
   id: string;
@@ -19,7 +20,7 @@ export interface OAuthGrant {
 export function useOAuthGrants() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["oauth-grants", tenantId],
+    queryKey: authKeys.oauthGrants(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: OAuthGrant[] }>(`/v1/tenants/${tenantId}/oauth/grants`),
   });
@@ -33,7 +34,7 @@ export function useRevokeOAuthGrant() {
       api<void>(`/v1/tenants/${tenantId}/oauth/grants/${id}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["oauth-grants"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oauthGrants(tenantId) }),
     meta: { successMessage: "Grant revoked" },
   });
 }

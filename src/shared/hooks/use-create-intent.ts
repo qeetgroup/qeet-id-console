@@ -1,9 +1,11 @@
 import { useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 
-export function parseCreateIntent(search: Record<string, unknown>): { action?: "create" } {
-  return search.action === "create" ? { action: "create" } : {};
-}
+import { searchEnum } from "@/shared/utils/search-params";
+
+/** The search of a list route whose `?action=create` opens its create drawer. */
+export const createIntentSearch = z.object({ action: searchEnum(["create"]) });
 
 export function useCreateIntent(enabled: boolean) {
   const { action } = useSearch({ strict: false });

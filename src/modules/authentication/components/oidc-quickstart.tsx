@@ -8,7 +8,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CopyableSecret,
   SegmentedControl,
   SegmentedControlItem,
 } from "@qeetrix/ui";
@@ -181,10 +180,10 @@ function CodeBlock({ code }: { code: string }) {
 }
 
 /**
- * Renders the integration quickstart for one client. Pass `secret` right after creation to show
- * the one-time client secret beside the snippet; omit it elsewhere (the snippet reads an env var).
+ * Renders the integration quickstart for one client. The snippet reads the client secret from an
+ * env var; right after creation, the caller shows the one-time secret in a OneTimeSecret.
  */
-export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?: string }) {
+export function OidcQuickstart({ client }: { client: OidcClient }) {
   const [fw, setFw] = useState<Framework>("config");
 
   return (
@@ -196,16 +195,6 @@ export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {secret && (
-          <div className="flex flex-col gap-2 rounded-md border border-emerald-500/40 bg-emerald-50/50 p-3 dark:bg-emerald-950/20">
-            <p className="text-xs font-medium">
-              Copy your credentials now — the secret is shown only once.
-            </p>
-            <CopyableSecret value={client.client_id} label="client_id=" size="sm" />
-            <CopyableSecret value={secret} label="client_secret=" size="sm" />
-          </div>
-        )}
-
         <SegmentedControl
           value={fw}
           onValueChange={(v) => setFw(v as Framework)}

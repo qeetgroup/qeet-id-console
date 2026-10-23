@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
+import { authKeys } from "./keys";
 
 export interface SSODiscoveryHit {
   kind: "saml" | "oidc";
@@ -24,7 +25,7 @@ export function useSSODiscovery(email: string) {
   const enabled = emailLooksValid(trimmed);
 
   return useQuery({
-    queryKey: ["sso-discovery", trimmed],
+    queryKey: authKeys.ssoDiscovery(trimmed),
     enabled,
     queryFn: async (): Promise<SSODiscoveryHit | null> => {
       try {

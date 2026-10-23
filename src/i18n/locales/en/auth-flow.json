@@ -13,10 +13,23 @@
     "clearSearch": "Clear search",
     "roleFilter": "Filter by role",
     "allRoles": "All roles",
-    "roles": { "owner": "Owner", "admin": "Admin", "member": "Member" },
-    "plans": { "free": "Free", "starter": "Starter", "pro": "Pro", "enterprise": "Enterprise" },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "plans": {
+      "free": "Free",
+      "starter": "Starter",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
     "sort": "Sort organizations",
-    "sorts": { "recent": "Sort: Last used", "name": "Name: A to Z", "name-desc": "Name: Z to A" },
+    "sorts": {
+      "recent": "Sort: Last used",
+      "name": "Name: A to Z",
+      "name-desc": "Name: Z to A"
+    },
     "layout": "Organization view",
     "gridView": "Grid view",
     "listView": "List view",
@@ -159,6 +172,7 @@
       "codesTitle": "Save your recovery codes",
       "codesSubtitle": "Each code signs you in once if you lose your authenticator app. They won't be shown again.",
       "copyBtn": "Copy",
+      "copiedBtn": "Copied",
       "downloadBtn": "Download",
       "continueBtn": "Continue"
     }

@@ -37,9 +37,9 @@ architecture:
     mechanism: biome-noRestrictedImports        # + noImportCycles: error
     config: biome.json
     command: bun run lint:boundaries
-  modules: 17                                   # src/modules/, each with an index.ts barrel
+  modules: 18                                   # src/modules/, each with an index.ts barrel
   platform_dirs: [api, auth, components, config, errors, feature-flags, query, security, telemetry, theme]
-  route_ratchet: "src/routes/** may not import module internals, api() or @tanstack/react-query; the files that still do are listed in biome.json and shrink to zero in the route-to-module migration"
+  route_rule: "src/routes/** may not import module internals, api() or @tanstack/react-query; no route is exempt"
   network_exits: "global fetch/EventSource/WebSocket/XMLHttpRequest are banned outside src/platform/api (plus the two SSE clients, until a shared stream transport exists)"
 
 session:

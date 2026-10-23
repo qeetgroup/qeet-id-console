@@ -4,10 +4,18 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorText } from "@/platform/components/error-reference";
+import {
+  settleSensitiveAction,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { isStepUpRequired } from "@/platform/security/step-up";
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
-import { type PushDeviceScope, usePushDevices, useRemovePushDevice } from "../api/push-devices";
+import {
+  type PushDevice,
+  type PushDeviceScope,
+  usePushDevices,
+  useRemovePushDevice,
+} from "../api/push-devices";
 import { LinkPhoneDialog } from "./link-phone-dialog";
 
 /**
@@ -25,7 +33,7 @@ export function LinkedPhonesCard({
   className?: string;
 }) {
   const { t } = useTranslation("account");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
+  const runSensitive = useSensitiveAction();
   const [linking, setLinking] = useState(false);
   const phonesQ = usePushDevices(scope);
   const remove = useRemovePushDevice(scope);
@@ -35,13 +43,28 @@ export function LinkedPhonesCard({
   // A cancelled step-up is not a failure to show: nothing was changed.
   const removeError = remove.error && !isStepUpRequired(remove.error) ? remove.error : null;
 
-  function removePhone(id: string) {
-    remove.mutate(id, { onSuccess: () => toast.success(t("security.phones.removed")) });
+  function removePhone(phone: PushDevice) {
+    const name = phone.name || t(`security.phones.platform.${phone.platform}`);
+    runSensitive({
+      confirm: {
+        title: t("security.phones.removeConfirm", { name }),
+        description: t(
+          scope.kind === "self"
+            ? "security.phones.removeDescription"
+            : "security.phones.removeMemberDescription",
+        ),
+        confirmLabel: t("security.phones.remove"),
+        tone: "destructive",
+      },
+      actionLabel: t("security.phones.removeAction").toLowerCase(),
+      run: () => remove.mutateAsync(phone.id),
+    })
+      .then(() => toast.success(t("security.phones.removed")))
+      .catch(settleSensitiveAction);
   }
 
   return (
     <Card className={className}>
-      {confirmDialog}
       {scope.kind === "self" && <LinkPhoneDialog open={linking} onOpenChange={setLinking} />}
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -69,7 +92,7 @@ export function LinkedPhonesCard({
         )}
         {phonesQ.isError && (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(phonesQ.error)}
+            <ErrorText error={phonesQ.error} />
           </p>
         )}
         {phonesQ.isSuccess && phones.length === 0 && (
@@ -99,21 +122,7 @@ export function LinkedPhonesCard({
                     variant="ghost"
                     size="sm"
                     disabled={remove.isPending}
-                    onClick={() =>
-                      openConfirm({
-                        title: t("security.phones.removeConfirm", {
-                          name: p.name || t(`security.phones.platform.${p.platform}`),
-                        }),
-                        description: t(
-                          scope.kind === "self"
-                            ? "security.phones.removeDescription"
-                            : "security.phones.removeMemberDescription",
-                        ),
-                        variant: "destructive",
-                        confirmLabel: t("security.phones.remove"),
-                        onConfirm: () => removePhone(p.id),
-                      })
-                    }
+                    onClick={() => removePhone(p)}
                   >
                     <TrashIcon /> {t("security.phones.remove")}
                   </Button>
@@ -124,7 +133,7 @@ export function LinkedPhonesCard({
         )}
         {removeError ? (
           <p role="alert" className="text-sm text-destructive">
-            {errorMessage(removeError)}
+            <ErrorText error={removeError} />
           </p>
         ) : null}
       </CardContent>

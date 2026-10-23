@@ -17,18 +17,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { BuildingComplexIcon, CheckIcon, ChevronsUpDownIcon, PlusIcon } from "@qeetrix/icons";
 
-import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
-
-type Tenant = {
-  id: string;
-  slug: string;
-  name: string;
-  plan: string;
-  region: string;
-  logo_url?: string;
-};
+import { orgQueries } from "@/modules/organizations";
 
 function initialOf(name: string) {
   const trimmed = name.trim();
@@ -39,11 +30,7 @@ export function TeamSwitcher() {
   const { isMobile } = useSidebar();
   const activeId = useTenantId();
 
-  const tenantsQ = useQuery({
-    queryKey: ["tenants", "switcher"],
-    queryFn: () => api<{ items: Tenant[] }>("/v1/tenants"), // only the caller's orgs
-    staleTime: 60_000,
-  });
+  const tenantsQ = useQuery(orgQueries.list()); // only the caller's orgs
 
   const tenants = tenantsQ.data?.items ?? [];
   const active = tenants.find((t) => t.id === activeId) ?? tenants[0];

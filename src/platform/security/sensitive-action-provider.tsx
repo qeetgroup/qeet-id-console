@@ -24,6 +24,7 @@ import type { Capability } from "@/platform/security/capability-model";
 import { StepUpDialog } from "@/platform/security/step-up-dialog";
 import { isStepUpRequired } from "@/platform/security/step-up";
 import { registerStepUpHandler } from "@/platform/security/step-up-gate";
+import { captureError } from "@/platform/telemetry/errors";
 
 export type SensitiveActionOptions<T> = {
   capability?: Capability; // checked first; UX only, the backend still decides
@@ -51,6 +52,16 @@ export class SensitiveActionCancelled extends Error {
     super("Sensitive action cancelled");
     this.name = "SensitiveActionCancelled";
   }
+}
+
+/**
+ * Ends a sensitive action's promise in an event handler. A cancellation is expected, and a failed
+ * mutation has already been toasted by the query client, so neither is rethrown; a failure is
+ * still logged. `run` must therefore be a mutation.
+ */
+export function settleSensitiveAction(err: unknown): void {
+  if (err instanceof SensitiveActionCancelled) return;
+  captureError(err, { source: "sensitive-action" });
 }
 
 type ConfirmState = NonNullable<SensitiveActionOptions<unknown>["confirm"]> & {

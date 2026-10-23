@@ -1,12 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
-import type { Me } from "@/platform/auth/session";
+import { type Me, meKeys } from "@/platform/auth/session";
 
 /** Returns the `/v1/me` query, keyed like useMe() so a guard and the page share one request. */
 export function meQueryOptions(userId: string) {
   return {
-    queryKey: ["me", userId] as const,
+    queryKey: meKeys.user(userId),
     queryFn: () => api<Me>("/v1/me"),
     staleTime: 60_000,
   };

@@ -17,14 +17,6 @@ export const USE_CASES: { value: string; label: string }[] = [
   { value: "other", label: "Something else" },
 ];
 
-export const TEAM_SIZES: { value: string; label: string }[] = [
-  { value: "solo", label: "Just me" },
-  { value: "2-10", label: "2–10" },
-  { value: "11-50", label: "11–50" },
-  { value: "51-200", label: "51–200" },
-  { value: "200+", label: "200+" },
-];
-
 export const ROLES: { value: string; label: string }[] = [
   { value: "founder", label: "Founder / exec" },
   { value: "engineer", label: "Engineer" },

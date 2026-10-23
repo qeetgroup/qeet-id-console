@@ -35,8 +35,6 @@
     "roleHeader": "Rôle",
     "grantedHeader": "Accordé",
     "actionsHeader": "Actions",
-    "revokeTitle": "Supprimer ce rôle du groupe ?",
-    "revokeDescriptionNamed": "Les membres perdront les permissions accordées par <strong>{{name}}</strong> sauf s'ils le détiennent via un autre groupe ou une attribution directe.",
-    "revokeDescriptionFallback": "Les membres perdront les permissions de ce rôle."
+    "revokeTitle": "Supprimer ce rôle du groupe ?"
   }
 }

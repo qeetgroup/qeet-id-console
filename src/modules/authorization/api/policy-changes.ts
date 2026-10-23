@@ -5,6 +5,7 @@ import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
 import { type AuditEvent, isAuthzAction } from "./audit";
+import { authzKeys } from "./keys";
 
 export type PolicyChangeKind = "created" | "updated" | "deleted" | "other";
 
@@ -77,7 +78,7 @@ export function usePolicyChanges(from: string, limit = 5) {
   const tenantId = useTenantId();
 
   return useQuery({
-    queryKey: ["authz-policy-changes", tenantId, from, limit],
+    queryKey: authzKeys.policyChanges(tenantId, from, limit),
     enabled: !!tenantId,
     queryFn: async (): Promise<PolicyChange[]> => {
       const page = await fetchActivityPage({ ...DEFAULT_FILTERS, from }, "", 100);

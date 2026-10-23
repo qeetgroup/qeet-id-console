@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 // Lives beside the route with a "-" prefix so the router generator ignores it.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
+import type { SensitiveActionOptions } from "@/platform/security/sensitive-action-provider";
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
@@ -12,19 +13,35 @@ vi.mock("@/platform/components/page-header", () => ({
   PageHeader: ({ actions }: { actions?: ReactNode }) => <div>{actions}</div>,
 }));
 vi.mock("@/platform/security/capability-provider", () => ({
-  useCapabilities: () => ({ can: () => true }),
+  useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
-vi.mock("@/platform/security/sensitive-action-provider", () => ({
-  SensitiveActionCancelled: class extends Error {},
-  useSensitiveAction: () => vi.fn(),
-}));
-vi.mock("@/shared/hooks/use-create-intent", async () => {
+// Records each sensitive action's options while the real provider confirms and runs it.
+const sensitive = vi.hoisted(() => ({ calls: [] as SensitiveActionOptions<unknown>[] }));
+vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/platform/security/sensitive-action-provider")>();
+  return {
+    ...actual,
+    useSensitiveAction: () => {
+      const run = actual.useSensitiveAction();
+      return <T,>(options: SensitiveActionOptions<T>) => {
+        sensitive.calls.push(options);
+        return run(options);
+      };
+    },
+  };
+});
+vi.mock("@/shared/hooks/use-create-intent", async (importOriginal) => {
   const { useState } = await import("react");
-  return { parseCreateIntent: () => ({}), useCreateIntent: () => useState(false) };
+  return {
+    ...(await importOriginal<typeof import("@/shared/hooks/use-create-intent")>()),
+    useCreateIntent: () => useState(false),
+  };
 });
 
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./keys";
 
 const ApiKeysPage = Route.options.component as () => React.JSX.Element;
@@ -49,14 +66,18 @@ function created(name: string, secret?: string) {
 let responses: ReturnType<typeof created>[];
 let posted: Record<string, unknown>[];
 let rejection: Error | undefined;
+let listed: ReturnType<typeof created>["api_key"][];
 
 beforeEach(() => {
   responses = [];
   posted = [];
   rejection = undefined;
+  listed = [];
+  sensitive.calls = [];
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
-    if (path === "/v1/tenants/tenant-1/api-keys") return { items: [] };
+    if (path === "/v1/tenants/tenant-1/api-keys") return { items: listed };
+    if (path.startsWith("/v1/api-keys/") && options?.method === "DELETE") return undefined;
     if (path === "/v1/api-keys" && options?.method === "POST") {
       posted.push(options.body as Record<string, unknown>);
       if (rejection) throw rejection;
@@ -74,14 +95,16 @@ function renderPage() {
   });
   render(
     <QueryClientProvider client={client}>
-      <ApiKeysPage />
+      <SensitiveActionProvider>
+        <ApiKeysPage />
+      </SensitiveActionProvider>
     </QueryClientProvider>,
   );
 }
 
 async function submitKey(name: string, expiresAt?: string) {
   fireEvent.click(screen.getByRole("button", { name: /new api key/i }));
-  fireEvent.change(await screen.findByLabelText("Name"), { target: { value: name } });
+  fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: name } });
   if (expiresAt !== undefined) {
     fireEvent.change(screen.getByLabelText("Expires at"), { target: { value: expiresAt } });
   }
@@ -187,5 +210,48 @@ describe("API keys — choosing an expiry", () => {
     const [body] = posted;
     assert(body, "expected the posted key body");
     expect(body.expires_at).toBeUndefined();
+  });
+});
+
+describe("API keys — sensitive actions", () => {
+  it("creates a key through the sensitive-action path, the form submit being the confirmation", async () => {
+    responses.push(created("CI deploy bot", "qk_secret"));
+    renderPage();
+
+    await createKey("CI deploy bot");
+
+    expect(sensitive.calls).toHaveLength(1);
+    expect(sensitive.calls[0]?.actionLabel).toBe("create this API key");
+    expect(sensitive.calls[0]?.confirm).toBeUndefined();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+  });
+
+  it("revokes a key only after the admin confirms", async () => {
+    listed = [created("CI deploy bot").api_key];
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: /revoke/i }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(dialog.textContent).toContain('Revoke "CI deploy bot"?');
+    expect(api).not.toHaveBeenCalledWith("/v1/api-keys/id-CI deploy bot", { method: "DELETE" });
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Revoke" }));
+
+    await waitFor(() =>
+      expect(api).toHaveBeenCalledWith("/v1/api-keys/id-CI deploy bot", { method: "DELETE" }),
+    );
+    expect(sensitive.calls[0]?.actionLabel).toBe("revoke this API key");
+  });
+
+  it("revokes nothing when the admin cancels", async () => {
+    listed = [created("CI deploy bot").api_key];
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: /revoke/i }));
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    expect(api).not.toHaveBeenCalledWith("/v1/api-keys/id-CI deploy bot", { method: "DELETE" });
   });
 });

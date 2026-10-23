@@ -15,7 +15,10 @@ import "@/i18n";
 
 const intent = vi.hoisted(() => ({ action: undefined as string | undefined, navigate: vi.fn() }));
 
-vi.mock("@/modules/users", () => ({ useUserStats: vi.fn() }));
+vi.mock("@/modules/users", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/users")>()),
+  useUserStats: vi.fn(),
+}));
 vi.mock("@/modules/organizations", () => ({ useOrgs: vi.fn() }));
 vi.mock("@/modules/authentication", () => ({
   useScimConfig: vi.fn(),
@@ -46,7 +49,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 import { navGroups } from "@/platform/config/navigation";
-import { parseCreateIntent, useCreateIntent } from "@/shared/hooks/use-create-intent";
+import { createIntentSearch, useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { DirectoryOverviewView, type DirectoryViewData } from "../components/directory-overview";
 import { SectionNav } from "../components/nav-main";
 
@@ -256,9 +259,9 @@ describe("Directory overview", () => {
     const { result } = renderHook(() => useCreateIntent(true));
     expect(result.current[0]).toBe(false);
     expect(intent.navigate).not.toHaveBeenCalled();
-    expect(parseCreateIntent({ action: "create" })).toEqual({ action: "create" });
-    expect(parseCreateIntent({ action: "delete" })).toEqual({});
-    expect(parseCreateIntent({ action: true })).toEqual({});
+    expect(createIntentSearch.parse({ action: "create" })).toEqual({ action: "create" });
+    expect(createIntentSearch.parse({ action: "delete" })).toEqual({ action: undefined });
+    expect(createIntentSearch.parse({ action: true })).toEqual({ action: undefined });
   });
 
   it("expands Directory branches and links to every completed view", () => {

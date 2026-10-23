@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ComplianceEvidencePage } from "@/modules/compliance";
+import { ComplianceEvidencePage } from "@/modules/compliance/pages";
 
 export const Route = createFileRoute("/_app/security/compliance/iso27001")({
   component: Iso27001Page,

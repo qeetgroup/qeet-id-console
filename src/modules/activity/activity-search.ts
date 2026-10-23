@@ -2,38 +2,46 @@
 // saved view and open event, so any view is shareable as a link.
 
 import { type DateRange, presetToRange, TIME_PRESETS } from "./components/activity-time-range";
+import { z } from "zod";
+
+import { searchEnum, searchText } from "@/shared/utils/search-params";
 import type { ActivityFilters, ActivityMode, Outcome, Severity } from "./types/activity.types";
 
-export type DrawerTab = "overview" | "raw" | "related";
+const RANGE_KEYS = new Set(TIME_PRESETS.map((p) => p.value));
 
 /**
  * Activity URL params. severity, category and type are comma-separated lists; `range` is a
  * TIME_PRESETS key, with RFC 3339 `from`/`to` used only when it is "custom"; `view` is the
- * applied saved view; `event` opens that event's drawer on `tab`.
+ * applied saved view; `event` opens that event's drawer on `tab`. A blank or unknown value is
+ * dropped.
  */
-export interface ActivitySearch {
-  q?: string;
-  severity?: string;
-  category?: string;
-  type?: string;
-  actor?: string;
-  ip?: string;
-  resource?: string;
-  source?: string;
-  status?: string;
-  range?: string;
-  from?: string;
-  to?: string;
-  mode?: ActivityMode;
-  view?: string;
-  event?: string;
-  tab?: DrawerTab;
-}
+export const activitySearchSchema = z.object({
+  q: searchText(),
+  severity: searchText(),
+  category: searchText(),
+  type: searchText(),
+  actor: searchText(),
+  ip: searchText(),
+  resource: searchText(),
+  source: searchText(),
+  status: searchText(),
+  range: z
+    .string()
+    .refine((v) => RANGE_KEYS.has(v))
+    .optional()
+    .catch(undefined),
+  from: searchText(),
+  to: searchText(),
+  mode: searchEnum(["live", "history"]),
+  view: searchText(),
+  event: searchText(),
+  tab: searchEnum(["overview", "raw", "related"]),
+});
+
+export type ActivitySearch = z.infer<typeof activitySearchSchema>;
+export type DrawerTab = NonNullable<ActivitySearch["tab"]>;
 
 const SEVERITIES: Severity[] = ["info", "success", "warning", "error", "critical"];
-const RANGE_KEYS = new Set(TIME_PRESETS.map((p) => p.value));
-const MODES = new Set<ActivityMode>(["live", "history"]);
-const TABS = new Set<DrawerTab>(["overview", "raw", "related"]);
 
 /** The severities behind each outcome, matching the summary's by_outcome buckets. */
 export const OUTCOME_TO_SEVERITY: Record<Outcome, Severity[]> = {
@@ -62,35 +70,6 @@ function csvToArray(v: string | undefined): string[] {
 
 export function arrayToCsv(v: string[]): string | undefined {
   return v.length > 0 ? v.join(",") : undefined;
-}
-
-/** Validates raw route search params: blanks and unknown enum values become undefined. */
-export function validateActivitySearch(raw: Record<string, unknown>): ActivitySearch {
-  const str = (k: string): string | undefined => {
-    const v = raw[k];
-    return typeof v === "string" && v.trim() !== "" ? v : undefined;
-  };
-  const range = str("range");
-  const mode = str("mode");
-  const tab = str("tab");
-  return {
-    q: str("q"),
-    severity: str("severity"),
-    category: str("category"),
-    type: str("type"),
-    actor: str("actor"),
-    ip: str("ip"),
-    resource: str("resource"),
-    source: str("source"),
-    status: str("status"),
-    range: range && RANGE_KEYS.has(range) ? range : undefined,
-    from: str("from"),
-    to: str("to"),
-    mode: mode && MODES.has(mode as ActivityMode) ? (mode as ActivityMode) : undefined,
-    view: str("view"),
-    event: str("event"),
-    tab: tab && TABS.has(tab as DrawerTab) ? (tab as DrawerTab) : undefined,
-  };
 }
 
 /**

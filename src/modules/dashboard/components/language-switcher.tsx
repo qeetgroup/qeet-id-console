@@ -12,20 +12,18 @@ import {
 import { LanguagesIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
-import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
+import { LANGUAGE_LABELS, OFFERED_LANGUAGES, type OfferedLanguage } from "@/i18n";
 
 /**
- * Renders the header's language picker over `SUPPORTED_LANGUAGES`. The i18next detector persists
- * the choice in `localStorage` (`qeetid.lang`).
+ * Renders the header's language picker over `OFFERED_LANGUAGES`, or nothing while there is only
+ * one. The i18next detector persists the choice in `localStorage` (`qeetid.lang`).
  */
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation("common");
+  if (OFFERED_LANGUAGES.length < 2) return null;
 
-  const current = (
-    SUPPORTED_LANGUAGES.includes(i18n.resolvedLanguage as SupportedLanguage)
-      ? (i18n.resolvedLanguage as SupportedLanguage)
-      : SUPPORTED_LANGUAGES[0]
-  ) as SupportedLanguage;
+  const current: OfferedLanguage =
+    OFFERED_LANGUAGES.find((lng) => lng === i18n.resolvedLanguage) ?? OFFERED_LANGUAGES[0];
 
   return (
     <DropdownMenu>
@@ -34,8 +32,8 @@ export function LanguageSwitcher() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label={`Language: ${LANGUAGE_LABELS[current]}`}
-            title="Change language"
+            aria-label={t("language.current", { language: LANGUAGE_LABELS[current] })}
+            title={t("language.change")}
           />
         }
       >
@@ -43,14 +41,16 @@ export function LanguageSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-44 rounded-lg" align="end" sideOffset={4}>
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="text-xs text-muted-foreground">Language</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-xs text-muted-foreground">
+            {t("language.label")}
+          </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
           value={current}
           onValueChange={(lng) => lng && void i18n.changeLanguage(lng)}
         >
-          {SUPPORTED_LANGUAGES.map((lng) => (
+          {OFFERED_LANGUAGES.map((lng) => (
             <DropdownMenuRadioItem key={lng} value={lng}>
               {LANGUAGE_LABELS[lng]}
             </DropdownMenuRadioItem>

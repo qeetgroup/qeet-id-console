@@ -25,9 +25,7 @@
     "actions": "क्रियाएँ"
   },
   "delete": {
-    "title": "इस सेवा प्रदाता को हटाएँ?",
-    "descriptionNamed": "<strong>{{name}}</strong> अब इस IdP से SSO स्वीकार नहीं करेगा। इसे पूर्ववत नहीं किया जा सकता।",
-    "descriptionFallback": "यह अब इस IdP से SSO स्वीकार नहीं करेगा।"
+    "title": "इस सेवा प्रदाता को हटाएँ?"
   },
   "form": {
     "addTitle": "सेवा प्रदाता जोड़ें",

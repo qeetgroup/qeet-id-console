@@ -16,7 +16,10 @@ const hooks = vi.hoisted(() => ({
   ldap: vi.fn(),
 }));
 
-vi.mock("@/modules/users", () => ({ useUserStats: hooks.users }));
+vi.mock("@/modules/users", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/users")>()),
+  useUserStats: hooks.users,
+}));
 vi.mock("@/modules/organizations", () => ({ useOrgs: hooks.organizations }));
 vi.mock("@/modules/authentication", () => ({
   useScimConfig: hooks.scim,

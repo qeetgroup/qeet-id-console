@@ -24,7 +24,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 import type { User } from "../api/users";
-import { type RowActionHandlers, UserRowActions } from "../user-row-actions";
+import { type RowActionHandlers, UserRowActions } from "../components/user-row-actions";
 
 function user(overrides: Partial<User> = {}): User {
   return {

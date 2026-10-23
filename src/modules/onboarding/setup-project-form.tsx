@@ -16,7 +16,9 @@ import type { Dispatch, SetStateAction } from "react";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
-import { type OnboardingProfile, ROLES, TEAM_SIZES, USE_CASES } from "./onboarding-profile";
+import { TEAM_SIZES } from "@/shared/data/team-sizes";
+
+import { type OnboardingProfile, ROLES, USE_CASES } from "./onboarding-profile";
 import type { PlanSelection } from "./plan-select";
 import { SetupPlanSummary } from "./setup-plan-summary";
 import {

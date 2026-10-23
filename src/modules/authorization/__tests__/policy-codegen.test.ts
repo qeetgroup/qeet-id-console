@@ -19,6 +19,9 @@ import {
 function leaf(attr: string, op: Operator, value = ""): CondNode {
   return { id: nid("leaf"), kind: "leaf", attr, op, value };
 }
+function compare(attr: string, op: Operator, other: string): CondNode {
+  return { id: nid("leaf"), kind: "leaf", attr, op, value: other, ref: true };
+}
 function all(children: CondNode[]): CondNode {
   return { id: nid("grp"), kind: "group", combinator: "all", children };
 }
@@ -77,35 +80,49 @@ describe("isReducibleToAbac", () => {
     expect(isReducibleToAbac(doc({ requireRole: "" }))).toBe(true);
   });
 
-  it("refuses a condition whose value is another attribute, which the engine compares literally", () => {
+  it("saves a condition that compares two attributes", () => {
     for (const condition of [
-      all([leaf("subject.region", "eq", "resource.region")]),
+      all([compare("subject.region", "eq", "resource.region")]),
       all([
         leaf("subject.role", "eq", "clinician"),
-        not(leaf("subject.id", "ne", "context.actor")),
+        not(compare("subject.id", "ne", "context.actor")),
       ]),
-      any([leaf("subject.id", "in", "admin, resource.owner_id")]),
+      any([compare("subject.team_ids", "contains", "resource.team_id")]),
     ]) {
-      const d = doc({ condition });
-      expect(isReducibleToAbac(d)).toBe(false);
-      expect(abacSaveBlocker(d)).toBe(
-        "Compares two attributes, which the policy engine doesn't support yet. Compare against a literal value to save it as an ABAC policy.",
-      );
+      expect(abacSaveBlocker(doc({ condition }))).toBeNull();
     }
   });
 
-  it("still saves literal values that merely contain a dot or a namespace word", () => {
-    for (const value of ["example.com", "subject.", "resource region", "v1.2"]) {
-      expect(abacSaveBlocker(doc({ condition: all([leaf("subject.tag", "eq", value)]) }))).toBe(
-        null,
+  it("refuses an attribute reference the engine would reject", () => {
+    const blocker = (node: CondNode) => abacSaveBlocker(doc({ condition: all([node]) }));
+    expect(blocker(compare("subject.name", "regex", "resource.pattern"))).toBe(
+      "“matches regex” can't compare with another attribute. Compare with a value instead.",
+    );
+    for (const other of ["region", "tenant.region", "resource.", "resource..id", ""]) {
+      expect(blocker(compare("subject.region", "eq", other))).toBe(
+        "The attribute to compare with must be a subject., resource. or context. path.",
       );
     }
-    expect(abacSaveBlocker(doc({ condition: all([leaf("subject.email", "exists", "x.y")]) }))).toBe(
-      null,
+    expect(blocker(compare("subject.region", "eq", "subject.region"))).toBe(
+      "A condition can't compare an attribute with itself.",
     );
-    expect(
-      abacSaveBlocker(doc({ condition: all([leaf("subject.tag", "eq", "resource.a, b")]) })),
-    ).toBe(null);
+  });
+
+  it("refuses an empty affix, substring or pattern, which would match everything", () => {
+    for (const op of ["prefix", "suffix", "contains", "regex"] as const) {
+      expect(abacSaveBlocker(doc({ condition: any([leaf("subject.email", op, "  ")]) }))).toMatch(
+        /needs a value\.$/,
+      );
+    }
+    expect(abacSaveBlocker(doc({ condition: all([leaf("subject.dept", "eq", "")]) }))).toBeNull();
+  });
+
+  it("compares a literal that only looks like an attribute path as a literal", () => {
+    for (const value of ["resource.region", "example.com", "subject.", "v1.2"]) {
+      const d = doc({ condition: all([leaf("subject.tag", "eq", value)]) });
+      expect(abacSaveBlocker(d)).toBeNull();
+      expect(toAbacInput(d).condition).toEqual({ all: [{ attr: "subject.tag", op: "eq", value }] });
+    }
   });
 
   it("explains a composite RBAC/ReBAC doc with the composite reason", () => {

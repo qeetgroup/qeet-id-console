@@ -59,7 +59,8 @@
     "defaultRoleHelp": "Members of this group will be granted this role.",
     "initialMembers": "Initial members",
     "initialMembersPlaceholder": "Search users to add...",
-    "initialMembersHelp": "You can also add members later."
+    "initialMembersHelp": "You can also add members later.",
+    "roleAction": "Grant the default role to the new group"
   },
   "edit": {
     "title": "Edit group",
@@ -70,7 +71,10 @@
     "parentNone": "— None (top-level)",
     "cancel": "Cancel",
     "save": "Save",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "validation": {
+      "name": "Enter a name."
+    }
   },
   "members": {
     "title": "Members — {{groupName}}",
@@ -81,11 +85,17 @@
     "noMembers": "No members yet.",
     "loading": "Loading…",
     "close": "Close",
-    "removeLabel": "Remove member"
+    "removeLabel": "Remove member",
+    "removeTitle": "Remove {{name}} from the group?",
+    "removeDescription": "They lose every role they inherited through this group.",
+    "removeConfirm": "Remove",
+    "removeAction": "remove this member"
   },
   "confirm": {
     "delete": "Delete group \"{{name}}\"?",
-    "deleteLabel": "Delete"
+    "deleteLabel": "Delete",
+    "deleteDescription": "Its members lose every role they inherited through it. This can't be undone.",
+    "deleteAction": "delete this group"
   },
   "detail": {
     "back": "All groups",
@@ -178,6 +188,8 @@
     "cancel": "Cancel",
     "resultTitle": "Import finished",
     "resultSummary": "{{created}} created · {{skipped}} skipped · {{failed}} failed",
-    "done": "Done"
+    "done": "Done",
+    "rowSkipped": "A group with this name already exists.",
+    "rowFailed": "Couldn't be created. Check the name and that its parent exists."
   }
 }

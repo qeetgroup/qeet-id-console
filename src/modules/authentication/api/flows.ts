@@ -4,10 +4,12 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 
 import { ApiError, api, getApiBaseUrl } from "@/platform/api/client";
 
 import { refreshSignInMethods } from "./sign-in-methods";
+import { authKeys } from "./keys";
 
 type SessionResponse = {
   token_type: string;
@@ -143,7 +145,7 @@ export interface InvitePreview {
 /** Looks up an invitation by its emailed token, sent in the body rather than the URL. */
 export function useInvitePreview(token: string) {
   return useQuery({
-    queryKey: ["invite-preview", token],
+    queryKey: authKeys.invitePreview(token),
     queryFn: () =>
       api<InvitePreview>("/v1/invites/lookup", {
         method: "POST",
@@ -174,7 +176,7 @@ export interface ReceivedInvite {
  */
 export function useMyInvitations() {
   return useQuery({
-    queryKey: ["invites", "mine"],
+    queryKey: authKeys.invitations(),
     // A server without this endpoint (404/501) yields no invites: this renders on the pre-org
     // landing screen, where an error toast would be noise.
     queryFn: async (): Promise<{ items: ReceivedInvite[] }> => {
@@ -198,7 +200,7 @@ export function useDeclineInvitation() {
   return useMutation({
     mutationFn: (inviteId: string) =>
       api<{ message: string }>(`/v1/me/invites/${inviteId}/decline`, { method: "POST", body: {} }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["invites", "mine"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.invitations() }),
     meta: { successMessage: "Invitation declined" },
   });
 }
@@ -388,7 +390,7 @@ export function useStartEmailChange() {
   return useMutation({
     mutationFn: (email: string) =>
       api<{ message: string }>("/v1/me/email/change/start", { method: "POST", body: { email } }),
-    meta: { successMessage: "Verification code sent to your new address" },
+    meta: { successMessage: "Verification code sent to your new address", silentError: true },
   });
 }
 
@@ -399,14 +401,14 @@ export function useConfirmEmailChange() {
         method: "POST",
         body: { code },
       }),
-    meta: { successMessage: "Email address updated" },
+    meta: { successMessage: "Email address updated", silentError: true },
   });
 }
 
 /** Returns whether the current account has a password (rather than social or passkey only). */
 export function usePasswordStatus() {
   return useQuery({
-    queryKey: ["auth", "password-status"],
+    queryKey: authKeys.passwordStatus(),
     queryFn: async (): Promise<{ has_password: boolean }> => {
       try {
         return await api<{ has_password: boolean }>("/v1/auth/password");
@@ -431,8 +433,11 @@ export function useChangePassword() {
   return useMutation({
     mutationFn: (in_: { current_password: string; new_password: string }) =>
       api<{ message: string }>("/v1/auth/password", { method: "POST", body: in_ }),
-    onSuccess: () => refreshSignInMethods(qc), // Setting a first password adds a way to sign in
-    meta: { successMessage: "Password changed" },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: authKeys.passwordStatus() });
+      return refreshSignInMethods(qc); // setting a first password adds a way to sign in
+    },
+    meta: { silent: true }, // the page words the outcome: changed, or set for the first time
   });
 }
 
@@ -447,11 +452,19 @@ export function useConfirmEmailVerification() {
   });
 }
 
+// The session metadata the BFF passes on once it has kept the new token pair server-side.
+const switchedTenantSchema = z.object({
+  session_id: z.string(),
+  user_id: z.string(),
+  tenant_id: z.string(),
+});
+
 /** Switches organization: the BFF replaces the encrypted session, then the page reloads. */
 export async function switchToTenant(tenantId: string): Promise<void> {
-  await api<SessionResponse & { tenant_id: string }>("/v1/auth/switch-tenant", {
+  await api("/v1/auth/switch-tenant", {
     method: "POST",
     body: { tenant_id: tenantId },
+    schema: switchedTenantSchema,
   });
   if (typeof window !== "undefined") window.location.assign("/");
 }
@@ -461,7 +474,7 @@ export async function switchToTenant(tenantId: string): Promise<void> {
 /** Returns which platform-level social providers are configured (e.g. ["google"]). */
 export function usePlatformSocialProviders() {
   return useQuery({
-    queryKey: ["social", "platform-providers"],
+    queryKey: authKeys.platformSocialProviders(),
     queryFn: () =>
       api<{ providers: string[] }>("/v1/social/platform/providers", { anonymous: true }),
     staleTime: 5 * 60_000,
@@ -482,14 +495,20 @@ export function socialStartUrl(provider: string, intent: "login" | "signup" = "l
  * request is authenticated, so the server keeps our identity in the OAuth state and the callback
  * attaches the provider to this account, never creating or switching one.
  */
-export async function startSocialLink(provider: string): Promise<void> {
-  const res = await api<{ authorize_url: string }>(`/v1/social/${provider}/link/start`, {
-    method: "POST",
-    body: {},
+export function useStartSocialLink() {
+  return useMutation({
+    mutationFn: (provider: string) =>
+      api<{ authorize_url: string }>(`/v1/social/${provider}/link/start`, {
+        method: "POST",
+        body: {},
+      }),
+    onSuccess: (res) => {
+      if (typeof window !== "undefined" && res.authorize_url) {
+        window.location.href = res.authorize_url;
+      }
+    },
+    meta: { silent: true }, // success leaves the page; a failure toasts from the page
   });
-  if (typeof window !== "undefined" && res.authorize_url) {
-    window.location.href = res.authorize_url;
-  }
 }
 
 /**

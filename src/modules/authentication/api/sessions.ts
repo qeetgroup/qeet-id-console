@@ -2,25 +2,43 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
+import { authKeys } from "./keys";
 
+const sessionStatusSchema = z.enum(["active", "revoked", "expired"]);
+
+/**
+ * active, revoked (ended by sign-out or revocation) or expired (reached its maximum age or idle
+ * timeout first). Only an active session can be revoked.
+ */
+export type SessionStatus = z.infer<typeof sessionStatusSchema>;
+
+const sessionSchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  tenant_id: z.string(),
+  ip: z.string().nullish(),
+  user_agent: z.string().nullish(),
+  created_at: z.string(),
+  last_seen_at: z.string(),
+  revoked_at: z.string().nullish(),
+  expires_at: z.string().optional(), // When the session ends however active it is
+  idle_expires_at: z.string().optional(), // When the session ends unless it is renewed first
+  status: sessionStatusSchema.optional(),
+  device: z.string().optional(), // The device and browser in words, e.g. "Chrome on macOS"
+  device_kind: z.enum(["desktop", "mobile", "tablet", "unknown"]).optional(),
+  country: z.string().optional(), // Where the session was opened (ISO 3166-1 alpha-2), when known
+  current: z.boolean().optional(), // True for the session the list was requested with
+});
 /** A sign-in session as GET /v1/auth/sessions returns it; every session view renders this shape. */
-export type Session = {
-  id: string;
-  user_id: string;
-  tenant_id: string;
-  ip?: string | null;
-  user_agent?: string | null;
-  created_at: string;
-  last_seen_at: string;
-  revoked_at?: string | null;
-  expires_at?: string; // When the session ends however active it is
-  idle_expires_at?: string; // When the session ends unless it is renewed first
-  status?: SessionStatus;
-  device?: string; // The device and browser in words, from the server ("Chrome on macOS")
-  device_kind?: "desktop" | "mobile" | "tablet" | "unknown";
-  country?: string; // Where the session was opened (ISO 3166-1 alpha-2), when known
-  current?: boolean; // True for the session the list was requested with
-};
+export type Session = z.infer<typeof sessionSchema>;
+
+const sessionListSchema = z.object({ items: z.array(sessionSchema) });
+export type SessionList = z.infer<typeof sessionListSchema>;
+
+/** Returns the caller's own sessions, rejecting a response that isn't a session list. */
+export function listSessions(signal?: AbortSignal): Promise<SessionList> {
+  return api("/v1/auth/sessions", { schema: sessionListSchema, signal });
+}
 
 /** Returns the session's device in words, as the server describes it (never the browser). */
 export function sessionDevice(s: Session): string {
@@ -37,30 +55,40 @@ export function sessionCountry(s: Session, locale = "en"): string {
   }
 }
 
-/**
- * active, revoked (ended by sign-out or revocation) or expired (reached its maximum age or idle
- * timeout first). Only an active session can be revoked.
- */
-export type SessionStatus = "active" | "revoked" | "expired";
-
 export function sessionStatus(s: Session): SessionStatus {
   return s.status ?? (s.revoked_at ? "revoked" : "active");
 }
 
-export const SESSIONS_KEY = ["sessions"] as const;
-
 export function useSessions() {
   return useQuery({
-    queryKey: SESSIONS_KEY,
-    queryFn: () => api<{ items: Session[] }>("/v1/auth/sessions"),
+    queryKey: authKeys.sessions(),
+    queryFn: () => listSessions(),
   });
 }
 
+/** Revokes one session; the list shows it revoked at once, and rolls back on a refusal. */
 export function useRevokeSession() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/auth/sessions/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: SESSIONS_KEY }),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: authKeys.sessions() });
+      const previous = qc.getQueryData<SessionList>(authKeys.sessions());
+      const now = new Date().toISOString();
+      qc.setQueryData<SessionList>(
+        authKeys.sessions(),
+        (list) =>
+          list && {
+            ...list,
+            items: list.items.map((s) =>
+              s.id === id ? { ...s, revoked_at: now, status: "revoked" as const } : s,
+            ),
+          },
+      );
+      return { previous };
+    },
+    onError: (_err, _id, ctx) => qc.setQueryData(authKeys.sessions(), ctx?.previous),
+    onSettled: () => qc.invalidateQueries({ queryKey: authKeys.sessions() }),
     meta: { successMessage: "Session revoked" },
   });
 }
@@ -99,4 +127,19 @@ export function signOutEverywhere(): Promise<SignOutEverywhereResult> {
     method: "POST",
     schema: signOutEverywhereSchema,
   });
+}
+
+/** Ends every other session; the caller reports the outcome. */
+export function useRevokeOtherSessions() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: revokeOtherSessions,
+    onSettled: () => qc.invalidateQueries({ queryKey: authKeys.sessions() }),
+    meta: { silent: true },
+  });
+}
+
+/** Signs out everywhere, this console included; the caller reports it and leaves the console. */
+export function useSignOutEverywhere() {
+  return useMutation({ mutationFn: signOutEverywhere, meta: { silent: true } });
 }

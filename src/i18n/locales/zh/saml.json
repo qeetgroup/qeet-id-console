@@ -25,9 +25,7 @@
     "actions": "操作"
   },
   "delete": {
-    "title": "移除此服务提供商？",
-    "descriptionNamed": "<strong>{{name}}</strong> 将不再接受来自此 IdP 的 SSO。此操作无法撤销。",
-    "descriptionFallback": "它将不再接受来自此 IdP 的 SSO。"
+    "title": "移除此服务提供商？"
   },
   "form": {
     "addTitle": "添加服务提供商",

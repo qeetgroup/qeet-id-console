@@ -5,6 +5,7 @@ import { api } from "@/platform/api/client";
 import { useTenantId, useUserId } from "@/platform/auth/session";
 
 import { clearStashedProfile, readPendingOnboarding } from "./onboarding-profile";
+import { orgKeys } from "@/modules/organizations";
 
 type TenantRec = {
   id: string;
@@ -45,8 +46,7 @@ export function useApplyOnboardingProfile() {
         if (logo_url && !tenant.logo_url) body.logo_url = logo_url;
         await api(`/v1/tenants/${tenantId}`, { method: "PATCH", body });
         clearStashedProfile();
-        qc.invalidateQueries({ queryKey: ["tenant", tenantId] });
-        qc.invalidateQueries({ queryKey: ["tenants"] });
+        qc.invalidateQueries({ queryKey: orgKeys.all });
       } catch {
         ran.current = false; // let a later run retry
       }

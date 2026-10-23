@@ -83,7 +83,6 @@
     "newPasswordHelp": "Mínimo de 8 caracteres.",
     "confirmPassword": "Confirmar nova senha",
     "mismatch": "As senhas não coincidem",
-    "success": "Senha atualizada.",
     "submit": "Atualizar senha"
   },
   "toast": {

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authzKeys } from "./keys";
 
 export interface AuditEvent {
   id: string;
@@ -47,7 +48,7 @@ export const AUTHZ_RESOURCE_TYPES = [
 export function useAuditEvents(filter: AuditFilter = {}) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["authz-audit", tenantId, filter],
+    queryKey: authzKeys.audit(tenantId, filter),
     enabled: !!tenantId,
     queryFn: () =>
       api<AuditResponse>(`/v1/tenants/${tenantId}/audit`, {

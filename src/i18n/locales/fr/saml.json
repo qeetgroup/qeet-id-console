@@ -25,9 +25,7 @@
     "actions": "Actions"
   },
   "delete": {
-    "title": "Supprimer ce fournisseur de services ?",
-    "descriptionNamed": "<strong>{{name}}</strong> n'acceptera plus le SSO de cet IdP. Cette action est irréversible.",
-    "descriptionFallback": "Il n'acceptera plus le SSO de cet IdP."
+    "title": "Supprimer ce fournisseur de services ?"
   },
   "form": {
     "addTitle": "Ajouter un fournisseur de services",

@@ -24,7 +24,11 @@ import { ChevronUpIcon, InfoIcon, LoaderCircleIcon, SearchIcon, XIcon } from "@q
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorText } from "@/platform/components/error-reference";
+import {
+  settleSensitiveAction,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import { useRoles } from "@/modules/authorization";
 import { type Group, useAddGroupMember, useAssignGroupRole, useCreateGroup } from "../api/groups";
 
@@ -43,8 +47,9 @@ export function NewGroupSheet({ open, onOpenChange, groups, users }: Props) {
   const { t } = useTranslation("groups");
   const rolesQ = useRoles();
   const createM = useCreateGroup();
-  const addMemberM = useAddGroupMember();
+  const addMemberM = useAddGroupMember({ silent: true });
   const assignRoleM = useAssignGroupRole();
+  const runSensitive = useSensitiveAction();
 
   const [parentId, setParentId] = useState(NONE);
   const [roleId, setRoleId] = useState(NONE);
@@ -97,8 +102,14 @@ export function NewGroupSheet({ open, onOpenChange, groups, users }: Props) {
                     ...selected.map((u) =>
                       addMemberM.mutateAsync({ groupId: group.id, userId: u.id }),
                     ),
+                    // Granting the group a role is step-up gated; the group itself is not.
                     ...(roleId !== NONE
-                      ? [assignRoleM.mutateAsync({ groupId: group.id, roleId })]
+                      ? [
+                          runSensitive({
+                            actionLabel: t("create.roleAction").toLowerCase(),
+                            run: () => assignRoleM.mutateAsync({ groupId: group.id, roleId }),
+                          }).catch(settleSensitiveAction),
+                        ]
                       : []),
                   ]);
                   reset();
@@ -263,7 +274,9 @@ export function NewGroupSheet({ open, onOpenChange, groups, users }: Props) {
 
             {createM.error ? (
               <Field>
-                <FieldError>{errorMessage(createM.error)}</FieldError>
+                <FieldError>
+                  <ErrorText error={createM.error} />
+                </FieldError>
               </Field>
             ) : null}
           </div>

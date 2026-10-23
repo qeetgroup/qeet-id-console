@@ -14,7 +14,7 @@ vi.mock("@tanstack/react-router", () => ({
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
 import * as dataExport from "@/shared/utils/data-export";
-import { ComplianceEvidencePage } from "../evidence-page";
+import { ComplianceEvidencePage } from "../components/evidence-page";
 
 type Control = {
   id: string;

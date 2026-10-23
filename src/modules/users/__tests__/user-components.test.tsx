@@ -17,10 +17,10 @@ import { sessionStore } from "@/platform/auth/session-store";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import type { SecuritySummary } from "../api/user360";
 import type { UserStats } from "../api/users";
-import { DangerZone } from "../danger-zone";
-import { SaveView, type UsersViewState } from "../filter-extras";
-import { SecurityPosture } from "../posture-tiles";
-import { UsersKpis } from "../users-kpis";
+import { DangerZone } from "../components/danger-zone";
+import { SaveView, type UsersViewState } from "../components/filter-extras";
+import { SecurityPosture } from "../components/posture-tiles";
+import { UsersKpis } from "../components/users-kpis";
 
 beforeEach(() => {
   navigate.mockReset();

@@ -3,7 +3,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { userKeys } from "@/modules/users";
 import { api } from "@/platform/api/client";
+import { useTenantId, useUserId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 /** A phone that can approve sign-ins. */
 export interface PushDevice {
@@ -21,28 +24,36 @@ function devicesPath(scope: PushDeviceScope): string {
   return scope.kind === "self" ? "/v1/mfa/push/devices" : `/v1/users/${scope.userId}/push-devices`;
 }
 
-function devicesKey(scope: PushDeviceScope) {
-  return ["push-devices", scope.kind === "self" ? "self" : scope.userId] as const;
+// A member's phones sit with the rest of that person's views.
+function devicesKey(tenantId: string | null, scope: PushDeviceScope) {
+  return scope.kind === "self"
+    ? authKeys.pushDevices()
+    : [...userKeys.user(tenantId, scope.userId), "push-devices"];
 }
 
 /** The linked phones in scope. */
 export function usePushDevices(scope: PushDeviceScope) {
+  const tenantId = useTenantId();
   return useQuery({
-    queryKey: devicesKey(scope),
+    queryKey: devicesKey(tenantId, scope),
     queryFn: () => api<{ items: PushDevice[] }>(devicesPath(scope)),
   });
 }
 
 /** Removes a linked phone: it stops approving sign-ins at once. */
 export function useRemovePushDevice(scope: PushDeviceScope) {
+  const tenantId = useTenantId();
+  const ownId = useUserId();
   const qc = useQueryClient();
+  const userId = scope.kind === "member" ? scope.userId : ownId;
   return useMutation({
     mutationFn: (deviceId: string) =>
       api<void>(`${devicesPath(scope)}/${deviceId}`, { method: "DELETE" }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: devicesKey(scope) });
+      void qc.invalidateQueries({ queryKey: devicesKey(tenantId, scope) });
       // The member page counts linked phones in its security summary.
-      void qc.invalidateQueries({ queryKey: ["user360", "security"] });
+      if (userId)
+        void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "security") });
     },
     meta: { silent: true },
   });
@@ -77,7 +88,7 @@ export function useStartPairing() {
 /** Watches a pairing code until it links a phone or expires. */
 export function usePairingStatus(id: string | null) {
   return useQuery({
-    queryKey: ["push-pairing", id],
+    queryKey: authKeys.pushPairing(id),
     enabled: id !== null,
     queryFn: () => api<PushPairing>(`/v1/mfa/push/pairing/${id}`),
     refetchInterval: (query) => (query.state.data?.status === "pending" ? 2000 : false),

@@ -8,6 +8,7 @@ const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
 
+import { userKeys } from "@/modules/users";
 import { api } from "@/platform/api/client";
 import {
   type RetentionPolicy,
@@ -16,10 +17,11 @@ import {
   useRunRetention,
   useUpdateRetentionPolicy,
 } from "../api/retention";
+import { complianceKeys } from "../api/keys";
 
-const DELETED_USERS: QueryKey = ["users", "deleted", "tenant-a"];
+const DELETED_USERS: QueryKey = userKeys.deleted("tenant-a");
 const USERS_LIST: QueryKey = ["users", "tenant-a", 25, 1];
-const POLICY: QueryKey = ["retention", "tenant-a"];
+const POLICY: QueryKey = complianceKeys.retention("tenant-a");
 
 /** Renders the hook; mutation tests seed the caches it may refresh, query tests start empty. */
 function setup<T>(hook: () => T, seed: QueryKey[] = []) {

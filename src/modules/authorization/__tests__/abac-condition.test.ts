@@ -231,6 +231,47 @@ describe("fromConditionJson", () => {
   });
 });
 
+describe("attribute references", () => {
+  const reference: ConditionJson = {
+    attr: "subject.region",
+    op: "eq",
+    value: { attr: "resource.region" },
+  };
+
+  it("stores a leaf that names another attribute as {attr}", () => {
+    const node: CondNode = {
+      id: nid("leaf"),
+      kind: "leaf",
+      attr: "subject.region",
+      op: "eq",
+      value: " resource.region ",
+      ref: true,
+    };
+    expect(toConditionJson(node)).toEqual(reference);
+  });
+
+  it("reads a stored reference back as a reference, round-tripping unchanged", () => {
+    expect(fromConditionJson(reference)).toMatchObject({ value: "resource.region", ref: true });
+    expect(toConditionJson(fromConditionJson(reference))).toEqual(reference);
+  });
+
+  it("keeps a lookalike string a literal", () => {
+    const literal: ConditionJson = { attr: "subject.region", op: "eq", value: "resource.region" };
+    expect(fromConditionJson(literal)).not.toHaveProperty("ref", true);
+    expect(toConditionJson(fromConditionJson(literal))).toEqual(literal);
+  });
+
+  it("keeps prefix, suffix and regex values strings, as the engine requires", () => {
+    for (const op of ["prefix", "suffix", "regex"] as const) {
+      expect(toConditionJson(leaf("subject.code", op, " 0123 "))).toEqual({
+        attr: "subject.code",
+        op,
+        value: "0123",
+      });
+    }
+  });
+});
+
 describe("countLeaves", () => {
   it("counts comparison leaves through groups and NOT wrappers", () => {
     const tree = group("all", [

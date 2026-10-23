@@ -4,6 +4,7 @@ import {
   startAuthentication,
 } from "@simplewebauthn/browser";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
@@ -28,7 +29,20 @@ export type StepUpOptions = {
   codeFactors: StepUpCodeFactor[];
 };
 
-type OtpFactor = StepUpCodeFactor & { verified: boolean };
+const totpStatusSchema = z.object({ enrolled: z.boolean() });
+const codeFactorsSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      channel: z.enum(["email", "sms"]),
+      destination: z.string(), // masked
+      verified: z.boolean(),
+    }),
+  ),
+});
+const passkeysSchema = z.object({ items: z.array(z.object({ id: z.string() })) });
+// The server answers a met factor with exactly this; nothing else may count as stepped up.
+const verifiedSchema = z.object({ verified: z.literal(true) });
 
 function counts(allowed: string[] | null, ...methods: string[]): boolean {
   return allowed === null || methods.some((m) => allowed.includes(m));
@@ -42,9 +56,9 @@ export function useStepUpOptions(open: boolean, allowed: string[] | null) {
     staleTime: 0,
     queryFn: async (): Promise<StepUpOptions> => {
       const [totp, otp, passkeys] = await Promise.all([
-        api<{ enrolled: boolean }>("/v1/mfa/totp").catch(() => ({ enrolled: false })),
-        api<{ items: OtpFactor[] }>("/v1/mfa/otp/factors").catch(() => ({ items: [] })),
-        api<{ items: unknown[] }>("/v1/passkeys").catch(() => ({ items: [] })),
+        api("/v1/mfa/totp", { schema: totpStatusSchema }).catch(() => ({ enrolled: false })),
+        api("/v1/mfa/otp/factors", { schema: codeFactorsSchema }).catch(() => ({ items: [] })),
+        api("/v1/passkeys", { schema: passkeysSchema }).catch(() => ({ items: [] })),
       ]);
       return {
         passkey:
@@ -75,9 +89,10 @@ export function useStepUpVerify() {
       code: string;
       kind?: "authenticator" | "otp";
     }) =>
-      api<{ verified: boolean }>(kind === "otp" ? "/v1/mfa/otp/verify" : "/v1/mfa/totp/verify", {
+      api(kind === "otp" ? "/v1/mfa/otp/verify" : "/v1/mfa/totp/verify", {
         method: "POST",
         body: { code },
+        schema: verifiedSchema,
       }),
     meta: { silent: true },
   });
@@ -104,9 +119,10 @@ export function useStepUpPasskey() {
         publicKey: PublicKeyCredentialRequestOptionsJSON;
       }>("/v1/mfa/webauthn/challenge", { method: "POST", body: {} });
       const credential = await startAuthentication({ optionsJSON: begin.publicKey });
-      return api<{ verified: boolean }>("/v1/mfa/webauthn/verify", {
+      return api("/v1/mfa/webauthn/verify", {
         method: "POST",
         body: { session_id: begin.session_id, credential },
+        schema: verifiedSchema,
       });
     },
     meta: { silent: true },

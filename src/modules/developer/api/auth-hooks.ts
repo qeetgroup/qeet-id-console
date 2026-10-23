@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { developerKeys } from "./keys";
 
 export interface AuthHook {
   id: string;
@@ -15,12 +16,10 @@ export interface AuthHook {
   created_at: string;
 }
 
-const KEY = ["auth-hooks"];
-
 export function useAuthHooks() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: developerKeys.authHooks(tenantId),
     queryFn: () => api<{ items: AuthHook[] }>(`/v1/tenants/${tenantId}/auth-hooks`),
     enabled: !!tenantId,
   });
@@ -35,8 +34,8 @@ export function useCreateAuthHook() {
         method: "POST",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Hook added" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
+    meta: { successMessage: "Hook added", silentError: true },
   });
 }
 
@@ -57,7 +56,7 @@ export function useUpdateAuthHook() {
         method: "PATCH",
         body: { enabled, fail_open },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
     meta: { successMessage: "Auth hook updated" },
   });
 }
@@ -70,7 +69,7 @@ export function useDeleteAuthHook() {
       api<void>(`/v1/tenants/${tenantId}/auth-hooks/${id}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
     meta: { successMessage: "Auth hook deleted" },
   });
 }

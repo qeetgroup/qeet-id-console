@@ -3,6 +3,7 @@
 
 import { z } from "zod";
 
+import { listSessions } from "@/modules/authentication";
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
 
@@ -69,15 +70,6 @@ export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
 const searchSessionsInput = z.object({});
 type SearchSessionsInput = z.infer<typeof searchSessionsInput>;
 
-interface Session {
-  id: string;
-  user_id: string;
-  user_agent?: string | null;
-  ip?: string | null;
-  created_at: string;
-  last_seen_at?: string | null;
-}
-
 export const searchSessionsTool: ToolDefinition<SearchSessionsInput> = {
   name: "search_sessions",
   category: "audit",
@@ -92,10 +84,7 @@ export const searchSessionsTool: ToolDefinition<SearchSessionsInput> = {
   async run(ctx, input) {
     // input is always {}; referenced only for the unused-parameter lint.
     void input;
-    const data = await api<{ items: Session[] }>("/v1/auth/sessions", {
-      signal: ctx.signal,
-    });
-    const sessions = data.items ?? [];
+    const { items: sessions } = await listSessions(ctx.signal);
     return {
       ok: true,
       summary: `Found ${sessions.length} active session${sessions.length === 1 ? "" : "s"} for the current operator. (Note: cross-user session search is not available — this returns only your own sessions.)`,

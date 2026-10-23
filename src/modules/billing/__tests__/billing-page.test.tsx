@@ -46,6 +46,7 @@ import {
   BillingSettingsView,
   type BillingSettingsViewProps,
 } from "../components/billing-page";
+import { billingKeys } from "../api/keys";
 
 beforeEach(() => {
   context.tenantId = "tenant-a";
@@ -579,8 +580,8 @@ describe("Billing API orchestration", () => {
   it("does not request or render tenant billing data without read permission", async () => {
     context.canRead = false;
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(["billing", "profile", "tenant-a"], profileFixture());
-    client.setQueryData(["billing", "subscription", "tenant-a"], subscription());
+    client.setQueryData(billingKeys.profile("tenant-a"), profileFixture());
+    client.setQueryData(billingKeys.subscription("tenant-a"), subscription());
     renderPage(client);
     expect(await screen.findByText("You don't have access to billing.")).toBeTruthy();
     expect(screen.queryByDisplayValue("Example Ltd")).toBeNull();

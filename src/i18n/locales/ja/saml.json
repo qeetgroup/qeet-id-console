@@ -25,9 +25,7 @@
     "actions": "操作"
   },
   "delete": {
-    "title": "このサービスプロバイダーを削除しますか？",
-    "descriptionNamed": "<strong>{{name}}</strong>はこのIdPからのSSOを受け入れなくなります。この操作は元に戻せません。",
-    "descriptionFallback": "このIdPからのSSOを受け入れなくなります。"
+    "title": "このサービスプロバイダーを削除しますか？"
   },
   "form": {
     "addTitle": "サービスプロバイダーを追加",

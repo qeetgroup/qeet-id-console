@@ -1,3 +1,14 @@
+/** One field the backend rejected in a 422, named by its JSON key in the request body. */
+export type ApiFieldError = {
+  field: string;
+  code: string; // e.g. "required", "too_long": map with fieldMessageForCode()
+};
+
+type ApiErrorContext = {
+  requestId?: string; // the backend's request_id, or the id the console sent
+  fields?: ApiFieldError[];
+};
+
 /**
  * The backend's `error` envelope as thrown by the API client; normalizeError() classifies it.
  * `message` is the backend's own text: never render it, use userMessageForCode().
@@ -8,6 +19,8 @@ export class ApiError extends Error {
   detail?: string; // developer context from the API's `detail` field
   retryable: boolean; // the API marks the failure safe to retry
   metadata?: Record<string, unknown>; // structured context such as `retry_after`
+  requestId?: string; // support reference, matching the backend's logs
+  fields: ApiFieldError[];
 
   constructor(
     status: number,
@@ -16,6 +29,7 @@ export class ApiError extends Error {
     detail?: string,
     retryable = false,
     metadata?: Record<string, unknown>,
+    context: ApiErrorContext = {},
   ) {
     super(message);
     this.name = "ApiError";
@@ -24,5 +38,7 @@ export class ApiError extends Error {
     this.detail = detail;
     this.retryable = retryable;
     this.metadata = metadata;
+    this.requestId = context.requestId;
+    this.fields = context.fields ?? [];
   }
 }

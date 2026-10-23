@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export interface DeviceAuth {
   id: string;
@@ -22,7 +23,7 @@ export interface DeviceAuth {
 export function useDeviceAuthorizations() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["device-auth", tenantId],
+    queryKey: securityKeys.deviceAuthorizations(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: DeviceAuth[] }>(`/v1/tenants/${tenantId}/oauth/devices`),
   });
@@ -38,7 +39,8 @@ export function useRevokeDeviceAuth() {
         method: "DELETE",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["device-auth"] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: securityKeys.deviceAuthorizations(tenantId) }),
     meta: { successMessage: "Device authorization revoked" },
   });
 }

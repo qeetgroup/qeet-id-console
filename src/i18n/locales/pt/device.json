@@ -21,8 +21,6 @@
     "actions": "Ações"
   },
   "revoke": {
-    "title": "Revogar esta autorização de dispositivo?",
-    "descriptionNamed": "O dispositivo que consulta com o código de usuário <code>{{code}}</code> será negado e não poderá mais ser aprovado. Esta ação não pode ser desfeita.",
-    "descriptionFallback": "O fluxo de dispositivo será negado e não poderá mais ser aprovado."
+    "title": "Revogar esta autorização de dispositivo?"
   }
 }

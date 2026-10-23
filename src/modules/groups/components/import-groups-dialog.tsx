@@ -16,7 +16,7 @@ import { CircleCheckIcon, CircleSlashIcon, CircleXIcon, LoaderCircleIcon } from 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorText } from "@/platform/components/error-reference";
 import { type ImportRow, useImportGroups } from "../api/groups";
 
 /**
@@ -94,8 +94,11 @@ export function ImportGroupsDialog({
                 )}
                 <span className="min-w-0">
                   <span className="font-medium">{row.name}</span>
-                  {row.reason ? (
-                    <span className="block text-xs text-muted-foreground">{row.reason}</span>
+                  {/* The server's reason is its own text, so the row's status picks the wording. */}
+                  {row.status !== "created" ? (
+                    <span className="block text-xs text-muted-foreground">
+                      {t(row.status === "skipped" ? "import.rowSkipped" : "import.rowFailed")}
+                    </span>
                   ) : null}
                 </span>
               </li>
@@ -122,7 +125,11 @@ export function ImportGroupsDialog({
                 onChange={(e) => setText(e.target.value)}
                 placeholder={t("import.placeholder")}
               />
-              {importM.error ? <FieldError>{errorMessage(importM.error)}</FieldError> : null}
+              {importM.error ? (
+                <FieldError>
+                  <ErrorText error={importM.error} />
+                </FieldError>
+              ) : null}
             </Field>
           </form>
         )}

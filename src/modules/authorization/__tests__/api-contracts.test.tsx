@@ -28,7 +28,6 @@ import {
 import { useExplainCheck } from "../api/access-check";
 import { useAuditEvents } from "../api/audit";
 import {
-  ROLES_KEY,
   useCreateRole,
   useGrantPermission,
   usePermissions,
@@ -36,12 +35,8 @@ import {
   useRolePermissions,
   useRoles,
 } from "../api/rbac";
-import {
-  useGrantGroupRole,
-  useGroupRoles,
-  useRevokeGroupRole,
-  useRoles as useGroupGrantRoles,
-} from "../api/rbac-groups";
+import { authzKeys } from "../api/keys";
+import { useGrantGroupRole, useGroupRoles, useRevokeGroupRole } from "../api/rbac-groups";
 import {
   useCheckRelation,
   useDeleteTuple,
@@ -121,7 +116,7 @@ describe("ABAC policies", () => {
   it("lists policies for the current tenant under a tenant-scoped key", async () => {
     const { client } = await runQuery(() => useAbacPolicies());
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/abac/policies");
-    expect(client.getQueryData(["abac-policies", "tenant-a"])).toEqual({ items: [] });
+    expect(client.getQueryData(authzKeys.abacPolicies("tenant-a"))).toEqual({ items: [] });
   });
 
   it("does not list policies without a tenant", async () => {
@@ -133,7 +128,7 @@ describe("ABAC policies", () => {
     vi.mocked(api).mockResolvedValue({ id: "p1" });
     const { client } = await runQuery(() => useAbacPolicy("p1"));
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/abac/policies/p1");
-    expect(client.getQueryData(["abac-policy", "tenant-a", "p1"])).toEqual({ id: "p1" });
+    expect(client.getQueryData(authzKeys.abacPolicy("tenant-a", "p1"))).toEqual({ id: "p1" });
 
     vi.clearAllMocks();
     await expectIdle(() => useAbacPolicy(null));
@@ -156,8 +151,8 @@ describe("ABAC policies", () => {
       method: "POST",
       body: input,
     });
-    expect(invalidated).toEqual([["abac-policies"]]);
-    expect(meta).toEqual({ successMessage: "Policy created" });
+    expect(invalidated).toEqual([authzKeys.abacPolicies("tenant-a")]);
+    expect(meta).toEqual({ successMessage: "Policy created", silentError: true });
   });
 
   it("patches a policy and refreshes both the list and the detail", async () => {
@@ -166,8 +161,8 @@ describe("ABAC policies", () => {
       method: "PATCH",
       body: input,
     });
-    expect(invalidated).toEqual([["abac-policies"], ["abac-policy"]]);
-    expect(meta).toEqual({ successMessage: "Policy updated" });
+    expect(invalidated).toEqual([authzKeys.abacPolicies("tenant-a")]);
+    expect(meta).toEqual({ successMessage: "Policy updated", silentError: true });
   });
 
   it("deletes a policy and refreshes the list", async () => {
@@ -175,7 +170,7 @@ describe("ABAC policies", () => {
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/abac/policies/p1", {
       method: "DELETE",
     });
-    expect(invalidated).toEqual([["abac-policies"]]);
+    expect(invalidated).toEqual([authzKeys.abacPolicies("tenant-a")]);
     expect(meta).toEqual({ successMessage: "Policy deleted" });
   });
 
@@ -217,7 +212,7 @@ describe("ReBAC relationship tuples", () => {
   it("lists tuples on an object, URL-encoding the object", async () => {
     const { client } = await runQuery(() => useRelationTuples("doc:a b/c"));
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/relation-tuples?object=doc%3Aa%20b%2Fc");
-    expect(client.getQueryData(["relation-tuples", "tenant-a", "doc:a b/c"])).toEqual({
+    expect(client.getQueryData(authzKeys.relationTuples("tenant-a", "doc:a b/c"))).toEqual({
       items: [],
     });
   });
@@ -233,9 +228,9 @@ describe("ReBAC relationship tuples", () => {
     expect(api).toHaveBeenCalledWith(
       "/v1/tenants/tenant-a/relation-tuples?subject=group%3Aeng%23member",
     );
-    expect(
-      client.getQueryData(["relation-tuples-subject", "tenant-a", "group:eng#member"]),
-    ).toEqual({ items: [] });
+    expect(client.getQueryData(authzKeys.subjectTuples("tenant-a", "group:eng#member"))).toEqual({
+      items: [],
+    });
 
     vi.clearAllMocks();
     await expectIdle(() => useSubjectTuples(""));
@@ -248,7 +243,7 @@ describe("ReBAC relationship tuples", () => {
       "/v1/tenants/tenant-a/relation-tuples/graph?object=doc%3A1&relation=viewer&depth=3",
     );
     expect(
-      withDepth.client.getQueryData(["relation-graph", "tenant-a", "doc:1", "viewer", 3]),
+      withDepth.client.getQueryData(authzKeys.relationGraph("tenant-a", "doc:1", "viewer", 3)),
     ).toEqual({ nodes: [], edges: [] });
 
     await runQuery(() => useRelationGraph("doc:1", "viewer"));
@@ -267,12 +262,8 @@ describe("ReBAC relationship tuples", () => {
       method: "POST",
       body: tuple,
     });
-    expect(invalidated).toEqual([
-      ["relation-tuples"],
-      ["relation-graph"],
-      ["relation-tuples-subject"],
-    ]);
-    expect(meta).toEqual({ successMessage: "Tuple written" });
+    expect(invalidated).toEqual([authzKeys.relations("tenant-a")]);
+    expect(meta).toEqual({ successMessage: "Tuple written", silentError: true });
   });
 
   it("deletes a tuple by id and refreshes tuple lists, the relation graph and subject lookups", async () => {
@@ -280,11 +271,7 @@ describe("ReBAC relationship tuples", () => {
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/relation-tuples/t1", {
       method: "DELETE",
     });
-    expect(invalidated).toEqual([
-      ["relation-tuples"],
-      ["relation-graph"],
-      ["relation-tuples-subject"],
-    ]);
+    expect(invalidated).toEqual([authzKeys.relations("tenant-a")]);
     expect(meta).toEqual({ successMessage: "Relationship deleted" });
   });
 
@@ -315,23 +302,22 @@ describe("ReBAC relationship tuples", () => {
 
   it("refreshes a cached relation graph and subject lookup after a tuple write", async () => {
     const h = harness();
-    h.client.setQueryData(["relation-graph", "tenant-a", "doc:1", "viewer", undefined], {
+    h.client.setQueryData(authzKeys.relationGraph("tenant-a", "doc:1", "viewer"), {
       nodes: [],
       edges: [],
     });
-    h.client.setQueryData(["relation-tuples-subject", "tenant-a", "user:u1"], { items: [] });
+    h.client.setQueryData(authzKeys.subjectTuples("tenant-a", "user:u1"), { items: [] });
     const { result } = renderHook(() => useWriteTuple(), { wrapper: h.wrapper });
     await act(async () => {
       await result.current.mutateAsync({ object: "doc:1", relation: "viewer", subject: "user:u1" });
     });
     const cache = h.client.getQueryCache();
     expect(
-      cache.find({ queryKey: ["relation-graph", "tenant-a", "doc:1", "viewer", undefined] })?.state
+      cache.find({ queryKey: authzKeys.relationGraph("tenant-a", "doc:1", "viewer") })?.state
         .isInvalidated,
     ).toBe(true);
     expect(
-      cache.find({ queryKey: ["relation-tuples-subject", "tenant-a", "user:u1"] })?.state
-        .isInvalidated,
+      cache.find({ queryKey: authzKeys.subjectTuples("tenant-a", "user:u1") })?.state.isInvalidated,
     ).toBe(true);
   });
 });
@@ -341,14 +327,13 @@ describe("RBAC roles and permissions", () => {
     session.tenantId = null;
     const { client } = await runQuery(() => usePermissions());
     expect(api).toHaveBeenCalledWith("/v1/permissions");
-    expect(client.getQueryData(["permissions"])).toEqual({ items: [] });
+    expect(client.getQueryData(authzKeys.permissions(null))).toEqual({ items: [] });
   });
 
   it("lists the tenant's roles under the shared roles key", async () => {
-    expect(ROLES_KEY).toEqual(["roles"]);
     const { client } = await runQuery(() => useRoles());
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/roles");
-    expect(client.getQueryData(["roles", "tenant-a"])).toEqual({ items: [] });
+    expect(client.getQueryData(authzKeys.roles("tenant-a"))).toEqual({ items: [] });
 
     vi.clearAllMocks();
     session.tenantId = null;
@@ -359,14 +344,14 @@ describe("RBAC roles and permissions", () => {
     const body = { name: "auditor", description: "Read-only" };
     const { invalidated, meta } = await runMutation(() => useCreateRole(), body);
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/roles", { method: "POST", body });
-    expect(invalidated).toEqual([["roles"]]);
-    expect(meta).toEqual({ successMessage: "Role created" });
+    expect(invalidated).toEqual([authzKeys.roles("tenant-a")]);
+    expect(meta).toEqual({ successMessage: "Role created", silentError: true });
   });
 
   it("reads a role's permissions by role id, and waits until a role is chosen", async () => {
     const { client } = await runQuery(() => useRolePermissions("r1"));
     expect(api).toHaveBeenCalledWith("/v1/roles/r1/permissions");
-    expect(client.getQueryData(["role-permissions", "r1"])).toEqual({ items: [] });
+    expect(client.getQueryData(authzKeys.rolePermissions("tenant-a", "r1"))).toEqual({ items: [] });
 
     vi.clearAllMocks();
     await expectIdle(() => useRolePermissions(null));
@@ -375,29 +360,23 @@ describe("RBAC roles and permissions", () => {
   it("grants a permission to a role and refreshes that role's permissions", async () => {
     const { invalidated, meta } = await runMutation(() => useGrantPermission("r1"), "perm-1");
     expect(api).toHaveBeenCalledWith("/v1/roles/r1/permissions/perm-1", { method: "POST" });
-    expect(invalidated).toEqual([["role-permissions", "r1"]]);
+    expect(invalidated).toEqual([authzKeys.rolePermissions("tenant-a", "r1")]);
     expect(meta).toEqual({ successMessage: "Permission granted" });
   });
 
   it("revokes a permission from a role and refreshes that role's permissions", async () => {
     const { invalidated, meta } = await runMutation(() => useRevokePermission("r1"), "perm-1");
     expect(api).toHaveBeenCalledWith("/v1/roles/r1/permissions/perm-1", { method: "DELETE" });
-    expect(invalidated).toEqual([["role-permissions", "r1"]]);
+    expect(invalidated).toEqual([authzKeys.rolePermissions("tenant-a", "r1")]);
     expect(meta).toEqual({ successMessage: "Permission revoked" });
   });
 });
 
 describe("RBAC group grants", () => {
-  it("shares the tenant roles cache entry with the Roles screen", async () => {
-    const { client } = await runQuery(() => useGroupGrantRoles());
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/roles");
-    expect(client.getQueryData(["roles", "tenant-a"])).toEqual({ items: [] });
-  });
-
   it("lists a group's roles, and waits for both tenant and group", async () => {
     const { client } = await runQuery(() => useGroupRoles("g1"));
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/groups/g1/roles");
-    expect(client.getQueryData(["group-roles", "tenant-a", "g1"])).toEqual({ items: [] });
+    expect(client.getQueryData(authzKeys.groupRoles("tenant-a", "g1"))).toEqual({ items: [] });
 
     vi.clearAllMocks();
     await expectIdle(() => useGroupRoles(""));
@@ -410,7 +389,7 @@ describe("RBAC group grants", () => {
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/groups/g1/roles/r1", {
       method: "POST",
     });
-    expect(invalidated).toEqual([["group-roles", "tenant-a", "g1"]]);
+    expect(invalidated).toEqual([authzKeys.groupRoles("tenant-a", "g1")]);
     expect(meta).toEqual({ successMessage: "Role granted to group" });
   });
 
@@ -419,7 +398,7 @@ describe("RBAC group grants", () => {
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/groups/g1/roles/r1", {
       method: "DELETE",
     });
-    expect(invalidated).toEqual([["group-roles", "tenant-a", "g1"]]);
+    expect(invalidated).toEqual([authzKeys.groupRoles("tenant-a", "g1")]);
     expect(meta).toEqual({ successMessage: "Role revoked from group" });
   });
 });
@@ -459,7 +438,7 @@ describe("authorization audit feed", () => {
         cursor: undefined,
       },
     });
-    expect(client.getQueryData(["authz-audit", "tenant-a", filter])).toEqual({ items: [] });
+    expect(client.getQueryData(authzKeys.audit("tenant-a", filter))).toEqual({ items: [] });
   });
 
   it("passes every filter through, and waits for a tenant", async () => {

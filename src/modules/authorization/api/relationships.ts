@@ -2,6 +2,7 @@ import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tansta
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authzKeys } from "./keys";
 
 /** A Zanzibar-style "object relation subject" assertion; the server resolves them recursively. */
 export interface RelationTuple {
@@ -15,7 +16,7 @@ export interface RelationTuple {
 export function useRelationTuples(object: string) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["relation-tuples", tenantId, object],
+    queryKey: authzKeys.relationTuples(tenantId, object),
     enabled: !!tenantId && !!object,
     queryFn: () =>
       api<{ items: RelationTuple[] }>(
@@ -25,12 +26,8 @@ export function useRelationTuples(object: string) {
 }
 
 // A tuple change also moves the expanded graph and the subject reverse-lookup.
-function invalidateTupleViews(qc: QueryClient) {
-  return Promise.all([
-    qc.invalidateQueries({ queryKey: ["relation-tuples"] }),
-    qc.invalidateQueries({ queryKey: ["relation-graph"] }),
-    qc.invalidateQueries({ queryKey: ["relation-tuples-subject"] }),
-  ]);
+function invalidateTupleViews(qc: QueryClient, tenantId: string | null) {
+  return qc.invalidateQueries({ queryKey: authzKeys.relations(tenantId) });
 }
 
 export function useWriteTuple() {
@@ -44,8 +41,8 @@ export function useWriteTuple() {
         body,
       });
     },
-    onSuccess: () => invalidateTupleViews(qc),
-    meta: { successMessage: "Tuple written" },
+    onSuccess: () => invalidateTupleViews(qc, tenantId),
+    meta: { successMessage: "Tuple written", silentError: true }, // the page shows the error
   });
 }
 
@@ -59,7 +56,7 @@ export function useDeleteTuple() {
         method: "DELETE",
       });
     },
-    onSuccess: () => invalidateTupleViews(qc),
+    onSuccess: () => invalidateTupleViews(qc, tenantId),
     meta: { successMessage: "Relationship deleted" },
   });
 }
@@ -104,7 +101,7 @@ export function useRelationGraph(object: string, relation: string, depth?: numbe
     ...(depth != null ? { depth: String(depth) } : {}),
   });
   return useQuery({
-    queryKey: ["relation-graph", tenantId, object, relation, depth],
+    queryKey: authzKeys.relationGraph(tenantId, object, relation, depth),
     enabled: !!tenantId && !!object && !!relation,
     queryFn: () => api<RelationGraph>(`/v1/tenants/${tenantId}/relation-tuples/graph?${params}`),
   });
@@ -114,7 +111,7 @@ export function useRelationGraph(object: string, relation: string, depth?: numbe
 export function useSubjectTuples(subject: string) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["relation-tuples-subject", tenantId, subject],
+    queryKey: authzKeys.subjectTuples(tenantId, subject),
     enabled: !!tenantId && !!subject,
     queryFn: () =>
       api<{ items: RelationTuple[] }>(

@@ -21,8 +21,6 @@
     "actions": "Acciones"
   },
   "revoke": {
-    "title": "¿Revocar esta autorización de dispositivo?",
-    "descriptionNamed": "El dispositivo que sondea con el código de usuario <code>{{code}}</code> será denegado y ya no podrá ser aprobado. No se puede deshacer.",
-    "descriptionFallback": "El flujo del dispositivo será denegado y ya no podrá ser aprobado."
+    "title": "¿Revocar esta autorización de dispositivo?"
   }
 }

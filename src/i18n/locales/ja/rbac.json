@@ -35,8 +35,6 @@
     "roleHeader": "ロール",
     "grantedHeader": "付与日",
     "actionsHeader": "操作",
-    "revokeTitle": "このロールをグループから削除しますか？",
-    "revokeDescriptionNamed": "メンバーは<strong>{{name}}</strong>によって付与された権限を失います（別のグループや直接割り当てで保持していない限り）。",
-    "revokeDescriptionFallback": "メンバーはこのロールの権限を失います。"
+    "revokeTitle": "このロールをグループから削除しますか？"
   }
 }

@@ -25,6 +25,21 @@ vi.mock("@/platform/security/capability-provider", () => ({
       })[permission] ?? false,
   }),
 }));
+const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
+vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/platform/security/sensitive-action-provider")>();
+  return {
+    ...actual,
+    useSensitiveAction: () => {
+      const run = actual.useSensitiveAction();
+      return (options: Parameters<typeof run>[0]) => {
+        sensitiveCalls.push(options);
+        return run(options);
+      };
+    },
+  };
+});
 
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
@@ -528,6 +543,10 @@ describe("Branding authorization", () => {
       }),
     });
     expect(vi.mocked(api).mock.calls.some(([path]) => path.endsWith("/domains"))).toBe(false);
+    expect(sensitiveCalls.at(-1)).toMatchObject({
+      capability: "branding.write",
+      actionLabel: "save changes",
+    });
   });
 
   it("clears draft data when changing organization or losing write access", async () => {

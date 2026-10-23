@@ -1,7 +1,8 @@
 // run() calls the backend through api(), so its RBAC, RLS and audit apply.
 
 import { z } from "zod";
-import { ROLES_KEY } from "@/modules/authorization";
+import { authzKeys } from "@/modules/authorization";
+import { userKeys } from "@/modules/users";
 
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
@@ -40,7 +41,7 @@ export const createRoleTool: ToolDefinition<CreateRoleInput> = {
         signal: ctx.signal,
       },
     );
-    ctx.queryClient.invalidateQueries({ queryKey: ROLES_KEY });
+    ctx.queryClient.invalidateQueries({ queryKey: authzKeys.roles(ctx.tenantId) });
     return {
       ok: true,
       summary: `Role "${role.name}" created (id: ${role.id}).`,
@@ -81,8 +82,7 @@ export const assignRoleTool: ToolDefinition<AssignRoleInput> = {
       method: "POST",
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ["users"] });
-    ctx.queryClient.invalidateQueries({ queryKey: ["user", input.user_id] });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
     return {
       ok: true,
       summary: `Role ${input.role_id} assigned to user ${input.user_id} in tenant ${ctx.tenantId}.`,
@@ -123,7 +123,9 @@ export const grantPermissionTool: ToolDefinition<GrantPermissionInput> = {
       method: "POST",
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: ["role-permissions", input.role_id] });
+    ctx.queryClient.invalidateQueries({
+      queryKey: authzKeys.rolePermissions(ctx.tenantId, input.role_id),
+    });
     return {
       ok: true,
       summary: `Permission ${input.permission_id} granted to role ${input.role_id}.`,

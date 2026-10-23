@@ -455,6 +455,26 @@ describe("Mappings page", () => {
     expect(screen.getByRole("textbox", { name: "Source data (JSON)" })).toBeTruthy();
   });
 
+  it("explains each preview issue by its code, never by the backend's message", () => {
+    const preview = {
+      valid: false,
+      profile: {},
+      values: {},
+      issues: [
+        { mapping_id: "mapping-a", field: "department", code: "directory.mapping_source_missing" },
+        { mapping_id: "", field: "", code: "directory.mapping_preview_too_large" },
+        { mapping_id: "mapping-a", field: "department", code: "directory.mapping_new_rule" },
+      ],
+    };
+    render(<MappingsView {...mappingProps()} preview={preview} />);
+    const status = screen.getByRole("status").textContent ?? "";
+    expect(status).toContain(
+      "Department: The required source attribute is missing from the test data.",
+    );
+    expect(status).toContain("The test data or the mappings are too large to preview.");
+    expect(status).toContain("Department: This mapping can't be applied as configured.");
+  });
+
   it("does not claim a valid mapping before a current preview exists", () => {
     render(<MappingsView {...mappingProps()} preview={undefined} />);
     expect(screen.getByRole("status").textContent).toBe("Not validated");

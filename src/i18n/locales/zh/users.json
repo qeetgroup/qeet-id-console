@@ -83,7 +83,6 @@
     "newPasswordHelp": "最少 8 个字符。",
     "confirmPassword": "确认新密码",
     "mismatch": "密码不匹配",
-    "success": "密码已更新。",
     "submit": "更新密码"
   },
   "toast": {

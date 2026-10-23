@@ -21,9 +21,7 @@
     "description": "Kopieren Sie das Geheimnis jetzt — es wird danach server-seitig bcrypt-gehasht und kann nicht mehr angezeigt werden."
   },
   "delete": {
-    "title": "Diese Anwendung löschen?",
-    "descriptionNamed": "Apps, die die Client-ID für <strong>{{name}}</strong> verwenden, können sich sofort nicht mehr authentifizieren. Dies kann nicht rückgängig gemacht werden.",
-    "descriptionFallback": "Apps, die diese Client-ID verwenden, werden nicht mehr funktionieren."
+    "title": "Diese Anwendung löschen?"
   },
   "create": {
     "title": "OAuth / OIDC-Anwendung registrieren",
@@ -65,7 +63,6 @@
     "dangerZoneTitle": "Gefahrenzone",
     "dangerZoneDescription": "Das Löschen verhindert, dass jede App mit dieser Client-ID sich authentifizieren kann.",
     "deleteApplication": "Anwendung löschen",
-    "deleteTitle": "Diese Anwendung löschen?",
-    "deleteDescription": "Apps, die die Client-ID für <strong>{{name}}</strong> verwenden, können sich sofort nicht mehr authentifizieren. Dies kann nicht rückgängig gemacht werden."
+    "deleteTitle": "Diese Anwendung löschen?"
   }
 }

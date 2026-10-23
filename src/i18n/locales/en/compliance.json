@@ -36,10 +36,15 @@
       "userId": "User ID",
       "userIdHelp": "UUID of the user to erase. Copy from the Users page.",
       "reason": "Reason",
+      "reasonPlaceholder": "The person asked for their account to be deleted (support ticket #1234).",
       "reasonHelp": "Optional but strongly recommended for audit-trail purposes.",
       "cancel": "Cancel",
       "submit": "File request",
-      "submitting": "Filing…"
+      "submitting": "Filing…",
+      "submitAction": "File an erasure request",
+      "validation": {
+        "userId": "Enter the person's user ID (a UUID)."
+      }
     },
     "confirm": {
       "cancelTitle": "Cancel this erasure request?",
@@ -107,7 +112,9 @@
       "previewResult_one": "{{count}} user would be purged at the current {{days}}-day window.",
       "previewResult_other": "{{count}} users would be purged at the current {{days}}-day window.",
       "runResult_one": "Purged {{count}} user.",
-      "runResult_other": "Purged {{count}} users."
+      "runResult_other": "Purged {{count}} users.",
+      "purgeAction": "Purge soft-deleted users",
+      "saveAction": "Change the retention policy"
     },
     "otherDataClasses": {
       "title": "Other data classes",

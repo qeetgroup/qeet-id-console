@@ -11,7 +11,7 @@ import {
   Input,
   QRCode,
 } from "@qeetrix/ui";
-import { CheckIcon, CopyIcon, DownloadIcon, LoaderCircleIcon } from "@qeetrix/icons";
+import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +19,7 @@ import { errorMessage } from "@/platform/errors/user-message";
 
 import { type MfaEnrollment, startMfaEnrollment } from "../api/mfa-sign-in";
 import type { MfaProof } from "../api/flows";
+import { RecoveryCodeList } from "./recovery-code-list";
 
 /**
  * Renders the sign-in step for an account that must have a second factor and holds none: set up
@@ -179,23 +180,6 @@ export function RecoveryCodesStep({
   onContinue: () => void;
 }) {
   const { t } = useTranslation("auth-flow");
-  const [copied, setCopied] = useState(false);
-
-  function copy() {
-    void navigator.clipboard?.writeText(codes.join("\n"));
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  }
-
-  function download() {
-    const blob = new Blob([`${codes.join("\n")}\n`], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "qeet-id-recovery-codes.txt";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
@@ -208,19 +192,12 @@ export function RecoveryCodesStep({
                 {t("signIn.enroll.codesSubtitle")}
               </p>
             </div>
-            <ul className="grid grid-cols-2 gap-2 rounded-lg border bg-muted/30 p-4 font-mono text-sm">
-              {codes.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={copy}>
-                {copied ? <CheckIcon /> : <CopyIcon />} {t("signIn.enroll.copyBtn")}
-              </Button>
-              <Button type="button" variant="outline" size="sm" onClick={download}>
-                <DownloadIcon /> {t("signIn.enroll.downloadBtn")}
-              </Button>
-            </div>
+            <RecoveryCodeList
+              codes={codes}
+              copyLabel={t("signIn.enroll.copyBtn")}
+              copiedLabel={t("signIn.enroll.copiedBtn")}
+              downloadLabel={t("signIn.enroll.downloadBtn")}
+            />
             <Field>
               <Button type="button" onClick={onContinue}>
                 {t("signIn.enroll.continueBtn")}

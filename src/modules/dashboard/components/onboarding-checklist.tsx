@@ -25,10 +25,16 @@ import { type ComponentType, useState } from "react";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { CHECKLIST_INTRO, CHECKLIST_ORDER } from "@/modules/onboarding";
-import * as apiClient from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { scopedStorage, useStorageScope } from "@/platform/auth/scoped-storage";
+import { oidcClientQueries } from "@/modules/authentication";
+import { brandingQueries } from "@/modules/branding";
+import { apiKeyQueries, webhookQueries } from "@/modules/developer";
+import { orgQueries } from "@/modules/organizations";
+import { userQueries } from "@/modules/users";
 
-const DISMISS_KEY = "qeetid-admin-onboarding-dismissed";
+// Dismissed per person and organization, so it never hides another's checklist.
+const dismissStorage = scopedStorage("qeetid-admin-onboarding-dismissed");
 
 // A step is done when its existence probe matches. Any error, including a 404 from an absent
 // endpoint, reads as not done, so the checklist waits instead of throwing.
@@ -37,7 +43,6 @@ function isDoneSafe<T>(
   err: unknown,
   predicate: (d: T) => boolean,
 ): boolean | "loading" {
-  if (err instanceof apiClient.ApiError && err.status === 404) return false;
   if (err) return false;
   if (data === undefined) return "loading";
   return predicate(data);
@@ -62,52 +67,33 @@ function useSteps(): Step[] {
   const canManageApiKeys = access.canAll(["apikey.read", "apikey.write"]);
   const canManageWebhooks = access.canAll(["webhook.read", "webhook.write"]);
 
+  // Each probe shares its module's cache entry and stays quiet: a failure only leaves the step open.
+  const probe = { meta: { silent: true }, staleTime: 30_000, retry: false } as const;
   const branding = useQuery({
-    queryKey: ["onboarding", "branding", tenantId],
-    queryFn: () =>
-      apiClient.api<{ logo_url?: string | null; primary_color?: string | null }>(
-        `/v1/tenants/${tenantId}/branding`,
-      ),
+    ...brandingQueries.detail(tenantId),
+    ...probe,
     enabled: !!tenantId && canBrand,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
+  // Two users means someone besides the owner joined.
   const users = useQuery({
-    queryKey: ["onboarding", "users", tenantId],
-    // Users are tenant-scoped by the session, not the URL: there is no /v1/tenants/{id}/users.
-    queryFn: () =>
-      apiClient.api<{ items: unknown[] }>(`/v1/users`, {
-        query: { limit: 2 },
-      }),
+    ...userQueries.list(tenantId, { limit: 2, offset: 0 }),
+    ...probe,
     enabled: !!tenantId && canInvite,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
   const webhooks = useQuery({
-    queryKey: ["onboarding", "webhooks", tenantId],
-    queryFn: () => apiClient.api<{ items: unknown[] }>(`/v1/tenants/${tenantId}/webhooks`),
+    ...webhookQueries.list(tenantId),
+    ...probe,
     enabled: !!tenantId && canManageWebhooks,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
   const oidc = useQuery({
-    queryKey: ["onboarding", "oidc", tenantId],
-    queryFn: () => apiClient.api<{ items: unknown[] }>(`/v1/tenants/${tenantId}/oidc/clients`),
+    ...oidcClientQueries.list(tenantId),
+    ...probe,
     enabled: !!tenantId && canManageConnections,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
   const apiKeys = useQuery({
-    queryKey: ["onboarding", "api-keys", tenantId],
-    queryFn: () => apiClient.api<{ items: unknown[] }>(`/v1/tenants/${tenantId}/api-keys`),
+    ...apiKeyQueries.list(tenantId),
+    ...probe,
     enabled: !!tenantId && canManageApiKeys,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
 
   return [
@@ -198,25 +184,17 @@ function tailor(steps: Step[], useCase?: string): Step[] {
 /**
  * Renders the first-day setup tasks the operator can act on, ticked off by probing existing APIs
  * and ordered for the use case chosen at organization creation. Shows a completion card once all
- * are done; a dismissal persists in localStorage.
+ * are done; a dismissal is kept for this person and organization.
  */
 export function OnboardingChecklist() {
-  const [dismissed, setDismissed] = useState(
-    () => typeof window !== "undefined" && localStorage.getItem(DISMISS_KEY) === "1",
-  );
+  // The scope is known only once the session hydrates, so the stored dismissal is read with it.
+  const scope = useStorageScope();
+  const [dismissedIn, setDismissedIn] = useState<string | null>(null);
+  const dismissed = scope !== null && (dismissedIn === scope || dismissStorage.read() === true);
   const tenantId = useTenantId();
-  const tenantQ = useQuery({
-    queryKey: ["tenant", tenantId],
-    queryFn: () =>
-      apiClient.api<{ metadata?: { onboarding?: { use_case?: string } } | null }>(
-        `/v1/tenants/${tenantId}`,
-      ),
-    enabled: !!tenantId,
-    staleTime: 60_000,
-    meta: { silent: true },
-    retry: false,
-  });
-  const useCase = tenantQ.data?.metadata?.onboarding?.use_case;
+  const tenantQ = useQuery({ ...orgQueries.record(tenantId), staleTime: 60_000 });
+  const onboarding = tenantQ.data?.metadata?.onboarding as { use_case?: string } | undefined;
+  const useCase = onboarding?.use_case;
   const intro = useCase ? CHECKLIST_INTRO[useCase] : undefined;
   const steps = tailor(useSteps(), useCase);
 
@@ -229,12 +207,8 @@ export function OnboardingChecklist() {
   const stillLoading = steps.some((s) => s.done === "loading");
 
   function handleDismiss() {
-    setDismissed(true);
-    try {
-      localStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      // Storage may be disabled (private mode); the in-memory dismissal lasts this session.
-    }
+    setDismissedIn(scope);
+    dismissStorage.write(true); // best-effort: without storage it lasts this page
   }
 
   if (allDone) {

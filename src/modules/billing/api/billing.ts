@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { billingKeys } from "./keys";
 
 export interface Plan {
   id: string;
@@ -55,7 +56,7 @@ export interface Entitlements {
 export function useEntitlements(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "entitlements", tenantId],
+    queryKey: billingKeys.entitlements(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<Entitlements>(`/v1/tenants/${tenantId}/entitlements`),
   });
@@ -68,7 +69,7 @@ export function useEntitlements(enabled = true) {
 export function useUsage(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "usage", tenantId],
+    queryKey: billingKeys.usage(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () =>
       api<{ usage: Record<string, number> }>(`/v1/tenants/${tenantId}/entitlements/usage`),
@@ -96,15 +97,15 @@ export function useStartTrial() {
   return useMutation({
     mutationFn: (body: { plan_code: string; currency: string }) =>
       api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
-    meta: { successMessage: "Trial started" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
+    meta: { successMessage: "Trial started", silentError: true },
   });
 }
 
 export function useBillingProfile(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "profile", tenantId],
+    queryKey: billingKeys.profile(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`),
   });
@@ -116,8 +117,8 @@ export function useSaveBillingProfile() {
   return useMutation({
     mutationFn: (body: BillingProfile) =>
       api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing", "profile", tenantId] }),
-    meta: { successMessage: "Billing profile saved" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.profile(tenantId) }),
+    meta: { successMessage: "Billing profile saved", silentError: true },
   });
 }
 
@@ -140,7 +141,7 @@ export function formatMoney(amountMinor: number, currency: string): string {
 
 export function usePlans() {
   return useQuery({
-    queryKey: ["billing", "plans"],
+    queryKey: billingKeys.plans(),
     queryFn: () => api<{ items: Plan[] }>("/v1/billing/plans"),
   });
 }
@@ -148,7 +149,7 @@ export function usePlans() {
 export function useSubscription(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "subscription", tenantId],
+    queryKey: billingKeys.subscription(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<Subscription>(`/v1/tenants/${tenantId}/billing/subscription`),
   });
@@ -157,7 +158,7 @@ export function useSubscription(enabled = true) {
 export function useInvoices(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["billing", "invoices", tenantId],
+    queryKey: billingKeys.invoices(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<{ items: Invoice[] }>(`/v1/tenants/${tenantId}/billing/invoices`),
   });
@@ -172,8 +173,8 @@ export function useChangePlan() {
         method: "PUT",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
-    meta: { successMessage: "Subscription updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
+    meta: { successMessage: "Subscription updated", silentError: true },
   });
 }
 
@@ -212,9 +213,9 @@ export function useCheckout() {
         window.location.href = res.checkout_url;
         return;
       }
-      qc.invalidateQueries({ queryKey: ["billing"] });
+      qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) });
     },
-    meta: { successMessage: "Subscription updated" },
+    meta: { successMessage: "Subscription updated", silentError: true },
   });
 }
 
@@ -227,8 +228,8 @@ export function useCancelSubscription() {
         `/v1/tenants/${tenantId}/billing/subscription/cancel`,
         { method: "POST" },
       ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["billing"] }),
-    meta: { successMessage: "Subscription will cancel at period end" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
+    meta: { successMessage: "Subscription will cancel at period end", silentError: true },
   });
 }
 

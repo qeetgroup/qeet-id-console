@@ -1,26 +1,19 @@
 import { cn, EmptyState, Kbd, ScrollArea, Separator, Skeleton, Spinner } from "@qeetrix/ui";
-import { useQuery } from "@tanstack/react-query";
 import { RotateCcwClockIcon, SearchIcon, XIcon } from "@qeetrix/icons";
 import { useEffect, useMemo, useRef, useState } from "react";
-
-import { ApiError, api } from "@/platform/api/client";
 
 import { moveHighlight } from "../keyboard";
 import { rankItems } from "../ranking";
 import { resourceHitsToSearchItems } from "../registry/resource-source";
-import type {
-  SearchItem,
-  SearchResponse,
-  SearchResultGroup,
-} from "../registry/types/registry.types";
+import type { SearchItem, SearchResultGroup } from "../registry/types/registry.types";
 import { useUniversalSearch } from "../search-provider";
 import { PreviewPane } from "./preview-pane";
 import { ResultGroups } from "./result-groups";
+import { useResourceSearch } from "../api/search";
 
 const LISTBOX_ID = "us-listbox";
 const MAX_NAV_RESULTS = 20;
 const MAX_CMD_RESULTS = 10;
-const MAX_RESOURCE_RESULTS = 10;
 const MAX_RECENT_SHOWN = 8;
 const DEBOUNCE_MS = 200;
 
@@ -79,31 +72,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     }
   }, [open]);
 
-  const resourceQuery = useQuery({
-    queryKey: ["universal-search", debouncedQuery],
-    queryFn: async ({ signal }) => {
-      try {
-        return await api<SearchResponse>("/v1/search", {
-          query: { q: debouncedQuery, limit: MAX_RESOURCE_RESULTS },
-          signal,
-        });
-      } catch (err) {
-        // An abort must propagate so TanStack Query treats the request as cancelled.
-        if (err instanceof Error && err.name === "AbortError") throw err;
-        // Any other failure means no resource results rather than a broken palette.
-        if (err instanceof ApiError || err instanceof Error) {
-          return { results: [], next_cursor: undefined } satisfies SearchResponse;
-        }
-        throw err;
-      }
-    },
-    enabled: open && debouncedQuery.length >= 2,
-    // Keeps the previous results visible while a new query loads, avoiding flicker.
-    placeholderData: (prev) => prev,
-    staleTime: 10_000,
-    retry: false,
-    meta: { silent: true },
-  });
+  const resourceQuery = useResourceSearch(debouncedQuery, open);
 
   const rankCtx = useMemo(() => getRankContext(), [getRankContext]);
 

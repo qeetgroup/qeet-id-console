@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export type SamlStatus = "draft" | "active" | "disabled";
 
@@ -39,7 +40,7 @@ export const samlLoginUrl = (id: string) => `${getApiBaseUrl()}/saml/login/${id}
 export function useSamlConnections() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["saml", tenantId],
+    queryKey: authKeys.saml(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: SamlConnection[] }>(`/v1/tenants/${tenantId}/saml`),
   });
@@ -54,8 +55,8 @@ export function useCreateSamlConnection() {
         method: "POST",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml"] }),
-    meta: { successMessage: "SAML connection created" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
+    meta: { successMessage: "SAML connection created", silentError: true },
   });
 }
 
@@ -68,7 +69,7 @@ export function useUpdateSamlConnection() {
         method: "PATCH",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
     meta: { successMessage: "SAML connection updated" },
   });
 }
@@ -79,7 +80,7 @@ export function useDeleteSamlConnection() {
   return useMutation({
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/saml/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(tenantId) }),
     meta: { successMessage: "SAML connection deleted" },
   });
 }

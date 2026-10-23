@@ -6,6 +6,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
+import { orgKeys } from "./keys";
+
 export interface EmailTemplate {
   key: string;
   name: string;
@@ -42,7 +44,7 @@ export type EmailTemplateCapabilities = {
 export function useEmailTemplates(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["email-templates", tenantId],
+    queryKey: orgKeys.emailTemplates(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () =>
       api<{ items: EmailTemplate[]; capabilities?: EmailTemplateCapabilities }>(
@@ -70,7 +72,7 @@ export function useUpsertEmailTemplate() {
         method: "PUT",
         body: { subject, body, options },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["email-templates"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(tenantId) }),
     meta: { successMessage: "Template saved" },
   });
 }
@@ -83,7 +85,7 @@ export function useResetEmailTemplate() {
       api<EmailTemplate>(`/v1/tenants/${tenantId}/email-templates/${key}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["email-templates"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(tenantId) }),
     meta: { successMessage: "Reverted to default" },
   });
 }

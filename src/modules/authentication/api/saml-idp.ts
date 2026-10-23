@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export interface SamlProvider {
   id: string;
@@ -36,7 +37,7 @@ export const idpMetadataUrl = () => `${getApiBaseUrl()}/saml/idp/metadata`;
 export function useSamlProviders() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["saml-providers", tenantId],
+    queryKey: authKeys.samlProviders(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: SamlProvider[] }>(`/v1/tenants/${tenantId}/saml-providers`),
   });
@@ -51,8 +52,8 @@ export function useCreateSamlProvider() {
         method: "POST",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml-providers"] }),
-    meta: { successMessage: "Service provider added" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
+    meta: { successMessage: "Service provider added", silentError: true },
   });
 }
 
@@ -65,8 +66,8 @@ export function useUpdateSamlProvider() {
         method: "PATCH",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml-providers"] }),
-    meta: { successMessage: "Service provider updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
+    meta: { successMessage: "Service provider updated", silentError: true },
   });
 }
 
@@ -78,7 +79,7 @@ export function useDeleteSamlProvider() {
       api<void>(`/v1/tenants/${tenantId}/saml-providers/${id}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["saml-providers"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
     meta: { successMessage: "Service provider removed" },
   });
 }

@@ -3,6 +3,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { api } from "@/platform/api/client";
 
 import type { ActivityEvent, ActivityFilters } from "./types/activity.types";
+import { useTenantId } from "@/platform/auth/session";
+import { activityKeys } from "./api/keys";
 
 export type ActivityHistoryPage = {
   events: ActivityEvent[];
@@ -57,8 +59,9 @@ export async function fetchActivityPage(
 
 /** Loads the cursor-paginated activity history for `filters`. */
 export function useActivityHistory(filters: ActivityFilters, enabled = true) {
+  const tenantId = useTenantId();
   return useInfiniteQuery({
-    queryKey: ["activity-history", filters] as const,
+    queryKey: activityKeys.history(tenantId, filters),
     queryFn: ({ pageParam }: { pageParam: string }) => fetchActivityPage(filters, pageParam),
     initialPageParam: "",
     getNextPageParam: (page: ActivityHistoryPage) => page.next_cursor ?? undefined,

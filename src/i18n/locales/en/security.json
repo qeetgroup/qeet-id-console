@@ -48,7 +48,8 @@
     },
     "confirm": {
       "revokeTitle": "Revoke this session?",
-      "revokeLabel": "Revoke"
+      "revokeLabel": "Revoke",
+      "revokeAction": "Revoke this session"
     }
   },
   "auditLogs": {
@@ -57,6 +58,9 @@
     "exporting": "Exporting {{format}}…",
     "exportCsv": "Download as CSV",
     "exportJson": "Download as JSON",
+    "exported_one": "Exported {{count}} event",
+    "exported_other": "Exported {{count}} events",
+    "exportCapped": "Capped at {{cap}} rows. Narrow the filter to capture older history.",
     "refresh": "Refresh",
     "filter": {
       "searchPlaceholder": "Search events — e.g. \"failed login\", user.delete, -saml",
@@ -117,13 +121,24 @@
       "description": "Tune sensitivity for this organization.",
       "scoreThreshold": "Score threshold",
       "coldStartGuard": "Cold-start guard (events)",
-      "save": "Save"
+      "save": "Save",
+      "saveAction": "Change anomaly detection settings",
+      "enabled": "Detect anomalies",
+      "validation": {
+        "threshold": "Use a score from 0 to 1.",
+        "events": "Use a whole number of 0 or more."
+      }
     },
     "verify": {
       "title": "Chain integrity",
       "description": "Walk the organization's hash-chained audit log and confirm no row has been tampered with.",
       "verify": "Verify integrity",
-      "verifying": "Verifying…"
+      "verifying": "Verifying…",
+      "intact_one": "Intact: {{count}} row checked.",
+      "intact_other": "Intact: {{count}} rows checked.",
+      "broken": "Broken at row {{id}}.",
+      "brokenLink": "It doesn't link to the row before it.",
+      "brokenRow": "Its content no longer matches its hash."
     }
   },
   "rateLimits": {
@@ -163,7 +178,8 @@
       "captcha": "CAPTCHA challenge",
       "captchaHelp": "hCaptcha shown for score > threshold.",
       "signature": "Request-signature analysis",
-      "signatureHelp": "TLS JA3 + header-order fingerprinting (beta)."
+      "signatureHelp": "TLS JA3 + header-order fingerprinting (beta).",
+      "saveAction": "Change bot protection settings"
     },
     "recent": {
       "title": "Recent decisions",
@@ -187,7 +203,11 @@
       "endpointLabel": "Endpoint URL",
       "tokenLabel": "Token",
       "tokenHelp": "Stored write-only; never shown again.",
-      "add": "Add"
+      "add": "Add",
+      "addAction": "Add a log sink",
+      "validation": {
+        "endpoint": "Enter the sink's endpoint URL."
+      }
     },
     "sinks": {
       "title": "Sinks",
@@ -197,7 +217,9 @@
       "lastForwarded": "last forwarded",
       "remove": "Remove",
       "confirmRemoveTitle": "Remove this sink?",
-      "confirmRemoveLabel": "Remove"
+      "confirmRemoveLabel": "Remove",
+      "toggleAction": "Pause or resume a log sink",
+      "removeAction": "Remove this log sink"
     }
   },
   "threats": {
@@ -239,7 +261,11 @@
         "actionLabel": "Action",
         "actionAllow": "Allow",
         "actionDeny": "Deny",
-        "add": "Add rule"
+        "add": "Add rule",
+        "addAction": "Add an IP rule",
+        "validation": {
+          "cidr": "Enter an address or range, such as 203.0.113.0/24."
+        }
       },
       "rules": {
         "title": "Rules",
@@ -253,7 +279,12 @@
           "added": "Added",
           "actions": "Actions"
         },
-        "remove": "Remove"
+        "remove": "Remove",
+        "removeAction": "Remove this IP rule",
+        "confirmRemoveTitle": "Remove this IP rule?",
+        "confirmRemoveAllow": "Sign-ins from {{cidr}} will no longer be allowed by this rule, so while enforcement is on they may be refused.",
+        "confirmRemoveDeny": "Sign-ins from {{cidr}} will no longer be refused by this rule.",
+        "confirmRemoveLabel": "Remove rule"
       },
       "test": {
         "title": "Test an address",
@@ -262,7 +293,17 @@
         "ipHelp": "Checked exactly as a sign-in from that address would be. An address that can't be read is refused.",
         "check": "Check",
         "allowed": "Allowed",
-        "blocked": "Blocked"
+        "blocked": "Blocked",
+        "reasons": {
+          "allowed": "An allow rule matches, or no rule refuses it.",
+          "denyRule": "A deny rule matches it.",
+          "notAllowed": "No allow rule matches it.",
+          "unknown": "The address couldn't be read.",
+          "enforcementOff": "Rules aren't enforced, so every address is allowed."
+        },
+        "validation": {
+          "ip": "Enter an IP address."
+        }
       },
       "coverage": {
         "title": "What the rules cover",
@@ -304,7 +345,8 @@
           "device": "Device",
           "mfa": "Second factor"
         }
-      }
+      },
+      "enforcementAction": "Change IP rule enforcement"
     },
     "rateLimits": {
       "description": "Configure per-organization rate limits. Rate is tokens per second; burst is the maximum burst capacity. These override the platform defaults for this organization.",
@@ -316,9 +358,9 @@
         "resetConfirmLabel": "Reset to defaults",
         "rateLabel": "Rate (req/s)",
         "burstLabel": "Burst",
-        "loading": "Loading…",
         "save": "Save changes",
-        "saved": "Saved."
+        "resetAction": "Reset rate limits to platform defaults",
+        "saveAction": "Change rate limits"
       },
       "rows": {
         "tenant": {
@@ -333,6 +375,9 @@
           "label": "Per-API-key",
           "description": "Requests per second per API key credential."
         }
+      },
+      "validation": {
+        "positive": "Enter a whole number of 1 or more."
       }
     },
     "riskSettings": {
@@ -358,9 +403,13 @@
         "title": "Device reputation",
         "description": "Flag a login from a browser + OS combination never seen before for that user. Off by default."
       },
-      "loading": "Loading…",
       "save": "Save changes",
-      "saved": "Saved."
+      "saveAction": "Change risk settings",
+      "validation": {
+        "threshold": "Use a score from 0.1 to 1.",
+        "highAboveMedium": "The high threshold must be above the medium one.",
+        "travelHours": "Use 0.5 hours or more."
+      }
     }
   },
   "activity": {

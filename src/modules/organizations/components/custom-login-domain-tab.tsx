@@ -10,7 +10,7 @@ import {
   FieldLabel,
   Input,
 } from "@qeetrix/ui";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   BookOpenIcon,
@@ -32,13 +32,14 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { api } from "@/platform/api/client";
+import { toastError } from "@/platform/errors/error-toast";
+
+import { brandingKeys, saveBranding, useBranding } from "@/modules/branding";
 import { useTenantId } from "@/platform/auth/session";
 import { useLoginDomain } from "../api/domains";
+import { orgKeys } from "../api/keys";
 
 const GUIDE = "https://docs.qeet.in/qeet-id/custom-login-domain";
-
-type Branding = { custom_domain?: string | null };
 
 export function CustomLoginDomainTab() {
   const { t } = useTranslation("settings");
@@ -46,11 +47,7 @@ export function CustomLoginDomainTab() {
   const qc = useQueryClient();
   const statusQ = useLoginDomain();
 
-  const brandingQ = useQuery({
-    queryKey: ["branding", tenantId],
-    enabled: !!tenantId,
-    queryFn: () => api<Branding>(`/v1/tenants/${tenantId}/branding`),
-  });
+  const brandingQ = useBranding();
 
   const [host, setHost] = useState("");
   useEffect(() => {
@@ -67,14 +64,14 @@ export function CustomLoginDomainTab() {
   const save = async () => {
     setSaving(true);
     try {
+      if (!tenantId || !brandingQ.data) return;
       // The PUT replaces all branding: merge onto it so the colours and logo survive.
-      await api(`/v1/tenants/${tenantId}/branding`, {
-        method: "PUT",
-        body: { ...(brandingQ.data ?? {}), custom_domain: host.trim() || null },
-      });
+      await saveBranding(tenantId, { ...brandingQ.data, custom_domain: host.trim() || null });
       toast.success("Login domain saved");
-      await qc.invalidateQueries({ queryKey: ["branding", tenantId] });
-      await qc.invalidateQueries({ queryKey: ["domains"] });
+      await qc.invalidateQueries({ queryKey: brandingKeys.tenant(tenantId) });
+      await qc.invalidateQueries({ queryKey: orgKeys.org(tenantId) });
+    } catch (err) {
+      toastError(err);
     } finally {
       setSaving(false);
     }

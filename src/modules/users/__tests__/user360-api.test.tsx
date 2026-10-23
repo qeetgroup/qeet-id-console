@@ -12,9 +12,9 @@ vi.mock("@/platform/api/client", async () => {
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
 
 import { api } from "@/platform/api/client";
+import { userKeys } from "../api/keys";
 import { ApiError } from "@/platform/errors/api-error";
 import {
-  USER360_KEYS,
   useRevokeAllUserSessions,
   useSendPasswordReset,
   useSetMfaRequired,
@@ -53,7 +53,6 @@ afterEach(cleanup);
 describe("per-user read surfaces", () => {
   it.each([
     ["security posture", useUserSecurity, "/v1/users/user-1/security"],
-    ["live sessions", useUserSessions, "/v1/users/user-1/sessions"],
     ["access summary", useUserAccess, "/v1/users/user-1/access"],
   ] as const)("reads the user's %s", async (_name, useHook, path) => {
     vi.mocked(api).mockResolvedValue({ from: path });
@@ -72,6 +71,32 @@ describe("per-user read surfaces", () => {
     expect(setup(() => useHook("")).result.current.fetchStatus).toBe("idle");
     expect(setup(() => useHook("user-1", false)).result.current.fetchStatus).toBe("idle");
     expect(api).not.toHaveBeenCalled();
+  });
+});
+
+describe("useUserSessions", () => {
+  it("checks the sessions against the server's shape", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [] });
+    const { result } = setup(() => useUserSessions("user-1"));
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const [path, opts] = vi.mocked(api).mock.calls[0] ?? [];
+    expect(path).toBe("/v1/users/user-1/sessions");
+    const schema = (
+      opts as {
+        schema: { parse: (v: unknown) => unknown; safeParse: (v: unknown) => { success: boolean } };
+      }
+    ).schema;
+    const session = {
+      id: "s-1",
+      ip: null,
+      user_agent: "Mozilla/5.0",
+      created_at: "2026-10-01T00:00:00Z",
+      last_seen_at: "2026-10-02T00:00:00Z",
+    };
+    expect(schema.parse({ items: [session] })).toEqual({ items: [session] });
+    expect(schema.safeParse({ items: null }).success).toBe(false);
+    expect(schema.safeParse({ items: [{ ...session, last_seen_at: 1 }] }).success).toBe(false);
   });
 });
 
@@ -206,10 +231,10 @@ describe("useRevokeAllUserSessions", () => {
     const { result, client } = setup(
       () => useRevokeAllUserSessions(),
       [
-        USER360_KEYS.sessions("user-1"),
-        USER360_KEYS.security("user-1"),
-        USER360_KEYS.access("user-1"),
-        USER360_KEYS.sessions("user-2"),
+        userKeys.view("tenant-a", "user-1", "sessions"),
+        userKeys.view("tenant-a", "user-1", "security"),
+        userKeys.view("tenant-a", "user-1", "access"),
+        userKeys.view("tenant-a", "user-2", "sessions"),
       ],
     );
 
@@ -220,10 +245,10 @@ describe("useRevokeAllUserSessions", () => {
 
     expect(api).toHaveBeenCalledWith("/v1/users/user-1/sessions/revoke-all", { method: "POST" });
     expect(response).toEqual({ revoked: 3 });
-    expect(invalidated(client, USER360_KEYS.sessions("user-1"))).toBe(true);
-    expect(invalidated(client, USER360_KEYS.security("user-1"))).toBe(true);
-    expect(invalidated(client, USER360_KEYS.access("user-1"))).toBe(false);
-    expect(invalidated(client, USER360_KEYS.sessions("user-2"))).toBe(false);
+    expect(invalidated(client, userKeys.view("tenant-a", "user-1", "sessions"))).toBe(true);
+    expect(invalidated(client, userKeys.view("tenant-a", "user-1", "security"))).toBe(true);
+    expect(invalidated(client, userKeys.view("tenant-a", "user-1", "access"))).toBe(false);
+    expect(invalidated(client, userKeys.view("tenant-a", "user-2", "sessions"))).toBe(false);
   });
 });
 
@@ -232,7 +257,10 @@ describe("useSetMfaRequired", () => {
     vi.mocked(api).mockResolvedValue({ mfa_required: true });
     const { result, client } = setup(
       () => useSetMfaRequired(),
-      [USER360_KEYS.security("user-1"), USER360_KEYS.security("user-2")],
+      [
+        userKeys.view("tenant-a", "user-1", "security"),
+        userKeys.view("tenant-a", "user-2", "security"),
+      ],
     );
 
     await act(async () => {
@@ -243,8 +271,8 @@ describe("useSetMfaRequired", () => {
       method: "PUT",
       body: { required: true },
     });
-    expect(invalidated(client, USER360_KEYS.security("user-1"))).toBe(true);
-    expect(invalidated(client, USER360_KEYS.security("user-2"))).toBe(false);
+    expect(invalidated(client, userKeys.view("tenant-a", "user-1", "security"))).toBe(true);
+    expect(invalidated(client, userKeys.view("tenant-a", "user-2", "security"))).toBe(false);
   });
 });
 

@@ -1,9 +1,12 @@
+import type { ApiFieldError } from "@/platform/errors/api-error";
 import type { ErrorKind } from "@/platform/errors/error-codes";
 
 type AppErrorInit = {
   httpStatus?: number;
   retryable?: boolean;
   devDetail?: string; // never rendered; logged only in DEV
+  requestId?: string;
+  fields?: ApiFieldError[];
   cause?: unknown;
 };
 
@@ -17,6 +20,8 @@ export class AppError extends Error {
   readonly httpStatus?: number;
   readonly retryable: boolean;
   readonly devDetail?: string;
+  readonly requestId?: string; // support reference, shown beside the message
+  readonly fields: ApiFieldError[]; // fields a 422 rejected, for a form to mark
 
   constructor(kind: ErrorKind, code: string, message: string, init: AppErrorInit = {}) {
     super(message, { cause: init.cause });
@@ -26,5 +31,7 @@ export class AppError extends Error {
     this.httpStatus = init.httpStatus;
     this.retryable = init.retryable ?? false;
     this.devDetail = init.devDetail;
+    this.requestId = init.requestId;
+    this.fields = init.fields ?? [];
   }
 }

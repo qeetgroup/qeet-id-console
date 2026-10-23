@@ -10,3 +10,4 @@ export * from "./event-labels";
 export * from "./activity-filters";
 export * from "./activity-subscription";
 export * from "./types/activity.types";
+export { type ActivitySearch, activitySearchSchema } from "./activity-search";

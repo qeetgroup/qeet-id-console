@@ -20,7 +20,6 @@
   },
   "revoke": {
     "title": "¿Revocar esta concesión?",
-    "descriptionNamed": "Esto invalida inmediatamente la cadena de token de actualización para <strong>{{email}}</strong> en esta aplicación. Se le pedirá que dé su consentimiento nuevamente en el próximo inicio de sesión.",
     "descriptionFallback": "Esto invalida la cadena de token de actualización para esta concesión."
   }
 }

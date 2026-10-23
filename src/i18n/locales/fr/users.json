@@ -83,7 +83,6 @@
     "newPasswordHelp": "Minimum 8 caractères.",
     "confirmPassword": "Confirmer le nouveau mot de passe",
     "mismatch": "Les mots de passe ne correspondent pas",
-    "success": "Mot de passe mis à jour.",
     "submit": "Mettre à jour le mot de passe"
   },
   "toast": {

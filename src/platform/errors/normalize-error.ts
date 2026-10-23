@@ -25,6 +25,8 @@ export function normalizeError(err: unknown): AppError {
       httpStatus: err.status,
       retryable: err.retryable,
       devDetail: err.detail,
+      requestId: err.requestId,
+      fields: err.fields,
       cause: err,
     });
   }

@@ -21,9 +21,7 @@
     "description": "Copiez le secret maintenant — il est haché bcrypt côté serveur après cela et ne peut plus être affiché."
   },
   "delete": {
-    "title": "Supprimer cette application ?",
-    "descriptionNamed": "Les applications utilisant l'ID client pour <strong>{{name}}</strong> cesseront immédiatement de pouvoir s'authentifier. Cette action est irréversible.",
-    "descriptionFallback": "Les applications utilisant cet ID client cesseront de fonctionner."
+    "title": "Supprimer cette application ?"
   },
   "create": {
     "title": "Enregistrer une application OAuth / OIDC",
@@ -65,7 +63,6 @@
     "dangerZoneTitle": "Zone de danger",
     "dangerZoneDescription": "La suppression empêche toute application utilisant cet ID client de s'authentifier.",
     "deleteApplication": "Supprimer l'application",
-    "deleteTitle": "Supprimer cette application ?",
-    "deleteDescription": "Les applications utilisant l'ID client pour <strong>{{name}}</strong> cesseront immédiatement de pouvoir s'authentifier. Cette action est irréversible."
+    "deleteTitle": "Supprimer cette application ?"
   }
 }

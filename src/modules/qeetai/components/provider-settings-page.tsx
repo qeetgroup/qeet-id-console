@@ -52,8 +52,6 @@ import {
 } from "@/platform/security/sensitive-action-provider";
 import {
   deleteQeetAIProviderConfig,
-  QEETAI_PROVIDER_CONFIG_KEY,
-  QEETAI_STATUS_KEY,
   type QeetAIProviderConfig,
   type SetQeetAIProviderInput,
   setQeetAIProviderConfig,
@@ -70,6 +68,7 @@ import {
   validateProviderSettings,
 } from "../provider-settings-model";
 import { ProviderLogo, ProviderSettingsGuidance } from "./provider-settings-guidance";
+import { qeetaiKeys } from "../api/keys";
 
 type ProviderSettingsActions = {
   onSave: (input: SetQeetAIProviderInput) => Promise<QeetAIProviderConfig>;
@@ -104,7 +103,7 @@ export function QeetAISettingsPage() {
   const configQuery = useQeetAIProviderConfig(canRead);
   const queryClient = useQueryClient();
   const sensitive = useSensitiveAction();
-  const queryKey = [...QEETAI_PROVIDER_CONFIG_KEY, tenantId];
+  const queryKey = qeetaiKeys.providerConfig(tenantId);
   const activeTenant = useRef(tenantId);
 
   useEffect(() => {
@@ -120,8 +119,8 @@ export function QeetAISettingsPage() {
 
   const refresh = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: QEETAI_PROVIDER_CONFIG_KEY }),
-      queryClient.invalidateQueries({ queryKey: QEETAI_STATUS_KEY }),
+      queryClient.invalidateQueries({ queryKey: qeetaiKeys.providerConfig(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: qeetaiKeys.status() }),
     ]);
   };
 

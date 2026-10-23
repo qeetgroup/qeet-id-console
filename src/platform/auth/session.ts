@@ -97,10 +97,16 @@ export type Me = {
  * Fetches the signed-in user from `GET /v1/me`, keyed by user id. The self endpoint resolves the
  * caller from the token, so unlike /v1/users/{id} it works before the user has an organization.
  */
+/** The signed-in person's profile, keyed by user id; `all` refreshes it after a change. */
+export const meKeys = {
+  all: ["me"] as const,
+  user: (userId: string | null) => ["me", userId] as const,
+};
+
 export function useMe() {
   const userId = useUserId();
   return useQuery({
-    queryKey: ["me", userId],
+    queryKey: meKeys.user(userId),
     queryFn: () => api<Me>(`/v1/me`),
     enabled: !!userId,
     staleTime: 60_000,

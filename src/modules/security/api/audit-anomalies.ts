@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export type AnomalyReason = "new_action_type" | "unusual_hour" | "new_ip";
 
@@ -39,12 +40,10 @@ export interface AuditAnomalySettings {
   min_baseline_events: number;
 }
 
-const KEY = ["audit-anomalies"];
-
 export function useAuditAnomalies(status?: "open" | "resolved") {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId, status ?? "all"],
+    queryKey: securityKeys.auditAnomalyList(tenantId, status ?? "all"),
     queryFn: () =>
       api<{ items: AuditAnomaly[] }>(`/v1/tenants/${tenantId}/audit/anomalies`, {
         query: status ? { status } : undefined,
@@ -57,7 +56,7 @@ export function useAuditAnomalies(status?: "open" | "resolved") {
 export function useAuditAnomalySummary() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "summary", tenantId],
+    queryKey: securityKeys.auditAnomalySummary(tenantId),
     queryFn: () => api<AuditAnomalySummary>(`/v1/tenants/${tenantId}/audit/anomalies/summary`),
     enabled: !!tenantId,
     staleTime: 30_000,
@@ -74,7 +73,7 @@ export function useResolveAuditAnomaly() {
         method: "POST",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.auditAnomalies(tenantId) }),
     meta: { successMessage: "Anomaly resolved" },
   });
 }
@@ -82,7 +81,7 @@ export function useResolveAuditAnomaly() {
 export function useAuditAnomalySettings() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "settings", tenantId],
+    queryKey: securityKeys.auditAnomalySettings(tenantId),
     queryFn: () => api<AuditAnomalySettings>(`/v1/tenants/${tenantId}/audit/anomaly-settings`),
     enabled: !!tenantId,
   });
@@ -99,8 +98,9 @@ export function useUpdateAuditAnomalySettings() {
         body,
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: [...KEY, "settings"] }),
-    meta: { successMessage: "Anomaly-detection settings updated" },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: securityKeys.auditAnomalySettings(tenantId) }),
+    meta: { successMessage: "Anomaly-detection settings updated", silentError: true }, // the form shows it
   });
 }
 

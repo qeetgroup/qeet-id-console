@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Lives beside the route with a "-" prefix so the router generator ignores it.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
@@ -12,9 +12,32 @@ vi.mock("@/platform/api/client", async () => {
 });
 vi.mock("@/platform/auth/session", () => ({
   useMe: () => ({ data: { email: "ada@example.com" } }),
+  useTenantId: () => "t-1",
+  useUserId: () => "u-1",
 }));
 vi.mock("@simplewebauthn/browser", () => ({ startRegistration: vi.fn() }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() },
+}));
+vi.mock("@/platform/security/capability-provider", () => ({
+  useCapabilities: () => ({ state: "ready", can: () => true }),
+}));
+// Records what each action hands the real sensitive-action runner.
+const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
+vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/platform/security/sensitive-action-provider")>();
+  return {
+    ...actual,
+    useSensitiveAction: () => {
+      const run = actual.useSensitiveAction();
+      return (o: Parameters<typeof run>[0]) => {
+        sensitiveCalls.push(o);
+        return run(o);
+      };
+    },
+  };
+});
 // The page's other cards link elsewhere in the console; a plain anchor keeps
 // their targets visible without a router.
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
@@ -29,6 +52,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
 import { startRegistration } from "@simplewebauthn/browser";
 import type { Passkey } from "@/modules/authentication";
 import { api } from "@/platform/api/client";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./security";
 
 const SecurityPage = Route.options.component as () => React.JSX.Element;
@@ -46,10 +70,15 @@ const passkey: Passkey = {
 // organization has passkeys switched off.
 let listed: { items: Passkey[]; enrollment_allowed: boolean };
 let finishBodies: unknown[];
+let identities: { id: string; provider: string; email: string; linked_at: string }[];
+let deleted: string[];
 
 beforeEach(() => {
   listed = { items: [passkey], enrollment_allowed: true };
   finishBodies = [];
+  identities = [];
+  deleted = [];
+  sensitiveCalls.length = 0;
   vi.mocked(startRegistration).mockReset();
   vi.mocked(startRegistration).mockResolvedValue({ id: "cred-1" } as never);
   vi.mocked(api).mockReset();
@@ -63,7 +92,13 @@ beforeEach(() => {
       return undefined;
     }
     if (path === "/v1/auth/password") return { has_password: true };
-    if (path === "/v1/me/social/identities") return { items: [] };
+    if (method === "DELETE") {
+      deleted.push(path);
+      return undefined;
+    }
+    if (path === "/v1/me/social/identities") return { items: identities };
+    if (path === "/v1/auth/sign-in-methods")
+      return { password: true, passkeys: 1, linked_identities: identities.length, total: 3 };
     if (path === "/v1/social/platform/providers") return { providers: [] };
     if (path === "/v1/auth/trusted-devices") return { items: [] };
     if (path === "/v1/mfa/push/devices") return { items: [] };
@@ -79,7 +114,9 @@ function renderPage() {
   });
   render(
     <QueryClientProvider client={client}>
-      <SecurityPage />
+      <SensitiveActionProvider>
+        <SecurityPage />
+      </SensitiveActionProvider>
     </QueryClientProvider>,
   );
 }
@@ -104,6 +141,9 @@ describe("Account › Security: passkeys", () => {
     await waitFor(() => expect(finishBodies).toHaveLength(1));
     expect(finishBodies[0]).toEqual({ session_id: "ceremony-1", credential: { id: "cred-1" } });
     expect(startRegistration).toHaveBeenCalledWith({ optionsJSON: { challenge: "abc" } });
+    // Adding one is step-up gated: it runs as a sensitive action, without a confirmation.
+    expect(sensitiveCalls).toEqual([expect.objectContaining({ actionLabel: "add passkey" })]);
+    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
   });
 
   it("adds a passkey with the name the user typed, trimmed", async () => {
@@ -137,5 +177,59 @@ describe("Account › Security: passkeys", () => {
       await screen.findByText("Your organization has turned off passkeys, so you can't add one."),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Add passkey" })).toBeNull();
+  });
+});
+
+describe("Account › Security: removing a passkey", () => {
+  it("asks for confirmation before removing it", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: /^remove$/i }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText('Remove passkey "Chrome on macOS"?')).toBeTruthy();
+    expect(deleted).toEqual([]);
+
+    fireEvent.click(within(dialog).getByRole("button", { name: /^remove$/i }));
+    await waitFor(() => expect(deleted).toEqual(["/v1/passkeys/pk1"]));
+    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("remove this passkey");
+  });
+
+  it("keeps it when the confirmation is cancelled", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: /^remove$/i }));
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    expect(deleted).toEqual([]);
+  });
+});
+
+describe("Account › Security: unlinking a connected account", () => {
+  beforeEach(() => {
+    identities = [
+      { id: "id-1", provider: "google", email: "ada@example.com", linked_at: "2026-10-01" },
+    ];
+  });
+
+  it("asks for confirmation before unlinking, since it removes a way to sign in", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: /unlink/i }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText("Unlink Google?")).toBeTruthy();
+    expect(deleted).toEqual([]);
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Unlink" }));
+    await waitFor(() => expect(deleted).toEqual(["/v1/me/social/identities/id-1"]));
+    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("unlink this account");
+  });
+
+  it("keeps the account linked when the confirmation is cancelled", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: /unlink/i }));
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    expect(deleted).toEqual([]);
   });
 });

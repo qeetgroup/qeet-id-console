@@ -1,31 +1,20 @@
-import { clearBrowserSession, refreshSessionForRequest } from "@/platform/api/client";
+import {
+  openEventStream,
+  readServerSentEvents,
+  type ServerSentEvent,
+} from "@/platform/api/event-stream";
+import { ApiError } from "@/platform/errors/api-error";
 
 import type { ActivityEvent } from "./types/activity.types";
 
 /**
- * Parses one SSE frame (the text between blank lines) into an ActivityEvent. Returns null for
- * keep-alives, other event types, and malformed or id-less JSON.
+ * Reads one server-sent event as an ActivityEvent. Returns null for other event types and for
+ * malformed or id-less JSON.
  */
-export function parseActivityFrame(frame: string): ActivityEvent | null {
-  let eventType = "activity";
-  const dataLines: string[] = [];
-
-  for (const line of frame.split("\n")) {
-    if (line.startsWith(":")) continue; // keep-alive / comment
-    if (line.startsWith("event:")) {
-      eventType = line.slice(6).trim();
-      continue;
-    }
-    if (line.startsWith("data:")) {
-      dataLines.push(line.slice(5).trim());
-    }
-  }
-
-  if (eventType !== "activity") return null;
-  if (dataLines.length === 0) return null;
-
+export function parseActivityEvent(message: ServerSentEvent): ActivityEvent | null {
+  if (message.event !== "activity") return null;
   try {
-    const data = JSON.parse(dataLines.join("\n")) as Partial<ActivityEvent>;
+    const data = JSON.parse(message.data) as Partial<ActivityEvent>;
     if (typeof data.id !== "string" || !data.id) return null;
     if (typeof data.type !== "string") return null;
     // Only id and type are checked; the backend owns the full schema.
@@ -33,13 +22,6 @@ export function parseActivityFrame(frame: string): ActivityEvent | null {
   } catch {
     return null;
   }
-}
-
-function extractFrameId(frame: string): string | null {
-  for (const line of frame.split("\n")) {
-    if (line.startsWith("id:")) return line.slice(3).trim();
-  }
-  return null;
 }
 
 const INITIAL_BACKOFF_MS = 1_000;
@@ -101,7 +83,7 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
     }, delay);
   }
 
-  async function connect(hasRetriedAuth = false) {
+  async function connect() {
     if (stopped) return;
 
     abortController = new AbortController();
@@ -109,42 +91,16 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
 
     callbacks.onStatusChange("reconnecting");
 
-    const url = new URL("/api/activity-stream", window.location.origin);
-    const headers: Record<string, string> = {
-      Accept: "text/event-stream",
-      "Cache-Control": "no-cache",
-    };
-    if (lastEventId) headers["Last-Event-ID"] = lastEventId;
-
-    let res: Response;
+    let body: ReadableStream<Uint8Array>;
     try {
-      res = await fetch(url, { method: "GET", headers, signal });
-    } catch {
+      body = await openEventStream("/api/activity-stream", { lastEventId, signal });
+    } catch (err) {
       if (stopped || signal.aborted) return;
-      scheduleReconnect();
-      return;
-    }
-
-    if (!res.ok || !res.body) {
-      if (stopped) return;
-      if (res.status === 401) {
-        let refreshed = false;
-        try {
-          refreshed = !hasRetriedAuth && (await refreshSessionForRequest(signal, true));
-        } catch {
-          // Qeet ID couldn't renew the session right now but didn't reject it:
-          // stay signed in and back off, as for any other unavailable stream.
-          if (!stopped && !signal.aborted) scheduleReconnect();
-          return;
-        }
-        if (refreshed) {
-          await connect(true);
-          return;
-        }
-        await clearBrowserSession();
+      // The session is gone (the person has been signed out) or belongs to another scope:
+      // nothing to reconnect to. Anything else, an undeployed backend included, retries quietly.
+      if (err instanceof ApiError && (err.status === 401 || err.code === "client.stale_scope")) {
         return;
       }
-      // Any other error status (e.g. 404/503 from an undeployed backend) retries silently.
       scheduleReconnect();
       return;
     }
@@ -153,43 +109,19 @@ export function createActivityStream(callbacks: ActivityStreamCallbacks) {
     reconnectAttempts = 0;
     callbacks.onStatusChange("connected");
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-
     try {
-      while (!stopped) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        let sep = buffer.indexOf("\n\n");
-
-        while (sep !== -1) {
-          const frame = buffer.slice(0, sep);
-          buffer = buffer.slice(sep + 2);
-
-          // Remembered so a reconnect resumes from here via Last-Event-ID.
-          const frameId = extractFrameId(frame);
-          if (frameId) {
-            lastEventId = frameId;
-            callbacks.onLastEventId(frameId);
-          }
-
-          const event = parseActivityFrame(frame);
-          if (event) scheduleFlush(event);
-
-          sep = buffer.indexOf("\n\n");
+      for await (const message of readServerSentEvents(body)) {
+        if (stopped) break;
+        // Remembered so a reconnect resumes from here via Last-Event-ID.
+        if (message.id && message.id !== lastEventId) {
+          lastEventId = message.id;
+          callbacks.onLastEventId(message.id);
         }
+        const event = parseActivityEvent(message);
+        if (event) scheduleFlush(event);
       }
     } catch {
       if (stopped || signal.aborted) return;
-    } finally {
-      try {
-        await reader.cancel();
-      } catch {
-        // reader already released
-      }
     }
 
     if (!stopped) scheduleReconnect();

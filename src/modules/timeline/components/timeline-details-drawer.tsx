@@ -34,7 +34,7 @@ import { ResultBadge } from "@/modules/activity";
 import { SeverityBadge } from "@/modules/activity";
 import { formatEventTitle } from "@/modules/activity";
 import type { ActivityEvent } from "@/modules/activity";
-import { useResetUserMfa, useSetUserStatus } from "@/modules/users";
+import { useUserActions } from "@/modules/users";
 
 function CopyButton({ text, label }: { text: string; label: string }) {
   const handleCopy = useCallback(() => {
@@ -157,8 +157,7 @@ export function TimelineDetailsDrawer({
   const access = useCapabilities();
   const canWriteUsers = access.can("user.write");
 
-  const resetMfa = useResetUserMfa();
-  const setStatus = useSetUserStatus();
+  const actions = useUserActions();
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -166,14 +165,6 @@ export function TimelineDetailsDrawer({
     },
     [onClose],
   );
-
-  const handleDisableUser = useCallback(() => {
-    setStatus.mutate({ userId, status: "suspended" });
-  }, [setStatus, userId]);
-
-  const handleResetMfa = useCallback(() => {
-    resetMfa.mutate(userId);
-  }, [resetMfa, userId]);
 
   const correlationId =
     typeof event?.metadata?.correlation_id === "string"
@@ -530,24 +521,24 @@ export function TimelineDetailsDrawer({
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled={resetMfa.isPending}
-                          onClick={handleResetMfa}
+                          disabled={actions.pendingAction.resetMfa}
+                          onClick={() => actions.resetMfa({ id: userId })}
                           aria-label="Reset this user's MFA factors"
                         >
                           <ShieldOffIcon className="size-3.5" aria-hidden="true" />
-                          {resetMfa.isPending ? "Resetting…" : "Reset MFA"}
+                          {actions.pendingAction.resetMfa ? "Resetting…" : "Reset MFA"}
                         </Button>
 
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled={setStatus.isPending}
-                          onClick={handleDisableUser}
+                          disabled={actions.pendingAction.status}
+                          onClick={() => actions.suspend({ id: userId })}
                           className="border-destructive/40 text-destructive hover:bg-destructive/10"
                           aria-label="Suspend this user account"
                         >
                           <UserXIcon className="size-3.5" aria-hidden="true" />
-                          {setStatus.isPending ? "Suspending…" : "Disable user"}
+                          {actions.pendingAction.status ? "Suspending…" : "Disable user"}
                         </Button>
                       </>
                     )}

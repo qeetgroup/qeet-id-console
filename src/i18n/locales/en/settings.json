@@ -628,7 +628,13 @@
         "status": "Status"
       }
     },
-    "empty": "No plans configured."
+    "empty": "No plans configured.",
+    "stepUp": {
+      "switchPlan": "switch to the {{name}} plan",
+      "cancelPlan": "cancel your plan",
+      "startTrial": "start a free trial",
+      "saveProfile": "save your billing profile"
+    }
   },
   "workspace": {
     "general": {
@@ -676,6 +682,7 @@
         "unsavedDetail": "You have made changes to this page."
       },
       "tagline": "Secure identity for modern teams.",
+      "actionLabel": "Save your organization details",
       "notes": {
         "title": "Operational notes",
         "description": "Important things to know about your organization settings.",
@@ -691,6 +698,14 @@
           "title": "Status controls access",
           "detail": "Suspending your organization will block new logins for everyone, but keep existing sessions active."
         }
+      },
+      "validation": {
+        "name": "Enter the organization's name."
+      },
+      "suspend": {
+        "title": "Suspend this organization?",
+        "description": "No one in {{name}} can sign in until it is reactivated, including you.",
+        "confirm": "Suspend"
       }
     },
     "domains": {
@@ -837,6 +852,14 @@
         "toggleSso": "Toggle SSO eligibility",
         "toggleJit": "Toggle JIT provisioning",
         "remove": "Remove domain"
+      },
+      "remove": {
+        "title": "Remove this domain?",
+        "description": "{{domain}} will no longer route sign-ins to single sign-on or provision people just in time. To use it again, add it and verify it again."
+      },
+      "actionLabels": {
+        "add": "Add a domain",
+        "settings": "Change this domain's settings"
       },
       "how": {
         "title": "How domain verification works",

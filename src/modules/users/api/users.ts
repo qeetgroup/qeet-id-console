@@ -1,9 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
-import { USER360_KEYS } from "./user360";
+import type { ImportRowError } from "../import-errors";
+import type { ImportRow } from "../import-file";
+import { type UserListParams, userKeys } from "./keys";
+import type { UserDetail } from "./user360";
 
 export type UserStatus = "active" | "invited" | "suspended" | "deleted";
 
@@ -25,6 +34,8 @@ export interface User {
   last_seen_ip?: string | null;
 }
 
+export type UserPage = { items: User[]; next_cursor?: string };
+
 /** Tenant-wide member counts. */
 export interface UserStats {
   total: number;
@@ -42,24 +53,83 @@ export interface UserTrends {
   mfa_enabled: number[];
 }
 
+/** A soft-deleted user, restorable until purged. */
+export interface DeletedUser {
+  id: string;
+  email: string;
+  display_name: string | null;
+  deleted_at: string;
+  created_at: string;
+}
+
+/** Query definitions for the users reads, shared by hooks, prefetches and cache reads. */
+export const userQueries = {
+  list: (tenantId: string | null, params: UserListParams) =>
+    queryOptions({
+      queryKey: userKeys.list(tenantId, params),
+      queryFn: () => api<UserPage>("/v1/users", { query: params }),
+      enabled: !!tenantId,
+    }),
+  detail: (tenantId: string | null, userId: string) =>
+    queryOptions({
+      queryKey: userKeys.detail(tenantId, userId),
+      queryFn: () => api<UserDetail>(`/v1/users/${userId}`),
+      enabled: !!tenantId && !!userId,
+    }),
+  stats: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: userKeys.stats(tenantId),
+      queryFn: () => api<UserStats>("/v1/users/stats"),
+      enabled: !!tenantId,
+      staleTime: 30_000,
+    }),
+  trends: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: userKeys.trends(tenantId),
+      queryFn: () => api<UserTrends>("/v1/users/trends"),
+      enabled: !!tenantId,
+      staleTime: 60_000,
+    }),
+  deleted: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: userKeys.deleted(tenantId),
+      queryFn: () => api<{ items: DeletedUser[] }>("/v1/users/deleted"),
+      enabled: !!tenantId,
+    }),
+};
+
+/** Refreshes what a change to who's in the tenant can move: the lists and the counts. */
+function refreshMembership(qc: QueryClient, tenantId: string | null) {
+  void qc.invalidateQueries({ queryKey: userKeys.lists(tenantId) });
+  void qc.invalidateQueries({ queryKey: userKeys.stats(tenantId) });
+  void qc.invalidateQueries({ queryKey: userKeys.trends(tenantId) });
+}
+
+/** Refreshes the membership views and every view of one user. */
+function refreshUser(qc: QueryClient, tenantId: string | null, userId: string) {
+  refreshMembership(qc, tenantId);
+  void qc.invalidateQueries({ queryKey: userKeys.user(tenantId, userId) });
+}
+
+export function useUsers(params: UserListParams) {
+  return useQuery(userQueries.list(useTenantId(), params));
+}
+
+export function useUser(userId: string) {
+  return useQuery(userQueries.detail(useTenantId(), userId));
+}
+
 export function useUserStats(enabled = true) {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: ["user-stats", tenantId],
-    queryFn: () => api<UserStats>("/v1/users/stats"),
-    enabled: !!tenantId && enabled,
-    staleTime: 30_000,
-  });
+  const options = userQueries.stats(useTenantId());
+  return useQuery({ ...options, enabled: options.enabled && enabled });
 }
 
 export function useUserTrends() {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: ["user-trends", tenantId],
-    queryFn: () => api<UserTrends>("/v1/users/trends"),
-    enabled: !!tenantId,
-    staleTime: 60_000,
-  });
+  return useQuery(userQueries.trends(useTenantId()));
+}
+
+export function useDeletedUsers() {
+  return useQuery(userQueries.deleted(useTenantId()));
 }
 
 export interface CreateUserInput {
@@ -77,17 +147,12 @@ export interface UpdateUserBody {
   status?: "active" | "suspended";
 }
 
-export const USER_KEYS = {
-  all: ["users"] as const,
-  detail: (id: string) => ["user", id] as const,
-  activity: (id: string, tenantId: string | null) => ["user-activity", id, tenantId] as const,
-};
-
 /**
  * Creates a user, then assigns `role_id` when given. If the assignment fails the mutation
  * rejects, but the user still exists.
  */
 export function useCreateUser() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateUserInput) => {
@@ -100,50 +165,78 @@ export function useCreateUser() {
           });
         } catch (err) {
           // The user exists even though the role didn't stick, so the list must show it.
-          qc.invalidateQueries({ queryKey: USER_KEYS.all });
+          refreshMembership(qc, tenantId);
           throw err;
         }
       }
       return user;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: USER_KEYS.all }),
+    onSuccess: () => refreshMembership(qc, tenantId),
     meta: { successMessage: "User created" },
   });
 }
 
 export function useUpdateUser() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, body }: { userId: string; body: UpdateUserBody }) =>
       api<User>(`/v1/users/${userId}`, { method: "PATCH", body }),
-    onSuccess: (_, { userId }) => {
-      qc.invalidateQueries({ queryKey: USER_KEYS.all });
-      qc.invalidateQueries({ queryKey: USER_KEYS.detail(userId) });
-    },
+    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
     meta: { successMessage: "User updated" },
   });
 }
 
 export function useSetUserStatus() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, status }: { userId: string; status: "active" | "suspended" }) =>
       api<User>(`/v1/users/${userId}`, { method: "PATCH", body: { status } }),
     onSuccess: (_, { userId }) => {
-      qc.invalidateQueries({ queryKey: USER_KEYS.all });
-      qc.invalidateQueries({ queryKey: USER_KEYS.detail(userId) });
+      refreshUser(qc, tenantId, userId);
+      void qc.invalidateQueries({ queryKey: userKeys.suspended(tenantId) });
     },
     meta: { successMessage: "User status updated" },
   });
 }
 
-/** Soft-deletes a user. */
+/** Soft-deletes a user; it stays restorable until purged. */
 export function useDeleteUser() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => api<void>(`/v1/users/${userId}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: USER_KEYS.all }),
+    onSuccess: (_, userId) => {
+      refreshUser(qc, tenantId, userId);
+      void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
+    },
     meta: { successMessage: "User deleted" },
+  });
+}
+
+/** Restores a soft-deleted user. */
+export function useRestoreUser() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => api<void>(`/v1/users/${userId}/restore`, { method: "POST" }),
+    onSuccess: () => {
+      refreshMembership(qc, tenantId);
+      void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
+    },
+    meta: { successMessage: "User restored" },
+  });
+}
+
+/** Erases a soft-deleted user for good. */
+export function usePurgeUser() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => api<void>(`/v1/users/${userId}/purge`, { method: "DELETE" }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) }),
+    meta: { successMessage: "User permanently deleted" },
   });
 }
 
@@ -152,18 +245,22 @@ export function useDeleteUser() {
  * requires user.write and audits the reset.
  */
 export function useResetUserMfa() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) =>
       api<{ message: string }>(`/v1/users/${userId}/mfa`, { method: "DELETE" }),
-    onSuccess: (_, userId) => {
-      // MFA state also shows in the security posture, the list and the stats.
-      qc.invalidateQueries({ queryKey: USER_KEYS.detail(userId) });
-      qc.invalidateQueries({ queryKey: USER360_KEYS.security(userId) });
-      qc.invalidateQueries({ queryKey: USER_KEYS.all });
-      qc.invalidateQueries({ queryKey: ["user-stats"] });
-    },
+    onSuccess: (_, userId) => refreshUser(qc, tenantId, userId),
     meta: { successMessage: "Multi-factor authentication reset for this user" },
+  });
+}
+
+/** Sets a user's password; the person isn't told it changed. */
+export function useSetUserPassword() {
+  return useMutation({
+    mutationFn: ({ userId, password }: { userId: string; password: string }) =>
+      api<void>(`/v1/users/${userId}/password`, { method: "POST", body: { password } }),
+    meta: { successMessage: "Password updated" },
   });
 }
 
@@ -178,7 +275,64 @@ export function useAssignRole() {
         method: "POST",
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: USER_KEYS.all }),
+    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
     meta: { successMessage: "Role assigned" },
   });
 }
+
+/** The per-row outcome of a bulk import. */
+export interface BulkImportResult {
+  succeeded: number;
+  failed: number;
+  errors?: ImportRowError[];
+}
+
+/** Creates the rows' users in one request; each row succeeds or fails on its own. */
+export function useBulkImportUsers() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rows: ImportRow[]): Promise<BulkImportResult> => {
+      const res = await api<BulkImportResult>("/v1/users/bulk", {
+        method: "POST",
+        body: {
+          tenant_id: tenantId,
+          users: rows.map(({ email, password, display_name, phone }) => ({
+            email,
+            password,
+            display_name,
+            phone,
+          })),
+        },
+      });
+      // The backend numbers rows by their place in the batch; name the file's line instead.
+      const errors = res.errors?.map(({ line, email, code, field }) => ({
+        line: line ? rows[line - 1]?.line : undefined,
+        email,
+        code,
+        field,
+      }));
+      return { ...res, errors };
+    },
+    onSuccess: () => refreshMembership(qc, tenantId),
+    meta: { silent: true }, // the page shows the outcome, and any error, itself
+  });
+}
+
+/**
+ * The per-user calls a bulk action makes for each selected user; there is no batch endpoint.
+ * The caller refreshes the users views once the batch is done.
+ */
+export const perUserCalls = {
+  assignRole: (tenantId: string, roleId: string) => (userId: string) =>
+    api<void>(`/v1/users/${userId}/tenants/${tenantId}/roles/${roleId}`, { method: "POST" }),
+  addToGroup: (groupId: string) => (userId: string) =>
+    api<void>(`/v1/groups/${groupId}/members/${userId}`, { method: "POST" }),
+  requireMfa: (userId: string) =>
+    api<void>(`/v1/users/${userId}/mfa-required`, { method: "PUT", body: { required: true } }),
+  revokeSessions: (userId: string) =>
+    api<void>(`/v1/users/${userId}/sessions/revoke-all`, { method: "POST" }),
+  suspend: (userId: string) =>
+    api<void>(`/v1/users/${userId}`, { method: "PATCH", body: { status: "suspended" } }),
+  remove: (userId: string) => api<void>(`/v1/users/${userId}`, { method: "DELETE" }),
+};

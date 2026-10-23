@@ -17,8 +17,13 @@ src/i18n/
     <lng>/            the same namespaces, translated
 ```
 
-English is the source locale (4077 keys in 19 namespaces). The other locales are
-partial; their key coverage on 2026-10-23: de 8%, es 8%, fr 8%, hi 8%, ja 8%, pt 8%, zh 8%. Missing keys fall back to English.
+English is the source locale (4476 keys in 19 namespaces). The other locales are
+partial; their key coverage on 2026-10-23: de 7%, es 7%, fr 7%, hi 7%, ja 7%, pt 7%, zh 7%.
+
+Only `OFFERED_LANGUAGES` can be chosen, and today that is English: a locale is offered once it
+translates every `en` key, so the console never shows a mix of languages.
+`src/i18n/__tests__/offered-languages.test.ts` holds the rule. A saved or detected language that
+isn't offered resolves to English; the partial files stay, ready to finish.
 
 Each top-level JSON file is an i18next **namespace**. Keys are grouped by the
 sub-area of the screen (e.g. `oidc.list.*`, `oidc.create.*`, `users.table.*`)
@@ -56,10 +61,12 @@ function MyScreen() {
    - add `<lng>` to `SUPPORTED_LANGUAGES`,
    - add a label to `LANGUAGE_LABELS`,
    - register the namespaces under `resources.<lng>`.
+3. Once every `en` key is translated, add `<lng>` to `OFFERED_LANGUAGES`; the offered-languages
+   test fails while any is missing.
 
-The language switcher in the sidebar footer reads `SUPPORTED_LANGUAGES` /
-`LANGUAGE_LABELS`, so the new locale appears automatically. The detector
-persists the choice to `localStorage` under `qeetid.lang`.
+The header's language switcher and the profile's language field list `OFFERED_LANGUAGES` and
+stay hidden while there is only one. The detector persists the choice to `localStorage` under
+`qeetid.lang`.
 
 ## Where it is initialized
 
@@ -69,16 +76,17 @@ entries call to build the router). Because the `en` resources are bundled
 statically, init is synchronous and SSR-safe — there is no async gate before
 React mounts.
 
-## Incremental retrofit
+## Copy still in code
 
-Only the newly-added screens plus a couple of key existing flows
-(`users/index.tsx`, `auth/login-methods/password.tsx`) have been migrated to
-`t()`. The remaining ~70 screens are intentionally left with hardcoded English
-copy for incremental migration. To localize another screen:
+Most screens read their copy through `t()`. Two kinds of copy are still English in code: most mutation
+hooks' `meta.successMessage` toasts, and parts of the authorization tooling (the policy builder,
+its generated code and the condition checks in `modules/authorization/api/abac.ts`). Move them
+into a namespace when that code changes. To localize a screen:
 
 1. Pick or add a namespace JSON under `locales/en/`.
-2. Add the screen’s user-facing strings as grouped keys.
+2. Add the screen's user-facing strings as grouped keys.
 3. Replace the literals with `t("…")` via `useTranslation("<ns>")`.
 
 Do **not** localize IDs, developer/debug strings, or values that come from the
-API — only human-facing UI copy.
+API — only human-facing UI copy. A fixed set of server values (a reason or status code) is
+mapped to keys, never rendered as the server's own words.

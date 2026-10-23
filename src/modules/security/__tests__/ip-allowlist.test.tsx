@@ -18,9 +18,10 @@ import {
   useIpRules,
   useSetIpEnforcement,
 } from "../api/ip-allowlist";
+import { securityKeys } from "../api/keys";
 
-const RULES: QueryKey = ["ip-rules", "tenant-a"];
-const REFUSALS: QueryKey = ["ip-rules", "refusals", "tenant-a", 20];
+const RULES: QueryKey = securityKeys.ipRules("tenant-a");
+const REFUSALS: QueryKey = securityKeys.addressRefusals("tenant-a", 20);
 
 /** Renders the hook; mutation tests seed the caches it may refresh, query tests start empty. */
 function setup<T>(hook: () => T, { seed = false } = {}) {
