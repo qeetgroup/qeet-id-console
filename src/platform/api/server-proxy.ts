@@ -105,9 +105,26 @@ async function parseResponse(response: Response): Promise<JsonValue> {
   }
 }
 
-// Refreshes that spend the same refresh token share one backend call, so a rotated token is spent
-// once. `relay` comes from the caller: this function is exported, so it reaches the client bundle
-// and can't read the request itself.
+/**
+ * True for a 401 saying the backend ended the session (signed out everywhere, suspended, removed,
+ * password reset): no refresh can renew it.
+ */
+export async function isSessionEnded(response: Response): Promise<boolean> {
+  if (response.status !== 401) return false;
+  const data = await parseResponse(response.clone()).catch(() => null);
+  const error = data && typeof data === "object" && !Array.isArray(data) ? data.error : null;
+  return (
+    !!error &&
+    typeof error === "object" &&
+    !Array.isArray(error) &&
+    error.code === ERROR_CODES.SESSION_REVOKED
+  );
+}
+
+// Concurrent refreshes that spend the same refresh token share one backend call. A later request
+// still carrying a rotated token (one aborted mid-refresh never got its new cookie) gets the same
+// pair from the backend's reuse grace. `relay` comes from the caller: this function is exported,
+// so it reaches the client bundle and can't read the request itself.
 async function refreshSession(
   session: Awaited<ReturnType<typeof openServerSession>>,
   requestId: string,
@@ -117,51 +134,37 @@ async function refreshSession(
   if (!refreshToken) return "rejected";
   let flight = refreshFlights.get(refreshToken);
   if (!flight) {
-    // Spending a token a kept refresh issued ends that reuse, as on the backend: its pair would
-    // put a spent refresh token back in a cookie.
-    for (const [spent, kept] of refreshFlights) {
-      if (kept.issued === refreshToken) refreshFlights.delete(spent);
-    }
-    const current: RefreshFlight = {
-      result: (async (): Promise<RefreshResult> => {
-        let response: Response;
-        let data: JsonValue;
-        try {
-          response = await fetch(`${getServerApiBaseUrl()}/v1/auth/refresh`, {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              "X-Request-Id": requestId,
-              ...relay,
-            },
-            body: JSON.stringify({ refresh_token: refreshToken }),
-            signal: AbortSignal.timeout(AUTH_CALL_TIMEOUT_MS),
-          });
-          data = await parseResponse(response);
-        } catch {
-          return "unavailable";
-        }
-        // Only a definite answer about the token ends the session: an overloaded
-        // or failing backend (5xx, 429) hasn't judged it.
-        if (response.status >= 500 || response.status === 429) return "unavailable";
-        return response.ok && isBackendTokenResponse(data) ? serverSessionData(data) : "rejected";
-      })(),
-    };
-    flight = current;
-    refreshFlights.set(refreshToken, current);
-    // A successful result is kept briefly: a request aborted mid-refresh (the browser navigated)
-    // never delivered its new cookie, and the next request still carries the rotated token.
-    // Another instance gets the same answer from the backend's reuse grace.
-    void current.result.then((result) => {
-      if (typeof result === "object") current.issued = result.refreshToken;
-      const keepMs = typeof result === "object" ? REFRESH_REUSE_MS : 0;
-      setTimeout(() => {
-        if (refreshFlights.get(refreshToken) === current) refreshFlights.delete(refreshToken);
-      }, keepMs).unref?.();
+    flight = (async (): Promise<RefreshResult> => {
+      let response: Response;
+      let data: JsonValue;
+      try {
+        response = await fetch(`${getServerApiBaseUrl()}/v1/auth/refresh`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-Request-Id": requestId,
+            ...relay,
+          },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+          signal: AbortSignal.timeout(AUTH_CALL_TIMEOUT_MS),
+        });
+        data = await parseResponse(response);
+      } catch {
+        return "unavailable";
+      }
+      // Only a definite answer about the token ends the session: an overloaded
+      // or failing backend (5xx, 429) hasn't judged it.
+      if (response.status >= 500 || response.status === 429) return "unavailable";
+      return response.ok && isBackendTokenResponse(data) ? serverSessionData(data) : "rejected";
+    })();
+    refreshFlights.set(refreshToken, flight);
+    const settled = flight;
+    void settled.finally(() => {
+      if (refreshFlights.get(refreshToken) === settled) refreshFlights.delete(refreshToken);
     });
   }
-  const refreshed = await flight.result;
+  const refreshed = await flight;
   if (refreshed === "unavailable") return "unavailable";
   if (refreshed === "rejected") {
     await session.clear();
@@ -176,15 +179,10 @@ async function refreshSession(
 }
 
 type RefreshResult = ServerSessionData | "rejected" | "unavailable";
-type RefreshFlight = {
-  result: Promise<RefreshResult>;
-  issued?: string; // the refresh token a success issued
-};
 
-const REFRESH_REUSE_MS = 30_000; // the backend's default reuse grace
-const refreshFlights = new Map<string, RefreshFlight>(); // by the refresh token spent
+const refreshFlights = new Map<string, Promise<RefreshResult>>(); // in flight, by the token spent
 
-/** Forgets every refresh in flight or kept for reuse; for tests. */
+/** Forgets every refresh in flight; for tests. */
 export function _resetRefreshFlightsForTest() {
   refreshFlights.clear();
 }
@@ -252,12 +250,13 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       );
       // The BFF holds the refresh token, so it renews the session here, for server renders too,
       // and retries once: a refused request never ran. Only a rejected refresh token ends the
-      // session; an unreachable backend leaves it intact.
+      // session; an unreachable backend leaves it intact. An ended session isn't renewed.
       if (
         response.status === 401 &&
         !input.anonymous &&
         sessionData.refreshToken &&
-        !destroysLocalSession
+        !destroysLocalSession &&
+        !(await isSessionEnded(response))
       ) {
         const session = await openServerSession();
         const outcome = await refreshServerSession(session, input.requestId, relayed());
@@ -289,6 +288,13 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       throw error;
     }
     const elapsedMs = Date.now() - startedAt; // the upstream round trip, before session bookkeeping
+
+    // Signed out here at once, so neither this request nor the browser tries to renew it.
+    if (!input.anonymous && sessionData.accessToken && (await isSessionEnded(response))) {
+      await clearServerSessionCookie();
+      sessionData = {};
+      sessionChanged = true;
+    }
 
     const responseData = await parseResponse(response);
     let safeData = responseData;

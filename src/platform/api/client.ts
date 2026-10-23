@@ -153,7 +153,14 @@ export async function api<T = unknown>(path: string, opts: RequestOpts<T> = {}):
     },
     signal,
   });
-  if (res.status === 401 && !anonymous && (await refreshSessionForRequest(signal, true))) {
+  // The BFF has already tried to renew the session; one it reports gone (ended or refused) is
+  // final, so the browser doesn't try again.
+  if (
+    res.status === 401 &&
+    !anonymous &&
+    res.session.isAuthenticated &&
+    (await refreshSessionForRequest(signal, true))
+  ) {
     res = await proxyApiRequest({
       data: {
         path: path.startsWith("/") ? path : `/${path}`,

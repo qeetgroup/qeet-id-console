@@ -96,11 +96,14 @@ unauthenticated federation redirects (e.g. starting a social login).
 - **Client**: `navigator.locks.request("qeetid-session-refresh", …)` serialises tabs, sending
   `expectedVersion`.
 - **Server**: `refreshServerSessionNow` rejects stale callers on version mismatch. `refreshSession`
-  shares one backend call per refresh token spent, and keeps a successful result for 30 s while
-  the token it issued is unspent: a request aborted mid-refresh (the browser navigated) never
-  delivered its new cookie, so the next request arrives with the rotated token and reuses the
-  result instead of being refused. The cache is per process; another instance gets the same pair
-  from the backend's reuse grace (`REFRESH_TOKEN_REUSE_GRACE`, default 30 s), under the same rule.
+  shares one backend call between concurrent refreshes of the same token. A request aborted
+  mid-refresh (the browser navigated) never delivered its new cookie, so the next one arrives with
+  the rotated token; the backend's reuse grace (`REFRESH_TOKEN_REUSE_GRACE`, default 30 s) answers
+  it with the same pair while that pair's refresh token is unused.
+- **Ended session**: a 401 `auth.session_revoked` (signed out everywhere, suspended, removed,
+  password reset) is final. `proxyApiRequest` clears the cookie without trying a refresh, the
+  browser client and `openEventStream` don't retry, and the signed-out session is broadcast, so
+  other tabs go to `/sign-in` too.
 - **Replay**: on a backend 401, `proxyApiRequest` renews the session itself (it holds the refresh
   token) and re-issues once with the **same** `requestId` — this is what keeps server-side renders
   from ending a valid session. A rejected refresh token clears the cookie (the browser then goes to

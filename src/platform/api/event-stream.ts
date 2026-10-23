@@ -78,9 +78,12 @@ export async function openEventStream(
   };
 
   let res = await send();
+  let ended = false;
   if (res.status === 401) {
+    // A session the backend ended can't be renewed, so it isn't tried.
+    ended = (await refusal(res.clone(), requestId)).code === ERROR_CODES.SESSION_REVOKED;
     await res.body?.cancel().catch(() => undefined);
-    if (await refreshSessionForRequest(signal, true)) res = await send();
+    if (!ended && (await refreshSessionForRequest(signal, true))) res = await send();
   }
   if (scopeGeneration !== sessionStore.getScopeGeneration()) {
     await res.body?.cancel().catch(() => undefined);
@@ -91,8 +94,8 @@ export async function openEventStream(
     await clearBrowserSession();
     throw new ApiError(
       401,
-      ERROR_CODES.SESSION_EXPIRED,
-      "Your session has expired.",
+      ended ? ERROR_CODES.SESSION_REVOKED : ERROR_CODES.SESSION_EXPIRED,
+      "Your session has ended.",
       undefined,
       false,
       undefined,

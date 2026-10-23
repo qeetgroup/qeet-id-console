@@ -384,9 +384,35 @@ describe("A request whose access token has expired", () => {
     expect(store.data.refreshToken).toBe("old-refresh");
   });
 
+  it("shares one backend refresh between concurrent requests", async () => {
+    store.data = signedIn();
+    let release: (response: Response) => void = () => {};
+    store.fetch.mockImplementation((url: string | URL) => {
+      if (String(url).endsWith("/v1/auth/refresh")) {
+        return new Promise<Response>((resolve) => {
+          release = resolve;
+        });
+      }
+      return Promise.resolve(
+        store.data.accessToken === "access-secret" ? Response.json({ id: "user-a" }) : expired(),
+      );
+    });
+
+    const pending = Promise.all([request("/v1/me", "GET"), request("/v1/me", "GET")]);
+    await vi.waitFor(() => expect(store.fetch.mock.calls.length).toBeGreaterThanOrEqual(3));
+    release(Response.json(tokens));
+    const results = await pending;
+
+    expect(results.map((r) => r.status)).toEqual([200, 200]);
+    const refreshCalls = store.fetch.mock.calls.filter(([url]) =>
+      String(url).endsWith("/v1/auth/refresh"),
+    );
+    expect(refreshCalls).toHaveLength(1);
+  });
+
   // A navigation can abort the request that refreshed, so the browser never gets the new cookie
-  // and comes back with the rotated token; the backend would refuse it.
-  it("reuses a just-completed refresh for a request that still carries the rotated token", async () => {
+  // and comes back with the rotated token; the backend's reuse grace answers with the same pair.
+  it("asks the backend again for a later request that still carries the rotated token", async () => {
     store.data = signedIn();
     store.fetch
       .mockResolvedValueOnce(expired())
@@ -398,6 +424,7 @@ describe("A request whose access token has expired", () => {
     store.data = signedIn(); // the response with the new cookie never arrived
     store.fetch
       .mockResolvedValueOnce(expired())
+      .mockResolvedValueOnce(Response.json(tokens))
       .mockResolvedValueOnce(Response.json({ id: "user-a" }));
     const result = await request("/v1/me", "GET");
 
@@ -406,41 +433,45 @@ describe("A request whose access token has expired", () => {
     const refreshCalls = store.fetch.mock.calls.filter(([url]) =>
       String(url).endsWith("/v1/auth/refresh"),
     );
-    expect(refreshCalls).toHaveLength(1);
+    expect(refreshCalls).toHaveLength(2);
+    expect(JSON.parse(String(refreshCalls[1]?.[1]?.body))).toEqual({
+      refresh_token: "old-refresh",
+    });
   });
 
-  it("stops reusing a refresh once the token it issued has been spent", async () => {
-    const refreshCalls = () =>
-      store.fetch.mock.calls.filter(([url]) => String(url).endsWith("/v1/auth/refresh"));
+  it("signs out at once, without a refresh, when the backend says the session ended", async () => {
+    store.data = signedIn();
+    store.fetch.mockResolvedValueOnce(
+      Response.json({ error: { code: "auth.session_revoked" } }, { status: 401 }),
+    );
+
+    const result = await request("/v1/me", "GET");
+
+    expect(result).toMatchObject({
+      status: 401,
+      data: { error: { code: "auth.session_revoked" } },
+      sessionChanged: true,
+    });
+    expect(result.session.isAuthenticated).toBe(false);
+    expect(store.data.refreshToken).toBeUndefined();
+    expect(store.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("signs out when the retried request finds the session ended", async () => {
     store.data = signedIn();
     store.fetch
       .mockResolvedValueOnce(expired())
       .mockResolvedValueOnce(Response.json(tokens))
-      .mockResolvedValueOnce(Response.json({ id: "user-a" }));
-    await request("/v1/me", "GET");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    // The next renewal spends the token the first one issued.
-    store.fetch
-      .mockResolvedValueOnce(expired())
-      .mockResolvedValueOnce(Response.json({ ...tokens, refresh_token: "refresh-third" }))
-      .mockResolvedValueOnce(Response.json({ id: "user-a" }));
-    await request("/v1/me", "GET");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    store.data = signedIn(); // a late request with the first, long-rotated token
-    store.fetch
-      .mockResolvedValueOnce(expired())
       .mockResolvedValueOnce(
         Response.json({ error: { code: "auth.session_revoked" } }, { status: 401 }),
       );
+
     const result = await request("/v1/me", "GET");
 
-    expect(refreshCalls()).toHaveLength(3);
-    expect(JSON.parse(String(refreshCalls()[2]?.[1]?.body))).toEqual({
-      refresh_token: "old-refresh",
-    });
+    expect(result).toMatchObject({ status: 401, sessionChanged: true });
     expect(result.session.isAuthenticated).toBe(false);
+    expect(store.data.accessToken).toBeUndefined();
+    expect(store.fetch).toHaveBeenCalledTimes(3);
   });
 
   it("asks the backend again after a rejected refresh", async () => {

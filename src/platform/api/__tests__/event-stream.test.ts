@@ -115,6 +115,19 @@ describe("openEventStream", () => {
     expect(clearBrowserSession).not.toHaveBeenCalled();
   });
 
+  it("signs out without a refresh when the backend says the session ended", async () => {
+    fetchMock.mockResolvedValue(refusal(401, { code: "auth.session_revoked" }));
+
+    const err = await openEventStream("/api/activity-stream", {
+      signal: new AbortController().signal,
+    }).catch((e: unknown) => e);
+
+    expect(err).toMatchObject({ status: 401, code: "auth.session_revoked" });
+    expect(refreshSessionForRequest).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(clearBrowserSession).toHaveBeenCalledOnce();
+  });
+
   it("signs out when the session can't be renewed", async () => {
     refreshSessionForRequest.mockResolvedValue(false);
     fetchMock.mockResolvedValue(refusal(401));

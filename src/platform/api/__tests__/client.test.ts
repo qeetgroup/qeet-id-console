@@ -132,6 +132,22 @@ describe("api() BFF request", () => {
     expect(onAuthLost).toHaveBeenCalledOnce();
   });
 
+  it("signs out without trying to renew a session the BFF reports ended", async () => {
+    proxyApiRequest.mockResolvedValue({
+      status: 401,
+      data: { error: { code: "auth.session_revoked" } },
+      session: EMPTY_SESSION,
+      sessionChanged: true,
+    });
+    sessionStore.set(AUTHENTICATED_SESSION);
+
+    await expect(api("/v1/thing")).rejects.toMatchObject({ code: "auth.session_revoked" });
+    expect(refreshServerSessionNow).not.toHaveBeenCalled();
+    expect(proxyApiRequest).toHaveBeenCalledOnce();
+    expect(sessionStore.getSnapshot().isAuthenticated).toBe(false);
+    expect(onAuthLost).toHaveBeenCalledOnce();
+  });
+
   it("keeps the person signed in when the session can't be renewed right now", async () => {
     sessionStore.set(AUTHENTICATED_SESSION);
     proxyApiRequest.mockResolvedValue({
