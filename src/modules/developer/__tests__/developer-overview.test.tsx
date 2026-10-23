@@ -133,7 +133,7 @@ describe("Developer overview data", () => {
     ]) {
       expect(paths).toContain(`/v1/tenants/tenant-a/${path}`);
     }
-    expect(paths.some((path) => /reveal|rotate|\/token$/.test(path))).toBe(false);
+    expect(paths.some((path) => /reveal|rotate/.test(path) || path.endsWith("/token"))).toBe(false);
     expect(api).toHaveBeenCalledWith(
       "/v1/activity",
       expect.objectContaining({

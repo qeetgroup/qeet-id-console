@@ -30,6 +30,20 @@ type LogoFieldProps = {
  * always opens the file dialog, as both call the input's `.click()`. A picked file becomes a data
  * URL and a pasted URL passes as typed, both through `value`.
  */
+const INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp|svg\+xml);base64,/i;
+
+// Only an http(s) URL or an uploaded image renders; anything else typed into the URL field (a
+// `javascript:` URL, say) never reaches an element.
+function previewSource(value: string): string | undefined {
+  if (INLINE_IMAGE.test(value)) return value;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function LogoField({
   value,
   onChange,
@@ -60,6 +74,11 @@ export function LogoField({
     readVersion.current += 1;
     setError(null);
     setImageReady(false);
+    if (value && !previewSource(value)) {
+      setError("Use an http(s) URL or upload an image file.");
+      onStatusChange?.("error");
+      return;
+    }
     onStatusChange?.(value ? "loading" : "empty");
     const el = previewRef.current;
     if (!el) return;
@@ -219,7 +238,7 @@ export function LogoField({
               <div className="mt-2 flex min-h-10 min-w-0 items-center justify-between gap-3">
                 <img
                   ref={previewRef}
-                  src={value}
+                  src={previewSource(value)}
                   alt="Logo preview"
                   referrerPolicy="no-referrer"
                   className="h-9 w-auto max-w-40 object-contain"
@@ -256,7 +275,7 @@ export function LogoField({
           <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-background">
             <img
               ref={previewRef}
-              src={value}
+              src={previewSource(value)}
               alt="Logo preview"
               className="h-full w-full object-contain"
             />
