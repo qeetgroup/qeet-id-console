@@ -185,8 +185,10 @@ Comment the *why*, briefly; the code says *what*. Not every line needs a comment
 
 ## Commits and pull requests
 
-Commit subject: `<type>(<scope>): QTID-<n> <what changed, imperative>` — e.g.
-`fix(auth): QTID-802 say why a social sign-in was refused`. Types: `feat`, `fix`, `refactor`,
+Commit subject: `<type>(<scope>): <what changed, imperative>`, with `QTID-<n>` before the
+summary only when the change already has a ticket — e.g. `fix(auth): QTID-802 say why a social
+sign-in was refused`. Work in this repository needs no ticket; raise one only for a change another
+repository must make. Types: `feat`, `fix`, `refactor`,
 `test`, `docs`, `chore`, `ci`, `security`. One logical change per commit; never a bare
 "qeet-id-console". Pull requests follow `.github/pull_request_template.md`.
 
