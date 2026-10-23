@@ -435,6 +435,13 @@ describe("Emails workspace", () => {
     expect(screen.getByRole("button", { name: "Test email" }).hasAttribute("disabled")).toBe(true);
   });
 
+  it("keeps the reason a test can't be sent reachable by keyboard without a verified recipient", () => {
+    render(<EmailTemplatesView {...viewProps()} recipient={undefined} />);
+    const button = screen.getByRole("button", { name: "Test email" });
+    expect(button.hasAttribute("disabled")).toBe(true);
+    expect(button.parentElement?.getAttribute("tabindex")).toBe("0");
+  });
+
   it("handles pending saves and errors without discarding the draft or leaking server details", async () => {
     const props = viewProps();
     let reject: (error: Error) => void = () => {};

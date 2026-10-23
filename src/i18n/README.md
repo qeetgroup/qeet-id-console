@@ -76,17 +76,32 @@ entries call to build the router). Because the `en` resources are bundled
 statically, init is synchronous and SSR-safe — there is no async gate before
 React mounts.
 
-## Copy still in code
+## Copy outside components
 
-Most screens read their copy through `t()`. Two kinds of copy are still English in code: most mutation
-hooks' `meta.successMessage` toasts, and parts of the authorization tooling (the policy builder,
-its generated code and the condition checks in `modules/authorization/api/abac.ts`). Move them
-into a namespace when that code changes. To localize a screen:
+Every user-facing string is a catalogue key, including copy that isn't written in a component:
 
-1. Pick or add a namespace JSON under `locales/en/`.
-2. Add the screen's user-facing strings as grouped keys.
-3. Replace the literals with `t("…")` via `useTranslation("<ns>")`.
+- **Toasts:** a mutation's `meta.successMessage` / `successDescription` is a fully qualified key
+  (`"users:toast.created"`); the query client (`src/platform/query/query-client.ts`) translates it,
+  and falls back to `common:toast.saved`. Its own plan-limit and access-changed toasts live in
+  `errors:toast.*`.
+- **Errors:** curated error copy for each backend code, the per-kind fallbacks and the field
+  messages live in the `errors` namespace (`src/platform/errors/user-message.ts` maps codes to keys).
+- **Navigation:** the nav tree (`src/platform/config/nav-groups*.tsx`) holds `nav` keys;
+  `useNavGroups()` returns it translated, and groups compare on their `id`, never their label.
+- **Tables and models:** option lists, status maps and model helpers hold keys (or value codes
+  whose key the component derives) and translate where they render. Non-React code calls
+  `i18n.t("<ns>:key")` with `import i18n from "@/i18n"`.
 
-Do **not** localize IDs, developer/debug strings, or values that come from the
-API — only human-facing UI copy. A fixed set of server values (a reason or status code) is
-mapped to keys, never rendered as the server's own words.
+`src/i18n/__tests__/catalogue-keys.test.ts` reads the source and fails when a static key (`t("…")`,
+`i18nKey="…"`, or any `"<ns>:dotted.key"` literal) has no `en` entry. Keys built at runtime
+(`` t(`severity.${value}`) ``) aren't visible to it, so cover those with the module's own tests.
+
+## What stays as it is
+
+Brand and product names (Qeet ID, Google, Splunk), protocol and format names (SAML, OIDC, SCIM,
+TOTP, CSV, JSON), code identifiers and capability names (`audit.read`), sample values, anything
+sent to the backend or to the AI model (tool definitions, prompts), export-file column headers
+(a data format, the same in every locale), logs, and error messages that are never rendered.
+
+A fixed set of server values (a reason or status code) is mapped to keys, never rendered as the
+server's own words; a server sentence with no mapping isn't shown.

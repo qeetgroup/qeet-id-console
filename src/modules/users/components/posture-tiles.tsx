@@ -10,6 +10,8 @@ import {
   ShieldCheckIcon,
 } from "@qeetrix/icons";
 import type { ComponentType } from "react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 
 import type { SecuritySummary } from "../api/user360";
 import type { UserRisk } from "../user-risk";
@@ -60,12 +62,14 @@ function PostureTile({
   );
 }
 
-function mfaFactorsLabel(s: SecuritySummary): string {
+function mfaFactorsLabel(s: SecuritySummary, t: TFunction): string {
   const parts: string[] = [];
-  if (s.totp_enabled) parts.push("Authenticator");
-  if (s.otp_factors > 0) parts.push(`${s.otp_factors} OTP`);
-  if (s.push_devices > 0) parts.push(`${s.push_devices} push`);
-  if (parts.length === 0) return s.mfa_required ? "Required — not enrolled" : "No MFA configured";
+  if (s.totp_enabled) parts.push(t("postureTiles.mfa.authenticator"));
+  if (s.otp_factors > 0) parts.push(t("postureTiles.mfa.otp", { count: s.otp_factors }));
+  if (s.push_devices > 0) parts.push(t("postureTiles.mfa.push", { count: s.push_devices }));
+  if (parts.length === 0) {
+    return t(s.mfa_required ? "postureTiles.mfa.requiredNotEnrolled" : "postureTiles.mfa.none");
+  }
   return parts.join(" · ");
 }
 
@@ -84,97 +88,86 @@ export function SecurityPosture({
   risk?: UserRisk;
   riskLoading: boolean;
 }) {
+  const { t } = useTranslation("users");
   const riskTone: Tone =
     risk?.level === "high" ? "danger" : risk?.level === "medium" ? "warning" : "success";
-  const riskLabel = risk ? risk.level.charAt(0).toUpperCase() + risk.level.slice(1) : "—";
+  const riskLabel = risk ? t(`postureTiles.risk.${risk.level}`) : "—";
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
       <PostureTile
         icon={MailIcon}
-        label="Email"
+        label={t("common:labels.email")}
         tone={emailVerified ? "success" : "warning"}
-        value={emailVerified ? "Verified" : "Unverified"}
+        value={t(emailVerified ? "postureTiles.verified" : "postureTiles.unverified")}
         sub={email}
       />
       <PostureTile
         icon={security?.mfa_enabled ? ShieldCheckIcon : ShieldAlertIcon}
-        label="MFA"
+        label={t("postureTiles.mfa.label")}
         loading={securityLoading}
         tone={security?.mfa_enabled ? "success" : "warning"}
-        value={security?.mfa_enabled ? "Enabled" : "Disabled"}
-        sub={security ? mfaFactorsLabel(security) : undefined}
+        value={t(security?.mfa_enabled ? "postureTiles.enabled" : "postureTiles.disabled")}
+        sub={security ? mfaFactorsLabel(security, t) : undefined}
       />
       <PostureTile
         icon={KeyRoundIcon}
-        label="Passkeys"
+        label={t("postureTiles.passkeys")}
         loading={securityLoading}
         tone={security && security.passkeys > 0 ? "success" : "neutral"}
-        value={
-          security
-            ? security.passkeys === 1
-              ? "1 registered"
-              : `${security.passkeys} registered`
-            : undefined
-        }
+        value={security ? t("postureTiles.registered", { count: security.passkeys }) : undefined}
         sub={
           security?.passkey_last_used_at ? (
             <>
-              Last used <TimeSince value={security.passkey_last_used_at} />
+              {t("postureTiles.lastUsed")} <TimeSince value={security.passkey_last_used_at} />
             </>
           ) : security && security.passkeys > 0 ? (
-            "Never used"
+            t("postureTiles.neverUsed")
           ) : (
-            "None registered"
+            t("postureTiles.noneRegistered")
           )
         }
       />
       <PostureTile
         icon={LockIcon}
-        label="Password"
+        label={t("postureTiles.password")}
         loading={securityLoading}
         tone={security?.password_set ? "neutral" : "warning"}
-        value={security?.password_set ? "Enabled" : "Not set"}
+        value={t(security?.password_set ? "postureTiles.enabled" : "postureTiles.notSet")}
         sub={
           security?.password_changed_at ? (
             <>
-              Last changed <TimeSince value={security.password_changed_at} />
+              {t("postureTiles.lastChanged")} <TimeSince value={security.password_changed_at} />
             </>
           ) : security?.password_set ? (
-            "Change date unknown"
+            t("postureTiles.changeDateUnknown")
           ) : (
-            "Password login not set up"
+            t("postureTiles.passwordNotSetUp")
           )
         }
       />
       <PostureTile
         icon={MonitorSmartphoneIcon}
-        label="Sessions"
+        label={t("postureTiles.sessions")}
         loading={securityLoading}
         tone="neutral"
-        value={
-          security
-            ? security.active_sessions === 1
-              ? "1 active"
-              : `${security.active_sessions} active`
-            : undefined
-        }
+        value={security ? t("postureTiles.active", { count: security.active_sessions }) : undefined}
         sub={
           security
-            ? `Across ${security.distinct_devices} device${security.distinct_devices === 1 ? "" : "s"}`
+            ? t("postureTiles.acrossDevices", { count: security.distinct_devices })
             : undefined
         }
       />
       <PostureTile
         icon={GaugeIcon}
-        label="Risk level"
+        label={t("postureTiles.riskLevel")}
         loading={riskLoading}
         tone={riskTone}
         value={riskLabel}
         sub={
           risk && risk.openCount > 0
-            ? `${risk.openCount} open signal${risk.openCount === 1 ? "" : "s"}`
-            : "No suspicious activity"
+            ? t("postureTiles.openSignals", { count: risk.openCount })
+            : t("postureTiles.noSuspiciousActivity")
         }
       />
     </div>

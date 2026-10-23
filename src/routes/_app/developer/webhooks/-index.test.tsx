@@ -62,15 +62,44 @@ const webhook = {
   created_at: "2026-09-24T10:15:00Z",
 };
 
+const failing = {
+  ...webhook,
+  id: "wh-3",
+  url: "https://example.com/hooks/flaky",
+  failing_since: "2026-10-20T08:00:00Z",
+};
+const autoDisabled = {
+  ...webhook,
+  id: "wh-4",
+  url: "https://example.com/hooks/dead",
+  disabled_at: "2026-10-21T08:00:00Z",
+  disabled_reason: "failing",
+  failing_since: "2026-10-18T08:00:00Z",
+};
+const catalogue = {
+  items: [
+    { name: "user.created", description: "server English" },
+    { name: "user.deleted", description: "server English" },
+    { name: "widget.frobnicated", description: "an event this console doesn't know" },
+  ],
+};
+
+let listed: unknown[] = [webhook];
+
 beforeEach(() => {
   sensitive.calls = [];
+  listed = [webhook];
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
-    if (path === "/v1/tenants/tenant-1/webhooks") return { items: [webhook] };
+    if (path === "/v1/tenants/tenant-1/webhooks") return { items: listed };
+    if (path === "/v1/tenants/tenant-1/webhooks/events") return catalogue;
     if (path === "/v1/webhooks" && options?.method === "POST") {
       return { ...webhook, id: "wh-2", url: "https://example.com/new", secret: "whsec_once" };
     }
     if (path === "/v1/webhooks/wh-1" && options?.method === "DELETE") return undefined;
+    if (path === "/v1/tenants/tenant-1/webhooks/wh-4/enable" && options?.method === "POST") {
+      return { ...autoDisabled, disabled_at: null, disabled_reason: null, failing_since: null };
+    }
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });
 });
@@ -99,9 +128,17 @@ describe("Webhooks — creating one", () => {
     fireEvent.change(await screen.findByLabelText(/^URL/), {
       target: { value: "https://example.com/new" },
     });
+    fireEvent.click(await screen.findByRole("checkbox", { name: /user\.created/ }));
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
     expect(await screen.findByText("whsec_once")).toBeTruthy();
+    expect(api).toHaveBeenCalledWith(
+      "/v1/webhooks",
+      expect.objectContaining({
+        method: "POST",
+        body: { tenant_id: "tenant-1", url: "https://example.com/new", events: ["user.created"] },
+      }),
+    );
     expect(screen.getByText("Signing secret for https://example.com/new")).toBeTruthy();
     expect(screen.getByRole("button", { name: /copy/i })).toBeTruthy();
     expect(sensitive.calls[0]?.actionLabel).toBe("create this webhook");
@@ -109,6 +146,63 @@ describe("Webhooks — creating one", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
     expect(screen.queryByText("whsec_once")).toBeNull();
+  });
+});
+
+describe("Webhooks — the event catalogue", () => {
+  it("offers the server's events, worded by the console, never the server's descriptions", async () => {
+    renderPage();
+    await screen.findByText(webhook.url);
+    fireEvent.click(screen.getByRole("button", { name: /new webhook/i }));
+
+    const created = await screen.findByRole("checkbox", { name: /user\.created/ });
+    expect(created.closest("label")?.textContent).toContain(
+      "A person was added to the organization",
+    );
+    expect(screen.getByRole("checkbox", { name: /widget\.frobnicated/ })).toBeTruthy();
+    expect(screen.queryByText("server English")).toBeNull();
+    expect(screen.queryByText("an event this console doesn't know")).toBeNull();
+  });
+
+  it("asks for an event before creating", async () => {
+    renderPage();
+    await screen.findByText(webhook.url);
+    fireEvent.click(screen.getByRole("button", { name: /new webhook/i }));
+    fireEvent.change(await screen.findByLabelText(/^URL/), {
+      target: { value: "https://example.com/new" },
+    });
+    await screen.findByRole("checkbox", { name: /user\.created/ });
+    fireEvent.click(screen.getByRole("button", { name: "Create" }));
+
+    await waitFor(() => expect(sensitive.calls).toHaveLength(0));
+    expect(api).not.toHaveBeenCalledWith("/v1/webhooks", expect.anything());
+  });
+});
+
+describe("Webhooks — failing and disabled endpoints", () => {
+  it("shows which endpoints are failing or were disabled by their failures", async () => {
+    listed = [webhook, failing, autoDisabled];
+    renderPage();
+    await screen.findByText(failing.url);
+
+    expect(screen.getByText("Failing")).toBeTruthy();
+    expect(screen.getByText("Disabled: failing")).toBeTruthy();
+  });
+
+  it("enables a disabled endpoint through the sensitive-action path", async () => {
+    listed = [autoDisabled];
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: /enable/i }));
+
+    await waitFor(() =>
+      expect(api).toHaveBeenCalledWith(
+        "/v1/tenants/tenant-1/webhooks/wh-4/enable",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    expect(sensitive.calls[0]?.actionLabel).toBe("enable this webhook");
+    expect(sensitive.calls[0]?.confirm).toBeUndefined();
   });
 });
 
@@ -130,5 +224,16 @@ describe("Webhooks — disabling one", () => {
       ),
     );
     expect(sensitive.calls[0]?.actionLabel).toBe("disable this webhook");
+  });
+
+  it("keeps a disabled endpoint listed, so it can be enabled again", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: /disable/i }));
+    const dialog = await screen.findByRole("alertdialog");
+    listed = [{ ...webhook, disabled_at: "2026-10-23T10:00:00Z", disabled_reason: "disabled" }];
+    fireEvent.click(within(dialog).getByRole("button", { name: "Disable" }));
+
+    expect(await screen.findByRole("button", { name: /enable/i })).toBeTruthy();
+    expect(screen.getByText(webhook.url)).toBeTruthy();
   });
 });

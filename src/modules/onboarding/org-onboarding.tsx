@@ -46,7 +46,7 @@ export function OrgOnboarding({ title, subtitle, onCancel, onDone }: OrgOnboardi
                   step === "plan" && "size-9",
                 )}
               >
-                <QeetMark height={27} aria-label="Qeet ID" />
+                <QeetMark height={27} aria-label={t("orgOnboarding.qeetId")} />
               </span>
               <div>
                 <div className="flex items-center gap-3 leading-3.5">

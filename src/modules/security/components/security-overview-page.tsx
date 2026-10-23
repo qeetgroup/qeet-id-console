@@ -79,15 +79,13 @@ export function SecurityOverviewPage() {
         <section className="enterprise-panel">
           <PageState
             icon={ShieldIcon}
-            title={hasOrg ? "No security areas are available" : "Create an organization first"}
-            description={
-              hasOrg
-                ? "Your organization role does not include security or audit visibility. Ask an organization administrator if you need access."
-                : "Organization security and audit tools appear once you create or join an organization. Your personal account security lives under Account → Security."
-            }
+            title={t(hasOrg ? "overview.empty.noAreas" : "overview.empty.noOrg")}
+            description={t(
+              hasOrg ? "overview.empty.noAreasDescription" : "overview.empty.noOrgDescription",
+            )}
             actions={
               <Link to="/" className={buttonVariants()}>
-                Go to {hasOrg ? "overview" : "setup"}
+                {t(hasOrg ? "overview.empty.goToOverview" : "overview.empty.goToSetup")}
               </Link>
             }
           />
@@ -97,17 +95,20 @@ export function SecurityOverviewPage() {
           <header className="enterprise-panel-header items-center">
             <div>
               <h2 id="security-sections-title" className="font-heading text-base font-semibold">
-                Security operations
+                {t("securityOverviewPage.securityOperations")}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Investigate identity risk, enforce policy, and verify control evidence.
+                {t("securityOverviewPage.investigateIdentityRiskEnforce")}
               </p>
             </div>
             <Badge variant="muted" className="shrink-0 tabular-nums">
-              {sections.length} available
+              {t("overview.available", { count: sections.length })}
             </Badge>
           </header>
-          <nav aria-label="Available security areas" className="grid md:grid-cols-2">
+          <nav
+            aria-label={t("securityOverviewPage.availableSecurityAreas")}
+            className="grid md:grid-cols-2"
+          >
             {sections.map((section) => {
               const Icon = section.icon;
               return (

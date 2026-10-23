@@ -48,7 +48,8 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 
-import { navGroups } from "@/platform/config/navigation";
+import i18n from "@/i18n";
+import { navGroups, translateNavigation } from "@/platform/config/navigation";
 import { createIntentSearch, useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { DirectoryOverviewView, type DirectoryViewData } from "../components/directory-overview";
 import { SectionNav } from "../components/nav-main";
@@ -265,7 +266,7 @@ describe("Directory overview", () => {
   });
 
   it("expands Directory branches and links to every completed view", () => {
-    const group = navGroups.find((item) => item.label === "Directory");
+    const group = translateNavigation(navGroups, i18n.t).find((item) => item.id === "directory");
     if (!group) throw new Error("Directory navigation is missing");
     render(
       <SidebarProvider>

@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
   Checkbox,
-  StatusPill,
   Button,
 } from "@qeetrix/ui";
 import { KeyRoundIcon, LinkIcon, ShieldCheckIcon, TrashIcon } from "@qeetrix/icons";
@@ -37,6 +36,7 @@ import {
   useGenerateAdminPortalLink,
   useRevokeAdminPortalLink,
 } from "../api/admin-portal";
+import { AuthStatusPill } from "./auth-status-pill";
 
 const HOUR = 60 * 60;
 
@@ -294,7 +294,7 @@ function AdminPortalLinkRow({
         <p className="flex items-center gap-2 text-sm font-medium">
           <KeyRoundIcon className="size-4 text-muted-foreground" />
           {l.capabilities.join(" + ")}
-          <StatusPill status={status} />
+          <AuthStatusPill status={status} />
         </p>
         <p className="truncate text-xs text-muted-foreground">
           {t("connections.portal.linkExpires", { date: formatDateTime(l.expires_at) })}

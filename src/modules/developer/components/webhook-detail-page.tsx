@@ -23,7 +23,9 @@ import { Link } from "@tanstack/react-router";
 import {
   ArrowLeftIcon,
   ChevronDownIcon,
+  KeyRoundIcon,
   PlayIcon,
+  PowerIcon,
   RotateCwIcon,
   TrashIcon,
   WebhookIcon,
@@ -31,19 +33,28 @@ import {
 import { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { OneTimeSecret } from "@/shared/components/one-time-secret";
+
 import {
   settleSensitiveAction,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import {
+  type RotatedWebhookSecret,
   useDisableWebhook,
+  useEnableWebhook,
   useRetryWebhookDelivery,
+  useRotateWebhookSecret,
   useTestWebhook,
   useWebhook,
   useWebhookDeliveries,
 } from "../api/webhooks";
+import { WebhookStatusNote, WebhookStatusPill } from "./webhook-status";
 
-/** Renders one webhook: its configuration, delivery log, test send, retry and disable. */
+/**
+ * Renders one webhook: its state and configuration, delivery log, test send, retry, enable or
+ * disable, and signing-secret rotation.
+ */
 export function WebhookDetailPage({ id }: { id: string }) {
   const { t } = useTranslation("developer");
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -54,8 +65,16 @@ export function WebhookDetailPage({ id }: { id: string }) {
   const testWebhook = useTestWebhook();
   const retryDelivery = useRetryWebhookDelivery();
   const disableWebhook = useDisableWebhook();
+  const enableWebhook = useEnableWebhook();
+  const rotateSecret = useRotateWebhookSecret();
+  const [rotated, setRotated] = useState<RotatedWebhookSecret | null>(null);
 
   const w = webhookQ.data;
+  // The previous secret still signs, alongside the new one, until this passes.
+  const overlapUntil =
+    w?.previous_secret_expires_at && new Date(w.previous_secret_expires_at) > new Date()
+      ? w.previous_secret_expires_at
+      : null;
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -65,6 +84,18 @@ export function WebhookDetailPage({ id }: { id: string }) {
       >
         <ArrowLeftIcon className="size-3" /> {t("webhookDetail.back")}
       </Link>
+
+      {rotated && (
+        <OneTimeSecret
+          title={t("webhookDetail.rotated.title")}
+          description={t("webhookDetail.rotated.description", {
+            until: new Date(rotated.previous_secret_expires_at).toLocaleString(),
+          })}
+          values={[{ value: rotated.secret }]}
+          dismissLabel={t("common:actions.dismiss")}
+          onDismiss={() => setRotated(null)}
+        />
+      )}
 
       <Card>
         <CardHeader>
@@ -90,12 +121,18 @@ export function WebhookDetailPage({ id }: { id: string }) {
                   })}
                 </CardDescription>
               </div>
-              <StatusPill status={w.disabled_at ? "disabled" : "active"} />
+              <WebhookStatusPill webhook={w} />
             </div>
           ) : null}
         </CardHeader>
         {w && (
           <CardContent className="flex flex-col gap-3">
+            <WebhookStatusNote webhook={w} />
+            {overlapUntil && (
+              <p className="text-sm text-muted-foreground">
+                {t("webhookDetail.overlap", { until: new Date(overlapUntil).toLocaleString() })}
+              </p>
+            )}
             <div className="flex flex-wrap gap-1">
               {w.events.map((e) => (
                 <Badge key={e} variant="muted" className="font-mono text-[10px]">
@@ -112,7 +149,42 @@ export function WebhookDetailPage({ id }: { id: string }) {
               >
                 <PlayIcon /> {t("webhookDetail.testEvent")}
               </Button>
-              {!w.disabled_at && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  runSensitive({
+                    confirm: {
+                      title: t("webhookDetail.confirm.rotateTitle"),
+                      description: t("webhookDetail.confirm.rotateDescription"),
+                      confirmLabel: t("webhookDetail.confirm.rotateLabel"),
+                      tone: "default",
+                    },
+                    actionLabel: t("webhooks.stepUp.rotate"),
+                    run: () => rotateSecret.mutateAsync(id),
+                  })
+                    .then((result) => result && setRotated(result))
+                    .catch(settleSensitiveAction)
+                }
+                disabled={rotateSecret.isPending}
+              >
+                <KeyRoundIcon /> {t("webhookDetail.rotate")}
+              </Button>
+              {w.disabled_at ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    runSensitive({
+                      actionLabel: t("webhooks.stepUp.enable"),
+                      run: () => enableWebhook.mutateAsync(id),
+                    }).catch(settleSensitiveAction)
+                  }
+                  disabled={enableWebhook.isPending}
+                >
+                  <PowerIcon /> {t("webhookDetail.enable")}
+                </Button>
+              ) : (
                 <Button
                   size="sm"
                   variant="ghost"
@@ -273,13 +345,11 @@ export function WebhookDetailPage({ id }: { id: string }) {
               lineNumbers
               value={JSON.stringify(
                 {
-                  id: "evt_example",
-                  event: w.events[0] ?? "user.created",
+                  id: "8f14e45f-ceea-467f-a0e6-d2d1c4f3c2a1",
+                  type: w.events[0] ?? "user.created",
                   tenant_id: w.tenant_id,
-                  data: {
-                    // event-specific payload
-                  },
-                  created_at: new Date().toISOString(),
+                  occurred_at: new Date().toISOString(),
+                  data: {},
                 },
                 null,
                 2,

@@ -1,6 +1,7 @@
 import { Skeleton, Sparkline } from "@qeetrix/ui";
 import { ArrowDownRightIcon, ArrowUpRightIcon, type IconProps, MinusIcon } from "@qeetrix/icons";
 import type * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import { formatDelta } from "../dashboard-model";
 
@@ -48,6 +49,7 @@ function MetricSkeleton() {
 }
 
 function Metric({ metric }: { metric: DashboardMetric }) {
+  const { t } = useTranslation("dashboard");
   const Icon = metric.icon;
   const isNeutral = metric.delta === 0;
   const DirectionIcon = isNeutral
@@ -86,7 +88,9 @@ function Metric({ metric }: { metric: DashboardMetric }) {
           {formatDelta(metric.delta, metric.unit)}
         </span>
       </div>
-      <p className="mt-1.5 text-[11px] text-muted-foreground">Compared with the prior period</p>
+      <p className="mt-1.5 text-[11px] text-muted-foreground">
+        {t("dashboardMetrics.comparedWithThePriorPeriod")}
+      </p>
       <div className="mx-[-1.15rem] mt-3 h-12">
         <Sparkline
           data={metric.data}
@@ -107,8 +111,12 @@ export function DashboardMetricRail({
   metrics: DashboardMetric[];
   loading: boolean;
 }) {
+  const { t } = useTranslation("dashboard");
   return (
-    <section className="dashboard-metric-rail" aria-label="Organization performance indicators">
+    <section
+      className="dashboard-metric-rail"
+      aria-label={t("dashboardMetrics.organizationPerformanceIndicators")}
+    >
       {loading
         ? METRIC_SKELETON_IDS.map((id) => <MetricSkeleton key={id} />)
         : metrics.map((metric) => <Metric key={metric.id} metric={metric} />)}
@@ -125,8 +133,12 @@ export type DashboardSecondaryStat = {
 };
 
 export function DashboardSecondaryRail({ items }: { items: DashboardSecondaryStat[] }) {
+  const { t } = useTranslation("dashboard");
   return (
-    <dl className="dashboard-secondary-rail" aria-label="Directory health indicators">
+    <dl
+      className="dashboard-secondary-rail"
+      aria-label={t("dashboardMetrics.directoryHealthIndicators")}
+    >
       {items.map((item) => (
         <div key={item.id} className="dashboard-secondary-stat">
           <span className="row-span-2 mt-0.5 grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground [&_svg]:size-3.5">

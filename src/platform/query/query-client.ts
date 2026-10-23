@@ -1,14 +1,15 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import i18n from "@/i18n";
 import { ApiError } from "@/platform/errors/api-error";
 import { toastError } from "@/platform/errors/error-toast";
 
 interface MutationMeta {
   silent?: boolean; // drops both toasts, as for a background poll
   silentError?: boolean; // drops only the error toast, for a screen that shows it itself
-  successMessage?: string; // replaces the default "Saved"
-  successDescription?: string; // a second line for the success toast
+  successMessage?: string; // a catalogue key ("<ns>:toast.<key>") replacing the default "Saved"
+  successDescription?: string; // a catalogue key for a second line
 }
 
 declare module "@tanstack/react-query" {
@@ -27,17 +28,20 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
   // nor the 403 branch below can mask it.
   if (error.code === "billing.plan_limit" || error.code === "billing.upgrade_required") {
     const atLimit = error.code === "billing.plan_limit";
-    toast.error(atLimit ? "Plan limit reached" : "Upgrade to unlock this", {
-      description: atLimit
-        ? "You've reached your plan's limit. Upgrade to add more."
-        : "This feature isn't included in your plan. Upgrade to unlock it.",
-      action: {
-        label: "Upgrade",
-        onClick: () => {
-          window.location.href = "/settings/billing";
+    toast.error(
+      i18n.t(atLimit ? "errors:toast.planLimitTitle" : "errors:toast.upgradeRequiredTitle"),
+      {
+        description: i18n.t(
+          atLimit ? "errors:toast.planLimitDescription" : "errors:toast.upgradeRequiredDescription",
+        ),
+        action: {
+          label: i18n.t("errors:toast.upgrade"),
+          onClick: () => {
+            window.location.href = "/settings/billing";
+          },
         },
       },
-    });
+    );
     return;
   }
   if (error.status === 401 || error.status === 400 || error.status === 422) return;
@@ -45,8 +49,8 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
   // cancelled, and the generic 403 toast would mislead.
   if (error.code === "step_up_required") return;
   if (error.status === 403) {
-    toast.error("This action is no longer available", {
-      description: "Your organization access may have changed. The console is refreshing it now.",
+    toast.error(i18n.t("errors:toast.accessChangedTitle"), {
+      description: i18n.t("errors:toast.accessChangedDescription"),
     });
     return;
   }
@@ -56,8 +60,8 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
 // Toasts every mutation that doesn't opt out; the default "Saved" is generic on purpose.
 function reportSuccess(meta?: MutationMeta) {
   if (meta?.silent) return;
-  toast.success(meta?.successMessage ?? "Saved", {
-    description: meta?.successDescription,
+  toast.success(i18n.t(meta?.successMessage ?? "common:toast.saved"), {
+    description: meta?.successDescription ? i18n.t(meta.successDescription) : undefined,
   });
 }
 

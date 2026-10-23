@@ -67,7 +67,7 @@ export function AgentsPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader title="Agent Governance" description={t("agents.description")} />
+      <PageHeader title={t("agentsPage.agentGovernance")} description={t("agents.description")} />
 
       <Card>
         <CardHeader>

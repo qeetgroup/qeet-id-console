@@ -1,6 +1,7 @@
 // Provider backed by the qeetai service: each turn streams over SSE. Conversations are
 // local-first, so the server one is created on the first turn and its id kept on the local one.
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import { createQeetAIConversation } from "../api/qeetai";
 
@@ -35,7 +36,7 @@ export const backendProvider: AIProvider = {
       yield {
         type: "error",
         code: "conversation_unavailable",
-        message: "Could not open a conversation on the server.",
+        message: i18n.t("qeetai:stream.conversationUnavailable"),
       };
       yield { type: "done", reason: "error" };
       return;

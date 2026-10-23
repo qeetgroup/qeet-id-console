@@ -34,7 +34,7 @@ export function useUpdateRateLimits() {
     mutationFn: (body: TenantLimits) =>
       api<TenantLimits>(`/v1/tenants/${tenantId}/rate-limits`, { method: "PUT", body }),
     onSuccess: (data) => qc.setQueryData(securityKeys.rateLimits(tenantId), data),
-    meta: { successMessage: "Rate limits saved", silentError: true }, // the page shows it
+    meta: { successMessage: "security:toast.rateLimitsSaved", silentError: true }, // the page shows it
   });
 }
 
@@ -44,6 +44,6 @@ export function useResetRateLimits() {
   return useMutation({
     mutationFn: () => api<void>(`/v1/tenants/${tenantId}/rate-limits`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.rateLimits(tenantId) }),
-    meta: { successMessage: "Rate limits reset to platform defaults" },
+    meta: { successMessage: "security:toast.rateLimitsResetTo" },
   });
 }

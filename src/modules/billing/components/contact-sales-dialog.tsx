@@ -24,6 +24,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { TEAM_SIZES } from "@/shared/data/team-sizes";
 import { api } from "@/platform/api/client";
@@ -46,11 +47,12 @@ export function ContactSalesDialog({
   onOpenChange: (o: boolean) => void;
   source: string; // where the form opened, recorded on the lead, e.g. "onboarding"
 }) {
+  const { t } = useTranslation("settings");
   const [teamSize, setTeamSize] = useState("");
   const submitM = useMutation({
     mutationFn: (body: LeadBody) =>
       api<{ status: string }>("/v1/sales/leads", { method: "POST", body }),
-    meta: { successMessage: "Thanks — our team will be in touch shortly." },
+    meta: { successMessage: "settings:toast.thanksOurTeamWill" },
     onSuccess: () => onOpenChange(false),
   });
 
@@ -75,20 +77,17 @@ export function ContactSalesDialog({
           }}
         >
           <SheetHeader>
-            <SheetTitle>Talk to sales</SheetTitle>
-            <SheetDescription>
-              Tell us about your needs and we'll reach out about Enterprise — SSO enforcement, SCIM,
-              data residency, SLAs and more.
-            </SheetDescription>
+            <SheetTitle>{t("contactSalesDialog.talkToSales")}</SheetTitle>
+            <SheetDescription>{t("contactSalesDialog.tellUsAboutYour")}</SheetDescription>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto p-4">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="cs-name">Your name</FieldLabel>
-                <Input id="cs-name" name="name" placeholder="Jane Doe" />
+                <FieldLabel htmlFor="cs-name">{t("contactSalesDialog.yourName")}</FieldLabel>
+                <Input id="cs-name" name="name" placeholder={t("contactSalesDialog.janeDoe")} />
               </Field>
               <Field>
-                <FieldLabel htmlFor="cs-email">Work email</FieldLabel>
+                <FieldLabel htmlFor="cs-email">{t("contactSalesDialog.workEmail")}</FieldLabel>
                 <Input
                   id="cs-email"
                   name="email"
@@ -98,40 +97,48 @@ export function ContactSalesDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="cs-company">Company</FieldLabel>
-                <Input id="cs-company" name="company" placeholder="Acme Corp" />
+                <FieldLabel htmlFor="cs-company">{t("contactSalesDialog.company")}</FieldLabel>
+                <Input
+                  id="cs-company"
+                  name="company"
+                  placeholder={t("contactSalesDialog.acmeCorp")}
+                />
               </Field>
               <Field>
-                <FieldLabel>Team size</FieldLabel>
+                <FieldLabel>{t("contactSalesDialog.teamSize")}</FieldLabel>
                 <Select value={teamSize || undefined} onValueChange={(v) => setTeamSize(v ?? "")}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select…" />
+                    <SelectValue placeholder={t("contactSalesDialog.select")} />
                   </SelectTrigger>
                   <SelectContent>
                     {TEAM_SIZES.map((o) => (
                       <SelectItem key={o.value} value={o.value}>
-                        {o.label}
+                        {t(o.label)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </Field>
               <Field>
-                <FieldLabel htmlFor="cs-message">What are you looking for?</FieldLabel>
+                <FieldLabel htmlFor="cs-message">
+                  {t("contactSalesDialog.whatAreYouLookingFor")}
+                </FieldLabel>
                 <Textarea
                   id="cs-message"
                   name="message"
                   rows={4}
-                  placeholder="A few words on your use case, timeline, and requirements."
+                  placeholder={t("contactSalesDialog.aFewWordsOn")}
                 />
               </Field>
             </FieldGroup>
           </div>
           <SheetFooter className="flex-row justify-end gap-2 border-t">
-            <SheetClose render={<Button type="button" variant="outline" />}>Cancel</SheetClose>
+            <SheetClose render={<Button type="button" variant="outline" />}>
+              {t("common:actions.cancel")}
+            </SheetClose>
             <Button type="submit" disabled={submitM.isPending}>
               {submitM.isPending && <LoaderCircleIcon className="animate-spin" />}
-              {submitM.isPending ? "Sending…" : "Send"}
+              {submitM.isPending ? t("contactSalesDialog.sending") : t("contactSalesDialog.send")}
             </Button>
           </SheetFooter>
         </form>

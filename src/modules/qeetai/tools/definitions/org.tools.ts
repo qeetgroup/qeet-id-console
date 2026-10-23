@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { orgKeys } from "@/modules/organizations";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
 
@@ -22,21 +23,21 @@ type CreateOrgInput = z.infer<typeof createOrgInput>;
 export const createOrganizationTool: ToolDefinition<CreateOrgInput> = {
   name: "create_organization",
   category: "directory",
-  title: "Create organization",
+  title: "qeetai:tools.titles.createOrganization",
   description: "Create a new organization (tenant).",
   input: createOrgInput,
   requiredCapability: "tenant.write",
   destructive: false,
   mutates: true,
-  consoleScreen: { label: "Organizations", to: "/organizations" },
+  consoleScreen: { label: "qeetai:tools.screens.organizations", to: "/organizations" },
   confirm: (input) => ({
-    title: "Create organization",
-    body: "Qeet AI will create a new organization (tenant).",
+    title: i18n.t("qeetai:tools.titles.createOrganization"),
+    body: i18n.t("qeetai:tools.confirm.createOrganization.body"),
     affected: [
-      { label: "Name", value: input.name },
-      ...(input.slug ? [{ label: "Slug", value: input.slug }] : []),
+      { label: i18n.t("qeetai:tools.fields.name"), value: input.name },
+      ...(input.slug ? [{ label: i18n.t("qeetai:tools.fields.slug"), value: input.slug }] : []),
     ],
-    confirmText: "Create organization",
+    confirmText: i18n.t("qeetai:tools.titles.createOrganization"),
     tone: "default",
   }),
   auditLabel: "qeetai.create_organization",

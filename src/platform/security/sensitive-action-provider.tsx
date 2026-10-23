@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -79,6 +80,7 @@ type StepUpState = {
  * the dialog and resends the request once verified. Mount inside CapabilityProvider.
  */
 export function SensitiveActionProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation("common");
   const { can } = useCapabilities();
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const [stepUp, setStepUp] = useState<StepUpState | null>(null);
@@ -92,39 +94,42 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
         setStepUp({ actionLabel: actionLabelRef.current, allowedMethods, resolve });
       });
       setStepUp(null);
-      if (!verified) toast.info("Cancelled. Nothing was changed.");
+      if (!verified) toast.info(t("sensitiveActionProvider.cancelledNothingWasChanged"));
       return verified;
     });
     return () => registerStepUpHandler(null);
-  }, []);
+  }, [t]);
 
-  const runSensitive = useCallback<RunSensitive>(async (options) => {
-    if (options.capability && !canRef.current(options.capability)) {
-      toast.error("You don't have access to do that.");
-      throw new SensitiveActionCancelled();
-    }
+  const runSensitive = useCallback<RunSensitive>(
+    async (options) => {
+      if (options.capability && !canRef.current(options.capability)) {
+        toast.error(t("sensitiveActionProvider.youDonTHave"));
+        throw new SensitiveActionCancelled();
+      }
 
-    const { confirm } = options;
-    if (confirm) {
-      const ok = await new Promise<boolean>((resolve) => {
-        setConfirmState({ ...confirm, resolve });
-      });
-      setConfirmState(null);
-      if (!ok) throw new SensitiveActionCancelled();
-    }
+      const { confirm } = options;
+      if (confirm) {
+        const ok = await new Promise<boolean>((resolve) => {
+          setConfirmState({ ...confirm, resolve });
+        });
+        setConfirmState(null);
+        if (!ok) throw new SensitiveActionCancelled();
+      }
 
-    actionLabelRef.current = options.actionLabel;
-    try {
-      return await options.run();
-    } catch (err) {
-      // The API client has already asked for the step-up and sent the request
-      // again; a refusal that still reaches here is one the person cancelled.
-      if (isStepUpRequired(err)) throw new SensitiveActionCancelled();
-      throw err;
-    } finally {
-      actionLabelRef.current = undefined;
-    }
-  }, []);
+      actionLabelRef.current = options.actionLabel;
+      try {
+        return await options.run();
+      } catch (err) {
+        // The API client has already asked for the step-up and sent the request
+        // again; a refusal that still reaches here is one the person cancelled.
+        if (isStepUpRequired(err)) throw new SensitiveActionCancelled();
+        throw err;
+      } finally {
+        actionLabelRef.current = undefined;
+      }
+    },
+    [t],
+  );
 
   return (
     <SensitiveActionContext.Provider value={runSensitive}>
@@ -147,12 +152,12 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
             )}
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("actions.cancel")}</AlertDialogCancel>
             <Button
               variant={confirmState?.tone ?? "destructive"}
               onClick={() => confirmState?.resolve(true)}
             >
-              {confirmState?.confirmLabel ?? "Confirm"}
+              {confirmState?.confirmLabel ?? t("actions.confirm")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

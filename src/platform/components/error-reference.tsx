@@ -1,4 +1,5 @@
 import { cn } from "@qeetrix/ui";
+import { Trans } from "react-i18next";
 
 import { errorMessage, errorReference } from "@/platform/errors/user-message";
 
@@ -11,7 +12,11 @@ export function ErrorReference({ error, className }: { error: unknown; className
   if (!requestId) return null;
   return (
     <span className={cn("block text-xs text-muted-foreground", className)}>
-      Reference: <span className="select-all font-mono">{requestId}</span>
+      <Trans
+        i18nKey="errors:referenceLabel"
+        values={{ id: requestId }}
+        components={{ id: <span className="select-all font-mono" /> }}
+      />
     </span>
   );
 }

@@ -2,6 +2,7 @@ import { Button, useFloatingWindow, useIsMobile } from "@qeetrix/ui";
 import { useStore } from "@tanstack/react-store";
 import { SparklesIcon } from "@qeetrix/icons";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useQeetAIChat } from "../hooks/use-qeetai-chat";
 import { conversationStore } from "../store/conversation-store";
@@ -27,6 +28,7 @@ const RESIZE_STEP = 24;
  * fullscreen. Phones always get fullscreen.
  */
 export function QeetAIWorkspace() {
+  const { t } = useTranslation("qeetai");
   const open = useStore(workspaceStore, (s) => s.open);
   const mode = useStore(workspaceStore, (s) => s.mode);
   const dockWidth = useStore(workspaceStore, (s) => s.dockWidth);
@@ -46,7 +48,7 @@ export function QeetAIWorkspace() {
   if (isMobile || mode === "fullscreen") {
     return (
       <section
-        aria-label="Qeet AI"
+        aria-label={t("qeetaiWorkspace.qeetAi")}
         className="fixed inset-0 z-50 flex flex-col bg-background motion-safe:animate-in motion-safe:fade-in-0"
       >
         <QeetAIHeader />
@@ -61,7 +63,7 @@ export function QeetAIWorkspace() {
     const width = Math.min(dockWidth, vw - 32);
     return (
       <section
-        aria-label="Qeet AI"
+        aria-label={t("qeetaiWorkspace.qeetAi")}
         style={{ left: floating.position.x, top: floating.position.y, width }}
         className="fixed z-50 flex h-[min(70vh,640px)] flex-col overflow-hidden rounded-xl border bg-background shadow-2xl motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95"
       >
@@ -73,7 +75,7 @@ export function QeetAIWorkspace() {
 
   return (
     <section
-      aria-label="Qeet AI"
+      aria-label={t("qeetaiWorkspace.qeetAi")}
       style={{ width: dockWidth }}
       className="relative z-30 flex h-dvh shrink-0 flex-col border-s bg-background motion-safe:animate-in motion-safe:slide-in-from-right-4"
     >
@@ -109,13 +111,14 @@ function PanelBody() {
 }
 
 function CollapsedRail() {
+  const { t } = useTranslation("qeetai");
   return (
     <div className="relative z-30 flex h-dvh w-14 shrink-0 flex-col items-center gap-2 border-s bg-card/60 py-3">
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Expand Qeet AI"
-        title="Expand Qeet AI (⌘J)"
+        aria-label={t("qeetaiWorkspace.expandQeetAi")}
+        title={t("qeetaiWorkspace.expandQeetAiJ")}
         onClick={() => workspaceActions.setCollapsed(false)}
         className="text-primary"
       >
@@ -130,6 +133,7 @@ function CollapsedRail() {
  * do the same so the panel is resizable without a pointer.
  */
 function DockResizeHandle({ width }: { width: number }) {
+  const { t } = useTranslation("qeetai");
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     const target = e.currentTarget;
@@ -164,7 +168,7 @@ function DockResizeHandle({ width }: { width: number }) {
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize Qeet AI panel"
+      aria-label={t("qeetaiWorkspace.resizeQeetAiPanel")}
       aria-valuemin={MIN_DOCK_WIDTH}
       aria-valuemax={MAX_DOCK_WIDTH}
       aria-valuenow={clampDockWidth(width)}

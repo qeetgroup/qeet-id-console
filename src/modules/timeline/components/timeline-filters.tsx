@@ -11,44 +11,38 @@ import {
 } from "@qeetrix/ui";
 import { ChevronDownIcon, ListFilterIcon, SearchIcon, XIcon } from "@qeetrix/icons";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { ActivityTimeRange, type DateRange, presetToRange, TIME_PRESETS } from "@/modules/activity";
 import type { Severity } from "@/modules/activity";
 import { useTimeline } from "../timeline-provider";
 
-const CATEGORY_OPTIONS = [
-  { value: "authentication", label: "Authentication" },
-  { value: "authorization", label: "Authorization" },
-  { value: "security", label: "Security" },
-  { value: "provisioning", label: "Provisioning" },
-  { value: "organizations", label: "Organizations" },
-  { value: "groups", label: "Groups" },
-  { value: "policies", label: "Policies" },
-  { value: "applications", label: "Applications" },
-  { value: "devices", label: "Devices" },
-  { value: "sessions", label: "Sessions" },
-  { value: "api", label: "API" },
-  { value: "administration", label: "Administration" },
+// Labelled `timeline:category.<value>`; severities share `activity:severity.<value>`.
+const CATEGORIES = [
+  "authentication",
+  "authorization",
+  "security",
+  "provisioning",
+  "organizations",
+  "groups",
+  "policies",
+  "applications",
+  "devices",
+  "sessions",
+  "api",
+  "administration",
 ] as const;
 
-const SEVERITY_OPTIONS: { value: Severity; label: string; dot: string }[] = [
-  { value: "info", label: "Info", dot: "bg-info" },
-  { value: "success", label: "Success", dot: "bg-success" },
-  { value: "warning", label: "Warning", dot: "bg-warning" },
-  { value: "error", label: "Error", dot: "bg-destructive" },
-  { value: "critical", label: "Critical", dot: "bg-destructive" },
+const SEVERITY_OPTIONS: { value: Severity; dot: string }[] = [
+  { value: "info", dot: "bg-info" },
+  { value: "success", dot: "bg-success" },
+  { value: "warning", dot: "bg-warning" },
+  { value: "error", dot: "bg-destructive" },
+  { value: "critical", dot: "bg-destructive" },
 ];
 
-const CATEGORY_LABEL: Record<string, string> = Object.fromEntries(
-  CATEGORY_OPTIONS.map((o) => [o.value, o.label]),
-);
-const SEVERITY_LABEL: Record<string, string> = Object.fromEntries(
-  SEVERITY_OPTIONS.map((o) => [o.value, o.label]),
-);
-const PRESET_LABEL: Record<string, string> = Object.fromEntries(
-  TIME_PRESETS.map((p) => [p.value, p.label]),
-);
+const PRESETS = new Set(TIME_PRESETS.map((p) => p.value));
 
 function FilterDropdown({
   label,
@@ -106,6 +100,7 @@ function ActiveChip({ label, onRemove }: { label: string; onRemove: () => void }
  * removable chip per active filter. Disabled without audit.read and user.read.
  */
 export function TimelineFilters() {
+  const { t } = useTranslation("timeline");
   const access = useCapabilities();
   const disabled = !access.can("audit.read") || !access.can("user.read");
 
@@ -181,13 +176,18 @@ export function TimelineFilters() {
   // An unknown preset gets an empty chip label.
   const dateChipLabel =
     preset !== "all" && preset !== "custom"
-      ? (PRESET_LABEL[preset] ?? "")
+      ? PRESETS.has(preset)
+        ? t(`activity:activityTimeRange.presets.${preset}`)
+        : ""
       : preset === "custom"
-        ? "Custom range"
-        : "Date range";
+        ? t("timelineFilters.customRange")
+        : t("timelineFilters.dateRange");
 
   return (
-    <fieldset className="m-0 flex flex-col gap-3 border-0 p-0" aria-label="Timeline filters">
+    <fieldset
+      className="m-0 flex flex-col gap-3 border-0 p-0"
+      aria-label={t("timelineFilters.timelineFilters")}
+    >
       {/* Primary row: search + time range */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-52 flex-1">
@@ -197,12 +197,12 @@ export function TimelineFilters() {
           />
           <Input
             type="search"
-            placeholder="Search events, users, IPs, event IDs…"
+            placeholder={t("timelineFilters.searchEventsUsersIps")}
             value={filters.q}
             onChange={handleSearchChange}
             disabled={disabled}
             className="pl-8"
-            aria-label="Search identity timeline events"
+            aria-label={t("timelineFilters.searchIdentityTimelineEvents")}
           />
         </div>
 
@@ -221,25 +221,25 @@ export function TimelineFilters() {
         <ListFilterIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
 
         <FilterDropdown
-          label="Category"
-          heading="Filter by category"
+          label={t("timelineFilters.category")}
+          heading={t("timelineFilters.filterByCategory")}
           count={filters.category.length}
           disabled={disabled}
         >
-          {CATEGORY_OPTIONS.map((opt) => (
+          {CATEGORIES.map((value) => (
             <DropdownMenuCheckboxItem
-              key={opt.value}
-              checked={filters.category.includes(opt.value)}
-              onCheckedChange={() => toggleCategory(opt.value)}
+              key={value}
+              checked={filters.category.includes(value)}
+              onCheckedChange={() => toggleCategory(value)}
             >
-              {opt.label}
+              {t(`category.${value}`)}
             </DropdownMenuCheckboxItem>
           ))}
         </FilterDropdown>
 
         <FilterDropdown
-          label="Severity"
-          heading="Filter by severity"
+          label={t("timelineFilters.severity")}
+          heading={t("timelineFilters.filterBySeverity")}
           count={filters.severity.length}
           disabled={disabled}
         >
@@ -253,7 +253,7 @@ export function TimelineFilters() {
                 className={cn("mr-2 inline-block size-2 rounded-full", opt.dot)}
                 aria-hidden="true"
               />
-              {opt.label}
+              {t(`activity:severity.${opt.value}`)}
             </DropdownMenuCheckboxItem>
           ))}
         </FilterDropdown>
@@ -263,21 +263,28 @@ export function TimelineFilters() {
             type="button"
             onClick={handleClearAll}
             className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Clear all timeline filters"
+            aria-label={t("timelineFilters.clearAllTimelineFilters")}
           >
             <XIcon className="size-3" aria-hidden="true" />
-            Clear all
+            {t("timelineFilters.clearAll")}
           </button>
         )}
       </div>
 
       {/* Active-filter chips */}
       {hasActiveFilters && (
-        <ul className="flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+        <ul
+          className="flex flex-wrap items-center gap-1.5"
+          aria-label={t("timelineFilters.activeFilters")}
+        >
           {filters.category.map((value) => (
             <li key={`cat-${value}`}>
               <ActiveChip
-                label={`Category: ${CATEGORY_LABEL[value] ?? value}`}
+                label={t("timelineFilters.categoryChip", {
+                  label: (CATEGORIES as readonly string[]).includes(value)
+                    ? t(`category.${value}`)
+                    : value,
+                })}
                 onRemove={() => toggleCategory(value)}
               />
             </li>
@@ -285,7 +292,9 @@ export function TimelineFilters() {
           {filters.severity.map((value) => (
             <li key={`sev-${value}`}>
               <ActiveChip
-                label={`Severity: ${SEVERITY_LABEL[value] ?? value}`}
+                label={t("timelineFilters.severityChip", {
+                  label: t(`activity:severity.${value}`),
+                })}
                 onRemove={() => toggleSeverity(value)}
               />
             </li>

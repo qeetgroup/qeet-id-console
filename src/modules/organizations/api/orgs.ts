@@ -107,7 +107,7 @@ export function useUpdateOrg({ silentError = false }: { silentError?: boolean } 
     mutationFn: ({ id, body }: { id: string; body: UpdateOrgBody }) =>
       api<Org>(`/v1/tenants/${id}`, { method: "PATCH", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.all }),
-    meta: { successMessage: "Organization updated", silentError },
+    meta: { successMessage: "organizations:toast.organizationUpdated", silentError },
   });
 }
 
@@ -116,6 +116,6 @@ export function useDeleteOrg() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/tenants/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.all }),
-    meta: { successMessage: "Organization deleted" },
+    meta: { successMessage: "organizations:toast.organizationDeleted" },
   });
 }

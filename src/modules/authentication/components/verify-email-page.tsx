@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -8,6 +9,7 @@ import { errorMessage } from "@/platform/errors/user-message";
 
 /** Renders email verification for a signed-in, unverified account. */
 export function VerifyEmailPage() {
+  const { t } = useTranslation("auth-flow");
   const navigate = useNavigate();
   const qc = useQueryClient();
   const me = useMe();
@@ -44,14 +46,14 @@ export function VerifyEmailPage() {
         // who can't reach their inbox is stuck with no way to switch accounts.
         footer={
           <p className="text-center text-sm text-muted-foreground">
-            Wrong account?{" "}
+            {t("verifyEmail.wrongAccount")}{" "}
             <button
               type="button"
               className="underline underline-offset-4 disabled:opacity-50"
               onClick={() => logout.mutate()}
               disabled={logout.isPending}
             >
-              Sign out
+              {t("verifyEmail.signOut")}
             </button>
           </p>
         }

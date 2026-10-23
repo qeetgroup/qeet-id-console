@@ -1,6 +1,7 @@
 import { SidebarProvider } from "@qeetrix/ui";
 import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useFeatureFlag } from "@/platform/feature-flags/provider";
 import { CapabilityProvider, useCapabilities } from "@/platform/security/capability-provider";
@@ -56,6 +57,7 @@ function AppLayout() {
 }
 
 function ConsoleFrame() {
+  const { t } = useTranslation("common");
   const navigate = useNavigate();
   const access = useCapabilities();
   const qeetaiEnabled = useFeatureFlag("qeetai");
@@ -86,7 +88,7 @@ function ConsoleFrame() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:inset-s-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-md focus:ring-2 focus:ring-ring focus:outline-none"
       >
-        Skip to main content
+        {t("skipToContent")}
       </a>
       <AppSidebar />
       <div className="console-workspace">

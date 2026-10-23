@@ -105,7 +105,7 @@ export function useCreateGroup() {
     mutationFn: (in_: { name: string; description?: string; parent_id?: string | null }) =>
       api<Group>("/v1/groups", { method: "POST", body: { tenant_id: tenantId, ...in_ } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }),
-    meta: { successMessage: "Group created" },
+    meta: { successMessage: "groups:toast.created" },
   });
 }
 
@@ -122,7 +122,7 @@ export function useUpdateGroup() {
     mutationFn: ({ groupId, body }: { groupId: string; body: UpdateGroupInput }) =>
       api<Group>(`/v1/groups/${groupId}`, { method: "PATCH", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }),
-    meta: { successMessage: "Group updated", silentError: true }, // the sheet shows the error
+    meta: { successMessage: "groups:toast.updated", silentError: true }, // the sheet shows the error
   });
 }
 
@@ -143,7 +143,7 @@ export function useDeleteGroup() {
     },
     onError: (_err, _groupId, ctx) => qc.setQueryData(listKey, ctx?.previous),
     onSettled: () => qc.invalidateQueries({ queryKey: listKey }),
-    meta: { successMessage: "Group deleted" },
+    meta: { successMessage: "groups:toast.deleted" },
   });
 }
 
@@ -161,7 +161,9 @@ export function useAddGroupMember({ silent = false }: { silent?: boolean } = {})
       void qc.invalidateQueries({ queryKey: groupKeys.members(tenantId, groupId) });
       void qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }); // member counts
     },
-    meta: silent ? { silent: true } : { successMessage: "Member added", silentError: true },
+    meta: silent
+      ? { silent: true }
+      : { successMessage: "groups:toast.memberAdded", silentError: true },
   });
 }
 
@@ -175,7 +177,7 @@ export function useRemoveGroupMember() {
       void qc.invalidateQueries({ queryKey: groupKeys.members(tenantId, groupId) });
       void qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) });
     },
-    meta: { successMessage: "Member removed" },
+    meta: { successMessage: "groups:toast.memberRemoved" },
   });
 }
 
@@ -204,7 +206,7 @@ export function useCreateGroupTemplate() {
     mutationFn: (in_: { name: string; description?: string; nodes: GroupTemplateNode[] }) =>
       api<GroupTemplate>("/v1/groups/templates", { method: "POST", body: in_ }),
     onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.templates(tenantId) }),
-    meta: { successMessage: "Template saved" },
+    meta: { successMessage: "groups:toast.templateSaved" },
   });
 }
 
@@ -214,7 +216,7 @@ export function useDeleteGroupTemplate() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/groups/templates/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.templates(tenantId) }),
-    meta: { successMessage: "Template deleted" },
+    meta: { successMessage: "groups:toast.templateDeleted" },
   });
 }
 
@@ -228,7 +230,7 @@ export function useApplyGroupTemplate() {
         body: { parent_id: in_.parent_id ?? null },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }),
-    meta: { successMessage: "Template applied" },
+    meta: { successMessage: "groups:toast.templateApplied" },
   });
 }
 

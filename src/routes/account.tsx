@@ -98,7 +98,7 @@ function AccountFrame() {
       </div>
 
       {/* Tabs */}
-      <nav aria-label="Account sections" className="flex flex-wrap gap-1 border-b">
+      <nav aria-label={t("nav.sections")} className="flex flex-wrap gap-1 border-b">
         {NAV.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.to;

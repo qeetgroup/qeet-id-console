@@ -86,7 +86,9 @@
   "security": {
     "email": "Email",
     "mfaOn": "MFA",
-    "mfaOff": "MFA off"
+    "mfaOff": "MFA off",
+    "emailVerified": "Email verified",
+    "emailUnverified": "Email not verified"
   },
   "filters": {
     "mfa": "MFA",
@@ -218,7 +220,20 @@
     "created": "User created",
     "updated": "User updated",
     "deleted": "User deleted",
-    "passwordUpdated": "Password updated"
+    "passwordUpdated": "Password updated",
+    "invitationSent": "Invitation sent",
+    "invitationReSent": "Invitation re-sent",
+    "invitationRevoked": "Invitation revoked",
+    "usersReactivated": "Users reactivated",
+    "reviewSaved": "Review saved",
+    "allSessionsRevoked": "All sessions revoked",
+    "mfaRequirementUpdated": "MFA requirement updated",
+    "passwordResetEmailSent": "Password-reset email sent",
+    "userStatusUpdated": "User status updated",
+    "userRestored": "User restored",
+    "userPermanentlyDeleted": "User permanently deleted",
+    "mfaReset": "Multi-factor authentication reset for this user",
+    "roleAssigned": "Role assigned"
   },
   "sessions": {
     "description": "Active sign-in sessions tracked under your user. The backend stores IP, User-Agent, and last-seen-at for each.",
@@ -301,6 +316,8 @@
     "permissionsSplit": "{{direct}} direct · {{inherited}} inherited",
     "applications": "Applications",
     "policies": "Policies",
+    "applicationsCount": "Applications: {{n}}",
+    "policiesCount": "Policies: {{n}}",
     "viewEffectiveAccess": "View effective access",
     "recentActivityTitle": "Recent activity",
     "viewAllActivity": "View all activity →",
@@ -356,7 +373,8 @@
     "noRoles": "No roles assigned.",
     "noGroups": "Not a member of any group.",
     "effectivePermissions": "Effective permissions",
-    "effectivePermissionsCount": "{{count}} permission(s)",
+    "effectivePermissionsCount_one": "{{count}} permission",
+    "effectivePermissionsCount_other": "{{count}} permissions",
     "noPermissions": "No permissions resolved.",
     "sessionsTitle": "Active sessions",
     "sessionsDesc": "Live sign-in sessions for this user.",
@@ -444,5 +462,55 @@
       "aField": "A field"
     },
     "tooMany": "An import can add at most {{max}} users. Split the file and import each part."
+  },
+  "postureTiles": {
+    "passkeys": "Passkeys",
+    "password": "Password",
+    "sessions": "Sessions",
+    "riskLevel": "Risk level",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "notSet": "Not set",
+    "registered_one": "{{count}} registered",
+    "registered_other": "{{count}} registered",
+    "lastUsed": "Last used",
+    "neverUsed": "Never used",
+    "noneRegistered": "None registered",
+    "lastChanged": "Last changed",
+    "changeDateUnknown": "Change date unknown",
+    "passwordNotSetUp": "Password login not set up",
+    "active_one": "{{count}} active",
+    "active_other": "{{count}} active",
+    "acrossDevices_one": "Across {{count}} device",
+    "acrossDevices_other": "Across {{count}} devices",
+    "openSignals_one": "{{count}} open signal",
+    "openSignals_other": "{{count}} open signals",
+    "noSuspiciousActivity": "No suspicious activity",
+    "mfa": {
+      "label": "MFA",
+      "authenticator": "Authenticator",
+      "otp_one": "{{count}} OTP",
+      "otp_other": "{{count}} OTP",
+      "push_one": "{{count}} push",
+      "push_other": "{{count}} push",
+      "requiredNotEnrolled": "Required — not enrolled",
+      "none": "No MFA configured"
+    },
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    }
+  },
+  "userAgent": {
+    "unknown": "Unknown",
+    "device": "device",
+    "unknownDevice": "Unknown device",
+    "apiClient": "API client",
+    "browser": "Browser",
+    "unknownOs": "Unknown OS",
+    "label": "{{browser}} on {{os}}"
   }
 }

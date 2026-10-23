@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import i18n from "@/i18n";
+
 import type { ConsoleContext } from "../../context/types/context.types";
 import { rankSuggestions } from "../suggestion-engine";
 
@@ -14,7 +16,7 @@ function on(pathname: string, selection?: ConsoleContext["selection"]): ConsoleC
 }
 
 function labels(ctx: ConsoleContext): string[] {
-  return rankSuggestions(ctx, () => true).map((s) => s.label);
+  return rankSuggestions(ctx, () => true).map((s) => i18n.t(s.label));
 }
 
 describe("route suggestions while the assistant only reads", () => {

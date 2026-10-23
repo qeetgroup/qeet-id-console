@@ -8,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  TableCell,
+  TableRow,
 } from "@qeetrix/ui";
 import {
   ChevronLeftIcon,
@@ -105,6 +107,28 @@ export function DirectorySelect({
   );
 }
 
+/** The reporting window shared by the sync activity and sync error pages. */
+export function DirectoryDaysSelect({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (days: number) => void;
+}) {
+  const { t } = useTranslation("dashboard");
+  return (
+    <DirectorySelect
+      label={t("directory.dateRange")}
+      value={String(value)}
+      onChange={(next) => onChange(Number(next))}
+      options={[7, 30, 90].map((days) => ({
+        value: String(days),
+        label: t("directory.lastDays", { days }),
+      }))}
+    />
+  );
+}
+
 export function DirectorySearch({
   label,
   value,
@@ -172,6 +196,21 @@ export function DirectoryPagination({
         </Button>
       </div>
     </footer>
+  );
+}
+
+/** Placeholder rows for a directory table whose page is still loading. */
+export function DirectorySkeletonRows({ colSpan }: { colSpan: number }) {
+  return (
+    <>
+      {[0, 1, 2].map((row) => (
+        <TableRow key={row}>
+          <TableCell colSpan={colSpan}>
+            <Skeleton className="h-8 w-full" />
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
   );
 }
 

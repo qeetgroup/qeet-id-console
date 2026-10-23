@@ -26,7 +26,7 @@ export interface Message {
 
 export interface Conversation {
   id: string;
-  title: string;
+  title: string; // Empty until the first user message names it; the UI shows a placeholder
   messages: Message[];
   pinned: boolean;
   createdAt: number;

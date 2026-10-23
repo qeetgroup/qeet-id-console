@@ -1,6 +1,7 @@
 import { Button, Textarea } from "@qeetrix/ui";
 import { ArrowUpIcon, SquareIcon } from "@qeetrix/icons";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ComposerProps {
   onSend: (text: string) => void;
@@ -15,6 +16,7 @@ const MAX_TEXTAREA_HEIGHT = 200;
  * while a turn streams. The textarea grows up to a cap, then scrolls.
  */
 export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
+  const { t } = useTranslation("qeetai");
   const [draft, setDraft] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -49,8 +51,8 @@ export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
             }
           }}
           rows={1}
-          placeholder="Ask Qeet AI, or describe an action…"
-          aria-label="Message Qeet AI"
+          placeholder={t("composer.askQeetAiOr")}
+          aria-label={t("composer.messageQeetAi")}
           className="max-h-[200px] min-h-9 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
         />
         {isStreaming ? (
@@ -59,8 +61,8 @@ export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
             size="icon"
             variant="secondary"
             onClick={onStop}
-            aria-label="Stop generating"
-            title="Stop generating"
+            aria-label={t("composer.stopGenerating")}
+            title={t("composer.stopGenerating")}
           >
             <SquareIcon className="size-4" />
           </Button>
@@ -70,8 +72,8 @@ export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
             size="icon"
             onClick={submit}
             disabled={!draft.trim()}
-            aria-label="Send message"
-            title="Send (Enter)"
+            aria-label={t("composer.sendMessage")}
+            title={t("composer.sendEnter")}
           >
             <ArrowUpIcon className="size-4" />
           </Button>

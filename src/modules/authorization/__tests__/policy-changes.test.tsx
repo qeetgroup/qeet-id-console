@@ -17,7 +17,12 @@ import { type ActivityEvent, fetchActivityPage } from "@/modules/activity";
 import { api } from "@/platform/api/client";
 import type { AuditEvent } from "../api/audit";
 import { authzKeys } from "../api/keys";
-import { describePolicyAction, usePolicyChanges } from "../api/policy-changes";
+import {
+  describePolicyAction,
+  type PolicyChange,
+  policyChangeTitle,
+  usePolicyChanges,
+} from "../api/policy-changes";
 
 const FROM = "2026-10-01T00:00:00Z";
 
@@ -68,12 +73,17 @@ afterEach(cleanup);
 
 describe("describePolicyAction", () => {
   it.each([
-    ["abac_policy.created", "Policy created", "created"],
-    ["rbac_policy.updated", "Policy updated", "updated"],
+    ["abac_policy.created", "ABAC policy created", "created"],
+    ["rbac_policy.updated", "RBAC policy updated", "updated"],
+    ["policy.updated", "Policy updated", "updated"],
     ["role.deleted", "Role deleted", "deleted"],
     ["relation_tuple.deleted", "Relationship deleted", "deleted"],
     ["relation.created", "Relationship created", "created"],
     ["role.permission_granted", "Role permission granted", "created"],
+    ["role.group_assigned", "Role assigned to a group", "created"],
+    ["role.group_unassigned", "Role unassigned from a group", "deleted"],
+    ["rebac.tuple_written", "Relationship created", "created"],
+    ["rebac.tuple_deleted", "Relationship deleted", "deleted"],
     ["permission.revoked", "Permission revoked", "deleted"],
     ["group_role.assigned", "Group role assigned", "created"],
     ["group_role.unassigned", "Group role unassigned", "deleted"],
@@ -81,9 +91,26 @@ describe("describePolicyAction", () => {
     ["security_policy.updated", "Security policy updated", "updated"],
     ["abac.evaluated", "Abac evaluated", "other"],
     ["custom_entity.did_stuff", "Custom entity did stuff", "other"],
+    ["role.did_stuff", "Role did stuff", "other"],
     ["role", "Role", "other"],
   ] as const)("describes %s as %j (%s)", (action, title, kind) => {
     expect(describePolicyAction(action)).toEqual({ title, kind });
+  });
+});
+
+describe("policyChangeTitle", () => {
+  function change(action: string, title: string): PolicyChange {
+    return { id: "c1", action, title, target: "", actor: null, at: FROM, kind: "other" };
+  }
+
+  it("prefers the console's own title, then the feed's, then the action's", () => {
+    expect(policyChangeTitle(change("role.created", "Rôle créé par le serveur"))).toBe(
+      "Role created",
+    );
+    expect(policyChangeTitle(change("role.did_stuff", "Role reticulated"))).toBe(
+      "Role reticulated",
+    );
+    expect(policyChangeTitle(change("role.did_stuff", " "))).toBe("Role did stuff");
   });
 });
 
@@ -121,6 +148,7 @@ describe("usePolicyChanges", () => {
     expect(result.current.data).toEqual([
       {
         id: "a1",
+        action: "abac_policy.created",
         title: "Policy hr_view created",
         target: "hr_view",
         actor: "Asha Rao",
@@ -129,6 +157,7 @@ describe("usePolicyChanges", () => {
       },
       {
         id: "a2",
+        action: "role.updated",
         title: "Role updated",
         target: "",
         actor: null,
@@ -159,12 +188,16 @@ describe("usePolicyChanges", () => {
 
     expect(result.current.data).toEqual([
       expect.objectContaining({
-        title: "Relationship deleted",
+        action: "relation_tuple.deleted",
         target: "tuple-1",
         actor: "abcdef01",
         kind: "deleted",
       }),
-      expect.objectContaining({ title: "Role created", target: "role", actor: null }),
+      expect.objectContaining({ action: "role.created", target: "role", actor: null }),
+    ]);
+    expect(result.current.data?.map(policyChangeTitle)).toEqual([
+      "Relationship deleted",
+      "Role created",
     ]);
   });
 
@@ -188,7 +221,8 @@ describe("usePolicyChanges", () => {
     expect(result.current.data).toEqual([
       {
         id: "e1",
-        title: "Policy updated",
+        action: "abac_policy.updated",
+        title: "",
         target: "fedcba98",
         actor: "01234567",
         at: "2026-10-10T00:00:00Z",
@@ -196,12 +230,17 @@ describe("usePolicyChanges", () => {
       },
       {
         id: "e3",
-        title: "Role created",
+        action: "role.created",
+        title: "",
         target: "role",
         actor: null,
         at: "2026-10-10T00:00:00Z",
         kind: "created",
       },
+    ]);
+    expect(result.current.data?.map(policyChangeTitle)).toEqual([
+      "ABAC policy updated",
+      "Role created",
     ]);
   });
 
@@ -214,7 +253,9 @@ describe("usePolicyChanges", () => {
     });
     const fromActivity = render();
     await waitFor(() => expect(fromActivity.result.current.isSuccess).toBe(true));
-    expect(fromActivity.result.current.data?.map((c) => [c.id, c.title, c.kind])).toEqual([
+    expect(
+      fromActivity.result.current.data?.map((c) => [c.id, policyChangeTitle(c), c.kind]),
+    ).toEqual([
       ["a1", "Group role unassigned", "deleted"],
       ["a2", "Security policy updated", "updated"],
     ]);
@@ -229,10 +270,12 @@ describe("usePolicyChanges", () => {
     });
     const fromAudit = render();
     await waitFor(() => expect(fromAudit.result.current.isSuccess).toBe(true));
-    expect(fromAudit.result.current.data?.map((c) => [c.id, c.title, c.kind])).toEqual([
-      ["e1", "Group role assigned", "created"],
-      ["e2", "Security policy updated", "updated"],
-    ]);
+    expect(fromAudit.result.current.data?.map((c) => [c.id, policyChangeTitle(c), c.kind])).toEqual(
+      [
+        ["e1", "Group role assigned", "created"],
+        ["e2", "Security policy updated", "updated"],
+      ],
+    );
   });
 
   it("caps the audit fallback at five changes by default", async () => {

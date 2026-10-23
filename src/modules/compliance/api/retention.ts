@@ -34,7 +34,7 @@ export function useUpdateRetentionPolicy() {
       });
     },
     onSuccess: (data) => qc.setQueryData(complianceKeys.retention(tenantId), data),
-    meta: { successMessage: "Retention policy saved", silentError: true }, // the form shows it
+    meta: { successMessage: "compliance:toast.retentionPolicySaved", silentError: true }, // the form shows it
   });
 }
 
@@ -63,6 +63,6 @@ export function useRunRetention() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) }),
-    meta: { successMessage: "Retention purge complete" },
+    meta: { successMessage: "compliance:toast.retentionPurgeComplete" },
   });
 }

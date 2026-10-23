@@ -1,5 +1,6 @@
 import { Badge, SegmentedControl, SegmentedControlItem } from "@qeetrix/ui";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   type EvalTreeNode,
@@ -15,11 +16,11 @@ type View = "json" | "yaml" | "dsl" | "tree";
 
 /** Renders a live, read-only preview of a PolicyDoc as JSON, YAML, DSL or an evaluation tree. */
 export function CodePreview({ doc, height = 360 }: { doc: PolicyDoc; height?: number }) {
+  const { t } = useTranslation("rbac");
   const [view, setView] = useState<View>("json");
   const json = useMemo(() => toJson(doc), [doc]);
   const yaml = useMemo(() => toYamlDoc(doc), [doc]);
   const dsl = useMemo(() => toDsl(doc), [doc]);
-  const tree = useMemo(() => toEvalTree(doc), [doc]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -27,12 +28,12 @@ export function CodePreview({ doc, height = 360 }: { doc: PolicyDoc; height?: nu
         value={view}
         onValueChange={(v) => setView(v as View)}
         size="sm"
-        aria-label="Preview format"
+        aria-label={t("codePreview.previewFormat")}
       >
         <SegmentedControlItem value="json">JSON</SegmentedControlItem>
         <SegmentedControlItem value="yaml">YAML</SegmentedControlItem>
         <SegmentedControlItem value="dsl">DSL</SegmentedControlItem>
-        <SegmentedControlItem value="tree">Tree</SegmentedControlItem>
+        <SegmentedControlItem value="tree">{t("codePreview.tree")}</SegmentedControlItem>
       </SegmentedControl>
 
       {view === "json" && <MonacoPanel value={json} language="json" height={height} />}
@@ -40,7 +41,8 @@ export function CodePreview({ doc, height = 360 }: { doc: PolicyDoc; height?: nu
       {view === "dsl" && <MonacoPanel value={dsl} language="plaintext" height={height} />}
       {view === "tree" && (
         <div className="overflow-auto rounded-md border bg-muted/20 p-4" style={{ height }}>
-          <EvalTree node={tree} />
+          {/* Built each render: the tree is translated, so it follows a language change. */}
+          <EvalTree node={toEvalTree(doc)} />
         </div>
       )}
     </div>
@@ -57,6 +59,7 @@ const KIND_STYLES: Record<EvalTreeNode["kind"], string> = {
 };
 
 function EvalTree({ node, depth = 0 }: { node: EvalTreeNode; depth?: number }) {
+  const { t } = useTranslation("rbac");
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-2" style={{ paddingLeft: depth * 18 }}>
@@ -75,7 +78,7 @@ function EvalTree({ node, depth = 0 }: { node: EvalTreeNode; depth?: number }) {
         )}
         {node.kind === "leaf" && (
           <Badge variant="muted" className="text-[10px]">
-            condition
+            {t("codePreview.condition")}
           </Badge>
         )}
       </div>

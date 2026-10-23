@@ -96,7 +96,8 @@
       "name": "Enter a name.",
       "redirectUris": "Add at least one redirect URI.",
       "uri": "Enter one full URL per line."
-    }
+    },
+    "namePlaceholder": "My SPA"
   },
   "detail": {
     "backToList": "All applications",
@@ -153,5 +154,19 @@
     "validation": {
       "name": "Enter a name."
     }
+  },
+  "quickstart": {
+    "title": "Integrate this application",
+    "description": "Drop the snippet into your app to add “Sign in with Qeet ID”, then test the flow.",
+    "framework": "Framework",
+    "endpoints": "Endpoints",
+    "copySnippet": "Copy snippet",
+    "copied": "Copied to clipboard",
+    "testLogin": "Test login",
+    "discovery": "Discovery document",
+    "testLoginHelp": "“Test login” opens the hosted sign-in for this app and returns to its first redirect URI ({{uri}}).",
+    "testLoginHelpNone": "“Test login” opens the hosted sign-in for this app and returns to its first redirect URI (none set).",
+    "noRedirectTitle": "Add a redirect URI first",
+    "noRedirectText": "This app has no redirect URI to return to after login."
   }
 }

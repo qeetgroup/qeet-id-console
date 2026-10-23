@@ -17,33 +17,15 @@ import { useIpRules } from "../api/ip-allowlist";
 
 // The server's per-IP defaults. The API also takes per-tenant, per-user and per-key overrides,
 // which this screen doesn't manage.
-const STATIC_LIMITS: { endpoint: string; limit: string; window: string }[] = [
-  {
-    endpoint: "POST /v1/auth/login",
-    limit: "5 req / 20 burst",
-    window: "per IP, sliding",
-  },
-  {
-    endpoint: "POST /v1/auth/refresh",
-    limit: "5 req / 20 burst",
-    window: "per IP, sliding",
-  },
-  {
-    endpoint: "POST /v1/auth/signup",
-    limit: "5 req / 20 burst",
-    window: "per IP, sliding",
-  },
-  {
-    endpoint: "POST /v1/auth/forgot-password",
-    limit: "5 req / 20 burst",
-    window: "per IP, sliding",
-  },
-  {
-    endpoint: "POST /v1/oauth/token (client_credentials)",
-    limit: "5 req / 20 burst",
-    window: "per IP, sliding",
-  },
-  { endpoint: "Other authed endpoints", limit: "unlimited", window: "—" },
+// Each endpoint allows 5 requests a second with bursts of 20, per IP, in a sliding window;
+// `endpoint: null` is every other authenticated endpoint, which is unlimited.
+const STATIC_LIMITS: { endpoint: string | null; limited: boolean }[] = [
+  { endpoint: "POST /v1/auth/login", limited: true },
+  { endpoint: "POST /v1/auth/refresh", limited: true },
+  { endpoint: "POST /v1/auth/signup", limited: true },
+  { endpoint: "POST /v1/auth/forgot-password", limited: true },
+  { endpoint: "POST /v1/oauth/token (client_credentials)", limited: true },
+  { endpoint: null, limited: false },
 ];
 
 /** Renders the platform's per-address rate limits, which the console doesn't change. */
@@ -63,11 +45,20 @@ export function DefaultRateLimitsPage() {
         </CardHeader>
         <CardContent className="divide-y rounded-md border">
           {STATIC_LIMITS.map((row) => (
-            <div key={row.endpoint} className="flex items-center justify-between gap-4 p-3 text-sm">
-              <code className="text-xs">{row.endpoint}</code>
+            <div
+              key={row.endpoint ?? "other"}
+              className="flex items-center justify-between gap-4 p-3 text-sm"
+            >
+              <code className="text-xs">{row.endpoint ?? t("rateLimits.otherEndpoints")}</code>
               <div className="flex items-center gap-2">
-                <Badge variant="muted">{row.limit}</Badge>
-                <span className="text-xs text-muted-foreground">{row.window}</span>
+                <Badge variant="muted">
+                  {row.limited
+                    ? t("rateLimits.rate", { rate: 5, burst: 20 })
+                    : t("rateLimits.unlimited")}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {row.limited ? t("rateLimits.perIpSliding") : "—"}
+                </span>
               </div>
             </div>
           ))}

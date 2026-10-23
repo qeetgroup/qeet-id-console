@@ -26,7 +26,8 @@ export type IssueResult = z.infer<typeof issueResultSchema>;
 
 export interface VerifyResult {
   valid: boolean;
-  reason?: string;
+  reason?: string; // English, never shown
+  reason_code?: string; // vc.not_credential, vc.signature_invalid, vc.unknown or vc.revoked
   subject?: string;
   issuer?: string;
   vc?: Record<string, unknown>;
@@ -58,7 +59,7 @@ export function useIssueCredential() {
         schema: issueResultSchema,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.credentials(tenantId) }),
-    meta: { successMessage: "Credential issued", silentError: true },
+    meta: { successMessage: "developer:toast.credentialIssued", silentError: true },
   });
 }
 
@@ -71,7 +72,7 @@ export function useRevokeCredential() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.credentials(tenantId) }),
-    meta: { successMessage: "Credential revoked" },
+    meta: { successMessage: "developer:toast.credentialRevoked" },
   });
 }
 

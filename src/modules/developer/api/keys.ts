@@ -19,6 +19,8 @@ export const developerKeys = {
   webhooks: (tenantId: string | null) => [...developerKeys.tenant(tenantId), "webhooks"] as const,
   webhook: (tenantId: string | null, webhookId: string) =>
     [...developerKeys.webhooks(tenantId), webhookId] as const,
+  webhookEvents: (tenantId: string | null) =>
+    [...developerKeys.tenant(tenantId), "webhook-events"] as const, // apart: never a list refresh
   notifications: (tenantId: string | null) =>
     [...developerKeys.tenant(tenantId), "notifications"] as const,
   overview: (tenantId: string | null, source: string) =>

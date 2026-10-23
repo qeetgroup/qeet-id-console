@@ -20,6 +20,7 @@ import {
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
 import { BotIcon, RefreshCwIcon, ShieldOffIcon, ZapIcon } from "@qeetrix/icons";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
@@ -34,14 +35,14 @@ import {
   useUpdateBotSettings,
 } from "../api/bots";
 
-function verdictBadge(v: string) {
+function verdictBadge(v: string, t: TFunction) {
   switch (v) {
     case "blocked":
-      return <Badge variant="destructive">blocked</Badge>;
+      return <Badge variant="destructive">{t("bots.verdict.blocked")}</Badge>;
     case "challenged":
-      return <Badge variant="secondary">challenged</Badge>;
+      return <Badge variant="secondary">{t("bots.verdict.challenged")}</Badge>;
     default:
-      return <Badge variant="outline">allowed</Badge>;
+      return <Badge variant="outline">{t("bots.verdict.allowed")}</Badge>;
   }
 }
 
@@ -206,7 +207,7 @@ export function BotProtectionPage() {
                   <TableRow key={r.id}>
                     <TableCell className="font-mono text-xs">{r.ip ?? "—"}</TableCell>
                     <TableCell className="max-w-[280px] truncate text-xs">{r.user_agent}</TableCell>
-                    <TableCell>{verdictBadge(r.verdict)}</TableCell>
+                    <TableCell>{verdictBadge(r.verdict, t)}</TableCell>
                     <TableCell className="font-mono text-xs">{r.score.toFixed(2)}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       <TimeSince value={r.created_at} />

@@ -120,7 +120,7 @@ describe("groupByDate", () => {
     const evt = makeEvent({ at: "2024-06-15T08:00:00Z" });
     const groups = groupByDate([evt], now);
     expect(groups).toHaveLength(1);
-    expect(groups[0]?.label).toBe("Today");
+    expect(groups[0]?.key).toBe("today");
     expect(groups[0]?.events).toHaveLength(1);
   });
 
@@ -128,21 +128,21 @@ describe("groupByDate", () => {
     const now = new Date("2024-06-15T12:00:00Z");
     const evt = makeEvent({ at: "2024-06-14T10:00:00Z" });
     const groups = groupByDate([evt], now);
-    expect(groups[0]?.label).toBe("Yesterday");
+    expect(groups[0]?.key).toBe("yesterday");
   });
 
   it("puts 2-6 days ago in 'This Week'", () => {
     const now = new Date("2024-06-15T12:00:00Z");
     const evt = makeEvent({ at: "2024-06-12T10:00:00Z" }); // 3 days ago
     const groups = groupByDate([evt], now);
-    expect(groups[0]?.label).toBe("This Week");
+    expect(groups[0]?.key).toBe("thisWeek");
   });
 
   it("puts events older than 7 days in 'Older'", () => {
     const now = new Date("2024-06-15T12:00:00Z");
     const evt = makeEvent({ at: "2024-06-01T10:00:00Z" }); // 14 days ago
     const groups = groupByDate([evt], now);
-    expect(groups[0]?.label).toBe("Older");
+    expect(groups[0]?.key).toBe("older");
   });
 
   it("emits only non-empty groups and preserves order: Today→Yesterday→This Week→Older", () => {
@@ -154,6 +154,6 @@ describe("groupByDate", () => {
       makeEvent({ at: "2024-05-01T09:00:00Z" }), // Older
     ];
     const groups = groupByDate(events, now);
-    expect(groups.map((g) => g.label)).toEqual(["Today", "Yesterday", "This Week", "Older"]);
+    expect(groups.map((g) => g.key)).toEqual(["today", "yesterday", "thisWeek", "older"]);
   });
 });

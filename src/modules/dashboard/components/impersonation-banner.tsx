@@ -1,6 +1,7 @@
 import { Button } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
 import { LogOutIcon, UserCogIcon } from "@qeetrix/icons";
+import { Trans, useTranslation } from "react-i18next";
 
 import { api } from "@/platform/api/client";
 import { useImpersonationActor, useLogout } from "@/platform/auth/session";
@@ -10,6 +11,7 @@ import { useImpersonationActor, useLogout } from "@/platform/auth/session";
  * (an admin acting as another user), so they can't forget; renders nothing otherwise.
  */
 export function ImpersonationBanner() {
+  const { t } = useTranslation("dashboard");
   const actor = useImpersonationActor();
   const logout = useLogout();
 
@@ -34,8 +36,14 @@ export function ImpersonationBanner() {
       <div className="flex min-w-0 items-center gap-2">
         <UserCogIcon className="size-4 shrink-0" />
         <span className="truncate">
-          You are impersonating <strong>{actor.targetSubject}</strong>
-          <span className="opacity-80"> — signed in as {adminLabel}.</span>
+          {/* Trans escapes values before parsing its tags; unescape so a "<" in a name reads as typed. */}
+          <Trans
+            t={t}
+            shouldUnescape
+            i18nKey="impersonationBanner.message"
+            values={{ target: actor.targetSubject, admin: adminLabel }}
+            components={{ target: <strong />, admin: <span className="opacity-80" /> }}
+          />
         </span>
       </div>
       <Button
@@ -45,7 +53,7 @@ export function ImpersonationBanner() {
         disabled={exit.isPending}
         className="border-white/40 bg-white/10 text-white hover:bg-white/20"
       >
-        <LogOutIcon /> Exit impersonation
+        <LogOutIcon /> {t("impersonationBanner.exit")}
       </Button>
     </div>
   );

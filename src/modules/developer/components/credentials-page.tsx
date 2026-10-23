@@ -242,8 +242,12 @@ function IssueCredentialForm({ onIssued }: { onIssued: (result: IssueResult) => 
   );
 }
 
-// The server's fixed verify reasons, shown in the reader's language.
+// The server's verify reason codes, and the sentences a server without them sends instead.
 const VERIFY_REASONS: Record<string, string> = {
+  "vc.not_credential": "credentials.verify.reason.notCredential",
+  "vc.signature_invalid": "credentials.verify.reason.signature",
+  "vc.unknown": "credentials.verify.reason.unknown",
+  "vc.revoked": "credentials.verify.reason.revoked",
   "not a verifiable credential": "credentials.verify.reason.notCredential",
   "signature or expiry invalid": "credentials.verify.reason.signature",
   "unknown credential": "credentials.verify.reason.unknown",
@@ -266,7 +270,7 @@ function VerifyCard() {
     },
   });
   const result = verifyM.data;
-  const reason = result?.reason ? VERIFY_REASONS[result.reason] : undefined;
+  const reason = result ? VERIFY_REASONS[result.reason_code ?? result.reason ?? ""] : undefined;
 
   return (
     <Card>

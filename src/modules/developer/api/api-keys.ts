@@ -71,7 +71,7 @@ export function useCreateApiKey() {
     mutationFn: createApiKey,
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.apiKeys(tenantId) }),
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
-    meta: { successMessage: "API key created", silentError: true }, // the sheet shows the error
+    meta: { successMessage: "developer:toast.apiKeyCreated", silentError: true }, // the sheet shows the error
   });
 }
 
@@ -98,6 +98,6 @@ export function useRevokeApiKey() {
     },
     onError: (_err, _id, ctx) => qc.setQueryData(listKey, ctx?.previous),
     onSettled: () => qc.invalidateQueries({ queryKey: listKey }),
-    meta: { successMessage: "API key revoked" },
+    meta: { successMessage: "developer:toast.apiKeyRevoked" },
   });
 }

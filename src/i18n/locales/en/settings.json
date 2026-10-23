@@ -136,6 +136,10 @@
       "linksTitle": "Links in this email",
       "linksHint": "Links are inert in the preview. Check each destination here.",
       "noLinks": "This template contains no links."
+    },
+    "sample": {
+      "ttl": "10 minutes",
+      "tenantName": "Your organization"
     }
   },
   "qeetAI": {
@@ -325,7 +329,8 @@
       "email": {
         "title": "Outgoing email identity",
         "description": "Sender name and reply-to for organization invitations and tenant magic links.",
-        "providerNote": "The platform's provider-approved From address remains in use. A custom sender address needs email-provider configuration; saving it here does not activate it."
+        "providerNote": "The platform's provider-approved From address remains in use. A custom sender address needs email-provider configuration; saving it here does not activate it.",
+        "fromNamePlaceholder": "Example Auth"
       },
       "preview": {
         "sidebar": "Branding preview and application context",
@@ -486,7 +491,8 @@
         "percent": "{{percent}}% of plan limit",
         "loading": "Loading usage",
         "unavailable": "Usage or limit not reported",
-        "error": "Usage couldn't be loaded."
+        "error": "Usage couldn't be loaded.",
+        "limit": "/ {{limit}}"
       },
       "profile": {
         "title": "Billing profile",
@@ -569,7 +575,8 @@
         "confirmDescription": "{{amount}} {{period}}, before applicable taxes. Your payment provider may require checkout to complete the change.",
         "downgradeTitle": "Downgrade to Free?",
         "downgradeDescription": "You're over the Free limits for {{resources}}. Existing items stay, but you won't be able to add more until you're under the limit.",
-        "downgradeConfirm": "Downgrade anyway"
+        "downgradeConfirm": "Downgrade anyway",
+        "overLimit": "{{resource}} ({{used}}/{{limit}})"
       }
     },
     "country": "Country",
@@ -885,5 +892,38 @@
         "saving": "Saving…"
       }
     }
+  },
+  "contactSalesDialog": {
+    "talkToSales": "Talk to sales",
+    "tellUsAboutYour": "Tell us about your needs and we'll reach out about Enterprise — SSO enforcement, SCIM, data residency, SLAs and more.",
+    "yourName": "Your name",
+    "janeDoe": "Jane Doe",
+    "workEmail": "Work email",
+    "company": "Company",
+    "acmeCorp": "Acme Corp",
+    "teamSize": "Team size",
+    "select": "Select…",
+    "whatAreYouLookingFor": "What are you looking for?",
+    "aFewWordsOn": "A few words on your use case, timeline, and requirements.",
+    "sending": "Sending…",
+    "send": "Send"
+  },
+  "upgradeGate": {
+    "upgradePlan": "Upgrade plan"
+  },
+  "customLoginDomainTab": {
+    "loginDomainSaved": "Login domain saved"
+  },
+  "providerSettingsGuidance": {
+    "anthropic": "Anthropic",
+    "openai": "OpenAI",
+    "azure": "Azure"
+  },
+  "toast": {
+    "thanksOurTeamWill": "Thanks — our team will be in touch shortly.",
+    "trialStarted": "Trial started",
+    "billingProfileSaved": "Billing profile saved",
+    "subscriptionUpdated": "Subscription updated",
+    "subscriptionWillCancelAt": "Subscription will cancel at period end"
   }
 }

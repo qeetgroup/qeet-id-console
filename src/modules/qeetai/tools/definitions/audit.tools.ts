@@ -29,7 +29,7 @@ interface AuditEvent {
 export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
   name: "search_audit_logs",
   category: "audit",
-  title: "Search audit logs",
+  title: "qeetai:tools.titles.searchAuditLogs",
   description:
     "Search the organization's append-only audit log by free-text, action, resource type, and/or actor. Read-only.",
   input: searchAuditLogsInput,
@@ -73,7 +73,7 @@ type SearchSessionsInput = z.infer<typeof searchSessionsInput>;
 export const searchSessionsTool: ToolDefinition<SearchSessionsInput> = {
   name: "search_sessions",
   category: "audit",
-  title: "List sessions",
+  title: "qeetai:tools.titles.listSessions",
   description:
     "List active sessions for the current principal. Note: this endpoint is self-scoped — there is no admin cross-user session search — so it returns the calling operator's own sessions only.",
   input: searchSessionsInput,

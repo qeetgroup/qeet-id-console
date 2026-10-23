@@ -40,7 +40,7 @@ export function useCreateLogSink() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
-    meta: { successMessage: "Log sink added", silentError: true }, // the form shows it
+    meta: { successMessage: "security:toast.logSinkAdded", silentError: true }, // the form shows it
   });
 }
 
@@ -56,7 +56,7 @@ export function useToggleLogSink() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
-    meta: { successMessage: "Log sink updated" },
+    meta: { successMessage: "security:toast.logSinkUpdated" },
   });
 }
 
@@ -71,6 +71,6 @@ export function useDeleteLogSink() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.logSinks(tenantId) }),
-    meta: { successMessage: "Log sink deleted" },
+    meta: { successMessage: "security:toast.logSinkDeleted" },
   });
 }

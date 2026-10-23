@@ -1,5 +1,6 @@
 import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { RelationGraph } from "../../api/relationships";
 import { AuthzFlow } from "./authz-flow";
@@ -16,6 +17,7 @@ export function RelationshipGraph({
   rootId: string;
   height?: number;
 }) {
+  const { t } = useTranslation("rbac");
   const { nodes, edges } = useMemo(() => {
     const pos = layeredLayout(
       graph.nodes,
@@ -46,7 +48,7 @@ export function RelationshipGraph({
       edges={edges}
       nodeTypes={relationshipNodeTypes}
       height={height}
-      ariaLabel="ReBAC relationship graph"
+      ariaLabel={t("relationshipGraph.rebacRelationshipGraph")}
     />
   );
 }

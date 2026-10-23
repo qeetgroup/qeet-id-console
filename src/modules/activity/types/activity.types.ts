@@ -91,7 +91,9 @@ export const DEFAULT_FILTERS: ActivityFilters = {
   resource: "",
 };
 
+export type DateBucket = "today" | "yesterday" | "thisWeek" | "lastWeek" | "lastMonth" | "older";
+
 export interface DateGroup {
-  label: string;
+  key: DateBucket; // labelled `activity:dateGroup.<key>`
   events: ActivityEvent[];
 }

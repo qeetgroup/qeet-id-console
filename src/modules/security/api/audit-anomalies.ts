@@ -74,7 +74,7 @@ export function useResolveAuditAnomaly() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.auditAnomalies(tenantId) }),
-    meta: { successMessage: "Anomaly resolved" },
+    meta: { successMessage: "security:toast.anomalyResolved" },
   });
 }
 
@@ -100,7 +100,7 @@ export function useUpdateAuditAnomalySettings() {
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: securityKeys.auditAnomalySettings(tenantId) }),
-    meta: { successMessage: "Anomaly-detection settings updated", silentError: true }, // the form shows it
+    meta: { successMessage: "security:toast.anomalySettingsUpdated", silentError: true }, // the form shows it
   });
 }
 
@@ -114,7 +114,8 @@ export function useVerifyAuditChain() {
         rows_checked: number;
         last_verified_id?: string;
         broken_at_id?: string;
-        broken_reason?: string;
+        broken_reason?: string; // English, never shown
+        reason_code?: string; // audit.chain_prev_hash_mismatch or audit.chain_row_hash_mismatch
       }>(`/v1/tenants/${tenantId}/audit/verify`);
     },
     meta: { silent: true },

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Badge, Progress } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -12,7 +13,7 @@ import {
 
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
-import { filterNavigation, type NavItem, navGroups } from "@/platform/config/navigation";
+import { filterNavigation, type NavItem, useNavGroups } from "@/platform/config/navigation";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useAuthPolicy } from "@/modules/authentication";
 import { brandingQueries } from "@/modules/branding";
@@ -47,15 +48,18 @@ function longDate(iso?: string | null): string | undefined {
     : d.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
 }
 
-function greeting(): string {
+// The greeting's key for the time of day.
+function greetingKey(): "morning" | "afternoon" | "evening" {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return "morning";
+  if (h < 18) return "afternoon";
+  return "evening";
 }
 
-export function SettingsOverview({ description }: { description: string }) {
+export function SettingsOverview() {
+  const { t } = useTranslation("dashboard");
   const access = useCapabilities();
+  const navGroups = useNavGroups();
   const tenantId = useTenantId();
 
   const orgsQ = useQuery(orgQueries.list()); // shared with the sidebar switcher, so a cache read
@@ -77,14 +81,20 @@ export function SettingsOverview({ description }: { description: string }) {
   const sub = subQ.data;
   const aiConnected = aiQ.data?.source === "tenant" || !!aiQ.data?.provider;
 
-  const regionLabel =
-    REGIONS.find((r) => r.value === org?.region)?.label ?? org?.region ?? undefined;
+  const regionKey = REGIONS.find((r) => r.value === org?.region)?.label;
+  const regionLabel = regionKey ? t(regionKey) : (org?.region ?? undefined);
+  const planLabel =
+    sub?.plan_name ?? (org?.plan ? t("settingsOverview.plan", { plan: org.plan }) : undefined);
 
   // One entry per settings area, keyed by the nav URL so the cards stay in
   // lockstep with the sidebar and with each area's own page.
   const statusByUrl: Record<string, CardStatus> = {
     "/settings/organization/general": {
-      meta: [org?.name, monthYear(org?.created_at) && `Est. ${monthYear(org?.created_at)}`]
+      meta: [
+        org?.name,
+        monthYear(org?.created_at) &&
+          t("settingsOverview.established", { date: monthYear(org?.created_at) }),
+      ]
         .filter(Boolean)
         .join(" · "),
     },
@@ -92,12 +102,12 @@ export function SettingsOverview({ description }: { description: string }) {
       done: verifiedDomains > 0,
       label:
         verifiedDomains > 0
-          ? `${verifiedDomains} verified domain${verifiedDomains === 1 ? "" : "s"}`
-          : "No verified domains",
+          ? t("settingsOverview.verifiedDomains", { count: verifiedDomains })
+          : t("settingsOverview.noVerifiedDomains"),
     },
     "/settings/branding": {
       done: brandingDone,
-      label: brandingDone ? "Complete" : "Not configured",
+      label: t(brandingDone ? "settingsOverview.complete" : "settingsOverview.notConfigured"),
       swatches: [branding?.primary_color, branding?.secondary_color].filter(
         (c): c is string => !!c,
       ),
@@ -105,33 +115,47 @@ export function SettingsOverview({ description }: { description: string }) {
     "/settings/organization/email-templates": {
       done: customTemplates > 0,
       label:
-        customTemplates > 0 ? `${customTemplates} templates configured` : "Using default templates",
+        customTemplates > 0
+          ? t("settingsOverview.templatesConfigured", { count: customTemplates })
+          : t("settingsOverview.defaultTemplates"),
     },
     "/settings/organization/security-policy": {
       done: securityDone,
-      label: securityDone ? "Strong" : "Review recommended",
+      label: t(securityDone ? "settingsOverview.strong" : "settingsOverview.reviewRecommended"),
       meta: policy
         ? [
-            policy.passkey_enabled ? "Passkeys enabled" : "Passkeys off",
-            policy.remember_device_enabled ? "MFA optional" : "MFA required",
+            t(
+              policy.passkey_enabled
+                ? "settingsOverview.passkeysOn"
+                : "settingsOverview.passkeysOff",
+            ),
+            t(
+              policy.remember_device_enabled
+                ? "settingsOverview.mfaOptional"
+                : "settingsOverview.mfaRequired",
+            ),
           ].join(" · ")
         : undefined,
     },
     "/settings/billing": {
       done: !!sub,
-      label: sub?.plan_name ?? (org?.plan ? `${org.plan} plan` : "No subscription"),
-      meta: longDate(sub?.current_period_end) && `Renews ${longDate(sub?.current_period_end)}`,
+      label: planLabel ?? t("settingsOverview.noSubscription"),
+      meta:
+        longDate(sub?.current_period_end) &&
+        t("settingsOverview.renews", { date: longDate(sub?.current_period_end) }),
     },
     "/settings/qeet-ai": {
       done: aiConnected,
-      label: aiConnected ? "Connected" : "Not connected",
+      label: t(aiConnected ? "settingsOverview.connected" : "settingsOverview.notConnected"),
       meta: aiQ.data?.provider
-        ? [aiQ.data.provider, aiQ.data.model && "1 model"].filter(Boolean).join(" · ")
+        ? [aiQ.data.provider, aiQ.data.model && t("settingsOverview.oneModel")]
+            .filter(Boolean)
+            .join(" · ")
         : undefined,
     },
   };
 
-  const visibleGroup = filterNavigation(navGroups, access.can).find((g) => g.label === "Settings");
+  const visibleGroup = filterNavigation(navGroups, access.can).find((g) => g.id === "settings");
   const items = (visibleGroup?.items ?? []).filter((item) => item.url !== OVERVIEW_URL);
 
   // Progress counts only the areas this operator can actually see, so the
@@ -144,21 +168,21 @@ export function SettingsOverview({ description }: { description: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <PageHeader description={description} />
+        <PageHeader description={t("settingsOverview.description")} />
         {total > 0 ? (
           <div className="flex min-w-0 shrink-0 flex-col gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-center xl:w-[34rem]">
             <div className="min-w-0 flex-1 space-y-2">
-              <p className="text-sm font-medium">Organization setup</p>
+              <p className="text-sm font-medium">{t("settingsOverview.organizationSetup")}</p>
               <Progress value={pct} className="h-1.5" />
               <p className="text-xs text-muted-foreground tabular-nums">
-                {complete} of {total} complete
+                {t("settingsOverview.progress", { complete, total })}
               </p>
             </div>
             <div className="flex items-center gap-3 border-t pt-3 sm:border-s sm:border-t-0 sm:ps-4 sm:pt-0">
               <div className="min-w-0">
-                <p className="text-sm font-medium">Finish setup</p>
+                <p className="text-sm font-medium">{t("settingsOverview.finishSetup")}</p>
                 <p className="text-xs leading-5 text-muted-foreground">
-                  Complete your configuration for the best experience.
+                  {t("settingsOverview.completeYourConfigurationFor")}
                 </p>
               </div>
               <Link
@@ -166,7 +190,7 @@ export function SettingsOverview({ description }: { description: string }) {
                   (items.find((i) => statusByUrl[i.url]?.done === false)?.url ??
                     items[0]?.url) as never
                 }
-                aria-label="Go to the next unfinished setting"
+                aria-label={t("settingsOverview.goToTheNext")}
                 className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <ArrowRightIcon className="size-4" />
@@ -183,21 +207,22 @@ export function SettingsOverview({ description }: { description: string }) {
           </span>
           <div className="min-w-0">
             <h2 className="font-heading text-base font-semibold">
-              {greeting()}
-              {org?.name ? `, ${org.name}` : ""}
+              {org?.name
+                ? t(`settingsOverview.greeting.${greetingKey()}Named`, { name: org.name })
+                : t(`settingsOverview.greeting.${greetingKey()}`)}
             </h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Your organization is active and in good standing.
+              {t("settingsOverview.yourOrganizationIsActive")}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <StatusPillChip icon={<span className="size-2 rounded-full bg-emerald-500" />}>
-            Operational
+            {t("settingsOverview.operational")}
           </StatusPillChip>
-          {sub?.plan_name || org?.plan ? (
+          {planLabel ? (
             <StatusPillChip icon={<CreditCardIcon className="size-3.5" />}>
-              {sub?.plan_name ?? `${org?.plan} plan`}
+              {planLabel}
             </StatusPillChip>
           ) : null}
           {regionLabel ? (
@@ -207,12 +232,12 @@ export function SettingsOverview({ description }: { description: string }) {
           ) : null}
           <span className="hidden h-6 w-px bg-border sm:block" />
           <Badge variant="muted" className="shrink-0 tabular-nums">
-            {items.length} areas
+            {t("settingsOverview.areas", { count: items.length })}
           </Badge>
         </div>
       </section>
 
-      <nav aria-label="Settings areas" className="grid gap-4 lg:grid-cols-2">
+      <nav aria-label={t("settingsOverview.settingsAreas")} className="grid gap-4 lg:grid-cols-2">
         {items.map((item) => (
           <SettingsCard key={item.url} item={item} status={statusByUrl[item.url]} />
         ))}

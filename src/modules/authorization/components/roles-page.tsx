@@ -61,6 +61,7 @@ const roleCsvColumns: CsvColumn<Role>[] = [
 
 /** Renders the organization's roles, with create and permission grants. */
 export function RolesPage() {
+  const { t } = useTranslation("rbac");
   const rolesQ = useRoles();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Role | null>(null);
@@ -86,7 +87,7 @@ export function RolesPage() {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <PageHeader
-        description="Create roles and manage the permissions they grant. Role assignments propagate through groups automatically."
+        description={t("rolesPage.createRolesAndManage")}
         actions={
           <>
             <Button
@@ -95,10 +96,11 @@ export function RolesPage() {
               onClick={() => rolesQ.refetch()}
               disabled={rolesQ.isFetching}
             >
-              <RefreshCwIcon className={rolesQ.isFetching ? "animate-spin" : ""} /> Refresh
+              <RefreshCwIcon className={rolesQ.isFetching ? "animate-spin" : ""} />{" "}
+              {t("roles.refreshBtn")}
             </Button>
             <Button size="sm" onClick={() => setCreating(true)}>
-              <PlusIcon /> New role
+              <PlusIcon /> {t("roles.newButton")}
             </Button>
           </>
         }
@@ -106,29 +108,33 @@ export function RolesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Roles</CardTitle>
+          <CardTitle className="text-base">{t("rolesPage.roles")}</CardTitle>
           <CardDescription>
-            {rows.length} of {items.length} role{items.length === 1 ? "" : "s"}
+            {t("roles.list.count", {
+              count: items.length,
+              filtered: rows.length,
+              total: items.length,
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <ListToolbar
             search={lv.search}
             onSearchChange={lv.setSearch}
-            searchPlaceholder="Search roles…"
+            searchPlaceholder={t("roles.list.searchPlaceholder")}
             filters={[
               {
                 id: "type",
-                label: "Type",
+                label: t("common:labels.type"),
                 value: lv.filters.type ?? "",
                 options: [
-                  { label: "System", value: "system" },
-                  { label: "Custom", value: "custom" },
+                  { label: t("rolesPage.system"), value: "system" },
+                  { label: t("rolesPage.custom"), value: "custom" },
                 ],
                 onChange: (v) => lv.setFilter("type", v),
               },
             ]}
-            columns={[{ id: "created", label: "Created" }]}
+            columns={[{ id: "created", label: t("common:labels.created") }]}
             isColumnVisible={lv.isVisible}
             onToggleColumn={lv.toggleColumn}
             density={lv.density}
@@ -148,23 +154,23 @@ export function RolesPage() {
             error={rolesQ.error}
             isEmpty={rows.length === 0}
             emptyIcon={ShieldCheckIcon}
-            emptyTitle={lv.hasActiveFilters ? "No roles match your filters" : "No roles yet"}
+            emptyTitle={lv.hasActiveFilters ? t("roles.list.emptyFiltered") : t("roles.list.empty")}
             skeletonRows={3}
           >
             <Table>
               <TableHeader>
                 <TableRow>
                   <SortHeader columnKey="name" sort={lv.sort} onToggle={lv.toggleSort}>
-                    Name
+                    {t("common:labels.name")}
                   </SortHeader>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>{t("rolesPage.description")}</TableHead>
+                  <TableHead>{t("common:labels.type")}</TableHead>
                   {lv.isVisible("created") && (
                     <SortHeader columnKey="created" sort={lv.sort} onToggle={lv.toggleSort}>
-                      Created
+                      {t("common:labels.created")}
                     </SortHeader>
                   )}
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">{t("common:labels.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -174,7 +180,7 @@ export function RolesPage() {
                     <TableCell className="text-muted-foreground">{r.description || "—"}</TableCell>
                     <TableCell>
                       <Badge variant={r.is_system ? "muted" : "outline"}>
-                        {r.is_system ? "system" : "custom"}
+                        {r.is_system ? t("rolesPage.system") : t("rolesPage.custom")}
                       </Badge>
                     </TableCell>
                     {lv.isVisible("created") && (
@@ -184,7 +190,7 @@ export function RolesPage() {
                     )}
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => setEditing(r)}>
-                        Permissions
+                        {t("rolesPage.permissions")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -319,10 +325,8 @@ function RolePermissionsSheet({ role, onClose }: { role: Role; onClose: () => vo
     <Sheet open onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Permissions · {role.name}</SheetTitle>
-          <SheetDescription>
-            Toggle a permission to grant or revoke it for this role.
-          </SheetDescription>
+          <SheetTitle>{t("roles.permsSheet.title", { name: role.name })}</SheetTitle>
+          <SheetDescription>{t("rolesPage.toggleAPermissionTo")}</SheetDescription>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto p-4">
           <DataState
@@ -343,7 +347,7 @@ function RolePermissionsSheet({ role, onClose }: { role: Role; onClose: () => vo
         </div>
         <SheetFooter className="flex-row justify-end gap-2 border-t">
           <Button variant="outline" onClick={onClose}>
-            Done
+            {t("rolesPage.done")}
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -364,6 +368,7 @@ function PermissionToggleList({
   onRevoke: (id: string) => void;
   currentPermissions: Permission[];
 }) {
+  const { t } = useTranslation("rbac");
   const catalogue = usePermissionsCatalogue(); // to offer permissions not yet granted
   const merged = mergeCatalogue(catalogue, currentPermissions);
   return (
@@ -379,7 +384,11 @@ function PermissionToggleList({
             <Switch
               checked={isGranted}
               disabled={busy}
-              aria-label={`${isGranted ? "Revoke" : "Grant"} ${p.key}`}
+              aria-label={
+                isGranted
+                  ? t("rolesPage.revokeKey", { key: p.key })
+                  : t("rolesPage.grantKey", { key: p.key })
+              }
               onCheckedChange={(checked) => (checked ? onGrant(p.id) : onRevoke(p.id))}
             />
           </li>

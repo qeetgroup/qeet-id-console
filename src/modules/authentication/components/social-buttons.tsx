@@ -16,16 +16,23 @@ const CATALOG: { id: string; label: string; icon: ReactNode }[] = [
   { id: "apple", label: "Apple", icon: <Apple className="invert dark:invert-0" /> },
 ];
 
+// One whole phrase per action, so no sentence is assembled from a verb and a provider name.
+const ACTION_LABEL = {
+  continue: "auth-flow:form.socialContinue",
+  signIn: "auth-flow:form.socialSignIn",
+  signUp: "auth-flow:form.socialSignUp",
+} as const;
+
 /**
  * Renders the "Or continue with" divider and one button per configured social provider, or
  * nothing when none is configured, so the forms show only what works.
  */
 export function SocialButtons({
-  verb = "Continue",
+  action = "continue",
   intent = "login",
   disabled = false,
 }: {
-  verb?: string;
+  action?: keyof typeof ACTION_LABEL;
   disabled?: boolean;
   intent?: "login" | "signup"; // "signup" may create an account; "login" requires an existing one
 }) {
@@ -46,7 +53,7 @@ export function SocialButtons({
             variant="outline"
             type="button"
             disabled={disabled}
-            aria-label={t("form.socialLabel", { verb, provider: p.label })}
+            aria-label={t(ACTION_LABEL[action], { provider: p.label })}
             onClick={() => {
               window.location.href = socialStartUrl(p.id, intent);
             }}

@@ -47,8 +47,11 @@ const officeRule = {
   created_at: "2026-10-20T08:00:00Z",
 };
 
+let checkAnswer: Record<string, unknown> = {};
+
 function serve(enabled: boolean) {
   vi.mocked(api).mockImplementation(async (path, options) => {
+    if (path === "/v1/tenants/t-1/ip-rules/check" && options?.method === "POST") return checkAnswer;
     if (path === "/v1/tenants/t-1/ip-rules" && !options?.method) {
       return { enabled, items: [officeRule] };
     }
@@ -134,6 +137,41 @@ async function openRemoveConfirmation(): Promise<HTMLElement> {
   if (!dialog) throw new Error("Confirmation dialog is missing");
   return dialog as HTMLElement;
 }
+
+describe("IP rules — testing an address", () => {
+  async function check(answer: Record<string, unknown>) {
+    checkAnswer = answer;
+    serve(true);
+    renderPage();
+    fireEvent.change(await screen.findByLabelText(/^IP address/), {
+      target: { value: "192.0.2.10" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Check" }));
+    await screen.findByText(answer.allowed ? "Allowed" : "Blocked");
+  }
+
+  it("words the result from its reason code, naming the deny rule", async () => {
+    await check({
+      enabled: true,
+      allowed: false,
+      reason: "refused by the deny rule 192.0.2.0/24",
+      reason_code: "ip.deny_rule",
+      reason_params: { cidr: "192.0.2.0/24" },
+    });
+    expect(screen.getByText("The deny rule 192.0.2.0/24 matches it.")).toBeTruthy();
+    expect(screen.queryByText("refused by the deny rule 192.0.2.0/24")).toBeNull();
+  });
+
+  it("still words a server's bare reason without a code", async () => {
+    await check({ enabled: true, allowed: false, reason: "not_in_allow_rules" });
+    expect(screen.getByText("No allow rule matches it.")).toBeTruthy();
+  });
+
+  it("never shows a reason sentence it has no code for", async () => {
+    await check({ enabled: true, allowed: false, reason: "some new refusal" });
+    expect(screen.queryByText("some new refusal")).toBeNull();
+  });
+});
 
 describe("IP rules — what they cover and what they refused", () => {
   it("lists recent refusals with the method and the rule responsible, linked to it", async () => {

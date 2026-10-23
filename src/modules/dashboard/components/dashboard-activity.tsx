@@ -20,6 +20,7 @@ import { LiveIndicator } from "@/modules/activity";
 import type { ActivityEvent } from "@/modules/activity";
 import { useDashboardActivity } from "../use-dashboard-activity";
 import { DashboardPanel } from "./dashboard-panel";
+import i18n from "@/i18n";
 
 const ACTIVITY_SKELETON_IDS = ["one", "two", "three", "four", "five"] as const;
 
@@ -51,8 +52,8 @@ function getOperatorActions(t: (key: string) => string) {
     },
     {
       icon: FlaskConicalIcon,
-      label: "Test an access decision",
-      description: "Evaluate a policy before it reaches production",
+      label: i18n.t("dashboard:dashboardActivity.testAnAccessDecision"),
+      description: i18n.t("dashboard:dashboardActivity.evaluateAPolicyBefore"),
       href: "/authorization/simulator",
       tone: "warning" as const,
       requiredPermissions: ["role.read"] satisfies Capability[],
@@ -98,7 +99,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
         <Link
           to="/activity"
           className={buttonVariants({ variant: "ghost", size: "sm" })}
-          aria-label="Open full activity center"
+          aria-label={t("dashboardActivity.openFullActivityCenter")}
         >
           {t("activity.viewAll")}
         </Link>
@@ -108,7 +109,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
       {connecting ? (
         <ul
           className="divide-y divide-border/60"
-          aria-label="Loading recent activity"
+          aria-label={t("dashboardActivity.loadingRecentActivity")}
           aria-busy="true"
         >
           {ACTIVITY_SKELETON_IDS.map((id) => (
@@ -134,7 +135,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
       ) : (
         <ol
           className="divide-y divide-border/60"
-          aria-label="Recent activity events"
+          aria-label={t("dashboardActivity.recentActivityEvents")}
           aria-live="polite"
         >
           {events.map((event) => {
@@ -187,7 +188,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
       {/* Announces critical or error events to screen readers. */}
       {hasCritical && (
         <div role="alert" className="sr-only">
-          Critical security events detected in the activity feed
+          {t("dashboardActivity.criticalSecurityEventsDetected")}
         </div>
       )}
     </DashboardPanel>
@@ -215,7 +216,7 @@ export function OperatorActionsPanel({ className }: { className?: string }) {
     <DashboardPanel
       className={className}
       title={t("quickActions.heading")}
-      description="Frequent operator workflows"
+      description={t("dashboardActivity.frequentOperatorWorkflows")}
       contentClassName="p-2 sm:p-2"
     >
       <nav aria-label={t("quickActions.heading")} className="space-y-1">

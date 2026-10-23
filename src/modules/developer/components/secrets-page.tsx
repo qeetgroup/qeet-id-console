@@ -374,7 +374,7 @@ function CreateSecretForm({ onDone }: { onDone: () => void }) {
               <field.TextField
                 label={t("secrets.create.scopeLabel")}
                 description={t("secrets.create.scopeHelp")}
-                placeholder="billing (optional)"
+                placeholder={t("secretsPage.billingOptional")}
               />
             )}
           </form.AppField>

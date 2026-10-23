@@ -172,7 +172,7 @@ export function useCreateUser() {
       return user;
     },
     onSuccess: () => refreshMembership(qc, tenantId),
-    meta: { successMessage: "User created" },
+    meta: { successMessage: "users:toast.created" },
   });
 }
 
@@ -183,7 +183,7 @@ export function useUpdateUser() {
     mutationFn: ({ userId, body }: { userId: string; body: UpdateUserBody }) =>
       api<User>(`/v1/users/${userId}`, { method: "PATCH", body }),
     onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
-    meta: { successMessage: "User updated" },
+    meta: { successMessage: "users:toast.updated" },
   });
 }
 
@@ -197,7 +197,7 @@ export function useSetUserStatus() {
       refreshUser(qc, tenantId, userId);
       void qc.invalidateQueries({ queryKey: userKeys.suspended(tenantId) });
     },
-    meta: { successMessage: "User status updated" },
+    meta: { successMessage: "users:toast.userStatusUpdated" },
   });
 }
 
@@ -211,7 +211,7 @@ export function useDeleteUser() {
       refreshUser(qc, tenantId, userId);
       void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
     },
-    meta: { successMessage: "User deleted" },
+    meta: { successMessage: "users:toast.deleted" },
   });
 }
 
@@ -225,7 +225,7 @@ export function useRestoreUser() {
       refreshMembership(qc, tenantId);
       void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
     },
-    meta: { successMessage: "User restored" },
+    meta: { successMessage: "users:toast.userRestored" },
   });
 }
 
@@ -236,7 +236,7 @@ export function usePurgeUser() {
   return useMutation({
     mutationFn: (userId: string) => api<void>(`/v1/users/${userId}/purge`, { method: "DELETE" }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) }),
-    meta: { successMessage: "User permanently deleted" },
+    meta: { successMessage: "users:toast.userPermanentlyDeleted" },
   });
 }
 
@@ -251,7 +251,7 @@ export function useResetUserMfa() {
     mutationFn: (userId: string) =>
       api<{ message: string }>(`/v1/users/${userId}/mfa`, { method: "DELETE" }),
     onSuccess: (_, userId) => refreshUser(qc, tenantId, userId),
-    meta: { successMessage: "Multi-factor authentication reset for this user" },
+    meta: { successMessage: "users:toast.mfaReset" },
   });
 }
 
@@ -260,7 +260,7 @@ export function useSetUserPassword() {
   return useMutation({
     mutationFn: ({ userId, password }: { userId: string; password: string }) =>
       api<void>(`/v1/users/${userId}/password`, { method: "POST", body: { password } }),
-    meta: { successMessage: "Password updated" },
+    meta: { successMessage: "users:toast.passwordUpdated" },
   });
 }
 
@@ -276,7 +276,7 @@ export function useAssignRole() {
       });
     },
     onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
-    meta: { successMessage: "Role assigned" },
+    meta: { successMessage: "users:toast.roleAssigned" },
   });
 }
 

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import type { ReasonFields } from "./decision";
 import { authzKeys } from "./keys";
 
 export const NAMESPACES = ["subject", "resource", "context"] as const;
@@ -42,20 +43,21 @@ export const REFERENCE_OPERATORS: readonly Operator[] = [
 ];
 const ATTRIBUTE_PATH = new RegExp(`^(${NAMESPACES.join("|")})(\\.[^.\\s]+)+$`);
 
+// Catalogue keys; the policy DSL keeps its own English keywords (see policy-codegen).
 export const OPERATOR_LABELS: Record<Operator, string> = {
-  eq: "equals",
-  ne: "not equals",
-  in: "in",
-  nin: "not in",
-  contains: "contains",
-  gt: "greater than",
-  gte: "greater or equal",
-  lt: "less than",
-  lte: "less or equal",
-  exists: "exists",
-  prefix: "starts with",
-  suffix: "ends with",
-  regex: "matches regex",
+  eq: "rbac:operators.eq",
+  ne: "rbac:operators.ne",
+  in: "rbac:operators.in",
+  nin: "rbac:operators.nin",
+  contains: "rbac:operators.contains",
+  gt: "rbac:operators.gt",
+  gte: "rbac:operators.gte",
+  lt: "rbac:operators.lt",
+  lte: "rbac:operators.lte",
+  exists: "rbac:operators.exists",
+  prefix: "rbac:operators.prefix",
+  suffix: "rbac:operators.suffix",
+  regex: "rbac:operators.regex",
 };
 
 export type Effect = "allow" | "deny";
@@ -111,12 +113,11 @@ export interface AbacPolicyInput {
   enabled: boolean;
 }
 
-/** POST /abac/evaluate?explain=true response. */
-export interface AbacDecision {
+/** POST /abac/evaluate?explain=true response; `reason` is English, `reason_code` its code. */
+export interface AbacDecision extends ReasonFields {
   allow: boolean;
   effect: Effect | "";
   matched_policy_id?: string | null;
-  reason?: string;
   trace?: string[];
 }
 
@@ -241,10 +242,19 @@ export function fromConditionJson(json: ConditionJson | null | undefined): CondN
 }
 
 /**
- * Returns why the backend would refuse a condition, in the person's terms, or null when it can
- * be saved. Mirrors the engine's validation, so the form says so before the request does.
+ * Why the backend would refuse a condition, as a code translated at `rbac:conditionProblem.<code>`;
+ * `op` is the operator at fault.
  */
-export function conditionProblem(node: CondNode): string | null {
+export interface ConditionProblem {
+  code: "notReferenceable" | "badReference" | "selfReference" | "needsValue";
+  op: Operator;
+}
+
+/**
+ * Returns why the backend would refuse a condition, or null when it can be saved. Mirrors the
+ * engine's validation, so the form says so before the request does.
+ */
+export function conditionProblem(node: CondNode): ConditionProblem | null {
   if (node.kind === "group") {
     for (const child of node.children) {
       const problem = conditionProblem(child);
@@ -253,21 +263,17 @@ export function conditionProblem(node: CondNode): string | null {
     return null;
   }
   if (node.kind === "not") return conditionProblem(node.child);
-  const label = OPERATOR_LABELS[node.op];
+  const { op } = node;
   if (node.ref) {
-    if (!REFERENCE_OPERATORS.includes(node.op)) {
-      return `“${label}” can't compare with another attribute. Compare with a value instead.`;
-    }
+    if (!REFERENCE_OPERATORS.includes(op)) return { code: "notReferenceable", op };
     const other = node.value.trim();
-    if (!ATTRIBUTE_PATH.test(other)) {
-      return "The attribute to compare with must be a subject., resource. or context. path.";
-    }
-    if (other === node.attr) return "A condition can't compare an attribute with itself.";
+    if (!ATTRIBUTE_PATH.test(other)) return { code: "badReference", op };
+    if (other === node.attr) return { code: "selfReference", op };
     return null;
   }
   // An empty affix, substring or pattern would match every string.
-  const needsValue = STRING_OPERATORS.includes(node.op) || node.op === "contains";
-  if (needsValue && node.value.trim() === "") return `“${label}” needs a value.`;
+  const needsValue = STRING_OPERATORS.includes(op) || op === "contains";
+  if (needsValue && node.value.trim() === "") return { code: "needsValue", op };
   return null;
 }
 
@@ -305,7 +311,7 @@ export function useCreateAbacPolicy() {
       return api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies`, { method: "POST", body });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
-    meta: { successMessage: "Policy created", silentError: true }, // its forms show the error
+    meta: { successMessage: "rbac:toast.policyCreated", silentError: true }, // its forms show the error
   });
 }
 
@@ -321,7 +327,7 @@ export function useUpdateAbacPolicy(id: string) {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
-    meta: { successMessage: "Policy updated", silentError: true },
+    meta: { successMessage: "rbac:toast.policyUpdated", silentError: true },
   });
 }
 
@@ -334,7 +340,7 @@ export function useDeleteAbacPolicy() {
       return api<void>(`/v1/tenants/${tenantId}/abac/policies/${id}`, { method: "DELETE" });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
-    meta: { successMessage: "Policy deleted" },
+    meta: { successMessage: "rbac:toast.policyDeleted" },
   });
 }
 

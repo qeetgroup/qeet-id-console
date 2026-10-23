@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRightIcon } from "@qeetrix/icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { setBuilderDoc } from "../store/authz-store";
@@ -23,44 +24,53 @@ import {
 
 /** Renders the policy templates, each opening in the builder. */
 export function PolicyTemplatesPage() {
+  const { t } = useTranslation("rbac");
   const navigate = useNavigate();
   const [category, setCategory] = useState<string>("all");
 
   const filtered =
-    category === "all" ? POLICY_TEMPLATES : POLICY_TEMPLATES.filter((t) => t.category === category);
+    category === "all"
+      ? POLICY_TEMPLATES
+      : POLICY_TEMPLATES.filter((tpl) => tpl.category === category);
 
-  function use(t: PolicyTemplate) {
-    setBuilderDoc(t.build());
+  function use(tpl: PolicyTemplate) {
+    setBuilderDoc(tpl.build());
     navigate({ to: "/authorization/builder" });
   }
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader description="Start from a battle-tested pattern. Choosing a template pre-fills the Policy Builder with a real, editable policy." />
+      <PageHeader description={t("policyTemplatesPage.startFromABattle")} />
 
-      <SegmentedControl value={category} onValueChange={setCategory} aria-label="Category">
-        <SegmentedControlItem value="all">All</SegmentedControlItem>
+      <SegmentedControl
+        value={category}
+        onValueChange={setCategory}
+        aria-label={t("policyTemplatesPage.category")}
+      >
+        <SegmentedControlItem value="all">{t("policyTemplatesPage.all")}</SegmentedControlItem>
         {TEMPLATE_CATEGORIES.map((c) => (
           <SegmentedControlItem key={c} value={c}>
-            {c}
+            {t(`policyTemplatesPage.categories.${c}`)}
           </SegmentedControlItem>
         ))}
       </SegmentedControl>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((t) => (
-          <Card key={t.id} className="flex flex-col">
+        {filtered.map((tpl) => (
+          <Card key={tpl.id} className="flex flex-col">
             <CardHeader>
               <div className="flex items-center justify-between gap-2">
-                <Badge variant="secondary">{t.vendor}</Badge>
-                <Badge variant="muted">{t.category}</Badge>
+                <Badge variant="secondary">
+                  {"vendor" in tpl.source ? tpl.source.vendor : t(tpl.source.sector)}
+                </Badge>
+                <Badge variant="muted">{t(`policyTemplatesPage.categories.${tpl.category}`)}</Badge>
               </div>
-              <CardTitle className="text-base">{t.name}</CardTitle>
-              <CardDescription>{t.description}</CardDescription>
+              <CardTitle className="text-base">{t(tpl.name)}</CardTitle>
+              <CardDescription>{t(tpl.description)}</CardDescription>
             </CardHeader>
             <CardContent className="mt-auto flex flex-col gap-3">
               <div className="flex flex-wrap gap-1">
-                {t.tags.map((tag) => (
+                {tpl.tags.map((tag) => (
                   <span
                     key={tag}
                     className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
@@ -69,8 +79,8 @@ export function PolicyTemplatesPage() {
                   </span>
                 ))}
               </div>
-              <Button variant="outline" size="sm" className="self-start" onClick={() => use(t)}>
-                Use template <ArrowRightIcon />
+              <Button variant="outline" size="sm" className="self-start" onClick={() => use(tpl)}>
+                {t("policyTemplatesPage.useTemplate")} <ArrowRightIcon />
               </Button>
             </CardContent>
           </Card>

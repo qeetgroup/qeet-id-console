@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Button } from "@qeetrix/ui";
 import { RefreshCwIcon, TriangleAlertIcon } from "@qeetrix/icons";
@@ -13,6 +14,7 @@ import { PageState } from "@/shared/components/page-state";
  * error's code, never the backend message, with the error reported to telemetry.
  */
 export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
+  const { t } = useTranslation("common");
   const appError = normalizeError(error);
   captureError(error, { boundary: "root" });
 
@@ -21,7 +23,7 @@ export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
       <PageState
         code="—"
         icon={TriangleAlertIcon}
-        title="Something went wrong"
+        title={t("errorComponent.somethingWentWrong")}
         description={
           <>
             {userMessageForCode(appError.code, appError.kind)}
@@ -30,7 +32,7 @@ export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
         }
         actions={
           <Button onClick={reset}>
-            <RefreshCwIcon /> Try again
+            <RefreshCwIcon /> {t("actions.tryAgain")}
           </Button>
         }
       />

@@ -330,7 +330,7 @@ function AddRuleForm() {
             {(field) => (
               <field.TextField
                 label={t("threats.ipAllowlist.quickAdd.labelLabel")}
-                placeholder="Office NYC"
+                placeholder={t("ipAllowlistPage.officeNyc")}
               />
             )}
           </form.AppField>
@@ -358,7 +358,13 @@ function AddRuleForm() {
 }
 
 // The server's check reasons, shown in the reader's language.
+// A server without reason_code sends these reasons instead.
 const CHECK_REASONS: Record<string, string> = {
+  "ip.allowed": "threats.ipAllowlist.test.reasons.allowed",
+  "ip.deny_rule": "threats.ipAllowlist.test.reasons.denyRule",
+  "ip.not_in_allow_rules": "threats.ipAllowlist.test.reasons.notAllowed",
+  "ip.address_unknown": "threats.ipAllowlist.test.reasons.unknown",
+  "ip.enforcement_disabled": "threats.ipAllowlist.test.reasons.enforcementOff",
   allowed: "threats.ipAllowlist.test.reasons.allowed",
   deny_rule: "threats.ipAllowlist.test.reasons.denyRule",
   not_in_allow_rules: "threats.ipAllowlist.test.reasons.notAllowed",
@@ -384,7 +390,8 @@ function CheckAddressForm() {
     },
   });
   const result = checkM.data;
-  const reason = result ? CHECK_REASONS[result.reason] : undefined;
+  const reason = result ? CHECK_REASONS[result.reason_code ?? result.reason] : undefined;
+  const cidr = result?.reason_params?.cidr;
 
   return (
     <form
@@ -421,7 +428,13 @@ function CheckAddressForm() {
                 ? t("threats.ipAllowlist.test.allowed")
                 : t("threats.ipAllowlist.test.blocked")}
             </StatusPill>
-            {reason && <span className="text-xs text-muted-foreground">{t(reason)}</span>}
+            {reason && (
+              <span className="text-xs text-muted-foreground">
+                {cidr && reason === "threats.ipAllowlist.test.reasons.denyRule"
+                  ? t("threats.ipAllowlist.test.reasons.denyRuleNamed", { cidr })
+                  : t(reason)}
+              </span>
+            )}
           </div>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from "react-i18next";
 import {
   Button,
   cn,
@@ -45,6 +46,7 @@ export function ActivityPagination({
   onPageSizeChange: (size: number) => void;
   loading?: boolean;
 }) {
+  const { t } = useTranslation("activity");
   const from = total === 0 ? 0 : page * pageSize + 1;
   const to = page * pageSize + itemsOnPage;
   const current = page + 1; // 1-based
@@ -53,21 +55,26 @@ export function ActivityPagination({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 px-3 py-2.5 text-xs lg:px-4">
       <span className="text-muted-foreground" aria-live="polite">
-        Showing{" "}
-        <span className="font-medium text-foreground tabular-nums">{from.toLocaleString()}</span> to{" "}
-        <span className="font-medium text-foreground tabular-nums">{to.toLocaleString()}</span> of{" "}
-        <span className="font-medium text-foreground tabular-nums">{total.toLocaleString()}</span>{" "}
-        events
+        <Trans
+          t={t}
+          i18nKey="activityPagination.showing"
+          values={{
+            from: from.toLocaleString(),
+            to: to.toLocaleString(),
+            total: total.toLocaleString(),
+          }}
+          components={{ n: <span className="font-medium text-foreground tabular-nums" /> }}
+        />
       </span>
 
-      <nav className="flex items-center gap-1" aria-label="Pagination">
+      <nav className="flex items-center gap-1" aria-label={t("activityPagination.pagination")}>
         <Button
           variant="outline"
           size="icon-sm"
           className="size-7"
           onClick={() => onPageChange(page - 1)}
           disabled={page === 0 || loading}
-          aria-label="Previous page"
+          aria-label={t("activityPagination.previousPage")}
         >
           <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
         </Button>
@@ -90,7 +97,7 @@ export function ActivityPagination({
               className={cn("size-7 tabular-nums", p === current && "pointer-events-none")}
               onClick={() => onPageChange(p - 1)}
               disabled={loading}
-              aria-label={`Page ${p}`}
+              aria-label={t("activityPagination.page", { page: p })}
               aria-current={p === current ? "page" : undefined}
             >
               {p}
@@ -104,20 +111,20 @@ export function ActivityPagination({
           className="size-7"
           onClick={() => onPageChange(page + 1)}
           disabled={current >= pageCount || loading}
-          aria-label="Next page"
+          aria-label={t("activityPagination.nextPage")}
         >
           <ChevronRightIcon className="size-3.5" aria-hidden="true" />
         </Button>
       </nav>
 
       <Select value={String(pageSize)} onValueChange={(v) => v && onPageSizeChange(Number(v))}>
-        <SelectTrigger className="h-7 w-28" aria-label="Rows per page">
+        <SelectTrigger className="h-7 w-28" aria-label={t("activityPagination.rowsPerPage")}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {PAGE_SIZE_OPTIONS.map((n) => (
             <SelectItem key={n} value={String(n)}>
-              {n} / page
+              {t("activityPagination.perPage", { count: n })}
             </SelectItem>
           ))}
         </SelectContent>

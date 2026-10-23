@@ -44,6 +44,25 @@ export const AUTHZ_RESOURCE_TYPES = [
   "group_role",
   "security_policy",
 ] as const;
+export type AuthzResourceType = (typeof AUTHZ_RESOURCE_TYPES)[number];
+
+/** Catalogue keys for the authorization resource types. */
+export const RESOURCE_TYPE_LABELS: Record<AuthzResourceType, string> = {
+  abac_policy: "rbac:resourceTypes.abacPolicy",
+  role: "rbac:resourceTypes.role",
+  rbac_policy: "rbac:resourceTypes.rbacPolicy",
+  relation_tuple: "rbac:resourceTypes.relationTuple",
+  permission: "rbac:resourceTypes.permission",
+  group_role: "rbac:resourceTypes.groupRole",
+  security_policy: "rbac:resourceTypes.securityPolicy",
+};
+
+/** Returns the catalogue key for a resource type, or null for a type without a label. */
+export function resourceTypeKey(type: string): string | null {
+  return Object.hasOwn(RESOURCE_TYPE_LABELS, type)
+    ? RESOURCE_TYPE_LABELS[type as AuthzResourceType]
+    : null;
+}
 
 export function useAuditEvents(filter: AuditFilter = {}) {
   const tenantId = useTenantId();
@@ -66,7 +85,8 @@ export function useAuditEvents(filter: AuditFilter = {}) {
 
 /** Returns whether an audit or activity action belongs to the authorization domain. */
 export function isAuthzAction(action: string): boolean {
-  return /^(abac|rbac|role|group_role|permission|relation|policy|security_policy)[._]/i.test(
+  // `rebac.` covers the relationship tuples (rebac.tuple_written, rebac.tuple_deleted).
+  return /^(abac|rbac|rebac|role|group_role|permission|relation|policy|security_policy)[._]/i.test(
     action,
   );
 }

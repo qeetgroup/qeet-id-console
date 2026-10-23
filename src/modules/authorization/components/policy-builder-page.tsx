@@ -26,6 +26,7 @@ import {
 } from "@/platform/security/sensitive-action-provider";
 import { type BlockKind, PolicyCanvas } from "./canvas/policy-canvas";
 import { CodePreview } from "./code-preview/code-preview";
+import { policyProblemMessage } from "./condition-builder/condition-problem";
 import { ConditionTree } from "./condition-builder/condition-tree";
 import { ComingSoon } from "./shared/coming-soon";
 import { type Effect, emptyGroup, useCreateAbacPolicy } from "../api/abac";
@@ -79,18 +80,20 @@ export function PolicyBuilderPage() {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <PageHeader
-        description="Compose RBAC, ABAC and ReBAC blocks into one policy. Wire blocks into the decision and preview the generated policy live."
+        description={t("policyBuilderPage.composeRbacAbacAnd")}
         actions={
           <>
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
-                navigator.clipboard?.writeText(toJson(doc));
-                toast.success("Copied JSON");
+                // Confirm only a copy that happened; the clipboard can be missing or refuse.
+                void navigator.clipboard
+                  ?.writeText(toJson(doc))
+                  .then(() => toast.success(t("policyBuilderPage.copiedJson")));
               }}
             >
-              <CopyIcon /> Copy JSON
+              <CopyIcon /> {t("policyBuilderPage.copyJson")}
             </Button>
             <Button
               variant="outline"
@@ -99,7 +102,7 @@ export function PolicyBuilderPage() {
                 downloadBlob(toJson(doc), "application/json", `${doc.name || "policy"}.json`)
               }
             >
-              <DownloadIcon /> Export
+              <DownloadIcon /> {t("policyBuilderPage.export")}
             </Button>
             <Button
               size="sm"
@@ -107,7 +110,7 @@ export function PolicyBuilderPage() {
               disabled={!reducible || createM.isPending || !doc.name.trim()}
             >
               {createM.isPending ? <LoaderCircleIcon className="animate-spin" /> : <SaveIcon />}
-              Save as ABAC
+              {t("policyBuilderPage.saveAsAbac")}
             </Button>
           </>
         }
@@ -122,10 +125,8 @@ export function PolicyBuilderPage() {
       <div className="grid gap-4 xl:grid-cols-[1fr_360px]">
         <Card className="min-w-0">
           <CardHeader>
-            <CardTitle className="text-base">Blueprint</CardTitle>
-            <CardDescription>
-              Add blocks and click a node to edit it in the inspector.
-            </CardDescription>
+            <CardTitle className="text-base">{t("policyBuilderPage.blueprint")}</CardTitle>
+            <CardDescription>{t("policyBuilderPage.addBlocksAndClick")}</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <PolicyCanvas
@@ -140,11 +141,11 @@ export function PolicyBuilderPage() {
 
         <Card className="min-w-0">
           <CardHeader>
-            <CardTitle className="text-base">Inspector</CardTitle>
+            <CardTitle className="text-base">{t("policyBuilderPage.inspector")}</CardTitle>
             <CardDescription>
               {selected
-                ? `Editing the ${selected.toUpperCase()} block`
-                : "Select a node on the canvas"}
+                ? t(`policyBuilderPage.editingBlock.${selected}`)
+                : t("policyBuilderPage.selectANode")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -155,20 +156,20 @@ export function PolicyBuilderPage() {
 
       {blocker && (
         <ComingSoon
-          title="This policy isn't persistable yet"
-          description={blocker}
-          note="POST /abac/policies accepts ABAC-only policies"
+          title={t("policyBuilderPage.thisPolicyIsnT")}
+          description={policyProblemMessage(blocker, t)}
+          note={t("policyBuilderPage.abacOnlyNote")}
         />
       )}
 
       <Card>
         <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
           <div>
-            <CardTitle className="text-base">Generated policy</CardTitle>
-            <CardDescription>JSON · YAML · DSL · evaluation tree</CardDescription>
+            <CardTitle className="text-base">{t("policyBuilderPage.generatedPolicy")}</CardTitle>
+            <CardDescription>{t("policyBuilderPage.jsonYamlDslEvaluationTree")}</CardDescription>
           </div>
           <Badge variant={reducible ? "success" : "warning"}>
-            {reducible ? "ABAC-persistable" : "preview only"}
+            {reducible ? t("policyBuilderPage.persistable") : t("policyBuilderPage.previewOnly")}
           </Badge>
         </CardHeader>
         <CardContent>
@@ -188,11 +189,12 @@ function Inspector({
   doc: PolicyDoc;
   onChange: (d: PolicyDoc) => void;
 }) {
+  const { t } = useTranslation("rbac");
   if (selected === "decision" || selected === null) {
     return (
       <div className="flex flex-col gap-4">
         <Field>
-          <FieldLabel htmlFor="b-name">Name</FieldLabel>
+          <FieldLabel htmlFor="b-name">{t("common:labels.name")}</FieldLabel>
           <Input
             id="b-name"
             value={doc.name}
@@ -201,19 +203,21 @@ function Inspector({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="b-effect">Effect</FieldLabel>
+          <FieldLabel htmlFor="b-effect">{t("policyBuilderPage.effect")}</FieldLabel>
           <SegmentedControl
             value={doc.effect}
             onValueChange={(v) => onChange({ ...doc, effect: v as Effect })}
-            aria-label="Effect"
+            aria-label={t("policyBuilderPage.effect")}
           >
-            <SegmentedControlItem value="allow">Allow</SegmentedControlItem>
-            <SegmentedControlItem value="deny">Deny</SegmentedControlItem>
+            <SegmentedControlItem value="allow">
+              {t("policyBuilderPage.allow")}
+            </SegmentedControlItem>
+            <SegmentedControlItem value="deny">{t("policyBuilderPage.deny")}</SegmentedControlItem>
           </SegmentedControl>
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field>
-            <FieldLabel htmlFor="b-resource">Resource type</FieldLabel>
+            <FieldLabel htmlFor="b-resource">{t("policyBuilderPage.resourceType")}</FieldLabel>
             <Input
               id="b-resource"
               value={doc.resourceType}
@@ -222,7 +226,7 @@ function Inspector({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="b-action">Action</FieldLabel>
+            <FieldLabel htmlFor="b-action">{t("policyBuilderPage.action")}</FieldLabel>
             <Input
               id="b-action"
               value={doc.action}
@@ -233,7 +237,7 @@ function Inspector({
         </div>
         <div className="grid grid-cols-2 items-end gap-3">
           <Field>
-            <FieldLabel htmlFor="b-priority">Priority</FieldLabel>
+            <FieldLabel htmlFor="b-priority">{t("policyBuilderPage.priority")}</FieldLabel>
             <Input
               id="b-priority"
               type="number"
@@ -245,9 +249,9 @@ function Inspector({
             <Switch
               checked={doc.enabled}
               onCheckedChange={(c) => onChange({ ...doc, enabled: c })}
-              aria-label="Enabled"
+              aria-label={t("policyBuilderPage.enabled")}
             />
-            Enabled
+            {t("policyBuilderPage.enabled")}
           </div>
         </div>
       </div>
@@ -258,7 +262,7 @@ function Inspector({
     return (
       <div className="flex flex-col gap-3">
         <Field>
-          <FieldLabel htmlFor="b-role">Required role</FieldLabel>
+          <FieldLabel htmlFor="b-role">{t("policyBuilderPage.requiredRole")}</FieldLabel>
           <Input
             id="b-role"
             value={doc.requireRole ?? ""}
@@ -267,7 +271,7 @@ function Inspector({
           />
         </Field>
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, requireRole: null })}>
-          <TrashIcon /> Remove block
+          <TrashIcon /> {t("policyBuilderPage.removeBlock")}
         </Button>
       </div>
     );
@@ -277,7 +281,7 @@ function Inspector({
     return (
       <div className="flex flex-col gap-3">
         <Field>
-          <FieldLabel htmlFor="b-object">Object</FieldLabel>
+          <FieldLabel htmlFor="b-object">{t("policyBuilderPage.object")}</FieldLabel>
           <Input
             id="b-object"
             value={doc.relation?.object ?? ""}
@@ -291,7 +295,7 @@ function Inspector({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="b-relation">Relation</FieldLabel>
+          <FieldLabel htmlFor="b-relation">{t("policyBuilderPage.relation")}</FieldLabel>
           <Input
             id="b-relation"
             value={doc.relation?.relation ?? ""}
@@ -305,7 +309,7 @@ function Inspector({
           />
         </Field>
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, relation: null })}>
-          <TrashIcon /> Remove block
+          <TrashIcon /> {t("policyBuilderPage.removeBlock")}
         </Button>
       </div>
     );
@@ -320,11 +324,11 @@ function Inspector({
           onChange={(condition) => onChange({ ...doc, condition })}
         />
       ) : (
-        <p className="text-sm text-muted-foreground">No condition block.</p>
+        <p className="text-sm text-muted-foreground">{t("policyBuilderPage.noConditionBlock")}</p>
       )}
       {doc.condition && (
         <Button variant="outline" size="sm" onClick={() => onChange({ ...doc, condition: null })}>
-          <TrashIcon /> Remove block
+          <TrashIcon /> {t("policyBuilderPage.removeBlock")}
         </Button>
       )}
     </div>

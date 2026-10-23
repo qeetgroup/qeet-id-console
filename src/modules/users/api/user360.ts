@@ -208,7 +208,7 @@ export function useRevokeAllUserSessions() {
       void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "sessions") });
       void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "security") });
     },
-    meta: { successMessage: "All sessions revoked" },
+    meta: { successMessage: "users:toast.allSessionsRevoked" },
   });
 }
 
@@ -225,7 +225,7 @@ export function useSetMfaRequired() {
     onSuccess: (_res, { userId }) => {
       void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "security") });
     },
-    meta: { successMessage: "MFA requirement updated" },
+    meta: { successMessage: "users:toast.mfaRequirementUpdated" },
   });
 }
 
@@ -241,6 +241,6 @@ export function useSendPasswordReset() {
         body: { email },
         anonymous: true,
       }),
-    meta: { successMessage: "Password-reset email sent" },
+    meta: { successMessage: "users:toast.passwordResetEmailSent" },
   });
 }

@@ -81,7 +81,7 @@ function roleHcl(role: Role): string {
 export const generateTerraformTool: ToolDefinition<GenerateTerraformInput> = {
   name: "generate_terraform",
   category: "codegen",
-  title: "Generate Terraform",
+  title: "qeetai:tools.titles.generateTerraform",
   description:
     "Generate Terraform (HCL) for an existing resource by reading its live configuration. Client-side templating; nothing is applied.",
   input: generateTerraformInput,
@@ -204,7 +204,7 @@ print(result)`;
 export const generateSdkSnippetTool: ToolDefinition<GenerateSdkSnippetInput> = {
   name: "generate_sdk_snippet",
   category: "codegen",
-  title: "Generate SDK snippet",
+  title: "qeetai:tools.titles.generateSdkSnippet",
   description:
     "Generate a client code snippet (curl/TypeScript/Go/Python) for a known Qeet ID endpoint. Informational; client-side.",
   input: generateSdkSnippetInput,
@@ -267,7 +267,7 @@ function buildApiExample(endpoint: string, method: string): { request: string; r
 export const generateApiExampleTool: ToolDefinition<GenerateApiExampleInput> = {
   name: "generate_api_example",
   category: "codegen",
-  title: "Generate API example",
+  title: "qeetai:tools.titles.generateApiExample",
   description:
     "Generate an example request/response for a Qeet ID endpoint derived from its OpenAPI shape. Informational; client-side.",
   input: generateApiExampleInput,

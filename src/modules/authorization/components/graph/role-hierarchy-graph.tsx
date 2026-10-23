@@ -1,5 +1,6 @@
 import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { Permission, Role } from "../../api/rbac";
 import { AuthzFlow } from "./authz-flow";
@@ -22,6 +23,7 @@ export function RoleHierarchyGraph({
   onSelectRole?: (roleId: string) => void;
   height?: number;
 }) {
+  const { t } = useTranslation("rbac");
   const { nodes, edges } = useMemo(() => {
     const roleNodes: Node[] = roles.map((r, i) => ({
       id: `role:${r.id}`,
@@ -59,7 +61,7 @@ export function RoleHierarchyGraph({
       edges={edges}
       nodeTypes={rbacNodeTypes}
       height={height}
-      ariaLabel="RBAC role and permission graph"
+      ariaLabel={t("roleHierarchyGraph.rbacRoleAndPermissionGraph")}
       onNodeClick={(id) => {
         if (id.startsWith("role:") && onSelectRole) onSelectRole(id.slice("role:".length));
       }}

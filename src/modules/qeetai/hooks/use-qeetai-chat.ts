@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import i18n from "@/i18n";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
 import type { SendInput, ToolResultInput } from "../ai/ai-provider";
@@ -218,7 +219,7 @@ export function useQeetAIChat(): UseQeetAIChat {
         } catch {
           conversationActions.updateMessage(conversationId, assistantId, {
             status: "error",
-            error: "The assistant could not complete this turn.",
+            error: i18n.t("qeetai:chat.turnFailed"),
           });
         } finally {
           if (abortRef.current === controller) abortRef.current = null;

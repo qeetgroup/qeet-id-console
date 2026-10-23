@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import type { DecidedBy, ReasonFields } from "./decision";
 
 export interface ExplainPath {
   permission: string;
@@ -11,10 +12,11 @@ export interface ExplainPath {
   role_id: string;
 }
 
-export interface ExplainResult {
+/** GET /v1/check?explain=true response; the reason fields are set on a denial. */
+export interface ExplainResult extends ReasonFields {
   allowed: boolean;
   paths: ExplainPath[];
-  reason: string;
+  decided_by?: DecidedBy;
 }
 
 export interface ExplainInput {

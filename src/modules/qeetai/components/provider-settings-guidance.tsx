@@ -98,9 +98,9 @@ export function ProviderSettingsGuidance({ fallback }: { fallback?: boolean }) {
         </h2>
         <ul className="mt-2 flex flex-wrap gap-2">
           {[
-            { value: "anthropic" as const, label: "Anthropic" },
-            { value: "openai" as const, label: "OpenAI" },
-            { value: "azure" as const, label: "Azure" },
+            { value: "anthropic" as const, label: t("providerSettingsGuidance.anthropic") },
+            { value: "openai" as const, label: t("providerSettingsGuidance.openai") },
+            { value: "azure" as const, label: t("providerSettingsGuidance.azure") },
           ].map((provider) => (
             <li
               key={provider.value}

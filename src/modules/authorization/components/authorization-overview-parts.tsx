@@ -13,7 +13,7 @@ import {
 import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { PolicyChange } from "../api/policy-changes";
+import { type PolicyChange, policyChangeTitle } from "../api/policy-changes";
 import type { CountTrend, PostureFinding } from "../authz-posture";
 
 const INSIGHT_ROUTES: Record<PostureFinding["id"], string> = {
@@ -222,13 +222,12 @@ export function RecentChanges({
   changes,
   loading,
   emptyLabel,
-  byLabel,
 }: {
   changes: PolicyChange[];
   loading: boolean;
   emptyLabel: string;
-  byLabel: string;
 }) {
+  const { t } = useTranslation("rbac");
   if (loading) {
     return (
       <div className="flex flex-col gap-3">
@@ -254,7 +253,7 @@ export function RecentChanges({
             aria-hidden="true"
           />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{change.title}</p>
+            <p className="truncate text-sm font-medium">{policyChangeTitle(change)}</p>
             {change.target && (
               <p className="truncate font-mono text-xs text-muted-foreground">{change.target}</p>
             )}
@@ -265,7 +264,7 @@ export function RecentChanges({
             </p>
             {change.actor && (
               <p className="truncate text-xs text-muted-foreground">
-                {byLabel} {change.actor}
+                {t("overview.changes.byActor", { actor: change.actor })}
               </p>
             )}
           </div>

@@ -29,10 +29,11 @@ import {
   useToggleLogSink,
 } from "../api/log-sinks";
 
+// Catalogue keys.
 const TYPE_LABELS: Record<SinkType, string> = {
-  splunk_hec: "Splunk HEC",
-  datadog: "Datadog",
-  http: "Generic HTTP",
+  splunk_hec: "security:logStreaming.type.splunkHec",
+  datadog: "security:logStreaming.type.datadog",
+  http: "security:logStreaming.type.http",
 };
 
 /** Renders the audit log sinks, with add, pause and delete. */
@@ -80,13 +81,13 @@ export function LogStreamingPage() {
                 <li key={s.id} className="flex items-center justify-between gap-4 px-6 py-3">
                   <div className="min-w-0">
                     <p className="flex items-center gap-2 text-sm font-medium">
-                      {TYPE_LABELS[s.type] ?? s.type}
+                      {TYPE_LABELS[s.type] ? t(TYPE_LABELS[s.type]) : s.type}
                       {s.last_error ? (
-                        <Badge variant="destructive">error</Badge>
+                        <Badge variant="destructive">{t("logStreaming.state.error")}</Badge>
                       ) : s.last_forwarded_at ? (
-                        <Badge variant="success">streaming</Badge>
+                        <Badge variant="success">{t("logStreaming.state.streaming")}</Badge>
                       ) : (
-                        <Badge variant="outline">idle</Badge>
+                        <Badge variant="outline">{t("logStreaming.state.idle")}</Badge>
                       )}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">{s.endpoint}</p>
@@ -102,7 +103,7 @@ export function LogStreamingPage() {
                   <div className="flex items-center gap-3">
                     <Switch
                       checked={s.enabled}
-                      aria-label="Enabled"
+                      aria-label={t("logStreamingPage.enabled")}
                       disabled={toggleM.isPending}
                       onCheckedChange={(v) =>
                         runSensitive({
@@ -195,7 +196,7 @@ function AddSinkForm() {
             {(field) => (
               <field.SelectField
                 label={t("logStreaming.addSink.type")}
-                options={SINK_TYPES.map((type) => ({ value: type, label: TYPE_LABELS[type] }))}
+                options={SINK_TYPES.map((type) => ({ value: type, label: t(TYPE_LABELS[type]) }))}
               />
             )}
           </form.AppField>

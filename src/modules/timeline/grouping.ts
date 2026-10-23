@@ -35,10 +35,10 @@ export function groupTimelineByDate(events: ActivityEvent[], now = new Date()): 
   }
 
   const result: DateGroup[] = [];
-  if (today.length > 0) result.push({ label: "Today", events: today });
-  if (yesterday.length > 0) result.push({ label: "Yesterday", events: yesterday });
-  if (lastWeek.length > 0) result.push({ label: "Last Week", events: lastWeek });
-  if (lastMonth.length > 0) result.push({ label: "Last Month", events: lastMonth });
-  if (older.length > 0) result.push({ label: "Older", events: older });
+  if (today.length > 0) result.push({ key: "today", events: today });
+  if (yesterday.length > 0) result.push({ key: "yesterday", events: yesterday });
+  if (lastWeek.length > 0) result.push({ key: "lastWeek", events: lastWeek });
+  if (lastMonth.length > 0) result.push({ key: "lastMonth", events: lastMonth });
+  if (older.length > 0) result.push({ key: "older", events: older });
   return result;
 }

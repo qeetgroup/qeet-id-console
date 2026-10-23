@@ -43,22 +43,22 @@ export function useCreateInvitation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: CreateInvitationInput) =>
-      api<Invitation>("/v1/invites", { method: "POST", body }),
+      api<{ invite: Invitation }>("/v1/invites", { method: "POST", body }), // never the token
     onSuccess: (_, { tenant_id }) =>
       qc.invalidateQueries({ queryKey: userKeys.invitations(tenant_id) }),
-    meta: { successMessage: "Invitation sent", silentError: true }, // the sheet shows the error
+    meta: { successMessage: "users:toast.invitationSent", silentError: true }, // the sheet shows the error
   });
 }
 
-/** Re-sends an invitation with a fresh link and expiry, returning it to pending. */
+/** Re-sends an invitation with a fresh link and expiry, returning it to pending; only email has the link. */
 export function useResendInvitation() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<{ token: string }>(`/v1/invites/${id}/resend`, { method: "POST" }),
+      api<{ invite: Invitation }>(`/v1/invites/${id}/resend`, { method: "POST" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.invitations(tenantId) }),
-    meta: { successMessage: "Invitation re-sent" },
+    meta: { successMessage: "users:toast.invitationReSent" },
   });
 }
 
@@ -68,6 +68,6 @@ export function useRevokeInvitation() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/invites/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.invitations(tenantId) }),
-    meta: { successMessage: "Invitation revoked" },
+    meta: { successMessage: "users:toast.invitationRevoked" },
   });
 }

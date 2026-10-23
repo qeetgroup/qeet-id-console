@@ -1,7 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-import { lookupNavTitle } from "@/platform/config/navigation";
+import { lookupNavTitle, useNavGroups } from "@/platform/config/navigation";
 import { type Capability, CONSOLE_CAPABILITIES } from "@/platform/security/capability-model";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
@@ -16,9 +16,10 @@ export function useConsoleContext(): ConsoleContext {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const access = useCapabilities();
   const published = useContextRegistry(pathname);
+  const navGroups = useNavGroups();
 
   return useMemo(() => {
-    const nav = lookupNavTitle(pathname);
+    const nav = lookupNavTitle(pathname, navGroups);
     const capabilities = CONSOLE_CAPABILITIES.filter((c): c is Capability =>
       access.permissions.has(c),
     );
@@ -30,5 +31,5 @@ export function useConsoleContext(): ConsoleContext {
       selection: published.selection,
       filters: published.filters,
     };
-  }, [pathname, access.permissions, access.tenantId, access.userId, published]);
+  }, [pathname, navGroups, access.permissions, access.tenantId, access.userId, published]);
 }

@@ -1,6 +1,7 @@
 import { Button, cn, EmptyState, ScrollArea, Skeleton, usePrefersReducedMotion } from "@qeetrix/ui";
 import { ActivityIcon, RefreshCwIcon, WifiOffIcon } from "@qeetrix/icons";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ActivitySearch } from "../activity-search";
 import type { ActivityEvent, ConnectionStatus, DateGroup } from "../types/activity.types";
@@ -83,6 +84,7 @@ export function ActivityTimeline({
   onRetryStream,
   hideEndMarker = false,
 }: ActivityTimelineProps) {
+  const { t } = useTranslation("activity");
   const reducedMotion = usePrefersReducedMotion();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -115,13 +117,13 @@ export function ActivityTimeline({
       <div className="flex min-h-80 items-center justify-center">
         <EmptyState
           icon={RefreshCwIcon}
-          title="Couldn't load activity history"
-          description="There was a problem fetching the event log. Your live stream may still be working."
+          title={t("activityTimeline.couldnTLoadActivityHistory")}
+          description={t("activityTimeline.thereWasAProblem")}
           action={
             onRetryHistory && (
               <Button variant="outline" size="sm" onClick={onRetryHistory}>
                 <RefreshCwIcon className="size-3.5" aria-hidden="true" />
-                Retry
+                {t("activityTimeline.retry")}
               </Button>
             )
           }
@@ -138,7 +140,7 @@ export function ActivityTimeline({
           aria-live="polite"
           aria-atomic="true"
         >
-          Reconnecting to live stream…
+          {t("activityTimeline.reconnectingToLiveStream")}
         </p>
         <div className="w-full max-w-lg px-1">
           <EventSkeletons />
@@ -152,13 +154,13 @@ export function ActivityTimeline({
       <div className="flex min-h-80 items-center justify-center">
         <EmptyState
           icon={WifiOffIcon}
-          title="Stream unavailable"
-          description="The live event stream could not be established after several attempts."
+          title={t("activityTimeline.streamUnavailable")}
+          description={t("activityTimeline.theLiveEventStream")}
           action={
             onRetryStream && (
               <Button variant="outline" size="sm" onClick={onRetryStream}>
                 <RefreshCwIcon className="size-3.5" aria-hidden="true" />
-                Retry connection
+                {t("activityTimeline.retryConnection")}
               </Button>
             )
           }
@@ -172,8 +174,8 @@ export function ActivityTimeline({
       <div className="flex min-h-80 items-center justify-center">
         <EmptyState
           icon={ActivityIcon}
-          title="No events yet"
-          description="Live events will appear here as they stream in. Historical events load as you scroll."
+          title={t("activityTimeline.noEventsYet")}
+          description={t("activityTimeline.liveEventsWillAppear")}
         />
       </div>
     );
@@ -190,13 +192,16 @@ export function ActivityTimeline({
         */}
         <div
           role="feed"
-          aria-label="Activity event feed"
+          aria-label={t("activityTimeline.activityEventFeed")}
           aria-busy={status === "reconnecting"}
           className="flex flex-col pb-6"
         >
           {groups.map((group) => (
-            <section key={group.label} aria-label={`${group.label} events`}>
-              <GroupHeader label={group.label} date={group.events[0]?.at} />
+            <section
+              key={group.key}
+              aria-label={t("dateGroup.events", { label: t(`dateGroup.${group.key}`) })}
+            >
+              <GroupHeader label={t(`dateGroup.${group.key}`)} date={group.events[0]?.at} />
               <div className={reducedMotion ? "" : "motion-safe:transition-all"}>
                 {group.events.map((event, index) => {
                   const isNew = newEventIds.has(event.id);
@@ -242,7 +247,7 @@ export function ActivityTimeline({
 
           {!hasNextPage && groups.length > 0 && !hideEndMarker && (
             <p className="py-4 text-center text-[11px] text-muted-foreground" aria-live="polite">
-              All events loaded
+              {t("activityTimeline.allEventsLoaded")}
             </p>
           )}
         </div>

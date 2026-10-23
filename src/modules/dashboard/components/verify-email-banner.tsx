@@ -2,6 +2,7 @@ import { Button, OTPInput } from "@qeetrix/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { LoaderCircleIcon, MailWarningIcon } from "@qeetrix/icons";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { toastError } from "@/platform/errors/error-toast";
 import { meKeys, useMe } from "@/platform/auth/session";
@@ -13,6 +14,7 @@ import { useConfirmEmailVerification, useStartEmailVerification } from "@/module
  * organization. Renders nothing once verified or while the profile loads.
  */
 export function VerifyEmailBanner() {
+  const { t } = useTranslation("dashboard");
   const meQ = useMe();
   const qc = useQueryClient();
   const start = useStartEmailVerification();
@@ -52,7 +54,13 @@ export function VerifyEmailBanner() {
       <div className="flex items-center gap-2">
         <MailWarningIcon className="size-4 shrink-0" />
         <span>
-          Verify <span className="font-medium">{me.email}</span> to unlock organization creation.
+          <Trans
+            t={t}
+            shouldUnescape
+            i18nKey="verifyEmailBanner.message"
+            values={{ email: me.email }}
+            components={{ email: <span className="font-medium" /> }}
+          />
         </span>
       </div>
 
@@ -68,17 +76,17 @@ export function VerifyEmailBanner() {
             value={code}
             onChange={setCode}
             onComplete={submit}
-            aria-label="Email verification code"
+            aria-label={t("verifyEmailBanner.emailVerificationCode")}
           />
           <Button type="submit" size="sm" disabled={confirm.isPending || code.length !== 6}>
             {confirm.isPending && <LoaderCircleIcon className="animate-spin" />}
-            Verify
+            {t("verifyEmailBanner.verify")}
           </Button>
         </form>
       ) : (
         <Button size="sm" variant="outline" onClick={resend} disabled={start.isPending}>
           {start.isPending && <LoaderCircleIcon className="animate-spin" />}
-          Send verification code
+          {t("verifyEmailBanner.sendCode")}
         </Button>
       )}
     </div>

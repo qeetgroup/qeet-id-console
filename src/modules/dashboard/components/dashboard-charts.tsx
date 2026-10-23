@@ -12,6 +12,7 @@ import {
 } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { ActivityIcon, KeyRoundIcon, ShieldAlertIcon } from "@qeetrix/icons";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import {
   Area,
@@ -30,26 +31,32 @@ import {
 import { AUTH_METHOD_KEYS } from "../dashboard-model";
 import { DashboardPanel } from "./dashboard-panel";
 
-const activityConfig = {
-  password: { label: "Password", color: "var(--chart-1)" },
-  passkey: { label: "Passkey", color: "var(--chart-2)" },
-  social: { label: "Social", color: "var(--chart-3)" },
-  saml: { label: "SAML", color: "var(--chart-4)" },
-  oidc: { label: "OIDC", color: "var(--chart-5)" },
-} satisfies ChartConfig;
+function activityConfig(t: TFunction) {
+  return {
+    password: { label: t("dashboardCharts.methods.password"), color: "var(--chart-1)" },
+    passkey: { label: t("dashboardCharts.methods.passkey"), color: "var(--chart-2)" },
+    social: { label: t("dashboardCharts.methods.social"), color: "var(--chart-3)" },
+    saml: { label: "SAML", color: "var(--chart-4)" },
+    oidc: { label: "OIDC", color: "var(--chart-5)" },
+  } satisfies ChartConfig;
+}
 
-const mfaConfig = {
-  users: { label: "Users" },
-  totp: { label: "TOTP", color: "var(--chart-1)" },
-  passkey: { label: "Passkey", color: "var(--chart-2)" },
-  sms: { label: "SMS", color: "var(--chart-3)" },
-  email: { label: "Email OTP", color: "var(--chart-4)" },
-  recovery: { label: "Recovery codes", color: "var(--chart-5)" },
-} satisfies ChartConfig;
+function mfaConfig(t: TFunction) {
+  return {
+    users: { label: t("dashboardCharts.users") },
+    totp: { label: "TOTP", color: "var(--chart-1)" },
+    passkey: { label: t("dashboardCharts.mfaMethods.passkey"), color: "var(--chart-2)" },
+    sms: { label: "SMS", color: "var(--chart-3)" },
+    email: { label: t("dashboardCharts.mfaMethods.email"), color: "var(--chart-4)" },
+    recovery: { label: t("dashboardCharts.mfaMethods.recovery"), color: "var(--chart-5)" },
+  } satisfies ChartConfig;
+}
 
-const failedConfig = {
-  attempts: { label: "Failed attempts", color: "var(--chart-5)" },
-} satisfies ChartConfig;
+function failedConfig(t: TFunction) {
+  return {
+    attempts: { label: t("dashboardCharts.failedAttempts"), color: "var(--chart-5)" },
+  } satisfies ChartConfig;
+}
 
 const MIX_SKELETON_IDS = ["password", "passkey", "social", "saml", "oidc"] as const;
 
@@ -64,12 +71,14 @@ export type AuthenticationActivityRow = {
 
 export type MethodMixRow = {
   method: string;
+  label: string;
   value: number;
   fill: string;
 };
 
 export type MfaAdoptionRow = {
   method: string;
+  label: string;
   users: number;
   fill: string;
 };
@@ -95,6 +104,7 @@ export function AuthenticationActivityPanel({
   className?: string;
 }) {
   const { t } = useTranslation("dashboard");
+  const config = activityConfig(t);
 
   return (
     <DashboardPanel
@@ -118,10 +128,10 @@ export function AuthenticationActivityPanel({
       ) : (
         <figure>
           <ChartContainer
-            config={activityConfig}
+            config={config}
             className="aspect-auto h-72 w-full"
             role="img"
-            aria-label={`Stacked authentication activity for the last ${take} days, separated by sign-in method`}
+            aria-label={t("dashboardCharts.activityLabel", { count: take })}
           >
             <AreaChart data={rows} accessibilityLayer>
               <defs>
@@ -151,12 +161,12 @@ export function AuthenticationActivityPanel({
             </AreaChart>
           </ChartContainer>
           <table className="sr-only">
-            <caption>Authentication activity by day and method</caption>
+            <caption>{t("dashboardCharts.authenticationActivityByDay")}</caption>
             <thead>
               <tr>
-                <th>Day</th>
+                <th>{t("dashboardCharts.day")}</th>
                 {AUTH_METHOD_KEYS.map((method) => (
-                  <th key={method}>{method}</th>
+                  <th key={method}>{config[method].label}</th>
                 ))}
               </tr>
             </thead>
@@ -214,7 +224,7 @@ export function LoginMethodMixPanel({
           description={t("charts.loginMix.emptyDescription")}
         />
       ) : (
-        <ol className="space-y-4" aria-label="Sign-ins by authentication method">
+        <ol className="space-y-4" aria-label={t("dashboardCharts.signInsByAuthenticationMethod")}>
           {rows.map((row) => {
             const percentage = total > 0 ? (row.value / total) * 100 : 0;
             return (
@@ -226,7 +236,7 @@ export function LoginMethodMixPanel({
                       style={{ backgroundColor: row.fill }}
                       aria-hidden="true"
                     />
-                    <span className="truncate">{row.method}</span>
+                    <span className="truncate">{row.label}</span>
                   </span>
                   <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
                     {percentage.toFixed(1)}%
@@ -235,7 +245,10 @@ export function LoginMethodMixPanel({
                 <div
                   className="dashboard-method-track"
                   role="progressbar"
-                  aria-label={`${row.method}: ${percentage.toFixed(1)} percent`}
+                  aria-label={t("dashboardCharts.methodShare", {
+                    method: row.label,
+                    pct: percentage.toFixed(1),
+                  })}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={Math.round(percentage)}
@@ -285,10 +298,10 @@ export function MfaAdoptionPanel({
       ) : (
         <figure>
           <ChartContainer
-            config={mfaConfig}
+            config={mfaConfig(t)}
             className="aspect-auto h-64 w-full"
             role="img"
-            aria-label="Number of users enrolled in each multi-factor authentication method"
+            aria-label={t("dashboardCharts.numberOfUsersEnrolled")}
           >
             <BarChart
               data={rows}
@@ -300,7 +313,7 @@ export function MfaAdoptionPanel({
               <XAxis type="number" tickLine={false} axisLine={false} />
               <YAxis
                 type="category"
-                dataKey="method"
+                dataKey="label"
                 tickLine={false}
                 axisLine={false}
                 width={104}
@@ -314,17 +327,17 @@ export function MfaAdoptionPanel({
             </BarChart>
           </ChartContainer>
           <table className="sr-only">
-            <caption>MFA enrollment by method</caption>
+            <caption>{t("dashboardCharts.mfaEnrollmentByMethod")}</caption>
             <thead>
               <tr>
-                <th>Method</th>
-                <th>Users</th>
+                <th>{t("dashboardCharts.method")}</th>
+                <th>{t("dashboardCharts.users")}</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.method}>
-                  <th>{row.method}</th>
+                  <th>{row.label}</th>
                   <td>{row.users}</td>
                 </tr>
               ))}
@@ -372,10 +385,10 @@ export function FailedLoginsPanel({
       ) : (
         <figure>
           <ChartContainer
-            config={failedConfig}
+            config={failedConfig(t)}
             className="aspect-auto h-64 w-full"
             role="img"
-            aria-label="Failed login attempts by hour over the last 24 hours"
+            aria-label={t("dashboardCharts.failedLoginAttemptsBy")}
           >
             <LineChart data={rows} margin={{ left: 0, right: 16 }} accessibilityLayer>
               <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="2 5" />
@@ -404,11 +417,11 @@ export function FailedLoginsPanel({
             </LineChart>
           </ChartContainer>
           <table className="sr-only">
-            <caption>Failed login attempts by hour</caption>
+            <caption>{t("dashboardCharts.failedLoginAttemptsByHour")}</caption>
             <thead>
               <tr>
-                <th>Hour</th>
-                <th>Attempts</th>
+                <th>{t("dashboardCharts.hour")}</th>
+                <th>{t("dashboardCharts.attempts")}</th>
               </tr>
             </thead>
             <tbody>

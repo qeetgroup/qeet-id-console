@@ -15,12 +15,17 @@ import { z } from "zod";
 import { PageHeader } from "@/platform/components/page-header";
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import { type ExplainPath, useExplainCheck } from "../api/access-check";
+import { explainDecidedBy, explainedMessage, explainReasonFields } from "./explain/decision-reason";
 
 /** Renders the access tester: one permission check, explained. */
 export function AccessTesterPage() {
   const { t } = useTranslation("rbac");
   const checkM = useExplainCheck();
   const result = checkM.data;
+  // A denial states its own reason; either answer may say what decided it.
+  const why = result
+    ? (!result.allowed && explainReasonFields(result)) || explainDecidedBy(result.decided_by)
+    : null;
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -67,10 +72,9 @@ export function AccessTesterPage() {
                     <p className="text-sm font-semibold">
                       {result.allowed ? t("check.allowed") : t("check.denied")}
                     </p>
-                    {!result.allowed && (
-                      // The server's one deny reason, in the reader's language.
+                    {(why || !result.allowed) && (
                       <p className="mt-0.5 text-sm text-muted-foreground">
-                        {t("check.deniedReason")}
+                        {why ? explainedMessage(why, t) : t("check.deniedReason")}
                       </p>
                     )}
                   </div>
@@ -172,7 +176,7 @@ function CheckForm({ check }: { check: ReturnType<typeof useExplainCheck> }) {
         </form.AppField>
         <form.AppField name="permission">
           {(field) => (
-            <field.TextField label={t("check.permissionLabel")} placeholder="users:read" required />
+            <field.TextField label={t("check.permissionLabel")} placeholder="user.read" required />
           )}
         </form.AppField>
         <FormError error={check.error} />

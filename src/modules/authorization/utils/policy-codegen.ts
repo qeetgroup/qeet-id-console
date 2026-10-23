@@ -1,13 +1,16 @@
 // Turns the Policy Builder's PolicyDoc into its JSON, YAML, DSL and evaluation-tree previews,
 // and decides whether it can be saved as an ABAC policy.
 
+import i18n from "@/i18n";
 import {
   type AbacPolicyInput,
   type CondNode,
+  type ConditionProblem,
   conditionProblem,
   type Effect,
   emptyGroup,
   OPERATOR_LABELS,
+  type Operator,
   toConditionJson,
 } from "../api/abac";
 
@@ -43,11 +46,13 @@ export function emptyPolicyDoc(): PolicyDoc {
   };
 }
 
+/** Why a doc can't be saved as an ABAC policy, translated at `rbac:conditionProblem.<code>`. */
+export type PolicyProblem = ConditionProblem | { code: "mixedEngines" };
+
 /** Returns why a doc can't be saved as an ABAC policy, or null when it can. */
-export function abacSaveBlocker(doc: PolicyDoc): string | null {
-  if (doc.requireRole || doc.relation) {
-    return "This policy combines RBAC/ReBAC with ABAC, which has no single backend object. You can export it or simulate it now; remove the RBAC/ReBAC blocks to save it as a real ABAC policy.";
-  }
+export function abacSaveBlocker(doc: PolicyDoc): PolicyProblem | null {
+  // An RBAC or ReBAC block has no ABAC equivalent, so the backend has nothing to store it in.
+  if (doc.requireRole || doc.relation) return { code: "mixedEngines" };
   return doc.condition ? conditionProblem(doc.condition) : null;
 }
 
@@ -144,6 +149,23 @@ export function toYamlDoc(doc: PolicyDoc): string {
   return toYaml(toJsonObject(doc));
 }
 
+// The DSL's operator keywords: syntax, so they stay English whatever the reader's language.
+const DSL_OPERATORS: Record<Operator, string> = {
+  eq: "equals",
+  ne: "not equals",
+  in: "in",
+  nin: "not in",
+  contains: "contains",
+  gt: "greater than",
+  gte: "greater or equal",
+  lt: "less than",
+  lte: "less or equal",
+  exists: "exists",
+  prefix: "starts with",
+  suffix: "ends with",
+  regex: "matches regex",
+};
+
 function dslValue(node: Extract<CondNode, { kind: "leaf" }>): string {
   if (node.op === "exists") return "";
   // An attribute reference stays bare, so it reads apart from a quoted literal.
@@ -153,7 +175,7 @@ function dslValue(node: Extract<CondNode, { kind: "leaf" }>): string {
 function dslCondition(node: CondNode, indent: number): string {
   const pad = "  ".repeat(indent);
   if (node.kind === "leaf") {
-    return `${pad}${node.attr} ${OPERATOR_LABELS[node.op]}${dslValue(node)}`;
+    return `${pad}${node.attr} ${DSL_OPERATORS[node.op]}${dslValue(node)}`;
   }
   if (node.kind === "not") {
     return `${pad}NOT (\n${dslCondition(node.child, indent + 1)}\n${pad})`;
@@ -200,6 +222,7 @@ export function toDsl(doc: PolicyDoc): string {
   return lines.join("\n");
 }
 
+/** One node of the evaluation tree; `label` and `detail` are in the reader's language. */
 export interface EvalTreeNode {
   id: string;
   kind: "decision" | "and" | "or" | "not" | "leaf" | "block";
@@ -216,24 +239,34 @@ function tid() {
 
 function condToTree(node: CondNode): EvalTreeNode {
   if (node.kind === "leaf") {
+    const operator = i18n.t(OPERATOR_LABELS[node.op]);
     return {
       id: tid(),
       kind: "leaf",
       label: node.attr,
-      detail: `${OPERATOR_LABELS[node.op]}${node.op === "exists" ? "" : ` ${node.value || "…"}`}`,
+      detail:
+        node.op === "exists"
+          ? operator
+          : i18n.t("rbac:evalTree.comparison", { operator, value: node.value || "…" }),
     };
   }
   if (node.kind === "not") {
-    return { id: tid(), kind: "not", label: "NOT", children: [condToTree(node.child)] };
+    return {
+      id: tid(),
+      kind: "not",
+      label: i18n.t("rbac:evalTree.not"),
+      children: [condToTree(node.child)],
+    };
   }
   return {
     id: tid(),
     kind: node.combinator === "all" ? "and" : "or",
-    label: node.combinator === "all" ? "ALL of" : "ANY of",
+    label: i18n.t(node.combinator === "all" ? "rbac:evalTree.all" : "rbac:evalTree.any"),
     children: node.children.map(condToTree),
   };
 }
 
+/** Returns the doc's evaluation tree, translated when called: build it at render. */
 export function toEvalTree(doc: PolicyDoc): EvalTreeNode {
   _t = 0;
   const children: EvalTreeNode[] = [];
@@ -242,21 +275,29 @@ export function toEvalTree(doc: PolicyDoc): EvalTreeNode {
       id: tid(),
       kind: "block",
       label: "RBAC",
-      detail: `require role “${doc.requireRole}”`,
+      detail: i18n.t("rbac:evalTree.requireRole", { role: doc.requireRole }),
     });
   if (doc.relation)
     children.push({
       id: tid(),
       kind: "block",
       label: "ReBAC",
-      detail: `${doc.relation.relation} of ${doc.relation.object}`,
+      detail: i18n.t("rbac:evalTree.relationOf", {
+        relation: doc.relation.relation,
+        object: doc.relation.object,
+      }),
     });
   if (doc.condition) children.push(condToTree(doc.condition));
   return {
     id: tid(),
     kind: "decision",
-    label: `${doc.effect.toUpperCase()} ${doc.resourceType || "*"}:${doc.action || "*"}`,
-    detail: children.length ? "when all blocks match" : "unconditional",
+    label: i18n.t("rbac:evalTree.decision", {
+      effect: i18n.t(`rbac:decisionBadge.${doc.effect}`),
+      target: `${doc.resourceType || "*"}:${doc.action || "*"}`,
+    }),
+    detail: i18n.t(
+      children.length ? "rbac:evalTree.whenAllBlocksMatch" : "rbac:evalTree.unconditional",
+    ),
     children,
   };
 }

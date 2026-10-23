@@ -28,6 +28,7 @@ import {
   WebhookIcon,
 } from "@qeetrix/icons";
 import { type ComponentType, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ActivityEvent, Severity } from "../types/activity.types";
 import { SeverityBadge } from "./severity-badge";
@@ -82,6 +83,7 @@ export function EventCard({
   compact = false,
   onClick,
 }: EventCardProps) {
+  const { t } = useTranslation("activity");
   const [expanded, setExpanded] = useState(false);
   const CategoryIcon = getCategoryIcon(event.category);
   const SeverityIcon = SEVERITY_ICON[event.severity];
@@ -167,7 +169,7 @@ export function EventCard({
             <SeverityBadge severity={event.severity} />
             {isNew && (
               <Badge variant="success" className="text-[10px]">
-                New
+                {t("eventCard.new")}
               </Badge>
             )}
           </div>
@@ -184,9 +186,9 @@ export function EventCard({
               type="button"
               className="inline-flex items-center gap-1 text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               onClick={onClick}
-              aria-label="Open event details"
+              aria-label={t("eventCard.openEventDetails")}
             >
-              Details <ChevronRightIcon className="size-3" aria-hidden="true" />
+              {t("eventCard.details")} <ChevronRightIcon className="size-3" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -204,14 +206,20 @@ export function EventCard({
                       <AvatarFallback className="text-[8px]">{actorInitials}</AvatarFallback>
                     </Avatar>
                     <span className="max-w-32 truncate">
-                      {event.actor.name ?? event.actor.id ?? event.actor.type ?? "Unknown"}
+                      {event.actor.name ?? event.actor.id ?? event.actor.type ?? t("actor.unknown")}
                     </span>
                   </span>
                 }
               />
               <TooltipContent>
-                {event.actor.type && <p className="text-xs">Type: {event.actor.type}</p>}
-                {event.actor.id && <p className="font-mono text-xs">ID: {event.actor.id}</p>}
+                {event.actor.type && (
+                  <p className="text-xs">{t("eventCard.actorType", { type: event.actor.type })}</p>
+                )}
+                {event.actor.id && (
+                  <p className="font-mono text-xs">
+                    {t("eventCard.actorId", { id: event.actor.id })}
+                  </p>
+                )}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -265,7 +273,7 @@ export function EventCard({
             ) : (
               <ChevronRightIcon className="size-3" aria-hidden="true" />
             )}
-            Metadata
+            {t("eventCard.metadata")}
           </button>
           {expanded && (
             <pre

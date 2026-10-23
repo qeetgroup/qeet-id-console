@@ -23,40 +23,45 @@ import {
   ShieldCheckIcon,
   SlidersHorizontalIcon,
 } from "@qeetrix/icons";
-import { useEffect } from "react";
+import type { TFunction } from "i18next";
+import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { countLeaves } from "../../api/abac";
 import type { PolicyDoc } from "../../utils/policy-codegen";
 import { ClientOnly } from "../shared/client-only";
 
 export type BlockKind = "rbac" | "abac" | "rebac" | "decision";
 
-const BLOCK_META: Record<Exclude<BlockKind, "decision">, { title: string; color: string }> = {
-  rbac: {
-    title: "Role check (RBAC)",
-    color: "border-blue-400 bg-blue-50 dark:border-blue-500/60 dark:bg-blue-950/40",
-  },
-  abac: {
-    title: "Condition (ABAC)",
-    color: "border-emerald-400 bg-emerald-50 dark:border-emerald-500/60 dark:bg-emerald-950/40",
-  },
-  rebac: {
-    title: "Relationship (ReBAC)",
-    color: "border-purple-400 bg-purple-50 dark:border-purple-500/60 dark:bg-purple-950/40",
-  },
+type Block = Exclude<BlockKind, "decision">;
+
+const BLOCKS: Block[] = ["rbac", "abac", "rebac"];
+
+// Each block's colours; its title is `rbac:policyCanvas.blocks.<kind>`.
+const BLOCK_COLORS: Record<Block, string> = {
+  rbac: "border-blue-400 bg-blue-50 dark:border-blue-500/60 dark:bg-blue-950/40",
+  abac: "border-emerald-400 bg-emerald-50 dark:border-emerald-500/60 dark:bg-emerald-950/40",
+  rebac: "border-purple-400 bg-purple-50 dark:border-purple-500/60 dark:bg-purple-950/40",
 };
 
+// Whether the doc has this block; the palette offers only the missing ones.
+function isActive(doc: PolicyDoc, kind: Block): boolean {
+  if (kind === "rbac") return doc.requireRole != null;
+  if (kind === "abac") return doc.condition != null;
+  return doc.relation != null;
+}
+
 function BlockNode({ data }: NodeProps) {
-  const d = data as { kind: Exclude<BlockKind, "decision">; summary: string; selected?: boolean };
-  const meta = BLOCK_META[d.kind];
+  const { t } = useTranslation("rbac");
+  const d = data as { kind: Block; summary: string; selected?: boolean };
   const Icon =
     d.kind === "rbac" ? ShieldCheckIcon : d.kind === "abac" ? SlidersHorizontalIcon : NetworkIcon;
   return (
     <div
-      className={`w-52 rounded-lg border-2 px-3 py-2 shadow-sm ${meta.color} ${d.selected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""}`}
+      className={`w-52 rounded-lg border-2 px-3 py-2 shadow-sm ${BLOCK_COLORS[d.kind]} ${d.selected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""}`}
     >
       <div className="flex items-center gap-1.5">
         <Icon className="size-3.5" aria-hidden />
-        <p className="text-[11px] font-medium">{meta.title}</p>
+        <p className="text-[11px] font-medium">{t(`policyCanvas.blocks.${d.kind}`)}</p>
       </div>
       <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{d.summary}</p>
       <Handle type="source" position={Position.Right} className="!bg-muted-foreground" />
@@ -65,7 +70,8 @@ function BlockNode({ data }: NodeProps) {
 }
 
 function DecisionNode({ data }: NodeProps) {
-  const d = data as { effect: string; target: string; selected?: boolean };
+  const { t } = useTranslation("rbac");
+  const d = data as { effect: PolicyDoc["effect"]; target: string; selected?: boolean };
   const allow = d.effect === "allow";
   return (
     <div
@@ -73,7 +79,7 @@ function DecisionNode({ data }: NodeProps) {
     >
       <Handle type="target" position={Position.Left} className="!bg-muted-foreground" />
       <div className="flex items-center gap-2">
-        <Badge variant={allow ? "success" : "destructive"}>{d.effect.toUpperCase()}</Badge>
+        <Badge variant={allow ? "success" : "destructive"}>{t(`decisionBadge.${d.effect}`)}</Badge>
         <KeyRoundIcon className="size-3.5 text-muted-foreground" aria-hidden />
       </div>
       <p className="mt-1 truncate font-mono text-[11px]">{d.target}</p>
@@ -83,19 +89,35 @@ function DecisionNode({ data }: NodeProps) {
 
 const nodeTypes = { block: BlockNode, decision: DecisionNode };
 
-function buildGraph(doc: PolicyDoc, selected: BlockKind | null): { nodes: Node[]; edges: Edge[] } {
+// Builds the canvas at render, so the block summaries are in the reader's language.
+function buildGraph(
+  doc: PolicyDoc,
+  selected: BlockKind | null,
+  t: TFunction,
+): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
-  const active: { kind: Exclude<BlockKind, "decision">; y: number; summary: string }[] = [];
+  const active: { kind: Block; y: number; summary: string }[] = [];
   if (doc.requireRole != null)
-    active.push({ kind: "rbac", y: 10, summary: doc.requireRole || "(role…)" });
+    active.push({
+      kind: "rbac",
+      y: 10,
+      summary: doc.requireRole || t("rbac:policyCanvas.rolePlaceholder"),
+    });
   if (doc.condition != null)
-    active.push({ kind: "abac", y: 130, summary: `${countLeaves(doc.condition)} condition(s)` });
+    active.push({
+      kind: "abac",
+      y: 130,
+      summary: t("rbac:policyCanvas.conditionCount", { count: countLeaves(doc.condition) }),
+    });
   if (doc.relation != null)
     active.push({
       kind: "rebac",
       y: 250,
-      summary: `${doc.relation.relation || "rel"} of ${doc.relation.object || "object"}`,
+      summary: t("rbac:evalTree.relationOf", {
+        relation: doc.relation.relation || t("rbac:policyCanvas.relationPlaceholder"),
+        object: doc.relation.object || t("rbac:policyCanvas.objectPlaceholder"),
+      }),
     });
 
   for (const b of active) {
@@ -137,9 +159,11 @@ function Canvas({
   doc: PolicyDoc;
   selected: BlockKind | null;
   onSelect: (kind: BlockKind | null) => void;
-  onToggleBlock: (kind: Exclude<BlockKind, "decision">) => void;
+  onToggleBlock: (kind: Block) => void;
 }) {
-  const built = buildGraph(doc, selected);
+  const { t } = useTranslation("rbac");
+  // Memoised: the effects below reseed the flow state, and a fresh graph each render would loop.
+  const built = useMemo(() => buildGraph(doc, selected, t), [doc, selected, t]);
   const [nodes, setNodes, onNodesChange] = useNodesState(built.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(built.edges);
   useEffect(() => setNodes(built.nodes), [built.nodes, setNodes]);
@@ -157,7 +181,7 @@ function Canvas({
       nodesConnectable={false}
       minZoom={0.4}
       maxZoom={1.8}
-      aria-label="Unified policy builder canvas"
+      aria-label={t("policyCanvas.unifiedPolicyBuilderCanvas")}
       onNodeClick={(_, node) =>
         onSelect(
           node.id === "decision" ? "decision" : (node.id.slice("block:".length) as BlockKind),
@@ -168,21 +192,11 @@ function Canvas({
       <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
       <Controls showInteractive={false} />
       <Panel position="top-left" className="flex flex-wrap gap-1.5">
-        {doc.requireRole == null && (
-          <Button variant="outline" size="xs" onClick={() => onToggleBlock("rbac")}>
-            <PlusIcon /> Role
+        {BLOCKS.filter((kind) => !isActive(doc, kind)).map((kind) => (
+          <Button key={kind} variant="outline" size="xs" onClick={() => onToggleBlock(kind)}>
+            <PlusIcon /> {t(`policyCanvas.add.${kind}`)}
           </Button>
-        )}
-        {doc.condition == null && (
-          <Button variant="outline" size="xs" onClick={() => onToggleBlock("abac")}>
-            <PlusIcon /> Condition
-          </Button>
-        )}
-        {doc.relation == null && (
-          <Button variant="outline" size="xs" onClick={() => onToggleBlock("rebac")}>
-            <PlusIcon /> Relationship
-          </Button>
-        )}
+        ))}
       </Panel>
     </ReactFlow>
   );
@@ -198,7 +212,7 @@ export function PolicyCanvas({
   doc: PolicyDoc;
   selected: BlockKind | null;
   onSelect: (kind: BlockKind | null) => void;
-  onToggleBlock: (kind: Exclude<BlockKind, "decision">) => void;
+  onToggleBlock: (kind: Block) => void;
   height?: number;
 }) {
   return (

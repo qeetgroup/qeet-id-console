@@ -40,7 +40,8 @@ vi.mock("@/platform/security/capability-provider", () => ({
 }));
 
 import { api } from "@/platform/api/client";
-import { navGroups } from "@/platform/config/navigation";
+import i18n from "@/i18n";
+import { navGroups, translateNavigation } from "@/platform/config/navigation";
 import { type DeveloperOverviewData, useDeveloperOverview } from "../api/overview";
 import { DeveloperOverviewView } from "../components/developer-overview";
 import { isCurrentCredential, summarizeDeveloperRecords } from "../overview-model";
@@ -260,8 +261,8 @@ function viewData(): DeveloperOverviewData {
     canCreateKey: true,
     canCreateWebhook: true,
     areas:
-      navGroups
-        .find((group) => group.label === "Developer")
+      translateNavigation(navGroups, i18n.t)
+        .find((group) => group.id === "developer")
         ?.items.filter((item) => item.url !== "/developer") ?? [],
     resources: ids.map((id) => ({
       id,

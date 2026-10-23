@@ -34,25 +34,31 @@ function doc(partial: Partial<PolicyDoc>): PolicyDoc {
   };
 }
 
+export const TEMPLATE_CATEGORIES = ["saas", "cloud", "regulated", "baseline"] as const;
+
+/**
+ * A starter policy. `name` and `description` are catalogue keys, and the categories read
+ * `rbac:policyTemplatesPage.categories.<category>`. The built doc is policy content, so it stays
+ * as written.
+ */
 export interface PolicyTemplate {
   id: string;
   name: string;
-  vendor: string;
-  category: "SaaS" | "Cloud" | "Regulated" | "Baseline";
+  // The product a template mirrors (a brand, shown as written), or a sector's catalogue key.
+  source: { vendor: string } | { sector: string };
+  category: (typeof TEMPLATE_CATEGORIES)[number];
   description: string;
   tags: string[];
   build: () => PolicyDoc;
 }
 
-export const TEMPLATE_CATEGORIES = ["SaaS", "Cloud", "Regulated", "Baseline"] as const;
-
 export const POLICY_TEMPLATES: PolicyTemplate[] = [
   {
     id: "github-repo-admin",
-    name: "Repository admin (org members)",
-    vendor: "GitHub",
-    category: "SaaS",
-    description: "Allow org members with the maintainer role to administer repositories.",
+    name: "rbac:policyTemplates.githubRepoAdmin.name",
+    source: { vendor: "GitHub" },
+    category: "saas",
+    description: "rbac:policyTemplates.githubRepoAdmin.description",
     tags: ["rbac", "abac", "repository"],
     build: () =>
       doc({
@@ -67,10 +73,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "organization-hr-profiles",
-    name: "HR can view employee profiles",
-    vendor: "Google Organization",
-    category: "SaaS",
-    description: "Allow the HR department to read employee profile resources.",
+    name: "rbac:policyTemplates.organizationHrProfiles.name",
+    source: { vendor: "Google Organization" },
+    category: "saas",
+    description: "rbac:policyTemplates.organizationHrProfiles.description",
     tags: ["abac", "department", "read"],
     build: () =>
       doc({
@@ -84,10 +90,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "aws-prod-deploy-window",
-    name: "Block production deploys after hours",
-    vendor: "AWS IAM",
-    category: "Cloud",
-    description: "Deny deployments to production environments outside business hours.",
+    name: "rbac:policyTemplates.awsProdDeployWindow.name",
+    source: { vendor: "AWS IAM" },
+    category: "cloud",
+    description: "rbac:policyTemplates.awsProdDeployWindow.description",
     tags: ["abac", "deny", "time-window"],
     build: () =>
       doc({
@@ -105,10 +111,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "azure-corp-network",
-    name: "Corporate network only",
-    vendor: "Azure Entra",
-    category: "Cloud",
-    description: "Allow access only from the corporate network CIDR ranges.",
+    name: "rbac:policyTemplates.azureCorpNetwork.name",
+    source: { vendor: "Azure Entra" },
+    category: "cloud",
+    description: "rbac:policyTemplates.azureCorpNetwork.description",
     tags: ["abac", "network", "context"],
     build: () =>
       doc({
@@ -122,10 +128,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "slack-channel-owner",
-    name: "Channel owners manage members",
-    vendor: "Slack",
-    category: "SaaS",
-    description: "Allow the owner relation of a channel to manage its membership.",
+    name: "rbac:policyTemplates.slackChannelOwner.name",
+    source: { vendor: "Slack" },
+    category: "saas",
+    description: "rbac:policyTemplates.slackChannelOwner.description",
     tags: ["rebac", "ownership"],
     build: () =>
       doc({
@@ -139,10 +145,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "jira-project-lead",
-    name: "Project leads edit issues",
-    vendor: "Jira",
-    category: "SaaS",
-    description: "Allow the lead role to edit issues within their project.",
+    name: "rbac:policyTemplates.jiraProjectLead.name",
+    source: { vendor: "Jira" },
+    category: "saas",
+    description: "rbac:policyTemplates.jiraProjectLead.description",
     tags: ["rbac", "abac", "project"],
     build: () =>
       doc({
@@ -156,10 +162,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "salesforce-region",
-    name: "Region-scoped account access",
-    vendor: "Salesforce",
-    category: "SaaS",
-    description: "Allow reps to read accounts only in their assigned region.",
+    name: "rbac:policyTemplates.salesforceRegion.name",
+    source: { vendor: "Salesforce" },
+    category: "saas",
+    description: "rbac:policyTemplates.salesforceRegion.description",
     tags: ["abac", "attribute-match"],
     build: () =>
       doc({
@@ -173,10 +179,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "healthcare-phi",
-    name: "PHI access with break-glass audit",
-    vendor: "Healthcare / HIPAA",
-    category: "Regulated",
-    description: "Allow clinicians to read PHI for patients in their care team.",
+    name: "rbac:policyTemplates.healthcarePhi.name",
+    source: { sector: "rbac:policyTemplates.sectors.healthcare" },
+    category: "regulated",
+    description: "rbac:policyTemplates.healthcarePhi.description",
     tags: ["abac", "hipaa", "sensitive"],
     build: () =>
       doc({
@@ -193,10 +199,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "finance-sod",
-    name: "Separation of duties (payments)",
-    vendor: "Finance / SOX",
-    category: "Regulated",
-    description: "Deny payment approval by the same user who created the payment.",
+    name: "rbac:policyTemplates.financeSod.name",
+    source: { sector: "rbac:policyTemplates.sectors.finance" },
+    category: "regulated",
+    description: "rbac:policyTemplates.financeSod.description",
     tags: ["abac", "deny", "sox"],
     build: () =>
       doc({
@@ -211,10 +217,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "gov-clearance",
-    name: "Clearance-level document access",
-    vendor: "Government",
-    category: "Regulated",
-    description: "Allow access to classified documents at or below the subject's clearance.",
+    name: "rbac:policyTemplates.govClearance.name",
+    source: { sector: "rbac:policyTemplates.sectors.government" },
+    category: "regulated",
+    description: "rbac:policyTemplates.govClearance.description",
     tags: ["abac", "clearance"],
     build: () =>
       doc({
@@ -230,10 +236,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "baseline-mfa",
-    name: "Require MFA for sensitive actions",
-    vendor: "Baseline",
-    category: "Baseline",
-    description: "Deny sensitive write actions when the session is not MFA-verified.",
+    name: "rbac:policyTemplates.baselineMfa.name",
+    source: { sector: "rbac:policyTemplates.sectors.baseline" },
+    category: "baseline",
+    description: "rbac:policyTemplates.baselineMfa.description",
     tags: ["abac", "deny", "mfa"],
     build: () =>
       doc({
@@ -248,10 +254,10 @@ export const POLICY_TEMPLATES: PolicyTemplate[] = [
   },
   {
     id: "baseline-owner",
-    name: "Owners can do anything to their resource",
-    vendor: "Baseline",
-    category: "Baseline",
-    description: "Allow the owner relation of a resource full access to it.",
+    name: "rbac:policyTemplates.baselineOwner.name",
+    source: { sector: "rbac:policyTemplates.sectors.baseline" },
+    category: "baseline",
+    description: "rbac:policyTemplates.baselineOwner.description",
     tags: ["rebac", "ownership"],
     build: () =>
       doc({

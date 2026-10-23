@@ -59,7 +59,8 @@ errors/user-message.ts         the leak stop
 components/data-state.tsx      DataState that maps errors through the leak stop (lint-enforced)
 config/server-config.ts        production config check, called from src/start.ts
 security/security-headers.ts   response headers, applied by Nitro route rules (vite.config.ts)
-config/navigation.tsx          nav tree + getRequiredCapabilityForPath
+config/navigation.tsx          nav types, useNavGroups (translated), getRequiredCapabilityForPath
+config/nav-groups{,-admin}.tsx the nav tree; labels are `nav` catalogue keys
 ```
 
 **Tests** `api/__tests__/{client,server-request-policy}.test.ts` ·
@@ -123,8 +124,8 @@ tiles share the owning module's cache entry.
 | `api/` | 2 | `activity-stream.ts`, `qeetai-stream.ts` — server-only SSE |
 
 `_app/` sub-areas: `auth/`, `authorization/` (15 routes), `security/`, `settings/`, `users/`,
-`groups/`, `organizations/`, `developer/`, `directory/`, plus `$.tsx` — a catch-all "Coming soon"
-(the dashboard's `PlaceholderPage`) that resolves its title from `navGroups`.
+`groups/`, `organizations/`, `developer/`, `directory/`, plus `$.tsx` — the catch-all "Page not
+found" (the dashboard's `NotFoundPage`) for any console address no route matches.
 
 Route tests (49 files) sit beside their route as `-<name>.test.tsx`, which the router generator
 ignores; they render the route's component, so they exercise the module page through it.
@@ -152,7 +153,8 @@ namespaces; the other seven have 10 (about 7% of the keys), so only English is o
 (`OFFERED_LANGUAGES`) until one is complete. Detection: `localStorage` then `navigator`, key
 `qeetid.lang`. `humanizeMissingKey` ensures an operator never sees a raw key.
 
-**Tests** `src/i18n/__tests__/{index,offered-languages}.test.ts`
+**Tests** `src/i18n/__tests__/{index,offered-languages,catalogue-keys}.test.ts` — the last fails on
+a static key the source uses that `en` lacks.
 
 ---
 

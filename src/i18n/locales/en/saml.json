@@ -6,8 +6,10 @@
   },
   "metadata": {
     "title": "IdP metadata",
-    "description": "Service providers import this single metadata document to trust Qeet ID as their IdP. Hand this URL to each SP’s SAML configuration.",
-    "hint": "Most SPs accept a metadata URL directly; for those that need the XML, point them at the same endpoint — it serves the signed IdP descriptor (entity ID, SSO URL, signing certificate)."
+    "description": "Service providers import your organisation’s metadata document to trust Qeet ID as their IdP. Hand this URL to each SP’s SAML configuration.",
+    "hint": "Most SPs accept a metadata URL directly; it serves the signed IdP descriptor (entity ID, SSO URL, signing certificate). For an SP configured by hand, use the values below.",
+    "entityId": "IdP entity ID",
+    "ssoUrl": "Single sign-on URL"
   },
   "list": {
     "title": "Service providers",
@@ -51,6 +53,7 @@
       "name": "Enter a name.",
       "entityId": "Enter the service provider's entity ID.",
       "acsUrl": "Enter the assertion consumer service URL."
-    }
+    },
+    "namePlaceholder": "Acme Analytics"
   }
 }

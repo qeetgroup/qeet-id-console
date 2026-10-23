@@ -1,4 +1,5 @@
 import { Badge, cn, Highlight, StatusPill } from "@qeetrix/ui";
+import { useTranslation } from "react-i18next";
 
 import type { SearchItem } from "../registry/types/registry.types";
 
@@ -20,6 +21,7 @@ export function ResultRow({
   onClick,
   id,
 }: ResultRowProps) {
+  const { t } = useTranslation("search");
   return (
     <button
       type="button"
@@ -58,7 +60,7 @@ export function ResultRow({
       <span className="flex shrink-0 items-center gap-1.5">
         {item.kind === "command" && (
           <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
-            cmd
+            {t("resultRow.command")}
           </Badge>
         )}
         {item.kind === "favorite" && (

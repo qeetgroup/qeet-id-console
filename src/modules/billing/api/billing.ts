@@ -98,7 +98,7 @@ export function useStartTrial() {
     mutationFn: (body: { plan_code: string; currency: string }) =>
       api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "Trial started", silentError: true },
+    meta: { successMessage: "settings:toast.trialStarted", silentError: true },
   });
 }
 
@@ -118,7 +118,7 @@ export function useSaveBillingProfile() {
     mutationFn: (body: BillingProfile) =>
       api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.profile(tenantId) }),
-    meta: { successMessage: "Billing profile saved", silentError: true },
+    meta: { successMessage: "settings:toast.billingProfileSaved", silentError: true },
   });
 }
 
@@ -174,7 +174,7 @@ export function useChangePlan() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "Subscription updated", silentError: true },
+    meta: { successMessage: "settings:toast.subscriptionUpdated", silentError: true },
   });
 }
 
@@ -215,7 +215,7 @@ export function useCheckout() {
       }
       qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) });
     },
-    meta: { successMessage: "Subscription updated", silentError: true },
+    meta: { successMessage: "settings:toast.subscriptionUpdated", silentError: true },
   });
 }
 
@@ -229,7 +229,7 @@ export function useCancelSubscription() {
         { method: "POST" },
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "Subscription will cancel at period end", silentError: true },
+    meta: { successMessage: "settings:toast.subscriptionWillCancelAt", silentError: true },
   });
 }
 

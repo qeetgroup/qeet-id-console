@@ -67,6 +67,6 @@ export function useUpdateAuthPolicy() {
         body,
       }),
     onSuccess: (data) => qc.setQueryData(authKeys.policy(tenantId), data), // PUT returns the whole policy
-    meta: { successMessage: "Authentication policy saved", silentError: true }, // pages show it
+    meta: { successMessage: "auth:toast.authenticationPolicySaved", silentError: true }, // pages show it
   });
 }

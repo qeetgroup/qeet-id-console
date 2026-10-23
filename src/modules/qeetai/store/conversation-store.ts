@@ -52,10 +52,10 @@ function uid(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/** Returns a title for a conversation from its first user message. */
+/** Returns a title for a conversation from its first user message; empty for a blank one. */
 export function deriveTitle(text: string): string {
   const trimmed = text.trim().replace(/\s+/g, " ");
-  if (!trimmed) return "New conversation";
+  if (!trimmed) return "";
   return trimmed.length > 48 ? `${trimmed.slice(0, 47)}…` : trimmed;
 }
 
@@ -135,7 +135,7 @@ export const conversationActions = {
     const now = Date.now();
     const conversation: Conversation = {
       id,
-      title: "New conversation",
+      title: "",
       messages: [],
       pinned: false,
       createdAt: now,

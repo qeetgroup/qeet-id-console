@@ -42,7 +42,7 @@ export function useWriteTuple() {
       });
     },
     onSuccess: () => invalidateTupleViews(qc, tenantId),
-    meta: { successMessage: "Tuple written", silentError: true }, // the page shows the error
+    meta: { successMessage: "rbac:toast.tupleWritten", silentError: true }, // the page shows the error
   });
 }
 
@@ -57,7 +57,7 @@ export function useDeleteTuple() {
       });
     },
     onSuccess: () => invalidateTupleViews(qc, tenantId),
-    meta: { successMessage: "Relationship deleted" },
+    meta: { successMessage: "rbac:toast.relationshipDeleted" },
   });
 }
 

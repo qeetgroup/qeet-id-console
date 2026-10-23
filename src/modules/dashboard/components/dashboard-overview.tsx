@@ -25,8 +25,9 @@ import {
 import { errorMessage } from "@/platform/errors/user-message";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
+import type { AccessMode } from "@/platform/security/capability-model";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useApplyOnboardingProfile } from "@/modules/onboarding";
 import { formatShortDate, useAnalyticsOverview } from "../api/analytics";
@@ -35,7 +36,9 @@ import {
   authMethodColor,
   type DashboardRange,
   formatDelta,
+  loginMethodLabel,
   mfaMethodColor,
+  mfaMethodLabel,
   takeLatest,
 } from "../dashboard-model";
 import { OperatorActionsPanel, RecentActivityPanel } from "./dashboard-activity";
@@ -47,12 +50,11 @@ import {
 } from "./dashboard-charts";
 import {
   AttentionRequiredPanel,
-  EnterpriseOverviewPanel,
   IdentityHealthPanel,
-  PlanUsagePanel,
   SecurityPosturePanel,
   SessionOverviewPanel,
 } from "./dashboard-insights";
+import { EnterpriseOverviewPanel, PlanUsagePanel } from "./dashboard-insights-enterprise";
 import {
   type DashboardMetric,
   DashboardMetricRail,
@@ -60,6 +62,15 @@ import {
 } from "./dashboard-metrics";
 import { OnboardingChecklist } from "./onboarding-checklist";
 import { PasskeyPromptCard } from "./passkey-prompt-card";
+
+const ACCESS_MODE_KEYS: Record<AccessMode, string> = {
+  setup: "dashboard:dashboardOverview.accessMode.setup",
+  full: "dashboard:dashboardOverview.accessMode.full",
+  "read-only": "dashboard:dashboardOverview.accessMode.readOnly",
+  restricted: "dashboard:dashboardOverview.accessMode.restricted",
+  none: "dashboard:dashboardOverview.accessMode.none",
+  unknown: "dashboard:dashboardOverview.accessMode.unknown",
+};
 
 function hasLiveTelemetry(generatedAt: string | undefined): generatedAt is string {
   if (!generatedAt) return false;
@@ -90,7 +101,7 @@ function DashboardHeading({
       <div className="min-w-0">
         <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           <span className="h-px w-5 bg-primary" aria-hidden="true" />
-          Identity operations
+          {t("dashboardOverview.identityOperations")}
         </div>
         <h1 className="text-balance font-heading text-3xl font-semibold tracking-[-0.04em] sm:text-[2.25rem]">
           {t("title")}
@@ -114,10 +125,16 @@ function DashboardHeading({
                   />
                   {live ? (
                     <span>
-                      Telemetry updated <TimeSince value={generatedAt} className="font-medium" />
+                      <Trans
+                        t={t}
+                        i18nKey="dashboardOverview.telemetryUpdated"
+                        components={{
+                          time: <TimeSince value={generatedAt} className="font-medium" />,
+                        }}
+                      />
                     </span>
                   ) : (
-                    <span>Awaiting organization telemetry</span>
+                    <span>{t("dashboardOverview.awaitingOrganizationTelemetry")}</span>
                   )}
                 </>
               )}
@@ -178,10 +195,10 @@ export function DashboardOverview() {
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
               {analytics.error instanceof Error
                 ? errorMessage(analytics.error)
-                : "The analytics service did not return a response."}
+                : t("dashboardOverview.analyticsNoResponse")}
             </p>
             <Button className="mt-5" variant="outline" onClick={() => analytics.refetch()}>
-              <RefreshCwIcon /> Retry
+              <RefreshCwIcon /> {t("dashboardOverview.retry")}
             </Button>
           </div>
         </section>
@@ -285,11 +302,13 @@ export function DashboardOverview() {
   }));
   const methodRows = (overview?.login_methods_mix ?? []).map((method) => ({
     method: method.method,
+    label: loginMethodLabel(method.method),
     value: method.value,
     fill: authMethodColor(method.method),
   }));
   const mfaRows = (overview?.mfa_methods_adoption ?? []).map((method) => ({
     method: method.method,
+    label: mfaMethodLabel(method.method),
     users: method.users,
     fill: mfaMethodColor(method.method),
   }));
@@ -317,15 +336,16 @@ export function DashboardOverview() {
               <ShieldCheckIcon className="size-4.5" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <h2 className="font-heading text-base font-semibold">Your operator view is scoped</h2>
+              <h2 className="font-heading text-base font-semibold">
+                {t("dashboardOverview.yourOperatorViewIsScoped")}
+              </h2>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Organization analytics are not part of your role. Available navigation and actions
-                are tailored to your effective permissions.
+                {t("dashboardOverview.organizationAnalyticsAreNot")}
               </p>
             </div>
           </div>
-          <Badge variant="muted" className="w-fit shrink-0 capitalize">
-            {access.mode.replace("-", " ")} access
+          <Badge variant="muted" className="w-fit shrink-0">
+            {t(ACCESS_MODE_KEYS[access.mode])}
           </Badge>
         </section>
       )}

@@ -46,6 +46,6 @@ export function useSaveSecurityPolicy() {
     mutationFn: (body: SecurityPolicy) =>
       api<SecurityPolicy>(`/v1/tenants/${tenantId}/policy`, { method: "PUT", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.securityPolicy(tenantId) }),
-    meta: { successMessage: "Security policy saved", silentError: true }, // the form shows it
+    meta: { successMessage: "organizations:toast.securityPolicySaved", silentError: true }, // the form shows it
   });
 }

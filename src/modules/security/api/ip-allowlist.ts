@@ -40,7 +40,7 @@ export function useSetIpEnforcement() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
-    meta: { successMessage: "Enforcement updated" },
+    meta: { successMessage: "security:toast.enforcementUpdated" },
   });
 }
 
@@ -53,7 +53,7 @@ export function useAddIpRule() {
       return api<IpRule>(`/v1/tenants/${tenantId}/ip-rules`, { method: "POST", body });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
-    meta: { successMessage: "Rule added", silentError: true }, // the form shows it
+    meta: { successMessage: "security:toast.ruleAdded", silentError: true }, // the form shows it
   });
 }
 
@@ -66,7 +66,7 @@ export function useDeleteIpRule() {
       return api<void>(`/v1/tenants/${tenantId}/ip-rules/${id}`, { method: "DELETE" });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.ipRules(tenantId) }),
-    meta: { successMessage: "Rule removed" },
+    meta: { successMessage: "security:toast.ruleRemoved" },
   });
 }
 
@@ -75,10 +75,13 @@ export function useCheckIp() {
   return useMutation({
     mutationFn: (ip: string) => {
       if (!tenantId) throw new Error("No tenant selected");
-      return api<{ enabled: boolean; allowed: boolean; reason: string }>(
-        `/v1/tenants/${tenantId}/ip-rules/check`,
-        { method: "POST", body: { ip } },
-      );
+      return api<{
+        enabled: boolean;
+        allowed: boolean;
+        reason: string; // English, or a bare code from a server without reason_code; never shown
+        reason_code?: string; // ip.allowed, ip.deny_rule, ip.not_in_allow_rules, ...
+        reason_params?: { cidr?: string }; // the deny rule that refused it
+      }>(`/v1/tenants/${tenantId}/ip-rules/check`, { method: "POST", body: { ip } });
     },
     meta: { silent: true },
   });

@@ -1,5 +1,5 @@
 import type { NavGroup } from "@/platform/config/navigation";
-import { navGroups } from "@/platform/config/navigation";
+import { navGroups, translateNavigation } from "@/platform/config/navigation";
 import type { Capability } from "@/platform/security/capability-model";
 
 import type { SearchContext, SearchItem, SearchSource } from "./types/registry.types";
@@ -75,7 +75,7 @@ export function createNavigationSource(): SearchSource {
     getItems(_query: string, ctx: SearchContext): SearchItem[] {
       const can = (permission?: Capability): boolean =>
         permission === undefined || ctx.capabilities.has(permission);
-      return buildNavSearchItems(navGroups, can);
+      return buildNavSearchItems(translateNavigation(navGroups, ctx.t), can);
     },
   };
 }

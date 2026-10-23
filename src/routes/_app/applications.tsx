@@ -1,13 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ApplicationsOverview } from "@/modules/dashboard";
+import { ApplicationsOverview } from "@/modules/dashboard/pages";
 
 export const Route = createFileRoute("/_app/applications")({
-  component: ApplicationsOverviewPage,
+  component: ApplicationsOverview,
 });
-
-function ApplicationsOverviewPage() {
-  return (
-    <ApplicationsOverview description="Manage client applications, machine identities, API keys, permissions, and OAuth consent across your organization." />
-  );
-}

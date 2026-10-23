@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { passkeyErrorMessage, startPasskeyAutofill, usePasskeyLogin } from "../api/passkey-flows";
@@ -15,6 +16,7 @@ import { errorMessage } from "@/platform/errors/user-message";
 
 /** Renders sign-in: password, passkey (with autofill), SSO discovery and social return. */
 export function SignInPage() {
+  const { t } = useTranslation("auth-flow");
   const login = useLogin();
   const social = useConsumeSocialCode();
   const passkey = usePasskeyLogin();
@@ -50,9 +52,9 @@ export function SignInPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("social_error") !== "no_account") return;
-    toast.error("No account uses that provider yet. Sign up first, then sign in.");
+    toast.error(t("signIn.noSocialAccount"));
     window.history.replaceState({}, "", window.location.pathname);
-  }, []);
+  }, [t]);
 
   if (socialCode) {
     return (
@@ -60,7 +62,7 @@ export function SignInPage() {
         <div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
           <LoaderCircleIcon className="size-6 animate-spin" />
           <p className="text-sm">
-            {social.isError ? errorMessage(social.error) : "Signing you in…"}
+            {social.isError ? errorMessage(social.error) : t("signIn.socialSigningIn")}
           </p>
         </div>
       </div>

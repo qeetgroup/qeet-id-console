@@ -41,6 +41,6 @@ export function useRevokeDeviceAuth() {
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: securityKeys.deviceAuthorizations(tenantId) }),
-    meta: { successMessage: "Device authorization revoked" },
+    meta: { successMessage: "security:toast.deviceAuthorizationRevoked" },
   });
 }

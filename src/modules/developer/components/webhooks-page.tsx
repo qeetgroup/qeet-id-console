@@ -6,15 +6,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  FieldGroup,
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -25,14 +16,20 @@ import {
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
 import { Link } from "@tanstack/react-router";
-import { PlayIcon, PlusIcon, RefreshCwIcon, TrashIcon, WebhookIcon } from "@qeetrix/icons";
+import {
+  PlayIcon,
+  PlusIcon,
+  PowerIcon,
+  RefreshCwIcon,
+  TrashIcon,
+  WebhookIcon,
+} from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ListToolbar, SortHeader } from "@/shared/components/data-table";
 import { OneTimeSecret } from "@/shared/components/one-time-secret";
 import { PageHeader } from "@/platform/components/page-header";
-import { useTenantId } from "@/platform/auth/session";
 import { FeatureGate, useEntitlements } from "@/modules/billing";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
@@ -44,40 +41,29 @@ import {
 } from "@/platform/security/sensitive-action-provider";
 import {
   type Webhook,
-  useCreateWebhook,
   useDisableWebhook,
+  useEnableWebhook,
   useTestWebhook,
   useWebhooks,
 } from "../api/webhooks";
-import {
-  applyServerErrors,
-  FieldFrame,
-  FormError,
-  useAppForm,
-  useFieldChange,
-} from "@/platform/forms/app-form";
-import { useMemo } from "react";
-import { z } from "zod";
-
-const KNOWN_EVENTS = [
-  "user.created",
-  "user.updated",
-  "user.deleted",
-  "tenant.created",
-  "tenant.updated",
-  "session.created",
-  "session.revoked",
-  "mfa.enrolled",
-  "auth.failed",
-];
+import { webhookState } from "../webhook-state";
+import { WebhookStatusPill } from "./webhook-status";
+import { CreateWebhookSheet } from "./webhooks-page-create";
 
 const webhookCsvColumns: CsvColumn<Webhook>[] = [
   { header: "id", value: (w) => w.id },
   { header: "url", value: (w) => w.url },
   { header: "events", value: (w) => w.events.join("; ") },
-  { header: "status", value: (w) => (w.disabled_at ? "disabled" : "active") },
+  { header: "status", value: (w) => webhookState(w) },
+  { header: "failing_since", value: (w) => w.failing_since ?? "" },
   { header: "created_at", value: (w) => w.created_at },
 ];
+
+// The list filters on whether an endpoint is on and healthy, on and failing, or off.
+function statusFilterValue(w: Webhook): "active" | "failing" | "disabled" {
+  const state = webhookState(w);
+  return state === "autoDisabled" ? "disabled" : state;
+}
 
 /** Renders the tenant's webhooks with test and disable, and the sheet that creates one. */
 export function WebhooksPage() {
@@ -94,13 +80,14 @@ export function WebhooksPage() {
   const items = listQ.data?.items ?? [];
   const lv = useListView(items, {
     searchFields: (w) => [w.url, ...w.events],
-    filterFields: { status: (w) => (w.disabled_at ? "disabled" : "active") },
+    filterFields: { status: statusFilterValue },
     sortFields: { url: (w) => w.url, created: (w) => w.created_at },
   });
   const rows = lv.view;
   const denseCls = lv.density === "compact" ? "[&_td]:py-1.5 [&_th]:py-2" : undefined;
 
   const disableM = useDisableWebhook();
+  const enableM = useEnableWebhook();
   const testM = useTestWebhook();
 
   return (
@@ -139,8 +126,8 @@ export function WebhooksPage() {
 
       <FeatureGate
         feature="webhooks"
-        title="Webhooks are a paid feature"
-        description="Receive signed HTTP callbacks for events like user.created and session.revoked. Upgrade to Starter to create webhook subscriptions."
+        title={t("webhooksPage.webhooksAreAPaidFeature")}
+        description={t("webhooksPage.receiveSignedHttpCallbacks")}
       >
         <Card>
           <CardHeader>
@@ -167,6 +154,10 @@ export function WebhooksPage() {
                     {
                       label: t("webhooks.list.filters.status.active"),
                       value: "active",
+                    },
+                    {
+                      label: t("webhooks.list.filters.status.failing"),
+                      value: "failing",
                     },
                     {
                       label: t("webhooks.list.filters.status.disabled"),
@@ -252,7 +243,7 @@ export function WebhooksPage() {
                           </TableCell>
                         )}
                         <TableCell>
-                          <StatusPill status={w.disabled_at ? "disabled" : "active"} />
+                          <WebhookStatusPill webhook={w} />
                         </TableCell>
                         {lv.isVisible("created") && (
                           <TableCell>
@@ -268,27 +259,43 @@ export function WebhooksPage() {
                           >
                             <PlayIcon /> {t("webhooks.table.test")}
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              runSensitive({
-                                confirm: {
-                                  title: t("webhooks.confirm.disableTitle"),
-                                  description: t("webhooks.confirm.disableDescription", {
-                                    url: w.url,
-                                  }),
-                                  confirmLabel: t("webhooks.confirm.disableLabel"),
-                                  tone: "destructive",
-                                },
-                                actionLabel: t("webhooks.stepUp.disable"),
-                                run: () => disableM.mutateAsync(w.id),
-                              }).catch(settleSensitiveAction)
-                            }
-                            disabled={!!w.disabled_at || disableM.isPending}
-                          >
-                            <TrashIcon /> {t("webhooks.table.disable")}
-                          </Button>
+                          {w.disabled_at ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                runSensitive({
+                                  actionLabel: t("webhooks.stepUp.enable"),
+                                  run: () => enableM.mutateAsync(w.id),
+                                }).catch(settleSensitiveAction)
+                              }
+                              disabled={enableM.isPending}
+                            >
+                              <PowerIcon /> {t("webhooks.table.enable")}
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                runSensitive({
+                                  confirm: {
+                                    title: t("webhooks.confirm.disableTitle"),
+                                    description: t("webhooks.confirm.disableDescription", {
+                                      url: w.url,
+                                    }),
+                                    confirmLabel: t("webhooks.confirm.disableLabel"),
+                                    tone: "destructive",
+                                  },
+                                  actionLabel: t("webhooks.stepUp.disable"),
+                                  run: () => disableM.mutateAsync(w.id),
+                                }).catch(settleSensitiveAction)
+                              }
+                              disabled={disableM.isPending}
+                            >
+                              <TrashIcon /> {t("webhooks.table.disable")}
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -305,133 +312,6 @@ export function WebhooksPage() {
         onOpenChange={setCreating}
         onCreated={(w) => w.secret && setRevealed({ url: w.url, secret: w.secret })}
       />
-    </div>
-  );
-}
-
-/** Renders the sheet that subscribes an endpoint to events; the parent shows its secret once. */
-function CreateWebhookSheet({
-  open,
-  onOpenChange,
-  onCreated,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onCreated: (webhook: Webhook) => void;
-}) {
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        {open && (
-          <CreateWebhookForm
-            onCreated={(webhook) => {
-              onCreated(webhook);
-              onOpenChange(false);
-            }}
-          />
-        )}
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-function CreateWebhookForm({ onCreated }: { onCreated: (webhook: Webhook) => void }) {
-  const { t } = useTranslation("developer");
-  const tenantId = useTenantId();
-  const runSensitive = useSensitiveAction();
-  const createM = useCreateWebhook();
-  const schema = useMemo(
-    () =>
-      z.object({
-        url: z.url({ protocol: /^https?$/, error: t("webhooks.create.validation.url") }),
-        events: z.array(z.string()).min(1, t("webhooks.create.validation.events")),
-      }),
-    [t],
-  );
-  const form = useAppForm({
-    defaultValues: { url: "", events: KNOWN_EVENTS.slice(0, 3) },
-    validators: { onSubmit: schema },
-    onSubmit: async ({ value, formApi }) => {
-      if (!tenantId) return;
-      await runSensitive({
-        actionLabel: t("webhooks.stepUp.create"),
-        run: () =>
-          createM.mutateAsync({ tenant_id: tenantId, url: value.url.trim(), events: value.events }),
-      })
-        .then((webhook) => webhook && onCreated(webhook))
-        .catch((err: unknown) => {
-          applyServerErrors(formApi, err);
-          settleSensitiveAction(err);
-        });
-    },
-  });
-
-  return (
-    <form
-      className="flex h-full flex-col"
-      noValidate
-      onSubmit={(e) => {
-        e.preventDefault();
-        void form.handleSubmit();
-      }}
-    >
-      <SheetHeader>
-        <SheetTitle>{t("webhooks.create.title")}</SheetTitle>
-        <SheetDescription>{t("webhooks.create.description")}</SheetDescription>
-      </SheetHeader>
-      <div className="flex-1 overflow-y-auto p-4">
-        <FieldGroup>
-          <form.AppField name="url">
-            {(field) => (
-              <field.TextField
-                label={t("webhooks.create.url")}
-                description={t("webhooks.create.urlHelp")}
-                type="url"
-                placeholder={t("webhooks.create.urlPlaceholder")}
-                required
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="events">
-            {(field) => (
-              <FieldFrame
-                label={t("webhooks.create.events")}
-                description={t("webhooks.create.eventsCount", { count: field.state.value.length })}
-              >
-                <EventChoices selected={field.state.value} />
-              </FieldFrame>
-            )}
-          </form.AppField>
-          <FormError error={createM.error} />
-        </FieldGroup>
-      </div>
-      <SheetFooter className="flex-row justify-end gap-2 border-t">
-        <SheetClose render={<Button type="button" variant="outline" />}>
-          {t("webhooks.create.cancel")}
-        </SheetClose>
-        <form.AppForm>
-          <form.SubmitButton pendingLabel={t("webhooks.create.submitting")}>
-            {t("webhooks.create.submit")}
-          </form.SubmitButton>
-        </form.AppForm>
-      </SheetFooter>
-    </form>
-  );
-}
-
-// The event checkboxes, bound to the enclosing form field as one list.
-function EventChoices({ selected }: { selected: string[] }) {
-  const change = useFieldChange<string[]>();
-  const toggle = (ev: string) =>
-    change(selected.includes(ev) ? selected.filter((e) => e !== ev) : [...selected, ev]);
-  return (
-    <div className="grid grid-cols-1 gap-2 rounded-md border p-3">
-      {KNOWN_EVENTS.map((ev) => (
-        <label key={ev} className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={selected.includes(ev)} onChange={() => toggle(ev)} />
-          <code className="text-xs">{ev}</code>
-        </label>
-      ))}
     </div>
   );
 }

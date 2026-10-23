@@ -133,7 +133,7 @@ function WriteCard() {
               <field.TextField
                 label={t("relationships.write.subjectLabel")}
                 description={t("relationships.write.subjectHelp")}
-                placeholder="user:… or group:eng#member"
+                placeholder={t("rebacPage.userOrGroupEngMember")}
                 required
               />
             )}

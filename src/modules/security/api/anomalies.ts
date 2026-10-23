@@ -64,6 +64,6 @@ export function useResolveAnomaly() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.anomalies(tenantId) }),
-    meta: { successMessage: "Anomaly resolved" },
+    meta: { successMessage: "security:toast.anomalyResolved" },
   });
 }

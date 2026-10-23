@@ -256,7 +256,7 @@ function RbacForm({ onResult }: { onResult: OnResult }) {
         {(field) => (
           <field.TextField
             label={t("simulator.fields.permission")}
-            placeholder="users.read"
+            placeholder="user.read"
             required
           />
         )}

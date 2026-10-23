@@ -35,7 +35,7 @@ export function useCreateAuthHook() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
-    meta: { successMessage: "Hook added", silentError: true },
+    meta: { successMessage: "developer:toast.hookAdded", silentError: true },
   });
 }
 
@@ -57,7 +57,7 @@ export function useUpdateAuthHook() {
         body: { enabled, fail_open },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
-    meta: { successMessage: "Auth hook updated" },
+    meta: { successMessage: "developer:toast.authHookUpdated" },
   });
 }
 
@@ -70,6 +70,6 @@ export function useDeleteAuthHook() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.authHooks(tenantId) }),
-    meta: { successMessage: "Auth hook deleted" },
+    meta: { successMessage: "developer:toast.authHookDeleted" },
   });
 }

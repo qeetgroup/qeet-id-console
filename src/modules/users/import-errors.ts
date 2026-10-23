@@ -24,10 +24,10 @@ const ROW_ERROR_KEYS: Record<string, string> = {
 };
 
 const FIELD_LABEL_KEYS: Record<string, string> = {
-  email: "import.colEmail",
-  display_name: "import.colName",
-  phone: "import.colPhone",
-  password: "import.colPassword",
+  email: "users:import.colEmail",
+  display_name: "users:import.colName",
+  phone: "users:import.colPhone",
+  password: "users:import.colPassword",
 };
 
 /** Returns the console's wording for a refused import row, keyed on its code and field. */
@@ -36,6 +36,6 @@ export function importRowErrorMessage(t: Translate, error: ImportRowError): stri
   // With no line, the whole file failed to parse rather than one row.
   if (key === "rowMalformed" && !error.line) key = "fileMalformed";
   const labelKey = error.field ? FIELD_LABEL_KEYS[error.field] : undefined;
-  const field = labelKey ? t(labelKey) : (error.field ?? t("import.rowErrors.aField"));
-  return t(`import.rowErrors.${key}`, { field });
+  const field = labelKey ? t(labelKey) : (error.field ?? t("users:import.rowErrors.aField"));
+  return t(`users:import.rowErrors.${key}`, { field });
 }

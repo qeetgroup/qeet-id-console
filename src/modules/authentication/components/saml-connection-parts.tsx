@@ -6,7 +6,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  StatusPill,
   TableCell,
   TableRow,
   TimeSince,
@@ -36,6 +35,7 @@ import {
 } from "../api/saml";
 import { SAML_IDP_VENDOR_LABELS, samlIdpVendor } from "../saml-vendors";
 import { ErrorText } from "@/platform/components/error-reference";
+import { AuthStatusPill } from "./auth-status-pill";
 
 const SETUP_GUIDE_URL = `${DOCS_URL}/docs/guides/add-enterprise-sso`;
 
@@ -150,7 +150,7 @@ export function ConnectionRow({
         {vendor === "other" ? t("samlSp.filters.vendorOther") : SAML_IDP_VENDOR_LABELS[vendor]}
       </TableCell>
       <TableCell>
-        <StatusPill status={connection.status} />
+        <AuthStatusPill status={connection.status} />
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
         {connection.last_login_at ? <TimeSince value={connection.last_login_at} /> : "—"}

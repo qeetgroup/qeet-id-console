@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { PlaceholderPage } from "@/modules/dashboard/pages";
+import { NotFoundPage } from "@/modules/dashboard/pages";
 
-// A navigation entry with no screen yet lands here rather than on a 404.
+// Any address inside the console that no route matches.
 export const Route = createFileRoute("/_app/$")({
-  component: function PlaceholderRoute() {
-    return <PlaceholderPage path={Route.useParams()._splat ?? ""} />;
-  },
+  component: NotFoundPage,
 });

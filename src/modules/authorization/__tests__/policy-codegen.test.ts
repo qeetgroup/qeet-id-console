@@ -1,6 +1,8 @@
 import { assert, describe, expect, it } from "vitest";
 
+import i18n from "@/i18n";
 import { type CondNode, nid, type Operator } from "../api/abac";
+import { policyProblemMessage } from "../components/condition-builder/condition-problem";
 import {
   abacSaveBlocker,
   type EvalTreeNode,
@@ -95,24 +97,28 @@ describe("isReducibleToAbac", () => {
 
   it("refuses an attribute reference the engine would reject", () => {
     const blocker = (node: CondNode) => abacSaveBlocker(doc({ condition: all([node]) }));
-    expect(blocker(compare("subject.name", "regex", "resource.pattern"))).toBe(
-      "“matches regex” can't compare with another attribute. Compare with a value instead.",
-    );
+    expect(blocker(compare("subject.name", "regex", "resource.pattern"))).toEqual({
+      code: "notReferenceable",
+      op: "regex",
+    });
     for (const other of ["region", "tenant.region", "resource.", "resource..id", ""]) {
-      expect(blocker(compare("subject.region", "eq", other))).toBe(
-        "The attribute to compare with must be a subject., resource. or context. path.",
-      );
+      expect(blocker(compare("subject.region", "eq", other))).toEqual({
+        code: "badReference",
+        op: "eq",
+      });
     }
-    expect(blocker(compare("subject.region", "eq", "subject.region"))).toBe(
-      "A condition can't compare an attribute with itself.",
-    );
+    expect(blocker(compare("subject.region", "eq", "subject.region"))).toEqual({
+      code: "selfReference",
+      op: "eq",
+    });
   });
 
   it("refuses an empty affix, substring or pattern, which would match everything", () => {
     for (const op of ["prefix", "suffix", "contains", "regex"] as const) {
-      expect(abacSaveBlocker(doc({ condition: any([leaf("subject.email", op, "  ")]) }))).toMatch(
-        /needs a value\.$/,
-      );
+      expect(abacSaveBlocker(doc({ condition: any([leaf("subject.email", op, "  ")]) }))).toEqual({
+        code: "needsValue",
+        op,
+      });
     }
     expect(abacSaveBlocker(doc({ condition: all([leaf("subject.dept", "eq", "")]) }))).toBeNull();
   });
@@ -126,7 +132,24 @@ describe("isReducibleToAbac", () => {
   });
 
   it("explains a composite RBAC/ReBAC doc with the composite reason", () => {
-    expect(abacSaveBlocker(doc({ requireRole: "maintainer" }))).toMatch(/combines RBAC\/ReBAC/);
+    expect(abacSaveBlocker(doc({ requireRole: "maintainer" }))).toEqual({ code: "mixedEngines" });
+  });
+
+  it("reads each problem in the reader's language, naming the operator at fault", () => {
+    const t = i18n.getFixedT("en");
+    expect(policyProblemMessage({ code: "notReferenceable", op: "regex" }, t)).toBe(
+      "“matches regex” can't compare with another attribute. Compare with a value instead.",
+    );
+    expect(policyProblemMessage({ code: "badReference", op: "eq" }, t)).toBe(
+      "The attribute to compare with must be a subject., resource. or context. path.",
+    );
+    expect(policyProblemMessage({ code: "selfReference", op: "eq" }, t)).toBe(
+      "A condition can't compare an attribute with itself.",
+    );
+    expect(policyProblemMessage({ code: "needsValue", op: "prefix" }, t)).toBe(
+      "“starts with” needs a value.",
+    );
+    expect(policyProblemMessage({ code: "mixedEngines" }, t)).toMatch(/combines RBAC\/ReBAC/);
   });
 });
 

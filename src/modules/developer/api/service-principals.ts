@@ -68,7 +68,7 @@ export function useCreateServicePrincipal() {
     mutationFn: createServicePrincipal,
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.servicePrincipals(tenantId) }),
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
-    meta: { successMessage: "Machine identity created", silentError: true }, // the sheet shows it
+    meta: { successMessage: "developer:toast.machineIdentityCreated", silentError: true }, // the sheet shows it
   });
 }
 
@@ -78,6 +78,6 @@ export function useDisableServicePrincipal() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/service-principals/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.servicePrincipals(tenantId) }),
-    meta: { successMessage: "Machine identity disabled" },
+    meta: { successMessage: "developer:toast.machineIdentityDisabled" },
   });
 }

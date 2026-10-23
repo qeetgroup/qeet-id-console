@@ -24,6 +24,7 @@ import {
   XIcon,
 } from "@qeetrix/icons";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { Density } from "@/shared/hooks/use-list-view";
 
@@ -61,7 +62,7 @@ type ListToolbarProps = {
 export function ListToolbar({
   search,
   onSearchChange,
-  searchPlaceholder = "Search…",
+  searchPlaceholder,
   filters,
   columns,
   isColumnVisible,
@@ -74,10 +75,11 @@ export function ListToolbar({
   onClear,
   children,
 }: ListToolbarProps) {
+  const { t } = useTranslation("common");
   return (
     <search
       className="flex flex-col gap-3 border-y border-border/70 bg-muted/20 p-3 sm:flex-row sm:items-center sm:px-4"
-      aria-label="List controls"
+      aria-label={t("listToolbar.listControls")}
     >
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <div className="relative w-full sm:max-w-xs">
@@ -85,9 +87,9 @@ export function ListToolbar({
           <Input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={searchPlaceholder}
+            placeholder={searchPlaceholder ?? t("listToolbar.search")}
             className="ps-9"
-            aria-label="Search"
+            aria-label={t("actions.search")}
           />
         </div>
 
@@ -97,7 +99,7 @@ export function ListToolbar({
               <SelectValue placeholder={f.label} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{f.label}: All</SelectItem>
+              <SelectItem value="all">{t("listToolbar.allOf", { label: f.label })}</SelectItem>
               {f.options.map((o) => (
                 <SelectItem key={o.value} value={o.value}>
                   {o.label}
@@ -109,7 +111,7 @@ export function ListToolbar({
 
         {hasActiveFilters && onClear && (
           <Button variant="ghost" size="sm" onClick={onClear}>
-            <XIcon /> Clear
+            <XIcon /> {t("listToolbar.clear")}
           </Button>
         )}
       </div>
@@ -119,8 +121,12 @@ export function ListToolbar({
           <Button
             variant="outline"
             size="icon"
-            aria-label={density === "compact" ? "Comfortable rows" : "Compact rows"}
-            title={density === "compact" ? "Comfortable rows" : "Compact rows"}
+            aria-label={t(
+              density === "compact" ? "listToolbar.comfortableRows" : "listToolbar.compactRows",
+            )}
+            title={t(
+              density === "compact" ? "listToolbar.comfortableRows" : "listToolbar.compactRows",
+            )}
             onClick={() => onDensityChange(density === "compact" ? "comfortable" : "compact")}
           >
             {density === "compact" ? <Rows3Icon /> : <Rows2Icon />}
@@ -131,14 +137,19 @@ export function ListToolbar({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="outline" size="icon" aria-label="Toggle columns" title="Columns">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={t("listToolbar.toggleColumns")}
+                  title={t("listToolbar.columns")}
+                >
                   <SlidersHorizontalIcon />
                 </Button>
               }
             />
             <DropdownMenuContent align="end" className="min-w-40">
               <DropdownMenuGroup>
-                <DropdownMenuLabel>Columns</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("listToolbar.columns")}</DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               {columns.map((c) => (
@@ -159,13 +170,17 @@ export function ListToolbar({
             <DropdownMenuTrigger
               render={
                 <Button variant="outline" size="sm" disabled={exportDisabled}>
-                  <DownloadIcon /> Export
+                  <DownloadIcon /> {t("listToolbar.export")}
                 </Button>
               }
             />
             <DropdownMenuContent align="end" className="min-w-36">
-              <DropdownMenuItem onClick={() => onExport("csv")}>Download as CSV</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onExport("json")}>Download as JSON</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onExport("csv")}>
+                {t("listToolbar.downloadCsv")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onExport("json")}>
+                {t("listToolbar.downloadJson")}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}

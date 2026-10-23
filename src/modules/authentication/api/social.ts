@@ -58,7 +58,7 @@ export function useUpsertSocialProvider() {
         body: { tenant_id: tenantId, ...input },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
-    meta: { successMessage: "Social provider saved", silentError: true }, // the sheet shows it
+    meta: { successMessage: "auth:toast.socialProviderSaved", silentError: true }, // the sheet shows it
   });
 }
 
@@ -80,7 +80,7 @@ export function useUpdateSocialProvider() {
         body: input,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
-    meta: { successMessage: "Social provider updated", silentError: true }, // the sheet shows it
+    meta: { successMessage: "auth:toast.socialProviderUpdated", silentError: true }, // the sheet shows it
   });
 }
 
@@ -95,6 +95,6 @@ export function useDeleteSocialProvider() {
     mutationFn: (provider: string) =>
       api<void>(`/v1/social/providers/${encodeURIComponent(provider)}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.socialProviders(tenantId) }),
-    meta: { successMessage: "Social provider removed", silentError: true }, // the sheet shows it
+    meta: { successMessage: "auth:toast.socialProviderRemoved", silentError: true }, // the sheet shows it
   });
 }

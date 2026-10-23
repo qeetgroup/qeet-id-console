@@ -10,6 +10,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { FingerprintPatternIcon, XIcon, ZapIcon } from "@qeetrix/icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { canAddPasskey, usePasskeys } from "@/modules/authentication";
 import { scopedStorage, useStorageScope } from "@/platform/auth/scoped-storage";
@@ -23,6 +24,7 @@ const dismissStorage = scopedStorage("qeetid-admin-passkey-prompt-dismissed");
  * the organization has passkeys switched off.
  */
 export function PasskeyPromptCard() {
+  const { t } = useTranslation("dashboard");
   // The scope is known only once the session hydrates, so the stored dismissal is read with it.
   const scope = useStorageScope();
   const [dismissedIn, setDismissedIn] = useState<string | null>(null);
@@ -48,26 +50,29 @@ export function PasskeyPromptCard() {
           </span>
           <div>
             <CardTitle className="text-sm font-semibold">
-              Protect this operator account with a passkey
+              {t("passkeyPromptCard.protectThisOperatorAccount")}
             </CardTitle>
-            <CardDescription>
-              Use Touch ID, Face ID, Windows Hello, or a security key for phishing-resistant access.
-            </CardDescription>
+            <CardDescription>{t("passkeyPromptCard.useTouchIdFace")}</CardDescription>
           </div>
         </div>
-        <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t("common:actions.dismiss")}
+          onClick={handleDismiss}
+        >
           <XIcon />
         </Button>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2 border-t border-info/15 pt-3">
         <Link to="/account/security" className={buttonVariants({ size: "sm" })}>
-          <ZapIcon /> Add a passkey
+          <ZapIcon /> {t("passkeyPromptCard.addPasskey")}
         </Link>
         <Button variant="ghost" size="sm" onClick={handleDismiss}>
-          Not now
+          {t("passkeyPromptCard.notNow")}
         </Button>
         <span className="ms-auto text-[11px] text-muted-foreground">
-          Recommended for privileged operators
+          {t("passkeyPromptCard.recommendedForPrivilegedOperators")}
         </span>
       </CardContent>
     </Card>

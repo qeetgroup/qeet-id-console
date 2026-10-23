@@ -152,7 +152,7 @@ describe("ABAC policies", () => {
       body: input,
     });
     expect(invalidated).toEqual([authzKeys.abacPolicies("tenant-a")]);
-    expect(meta).toEqual({ successMessage: "Policy created", silentError: true });
+    expect(meta).toEqual({ successMessage: "rbac:toast.policyCreated", silentError: true });
   });
 
   it("patches a policy and refreshes both the list and the detail", async () => {
@@ -162,7 +162,7 @@ describe("ABAC policies", () => {
       body: input,
     });
     expect(invalidated).toEqual([authzKeys.abacPolicies("tenant-a")]);
-    expect(meta).toEqual({ successMessage: "Policy updated", silentError: true });
+    expect(meta).toEqual({ successMessage: "rbac:toast.policyUpdated", silentError: true });
   });
 
   it("deletes a policy and refreshes the list", async () => {
@@ -171,7 +171,7 @@ describe("ABAC policies", () => {
       method: "DELETE",
     });
     expect(invalidated).toEqual([authzKeys.abacPolicies("tenant-a")]);
-    expect(meta).toEqual({ successMessage: "Policy deleted" });
+    expect(meta).toEqual({ successMessage: "rbac:toast.policyDeleted" });
   });
 
   it("evaluates silently with the explain trace and invalidates nothing", async () => {
@@ -263,7 +263,7 @@ describe("ReBAC relationship tuples", () => {
       body: tuple,
     });
     expect(invalidated).toEqual([authzKeys.relations("tenant-a")]);
-    expect(meta).toEqual({ successMessage: "Tuple written", silentError: true });
+    expect(meta).toEqual({ successMessage: "rbac:toast.tupleWritten", silentError: true });
   });
 
   it("deletes a tuple by id and refreshes tuple lists, the relation graph and subject lookups", async () => {
@@ -272,7 +272,7 @@ describe("ReBAC relationship tuples", () => {
       method: "DELETE",
     });
     expect(invalidated).toEqual([authzKeys.relations("tenant-a")]);
-    expect(meta).toEqual({ successMessage: "Relationship deleted" });
+    expect(meta).toEqual({ successMessage: "rbac:toast.relationshipDeleted" });
   });
 
   it("checks a relation silently without the explain flag", async () => {
@@ -345,7 +345,7 @@ describe("RBAC roles and permissions", () => {
     const { invalidated, meta } = await runMutation(() => useCreateRole(), body);
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/roles", { method: "POST", body });
     expect(invalidated).toEqual([authzKeys.roles("tenant-a")]);
-    expect(meta).toEqual({ successMessage: "Role created", silentError: true });
+    expect(meta).toEqual({ successMessage: "rbac:toast.roleCreated", silentError: true });
   });
 
   it("reads a role's permissions by role id, and waits until a role is chosen", async () => {
@@ -361,14 +361,14 @@ describe("RBAC roles and permissions", () => {
     const { invalidated, meta } = await runMutation(() => useGrantPermission("r1"), "perm-1");
     expect(api).toHaveBeenCalledWith("/v1/roles/r1/permissions/perm-1", { method: "POST" });
     expect(invalidated).toEqual([authzKeys.rolePermissions("tenant-a", "r1")]);
-    expect(meta).toEqual({ successMessage: "Permission granted" });
+    expect(meta).toEqual({ successMessage: "rbac:toast.permissionGranted" });
   });
 
   it("revokes a permission from a role and refreshes that role's permissions", async () => {
     const { invalidated, meta } = await runMutation(() => useRevokePermission("r1"), "perm-1");
     expect(api).toHaveBeenCalledWith("/v1/roles/r1/permissions/perm-1", { method: "DELETE" });
     expect(invalidated).toEqual([authzKeys.rolePermissions("tenant-a", "r1")]);
-    expect(meta).toEqual({ successMessage: "Permission revoked" });
+    expect(meta).toEqual({ successMessage: "rbac:toast.permissionRevoked" });
   });
 });
 
@@ -390,7 +390,7 @@ describe("RBAC group grants", () => {
       method: "POST",
     });
     expect(invalidated).toEqual([authzKeys.groupRoles("tenant-a", "g1")]);
-    expect(meta).toEqual({ successMessage: "Role granted to group" });
+    expect(meta).toEqual({ successMessage: "rbac:toast.roleGrantedToGroup" });
   });
 
   it("revokes a role from a group and refreshes only that group's roles", async () => {
@@ -399,7 +399,7 @@ describe("RBAC group grants", () => {
       method: "DELETE",
     });
     expect(invalidated).toEqual([authzKeys.groupRoles("tenant-a", "g1")]);
-    expect(meta).toEqual({ successMessage: "Role revoked from group" });
+    expect(meta).toEqual({ successMessage: "rbac:toast.roleRevokedFromGroup" });
   });
 });
 

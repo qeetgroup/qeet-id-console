@@ -156,7 +156,7 @@ function EditOrgForm({ org, onDone }: { org: Org; onDone: () => void }) {
             {(field) => (
               <field.SelectField
                 label={t("tenants.edit.region")}
-                options={REGIONS.map((r) => ({ value: r.value, label: r.label }))}
+                options={REGIONS.map((r) => ({ value: r.value, label: t(r.label) }))}
               />
             )}
           </form.AppField>

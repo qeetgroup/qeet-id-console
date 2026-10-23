@@ -22,6 +22,7 @@ import {
   XIcon,
 } from "@qeetrix/icons";
 import { type ComponentType, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { CHECKLIST_INTRO, CHECKLIST_ORDER } from "@/modules/onboarding";
@@ -32,6 +33,7 @@ import { brandingQueries } from "@/modules/branding";
 import { apiKeyQueries, webhookQueries } from "@/modules/developer";
 import { orgQueries } from "@/modules/organizations";
 import { userQueries } from "@/modules/users";
+import i18n from "@/i18n";
 
 // Dismissed per person and organization, so it never hides another's checklist.
 const dismissStorage = scopedStorage("qeetid-admin-onboarding-dismissed");
@@ -102,9 +104,9 @@ function useSteps(): Step[] {
           {
             id: "branding",
             icon: PaletteIcon,
-            title: "Set your brand",
-            description: "Upload a logo and pick your brand colours.",
-            ctaLabel: "Open branding",
+            title: i18n.t("dashboard:onboardingChecklist.setYourBrand"),
+            description: i18n.t("dashboard:onboardingChecklist.uploadALogoAnd"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.openBranding"),
             ctaHref: "/settings/branding",
             done: isDoneSafe(
               branding.data,
@@ -119,9 +121,9 @@ function useSteps(): Step[] {
           {
             id: "invite",
             icon: UsersIcon,
-            title: "Invite your team",
-            description: "Bring in admins, engineers, or support staff.",
-            ctaLabel: "Invite teammates",
+            title: i18n.t("dashboard:onboardingChecklist.inviteYourTeam"),
+            description: i18n.t("dashboard:onboardingChecklist.bringInAdminsEngineers"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.inviteTeammates"),
             ctaHref: "/invitations",
             done: isDoneSafe(users.data, users.error, (d) => (d.items?.length ?? 0) > 1),
           },
@@ -132,9 +134,9 @@ function useSteps(): Step[] {
           {
             id: "oauth-app",
             icon: ShieldCheckIcon,
-            title: "Register an application",
-            description: "Hook up your first OAuth/OIDC client to start signing users in.",
-            ctaLabel: "Add application",
+            title: i18n.t("dashboard:onboardingChecklist.registerAnApplication"),
+            description: i18n.t("dashboard:onboardingChecklist.hookUpYourFirst"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.addApplication"),
             ctaHref: "/auth/connections/oidc",
             done: isDoneSafe(oidc.data, oidc.error, (d) => (d.items?.length ?? 0) > 0),
           },
@@ -145,9 +147,9 @@ function useSteps(): Step[] {
           {
             id: "api-key",
             icon: KeyRoundIcon,
-            title: "Create an API key",
-            description: "Service-to-service auth for your backend integrations.",
-            ctaLabel: "Create key",
+            title: i18n.t("dashboard:onboardingChecklist.createAnApiKey"),
+            description: i18n.t("dashboard:onboardingChecklist.serviceToServiceAuth"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.createKey"),
             ctaHref: "/auth/api/keys",
             done: isDoneSafe(apiKeys.data, apiKeys.error, (d) => (d.items?.length ?? 0) > 0),
           },
@@ -158,9 +160,9 @@ function useSteps(): Step[] {
           {
             id: "webhook",
             icon: WebhookIcon,
-            title: "Subscribe to an event webhook",
-            description: "Listen for sign-ins, role changes, audit events.",
-            ctaLabel: "Add webhook",
+            title: i18n.t("dashboard:onboardingChecklist.subscribeToAnEventWebhook"),
+            description: i18n.t("dashboard:onboardingChecklist.listenForSignIns"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.addWebhook"),
             ctaHref: "/developer/webhooks",
             done: isDoneSafe(webhooks.data, webhooks.error, (d) => (d.items?.length ?? 0) > 0),
           },
@@ -187,6 +189,7 @@ function tailor(steps: Step[], useCase?: string): Step[] {
  * are done; a dismissal is kept for this person and organization.
  */
 export function OnboardingChecklist() {
+  const { t } = useTranslation("dashboard");
   // The scope is known only once the session hydrates, so the stored dismissal is read with it.
   const scope = useStorageScope();
   const [dismissedIn, setDismissedIn] = useState<string | null>(null);
@@ -195,7 +198,8 @@ export function OnboardingChecklist() {
   const tenantQ = useQuery({ ...orgQueries.record(tenantId), staleTime: 60_000 });
   const onboarding = tenantQ.data?.metadata?.onboarding as { use_case?: string } | undefined;
   const useCase = onboarding?.use_case;
-  const intro = useCase ? CHECKLIST_INTRO[useCase] : undefined;
+  const introKey = useCase ? CHECKLIST_INTRO[useCase] : undefined;
+  const intro = introKey ? t(introKey) : undefined;
   const steps = tailor(useSteps(), useCase);
 
   if (dismissed) return null;
@@ -205,6 +209,9 @@ export function OnboardingChecklist() {
   const doneCount = steps.filter((s) => s.done === true).length;
   const allDone = doneCount === total;
   const stillLoading = steps.some((s) => s.done === "loading");
+  const progress = stillLoading
+    ? t("onboardingChecklist.checking")
+    : t("onboardingChecklist.progress", { done: doneCount, count: total });
 
   function handleDismiss() {
     setDismissedIn(scope);
@@ -220,11 +227,18 @@ export function OnboardingChecklist() {
               <PartyPopperIcon className="size-4" />
             </span>
             <div>
-              <CardTitle className="text-base">Organization fully set up</CardTitle>
-              <CardDescription>Every control-plane setup task is complete.</CardDescription>
+              <CardTitle className="text-base">
+                {t("onboardingChecklist.organizationFullySetUp")}
+              </CardTitle>
+              <CardDescription>{t("onboardingChecklist.everyControlPlaneSetup")}</CardDescription>
             </div>
           </div>
-          <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("common:actions.dismiss")}
+            onClick={handleDismiss}
+          >
             <XIcon />
           </Button>
         </CardHeader>
@@ -236,20 +250,15 @@ export function OnboardingChecklist() {
     <Card className="border-border/80 bg-card/80 shadow-none hover:shadow-none">
       <CardHeader className="flex flex-row items-start justify-between">
         <div>
-          <CardTitle className="text-sm font-semibold">Organization readiness</CardTitle>
-          <CardDescription>
-            {intro ??
-              (stillLoading ? "Checking your setup…" : `${doneCount} of ${total} steps complete.`)}
-          </CardDescription>
-          {intro && (
-            <CardDescription className="text-xs">
-              {stillLoading ? "Checking your setup…" : `${doneCount} of ${total} steps complete.`}
-            </CardDescription>
-          )}
+          <CardTitle className="text-sm font-semibold">
+            {t("onboardingChecklist.organizationReadiness")}
+          </CardTitle>
+          <CardDescription>{intro ?? progress}</CardDescription>
+          {intro && <CardDescription className="text-xs">{progress}</CardDescription>}
           <div
             className="mt-3 h-1.5 w-48 max-w-full overflow-hidden rounded-full bg-muted"
             role="progressbar"
-            aria-label="Organization setup progress"
+            aria-label={t("onboardingChecklist.organizationSetupProgress")}
             aria-valuemin={0}
             aria-valuemax={total}
             aria-valuenow={doneCount}
@@ -261,7 +270,12 @@ export function OnboardingChecklist() {
             />
           </div>
         </div>
-        <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t("common:actions.dismiss")}
+          onClick={handleDismiss}
+        >
           <XIcon />
         </Button>
       </CardHeader>

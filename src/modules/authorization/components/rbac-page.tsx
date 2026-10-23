@@ -10,6 +10,7 @@ import {
 import { DataState } from "@/platform/components/data-state";
 import { ShieldCheckIcon } from "@qeetrix/icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { RoleHierarchyGraph } from "./graph/role-hierarchy-graph";
@@ -17,6 +18,7 @@ import { useRolePermissions, useRoles } from "../api/rbac";
 
 /** Renders the role hierarchy and each role's permissions. */
 export function RbacPage() {
+  const { t } = useTranslation("rbac");
   const rolesQ = useRoles();
   const roles = rolesQ.data?.items ?? [];
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export function RbacPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader description="Visualise how roles grant permissions. Click a role to expand its permission grants; drag to rearrange." />
+      <PageHeader description={t("rbacPage.visualiseHowRolesGrant")} />
 
       <DataState
         isLoading={rolesQ.isLoading}
@@ -34,23 +36,23 @@ export function RbacPage() {
         error={rolesQ.error}
         isEmpty={roles.length === 0}
         emptyIcon={ShieldCheckIcon}
-        emptyTitle="No roles to visualise yet"
+        emptyTitle={t("rbacPage.noRolesToVisualiseYet")}
         skeletonRows={4}
       >
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <Card className="min-w-0">
             <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
               <div>
-                <CardTitle className="text-base">Role → permission graph</CardTitle>
+                <CardTitle className="text-base">{t("rbacPage.rolePermissionGraph")}</CardTitle>
                 <CardDescription>
                   {selectedRole
-                    ? `Showing grants for “${selectedRole.name}”`
-                    : "Select a role to expand its grants"}
+                    ? t("rbacPage.showingGrantsFor", { name: selectedRole.name })
+                    : t("rbacPage.selectARole")}
                 </CardDescription>
               </div>
               {selectedRole && (
                 <Button variant="outline" size="sm" onClick={() => setSelectedRoleId(null)}>
-                  Clear selection
+                  {t("rbacPage.clearSelection")}
                 </Button>
               )}
             </CardHeader>
@@ -68,17 +70,19 @@ export function RbacPage() {
           <Card className="min-w-0">
             <CardHeader>
               <CardTitle className="text-base">
-                {selectedRole ? selectedRole.name : "Role details"}
+                {selectedRole ? selectedRole.name : t("rbacPage.roleDetails")}
               </CardTitle>
               <CardDescription>
                 {selectedRole
-                  ? selectedRole.description || "No description"
-                  : "Click a role node to inspect the permissions it grants."}
+                  ? selectedRole.description || t("permissions.noDescription")
+                  : t("rbacPage.clickARoleNode")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {!selectedRole ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">Nothing selected</p>
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  {t("rbacPage.nothingSelected")}
+                </p>
               ) : (
                 <DataState
                   isLoading={permsQ.isLoading}
@@ -86,19 +90,19 @@ export function RbacPage() {
                   error={permsQ.error}
                   isEmpty={permissions.length === 0}
                   emptyIcon={ShieldCheckIcon}
-                  emptyTitle="This role grants no permissions"
+                  emptyTitle={t("rbacPage.thisRoleGrantsNoPermissions")}
                   skeletonRows={4}
                 >
                   <div className="flex flex-col gap-2">
                     <p className="text-xs text-muted-foreground">
-                      {permissions.length} permission{permissions.length === 1 ? "" : "s"} granted
+                      {t("rbacPage.grantedCount", { count: permissions.length })}
                     </p>
                     {permissions.map((p) => (
                       <div key={p.id} className="rounded-md border p-2">
                         <code className="text-xs font-medium">{p.key}</code>
                         {p.key.includes("*") && (
                           <Badge variant="warning" className="ml-2 text-[10px]">
-                            wildcard
+                            {t("permissionsPage.wildcard")}
                           </Badge>
                         )}
                         <p className="truncate text-xs text-muted-foreground">{p.description}</p>

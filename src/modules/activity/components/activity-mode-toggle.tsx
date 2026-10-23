@@ -1,12 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { Button, cn } from "@qeetrix/ui";
 import { ArrowUpIcon } from "@qeetrix/icons";
 
 import type { ActivityMode } from "../types/activity.types";
 
-const MODES: { value: ActivityMode; label: string }[] = [
-  { value: "live", label: "Live" },
-  { value: "history", label: "History" },
-];
+const MODES: ActivityMode[] = ["live", "history"]; // labelled `activityModeToggle.mode.<mode>`
 
 /**
  * Renders the Live / History toggle and, in live mode, a "N new" jump button. History freezes
@@ -25,20 +23,21 @@ export function ActivityModeToggle({
   onJumpToNew?: () => void;
   className?: string;
 }) {
+  const { t } = useTranslation("activity");
   // Hand-rolled: @qeetrix/ui's SegmentedControl doesn't move its highlight when a controlled
   // `value` changes.
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <div className="inline-flex h-8 items-center rounded-lg bg-muted p-1 text-xs">
-        <span className="sr-only">Feed mode</span>
+        <span className="sr-only">{t("activityModeToggle.feedMode")}</span>
         {MODES.map((m) => {
-          const active = mode === m.value;
+          const active = mode === m;
           return (
             <button
-              key={m.value}
+              key={m}
               type="button"
               aria-pressed={active}
-              onClick={() => onModeChange(m.value)}
+              onClick={() => onModeChange(m)}
               className={cn(
                 "rounded-md px-3 py-1 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active
@@ -46,7 +45,7 @@ export function ActivityModeToggle({
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {m.label}
+              {t(`activityModeToggle.mode.${m}`)}
             </button>
           );
         })}
@@ -58,10 +57,10 @@ export function ActivityModeToggle({
           size="sm"
           onClick={onJumpToNew}
           className="fade-in-0 animate-in"
-          aria-label={`Jump to ${newCount} new events`}
+          aria-label={t("activityModeToggle.jumpToNew", { count: newCount })}
         >
           <ArrowUpIcon className="size-3.5" aria-hidden="true" />
-          {newCount > 99 ? "99+" : newCount} new
+          {t("activityModeToggle.new", { count: newCount > 99 ? "99+" : newCount })}
         </Button>
       )}
     </div>

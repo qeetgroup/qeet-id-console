@@ -1,5 +1,6 @@
 import { Tooltip, TooltipContent, TooltipTrigger, useCopyToClipboard } from "@qeetrix/ui";
 import { CheckIcon, CopyIcon } from "@qeetrix/icons";
+import { useTranslation } from "react-i18next";
 
 import { truncateId } from "../user-display";
 
@@ -7,13 +8,15 @@ import { truncateId } from "../user-display";
 export function CopyId({
   value,
   truncate = true,
-  label = "Copy",
+  label,
 }: {
   value: string;
   truncate?: boolean;
   label?: string;
 }) {
+  const { t } = useTranslation("common");
   const { copied, copy } = useCopyToClipboard();
+  const copyLabel = label ?? t("actions.copy");
   const shown = truncate ? truncateId(value) : value;
   return (
     <span className="inline-flex items-center gap-1.5 font-mono text-xs">
@@ -24,7 +27,7 @@ export function CopyId({
             <button
               type="button"
               onClick={() => copy(value)}
-              aria-label={label}
+              aria-label={copyLabel}
               className="inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {copied ? (
@@ -35,7 +38,7 @@ export function CopyId({
             </button>
           }
         />
-        <TooltipContent>{copied ? "Copied" : label}</TooltipContent>
+        <TooltipContent>{copied ? t("states.copied") : copyLabel}</TooltipContent>
       </Tooltip>
     </span>
   );

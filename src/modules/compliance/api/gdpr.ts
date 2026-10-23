@@ -40,7 +40,7 @@ export function useCreateGdprPurge() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: complianceKeys.gdprPurges(tenantId) }),
-    meta: { successMessage: "Erasure request submitted", silentError: true }, // the sheet shows it
+    meta: { successMessage: "compliance:toast.erasureRequestSubmitted", silentError: true }, // the sheet shows it
   });
 }
 
@@ -50,6 +50,6 @@ export function useCancelGdprPurge() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/gdpr/purge/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: complianceKeys.gdprPurges(tenantId) }),
-    meta: { successMessage: "Erasure request cancelled" },
+    meta: { successMessage: "compliance:toast.erasureRequestCancelled" },
   });
 }

@@ -63,6 +63,9 @@ export const ERROR_CODES = {
   USER_IMPORT_BATCH_TOO_LARGE: "user.import_batch_too_large",
   USER_IMPORT_FILE_TOO_LARGE: "user.import_file_too_large",
   USER_IMPORT_SOURCE_INVALID: "user.import_source_invalid",
+  WEBHOOK_URL_REQUIRED: "webhook.url_required", // 422
+  WEBHOOK_EVENTS_REQUIRED: "webhook.events_required", // 422
+  WEBHOOK_EVENT_UNKNOWN: "webhook.event_unknown", // 422: not in the server's catalogue
   TOO_MANY_REQUESTS: "too_many_requests", // throttling
   HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
   NETWORK: "network_error", // client-synthesised

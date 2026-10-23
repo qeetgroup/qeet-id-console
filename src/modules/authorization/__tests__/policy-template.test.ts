@@ -1,5 +1,6 @@
 import { assert, describe, expect, it } from "vitest";
 
+import i18n from "@/i18n";
 import { type CondNode, countLeaves } from "../api/abac";
 import { abacSaveBlocker, isReducibleToAbac, toAbacInput } from "../utils/policy-codegen";
 import { findTemplate, POLICY_TEMPLATES, TEMPLATE_CATEGORIES } from "../utils/policy-template";
@@ -19,18 +20,21 @@ function nodeIds(node: CondNode | null): string[] {
 
 describe("policy template catalogue", () => {
   it("offers the four categories, each with at least one template", () => {
-    expect(TEMPLATE_CATEGORIES).toEqual(["SaaS", "Cloud", "Regulated", "Baseline"]);
+    expect(TEMPLATE_CATEGORIES).toEqual(["saas", "cloud", "regulated", "baseline"]);
     for (const category of TEMPLATE_CATEGORIES) {
       expect(POLICY_TEMPLATES.some((t) => t.category === category)).toBe(true);
     }
   });
 
-  it("has unique ids, and every template carries display metadata", () => {
+  it("has unique ids, and every template carries translated display metadata", () => {
     const ids = POLICY_TEMPLATES.map((t) => t.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toHaveLength(12);
+    const known = (key: string) => i18n.exists(key, { lng: "en" });
     for (const t of POLICY_TEMPLATES) {
-      expect(t.name && t.vendor && t.description).toBeTruthy();
+      expect(known(t.name) && known(t.description)).toBe(true);
+      expect(known(`rbac:policyTemplatesPage.categories.${t.category}`)).toBe(true);
+      expect("vendor" in t.source ? t.source.vendor : known(t.source.sector)).toBeTruthy();
       expect(t.tags.length).toBeGreaterThan(0);
     }
   });
@@ -101,7 +105,10 @@ describe("policy template catalogue", () => {
 
 describe("findTemplate", () => {
   it("looks a template up by id", () => {
-    expect(findTemplate("baseline-mfa")?.vendor).toBe("Baseline");
+    expect(findTemplate("baseline-mfa")?.source).toEqual({
+      sector: "rbac:policyTemplates.sectors.baseline",
+    });
+    expect(findTemplate("github-repo-admin")?.source).toEqual({ vendor: "GitHub" });
     expect(findTemplate("does-not-exist")).toBeUndefined();
   });
 });

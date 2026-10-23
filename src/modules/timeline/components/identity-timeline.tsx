@@ -10,6 +10,7 @@ import {
 } from "@qeetrix/ui";
 import { ActivityIcon, RefreshCwIcon } from "@qeetrix/icons";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ActivityEvent, DateGroup } from "@/modules/activity";
 import { TimelineItem } from "./timeline-item";
@@ -28,8 +29,13 @@ function GroupHeader({ label }: { label: string }) {
 const SKELETON_IDS = ["a", "b", "c", "d"] as const;
 
 function TimelineSkeletons() {
+  const { t } = useTranslation("timeline");
   return (
-    <div role="status" aria-label="Loading timeline events" className="flex flex-col gap-3 pl-5">
+    <div
+      role="status"
+      aria-label={t("identityTimeline.loadingTimelineEvents")}
+      className="flex flex-col gap-3 pl-5"
+    >
       {SKELETON_IDS.map((id) => (
         <div key={id} className="flex gap-3">
           <Skeleton className="size-7 shrink-0 rounded-md" />
@@ -72,6 +78,7 @@ export function IdentityTimeline({
   isError = false,
   onRetry,
 }: IdentityTimelineProps) {
+  const { t } = useTranslation("timeline");
   const reducedMotion = usePrefersReducedMotion();
   const sentinelRef = useRef<HTMLLIElement>(null);
 
@@ -104,13 +111,13 @@ export function IdentityTimeline({
       <div className="flex min-h-72 items-center justify-center">
         <EmptyState
           icon={RefreshCwIcon}
-          title="Couldn't load timeline"
-          description="There was a problem fetching this user's event history."
+          title={t("identityTimeline.couldnTLoadTimeline")}
+          description={t("identityTimeline.thereWasAProblem")}
           action={
             onRetry && (
               <Button variant="outline" size="sm" onClick={onRetry}>
                 <RefreshCwIcon className="size-3.5" aria-hidden="true" />
-                Retry
+                {t("identityTimeline.retry")}
               </Button>
             )
           }
@@ -124,8 +131,8 @@ export function IdentityTimeline({
       <div className="flex min-h-72 items-center justify-center">
         <EmptyState
           icon={ActivityIcon}
-          title="No events found"
-          description="No activity events match your current filters for this user."
+          title={t("identityTimeline.noEventsFound")}
+          description={t("identityTimeline.noActivityEventsMatch")}
         />
       </div>
     );
@@ -138,11 +145,18 @@ export function IdentityTimeline({
   return (
     <ScrollArea className="flex-1">
       {/* Historical data: an ordered list, deliberately not a live region */}
-      <ol aria-label="Identity timeline events" className="flex flex-col gap-0 px-1 pb-6">
+      <ol
+        aria-label={t("identityTimeline.identityTimelineEvents")}
+        className="flex flex-col gap-0 px-1 pb-6"
+      >
         {groups.map((group) => (
-          <li key={group.label}>
-            <section aria-label={`${group.label} events`}>
-              <GroupHeader label={group.label} />
+          <li key={group.key}>
+            <section
+              aria-label={t("activity:dateGroup.events", {
+                label: t(`activity:dateGroup.${group.key}`),
+              })}
+            >
+              <GroupHeader label={t(`activity:dateGroup.${group.key}`)} />
 
               {/* @qeetrix/ui Timeline provides the vertical connector rail */}
               <Timeline>
@@ -193,7 +207,7 @@ export function IdentityTimeline({
               aria-live="polite"
               aria-atomic="true"
             >
-              All events loaded · {totalEvents} total
+              {t("identityTimeline.allLoaded", { count: totalEvents })}
             </p>
           </li>
         )}

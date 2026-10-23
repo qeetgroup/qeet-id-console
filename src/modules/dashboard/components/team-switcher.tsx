@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   cn,
   DropdownMenu,
@@ -27,6 +28,7 @@ function initialOf(name: string) {
 }
 
 export function TeamSwitcher() {
+  const { t } = useTranslation("dashboard");
   const { isMobile } = useSidebar();
   const activeId = useTenantId();
 
@@ -71,9 +73,9 @@ export function TeamSwitcher() {
                 </>
               ) : (
                 <>
-                  <span className="truncate font-medium">No organization</span>
+                  <span className="truncate font-medium">{t("teamSwitcher.noOrganization")}</span>
                   <span className="truncate text-[10px] text-sidebar-foreground/55">
-                    Create a tenant boundary
+                    {t("teamSwitcher.createATenantBoundary")}
                   </span>
                 </>
               )}
@@ -88,35 +90,37 @@ export function TeamSwitcher() {
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Organizations
+                {t("teamSwitcher.organizations")}
               </DropdownMenuLabel>
               {tenants.length === 0 && !tenantsQ.isLoading ? (
                 <DropdownMenuItem disabled className="gap-2 p-2">
-                  <span className="text-sm text-muted-foreground">No organizations yet</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t("teamSwitcher.noOrganizationsYet")}
+                  </span>
                 </DropdownMenuItem>
               ) : (
-                tenants.slice(0, 9).map((t) => {
-                  const isActive = t.id === activeId;
+                tenants.slice(0, 9).map((tenant) => {
+                  const isActive = tenant.id === activeId;
                   return (
                     <DropdownMenuItem
-                      key={t.id}
+                      key={tenant.id}
                       onClick={() => {
-                        if (!isActive) void switchToTenant(t.id);
+                        if (!isActive) void switchToTenant(tenant.id);
                       }}
                       className={cn("gap-2 p-2", isActive && "bg-accent/40")}
                       aria-current={isActive ? "true" : undefined}
                     >
                       <div className="flex size-6 items-center justify-center overflow-hidden rounded-md border text-xs font-semibold">
-                        {t.logo_url ? (
-                          <img src={t.logo_url} alt="" className="size-full object-cover" />
+                        {tenant.logo_url ? (
+                          <img src={tenant.logo_url} alt="" className="size-full object-cover" />
                         ) : (
-                          initialOf(t.name)
+                          initialOf(tenant.name)
                         )}
                       </div>
-                      <span className="truncate">{t.name}</span>
+                      <span className="truncate">{tenant.name}</span>
                       {isActive && (
                         <CheckIcon
-                          aria-label="Current organization"
+                          aria-label={t("teamSwitcher.currentOrganization")}
                           className="ms-auto size-4 text-emerald-600 dark:text-emerald-400"
                         />
                       )}
@@ -131,7 +135,9 @@ export function TeamSwitcher() {
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <PlusIcon className="size-4" />
                 </div>
-                <div className="font-medium text-muted-foreground">Add organization</div>
+                <div className="font-medium text-muted-foreground">
+                  {t("teamSwitcher.addOrganization")}
+                </div>
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

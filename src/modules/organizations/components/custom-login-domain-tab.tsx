@@ -67,7 +67,7 @@ export function CustomLoginDomainTab() {
       if (!tenantId || !brandingQ.data) return;
       // The PUT replaces all branding: merge onto it so the colours and logo survive.
       await saveBranding(tenantId, { ...brandingQ.data, custom_domain: host.trim() || null });
-      toast.success("Login domain saved");
+      toast.success(t("customLoginDomainTab.loginDomainSaved"));
       await qc.invalidateQueries({ queryKey: brandingKeys.tenant(tenantId) });
       await qc.invalidateQueries({ queryKey: orgKeys.org(tenantId) });
     } catch (err) {

@@ -150,9 +150,15 @@ One way to do each thing. `src/modules/users` is the reference implementation.
   value in component state only, and give the mutation that returns it `gcTime: 0`.
 - **Server wording** — render a fixed set of server values (a verify reason, a check result) by
   mapping each to a key; never print the server's own sentence.
-- **Copy and locales** — screen copy goes through `t()`. Only `OFFERED_LANGUAGES`
-  (`src/i18n/index.ts`) can be chosen: a locale is offered once it translates every `en` key, so
-  the console never mixes languages (`src/i18n/README.md`).
+- **Copy and locales** — every user-facing string is a catalogue key: `t()` in a component,
+  `i18n.t("<ns>:key")` elsewhere, and a key, not English, in a label table or a mutation's
+  `meta.successMessage` (the query client translates it). Brand, protocol and format names, sample
+  values, anything sent to the backend or the AI model, and export-file columns stay as they are.
+  `src/i18n/__tests__/catalogue-keys.test.ts` fails on a key missing from `en`. Only
+  `OFFERED_LANGUAGES` (`src/i18n/index.ts`) can be chosen: a locale is offered once it translates
+  every `en` key, so the console never mixes languages (`src/i18n/README.md`).
+- **File size** — a source file stays within 500 lines (`src/__tests__/source-files.test.ts`).
+  Split by cohesion into siblings named `<file>-<part>`, with pure logic in a `.ts` file.
 - **API contract** — no generated client. Each module types the endpoints it calls by hand from
   the server's Go structs and OpenAPI, and parses with a Zod `schema` where a wrong shape would
   mislead (a one-time secret, a status). A server contract change is a cross-repository change

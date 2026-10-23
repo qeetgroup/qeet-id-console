@@ -1,6 +1,7 @@
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useStorageScope } from "@/platform/auth/scoped-storage";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -43,6 +44,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const access = useCapabilities();
+  const { t } = useTranslation();
 
   // Recents and favorites are scoped per person and tenant, so re-read them on the client
   // (never during render) whenever that scope changes.
@@ -56,15 +58,17 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const recentEntries = useStore(recentStore, (s) => s.entries);
   const favoriteEntries = useStore(favoritesStore, (s) => s.entries);
 
+  // A language change gives a new `t`, so the items are rebuilt in it.
   const searchCtx = useMemo<SearchContext>(
     () => ({
       pathname,
       tenantId: access.tenantId,
       capabilities: access.permissions,
       navigate: (url: string) => navigate({ to: url }),
+      t,
     }),
     // useNavigate returns a stable callback, so listing it never recomputes the context.
-    [pathname, access.tenantId, access.permissions, navigate],
+    [pathname, access.tenantId, access.permissions, navigate, t],
   );
 
   // Until capabilities load there is nothing to filter against, so no items are offered.

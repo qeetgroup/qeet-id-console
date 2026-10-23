@@ -6,6 +6,7 @@ import { useState } from "react";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import type { AbacDecision } from "./abac";
+import type { DecidedBy, ReasonFields } from "./decision";
 
 export type Engine = "authzen" | "abac" | "rbac" | "rebac";
 
@@ -16,10 +17,12 @@ export interface RbacExplainPath {
   group_id?: string;
   role_id: string;
 }
-export interface RbacExplain {
+/** GET /v1/check?explain=true response; the reason fields are set on a denial. */
+export interface RbacExplain extends ReasonFields {
   allowed: boolean;
   paths: RbacExplainPath[];
-  reason: string;
+  decided_by?: DecidedBy;
+  trace?: string[];
 }
 
 export interface RebacPathStep {
@@ -31,11 +34,13 @@ export interface RebacPathStep {
 export interface RebacExplain {
   allowed: boolean;
   path?: RebacPathStep[];
+  decided_by?: DecidedBy;
+  trace?: string[];
 }
 
 export interface AuthzenResult {
   decision: boolean;
-  context?: Record<string, unknown>;
+  context?: Record<string, unknown> & { decided_by?: DecidedBy };
 }
 
 /** One engine's decision in a common shape, with its explain payload and measured latency. */

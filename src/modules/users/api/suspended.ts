@@ -94,7 +94,7 @@ export function useReactivateUsers() {
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: userKeys.tenant(tenantId) });
     },
-    meta: { successMessage: "Users reactivated", silentError: true }, // the page shows the error
+    meta: { successMessage: "users:toast.usersReactivated", silentError: true }, // the page shows the error
   });
 }
 
@@ -105,7 +105,7 @@ export function useReviewSuspension() {
     mutationFn: ({ id, review }: { id: string; review: SuspensionReview }) =>
       api(`/v1/users/${id}/suspension`, { method: "PUT", body: review }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.suspended(tenantId) }),
-    meta: { successMessage: "Review saved", silentError: true }, // the page shows the error
+    meta: { successMessage: "users:toast.reviewSaved", silentError: true }, // the page shows the error
   });
 }
 

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
-import { filterNavigation, navGroups } from "@/platform/config/navigation";
+import { filterNavigation, useNavGroups } from "@/platform/config/navigation";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { isCurrentCredential, summarizeDeveloperRecords } from "../overview-model";
 import { developerKeys } from "./keys";
@@ -98,6 +98,7 @@ function resourceSummary(id: DeveloperResourceId, response: z.infer<typeof recor
 export function useDeveloperOverview() {
   const tenantId = useTenantId();
   const access = useCapabilities();
+  const navGroups = useNavGroups();
   const ready = !!tenantId && access.state === "ready";
   const requests = useQueries({
     queries: SOURCES.map((source) => ({
@@ -159,7 +160,7 @@ export function useDeveloperOverview() {
   });
 
   const developerGroup = filterNavigation(navGroups, access.can).find(
-    (group) => group.label === "Developer",
+    (group) => group.id === "developer",
   );
 
   return {

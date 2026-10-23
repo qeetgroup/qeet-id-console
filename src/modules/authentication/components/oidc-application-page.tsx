@@ -130,7 +130,9 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
             <CardDescription className="font-mono">{client.client_id}</CardDescription>
           </div>
           <StatusPill kind={client.type === "confidential" ? "info" : "muted"}>
-            {client.type}
+            {client.type === "confidential"
+              ? t("filters.typeConfidential")
+              : t("filters.typePublic")}
           </StatusPill>
         </CardHeader>
         <CardContent>

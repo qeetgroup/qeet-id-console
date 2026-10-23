@@ -88,8 +88,7 @@ function renderStatus({
     );
   }
 
-  const detail =
-    consume.error instanceof ApiError ? errorMessage(consume.error) : "Single sign-on failed.";
+  const detail = consume.error instanceof ApiError ? errorMessage(consume.error) : t("sso.failed");
   return (
     <>
       <ShieldXIcon className="size-10 text-rose-500" />

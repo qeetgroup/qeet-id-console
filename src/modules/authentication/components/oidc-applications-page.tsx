@@ -351,7 +351,9 @@ export function OidcApplicationsPage() {
                     <TableCell>
                       <div className="flex flex-wrap items-center gap-1">
                         <Badge variant={c.type === "confidential" ? "default" : "muted"}>
-                          {c.type}
+                          {c.type === "confidential"
+                            ? t("filters.typeConfidential")
+                            : t("filters.typePublic")}
                         </Badge>
                         <ProofKeyBadge client={c} />
                       </div>

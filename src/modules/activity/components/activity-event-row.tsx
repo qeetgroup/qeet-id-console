@@ -10,6 +10,8 @@ import {
   TriangleAlertIcon,
 } from "@qeetrix/icons";
 import type { ComponentType, ReactNode } from "react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 
 import type { ActivitySearch } from "../activity-search";
 import { formatIp } from "@/shared/utils/ip-format";
@@ -56,18 +58,21 @@ function shortId(id: string): string {
 
 // A server glyph for system actors, info tone for services and agents, brand tone for any
 // other identified actor, muted when unknown.
-function actorVisual(event: ActivityEvent): {
+function actorVisual(
+  event: ActivityEvent,
+  t: TFunction,
+): {
   cls: string;
   content: ReactNode;
   name: string;
 } {
   const type = (event.actor?.type ?? "").toLowerCase();
-  const name = event.actor?.name ?? event.actor?.id ?? (type ? type : "Unknown");
+  const name = event.actor?.name ?? event.actor?.id ?? (type ? type : t("actor.unknown"));
   if (type.includes("system")) {
     return {
       cls: "bg-muted text-muted-foreground",
       content: <ServerIcon className="size-3.5" />,
-      name: event.actor?.name ?? "System",
+      name: event.actor?.name ?? t("actor.system"),
     };
   }
   const tone =
@@ -82,6 +87,7 @@ function actorVisual(event: ActivityEvent): {
 
 /** Renders the column headers on the row grid; decorative, and shown from `lg` up. */
 export function ActivityRowHeader() {
+  const { t } = useTranslation("activity");
   return (
     <div
       aria-hidden="true"
@@ -90,13 +96,13 @@ export function ActivityRowHeader() {
         ROW_COLS,
       )}
     >
-      <span>Time</span>
-      <span>Actor</span>
-      <span>Action</span>
-      <span>Resource</span>
-      <span>Outcome</span>
-      <span>IP address</span>
-      <span className="sr-only">Actions</span>
+      <span>{t("activityEventRow.time")}</span>
+      <span>{t("activityEventRow.actor")}</span>
+      <span>{t("activityEventRow.action")}</span>
+      <span>{t("activityEventRow.resource")}</span>
+      <span>{t("activityEventRow.outcome")}</span>
+      <span>{t("activityEventRow.ipAddress")}</span>
+      <span className="sr-only">{t("common:labels.actions")}</span>
     </div>
   );
 }
@@ -121,9 +127,10 @@ export function ActivityEventRow({
   onSelect,
   onFilter,
 }: ActivityEventRowProps) {
+  const { t } = useTranslation("activity");
   const SevIcon = SEVERITY_ICON[event.severity];
   const isCritical = event.severity === "critical" || event.severity === "error";
-  const actor = actorVisual(event);
+  const actor = actorVisual(event, t);
   const resourceType = event.target?.label ?? event.target?.type;
   const resourceId = event.target?.id;
   const subtitle = event.description ?? event.title;
@@ -163,7 +170,11 @@ export function ActivityEventRow({
               <span className="truncate font-mono text-[11px] text-muted-foreground">
                 {shortId(event.actor.id)}
               </span>
-              <CopyIconButton text={event.actor.id} label="Copy actor ID" revealOnHover />
+              <CopyIconButton
+                text={event.actor.id}
+                label={t("activityEventRow.copyActorId")}
+                revealOnHover
+              />
             </div>
           )}
         </div>
@@ -180,13 +191,13 @@ export function ActivityEventRow({
             type="button"
             onClick={onSelect}
             className="block max-w-full truncate text-left text-sm font-medium after:absolute after:inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-            aria-label={`Open details for ${event.title}`}
+            aria-label={t("activityEventRow.openDetails", { title: event.title })}
           >
             {event.type}
           </button>
           {isNew && (
             <Badge variant="success" className="shrink-0 text-[9px]">
-              New
+              {t("activityEventRow.new")}
             </Badge>
           )}
         </div>
@@ -211,7 +222,11 @@ export function ActivityEventRow({
                 <span className="truncate font-mono text-[11px] text-muted-foreground">
                   {shortId(resourceId)}
                 </span>
-                <CopyIconButton text={resourceId} label="Copy resource ID" revealOnHover />
+                <CopyIconButton
+                  text={resourceId}
+                  label={t("activityEventRow.copyResourceId")}
+                  revealOnHover
+                />
               </div>
             )}
           </>

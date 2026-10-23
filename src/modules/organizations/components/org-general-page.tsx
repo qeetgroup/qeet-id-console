@@ -239,7 +239,7 @@ function GeneralSettingsForm({ org }: { org: Org }) {
                             </>
                           }
                           description={t("workspace.general.profile.regionHelp")}
-                          options={REGIONS.map((r) => ({ value: r.value, label: r.label }))}
+                          options={REGIONS.map((r) => ({ value: r.value, label: t(r.label) }))}
                         />
                       )}
                     </form.AppField>

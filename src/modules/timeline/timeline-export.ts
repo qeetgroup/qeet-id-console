@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 
+import i18n from "@/i18n";
 import type { ActivityEvent } from "@/modules/activity";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 
@@ -34,7 +35,7 @@ export function exportTimelineEvents(
   userId: string,
 ) {
   if (events.length === 0) {
-    toast.error("No events to export in the current view.");
+    toast.error(i18n.t("timeline:timelineExport.empty"));
     return;
   }
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -46,8 +47,7 @@ export function exportTimelineEvents(
     downloadBlob(JSON.stringify(events, null, 2), "application/json", name);
   }
 
-  const noun = events.length === 1 ? "event" : "events";
-  toast.success(`Exported ${events.length.toLocaleString()} ${noun}`, {
-    description: "Loaded events only — scroll to load more before exporting a longer range.",
+  toast.success(i18n.t("timeline:timelineExport.exported", { count: events.length }), {
+    description: i18n.t("timeline:timelineExport.loadedOnly"),
   });
 }

@@ -1,7 +1,7 @@
+import { useTranslation } from "react-i18next";
 import {
   Badge,
   Button,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -16,6 +16,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 
 import { formatIp } from "@/shared/utils/ip-format";
 import { type Session, sessionCountry, sessionDevice, sessionStatus } from "../api/sessions";
+import { AuthStatusPill } from "./auth-status-pill";
 
 type SessionsTableProps = {
   query: UseQueryResult<{ items: Session[] }>;
@@ -36,8 +37,9 @@ export function SessionsTable({
   currentSessionId,
   onRevoke,
   isRevoking,
-  emptyLabel = "No active sessions.",
+  emptyLabel,
 }: SessionsTableProps) {
+  const { t } = useTranslation("auth");
   const items = query.data?.items ?? [];
   return (
     <DataState
@@ -46,18 +48,18 @@ export function SessionsTable({
       error={query.error}
       isEmpty={items.length === 0}
       emptyIcon={ShieldIcon}
-      emptyTitle={emptyLabel}
+      emptyTitle={emptyLabel ?? t("sessionsTable.empty")}
       skeletonRows={3}
     >
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Device</TableHead>
-            <TableHead>IP address</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Last seen</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("sessionsTable.device")}</TableHead>
+            <TableHead>{t("sessionsTable.ipAddress")}</TableHead>
+            <TableHead>{t("common:labels.created")}</TableHead>
+            <TableHead>{t("sessionsTable.lastSeen")}</TableHead>
+            <TableHead>{t("common:labels.status")}</TableHead>
+            <TableHead className="text-right">{t("common:labels.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -76,7 +78,7 @@ export function SessionsTable({
                   {country && <span className="ml-1">· {country}</span>}
                   {isCurrent && (
                     <Badge variant="secondary" className="ml-2">
-                      This device
+                      {t("sessionsTable.thisDevice")}
                     </Badge>
                   )}
                 </TableCell>
@@ -90,7 +92,7 @@ export function SessionsTable({
                   <TimeSince value={s.last_seen_at} />
                 </TableCell>
                 <TableCell>
-                  <StatusPill status={sessionStatus(s)} />
+                  <AuthStatusPill status={sessionStatus(s)} />
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
@@ -99,7 +101,7 @@ export function SessionsTable({
                     disabled={sessionStatus(s) !== "active" || isCurrent || isRevoking}
                     onClick={() => onRevoke(s)}
                   >
-                    Revoke
+                    {t("common:actions.revoke")}
                   </Button>
                 </TableCell>
               </TableRow>

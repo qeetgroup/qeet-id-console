@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { buttonVariants, cn } from "@qeetrix/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -56,7 +57,8 @@ const TONES: Record<Stat["tone"], string> = {
   indigo: "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400",
 };
 
-export function ApplicationsOverview({ description }: { description: string }) {
+export function ApplicationsOverview() {
+  const { t } = useTranslation("dashboard");
   const access = useCapabilities();
   const tenantId = useTenantId();
 
@@ -79,7 +81,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
 
   const stats: Stat[] = [
     {
-      label: "Registered apps",
+      label: t("applicationsOverview.registeredApps"),
       value: clients.length,
       added: recentCount(clients.map((c) => c.created_at)),
       icon: <SquareStackIcon />,
@@ -87,7 +89,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
       loading: clientsQ.isPending,
     },
     {
-      label: "Machine apps",
+      label: t("applicationsOverview.machineApps"),
       value: machines.length,
       added: recentCount(machines.map((m) => m.created_at)),
       icon: <ZapIcon />,
@@ -95,7 +97,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
       loading: machineQ.isPending,
     },
     {
-      label: "Active grants",
+      label: t("applicationsOverview.activeGrants"),
       value: grants.length,
       added: recentCount(grants.map((g) => g.issued_at)),
       icon: <ShieldCheckIcon />,
@@ -103,7 +105,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
       loading: grantsQ.isPending,
     },
     {
-      label: "API keys",
+      label: t("applicationsOverview.apiKeys"),
       value: keys.length,
       added: recentCount(keys.map((k) => k.created_at)),
       icon: <KeyRoundIcon />,
@@ -111,7 +113,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
       loading: keysQ.isPending,
     },
     {
-      label: "Custom scopes",
+      label: t("applicationsOverview.customScopes"),
       value: customScopes, // no `added`: scope lists carry no per-scope date
       icon: <LayersIcon />,
       tone: "indigo",
@@ -121,46 +123,46 @@ export function ApplicationsOverview({ description }: { description: string }) {
 
   const areas = [
     {
-      title: "Applications",
+      title: t("applicationsOverview.applications"),
       url: "/auth/connections/oidc",
-      description: "Your registered OIDC / OAuth relying-party apps.",
-      detail: "View, configure, and manage client applications.",
+      description: t("applicationsOverview.yourRegisteredOidcOauth"),
+      detail: t("applicationsOverview.viewConfigureAndManage"),
       icon: <SquareStackIcon />,
       tone: "primary" as const,
       can: access.can("connection.read"),
     },
     {
-      title: "Machine apps",
+      title: t("applicationsOverview.machineApps"),
       url: "/auth/api/machine-identities",
-      description: "Non-interactive service and machine identities.",
-      detail: "Manage machine-to-machine applications and credentials.",
+      description: t("applicationsOverview.nonInteractiveServiceAnd"),
+      detail: t("applicationsOverview.manageMachineToMachine"),
       icon: <ZapIcon />,
       tone: "neutral" as const,
       can: access.can("apikey.read"),
     },
     {
-      title: "OAuth grants",
+      title: t("applicationsOverview.oauthGrants"),
       url: "/auth/api/consent-grants",
-      description: "Consents users have granted to your apps.",
-      detail: "View and manage OAuth grants and consent records.",
+      description: t("applicationsOverview.consentsUsersHaveGranted"),
+      detail: t("applicationsOverview.viewAndManageOauth"),
       icon: <ShieldCheckIcon />,
       tone: "indigo" as const,
       can: access.can("connection.read"),
     },
     {
-      title: "API keys",
+      title: t("applicationsOverview.apiKeys"),
       url: "/auth/api/keys",
-      description: "Manage API keys for programmatic access.",
-      detail: "Create, rotate, and revoke API keys.",
+      description: t("applicationsOverview.manageApiKeysFor"),
+      detail: t("applicationsOverview.createRotateAndRevoke"),
       icon: <KeyRoundIcon />,
       tone: "primary" as const,
       can: access.can("apikey.read"),
     },
     {
-      title: "Scopes & permissions",
+      title: t("applicationsOverview.scopesPermissions"),
       url: "/authorization/permissions",
-      description: "Define and manage custom scopes and permissions.",
-      detail: "Control what your applications can access.",
+      description: t("applicationsOverview.defineAndManageCustom"),
+      detail: t("applicationsOverview.controlWhatYourApplications"),
       icon: <LayersIcon />,
       tone: "indigo" as const,
       can: access.can("role.read"),
@@ -169,29 +171,29 @@ export function ApplicationsOverview({ description }: { description: string }) {
 
   const quickActions = [
     {
-      title: "Register application",
-      detail: "Create a new OIDC / OAuth app",
+      title: t("applicationsOverview.registerApplication"),
+      detail: t("applicationsOverview.createANewOidc"),
       url: "/auth/connections/oidc?action=create",
       icon: <SquareStackIcon />,
       can: access.can("connection.write"),
     },
     {
-      title: "Create machine app",
-      detail: "Set up a non-interactive app",
+      title: t("applicationsOverview.createMachineApp"),
+      detail: t("applicationsOverview.setUpANon"),
       url: "/auth/api/machine-identities?action=create",
       icon: <ZapIcon />,
       can: access.can("apikey.write"),
     },
     {
-      title: "Generate API key",
-      detail: "Create an API key for accessing APIs",
+      title: t("applicationsOverview.generateApiKey"),
+      detail: t("applicationsOverview.createAnApiKey"),
       url: "/auth/api/keys?action=create",
       icon: <KeyRoundIcon />,
       can: access.can("apikey.write"),
     },
     {
-      title: "Review grants",
-      detail: "View and manage OAuth grants",
+      title: t("applicationsOverview.reviewGrants"),
+      detail: t("applicationsOverview.viewAndManageOauthGrants"),
       url: "/auth/api/consent-grants",
       icon: <ShieldCheckIcon />,
       can: access.can("connection.read"),
@@ -201,7 +203,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <PageHeader description={description} />
+        <PageHeader description={t("applicationsOverview.description")} />
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {access.can("apikey.write") ? (
             <Link
@@ -209,7 +211,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
               search={{ action: "create" } as never}
               className={buttonVariants({ variant: "outline" })}
             >
-              <PlusIcon /> Create machine app
+              <PlusIcon /> {t("applicationsOverview.createMachineApp")}
             </Link>
           ) : null}
           {access.can("connection.write") ? (
@@ -218,7 +220,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
               search={{ action: "create" } as never}
               className={buttonVariants()}
             >
-              <PlusIcon /> Register app
+              <PlusIcon /> {t("applicationsOverview.registerApp")}
             </Link>
           ) : null}
         </div>
@@ -235,14 +237,17 @@ export function ApplicationsOverview({ description }: { description: string }) {
           <header className="enterprise-panel-header">
             <div>
               <h2 id="applications-areas-title" className="font-heading text-base font-semibold">
-                Explore and manage
+                {t("applicationsOverview.exploreAndManage")}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Jump to any area in applications.
+                {t("applicationsOverview.jumpToAnyArea")}
               </p>
             </div>
           </header>
-          <nav aria-label="Application areas" className="grid md:grid-cols-2">
+          <nav
+            aria-label={t("applicationsOverview.applicationAreas")}
+            className="grid md:grid-cols-2"
+          >
             {areas.map((a) => (
               <AreaCard key={a.url} {...a} />
             ))}
@@ -255,10 +260,10 @@ export function ApplicationsOverview({ description }: { description: string }) {
           <header className="enterprise-panel-header items-center">
             <div>
               <h2 id="getting-started-title" className="font-heading text-base font-semibold">
-                Getting started
+                {t("applicationsOverview.gettingStarted")}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Set up your first application or explore the available capabilities.
+                {t("applicationsOverview.setUpYourFirst")}
               </p>
             </div>
             <a
@@ -267,18 +272,26 @@ export function ApplicationsOverview({ description }: { description: string }) {
               rel="noreferrer"
               className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0")}
             >
-              View documentation <ArrowUpRightIcon />
+              {t("applicationsOverview.viewDocumentation")} <ArrowUpRightIcon />
             </a>
           </header>
           <ol className="grid gap-6 p-5 sm:grid-cols-3">
             {[
               {
                 n: 1,
-                title: "Register an application",
-                detail: "Set up your first client application.",
+                title: t("applicationsOverview.registerAnApplication"),
+                detail: t("applicationsOverview.setUpYourFirst2"),
               },
-              { n: 2, title: "Configure permissions", detail: "Add requested scopes." },
-              { n: 3, title: "Integrate and test", detail: "Use our SDKs or OAuth flows." },
+              {
+                n: 2,
+                title: t("applicationsOverview.configurePermissions"),
+                detail: t("applicationsOverview.addRequestedScopes"),
+              },
+              {
+                n: 3,
+                title: t("applicationsOverview.integrateAndTest"),
+                detail: t("applicationsOverview.useOurSdksOr"),
+              },
             ].map((step) => (
               <li key={step.n} className="flex flex-col items-center text-center">
                 <span
@@ -303,10 +316,10 @@ export function ApplicationsOverview({ description }: { description: string }) {
             <header className="enterprise-panel-header">
               <div>
                 <h2 id="quick-actions-title" className="font-heading text-base font-semibold">
-                  Quick actions
+                  {t("applicationsOverview.quickActions")}
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Common tasks to manage your applications.
+                  {t("applicationsOverview.commonTasksToManage")}
                 </p>
               </div>
             </header>
@@ -339,6 +352,7 @@ export function ApplicationsOverview({ description }: { description: string }) {
 }
 
 function StatCard({ stat }: { stat: Stat }) {
+  const { t } = useTranslation("dashboard");
   // Percentage against the count before this window, so "3 new on top of 21"
   // reads as +14% rather than +12.5% of the new total.
   const base = stat.added !== undefined ? stat.value - stat.added : 0;
@@ -368,12 +382,12 @@ function StatCard({ stat }: { stat: Stat }) {
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
           {stat.loading
-            ? "Loading…"
+            ? t("common:states.loading")
             : stat.added === undefined
-              ? "Across registered apps"
+              ? t("applicationsOverview.statAcrossApps")
               : stat.added > 0
-                ? `+${stat.added} from last 30 days`
-                : "No change"}
+                ? t("applicationsOverview.statAdded", { count: stat.added })
+                : t("applicationsOverview.statNoChange")}
         </p>
       </div>
     </div>

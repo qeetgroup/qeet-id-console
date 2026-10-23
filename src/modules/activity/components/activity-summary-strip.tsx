@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn, Skeleton, Sparkline } from "@qeetrix/ui";
 
 import type { ActivitySearch } from "../activity-search";
@@ -113,6 +114,7 @@ export function ActivitySummaryStrip({
   /** The applied outcome, whose card renders pressed; "" presses Total events. */
   activeOutcome?: Outcome | "";
 }) {
+  const { t } = useTranslation("activity");
   if (isLoading && !summary) return <StripSkeleton />;
   if (!summary) return null;
 
@@ -129,7 +131,7 @@ export function ActivitySummaryStrip({
   return (
     <div className={RAIL_CLASS}>
       <MetricCard
-        label="Total events"
+        label={t("activitySummaryStrip.totalEvents")}
         value={total}
         tone="brand"
         series={seriesOf("count")}
@@ -137,7 +139,7 @@ export function ActivitySummaryStrip({
         active={activeOutcome === ""}
       />
       <MetricCard
-        label="Success"
+        label={t("activitySummaryStrip.success")}
         value={success}
         tone="success"
         series={seriesOf("success")}
@@ -146,7 +148,7 @@ export function ActivitySummaryStrip({
         active={activeOutcome === "success"}
       />
       <MetricCard
-        label="Warnings"
+        label={t("activitySummaryStrip.warnings")}
         value={warning}
         tone="warning"
         series={seriesOf("warning")}
@@ -155,7 +157,7 @@ export function ActivitySummaryStrip({
         active={activeOutcome === "warning"}
       />
       <MetricCard
-        label="Failed"
+        label={t("activitySummaryStrip.failed")}
         value={failed}
         tone="danger"
         series={seriesOf("failed")}
@@ -164,13 +166,13 @@ export function ActivitySummaryStrip({
         active={activeOutcome === "failed"}
       />
       <MetricCard
-        label="Unique actors"
+        label={t("activitySummaryStrip.uniqueActors")}
         value={summary.unique_actors}
         tone="info"
         series={seriesOf("count")}
       />
       <MetricCard
-        label="Security alerts"
+        label={t("activitySummaryStrip.securityAlerts")}
         value={summary.security_alerts}
         tone="danger"
         series={seriesOf("critical")}

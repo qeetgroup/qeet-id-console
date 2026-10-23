@@ -129,7 +129,10 @@
     "updated": "Group updated",
     "deleted": "Group deleted",
     "memberAdded": "Member added",
-    "memberRemoved": "Member removed"
+    "memberRemoved": "Member removed",
+    "templateSaved": "Template saved",
+    "templateDeleted": "Template deleted",
+    "templateApplied": "Template applied"
   },
   "kpis": {
     "total": "Total groups",
@@ -191,5 +194,8 @@
     "done": "Done",
     "rowSkipped": "A group with this name already exists.",
     "rowFailed": "Couldn't be created. Check the name and that its parent exists."
+  },
+  "newGroup": {
+    "removeMember": "Remove {{email}}"
   }
 }

@@ -32,7 +32,7 @@ export function useCreateSecret() {
     mutationFn: (body: { name: string; scope: string; value: string }) =>
       api<Secret>(`/v1/tenants/${tenantId}/secrets`, { method: "POST", body }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(tenantId) }),
-    meta: { successMessage: "Secret created", silentError: true }, // the sheet shows the error
+    meta: { successMessage: "developer:toast.secretCreated", silentError: true }, // the sheet shows the error
   });
 }
 
@@ -46,7 +46,7 @@ export function useRotateSecret() {
         body: { value },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(tenantId) }),
-    meta: { successMessage: "Secret rotated", silentError: true }, // the sheet shows the error
+    meta: { successMessage: "developer:toast.secretRotated", silentError: true }, // the sheet shows the error
   });
 }
 
@@ -72,6 +72,6 @@ export function useDeleteSecret() {
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/secrets/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.secrets(tenantId) }),
-    meta: { successMessage: "Secret deleted" },
+    meta: { successMessage: "developer:toast.secretDeleted" },
   });
 }

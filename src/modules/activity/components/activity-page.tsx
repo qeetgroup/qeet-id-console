@@ -5,13 +5,13 @@ import { Button, EmptyState, Input, Separator } from "@qeetrix/ui";
 import {
   ActivityIcon,
   BoxIcon,
-  GlobeIcon,
   LayersIcon,
   SearchIcon,
   TargetIcon,
   UserIcon,
 } from "@qeetrix/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -39,11 +39,11 @@ import type { ActivityFilters, ActivityMode, Outcome } from "@/modules/activity"
 import { useEntitlements } from "@/modules/billing";
 import { useStorageScope } from "@/platform/auth/scoped-storage";
 import {
-  CATEGORY_OPTIONS,
+  CATEGORIES,
   ExportMenu,
   FacetSelect,
   filtersPatchToSearch,
-  OUTCOME_OPTIONS,
+  OUTCOMES,
   prettify,
 } from "./activity-toolbar";
 
@@ -83,6 +83,7 @@ export function ActivityPage({ search, onSearchChange }: ActivityPageProps) {
 }
 
 function ActivityWorkspace({ search, onSearchChange }: ActivityPageProps) {
+  const { t } = useTranslation("activity");
   const access = useCapabilities();
   const canRead = access.can("audit.read");
 
@@ -294,12 +295,13 @@ function ActivityWorkspace({ search, onSearchChange }: ActivityPageProps) {
         <div className="enterprise-panel flex min-h-64 items-center justify-center">
           <EmptyState
             icon={ActivityIcon}
-            title="Activity not available"
+            title={t("activityPage.activityNotAvailable")}
             description={
-              <>
-                You don't have permission to view the activity feed. Contact your organization admin
-                to request the <code className="font-mono">audit.read</code> capability.
-              </>
+              <Trans
+                t={t}
+                i18nKey="activityPage.noPermission"
+                components={{ code: <code className="font-mono" /> }}
+              />
             }
           />
         </div>
@@ -314,7 +316,7 @@ function ActivityWorkspace({ search, onSearchChange }: ActivityPageProps) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <PageHeader
-        description="Monitor authentication, identity, access, and security events across your organization."
+        description={t("activityPage.monitorAuthenticationIdentityAccess")}
         actions={
           <>
             <LiveIndicator status={status} unreadCount={unreadCount} className="flex-wrap" />
@@ -325,7 +327,7 @@ function ActivityWorkspace({ search, onSearchChange }: ActivityPageProps) {
 
       {/* Critical event announcement for screen readers */}
       <div role="alert" aria-live="assertive" aria-atomic="true" className="sr-only">
-        {hasCritical ? `${unreadCount} critical or error events require attention` : ""}
+        {hasCritical ? t("activityPage.criticalAlert", { count: unreadCount }) : ""}
       </div>
 
       {/* Sticky toolbar */}
@@ -351,39 +353,32 @@ function ActivityWorkspace({ search, onSearchChange }: ActivityPageProps) {
         {/* Row 2 — faceted dropdowns + search */}
         <div className="flex flex-wrap items-center gap-2">
           <FacetSelect
-            label="All events"
+            label={t("activityPage.allEvents")}
             value={filters.category[0] ?? ""}
             onChange={handleCategory}
-            options={CATEGORY_OPTIONS}
+            options={CATEGORIES.map((value) => ({ value, label: t(`category.${value}`) }))}
             icon={LayersIcon}
           />
           <FacetSelect
-            label="All outcomes"
+            label={t("activityPage.allOutcomes")}
             value={activeOutcome}
             onChange={handleOutcome}
-            options={OUTCOME_OPTIONS}
+            options={OUTCOMES.map((value) => ({ value, label: t(`outcome.${value}`) }))}
             icon={TargetIcon}
           />
           <FacetSelect
-            label="All actors"
+            label={t("activityPage.allActors")}
             value={filters.actor}
             onChange={handleActor}
             options={actorOptions}
             icon={UserIcon}
           />
           <FacetSelect
-            label="All resources"
+            label={t("activityPage.allResources")}
             value={filters.resource}
             onChange={handleResource}
             options={resourceOptions}
             icon={BoxIcon}
-          />
-          <FacetSelect
-            label="All environments"
-            value="production"
-            onChange={() => {}}
-            options={[{ value: "production", label: "Production" }]}
-            icon={GlobeIcon}
           />
           <form
             className="relative min-w-48 flex-1"
@@ -397,16 +392,16 @@ function ActivityWorkspace({ search, onSearchChange }: ActivityPageProps) {
               aria-hidden="true"
             />
             <Input
-              placeholder="Search events by keyword, ID, IP, user… (press Enter)"
+              placeholder={t("activityPage.searchEventsByKeyword")}
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
               className="pl-8"
-              aria-label="Search activity events"
+              aria-label={t("activityPage.searchActivityEvents")}
             />
           </form>
           {hasAnyFilter && (
             <Button variant="ghost" size="sm" onClick={clearAll}>
-              Clear all
+              {t("activityPage.clearAll")}
             </Button>
           )}
         </div>

@@ -1,3 +1,6 @@
+// Loads the real catalogue, so components under test render their English copy, not raw keys.
+import "@/i18n";
+
 // Polyfills the browser APIs jsdom lacks and the @qeetrix/ui primitives touch on mount. Each is
 // guarded, so this is a no-op in the default `node` environment.
 if (typeof window !== "undefined") {

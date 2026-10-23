@@ -15,25 +15,21 @@ import {
 } from "@qeetrix/ui";
 import { DownloadIcon, type IconProps, LoaderCircleIcon } from "@qeetrix/icons";
 import type { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 
 import { type ActivitySearch, arrayToCsv } from "../activity-search";
 import type { ActivityFilters, Outcome } from "@/modules/activity";
 
-export const CATEGORY_OPTIONS = [
-  { value: "authentication", label: "Authentication" },
-  { value: "authorization", label: "Authorization" },
-  { value: "security", label: "Security" },
-  { value: "directory", label: "Directory" },
-  { value: "developer", label: "Developer" },
-  { value: "system", label: "System" },
-];
-
-export const OUTCOME_OPTIONS: { value: Outcome; label: string }[] = [
-  { value: "success", label: "Success" },
-  { value: "warning", label: "Warning" },
-  { value: "failed", label: "Failed" },
-  { value: "info", label: "Info" },
-];
+// Labelled `activity:category.<value>` and `activity:outcome.<value>`.
+export const CATEGORIES = [
+  "authentication",
+  "authorization",
+  "security",
+  "directory",
+  "developer",
+  "system",
+] as const;
+export const OUTCOMES: Outcome[] = ["success", "warning", "failed", "info"];
 
 export function prettify(v: string): string {
   if (v.includes(".")) return v;
@@ -75,7 +71,7 @@ export function FacetSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All {label.toLowerCase()}</SelectItem>
+        <SelectItem value="all">{label}</SelectItem>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>
             {o.label}
@@ -93,6 +89,7 @@ export function ExportMenu({
   exporting: "csv" | "json" | "ndjson" | null;
   onExport: (f: "csv" | "json" | "ndjson") => void;
 }) {
+  const { t } = useTranslation("activity");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -103,7 +100,9 @@ export function ExportMenu({
             ) : (
               <DownloadIcon className="size-3.5" aria-hidden="true" />
             )}
-            {exporting ? `Exporting ${exporting.toUpperCase()}…` : "Export"}
+            {exporting
+              ? t("export.running", { format: exporting.toUpperCase() })
+              : t("export.button")}
           </Button>
         }
       />

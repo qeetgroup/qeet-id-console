@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { authKeys } from "@/modules/authentication";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import type { AuthPolicy } from "@/modules/authentication";
 import type { ToolDefinition } from "../types/tool.types";
@@ -132,7 +133,7 @@ async function runRebacCheck(
 export const simulateAuthorizationTool: ToolDefinition<SimulateAuthorizationInput> = {
   name: "simulate_authorization",
   category: "authz",
-  title: "Simulate authorization",
+  title: "qeetai:tools.titles.simulateAuthorization",
   description:
     "Evaluate whether a subject may perform an action on a resource using a chosen decision engine (AuthZEN/ABAC/RBAC/ReBAC). Returns the decision plus an explain trace. Read-only — nothing is changed.",
   input: simulateAuthorizationInput,
@@ -177,21 +178,35 @@ type SetStrictMfaInput = z.infer<typeof setStrictMfaInput>;
 export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
   name: "set_strict_mfa",
   category: "authz",
-  title: "Set strict MFA",
+  title: "qeetai:tools.titles.setStrictMfa",
   description:
     "Toggle strict MFA for the tenant by disabling adaptive device-remembering (remember_device_enabled). When strict, every sign-in must complete MFA with no adaptive skip.",
   input: setStrictMfaInput,
   requiredCapability: "policy.write",
   destructive: false,
   mutates: true,
-  consoleScreen: { label: "Passwordless", to: "/auth/login-methods/passwordless" },
+  consoleScreen: {
+    label: "qeetai:tools.screens.passwordless",
+    to: "/auth/login-methods/passwordless",
+  },
   confirm: (input) => ({
-    title: input.enabled ? "Enforce strict MFA" : "Disable strict MFA",
+    title: input.enabled
+      ? i18n.t("qeetai:tools.confirm.setStrictMfa.enforceTitle")
+      : i18n.t("qeetai:tools.confirm.setStrictMfa.disableTitle"),
     body: input.enabled
-      ? "Every member will be required to complete MFA on each sign-in."
-      : "This weakens tenant security: members will be able to skip MFA on trusted devices.",
-    affected: [{ label: "Strict MFA", value: input.enabled ? "Enabled" : "Disabled" }],
-    confirmText: input.enabled ? "Enforce" : "Disable strict MFA",
+      ? i18n.t("qeetai:tools.confirm.setStrictMfa.enforceBody")
+      : i18n.t("qeetai:tools.confirm.setStrictMfa.disableBody"),
+    affected: [
+      {
+        label: i18n.t("qeetai:tools.fields.strictMfa"),
+        value: input.enabled
+          ? i18n.t("qeetai:tools.values.enabled")
+          : i18n.t("qeetai:tools.values.disabled"),
+      },
+    ],
+    confirmText: input.enabled
+      ? i18n.t("qeetai:tools.confirm.setStrictMfa.enforceAction")
+      : i18n.t("qeetai:tools.confirm.setStrictMfa.disableTitle"),
     tone: input.enabled ? "default" : "destructive",
   }),
   auditLabel: "qeetai.set_strict_mfa",

@@ -10,6 +10,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { SearchCodeIcon, TrashIcon } from "@qeetrix/icons";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { DecisionExplain } from "./explain/decision-explain";
@@ -18,6 +19,7 @@ import { clearHistory, useDecisionHistory } from "../store/authz-store";
 
 /** Renders the decisions made in this browser session, each explained. */
 export function DecisionExplorerPage() {
+  const { t } = useTranslation("rbac");
   const history = useDecisionHistory();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -34,11 +36,11 @@ export function DecisionExplorerPage() {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <PageHeader
-        description="Inspect authorization decisions like a network waterfall: the outcome, the engine, latency and the full grant-path or trace."
+        description={t("decisionExplorerPage.inspectAuthorizationDecisionsLike")}
         actions={
           history.length > 0 && (
             <Button variant="outline" size="sm" onClick={() => clearHistory()}>
-              <TrashIcon /> Clear history
+              <TrashIcon /> {t("decisionExplorerPage.clearHistory")}
             </Button>
           )
         }
@@ -49,15 +51,15 @@ export function DecisionExplorerPage() {
           <CardContent className="py-6">
             <EmptyState
               icon={SearchCodeIcon}
-              title="No decisions captured yet"
-              description="Run a check from the Simulator, the ReBAC page, or an ABAC policy test — every decision lands here for inspection."
+              title={t("decisionExplorerPage.noDecisionsCapturedYet")}
+              description={t("decisionExplorerPage.runACheckFrom")}
               action={
                 <Button
                   nativeButton={false}
                   render={<Link to="/authorization/simulator" />}
                   size="sm"
                 >
-                  Open Simulator
+                  {t("decisionExplorerPage.openSimulator")}
                 </Button>
               }
             />
@@ -67,8 +69,12 @@ export function DecisionExplorerPage() {
         <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
           <Card className="min-w-0">
             <CardHeader>
-              <CardTitle className="text-base">Recent decisions</CardTitle>
-              <CardDescription>{history.length} captured (latest first)</CardDescription>
+              <CardTitle className="text-base">
+                {t("decisionExplorerPage.recentDecisions")}
+              </CardTitle>
+              <CardDescription>
+                {t("decisionExplorerPage.capturedCount", { count: history.length })}
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <ul className="divide-y">
@@ -77,13 +83,15 @@ export function DecisionExplorerPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedId(r.id)}
+                      aria-current={r.id === selectedId ? "true" : undefined}
                       className={`flex w-full items-center gap-2 p-3 text-left hover:bg-muted/40 ${r.id === selectedId ? "bg-muted/60" : ""}`}
                     >
                       <DecisionBadge allowed={r.allowed} />
                       <span className="min-w-0 flex-1">
                         <span className="block text-xs font-medium">{ENGINE_LABELS[r.engine]}</span>
                         <span className="block truncate text-[11px] text-muted-foreground">
-                          {new Date(r.at).toLocaleTimeString()} · {r.durationMs} ms
+                          {new Date(r.at).toLocaleTimeString()} ·{" "}
+                          {t("simulator.batch.ms", { count: r.durationMs })}
                         </span>
                       </span>
                     </button>
@@ -95,8 +103,10 @@ export function DecisionExplorerPage() {
 
           <Card className="min-w-0">
             <CardHeader>
-              <CardTitle className="text-base">Decision detail</CardTitle>
-              <CardDescription>Full evaluation breakdown</CardDescription>
+              <CardTitle className="text-base">
+                {t("decisionExplorerPage.decisionDetail")}
+              </CardTitle>
+              <CardDescription>{t("decisionExplorerPage.fullEvaluationBreakdown")}</CardDescription>
             </CardHeader>
             <CardContent>{selected && <DecisionExplain record={selected} />}</CardContent>
           </Card>

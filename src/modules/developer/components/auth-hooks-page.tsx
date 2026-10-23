@@ -81,7 +81,7 @@ export function AuthHooksPage() {
                       </Badge>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {h.trigger} · added <TimeSince value={h.created_at} />
+                      {h.trigger} · {t("authHooks.list.added")} <TimeSince value={h.created_at} />
                     </p>
                   </div>
                   <div className="flex items-center gap-3">

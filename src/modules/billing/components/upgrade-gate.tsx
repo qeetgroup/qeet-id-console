@@ -2,6 +2,7 @@ import { buttonVariants, Card, CardContent } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { type IconProps, LockIcon } from "@qeetrix/icons";
 import type { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useEntitlements } from "../api/billing";
 
@@ -17,6 +18,7 @@ export function UpgradeGate({
   description: string;
   plan?: string; // tier to preselect on the billing page
 }) {
+  const { t } = useTranslation("settings");
   return (
     <Card className="border-dashed">
       <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
@@ -32,7 +34,7 @@ export function UpgradeGate({
           search={plan ? { plan } : {}}
           className={buttonVariants({ size: "sm" })}
         >
-          Upgrade plan
+          {t("upgradeGate.upgradePlan")}
         </Link>
       </CardContent>
     </Card>

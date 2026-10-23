@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 type MasterCheckboxProps = {
   selectableIds: string[];
@@ -15,8 +16,9 @@ export function MasterCheckbox({
   selectableIds,
   selectedIds,
   onChange,
-  label = "Select all rows",
+  label,
 }: MasterCheckboxProps) {
+  const { t } = useTranslation("common");
   const allChecked = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id));
   const someChecked = selectableIds.some((id) => selectedIds.has(id));
   const ref = useRef<HTMLInputElement>(null);
@@ -28,7 +30,7 @@ export function MasterCheckbox({
       ref={ref}
       type="checkbox"
       checked={allChecked}
-      aria-label={label}
+      aria-label={label ?? t("selection.selectAll")}
       onChange={(e) => onChange(e.target.checked ? new Set(selectableIds) : new Set())}
       className="size-4 cursor-pointer rounded border-input accent-primary"
     />

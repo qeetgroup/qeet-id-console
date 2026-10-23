@@ -231,7 +231,7 @@
     "title": "Access Tester",
     "description": "Evaluate a permission for a specific user and see exactly why access is granted or denied — including which role granted it and whether it came directly or through a group.",
     "runTitle": "Run a check",
-    "runDescription": "Permissions use the resource:action shape, e.g. users:read.",
+    "runDescription": "Permissions use the resource.action shape, e.g. user.read.",
     "userIdLabel": "User ID",
     "userIdHelp": "The UUID of the user to evaluate.",
     "permissionLabel": "Permission",
@@ -281,7 +281,6 @@
       "7d": "Last 7 days",
       "30d": "Last 30 days"
     },
-    "updated": "Updated",
     "kpi": {
       "roles": "Roles",
       "rolesHint_one": "{{count}} system role",
@@ -329,8 +328,8 @@
       "title": "Recent policy changes",
       "subtitle": "From the audit log",
       "viewAll": "View all",
-      "by": "by",
-      "empty": "No authorization changes in this window."
+      "empty": "No authorization changes in this window.",
+      "byActor": "by {{actor}}"
     },
     "insights": {
       "title": "Security insights",
@@ -372,7 +371,8 @@
       "unavailableTitle": "Decision metrics aren't being collected yet",
       "unavailableBody": "Allow-vs-deny volume, p95 decision latency and policy-evaluation counts will appear here once the authorization engine emits decision metrics. Everything above is read from live configuration and the audit log.",
       "note": "no authz metrics endpoint yet"
-    }
+    },
+    "updatedAgo": "Updated <time/>"
   },
   "abac": {
     "deleteTitle": "Delete this policy?",
@@ -474,6 +474,401 @@
       "required": "Fill in this field.",
       "json": "The input isn't a valid JSON object.",
       "subjects": "Add at least one subject."
+    }
+  },
+  "abacPoliciesPage": {
+    "authorAttributeBasedPolicies": "Author attribute-based policies with a no-code condition builder. Deny wins; policies are ordered by priority.",
+    "abacIsAProFeature": "ABAC is a Pro feature",
+    "authorAttributeBasedAccess": "Author attribute-based access policies with a no-code condition builder. Upgrade to Pro to use ABAC.",
+    "policies": "Policies",
+    "noAbacPoliciesYet": "No ABAC policies yet",
+    "createYourFirstAttribute": "Create your first attribute-based policy.",
+    "selectAPolicyTo": "Select a policy to edit, or create a new one.",
+    "orDocument": "* or document",
+    "orRead": "* or read",
+    "policyCount_one": "{{count}} attribute policy",
+    "policyCount_other": "{{count}} attribute policies",
+    "disabled": "disabled",
+    "target": "{{resource}}:{{action}} · priority {{priority}}",
+    "deleteNamed": "Delete {{name}}"
+  },
+  "authorizationAuditPage": {
+    "everyAuthorizationChangeIs": "Every authorization change is recorded in the hash-chained, append-only audit log.",
+    "resourceType": "Resource type",
+    "filterByAction": "Filter by action…",
+    "actionFilter": "Action filter",
+    "search": "Search…",
+    "searchAudit": "Search audit",
+    "noAuthorizationEvents": "No authorization events",
+    "when": "When",
+    "action": "Action",
+    "resource": "Resource",
+    "actor": "Actor",
+    "allResources": "All authz resources"
+  },
+  "authorizationSettingsPage": {
+    "howTheAuthorizationEngine": "How the authorization engine evaluates decisions, and where to configure related controls.",
+    "theOrderAndSemantics": "The order and semantics used to reach a decision.",
+    "denyWins": "Deny wins",
+    "priorityOrdering": "Priority ordering",
+    "composedEngines": "Composed engines",
+    "explainability": "Explainability",
+    "securityPolicy": "Security policy",
+    "accessTester": "Access Tester",
+    "open": "Open →",
+    "evaluationModel": "Evaluation model",
+    "denyWinsDetail": "An explicit deny from any matching policy overrides every allow.",
+    "priorityOrderingDetail": "ABAC policies evaluate in descending priority; default is deny.",
+    "composedEnginesDetail": "The unified PDP resolves RBAC (permissions) and ReBAC (relationships) together.",
+    "explainabilityDetail": "Every engine returns a grant-path / trace when explain is requested.",
+    "securityPolicyDetail": "IP allow/deny lists, session limits, and MFA enforcement.",
+    "accessTesterDetail": "Run an ad-hoc RBAC check with the full grant path.",
+    "tenantPolicy": "tenant policy",
+    "diagnostics": "diagnostics"
+  },
+  "policyCanvas": {
+    "unifiedPolicyBuilderCanvas": "Unified policy builder canvas",
+    "rolePlaceholder": "(role…)",
+    "conditionCount_one": "{{count}} condition",
+    "conditionCount_other": "{{count}} conditions",
+    "relationPlaceholder": "rel",
+    "objectPlaceholder": "object",
+    "blocks": {
+      "rbac": "Role check (RBAC)",
+      "abac": "Condition (ABAC)",
+      "rebac": "Relationship (ReBAC)"
+    },
+    "add": {
+      "rbac": "Role",
+      "abac": "Condition",
+      "rebac": "Relationship"
+    }
+  },
+  "codePreview": {
+    "previewFormat": "Preview format",
+    "tree": "Tree",
+    "condition": "condition"
+  },
+  "conditionTree": {
+    "removeNot": "Remove NOT",
+    "removeGroup": "Remove group",
+    "namespace": "Namespace",
+    "attributePath": "Attribute path",
+    "operator": "Operator",
+    "compareWith": "Compare with",
+    "removeCondition": "Remove condition",
+    "not": "NOT",
+    "all": "ALL (AND)",
+    "any": "ANY (OR)",
+    "addCondition": "Condition",
+    "addGroup": "Group",
+    "attributePlaceholder": "attribute",
+    "valuePlaceholder": "value",
+    "otherAttribute": "Attribute to compare with",
+    "value": "Value",
+    "operand": {
+      "value": "value",
+      "attribute": "attribute"
+    }
+  },
+  "decisionExplorerPage": {
+    "inspectAuthorizationDecisionsLike": "Inspect authorization decisions like a network waterfall: the outcome, the engine, latency and the full grant-path or trace.",
+    "noDecisionsCapturedYet": "No decisions captured yet",
+    "runACheckFrom": "Run a check from the Simulator, the ReBAC page, or an ABAC policy test — every decision lands here for inspection.",
+    "openSimulator": "Open Simulator",
+    "recentDecisions": "Recent decisions",
+    "decisionDetail": "Decision detail",
+    "fullEvaluationBreakdown": "Full evaluation breakdown",
+    "clearHistory": "Clear history",
+    "capturedCount_one": "{{count}} captured (latest first)",
+    "capturedCount_other": "{{count}} captured (latest first)"
+  },
+  "decisionExplain": {
+    "decisionContext": "Decision context",
+    "request": "Request",
+    "noGrantPathAccess": "No grant path — access is not granted by any role.",
+    "grantPaths": "Grant paths",
+    "grantedBy": "granted by",
+    "evaluationTrace": "Evaluation trace",
+    "noPolicyMatchedDefaultDeny": "No policy matched — default deny.",
+    "noRelationshipPathResolves": "No relationship path resolves this check.",
+    "relationshipPath": "Relationship path",
+    "matchedPolicy": "matched policy {{id}}",
+    "hop": "hop {{depth}}",
+    "effect": {
+      "allow": "allow",
+      "deny": "deny"
+    },
+    "reason": {
+      "explicitDeny": "Explicitly denied by policy “{{name}}” (priority {{priority}}).",
+      "absentDeny": "Denied by policy “{{name}}” (priority {{priority}}): an attribute it compares is absent.",
+      "allowed": "Allowed by policy “{{name}}” (priority {{priority}}).",
+      "noAllow": "No allow policy matched, so access is denied by default.",
+      "conditionError": "A condition in policy “{{name}}” couldn't be evaluated.",
+      "allowedUnnamed": "Allowed by an ABAC policy.",
+      "explicitDenyUnnamed": "Explicitly denied by an ABAC policy.",
+      "absentDenyUnnamed": "Denied by an ABAC policy: an attribute it compares is absent.",
+      "conditionErrorUnnamed": "A condition in an ABAC policy couldn't be evaluated.",
+      "roleGrant": "A role grants {{permission}}.",
+      "roleGrantUnnamed": "A role grants this permission.",
+      "relationGrant": "The relationship {{relation}} on {{object}} grants access.",
+      "relationGrantUnnamed": "A relationship grants access.",
+      "nothingAllows": "Nothing allows this request, so it is denied by default.",
+      "noTenant": "There's no organization to decide in, so the request is refused.",
+      "engineError": "An authorization engine failed, so the request was refused.",
+      "unknown": "The decision point gave a reason the console can't display."
+    },
+    "trace": {
+      "notMatched": "Policy “{{name}}” ({{effect}}, priority {{priority}}): condition not matched",
+      "matched": "Policy “{{name}}” ({{effect}}, priority {{priority}}): condition matched → {{effect}}",
+      "absentApplies": "Policy “{{name}}” ({{effect}}, priority {{priority}}): an attribute the condition compares is absent → {{effect}}",
+      "absentNotMatched": "Policy “{{name}}” ({{effect}}, priority {{priority}}): an attribute the condition compares is absent → not matched",
+      "conditionError": "Policy “{{name}}”: a condition couldn't be evaluated → deny",
+      "defaultDeny": "No allow policy matched → default deny",
+      "unknown": "An evaluation step the console can't display"
+    }
+  },
+  "relationshipGraph": {
+    "rebacRelationshipGraph": "ReBAC relationship graph"
+  },
+  "roleHierarchyGraph": {
+    "rbacRoleAndPermissionGraph": "RBAC role and permission graph",
+    "role": "role",
+    "systemRole": "role · system",
+    "permission": "permission",
+    "permissionCount_one": "{{count}} permission",
+    "permissionCount_other": "{{count}} permissions"
+  },
+  "permissionsPage": {
+    "thePlatformPermissionCatalogue": "The platform permission catalogue, grouped by resource. Permissions use resource.action keys.",
+    "searchPermissions": "Search permissions…",
+    "searchPermissions2": "Search permissions",
+    "wildcardWarning_one": "<strong>{{count}}</strong> wildcard permission detected — wildcards grant broad access; prefer explicit keys.",
+    "wildcardWarning_other": "<strong>{{count}}</strong> wildcard permissions detected — wildcards grant broad access; prefer explicit keys.",
+    "noMatches": "No permissions match your search",
+    "actionsOn": "Actions available on {{resource}} resources.",
+    "wildcard": "wildcard"
+  },
+  "policyBuilderPage": {
+    "composeRbacAbacAnd": "Compose RBAC, ABAC and ReBAC blocks into one policy. Wire blocks into the decision and preview the generated policy live.",
+    "copiedJson": "Copied JSON",
+    "blueprint": "Blueprint",
+    "addBlocksAndClick": "Add blocks and click a node to edit it in the inspector.",
+    "inspector": "Inspector",
+    "thisPolicyIsnT": "This policy isn't persistable yet",
+    "generatedPolicy": "Generated policy",
+    "jsonYamlDslEvaluationTree": "JSON · YAML · DSL · evaluation tree",
+    "effect": "Effect",
+    "allow": "Allow",
+    "deny": "Deny",
+    "resourceType": "Resource type",
+    "action": "Action",
+    "priority": "Priority",
+    "enabled": "Enabled",
+    "requiredRole": "Required role",
+    "object": "Object",
+    "relation": "Relation",
+    "noConditionBlock": "No condition block.",
+    "copyJson": "Copy JSON",
+    "export": "Export",
+    "saveAsAbac": "Save as ABAC",
+    "selectANode": "Select a node on the canvas",
+    "abacOnlyNote": "POST /abac/policies accepts ABAC-only policies",
+    "persistable": "ABAC-persistable",
+    "previewOnly": "preview only",
+    "removeBlock": "Remove block",
+    "editingBlock": {
+      "decision": "Editing the DECISION block",
+      "rbac": "Editing the RBAC block",
+      "abac": "Editing the ABAC block",
+      "rebac": "Editing the REBAC block"
+    }
+  },
+  "policyTemplatesPage": {
+    "startFromABattle": "Start from a battle-tested pattern. Choosing a template pre-fills the Policy Builder with a real, editable policy.",
+    "category": "Category",
+    "all": "All",
+    "useTemplate": "Use template",
+    "categories": {
+      "saas": "SaaS",
+      "cloud": "Cloud",
+      "regulated": "Regulated",
+      "baseline": "Baseline"
+    }
+  },
+  "policyVersionsPage": {
+    "everyPolicyChangeIs": "Every policy change is reconstructed from the audit log. History is read-only — server-side rollback is not available yet.",
+    "oneClickRollbackIsComing": "One-click rollback is coming",
+    "theBackendRecordsEvery": "The backend records every change but has no revert endpoint. For now, re-apply a prior state manually from the ABAC editor; rollback here is disabled.",
+    "policies": "Policies",
+    "selectAPolicyTo": "Select a policy to see its change history.",
+    "noPoliciesToTrack": "No policies to track",
+    "changeHistory": "Change history",
+    "selectAPolicyTo2": "Select a policy to reconstruct its timeline.",
+    "noChangesRecordedFor": "No changes recorded for this policy",
+    "rollbackUnavailable": "Rollback (unavailable)",
+    "serverSideRollbackComingSoon": "Server-side rollback coming soon",
+    "revertNote": "no POST /abac/policies/{id}/revert endpoint yet",
+    "recordedChanges_one": "{{count}} recorded change",
+    "recordedChanges_other": "{{count}} recorded changes",
+    "noPolicySelected": "No policy selected"
+  },
+  "rbacPage": {
+    "visualiseHowRolesGrant": "Visualise how roles grant permissions. Click a role to expand its permission grants; drag to rearrange.",
+    "noRolesToVisualiseYet": "No roles to visualise yet",
+    "rolePermissionGraph": "Role → permission graph",
+    "clearSelection": "Clear selection",
+    "nothingSelected": "Nothing selected",
+    "thisRoleGrantsNoPermissions": "This role grants no permissions",
+    "showingGrantsFor": "Showing grants for “{{name}}”",
+    "selectARole": "Select a role to expand its grants",
+    "roleDetails": "Role details",
+    "clickARoleNode": "Click a role node to inspect the permissions it grants.",
+    "grantedCount_one": "{{count}} permission granted",
+    "grantedCount_other": "{{count}} permissions granted"
+  },
+  "rebacPage": {
+    "userOrGroupEngMember": "user:… or group:eng#member"
+  },
+  "rolesPage": {
+    "createRolesAndManage": "Create roles and manage the permissions they grant. Role assignments propagate through groups automatically.",
+    "roles": "Roles",
+    "system": "System",
+    "custom": "Custom",
+    "description": "Description",
+    "permissions": "Permissions",
+    "toggleAPermissionTo": "Toggle a permission to grant or revoke it for this role.",
+    "done": "Done",
+    "grantKey": "Grant {{key}}",
+    "revokeKey": "Revoke {{key}}"
+  },
+  "toast": {
+    "policyCreated": "Policy created",
+    "policyUpdated": "Policy updated",
+    "policyDeleted": "Policy deleted",
+    "tupleWritten": "Tuple written",
+    "relationshipDeleted": "Relationship deleted",
+    "roleCreated": "Role created",
+    "permissionGranted": "Permission granted",
+    "permissionRevoked": "Permission revoked",
+    "roleGrantedToGroup": "Role granted to group",
+    "roleRevokedFromGroup": "Role revoked from group"
+  },
+  "decisionBadge": {
+    "allow": "ALLOW",
+    "deny": "DENY"
+  },
+  "operators": {
+    "eq": "equals",
+    "ne": "not equals",
+    "in": "in",
+    "nin": "not in",
+    "contains": "contains",
+    "gt": "greater than",
+    "gte": "greater or equal",
+    "lt": "less than",
+    "lte": "less or equal",
+    "exists": "exists",
+    "prefix": "starts with",
+    "suffix": "ends with",
+    "regex": "matches regex"
+  },
+  "conditionProblem": {
+    "notReferenceable": "“{{operator}}” can't compare with another attribute. Compare with a value instead.",
+    "badReference": "The attribute to compare with must be a subject., resource. or context. path.",
+    "selfReference": "A condition can't compare an attribute with itself.",
+    "needsValue": "“{{operator}}” needs a value.",
+    "mixedEngines": "This policy combines RBAC/ReBAC with ABAC, which has no single backend object. You can export it or simulate it now; remove the RBAC/ReBAC blocks to save it as a real ABAC policy."
+  },
+  "evalTree": {
+    "decision": "{{effect}} {{target}}",
+    "whenAllBlocksMatch": "when all blocks match",
+    "unconditional": "unconditional",
+    "all": "ALL of",
+    "any": "ANY of",
+    "not": "NOT",
+    "comparison": "{{operator}} {{value}}",
+    "requireRole": "require role “{{role}}”",
+    "relationOf": "{{relation}} of {{object}}"
+  },
+  "resourceTypes": {
+    "abacPolicy": "ABAC policy",
+    "rbacPolicy": "RBAC policy",
+    "policy": "Policy",
+    "role": "Role",
+    "permission": "Permission",
+    "relationTuple": "Relationship",
+    "groupRole": "Group role",
+    "securityPolicy": "Security policy"
+  },
+  "policyChanges": {
+    "created": "{{entity}} created",
+    "updated": "{{entity}} updated",
+    "deleted": "{{entity}} deleted",
+    "granted": "{{entity}} granted",
+    "revoked": "{{entity}} revoked",
+    "assigned": "{{entity}} assigned",
+    "unassigned": "{{entity}} unassigned",
+    "permissionGranted": "{{entity}} permission granted",
+    "permissionRevoked": "{{entity}} permission revoked",
+    "groupAssigned": "{{entity}} assigned to a group",
+    "groupUnassigned": "{{entity}} unassigned from a group",
+    "assignRefused": "{{entity}} assignment refused"
+  },
+  "policyTemplates": {
+    "sectors": {
+      "healthcare": "Healthcare / HIPAA",
+      "finance": "Finance / SOX",
+      "government": "Government",
+      "baseline": "Baseline"
+    },
+    "githubRepoAdmin": {
+      "name": "Repository admin (org members)",
+      "description": "Allow org members with the maintainer role to administer repositories."
+    },
+    "organizationHrProfiles": {
+      "name": "HR can view employee profiles",
+      "description": "Allow the HR department to read employee profile resources."
+    },
+    "awsProdDeployWindow": {
+      "name": "Block production deploys after hours",
+      "description": "Deny deployments to production environments outside business hours."
+    },
+    "azureCorpNetwork": {
+      "name": "Corporate network only",
+      "description": "Allow access only from the corporate network CIDR ranges."
+    },
+    "slackChannelOwner": {
+      "name": "Channel owners manage members",
+      "description": "Allow the owner relation of a channel to manage its membership."
+    },
+    "jiraProjectLead": {
+      "name": "Project leads edit issues",
+      "description": "Allow the lead role to edit issues within their project."
+    },
+    "salesforceRegion": {
+      "name": "Region-scoped account access",
+      "description": "Allow reps to read accounts only in their assigned region."
+    },
+    "healthcarePhi": {
+      "name": "PHI access with break-glass audit",
+      "description": "Allow clinicians to read PHI for patients in their care team."
+    },
+    "financeSod": {
+      "name": "Separation of duties (payments)",
+      "description": "Deny payment approval by the same user who created the payment."
+    },
+    "govClearance": {
+      "name": "Clearance-level document access",
+      "description": "Allow access to classified documents at or below the subject's clearance."
+    },
+    "baselineMfa": {
+      "name": "Require MFA for sensitive actions",
+      "description": "Deny sensitive write actions when the session is not MFA-verified."
+    },
+    "baselineOwner": {
+      "name": "Owners can do anything to their resource",
+      "description": "Allow the owner relation of a resource full access to it."
     }
   }
 }

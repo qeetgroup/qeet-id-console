@@ -9,7 +9,6 @@ import {
   FieldDescription,
   FieldLabel,
   Input,
-  StatusPill,
   Switch,
   Table,
   TableBody,
@@ -38,6 +37,7 @@ import {
   useScimConfig,
   useScimProvisionedUsers,
 } from "../api/scim";
+import { AuthStatusPill } from "./auth-status-pill";
 
 /** Renders SCIM provisioning: the endpoint and its bearer token, sync stats and provisioned users. */
 export function ScimPage() {
@@ -152,7 +152,7 @@ export function ScimPage() {
                 <KeyRoundIcon className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <StatusPill status={enabled ? "active" : "disabled"} />
+                <AuthStatusPill status={enabled ? "active" : "disabled"} />
               </CardContent>
             </Card>
             <Card>
@@ -274,7 +274,7 @@ export function ScimPage() {
                         {u.external_id || "—"}
                       </TableCell>
                       <TableCell>
-                        <StatusPill status={u.status} />
+                        <AuthStatusPill status={u.status} />
                       </TableCell>
                       <TableCell>
                         <TimeSince value={u.created_at} />

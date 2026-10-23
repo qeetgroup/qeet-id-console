@@ -82,10 +82,10 @@ export function groupByDate(events: ActivityEvent[], now = new Date()): DateGrou
   }
 
   const result: DateGroup[] = [];
-  if (today.length > 0) result.push({ label: "Today", events: today });
-  if (yesterday.length > 0) result.push({ label: "Yesterday", events: yesterday });
-  if (thisWeek.length > 0) result.push({ label: "This Week", events: thisWeek });
-  if (older.length > 0) result.push({ label: "Older", events: older });
+  if (today.length > 0) result.push({ key: "today", events: today });
+  if (yesterday.length > 0) result.push({ key: "yesterday", events: yesterday });
+  if (thisWeek.length > 0) result.push({ key: "thisWeek", events: thisWeek });
+  if (older.length > 0) result.push({ key: "older", events: older });
   return result;
 }
 

@@ -39,17 +39,129 @@ describe("DecisionBadge", () => {
 });
 
 describe("DecisionExplain", () => {
-  it("shows the outcome, engine, latency and the server's reason", () => {
+  it("shows the outcome, engine, latency and the server's reason in the reader's words", () => {
+    const reason = 'explicitly denied by policy "deny_contractors" (priority 90)';
     const { container } = render(
-      <DecisionExplain record={record({ engine: "abac", allowed: false, reason: "no match" })} />,
+      <DecisionExplain record={record({ engine: "abac", allowed: false, reason })} />,
     );
     const text = container.textContent ?? "";
     expect(text).toContain("DENY");
     expect(text).toContain("ABAC");
     expect(text).toContain("Attribute-based conditions");
     expect(text).toContain("12.5 ms");
-    expect(text).toContain("no match");
+    expect(text).toContain("Explicitly denied by policy “deny_contractors” (priority 90).");
+    expect(text).not.toContain(reason);
     expect(screen.getByRole("heading", { name: "Request" })).toBeTruthy();
+  });
+
+  it("maps the RBAC deny reason to the console's own sentence", () => {
+    const { container } = render(
+      <DecisionExplain
+        record={record({
+          engine: "rbac",
+          allowed: false,
+          reason: "no role grants this permission for this user in this tenant",
+        })}
+      />,
+    );
+    expect(container.textContent).toContain(
+      "No role grants this permission to this person in this organization.",
+    );
+  });
+
+  it("names the policy behind a condition error but never shows the error itself", () => {
+    const { container } = render(
+      <DecisionExplain
+        record={record({
+          engine: "abac",
+          allowed: false,
+          reason: 'condition error in policy "geo_fence": regexp: Compile(`(`): missing )',
+          abac: {
+            allow: false,
+            effect: "deny",
+            trace: [
+              'policy "geo_fence": condition error (regexp: Compile(`(`): missing )) → fail-closed deny',
+            ],
+          },
+        })}
+      />,
+    );
+    const text = container.textContent ?? "";
+    expect(text).toContain("A condition in policy “geo_fence” couldn't be evaluated.");
+    expect(text).toContain("Policy “geo_fence”: a condition couldn't be evaluated → deny");
+    expect(text).not.toContain("regexp");
+    expect(text).not.toContain("Compile");
+  });
+
+  it("reads a reason it doesn't recognise as a generic line, never the server's text", () => {
+    const { container } = render(
+      <DecisionExplain
+        record={record({ engine: "abac", allowed: false, reason: "pq: relation does not exist" })}
+      />,
+    );
+    expect(container.textContent).toContain(
+      "The decision point gave a reason the console can't display.",
+    );
+    expect(container.textContent).not.toContain("pq:");
+    expect(container.textContent).not.toContain("relation does not exist");
+  });
+
+  it("words the reason from the server's code rather than its sentence", () => {
+    const reason = 'condition error in policy "geo"';
+    const { container } = render(
+      <DecisionExplain
+        record={record({
+          engine: "abac",
+          allowed: false,
+          reason,
+          abac: {
+            allow: false,
+            effect: "deny",
+            reason,
+            reason_code: "authz.condition_error",
+            reason_params: { policy_id: "p1", policy_name: "geo", priority: 50 },
+          },
+        })}
+      />,
+    );
+    expect(container.textContent).toContain("A condition in policy “geo” couldn't be evaluated.");
+    expect(container.textContent).not.toContain(reason);
+  });
+
+  it("still words a code whose policy the reader may not see", () => {
+    const { container } = render(
+      <DecisionExplain
+        record={record({
+          engine: "abac",
+          allowed: false,
+          reason: 'explicitly denied by policy "secret" (priority 9)',
+          abac: { allow: false, effect: "deny", reason_code: "authz.denied_by_policy" },
+        })}
+      />,
+    );
+    expect(container.textContent).toContain("Explicitly denied by an ABAC policy.");
+    expect(container.textContent).not.toContain("secret");
+  });
+
+  it("summarises an AuthZEN decision from decided_by", () => {
+    const { container } = render(
+      <DecisionExplain
+        record={record({
+          engine: "authzen",
+          authzen: {
+            decision: true,
+            context: {
+              decided_by: {
+                model: "rebac",
+                reason_code: "authz.relation_grant",
+                reason_params: { relation: "viewer", object: "doc:1" },
+              },
+            },
+          },
+        })}
+      />,
+    );
+    expect(container.textContent).toContain("The relationship viewer on doc:1 grants access.");
   });
 
   it("lists RBAC grant paths, distinguishing direct roles from group inheritance", () => {
@@ -82,9 +194,9 @@ describe("DecisionExplain", () => {
     const items = itemsUnder("Grant paths");
     expect(items).toHaveLength(2);
     expect(items[0]).toContain("granted byAdmin");
-    expect(items[0]).toContain("direct assignment");
+    expect(items[0]).toContain("Direct assignment");
     expect(items[0]).toContain("role role-123");
-    expect(items[1]).toContain("via group:Engineering");
+    expect(items[1]).toContain("Group · Engineering");
     expect(container.textContent).not.toContain("No grant path");
   });
 
@@ -111,14 +223,23 @@ describe("DecisionExplain", () => {
             allow: false,
             effect: "deny",
             matched_policy_id: "policy-1234567890",
-            trace: ["evaluate sox_payment_sod", "deny wins"],
+            trace: [
+              'policy "sox_payment_sod" (effect=deny, priority=95): condition matched → deny',
+              'policy "allow_finance" (effect=allow, priority=10): condition not matched',
+              "policy step the console has never seen",
+            ],
           },
         })}
       />,
     );
     const text = container.textContent ?? "";
     expect(text).toContain("matched policy policy-1");
-    expect(text.indexOf("evaluate sox_payment_sod")).toBeLessThan(text.indexOf("deny wins"));
+    const first = "Policy “sox_payment_sod” (deny, priority 95): condition matched → deny";
+    const second = "Policy “allow_finance” (allow, priority 10): condition not matched";
+    expect(text).toContain(first);
+    expect(text.indexOf(first)).toBeLessThan(text.indexOf(second));
+    expect(text).toContain("An evaluation step the console can't display");
+    expect(text).not.toContain("never seen");
     expect(text).not.toContain("default deny");
   });
 

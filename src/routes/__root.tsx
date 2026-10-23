@@ -11,6 +11,7 @@ import type { RouterContext } from "@/platform/query/query-client";
 import { queryDevtoolsPlugin } from "@/platform/query/query-devtools";
 
 import appCss from "../styles.css?url";
+import i18n from "@/i18n";
 
 const THEME_STORAGE_KEY = "qeetid-admin-theme";
 const DEVTOOLS_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEVTOOLS === "true";
@@ -24,11 +25,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Qeet ID · Control plane" },
+      { title: i18n.t("common:pageTitle.console") },
       {
         name: "description",
-        content:
-          "Qeet ID identity, authentication, authorization, and security operations console.",
+        content: i18n.t("common:pageTitle.description"),
       },
       { name: "theme-color", content: "#f5f7fa", media: "(prefers-color-scheme: light)" },
       { name: "theme-color", content: "#11141a", media: "(prefers-color-scheme: dark)" },

@@ -1,7 +1,6 @@
 // The signed-in person's own data: a portable export, and erasing the account.
 
 import { useMutation } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 
 import { api } from "@/platform/api/client";
 import { sessionStore } from "@/platform/auth/session-store";
@@ -9,7 +8,6 @@ import { downloadBlob } from "@/shared/utils/data-export";
 
 /** Downloads the person's portable data as a JSON file. */
 export function useExportAccount() {
-  const { t } = useTranslation("account");
   return useMutation({
     mutationFn: async () => {
       const data = await api<Record<string, unknown>>("/v1/account/export", { method: "POST" });
@@ -19,7 +17,7 @@ export function useExportAccount() {
         `qeet-id-account-export-${new Date().toISOString().slice(0, 10)}.json`,
       );
     },
-    meta: { successMessage: t("data.export.done") },
+    meta: { successMessage: "account:data.export.done" },
   });
 }
 

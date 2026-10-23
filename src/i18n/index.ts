@@ -12,6 +12,7 @@ import deSaml from "./locales/de/saml.json";
 import deSigningKeys from "./locales/de/signing-keys.json";
 import deUsers from "./locales/de/users.json";
 import account from "./locales/en/account.json";
+import activity from "./locales/en/activity.json";
 import auth from "./locales/en/auth.json";
 import authFlow from "./locales/en/auth-flow.json";
 import common from "./locales/en/common.json";
@@ -20,14 +21,19 @@ import consent from "./locales/en/consent.json";
 import dashboard from "./locales/en/dashboard.json";
 import developer from "./locales/en/developer.json";
 import device from "./locales/en/device.json";
+import errors from "./locales/en/errors.json";
 import groups from "./locales/en/groups.json";
 import invitations from "./locales/en/invitations.json";
+import nav from "./locales/en/nav.json";
 import oidc from "./locales/en/oidc.json";
+import qeetai from "./locales/en/qeetai.json";
 import organizations from "./locales/en/organizations.json";
 import rbac from "./locales/en/rbac.json";
 import saml from "./locales/en/saml.json";
+import search from "./locales/en/search.json";
 import security from "./locales/en/security.json";
 import settings from "./locales/en/settings.json";
+import timeline from "./locales/en/timeline.json";
 import signingKeys from "./locales/en/signing-keys.json";
 import users from "./locales/en/users.json";
 import esAuth from "./locales/es/auth.json";
@@ -127,6 +133,12 @@ const newNs = {
   account,
   compliance,
   "auth-flow": authFlow,
+  activity,
+  timeline,
+  qeetai,
+  search,
+  errors,
+  nav,
 };
 
 const resources = {

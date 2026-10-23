@@ -5,9 +5,7 @@
     "addProvider": "添加服务提供商"
   },
   "metadata": {
-    "title": "IdP 元数据",
-    "description": "服务提供商导入此单个元数据文档以将 Qeet ID 信任为其 IdP。将此 URL 提供给每个 SP 的 SAML 配置。",
-    "hint": "大多数 SP 直接接受元数据 URL；对于需要 XML 的 SP，将其指向同一端点 — 它提供签名的 IdP 描述符（实体 ID、SSO URL、签名证书）。"
+    "title": "IdP 元数据"
   },
   "list": {
     "title": "服务提供商",

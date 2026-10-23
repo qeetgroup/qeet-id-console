@@ -293,7 +293,7 @@ function SamlConnectionForm({ onDone }: { onDone: () => void }) {
                 <field.TextField
                   label={t("samlSp.create.nameLabel")}
                   description={t("samlSp.create.nameHelp")}
-                  placeholder="Acme — Okta"
+                  placeholder={t("samlSp.create.namePlaceholder")}
                   required
                 />
               )}

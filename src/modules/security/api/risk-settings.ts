@@ -35,6 +35,6 @@ export function useUpdateRiskSettings() {
         body,
       }),
     onSuccess: (data) => qc.setQueryData(securityKeys.riskSettings(tenantId), data),
-    meta: { successMessage: "Risk settings saved", silentError: true }, // the page shows it
+    meta: { successMessage: "security:toast.riskSettingsSaved", silentError: true }, // the page shows it
   });
 }

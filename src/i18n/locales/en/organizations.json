@@ -233,5 +233,16 @@
     },
     "empty": "No members yet.",
     "remove": "Remove"
+  },
+  "toast": {
+    "securityPolicySaved": "Security policy saved",
+    "domainAdded": "Domain added",
+    "domainVerified": "Domain verified",
+    "domainRemoved": "Domain removed",
+    "domainUpdated": "Domain updated",
+    "organizationUpdated": "Organization updated",
+    "organizationDeleted": "Organization deleted",
+    "templateSaved": "Template saved",
+    "revertedToDefault": "Reverted to default"
   }
 }

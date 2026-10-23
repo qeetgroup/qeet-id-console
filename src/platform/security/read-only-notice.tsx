@@ -1,18 +1,14 @@
 import { Alert, AlertDescription, AlertTitle } from "@qeetrix/ui";
 import { EyeIcon } from "@qeetrix/icons";
+import { useTranslation } from "react-i18next";
 
-export function ReadOnlyNotice({
-  title = "Read-only access",
-  description = "You can inspect and export this data, but your organization role cannot change it.",
-}: {
-  title?: string;
-  description?: string;
-}) {
+export function ReadOnlyNotice({ title, description }: { title?: string; description?: string }) {
+  const { t } = useTranslation("common");
   return (
     <Alert>
       <EyeIcon />
-      <AlertTitle>{title}</AlertTitle>
-      <AlertDescription>{description}</AlertDescription>
+      <AlertTitle>{title ?? t("readOnlyNotice.title")}</AlertTitle>
+      <AlertDescription>{description ?? t("readOnlyNotice.description")}</AlertDescription>
     </Alert>
   );
 }

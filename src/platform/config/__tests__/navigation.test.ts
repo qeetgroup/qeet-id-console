@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
 
+import i18n from "@/i18n";
 import {
   filterNavigation,
   findNavGroupForPath,
   getRequiredCapabilityForPath,
-  navGroups,
+  navGroups as navKeys,
   safeNavigation,
+  translateNavigation,
 } from "../navigation";
 import { isNavBranchActive, isNavPathActive, type NavTreeItem } from "../navigation-state";
+
+// The navigation as the sidebar shows it.
+const navGroups = translateNavigation(navKeys, i18n.t);
 
 const users: NavTreeItem = {
   url: "/users",
@@ -15,8 +20,21 @@ const users: NavTreeItem = {
 };
 
 describe("console navigation state", () => {
+  it("translates every label, title and description, and keeps group ids unique", () => {
+    const copy = navGroups.flatMap((group) => [
+      group.label,
+      ...group.items.flatMap((item) => [
+        item.title,
+        item.description ?? "",
+        ...(item.items?.map((sub) => sub.title) ?? []),
+      ]),
+    ]);
+    expect(copy.filter((text) => text.startsWith("nav:"))).toEqual([]);
+    expect(new Set(navGroups.map((group) => group.id)).size).toBe(navGroups.length);
+  });
+
   it("keeps Directory focused on people, groups, organizations and sync", () => {
-    const directory = navGroups.find((group) => group.label === "Directory");
+    const directory = navGroups.find((group) => group.id === "directory");
 
     expect(directory?.items.map((item) => item.title)).toEqual([
       "Overview",
@@ -28,7 +46,7 @@ describe("console navigation state", () => {
   });
 
   it("exposes the completed Directory views with short labels and scoped access", () => {
-    const directory = navGroups.find((group) => group.label === "Directory");
+    const directory = navGroups.find((group) => group.id === "directory");
     const users = directory?.items.find((item) => item.title === "Users");
     const directories = directory?.items.find((item) => item.title === "Directories");
 
@@ -51,7 +69,7 @@ describe("console navigation state", () => {
     for (const item of directories?.items ?? []) {
       expect(item.title.length).toBeLessThanOrEqual(13);
       expect(item.requiredPermission).toBe("connection.read");
-      expect(findNavGroupForPath(navGroups, item.url)).toBe("Directory");
+      expect(findNavGroupForPath(navGroups, item.url)).toBe("directory");
       expect(getRequiredCapabilityForPath(item.url)).toBe("connection.read");
       expect(item.planned).toBeUndefined();
     }
@@ -88,21 +106,21 @@ describe("console navigation state", () => {
       navGroups,
       (permission) => permission === undefined || permission === "policy.read",
     );
-    const authorization = visible.find((group) => group.label === "Authorization");
+    const authorization = visible.find((group) => group.id === "authorization");
     const models = authorization?.items.find((item) => item.title === "Models");
 
     expect(models?.items?.map((item) => item.title)).toEqual(["ABAC"]);
     expect(
-      visible.find((group) => group.label === "Overview")?.items.map((item) => item.title),
+      visible.find((group) => group.id === "overview")?.items.map((item) => item.title),
     ).toEqual(["Dashboard"]);
   });
 
   it("resolves the rail's active group by longest matching destination", () => {
-    expect(findNavGroupForPath(navGroups, "/")).toBe("Overview");
-    expect(findNavGroupForPath(navGroups, "/authorization/roles/42")).toBe("Authorization");
-    expect(findNavGroupForPath(navGroups, "/security/audit-logs")).toBe("Security");
+    expect(findNavGroupForPath(navGroups, "/")).toBe("overview");
+    expect(findNavGroupForPath(navGroups, "/authorization/roles/42")).toBe("authorization");
+    expect(findNavGroupForPath(navGroups, "/security/audit-logs")).toBe("security");
     // SCIM lives under Directory even though /auth/connections/oidc is Applications.
-    expect(findNavGroupForPath(navGroups, "/auth/connections/scim")).toBe("Directory");
+    expect(findNavGroupForPath(navGroups, "/auth/connections/scim")).toBe("directory");
     expect(findNavGroupForPath(navGroups, "/unmapped-route")).toBeUndefined();
   });
 

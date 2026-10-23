@@ -288,7 +288,7 @@ export function PlanSelect({
                     </p>
                   </div>
                   <div className="absolute -top-1 -right-0.5 flex flex-col items-end gap-1">
-                    {meta.badge && (
+                    {meta.popular && (
                       <span className="rounded-full bg-[#cc4500] px-2 py-0.75 text-[9px] text-white dark:rounded-lg dark:border dark:border-orange-500/75 dark:bg-orange-950/65 dark:text-orange-100 dark:shadow-[0_0_8px_rgb(237_110_22/0.18)]">
                         {t("setup.plans.popular")}
                       </span>

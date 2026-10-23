@@ -5,25 +5,16 @@ import {
   ArrowDownRightIcon,
   ArrowUpRightIcon,
   ChevronRightIcon,
-  GlobeIcon,
   HeartPulseIcon,
   type IconProps,
-  KeyRoundIcon,
-  LayersIcon,
-  PlugZapIcon,
   ShieldCheckIcon,
   SparklesIcon,
   TriangleAlertIcon,
-  UsersIcon,
 } from "@qeetrix/icons";
 import type { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { AnalyticsOverview } from "../api/analytics";
-import { useEntitlements, useUsage } from "@/modules/billing";
-import { useDomains } from "@/modules/organizations";
-import { useOidcClients } from "@/modules/authentication";
-import { useSamlConnections } from "@/modules/authentication";
-import { useScimConfig } from "@/modules/authentication";
 
 import {
   computeIdentityHealth,
@@ -42,19 +33,19 @@ const severityStyles: Record<
     chip: "bg-destructive/10 text-destructive ring-destructive/15",
     icon: TriangleAlertIcon,
     badge: "bg-destructive/10 text-destructive",
-    label: "Critical",
+    label: "dashboard:insights.severity.critical",
   },
   warning: {
     chip: "bg-warning/10 text-warning ring-warning/15",
     icon: TriangleAlertIcon,
     badge: "bg-warning/10 text-warning",
-    label: "Warning",
+    label: "dashboard:insights.severity.warning",
   },
   info: {
     chip: "bg-info/10 text-info ring-info/15",
     icon: SparklesIcon,
     badge: "bg-info/10 text-info",
-    label: "Notice",
+    label: "dashboard:insights.severity.info",
   },
 };
 
@@ -69,13 +60,14 @@ export function AttentionRequiredPanel({
   loading: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation("dashboard");
   const items = overview ? deriveAttentionItems(overview) : [];
 
   return (
     <DashboardPanel
       className={className}
-      title="Attention required"
-      description="Signals from live telemetry that need an operator's eyes"
+      title={t("insights.attentionRequired")}
+      description={t("insights.signalsFromLiveTelemetry")}
       action={
         items.length > 0 ? (
           <Badge className={cn("shrink-0", severityStyles.warning.badge)}>{items.length}</Badge>
@@ -99,12 +91,15 @@ export function AttentionRequiredPanel({
         <div className="flex min-h-52 items-center justify-center px-6 py-10">
           <EmptyState
             icon={ShieldCheckIcon}
-            title="Nothing needs attention"
-            description="Every monitored signal is within its healthy range right now."
+            title={t("insights.nothingNeedsAttention")}
+            description={t("insights.everyMonitoredSignalIs")}
           />
         </div>
       ) : (
-        <ul className="divide-y divide-border/60" aria-label="Items requiring attention">
+        <ul
+          className="divide-y divide-border/60"
+          aria-label={t("insights.itemsRequiringAttention")}
+        >
           {items.map((item) => {
             const style = severityStyles[item.severity];
             const Icon = style.icon;
@@ -125,21 +120,21 @@ export function AttentionRequiredPanel({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold">{item.title}</span>
+                      <span className="truncate text-sm font-semibold">{t(item.title)}</span>
                       <span
                         className={cn(
                           "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
                           style.badge,
                         )}
                       >
-                        {style.label}
+                        {t(style.label)}
                       </span>
                     </span>
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      {item.detail}
+                      {t(item.detail, item.params)}
                     </span>
                     <span className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-primary">
-                      {item.actionLabel}
+                      {t(item.actionLabel)}
                       <ChevronRightIcon className="size-3 transition-transform duration-150 group-hover:translate-x-0.5" />
                     </span>
                   </span>
@@ -162,13 +157,14 @@ export function IdentityHealthPanel({
   loading: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation("dashboard");
   const health = overview ? computeIdentityHealth(overview) : null;
 
   return (
     <DashboardPanel
       className={className}
-      title="Identity health"
-      description="Composite posture across your identity subsystems"
+      title={t("insights.identityHealth")}
+      description={t("insights.compositePostureAcrossYour")}
       action={<HeartPulseIcon className="size-4 text-muted-foreground" aria-hidden="true" />}
     >
       {loading || !health ? (
@@ -185,14 +181,14 @@ export function IdentityHealthPanel({
           <div className="flex items-center gap-4">
             <HealthGauge
               score={health.score}
-              ariaLabel={`Identity health score ${health.score} out of 100`}
+              ariaLabel={t("insights.healthScore", { score: health.score })}
             />
             <div className="min-w-0">
               <p className={cn("text-lg font-semibold", healthText[stateFromScore(health.score)])}>
-                {health.grade}
+                {t(`insights.grade.${health.grade}`)}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Weighted across authentication reliability, MFA coverage, and engagement.
+                {t("insights.weightedAcrossAuthenticationReliability")}
               </p>
             </div>
           </div>
@@ -200,7 +196,7 @@ export function IdentityHealthPanel({
             {health.areas.map((area) => (
               <li key={area.id}>
                 <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="font-medium">{area.label}</span>
+                  <span className="font-medium">{t(area.label)}</span>
                   <span className={cn("font-mono tabular-nums", healthText[area.state])}>
                     {area.score}
                   </span>
@@ -232,16 +228,17 @@ export function SessionOverviewPanel({
   loading: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation("dashboard");
   const stats = overview ? deriveSessionStats(overview) : [];
 
   return (
     <DashboardPanel
       className={className}
-      title="Session overview"
-      description="Active session footprint"
+      title={t("insights.sessionOverview")}
+      description={t("insights.activeSessionFootprint")}
       action={
         <Link to="/security/sessions" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-          Manage
+          {t("insights.manage")}
         </Link>
       }
     >
@@ -260,11 +257,11 @@ export function SessionOverviewPanel({
             <div key={stat.id} className="flex items-baseline justify-between gap-3">
               <dt className="min-w-0">
                 <span className="block truncate text-xs font-medium text-muted-foreground">
-                  {stat.label}
+                  {t(stat.label)}
                 </span>
                 {stat.hint ? (
                   <span className="mt-0.5 block truncate text-[10px] text-muted-foreground/70">
-                    {stat.hint}
+                    {t(stat.hint)}
                   </span>
                 ) : null}
               </dt>
@@ -294,16 +291,17 @@ export function SecurityPosturePanel({
   loading: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation("dashboard");
   const signals = overview ? deriveSecuritySignals(overview) : [];
 
   return (
     <DashboardPanel
       className={className}
-      title="Security posture"
-      description="Authentication risk at a glance"
+      title={t("insights.securityPosture")}
+      description={t("insights.authenticationRiskAtAGlance")}
       action={
         <Link to="/security" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-          Security
+          {t("insights.security")}
         </Link>
       }
     >
@@ -328,7 +326,7 @@ export function SecurityPosturePanel({
                 className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-muted/25 px-3 py-2.5"
               >
                 <span className="min-w-0 text-xs font-medium text-muted-foreground">
-                  {signal.label}
+                  {t(signal.label)}
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
                   <span
@@ -353,184 +351,6 @@ export function SecurityPosturePanel({
                     </span>
                   ) : null}
                 </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </DashboardPanel>
-  );
-}
-
-type EnterpriseTile = {
-  id: string;
-  icon: ComponentType<IconProps<"outline">>;
-  label: string;
-  count: number | undefined;
-  loading: boolean;
-  to: string;
-};
-
-function EnterpriseStat({ tile }: { tile: EnterpriseTile }) {
-  return (
-    <Link
-      to={tile.to as never}
-      className="group flex flex-col gap-2 rounded-lg border border-border/60 bg-muted/25 p-3 outline-none transition-colors duration-150 hover:bg-muted/45 focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      <span className="flex items-center justify-between">
-        <span className="grid size-8 place-items-center rounded-lg bg-background text-muted-foreground ring-1 ring-border/70 [&_svg]:size-4">
-          <tile.icon aria-hidden="true" />
-        </span>
-        <ChevronRightIcon className="size-3.5 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5" />
-      </span>
-      {tile.loading ? (
-        <Skeleton className="h-7 w-10" />
-      ) : (
-        <span className="font-heading text-2xl font-semibold leading-none tabular-nums">
-          {(tile.count ?? 0).toLocaleString("en-US")}
-        </span>
-      )}
-      <span className="text-[11px] font-medium text-muted-foreground">{tile.label}</span>
-    </Link>
-  );
-}
-
-export function EnterpriseOverviewPanel({ className }: { className?: string }) {
-  const saml = useSamlConnections();
-  const oidc = useOidcClients();
-  const scim = useScimConfig();
-  const domains = useDomains();
-
-  const tiles: EnterpriseTile[] = [
-    {
-      id: "saml",
-      icon: PlugZapIcon,
-      label: "SAML connections",
-      count: saml.data?.items.length,
-      loading: saml.isLoading,
-      to: "/auth/connections/saml",
-    },
-    {
-      id: "oidc",
-      icon: LayersIcon,
-      label: "OIDC clients",
-      count: oidc.data?.items.length,
-      loading: oidc.isLoading,
-      to: "/auth/connections/oidc",
-    },
-    {
-      id: "scim",
-      icon: UsersIcon,
-      label: "SCIM provisioned",
-      count: scim.data?.provisioned_count,
-      loading: scim.isLoading,
-      to: "/auth/connections/scim",
-    },
-    {
-      id: "domains",
-      icon: GlobeIcon,
-      label: "Verified domains",
-      count: domains.data?.items.filter((d) => d.verified_at).length,
-      loading: domains.isLoading,
-      to: "/settings/organization/domains",
-    },
-  ];
-
-  return (
-    <DashboardPanel
-      className={className}
-      title="Enterprise connectivity"
-      description="Federation & provisioning across your organization"
-      action={
-        <Link to="/auth/connections" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-          Manage
-        </Link>
-      }
-    >
-      <div className="grid grid-cols-2 gap-3">
-        {tiles.map((tile) => (
-          <EnterpriseStat key={tile.id} tile={tile} />
-        ))}
-      </div>
-    </DashboardPanel>
-  );
-}
-
-const USAGE_RESOURCES: { key: string; label: string; icon: ComponentType<IconProps<"outline">> }[] =
-  [
-    { key: "seats", label: "Members", icon: UsersIcon },
-    { key: "apps", label: "Applications", icon: LayersIcon },
-    { key: "api_keys", label: "API keys", icon: KeyRoundIcon },
-    { key: "custom_roles", label: "Custom roles", icon: ShieldCheckIcon },
-  ];
-
-export function PlanUsagePanel({ className }: { className?: string }) {
-  const usageQ = useUsage();
-  const entQ = useEntitlements();
-  const loading = usageQ.isLoading || entQ.isLoading;
-  const usage = usageQ.data?.usage ?? {};
-  const limits = entQ.data?.limits ?? {};
-  const plan = entQ.data?.plan;
-
-  return (
-    <DashboardPanel
-      className={className}
-      title="Plan usage"
-      description={
-        plan ? `Consumption on the ${plan} plan` : "Consumption against your plan limits"
-      }
-      action={
-        <Link to="/settings/billing" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-          Manage plan
-        </Link>
-      }
-    >
-      {loading ? (
-        <div className="space-y-4">
-          {USAGE_RESOURCES.map(({ key }) => (
-            <div key={key} className="space-y-2">
-              <div className="flex justify-between">
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-3 w-12" />
-              </div>
-              <Skeleton className="h-1.5 w-full" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <ul className="space-y-3.5">
-          {USAGE_RESOURCES.map(({ key, label, icon: Icon }) => {
-            const used = usage[key] ?? 0;
-            const limit = limits[key] ?? -1;
-            const unlimited = limit < 0;
-            const atLimit = !unlimited && used >= limit;
-            const pct = unlimited ? 0 : Math.min(100, limit === 0 ? 100 : (used / limit) * 100);
-            return (
-              <li key={key} className="space-y-1.5">
-                <div className="flex items-baseline justify-between gap-2 text-xs">
-                  <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
-                    <Icon className="size-3.5" aria-hidden="true" />
-                    {label}
-                  </span>
-                  <span
-                    className={cn(
-                      "font-medium tabular-nums",
-                      atLimit ? "text-destructive" : "text-foreground",
-                    )}
-                  >
-                    {used.toLocaleString("en-US")}
-                    {unlimited ? " / ∞" : ` / ${limit.toLocaleString("en-US")}`}
-                  </span>
-                </div>
-                <div className="dashboard-method-track">
-                  <div
-                    className={cn("dashboard-method-fill w-full", unlimited && "opacity-40")}
-                    style={{
-                      backgroundColor: atLimit ? "var(--destructive)" : "var(--primary)",
-                      transform: `scaleX(${unlimited ? 0.06 : pct / 100})`,
-                    }}
-                  />
-                </div>
               </li>
             );
           })}

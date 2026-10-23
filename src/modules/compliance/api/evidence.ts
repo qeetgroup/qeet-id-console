@@ -66,6 +66,6 @@ export function useGenerateEvidence(framework: Framework) {
       void qc.invalidateQueries({ queryKey: complianceKeys.evidenceRuns(tenantId, framework) });
       qc.setQueryData(complianceKeys.evidenceRun(tenantId, run.id), run);
     },
-    meta: { successMessage: "Evidence generated" },
+    meta: { successMessage: "compliance:toast.evidenceGenerated" },
   });
 }

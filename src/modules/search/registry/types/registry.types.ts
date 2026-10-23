@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import type { ReactNode } from "react";
 
 import type { Capability } from "@/platform/security/capability-model";
@@ -34,6 +35,7 @@ export interface SearchContext {
   tenantId: string | null;
   capabilities: ReadonlySet<string>; // The person's current permission strings
   navigate(url: string): void;
+  t: TFunction; // translates item copy in the current language
 }
 
 export interface SearchSource {

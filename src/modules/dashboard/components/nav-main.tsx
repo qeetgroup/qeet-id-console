@@ -170,7 +170,7 @@ export function SectionNav({
           key={item.title}
           item={item}
           pathname={pathname}
-          expandBranches={group.label === "Directory" && pathname === "/directory"}
+          expandBranches={group.id === "directory" && pathname === "/directory"}
           badges={badges}
         />
       ))}
@@ -214,8 +214,13 @@ export function DirectoryNav({ group }: { group: NavGroup }) {
 const SECTION_SKELETON_ROWS = ["one", "two", "three", "four", "five"] as const;
 
 export function SectionNavSkeleton() {
+  const { t } = useTranslation("dashboard");
   return (
-    <div role="status" aria-live="polite" aria-label="Checking available console sections">
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label={t("navMain.checkingAvailableConsoleSections")}
+    >
       <SidebarMenu className="gap-0.5">
         {SECTION_SKELETON_ROWS.map((row) => (
           <SidebarMenuItem key={row}>
@@ -226,7 +231,7 @@ export function SectionNavSkeleton() {
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
-      <span className="sr-only">Checking organization access</span>
+      <span className="sr-only">{t("navMain.checkingOrganizationAccess")}</span>
     </div>
   );
 }

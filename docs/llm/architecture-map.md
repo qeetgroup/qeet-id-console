@@ -70,7 +70,7 @@
 | Client env schema | `src/platform/config/env.ts` |
 | **Production config check** | `src/platform/config/server-config.ts` |
 | Public API origin | `src/platform/config/api-base-url.ts` |
-| **Nav tree + path→capability map** | `src/platform/config/navigation.tsx` |
+| **Nav tree + path→capability map** | `src/platform/config/navigation.tsx` (helpers, `useNavGroups`), `nav-groups.tsx`, `nav-groups-admin.tsx` (the tree) |
 | Error taxonomy | `src/platform/errors/` |
 | **Forms kit** (TanStack Form + `@qeetrix/ui` fields, server field errors) | `src/platform/forms/app-form.tsx` |
 | Query client, 403 recapability | `src/platform/query/query-client.ts` |

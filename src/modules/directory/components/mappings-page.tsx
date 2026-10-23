@@ -1,50 +1,16 @@
-import {
-  Button,
-  cn,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  Field,
-  FieldError,
-  FieldLabel,
-  Input,
-  Skeleton,
-  Switch,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  Textarea,
-  TimeSince,
-} from "@qeetrix/ui";
+import { Button, cn, TimeSince } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import {
-  ArrowDownIcon,
   ArrowRightIcon,
   CircleCheckIcon,
   CodeXmlIcon,
-  EllipsisIcon,
   LayersIcon,
-  PencilIcon,
   PlayIcon,
   PlusIcon,
-  PowerIcon,
-  TrashIcon,
   TriangleAlertIcon,
 } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import i18n from "@/i18n";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { errorMessage } from "@/platform/errors/user-message";
@@ -70,11 +36,13 @@ import {
   DIRECTORY_PAGE,
   DIRECTORY_PANEL,
   DirectoryQueryError,
-  DirectorySearch,
   DirectorySelect,
   DirectoryStat,
   DirectoryStatus,
 } from "./directory-ui";
+import { MappingEditor } from "./mappings-page-editor";
+import { MappingPreviewPanel } from "./mappings-page-preview";
+import { MappingRulesTable } from "./mappings-page-rules";
 
 export function MappingsPage() {
   const connections = useDirectoryConnections();
@@ -161,6 +129,12 @@ function MappingsWorkspace({
     }
   }
 
+  // The editor opens clean rather than repeating an earlier action's error.
+  function openEditor(mapping: MappingInput) {
+    setLocalError(undefined);
+    setDraft(mapping);
+  }
+
   function testMapping() {
     setLocalError(undefined);
     try {
@@ -193,7 +167,7 @@ function MappingsWorkspace({
         previewing={preview.isPending}
         actionError={localError ?? (preview.isError ? errorMessage(preview.error) : undefined)}
         onAdd={() =>
-          setDraft({
+          openEditor({
             source_attribute: "",
             target_field: "display_name",
             value_type: "string",
@@ -203,7 +177,7 @@ function MappingsWorkspace({
             required: false,
           })
         }
-        onEdit={setDraft}
+        onEdit={openEditor}
         onDelete={(mappings) => void deleteRules(mappings)}
         onToggle={(mapping) => void saveRule({ ...mapping, enabled: !mapping.enabled })}
       />
@@ -220,12 +194,6 @@ function MappingsWorkspace({
       ) : null}
     </>
   );
-}
-
-// A code newer than this console reads as a generic problem rather than a humanised key.
-function issueKey(code: string): string {
-  const key = `directory.mappings.issues.${code.replace(/^directory\.mapping_/, "")}`;
-  return i18n.exists(key, { ns: "dashboard" }) ? key : "directory.mappings.issues.unknown";
 }
 
 export function MappingsView({
@@ -270,30 +238,12 @@ export function MappingsView({
   onToggle: (mapping: DirectoryMapping) => void;
 }) {
   const { t } = useTranslation("dashboard");
-  const [search, setSearch] = useState("");
-  const [state, setState] = useState("");
-  const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const mappings = data?.items ?? [];
   const active = mappings.filter((mapping) => mapping.enabled);
   const required = active.filter((mapping) => mapping.required);
   const covered = preview
     ? required.filter((mapping) => preview.profile[mapping.target_field] != null).length
     : null;
-  const visible = mappings.filter(
-    (mapping) =>
-      (!state || mapping.enabled === (state === "active")) &&
-      `${mapping.source_attribute} ${mapping.target_field}`
-        .toLowerCase()
-        .includes(search.toLowerCase()),
-  );
-  const selectedMappings = mappings.filter((mapping) => selected.has(mapping.id));
-  const toggle = (id: string) =>
-    setSelected((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
 
   return (
     <div className={DIRECTORY_PAGE}>
@@ -436,406 +386,26 @@ export function MappingsView({
       </section>
 
       <div className="grid items-start gap-3 @min-[1050px]/directory-page:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
-        <section className={DIRECTORY_PANEL} aria-label={t("directory.mappings.rules")}>
-          <header className="flex flex-wrap items-center justify-between gap-3 p-4">
-            <h2 className="font-heading text-sm font-semibold">
-              {t("directory.mappings.rules")}{" "}
-              <span className="text-muted-foreground">({mappings.length})</span>
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              <DirectorySearch
-                label={t("directory.mappings.search")}
-                value={search}
-                onChange={setSearch}
-              />
-              <DirectorySelect
-                label={t("directory.mappings.filter")}
-                value={state}
-                onChange={setState}
-                options={[
-                  { value: "all", label: t("directory.allStatuses") },
-                  { value: "active", label: t("directory.mappings.activeLabel") },
-                  { value: "disabled", label: t("directory.mappings.disabled") },
-                ]}
-              />
-            </div>
-          </header>
-          {canWrite && selectedMappings.length ? (
-            <div className="flex items-center justify-between border-y border-border bg-primary/5 px-4 py-2 text-xs">
-              <span>{t("directory.mappings.selected", { count: selectedMappings.length })}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={busy}
-                onClick={() => onDelete(selectedMappings)}
-              >
-                <TrashIcon />
-                {t("directory.mappings.delete")}
-              </Button>
-            </div>
-          ) : null}
-          <div className="overflow-x-auto">
-            <Table className="min-w-160 text-xs [&_td]:px-3 [&_td]:py-3 [&_th]:px-3 [&_th]:text-[10px]">
-              <TableHeader className="border-y border-border/60 bg-muted/25">
-                <TableRow>
-                  {canWrite ? (
-                    <TableHead>
-                      <input
-                        type="checkbox"
-                        aria-label={t("directory.mappings.selectAll")}
-                        checked={
-                          visible.length > 0 && visible.every((mapping) => selected.has(mapping.id))
-                        }
-                        onChange={(event) =>
-                          setSelected(
-                            event.target.checked
-                              ? new Set(visible.map((mapping) => mapping.id))
-                              : new Set(),
-                          )
-                        }
-                        className="size-3.5 accent-primary"
-                      />
-                    </TableHead>
-                  ) : null}
-                  {[
-                    "source",
-                    "target",
-                    "type",
-                    "transform",
-                    "previewValue",
-                    "status",
-                    "actions",
-                  ].map((column) => (
-                    <TableHead key={column}>{t(`directory.mappings.${column}`)}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading
-                  ? [0, 1, 2].map((row) => (
-                      <TableRow key={row}>
-                        <TableCell colSpan={8}>
-                          <Skeleton className="h-8 w-full" />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  : visible.map((mapping) => (
-                      <TableRow key={mapping.id}>
-                        {canWrite ? (
-                          <TableCell>
-                            <input
-                              type="checkbox"
-                              aria-label={t("directory.mappings.select", {
-                                field: mapping.target_field,
-                              })}
-                              checked={selected.has(mapping.id)}
-                              onChange={() => toggle(mapping.id)}
-                              className="size-3.5 accent-primary"
-                            />
-                          </TableCell>
-                        ) : null}
-                        <TableCell>
-                          <code
-                            className="block max-w-32 truncate rounded border border-border/60 bg-muted/20 px-2 py-1"
-                            title={mapping.source_attribute}
-                          >
-                            {mapping.source_attribute}
-                          </code>
-                        </TableCell>
-                        <TableCell>
-                          <span className="flex items-center gap-2">
-                            <ArrowRightIcon className="size-3 shrink-0 text-muted-foreground" />
-                            <code className="rounded border border-border/60 bg-muted/20 px-2 py-1">
-                              {mapping.target_field}
-                            </code>
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="rounded bg-muted px-1.5 py-0.5 text-[10px]">
-                            {t(`directory.mappings.types.${mapping.value_type}`)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <p>{t(`directory.mappings.transformOptions.${mapping.transform}`)}</p>
-                          {mapping.pattern ? (
-                            <code
-                              className="mt-1 block max-w-28 truncate text-[10px] text-muted-foreground"
-                              title={mapping.pattern}
-                            >
-                              {mapping.pattern}
-                            </code>
-                          ) : null}
-                        </TableCell>
-                        <TableCell
-                          className="max-w-28 truncate"
-                          title={JSON.stringify(preview?.values[mapping.id])}
-                        >
-                          {preview?.values[mapping.id] == null
-                            ? "--"
-                            : typeof preview.values[mapping.id] === "string"
-                              ? String(preview.values[mapping.id])
-                              : JSON.stringify(preview.values[mapping.id])}
-                        </TableCell>
-                        <TableCell>
-                          <DirectoryStatus
-                            label={t(
-                              mapping.enabled
-                                ? "directory.mappings.activeLabel"
-                                : "directory.mappings.disabled",
-                            )}
-                            tone={mapping.enabled ? "success" : "neutral"}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {canWrite ? (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger
-                                render={
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-7"
-                                    aria-label={t("directory.mappings.rowActions", {
-                                      field: mapping.target_field,
-                                    })}
-                                    disabled={busy}
-                                  />
-                                }
-                              >
-                                <EllipsisIcon />
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => onEdit(mapping)}>
-                                  <PencilIcon />
-                                  {t("directory.mappings.edit")}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onToggle(mapping)}>
-                                  <PowerIcon />
-                                  {t(
-                                    mapping.enabled
-                                      ? "directory.mappings.disable"
-                                      : "directory.mappings.enable",
-                                  )}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onDelete([mapping])}>
-                                  <TrashIcon />
-                                  {t("directory.mappings.delete")}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          ) : (
-                            "--"
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                {!loading && visible.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-40 text-center text-muted-foreground">
-                      {t(search || state ? "directory.noResults" : "directory.mappings.empty")}
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-              </TableBody>
-            </Table>
-          </div>
-        </section>
+        <MappingRulesTable
+          mappings={mappings}
+          loading={loading}
+          canWrite={canWrite}
+          busy={busy}
+          preview={preview}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onToggle={onToggle}
+        />
 
-        <aside className={cn(DIRECTORY_PANEL, "p-4")} aria-label={t("directory.mappings.preview")}>
-          <header className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="font-heading text-sm font-semibold">
-              {t("directory.mappings.preview")}
-            </h2>
-            <Button
-              variant="outline"
-              className={DIRECTORY_ACTION}
-              onClick={onPreview}
-              disabled={previewing || !active.length}
-            >
-              <PlayIcon />
-              {t("directory.mappings.testData")}
-            </Button>
-          </header>
-          <Field>
-            <FieldLabel htmlFor="directory-mapping-source" className="text-xs">
-              {t("directory.mappings.sourceData")}
-            </FieldLabel>
-            <Textarea
-              id="directory-mapping-source"
-              value={source}
-              onChange={(event) => onSourceChange(event.target.value)}
-              maxLength={64000}
-              spellCheck={false}
-              className="min-h-44 resize-y bg-muted/20 font-mono text-[11px] leading-5"
-            />
-          </Field>
-          <ArrowDownIcon className="mx-auto my-3 size-5 text-muted-foreground" aria-hidden="true" />
-          <div className="rounded-md border border-border/60 bg-muted/20 p-3">
-            <h3 className="mb-2 text-xs font-medium">{t("directory.mappings.mappedProfile")}</h3>
-            <pre className="max-h-60 overflow-auto whitespace-pre-wrap wrap-anywhere font-mono text-[11px] leading-5">
-              {JSON.stringify(preview?.profile ?? {}, null, 2)}
-            </pre>
-          </div>
-          <div
-            className={cn(
-              "mt-3 rounded-md p-3 text-xs",
-              !preview
-                ? "bg-muted/40 text-muted-foreground"
-                : preview.valid
-                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                  : "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-            )}
-            role="status"
-          >
-            <p className="font-medium">
-              {t(
-                !preview
-                  ? "directory.mappings.notValidated"
-                  : preview.valid
-                    ? "directory.mappings.valid"
-                    : "directory.mappings.review",
-              )}
-            </p>
-            {preview?.issues.map((issue) => (
-              <p
-                key={`${issue.mapping_id}:${issue.field}:${issue.code}`}
-                className="mt-1 text-[11px]"
-              >
-                {issue.field &&
-                  `${t(`directory.mappings.targets.${issue.field}`, { defaultValue: issue.field })}: `}
-                {t(issueKey(issue.code))}
-              </p>
-            ))}
-          </div>
-        </aside>
+        <MappingPreviewPanel
+          source={source}
+          onSourceChange={onSourceChange}
+          preview={preview}
+          onPreview={onPreview}
+          previewing={previewing}
+          hasActiveRules={active.length > 0}
+        />
       </div>
     </div>
-  );
-}
-
-export function MappingEditor({
-  initial,
-  targets,
-  busy,
-  error,
-  onSave,
-  onClose,
-}: {
-  initial: MappingInput;
-  targets: Record<string, "string" | "array">;
-  busy: boolean;
-  error?: string;
-  onSave: (mapping: MappingInput) => void;
-  onClose: () => void;
-}) {
-  const { t } = useTranslation("dashboard");
-  const [mapping, setMapping] = useState(initial);
-  return (
-    <Dialog open onOpenChange={(open) => !open && !busy && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {t(initial.id ? "directory.mappings.edit" : "directory.mappings.add")}
-          </DialogTitle>
-          <DialogDescription>{t("directory.mappings.editorDescription")}</DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!busy && mapping.source_attribute.trim())
-              onSave({ ...mapping, source_attribute: mapping.source_attribute.trim() });
-          }}
-        >
-          <fieldset disabled={busy} className="space-y-4">
-            <Field>
-              <FieldLabel htmlFor="mapping-source-field">
-                {t("directory.mappings.source")}
-              </FieldLabel>
-              <Input
-                id="mapping-source-field"
-                required
-                maxLength={128}
-                value={mapping.source_attribute}
-                onChange={(event) =>
-                  setMapping({ ...mapping, source_attribute: event.target.value })
-                }
-              />
-            </Field>
-            <DirectorySelect
-              label={t("directory.mappings.target")}
-              value={mapping.target_field}
-              onChange={(target_field) =>
-                setMapping({
-                  ...mapping,
-                  target_field,
-                  value_type: targets[target_field] ?? "string",
-                })
-              }
-              options={Object.keys(targets).map((value) => ({
-                value,
-                label: t(`directory.mappings.targets.${value}`, { defaultValue: value }),
-              }))}
-            />
-            <DirectorySelect
-              label={t("directory.mappings.transform")}
-              value={mapping.transform}
-              onChange={(transform) =>
-                setMapping({
-                  ...mapping,
-                  transform: transform as MappingInput["transform"],
-                  pattern: transform === "extract" ? mapping.pattern : "",
-                })
-              }
-              options={["none", "trim", "lowercase", "uppercase", "extract"].map((value) => ({
-                value,
-                label: t(`directory.mappings.transformOptions.${value}`),
-              }))}
-            />
-            {mapping.transform === "extract" ? (
-              <Field>
-                <FieldLabel htmlFor="mapping-pattern">{t("directory.mappings.pattern")}</FieldLabel>
-                <Input
-                  id="mapping-pattern"
-                  className="font-mono"
-                  required
-                  maxLength={256}
-                  value={mapping.pattern}
-                  onChange={(event) => setMapping({ ...mapping, pattern: event.target.value })}
-                />
-              </Field>
-            ) : null}
-            <div className="flex items-center justify-between">
-              <label htmlFor="mapping-enabled" className="text-sm">
-                {t("directory.mappings.activeLabel")}
-              </label>
-              <Switch
-                id="mapping-enabled"
-                checked={mapping.enabled}
-                onCheckedChange={(enabled) => setMapping({ ...mapping, enabled })}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="mapping-required" className="text-sm">
-                {t("directory.mappings.required")}
-              </label>
-              <Switch
-                id="mapping-required"
-                checked={mapping.required}
-                onCheckedChange={(required) => setMapping({ ...mapping, required })}
-              />
-            </div>
-            {error ? <FieldError>{error}</FieldError> : null}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                {t("directory.cancel")}
-              </Button>
-              <Button type="submit" disabled={busy || !mapping.source_attribute.trim()}>
-                {t("directory.mappings.save")}
-              </Button>
-            </DialogFooter>
-          </fieldset>
-        </form>
-      </DialogContent>
-    </Dialog>
   );
 }

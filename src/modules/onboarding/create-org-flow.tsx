@@ -129,7 +129,7 @@ export function CreateOrgFlow({
         logo_url: logo || undefined,
       });
       if (selection.tier === "enterprise") {
-        toast.success("Organization created — our team will reach out about Enterprise setup.");
+        toast.success(t("createOrgFlow.organizationCreatedOurTeam"));
       }
       done();
     } catch (err) {

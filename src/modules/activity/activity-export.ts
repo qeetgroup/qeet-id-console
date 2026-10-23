@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import i18n from "@/i18n";
 import { toastError } from "@/platform/errors/error-toast";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { fetchActivityPage } from "./activity-history";
@@ -71,10 +72,9 @@ export function useActivityExport(filters: ActivityFilters) {
           downloadBlob(JSON.stringify(all, null, 2), MIME.json, name);
         }
 
-        const noun = all.length === 1 ? "event" : "events";
-        toast.success(`Exported ${all.length.toLocaleString()} ${noun}`, {
+        toast.success(i18n.t("activity:export.done", { count: all.length }), {
           description: truncated
-            ? `Capped at ${EXPORT_ROW_CAP.toLocaleString()} rows. Narrow the filter or time range to capture more.`
+            ? i18n.t("activity:export.capped", { cap: EXPORT_ROW_CAP.toLocaleString() })
             : undefined,
         });
       } catch (err) {

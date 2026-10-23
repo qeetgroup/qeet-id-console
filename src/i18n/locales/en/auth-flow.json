@@ -132,9 +132,11 @@
     "passwordPlaceholder": "Enter your password",
     "forgotPassword": "Forgot your password?",
     "socialDivider": "Or continue with",
-    "socialLabel": "{{verb}} with {{provider}}",
     "ssoDescription": "Your organization uses {{kind}} single sign-on. You’ll be redirected to your identity provider.",
-    "ssoContinue": "Continue with {{provider}}"
+    "ssoContinue": "Continue with {{provider}}",
+    "socialContinue": "Continue with {{provider}}",
+    "socialSignIn": "Sign in with {{provider}}",
+    "socialSignUp": "Sign up with {{provider}}"
   },
   "signIn": {
     "eyebrow": "WELCOME BACK",
@@ -175,7 +177,9 @@
       "copiedBtn": "Copied",
       "downloadBtn": "Download",
       "continueBtn": "Continue"
-    }
+    },
+    "noSocialAccount": "No account uses that provider yet. Sign up first, then sign in.",
+    "socialSigningIn": "Signing you in…"
   },
   "signUp": {
     "eyebrowLight": "JOIN QEET ID",
@@ -223,7 +227,9 @@
       "confirmLabel": "Confirm new password",
       "submitBtn": "Reset password",
       "submittingBtn": "Resetting…",
-      "mismatch": "Passwords don't match."
+      "mismatch": "Passwords don't match.",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPlaceholder": "Re-enter your password"
     }
   },
   "magic": {
@@ -276,6 +282,20 @@
     "successText": "Redirecting to your dashboard…",
     "errorTitle": "Couldn't complete sign-in",
     "errorTrailer": "The code is single-use and short-lived — start the SSO flow again from your identity provider.",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "failed": "Single sign-on failed."
+  },
+  "verifyEmail": {
+    "title": "Verify your email",
+    "sentTo": "We sent a 6-digit code to <email>{{email}}</email>. Enter it below to finish creating your account.",
+    "codeLabel": "Verification code",
+    "expiry": "The code expires in 10 minutes.",
+    "submit": "Verify email",
+    "submitting": "Verifying…",
+    "noCode": "Didn't get it?",
+    "resend": "Resend code",
+    "resending": "Resending…",
+    "wrongAccount": "Wrong account?",
+    "signOut": "Sign out"
   }
 }

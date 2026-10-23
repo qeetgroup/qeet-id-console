@@ -1,5 +1,6 @@
 import { Badge, cn, Separator, StatusPill } from "@qeetrix/ui";
 import { StarIcon } from "@qeetrix/icons";
+import { useTranslation } from "react-i18next";
 
 import type { SearchContext, SearchItem } from "../registry/types/registry.types";
 import { QuickActions } from "./quick-actions";
@@ -13,6 +14,7 @@ interface PreviewPaneProps {
 
 /** Renders the highlighted item's details, favorite toggle and quick actions. */
 export function PreviewPane({ item, ctx, isFavorite, onToggleFavorite }: PreviewPaneProps) {
+  const { t } = useTranslation("search");
   return (
     <div className="flex h-full flex-col gap-3 p-4">
       {/* Header */}
@@ -33,7 +35,7 @@ export function PreviewPane({ item, ctx, isFavorite, onToggleFavorite }: Preview
         </div>
         <button
           type="button"
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          aria-label={t(isFavorite ? "previewPane.removeFavorite" : "previewPane.addFavorite")}
           aria-pressed={isFavorite}
           onClick={onToggleFavorite}
           className={cn(
@@ -76,11 +78,12 @@ export function PreviewPane({ item, ctx, isFavorite, onToggleFavorite }: Preview
       {/* Updated timestamp */}
       {item.updatedAt != null && (
         <p className="text-xs text-muted-foreground">
-          Updated{" "}
-          {new Date(item.updatedAt).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
+          {t("previewPane.updated", {
+            date: new Date(item.updatedAt).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }),
           })}
         </p>
       )}

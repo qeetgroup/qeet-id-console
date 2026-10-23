@@ -21,6 +21,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
+import { ErrorText } from "@/platform/components/error-reference";
 import { PageHeader } from "@/platform/components/page-header";
 import { applyServerErrors, FieldFrame, FormError, useAppForm } from "@/platform/forms/app-form";
 import {
@@ -28,6 +29,7 @@ import {
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import { CodePreview } from "./code-preview/code-preview";
+import { policyProblemMessage } from "./condition-builder/condition-problem";
 import { ConditionTree } from "./condition-builder/condition-tree";
 import { DecisionExplain } from "./explain/decision-explain";
 import { MonacoPanel } from "./shared/monaco-panel";
@@ -128,11 +130,11 @@ export function AbacPoliciesPage() {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <PageHeader
-        description="Author attribute-based policies with a no-code condition builder. Deny wins; policies are ordered by priority."
+        description={t("abacPoliciesPage.authorAttributeBasedPolicies")}
         actions={
           abacLocked ? undefined : (
             <Button size="sm" onClick={() => setDraft(newDraft())}>
-              <PlusIcon /> New policy
+              <PlusIcon /> {t("abac.editor.newTitle")}
             </Button>
           )
         }
@@ -140,15 +142,15 @@ export function AbacPoliciesPage() {
 
       <FeatureGate
         feature="abac"
-        title="ABAC is a Pro feature"
-        description="Author attribute-based access policies with a no-code condition builder. Upgrade to Pro to use ABAC."
+        title={t("abacPoliciesPage.abacIsAProFeature")}
+        description={t("abacPoliciesPage.authorAttributeBasedAccess")}
       >
         <div className="grid gap-4 xl:grid-cols-[380px_1fr]">
           <Card className="min-w-0">
             <CardHeader>
-              <CardTitle className="text-base">Policies</CardTitle>
+              <CardTitle className="text-base">{t("abacPoliciesPage.policies")}</CardTitle>
               <CardDescription>
-                {policies.length} attribute polic{policies.length === 1 ? "y" : "ies"}
+                {t("abacPoliciesPage.policyCount", { count: policies.length })}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -158,8 +160,8 @@ export function AbacPoliciesPage() {
                 error={policiesQ.error}
                 isEmpty={policies.length === 0}
                 emptyIcon={SlidersHorizontalIcon}
-                emptyTitle="No ABAC policies yet"
-                emptyDescription="Create your first attribute-based policy."
+                emptyTitle={t("abacPoliciesPage.noAbacPoliciesYet")}
+                emptyDescription={t("abacPoliciesPage.createYourFirstAttribute")}
                 skeletonRows={4}
               >
                 <ul className="divide-y">
@@ -172,19 +174,25 @@ export function AbacPoliciesPage() {
                       >
                         <div className="flex items-center gap-2">
                           <Badge variant={p.effect === "deny" ? "destructive" : "success"}>
-                            {p.effect}
+                            {t(`abac.editor.${p.effect}`)}
                           </Badge>
                           <span className="truncate text-sm font-medium">{p.name}</span>
-                          {!p.enabled && <Badge variant="muted">disabled</Badge>}
+                          {!p.enabled && (
+                            <Badge variant="muted">{t("abacPoliciesPage.disabled")}</Badge>
+                          )}
                         </div>
                         <p className="truncate font-mono text-xs text-muted-foreground">
-                          {p.resource_type}:{p.action} · priority {p.priority}
+                          {t("abacPoliciesPage.target", {
+                            resource: p.resource_type,
+                            action: p.action,
+                            priority: p.priority,
+                          })}
                         </p>
                       </button>
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label={`Delete ${p.name}`}
+                        aria-label={t("abacPoliciesPage.deleteNamed", { name: p.name })}
                         disabled={deleteM.isPending}
                         onClick={() => deletePolicy(p)}
                       >
@@ -202,7 +210,7 @@ export function AbacPoliciesPage() {
           ) : (
             <Card className="flex min-h-100 items-center justify-center">
               <CardContent className="text-center text-sm text-muted-foreground">
-                Select a policy to edit, or create a new one.
+                {t("abacPoliciesPage.selectAPolicyTo")}
               </CardContent>
             </Card>
           )}
@@ -331,13 +339,16 @@ function PolicyEditor({ draft, onClose }: { draft: Draft; onClose: () => void })
               {(field) => (
                 <field.TextField
                   label={t("abac.editor.resourceType")}
-                  placeholder="* or document"
+                  placeholder={t("abacPoliciesPage.orDocument")}
                 />
               )}
             </form.AppField>
             <form.AppField name="action">
               {(field) => (
-                <field.TextField label={t("abac.editor.action")} placeholder="* or read" />
+                <field.TextField
+                  label={t("abac.editor.action")}
+                  placeholder={t("abacPoliciesPage.orRead")}
+                />
               )}
             </form.AppField>
             <form.AppField name="priority">
@@ -354,7 +365,9 @@ function PolicyEditor({ draft, onClose }: { draft: Draft; onClose: () => void })
             <p className="mb-2 text-sm font-medium">{t("abac.editor.condition")}</p>
             <ConditionTree value={condition} onChange={setCondition} />
           </div>
-          {problem && <p className="text-sm text-muted-foreground">{problem}</p>}
+          {problem && (
+            <p className="text-sm text-muted-foreground">{policyProblemMessage(problem, t)}</p>
+          )}
           <FormError error={createM.error ?? updateM.error} />
         </CardContent>
       </Card>
@@ -433,6 +446,7 @@ function TestPanel({ resourceType, action }: { resourceType: string; action: str
           setRecord(rec);
           pushDecision(rec);
         },
+        onError: () => setRecord(null), // never leave the previous decision beside the failure
       },
     );
   }
@@ -459,6 +473,11 @@ function TestPanel({ resourceType, action }: { resourceType: string; action: str
           ariaLabel={t("abac.test.input")}
         />
         {parseError && <p className="text-destructive text-sm">{t("abac.test.invalidJson")}</p>}
+        {simM.error && (
+          <p className="text-destructive text-sm">
+            <ErrorText error={simM.error} />
+          </p>
+        )}
         {record && (
           <div className="rounded-md border p-3">
             <DecisionExplain record={record} />

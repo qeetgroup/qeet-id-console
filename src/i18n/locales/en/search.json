@@ -1,0 +1,162 @@
+{
+  "quickActions": {
+    "open": "Open",
+    "copyUrl": "Copy URL",
+    "newTab": "New tab",
+    "copyId": "Copy ID",
+    "quickActions": "Quick actions"
+  },
+  "universalSearch": {
+    "universalSearch": "Universal search",
+    "searchTheControlPlane": "Search the control plane…",
+    "searchingResources": "Searching resources",
+    "clearSearch": "Clear search",
+    "searchResults": "Search results",
+    "noResults": "No results",
+    "clearRecentHistory": "Clear recent history",
+    "loadingResults": "Loading results",
+    "nothingMatched": "Nothing matched “{{query}}”. Try a different term.",
+    "hint": {
+      "navigate": "navigate",
+      "select": "select",
+      "close": "close"
+    },
+    "resultCount_one": "{{count}} result",
+    "resultCount_other": "{{count}} results"
+  },
+  "category": {
+    "favorites": "Favorites",
+    "recent": "Recent",
+    "navigation": "Navigation",
+    "commands": "Commands"
+  },
+  "resourceType": {
+    "user": "Users",
+    "organization": "Organizations",
+    "group": "Groups",
+    "role": "Roles",
+    "oidc_client": "Applications",
+    "audit_event": "Audit events",
+    "other": "Other results"
+  },
+  "commands": {
+    "dashboard": {
+      "title": "Open Dashboard",
+      "subtitle": "Go to the organization overview",
+      "keywords": "home, overview, main"
+    },
+    "createUser": {
+      "title": "Create User",
+      "subtitle": "Invite a new user to this organization",
+      "keywords": "invite, add user, new user, onboard"
+    },
+    "createOrganization": {
+      "title": "Create Organization",
+      "subtitle": "Add a new organization or sub-organization",
+      "keywords": "add org, new organization, create organization, new tenant, create tenant"
+    },
+    "createRole": {
+      "title": "Create Role",
+      "subtitle": "Define a new RBAC role with custom permissions",
+      "keywords": "add role, new role, rbac"
+    },
+    "createGroup": {
+      "title": "Create Group",
+      "subtitle": "Create a user group for bulk access control",
+      "keywords": "add group, new group, user group"
+    },
+    "users": {
+      "title": "Manage Users",
+      "subtitle": "View and manage all organization users",
+      "keywords": "users list, all users, user management"
+    },
+    "invitations": {
+      "title": "Invite User",
+      "subtitle": "Send an organization invitation",
+      "keywords": "send invite, invitation, onboard"
+    },
+    "apiKeys": {
+      "title": "Generate API Key",
+      "subtitle": "Create a new machine-access API key",
+      "keywords": "api key, machine identity, service account, token"
+    },
+    "signingKeys": {
+      "title": "Rotate Signing Keys",
+      "subtitle": "Manage JWKS signing and encryption keys",
+      "keywords": "jwks, rotate keys, signing, encryption key"
+    },
+    "oauthClients": {
+      "title": "Create OAuth Client",
+      "subtitle": "Register an OIDC / OAuth 2.0 application",
+      "keywords": "oauth, oidc, client, application, app"
+    },
+    "passkeys": {
+      "title": "Configure Passkeys",
+      "subtitle": "Manage WebAuthn / passkey settings",
+      "keywords": "webauthn, fido2, passkey, biometric"
+    },
+    "mfa": {
+      "title": "Multi-factor Auth Settings",
+      "subtitle": "Configure TOTP, SMS, and recovery codes",
+      "keywords": "mfa, totp, 2fa, two factor, authenticator"
+    },
+    "auditLogs": {
+      "title": "View Audit Logs",
+      "subtitle": "Browse and filter security audit events",
+      "keywords": "audit, logs, events, security"
+    },
+    "exportAudit": {
+      "title": "Export Audit Logs",
+      "subtitle": "Download audit events for compliance",
+      "keywords": "export, download, compliance, audit csv"
+    },
+    "webhooks": {
+      "title": "Manage Webhooks",
+      "subtitle": "Configure outbound event webhooks",
+      "keywords": "webhooks, events, integrations, outbound"
+    },
+    "authHooks": {
+      "title": "Auth Hooks",
+      "subtitle": "Configure pre/post authentication hooks",
+      "keywords": "hooks, actions, login hook, auth pipeline"
+    },
+    "agents": {
+      "title": "Agent Governance",
+      "subtitle": "Manage machine-to-machine and AI agents",
+      "keywords": "agents, bots, m2m, machine identity, ai agent"
+    },
+    "credentials": {
+      "title": "Verifiable Credentials",
+      "subtitle": "Issue and manage W3C verifiable credentials",
+      "keywords": "vc, credentials, w3c, ssi"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "subtitle": "Organization usage metrics and trends",
+      "keywords": "metrics, stats, analytics, charts"
+    },
+    "branding": {
+      "title": "Manage Branding",
+      "subtitle": "Customise the hosted login UI",
+      "keywords": "branding, theme, logo, colors, login page"
+    },
+    "organizationSettings": {
+      "title": "Organization Settings",
+      "subtitle": "General, domains, security policy",
+      "keywords": "settings, organization, general, config"
+    },
+    "policyBuilder": {
+      "title": "Build Policy",
+      "subtitle": "Create and test authorization policies",
+      "keywords": "policy, abac, rego, cedar, rules"
+    }
+  },
+  "previewPane": {
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "updated": "Updated {{date}}"
+  },
+  "resultRow": {
+    "command": "cmd"
+  }
+}

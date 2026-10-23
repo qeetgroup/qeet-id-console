@@ -10,12 +10,14 @@ import {
 import { DataState } from "@/platform/components/data-state";
 import { KeyRoundIcon, TriangleAlertIcon } from "@qeetrix/icons";
 import { useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { groupPermissionsByResource, usePermissions, wildcardPermissions } from "../api/rbac";
 
 /** Renders the permission catalogue grouped by resource. */
 export function PermissionsPage() {
+  const { t } = useTranslation("rbac");
   const permsQ = usePermissions();
   const [q, setQ] = useState("");
   const all = permsQ.data?.items ?? [];
@@ -33,7 +35,7 @@ export function PermissionsPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader description="The platform permission catalogue, grouped by resource. Permissions use resource.action keys." />
+      <PageHeader description={t("permissionsPage.thePlatformPermissionCatalogue")} />
 
       {wildcards.length > 0 && (
         <Card className="border-amber-500/40 bg-amber-500/5">
@@ -43,20 +45,22 @@ export function PermissionsPage() {
               aria-hidden
             />
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{wildcards.length}</span> wildcard
-              permission
-              {wildcards.length === 1 ? "" : "s"} detected — wildcards grant broad access; prefer
-              explicit keys.
+              <Trans
+                t={t}
+                i18nKey="permissionsPage.wildcardWarning"
+                count={wildcards.length}
+                components={{ strong: <span className="font-medium text-foreground" /> }}
+              />
             </p>
           </CardContent>
         </Card>
       )}
 
       <Input
-        placeholder="Search permissions…"
+        placeholder={t("permissionsPage.searchPermissions")}
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        aria-label="Search permissions"
+        aria-label={t("permissionsPage.searchPermissions2")}
         className="max-w-sm"
       />
 
@@ -66,7 +70,7 @@ export function PermissionsPage() {
         error={permsQ.error}
         isEmpty={filtered.length === 0}
         emptyIcon={KeyRoundIcon}
-        emptyTitle={q ? "No permissions match your search" : "No permissions"}
+        emptyTitle={q ? t("permissionsPage.noMatches") : t("permissions.empty")}
         skeletonRows={4}
       >
         <div className="grid gap-4 lg:grid-cols-2">
@@ -77,7 +81,7 @@ export function PermissionsPage() {
                   <span className="font-mono">{resource}</span>
                   <Badge variant="muted">{perms.length}</Badge>
                 </CardTitle>
-                <CardDescription>Actions available on {resource} resources.</CardDescription>
+                <CardDescription>{t("permissionsPage.actionsOn", { resource })}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 {perms.map((p) => (
@@ -88,7 +92,7 @@ export function PermissionsPage() {
                     <code className="shrink-0 text-xs font-medium">{p.key}</code>
                     {p.key.includes("*") && (
                       <Badge variant="warning" className="text-[10px]">
-                        wildcard
+                        {t("permissionsPage.wildcard")}
                       </Badge>
                     )}
                     <span className="text-muted-foreground">{p.description}</span>

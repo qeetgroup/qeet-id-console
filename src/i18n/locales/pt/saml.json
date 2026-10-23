@@ -5,9 +5,7 @@
     "addProvider": "Adicionar provedor de serviço"
   },
   "metadata": {
-    "title": "Metadados do IdP",
-    "description": "Os provedores de serviço importam este único documento de metadados para confiar no Qeet ID como seu IdP. Forneça esta URL para a configuração SAML de cada SP.",
-    "hint": "A maioria dos SPs aceita uma URL de metadados diretamente; para os que precisam do XML, aponte-os para o mesmo endpoint — ele serve o descritor IdP assinado (ID de entidade, URL SSO, certificado de assinatura)."
+    "title": "Metadados do IdP"
   },
   "list": {
     "title": "Provedores de serviço",

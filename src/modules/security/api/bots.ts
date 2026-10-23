@@ -76,6 +76,6 @@ export function useUpdateBotSettings() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.bots(tenantId) }),
-    meta: { successMessage: "Bot protection settings saved" },
+    meta: { successMessage: "security:toast.botProtectionSettingsSaved" },
   });
 }

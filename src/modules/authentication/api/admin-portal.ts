@@ -52,7 +52,7 @@ export function useGenerateAdminPortalLink() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.adminPortalLinks(tenantId) }),
-    meta: { successMessage: "Admin portal link generated", silentError: true }, // the card shows it
+    meta: { successMessage: "auth:toast.adminPortalLinkGenerated", silentError: true }, // the card shows it
   });
 }
 
@@ -65,7 +65,7 @@ export function useRevokeAdminPortalLink() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.adminPortalLinks(tenantId) }),
-    meta: { successMessage: "Admin portal link revoked" },
+    meta: { successMessage: "auth:toast.adminPortalLinkRevoked" },
   });
 }
 

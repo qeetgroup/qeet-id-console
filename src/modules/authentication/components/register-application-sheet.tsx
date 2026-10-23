@@ -142,7 +142,7 @@ function RegisterApplicationForm({
               <field.TextField
                 label={t("create.name")}
                 description={t("create.nameHelp")}
-                placeholder="My SPA"
+                placeholder={t("create.namePlaceholder")}
                 maxLength={NAME_MAX_LENGTH}
                 required
               />

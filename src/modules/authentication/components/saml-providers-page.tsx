@@ -15,7 +15,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -29,13 +28,16 @@ import { PencilIcon, PlusIcon, ServerIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
 import {
   settleSensitiveAction,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import {
+  idpEntityId,
   idpMetadataUrl,
+  idpSsoUrl,
   type SamlProvider,
   useCreateSamlProvider,
   useDeleteSamlProvider,
@@ -45,10 +47,12 @@ import {
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import { useMemo } from "react";
 import { z } from "zod";
+import { AuthStatusPill } from "./auth-status-pill";
 
 /** Renders the service providers that sign people in through Qeet ID as their SAML IdP. */
 export function SamlProvidersPage() {
   const { t } = useTranslation("saml");
+  const tenantId = useTenantId();
   const runSensitive = useSensitiveAction();
   const listQ = useSamlProviders();
   const deleteM = useDeleteSamlProvider();
@@ -86,10 +90,30 @@ export function SamlProvidersPage() {
           <CardTitle className="text-base">{t("metadata.title")}</CardTitle>
           <CardDescription>{t("metadata.description")}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <CopyableSecret value={idpMetadataUrl()} oneLine />
-          <FieldDescription>{t("metadata.hint")}</FieldDescription>
-        </CardContent>
+        {tenantId && (
+          <CardContent className="flex flex-col gap-3">
+            <CopyableSecret value={idpMetadataUrl(tenantId)} oneLine />
+            <FieldDescription>{t("metadata.hint")}</FieldDescription>
+            <dl className="grid gap-3 border-t pt-3 text-sm">
+              <div className="flex flex-col gap-1">
+                <dt className="text-xs font-medium text-muted-foreground">
+                  {t("metadata.entityId")}
+                </dt>
+                <dd>
+                  <CopyableSecret value={idpEntityId(tenantId)} oneLine />
+                </dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="text-xs font-medium text-muted-foreground">
+                  {t("metadata.ssoUrl")}
+                </dt>
+                <dd>
+                  <CopyableSecret value={idpSsoUrl(tenantId)} oneLine />
+                </dd>
+              </div>
+            </dl>
+          </CardContent>
+        )}
       </Card>
 
       <Card>
@@ -130,7 +154,7 @@ export function SamlProvidersPage() {
                       {p.acs_url}
                     </TableCell>
                     <TableCell>
-                      <StatusPill status={p.status} />
+                      <AuthStatusPill status={p.status} />
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {p.last_login_at ? <TimeSince value={p.last_login_at} /> : "—"}
@@ -258,7 +282,11 @@ function SamlProviderForm({ provider, onDone }: { provider?: SamlProvider; onDon
         <FieldGroup>
           <form.AppField name="name">
             {(field) => (
-              <field.TextField label={t("form.name")} placeholder="Acme Analytics" required />
+              <field.TextField
+                label={t("form.name")}
+                placeholder={t("form.namePlaceholder")}
+                required
+              />
             )}
           </form.AppField>
           <form.AppField name="entity_id">

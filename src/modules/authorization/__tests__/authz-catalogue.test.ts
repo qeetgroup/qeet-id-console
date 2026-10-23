@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import i18n from "@/i18n";
+
 import {
   AUTHZ_RESOURCE_TYPES,
   type AuditEvent,
   isAuthzAction,
   isAuthzEvent,
+  resourceTypeKey,
   toVersionTimeline,
 } from "../api/audit";
 import { groupPermissionsByResource, type Permission, wildcardPermissions } from "../api/rbac";
@@ -77,6 +80,7 @@ describe("isAuthzAction", () => {
     "permission.revoked",
     "relation.created",
     "relation_tuple.deleted",
+    "rebac.tuple_written",
     "policy.updated",
     "group_role.assigned",
     "group_role.unassigned",
@@ -97,6 +101,18 @@ describe("isAuthzAction", () => {
     "",
   ])("does not treat %j as an authorization action", (action) => {
     expect(isAuthzAction(action)).toBe(false);
+  });
+});
+
+describe("resourceTypeKey", () => {
+  it("labels every authorization resource type, and nothing else", () => {
+    for (const type of AUTHZ_RESOURCE_TYPES) {
+      const key = resourceTypeKey(type);
+      expect(key && i18n.exists(key, { lng: "en" })).toBe(true);
+    }
+    for (const type of ["user", "constructor", "toString", ""]) {
+      expect(resourceTypeKey(type)).toBeNull();
+    }
   });
 });
 

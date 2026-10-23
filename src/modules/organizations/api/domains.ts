@@ -63,7 +63,7 @@ export function useAddDomain() {
         body: { domain },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
-    meta: { successMessage: "Domain added" },
+    meta: { successMessage: "organizations:toast.domainAdded" },
   });
 }
 
@@ -76,7 +76,7 @@ export function useVerifyDomain() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
-    meta: { successMessage: "Domain verified" },
+    meta: { successMessage: "organizations:toast.domainVerified" },
   });
 }
 
@@ -87,7 +87,7 @@ export function useRemoveDomain() {
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/domains/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
-    meta: { successMessage: "Domain removed" },
+    meta: { successMessage: "organizations:toast.domainRemoved" },
   });
 }
 
@@ -108,7 +108,7 @@ export function useUpdateDomainSettings() {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
-    meta: { successMessage: "Domain updated" },
+    meta: { successMessage: "organizations:toast.domainUpdated" },
   });
 }
 

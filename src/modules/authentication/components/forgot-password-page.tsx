@@ -127,7 +127,7 @@ function ResetPanel({ token }: { token: string }) {
             id="new-password"
             name="new-password"
             autoComplete="new-password"
-            placeholder="At least 8 characters"
+            placeholder={t("forgotPassword.reset.passwordPlaceholder")}
             minLength={8}
             required
             value={password}
@@ -143,7 +143,7 @@ function ResetPanel({ token }: { token: string }) {
             id="confirm-password"
             name="confirm-password"
             autoComplete="new-password"
-            placeholder="Re-enter your password"
+            placeholder={t("forgotPassword.reset.confirmPlaceholder")}
             minLength={8}
             required
             value={confirm}

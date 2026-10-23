@@ -1,5 +1,6 @@
 import { cn, StatusPill } from "@qeetrix/ui";
 import { RadioIcon } from "@qeetrix/icons";
+import { useTranslation } from "react-i18next";
 
 import type { ConnectionStatus } from "../types/activity.types";
 
@@ -15,13 +16,6 @@ const STATUS_ICON_CLASS: Record<ConnectionStatus, string> = {
   reconnecting: "text-warning",
   disconnected: "text-destructive",
   paused: "text-muted-foreground",
-};
-
-const STATUS_LABEL: Record<ConnectionStatus, string> = {
-  connected: "Live",
-  reconnecting: "Reconnecting…",
-  disconnected: "Disconnected",
-  paused: "Paused",
 };
 
 const UNREAD_KIND: Partial<Record<ConnectionStatus, "success" | "warning" | "danger" | "muted">> = {
@@ -40,7 +34,8 @@ export function LiveIndicator({
   unreadCount?: number;
   className?: string;
 }) {
-  const label = STATUS_LABEL[status];
+  const { t } = useTranslation("activity");
+  const label = t(`liveIndicator.status.${status}`);
   const isPulsing = status === "connected" || status === "reconnecting";
 
   return (
@@ -61,7 +56,7 @@ export function LiveIndicator({
 
       {unreadCount !== undefined && unreadCount > 0 && (
         <StatusPill kind={UNREAD_KIND[status] ?? "neutral"} dot={false}>
-          {unreadCount > 99 ? "99+" : unreadCount} new
+          {t("activityModeToggle.new", { count: unreadCount > 99 ? "99+" : unreadCount })}
         </StatusPill>
       )}
     </div>

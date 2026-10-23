@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   DateRangePicker,
   type DateRangePickerProps,
@@ -12,15 +13,10 @@ import { CalendarClockIcon } from "@qeetrix/icons";
 // Lets callers hold a custom range without depending on react-day-picker.
 export type DateRange = NonNullable<DateRangePickerProps["value"]>;
 
-export const TIME_PRESETS: { value: string; label: string }[] = [
-  { value: "all", label: "All time" },
-  { value: "15m", label: "Last 15 minutes" },
-  { value: "1h", label: "Last hour" },
-  { value: "24h", label: "Last 24 hours" },
-  { value: "7d", label: "Last 7 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "custom", label: "Custom range…" },
-];
+// Each preset's label is `activityTimeRange.presets.<value>`.
+export const TIME_PRESETS = ["all", "15m", "1h", "24h", "7d", "30d", "custom"].map((value) => ({
+  value,
+}));
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -72,10 +68,11 @@ export function ActivityTimeRange({
   onPresetChange,
   onCustomRangeChange,
 }: ActivityTimeRangeProps) {
+  const { t } = useTranslation("activity");
   return (
     <div className="flex items-center gap-2">
       <Select value={preset} onValueChange={(v) => v && onPresetChange(v)}>
-        <SelectTrigger className="w-44 gap-2" aria-label="Time range">
+        <SelectTrigger className="w-44 gap-2" aria-label={t("activityTimeRange.timeRange")}>
           <CalendarClockIcon
             className="size-3.5 shrink-0 text-muted-foreground"
             aria-hidden="true"
@@ -85,7 +82,7 @@ export function ActivityTimeRange({
         <SelectContent>
           {TIME_PRESETS.map((p) => (
             <SelectItem key={p.value} value={p.value}>
-              {p.label}
+              {t(`activityTimeRange.presets.${p.value}`)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -95,7 +92,7 @@ export function ActivityTimeRange({
         <DateRangePicker
           value={customRange}
           onValueChange={onCustomRangeChange}
-          placeholder="Pick dates"
+          placeholder={t("activityTimeRange.pickDates")}
           numberOfMonths={2}
         />
       )}

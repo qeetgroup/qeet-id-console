@@ -2,7 +2,6 @@
 // no user or tenant id.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
@@ -72,7 +71,6 @@ export function useStartTotpEnrollment() {
 
 /** Confirms the app being set up; resolves with recovery codes that are shown once. */
 export function useConfirmTotpEnrollment() {
-  const { t } = useTranslation("auth");
   const qc = useQueryClient();
   return useMutation({
     gcTime: 0, // the response holds the recovery codes
@@ -81,13 +79,12 @@ export function useConfirmTotpEnrollment() {
       void qc.invalidateQueries({ queryKey: authKeys.totp() });
       void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
     },
-    meta: { successMessage: t("mfa.totp.toastEnabled"), silentError: true },
+    meta: { successMessage: "auth:mfa.totp.toastEnabled", silentError: true },
   });
 }
 
 /** Removes the authenticator app and, with it, the recovery codes. */
 export function useDisableTotp() {
-  const { t } = useTranslation("auth");
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () => api<void>("/v1/mfa/totp", { method: "DELETE" }),
@@ -95,7 +92,7 @@ export function useDisableTotp() {
       void qc.invalidateQueries({ queryKey: authKeys.totp() });
       void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
     },
-    meta: { successMessage: t("mfa.totp.toastDisabled") },
+    meta: { successMessage: "auth:mfa.totp.toastDisabled" },
   });
 }
 
@@ -156,7 +153,7 @@ export function useEnrollOtpStart() {
         method: "POST",
         body,
       }),
-    meta: { successMessage: "Verification code sent", silentError: true }, // the sheet shows it
+    meta: { successMessage: "auth:toast.verificationCodeSent", silentError: true }, // the sheet shows it
   });
 }
 
@@ -169,7 +166,7 @@ export function useConfirmOtpFactor() {
         body: { code },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.otpFactors() }),
-    meta: { successMessage: "Factor confirmed", silentError: true },
+    meta: { successMessage: "auth:toast.factorConfirmed", silentError: true },
   });
 }
 
@@ -179,7 +176,7 @@ export function useChallengeOtpFactor() {
       api<{ message: string }>(`/v1/mfa/otp/factors/${id}/challenge`, {
         method: "POST",
       }),
-    meta: { successMessage: "Test code sent" },
+    meta: { successMessage: "auth:toast.testCodeSent" },
   });
 }
 
@@ -188,6 +185,6 @@ export function useDeleteOtpFactor() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/mfa/otp/factors/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.otpFactors() }),
-    meta: { successMessage: "Factor removed" },
+    meta: { successMessage: "auth:toast.factorRemoved" },
   });
 }

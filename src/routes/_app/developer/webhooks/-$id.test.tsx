@@ -55,11 +55,17 @@ const webhook = {
   created_at: "2026-09-24T10:15:00Z",
 };
 
+let current: Record<string, unknown> = webhook;
+
 beforeEach(() => {
   sensitive.calls = [];
+  current = webhook;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
-    if (path === "/v1/webhooks/wh-1" && !options?.method) return webhook;
+    if (path === "/v1/webhooks/wh-1" && !options?.method) return current;
+    if (path === "/v1/tenants/tenant-1/webhooks/wh-1/rotate-secret" && options?.method === "POST") {
+      return { secret: "whsec_rotated", previous_secret_expires_at: "2030-01-02T10:00:00Z" };
+    }
     if (path === "/v1/webhooks/wh-1/deliveries") return { items: [] };
     if (path === "/v1/webhooks/wh-1" && options?.method === "DELETE") return undefined;
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
@@ -102,5 +108,56 @@ describe("Webhook detail — disabling it", () => {
       ),
     );
     expect(sensitive.calls[0]?.actionLabel).toBe("disable this webhook");
+  });
+});
+
+describe("Webhook detail — rotating its secret", () => {
+  it("rotates after confirming, and shows the new secret once with when the old one stops", async () => {
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: /rotate secret/i }));
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Rotate" }));
+
+    expect(await screen.findByText("whsec_rotated")).toBeTruthy();
+    expect(screen.getByText(/the previous secret stops signing/)).toBeTruthy();
+    expect(sensitive.calls[0]?.actionLabel).toBe("rotate this webhook's signing secret");
+
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+    expect(screen.queryByText("whsec_rotated")).toBeNull();
+  });
+});
+
+describe("Webhook detail — its state", () => {
+  it("explains an endpoint its failures disabled, and offers to enable it", async () => {
+    current = {
+      ...webhook,
+      disabled_at: "2026-10-21T08:00:00Z",
+      disabled_reason: "failing",
+      failing_since: "2026-10-18T08:00:00Z",
+    };
+    renderPage();
+
+    expect(
+      await screen.findByText(/Disabled automatically because its deliveries kept failing/),
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: /enable/i })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^disable$/i })).toBeNull();
+  });
+
+  it("says while a rotated-out secret still signs", async () => {
+    current = { ...webhook, previous_secret_expires_at: "2099-01-01T00:00:00Z" };
+    renderPage();
+
+    expect(await screen.findByText(/previous signing secret still signs deliveries/)).toBeTruthy();
+  });
+
+  it("shows the payload the server actually sends", async () => {
+    renderPage();
+    await screen.findByText(/Sample payload/);
+    const sample = document.body.textContent ?? "";
+    expect(sample).toContain('"type": "user.created"');
+    expect(sample).toContain('"occurred_at"');
+    expect(sample).not.toContain('"event":');
   });
 });

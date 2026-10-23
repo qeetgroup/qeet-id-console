@@ -21,7 +21,9 @@ import { USER360_TABS, type User360Tab } from "../tabs";
 import { deriveUserRisk } from "../user-risk";
 import { ActivityTab } from "./activity-tab";
 import { OverviewTab } from "./overview-tab";
-import { AccessTab, DeveloperTab, IdentitiesTab, SecurityTab, SessionsTab } from "./tab-panels";
+import { SecurityTab, SessionsTab } from "./tab-panels";
+import { AccessTab } from "./tab-panels-access";
+import { DeveloperTab, IdentitiesTab } from "./tab-panels-identities";
 import { UserDetailHeader } from "./user-detail-header";
 
 /** Renders User 360 for one user: the header and its tabs. */

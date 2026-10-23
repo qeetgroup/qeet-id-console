@@ -89,6 +89,11 @@
     },
     "toast": {
       "generated": "Evidence generated"
+    },
+    "status": {
+      "pass": "pass",
+      "na": "n/a",
+      "fail": "fail"
     }
   },
   "retention": {
@@ -120,5 +125,12 @@
       "title": "Other data classes",
       "description": "Audit logs are append-only and retained for the compliance window; session and event retention are managed by the platform. Per-class policies aren't configurable yet."
     }
+  },
+  "toast": {
+    "evidenceGenerated": "Evidence generated",
+    "retentionPolicySaved": "Retention policy saved",
+    "retentionPurgeComplete": "Retention purge complete",
+    "erasureRequestSubmitted": "Erasure request submitted",
+    "erasureRequestCancelled": "Erasure request cancelled"
   }
 }

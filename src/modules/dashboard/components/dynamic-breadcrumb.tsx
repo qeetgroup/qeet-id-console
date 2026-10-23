@@ -8,13 +8,13 @@ import {
 } from "@qeetrix/ui";
 import { Link, useLocation } from "@tanstack/react-router";
 
-import { lookupNavTitle } from "@/platform/config/navigation";
+import { lookupNavTitle, useNavGroups } from "@/platform/config/navigation";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
 export function DynamicBreadcrumb() {
   const { pathname } = useLocation();
   const access = useCapabilities();
-  const meta = lookupNavTitle(pathname);
+  const meta = lookupNavTitle(pathname, useNavGroups());
 
   const lead = meta.parent // at most 2 levels: the parent for sub-items, else the group
     ? { title: meta.parent.title, url: meta.parent.url }

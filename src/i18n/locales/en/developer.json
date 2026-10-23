@@ -157,7 +157,8 @@
       "failOpen": "fail-open",
       "failClosed": "fail-closed",
       "enabledAriaLabel": "Enabled",
-      "remove": "Remove"
+      "remove": "Remove",
+      "added": "added"
     },
     "confirm": {
       "removeTitle": "Remove this hook?",
@@ -317,7 +318,7 @@
     }
   },
   "webhooks": {
-    "description": "HTTP endpoints we POST events to. Every delivery is HMAC-SHA256 signed via the X-Signature header and retried with exponential backoff.",
+    "description": "HTTP endpoints we POST events to. Every delivery is signed with HMAC-SHA256 in the X-Qeet-Signature header and retried with exponential backoff.",
     "refresh": "Refresh",
     "new": "New webhook",
     "list": {
@@ -331,7 +332,8 @@
         "status": {
           "label": "Status",
           "active": "Active",
-          "disabled": "Disabled"
+          "disabled": "Disabled",
+          "failing": "Failing"
         }
       },
       "columns": {
@@ -344,7 +346,8 @@
     },
     "table": {
       "test": "Test",
-      "disable": "Disable"
+      "disable": "Disable",
+      "enable": "Enable"
     },
     "confirm": {
       "disableTitle": "Disable webhook?",
@@ -366,7 +369,8 @@
       "validation": {
         "url": "Enter an https:// URL.",
         "events": "Choose at least one event."
-      }
+      },
+      "noEvents": "No events are available to subscribe to."
     },
     "toast": {
       "created": "Webhook created",
@@ -375,11 +379,26 @@
     },
     "stepUp": {
       "create": "create this webhook",
-      "disable": "disable this webhook"
+      "disable": "disable this webhook",
+      "enable": "enable this webhook",
+      "rotate": "rotate this webhook's signing secret"
     },
     "revealed": {
       "title": "Signing secret for {{url}}",
       "description": "Use it to verify the X-Qeet-Signature header on each delivery. It’s shown only once: copy it now."
+    },
+    "state": {
+      "active": "Active",
+      "failing": "Failing",
+      "disabled": "Disabled",
+      "autoDisabled": "Disabled: failing"
+    },
+    "stateNote": {
+      "disabled": "An administrator disabled this endpoint. Enable it to resume deliveries.",
+      "failing": "Deliveries to this endpoint are failing. It's disabled automatically if they keep failing.",
+      "failingSince": "Deliveries to this endpoint started failing <since></since>. It's disabled automatically if they keep failing.",
+      "autoDisabled": "Disabled automatically because its deliveries kept failing. Fix the endpoint, then enable it.",
+      "autoDisabledSince": "Disabled automatically because its deliveries kept failing (they started <since></since>). Fix the endpoint, then enable it."
     }
   },
   "webhookDetail": {
@@ -394,14 +413,17 @@
     "created": "Created",
     "confirm": {
       "disableTitle": "Disable webhook?",
-      "disableLabel": "Disable"
+      "disableLabel": "Disable",
+      "rotateTitle": "Rotate the signing secret?",
+      "rotateDescription": "A new secret is issued and shown once. The current one keeps signing deliveries for a while, so your receiver can switch without missing any.",
+      "rotateLabel": "Rotate"
     },
     "info": {
       "title": "Endpoint details",
       "url": "URL",
       "events": "Subscribed events",
       "secret": "Signing secret",
-      "secretHelp": "HMAC-SHA256 — verify the X-Signature header with this key.",
+      "secretHelp": "HMAC-SHA256 — verify the X-Qeet-Signature header with this key.",
       "created": "Created"
     },
     "deliveries": {
@@ -430,7 +452,125 @@
     },
     "sample": {
       "title": "Sample payload",
-      "description": "POSTed to the URL above with an HMAC-SHA256 signature in the X-Signature header."
+      "description": "POSTed to the URL above. X-Qeet-Signature carries sha256= and the HMAC-SHA256, keyed by the signing secret, of X-Qeet-Timestamp, a dot, and the body."
+    },
+    "rotate": "Rotate secret",
+    "enable": "Enable",
+    "overlap": "The previous signing secret still signs deliveries, alongside the new one, until {{until}}.",
+    "rotated": {
+      "title": "New signing secret",
+      "description": "Update your receiver with it. Deliveries carry both signatures until {{until}}, when the previous secret stops signing. It's shown only once: copy it now."
+    }
+  },
+  "agentsPage": {
+    "agentGovernance": "Agent Governance"
+  },
+  "webhooksPage": {
+    "webhooksAreAPaidFeature": "Webhooks are a paid feature",
+    "receiveSignedHttpCallbacks": "Receive signed HTTP callbacks for events like user.created and session.revoked. Upgrade to Starter to create webhook subscriptions."
+  },
+  "toast": {
+    "webhookCreated": "Webhook created",
+    "webhookDisabled": "Webhook disabled",
+    "testEventQueued": "Test event queued",
+    "deliveryReQueued": "Delivery re-queued",
+    "apiKeyCreated": "API key created",
+    "apiKeyRevoked": "API key revoked",
+    "secretCreated": "Secret created",
+    "secretRotated": "Secret rotated",
+    "secretDeleted": "Secret deleted",
+    "agentCreated": "Agent created",
+    "agentDeleted": "Agent deleted",
+    "agentStatusUpdated": "Agent status updated",
+    "allAgentAccessRevoked": "All agent access revoked",
+    "sponsorTransferred": "Sponsor transferred",
+    "hookAdded": "Hook added",
+    "authHookUpdated": "Auth hook updated",
+    "authHookDeleted": "Auth hook deleted",
+    "credentialIssued": "Credential issued",
+    "credentialRevoked": "Credential revoked",
+    "machineIdentityCreated": "Machine identity created",
+    "machineIdentityDisabled": "Machine identity disabled",
+    "webhookEnabled": "Webhook enabled",
+    "webhookSecretRotated": "Signing secret rotated"
+  },
+  "webhookEvents": {
+    "user": {
+      "created": "A person was added to the organization, by an administrator or over SCIM.",
+      "updated": "SCIM changed a person's profile or status.",
+      "suspended": "A person's account was suspended.",
+      "reactivated": "A suspended account was reactivated.",
+      "deleted": "A person was deleted from the organization.",
+      "password_set": "An administrator set a person's password, ending their sessions.",
+      "bulk_imported": "A bulk import of people finished, with how many rows succeeded and failed."
+    },
+    "auth": {
+      "password_changed": "A person changed their own password."
+    },
+    "session": {
+      "revoked": "A session ended, with the reason; its tokens stop working."
+    },
+    "token": {
+      "claims_change": "A person's roles changed, so their next access token carries different claims."
+    },
+    "group": {
+      "created": "A group was created.",
+      "updated": "A group was changed.",
+      "deleted": "A group was deleted.",
+      "member_added": "A person was added to a group.",
+      "member_removed": "A person was removed from a group."
+    },
+    "group_template": {
+      "applied": "A group template was applied, creating its groups."
+    },
+    "domain": {
+      "created": "A domain was added for verification.",
+      "verified": "A domain was verified.",
+      "deleted": "A domain was removed."
+    },
+    "agent": {
+      "created": "An AI agent was registered.",
+      "suspended": "An AI agent was suspended; its tokens stop working.",
+      "resumed": "A suspended AI agent was made active again.",
+      "decommissioned": "An AI agent was decommissioned for good.",
+      "deleted": "An AI agent was deleted.",
+      "sponsor_transferred": "A person's AI agents were given to another sponsor.",
+      "kill_switch": "Every active AI agent of the organization was suspended at once."
+    },
+    "rebac": {
+      "tuple_written": "A relationship was written.",
+      "tuple_deleted": "A relationship was deleted."
+    },
+    "abac_policy": {
+      "created": "An attribute-based access policy was created.",
+      "updated": "An attribute-based access policy was changed.",
+      "deleted": "An attribute-based access policy was deleted."
+    },
+    "auth_hook": {
+      "created": "An authentication hook was created.",
+      "updated": "An authentication hook was enabled, disabled or changed.",
+      "deleted": "An authentication hook was deleted."
+    },
+    "siem": {
+      "sink_created": "A log stream to a SIEM was created.",
+      "sink_updated": "A log stream to a SIEM was enabled or disabled.",
+      "sink_deleted": "A log stream to a SIEM was deleted."
+    },
+    "rate_limits": {
+      "updated": "The organization's rate limits were changed.",
+      "deleted": "The organization's rate limits were reset to the defaults."
+    },
+    "credential": {
+      "issued": "A verifiable credential was issued.",
+      "revoked": "A verifiable credential was revoked."
+    },
+    "oidc": {
+      "client_locked_out": "An application was locked out after too many wrong secrets."
+    },
+    "tenant": {
+      "suspended": "The organization was suspended, ending its sessions.",
+      "reactivated": "The organization was reactivated.",
+      "deleted": "The organization was deleted, ending its sessions."
     }
   }
 }

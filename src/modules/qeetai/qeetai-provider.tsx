@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -44,6 +45,7 @@ interface PendingConfirm {
  * provides the promise-based confirm() and stepUp() dialogs that tools wait on.
  */
 export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation("qeetai");
   const [pending, setPending] = useState<PendingConfirm | null>(null);
   const [stepUpOpen, setStepUpOpen] = useState(false);
   // Guards against a settle-after-unmount and double-resolve on the same prompt.
@@ -114,7 +116,9 @@ export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
               </ul>
             ) : null}
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => settle(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => settle(false)}>
+                {t("common:actions.cancel")}
+              </AlertDialogCancel>
               <Button
                 variant={req.tone === "destructive" ? "destructive" : "default"}
                 onClick={() => settle(true)}
@@ -131,7 +135,7 @@ export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
           if (!open) settleStepUp(false);
         }}
         onVerified={() => settleStepUp(true)}
-        actionLabel="continue this action"
+        actionLabel={t("qeetaiProvider.continueThisAction")}
       />
     </QeetAIContext.Provider>
   );

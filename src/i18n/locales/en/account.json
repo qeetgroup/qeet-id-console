@@ -5,7 +5,8 @@
     "sessions": "Sessions",
     "data": "Data & deletion",
     "backToAdmin": "Back to admin →",
-    "yourAccount": "Your account"
+    "yourAccount": "Your account",
+    "sections": "Account sections"
   },
   "profile": {
     "title": "Profile",

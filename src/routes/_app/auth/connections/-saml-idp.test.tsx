@@ -88,6 +88,22 @@ function calledWith(path: string, method: string) {
   return vi.mocked(api).mock.calls.some(([p, o]) => p === path && o?.method === method);
 }
 
+describe("SAML IdP URLs", () => {
+  it("shows the organisation's own metadata, entity ID and single sign-on URLs", async () => {
+    renderPage();
+    await screen.findByText("Acme Analytics");
+
+    for (const url of [
+      "https://api.example.com/saml/idp/tenant-1/metadata",
+      "https://api.example.com/saml/idp/tenant-1",
+      "https://api.example.com/saml/idp/tenant-1/sso",
+    ]) {
+      expect(screen.getAllByText(url, { exact: true }).length).toBeGreaterThan(0);
+    }
+    expect(screen.queryByText("https://api.example.com/saml/idp/metadata")).toBeNull();
+  });
+});
+
 describe("SAML service providers — sensitive actions", () => {
   it("adds a provider through the sensitive-action path, the submit being the confirmation", async () => {
     renderPage();

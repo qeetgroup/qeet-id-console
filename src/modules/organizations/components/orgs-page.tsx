@@ -96,7 +96,7 @@ export function OrgsPage() {
     lv.setFilter("status", f === "all" ? "" : f);
   }
 
-  const regionOptions = REGIONS.map((r) => ({ label: r.label, value: r.value }));
+  const regionOptions = REGIONS.map((r) => ({ label: t(r.label), value: r.value }));
 
   return (
     <TooltipProvider>

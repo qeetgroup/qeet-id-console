@@ -4,9 +4,6 @@ import {
   Callout,
   Card,
   CardContent,
-  DescriptionDetails,
-  DescriptionList,
-  DescriptionTerm,
   Field,
   FieldLabel,
   Select,
@@ -21,27 +18,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  StatusPill,
   Switch,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-  useCopyToClipboard,
 } from "@qeetrix/ui";
-import {
-  CheckIcon,
-  CopyIcon,
-  GlobeIcon,
-  KeyRoundIcon,
-  LinkIcon,
-  NetworkIcon,
-  PlayIcon,
-  SaveIcon,
-  ShieldCheckIcon,
-  TrashIcon,
-} from "@qeetrix/icons";
-import { type ReactNode, useMemo, useState } from "react";
+import { GlobeIcon, KeyRoundIcon, LinkIcon, SaveIcon, TrashIcon } from "@qeetrix/icons";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
@@ -50,9 +34,7 @@ import {
   settleSensitiveAction,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
-import { formatDateTime } from "@/shared/utils/format";
 
-import { socialStartUrl } from "../api/flows";
 import {
   type SocialProvider,
   socialRedirectUri,
@@ -65,6 +47,8 @@ import {
   type SocialProviderMeta,
   SocialProviderMark,
 } from "./social-provider-catalogue";
+import { SocialProviderAdvancedTab } from "./configure-social-provider-sheet-advanced";
+import { CopyableUrlPanel, SectionHeading } from "./configure-social-provider-sheet-parts";
 
 type ConfigureSocialProviderSheetProps = {
   provider: SocialProviderMeta;
@@ -269,7 +253,7 @@ export function ConfigureSocialProviderSheet({
                           label={t("social.configure.clientSecretLabel")}
                           description={
                             existing
-                              ? `${t("social.configure.clientSecretHelp")} ${t("social.configure.clientSecretReplaceHelp")}`
+                              ? t("social.configure.clientSecretHelpKeep")
                               : t("social.configure.clientSecretHelp")
                           }
                           placeholder="••••••••••••••••"
@@ -321,82 +305,7 @@ export function ConfigureSocialProviderSheet({
             </TabsContent>
 
             <TabsContent value="advanced" className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
-              <Card>
-                <CardContent className="space-y-4 p-4">
-                  <SectionHeading
-                    icon={<NetworkIcon className="size-4" />}
-                    title={t("social.configure.advanced.endpointsTitle")}
-                    subtitle={t("social.configure.advanced.endpointsSubtitle")}
-                  />
-                  <div className="grid gap-4">
-                    <CopyableUrlPanel
-                      icon={<LinkIcon className="size-3.5" />}
-                      title={t("social.configure.redirectTitle")}
-                      value={redirectUri}
-                      help={t("social.configure.advanced.redirectHelp")}
-                      copyLabel={t("social.configure.copyLabel")}
-                      copiedLabel={t("social.configure.copiedLabel")}
-                    />
-                    <CopyableUrlPanel
-                      icon={<PlayIcon className="size-3.5" />}
-                      title={t("social.configure.advanced.startTitle")}
-                      value={socialStartUrl(provider.id)}
-                      help={t("social.configure.advanced.startHelp")}
-                      copyLabel={t("social.configure.copyLabel")}
-                      copiedLabel={t("social.configure.copiedLabel")}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="space-y-4 p-4">
-                  <SectionHeading
-                    icon={<ShieldCheckIcon className="size-4" />}
-                    title={t("social.configure.advanced.statusTitle")}
-                    subtitle={t("social.configure.advanced.statusSubtitle")}
-                  />
-                  <DescriptionList>
-                    <DescriptionTerm>{t("social.configure.advanced.state")}</DescriptionTerm>
-                    <DescriptionDetails>
-                      {existing ? (
-                        <StatusPill kind={isEnabled ? "success" : "muted"}>
-                          {isEnabled
-                            ? t("social.configure.stateOn")
-                            : t("social.configure.stateOff")}
-                        </StatusPill>
-                      ) : (
-                        <StatusPill kind="muted">{t("social.badges.notConfigured")}</StatusPill>
-                      )}
-                    </DescriptionDetails>
-                    <DescriptionTerm>
-                      {t("social.configure.advanced.requestedScopes")}
-                    </DescriptionTerm>
-                    <DescriptionDetails className="font-mono text-xs">
-                      openid email profile
-                    </DescriptionDetails>
-                    {existing && (
-                      <>
-                        <DescriptionTerm>{t("social.configure.clientIdLabel")}</DescriptionTerm>
-                        <DescriptionDetails className="break-all font-mono text-xs">
-                          {existing.client_id}
-                        </DescriptionDetails>
-                        <DescriptionTerm>{t("social.configure.discoveryLabel")}</DescriptionTerm>
-                        <DescriptionDetails className="break-all font-mono text-xs">
-                          {existing.discovery_url || "—"}
-                        </DescriptionDetails>
-                        <DescriptionTerm>{t("social.configure.advanced.updated")}</DescriptionTerm>
-                        <DescriptionDetails>
-                          {formatDateTime(existing.updated_at)}
-                        </DescriptionDetails>
-                      </>
-                    )}
-                  </DescriptionList>
-                  <Callout variant="warning" className="text-xs">
-                    {t("social.configure.advanced.lifecycleNote")}
-                  </Callout>
-                </CardContent>
-              </Card>
+              <SocialProviderAdvancedTab provider={provider} existing={existing} />
             </TabsContent>
           </Tabs>
 
@@ -440,72 +349,5 @@ export function ConfigureSocialProviderSheet({
         </form>
       </SheetContent>
     </Sheet>
-  );
-}
-
-/** Section title block: tiled icon, title, subtitle, and an optional status chip. */
-function SectionHeading({
-  icon,
-  title,
-  subtitle,
-}: {
-  icon: ReactNode;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold leading-none">{title}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
-      </div>
-    </div>
-  );
-}
-
-/** Read-only URL the admin has to paste into the provider's own console. */
-function CopyableUrlPanel({
-  icon,
-  title,
-  value,
-  help,
-  copyLabel,
-  copiedLabel,
-}: {
-  icon: ReactNode;
-  title: string;
-  value: string;
-  help: string;
-  copyLabel: string;
-  copiedLabel: string;
-}) {
-  const { copied, copy } = useCopyToClipboard();
-  return (
-    <div className="rounded-lg border bg-muted/40 p-3">
-      <div className="flex items-start justify-between gap-2">
-        <p className="flex items-center gap-2 text-xs font-medium">
-          <span className="text-muted-foreground">{icon}</span>
-          {title}
-        </p>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={copied ? copiedLabel : copyLabel}
-          onClick={() => copy(value)}
-        >
-          {copied ? (
-            <CheckIcon className="size-3.5 text-success" />
-          ) : (
-            <CopyIcon className="size-3.5" />
-          )}
-        </Button>
-      </div>
-      <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{value}</p>
-      <p className="mt-2 text-xs text-muted-foreground">{help}</p>
-    </div>
   );
 }

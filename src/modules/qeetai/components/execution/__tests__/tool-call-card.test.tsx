@@ -43,3 +43,17 @@ describe("ToolCallCard retry", () => {
     },
   );
 });
+
+describe("ToolCallCard copy", () => {
+  it("names the tool by its title and keys the error on its code, not the model's message", () => {
+    const execution = failed("capability_denied");
+    execution.error = { code: "capability_denied", message: "Text written for the model." };
+    render(<ToolCallCard execution={execution} />);
+
+    expect(screen.getByText("Search users")).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toBe(
+      'This action requires the "user.read" capability, which is not granted to your account.',
+    );
+    expect(screen.queryByText(/written for the model/)).toBeNull();
+  });
+});

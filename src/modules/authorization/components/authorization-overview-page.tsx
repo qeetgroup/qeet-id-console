@@ -32,7 +32,7 @@ import {
   UsersRoundIcon,
 } from "@qeetrix/icons";
 import { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
 import { useAbacPolicies } from "../api/abac";
 import { isAuthzEvent, useAuditEvents } from "../api/audit";
@@ -133,7 +133,11 @@ export function AuthorizationOverviewPage() {
             {updatedAt > 0 && (
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
-                {t("overview.updated")} <TimeSince value={new Date(updatedAt).toISOString()} />
+                <Trans
+                  t={t}
+                  i18nKey="overview.updatedAgo"
+                  components={{ time: <TimeSince value={new Date(updatedAt).toISOString()} /> }}
+                />
               </p>
             )}
           </div>
@@ -324,7 +328,6 @@ export function AuthorizationOverviewPage() {
               changes={changesQ.data ?? []}
               loading={changesQ.isLoading}
               emptyLabel={t("overview.changes.empty")}
-              byLabel={t("overview.changes.by")}
             />
           </CardContent>
         </Card>

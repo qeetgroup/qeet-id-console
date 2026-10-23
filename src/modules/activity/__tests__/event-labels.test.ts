@@ -41,20 +41,20 @@ describe("formatEventTitle", () => {
 
 describe("eventResult", () => {
   it("prefers explicit status over severity", () => {
-    expect(eventResult({ status: "blocked", severity: "warning" })).toBe("Blocked");
-    expect(eventResult({ status: "invalid_password", severity: "warning" })).toBe("Failed");
+    expect(eventResult({ status: "blocked", severity: "warning" })).toBe("blocked");
+    expect(eventResult({ status: "invalid_password", severity: "warning" })).toBe("failed");
   });
 
   it("derives the outcome from the action verb even at info severity", () => {
-    expect(eventResult({ type: "auth.login_succeeded", severity: "info" })).toBe("Success");
-    expect(eventResult({ type: "tenant.created", severity: "info" })).toBe("Success");
-    expect(eventResult({ type: "auth.login_failed", severity: "warning" })).toBe("Failed");
-    expect(eventResult({ type: "auth.suspicious_detected", severity: "critical" })).toBe("Blocked");
+    expect(eventResult({ type: "auth.login_succeeded", severity: "info" })).toBe("success");
+    expect(eventResult({ type: "tenant.created", severity: "info" })).toBe("success");
+    expect(eventResult({ type: "auth.login_failed", severity: "warning" })).toBe("failed");
+    expect(eventResult({ type: "auth.suspicious_detected", severity: "critical" })).toBe("blocked");
   });
 
   it("derives from severity when no status or verb is present", () => {
-    expect(eventResult({ severity: "success" })).toBe("Success");
-    expect(eventResult({ severity: "critical" })).toBe("Failed");
-    expect(eventResult({ severity: "info" })).toBe("Info");
+    expect(eventResult({ severity: "success" })).toBe("success");
+    expect(eventResult({ severity: "critical" })).toBe("failed");
+    expect(eventResult({ severity: "info" })).toBe("info");
   });
 });

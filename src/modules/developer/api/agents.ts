@@ -45,7 +45,7 @@ export function useCreateAgent() {
     }) =>
       api(`/v1/tenants/${tenantId}/agents`, { method: "POST", body, schema: createdAgentSchema }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
-    meta: { successMessage: "Agent created", silentError: true }, // the form shows the error
+    meta: { successMessage: "developer:toast.agentCreated", silentError: true }, // the form shows the error
   });
 }
 
@@ -56,7 +56,7 @@ export function useDeleteAgent() {
     mutationFn: (id: string) =>
       api<void>(`/v1/tenants/${tenantId}/agents/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
-    meta: { successMessage: "Agent deleted" },
+    meta: { successMessage: "developer:toast.agentDeleted" },
   });
 }
 
@@ -70,7 +70,7 @@ export function useSetAgentDisabled() {
         body: { disabled },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
-    meta: { successMessage: "Agent status updated" },
+    meta: { successMessage: "developer:toast.agentStatusUpdated" },
   });
 }
 
@@ -83,7 +83,7 @@ export function useKillAllAgents() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
-    meta: { successMessage: "All agent access revoked" },
+    meta: { successMessage: "developer:toast.allAgentAccessRevoked" },
   });
 }
 
@@ -111,6 +111,6 @@ export function useTransferSponsor() {
         { method: "POST", body: { to_user_id: toUserId } },
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
-    meta: { successMessage: "Sponsor transferred" },
+    meta: { successMessage: "developer:toast.sponsorTransferred" },
   });
 }

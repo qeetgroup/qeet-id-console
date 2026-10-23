@@ -22,8 +22,10 @@ import {
   UserIcon,
 } from "@qeetrix/icons";
 import type { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import i18n from "@/i18n";
 import { getCategoryIcon } from "@/modules/activity";
 import { ResultBadge } from "@/modules/activity";
 import { type EventResult, eventResult, formatEventTitle } from "@/modules/activity";
@@ -31,17 +33,17 @@ import { formatIp } from "@/shared/utils/ip-format";
 import type { ActivityEvent } from "@/modules/activity";
 
 const RESULT_NODE: Record<EventResult, string> = {
-  Success: "bg-success ring-success/25",
-  Failed: "bg-destructive ring-destructive/25",
-  Blocked: "bg-warning ring-warning/25",
-  Warning: "bg-warning ring-warning/25",
-  Info: "bg-info ring-info/25",
+  success: "bg-success ring-success/25",
+  failed: "bg-destructive ring-destructive/25",
+  blocked: "bg-warning ring-warning/25",
+  warning: "bg-warning ring-warning/25",
+  info: "bg-info ring-info/25",
 };
 
 // Icon chips stay neutral except for outcomes that need attention.
 function iconTone(result: EventResult): string {
-  if (result === "Failed") return "bg-destructive/10 text-destructive ring-destructive/15";
-  if (result === "Blocked" || result === "Warning")
+  if (result === "failed") return "bg-destructive/10 text-destructive ring-destructive/15";
+  if (result === "blocked" || result === "warning")
     return "bg-warning/10 text-warning ring-warning/15";
   return "bg-muted text-muted-foreground ring-foreground/6";
 }
@@ -69,19 +71,21 @@ function MetaColumn({
   );
 }
 
-function copy(text: string, what: string) {
+// `copiedKey` names what was copied, for the toast.
+function copy(text: string, copiedKey: string) {
   void navigator.clipboard.writeText(text);
-  toast.success(`Copied ${what}`);
+  toast.success(i18n.t(copiedKey));
 }
 
 function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () => void }) {
+  const { t } = useTranslation("timeline");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
           <button
             type="button"
-            aria-label="Event actions"
+            aria-label={t("timelineItem.eventActions")}
             className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/item:opacity-100 data-popup-open:opacity-100"
           >
             <EllipsisVerticalIcon className="size-4" aria-hidden="true" />
@@ -89,20 +93,24 @@ function RowActionsMenu({ event, onOpen }: { event: ActivityEvent; onOpen: () =>
         }
       />
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onOpen}>View details</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => copy(event.id, "event ID")}>
+        <DropdownMenuItem onClick={onOpen}>{t("timelineItem.viewDetails")}</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => copy(event.id, "timeline:timelineItem.copiedEventId")}>
           <ClipboardIcon className="size-3.5" aria-hidden="true" />
-          Copy event ID
+          {t("timelineItem.copyEventId")}
         </DropdownMenuItem>
         {event.request_id ? (
-          <DropdownMenuItem onClick={() => copy(event.request_id ?? "", "request ID")}>
+          <DropdownMenuItem
+            onClick={() => copy(event.request_id ?? "", "timeline:timelineItem.copiedRequestId")}
+          >
             <ClipboardIcon className="size-3.5" aria-hidden="true" />
-            Copy request ID
+            {t("timelineItem.copyRequestId")}
           </DropdownMenuItem>
         ) : null}
-        <DropdownMenuItem onClick={() => copy(JSON.stringify(event, null, 2), "event JSON")}>
+        <DropdownMenuItem
+          onClick={() => copy(JSON.stringify(event, null, 2), "timeline:timelineItem.copiedJson")}
+        >
           <FileBracesIcon className="size-3.5" aria-hidden="true" />
-          Copy JSON
+          {t("timelineItem.copyJson")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -131,10 +139,12 @@ export function TimelineItem({
   posInSet,
   setSize,
 }: TimelineItemProps) {
+  const { t } = useTranslation("timeline");
   const result = eventResult(event);
+  const resultLabel = t(`activity:result.${result}`);
   const CategoryIcon = getCategoryIcon(event.category);
   const title = formatEventTitle(event);
-  const actorName = event.actor?.name ?? event.actor?.id ?? "System";
+  const actorName = event.actor?.name ?? event.actor?.id ?? t("timelineItem.system");
   const actorSub = event.actor?.type;
   const locationValue = event.location ?? (event.ip ? formatIp(event.ip) : undefined);
   const locationSub = event.device ?? event.browser ?? event.source ?? undefined;
@@ -157,11 +167,11 @@ export function TimelineItem({
                   "z-10 mt-3.5 size-2.5 rounded-full ring-4 ring-background transition-transform duration-150 group-hover/item:scale-125",
                   RESULT_NODE[result],
                 )}
-                aria-label={`Outcome: ${result}`}
+                aria-label={t("timelineItem.outcome", { result: resultLabel })}
               />
             }
           />
-          <TooltipContent>{result}</TooltipContent>
+          <TooltipContent>{resultLabel}</TooltipContent>
         </Tooltip>
       </TimelineIndicator>
 
@@ -176,7 +186,7 @@ export function TimelineItem({
           <button
             type="button"
             onClick={() => onClick(event)}
-            aria-label={`${title}, ${result} — open details`}
+            aria-label={t("timelineItem.openDetails", { title, result: resultLabel })}
             className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
           >
             {/* Category icon */}
@@ -218,9 +228,14 @@ export function TimelineItem({
             </span>
 
             {/* Actor + Location columns (lg+) */}
-            <MetaColumn label="Actor" icon={UserIcon} value={actorName} sub={actorSub} />
             <MetaColumn
-              label="Location"
+              label={t("timelineItem.actor")}
+              icon={UserIcon}
+              value={actorName}
+              sub={actorSub}
+            />
+            <MetaColumn
+              label={t("timelineItem.location")}
               icon={locationValue ? GlobeIcon : MonitorIcon}
               value={locationValue}
               sub={locationSub}

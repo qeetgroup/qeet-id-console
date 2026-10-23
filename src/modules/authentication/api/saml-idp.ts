@@ -1,5 +1,5 @@
 // Qeet ID as a SAML identity provider: the rows are the service providers that consume its
-// assertions (the inverse of saml.ts). Every SP imports one shared IdP metadata document.
+// assertions (the inverse of saml.ts). Each organisation is its own IdP, with its own URLs.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -31,8 +31,14 @@ export interface CreateSamlProviderInput {
   certificate?: string;
 }
 
-/** The single IdP metadata document an SP imports to trust this deployment. */
-export const idpMetadataUrl = () => `${getApiBaseUrl()}/saml/idp/metadata`;
+/** The organisation's IdP entity ID, which its metadata and assertions carry. */
+export const idpEntityId = (tenantId: string) => `${getApiBaseUrl()}/saml/idp/${tenantId}`;
+
+/** The organisation's IdP metadata document, which an SP imports to trust it. */
+export const idpMetadataUrl = (tenantId: string) => `${idpEntityId(tenantId)}/metadata`;
+
+/** The organisation's SingleSignOnService URL, for an SP configured by hand. */
+export const idpSsoUrl = (tenantId: string) => `${idpEntityId(tenantId)}/sso`;
 
 export function useSamlProviders() {
   const tenantId = useTenantId();
@@ -53,7 +59,7 @@ export function useCreateSamlProvider() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "Service provider added", silentError: true },
+    meta: { successMessage: "auth:toast.serviceProviderAdded", silentError: true },
   });
 }
 
@@ -67,7 +73,7 @@ export function useUpdateSamlProvider() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "Service provider updated", silentError: true },
+    meta: { successMessage: "auth:toast.serviceProviderUpdated", silentError: true },
   });
 }
 
@@ -80,6 +86,6 @@ export function useDeleteSamlProvider() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "Service provider removed" },
+    meta: { successMessage: "auth:toast.serviceProviderRemoved" },
   });
 }

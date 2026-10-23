@@ -1,7 +1,7 @@
 import { useLocation } from "@tanstack/react-router";
 import type * as React from "react";
 
-import { lookupNavTitle } from "@/platform/config/navigation";
+import { lookupNavTitle, useNavGroups } from "@/platform/config/navigation";
 
 type PageHeaderProps = {
   title?: string; // overrides the title found in the navigation config
@@ -16,7 +16,7 @@ type PageHeaderProps = {
  */
 export function PageHeader({ title, description, icon: Icon, actions }: PageHeaderProps) {
   const { pathname } = useLocation();
-  const meta = lookupNavTitle(pathname);
+  const meta = lookupNavTitle(pathname, useNavGroups());
 
   return (
     <header className="page-heading">

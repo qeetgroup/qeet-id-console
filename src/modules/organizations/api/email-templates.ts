@@ -3,6 +3,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
@@ -73,7 +74,7 @@ export function useUpsertEmailTemplate() {
         body: { subject, body, options },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(tenantId) }),
-    meta: { successMessage: "Template saved" },
+    meta: { successMessage: "organizations:toast.templateSaved" },
   });
 }
 
@@ -86,7 +87,7 @@ export function useResetEmailTemplate() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(tenantId) }),
-    meta: { successMessage: "Reverted to default" },
+    meta: { successMessage: "organizations:toast.revertedToDefault" },
   });
 }
 
@@ -106,8 +107,8 @@ export function usePreviewEmailTemplate() {
 export function sampleVar(name: string): string {
   if (name.endsWith("_url")) return "https://example.invalid/test/preview";
   if (name === "code") return "482913";
-  if (name === "ttl") return "10 minutes";
-  if (name === "tenant_name") return "Your organization";
+  if (name === "ttl") return i18n.t("settings:emails.sample.ttl");
+  if (name === "tenant_name") return i18n.t("settings:emails.sample.tenantName");
   return name;
 }
 

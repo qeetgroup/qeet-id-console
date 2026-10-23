@@ -9,20 +9,21 @@ export interface OnboardingProfile {
   logo_url?: string; // applied on first load for paid plans; free plans send it on create
 }
 
+// Option labels are catalogue keys.
 export const USE_CASES: { value: string; label: string }[] = [
-  { value: "b2b_saas", label: "B2B SaaS (customers log into my product)" },
-  { value: "consumer", label: "Consumer app (sign-ups & social login)" },
-  { value: "internal", label: "Internal tools (employees & SSO)" },
-  { value: "api_platform", label: "API platform (machine-to-machine)" },
-  { value: "other", label: "Something else" },
+  { value: "b2b_saas", label: "dashboard:setup.profile.useCases.b2bSaas" },
+  { value: "consumer", label: "dashboard:setup.profile.useCases.consumer" },
+  { value: "internal", label: "dashboard:setup.profile.useCases.internal" },
+  { value: "api_platform", label: "dashboard:setup.profile.useCases.apiPlatform" },
+  { value: "other", label: "dashboard:setup.profile.useCases.other" },
 ];
 
 export const ROLES: { value: string; label: string }[] = [
-  { value: "founder", label: "Founder / exec" },
-  { value: "engineer", label: "Engineer" },
-  { value: "product", label: "Product / design" },
-  { value: "security", label: "Security / IT" },
-  { value: "other", label: "Other" },
+  { value: "founder", label: "dashboard:setup.profile.roles.founder" },
+  { value: "engineer", label: "dashboard:setup.profile.roles.engineer" },
+  { value: "product", label: "dashboard:setup.profile.roles.product" },
+  { value: "security", label: "dashboard:setup.profile.roles.security" },
+  { value: "other", label: "dashboard:setup.profile.roles.other" },
 ];
 
 /** Checklist step ids per use case, most relevant first; unlisted steps follow in default order. */
@@ -33,12 +34,12 @@ export const CHECKLIST_ORDER: Record<string, string[]> = {
   api_platform: ["api-key", "oauth-app", "webhook", "invite", "branding"],
 };
 
-/** A use-case-specific nudge shown atop the checklist. */
+/** The catalogue key of a use-case-specific nudge shown atop the checklist. */
 export const CHECKLIST_INTRO: Record<string, string> = {
-  b2b_saas: "Get customers signing into your product — register your app first.",
-  consumer: "Wire up sign-in and make it yours — start with your app and branding.",
-  internal: "Bring your team in and connect your identity provider.",
-  api_platform: "Set up machine-to-machine access — start with an API key.",
+  b2b_saas: "dashboard:setup.checklistIntro.b2bSaas",
+  consumer: "dashboard:setup.checklistIntro.consumer",
+  internal: "dashboard:setup.checklistIntro.internal",
+  api_platform: "dashboard:setup.checklistIntro.apiPlatform",
 };
 
 const STASH_KEY = "qeetid-pending-onboarding";

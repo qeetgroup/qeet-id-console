@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import type { Capability } from "@/platform/security/capability-model";
 import type { ToolDefinition } from "./types/tool.types";
 
@@ -84,8 +85,9 @@ export function isWithheldChange(
  */
 export function changeRefusal(tool: ToolDefinition): { code: string; message: string } {
   const screen = tool.consoleScreen;
+  // The model gets English, whatever language the operator reads.
   const where = screen
-    ? ` ${screen.hint ?? "The operator can make this change themselves"} on the ${screen.label} screen (${screen.to}).`
+    ? ` ${screen.hint ?? "The operator can make this change themselves"} on the ${i18n.t(screen.label, { lng: "en" })} screen (${screen.to}).`
     : "";
   return {
     code: CHANGE_TOOLS_DISABLED,

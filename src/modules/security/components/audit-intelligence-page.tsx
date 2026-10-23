@@ -66,8 +66,7 @@ export function AuditIntelligencePage() {
   const sm = summaryQ.data;
 
   // Reason labels use translation lookups keyed by the AnomalyReason value
-  const getReasonLabel = (r: AnomalyReason): string =>
-    t(`auditIntelligence.reasonLabels.${r}`, { defaultValue: r });
+  const getReasonLabel = (r: AnomalyReason): string => t(`auditIntelligence.reasonLabels.${r}`);
 
   const summary = [
     {
@@ -337,8 +336,10 @@ function SettingsForm({ settings }: { settings: AuditAnomalySettings }) {
   );
 }
 
-// The server's fixed reasons a chain is broken, in the reader's language.
+// The server's codes for a broken chain, and the sentences a server without them sends instead.
 const BROKEN_REASONS: Record<string, string> = {
+  "audit.chain_prev_hash_mismatch": "auditIntelligence.verify.brokenLink",
+  "audit.chain_row_hash_mismatch": "auditIntelligence.verify.brokenRow",
   "prev_hash does not match preceding row_hash": "auditIntelligence.verify.brokenLink",
   "row_hash does not match recomputed hash": "auditIntelligence.verify.brokenRow",
 };
@@ -348,7 +349,9 @@ function VerifyCard() {
   const { t } = useTranslation("security");
   const verifyM = useVerifyAuditChain();
   const result = verifyM.data;
-  const reason = result?.broken_reason ? BROKEN_REASONS[result.broken_reason] : undefined;
+  const reason = result
+    ? BROKEN_REASONS[result.reason_code ?? result.broken_reason ?? ""]
+    : undefined;
 
   return (
     <Card>

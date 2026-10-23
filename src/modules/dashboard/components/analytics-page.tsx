@@ -19,6 +19,7 @@ import {
   UsersIcon,
   ZapIcon,
 } from "@qeetrix/icons";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -26,10 +27,12 @@ import { PageHeader } from "@/platform/components/page-header";
 import { useAnalyticsOverview } from "../api/analytics";
 import { DataState } from "@/platform/components/data-state";
 
-const mauConfig: ChartConfig = {
-  wau: { label: "WAU", color: "var(--chart-1)" },
-  dau: { label: "DAU (avg)", color: "var(--chart-2)" },
-};
+function mauConfig(t: TFunction): ChartConfig {
+  return {
+    wau: { label: "WAU", color: "var(--chart-1)" },
+    dau: { label: t("analyticsPage.dauAvg"), color: "var(--chart-2)" },
+  };
+}
 
 function formatDelta(pct: number, suffix = "%"): string {
   const sign = pct >= 0 ? "+" : "";
@@ -176,14 +179,14 @@ export function AnalyticsPage() {
               icon={<ZapIcon className="size-4" />}
             />
             <KpiCard
-              label="Avg sessions / user"
+              label={t("analyticsPage.avgSessionsUser")}
               value={kpis.avg_sessions_per_user.value.toFixed(1)}
               delta={kpis.avg_sessions_per_user.delta_pct}
               hint={t("analytics.kpiHintLast30d")}
               icon={<TrendingUpIcon className="size-4" />}
             />
             <KpiCard
-              label="Total users"
+              label={t("analyticsPage.totalUsers")}
               value={fmtInt(kpis.total_users.value)}
               delta={kpis.total_users.delta_pct}
               hint={t("analytics.kpiHintVs30dAgo")}
@@ -205,7 +208,7 @@ export function AnalyticsPage() {
             ) : weekly.length === 0 || weekly.every((w) => w.wau === 0 && w.dau === 0) ? (
               <EmptyChart message={t("analytics.emptyActivity")} />
             ) : (
-              <ChartContainer config={mauConfig} className="h-70 w-full">
+              <ChartContainer config={mauConfig(t)} className="h-70 w-full">
                 <AreaChart data={weekly}>
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="week" tickLine={false} axisLine={false} />

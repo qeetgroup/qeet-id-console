@@ -26,7 +26,16 @@
         "title": "Compliance",
         "description": "SOC 2, GDPR, ISO 27001 and data-retention controls."
       }
-    }
+    },
+    "empty": {
+      "noAreas": "No security areas are available",
+      "noOrg": "Create an organization first",
+      "noAreasDescription": "Your organization role does not include security or audit visibility. Ask an organization administrator if you need access.",
+      "noOrgDescription": "Organization security and audit tools appear once you create or join an organization. Your personal account security lives under Account → Security.",
+      "goToOverview": "Go to overview",
+      "goToSetup": "Go to setup"
+    },
+    "available": "{{count}} available"
   },
   "sessions": {
     "description": "Every active and revoked session for your account. Revoking a session terminates the refresh token immediately.",
@@ -158,7 +167,11 @@
     "comingSoon": {
       "title": "Per-organization rate-limit controls coming to this screen.",
       "description": "The API already supports per-organization / per-user / per-api-key overrides; a UI to view and edit them from here is on the way."
-    }
+    },
+    "otherEndpoints": "Other authed endpoints",
+    "rate": "{{rate}} req / {{burst}} burst",
+    "unlimited": "unlimited",
+    "perIpSliding": "per IP, sliding"
   },
   "bots": {
     "description": "Detection rules and recent challenges against suspected automated traffic.",
@@ -192,6 +205,11 @@
         "score": "Score",
         "when": "When"
       }
+    },
+    "verdict": {
+      "blocked": "blocked",
+      "challenged": "challenged",
+      "allowed": "allowed"
     }
   },
   "logStreaming": {
@@ -220,6 +238,16 @@
       "confirmRemoveLabel": "Remove",
       "toggleAction": "Pause or resume a log sink",
       "removeAction": "Remove this log sink"
+    },
+    "type": {
+      "http": "Generic HTTP",
+      "splunkHec": "Splunk HEC",
+      "datadog": "Datadog"
+    },
+    "state": {
+      "error": "error",
+      "streaming": "streaming",
+      "idle": "idle"
     }
   },
   "threats": {
@@ -299,7 +327,8 @@
           "denyRule": "A deny rule matches it.",
           "notAllowed": "No allow rule matches it.",
           "unknown": "The address couldn't be read.",
-          "enforcementOff": "Rules aren't enforced, so every address is allowed."
+          "enforcementOff": "Rules aren't enforced, so every address is allowed.",
+          "denyRuleNamed": "The deny rule {{cidr}} matches it."
         },
         "validation": {
           "ip": "Enter an IP address."
@@ -426,5 +455,31 @@
     "colAction": "Action",
     "colResource": "Resource",
     "newBadge": "New"
+  },
+  "ipAllowlistPage": {
+    "officeNyc": "Office NYC"
+  },
+  "logStreamingPage": {
+    "enabled": "Enabled"
+  },
+  "securityOverviewPage": {
+    "securityOperations": "Security operations",
+    "investigateIdentityRiskEnforce": "Investigate identity risk, enforce policy, and verify control evidence.",
+    "availableSecurityAreas": "Available security areas"
+  },
+  "toast": {
+    "rateLimitsSaved": "Rate limits saved",
+    "rateLimitsResetTo": "Rate limits reset to platform defaults",
+    "logSinkAdded": "Log sink added",
+    "logSinkUpdated": "Log sink updated",
+    "logSinkDeleted": "Log sink deleted",
+    "enforcementUpdated": "Enforcement updated",
+    "ruleAdded": "Rule added",
+    "ruleRemoved": "Rule removed",
+    "deviceAuthorizationRevoked": "Device authorization revoked",
+    "riskSettingsSaved": "Risk settings saved",
+    "anomalyResolved": "Anomaly resolved",
+    "anomalySettingsUpdated": "Anomaly-detection settings updated",
+    "botProtectionSettingsSaved": "Bot protection settings saved"
   }
 }

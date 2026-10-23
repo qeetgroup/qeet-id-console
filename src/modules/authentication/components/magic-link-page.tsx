@@ -138,7 +138,7 @@ function renderStatus({
 
   // An expired or used link (400) gets its own, actionable copy.
   const status = consume.error instanceof ApiError ? consume.error.status : undefined;
-  const detail = consume.error ? errorMessage(consume.error) : "Unknown error";
+  const detail = errorMessage(consume.error);
   const isExpiredOrUsed = status === 400;
 
   return (

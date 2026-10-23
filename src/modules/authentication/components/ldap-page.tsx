@@ -13,7 +13,6 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -43,6 +42,7 @@ import {
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import { useMemo } from "react";
 import { z } from "zod";
+import { AuthStatusPill } from "./auth-status-pill";
 
 /** Renders the organization's LDAP and Active Directory connections, with test, enable and delete. */
 export function LdapPage() {
@@ -109,7 +109,7 @@ export function LdapPage() {
                         {c.server_url}
                       </TableCell>
                       <TableCell>
-                        <StatusPill status={c.status} />
+                        <AuthStatusPill status={c.status} />
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {c.last_login_at ? <TimeSince value={c.last_login_at} /> : "—"}
@@ -277,7 +277,11 @@ function CreateConnectionForm({ onDone }: { onDone: () => void }) {
         <FieldGroup>
           <form.AppField name="name">
             {(field) => (
-              <field.TextField label={t("ldap.create.nameLabel")} placeholder="Corp AD" required />
+              <field.TextField
+                label={t("ldap.create.nameLabel")}
+                placeholder={t("ldap.create.namePlaceholder")}
+                required
+              />
             )}
           </form.AppField>
           <form.AppField name="server_url">

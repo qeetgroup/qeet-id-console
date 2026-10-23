@@ -156,7 +156,7 @@ export function LoginForm({
             </>
           )}
 
-          <SocialButtons verb={t("signIn.submit")} disabled={!hydrated || isBusy} />
+          <SocialButtons action="signIn" disabled={!hydrated || isBusy} />
 
           <p className="auth-form-switch">
             <Link to="/magic" className="auth-link">

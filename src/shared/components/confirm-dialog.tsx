@@ -9,6 +9,7 @@ import {
   Button,
 } from "@qeetrix/ui";
 import { useState } from "react";
+import i18n from "@/i18n";
 
 type ConfirmOptions = {
   title: string;
@@ -40,7 +41,7 @@ export function useConfirmDialog() {
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{i18n.t("common:actions.cancel")}</AlertDialogCancel>
           <Button
             variant={pending?.variant ?? "destructive"}
             onClick={() => {
@@ -48,7 +49,7 @@ export function useConfirmDialog() {
               setPending(null);
             }}
           >
-            {pending?.confirmLabel ?? "Confirm"}
+            {pending?.confirmLabel ?? i18n.t("common:actions.confirm")}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

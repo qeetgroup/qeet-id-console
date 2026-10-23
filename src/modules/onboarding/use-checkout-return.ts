@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import i18n from "@/i18n";
 import { api } from "@/platform/api/client";
 import { useTenantId, useUserId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
@@ -33,7 +34,7 @@ export function useCheckoutReturn(): { finalizing: boolean } {
     const cancelled =
       outcome === "cancelled" || (!!rzpLinkId && rzpStatus !== null && rzpStatus !== "paid");
     if (cancelled) {
-      toast.message("Payment cancelled — no organization was created.");
+      toast.message(i18n.t("dashboard:setup.checkout.cancelled"));
       window.history.replaceState({}, "", window.location.pathname);
       return;
     }
@@ -86,9 +87,7 @@ export function useCheckoutReturn(): { finalizing: boolean } {
       // Paid but not provisioned yet: say so, rather than look as if nothing happened.
       setFinalizing(false);
       window.history.replaceState({}, "", window.location.pathname);
-      toast.message(
-        "Payment received — we're finishing your organization setup. This can take a moment; refresh shortly or contact support if it doesn't appear.",
-      );
+      toast.message(i18n.t("dashboard:setup.checkout.finishing"));
     })();
   }, [currentTenantId, userId]);
 

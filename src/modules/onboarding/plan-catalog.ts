@@ -5,7 +5,7 @@ export const TIER_ORDER = ["free", "starter", "pro", "enterprise"] as const;
 export type Tier = (typeof TIER_ORDER)[number];
 
 export interface TierMeta {
-  badge?: string;
+  popular?: boolean; // marked "Most popular"
   featured?: boolean;
   contactSales?: boolean; // no self-serve checkout: talk to sales instead
 }
@@ -13,7 +13,7 @@ export interface TierMeta {
 export const TIER_META: Record<Tier, TierMeta> = {
   free: {},
   starter: {},
-  pro: { badge: "Most popular", featured: true },
+  pro: { popular: true, featured: true },
   enterprise: { contactSales: true },
 };
 

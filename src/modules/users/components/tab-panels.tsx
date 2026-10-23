@@ -1,4 +1,5 @@
-// The User 360 Security, Access, Sessions, Identities and Developer tabs.
+// The User 360 Security and Sessions tabs; the others are in tab-panels-access.tsx and
+// tab-panels-identities.tsx.
 
 import {
   Badge,
@@ -8,9 +9,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  EmptyState,
-  JSONTree,
-  StatusPill,
   Switch,
   Table,
   TableBody,
@@ -20,27 +18,16 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
-import { DataState } from "@/platform/components/data-state";
-import {
-  BuildingComplexIcon,
-  FingerprintPatternIcon,
-  KeyRoundIcon,
-  LinkIcon,
-  LockIcon,
-  MonitorSmartphoneIcon,
-  ShieldCheckIcon,
-  TriangleAlertIcon,
-  UsersRoundIcon,
-} from "@qeetrix/icons";
+import { MonitorSmartphoneIcon, ShieldCheckIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { LinkedPhonesCard, TrustedDevicesCard } from "@/modules/authentication";
 import { type Anomaly, useAnomalies } from "@/modules/security";
-import type { AccessSummary, SecuritySummary, UserDetail } from "../api/user360";
-import { useUserSessions, useUserSocialIdentities } from "../api/user360";
+import { DataState } from "@/platform/components/data-state";
+import { type SecuritySummary, useUserSessions } from "../api/user360";
 import { useUserActions } from "../use-user-actions";
 import { parseUserAgent } from "../user-agent";
-import { CopyId, InfoRow } from "./user-detail-fields";
+import { InfoRow } from "./user-detail-fields";
 
 export function SecurityTab({
   userId,
@@ -137,6 +124,7 @@ export function SecurityTab({
           <DataState
             isLoading={anomaliesQ.isLoading}
             isError={anomaliesQ.isError}
+            error={anomaliesQ.error}
             isEmpty={signals.length === 0}
             emptyIcon={ShieldCheckIcon}
             emptyTitle={t("detail.securitySignalsEmpty")}
@@ -184,139 +172,6 @@ export function SecurityTab({
     </div>
   );
 }
-
-export function AccessTab({
-  access,
-  loading,
-  permissions,
-  permissionsLoading,
-}: {
-  access?: AccessSummary;
-  loading: boolean;
-  permissions: string[];
-  permissionsLoading: boolean;
-}) {
-  const { t } = useTranslation("users");
-  return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <div className="flex flex-col gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BuildingComplexIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-              {t("detail.organization")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataState isLoading={loading} isEmpty={!access?.organization} emptyTitle="—">
-              {access?.organization ? (
-                <div className="divide-y divide-border/50">
-                  <InfoRow label={t("detail.name")}>{access.organization.name}</InfoRow>
-                  <InfoRow label={t("detail.slug")}>
-                    <span className="font-mono text-xs">{access.organization.slug}</span>
-                  </InfoRow>
-                  <InfoRow label={t("detail.fieldTenant")}>
-                    <CopyId value={access.organization.id} />
-                  </InfoRow>
-                </div>
-              ) : null}
-            </DataState>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldCheckIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-              {t("detail.roles")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataState
-              isLoading={loading}
-              isEmpty={!access?.roles.length}
-              emptyIcon={ShieldCheckIcon}
-              emptyTitle={t("detail.noRoles")}
-              skeletonRows={2}
-            >
-              <ul className="divide-y divide-border/50">
-                {access?.roles.map((r) => (
-                  <li key={r.id} className="flex flex-col gap-0.5 px-6 py-2.5">
-                    <span className="text-sm font-medium">{r.name}</span>
-                    {r.description ? (
-                      <span className="text-xs text-muted-foreground">{r.description}</span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </DataState>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <UsersRoundIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-              {t("detail.groups")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataState
-              isLoading={loading}
-              isEmpty={!access?.groups.length}
-              emptyIcon={UsersRoundIcon}
-              emptyTitle={t("detail.noGroups")}
-              skeletonRows={2}
-            >
-              <ul className="divide-y divide-border/50">
-                {access?.groups.map((g) => (
-                  <li key={g.id} className="flex flex-col gap-0.5 px-6 py-2.5">
-                    <span className="text-sm font-medium">{g.name}</span>
-                    {g.description ? (
-                      <span className="text-xs text-muted-foreground">{g.description}</span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </DataState>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="flex flex-col">
-        <CardHeader>
-          <CardTitle className="text-base">{t("detail.effectivePermissions")}</CardTitle>
-          <CardDescription>
-            {t("detail.effectivePermissionsCount", { count: permissions.length })} ·{" "}
-            {t("detail.applications")}: {access?.applications_count ?? 0} · {t("detail.policies")}:{" "}
-            {access?.policies_count ?? 0}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex-1">
-          <DataState
-            isLoading={permissionsLoading}
-            isEmpty={permissions.length === 0}
-            emptyIcon={LockIcon}
-            emptyTitle={t("detail.noPermissions")}
-            skeletonRows={4}
-          >
-            <div className="flex flex-wrap gap-1.5">
-              {permissions.map((p) => (
-                <span
-                  key={p}
-                  className="rounded-md border bg-muted/40 px-2 py-0.5 font-mono text-xs"
-                >
-                  {p}
-                </span>
-              ))}
-            </div>
-          </DataState>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 export function SessionsTab({ userId, canWrite }: { userId: string; canWrite: boolean }) {
   const { t } = useTranslation("users");
   const sessionsQ = useUserSessions(userId);
@@ -396,120 +251,6 @@ export function SessionsTab({ userId, canWrite }: { userId: string; canWrite: bo
       </Card>
       {/* The member's devices remembered in this organisation. */}
       <TrustedDevicesCard scope={{ kind: "member", userId }} canForget={canWrite} />
-    </div>
-  );
-}
-
-export function IdentitiesTab({ userId, passwordSet }: { userId: string; passwordSet?: boolean }) {
-  const { t } = useTranslation("users");
-  const identitiesQ = useUserSocialIdentities(userId);
-  const social = identitiesQ.data?.items ?? [];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{t("detail.identitiesTitle")}</CardTitle>
-        <CardDescription>{t("detail.identitiesDesc")}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        {passwordSet ? (
-          <IdentityRow
-            icon={<LockIcon className="size-4" aria-hidden="true" />}
-            title={t("detail.password")}
-            subtitle={t("detail.passwordIdentity")}
-          />
-        ) : null}
-        <DataState
-          isLoading={identitiesQ.isLoading}
-          isError={identitiesQ.isError}
-          isEmpty={social.length === 0 && !passwordSet}
-          emptyIcon={LinkIcon}
-          emptyTitle={t("detail.identitiesEmpty")}
-          skeletonRows={2}
-        >
-          {social.map((i) => (
-            <IdentityRow
-              key={i.id}
-              icon={<FingerprintPatternIcon className="size-4" aria-hidden="true" />}
-              title={i.provider}
-              subtitle={i.email ?? i.subject}
-              trailing={
-                <span className="text-xs text-muted-foreground">
-                  <TimeSince value={i.linked_at} />
-                </span>
-              }
-            />
-          ))}
-        </DataState>
-      </CardContent>
-    </Card>
-  );
-}
-
-function IdentityRow({
-  icon,
-  title,
-  subtitle,
-  trailing,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string | null;
-  trailing?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium capitalize">{title}</div>
-        {subtitle ? <div className="truncate text-xs text-muted-foreground">{subtitle}</div> : null}
-      </div>
-      {trailing}
-    </div>
-  );
-}
-
-export function DeveloperTab({ user }: { user: UserDetail }) {
-  const { t } = useTranslation("users");
-  return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <KeyRoundIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-            {t("detail.identifiers")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="divide-y divide-border/50">
-            <InfoRow label={t("detail.fieldUserId")}>
-              <CopyId value={user.id} truncate={false} />
-            </InfoRow>
-            <InfoRow label={t("detail.fieldTenant")}>
-              <CopyId value={user.tenant_id} truncate={false} />
-            </InfoRow>
-            <InfoRow label={t("detail.userStatus")}>
-              <StatusPill status={user.status} dot />
-            </InfoRow>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("detail.metadata")}</CardTitle>
-          <CardDescription>{t("detail.metadataDesc")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {user.metadata && Object.keys(user.metadata).length > 0 ? (
-            <JSONTree value={user.metadata} rootLabel="metadata" initialOpenDepth={1} />
-          ) : (
-            <EmptyState icon={TriangleAlertIcon} title={t("detail.metadataEmpty")} />
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

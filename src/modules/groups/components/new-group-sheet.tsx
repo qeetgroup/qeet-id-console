@@ -222,7 +222,7 @@ export function NewGroupSheet({ open, onOpenChange, groups, users }: Props) {
                             {u.display_name || u.email}
                             <button
                               type="button"
-                              aria-label={`Remove ${u.email}`}
+                              aria-label={t("newGroup.removeMember", { email: u.email })}
                               onClick={() =>
                                 setSelected((prev) => prev.filter((s) => s.id !== u.id))
                               }

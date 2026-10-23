@@ -306,7 +306,7 @@ function CreateApiKeyForm({
             {(field) => (
               <field.TextField
                 label={t("keys.create.nameLabel")}
-                placeholder="CI deploy key"
+                placeholder={t("apiKeysPage.ciDeployKey")}
                 required
               />
             )}

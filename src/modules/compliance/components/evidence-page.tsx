@@ -16,6 +16,7 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
+import i18n from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import { ErrorText } from "@/platform/components/error-reference";
 import {
@@ -48,7 +49,7 @@ function statusBadge(status: ControlStatus) {
     return (
       <Badge className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">
         <CircleCheckIcon className="size-3" />
-        pass
+        {i18n.t("compliance:evidence.status.pass")}
       </Badge>
     );
   }
@@ -56,14 +57,14 @@ function statusBadge(status: ControlStatus) {
     return (
       <Badge variant="secondary" className="gap-1">
         <CircleDashedIcon className="size-3" />
-        n/a
+        {i18n.t("compliance:evidence.status.na")}
       </Badge>
     );
   }
   return (
     <Badge variant="destructive" className="gap-1">
       <CircleAlertIcon className="size-3" />
-      fail
+      {i18n.t("compliance:evidence.status.fail")}
     </Badge>
   );
 }

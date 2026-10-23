@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@qeetrix/ui";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -9,6 +10,7 @@ type ShortcutsDialogProps = {
 };
 
 export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
+  const { t } = useTranslation("dashboard");
   const access = useCapabilities();
   const groups = SHORTCUT_GROUPS.map((group) => ({
     ...group,
@@ -19,15 +21,15 @@ export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>Keyboard shortcuts</SheetTitle>
-          <SheetDescription>Move around without touching the mouse.</SheetDescription>
+          <SheetTitle>{t("shortcutsDialog.keyboardShortcuts")}</SheetTitle>
+          <SheetDescription>{t("shortcutsDialog.moveAroundWithoutTouching")}</SheetDescription>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto p-4">
           <div className="flex flex-col gap-6">
             {groups.map((group) => (
               <div key={group.title}>
                 <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {group.title}
+                  {t(group.title)}
                 </h3>
                 <ul className="flex flex-col">
                   {group.items.map((item) => (
@@ -35,7 +37,7 @@ export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
                       key={item.description}
                       className="flex items-center justify-between gap-4 border-b border-border/60 py-2 text-sm last:border-0"
                     >
-                      <span className="text-muted-foreground">{item.description}</span>
+                      <span className="text-muted-foreground">{t(item.description)}</span>
                       <span className="flex items-center gap-1">
                         {item.keys.map((k) => (
                           <kbd

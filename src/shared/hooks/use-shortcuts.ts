@@ -3,6 +3,7 @@ import { useEffect } from "react";
 // Global keyboard layer: `?` opens the cheat-sheet and a `g`-prefixed sequence jumps between
 // sections. Keys are ignored while typing in a field, so they never hijack form input.
 
+/** A section of the shortcuts sheet; `title` and each `description` are catalogue keys. */
 export type ShortcutGroup = {
   title: string;
   items: { keys: string[]; description: string; path?: string }[];
@@ -10,27 +11,47 @@ export type ShortcutGroup = {
 
 export const SHORTCUT_GROUPS: ShortcutGroup[] = [
   {
-    title: "General",
+    title: "common:shortcuts.group.general",
     items: [
-      { keys: ["⌘", "K"], description: "Open command palette / search" },
-      { keys: ["⌘", "J"], description: "Toggle Qeet AI" },
-      { keys: ["?"], description: "Show this shortcuts panel" },
-      { keys: ["Esc"], description: "Close any drawer or dialog" },
+      { keys: ["⌘", "K"], description: "common:shortcuts.action.openCommandPaletteSearch" },
+      { keys: ["⌘", "J"], description: "common:shortcuts.action.toggleQeetAi" },
+      { keys: ["?"], description: "common:shortcuts.action.showThisShortcutsPanel" },
+      { keys: ["Esc"], description: "common:shortcuts.action.closeAnyDrawerOrDialog" },
     ],
   },
   {
-    title: "Go to",
+    title: "common:shortcuts.group.goTo",
     items: [
-      { keys: ["g", "d"], description: "Dashboard", path: "/" },
-      { keys: ["g", "u"], description: "Users", path: "/users" },
-      { keys: ["g", "r"], description: "Roles & permissions", path: "/authorization/roles" },
-      { keys: ["g", "i"], description: "Invitations", path: "/invitations" },
-      { keys: ["g", "t"], description: "Organizations", path: "/organizations" },
-      { keys: ["g", "w"], description: "Webhooks", path: "/developer/webhooks" },
-      { keys: ["g", "a"], description: "Audit logs", path: "/security/audit-logs" },
+      { keys: ["g", "d"], description: "common:shortcuts.action.dashboard", path: "/" },
+      { keys: ["g", "u"], description: "common:shortcuts.action.users", path: "/users" },
+      {
+        keys: ["g", "r"],
+        description: "common:shortcuts.action.rolesPermissions",
+        path: "/authorization/roles",
+      },
+      {
+        keys: ["g", "i"],
+        description: "common:shortcuts.action.invitations",
+        path: "/invitations",
+      },
+      {
+        keys: ["g", "t"],
+        description: "common:shortcuts.action.organizations",
+        path: "/organizations",
+      },
+      {
+        keys: ["g", "w"],
+        description: "common:shortcuts.action.webhooks",
+        path: "/developer/webhooks",
+      },
+      {
+        keys: ["g", "a"],
+        description: "common:shortcuts.action.auditLogs",
+        path: "/security/audit-logs",
+      },
       {
         keys: ["g", "s"],
-        description: "Organization settings",
+        description: "common:shortcuts.action.organizationSettings",
         path: "/settings/organization/general",
       },
     ],

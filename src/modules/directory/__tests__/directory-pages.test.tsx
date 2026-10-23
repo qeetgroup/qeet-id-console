@@ -18,7 +18,8 @@ import type { DirectoryConnection } from "../directory-model";
 import { ConnectionsView } from "../components/connections-page";
 import { SyncActivityView } from "../components/sync-activity-page";
 import { SyncErrorsView } from "../components/sync-errors-page";
-import { MappingEditor, MappingsView } from "../components/mappings-page";
+import { MappingsView } from "../components/mappings-page";
+import { MappingEditor } from "../components/mappings-page-editor";
 import type { DirectoryMappings } from "../api/directory";
 import { parseMappingSource } from "../directory-model";
 import { DEFAULT_ERROR_FILTERS, type DirectoryErrorPage } from "../api/directory";
@@ -34,7 +35,8 @@ import {
   safeSuspendedCsvValue,
   type SuspendedUsersPage,
 } from "@/modules/users";
-import { SuspendedView, SuspensionReviewDialog } from "../components/suspended-page";
+import { SuspendedView } from "../components/suspended-page";
+import { SuspensionReviewDialog } from "../components/suspended-page-review-dialog";
 
 function connections(): DirectoryConnection[] {
   return [

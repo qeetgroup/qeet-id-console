@@ -1,0 +1,307 @@
+{
+  "codeBlock": {
+    "copyCode": "Copy code",
+    "code": "code"
+  },
+  "composer": {
+    "askQeetAiOr": "Ask Qeet AI, or describe an action…",
+    "messageQeetAi": "Message Qeet AI",
+    "stopGenerating": "Stop generating",
+    "sendMessage": "Send message",
+    "sendEnter": "Send (Enter)"
+  },
+  "emptyState": {
+    "howCanIHelp": "How can I help?",
+    "intro": "Ask about your tenant, look things up, or generate code — all under your own permissions. In this version the assistant reads and explains; it doesn't make changes.",
+    "prompts": {
+      "newDevices": "Show users who signed in from a new device this week",
+      "leastPrivilegeRole": "Draft a least-privilege role for support engineers",
+      "simulateBilling": "Simulate whether alice@acme.com can delete billing settings",
+      "terraformOidc": "Generate Terraform for our production OIDC client"
+    }
+  },
+  "messageItem": {
+    "regenerate": "Regenerate",
+    "thinking": "Thinking…",
+    "editMessage": "Edit message",
+    "send": "Send"
+  },
+  "toolCallCard": {
+    "nothingWasChangedThe": "Nothing was changed. The assistant can't make changes in this version.",
+    "status": {
+      "queued": "Queued",
+      "validating": "Validating input",
+      "awaitingConfirmation": "Awaiting confirmation",
+      "authorizing": "Checking permissions",
+      "executing": "Executing",
+      "awaitingStepUp": "Awaiting identity check",
+      "succeeded": "Done",
+      "failed": "Failed",
+      "timedOut": "Timed out",
+      "cancelled": "Cancelled",
+      "withheld": "Not available in this version"
+    },
+    "showInput": "Show input",
+    "hideInput": "Hide input",
+    "retry": "Retry",
+    "openScreen": "Open {{screen}}",
+    "secretNotice": "{{label}} — shown once, never sent to the model. Store it securely now.",
+    "reveal": "Reveal",
+    "hide": "Hide",
+    "errors": {
+      "failed": "The action could not be completed.",
+      "capabilityDenied": "This action requires the \"{{capability}}\" capability, which is not granted to your account.",
+      "invalidInput": "The assistant sent input this action doesn't accept.",
+      "timedOut": "The action took too long and was stopped.",
+      "unknownTool": "The assistant asked for an action that doesn't exist.",
+      "notEnabled": "This action isn't available with your current permissions."
+    }
+  },
+  "historyPanel": {
+    "searchConversations": "Search conversations…",
+    "searchConversations2": "Search conversations",
+    "closeHistory": "Close history",
+    "deleteConversation": "Delete conversation?",
+    "conversation": "Conversation",
+    "conversationTitle": "Conversation title",
+    "saveTitle": "Save title",
+    "pinned": "Pinned",
+    "rename": "Rename",
+    "deleteConversation2": "Delete conversation",
+    "noMatches": "No conversations match your search.",
+    "empty": "No conversations yet.",
+    "deleteBody": "This permanently removes the conversation and its messages from this browser.",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "untitled": "New conversation",
+    "justNow": "just now",
+    "minutesAgo_one": "{{count}}m ago",
+    "minutesAgo_other": "{{count}}m ago",
+    "hoursAgo_one": "{{count}}h ago",
+    "hoursAgo_other": "{{count}}h ago",
+    "daysAgo_one": "{{count}}d ago",
+    "daysAgo_other": "{{count}}d ago",
+    "details_one": "{{time}} · {{count}} message",
+    "details_other": "{{time}} · {{count}} messages"
+  },
+  "qeetaiHeader": {
+    "askQeet": "Ask Qeet",
+    "conversationHistory": "Conversation history",
+    "history": "History",
+    "newConversation": "New conversation",
+    "collapsePanel": "Collapse panel",
+    "collapse": "Collapse",
+    "closeQeetAi": "Close Qeet AI",
+    "closeJ": "Close (⌘J)",
+    "modes": {
+      "docked": "Dock to side",
+      "floating": "Float",
+      "fullscreen": "Full screen"
+    }
+  },
+  "qeetaiTrigger": {
+    "toggleQeetAi": "Toggle Qeet AI",
+    "qeetAiJ": "Qeet AI (⌘J)"
+  },
+  "qeetaiWorkspace": {
+    "qeetAi": "Qeet AI",
+    "expandQeetAi": "Expand Qeet AI",
+    "expandQeetAiJ": "Expand Qeet AI (⌘J)",
+    "resizeQeetAiPanel": "Resize Qeet AI panel"
+  },
+  "qeetaiProvider": {
+    "continueThisAction": "continue this action"
+  },
+  "chat": {
+    "turnFailed": "The assistant could not complete this turn."
+  },
+  "stream": {
+    "conversationUnavailable": "Could not open a conversation on the server.",
+    "unreachable": "Could not reach Qeet AI.",
+    "interrupted": "The response stream was interrupted."
+  },
+  "unconfigured": {
+    "notConnected": "Qeet AI is ready, but no AI provider is connected for this organization yet.",
+    "onceConnected": "Once an owner or admin adds an AI provider key under **Settings → Qeet AI** (or an operator sets a platform key on the Qeet ID server), I'll be able to:",
+    "answer": "**Answer questions** about users, roles, policies, connections, and audit events in this tenant",
+    "act": "**Run actions as tools** — create users, rotate signing keys, simulate authorization, search audit logs — always through your own permissions, with a confirmation step before anything destructive",
+    "lookUp": "**Look things up** — search users and audit logs, simulate authorization — always through your own permissions, and explain where to make a change yourself",
+    "generate": "**Generate** Terraform, SDK snippets, and API examples from your live configuration",
+    "audit": "Everything I do runs under your access and is written to the audit log. Nothing here bypasses authorization."
+  },
+  "suggestions": {
+    "labels": {
+      "searchUsers": "Search users",
+      "createUser": "Create a user",
+      "suspendedUsers": "Show suspended users",
+      "userActivity": "Summarize user activity",
+      "resetMfa": "Reset MFA",
+      "disableUser": "Disable this user",
+      "userAuditEvents": "View audit events for this user",
+      "activeSessions": "View active sessions",
+      "userRecentActivity": "Summarize this user's recent activity",
+      "createRole": "Create a role",
+      "grantPermission": "Grant permission to a role",
+      "simulateAuthorization": "Simulate authorization",
+      "explainRoles": "Explain the current role model",
+      "summarizePolicies": "Summarize active policies",
+      "terraformRoles": "Generate Terraform for roles",
+      "searchAuditLogs": "Search audit logs",
+      "summarizeAnomalies": "Summarize anomalies",
+      "failedLogins": "Show failed login attempts",
+      "adminActions": "List recent admin actions",
+      "strictMfaPolicy": "Set strict MFA policy",
+      "registerOAuthClient": "Register an OAuth client",
+      "terraformClients": "Generate Terraform for clients",
+      "explainOAuth": "Explain OAuth flows",
+      "rotateSigningKeys": "Rotate signing keys",
+      "configureStrictMfa": "Configure strict MFA",
+      "explainSecurity": "Explain security settings",
+      "createOrganization": "Create an organization",
+      "terraformTenant": "Generate Terraform for tenant",
+      "codeSnippet": "Generate a code snippet",
+      "apiExample": "Generate an API example"
+    },
+    "descriptions": {
+      "searchUsers": "Find users by name, email or status",
+      "resetMfa": "Force the user to re-enroll MFA at next sign-in",
+      "userAuditEvents": "Search the audit log filtered to this user",
+      "simulateAccess": "Test whether a user can perform an action",
+      "simulateDecision": "Evaluate an ABAC/RBAC/ReBAC decision"
+    },
+    "prompts": {
+      "suspendedUsers": "List all suspended users in this tenant.",
+      "userActivity": "Summarize recent user activity and any anomalies in the audit log.",
+      "userRecentActivity": "Summarize the most recent audit events for the currently selected user.",
+      "explainRoles": "Explain the roles and their assigned permissions in plain English.",
+      "summarizePolicies": "List and summarize the active ABAC policies for this tenant.",
+      "summarizeAnomalies": "Summarize any unusual or high-risk events in the recent audit log.",
+      "failedLogins": "Search the audit log for failed authentication events in the last 24 hours.",
+      "adminActions": "List the most recent administrative actions by all operators in this tenant.",
+      "explainOAuth": "Explain the OAuth 2.0 grant types available in Qeet ID and when to use each.",
+      "explainSecurity": "Explain the current authentication policy and its security implications."
+    }
+  },
+  "providerSettings": {
+    "providers": {
+      "anthropic": "Anthropic (Claude)",
+      "openai": "OpenAI",
+      "azure": "Azure / OpenAI-compatible"
+    }
+  },
+  "tools": {
+    "titles": {
+      "searchUsers": "Search users",
+      "createUser": "Create user",
+      "updateUser": "Update user",
+      "disableUser": "Disable user",
+      "enableUser": "Enable user",
+      "deleteUser": "Delete user",
+      "resetUserMfa": "Reset user MFA",
+      "createOrganization": "Create organization",
+      "createRole": "Create role",
+      "assignRole": "Assign role to user",
+      "grantPermission": "Grant permission to role",
+      "setStrictMfa": "Set strict MFA",
+      "simulateAuthorization": "Simulate authorization",
+      "createOAuthClient": "Create OAuth client",
+      "rotateOAuthClientSecret": "Rotate OAuth client secret",
+      "rotateSigningKeys": "Rotate signing keys",
+      "searchAuditLogs": "Search audit logs",
+      "listSessions": "List sessions",
+      "generateTerraform": "Generate Terraform",
+      "generateSdkSnippet": "Generate SDK snippet",
+      "generateApiExample": "Generate API example"
+    },
+    "screens": {
+      "users": "Users",
+      "organizations": "Organizations",
+      "roles": "Roles",
+      "applications": "Applications",
+      "signingKeys": "Signing keys",
+      "passwordless": "Passwordless"
+    },
+    "fields": {
+      "email": "Email",
+      "tenant": "Tenant",
+      "initialRole": "Initial role",
+      "user": "User",
+      "userId": "User ID",
+      "displayName": "Display name",
+      "name": "Name",
+      "slug": "Slug",
+      "roleName": "Role name",
+      "role": "Role",
+      "permission": "Permission",
+      "strictMfa": "Strict MFA",
+      "clientName": "Client name",
+      "clientId": "Client ID",
+      "action": "Action"
+    },
+    "values": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "none": "None"
+    },
+    "confirm": {
+      "createUser": {
+        "body": "Qeet AI will create a new user account in this tenant."
+      },
+      "updateUser": {
+        "body": "Qeet AI will change this user's profile."
+      },
+      "disableUser": {
+        "body": "This will immediately block the user from signing in. They can be re-enabled later.",
+        "action": "Disable"
+      },
+      "enableUser": {
+        "body": "This re-activates the user and restores their ability to sign in."
+      },
+      "deleteUser": {
+        "body": "This will permanently soft-delete the user. This action cannot be easily reversed."
+      },
+      "resetUserMfa": {
+        "title": "Reset MFA",
+        "body": "This will clear all enrolled MFA factors. The user must re-enroll at their next sign-in."
+      },
+      "createOrganization": {
+        "body": "Qeet AI will create a new organization (tenant)."
+      },
+      "createRole": {
+        "body": "Qeet AI will create a new role in this organization."
+      },
+      "assignRole": {
+        "title": "Assign role",
+        "body": "This grants the role's permissions to the user — a privilege change."
+      },
+      "grantPermission": {
+        "body": "This broadens what every user holding the role can do — a privilege change.",
+        "action": "Grant permission"
+      },
+      "setStrictMfa": {
+        "enforceTitle": "Enforce strict MFA",
+        "enforceBody": "Every member will be required to complete MFA on each sign-in.",
+        "enforceAction": "Enforce",
+        "disableTitle": "Disable strict MFA",
+        "disableBody": "This weakens tenant security: members will be able to skip MFA on trusted devices."
+      },
+      "createOAuthClient": {
+        "body": "This registers a new OAuth/OIDC client. Confidential clients mint a client secret shown once.",
+        "action": "Create client"
+      },
+      "rotateOAuthClientSecret": {
+        "title": "Rotate client secret",
+        "body": "The existing client secret will stop working immediately. Update your application before confirming. The new secret is shown once only.",
+        "action": "Rotate"
+      },
+      "rotateSigningKeys": {
+        "body": "Signing keys rotate by deployment, not from the console. Nothing will be changed.",
+        "action": "OK"
+      }
+    },
+    "secrets": {
+      "clientSecret": "Client secret for \"{{name}}\"",
+      "newClientSecret": "New client secret for {{clientId}}"
+    }
+  }
+}

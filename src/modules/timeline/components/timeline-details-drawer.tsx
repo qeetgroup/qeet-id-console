@@ -1,7 +1,6 @@
 import {
   Badge,
   Button,
-  buttonVariants,
   JSONTree,
   ScrollArea,
   Separator,
@@ -11,124 +10,30 @@ import {
   SheetHeader,
   SheetTitle,
   TimeSince,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
 } from "@qeetrix/ui";
-import { Link } from "@tanstack/react-router";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  ClipboardIcon,
-  ExternalLinkIcon,
   GlobeIcon,
   MonitorIcon,
   ServerIcon,
-  ShieldOffIcon,
-  UserXIcon,
 } from "@qeetrix/icons";
-import { type ReactNode, useCallback } from "react";
+import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
-import { useCapabilities } from "@/platform/security/capability-provider";
-import { ResultBadge } from "@/modules/activity";
-import { SeverityBadge } from "@/modules/activity";
-import { formatEventTitle } from "@/modules/activity";
-import type { ActivityEvent } from "@/modules/activity";
-import { useUserActions } from "@/modules/users";
-
-function CopyButton({ text, label }: { text: string; label: string }) {
-  const handleCopy = useCallback(() => {
-    void navigator.clipboard.writeText(text);
-  }, [text]);
-
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <button
-            type="button"
-            onClick={handleCopy}
-            aria-label={label}
-            className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ClipboardIcon className="size-3.5" aria-hidden="true" />
-          </button>
-        }
-      />
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  );
-}
-
-function DetailRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3">
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="min-w-0 text-xs text-foreground">{children}</dd>
-    </div>
-  );
-}
-
-function SectionHeading({ children }: { children: ReactNode }) {
-  return (
-    <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-      {children}
-    </h3>
-  );
-}
-
-interface FieldChange {
-  field: string;
-  before: unknown;
-  after: unknown;
-}
-
-function humanizeField(field: string): string {
-  return field.replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatChangeValue(value: unknown): string {
-  if (value == null || value === "") return "—";
-  if (typeof value === "boolean") return value ? "Enabled" : "Disabled";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-}
-
-/**
- * Returns before → after changes from `metadata.changes` entries ({ from, to } or [old, new])
- * and from the fields that differ between `metadata.before` and `metadata.after`.
- */
-function extractChanges(metadata: Record<string, unknown> | undefined): FieldChange[] {
-  if (!metadata) return [];
-  const out: FieldChange[] = [];
-
-  const changes = metadata.changes;
-  if (changes && typeof changes === "object" && !Array.isArray(changes)) {
-    for (const [field, raw] of Object.entries(changes)) {
-      if (Array.isArray(raw) && raw.length >= 2) {
-        out.push({ field, before: raw[0], after: raw[1] });
-      } else if (raw && typeof raw === "object") {
-        const v = raw as Record<string, unknown>;
-        const before = v.from ?? v.old ?? v.before ?? v.previous;
-        const after = v.to ?? v.new ?? v.after ?? v.current;
-        if (before !== undefined || after !== undefined) out.push({ field, before, after });
-      }
-    }
-  }
-
-  const before = metadata.before;
-  const after = metadata.after;
-  if (before && after && typeof before === "object" && typeof after === "object") {
-    const b = before as Record<string, unknown>;
-    const a = after as Record<string, unknown>;
-    for (const field of new Set([...Object.keys(b), ...Object.keys(a)])) {
-      if (JSON.stringify(b[field]) !== JSON.stringify(a[field]))
-        out.push({ field, before: b[field], after: a[field] });
-    }
-  }
-
-  return out;
-}
+import {
+  type ActivityEvent,
+  formatEventTitle,
+  ResultBadge,
+  SeverityBadge,
+} from "@/modules/activity";
+import { TimelineQuickActions } from "./timeline-details-drawer-actions";
+import {
+  extractChanges,
+  formatChangeValue,
+  humanizeField,
+} from "./timeline-details-drawer-changes";
+import { CopyButton, DetailRow, SectionHeading } from "./timeline-details-drawer-fields";
 
 type TimelineDetailsDrawerProps = {
   event: ActivityEvent | null; // The open event; null closes the drawer
@@ -143,7 +48,6 @@ type TimelineDetailsDrawerProps = {
 /**
  * Renders a timeline event in a side sheet: its fields, before → after changes, correlation IDs,
  * actor, resource, request context and metadata, with prev/next navigation and quick actions.
- * Reset MFA and Disable user show only with user.write.
  */
 export function TimelineDetailsDrawer({
   event,
@@ -154,10 +58,7 @@ export function TimelineDetailsDrawer({
   onSelectPrev,
   onSelectNext,
 }: TimelineDetailsDrawerProps) {
-  const access = useCapabilities();
-  const canWriteUsers = access.can("user.write");
-
-  const actions = useUserActions();
+  const { t } = useTranslation("timeline");
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -172,9 +73,6 @@ export function TimelineDetailsDrawer({
       : typeof event?.metadata?.trace_id === "string"
         ? event.metadata.trace_id
         : null;
-
-  const sessionId =
-    typeof event?.metadata?.session_id === "string" ? event.metadata.session_id : null;
 
   const changes = extractChanges(event?.metadata);
 
@@ -206,7 +104,7 @@ export function TimelineDetailsDrawer({
                   size="icon-sm"
                   onClick={onSelectPrev}
                   disabled={!prevEvent || !onSelectPrev}
-                  aria-label="Previous event"
+                  aria-label={t("timelineDetailsDrawer.previousEvent")}
                   className="size-7"
                 >
                   <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
@@ -216,12 +114,14 @@ export function TimelineDetailsDrawer({
                   size="icon-sm"
                   onClick={onSelectNext}
                   disabled={!nextEvent || !onSelectNext}
-                  aria-label="Next event"
+                  aria-label={t("timelineDetailsDrawer.nextEvent")}
                   className="size-7"
                 >
                   <ChevronRightIcon className="size-3.5" aria-hidden="true" />
                 </Button>
-                <span className="text-[10px] text-muted-foreground">Navigate events</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {t("timelineDetailsDrawer.navigateEvents")}
+                </span>
               </div>
             </SheetHeader>
 
@@ -229,27 +129,30 @@ export function TimelineDetailsDrawer({
             <ScrollArea className="flex-1">
               <div className="flex flex-col gap-5 p-4">
                 {/* Core event fields */}
-                <section aria-label="Event details">
+                <section aria-label={t("timelineDetailsDrawer.eventDetails")}>
                   <dl className="flex flex-col gap-2.5">
-                    <DetailRow label="Event ID">
+                    <DetailRow label={t("timelineDetailsDrawer.eventId")}>
                       <span className="flex items-center gap-1.5">
                         <span className="max-w-48 truncate font-mono text-[10px]">{event.id}</span>
-                        <CopyButton text={event.id} label="Copy event ID" />
+                        <CopyButton
+                          text={event.id}
+                          label={t("timelineDetailsDrawer.copyEventId")}
+                        />
                       </span>
                     </DetailRow>
-                    <DetailRow label="Type">
+                    <DetailRow label={t("common:labels.type")}>
                       <Badge variant="muted">{event.type}</Badge>
                     </DetailRow>
-                    <DetailRow label="Category">
+                    <DetailRow label={t("timelineDetailsDrawer.category")}>
                       <span className="capitalize">{event.category}</span>
                     </DetailRow>
-                    <DetailRow label="Result">
+                    <DetailRow label={t("timelineDetailsDrawer.result")}>
                       <ResultBadge event={event} />
                     </DetailRow>
-                    <DetailRow label="Severity">
+                    <DetailRow label={t("timelineDetailsDrawer.severity")}>
                       <SeverityBadge severity={event.severity} />
                     </DetailRow>
-                    <DetailRow label="Timestamp">
+                    <DetailRow label={t("timelineDetailsDrawer.timestamp")}>
                       <time dateTime={event.at}>
                         {new Date(event.at).toLocaleString(undefined, {
                           dateStyle: "medium",
@@ -258,12 +161,12 @@ export function TimelineDetailsDrawer({
                       </time>
                     </DetailRow>
                     {event.status && (
-                      <DetailRow label="Status">
+                      <DetailRow label={t("common:labels.status")}>
                         <Badge variant="outline">{event.status}</Badge>
                       </DetailRow>
                     )}
                     {event.source && (
-                      <DetailRow label="Source">
+                      <DetailRow label={t("timelineDetailsDrawer.source")}>
                         <span className="flex items-center gap-1">
                           <ServerIcon className="size-3 text-muted-foreground" aria-hidden="true" />
                           {event.source}
@@ -277,8 +180,8 @@ export function TimelineDetailsDrawer({
                 {changes.length > 0 && (
                   <>
                     <Separator />
-                    <section aria-label="Changes">
-                      <SectionHeading>Changes</SectionHeading>
+                    <section aria-label={t("timelineDetailsDrawer.changes")}>
+                      <SectionHeading>{t("timelineDetailsDrawer.changes")}</SectionHeading>
                       <dl className="flex flex-col gap-2.5">
                         {changes.map((change) => (
                           <div
@@ -310,26 +213,34 @@ export function TimelineDetailsDrawer({
                 {(event.request_id || correlationId) && (
                   <>
                     <Separator />
-                    <section aria-label="Correlation and tracing">
-                      <SectionHeading>Correlation &amp; tracing</SectionHeading>
+                    <section aria-label={t("timelineDetailsDrawer.correlationAndTracing")}>
+                      <SectionHeading>
+                        {t("timelineDetailsDrawer.correlationTracing")}
+                      </SectionHeading>
                       <dl className="flex flex-col gap-2.5">
                         {event.request_id && (
-                          <DetailRow label="Request ID">
+                          <DetailRow label={t("timelineDetailsDrawer.requestId")}>
                             <span className="flex items-center gap-1.5">
                               <span className="max-w-48 truncate font-mono text-[10px]">
                                 {event.request_id}
                               </span>
-                              <CopyButton text={event.request_id} label="Copy request ID" />
+                              <CopyButton
+                                text={event.request_id}
+                                label={t("timelineDetailsDrawer.copyRequestId")}
+                              />
                             </span>
                           </DetailRow>
                         )}
                         {correlationId && (
-                          <DetailRow label="Trace / Corr. ID">
+                          <DetailRow label={t("timelineDetailsDrawer.traceCorrId")}>
                             <span className="flex items-center gap-1.5">
                               <span className="max-w-48 truncate font-mono text-[10px]">
                                 {correlationId}
                               </span>
-                              <CopyButton text={correlationId} label="Copy correlation ID" />
+                              <CopyButton
+                                text={correlationId}
+                                label={t("timelineDetailsDrawer.copyCorrelationId")}
+                              />
                             </span>
                           </DetailRow>
                         )}
@@ -342,22 +253,27 @@ export function TimelineDetailsDrawer({
                 {event.actor && (
                   <>
                     <Separator />
-                    <section aria-label="Actor">
-                      <SectionHeading>Actor</SectionHeading>
+                    <section aria-label={t("timelineDetailsDrawer.actor")}>
+                      <SectionHeading>{t("timelineDetailsDrawer.actor")}</SectionHeading>
                       <dl className="flex flex-col gap-2.5">
-                        {event.actor.name && <DetailRow label="Name">{event.actor.name}</DetailRow>}
+                        {event.actor.name && (
+                          <DetailRow label={t("common:labels.name")}>{event.actor.name}</DetailRow>
+                        )}
                         {event.actor.id && (
                           <DetailRow label="ID">
                             <span className="flex items-center gap-1.5">
                               <span className="max-w-48 truncate font-mono text-[10px]">
                                 {event.actor.id}
                               </span>
-                              <CopyButton text={event.actor.id} label="Copy actor ID" />
+                              <CopyButton
+                                text={event.actor.id}
+                                label={t("timelineDetailsDrawer.copyActorId")}
+                              />
                             </span>
                           </DetailRow>
                         )}
                         {event.actor.type && (
-                          <DetailRow label="Type">
+                          <DetailRow label={t("common:labels.type")}>
                             <Badge variant="muted">{event.actor.type}</Badge>
                           </DetailRow>
                         )}
@@ -370,11 +286,13 @@ export function TimelineDetailsDrawer({
                 {event.target && (
                   <>
                     <Separator />
-                    <section aria-label="Affected resource">
-                      <SectionHeading>Affected resource</SectionHeading>
+                    <section aria-label={t("timelineDetailsDrawer.affectedResource")}>
+                      <SectionHeading>{t("timelineDetailsDrawer.affectedResource")}</SectionHeading>
                       <dl className="flex flex-col gap-2.5">
                         {event.target.label && (
-                          <DetailRow label="Label">{event.target.label}</DetailRow>
+                          <DetailRow label={t("timelineDetailsDrawer.label")}>
+                            {event.target.label}
+                          </DetailRow>
                         )}
                         {event.target.id && (
                           <DetailRow label="ID">
@@ -382,7 +300,7 @@ export function TimelineDetailsDrawer({
                           </DetailRow>
                         )}
                         {event.target.type && (
-                          <DetailRow label="Type">
+                          <DetailRow label={t("common:labels.type")}>
                             <Badge variant="muted">{event.target.type}</Badge>
                           </DetailRow>
                         )}
@@ -395,16 +313,16 @@ export function TimelineDetailsDrawer({
                 {(event.ip ?? event.location ?? event.device ?? event.browser) && (
                   <>
                     <Separator />
-                    <section aria-label="Request context">
-                      <SectionHeading>Request context</SectionHeading>
+                    <section aria-label={t("timelineDetailsDrawer.requestContext")}>
+                      <SectionHeading>{t("timelineDetailsDrawer.requestContext")}</SectionHeading>
                       <dl className="flex flex-col gap-2.5">
                         {event.ip && (
-                          <DetailRow label="IP address">
+                          <DetailRow label={t("timelineDetailsDrawer.ipAddress")}>
                             <span className="font-mono">{event.ip}</span>
                           </DetailRow>
                         )}
                         {event.location && (
-                          <DetailRow label="Location">
+                          <DetailRow label={t("timelineDetailsDrawer.location")}>
                             <span className="flex items-center gap-1">
                               <GlobeIcon
                                 className="size-3 text-muted-foreground"
@@ -415,7 +333,7 @@ export function TimelineDetailsDrawer({
                           </DetailRow>
                         )}
                         {event.device && (
-                          <DetailRow label="Device">
+                          <DetailRow label={t("timelineDetailsDrawer.device")}>
                             <span className="flex items-center gap-1">
                               <MonitorIcon
                                 className="size-3 text-muted-foreground"
@@ -425,7 +343,11 @@ export function TimelineDetailsDrawer({
                             </span>
                           </DetailRow>
                         )}
-                        {event.browser && <DetailRow label="Browser">{event.browser}</DetailRow>}
+                        {event.browser && (
+                          <DetailRow label={t("timelineDetailsDrawer.browser")}>
+                            {event.browser}
+                          </DetailRow>
+                        )}
                       </dl>
                     </section>
                   </>
@@ -435,12 +357,12 @@ export function TimelineDetailsDrawer({
                 {event.metadata && Object.keys(event.metadata).length > 0 && (
                   <>
                     <Separator />
-                    <section aria-label="Event metadata">
+                    <section aria-label={t("timelineDetailsDrawer.eventMetadata")}>
                       <div className="mb-2 flex items-center justify-between">
-                        <SectionHeading>Metadata</SectionHeading>
+                        <SectionHeading>{t("timelineDetailsDrawer.metadata")}</SectionHeading>
                         <CopyButton
                           text={JSON.stringify(event.metadata, null, 2)}
-                          label="Copy JSON payload"
+                          label={t("timelineDetailsDrawer.copyJsonPayload")}
                         />
                       </div>
                       <JSONTree value={event.metadata} rootLabel="payload" initialOpenDepth={1} />
@@ -450,100 +372,7 @@ export function TimelineDetailsDrawer({
 
                 <Separator />
 
-                {/* Quick actions */}
-                <section aria-label="Quick actions">
-                  <SectionHeading>Quick actions</SectionHeading>
-                  <div className="flex flex-wrap gap-2">
-                    {/* Navigation actions */}
-                    <Link
-                      to="/users/$userId"
-                      params={{ userId }}
-                      className={buttonVariants({ variant: "outline", size: "sm" })}
-                    >
-                      <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-                      View user
-                    </Link>
-
-                    {sessionId && (
-                      <Link
-                        to="/security/sessions"
-                        className={buttonVariants({ variant: "outline", size: "sm" })}
-                      >
-                        <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-                        View session
-                      </Link>
-                    )}
-
-                    {event.target?.type === "organization" && event.target.id && (
-                      <Link
-                        to="/organizations"
-                        className={buttonVariants({ variant: "outline", size: "sm" })}
-                      >
-                        <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-                        Open org
-                      </Link>
-                    )}
-
-                    <Link
-                      to="/security/audit-logs"
-                      className={buttonVariants({ variant: "outline", size: "sm" })}
-                    >
-                      <ExternalLinkIcon className="size-3.5" aria-hidden="true" />
-                      View audit log
-                    </Link>
-
-                    {/* Copy actions */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => void navigator.clipboard.writeText(event.id)}
-                      aria-label="Copy event ID to clipboard"
-                    >
-                      <ClipboardIcon className="size-3.5" aria-hidden="true" />
-                      Copy event ID
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        void navigator.clipboard.writeText(JSON.stringify(event, null, 2))
-                      }
-                      aria-label="Copy full event JSON to clipboard"
-                    >
-                      <ClipboardIcon className="size-3.5" aria-hidden="true" />
-                      Copy JSON
-                    </Button>
-
-                    {/* Destructive actions — guarded by user.write capability */}
-                    {canWriteUsers && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={actions.pendingAction.resetMfa}
-                          onClick={() => actions.resetMfa({ id: userId })}
-                          aria-label="Reset this user's MFA factors"
-                        >
-                          <ShieldOffIcon className="size-3.5" aria-hidden="true" />
-                          {actions.pendingAction.resetMfa ? "Resetting…" : "Reset MFA"}
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={actions.pendingAction.status}
-                          onClick={() => actions.suspend({ id: userId })}
-                          className="border-destructive/40 text-destructive hover:bg-destructive/10"
-                          aria-label="Suspend this user account"
-                        >
-                          <UserXIcon className="size-3.5" aria-hidden="true" />
-                          {actions.pendingAction.status ? "Suspending…" : "Disable user"}
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </section>
+                <TimelineQuickActions event={event} userId={userId} />
               </div>
             </ScrollArea>
           </>

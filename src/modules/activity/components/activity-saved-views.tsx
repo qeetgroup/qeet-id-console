@@ -12,6 +12,7 @@ import {
 import { useStore } from "@tanstack/react-store";
 import { BookmarkIcon, PlusIcon } from "@qeetrix/icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ActivitySearch } from "../activity-search";
 import { PRESET_VIEWS, type SavedView, savedViewsActions, savedViewsStore } from "../saved-views";
@@ -28,6 +29,7 @@ export function ActivitySavedViews({
   onApply: (view: SavedView) => void;
   className?: string;
 }) {
+  const { t } = useTranslation("activity");
   const userViews = useStore(savedViewsStore, (s) => s.views);
   const [name, setName] = useState("");
 
@@ -52,12 +54,12 @@ export function ActivitySavedViews({
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           <BookmarkIcon className="size-3.5" aria-hidden="true" />
-          Saved views
+          {t("activitySavedViews.savedViews")}
         </span>
         <ChipGroup value={activeViewId ?? ""} onValueChange={handleChange}>
           {PRESET_VIEWS.map((v) => (
             <Chip key={v.id} value={v.id} size="sm">
-              {v.name}
+              {t(v.name)}
             </Chip>
           ))}
           {userViews.map((v) => (
@@ -73,14 +75,16 @@ export function ActivitySavedViews({
             render={
               <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground">
                 <PlusIcon className="size-3.5" aria-hidden="true" />
-                Save current view
+                {t("activitySavedViews.saveCurrentView")}
               </Button>
             }
           />
           <PopoverContent align="start" className="w-72 p-3">
-            <PopoverTitle className="text-sm font-medium">Save current view</PopoverTitle>
+            <PopoverTitle className="text-sm font-medium">
+              {t("activitySavedViews.saveCurrentView")}
+            </PopoverTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              Snapshots the active filters, time range, and search as a reusable view.
+              {t("activitySavedViews.snapshotsTheActiveFilters")}
             </p>
             <form
               className="mt-3 flex gap-2"
@@ -93,14 +97,14 @@ export function ActivitySavedViews({
                 autoFocus
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="View name"
-                aria-label="View name"
+                placeholder={t("activitySavedViews.viewName")}
+                aria-label={t("activitySavedViews.viewName")}
                 className="h-8"
               />
               <PopoverClose
                 render={
                   <Button type="submit" size="sm" disabled={!name.trim()}>
-                    Save
+                    {t("common:actions.save")}
                   </Button>
                 }
               />

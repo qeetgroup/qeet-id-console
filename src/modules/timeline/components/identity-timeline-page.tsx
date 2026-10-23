@@ -5,6 +5,7 @@ import { EmptyState } from "@qeetrix/ui";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeftIcon, ClockIcon, ShieldIcon } from "@qeetrix/icons";
 import { useCallback, useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 
 import type { ActivityEvent } from "@/modules/activity";
 import { PageHeader } from "@/platform/components/page-header";
@@ -27,6 +28,7 @@ export function IdentityTimelinePage({ userId }: { userId: string }) {
 }
 
 function TimelinePage({ userId }: { userId: string }) {
+  const { t } = useTranslation("timeline");
   const access = useCapabilities();
   const canRead = access.can("audit.read") && access.can("user.read");
 
@@ -72,18 +74,19 @@ function TimelinePage({ userId }: { userId: string }) {
     return (
       <div className="flex min-w-0 flex-col gap-4">
         <PageHeader
-          title="Identity Timeline"
-          description="A chronological view of this user's lifecycle events."
+          title={t("identityTimelinePage.identityTimeline")}
+          description={t("identityTimelinePage.aChronologicalViewOf")}
         />
         <div className="enterprise-panel flex min-h-64 items-center justify-center">
           <EmptyState
             icon={ShieldIcon}
-            title="Access restricted"
+            title={t("identityTimelinePage.accessRestricted")}
             description={
-              <>
-                You need the <code className="font-mono">audit.read</code> and{" "}
-                <code className="font-mono">user.read</code> capabilities to view the timeline.
-              </>
+              <Trans
+                t={t}
+                i18nKey="identityTimelinePage.needsCapabilities"
+                components={{ code: <code className="font-mono" /> }}
+              />
             }
           />
         </div>
@@ -100,19 +103,24 @@ function TimelinePage({ userId }: { userId: string }) {
         className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
       >
         <ArrowLeftIcon className="size-3" aria-hidden="true" />
-        Back to user
+        {t("identityTimelinePage.backToUser")}
       </Link>
 
       <PageHeader
-        title="Identity Timeline"
-        description="Chronological view of this user's lifecycle — authentication, access changes, security events, and more."
+        title={t("identityTimelinePage.identityTimeline")}
+        description={t("identityTimelinePage.chronologicalViewOfThis")}
         actions={
           <div className="flex items-center gap-2">
             <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:inline-flex">
               <ClockIcon className="size-3.5" aria-hidden="true" />
               {isLoading
-                ? "Loading…"
-                : `${events.length} event${events.length === 1 ? "" : "s"}${hasNextPage ? "+" : ""} loaded`}
+                ? t("common:states.loading")
+                : t(
+                    hasNextPage ? "identityTimelinePage.loadedMore" : "identityTimelinePage.loaded",
+                    {
+                      count: events.length,
+                    },
+                  )}
             </span>
             <TimelineExportMenu events={events} userId={userId} disabled={isLoading} />
           </div>

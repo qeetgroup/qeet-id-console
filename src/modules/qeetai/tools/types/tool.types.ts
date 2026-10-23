@@ -9,7 +9,10 @@ import type { ConsoleContext } from "../../context/types/context.types";
 
 export type ToolCategory = "directory" | "authz" | "credentials" | "audit" | "codegen";
 
-/** A confirmation the user must approve before a tool with a `confirm` builder runs. */
+/**
+ * A confirmation the user must approve before a tool with a `confirm` builder runs. Shown only to
+ * the operator, so its copy is translated.
+ */
 export interface ConfirmRequest {
   title: string;
   body: string;
@@ -48,8 +51,8 @@ export interface ToolContext {
 export interface ToolDefinition<I = unknown> {
   name: string; // snake_case; must equal the backend's name for the tool
   category: ToolCategory;
-  title: string;
-  description: string; // Model-facing description
+  title: string; // Catalogue key of the name the tool card shows
+  description: string; // Model-facing description, so English
   input: z.ZodType<I>;
   requiredCapability?: Capability;
   destructive: boolean;
@@ -59,8 +62,9 @@ export interface ToolDefinition<I = unknown> {
    */
   mutates: boolean;
   /**
-   * Console screen where the operator makes this change themselves. Every
-   * change tool names one, so a withheld tool can point the operator there.
+   * Console screen where the operator makes this change themselves. Every change tool names one,
+   * so a withheld tool can point the operator there. `label` is a catalogue key; `hint` goes only
+   * to the model.
    */
   consoleScreen?: { label: string; to: string; hint?: string };
   confirm?: (input: I, ctx: ToolContext) => ConfirmRequest;

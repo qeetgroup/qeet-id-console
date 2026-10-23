@@ -184,6 +184,20 @@ describe("Attribute mappings › sensitive actions", () => {
       actionLabel: "save mapping",
     });
   });
+  it("opens the rule editor without an earlier action's error", async () => {
+    renderWithProvider(<MappingsPage />);
+    await screen.findByRole("checkbox", { name: "Select department mapping" });
+    fireEvent.change(screen.getByRole("textbox", { name: "Source data (JSON)" }), {
+      target: { value: "not json" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Test mapping" }));
+    const invalid = "Enter a valid JSON object smaller than 64 KB.";
+    expect(screen.getByRole("alert").textContent).toBe(invalid);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add mapping" }));
+    const dialog = await screen.findByRole("dialog", { name: "Add mapping" });
+    expect(within(dialog).queryByText(invalid)).toBeNull();
+  });
 });
 
 describe("Suspended users › sensitive actions", () => {

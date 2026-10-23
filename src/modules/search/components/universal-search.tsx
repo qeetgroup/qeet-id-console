@@ -1,6 +1,7 @@
 import { cn, EmptyState, Kbd, ScrollArea, Separator, Skeleton, Spinner } from "@qeetrix/ui";
 import { RotateCcwClockIcon, SearchIcon, XIcon } from "@qeetrix/icons";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { moveHighlight } from "../keyboard";
 import { rankItems } from "../ranking";
@@ -28,6 +29,7 @@ interface UniversalSearchProps {
  * highlighted item. Choosing an item runs or opens it and records it as recent.
  */
 export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
+  const { t } = useTranslation("search");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -89,13 +91,13 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
           (e): SearchItem => ({
             id: e.id,
             kind: "favorite",
-            category: "Favorites",
+            category: t("category.favorites"),
             title: e.title,
             subtitle: e.subtitle,
             url: e.url,
           }),
         );
-        grouped.push({ category: "Favorites", items });
+        grouped.push({ category: t("category.favorites"), items });
         all.push(...items);
       }
 
@@ -105,13 +107,13 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
           (e): SearchItem => ({
             id: e.id,
             kind: "recent",
-            category: "Recent",
+            category: t("category.recent"),
             title: e.title,
             subtitle: e.subtitle,
             url: e.url,
           }),
         );
-        grouped.push({ category: "Recent", items });
+        grouped.push({ category: t("category.recent"), items });
         all.push(...items);
       }
 
@@ -121,19 +123,19 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
     const navRanked = rankItems(navigationItems, query, rankCtx).slice(0, MAX_NAV_RESULTS);
     if (navRanked.length > 0) {
       const items = navRanked.map((r) => r.item);
-      grouped.push({ category: "Navigation", items });
+      grouped.push({ category: t("category.navigation"), items });
       all.push(...items);
     }
 
     const cmdRanked = rankItems(commandItems, query, rankCtx).slice(0, MAX_CMD_RESULTS);
     if (cmdRanked.length > 0) {
       const items = cmdRanked.map((r) => r.item);
-      grouped.push({ category: "Commands", items });
+      grouped.push({ category: t("category.commands"), items });
       all.push(...items);
     }
 
     const hits = resourceQuery.data?.results ?? [];
-    const resourceItems = resourceHitsToSearchItems(hits);
+    const resourceItems = resourceHitsToSearchItems(hits, t);
     const byCategory = new Map<string, SearchItem[]>();
     for (const ri of resourceItems) {
       const bucket = byCategory.get(ri.category) ?? [];
@@ -147,6 +149,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
 
     return { groups: grouped, allItems: all };
   }, [
+    t,
     query,
     navigationItems,
     commandItems,
@@ -204,7 +207,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
         // A click whose target is the dialog itself landed on the backdrop.
         if (e.target === dialogRef.current) onOpenChange(false);
       }}
-      aria-label="Universal search"
+      aria-label={t("universalSearch.universalSearch")}
       className={cn(
         "fixed left-1/2 top-[8vh] -translate-x-1/2",
         // Wide enough for the preview pane while fitting a 1024px viewport.
@@ -231,17 +234,21 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
               setQuery(e.target.value);
               setHighlightIndex(0);
             }}
-            placeholder="Search the control plane…"
-            aria-label="Search"
+            placeholder={t("universalSearch.searchTheControlPlane")}
+            aria-label={t("common:actions.search")}
             className="h-12 w-full border-0 bg-transparent text-base outline-none placeholder:text-muted-foreground"
           />
           {isLoadingResources && (
-            <Spinner size="sm" label="Searching resources" className="shrink-0" />
+            <Spinner
+              size="sm"
+              label={t("universalSearch.searchingResources")}
+              className="shrink-0"
+            />
           )}
           {query.length > 0 && (
             <button
               type="button"
-              aria-label="Clear search"
+              aria-label={t("universalSearch.clearSearch")}
               className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => {
                 setQuery("");
@@ -262,14 +269,14 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
             <div
               id={LISTBOX_ID}
               role="listbox"
-              aria-label="Search results"
+              aria-label={t("universalSearch.searchResults")}
               aria-multiselectable="false"
               className="p-1"
             >
               {showEmpty ? (
                 <EmptyState
-                  title="No results"
-                  description={`Nothing matched "${query}". Try a different term.`}
+                  title={t("universalSearch.noResults")}
+                  description={t("universalSearch.nothingMatched", { query })}
                   className="py-8"
                 />
               ) : isLoadingResources && !hasResults ? (
@@ -295,7 +302,7 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
                     onClick={() => clearRecent()}
                   >
                     <RotateCcwClockIcon className="size-3" aria-hidden="true" />
-                    Clear recent history
+                    {t("universalSearch.clearRecentHistory")}
                   </button>
                 </div>
               )}
@@ -322,19 +329,17 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
         <div className="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-3">
             <span>
-              <Kbd>↑↓</Kbd> <span className="opacity-80">navigate</span>
+              <Kbd>↑↓</Kbd> <span className="opacity-80">{t("universalSearch.hint.navigate")}</span>
             </span>
             <span>
-              <Kbd>↵</Kbd> <span className="opacity-80">select</span>
+              <Kbd>↵</Kbd> <span className="opacity-80">{t("universalSearch.hint.select")}</span>
             </span>
             <span>
-              <Kbd>esc</Kbd> <span className="opacity-80">close</span>
+              <Kbd>esc</Kbd> <span className="opacity-80">{t("universalSearch.hint.close")}</span>
             </span>
           </span>
           {hasResults && (
-            <span>
-              {allItems.length} result{allItems.length === 1 ? "" : "s"}
-            </span>
+            <span>{t("universalSearch.resultCount", { count: allItems.length })}</span>
           )}
         </div>
       </div>
@@ -343,11 +348,12 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
 }
 
 function SearchSkeleton() {
+  const { t } = useTranslation("search");
   return (
     <div
       role="status"
       className="flex flex-col gap-1 p-1"
-      aria-label="Loading results"
+      aria-label={t("universalSearch.loadingResults")}
       aria-busy="true"
     >
       <SkRow />

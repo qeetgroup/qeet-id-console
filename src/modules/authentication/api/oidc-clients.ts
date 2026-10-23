@@ -160,7 +160,7 @@ export function useCreateOidcClient() {
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: (input: CreateOidcInput) => createOidcClient(tenantId, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "Application registered", silentError: true }, // the sheet shows it
+    meta: { successMessage: "auth:toast.applicationRegistered", silentError: true }, // the sheet shows it
   });
 }
 
@@ -176,7 +176,7 @@ export function useUpdateOidcClient(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) });
     },
-    meta: { successMessage: "Application updated", silentError: true },
+    meta: { successMessage: "auth:toast.applicationUpdated", silentError: true },
   });
 }
 
@@ -186,7 +186,7 @@ export function useDeleteOidcClient() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/oidc/clients/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "Application deleted" },
+    meta: { successMessage: "auth:toast.applicationDeleted" },
   });
 }
 
@@ -197,7 +197,7 @@ export function useRotateClientSecret(id: string) {
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: () => rotateOidcClientSecret(tenantId, id),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "Client secret rotated" },
+    meta: { successMessage: "auth:toast.clientSecretRotated" },
   });
 }
 
@@ -233,6 +233,6 @@ export function useReviewShadowAIClient() {
         method: "POST",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.shadowAi(tenantId) }),
-    meta: { successMessage: "Acknowledged" },
+    meta: { successMessage: "auth:toast.acknowledged" },
   });
 }

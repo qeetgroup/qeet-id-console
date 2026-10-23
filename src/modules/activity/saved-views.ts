@@ -9,7 +9,7 @@ import type { ActivitySearch } from "./activity-search";
 
 export interface SavedView {
   id: string;
-  name: string;
+  name: string; // a built-in view's is a catalogue key; a person's own is their text
   search: ActivitySearch;
   builtin?: boolean;
   icon?: string; // Icon name such as "ShieldCheck"; the saved-views bar doesn't render it
@@ -25,7 +25,7 @@ export const ALL_EVENTS_VIEW_ID = "all-events"; // The id of the unfiltered defa
 export const PRESET_VIEWS: SavedView[] = [
   {
     id: ALL_EVENTS_VIEW_ID,
-    name: "All events",
+    name: "activity:savedViews.preset.allEvents",
     builtin: true,
     icon: "Activity",
     search: {},
@@ -33,7 +33,7 @@ export const PRESET_VIEWS: SavedView[] = [
   },
   {
     id: "failed-logins",
-    name: "Failed logins",
+    name: "activity:savedViews.preset.failedLogins",
     builtin: true,
     icon: "LogIn",
     search: { category: "authentication", q: "login", severity: "warning,error,critical" },
@@ -41,7 +41,7 @@ export const PRESET_VIEWS: SavedView[] = [
   },
   {
     id: "admin-actions",
-    name: "Admin actions",
+    name: "activity:savedViews.preset.adminActions",
     builtin: true,
     icon: "ShieldCheck",
     search: { category: "authorization" },
@@ -49,7 +49,7 @@ export const PRESET_VIEWS: SavedView[] = [
   },
   {
     id: "mfa-changes",
-    name: "MFA changes",
+    name: "activity:savedViews.preset.mfaChanges",
     builtin: true,
     icon: "Fingerprint",
     search: { category: "authentication", q: "mfa" },
@@ -57,7 +57,7 @@ export const PRESET_VIEWS: SavedView[] = [
   },
   {
     id: "security-alerts",
-    name: "Security alerts",
+    name: "activity:savedViews.preset.securityAlerts",
     builtin: true,
     icon: "ShieldAlert",
     search: { severity: "critical,error" },
@@ -65,7 +65,7 @@ export const PRESET_VIEWS: SavedView[] = [
   },
   {
     id: "suspended-users",
-    name: "Suspended users",
+    name: "activity:savedViews.preset.suspendedUsers",
     builtin: true,
     icon: "UserX",
     search: { q: "suspended" },
@@ -73,7 +73,7 @@ export const PRESET_VIEWS: SavedView[] = [
   },
   {
     id: "oauth-failures",
-    name: "OAuth failures",
+    name: "activity:savedViews.preset.oauthFailures",
     builtin: true,
     icon: "KeyRound",
     search: { category: "authentication", q: "oauth", severity: "warning,error,critical" },
