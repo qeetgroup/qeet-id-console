@@ -1,6 +1,7 @@
-// A minimal stand-in for qeet-id-server: sign-in, refresh rotation, tenant switch, logout and the
-// reads the console makes, for one operator in each of two tenants and one in both. Test
-// controls: POST /__test__/reset, POST /__test__/expire (access tokens only), GET /__test__/stats.
+// A minimal stand-in for qeet-id-server: sign-in, refresh rotation (with the server's reuse grace),
+// tenant switch, logout and the reads the console makes, for one operator in each of two tenants
+// and one in both. Test controls: POST /__test__/reset, POST /__test__/expire (access tokens only),
+// GET /__test__/stats.
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 
@@ -32,8 +33,15 @@ const PASSWORD = "Password123!";
 
 let accessTokens = new Map(); // token -> { email, tenantId, sessionId }
 let refreshTokens = new Map(); // token -> { email, tenantId, sessionId }
+let keptRotations = new Map(); // spent refresh token -> { pair, at }
 let refreshCalls = 0;
+let rotations = 0;
 let logoutCalls = 0;
+
+// As REFRESH_TOKEN_REUSE_GRACE on the server: a rotated refresh token sent again within the grace
+// gets the pair its rotation issued, while that pair's refresh token is unused; any other reuse is
+// rejected as theft.
+const REUSE_GRACE_MS = 30_000;
 
 const base64url = (value) => Buffer.from(JSON.stringify(value)).toString("base64url");
 
@@ -102,7 +110,9 @@ const server = createServer(async (request, response) => {
   if (path === "/__test__/reset" && method === "POST") {
     accessTokens = new Map();
     refreshTokens = new Map();
+    keptRotations = new Map();
     refreshCalls = 0;
+    rotations = 0;
     logoutCalls = 0;
     return send(response, 200, { ok: true });
   }
@@ -111,7 +121,11 @@ const server = createServer(async (request, response) => {
     return send(response, 200, { ok: true });
   }
   if (path === "/__test__/stats") {
-    return send(response, 200, { refresh_calls: refreshCalls, logout_calls: logoutCalls });
+    return send(response, 200, {
+      refresh_calls: refreshCalls,
+      rotations,
+      logout_calls: logoutCalls,
+    });
   }
 
   if (path === "/v1/sso/discovery") {
@@ -129,9 +143,22 @@ const server = createServer(async (request, response) => {
     refreshCalls += 1;
     const body = await jsonBody(request);
     const holder = refreshTokens.get(body.refresh_token);
-    if (!holder) return fail(response, 401, "auth.session_revoked", "Refresh token is invalid.");
+    if (!holder) {
+      const kept = keptRotations.get(body.refresh_token);
+      if (
+        kept &&
+        Date.now() - kept.at < REUSE_GRACE_MS &&
+        refreshTokens.has(kept.pair.refresh_token)
+      ) {
+        return send(response, 200, kept.pair);
+      }
+      return fail(response, 401, "auth.session_revoked", "Refresh token is invalid.");
+    }
     refreshTokens.delete(body.refresh_token); // rotation: each refresh token works once
-    return send(response, 200, issuePair(holder.email, holder.tenantId, holder.sessionId));
+    const pair = issuePair(holder.email, holder.tenantId, holder.sessionId);
+    keptRotations.set(body.refresh_token, { pair, at: Date.now() });
+    rotations += 1;
+    return send(response, 200, pair);
   }
 
   const authorization = request.headers.authorization ?? "";

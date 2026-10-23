@@ -96,6 +96,8 @@ test("refreshes an expired session once for two tabs at the same moment", async 
   for (const tab of [page, otherTab]) {
     await expect(tab.locator("#email")).toHaveValue(OPERATOR.email);
   }
+  // One rotation: a request that missed the shared refresh gets the same pair from the backend's
+  // reuse grace. That concurrent requests share one call is pinned in server-proxy.test.ts.
   const stats = await (await request.get(`${BACKEND_URL}/__test__/stats`)).json();
-  expect(stats.refresh_calls).toBe(1);
+  expect(stats.rotations).toBe(1);
 });
