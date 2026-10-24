@@ -80,11 +80,13 @@ export function MetricCard({ resource }: { resource: DeveloperOverviewData["reso
           </Button>
         ) : metric?.series.length ? (
           <div className="h-7 w-14 shrink-0" aria-hidden="true">
+            {/* Decorative: the count beside it says the same, so the chart takes no focus. */}
             <AreaChart
               width={56}
               height={28}
               data={metric.series}
               margin={{ top: 2, right: 1, bottom: 2, left: 1 }}
+              accessibilityLayer={false}
             >
               <Area
                 type="monotone"

@@ -86,7 +86,14 @@ context. Map a code to safe copy via `userMessageForCode` / `errorMessage`. The 
 
 ### 6. Redact telemetry
 `src/platform/telemetry/redact.ts` has a hard denylist (token, secret, password, cookie, api-key,
-otp, …) plus email/IP masking. Never log a raw payload around it.
+otp, …) plus masking of token-shaped strings, query strings, emails and IPs. Never log a raw payload
+around it. Production telemetry goes only to the console's own server log
+(`src/platform/telemetry/server-log.ts`: JSON lines on stdout, every field redacted), never to a
+third party; log a path by its template (`pathTemplate`), never with ids or a query. The logger is
+server-only: `vite build` fails if it would reach the browser bundle, so call it from server
+functions, server routes or `createServerOnlyFn`. The browser reports errors and Web Vitals
+(`client-reporter.ts`) through the `reportClientTelemetry` server function (`client-report.ts`),
+which takes only its Zod allowlist.
 
 ### 7. Sensitive actions go through the shared primitive
 `useSensitiveAction()` gives one capability → confirm → step-up → retry path. Backend
@@ -110,12 +117,32 @@ Committed, and marked read-only in `.vscode/settings.json`. **Never hand-edit it
 never shows one person's data to another, and wipes it on sign-out. Never write AI history, search
 history, saved views or any backend-derived data to an unscoped `localStorage` key. Device
 preferences (theme, language, a panel's width) may stay unscoped; a dismissal about the person or
-the organization, such as the setup checklist, is scoped.
+the organization, such as the setup checklist, is scoped. The idle sign-out's shared
+`qeetid.last-activity` (`src/platform/auth/idle-activity.ts`) holds only a timestamp, so every tab
+can read it: a tab signs out when no tab has seen activity for the limit. Keep it a bare number.
 
 ### 11. The server holds no per-person state in module scope
 On the server one module instance serves every concurrent request. The session store ignores
 writes there; resolve the session per request (`getServerSession`). Never cache a person's data in a
 module-level variable that server code can reach.
+
+### 12. Every page meets WCAG 2.2 AA, and a pull request proves it
+`tests/e2e/accessibility.spec.ts` runs axe (`@axe-core/playwright`, tags `wcag2a`, `wcag2aa`,
+`wcag21a`, `wcag21aa`, `wcag22aa`) on the signed-out screens and the main console pages in light
+and dark themes, and on overlays a page scan can't reach (command palette, a create sheet, a
+confirm dialog, a menu). Any violation fails the "Session E2E" job. Fix it in the console:
+- An icon-only button, a select trigger (a combobox takes no name from the value it shows) and a
+  field each get a name: a visible `<label htmlFor>` or `FieldLabel`, else an `aria-label` from the
+  catalogue. When a control has visible text, its name begins with that text (2.5.3 Label in
+  Name); hide decoration that would read as words (initials, keycaps) with `aria-hidden`.
+- Colours come from the tokens: fix contrast by choosing the right token, never a hard-coded colour.
+- A decorative chart sets `accessibilityLayer={false}`, so recharts doesn't make it focusable.
+- A new page or overlay gets a scan in the spec, with fake-backend data for its real content.
+
+A violation from inside an `@qeetrix/ui` component that the console can't fix is excused for
+**that rule on that element only**: an entry in the spec's `DESIGN_SYSTEM_ISSUES` (one rule, one
+element selector, every other rule still applies), with a comment naming it as a qeetrix issue, and
+raised as a QTRX ticket. Never disable a rule for a page, and never excuse a console-owned element.
 
 ## Conventions
 
@@ -191,6 +218,19 @@ One way to do each thing. `src/modules/users` is the reference implementation.
   another language's month names. Words from `Intl` (country names, lists) follow the UI language.
 - **File size** — a source file stays within 500 lines (`src/__tests__/source-files.test.ts`).
   Split by cohesion into siblings named `<file>-<part>`, with pure logic in a `.ts` file.
+- **TanStack Start stays at 1.168** — pinned exactly with its router: 1.169 removed the `useSession`
+  API the session cookie is sealed with, so upgrading is a session migration of its own
+  (docs/llm/context.md, CI/CD).
+- **Bundle size** — `bun run size` (CI, after the build; `scripts/check-bundle-size.mjs`) holds
+  the signed-in shell's initial JS, and each route's own JS beyond its parent's, to the gzip
+  budgets in `bundle-budgets.json`. Code only some screens need (an editor, a date picker, a QR
+  encoder, the Qeet AI workspace) loads with `React.lazy` where it renders. A route's
+  `validateSearch` and `beforeLoad` ship in the entry with everything they import, so they read
+  light model files (`tabs.ts`, `time-range.ts`), never a page; and importing a barrel loads what
+  it re-exports, so the barrels the shell imports stay light. **Raise a budget only in the change
+  that grows the bundle, by hand, to what the check suggests, and give the reason in the commit
+  message**; never re-baseline the file to make room. A route without a budget is held to
+  `newRoute` until it gets one; a removed route's budget fails the check until deleted.
 - **API contract** — no generated client. Each module types the endpoints it calls by hand from
   the server's Go structs and OpenAPI, and parses with a Zod `schema` where a wrong shape would
   mislead (a one-time secret, a status). A server contract change is a cross-repository change
@@ -204,10 +244,11 @@ bun run dev              # vite dev on port 3002 (see below)
 bun run build
 bun run test             # vitest
 bun run test:coverage    # vitest + coverage thresholds (what CI runs)
-bun run test:e2e         # build, then the Playwright session-boundary suite
+bun run test:e2e         # build, then the Playwright suites: session boundary and accessibility
 bun run typecheck
 bun run check            # biome format + lint + assist
 bun run lint:boundaries  # the layering gate
+bun run size             # after a build: the gzip budgets in bundle-budgets.json
 bun run audit            # known high/critical vulnerabilities in the dependency tree
 ```
 
@@ -223,18 +264,26 @@ bun run audit            # known high/critical vulnerabilities in the dependency
 and workflows default to read-only permissions.
 
 - `verify` (job name **Verify**, the required status check on `main`; 20 min): typecheck → `check`
-  → **`lint:boundaries`** → `test:coverage` (thresholds in `vitest.config.ts`) → build.
-- `e2e` (job name **Session E2E**): the Playwright session suite against the production build.
+  → **`lint:boundaries`** → `test:coverage` (thresholds in `vitest.config.ts`) → build →
+  **`size`** (the bundle budgets; see Conventions, Bundle size).
+- `e2e` (job name **Session E2E**): every Playwright spec in `tests/e2e` against the production
+  build: the session boundary, the Content-Security-Policy and the WCAG 2.2 AA accessibility scan
+  (rule 12).
 - `dependency-review` (PRs only): fails on a new dependency with a high or critical advisory.
 - `image` — push to `release/**` only, after `verify`: publishes
   `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>` (amd64+arm64) for the `qeet-id-deploy` test kit.
   It never computes an RC number. The image is the `Dockerfile` (Nitro `node-server`), configured at
   runtime by `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL`; health `GET /healthz`. Vercel
   production does not use it.
+- `image-sbom` and `image-attest` — with `image`: attach SLSA build provenance and the CycloneDX
+  SBOM to the image's digest.
 
 `codeql.yml` scans the TypeScript and the workflow files (pushes, PRs, weekly).
 `dependency-audit.yml` runs `bun run audit` on pushes, PRs and daily (not a required check).
-`docker.yml` builds and smoke-tests the image on PRs that touch it. `package.json` `overrides`
+`docker.yml` builds and smoke-tests the image, and generates the SBOM, on PRs that touch them.
+`sbom.yml` (reusable) writes the SBOM: a CycloneDX file of the production dependency tree
+(`--omit dev`), read from the installed `node_modules` by a pinned `@cyclonedx/cyclonedx-npm`, as
+the `sbom` artifact. `package.json` `overrides`
 hold only security floors for transitive packages; never add a version pin there for another reason.
 `.github/dependabot.yml` proposes bun, Actions and Docker digest updates weekly, each at least 3
 days after release; `bunfig.toml` applies the same 3-day minimum to local `bun add`/`bun update`.
@@ -243,13 +292,33 @@ days after release; `bunfig.toml` applies the same 3-day minimum to local `bun a
 --prod` (pinned Vercel CLI; the token reaches only the Vercel steps), then it creates the `vX.Y.Z`
 tag and GitHub release through the API. Vercel's own Git integration is disabled for
 `main` (`vercel.json`) so the two cannot double-deploy; PR and `develop` previews still come
-from Vercel.
+from Vercel. Its `attest` job signs build provenance and the SBOM for `vercel-output.sha256`, the
+checksums of every file in `.vercel/output` (the `vercel-output-checksums` artifact; the output
+itself is never uploaded, as it was built with the production environment).
+
+**Attestations** use `actions/attest` (`attest-build-provenance` is now a wrapper around it and
+`attest-sbom` is deprecated). Only an attest job holds `id-token: write` and `attestations: write`,
+and it runs no checkout or dependency code: a package that could mint an OIDC token could sign
+anything as this repository. Verify after a run:
+
+```bash
+gh attestation verify oci://ghcr.io/qeetgroup/qeet-id-console:sha-<commit> -R qeetgroup/qeet-id-console
+gh run download <run-id> -R qeetgroup/qeet-id-console -n vercel-output-checksums
+gh attestation verify vercel-output.sha256 -R qeetgroup/qeet-id-console \
+  --signer-workflow qeetgroup/qeet-id-console/.github/workflows/deploy.yml
+# add --predicate-type https://cyclonedx.org/bom to check the SBOM instead of the provenance
+```
 
 Production refuses to serve with a missing or malformed `SESSION_SECRET`, backend URL or public API
 URL (`src/platform/config/server-config.ts`, called from `src/start.ts`): every request fails and
 the log names the variable. Security response headers live in
 `src/platform/security/security-headers.ts` and are applied through Nitro route rules
-(`vite.config.ts`) for both the image and Vercel.
+(`vite.config.ts`) for both the image and Vercel. The Content-Security-Policy is set per response
+in `src/start.ts` (`content-security-policy.ts`): scripts run only with that response's nonce,
+which the router puts on every script it renders, so **never add an inline `<script>` or event
+handler** (use `ScriptOnce`, which carries the nonce), never load code from another origin
+(Monaco ships from the console's own bundle), and never relax `script-src` or `connect-src`.
+`tests/e2e/content-security-policy.spec.ts` fails on any violation.
 
 ## Comments
 
@@ -290,8 +359,10 @@ bun run typecheck && bun run check && bun run lint:boundaries && bun run test
 git diff
 ```
 
-`src/platform/{api,auth}` carries the session boundary: after changing it, also run
-`bun run test:e2e` (builds, then runs the Playwright session suite in `tests/e2e`).
+After changing `src/platform/{api,auth}` (the session boundary) or anything a page renders, also
+run `bun run test:e2e`: it builds, then runs the Playwright suites in `tests/e2e`, including the
+accessibility scan. Its ports default to 43173 (app) and 43101 (fake backend); set `E2E_APP_PORT`
+and `E2E_BACKEND_PORT` to run two copies side by side.
 
 ## Escalate rather than proceed
 

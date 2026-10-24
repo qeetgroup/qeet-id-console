@@ -13,7 +13,7 @@ import { ConsoleHeader } from "@/modules/dashboard";
 import { ImpersonationBanner } from "@/modules/dashboard";
 import { ShortcutsDialog } from "@/modules/dashboard";
 import { VerifyEmailBanner } from "@/modules/dashboard";
-import { QeetAILauncher, QeetAIRuntimeProvider, QeetAIWorkspace } from "@/modules/qeetai";
+import { QeetAI } from "@/modules/qeetai";
 import { hasVerifiedEmail } from "@/platform/auth/email-verification";
 import { organizationSelectionBlocksPath } from "@/platform/auth/organization-selection";
 import { useIdleLogout } from "@/platform/auth/session";
@@ -105,14 +105,7 @@ function ConsoleFrame() {
           </AccessBoundary>
         </main>
       </div>
-      {qeetaiEnabled ? (
-        <QeetAIRuntimeProvider>
-          {/* Docked, Qeet AI is an in-flow flex sibling, so opening it reflows the page rather
-              than covering it. */}
-          <QeetAIWorkspace />
-          <QeetAILauncher />
-        </QeetAIRuntimeProvider>
-      ) : null}
+      {qeetaiEnabled ? <QeetAI /> : null}
       <CommandPaletteLauncher open={paletteOpen} onOpenChange={setPaletteOpen} />
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </SidebarProvider>

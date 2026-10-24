@@ -1,3 +1,5 @@
+// First: the schema below parses at load, and Zod must not probe for eval before it.
+import "./zod";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 

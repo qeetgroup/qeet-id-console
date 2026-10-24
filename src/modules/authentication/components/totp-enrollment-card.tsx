@@ -12,7 +12,6 @@ import {
   FieldGroup,
   FieldLabel,
   OTPInput,
-  QRCode,
 } from "@qeetrix/ui";
 import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
@@ -20,6 +19,7 @@ import { useTranslation } from "react-i18next";
 
 import { ErrorText } from "@/platform/components/error-reference";
 import type { TotpEnrollment } from "../api/mfa";
+import { LazyQRCode } from "./lazy-qr-code";
 
 const CODE_LENGTH = 6;
 
@@ -67,7 +67,7 @@ export function TotpEnrollmentCard({
             <FieldLabel id="totp-scan">{t("mfa.totp.enrolling.scanLabel")}</FieldLabel>
             <div className="flex flex-col items-center gap-4 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:justify-center">
               <div className="shrink-0 rounded-lg border bg-white p-3">
-                <QRCode
+                <LazyQRCode
                   value={enrollment.provisioning_url}
                   size={168}
                   aria-labelledby="totp-scan"

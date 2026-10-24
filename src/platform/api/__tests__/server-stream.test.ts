@@ -6,9 +6,13 @@ const session = vi.hoisted(() => ({
 vi.mock("@/platform/auth/server-session", () => ({ readServerSession: async () => session.data }));
 vi.mock("@/platform/api/server-proxy", () => ({
   getServerApiBaseUrl: () => "https://api.qeet.test",
+  isSessionEnded: async (response: Response) =>
+    response.status === 401 &&
+    (await response.clone().json()).error?.code === "auth.session_revoked",
 }));
 vi.mock("@tanstack/react-start/server", () => ({ getRequestIP: () => "198.51.100.7" }));
 
+import { _setServerLogSinkForTest } from "@/platform/telemetry/server-log";
 import { proxyActivityStream, proxyQeetAIStream } from "../server-stream";
 
 const fetchMock = vi.fn();
@@ -90,5 +94,62 @@ describe("proxyQeetAIStream", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ error: { code: "client.invalid_stream_path" } });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("the streams' production log", () => {
+  let lines: Record<string, unknown>[] = [];
+  beforeEach(() => {
+    lines = [];
+    _setServerLogSinkForTest((line) => lines.push(JSON.parse(line)));
+  });
+  afterEach(() => _setServerLogSinkForTest(null));
+
+  it("writes one line when the backend answers, naming the path by its template", async () => {
+    const url = `https://console.test/api/qeetai-stream?path=${encodeURIComponent(CONVERSATION)}`;
+    await proxyQeetAIStream(
+      new Request(url, { method: "POST", body: "{}", headers: { "X-Request-Id": "req-browser" } }),
+    );
+
+    expect(lines).toEqual([
+      {
+        ts: expect.any(String),
+        level: "info",
+        event: "api.stream",
+        requestId: "req-browser",
+        method: "POST",
+        path: "/v1/qeetai/conversations/{id}/messages",
+        status: 200,
+        durationMs: expect.any(Number),
+        outcome: "ok",
+      },
+    ]);
+    expect(JSON.stringify(lines)).not.toContain("secret");
+  });
+
+  it("logs a stream refused for want of a session", async () => {
+    session.data = {};
+    await proxyActivityStream(new Request("https://console.test/api/activity-stream"));
+    expect(lines).toEqual([
+      expect.objectContaining({ path: "/v1/activity/stream", status: 401, outcome: "no_session" }),
+    ]);
+  });
+
+  it("logs a session the backend ended", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({ error: { code: "auth.session_revoked" } }, { status: 401 }),
+    );
+    await proxyActivityStream(new Request("https://console.test/api/activity-stream"));
+    expect(lines).toEqual([expect.objectContaining({ status: 401, outcome: "session_ended" })]);
+  });
+
+  it("logs a backend that never answered, then lets the error through", async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError("fetch failed"));
+    await expect(
+      proxyActivityStream(new Request("https://console.test/api/activity-stream")),
+    ).rejects.toThrow("fetch failed");
+    expect(lines).toEqual([
+      expect.objectContaining({ level: "error", status: null, outcome: "backend_unavailable" }),
+    ]);
   });
 });

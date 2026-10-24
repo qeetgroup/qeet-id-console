@@ -47,8 +47,9 @@ export function HeaderUser() {
             className="rounded-full"
             aria-label={t("headerUser.accountMenu")}
           >
-            <Avatar className="size-8">
-              <AvatarImage src={avatarSrc} alt={name} />
+            {/* The label names the button; initials would be read as a different name. */}
+            <Avatar className="size-8" aria-hidden="true">
+              <AvatarImage src={avatarSrc} alt="" />
               <AvatarFallback className="text-xs">{initials(name)}</AvatarFallback>
             </Avatar>
           </Button>

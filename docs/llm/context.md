@@ -1,9 +1,9 @@
 # Repository Context — qeet-id-console
 
-**Level:** L2 · **Status:** active · **Evidence state:** verified · **Last verified:** 2026-10-23
+**Level:** L2 · **Status:** active · **Evidence state:** verified · **Last verified:** 2026-10-24
 **Verification scope:** layering rules read from `biome.json`; session and BFF behaviour from
 `src/platform/{api,auth}`; capability model from `src/platform/security/`; CI from
-`.github/workflows/ci.yml`. Layer compliance verified by grep.
+`.github/workflows/`. Layer compliance verified by grep.
 
 ## Identity
 
@@ -114,6 +114,18 @@ unauthenticated federation redirects (e.g. starting a social login).
 
 Multi-tab clients must serialise refresh or they trigger the backend's own theft detection.
 
+### Idle sign-out — one timer across tabs
+
+`useIdleLogout` (10 minutes in the shell, `/account` and the organization selector) runs
+`watchIdle` (`src/platform/auth/idle-activity.ts`). Each tab writes the time of its newest
+activity to `localStorage` `qeetid.last-activity` — a bare timestamp, so unscoped — at most every
+15 s with a trailing write, and never over a newer one. When a tab's timer fires it re-arms for
+the newest activity in any tab and signs out only when that is older than the limit, so an idle
+tab no longer signs out an operator working in another. The sign-out's `cleared` broadcast takes
+every other tab to `/sign-in`. A timestamp in the future or unreadable is ignored; with storage
+disabled each tab goes by its own activity. It is UX: the server's own idle limit stays
+authoritative.
+
 ### Token containment
 
 ```ts
@@ -172,10 +184,50 @@ suppressed for step-up.
 
 - **`src/platform/errors/user-message.ts` is "the leak stop"** — backend `error.message`/`detail` may
   carry internal context and must **never** be rendered. Map a code to safe copy.
-- **`src/platform/telemetry/redact.ts`** — denylist regex (token, authorization, secret, password,
-  refresh, client_secret, private_key, api-key, otp, recovery, cookie, credential, ssn) plus
-  email → `[redacted-email]` and IPv4 → `[redacted-ip]`.
+- **`src/platform/telemetry/redact.ts`** — the one redaction step for everything that leaves as
+  telemetry. Values under a denylisted key (token, authorization, secret, password, refresh,
+  client_secret, private_key, api-key, otp, recovery, cookie, credential, ssn) become `[redacted]`;
+  inside strings, JWTs, `Bearer`/`Basic` credentials and long opaque runs (a 43-character refresh
+  token, a hex hash; a bare UUID is kept) become `[redacted-token]`, a URL's query string
+  `?[redacted-query]`, emails `[redacted-email]` and IPv4 addresses `[redacted-ip]`.
 - Opt-in runtime schemas: a mismatch throws `client.schema_mismatch` — fail closed.
+
+Nothing goes to a third party. Production telemetry is the console's own server log:
+
+- **Server log** (`telemetry/server-log.ts`) — one JSON line per event on stdout (Vercel and the
+  container both collect it): `{ ts, level, event, …fields }`, every field passed through
+  `redact()`. It writes only in a production build (`import.meta.env.PROD`); DEV keeps its console
+  output (`logger`, the `api →` trace), and a test run is silent unless a test installs a sink
+  (`_setServerLogSinkForTest`). It imports `@tanstack/react-start/server-only`, so `vite build`
+  fails ("Import denied in client environment") if any of it would reach the browser bundle: call
+  it only from server-function handlers, server routes, `createServerOnlyFn`, or modules only they
+  import.
+- **Events** — `api.request` per `proxyApiRequest` call (`api/server-proxy-log.ts`) and
+  `api.stream` per SSE proxy (`api/server-stream.ts`): request id, method, the backend path as a
+  template (`/v1/users/{id}/sessions`, `telemetry/path-template.ts`; never the query), status,
+  `durationMs` and `outcome` (`ok`, `refreshed`, `refresh_rejected`, `backend_unavailable`,
+  `session_ended`, `unexpected_token`; streams `ok`, `no_session`, `aborted`,
+  `backend_unavailable`, `session_ended`, timed to the backend's answer). `session.refresh` for
+  each renewal (`trigger`: `backend_401`, `browser_expiring`, `browser_forced`; `outcome`:
+  `refreshed`, `rejected`, `unavailable`). `config.invalid` names the variables the production
+  check in `src/start.ts` refused, never their values. Never a token, cookie, body or email.
+- **Browser reports** (`telemetry/client-reporter.ts`, started in `src/router.tsx` before
+  hydration, production builds only) — `window` `error` and `unhandledrejection`, `captureError`'s
+  callers (the root error boundary, a failed sensitive action) and Web Vitals (`web-vitals`: LCP,
+  INP, CLS, FCP, TTFB, one report per metric per page view). Each carries the route's template
+  (`/users/$userId`), never its URL; an API error is reported by its code, never the backend's
+  message; text is redacted, then cut to the server's bounds. At most 10 distinct messages per
+  page load, deduplicated by message. Errors are sent after 2 s, everything when the page is
+  hidden, in batches of up to 20, with a keepalive fetch (`api/keepalive-fetch.ts`). Reporting
+  never throws into the app.
+- **Report endpoint** (`telemetry/client-report.ts`) — the `reportClientTelemetry` server
+  function, so the CSRF middleware checks it like any other. Zod strict objects: unknown fields,
+  over-long text (message 500, stack 2000), more than 20 events or a route that isn't a path
+  template are refused. It templates the route again and writes `client.error` / `client.vital`
+  through the server log. It needs no session (sign-in pages report too), so a scripted client
+  that forges `Origin` can add log lines; there is no rate limit.
+- `captureError` still logs to the console in DEV only; server-side renders don't report through
+  it.
 
 ## Modules and the shell
 
@@ -227,14 +279,41 @@ wait for `<html data-hydrated>` before typing — the
 earlier suite ran against `vite dev`, raced hydration and on-demand compiles, and was removed for
 flaking. No retries: a flake is a bug. Run them after any change to `src/platform/{api,auth}`.
 
+**Accessibility** (`tests/e2e/accessibility.spec.ts`, same job) holds the console to WCAG 2.2 AA:
+axe (`@axe-core/playwright`, tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`) scans
+sign-in, sign-up, verify-email, select-organization, the dashboard, users, a user's detail page,
+groups, roles, the security and developer overviews, organization settings and the account profile,
+each in the light and the dark theme (set as the theme toggle saves it, `qeetid-admin-theme` in
+`localStorage`), and with the command palette, the invite sheet, a confirm dialog and the account
+menu open. Each scan waits for hydration, the page's real content, no skeleton or `aria-busy`
+region left and finished animations; any violation fails with its rule, elements and reason. The
+fake backend serves the pages' records from `tests/e2e/fixtures/fake-tenant-data.mjs` and has an
+`admin@example.com` with every capability (so actions render) and an `unverified@example.com`.
+Text over the shell's and sidebar's faint gradients is measured against their solid token (axe
+can't measure over a gradient). A violation from inside `@qeetrix/ui` is excused for that rule on
+that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12); today one, the
+dark-theme destructive button in a confirm dialog. Ports default to 43173 and 43101;
+`E2E_APP_PORT` and `E2E_BACKEND_PORT` override them.
+
 Every module has tests; `users`, `security`, `compliance` and `authorization` pin their request
 contracts, cache refreshes and tenant guards.
+
+Timing logic runs on fake timers (`vi.useFakeTimers()`, which fakes `Date` too). The idle
+sign-out tests (`src/platform/auth/__tests__/idle-activity*.test.ts*`) model each tab as its own
+`EventTarget` over the one shared `localStorage`: activity in one tab keeps another signed in,
+every tab idle signs out once, another tab's timestamp is honoured, and the node-environment
+file holds it inert on the server.
 
 ## CI/CD
 
 `ci.yml` job `verify` (name **Verify**, the required check on `main`), 20-minute timeout:
 checkout → bun 1.3.14 → `install --frozen-lockfile` → `typecheck` → `check` →
-**`lint:boundaries`** → `test:coverage` → `build`. A `dependency-review` job runs on pull requests;
+**`lint:boundaries`** → `test:coverage` → `build` → **`size`**. `size`
+(`scripts/check-bundle-size.mjs`) reads TanStack Start's route manifest from the server build,
+follows each route's static imports through `.output/public/assets`, and fails when the signed-in
+shell's initial JS (the root plus `/_app`) or a route's own JS beyond its parent's exceeds its gzip
+budget in `bundle-budgets.json`, or when a budget names a route that no longer exists; an unlisted
+route is held to `newRoute`. A `dependency-review` job runs on pull requests;
 `release/**` pushes also publish the test-kit image. `codeql.yml` scans TypeScript and the
 workflows. Actions are pinned to commit SHAs; workflows default to read-only permissions.
 
@@ -245,11 +324,30 @@ releases back for 3 days. `dependency-audit.yml` runs `bun run audit` (high and 
 PRs and daily; it is not a required check, so a newly published advisory shows red without blocking
 merges. `docker.yml` builds and smoke-tests the image on PRs that touch it.
 
+**TanStack Start is pinned at 1.168.61** (with `@tanstack/react-router` 1.170.42, the version it
+requires): Start 1.169 removed the built-in `useSession` API that `src/platform/auth/server-session.ts`
+seals the session cookie with. Moving past it means choosing a session library and migrating the
+cookie (or signing everyone in again), a security-reviewed change of its own; until then, don't
+bump these two.
+
+**SBOM and provenance.** `sbom.yml` (reusable, read-only) installs with `--ignore-scripts` and runs
+a pinned `npx @cyclonedx/cyclonedx-npm --omit dev`: `npm ls` reads bun's hoisted `node_modules`, so
+the CycloneDX file lists the production dependency tree as `bun.lock` resolves it (artifact
+`sbom`). `deploy.yml` (`sbom`, `attest`), the release-image path of `ci.yml` (`image-sbom`,
+`image-attest`) and `docker.yml` (PRs, generation only) call it. The attest jobs sign with
+`actions/attest`: SLSA build provenance, plus the SBOM as a `https://cyclonedx.org/bom`
+attestation, for the image's index digest and for `vercel-output.sha256`, the checksums of every
+file in `.vercel/output` (that output is built with the production environment, so only its
+hashes are uploaded). Only these two jobs hold `id-token: write` and `attestations: write`, and
+they run no checkout or dependency code. A failed SBOM still leaves the provenance. The SBOM keeps
+its `serialNumber` (no `--output-reproducible`): `actions/attest` recognises CycloneDX by it.
+Verification commands are in `AGENTS.md` ("What CI enforces").
+
 **Dependency overrides** (`package.json` `overrides`) hold only security floors: transitive packages
 pinned at or above their first patched release because a parent still allowed a vulnerable one. Remove
-an entry once every parent requires a fixed version. The single audit ignore (`braces`, no fixed
-release; reached only through the `shadcn` CLI in `@qeetrix/ui`) is documented in
-`dependency-audit.yml` and goes when QTRX-4 lands.
+an entry once every parent requires a fixed version. The three audit ignores (`braces`, `zod` 3 and
+`body-parser`) are all reached only through the `shadcn` CLI in `@qeetrix/ui`, which the console
+never runs or bundles; they are documented in `dependency-audit.yml` and go when QTRX-4 lands.
 
 ## Security-critical areas
 
@@ -260,11 +358,12 @@ release; reached only through the `shadcn` CLI in `@qeetrix/ui`) is documented i
 | SSRF guard | `src/platform/api/server-request-policy.ts` | **Critical** | Security review |
 | Token-issuing allowlist | `src/platform/auth/session-response.ts` | **Critical** | Security review |
 | Capability model | `src/platform/security/` | High | Review — UX only, never enforcement |
-| Telemetry redaction | `src/platform/telemetry/redact.ts` | High | Security review |
+| Telemetry redaction, server log, browser report endpoint | `src/platform/telemetry/{redact,server-log,client-report}.ts` | High | Security review |
 | Error copy | `src/platform/errors/user-message.ts` | High | Review — leak stop |
 | CSRF middleware, production config check | `src/start.ts`, `src/platform/config/server-config.ts` | High | Security review |
 | Per-person browser storage | `src/platform/auth/scoped-storage.ts` | High | Security review |
 | Response headers | `src/platform/security/security-headers.ts` | High | Security review |
+| Content-Security-Policy | `src/platform/security/content-security-policy.ts`, `src/start.ts` | High | Security review |
 
 ## Known constraints
 

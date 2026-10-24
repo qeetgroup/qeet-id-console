@@ -5,6 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
 import { api } from "@/platform/api/client";
+import { watchIdle } from "@/platform/auth/idle-activity";
 import { sessionStore } from "@/platform/auth/session-store";
 
 export function useLogout() {
@@ -21,33 +22,16 @@ export function useLogout() {
   });
 }
 
-const IDLE_EVENTS = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click"] as const;
-
 /**
- * Logs the user out after `timeoutMs` of inactivity (no mouse/keyboard/touch).
- * Mount in any component that only renders while the user is authenticated.
+ * Logs the user out after `timeoutMs` without mouse, keyboard or touch activity in any of the
+ * console's tabs. Mount in any component that only renders while the user is authenticated.
  */
 export function useIdleLogout(timeoutMs: number) {
   const logout = useLogout();
-  const mutateRef = useRef(logout.mutate); // listeners always call the current mutate
+  const mutateRef = useRef(logout.mutate); // the idle callback always calls the current mutate
   mutateRef.current = logout.mutate;
 
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-
-    const reset = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => mutateRef.current(), timeoutMs);
-    };
-
-    for (const e of IDLE_EVENTS) window.addEventListener(e, reset, { passive: true });
-    reset();
-
-    return () => {
-      clearTimeout(timer);
-      for (const e of IDLE_EVENTS) window.removeEventListener(e, reset);
-    };
-  }, [timeoutMs]);
+  useEffect(() => watchIdle({ timeoutMs, onIdle: () => mutateRef.current() }), [timeoutMs]);
 }
 
 /** Returns the active tenant id from the in-memory session store. */

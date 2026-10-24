@@ -2,6 +2,7 @@
 export * from "./activity-history";
 export * from "./activity-store";
 export * from "./components/activity-time-range";
+export * from "./time-range";
 export * from "./components/event-card";
 export * from "./components/live-indicator";
 export * from "./components/result-badge";

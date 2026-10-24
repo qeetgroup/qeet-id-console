@@ -62,9 +62,14 @@ open a public issue). Include reproduction steps and impact.
   `code`/`kind` and mapped to curated, user-safe copy (`platform/errors`).
 - Telemetry routes through a redaction guard (`platform/telemetry/redact.ts`)
   with a hard denylist (tokens/secrets/passwords/keys/cookies/credentials) and
-  PII masking. Never log tokens, secrets, credential values, or private keys.
-- Audit events are **server-authoritative**; the client only emits UX analytics
-  and a correlation `X-Request-Id`.
+  masking of token-shaped strings, query strings and PII. Never log tokens,
+  secrets, credential values, or private keys.
+- Telemetry goes only to the console's own server log (JSON lines on stdout);
+  nothing is sent to a third party. The browser reports crashes and Web Vitals
+  to a CSRF-checked server function that accepts only an allowlist of bounded
+  fields and a route's template, never a URL.
+- Audit events are **server-authoritative**; the client only emits a correlation
+  `X-Request-Id` and those diagnostics.
 
 ## Environment
 

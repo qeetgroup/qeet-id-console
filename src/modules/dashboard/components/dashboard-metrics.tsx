@@ -135,24 +135,30 @@ export type DashboardSecondaryStat = {
 export function DashboardSecondaryRail({ items }: { items: DashboardSecondaryStat[] }) {
   const { t } = useTranslation("dashboard");
   return (
-    <dl
+    <ul
       className="dashboard-secondary-rail"
       aria-label={t("dashboardMetrics.directoryHealthIndicators")}
     >
       {items.map((item) => (
-        <div key={item.id} className="dashboard-secondary-stat">
-          <span className="row-span-2 mt-0.5 grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground [&_svg]:size-3.5">
+        // A <dl> admits only term and description groups, so the icon sits beside it.
+        <li key={item.id} className="dashboard-secondary-stat">
+          <span
+            className="row-span-2 mt-0.5 grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground [&_svg]:size-3.5"
+            aria-hidden="true"
+          >
             {item.icon}
           </span>
-          <dt className="truncate text-[11px] font-medium text-muted-foreground">{item.label}</dt>
-          <dd className="mt-0.5 flex min-w-0 items-baseline gap-2">
-            <span className="font-heading text-lg font-semibold tabular-nums">{item.value}</span>
-            {item.detail ? (
-              <span className="truncate text-[11px] text-muted-foreground">{item.detail}</span>
-            ) : null}
-          </dd>
-        </div>
+          <dl className="row-span-2 min-w-0">
+            <dt className="truncate text-[11px] font-medium text-muted-foreground">{item.label}</dt>
+            <dd className="mt-0.5 flex min-w-0 items-baseline gap-2">
+              <span className="font-heading text-lg font-semibold tabular-nums">{item.value}</span>
+              {item.detail ? (
+                <span className="truncate text-[11px] text-muted-foreground">{item.detail}</span>
+              ) : null}
+            </dd>
+          </dl>
+        </li>
       ))}
-    </dl>
+    </ul>
   );
 }

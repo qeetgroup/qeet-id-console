@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { ORG_TABS, OrgDetailPage } from "@/modules/organizations/pages";
+import { ORG_TABS } from "@/modules/organizations";
+import { OrgDetailPage } from "@/modules/organizations/pages";
 import { searchEnum } from "@/shared/utils/search-params";
 
 export const Route = createFileRoute("/_app/organizations/$orgId")({

@@ -31,7 +31,7 @@ import { ActivityPagination } from "./activity-pagination";
 import { ActivitySavedViews } from "./activity-saved-views";
 import { ActivitySummaryStrip } from "./activity-summary-strip";
 import { ActivityTimeRange, type DateRange } from "@/modules/activity";
-import { TIME_PRESETS } from "./activity-time-range";
+import { TIME_PRESETS } from "../time-range";
 import { ActivityTimeline } from "./activity-timeline";
 import { EventDetailsDrawer } from "./event-details-drawer";
 import { LiveIndicator } from "@/modules/activity";

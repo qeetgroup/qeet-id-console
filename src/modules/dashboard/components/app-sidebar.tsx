@@ -102,7 +102,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <div className="mb-2 flex items-center gap-1.5 px-1 leading-tight">
               <span className="font-heading text-sm font-semibold tracking-tight">Qeet ID</span>
               <span className="text-sm text-sidebar-foreground/30">—</span>
-              <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-sidebar-foreground/45">
+              <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 {t("appSidebar.controlPlane")}
               </span>
             </div>

@@ -198,6 +198,35 @@ export function lookupNavTitle(pathname: string, groups: NavGroup[]): NavTitleLo
       }
     }
   }
+  // A page without its own entry, such as a user's detail page, sits under the deepest section
+  // whose address leads to it; an id in its address reads as "Details", never as the raw id.
+  const section = deepestSection(pathname, groups);
   const slug = pathname.split("/").filter(Boolean).at(-1);
-  return { title: slug ? titleFromSlug(slug) : i18n.t("common:pageTitle.untitled") };
+  const title = !slug
+    ? i18n.t("common:pageTitle.untitled")
+    : looksLikeId(slug)
+      ? i18n.t("common:pageTitle.details")
+      : titleFromSlug(slug);
+  return section ? { group: section.group, parent: section.parent, title } : { title };
+}
+
+// UUIDs and other opaque ids: long, or digits mixed into hex-like text.
+function looksLikeId(segment: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(segment) || (segment.length >= 16 && /\d/.test(segment));
+}
+
+function deepestSection(
+  pathname: string,
+  groups: NavGroup[],
+): { group: string; parent: { title: string; url: string } } | undefined {
+  let best: { group: string; parent: { title: string; url: string } } | undefined;
+  for (const group of groups) {
+    for (const entry of group.items.flatMap((item) => [item, ...(item.items ?? [])])) {
+      if (entry.url === "/" || !pathname.startsWith(`${entry.url}/`)) continue;
+      if (!best || entry.url.length > best.parent.url.length) {
+        best = { group: group.label, parent: { title: entry.title, url: entry.url } };
+      }
+    }
+  }
+  return best;
 }

@@ -51,7 +51,11 @@ export function TeamSwitcher() {
               />
             }
           >
-            <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/18%)]">
+            {/* The initial repeats the name beside it, so it isn't read as part of the name. */}
+            <div
+              className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/18%)]"
+              aria-hidden="true"
+            >
               {active?.logo_url ? (
                 <img src={active.logo_url} alt="" className="size-full object-cover" />
               ) : active ? (
@@ -63,20 +67,22 @@ export function TeamSwitcher() {
             <div className="grid flex-1 text-start text-sm leading-tight">
               {tenantsQ.isLoading ? (
                 <>
+                  {/* Names the button while the organizations load. */}
+                  <span className="sr-only">{t("teamSwitcher.organizations")}</span>
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="mt-1 h-3 w-16" />
                 </>
               ) : active ? (
                 <>
                   <span className="truncate font-medium">{active.name}</span>
-                  <span className="truncate text-[10px] capitalize text-sidebar-foreground/55">
+                  <span className="truncate text-[10px] capitalize text-muted-foreground">
                     {planName(active.plan)} · {active.region}
                   </span>
                 </>
               ) : (
                 <>
                   <span className="truncate font-medium">{t("teamSwitcher.noOrganization")}</span>
-                  <span className="truncate text-[10px] text-sidebar-foreground/55">
+                  <span className="truncate text-[10px] text-muted-foreground">
                     {t("teamSwitcher.createATenantBoundary")}
                   </span>
                 </>

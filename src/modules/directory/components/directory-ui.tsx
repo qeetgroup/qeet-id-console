@@ -46,7 +46,8 @@ export function DirectoryDonut({
       role="img"
       aria-label={t("directory.chartSummary", { label, value })}
     >
-      <PieChart width={128} height={128}>
+      {/* The wrapper's label is the chart's text alternative, so the chart takes no focus. */}
+      <PieChart width={128} height={128} accessibilityLayer={false}>
         <Pie
           data={data}
           dataKey="count"

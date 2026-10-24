@@ -36,12 +36,9 @@ import { initials } from "@/shared/utils/initials";
 import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
 import { type Org, useOrg } from "../api/orgs";
+import { ORG_TABS, type OrgTab } from "../tabs";
 import { useOrgActions } from "../use-org-actions";
 import { ActivityTab, BillingTab, MembersTab, OverviewTab, SecurityTab } from "./org-detail-tabs";
-
-export const TABS = ["overview", "members", "security", "billing", "activity"] as const;
-
-export type OrgTab = (typeof TABS)[number];
 
 /** Renders one organization: its header, actions and the detail tabs. */
 export function OrgDetailPage({
@@ -93,7 +90,7 @@ export function OrgDetailPage({
               className="flex min-w-0 flex-col gap-5"
             >
               <TabsList className="w-full justify-start overflow-x-auto">
-                {TABS.map((k) => (
+                {ORG_TABS.map((k) => (
                   <TabsTrigger key={k} value={k}>
                     {t(`detail.tabs.${k}`)}
                   </TabsTrigger>

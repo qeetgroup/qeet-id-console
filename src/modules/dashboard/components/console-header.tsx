@@ -31,20 +31,21 @@ export function ConsoleHeader({
         <DynamicBreadcrumb />
       </div>
 
+      {/* Named by its visible text, so speech input can say what it reads; the keycap is
+          announced through aria-keyshortcuts instead. */}
       <button
         type="button"
         onClick={onOpenPalette}
         className="console-command-trigger"
-        aria-label={t(
-          searchAvailable
-            ? "consoleHeader.searchTheControlPlane"
-            : "consoleHeader.searchUnavailable",
-        )}
+        aria-keyshortcuts="Meta+K Control+K"
+        title={searchAvailable ? undefined : t("consoleHeader.searchUnavailable")}
         disabled={!searchAvailable}
       >
         <SearchIcon className="size-4 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">{t("consoleHeader.searchTheControlPlane")}</span>
-        <kbd className="console-keycap">⌘ + K</kbd>
+        <span className="flex shrink-0" aria-hidden="true">
+          <kbd className="console-keycap">⌘ + K</kbd>
+        </span>
       </button>
 
       <div className="ms-auto flex shrink-0 items-center gap-0.5">

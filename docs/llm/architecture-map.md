@@ -49,6 +49,7 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | **Per-person browser storage, wiped on sign-out** | `src/platform/auth/scoped-storage.ts` |
 | Token-issuing endpoint allowlist | `src/platform/auth/session-response.ts` |
 | Session helpers / auth-lost | `src/platform/auth/session.ts`, `auth-lost.ts` |
+| Idle sign-out, shared across tabs | `src/platform/auth/idle-activity.ts` |
 
 ## Security
 
@@ -63,6 +64,11 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | Step-up dialog / helper | `src/platform/security/step-up-dialog.tsx`, `step-up.ts` |
 | Read-only + mode indicators | `src/platform/security/read-only-notice.tsx`, `access-mode-indicator.tsx` |
 | **Telemetry redaction** | `src/platform/telemetry/redact.ts` |
+| **Server log** (JSON lines on stdout, server-only) | `src/platform/telemetry/server-log.ts` |
+| BFF call and refresh log lines | `src/platform/api/server-proxy-log.ts` |
+| Browser errors + Web Vitals reporter | `src/platform/telemetry/client-reporter.ts` |
+| Report endpoint (Zod allowlist) | `src/platform/telemetry/client-report.ts` |
+| Path → template for logs | `src/platform/telemetry/path-template.ts` |
 | **Backend-message leak stop**, field and reference copy | `src/platform/errors/user-message.ts` |
 | Leak-safe `DataState` (lint-enforced) | `src/platform/components/data-state.tsx` |
 | Translated `StatusPill` (lint-enforced) | `src/platform/components/status-pill.tsx` |
@@ -70,6 +76,7 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | Support reference (request id) | `src/platform/components/error-reference.tsx` |
 | **CSRF policy** | `src/platform/security/csrf-policy.ts` |
 | **Response headers** (applied via `vite.config.ts`) | `src/platform/security/security-headers.ts` |
+| **Content-Security-Policy** (nonce per response, set in `src/start.ts`) | `src/platform/security/content-security-policy.ts` |
 
 ## Platform support
 
@@ -129,6 +136,7 @@ have 10 (about 5% of the keys), so only English is offered until one is complete
 | Vite plugins, security-header route rules | `vite.config.ts` (dev port 3002 is set in the `dev` script) |
 | Unit tests + coverage thresholds | `vitest.config.ts` — `environment: "node"`, jsdom via per-file pragma |
 | CI (required check **Verify**) | `.github/workflows/ci.yml` |
+| Bundle budgets (gzip: the shell, each route) | `bundle-budgets.json`, checked by `scripts/check-bundle-size.mjs` (`bun run size`, after the build) |
 | Static analysis | `.github/workflows/codeql.yml` |
 | Known-vulnerability audit | `.github/workflows/dependency-audit.yml` (`bun run audit`) |
 | Image build + smoke test on PRs | `.github/workflows/docker.yml` |

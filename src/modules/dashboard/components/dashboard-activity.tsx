@@ -106,7 +106,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
         <Link
           to="/activity"
           className={buttonVariants({ variant: "ghost", size: "sm" })}
-          aria-label={t("dashboardActivity.openFullActivityCenter")}
+          aria-label={t("dashboardActivity.viewAllActivity")}
         >
           {t("activity.viewAll")}
         </Link>

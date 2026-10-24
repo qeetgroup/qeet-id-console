@@ -48,7 +48,13 @@ jobs:
       - name: Build
         run: bun run build
 
-  # Playwright session-boundary tests against the production build (tests/e2e).
+      # The shell's initial JS and each route's own JS against bundle-budgets.json (gzip).
+      - name: Bundle budgets
+        run: bun run size
+
+  # Every Playwright spec in tests/e2e against the production build: the session boundary, the
+  # Content-Security-Policy and the WCAG 2.2 AA accessibility scan, so a violation fails the pull
+  # request.
   # No retries: a flake is a bug.
   e2e:
     name: Session E2E
@@ -108,6 +114,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      digest: ${{ steps.push.outputs.digest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -138,6 +147,7 @@ jobs:
         run: echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
       - name: Build and push linux/amd64 + linux/arm64
+        id: push
         env:
           IMAGE: ${{ steps.meta.outputs.image }}
           RELEASE: ${{ steps.meta.outputs.release }}
@@ -145,9 +155,18 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
         run: |
           ref="$IMAGE:sha-$GITHUB_SHA"
+          # The index digest, for the attest job.
+          publish_digest() {
+            if ! [[ $1 =~ ^sha256:[0-9a-f]{64}$ ]]; then
+              echo "::error::no image digest for $ref (got '$1')"
+              exit 1
+            fi
+            echo "digest=$1" >> "$GITHUB_OUTPUT"
+          }
           # sha-<commit> tags are immutable: a re-run must not move them.
           if out=$(docker buildx imagetools inspect "$ref" 2>&1); then
             echo "::notice::$ref already published; leaving it untouched."
+            publish_digest "$(docker buildx imagetools inspect "$ref" --format '{{json .Manifest}}' | jq -r .digest)"
             exit 0
           elif ! grep -qiE 'not found|manifest unknown' <<<"$out"; then
             echo "::error::cannot check $ref: $out"
@@ -172,6 +191,7 @@ jobs:
             --metadata-file "$RUNNER_TEMP/build.json" \
             --push
           digest=$(jq -r '."containerimage.digest"' "$RUNNER_TEMP/build.json")
+          publish_digest "$digest"
           {
             echo "### Release image"
             echo "| | |"
@@ -182,3 +202,43 @@ jobs:
             echo
             echo "Assemble a product RC in qeet-id-deploy → Actions → **publish-candidate** with console = \`$GITHUB_SHA\`."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  image-sbom:
+    name: Release image SBOM
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
+    permissions:
+      contents: read
+    uses: ./.github/workflows/sbom.yml
+
+  # Signs the published image's provenance and SBOM. Kept out of the image job so no build or
+  # dependency code runs where an OIDC token can be minted; a failed SBOM still leaves the
+  # provenance.
+  image-attest:
+    name: Attest release image
+    needs: [image, image-sbom]
+    if: ${{ !cancelled() && needs.image.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # Sigstore signing certificate
+      attestations: write # store the attestations
+    steps:
+      - name: Attest build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ needs.image.outputs.image }}
+          subject-digest: ${{ needs.image.outputs.digest }}
+
+      - if: needs.image-sbom.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: sbom
+
+      - name: Attest SBOM
+        if: needs.image-sbom.result == 'success'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ needs.image.outputs.image }}
+          subject-digest: ${{ needs.image.outputs.digest }}
+          sbom-path: sbom.cdx.json

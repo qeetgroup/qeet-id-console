@@ -1,11 +1,11 @@
 // URL search params for the Activity workspace, the source of truth for its filters, mode,
 // saved view and open event, so any view is shareable as a link.
 
-import { type DateRange, presetToRange, TIME_PRESETS } from "./components/activity-time-range";
 import { z } from "zod";
 
 import { isOneOf } from "@/shared/utils/one-of";
 import { searchEnum, searchText } from "@/shared/utils/search-params";
+import { type DateRange, presetToRange, TIME_PRESETS } from "./time-range";
 import type { ActivityFilters, ActivityMode, Outcome, Severity } from "./types/activity.types";
 
 const RANGE_KEYS = TIME_PRESETS.map((p) => p.value);

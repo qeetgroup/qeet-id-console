@@ -144,7 +144,11 @@ function DashboardHeading({
               value={range}
               onValueChange={(value) => value && onRangeChange(value as DashboardRange)}
             >
-              <SelectTrigger size="sm" className="min-w-36 bg-card">
+              <SelectTrigger
+                size="sm"
+                className="min-w-36 bg-card"
+                aria-label={t("dashboardOverview.range")}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

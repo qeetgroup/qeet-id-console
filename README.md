@@ -143,7 +143,7 @@ bun run build            # production build (Vite + Nitro)
 bun run typecheck        # tsc --noEmit
 bun run test             # vitest
 bun run test:coverage    # vitest + coverage thresholds (what CI runs)
-bun run test:e2e         # build, then Playwright session-boundary tests
+bun run test:e2e         # build, then Playwright: session, tenant isolation, CSP, WCAG 2.2 AA
 bun run check            # Biome format + lint; warnings fail
 bun run lint:boundaries  # layer rules
 bun run audit            # known high/critical vulnerabilities

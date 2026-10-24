@@ -128,7 +128,7 @@ export function AuditIntelligencePage() {
             <CardDescription>{t("auditIntelligence.anomalies.description")}</CardDescription>
           </div>
           <Select value={status} onValueChange={(v) => v && setStatus(v as "open" | "resolved")}>
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-36" aria-label={t("auditIntelligence.anomalies.status")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

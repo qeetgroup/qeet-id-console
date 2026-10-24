@@ -16,7 +16,7 @@ import { PageState } from "@/shared/components/page-state";
 export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
   const { t } = useTranslation("common");
   const appError = normalizeError(error);
-  captureError(error, { boundary: "root" });
+  captureError(error, { source: "error-boundary" });
 
   return (
     <div className="grid min-h-[60vh] place-items-center p-6">

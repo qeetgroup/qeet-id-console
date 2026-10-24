@@ -304,6 +304,7 @@
       "!**/playwright-report",
       "!**/test-results",
       "!**/routeTree.gen.ts",
+      "!.claude",
       "!bun.lock"
     ]
   }

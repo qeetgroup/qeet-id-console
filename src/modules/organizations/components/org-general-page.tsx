@@ -209,11 +209,12 @@ function GeneralSettingsForm({ org }: { org: Org }) {
                   </form.AppField>
                   <Field className="grid grid-cols-2 gap-4">
                     <Field>
-                      <FieldLabel className="gap-1.5">
+                      <FieldLabel htmlFor="org-plan" className="gap-1.5">
                         <CreditCardIcon className="size-3.5 text-muted-foreground" />
                         {t("workspace.general.profile.plan")}
                       </FieldLabel>
                       <Input
+                        id="org-plan"
                         value={(org.plan ?? "free").replace(/^./, (c) => c.toUpperCase())}
                         readOnly
                         disabled

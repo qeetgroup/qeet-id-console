@@ -500,7 +500,7 @@ body {
   align-items: center;
   height: 1.75rem;
   padding-inline: 0.5rem;
-  color: color-mix(in oklab, var(--sidebar-foreground) 45%, transparent);
+  color: var(--muted-foreground);
   font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -728,6 +728,27 @@ body {
 .activity-live-indicator[data-state="paused"]::before {
   background: var(--muted-foreground);
   box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+ * Toasts
+ * -------------------------------------------------------------------------- */
+
+/* Sonner's rich colours miss 4.5:1 (its success text is 4.25:1 on its green), so toasts take the
+   status tokens, which also follow the console theme. `html` outranks the sheet sonner injects. */
+html [data-sonner-toaster][data-sonner-theme] {
+  --success-bg: var(--success-soft);
+  --success-border: color-mix(in oklab, var(--success) 30%, transparent);
+  --success-text: var(--success-foreground);
+  --info-bg: var(--info-soft);
+  --info-border: color-mix(in oklab, var(--info) 30%, transparent);
+  --info-text: var(--info-foreground);
+  --warning-bg: var(--warning-soft);
+  --warning-border: color-mix(in oklab, var(--warning) 30%, transparent);
+  --warning-text: var(--warning-foreground);
+  --error-bg: var(--danger-soft);
+  --error-border: color-mix(in oklab, var(--danger) 30%, transparent);
+  --error-text: var(--danger-foreground);
 }
 
 /* --------------------------------------------------------------------------

@@ -329,13 +329,13 @@ export function UniversalSearch({ open, onOpenChange }: UniversalSearchProps) {
         <div className="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-3">
             <span>
-              <Kbd>↑↓</Kbd> <span className="opacity-80">{t("universalSearch.hint.navigate")}</span>
+              <Kbd>↑↓</Kbd> <span>{t("universalSearch.hint.navigate")}</span>
             </span>
             <span>
-              <Kbd>↵</Kbd> <span className="opacity-80">{t("universalSearch.hint.select")}</span>
+              <Kbd>↵</Kbd> <span>{t("universalSearch.hint.select")}</span>
             </span>
             <span>
-              <Kbd>esc</Kbd> <span className="opacity-80">{t("universalSearch.hint.close")}</span>
+              <Kbd>esc</Kbd> <span>{t("universalSearch.hint.close")}</span>
             </span>
           </span>
           {hasResults && (
