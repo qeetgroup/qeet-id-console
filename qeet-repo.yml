@@ -28,7 +28,7 @@ runtime:
   bundler: vite ^8            # + nitro (Vercel Build Output)
   package_manager: bun@1.3.14
   styling: tailwindcss ^4.3
-  design_system: "@qeetrix/ui 2.1.5 + @qeetrix/icons 1.0.11"   # pinned exactly
+  design_system: "@qeetrix/ui 2.1.6 + @qeetrix/icons 1.0.12"   # pinned exactly
 
 architecture:
   style: layered-with-enforced-boundaries

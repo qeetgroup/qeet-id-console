@@ -35,8 +35,8 @@ and page gating · telemetry redaction · user-safe error copy.
 ## Non-responsibilities
 
 **It enforces nothing.** Authorization, tenancy, token validation and every business rule belong to
-`qeet-id-server`. It also does not own the hosted login (`qeet-id-login`), the SDKs, docs, or the
-design system (`qeetrix-ui`).
+`qeet-id-server`. It also does not own the hosted sign-in (`qeet-id-hosted`, `accounts.id.qeet.in`),
+the SDKs, docs, or the design system (`qeetrix-ui`).
 
 ## Layered architecture — enforced by lint
 

@@ -203,7 +203,7 @@ output.
 | Repo | Role |
 |---|---|
 | [`qeet-id-server`](https://github.com/qeetgroup/qeet-id-server) | Backend API (Go) — auth, OIDC, WebAuthn |
-| [`qeet-id-login`](https://github.com/qeetgroup/qeet-id-login) | Hosted login — `login.id.qeet.in` |
+| [`qeet-id-hosted`](https://github.com/qeetgroup/qeet-id-hosted) | Hosted sign-in — `accounts.id.qeet.in` |
 | [`qeet-id-website`](https://github.com/qeetgroup/qeet-id-website) | Marketing site — `id.qeet.in` |
 | `qeet-id-deploy` | Backend infrastructure + CD (Terraform) |
 

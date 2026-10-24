@@ -13,6 +13,8 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { HOSTED_SIGN_IN_HOST } from "@/platform/config/site-urls";
+
 import {
   BRANDING_COLORS,
   type BrandingDraft,
@@ -41,7 +43,7 @@ export function BrandingPreview({
   const domain =
     draft.custom_domain.trim() && validBrandDomain(draft.custom_domain)
       ? draft.custom_domain.trim().toLowerCase()
-      : "login.id.qeet.in";
+      : HOSTED_SIGN_IN_HOST;
 
   return (
     <aside aria-label={t("branding.workspace.preview.sidebar")} className="min-w-0 space-y-4">

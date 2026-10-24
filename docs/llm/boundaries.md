@@ -17,7 +17,7 @@ sensitive-action/step-up primitive.
 | **Every authorization decision** | `qeet-id-server` |
 | Tenant scoping, token validation, business rules | `qeet-id-server` |
 | The API contract | `qeet-id-server` — see its OpenAPI documents; the console types what it calls by hand (no generated client) |
-| End-user sign-in UI | `qeet-id-login` |
+| End-user sign-in UI | `qeet-id-hosted` (`accounts.id.qeet.in`) |
 | Marketing | `qeet-id-website` |
 | SDKs | `qeet-id-{go,node,react}` |
 | Product documentation | `qeet-id-docs` |
@@ -80,7 +80,7 @@ relative-import rules — a violation fails the build. A module's catalogue name
 ```text
 qeet-id-server ──API contract──►  qeet-id-console
 qeetrix-ui     ──@qeetrix/ui───►  qeet-id-console
-qeet-id-console ──redirects to──►  qeet-id-login   (OIDC sign-in)
+qeet-id-console ──redirects to──►  qeet-id-hosted  (OIDC sign-in)
 ```
 
 This repository is **downstream of everything**. It initiates no contract.
@@ -96,10 +96,10 @@ adding a test · internal refactoring inside one module · i18n strings · featu
 |---|---|
 | **Calling a new endpoint** | Requires the endpoint to exist in `qeet-id-server` first |
 | **Session or cookie assumptions** | `qeet-id-server` sets them |
-| **CSRF cookie/header names** | Must match `qeet-id-server` and `qeet-id-login` |
+| **CSRF cookie/header names** | Must match `qeet-id-server` and `qeet-id-hosted` |
 | A new permission surfaced in the UI | `qeet-id-server` must define it |
 | Error-code handling | `qeet-id-server` owns the codes |
-| `@qeetrix/ui` / `@qeetrix/icons` upgrade | `qeetrix-ui`, `qeetrix-icons` — pinned exactly to `2.1.5` / `1.0.11` (patch releases have removed exports and replaced the icon catalogue, so bump deliberately) |
+| `@qeetrix/ui` / `@qeetrix/icons` upgrade | `qeetrix-ui`, `qeetrix-icons` — pinned exactly to `2.1.6` / `1.0.12` (patch releases have removed exports and replaced the icon catalogue, so bump deliberately) |
 | Hostname change | `qeet-id-deploy`, backend CORS, WebAuthn origins |
 
 Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.

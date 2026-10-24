@@ -375,6 +375,16 @@ describe("Branding workspace", () => {
     expect(props.onSave).not.toHaveBeenCalled();
   });
 
+  it("previews the organization's own domain, else the hosted sign-in page's", () => {
+    render(<BrandingSettingsView {...viewProps()} />);
+    expect(screen.getByText("auth.example.test")).toBeTruthy();
+    cleanup();
+
+    const branding = { ...brandingFixture(), logo_url: "", custom_domain: "" };
+    render(<BrandingSettingsView {...viewProps()} branding={branding} />);
+    expect(screen.getByText("accounts.id.qeet.in")).toBeTruthy();
+  });
+
   it("reflects swatches and preview size without changing persisted branding", () => {
     const props = viewProps();
     const { container } = render(<BrandingSettingsView {...props} />);
