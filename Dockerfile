@@ -6,7 +6,7 @@
 #   PORT / HOST      listen address (default 3000 / 0.0.0.0)
 
 # Bun installs in its own image: it fails to extract packages inside the Node image.
-FROM --platform=$BUILDPLATFORM oven/bun:1.3.14@sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4 AS deps
+FROM --platform=$BUILDPLATFORM oven/bun:1.4.3@sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be39c598 AS deps
 WORKDIR /app
 COPY package.json bun.lock .npmrc ./
 # Retried: Bun sometimes fails to extract large tarballs; a lockfile install is idempotent.
@@ -17,7 +17,7 @@ RUN for attempt in 1 2 3; do \
 
 # Built once on the build platform: .output is plain JavaScript, so it runs on any
 # architecture. The guard fails the build if a native addon appears.
-FROM --platform=$BUILDPLATFORM node:24.21.0-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS build
+FROM --platform=$BUILDPLATFORM node:26.12.0-slim@sha256:e556a144463cc8dc53afe8de6d2fa0db5c132fd39ffa232c17641bd40df2bf11 AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -27,7 +27,7 @@ RUN NITRO_PRESET=node-server ./node_modules/.bin/vite build \
       find .output -name '*.node' >&2; exit 1; \
     fi
 
-FROM node:24.21.0-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+FROM node:26.12.0-slim@sha256:e556a144463cc8dc53afe8de6d2fa0db5c132fd39ffa232c17641bd40df2bf11
 ARG VERSION=""
 ARG REVISION=""
 ENV NODE_ENV=production \
