@@ -104,7 +104,7 @@ jobs:
           fail-on-severity: high
 
   # Publishes ghcr.io/qeetgroup/qeet-id-console:sha-<commit> from release/** for the
-  # qeet-id-deploy test kit. Production deploys to Vercel from deploy.yml.
+  # Qeet ID Kit (qeet-id-kit). Production deploys to Vercel from deploy.yml.
   image:
     name: Release image
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
@@ -200,7 +200,7 @@ jobs:
             echo "| Digest | \`$digest\` |"
             echo "| Release | \`$RELEASE\` |"
             echo
-            echo "Assemble a product RC in qeet-id-deploy → Actions → **publish-candidate** with console = \`$GITHUB_SHA\`."
+            echo "Assemble a product RC in qeet-id-kit → Actions → **publish-candidate** with console = \`$GITHUB_SHA\`."
           } >> "$GITHUB_STEP_SUMMARY"
 
   image-sbom:
