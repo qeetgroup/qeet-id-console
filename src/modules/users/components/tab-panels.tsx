@@ -22,7 +22,12 @@ import { MonitorSmartphoneIcon, ShieldCheckIcon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
 import { LinkedPhonesCard, TrustedDevicesCard } from "@/modules/authentication";
-import { type Anomaly, useAnomalies } from "@/modules/security";
+import {
+  type Anomaly,
+  AnomalySeverityBadge,
+  AnomalyStatusBadge,
+  useAnomalies,
+} from "@/modules/security";
 import { DataState } from "@/platform/components/data-state";
 import { type SecuritySummary, useUserSessions } from "../api/user360";
 import { useUserActions } from "../use-user-actions";
@@ -144,12 +149,10 @@ export function SecurityTab({
                   <TableRow key={s.id}>
                     <TableCell className="font-mono text-xs">{s.type}</TableCell>
                     <TableCell>
-                      <Badge variant={s.severity === "high" ? "destructive" : "outline"}>
-                        {s.severity}
-                      </Badge>
+                      <AnomalySeverityBadge severity={s.severity} />
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{s.status}</Badge>
+                      <AnomalyStatusBadge status={s.status} />
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       <TimeSince value={s.created_at} />

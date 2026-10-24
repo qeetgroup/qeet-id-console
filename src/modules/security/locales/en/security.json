@@ -271,7 +271,12 @@
       "severity": {
         "low": "Low",
         "medium": "Medium",
-        "high": "High"
+        "high": "High",
+        "critical": "Critical"
+      },
+      "status": {
+        "open": "Open",
+        "resolved": "Resolved"
       }
     },
     "ipAllowlist": {

@@ -1,5 +1,4 @@
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -14,7 +13,6 @@ import {
   TableRow,
   TimeSince,
 } from "@qeetrix/ui";
-import { translateDynamic } from "@/i18n";
 import { DataState } from "@/platform/components/data-state";
 import {
   MapPinIcon,
@@ -27,13 +25,7 @@ import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
 import { useAnomalies, useAnomalySummary, useResolveAnomaly } from "@/modules/security";
-
-function severityBadge(s: string) {
-  const label = translateDynamic(`security:threats.anomalies.severity.${s}`);
-  if (s === "high") return <Badge variant="destructive">{label}</Badge>;
-  if (s === "medium") return <Badge variant="secondary">{label}</Badge>;
-  return <Badge variant="outline">{label}</Badge>;
-}
+import { AnomalySeverityBadge, AnomalyStatusBadge } from "./anomaly-badges";
 
 /** Renders sign-in anomalies and their summary, with resolve. */
 export function AnomaliesPage() {
@@ -138,9 +130,11 @@ export function AnomaliesPage() {
                     <TableCell className="max-w-80 truncate text-sm text-muted-foreground">
                       {i.detail}
                     </TableCell>
-                    <TableCell>{severityBadge(i.severity)}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{i.status}</Badge>
+                      <AnomalySeverityBadge severity={i.severity} />
+                    </TableCell>
+                    <TableCell>
+                      <AnomalyStatusBadge status={i.status} />
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       <TimeSince value={i.created_at} />
