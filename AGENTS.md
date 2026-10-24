@@ -271,7 +271,7 @@ and workflows default to read-only permissions.
   (rule 12).
 - `dependency-review` (PRs only): fails on a new dependency with a high or critical advisory.
 - `image` — push to `release/**` only, after `verify`: publishes
-  `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>` (amd64+arm64) for the `qeet-id-deploy` test kit.
+  `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>` (amd64+arm64) for the Qeet ID Kit (`qeet-id-kit`).
   It never computes an RC number. The image is the `Dockerfile` (Nitro `node-server`), configured at
   runtime by `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL`; health `GET /healthz`. Vercel
   production does not use it.

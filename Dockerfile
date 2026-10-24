@@ -1,4 +1,4 @@
-# Console image (Nitro node-server) for the qeet-id-deploy test kit; production runs on Vercel.
+# Console image (Nitro node-server) for the Qeet ID Kit (qeet-id-kit); production runs on Vercel.
 # Runtime configuration:
 #   SERVER_URL       backend origin the BFF calls
 #   SESSION_SECRET   at least 32 characters; seals the session cookie
