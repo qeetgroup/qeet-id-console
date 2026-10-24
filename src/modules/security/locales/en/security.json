@@ -101,6 +101,7 @@
     "anomalies": {
       "title": "Anomalies",
       "description": "Scored by a background sweep, newest first.",
+      "status": "Anomaly status",
       "statusOpen": "Open",
       "statusResolved": "Resolved",
       "emptyOpen": "No open anomalies.",

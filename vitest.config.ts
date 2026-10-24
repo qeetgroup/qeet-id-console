@@ -10,7 +10,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    exclude: [...configDefaults.exclude, "tests/e2e/**"], // Playwright specs live in tests/e2e
+    // Playwright specs live in tests/e2e; .claude/worktrees holds whole copies of this repository.
+    exclude: [...configDefaults.exclude, "tests/e2e/**", ".claude/**"],
     setupFiles: ["./src/test-setup.ts"],
     coverage: {
       provider: "v8",

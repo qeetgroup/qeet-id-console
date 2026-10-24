@@ -64,10 +64,13 @@ relative-import rules — a violation fails the build. A module's catalogue name
 | Credential responses | `session-response.ts` allowlist; anything else → `502` |
 | Server functions, unsafe server-route requests | CSRF middleware in `src/start.ts`, policy in `src/platform/security/csrf-policy.ts` (tested) |
 | Browser storage | `src/platform/auth/scoped-storage.ts` — per person and tenant, wiped on sign-out |
-| Response headers | `src/platform/security/security-headers.ts` — HSTS, `frame-ancestors 'none'`, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag` |
+| Response headers | `src/platform/security/security-headers.ts` — HSTS, `X-Frame-Options`, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag` |
+| Scripts the browser runs | `src/platform/security/content-security-policy.ts`, set per response in `src/start.ts` — a nonce on every script, `'strict-dynamic'`, no eval, `connect-src 'self'`, no framing; Monaco is self-hosted |
 | Capability → UI | **UX only.** The backend decides |
 | Backend message → user | `errors/user-message.ts` — the leak stop |
-| Payload → telemetry | `telemetry/redact.ts` — denylist + email/IP masking |
+| Payload → telemetry | `telemetry/redact.ts` — denylist + token/query/email/IP masking; production telemetry goes only to the console's own server log |
+| Browser → server log | `telemetry/client-report.ts` — a server function (CSRF-checked) with a strict Zod allowlist and bounds |
+| Server log → browser bundle | `server-log.ts` imports `@tanstack/react-start/server-only`: the build fails if it would ship |
 
 > **A UI capability check is not a security boundary.** It hides a button. If hiding the button is
 > the only thing preventing an action, that is a defect in `qeet-id-server`.

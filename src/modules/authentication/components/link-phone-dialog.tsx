@@ -6,7 +6,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  QRCode,
   Spinner,
 } from "@qeetrix/ui";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,6 +27,7 @@ import {
   useWithdrawPairing,
 } from "../api/push-devices";
 import { authKeys } from "../api/keys";
+import { LazyQRCode } from "./lazy-qr-code";
 
 // "4:05" — minutes and seconds left.
 function clock(seconds: number): string {
@@ -141,7 +141,7 @@ export function LinkPhoneDialog({
 
         {pairing && !expired && (
           <div className="flex flex-col items-center gap-3">
-            <QRCode value={pairingLink(pairing.code)} size={200} aria-labelledby="pair-scan" />
+            <LazyQRCode value={pairingLink(pairing.code)} size={200} aria-labelledby="pair-scan" />
             <p id="pair-scan" className="text-sm text-muted-foreground">
               {t("security.phones.dialog.scan")}
             </p>

@@ -9,7 +9,6 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
-  QRCode,
 } from "@qeetrix/ui";
 import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
@@ -20,6 +19,7 @@ import { errorMessage } from "@/platform/errors/user-message";
 
 import { type MfaEnrollment, startMfaEnrollment } from "../api/mfa-sign-in";
 import type { MfaProof } from "../api/flows";
+import { LazyQRCode } from "./lazy-qr-code";
 import { RecoveryCodeList } from "./recovery-code-list";
 
 /**
@@ -97,7 +97,7 @@ export function MfaEnrollmentStep({
                   <Field>
                     <FieldLabel id="enroll-scan">{t("signIn.enroll.scanLabel")}</FieldLabel>
                     <div className="flex justify-center">
-                      <QRCode
+                      <LazyQRCode
                         value={app.provisioning_url}
                         size={200}
                         aria-labelledby="enroll-scan"

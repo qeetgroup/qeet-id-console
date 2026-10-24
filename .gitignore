@@ -17,3 +17,9 @@ mcp-todos.json
 coverage
 test-results
 playwright-report
+
+# Agent worktrees: whole copies of this repository
+.claude/worktrees/
+
+# Vitest artifacts
+.vitest

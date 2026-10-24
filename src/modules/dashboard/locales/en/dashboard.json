@@ -345,7 +345,7 @@
   "dashboardActivity": {
     "testAnAccessDecision": "Test an access decision",
     "evaluateAPolicyBefore": "Evaluate a policy before it reaches production",
-    "openFullActivityCenter": "Open full activity center",
+    "viewAllActivity": "View all activity",
     "loadingRecentActivity": "Loading recent activity",
     "recentActivityEvents": "Recent activity events",
     "criticalSecurityEventsDetected": "Critical security events detected in the activity feed",
@@ -399,7 +399,8 @@
       "restricted": "Restricted access",
       "none": "No access",
       "unknown": "Unknown access"
-    }
+    },
+    "range": "Time range"
   },
   "headerUser": {
     "accountMenu": "Account menu",

@@ -1,9 +1,11 @@
 // A minimal stand-in for qeet-id-server: sign-in, refresh rotation (with the server's reuse grace),
-// tenant switch, logout and the reads the console makes, for one operator in each of two tenants
-// and one in both. Test controls: POST /__test__/reset, POST /__test__/expire (access tokens only),
-// GET /__test__/stats.
+// tenant switch, logout and the reads the console makes (records in fake-tenant-data.mjs), for one
+// operator in each of two tenants, one in both, an admin and an unverified account. Test controls:
+// POST /__test__/reset, POST /__test__/expire (access tokens only), GET /__test__/stats.
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
+
+import { tenantRead } from "./fake-tenant-data.mjs";
 
 const port = Number(process.env.FAKE_BACKEND_PORT ?? 43101);
 
@@ -28,8 +30,24 @@ const users = {
     name: "Max Multi",
     tenantIds: ["22222222-2222-4222-8222-222222222222", "33333333-3333-4333-8333-333333333333"],
   },
+  "admin@example.com": {
+    id: "66666666-6666-4666-8666-666666666666",
+    name: "Alan Admin",
+    tenantIds: ["22222222-2222-4222-8222-222222222222"],
+    admin: true, // every console capability, so pages show their actions
+  },
+  "unverified@example.com": {
+    id: "77777777-7777-4777-8777-777777777777",
+    name: "Uma Unverified",
+    tenantIds: ["22222222-2222-4222-8222-222222222222"],
+    unverified: true,
+  },
 };
 const PASSWORD = "Password123!";
+const ADMIN_PERMISSIONS = ["tenant", "user", "role", "group", "policy", "apikey", "connection"]
+  .concat(["webhook", "secret", "audit", "billing"])
+  .flatMap((resource) => [`${resource}.read`, `${resource}.write`])
+  .concat(["branding.write", "gdpr.write", "analytics.read"]);
 
 let accessTokens = new Map(); // token -> { email, tenantId, sessionId }
 let refreshTokens = new Map(); // token -> { email, tenantId, sessionId }
@@ -98,6 +116,8 @@ function organization(tenantId) {
     domain: "",
     roles: ["owner"],
     last_used_at: null,
+    status: "active",
+    created_at: "2026-01-01T00:00:00Z",
   };
 }
 
@@ -183,7 +203,7 @@ const server = createServer(async (request, response) => {
       email: principal.email,
       display_name: user.name,
       status: "active",
-      email_verified_at: "2026-01-01T00:00:00Z",
+      email_verified_at: user.unverified ? null : "2026-01-01T00:00:00Z",
     });
   }
   if (path === "/v1/auth/switch-tenant" && method === "POST") {
@@ -199,32 +219,25 @@ const server = createServer(async (request, response) => {
   if (path === "/v1/tenants") {
     return send(response, 200, { items: user.tenantIds.map(organization) });
   }
-  if (path === "/v1/users" && method === "GET") {
-    const slug = tenants[principal.tenantId].slug; // each tenant has its own member
-    return send(response, 200, {
-      items: [
-        {
-          id: randomUUID(),
-          tenant_id: principal.tenantId,
-          email: `member@${slug}.example`,
-          display_name: `Member of ${tenants[principal.tenantId].name}`,
-          status: "active",
-          created_at: "2026-01-01T00:00:00Z",
-        },
-      ],
-      next_cursor: "",
-    });
+  if (path === `/v1/tenants/${principal.tenantId}`) {
+    return send(response, 200, organization(principal.tenantId));
   }
   if (/^\/v1\/users\/[^/]+\/tenants\/[^/]+\/permissions$/.test(path)) {
     return send(response, 200, {
-      permissions: ["user.read", "tenant.read", "role.read", "audit.read", "analytics.read"],
+      permissions: user.admin
+        ? ADMIN_PERMISSIONS
+        : ["user.read", "tenant.read", "role.read", "audit.read", "analytics.read"],
     });
   }
   if (path === "/v1/qeetai/status") {
     return send(response, 200, { configured: false, available: false, source: "none" });
   }
   if (path === "/v1/notifications") return send(response, 200, { items: [], unread_count: 0 });
-  if (method === "GET") return send(response, 200, { items: [] });
+  if (method === "GET") {
+    const tenant = tenants[principal.tenantId];
+    const context = { tenantId: principal.tenantId, tenant, principalId: user.id };
+    return send(response, 200, tenantRead(path, url.searchParams, context) ?? { items: [] });
+  }
   return send(response, 200, {});
 });
 

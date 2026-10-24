@@ -95,7 +95,7 @@ export function ListToolbar({
 
         {filters?.map((f) => (
           <Select key={f.id} value={f.value || "all"} onValueChange={(v) => v && f.onChange(v)}>
-            <SelectTrigger size="sm" className="w-auto min-w-32">
+            <SelectTrigger size="sm" className="w-auto min-w-32" aria-label={f.label}>
               <SelectValue placeholder={f.label} />
             </SelectTrigger>
             <SelectContent>

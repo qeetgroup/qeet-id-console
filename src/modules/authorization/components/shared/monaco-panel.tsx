@@ -3,9 +3,9 @@ import { lazy, Suspense, useEffect, useState } from "react";
 
 import { ClientOnly } from "./client-only";
 
-// Monaco is heavy and browser-only, so it loads lazily; until it mounts, and during SSR, a
-// read-only CodeBlock keeps the content visible and copyable.
-const MonacoEditor = lazy(() => import("@monaco-editor/react"));
+// Monaco is heavy and browser-only, so it loads lazily, from this console's own bundle; until it
+// mounts, and during SSR, a read-only CodeBlock keeps the content visible and copyable.
+const MonacoEditor = lazy(() => import("./monaco-editor"));
 
 function useIsDark(): boolean {
   const [dark, setDark] = useState(false);

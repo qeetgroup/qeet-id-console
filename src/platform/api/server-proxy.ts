@@ -24,6 +24,11 @@ import {
 } from "@/platform/api/server-request-policy";
 import { relayHeaders } from "@/platform/api/relay";
 import { ERROR_CODES } from "@/platform/errors/error-codes";
+import {
+  logProxiedCall,
+  logSessionRefresh,
+  type ProxyOutcome,
+} from "@/platform/api/server-proxy-log";
 import { logger } from "@/platform/telemetry/logger";
 import {
   requiresOrganizationSelection,
@@ -241,7 +246,11 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
     const destroysLocalSession = isLocalSessionDestroyRequest(pathname, input.method);
     let response: Response;
     let sessionChanged = false;
+    let outcome: ProxyOutcome = "ok";
     const startedAt = Date.now();
+    const { requestId, method } = input;
+    const logCall = (status: number | null, result: ProxyOutcome) =>
+      logProxiedCall({ requestId, method, pathname, status, outcome: result, startedAt });
     try {
       response = await forwardRequest(
         input,
@@ -259,8 +268,11 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
         !(await isSessionEnded(response))
       ) {
         const session = await openServerSession();
-        const outcome = await refreshServerSession(session, input.requestId, relayed());
-        if (outcome === "unavailable") {
+        const refreshStartedAt = Date.now();
+        const refresh = await refreshServerSession(session, input.requestId, relayed());
+        logSessionRefresh(requestId, refresh, "backend_401", refreshStartedAt);
+        if (refresh === "unavailable") {
+          logCall(503, "backend_unavailable");
           return {
             status: 503,
             data: {
@@ -274,9 +286,10 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
             sessionChanged: false,
           };
         }
-        sessionData = outcome === "refreshed" ? session.data : {};
+        sessionData = refresh === "refreshed" ? session.data : {};
         sessionChanged = true;
-        if (outcome === "refreshed") {
+        outcome = refresh === "refreshed" ? "refreshed" : "refresh_rejected";
+        if (refresh === "refreshed") {
           response = await forwardRequest(input, target, sessionData.accessToken);
         }
       }
@@ -284,6 +297,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       traceBackendCall(input.method, pathname, "ERR", Date.now() - startedAt, input.requestId, {
         request: input.body,
       });
+      logCall(null, "backend_unavailable");
       if (destroysLocalSession) await clearServerSessionCookie();
       throw error;
     }
@@ -294,6 +308,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       await clearServerSessionCookie();
       sessionData = {};
       sessionChanged = true;
+      outcome = "session_ended";
     }
 
     const responseData = await parseResponse(response);
@@ -357,6 +372,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       traceBackendCall(input.method, pathname, 502, elapsedMs, input.requestId, {
         request: input.body,
       });
+      logCall(502, "unexpected_token");
       return {
         status: 502,
         data: {
@@ -387,6 +403,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       request: input.body,
       response: safeData,
     });
+    logCall(response.status, outcome);
     return {
       status: response.status,
       data: safeData,
@@ -425,7 +442,11 @@ export const refreshServerSessionNow = createServerFn({ method: "POST" })
       return { session: current, unavailable: false };
 
     const session = await openServerSession();
-    const outcome = await refreshServerSession(session, crypto.randomUUID(), relayed());
+    const requestId = crypto.randomUUID();
+    const startedAt = Date.now();
+    const outcome = await refreshServerSession(session, requestId, relayed());
+    const trigger = data.force ? "browser_forced" : "browser_expiring";
+    logSessionRefresh(requestId, outcome, trigger, startedAt);
     return { session: toPublicSession(session.data), unavailable: outcome === "unavailable" };
   });
 

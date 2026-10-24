@@ -6,7 +6,7 @@ import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
-import { SECURITY_HEADERS } from "./src/platform/security/security-headers";
+import { SECURITY_HEADERS } from "./src/platform/security/security-headers.ts";
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },

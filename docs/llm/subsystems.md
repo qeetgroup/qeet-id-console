@@ -48,7 +48,7 @@ folders, every nav/command/shortcut target is a real route, a fake module shows 
 
 | Dir | Purpose |
 |---|---|
-| `api/` | The single HTTP path: browser client, server proxy, SSRF policy, SSE |
+| `api/` | The single HTTP path: browser client, server proxy (and its log lines), SSRF policy, SSE, the keepalive fetch telemetry reports use |
 | `auth/` | Encrypted server session, client store (inert on the server), cross-tab transitions, per-person scoped browser storage |
 | `security/` | Capability model, route capability, access boundary, step-up, sensitive action, response headers |
 | `config/` | Client env schema, production server-config check, public runtime config (API origin, flags turned off), sidebar groups, the sidebar built from manifests |
@@ -56,7 +56,7 @@ folders, every nav/command/shortcut target is a real route, a fake module shows 
 | `keyboard/` | Global `g` shortcuts, from the manifests |
 | `feature-flags/` | Evaluates the flags modules declare; `CONSOLE_FLAGS_OFF` turns any off at runtime |
 | `errors/` | Error taxonomy and user-safe copy |
-| `telemetry/` | Redaction, a DEV-only logger and `captureError`, request ids (`tracing.ts`); nothing is sent anywhere yet |
+| `telemetry/` | Redaction, the server's JSON-line log (production, stdout, server-only), path templates, the browser error and Web Vitals reporter and its report endpoint, the DEV console logger, `captureError`, request ids (`tracing.ts`); nothing goes to a third party |
 | `query/` | QueryClient, global 403 recapability handler |
 | `forms/` | The forms kit: TanStack Form + `@qeetrix/ui` fields, server field errors |
 | `components/` | `page-header.tsx`, `theme-toggle.tsx`, `error-reference.tsx`, the leak-safe `data-state.tsx` and `status-pill.tsx` (status words from the catalogue) |
@@ -74,15 +74,21 @@ api/server-stream.ts           SSE proxies (activity, qeetai)
 auth/server-session.ts         __Host-qeet_console, chunked, PublicSession
 auth/session-store.ts          BroadcastChannel, legacy-key purge; ignores writes on the server
 auth/scoped-storage.ts         localStorage keyed by person + tenant, wiped on sign-out
+auth/idle-activity.ts          idle sign-out shared by every tab (a bare localStorage timestamp)
 auth/session-response.ts       token-issuing endpoint allowlist + stripBackendTokens
 security/capability-model.ts   25 capabilities, classifyAccessMode
 security/effective-permissions.ts   the source — parsing FAILS CLOSED
-telemetry/redact.ts            denylist + email/IP masking
+telemetry/redact.ts            denylist + token/query/email/IP masking
+telemetry/server-log.ts        one JSON line per event on stdout; production builds; server-only
+telemetry/client-reporter.ts   browser errors + Web Vitals: deduped, ≤10 a page load, templates
+telemetry/client-report.ts     reportClientTelemetry server function: Zod allowlist and bounds
+api/server-proxy-log.ts        api.request / session.refresh lines for proxyApiRequest
 errors/user-message.ts         the leak stop
 components/data-state.tsx      DataState that maps errors through the leak stop (lint-enforced)
 components/status-pill.tsx     StatusPill naming a status from `common:status.*` (lint-enforced)
 config/server-config.ts        production config check, called from src/start.ts
 security/security-headers.ts   response headers, applied by Nitro route rules (vite.config.ts)
+security/content-security-policy.ts  the nonce CSP, set per response by src/start.ts
 security/route-capability.ts   staticData.capability per route; getRequiredCapabilityForPath
 modules/manifest.ts            ModuleManifest, defineModule, the ModuleExtensions extension point
 modules/registry.ts            registerModules + navContributions/commandContributions/…
@@ -96,7 +102,9 @@ keyboard/shortcuts.ts          useGlobalShortcuts, shortcutGroups (the shortcuts
 **Tests** `api/__tests__/{client,server-request-policy}.test.ts` ·
 `auth/__tests__/{server-session,session-response,session-store}.test.ts` ·
 `security/__tests__/{capability-model,sensitive-action-provider}.test.*` ·
-`errors/__tests__/normalize-error.test.ts` · `telemetry/__tests__/redact.test.ts` ·
+`errors/__tests__/normalize-error.test.ts` ·
+`telemetry/__tests__/{redact,path-template,server-log,client-report,client-reporter}.test.ts` ·
+`api/__tests__/server-proxy-log.test.ts` ·
 `config/__tests__/navigation.test.ts`
 
 ---
@@ -121,7 +129,7 @@ keyboard/shortcuts.ts          useGlobalShortcuts, shortcutGroups (the shortcuts
 | `groups` | `api`, `components`, `routes` | 2 / 0 | 3 |
 | `onboarding` | flat | — | 3 |
 | `organizations` | `api`, `components`, `routes` | 7 / 0 | 6 |
-| `qeetai` | `ai`, `api`, `components`, `context`, `hooks`, `routes`, `store`, `suggestions`, `tools`, `types` | 1 / 0 | 12 |
+| `qeetai` | `ai`, `api`, `components`, `context`, `hooks`, `routes`, `store`, `suggestions`, `tools`, `types` | 1 / 0 | 13 |
 | `search` | `api`, `components`, `registry`, `store` | — | 3 |
 | `security` | `api`, `components`, `routes` | 12 / 0 | 10 |
 | `timeline` | `api`, `components`, `routes` | 1 / 0 | 3 |
@@ -159,7 +167,7 @@ module's routes may share a prefix with another's (`/auth/…` is `authenticatio
 
 | Where | Files | Notes |
 |---|---|---|
-| `src/routes/_app.tsx` | 1 | Authenticated operator shell. Wraps children in `CapabilityProvider > SensitiveActionProvider > AccessBoundary`. 10-minute idle logout |
+| `src/routes/_app.tsx` | 1 | Authenticated operator shell. Wraps children in `CapabilityProvider > SensitiveActionProvider > AccessBoundary`. 10-minute idle logout, measured across every tab |
 | `src/routes/__root.tsx`, `healthz.ts` | 2 | Document, theme, toaster; the container health check |
 | `src/routes/api/` | 2 | `activity-stream.ts`, `qeetai-stream.ts` — server-only SSE |
 | `*/routes/app/` | 91 | Every page inside the shell; the catch-all "Page not found" is `dashboard/routes/app/$.tsx` |

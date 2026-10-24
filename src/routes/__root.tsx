@@ -1,6 +1,11 @@
 import { ThemeProvider } from "@qeetrix/ui";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
+import {
+  createRootRouteWithContext,
+  HeadContent,
+  ScriptOnce,
+  Scripts,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
@@ -59,10 +64,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static anti-flash script */}
-        <script dangerouslySetInnerHTML={{ __html: themeFlashScript }} />
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: escaped public config only */}
-        <script dangerouslySetInnerHTML={{ __html: publicConfigScript() }} />
+        {/* Server-rendered with the request's CSP nonce; each runs once and removes itself. */}
+        <ScriptOnce>{themeFlashScript}</ScriptOnce>
+        <ScriptOnce>{publicConfigScript()}</ScriptOnce>
         <HeadContent />
       </head>
       <body suppressHydrationWarning>

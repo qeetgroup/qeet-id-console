@@ -116,6 +116,20 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: vercel build --prod --token="$VERCEL_TOKEN"
 
+      # The attest job signs this list of what Vercel serves. Only hashes leave the job: the
+      # output was built with the production environment pulled.
+      - name: Checksum the build output
+        working-directory: .vercel/output
+        run: |
+          find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum \
+            > "$RUNNER_TEMP/vercel-output.sha256"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vercel-output-checksums
+          path: ${{ runner.temp }}/vercel-output.sha256
+          if-no-files-found: error
+
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -133,3 +147,44 @@ jobs:
             --title "$VERSION" \
             --generate-notes \
             --repo "$GITHUB_REPOSITORY"
+
+  sbom:
+    name: SBOM
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/sbom.yml
+
+  # Signs the deploy's provenance and SBOM. Kept out of the deploy job so no dependency code
+  # runs where an OIDC token can be minted; a failed SBOM still leaves the provenance.
+  attest:
+    name: Attest
+    needs: [deploy, sbom]
+    if: ${{ !cancelled() && needs.deploy.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # Sigstore signing certificate
+      attestations: write # store the attestations
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: vercel-output-checksums
+
+      - name: Attest build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: vercel-output.sha256
+
+      - if: needs.sbom.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: sbom
+
+      - name: Attest SBOM
+        if: needs.sbom.result == 'success'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: vercel-output.sha256
+          sbom-path: sbom.cdx.json

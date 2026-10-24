@@ -16,7 +16,7 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { BracesIcon } from "@qeetrix/icons";
-import { type ChangeEvent, type RefObject, useRef } from "react";
+import { type ChangeEvent, lazy, type RefObject, Suspense, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type {
@@ -25,7 +25,13 @@ import type {
   EmailTemplateTranslation,
 } from "../api/email-templates";
 import { emailTextHTML } from "../email-template-model";
-import { EmailBodyEditor, type EmailBodyEditorHandle } from "./email-body-editor";
+import type { EmailBodyEditorHandle } from "./email-body-editor";
+
+// Tiptap and ProseMirror are most of this module's weight and only this editor uses them; every
+// organizations route shares the module's pages, so the editor loads when it is first shown.
+const EmailBodyEditor = lazy(() =>
+  import("./email-body-editor").then((m) => ({ default: m.EmailBodyEditor })),
+);
 
 const ACTION =
   "h-8 rounded-md px-3 text-xs focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11";
@@ -154,14 +160,16 @@ export function EmailContentTab({
           }}
         >
           {modern ? (
-            <EmailBodyEditor
-              key={`${template.key}:${currentLocale}`}
-              ref={editorRef}
-              variables={template.variables}
-              value={content.body_html || emailTextHTML(content.body)}
-              onChange={(body_html, body) => onUpdate({ body_html, body })}
-              disabled={disabled}
-            />
+            <Suspense fallback={<div className="min-h-72 rounded-md border border-border/70" />}>
+              <EmailBodyEditor
+                key={`${template.key}:${currentLocale}`}
+                ref={editorRef}
+                variables={template.variables}
+                value={content.body_html || emailTextHTML(content.body)}
+                onChange={(body_html, body) => onUpdate({ body_html, body })}
+                disabled={disabled}
+              />
+            </Suspense>
           ) : (
             <Textarea
               aria-label={t("emails.fields.body")}

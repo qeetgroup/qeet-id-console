@@ -44,7 +44,7 @@ Read them when a task needs organization or product understanding; this reposito
 
 ```bash
 bun run typecheck && bun run check && bun run lint:boundaries && bun run test
-bun run test:e2e   # after touching src/platform/{api,auth}: the browser session suite
+bun run test:e2e   # after touching src/platform/{api,auth}, a page or the CSP: session, CSP and accessibility
 git diff
 ```
 

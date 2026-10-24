@@ -1,7 +1,7 @@
 name: Docker image
 
-# Builds and smoke-tests the image on pull requests that touch its inputs, before
-# release/** publishes it for the test kit.
+# Builds and smoke-tests the image, and generates the SBOM, on pull requests that touch
+# their inputs, before release/** publishes and attests the image for the test kit.
 on:
   pull_request:
     paths:
@@ -14,6 +14,7 @@ on:
       - src/start.ts
       - src/platform/config/**
       - .github/workflows/docker.yml
+      - .github/workflows/sbom.yml
 
 concurrency:
   group: docker-${{ github.ref }}
@@ -59,3 +60,11 @@ jobs:
         run: |
           docker logs configured || true
           docker logs unconfigured || true
+
+  # The SBOM the release image and the deploy attest, so a dependency change that breaks it
+  # fails here rather than after a release push.
+  sbom:
+    name: SBOM
+    permissions:
+      contents: read
+    uses: ./.github/workflows/sbom.yml

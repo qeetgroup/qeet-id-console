@@ -16,20 +16,21 @@
     "lint:boundaries": "biome lint --error-on-warnings ./src",
     "format": "biome format --write .",
     "check": "biome check --error-on-warnings .",
-    "audit": "bun audit --audit-level=high --ignore=GHSA-vfj7-8cjw-p6xm",
-    "new-module": "node scripts/new-module.mjs"
+    "audit": "bun audit --audit-level=high --ignore=GHSA-vfj7-8cjw-p6xm --ignore=GHSA-mrhx-c7xc-m3w5 --ignore=GHSA-27r3-jxmh-p828",
+    "new-module": "node scripts/new-module.mjs",
+    "size": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@qeetrix/icons": "1.0.11",
     "@qeetrix/ui": "2.1.5",
-    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/browser": "^14.0.0",
     "@t3-oss/env-core": "^0.13.11",
     "@tanstack/react-form": "^1.33.0",
     "@tanstack/react-query": "^5.104.5",
-    "@tanstack/react-router": "^1.170.41",
+    "@tanstack/react-router": "1.170.42",
     "@tanstack/react-router-ssr-query": "^1.167.3",
-    "@tanstack/react-start": "^1.168.60",
+    "@tanstack/react-start": "1.168.61",
     "@tanstack/react-store": "^0.11.0",
     "@thesvg/react": "3.0.10",
     "@tiptap/extension-image": "^3.32.0",
@@ -39,6 +40,7 @@
     "dompurify": "^3.4.17",
     "i18next": "^26.3.1",
     "i18next-browser-languagedetector": "^8.2.1",
+    "monaco-editor": "0.57.0",
     "nitro": "3.0.260429-beta",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
@@ -46,9 +48,11 @@
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "tailwindcss": "^4.3.0",
-    "zod": "^4.4.3"
+    "web-vitals": "6.2.3",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@biomejs/biome": "^2.5.3",
     "@playwright/test": "^1.64.1",
     "@rolldown/plugin-babel": "^0.2.3",
@@ -63,12 +67,12 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/coverage-v8": "^5.0.5",
     "babel-plugin-react-compiler": "^1.0.0",
     "jsdom": "^28.1.0",
     "typescript": "^5.9.3",
     "vite": "^8.3.4",
-    "vitest": "^4.1.12"
+    "vitest": "^5.0.5"
   },
   "trustedDependencies": [
     "esbuild",

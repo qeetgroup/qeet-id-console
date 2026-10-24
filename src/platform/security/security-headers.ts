@@ -1,9 +1,8 @@
-// Response headers for every route, set through Nitro route rules. The CSP enforces only what
-// needs no script changes (no framing, no <base> rewrites, no plugins): a script and style policy
-// needs per-request nonces for the inline theme, config and hydration scripts.
+// Response headers for every route, set through Nitro route rules. The Content-Security-Policy
+// carries a per-request nonce, so src/start.ts sets it on each response instead
+// (content-security-policy.ts).
 export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-  "Content-Security-Policy": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
   "X-Frame-Options": "DENY", // frame-ancestors for browsers that predate it
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",

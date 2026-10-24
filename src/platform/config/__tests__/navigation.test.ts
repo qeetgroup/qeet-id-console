@@ -4,6 +4,7 @@ import {
   filterNavigation,
   findNavGroupForPath,
   getNavGroups,
+  lookupNavTitle,
   safeNavigation,
   translateNavigation,
 } from "../navigation";
@@ -113,5 +114,25 @@ describe("console navigation state", () => {
     );
 
     expect(new Set(visiblePaths)).toEqual(new Set(["/", "/organizations"]));
+  });
+});
+
+describe("page titles", () => {
+  it("names a detail page by its section, never by the id in its address", () => {
+    const meta = lookupNavTitle("/users/6c9d2a7e-1f3b-4c8d-9e0a-1234567890ab", navGroups);
+    expect(meta.parent?.url).toBe("/users");
+    expect(meta.title).toBe("Details");
+  });
+
+  it("titles an unlisted page from its address, under its section", () => {
+    const meta = lookupNavTitle("/users/some-report", navGroups);
+    expect(meta.parent?.url).toBe("/users");
+    expect(meta.title).toBe("Some Report");
+  });
+
+  it("keeps the title of a page with its own entry", () => {
+    const meta = lookupNavTitle("/users", navGroups);
+    expect(meta.parent).toBeUndefined();
+    expect(meta.title).not.toBe("Details");
   });
 });

@@ -58,12 +58,13 @@ export function OrganizationSelectorHeader({
               <Button
                 variant="ghost"
                 className="h-auto min-h-10 max-w-52 gap-2 rounded-md px-2"
-                aria-label={t("organizationSelection.accountMenu")}
                 disabled={disabled}
               />
             }
           >
-            <Avatar className="size-8 shrink-0">
+            {/* Named by the visible account, then what the button opens, so the name begins with
+                what a speech-input user reads. */}
+            <Avatar className="size-8 shrink-0" aria-hidden="true">
               <AvatarImage src={organizationImage(user?.avatar_url)} alt="" />
               <AvatarFallback className="bg-muted text-[10px]">
                 {organizationInitials(accountName)}
@@ -77,6 +78,7 @@ export function OrganizationSelectorHeader({
                 </span>
               )}
             </span>
+            <span className="sr-only">{t("organizationSelection.accountMenu")}</span>
             <ChevronDownIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

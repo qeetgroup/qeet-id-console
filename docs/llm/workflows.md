@@ -107,7 +107,7 @@ to the page as props. No route is exempt from this, and none may be.
    src/platform/auth/session-response.ts (token-issuing allowlist)
 2  TOKENS MUST NOT REACH THE BROWSER
 3  keep unseal failures FAIL-CLOSED (clear the session, return {})
-4  bun run test:e2e — the browser suite checks the session boundary end to end
+4  bun run test:e2e — the browser suite checks the session boundary, the CSP and WCAG 2.2 AA
 ```
 
 Never add a token to `PublicSession`. Never reintroduce localStorage token keys.
@@ -181,9 +181,11 @@ bun run typecheck && bun run check && bun run lint:boundaries && bun run test
 git diff
 ```
 
-If you touched `src/platform/{api,auth}`, run `bun run test:e2e` (builds, then runs the Playwright
-session suite). It checks that no token reaches `localStorage`, `document.cookie` or the rendered
-HTML, the cookie flags, hard refresh, CSRF, cross-tab logout and refresh coordination.
+If you touched `src/platform/{api,auth}`, a page, or anything the CSP governs, run `bun run test:e2e`
+(builds, then runs Playwright). It checks that no token reaches `localStorage`, `document.cookie` or
+the rendered HTML, the cookie flags, hard refresh, CSRF, cross-tab logout and refresh coordination;
+that every page runs under its nonce CSP without a violation; and that the main pages and overlays
+meet WCAG 2.2 AA in both themes.
 
 ### Escalate rather than proceed
 

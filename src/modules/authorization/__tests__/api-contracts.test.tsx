@@ -217,7 +217,9 @@ describe("ABAC policies", () => {
 describe("ReBAC relationship tuples", () => {
   it("lists tuples on an object, URL-encoding the object", async () => {
     const { client } = await runQuery(() => useRelationTuples("doc:a b/c"));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/relation-tuples?object=doc%3Aa%20b%2Fc");
+    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/relation-tuples", {
+      query: { object: "doc:a b/c" },
+    });
     expect(client.getQueryData(authzKeys.relationTuples("tenant-a", "doc:a b/c"))).toEqual({
       items: [],
     });
@@ -229,11 +231,11 @@ describe("ReBAC relationship tuples", () => {
     await expectIdle(() => useRelationTuples("doc:1"));
   });
 
-  it("reverse-looks-up tuples by subject, URL-encoding the subject", async () => {
+  it("reverse-looks-up tuples by subject, passed as a query value", async () => {
     const { client } = await runQuery(() => useSubjectTuples("group:eng#member"));
-    expect(api).toHaveBeenCalledWith(
-      "/v1/tenants/tenant-a/relation-tuples?subject=group%3Aeng%23member",
-    );
+    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/relation-tuples", {
+      query: { subject: "group:eng#member" },
+    });
     expect(client.getQueryData(authzKeys.subjectTuples("tenant-a", "group:eng#member"))).toEqual({
       items: [],
     });
@@ -245,17 +247,17 @@ describe("ReBAC relationship tuples", () => {
   it("expands the relation graph, passing depth only when given", async () => {
     vi.mocked(api).mockResolvedValue({ nodes: [], edges: [] });
     const withDepth = await runQuery(() => useRelationGraph("doc:1", "viewer", 3));
-    expect(api).toHaveBeenLastCalledWith(
-      "/v1/tenants/tenant-a/relation-tuples/graph?object=doc%3A1&relation=viewer&depth=3",
-    );
+    expect(api).toHaveBeenLastCalledWith("/v1/tenants/tenant-a/relation-tuples/graph", {
+      query: { object: "doc:1", relation: "viewer", depth: 3 },
+    });
     expect(
       withDepth.client.getQueryData(authzKeys.relationGraph("tenant-a", "doc:1", "viewer", 3)),
     ).toEqual({ nodes: [], edges: [] });
 
     await runQuery(() => useRelationGraph("doc:1", "viewer"));
-    expect(api).toHaveBeenLastCalledWith(
-      "/v1/tenants/tenant-a/relation-tuples/graph?object=doc%3A1&relation=viewer",
-    );
+    expect(api).toHaveBeenLastCalledWith("/v1/tenants/tenant-a/relation-tuples/graph", {
+      query: { object: "doc:1", relation: "viewer", depth: undefined },
+    });
 
     vi.clearAllMocks();
     await expectIdle(() => useRelationGraph("doc:1", ""));

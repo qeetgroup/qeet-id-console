@@ -5,7 +5,7 @@
 ## How it was verified
 
 <!-- Tests added or run; manual checks. Changes under src/platform/{api,auth}:
-also run `bun run test:e2e` (the browser session suite). -->
+also run `bun run test:e2e` (the browser suite: session, CSP and accessibility). -->
 
 ## Checklist
 
