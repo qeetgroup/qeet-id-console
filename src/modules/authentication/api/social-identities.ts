@@ -1,13 +1,12 @@
-// Connected-account (social identity) self-service data layer. Lists the
-// external identities linked to the current user and unlinks them. Backed by
-// the self-service, tenant-independent GET /v1/me/social/identities and
-// DELETE /v1/me/social/identities/{id} — so this works before joining any org.
+// The signed-in user's linked social identities. The endpoints are tenant-independent, so this
+// works before the user joins an organization.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 
 import { refreshSignInMethods } from "./sign-in-methods";
+import { authKeys } from "./keys";
 
 export interface SocialIdentity {
   id: string;
@@ -16,14 +15,10 @@ export interface SocialIdentity {
   linked_at: string;
 }
 
-const KEY = ["social-identities"];
-
-// useSocialIdentities lists the current user's linked social accounts via the
-// self endpoint (resolves the caller from the token, no tenant needed). Returns
-// [] gracefully when the endpoint is absent so the card still renders empty.
+/** Returns the current user's linked social accounts; [] when the server lacks the endpoint. */
 export function useSocialIdentities() {
   return useQuery({
-    queryKey: KEY,
+    queryKey: authKeys.socialIdentities(),
     queryFn: async (): Promise<{ items: SocialIdentity[] }> => {
       try {
         return await api<{ items: SocialIdentity[] }>(`/v1/me/social/identities`);
@@ -46,8 +41,8 @@ export function useUnlinkIdentity() {
     mutationFn: (id: string) => api<void>(`/v1/me/social/identities/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       void refreshSignInMethods(qc);
-      return qc.invalidateQueries({ queryKey: KEY });
+      return qc.invalidateQueries({ queryKey: authKeys.socialIdentities() });
     },
-    meta: { successMessage: "Identity unlinked" },
+    meta: { successMessage: "authentication:toast.identityUnlinked" },
   });
 }

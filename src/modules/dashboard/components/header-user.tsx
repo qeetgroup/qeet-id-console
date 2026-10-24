@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Avatar,
   AvatarFallback,
@@ -27,11 +28,10 @@ import {
 import { useLogout, useMe, useTenantId } from "@/platform/auth/session";
 
 export function HeaderUser() {
+  const { t } = useTranslation("dashboard");
   const meQ = useMe();
   const logout = useLogout();
-  // Org-scoped destinations 403 without a selected organization. Hide them for
-  // an org-less user so the menu never dead-ends (they see only self-service).
-  const hasOrg = !!useTenantId();
+  const hasOrg = !!useTenantId(); // org-scoped items 403 without an org, so they're hidden
 
   const name = meQ.data?.display_name || meQ.data?.email?.split("@")[0] || "—";
   const email = meQ.data?.email ?? "";
@@ -41,9 +41,15 @@ export function HeaderUser() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon" className="rounded-full" aria-label="Account menu">
-            <Avatar className="size-8">
-              <AvatarImage src={avatarSrc} alt={name} />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            aria-label={t("headerUser.accountMenu")}
+          >
+            {/* The label names the button; initials would be read as a different name. */}
+            <Avatar className="size-8" aria-hidden="true">
+              <AvatarImage src={avatarSrc} alt="" />
               <AvatarFallback className="text-xs">{initials(name)}</AvatarFallback>
             </Avatar>
           </Button>
@@ -77,25 +83,25 @@ export function HeaderUser() {
         <DropdownMenuGroup>
           <DropdownMenuItem render={<Link to="/account/profile" />}>
             <UserIcon />
-            My account
+            {t("headerUser.myAccount")}
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link to="/account/security" />}>
             <ShieldCheckIcon />
-            Security & MFA
+            {t("headerUser.securityMfa")}
           </DropdownMenuItem>
           {hasOrg && (
             <>
               <DropdownMenuItem render={<Link to="/settings/organization/general" />}>
                 <BadgeCheckIcon />
-                Organization settings
+                {t("headerUser.organizationSettings")}
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/auth/api/keys" />}>
                 <KeyRoundIcon />
-                API Keys
+                {t("headerUser.apiKeys")}
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/settings/billing" />}>
                 <CreditCardIcon />
-                Billing
+                {t("headerUser.billing")}
               </DropdownMenuItem>
             </>
           )}
@@ -107,7 +113,7 @@ export function HeaderUser() {
           disabled={logout.isPending}
         >
           {logout.isPending ? <LoaderCircleIcon className="animate-spin" /> : <LogOutIcon />}
-          {logout.isPending ? "Signing out…" : "Sign out"}
+          {logout.isPending ? t("headerUser.signingOut") : t("headerUser.signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,8 +1,11 @@
 import { Badge } from "@qeetrix/ui";
 import { CircleCheckIcon, CircleXIcon } from "@qeetrix/icons";
+import { useTranslation } from "react-i18next";
 
-import type { Engine } from "../../api/simulate";
+import type { TranslationKey } from "@/i18n";
+import type { Engine } from "@/modules/authorization/api/simulate";
 
+// Engine names are protocol names, so they show as written.
 export const ENGINE_LABELS: Record<Engine, string> = {
   authzen: "AuthZEN",
   abac: "ABAC",
@@ -10,15 +13,17 @@ export const ENGINE_LABELS: Record<Engine, string> = {
   rebac: "ReBAC",
 };
 
-export const ENGINE_DESCRIPTIONS: Record<Engine, string> = {
-  authzen: "Unified policy decision point (RBAC + ReBAC)",
-  abac: "Attribute-based conditions",
-  rbac: "Role & permission check",
-  rebac: "Relationship / tuple traversal",
+// Catalogue keys, shared with the simulator's engine picker.
+export const ENGINE_DESCRIPTIONS: Record<Engine, TranslationKey> = {
+  authzen: "authorization:simulator.engines.authzen.description",
+  abac: "authorization:simulator.engines.abac.description",
+  rbac: "authorization:simulator.engines.rbac.description",
+  rebac: "authorization:simulator.engines.rebac.description",
 };
 
-/** ALLOW / DENY pill with icon — the single visual for every decision. */
+/** Renders the ALLOW or DENY pill used for every decision. */
 export function DecisionBadge({ allowed, className }: { allowed: boolean; className?: string }) {
+  const { t } = useTranslation("authorization");
   return (
     <Badge variant={allowed ? "success" : "destructive"} className={className}>
       {allowed ? (
@@ -26,7 +31,7 @@ export function DecisionBadge({ allowed, className }: { allowed: boolean; classN
       ) : (
         <CircleXIcon className="size-3.5" aria-hidden />
       )}
-      {allowed ? "ALLOW" : "DENY"}
+      {allowed ? t("decisionBadge.allow") : t("decisionBadge.deny")}
     </Badge>
   );
 }

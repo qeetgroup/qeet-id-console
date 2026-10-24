@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   cn,
   DropdownMenu,
@@ -17,34 +18,23 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { BuildingComplexIcon, CheckIcon, ChevronsUpDownIcon, PlusIcon } from "@qeetrix/icons";
 
-import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { switchToTenant } from "@/modules/authentication";
+import { usePlanName } from "@/modules/billing";
+import { orgQueries } from "@/modules/organizations";
 
-type Tenant = {
-  id: string;
-  slug: string;
-  name: string;
-  plan: string;
-  region: string;
-  logo_url?: string;
-};
-
-// GET /v1/tenants is scoped to the caller; clicking one switches via switchToTenant().
 function initialOf(name: string) {
   const trimmed = name.trim();
   return trimmed ? trimmed.charAt(0).toUpperCase() : "?";
 }
 
 export function TeamSwitcher() {
+  const { t } = useTranslation("dashboard");
   const { isMobile } = useSidebar();
   const activeId = useTenantId();
 
-  const tenantsQ = useQuery({
-    queryKey: ["tenants", "switcher"],
-    queryFn: () => api<{ items: Tenant[] }>("/v1/tenants"),
-    staleTime: 60_000,
-  });
+  const tenantsQ = useQuery(orgQueries.list()); // only the caller's orgs
+  const planName = usePlanName();
 
   const tenants = tenantsQ.data?.items ?? [];
   const active = tenants.find((t) => t.id === activeId) ?? tenants[0];
@@ -61,7 +51,11 @@ export function TeamSwitcher() {
               />
             }
           >
-            <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/18%)]">
+            {/* The initial repeats the name beside it, so it isn't read as part of the name. */}
+            <div
+              className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/18%)]"
+              aria-hidden="true"
+            >
               {active?.logo_url ? (
                 <img src={active.logo_url} alt="" className="size-full object-cover" />
               ) : active ? (
@@ -73,21 +67,23 @@ export function TeamSwitcher() {
             <div className="grid flex-1 text-start text-sm leading-tight">
               {tenantsQ.isLoading ? (
                 <>
+                  {/* Names the button while the organizations load. */}
+                  <span className="sr-only">{t("teamSwitcher.organizations")}</span>
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="mt-1 h-3 w-16" />
                 </>
               ) : active ? (
                 <>
                   <span className="truncate font-medium">{active.name}</span>
-                  <span className="truncate text-[10px] capitalize text-sidebar-foreground/55">
-                    {active.plan} · {active.region}
+                  <span className="truncate text-[10px] capitalize text-muted-foreground">
+                    {planName(active.plan)} · {active.region}
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="truncate font-medium">No organization</span>
-                  <span className="truncate text-[10px] text-sidebar-foreground/55">
-                    Create a tenant boundary
+                  <span className="truncate font-medium">{t("teamSwitcher.noOrganization")}</span>
+                  <span className="truncate text-[10px] text-muted-foreground">
+                    {t("teamSwitcher.createATenantBoundary")}
                   </span>
                 </>
               )}
@@ -102,35 +98,37 @@ export function TeamSwitcher() {
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Organizations
+                {t("teamSwitcher.organizations")}
               </DropdownMenuLabel>
               {tenants.length === 0 && !tenantsQ.isLoading ? (
                 <DropdownMenuItem disabled className="gap-2 p-2">
-                  <span className="text-sm text-muted-foreground">No organizations yet</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t("teamSwitcher.noOrganizationsYet")}
+                  </span>
                 </DropdownMenuItem>
               ) : (
-                tenants.slice(0, 9).map((t) => {
-                  const isActive = t.id === activeId;
+                tenants.slice(0, 9).map((tenant) => {
+                  const isActive = tenant.id === activeId;
                   return (
                     <DropdownMenuItem
-                      key={t.id}
+                      key={tenant.id}
                       onClick={() => {
-                        if (!isActive) void switchToTenant(t.id);
+                        if (!isActive) void switchToTenant(tenant.id);
                       }}
                       className={cn("gap-2 p-2", isActive && "bg-accent/40")}
                       aria-current={isActive ? "true" : undefined}
                     >
                       <div className="flex size-6 items-center justify-center overflow-hidden rounded-md border text-xs font-semibold">
-                        {t.logo_url ? (
-                          <img src={t.logo_url} alt="" className="size-full object-cover" />
+                        {tenant.logo_url ? (
+                          <img src={tenant.logo_url} alt="" className="size-full object-cover" />
                         ) : (
-                          initialOf(t.name)
+                          initialOf(tenant.name)
                         )}
                       </div>
-                      <span className="truncate">{t.name}</span>
+                      <span className="truncate">{tenant.name}</span>
                       {isActive && (
                         <CheckIcon
-                          aria-label="Current organization"
+                          aria-label={t("teamSwitcher.currentOrganization")}
                           className="ms-auto size-4 text-emerald-600 dark:text-emerald-400"
                         />
                       )}
@@ -145,7 +143,9 @@ export function TeamSwitcher() {
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <PlusIcon className="size-4" />
                 </div>
-                <div className="font-medium text-muted-foreground">Add organization</div>
+                <div className="font-medium text-muted-foreground">
+                  {t("teamSwitcher.addOrganization")}
+                </div>
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

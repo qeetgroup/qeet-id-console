@@ -1,37 +1,36 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  activitySearchSchema,
   arrayToCsv,
   OUTCOME_TO_SEVERITY,
   searchToFilters,
   severityToOutcome,
-  validateActivitySearch,
 } from "../activity-search";
 import type { Severity } from "../types/activity.types";
 
-describe("validateActivitySearch", () => {
+describe("activitySearchSchema", () => {
   it("drops blank values and passes through valid strings", () => {
-    const s = validateActivitySearch({ q: "login", actor: "  ", severity: "error,critical" });
+    const s = activitySearchSchema.parse({ q: "login", actor: "  ", severity: "error,critical" });
     expect(s.q).toBe("login");
     expect(s.actor).toBeUndefined();
     expect(s.severity).toBe("error,critical");
   });
 
   it("clamps unknown enums to undefined", () => {
-    expect(validateActivitySearch({ range: "bogus" }).range).toBeUndefined();
-    expect(validateActivitySearch({ mode: "sideways" }).mode).toBeUndefined();
-    expect(validateActivitySearch({ tab: "nope" }).tab).toBeUndefined();
+    expect(activitySearchSchema.parse({ range: "bogus" }).range).toBeUndefined();
+    expect(activitySearchSchema.parse({ mode: "sideways" }).mode).toBeUndefined();
+    expect(activitySearchSchema.parse({ tab: "nope" }).tab).toBeUndefined();
   });
 
   it("accepts valid enums", () => {
-    expect(validateActivitySearch({ range: "24h" }).range).toBe("24h");
-    expect(validateActivitySearch({ mode: "history" }).mode).toBe("history");
-    expect(validateActivitySearch({ tab: "related" }).tab).toBe("related");
+    expect(activitySearchSchema.parse({ range: "24h" }).range).toBe("24h");
+    expect(activitySearchSchema.parse({ mode: "history" }).mode).toBe("history");
+    expect(activitySearchSchema.parse({ tab: "related" }).tab).toBe("related");
   });
 
   it("ignores non-string values", () => {
-    // biome-ignore lint/suspicious/noExplicitAny: exercising malformed input
-    const s = validateActivitySearch({ q: 42 as any, actor: null as any });
+    const s = activitySearchSchema.parse({ q: 42, actor: null });
     expect(s.q).toBeUndefined();
     expect(s.actor).toBeUndefined();
   });
@@ -76,7 +75,8 @@ describe("outcome ⇄ severity mapping", () => {
 
   it("reverse-maps an exact severity set to an outcome", () => {
     expect(severityToOutcome(["error", "critical"] as Severity[])).toBe("failed");
-    expect(severityToOutcome(["critical", "error"] as Severity[])).toBe("failed"); // order-insensitive
+    // Order-insensitive.
+    expect(severityToOutcome(["critical", "error"] as Severity[])).toBe("failed");
     expect(severityToOutcome(["success"] as Severity[])).toBe("success");
   });
 

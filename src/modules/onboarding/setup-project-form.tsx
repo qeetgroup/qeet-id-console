@@ -16,7 +16,9 @@ import type { Dispatch, SetStateAction } from "react";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
-import { type OnboardingProfile, ROLES, TEAM_SIZES, USE_CASES } from "./onboarding-profile";
+import { TEAM_SIZES } from "@/shared/data/team-sizes";
+
+import { type OnboardingProfile, ROLES, USE_CASES } from "./onboarding-profile";
 import type { PlanSelection } from "./plan-select";
 import { SetupPlanSummary } from "./setup-plan-summary";
 import {
@@ -42,7 +44,7 @@ export function SetupProjectForm({
   onContinue: () => void;
   onSkip: () => void;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("onboarding");
   const id = useId();
   const fields = [
     { key: "use_case", label: "useCase", options: USE_CASES },
@@ -93,7 +95,7 @@ export function SetupProjectForm({
               <SelectContent>
                 {options.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                    {i18n.t(option.label)}
                   </SelectItem>
                 ))}
               </SelectContent>

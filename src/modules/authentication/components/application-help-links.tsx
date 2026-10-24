@@ -10,9 +10,8 @@ type HelpLink = {
 };
 
 /**
- * The three-up "where to go next" footer under the applications table. Shown
- * regardless of whether the list is empty — it is the same set of pointers an
- * operator wants before and after registering their first client.
+ * Renders the three-up "where to go next" footer under the applications table, shown whether or
+ * not the list is empty.
  */
 export function ApplicationHelpLinks() {
   const { t } = useTranslation("oidc");

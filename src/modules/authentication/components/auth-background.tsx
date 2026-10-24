@@ -11,6 +11,7 @@ export function AuthBackground() {
         viewBox="0 0 1365 656"
         preserveAspectRatio="none"
         className="auth-artwork"
+        aria-hidden="true"
         focusable="false"
       >
         <defs>

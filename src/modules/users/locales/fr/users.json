@@ -1,0 +1,77 @@
+{
+  "list": {
+    "description": "Toutes les personnes ayant accès à cet organisation. Invitez ou créez des membres directement ici.",
+    "import": "Importer",
+    "newUser": "Nouvel utilisateur",
+    "searchPlaceholder": "Rechercher email, nom, téléphone…",
+    "emptyTitleFiltered": "Aucun utilisateur ne correspond à vos filtres.",
+    "emptyTitle": "Aucun utilisateur pour l'instant.",
+    "emptyDescriptionFiltered": "Ajustez ou effacez les filtres ci-dessus.",
+    "emptyDescription": "Cliquez sur Nouvel utilisateur pour en ajouter un.",
+    "selectAll": "Sélectionner tous les utilisateurs",
+    "selectOne": "Sélectionner {{email}}",
+    "you": "Vous"
+  },
+  "table": {
+    "name": "Nom",
+    "role": "Rôle",
+    "status": "Statut",
+    "created": "Créé",
+    "actions": "Actions",
+    "setPassword": "Définir le mot de passe",
+    "deleteUser": "Supprimer l'utilisateur"
+  },
+  "status": {
+    "active": "Actif",
+    "invited": "Invité",
+    "suspended": "Suspendu",
+    "deleted": "Supprimé"
+  },
+  "delete": {
+    "title": "Supprimer cet utilisateur ?"
+  },
+  "bulk": {
+    "confirm_one": "Supprimer {{count}} utilisateur ? Cette action est irréversible.",
+    "confirm_other": "Supprimer {{count}} utilisateurs ? Cette action est irréversible."
+  },
+  "create": {
+    "title": "Nouvel utilisateur",
+    "description": "Crée un utilisateur sous le locataire actuel avec un identifiant de mot de passe.",
+    "email": "Email",
+    "displayName": "Nom affiché",
+    "displayNameHelp": "Optionnel. Affiché dans la liste des utilisateurs et les journaux d'audit.",
+    "phone": "Téléphone",
+    "phoneHelp": "Format E.164. Utilisé pour OTP SMS si MFA est activé.",
+    "password": "Mot de passe initial",
+    "passwordHelp": "Au moins 8 caractères. L'utilisateur peut le changer plus tard.",
+    "submit": "Créer l'utilisateur",
+    "submitting": "Création en cours…"
+  },
+  "edit": {
+    "title": "Modifier l'utilisateur",
+    "description": "L'email est immuable. Pour changer un mot de passe, utilisez l'action Définir le mot de passe.",
+    "email": "Email",
+    "displayName": "Nom affiché",
+    "phone": "Téléphone",
+    "phoneHelp": "Format E.164. Laissez vide pour effacer.",
+    "status": "Statut",
+    "statusActive": "Actif",
+    "statusSuspended": "Suspendu",
+    "statusSelfHelp": "Vous ne pouvez pas suspendre votre propre compte depuis cet écran.",
+    "statusHelp": "La suspension empêche la connexion mais conserve le compte."
+  },
+  "setPassword": {
+    "title": "Définir un nouveau mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordHelp": "Minimum 8 caractères.",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "mismatch": "Les mots de passe ne correspondent pas",
+    "submit": "Mettre à jour le mot de passe"
+  },
+  "toast": {
+    "created": "Utilisateur créé",
+    "updated": "Utilisateur mis à jour",
+    "deleted": "Utilisateur supprimé",
+    "passwordUpdated": "Mot de passe mis à jour"
+  }
+}

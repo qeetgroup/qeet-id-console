@@ -1,12 +1,10 @@
-// QuickActions: per-item action buttons shown in the preview pane.
-// Standard actions (Open, Copy URL, Copy ID, New tab) are added automatically;
-// custom item.quickActions are prepended in front of them.
-
 import { cn } from "@qeetrix/ui";
 import { ArrowRightIcon, CopyIcon, ExternalLinkIcon, LinkIcon } from "@qeetrix/icons";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { SearchContext, SearchItem } from "../registry/types/registry.types";
+import i18n from "@/i18n";
 
 interface QuickActionsProps {
   item: SearchItem;
@@ -30,31 +28,28 @@ function copyToClipboard(text: string): void {
 function resolveActions(item: SearchItem, _ctx: SearchContext): ResolvedAction[] {
   const acts: ResolvedAction[] = [];
 
-  // Custom item-level actions first (e.g. "Disable user").
   for (const qa of item.quickActions ?? []) {
     acts.push({ id: qa.id, label: qa.label, icon: qa.icon ?? null, run: qa.run });
   }
 
-  // Standard actions based on what the item exposes.
   if (item.url != null) {
-    // Capture url into a local const so closures reference a string, not
-    // the optional field — avoids non-null assertions inside the lambdas.
+    // A const, so the closures see a string rather than the optional field.
     const itemUrl = item.url;
     acts.push({
       id: "open",
-      label: "Open",
+      label: i18n.t("search:quickActions.open"),
       icon: <ArrowRightIcon className="size-3" />,
       run: (c) => c.navigate(itemUrl),
     });
     acts.push({
       id: "copy-url",
-      label: "Copy URL",
+      label: i18n.t("search:quickActions.copyUrl"),
       icon: <LinkIcon className="size-3" />,
       run: () => copyToClipboard(itemUrl),
     });
     acts.push({
       id: "open-new-tab",
-      label: "New tab",
+      label: i18n.t("search:quickActions.newTab"),
       icon: <ExternalLinkIcon className="size-3" />,
       run: () => {
         if (typeof window !== "undefined") {
@@ -66,7 +61,7 @@ function resolveActions(item: SearchItem, _ctx: SearchContext): ResolvedAction[]
 
   acts.push({
     id: "copy-id",
-    label: "Copy ID",
+    label: i18n.t("search:quickActions.copyId"),
     icon: <CopyIcon className="size-3" />,
     run: () => copyToClipboard(item.id),
   });
@@ -74,13 +69,15 @@ function resolveActions(item: SearchItem, _ctx: SearchContext): ResolvedAction[]
   return acts;
 }
 
+/** Renders the item's own actions, then Open, Copy URL and New tab if it has a url, and Copy ID. */
 export function QuickActions({ item, ctx, className }: QuickActionsProps) {
+  const { t } = useTranslation("search");
   const actions = resolveActions(item, ctx);
   if (actions.length === 0) return null;
 
   return (
     <fieldset className={cn("flex flex-wrap gap-1 border-0 p-0", className)}>
-      <legend className="sr-only">Quick actions</legend>
+      <legend className="sr-only">{t("quickActions.quickActions")}</legend>
       {actions.map((action) => (
         <button
           key={action.id}

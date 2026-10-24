@@ -1,0 +1,50 @@
+{
+  "quickActions": {
+    "open": "Open",
+    "copyUrl": "Copy URL",
+    "newTab": "New tab",
+    "copyId": "Copy ID",
+    "quickActions": "Quick actions"
+  },
+  "universalSearch": {
+    "universalSearch": "Universal search",
+    "searchTheControlPlane": "Search the control plane…",
+    "searchingResources": "Searching resources",
+    "clearSearch": "Clear search",
+    "searchResults": "Search results",
+    "noResults": "No results",
+    "clearRecentHistory": "Clear recent history",
+    "loadingResults": "Loading results",
+    "nothingMatched": "Nothing matched “{{query}}”. Try a different term.",
+    "hint": {
+      "navigate": "navigate",
+      "select": "select",
+      "close": "close"
+    },
+    "resultCount_one": "{{count}} result",
+    "resultCount_other": "{{count}} results"
+  },
+  "category": {
+    "favorites": "Favorites",
+    "recent": "Recent",
+    "navigation": "Navigation",
+    "commands": "Commands"
+  },
+  "resourceType": {
+    "user": "Users",
+    "organization": "Organizations",
+    "group": "Groups",
+    "role": "Roles",
+    "oidc_client": "Applications",
+    "audit_event": "Audit events",
+    "other": "Other results"
+  },
+  "previewPane": {
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "updated": "Updated {{date}}"
+  },
+  "resultRow": {
+    "command": "cmd"
+  }
+}

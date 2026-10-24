@@ -1,8 +1,7 @@
-// ResultRow: a single search result rendered inside the listbox.
-// Uses @qeetrix/ui Highlight for match emphasis and StatusPill for status display.
+import { Badge, cn, Highlight } from "@qeetrix/ui";
+import { useTranslation } from "react-i18next";
 
-import { Badge, cn, Highlight, StatusPill } from "@qeetrix/ui";
-
+import { StatusPill } from "@/platform/components/status-pill";
 import type { SearchItem } from "../registry/types/registry.types";
 
 interface ResultRowProps {
@@ -14,6 +13,7 @@ interface ResultRowProps {
   id: string;
 }
 
+/** Renders one result as a listbox option, highlighting the query match. */
 export function ResultRow({
   item,
   query,
@@ -22,6 +22,7 @@ export function ResultRow({
   onClick,
   id,
 }: ResultRowProps) {
+  const { t } = useTranslation("search");
   return (
     <button
       type="button"
@@ -60,7 +61,7 @@ export function ResultRow({
       <span className="flex shrink-0 items-center gap-1.5">
         {item.kind === "command" && (
           <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
-            cmd
+            {t("resultRow.command")}
           </Badge>
         )}
         {item.kind === "favorite" && (

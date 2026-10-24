@@ -13,27 +13,46 @@ import {
 } from "@qeetrix/icons";
 import { Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { useSensitiveArtifact } from "../../store/secrets-store";
-import { CHANGE_TOOLS_DISABLED, getTool } from "../../tools";
-import type { ExecutionStatus, ToolExecution } from "../../tools/types/tool.types";
+import type { TranslationKey } from "@/i18n";
+import { useSensitiveArtifact } from "@/modules/qeetai/store/secrets-store";
+import { CHANGE_TOOLS_DISABLED, getTool } from "@/modules/qeetai/tools";
+import type { ExecutionStatus, ToolExecution } from "@/modules/qeetai/tools/types/tool.types";
+
+// A missing capability or invalid input fails the same way on every retry.
+const PERMANENT_ERRORS = new Set(["capability_denied", "validation_error"]);
 
 type Tone = "pending" | "running" | "success" | "error";
 
-const STATUS_META: Record<ExecutionStatus, { label: string; tone: Tone }> = {
-  queued: { label: "Queued", tone: "pending" },
-  validating: { label: "Validating input", tone: "running" },
-  awaiting_confirmation: { label: "Awaiting confirmation", tone: "pending" },
-  authorizing: { label: "Checking permissions", tone: "running" },
-  executing: { label: "Executing", tone: "running" },
-  awaiting_step_up: { label: "Awaiting identity check", tone: "pending" },
-  succeeded: { label: "Done", tone: "success" },
-  failed: { label: "Failed", tone: "error" },
-  timed_out: { label: "Timed out", tone: "error" },
-  cancelled: { label: "Cancelled", tone: "pending" },
+// Labels are catalogue keys, translated at render.
+const STATUS_META: Record<ExecutionStatus, { label: TranslationKey; tone: Tone }> = {
+  queued: { label: "qeetai:toolCallCard.status.queued", tone: "pending" },
+  validating: { label: "qeetai:toolCallCard.status.validating", tone: "running" },
+  awaiting_confirmation: {
+    label: "qeetai:toolCallCard.status.awaitingConfirmation",
+    tone: "pending",
+  },
+  authorizing: { label: "qeetai:toolCallCard.status.authorizing", tone: "running" },
+  executing: { label: "qeetai:toolCallCard.status.executing", tone: "running" },
+  awaiting_step_up: { label: "qeetai:toolCallCard.status.awaitingStepUp", tone: "pending" },
+  succeeded: { label: "qeetai:toolCallCard.status.succeeded", tone: "success" },
+  failed: { label: "qeetai:toolCallCard.status.failed", tone: "error" },
+  timed_out: { label: "qeetai:toolCallCard.status.timedOut", tone: "error" },
+  cancelled: { label: "qeetai:toolCallCard.status.cancelled", tone: "pending" },
 };
 
-const WITHHELD_META = { label: "Not available in this version", tone: "pending" } as const;
+const WITHHELD_META = { label: "qeetai:toolCallCard.status.withheld", tone: "pending" } as const;
+
+// An execution error's message is written for the model, so the card shows copy keyed on its
+// code; any other code gets the generic failure.
+const ERROR_COPY: Record<string, TranslationKey> = {
+  capability_denied: "qeetai:toolCallCard.errors.capabilityDenied",
+  validation_error: "qeetai:toolCallCard.errors.invalidInput",
+  timeout: "qeetai:toolCallCard.errors.timedOut",
+  unknown_tool: "qeetai:toolCallCard.errors.unknownTool",
+  tool_not_enabled: "qeetai:toolCallCard.errors.notEnabled",
+};
 
 const TONE_TEXT: Record<Tone, string> = {
   pending: "text-muted-foreground",
@@ -42,7 +61,7 @@ const TONE_TEXT: Record<Tone, string> = {
   error: "text-destructive",
 };
 
-/** snake_case tool name → readable label (registry-free, so this stays decoupled). */
+/** Turns a snake_case tool name into a title-cased label, for a tool the registry lacks. */
 function humanize(name: string): string {
   return name
     .split("_")
@@ -58,9 +77,8 @@ function StatusGlyph({ tone }: { tone: Tone }) {
 }
 
 /**
- * One tool execution rendered inline in the transcript: the action, its live
- * status, the (redacted) result, and — for secret-bearing tools — a one-time
- * reveal of the sensitive artifact that is NEVER sent back to the model.
+ * Renders one tool execution in the transcript: its live status, redacted result and, for a
+ * secret-bearing tool, a one-time reveal of the secret, which is never sent to the model.
  */
 export function ToolCallCard({
   execution,
@@ -69,23 +87,29 @@ export function ToolCallCard({
   execution: ToolExecution;
   onRetry?: () => void;
 }) {
+  const { t, i18n } = useTranslation("qeetai");
   const [showInput, setShowInput] = useState(false);
+  const tool = getTool(execution.toolName);
   // A change tool withheld in this version: not a failure, and retrying can't help.
   const withheld = execution.error?.code === CHANGE_TOOLS_DISABLED;
   const meta = withheld ? WITHHELD_META : STATUS_META[execution.status];
   const result = execution.result;
-  // Secret artifacts live in the in-memory secrets store (never localStorage).
+  // Secrets come from the in-memory secrets store, never localStorage.
   const artifact = useSensitiveArtifact(execution.id);
   const retryable =
-    !withheld && (execution.status === "failed" || execution.status === "timed_out");
+    !withheld &&
+    (execution.status === "failed" || execution.status === "timed_out") &&
+    !PERMANENT_ERRORS.has(execution.error?.code ?? "");
 
   return (
     <div className="rounded-lg border bg-card/50 text-sm">
       <div className="flex items-center gap-2 px-3 py-2">
         <StatusGlyph tone={meta.tone} />
         <span className="min-w-0 flex-1">
-          <span className="font-medium">{humanize(execution.toolName)}</span>
-          <span className={cn("ms-2 text-xs", TONE_TEXT[meta.tone])}>{meta.label}</span>
+          <span className="font-medium">
+            {tool ? i18n.t(tool.title) : humanize(execution.toolName)}
+          </span>
+          <span className={cn("ms-2 text-xs", TONE_TEXT[meta.tone])}>{i18n.t(meta.label)}</span>
         </span>
         {execution.status === "cancelled" ? (
           <XIcon className="size-3.5 text-muted-foreground" aria-hidden />
@@ -94,7 +118,7 @@ export function ToolCallCard({
           type="button"
           onClick={() => setShowInput((v) => !v)}
           aria-expanded={showInput}
-          aria-label={showInput ? "Hide input" : "Show input"}
+          aria-label={t(showInput ? "toolCallCard.hideInput" : "toolCallCard.showInput")}
           className="rounded p-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ChevronDownIcon
@@ -109,8 +133,13 @@ export function ToolCallCard({
         </pre>
       ) : null}
 
-      {result?.summary ? (
-        <p className="border-t px-3 py-2 text-[13px] text-muted-foreground">{result.summary}</p>
+      {/* `summary` is the model's English; the operator reads the tool's own copy. */}
+      {result?.ok ? (
+        <p className="border-t px-3 py-2 text-[13px] text-muted-foreground">
+          {result.display
+            ? i18n.t(result.display.key, result.display.values)
+            : i18n.t("qeetai:toolCallCard.results.done")}
+        </p>
       ) : null}
 
       {withheld ? <ChangeRefusal toolName={execution.toolName} /> : null}
@@ -119,13 +148,13 @@ export function ToolCallCard({
         <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
             <TriangleAlertIcon className="size-3.5 shrink-0" />
-            {execution.error.code === "execution_error"
-              ? "The action could not be completed."
-              : execution.error.message}
+            {i18n.t(ERROR_COPY[execution.error.code] ?? "qeetai:toolCallCard.errors.failed", {
+              capability: tool?.requiredCapability,
+            })}
           </p>
           {retryable && onRetry ? (
             <Button size="xs" variant="ghost" onClick={onRetry}>
-              <RotateCcwIcon className="size-3.5" /> Retry
+              <RotateCcwIcon className="size-3.5" /> {t("toolCallCard.retry")}
             </Button>
           ) : null}
         </div>
@@ -136,18 +165,19 @@ export function ToolCallCard({
   );
 }
 
-/** The assistant only reads in this version: say nothing changed, and where to do it. */
+/** Renders "nothing was changed", since the assistant only reads, with a link to where to do it. */
 function ChangeRefusal({ toolName }: { toolName: string }) {
+  const { t, i18n } = useTranslation("qeetai");
   const screen = getTool(toolName)?.consoleScreen;
   return (
     <div className="border-t px-3 py-2 text-xs text-muted-foreground" role="status">
-      <p>Nothing was changed. The assistant can't make changes in this version.</p>
+      <p>{t("toolCallCard.nothingWasChangedThe")}</p>
       {screen ? (
         <Link
           to={screen.to as never}
           className="mt-1 inline-block font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Open {screen.label}
+          {t("toolCallCard.openScreen", { screen: i18n.t(screen.label) })}
         </Link>
       ) : null}
     </div>
@@ -159,6 +189,7 @@ function SensitiveArtifact({
 }: {
   artifact: NonNullable<ToolExecution["result"]>["sensitiveArtifact"];
 }) {
+  const { t } = useTranslation(["qeetai", "common"]);
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
   const value = artifact?.value ?? "";
@@ -176,7 +207,7 @@ function SensitiveArtifact({
     <div className="border-t bg-warning/5 px-3 py-2">
       <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-warning">
         <ShieldAlertIcon className="size-3.5 shrink-0" />
-        {artifact.label} — shown once, never sent to the model. Store it securely now.
+        {t("toolCallCard.secretNotice", { label: artifact.label })}
       </p>
       <div className="flex items-center gap-2">
         <code className="min-w-0 flex-1 truncate rounded bg-muted px-2 py-1 font-mono text-xs">
@@ -185,7 +216,7 @@ function SensitiveArtifact({
         <Button
           size="icon-xs"
           variant="ghost"
-          aria-label={revealed ? "Hide" : "Reveal"}
+          aria-label={t(revealed ? "toolCallCard.hide" : "toolCallCard.reveal")}
           onClick={() => setRevealed((v) => !v)}
         >
           {revealed ? <EyeOffIcon className="size-3.5" /> : <EyeIcon className="size-3.5" />}
@@ -193,7 +224,7 @@ function SensitiveArtifact({
         <Button
           size="icon-xs"
           variant="ghost"
-          aria-label={copied ? "Copied" : "Copy"}
+          aria-label={t(copied ? "common:states.copied" : "common:actions.copy")}
           onClick={copy}
         >
           {copied ? (

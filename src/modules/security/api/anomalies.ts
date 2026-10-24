@@ -1,12 +1,10 @@
-// Security-anomaly data layer for the Threats → Anomalies screen. Backed by
-// GET /v1/tenants/{tenantID}/security/anomalies (+ /summary) and
-// POST .../anomalies/{id}/resolve. Detections are written server-side (e.g.
-// brute-force / credential-stuffing on account lockout).
+// Sign-in anomalies the server detects, such as brute force or credential stuffing.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export interface Anomaly {
   id: string;
@@ -28,12 +26,10 @@ export interface AnomalySummary {
   high_severity_24h: number;
 }
 
-const KEY = ["anomalies"];
-
 export function useAnomalies() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: securityKeys.anomalyList(tenantId),
     queryFn: async (): Promise<{ items: Anomaly[] }> => {
       try {
         return await api<{ items: Anomaly[] }>(`/v1/tenants/${tenantId}/security/anomalies`);
@@ -50,7 +46,7 @@ export function useAnomalies() {
 export function useAnomalySummary() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, "summary", tenantId],
+    queryKey: securityKeys.anomalySummary(tenantId),
     queryFn: () => api<AnomalySummary>(`/v1/tenants/${tenantId}/security/anomalies/summary`),
     enabled: !!tenantId,
     staleTime: 30_000,
@@ -61,11 +57,13 @@ export function useResolveAnomaly() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/security/anomalies/${id}/resolve`, {
+    mutationFn: (id: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/security/anomalies/${id}/resolve`, {
         method: "POST",
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Anomaly resolved" },
+      });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.anomalies(tenantId) }),
+    meta: { successMessage: "security:toast.anomalyResolved" },
   });
 }

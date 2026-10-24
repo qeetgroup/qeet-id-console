@@ -1,18 +1,16 @@
-// Identity summary strip — five stat cards computed from the loaded timeline
-// events. Cards toggle the category filter (Total clears it). Built on the
-// shared .dashboard-metric helpers so it matches the rest of the console.
-
 import { cn, Skeleton } from "@qeetrix/ui";
 import {
   ActivityIcon,
-  type IconProps,
+  CodeXmlIcon,
   LogInIcon,
-  MonitorIcon,
   ShieldIcon,
-  SlidersHorizontalIcon,
+  UsersIcon,
+  type IconProps,
 } from "@qeetrix/icons";
 import type { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import type { ActivityEvent } from "@/modules/activity";
 import { computeTimelineSummary, SUMMARY_CATEGORY_FILTERS } from "../timeline-summary";
 
@@ -32,9 +30,8 @@ function sameSet(a: readonly string[], b: readonly string[]): boolean {
   return a.every((v) => setB.has(v));
 }
 
-function shareLabel(value: number, total: number): string {
-  if (total === 0) return "0% of events";
-  return `${Math.round((value / total) * 100)}% of events`;
+function sharePercent(value: number, total: number): number {
+  return total === 0 ? 0 : Math.round((value / total) * 100);
 }
 
 function StatCard({
@@ -77,13 +74,17 @@ function StatCard({
         </span>
       </div>
       <p className="mt-2.5 font-heading text-2xl font-semibold leading-none tabular-nums">
-        {value.toLocaleString("en-US")}
+        {value.toLocaleString(formatLocale())}
       </p>
       <p className="mt-1.5 text-[11px] text-muted-foreground">{sub}</p>
     </button>
   );
 }
 
+/**
+ * Renders five stat cards counted from the loaded timeline events. A card applies its category
+ * filter when clicked; Total clears it.
+ */
 export function TimelineSummaryStrip({
   events,
   loading,
@@ -95,6 +96,7 @@ export function TimelineSummaryStrip({
   activeCategories: string[];
   onSelectCategories: (categories: string[]) => void;
 }) {
+  const { t } = useTranslation("timeline");
   if (loading && events.length === 0) {
     return (
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5" aria-busy="true">
@@ -124,47 +126,47 @@ export function TimelineSummaryStrip({
     {
       key: "total",
       icon: ActivityIcon,
-      label: "Total events",
+      label: t("timelineSummaryStrip.totalEvents"),
       value: s.total,
-      sub: "In this view",
+      sub: t("timelineSummaryStrip.inThisView"),
       tone: "brand",
       categories: [],
     },
     {
       key: "authentication",
       icon: LogInIcon,
-      label: "Authentication",
+      label: t("timelineSummaryStrip.authentication"),
       value: s.authentication,
-      sub: shareLabel(s.authentication, s.total),
+      sub: t("timelineSummaryStrip.share", { percent: sharePercent(s.authentication, s.total) }),
       tone: "info",
       categories: SUMMARY_CATEGORY_FILTERS.authentication,
     },
     {
       key: "security",
       icon: ShieldIcon,
-      label: "Security",
+      label: t("timelineSummaryStrip.security"),
       value: s.security,
-      sub: shareLabel(s.security, s.total),
+      sub: t("timelineSummaryStrip.share", { percent: sharePercent(s.security, s.total) }),
       tone: "danger",
       categories: SUMMARY_CATEGORY_FILTERS.security,
     },
     {
-      key: "admin",
-      icon: SlidersHorizontalIcon,
-      label: "Admin actions",
-      value: s.admin,
-      sub: shareLabel(s.admin, s.total),
+      key: "directory",
+      icon: UsersIcon,
+      label: t("timelineSummaryStrip.directory"),
+      value: s.directory,
+      sub: t("timelineSummaryStrip.share", { percent: sharePercent(s.directory, s.total) }),
       tone: "warning",
-      categories: SUMMARY_CATEGORY_FILTERS.admin,
+      categories: SUMMARY_CATEGORY_FILTERS.directory,
     },
     {
-      key: "sessions",
-      icon: MonitorIcon,
-      label: "Session events",
-      value: s.sessions,
-      sub: shareLabel(s.sessions, s.total),
+      key: "developer",
+      icon: CodeXmlIcon,
+      label: t("timelineSummaryStrip.developer"),
+      value: s.developer,
+      sub: t("timelineSummaryStrip.share", { percent: sharePercent(s.developer, s.total) }),
       tone: "success",
-      categories: SUMMARY_CATEGORY_FILTERS.sessions,
+      categories: SUMMARY_CATEGORY_FILTERS.developer,
     },
   ];
 

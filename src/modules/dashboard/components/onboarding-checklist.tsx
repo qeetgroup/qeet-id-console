@@ -22,27 +22,29 @@ import {
   XIcon,
 } from "@qeetrix/icons";
 import { type ComponentType, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { CHECKLIST_INTRO, CHECKLIST_ORDER } from "@/modules/onboarding";
-import * as apiClient from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { scopedStorage, useStorageScope } from "@/platform/auth/scoped-storage";
+import { oidcClientQueries } from "@/modules/authentication";
+import { brandingQueries } from "@/modules/branding";
+import { apiKeyQueries, webhookQueries } from "@/modules/developer";
+import { orgQueries } from "@/modules/organizations";
+import { userQueries } from "@/modules/users";
+import i18n from "@/i18n";
 
-const DISMISS_KEY = "qeetid-admin-onboarding-dismissed";
+// Dismissed per person and organization, so it never hides another's checklist.
+const dismissStorage = scopedStorage("qeetid-admin-onboarding-dismissed");
 
-// ---- Backend probes ----
-//
-// Each step is "done" when a simple existence query against the
-// backend succeeds. Queries that return 404 (endpoint not shipped
-// yet) treat the step as not-done so the checklist quietly waits for
-// the backend rather than throwing.
-
+// A step is done when its existence probe matches. Any error, including a 404 from an absent
+// endpoint, reads as not done, so the checklist waits instead of throwing.
 function isDoneSafe<T>(
   data: T | undefined,
   err: unknown,
   predicate: (d: T) => boolean,
 ): boolean | "loading" {
-  if (err instanceof apiClient.ApiError && err.status === 404) return false;
   if (err) return false;
   if (data === undefined) return "loading";
   return predicate(data);
@@ -67,55 +69,33 @@ function useSteps(): Step[] {
   const canManageApiKeys = access.canAll(["apikey.read", "apikey.write"]);
   const canManageWebhooks = access.canAll(["webhook.read", "webhook.write"]);
 
+  // Each probe shares its module's cache entry and stays quiet: a failure only leaves the step open.
+  const probe = { meta: { silent: true }, staleTime: 30_000, retry: false } as const;
   const branding = useQuery({
-    queryKey: ["onboarding", "branding", tenantId],
-    queryFn: () =>
-      apiClient.api<{ logo_url?: string | null; primary_color?: string | null }>(
-        `/v1/tenants/${tenantId}/branding`,
-      ),
+    ...brandingQueries.detail(tenantId),
+    ...probe,
     enabled: !!tenantId && canBrand,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
+  // Two users means someone besides the owner joined.
   const users = useQuery({
-    queryKey: ["onboarding", "users", tenantId],
-    // Tenant is scoped via the JWT principal, not the URL — there is no
-    // /v1/tenants/{tenantId}/users route (QID-02: the checklist previously
-    // called that nonexistent path, so "Invite your team" could never
-    // check itself off).
-    queryFn: () =>
-      apiClient.api<{ items: unknown[] }>(`/v1/users`, {
-        query: { limit: 2 },
-      }),
+    ...userQueries.list(tenantId, { limit: 2, offset: 0 }),
+    ...probe,
     enabled: !!tenantId && canInvite,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
   const webhooks = useQuery({
-    queryKey: ["onboarding", "webhooks", tenantId],
-    queryFn: () => apiClient.api<{ items: unknown[] }>(`/v1/tenants/${tenantId}/webhooks`),
+    ...webhookQueries.list(tenantId),
+    ...probe,
     enabled: !!tenantId && canManageWebhooks,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
   const oidc = useQuery({
-    queryKey: ["onboarding", "oidc", tenantId],
-    queryFn: () => apiClient.api<{ items: unknown[] }>(`/v1/tenants/${tenantId}/oidc/clients`),
+    ...oidcClientQueries.list(tenantId),
+    ...probe,
     enabled: !!tenantId && canManageConnections,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
   const apiKeys = useQuery({
-    queryKey: ["onboarding", "api-keys", tenantId],
-    queryFn: () => apiClient.api<{ items: unknown[] }>(`/v1/tenants/${tenantId}/api-keys`),
+    ...apiKeyQueries.list(tenantId),
+    ...probe,
     enabled: !!tenantId && canManageApiKeys,
-    meta: { silent: true },
-    staleTime: 30_000,
-    retry: false,
   });
 
   return [
@@ -124,9 +104,9 @@ function useSteps(): Step[] {
           {
             id: "branding",
             icon: PaletteIcon,
-            title: "Set your brand",
-            description: "Upload a logo and pick your brand colours.",
-            ctaLabel: "Open branding",
+            title: i18n.t("dashboard:onboardingChecklist.setYourBrand"),
+            description: i18n.t("dashboard:onboardingChecklist.uploadALogoAnd"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.openBranding"),
             ctaHref: "/settings/branding",
             done: isDoneSafe(
               branding.data,
@@ -141,9 +121,9 @@ function useSteps(): Step[] {
           {
             id: "invite",
             icon: UsersIcon,
-            title: "Invite your team",
-            description: "Bring in admins, engineers, or support staff.",
-            ctaLabel: "Invite teammates",
+            title: i18n.t("dashboard:onboardingChecklist.inviteYourTeam"),
+            description: i18n.t("dashboard:onboardingChecklist.bringInAdminsEngineers"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.inviteTeammates"),
             ctaHref: "/invitations",
             done: isDoneSafe(users.data, users.error, (d) => (d.items?.length ?? 0) > 1),
           },
@@ -154,9 +134,9 @@ function useSteps(): Step[] {
           {
             id: "oauth-app",
             icon: ShieldCheckIcon,
-            title: "Register an application",
-            description: "Hook up your first OAuth/OIDC client to start signing users in.",
-            ctaLabel: "Add application",
+            title: i18n.t("dashboard:onboardingChecklist.registerAnApplication"),
+            description: i18n.t("dashboard:onboardingChecklist.hookUpYourFirst"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.addApplication"),
             ctaHref: "/auth/connections/oidc",
             done: isDoneSafe(oidc.data, oidc.error, (d) => (d.items?.length ?? 0) > 0),
           },
@@ -167,9 +147,9 @@ function useSteps(): Step[] {
           {
             id: "api-key",
             icon: KeyRoundIcon,
-            title: "Create an API key",
-            description: "Service-to-service auth for your backend integrations.",
-            ctaLabel: "Create key",
+            title: i18n.t("dashboard:onboardingChecklist.createAnApiKey"),
+            description: i18n.t("dashboard:onboardingChecklist.serviceToServiceAuth"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.createKey"),
             ctaHref: "/auth/api/keys",
             done: isDoneSafe(apiKeys.data, apiKeys.error, (d) => (d.items?.length ?? 0) > 0),
           },
@@ -180,9 +160,9 @@ function useSteps(): Step[] {
           {
             id: "webhook",
             icon: WebhookIcon,
-            title: "Subscribe to an event webhook",
-            description: "Listen for sign-ins, role changes, audit events.",
-            ctaLabel: "Add webhook",
+            title: i18n.t("dashboard:onboardingChecklist.subscribeToAnEventWebhook"),
+            description: i18n.t("dashboard:onboardingChecklist.listenForSignIns"),
+            ctaLabel: i18n.t("dashboard:onboardingChecklist.addWebhook"),
             ctaHref: "/developer/webhooks",
             done: isDoneSafe(webhooks.data, webhooks.error, (d) => (d.items?.length ?? 0) > 0),
           },
@@ -204,31 +184,22 @@ function tailor(steps: Step[], useCase?: string): Step[] {
 }
 
 /**
- * OnboardingChecklist nudges a fresh organization through the five most
- * common first-day tasks. It introspects existing API queries to mark
- * steps done — no backend coordination required. Auto-hides once
- * every step is complete; the user can also dismiss it explicitly
- * (state persisted in localStorage so it doesn't reappear on refresh).
- * Step order + intro are tailored to the segmentation captured at org creation.
+ * Renders the first-day setup tasks the operator can act on, ticked off by probing existing APIs
+ * and ordered for the use case chosen at organization creation. Shows a completion card once all
+ * are done; a dismissal is kept for this person and organization.
  */
 export function OnboardingChecklist() {
-  const [dismissed, setDismissed] = useState(
-    () => typeof window !== "undefined" && localStorage.getItem(DISMISS_KEY) === "1",
-  );
+  const { t } = useTranslation(["dashboard", "common"]);
+  // The scope is known only once the session hydrates, so the stored dismissal is read with it.
+  const scope = useStorageScope();
+  const [dismissedIn, setDismissedIn] = useState<string | null>(null);
+  const dismissed = scope !== null && (dismissedIn === scope || dismissStorage.read() === true);
   const tenantId = useTenantId();
-  const tenantQ = useQuery({
-    queryKey: ["tenant", tenantId],
-    queryFn: () =>
-      apiClient.api<{ metadata?: { onboarding?: { use_case?: string } } | null }>(
-        `/v1/tenants/${tenantId}`,
-      ),
-    enabled: !!tenantId,
-    staleTime: 60_000,
-    meta: { silent: true },
-    retry: false,
-  });
-  const useCase = tenantQ.data?.metadata?.onboarding?.use_case;
-  const intro = useCase ? CHECKLIST_INTRO[useCase] : undefined;
+  const tenantQ = useQuery({ ...orgQueries.record(tenantId), staleTime: 60_000 });
+  const onboarding = tenantQ.data?.metadata?.onboarding as { use_case?: string } | undefined;
+  const useCase = onboarding?.use_case;
+  const introKey = useCase ? CHECKLIST_INTRO[useCase] : undefined;
+  const intro = introKey ? i18n.t(introKey) : undefined;
   const steps = tailor(useSteps(), useCase);
 
   if (dismissed) return null;
@@ -238,15 +209,13 @@ export function OnboardingChecklist() {
   const doneCount = steps.filter((s) => s.done === true).length;
   const allDone = doneCount === total;
   const stillLoading = steps.some((s) => s.done === "loading");
+  const progress = stillLoading
+    ? t("onboardingChecklist.checking")
+    : t("onboardingChecklist.progress", { done: doneCount, count: total });
 
   function handleDismiss() {
-    setDismissed(true);
-    try {
-      localStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      // localStorage may be disabled (private mode); accept the in-memory
-      // dismissal for this session and move on.
-    }
+    setDismissedIn(scope);
+    dismissStorage.write(true); // best-effort: without storage it lasts this page
   }
 
   if (allDone) {
@@ -258,11 +227,18 @@ export function OnboardingChecklist() {
               <PartyPopperIcon className="size-4" />
             </span>
             <div>
-              <CardTitle className="text-base">Organization fully set up</CardTitle>
-              <CardDescription>Every control-plane setup task is complete.</CardDescription>
+              <CardTitle className="text-base">
+                {t("onboardingChecklist.organizationFullySetUp")}
+              </CardTitle>
+              <CardDescription>{t("onboardingChecklist.everyControlPlaneSetup")}</CardDescription>
             </div>
           </div>
-          <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("common:actions.dismiss")}
+            onClick={handleDismiss}
+          >
             <XIcon />
           </Button>
         </CardHeader>
@@ -274,20 +250,15 @@ export function OnboardingChecklist() {
     <Card className="border-border/80 bg-card/80 shadow-none hover:shadow-none">
       <CardHeader className="flex flex-row items-start justify-between">
         <div>
-          <CardTitle className="text-sm font-semibold">Organization readiness</CardTitle>
-          <CardDescription>
-            {intro ??
-              (stillLoading ? "Checking your setup…" : `${doneCount} of ${total} steps complete.`)}
-          </CardDescription>
-          {intro && (
-            <CardDescription className="text-xs">
-              {stillLoading ? "Checking your setup…" : `${doneCount} of ${total} steps complete.`}
-            </CardDescription>
-          )}
+          <CardTitle className="text-sm font-semibold">
+            {t("onboardingChecklist.organizationReadiness")}
+          </CardTitle>
+          <CardDescription>{intro ?? progress}</CardDescription>
+          {intro && <CardDescription className="text-xs">{progress}</CardDescription>}
           <div
             className="mt-3 h-1.5 w-48 max-w-full overflow-hidden rounded-full bg-muted"
             role="progressbar"
-            aria-label="Organization setup progress"
+            aria-label={t("onboardingChecklist.organizationSetupProgress")}
             aria-valuemin={0}
             aria-valuemax={total}
             aria-valuenow={doneCount}
@@ -299,7 +270,12 @@ export function OnboardingChecklist() {
             />
           </div>
         </div>
-        <Button variant="ghost" size="icon" aria-label="Dismiss" onClick={handleDismiss}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t("common:actions.dismiss")}
+          onClick={handleDismiss}
+        >
           <XIcon />
         </Button>
       </CardHeader>

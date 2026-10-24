@@ -14,3 +14,12 @@ __unconfig*
 todos.json
 mcp-todos.json
 .env*
+coverage
+test-results
+playwright-report
+
+# Agent worktrees: whole copies of this repository
+.claude/worktrees/
+
+# Vitest artifacts
+.vitest

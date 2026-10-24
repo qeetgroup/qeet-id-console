@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { sessionStore } from "@/platform/auth/session-store";
 import {
   hydrateSavedViews,
   PRESET_VIEWS,
@@ -8,10 +9,20 @@ import {
   savedViewsStore,
 } from "../saved-views";
 
-const STORE_KEY = "qeetid.activity.views";
+// Saved views are scoped to the signed-in person and tenant.
+const STORE_KEY = "qeetid.activity.views:user-a:tenant-1";
 
 beforeEach(() => {
   window.localStorage.clear();
+  sessionStore.hydrate({
+    isAuthenticated: true,
+    expiresAt: "2030-01-01T00:00:00Z",
+    sessionId: "session-a",
+    userId: "user-a",
+    tenantId: "tenant-1",
+    version: 1,
+    impersonationActor: null,
+  });
   savedViewsStore.setState(() => ({ views: [] }));
 });
 
@@ -34,7 +45,6 @@ describe("savedViewsActions", () => {
     });
     expect(view.name).toBe("My triage");
     expect(view.search.severity).toBe("error,critical");
-    // transient params must not be captured
     expect(view.search.event).toBeUndefined();
     expect(view.search.tab).toBeUndefined();
     expect(view.search.view).toBeUndefined();

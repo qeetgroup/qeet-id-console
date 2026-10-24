@@ -41,9 +41,9 @@ function RocketIcon() {
   );
 }
 
-/** Educational context only; no fabricated security certification or setup state. */
+/** Renders educational guidance for a setup step; it claims no certification or setup state. */
 export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   const titleId = useId();
   const tips = [
     { id: "name", icon: UsersIcon },
@@ -87,7 +87,7 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
       {kind === "profile" ? (
         <>
           <ul className="mt-4 grid list-none gap-2 p-0 text-xs leading-4 text-(--setup-muted)">
-            {["checklist", "integrations", "dashboard", "resources"].map((item) => (
+            {(["checklist", "integrations", "dashboard", "resources"] as const).map((item) => (
               <li key={item} className="flex items-start gap-2">
                 <span className="shrink-0 text-(--setup-accent)">
                   <CircleCheckIcon className="size-4" aria-hidden="true" />
@@ -106,7 +106,7 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
       ) : (
         <>
           <ul className="mt-3 hidden list-none gap-1.5 p-0 text-[11px] leading-4 text-(--setup-muted) dark:grid">
-            {["workspace", "region", "defaults", "identity"].map((item) => (
+            {(["workspace", "region", "defaults", "identity"] as const).map((item) => (
               <li key={item} className="flex items-start gap-2">
                 <span className="shrink-0 text-(--setup-accent)">
                   <CircleCheckIcon className="size-3.5" aria-hidden="true" />
@@ -155,7 +155,7 @@ export function SetupGuidance({ kind }: { kind: "profile" | "name" }) {
 }
 
 export function SetupPlanNotes() {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   const nextSteps = [
     { id: "plan", icon: CreditCardIcon },
     { id: "details", icon: FileTextIcon },

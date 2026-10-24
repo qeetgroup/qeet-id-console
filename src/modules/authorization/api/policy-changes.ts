@@ -1,118 +1,151 @@
-// "Recent policy changes" for the Authorization overview.
-//
-// Two sources, in preference order:
-//   1. GET /v1/activity — resolves the actor's display name / email server-side,
-//      which is what the overview wants to show. It 404s where the activity
-//      service isn't deployed, and the activity module already turns that into
-//      an empty page rather than an error.
-//   2. GET /v1/tenants/{t}/audit — always present, but carries only an actor
-//      UUID, so the byline degrades to a short id.
-//
-// Both are filtered to authorization actions with the same predicate, and
-// normalised to one shape so the card doesn't care which answered.
-
 import { useQuery } from "@tanstack/react-query";
 
+import i18n, { type TranslationKey } from "@/i18n";
 import { DEFAULT_FILTERS, fetchActivityPage } from "@/modules/activity";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
-import { type AuditEvent, isAuthzAction } from "./audit";
+import { type AuditEvent, isAuthzAction, RESOURCE_TYPE_LABELS } from "./audit";
+import { authzKeys } from "./keys";
 
 export type PolicyChangeKind = "created" | "updated" | "deleted" | "other";
 
 export interface PolicyChange {
   id: string;
-  /** Humanised action, e.g. "Permission updated". */
-  title: string;
-  /** What it happened to — a key, name or short id. */
-  target: string;
-  /** Display name, email, or short actor id; null for system actions. */
-  actor: string | null;
+  action: string; // e.g. "permission.updated"
+  title: string; // the activity feed's own title, if any; see policyChangeTitle
+  target: string; // a key, name or short id
+  actor: string | null; // name, email or short id; null for a system action
   at: string;
   kind: PolicyChangeKind;
 }
 
-const ENTITY_LABELS: Record<string, string> = {
-  role: "Role",
-  permission: "Permission",
-  abac_policy: "Policy",
-  rbac_policy: "Policy",
-  policy: "Policy",
-  relation_tuple: "Relationship",
-  relation: "Relationship",
-  group_role: "Group role",
-  security_policy: "Security policy",
+// Catalogue keys for the entity an action is about.
+const ENTITY_LABELS: Record<string, TranslationKey> = {
+  ...RESOURCE_TYPE_LABELS,
+  policy: "authorization:resourceTypes.policy",
+  relation: "authorization:resourceTypes.relationTuple",
 };
 
+// Catalogue keys for a verb, each a title with the entity in it, such as "{{entity}} created".
+const VERB_TITLES: Record<string, TranslationKey> = {
+  created: "authorization:policyChanges.created",
+  updated: "authorization:policyChanges.updated",
+  deleted: "authorization:policyChanges.deleted",
+  granted: "authorization:policyChanges.granted",
+  revoked: "authorization:policyChanges.revoked",
+  assigned: "authorization:policyChanges.assigned",
+  unassigned: "authorization:policyChanges.unassigned",
+  permission_granted: "authorization:policyChanges.permissionGranted",
+  permission_revoked: "authorization:policyChanges.permissionRevoked",
+  group_assigned: "authorization:policyChanges.groupAssigned",
+  group_unassigned: "authorization:policyChanges.groupUnassigned",
+  assign_refused: "authorization:policyChanges.assignRefused",
+};
+
+// The relationship store names its actions after the engine, not the entity.
+const ACTION_ALIASES: Record<string, string> = {
+  "rebac.tuple_written": "relation_tuple.created",
+  "rebac.tuple_deleted": "relation_tuple.deleted",
+};
+
+function own<T extends string>(table: Record<string, T>, key: string): T | undefined {
+  return Object.hasOwn(table, key) ? table[key] : undefined;
+}
+
 function kindOf(verb: string): PolicyChangeKind {
-  if (verb.startsWith("creat") || verb.endsWith("granted") || verb.endsWith("assigned")) {
-    return "created";
-  }
+  // Deletions first: "unassigned" also ends with "assigned".
   if (verb.startsWith("delet") || verb.endsWith("revoked") || verb.endsWith("unassigned")) {
     return "deleted";
+  }
+  if (verb.startsWith("creat") || verb.endsWith("granted") || verb.endsWith("assigned")) {
+    return "created";
   }
   if (verb.startsWith("updat")) return "updated";
   return "other";
 }
 
-/** "abac_policy.created" → { title: "Policy created", kind: "created" }. */
+function splitAction(action: string): { entity: string; verb: string } {
+  const canonical = own(ACTION_ALIASES, action) ?? action;
+  const dot = canonical.indexOf(".");
+  return dot === -1
+    ? { entity: canonical, verb: "" }
+    : { entity: canonical.slice(0, dot), verb: canonical.slice(dot + 1) };
+}
+
+// Returns the console's own title for an action, or null when it has none.
+function curatedTitle(action: string): string | null {
+  const { entity, verb } = splitAction(action);
+  const entityKey = own(ENTITY_LABELS, entity);
+  if (!entityKey) return null;
+  if (!verb) return i18n.t(entityKey);
+  const verbKey = own(VERB_TITLES, verb);
+  return verbKey ? i18n.t(verbKey, { entity: i18n.t(entityKey) }) : null;
+}
+
+/**
+ * Returns an action's title, translated when called, and its change kind:
+ * "abac_policy.created" → "ABAC policy created". An action the console doesn't know reads as
+ * its sentence-cased enum.
+ */
 export function describePolicyAction(action: string): { title: string; kind: PolicyChangeKind } {
-  const dot = action.indexOf(".");
-  const entity = dot === -1 ? action : action.slice(0, dot);
-  const verb = dot === -1 ? "" : action.slice(dot + 1);
-  const label = ENTITY_LABELS[entity] ?? entity.replace(/_/g, " ");
-  const readableVerb = verb.replace(/_/g, " ");
-  return {
-    title: `${label}${readableVerb ? ` ${readableVerb}` : ""}`.replace(/^./, (c) =>
-      c.toUpperCase(),
-    ),
-    kind: kindOf(verb),
-  };
+  const { entity, verb } = splitAction(action);
+  const title =
+    curatedTitle(action) ??
+    `${entity} ${verb}`
+      .replace(/_/g, " ")
+      .trim()
+      .replace(/^./, (c) => c.toUpperCase());
+  return { title, kind: kindOf(verb) };
+}
+
+/** Returns a change's title: the console's own, else the activity feed's, else the action's. */
+export function policyChangeTitle(change: PolicyChange): string {
+  return (
+    curatedTitle(change.action) || change.title.trim() || describePolicyAction(change.action).title
+  );
 }
 
 function fromAudit(event: AuditEvent): PolicyChange {
-  const { title, kind } = describePolicyAction(event.action);
   return {
     id: event.id,
-    title,
+    action: event.action,
+    title: "",
     target: event.resource_id ? event.resource_id.slice(0, 8) : event.resource_type,
     actor: event.actor_user_id ? event.actor_user_id.slice(0, 8) : null,
     at: event.created_at,
-    kind,
+    kind: describePolicyAction(event.action).kind,
   };
 }
 
 /**
- * Recent authorization changes since `from` (RFC3339). `limit` caps what the
- * card renders, not what is fetched — both feeds are filtered client-side,
- * because an `abac_policy.*` action doesn't match the activity service's
- * `abac.` category prefix and would be dropped by a server-side filter.
+ * Returns up to `limit` authorization changes since `from` (RFC3339). Prefers the activity feed,
+ * which resolves actor names, and falls back to the audit log when it is empty or undeployed.
+ * Both are filtered here: the activity service's `abac.` category would drop `abac_policy.*`.
  */
 export function usePolicyChanges(from: string, limit = 5) {
   const tenantId = useTenantId();
 
   return useQuery({
-    queryKey: ["authz-policy-changes", tenantId, from, limit],
+    queryKey: authzKeys.policyChanges(tenantId, from, limit),
     enabled: !!tenantId,
     queryFn: async (): Promise<PolicyChange[]> => {
       const page = await fetchActivityPage({ ...DEFAULT_FILTERS, from }, "", 100);
       const activity = page.events
         .filter((e) => isAuthzAction(e.type))
         .map<PolicyChange>((e) => {
-          const described = describePolicyAction(e.type);
           return {
             id: e.id,
-            title: e.title || described.title,
+            action: e.type,
+            title: e.title ?? "",
             target: e.target?.label ?? e.target?.id ?? e.target?.type ?? "",
             actor: e.actor?.name ?? (e.actor?.id ? e.actor.id.slice(0, 8) : null),
             at: e.at,
-            kind: described.kind,
+            kind: describePolicyAction(e.type).kind,
           };
         });
       if (activity.length > 0) return activity.slice(0, limit);
 
-      // Activity is empty or undeployed — fall back to the audit log.
       const audit = await api<{ items: AuditEvent[] }>(`/v1/tenants/${tenantId}/audit`, {
         query: { limit: 100 },
       });

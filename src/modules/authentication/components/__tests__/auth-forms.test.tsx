@@ -8,8 +8,8 @@ import "@/i18n";
 
 import { TERMS_URL } from "@/platform/config/site-urls";
 
-import { usePlatformSocialProviders } from "../../api/flows";
-import { useSSODiscovery } from "../../api/sso";
+import { usePlatformSocialProviders } from "@/modules/authentication/api/flows";
+import { useSSODiscovery } from "@/modules/authentication/api/sso";
 import { AuthShell } from "../auth-shell";
 import { LoginForm } from "../signin-form";
 import { SignupForm } from "../signup-form";
@@ -21,8 +21,8 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 
-vi.mock("../../api/sso", () => ({ useSSODiscovery: vi.fn() }));
-vi.mock("../../api/flows", () => ({
+vi.mock("@/modules/authentication/api/sso", () => ({ useSSODiscovery: vi.fn() }));
+vi.mock("@/modules/authentication/api/flows", () => ({
   usePlatformSocialProviders: vi.fn(),
   socialStartUrl: (provider: string, intent: string) => `/social/${provider}?intent=${intent}`,
 }));

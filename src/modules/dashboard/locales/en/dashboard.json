@@ -1,0 +1,722 @@
+{
+  "title": "Overview",
+  "subtitle": "Identity health for this organization at a glance.",
+  "range7d": "Last 7 days",
+  "range14d": "Last 14 days",
+  "error": "Couldn't load dashboard analytics",
+  "kpi": {
+    "mau": "Active Users (MAU)",
+    "loginsToday": "Logins Today",
+    "mfaAdoption": "MFA Adoption",
+    "failedLogins24h": "Failed Logins (24h)"
+  },
+  "stats": {
+    "totalUsers": "Total users",
+    "dailyActive": "Daily active",
+    "stickiness": "Stickiness (DAU/MAU)",
+    "avgSessions": "Avg sessions / user"
+  },
+  "quickActions": {
+    "heading": "Quick Actions",
+    "inviteLabel": "Invite user",
+    "inviteDesc": "Add a teammate to this organization",
+    "apiKeyLabel": "Create API key",
+    "apiKeyDesc": "Issue credentials for an app",
+    "threatsLabel": "Review threats",
+    "threatsDesc": "Anomalies in the last 24 h",
+    "auditLabel": "Audit logs",
+    "auditDesc": "Search recent activity"
+  },
+  "charts": {
+    "viewAnalytics": "View analytics",
+    "viewLogs": "View logs",
+    "authActivity": {
+      "title": "Authentication Activity",
+      "description": "Daily logins by method · last {{take}} days",
+      "emptyTitle": "No activity yet",
+      "emptyDescription": "No logins recorded in this window."
+    },
+    "loginMix": {
+      "title": "Login Methods Mix",
+      "description": "Last 30 days",
+      "emptyTitle": "No sign-ins yet",
+      "emptyDescription": "Login method data will appear once users sign in."
+    },
+    "mfa": {
+      "title": "MFA Methods Adoption",
+      "description": "Users by second factor",
+      "emptyTitle": "No MFA enrolled",
+      "emptyDescription": "No users have enrolled in a second factor yet."
+    },
+    "failedLogins": {
+      "title": "Failed Login Attempts",
+      "description": "Hourly · last 24h (threshold 250)",
+      "threshold": "Threshold",
+      "emptyTitle": "No failed attempts",
+      "emptyDescription": "No failed-login telemetry recorded yet."
+    }
+  },
+  "activity": {
+    "title": "Recent Activity",
+    "description": "Last 5 events in this organization",
+    "viewAll": "View all",
+    "emptyTitle": "No activity yet",
+    "emptyDescription": "Events will appear here as users interact with your organization."
+  },
+  "noWorkspace": {
+    "title": "Create your first organization",
+    "cta": "Create organization",
+    "description": "Your account isn't tied to an organization yet. Create one to start managing users, configuring auth, and inviting teammates — you'll be its owner."
+  },
+  "welcome": {
+    "eyebrow": "Welcome to Qeet ID",
+    "description": "Your account isn't tied to an organization yet. Create one to manage users, configure authentication, and invite teammates — you’ll be its owner.",
+    "reviewSecurity": "Review account security",
+    "foundations": {
+      "title": "What an organization establishes",
+      "boundary": {
+        "title": "Organization boundary",
+        "description": "Isolate identities, policies, and administrators from every other organization."
+      },
+      "authentication": {
+        "title": "Authentication policy",
+        "description": "Configure passkeys, federation, MFA, and application credentials in one place."
+      },
+      "audit": {
+        "title": "Verifiable audit trail",
+        "description": "Record operator and identity events from the first configuration change."
+      }
+    },
+    "checklist": {
+      "title": "Get started with Qeet ID",
+      "description": "A few simple steps to set up your organization and start secure access for your team.",
+      "progress": "{{completed}} of {{total}} complete",
+      "progressLabel": "Organization setup progress",
+      "collapse": "Collapse getting-started checklist",
+      "expand": "Expand getting-started checklist",
+      "steps": {
+        "organization": {
+          "title": "Create your organization",
+          "description": "Set up your organization and basic details like name and domain."
+        },
+        "authentication": {
+          "title": "Configure authentication",
+          "description": "Set your passkey and MFA policies to match your security requirements."
+        },
+        "team": {
+          "title": "Invite your team",
+          "description": "Add teammates and grant the right access to get started."
+        }
+      }
+    },
+    "account": {
+      "complete": {
+        "title": "Your account is ready",
+        "description": "Your identity has been verified and your account is secure."
+      },
+      "pending": {
+        "title": "Finish securing your account",
+        "description": "Verify your email and review your account security to complete your setup."
+      },
+      "loading": {
+        "title": "Checking your account",
+        "description": "Checking your email verification and enrolled passkeys."
+      },
+      "unavailable": {
+        "title": "Account status unavailable",
+        "description": "We couldn’t check your account. Try again to see its current status."
+      },
+      "status": {
+        "pending": "Action needed",
+        "loading": "Checking…",
+        "unavailable": "Unable to check"
+      },
+      "retry": "Check again",
+      "rows": {
+        "identity": {
+          "label": "Identity verification",
+          "complete": "Identity verified",
+          "description": "Completed"
+        },
+        "passkey": {
+          "label": "Passkeys",
+          "complete": "Passkeys enabled",
+          "description": "Ready to use"
+        },
+        "account": {
+          "label": "Account security",
+          "complete": "Account secured",
+          "description": "No action required"
+        }
+      }
+    },
+    "help": {
+      "title": "Need help getting started?",
+      "description": "Explore our documentation or contact our team.",
+      "docs": {
+        "title": "View documentation",
+        "description": "Step-by-step guides and best practices"
+      },
+      "support": {
+        "title": "Contact support",
+        "description": "Get help from our team"
+      },
+      "newTab": "(opens in a new tab)"
+    },
+    "footer": {
+      "tagline": "Passkeys-first identity and access platform",
+      "navigation": "Dashboard resources",
+      "status": "Status",
+      "docs": "Documentation",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
+  },
+  "invites": {
+    "title": "You’ve been invited",
+    "description": "Accept an invitation to join an existing organization.",
+    "invitedAs": "Invited as {{email}}",
+    "decline": "Decline",
+    "accept": "Accept & join",
+    "dismissed": "Invitation dismissed."
+  },
+  "analytics": {
+    "description": "Product analytics across organizations, applications, and authentication methods.",
+    "kpiHintVs30d": "vs last 30 days",
+    "kpiHintStickiness": "stickiness",
+    "kpiHintLast30d": "last 30 days",
+    "kpiHintVs30dAgo": "vs 30 days ago",
+    "activeUsersTitle": "Active users",
+    "activeUsersDesc": "Weekly WAU and average DAU · last 8 weeks",
+    "emptyActivity": "No session activity recorded in the last 8 weeks.",
+    "geoTitle": "Geography",
+    "geoDesc": "Users by region",
+    "emptyGeo": "Requires GeoIP enrichment.",
+    "apiTitle": "API volume",
+    "apiDesc": "Requests per day",
+    "emptyApi": "Requires request-volume instrumentation.",
+    "appsTitle": "Top applications",
+    "appsDesc": "Ranked by logins in the selected period",
+    "emptyApps": "Requires per-application login tagging on auth events."
+  },
+  "finalizingSubscription": "Finalizing your subscription…",
+  "insights": {
+    "attentionRequired": "Attention required",
+    "signalsFromLiveTelemetry": "Signals from live telemetry that need an operator's eyes",
+    "nothingNeedsAttention": "Nothing needs attention",
+    "everyMonitoredSignalIs": "Every monitored signal is within its healthy range right now.",
+    "itemsRequiringAttention": "Items requiring attention",
+    "identityHealth": "Identity health",
+    "compositePostureAcrossYour": "Composite posture across your identity subsystems",
+    "weightedAcrossAuthenticationReliability": "Weighted across authentication reliability, MFA coverage, and engagement.",
+    "sessionOverview": "Session overview",
+    "activeSessionFootprint": "Active session footprint",
+    "manage": "Manage",
+    "securityPosture": "Security posture",
+    "authenticationRiskAtAGlance": "Authentication risk at a glance",
+    "security": "Security",
+    "samlConnections": "SAML connections",
+    "oidcClients": "OIDC clients",
+    "scimProvisioned": "SCIM provisioned",
+    "verifiedDomains": "Verified domains",
+    "enterpriseConnectivity": "Enterprise connectivity",
+    "federationProvisioningAcrossYourOrganization": "Federation & provisioning across your organization",
+    "planUsage": "Plan usage",
+    "managePlan": "Manage plan",
+    "severity": {
+      "critical": "Critical",
+      "warning": "Warning",
+      "info": "Notice"
+    },
+    "healthScore": "Identity health score {{score}} out of 100",
+    "planConsumption": "Consumption on the {{plan}} plan",
+    "planConsumptionDefault": "Consumption against your plan limits",
+    "grade": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "atRisk": "At risk"
+    },
+    "areas": {
+      "authentication": "Authentication",
+      "mfa": "MFA adoption",
+      "engagement": "Engagement"
+    },
+    "attention": {
+      "mfaAdoption": {
+        "title": "MFA adoption below target",
+        "detail": "{{pct}}% of active users have a second factor — short of the {{target}}% target.",
+        "action": "Strengthen MFA"
+      },
+      "failedLogins": {
+        "title": "Failed sign-ins are rising",
+        "detail": "Failed authentication attempts are up {{pct}}% over the last 24 hours.",
+        "action": "Review anomalies"
+      },
+      "engagement": {
+        "title": "Daily engagement is low",
+        "detail": "Only {{pct}}% of monthly users returned today (DAU/MAU).",
+        "action": "Open analytics"
+      }
+    },
+    "sessions": {
+      "active": "Active sessions",
+      "activeHint": "Estimated from daily active users",
+      "avg": "Avg sessions / user",
+      "dau": "Daily active users",
+      "stickiness": "Stickiness (DAU/MAU)"
+    },
+    "signals": {
+      "failed": "Failed sign-ins (24h)",
+      "success": "Sign-in success rate",
+      "mfa": "MFA coverage"
+    },
+    "usage": {
+      "seats": "Members",
+      "apps": "Applications",
+      "apiKeys": "API keys",
+      "customRoles": "Custom roles"
+    }
+  },
+  "analyticsPage": {
+    "avgSessionsUser": "Avg sessions / user",
+    "totalUsers": "Total users",
+    "dauAvg": "DAU (avg)"
+  },
+  "appSidebar": {
+    "qeetIdOverview": "Qeet ID overview",
+    "consoleSections": "Console sections",
+    "controlPlane": "Control plane"
+  },
+  "applicationsOverview": {
+    "registeredApps": "Registered apps",
+    "machineApps": "Machine apps",
+    "activeGrants": "Active grants",
+    "apiKeys": "API keys",
+    "customScopes": "Custom scopes",
+    "applications": "Applications",
+    "yourRegisteredOidcOauth": "Your registered OIDC / OAuth relying-party apps.",
+    "viewConfigureAndManage": "View, configure, and manage client applications.",
+    "nonInteractiveServiceAnd": "Non-interactive service and machine identities.",
+    "manageMachineToMachine": "Manage machine-to-machine applications and credentials.",
+    "oauthGrants": "OAuth grants",
+    "consentsUsersHaveGranted": "Consents users have granted to your apps.",
+    "viewAndManageOauth": "View and manage OAuth grants and consent records.",
+    "manageApiKeysFor": "Manage API keys for programmatic access.",
+    "createRotateAndRevoke": "Create, rotate, and revoke API keys.",
+    "scopesPermissions": "Scopes & permissions",
+    "defineAndManageCustom": "Define and manage custom scopes and permissions.",
+    "controlWhatYourApplications": "Control what your applications can access.",
+    "registerApplication": "Register application",
+    "createANewOidc": "Create a new OIDC / OAuth app",
+    "createMachineApp": "Create machine app",
+    "setUpANon": "Set up a non-interactive app",
+    "generateApiKey": "Generate API key",
+    "createAnApiKey": "Create an API key for accessing APIs",
+    "reviewGrants": "Review grants",
+    "viewAndManageOauthGrants": "View and manage OAuth grants",
+    "exploreAndManage": "Explore and manage",
+    "jumpToAnyArea": "Jump to any area in applications.",
+    "applicationAreas": "Application areas",
+    "gettingStarted": "Getting started",
+    "setUpYourFirst": "Set up your first application or explore the available capabilities.",
+    "registerAnApplication": "Register an application",
+    "setUpYourFirst2": "Set up your first client application.",
+    "configurePermissions": "Configure permissions",
+    "addRequestedScopes": "Add requested scopes.",
+    "integrateAndTest": "Integrate and test",
+    "useOurSdksOr": "Use our SDKs or OAuth flows.",
+    "quickActions": "Quick actions",
+    "commonTasksToManage": "Common tasks to manage your applications.",
+    "description": "Manage client applications, machine identities, API keys, permissions, and OAuth consent across your organization.",
+    "registerApp": "Register app",
+    "viewDocumentation": "View documentation",
+    "statAcrossApps": "Across registered apps",
+    "statAdded_one": "+{{count}} from last 30 days",
+    "statAdded_other": "+{{count}} from last 30 days",
+    "statNoChange": "No change"
+  },
+  "consoleHeader": {
+    "searchTheControlPlane": "Search the control plane",
+    "keyboardShortcuts": "Keyboard shortcuts",
+    "keyboardShortcuts2": "Keyboard shortcuts (?)",
+    "searchUnavailable": "Search unavailable while access loads"
+  },
+  "dashboardActivity": {
+    "testAnAccessDecision": "Test an access decision",
+    "evaluateAPolicyBefore": "Evaluate a policy before it reaches production",
+    "viewAllActivity": "View all activity",
+    "loadingRecentActivity": "Loading recent activity",
+    "recentActivityEvents": "Recent activity events",
+    "criticalSecurityEventsDetected": "Critical security events detected in the activity feed",
+    "frequentOperatorWorkflows": "Frequent operator workflows"
+  },
+  "dashboardCharts": {
+    "authenticationActivityByDay": "Authentication activity by day and method",
+    "day": "Day",
+    "signInsByAuthenticationMethod": "Sign-ins by authentication method",
+    "numberOfUsersEnrolled": "Number of users enrolled in each multi-factor authentication method",
+    "mfaEnrollmentByMethod": "MFA enrollment by method",
+    "method": "Method",
+    "users": "Users",
+    "failedLoginAttemptsBy": "Failed login attempts by hour over the last 24 hours",
+    "failedLoginAttemptsByHour": "Failed login attempts by hour",
+    "hour": "Hour",
+    "attempts": "Attempts",
+    "activityLabel_one": "Stacked authentication activity for the last {{count}} day, separated by sign-in method",
+    "activityLabel_other": "Stacked authentication activity for the last {{count}} days, separated by sign-in method",
+    "methodShare": "{{method}}: {{pct}} percent",
+    "failedAttempts": "Failed attempts",
+    "methods": {
+      "password": "Password",
+      "passkey": "Passkey",
+      "social": "Social",
+      "magicLink": "Magic link"
+    },
+    "mfaMethods": {
+      "passkey": "Passkey",
+      "email": "Email OTP",
+      "recovery": "Recovery codes"
+    }
+  },
+  "dashboardMetrics": {
+    "comparedWithThePriorPeriod": "Compared with the prior period",
+    "organizationPerformanceIndicators": "Organization performance indicators",
+    "directoryHealthIndicators": "Directory health indicators"
+  },
+  "dashboardOverview": {
+    "identityOperations": "Identity operations",
+    "awaitingOrganizationTelemetry": "Awaiting organization telemetry",
+    "yourOperatorViewIsScoped": "Your operator view is scoped",
+    "organizationAnalyticsAreNot": "Organization analytics are not part of your role. Available navigation and actions are tailored to your effective permissions.",
+    "telemetryUpdated": "Telemetry updated <time/>",
+    "analyticsNoResponse": "The analytics service did not return a response.",
+    "retry": "Retry",
+    "accessMode": {
+      "setup": "Setup access",
+      "full": "Full access",
+      "readOnly": "Read-only access",
+      "restricted": "Restricted access",
+      "none": "No access",
+      "unknown": "Unknown access"
+    },
+    "range": "Time range"
+  },
+  "headerUser": {
+    "accountMenu": "Account menu",
+    "myAccount": "My account",
+    "securityMfa": "Security & MFA",
+    "organizationSettings": "Organization settings",
+    "apiKeys": "API Keys",
+    "billing": "Billing",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…"
+  },
+  "navMain": {
+    "checkingAvailableConsoleSections": "Checking available console sections",
+    "checkingOrganizationAccess": "Checking organization access"
+  },
+  "notificationsInbox": {
+    "notifications": "Notifications",
+    "viewAllActivity": "View all activity →",
+    "new": "New",
+    "youReAllCaughtUp": "You're all caught up",
+    "newActivityInYour": "New activity in your organization will show up here.",
+    "unreadLabel_one": "Notifications ({{count}} unread)",
+    "unreadLabel_other": "Notifications ({{count}} unread)",
+    "markAllRead": "Mark all read"
+  },
+  "onboardingChecklist": {
+    "setYourBrand": "Set your brand",
+    "uploadALogoAnd": "Upload a logo and pick your brand colours.",
+    "openBranding": "Open branding",
+    "inviteYourTeam": "Invite your team",
+    "bringInAdminsEngineers": "Bring in admins, engineers, or support staff.",
+    "inviteTeammates": "Invite teammates",
+    "registerAnApplication": "Register an application",
+    "hookUpYourFirst": "Hook up your first OAuth/OIDC client to start signing users in.",
+    "addApplication": "Add application",
+    "createAnApiKey": "Create an API key",
+    "serviceToServiceAuth": "Service-to-service auth for your backend integrations.",
+    "createKey": "Create key",
+    "subscribeToAnEventWebhook": "Subscribe to an event webhook",
+    "listenForSignIns": "Listen for sign-ins, role changes, audit events.",
+    "addWebhook": "Add webhook",
+    "organizationFullySetUp": "Organization fully set up",
+    "everyControlPlaneSetup": "Every control-plane setup task is complete.",
+    "organizationReadiness": "Organization readiness",
+    "organizationSetupProgress": "Organization setup progress",
+    "checking": "Checking your setup…",
+    "progress_one": "{{done}} of {{count}} step complete.",
+    "progress_other": "{{done}} of {{count}} steps complete."
+  },
+  "passkeyPromptCard": {
+    "protectThisOperatorAccount": "Protect this operator account with a passkey",
+    "useTouchIdFace": "Use Touch ID, Face ID, Windows Hello, or a security key for phishing-resistant access.",
+    "notNow": "Not now",
+    "recommendedForPrivilegedOperators": "Recommended for privileged operators",
+    "addPasskey": "Add a passkey"
+  },
+  "settingsOverview": {
+    "organizationSetup": "Organization setup",
+    "finishSetup": "Finish setup",
+    "completeYourConfigurationFor": "Complete your configuration for the best experience.",
+    "goToTheNext": "Go to the next unfinished setting",
+    "yourOrganizationIsActive": "Your organization is active and in good standing.",
+    "operational": "Operational",
+    "settingsAreas": "Settings areas",
+    "description": "Configure your organization — profile, domains, branding, security, billing and AI.",
+    "plan": "{{plan}} plan",
+    "established": "Est. {{date}}",
+    "verifiedDomains_one": "{{count}} verified domain",
+    "verifiedDomains_other": "{{count}} verified domains",
+    "noVerifiedDomains": "No verified domains",
+    "complete": "Complete",
+    "notConfigured": "Not configured",
+    "templatesConfigured_one": "{{count}} template configured",
+    "templatesConfigured_other": "{{count}} templates configured",
+    "defaultTemplates": "Using default templates",
+    "strong": "Strong",
+    "reviewRecommended": "Review recommended",
+    "passkeysOn": "Passkeys enabled",
+    "passkeysOff": "Passkeys off",
+    "mfaOptional": "MFA optional",
+    "mfaRequired": "MFA required",
+    "noSubscription": "No subscription",
+    "renews": "Renews {{date}}",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "oneModel": "1 model",
+    "progress": "{{complete}} of {{total}} complete",
+    "areas_one": "{{count}} area",
+    "areas_other": "{{count}} areas",
+    "greeting": {
+      "morning": "Good morning",
+      "morningNamed": "Good morning, {{name}}",
+      "afternoon": "Good afternoon",
+      "afternoonNamed": "Good afternoon, {{name}}",
+      "evening": "Good evening",
+      "eveningNamed": "Good evening, {{name}}"
+    }
+  },
+  "shortcutsDialog": {
+    "keyboardShortcuts": "Keyboard shortcuts",
+    "moveAroundWithoutTouching": "Move around without touching the mouse."
+  },
+  "teamSwitcher": {
+    "noOrganization": "No organization",
+    "createATenantBoundary": "Create a tenant boundary",
+    "organizations": "Organizations",
+    "noOrganizationsYet": "No organizations yet",
+    "currentOrganization": "Current organization",
+    "addOrganization": "Add organization"
+  },
+  "verifyEmailBanner": {
+    "emailVerificationCode": "Email verification code",
+    "message": "Verify <email>{{email}}</email> to unlock organization creation.",
+    "verify": "Verify",
+    "sendCode": "Send verification code"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "There's nothing at this address. Check the link, or go back to the dashboard.",
+    "home": "Go to the dashboard"
+  },
+  "authenticationOverview": {
+    "deltaPp": "{{value}}pp",
+    "mfaChip": "{{method}} {{count}}"
+  },
+  "impersonationBanner": {
+    "message": "You are impersonating <target>{{target}}</target><admin> — signed in as {{admin}}.</admin>",
+    "exit": "Exit impersonation"
+  },
+  "authOverview": {
+    "description": "How people prove who they are — sign-in methods, social providers, SSO, MFA and devices.",
+    "kpi": {
+      "signIn": {
+        "label": "Sign-in methods",
+        "detail": "{{count}} of 5 available"
+      },
+      "social": {
+        "label": "Social providers",
+        "none": "None configured"
+      },
+      "sso": {
+        "label": "SSO connections",
+        "detail": "{{inbound}} inbound · {{outbound}} outbound"
+      },
+      "mfa": {
+        "label": "MFA coverage",
+        "detail": "of active users",
+        "delta": "vs 7 days ago"
+      },
+      "devices": {
+        "label": "Registered devices",
+        "detail_one": "across {{count}} person",
+        "detail_other": "across {{count}} people",
+        "none": "No trusted devices yet"
+      }
+    },
+    "areas": {
+      "title": "Authentication Areas",
+      "description": "Explore and configure each area of authentication.",
+      "documentation": "View documentation",
+      "signin": {
+        "title": "Sign-in",
+        "description": "Passwords, passwordless, passkeys and magic links.",
+        "stat": "{{count}} of 5 methods enabled"
+      },
+      "social": {
+        "title": "Social",
+        "description": "Google, Microsoft, Apple, GitHub and more.",
+        "stat_one": "{{count}} provider configured",
+        "stat_other": "{{count}} providers configured"
+      },
+      "sso": {
+        "title": "SSO",
+        "description": "SAML connections and Qeet ID as an IdP.",
+        "stat_one": "{{count}} connection configured",
+        "stat_other": "{{count}} connections configured"
+      },
+      "mfa": {
+        "title": "MFA",
+        "description": "TOTP and SMS / email second factors.",
+        "stat": "{{pct}}% user coverage"
+      },
+      "devices": {
+        "title": "Devices",
+        "description": "Trusted devices and OAuth device authorizations.",
+        "stat_one": "{{count}} trusted device",
+        "stat_other": "{{count}} trusted devices"
+      },
+      "methods": {
+        "password": "Password",
+        "passkey": "Passkeys",
+        "magicLink": "Magic links"
+      },
+      "chips": {
+        "rememberOn": "Remember device on",
+        "rememberOff": "Remember device off",
+        "samlIn": "{{count}} SAML",
+        "samlOut": "{{count}} SAML IdP"
+      }
+    },
+    "activity": {
+      "title": "Recent activity",
+      "description": "Latest changes to your authentication settings.",
+      "viewAll": "View all activity",
+      "emptyTitle": "No recent activity",
+      "emptyDescription": "Changes to sign-in methods, providers and policies will appear here."
+    },
+    "posture": {
+      "title": "Security posture",
+      "overall": "Overall",
+      "state": {
+        "healthy": "Good",
+        "attention": "Needs attention",
+        "critical": "At risk"
+      },
+      "summary": {
+        "healthy": "Your authentication setup is in good shape, with a few opportunities to improve.",
+        "attention": "Your authentication setup has gaps worth closing.",
+        "critical": "Your authentication setup needs attention before rollout."
+      },
+      "items": {
+        "signin": "Sign-in methods configured",
+        "social": "Social providers configured",
+        "mfa": "Increase MFA adoption",
+        "sso": "SSO configured",
+        "devices": "Device management active"
+      },
+      "callout": {
+        "title": "Get to 90%+",
+        "allClear": "Everything is configured",
+        "allClearDetail": "No outstanding setup steps for authentication."
+      }
+    },
+    "actions": {
+      "title": "Recommended actions",
+      "pending": "{{count}} pending",
+      "items": {
+        "signin": {
+          "title": "Add a sign-in method",
+          "description": "A second method keeps people signing in if one fails",
+          "verb": "Set up"
+        },
+        "social": {
+          "title": "Add another social provider",
+          "description": "Expand sign-in options (e.g. Microsoft, Apple)",
+          "verb": "Add"
+        },
+        "mfa": {
+          "title": "Increase MFA adoption",
+          "description": "Encourage more users to enable MFA",
+          "verb": "Review"
+        },
+        "sso": {
+          "title": "Configure SSO",
+          "description": "Enable SAML or OIDC for your organization",
+          "verb": "Set up"
+        },
+        "devices": {
+          "title": "Review device trust",
+          "description": "Audit and manage registered devices",
+          "verb": "Review"
+        }
+      }
+    },
+    "states": {
+      "unavailable": "Unavailable"
+    }
+  },
+  "nav": {
+    "overview": {
+      "dashboard": {
+        "title": "Dashboard"
+      },
+      "analytics": {
+        "title": "Analytics"
+      }
+    },
+    "applications": {
+      "overview": {
+        "title": "Overview"
+      }
+    },
+    "authentication": {
+      "overview": {
+        "title": "Overview"
+      }
+    },
+    "settings": {
+      "overview": {
+        "title": "Overview"
+      }
+    }
+  },
+  "commands": {
+    "dashboard": {
+      "title": "Open Dashboard",
+      "subtitle": "Go to the organization overview",
+      "keywords": "home, overview, main"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "subtitle": "Organization usage metrics and trends",
+      "keywords": "metrics, stats, analytics, charts"
+    }
+  },
+  "shortcuts": {
+    "dashboard": "Dashboard"
+  },
+  "qeetaiSuggestions": {
+    "labels": {
+      "registerOAuthClient": "Register an OAuth client",
+      "terraformClients": "Generate Terraform for clients",
+      "explainOAuth": "Explain OAuth flows"
+    },
+    "prompts": {
+      "explainOAuth": "Explain the OAuth 2.0 grant types available in Qeet ID and when to use each."
+    }
+  }
+}

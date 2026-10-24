@@ -1,13 +1,10 @@
-// A tiny pub/sub so route pages can tell the qeetai what the operator is
-// looking at — "user X", "role Y", "these filters" — without the qeetai having
-// to reach into each page's internals. Pages call `registerContext(pathname,
-// {...})` from an effect; `useConsoleContext` reads the entry for the active
-// path. Keyed by pathname so a stale publish from another route never leaks into
-// the current context.
+// Lets route pages tell the assistant what the operator is looking at (a user, a role, filters).
+// Entries are keyed by pathname, so a publish from another route never leaks into the context.
 
 import { Store, useStore } from "@tanstack/react-store";
 import { useEffect } from "react";
 
+import { onSessionClear } from "@/platform/auth/session-store";
 import type { ContextSelection } from "./types/context.types";
 
 export interface PublishedContext {
@@ -18,6 +15,9 @@ export interface PublishedContext {
 type RegistryState = Record<string, PublishedContext>;
 
 const registryStore = new Store<RegistryState>({});
+
+// What a page published names the outgoing scope's records.
+onSessionClear(() => registryStore.setState(() => ({})));
 
 const EMPTY: PublishedContext = {};
 
@@ -34,20 +34,17 @@ export function clearContext(pathname: string) {
   });
 }
 
-/** Read the published context for a path (reactive). */
 export function useContextRegistry(pathname: string): PublishedContext {
   return useStore(registryStore, (s) => s[pathname] ?? EMPTY);
 }
 
 /**
- * Convenience hook for route pages: publishes `value` for the current path while
- * mounted and clears it on unmount. Stable-stringify the value at the call site
- * (or memoize) to avoid needless churn.
+ * Publishes `value` for `pathname` while mounted and clears it on unmount. Memoize `value`: a
+ * new object on every render re-publishes it.
  */
 export function useRegisterContext(pathname: string, value: PublishedContext) {
   useEffect(() => {
     registerContext(pathname, value);
     return () => clearContext(pathname);
-    // The caller controls identity of `value`; re-publish when it changes.
   }, [pathname, value]);
 }

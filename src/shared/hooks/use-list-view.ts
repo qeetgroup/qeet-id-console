@@ -1,10 +1,7 @@
 import { useMemo, useState } from "react";
 
-// Client-side view state shared by list pages: free-text search across a
-// fixed set of fields, faceted equality filters, single-column sort, row
-// density, and column visibility. It operates on whatever rows the page
-// already holds (the current cursor page or a fully-loaded set), so it
-// composes with the existing server pagination instead of replacing it.
+// Client-side list view state (search, facet filters, single-column sort, density, column
+// visibility) over the rows the page already holds, so it composes with server pagination.
 
 export type Density = "comfortable" | "compact";
 
@@ -13,14 +10,10 @@ export type SortDir = "asc" | "desc";
 export type SortState = { key: string; dir: SortDir } | null;
 
 export type ListViewConfig<T> = {
-  /** Fields concatenated for free-text search (case-insensitive). */
-  searchFields: (row: T) => Array<string | null | undefined>;
-  /** Equality filters keyed by facet id → accessor. */
-  filterFields?: Record<string, (row: T) => string | null | undefined>;
-  /** Sortable columns keyed by id → comparable accessor. */
-  sortFields?: Record<string, (row: T) => string | number | null | undefined>;
-  /** Column ids that start hidden. */
-  initialHidden?: string[];
+  searchFields: (row: T) => Array<string | null | undefined>; // searched case-insensitively
+  filterFields?: Record<string, (row: T) => string | null | undefined>; // facet id → accessor
+  sortFields?: Record<string, (row: T) => string | number | null | undefined>; // by column id
+  initialHidden?: string[]; // column ids that start hidden
   initialDensity?: Density;
 };
 
@@ -51,12 +44,12 @@ export function useListView<T>(rows: T[], config: ListViewConfig<T>) {
       );
     }
 
-    if (sort && config.sortFields?.[sort.key]) {
-      const accessor = config.sortFields[sort.key];
+    const sortAccessor = sort ? config.sortFields?.[sort.key] : undefined;
+    if (sort && sortAccessor) {
       const dir = sort.dir === "asc" ? 1 : -1;
       out = [...out].sort((a, b) => {
-        const av = accessor(a) ?? "";
-        const bv = accessor(b) ?? "";
+        const av = sortAccessor(a) ?? "";
+        const bv = sortAccessor(b) ?? "";
         if (av < bv) return -1 * dir;
         if (av > bv) return 1 * dir;
         return 0;

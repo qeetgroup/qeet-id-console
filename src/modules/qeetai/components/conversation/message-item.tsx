@@ -8,9 +8,10 @@ import {
   TriangleAlertIcon,
 } from "@qeetrix/icons";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import type { UseQeetAIChat } from "../../hooks/use-qeetai-chat";
-import type { Message } from "../../types/qeetai.types";
+import type { UseQeetAIChat } from "@/modules/qeetai/hooks/use-qeetai-chat";
+import type { Message } from "@/modules/qeetai/types/qeetai.types";
 import { ExecutionTimeline } from "../execution/execution-timeline";
 import { MarkdownMessage } from "../markdown-message/markdown-message";
 import { type MessageAction, MessageActions } from "./message-actions";
@@ -33,10 +34,11 @@ interface MessageItemProps {
 }
 
 /**
- * A single turn. User messages sit in a right-aligned bubble (editable inline);
- * assistant messages render as Markdown with hover actions (copy, regenerate).
+ * Renders one turn: a user message as an inline-editable bubble, an assistant message as
+ * Markdown with copy and regenerate actions.
  */
 export function MessageItem({ message, isLast, chat }: MessageItemProps) {
+  const { t } = useTranslation(["qeetai", "common"]);
   const { copied, copy } = useCopy(message.content);
 
   if (message.role === "user") {
@@ -53,14 +55,14 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
       ) : (
         <CopyIcon className="size-3.5" />
       ),
-      label: copied ? "Copied" : "Copy",
+      label: t(copied ? "common:states.copied" : "common:actions.copy"),
       onClick: copy,
     },
   ];
   if (isLast && !streaming) {
     actions.push({
       icon: <RotateCcwIcon className="size-3.5" />,
-      label: "Regenerate",
+      label: t("messageItem.regenerate"),
       onClick: chat.regenerate,
     });
   }
@@ -77,7 +79,7 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
         {message.content ? (
           <MarkdownMessage content={message.content} />
         ) : streaming ? (
-          <span className="text-sm text-muted-foreground">Thinking…</span>
+          <span className="text-sm text-muted-foreground">{t("messageItem.thinking")}</span>
         ) : null}
         {streaming && message.content ? (
           <span
@@ -91,7 +93,7 @@ export function MessageItem({ message, isLast, chat }: MessageItemProps) {
         {errored ? (
           <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
             <TriangleAlertIcon className="size-3.5 shrink-0" />
-            {message.error ?? "The assistant could not complete this turn."}
+            {message.error ?? t("chat.turnFailed")}
           </p>
         ) : null}
         {!streaming ? (
@@ -116,6 +118,7 @@ function UserMessage({
   copy: () => void;
   chat: UseQeetAIChat;
 }) {
+  const { t } = useTranslation(["qeetai", "common"]);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
 
@@ -126,7 +129,7 @@ function UserMessage({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           rows={3}
-          aria-label="Edit message"
+          aria-label={t("messageItem.editMessage")}
           className="w-full max-w-[85%]"
           autoFocus
         />
@@ -139,7 +142,7 @@ function UserMessage({
               setEditing(false);
             }}
           >
-            Cancel
+            {t("common:actions.cancel")}
           </Button>
           <Button
             size="sm"
@@ -149,7 +152,7 @@ function UserMessage({
             }}
             disabled={!draft.trim()}
           >
-            Send
+            {t("messageItem.send")}
           </Button>
         </div>
       </div>
@@ -163,12 +166,12 @@ function UserMessage({
       ) : (
         <CopyIcon className="size-3.5" />
       ),
-      label: copied ? "Copied" : "Copy",
+      label: t(copied ? "common:states.copied" : "common:actions.copy"),
       onClick: copy,
     },
     {
       icon: <PencilIcon className="size-3.5" />,
-      label: "Edit",
+      label: t("common:actions.edit"),
       onClick: () => {
         setDraft(message.content);
         setEditing(true);

@@ -1,0 +1,4 @@
+[install]
+# Only resolve versions public for 3 days (in seconds), like Dependabot's cooldown.
+# Frozen-lockfile installs are unaffected.
+minimumReleaseAge = 259200

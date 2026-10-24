@@ -1,14 +1,5 @@
-// Panel-presentation state for the QeetAI workspace: open/closed, mode
-// (docked/floating/fullscreen), docked width, and the collapsed rail. Kept in a
-// standalone TanStack Store (not React context) so the header trigger and the
-// panel itself — mounted in different parts of the shell — share one source of
-// truth without prop-drilling, exactly like the sidebar/theme singletons.
-//
-// SSR note: the store always initialises to a deterministic, closed state so the
-// server render and the first client render match. Persisted *preferences*
-// (mode/width/collapsed) are re-applied in a mount effect (see hydrateWorkspace),
-// never during render — and `open` is intentionally session-only, so a refresh
-// never pops the panel open before hydration.
+// How the workspace panel is presented. It starts closed so the server and first client render
+// match; hydrateWorkspace re-applies saved preferences after mount, and `open` is never saved.
 
 import { Store } from "@tanstack/react-store";
 
@@ -22,8 +13,7 @@ const PREFS_KEY = "qeetid.qeetai.prefs";
 
 export interface WorkspaceState extends WorkspacePrefs {
   open: boolean;
-  /** Session-only: whether the conversation history view is showing. */
-  historyOpen: boolean;
+  historyOpen: boolean; // Session-only: whether the conversation history view is showing
 }
 
 const DEFAULT_STATE: WorkspaceState = {
@@ -58,8 +48,7 @@ export const workspaceActions = {
     workspaceStore.setState((s) => ({ ...s, open: !s.open }));
   },
   setMode(mode: QeetAIMode) {
-    // Switching to any mode implies the panel should be visible, and leaving
-    // docked mode clears the collapsed rail (it only exists while docked).
+    // Choosing a mode shows the panel; the collapsed rail exists only while docked.
     workspaceStore.setState((s) => ({
       ...s,
       mode,
@@ -100,14 +89,13 @@ function writePrefs(state: WorkspaceState) {
     };
     window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
   } catch {
-    /* storage may be unavailable (private mode); preferences are best-effort */
+    // storage may be unavailable (private mode); preferences are best-effort
   }
 }
 
 /**
- * Apply persisted preferences and start persisting future changes. Call once,
- * from a client mount effect. Returns an unsubscribe for the persistence
- * listener. Safe to call when storage is unavailable (it simply no-ops).
+ * Applies saved preferences and saves later changes; returns the unsubscribe. Call once from a
+ * client mount effect. Safe when storage is unavailable.
  */
 export function hydrateWorkspace(): () => void {
   const prefs = readPrefs();

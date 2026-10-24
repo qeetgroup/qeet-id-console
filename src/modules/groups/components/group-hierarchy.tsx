@@ -7,11 +7,8 @@ import type { Group } from "../api/groups";
 type Node = Group & { children: Node[] };
 
 /**
- * Builds the parent/child forest from the flat list.
- *
- * A group whose parent_id points at something not in the list (filtered out, or
- * deleted concurrently) is promoted to a root rather than dropped — silently
- * hiding rows would make the tree disagree with the count above it.
+ * Builds the parent/child forest from the flat list. A group whose parent isn't in the list is
+ * promoted to a root, not dropped, so the tree always agrees with the count above it.
  */
 function toForest(groups: Group[]): Node[] {
   const byId = new Map<string, Node>(groups.map((g) => [g.id, { ...g, children: [] }]));
@@ -23,7 +20,7 @@ function toForest(groups: Group[]): Node[] {
   }
   const sort = (nodes: Node[]) => {
     nodes.sort((a, b) => a.name.localeCompare(b.name));
-    nodes.forEach((n) => sort(n.children));
+    for (const n of nodes) sort(n.children);
   };
   sort(roots);
   return roots;

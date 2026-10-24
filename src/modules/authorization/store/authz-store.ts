@@ -1,11 +1,10 @@
-// Cross-surface UI state for the Authorization section. Keeps a short history
-// of decisions (so the Decision Explorer can render whatever the Simulator or
-// an ABAC "Test" run just produced) and the in-flight builder document (so
-// Templates can hand off to the Policy Builder). Server state stays in
-// TanStack Query — this store is UI-only.
+// UI state shared across the authorization screens: recent decisions, so the Decision Explorer
+// can show what a simulation just produced, and the builder draft, so a template can open in the
+// Policy Builder. Server state stays in TanStack Query.
 
 import { Store, useStore } from "@tanstack/react-store";
 
+import { onSessionClear } from "@/platform/auth/session-store";
 import type { PolicyDoc } from "../utils/policy-codegen";
 import type { DecisionRecord } from "../api/simulate";
 
@@ -17,6 +16,9 @@ interface AuthzState {
 const HISTORY_LIMIT = 25;
 
 export const authzStore = new Store<AuthzState>({ history: [], builderDoc: null });
+
+// Decisions and drafts belong to the organisation and person that made them.
+onSessionClear(() => authzStore.setState(() => ({ history: [], builderDoc: null })));
 
 export function pushDecision(record: DecisionRecord): void {
   authzStore.setState((s) => ({

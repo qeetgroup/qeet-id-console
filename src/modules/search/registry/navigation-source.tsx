@@ -1,18 +1,13 @@
-// Navigation source: converts the sidebar nav tree into SearchItem[].
-// Capability-filtered, parallel to buildCommandPaletteItems in the launcher
-// but producing SearchItem[] (with kind/category) instead of CommandPaletteItem[].
-
 import type { NavGroup } from "@/platform/config/navigation";
-import { navGroups } from "@/platform/config/navigation";
+import { getNavGroups, translateNavigation } from "@/platform/config/navigation";
 import type { Capability } from "@/platform/security/capability-model";
 
 import type { SearchContext, SearchItem, SearchSource } from "./types/registry.types";
 
 /**
- * Flatten a capability-filtered nav tree into SearchItem[].
- * Parent nodes that are "pure groups" (their url matches a child) are omitted
- * at the parent level (the child covers it). Sub-items inherit the parent
- * title as their subtitle for disambiguation.
+ * Flattens the sidebar nav into the navigation items `can` allows, skipping planned pages. A
+ * parent whose url is also a child's is left out, since the child covers it; sub-items take the
+ * parent title as their subtitle.
  */
 export function buildNavSearchItems(
   groups: NavGroup[],
@@ -23,7 +18,6 @@ export function buildNavSearchItems(
   for (const group of groups) {
     for (const item of group.items) {
       if (item.items && item.items.length > 0) {
-        // A pure group = one of its children shares the parent url.
         const isPureGroup = item.items.some((s) => s.url === item.url);
         if (!isPureGroup && can(item.requiredPermission)) {
           out.push({
@@ -81,7 +75,7 @@ export function createNavigationSource(): SearchSource {
     getItems(_query: string, ctx: SearchContext): SearchItem[] {
       const can = (permission?: Capability): boolean =>
         permission === undefined || ctx.capabilities.has(permission);
-      return buildNavSearchItems(navGroups, can);
+      return buildNavSearchItems(translateNavigation(getNavGroups()), can);
     },
   };
 }

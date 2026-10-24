@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 
 /**
- * The resolved colour scheme, read from the `dark` class the pre-hydration
- * theme script puts on <html> (it has already collapsed "system" to a concrete
- * value). Use this only where CSS cannot branch on its own — attributes such as
- * `placeholder` — and prefer the `.dark` selector everywhere else.
- *
- * Starts `false` so the server and first client render agree; the effect
- * corrects it before paint.
+ * Returns the resolved colour scheme from the `dark` class the pre-hydration script puts on
+ * <html>. Only for what CSS can't branch on, such as `placeholder`; prefer `.dark` elsewhere.
+ * Starts false so the server and first client render agree; the effect then corrects it.
  */
 export function useIsDark(): boolean {
   const [dark, setDark] = useState(false);

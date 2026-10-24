@@ -1,12 +1,11 @@
-// OAuth 2.0 Device Authorization Grant (RFC 8628) administration. Each row is a
-// pending/approved device flow keyed by its user_code — what a user types at
-// the verification URL on a second screen. Admins can list active flows and
-// revoke a suspicious one before it's redeemed.
+// OAuth device authorization grants (RFC 8628), each keyed by the user_code a person types on a
+// second screen. Revoking a suspicious grant stops it from being redeemed.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { securityKeys } from "./keys";
 
 export interface DeviceAuth {
   id: string;
@@ -24,7 +23,7 @@ export interface DeviceAuth {
 export function useDeviceAuthorizations() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["device-auth", tenantId],
+    queryKey: securityKeys.deviceAuthorizations(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: DeviceAuth[] }>(`/v1/tenants/${tenantId}/oauth/devices`),
   });
@@ -34,11 +33,14 @@ export function useRevokeDeviceAuth() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/oauth/devices/${id}`, {
+    mutationFn: (id: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/oauth/devices/${id}`, {
         method: "DELETE",
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["device-auth"] }),
-    meta: { successMessage: "Device authorization revoked" },
+      });
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: securityKeys.deviceAuthorizations(tenantId) }),
+    meta: { successMessage: "security:toast.deviceAuthorizationRevoked" },
   });
 }

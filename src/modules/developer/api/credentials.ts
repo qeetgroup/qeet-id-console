@@ -1,11 +1,12 @@
-// Verifiable Credentials data layer (Developer → Verifiable Credentials). Qeet
-// issues ES256-signed W3C JWT-VCs; relying parties verify them at
-// /v1/credentials/verify. Backed by /v1/tenants/{tenantID}/credentials.
+// Qeet issues ES256-signed W3C JWT verifiable credentials; relying parties verify them at
+// /v1/credentials/verify.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { developerKeys } from "./keys";
 
 export interface Credential {
   id: string;
@@ -16,26 +17,26 @@ export interface Credential {
   revoked: boolean;
 }
 
-export interface IssueResult {
-  credential_id: string;
-  jwt: string;
-  expires_at?: string | null;
-}
+const issueResultSchema = z.object({
+  credential_id: z.string(),
+  jwt: z.string().min(1), // The signed credential, shown this once
+  expires_at: z.string().optional(),
+});
+export type IssueResult = z.infer<typeof issueResultSchema>;
 
 export interface VerifyResult {
   valid: boolean;
-  reason?: string;
+  reason?: string; // English, never shown
+  reason_code?: string; // vc.not_credential, vc.signature_invalid, vc.unknown or vc.revoked
   subject?: string;
   issuer?: string;
   vc?: Record<string, unknown>;
 }
 
-const KEY = ["credentials"];
-
 export function useCredentials() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: developerKeys.credentials(tenantId),
     queryFn: () => api<{ items: Credential[] }>(`/v1/tenants/${tenantId}/credentials`),
     enabled: !!tenantId,
   });
@@ -45,18 +46,20 @@ export function useIssueCredential() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
+    gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: (body: {
       subject: string;
       type: string;
       claims: Record<string, unknown>;
       ttl_seconds: number;
     }) =>
-      api<IssueResult>(`/v1/tenants/${tenantId}/credentials`, {
+      api(`/v1/tenants/${tenantId}/credentials`, {
         method: "POST",
         body,
+        schema: issueResultSchema,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Credential issued" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.credentials(tenantId) }),
+    meta: { successMessage: "developer:toast.credentialIssued", silentError: true },
   });
 }
 
@@ -68,8 +71,8 @@ export function useRevokeCredential() {
       api<void>(`/v1/tenants/${tenantId}/credentials/${id}/revoke`, {
         method: "POST",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Credential revoked" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.credentials(tenantId) }),
+    meta: { successMessage: "developer:toast.credentialRevoked" },
   });
 }
 

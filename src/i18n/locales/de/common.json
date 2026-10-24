@@ -5,18 +5,12 @@
     "saving": "Wird gespeichert…",
     "cancel": "Abbrechen",
     "delete": "Löschen",
-    "deleting": "Wird gelöscht…",
-    "create": "Erstellen",
-    "creating": "Wird erstellt…",
     "edit": "Bearbeiten",
     "remove": "Entfernen",
-    "removing": "Wird entfernt…",
     "refresh": "Aktualisieren",
     "revoke": "Widerrufen",
-    "revoking": "Wird widerrufen…",
     "reset": "Zurücksetzen",
     "dismiss": "Schließen",
-    "add": "Hinzufügen",
     "search": "Suchen"
   },
   "labels": {
@@ -24,19 +18,10 @@
     "name": "Name",
     "created": "Erstellt",
     "actions": "Aktionen",
-    "user": "Benutzer",
     "email": "E-Mail",
-    "scopes": "Geltungsbereiche",
-    "expires": "Läuft ab",
-    "issued": "Ausgestellt",
-    "type": "Typ",
-    "tenant": "Organisation"
+    "type": "Typ"
   },
   "states": {
-    "loading": "Wird geladen…",
-    "empty": "Noch nichts anzuzeigen."
-  },
-  "confirm": {
-    "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden."
+    "loading": "Wird geladen…"
   }
 }

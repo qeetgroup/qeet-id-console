@@ -1,42 +1,40 @@
-// Passkey data layer. The full WebAuthn flow is implemented backend-side —
-// list/rename/delete plus register and login ceremonies (register/begin+finish,
-// login/begin+finish via go-webauthn). list still returns [] gracefully if the
-// endpoint isn't deployed, so the UI can render the "you have no passkeys yet"
-// nudge without erroring out.
-
 import {
   type PublicKeyCredentialCreationOptionsJSON,
   startRegistration,
 } from "@simplewebauthn/browser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { ApiError, api } from "@/platform/api/client";
 
 import { refreshSignInMethods } from "./sign-in-methods";
+import { authKeys } from "./keys";
 
+const passkeySchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  // User-supplied text: render it as text, never as markup. The server names a new passkey after
+  // the enrolling browser (e.g. "Chrome on macOS"); older passkeys may have no name.
+  name: z.string().nullish(),
+  transports: z.array(z.string()).nullish(),
+  created_at: z.string(),
+  last_used_at: z.string().nullish(),
+});
 /** One of the signed-in user's passkeys, as GET /v1/passkeys returns it. */
-export interface Passkey {
-  id: string;
-  user_id: string;
-  /**
-   * User-supplied text: render it as text, never as markup. The server names
-   * every new passkey (after the enrolling browser, e.g. "Chrome on macOS");
-   * passkeys enrolled before that may have no name.
-   */
-  name?: string | null;
-  transports?: string[] | null;
-  created_at: string;
-  last_used_at?: string | null;
-}
+export type Passkey = z.infer<typeof passkeySchema>;
 
+const passkeyListSchema = z.object({
+  items: z.array(passkeySchema),
+  // False when the user's organization has passkeys switched off; the server then refuses to add
+  // one. Absent means allowed.
+  enrollment_allowed: z.boolean().optional(),
+});
 /** GET /v1/passkeys: the user's passkeys and whether they may add one. */
-export interface PasskeyList {
-  items: Passkey[];
-  /**
-   * False when the user's organization has passkeys switched off; the server
-   * then refuses to add one. Missing from servers that predate the flag.
-   */
-  enrollment_allowed?: boolean;
+export type PasskeyList = z.infer<typeof passkeyListSchema>;
+
+/** Returns the signed-in user's passkeys, rejecting a response that isn't a passkey list. */
+export function listPasskeys(): Promise<PasskeyList> {
+  return api("/v1/passkeys", { schema: passkeyListSchema });
 }
 
 /** Whether to offer adding a passkey, once the list has loaded. */
@@ -47,19 +45,15 @@ export function canAddPasskey(list: PasskeyList | undefined): boolean {
 /** The longest passkey name the server accepts, in characters. */
 export const PASSKEY_NAME_MAX_LENGTH = 64;
 
-/** Every passkey view reads this one cache entry, so a change shows everywhere. */
-export const PASSKEYS_KEY = ["passkeys"] as const;
-
 export function usePasskeys() {
   return useQuery({
-    queryKey: PASSKEYS_KEY,
+    queryKey: authKeys.passkeys(),
     queryFn: async (): Promise<PasskeyList> => {
       try {
-        return await api<PasskeyList>("/v1/passkeys");
+        return await listPasskeys();
       } catch (err) {
-        // 404 = endpoint not deployed; 501 = endpoint stubbed (ceremony
-        // missing); treat both as "no passkeys" so the prompt-card
-        // surface remains usable.
+        // A server without passkey support (404/501) means "no passkeys", so the prompt card
+        // still renders.
         if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
           return { items: [] };
         }
@@ -73,17 +67,16 @@ export function usePasskeys() {
 }
 
 /**
- * Renames one of the signed-in user's passkeys (PATCH /v1/passkeys/{id}). The
- * server trims and checks the name; errors are left to the caller to show
- * inline, next to the name being edited.
+ * Renames one of the signed-in user's passkeys. The server trims and checks the name; errors are
+ * left to the caller to show inline, next to the name being edited.
  */
 export function useRenamePasskey() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) =>
       api<Passkey>(`/v1/passkeys/${encodeURIComponent(id)}`, { method: "PATCH", body: { name } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PASSKEYS_KEY }),
-    meta: { successMessage: "Passkey renamed", silentError: true },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.passkeys() }),
+    meta: { successMessage: "authentication:toast.passkeyRenamed", silentError: true },
   });
 }
 
@@ -96,7 +89,7 @@ export function useRenamePasskey() {
 export function useRegisterPasskey() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { name?: string } | void) => {
+    mutationFn: async (input: { name?: string } | undefined) => {
       const begin = await api<{
         session_id: string;
         publicKey: PublicKeyCredentialCreationOptionsJSON;
@@ -110,13 +103,13 @@ export function useRegisterPasskey() {
     },
     onSuccess: () => {
       void refreshSignInMethods(qc);
-      return qc.invalidateQueries({ queryKey: PASSKEYS_KEY });
+      return qc.invalidateQueries({ queryKey: authKeys.passkeys() });
     },
     meta: { silent: true },
   });
 }
 
-/** Removes one of the signed-in user's passkeys (DELETE /v1/passkeys/{id}). */
+/** Removes one of the signed-in user's passkeys. */
 export function useRemovePasskey() {
   const qc = useQueryClient();
   return useMutation({
@@ -124,8 +117,8 @@ export function useRemovePasskey() {
       api<void>(`/v1/passkeys/${encodeURIComponent(id)}`, { method: "DELETE" }),
     onSuccess: () => {
       void refreshSignInMethods(qc);
-      return qc.invalidateQueries({ queryKey: PASSKEYS_KEY });
+      return qc.invalidateQueries({ queryKey: authKeys.passkeys() });
     },
-    meta: { successMessage: "Passkey removed" },
+    meta: { successMessage: "authentication:toast.passkeyRemoved" },
   });
 }

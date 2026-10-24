@@ -616,9 +616,8 @@
   font-size: 1.5625rem;
 }
 
-/* The signup card is denser than the signin one, so its corner orb is a little
-   smaller — but it stays anchored in the card corner in both themes rather
-   than detaching into the page background. */
+/* The denser signup card gets a smaller corner orb, still anchored to the card corner in both
+   themes rather than detaching into the page background. */
 .auth-entry-signup .auth-card-orb {
   top: -3.75rem;
   right: -5.25rem;

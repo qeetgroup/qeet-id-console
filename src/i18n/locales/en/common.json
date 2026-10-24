@@ -5,38 +5,279 @@
     "saving": "Saving…",
     "cancel": "Cancel",
     "delete": "Delete",
-    "deleting": "Deleting…",
-    "create": "Create",
-    "creating": "Creating…",
     "edit": "Edit",
     "remove": "Remove",
-    "removing": "Removing…",
     "refresh": "Refresh",
     "revoke": "Revoke",
-    "revoking": "Revoking…",
     "reset": "Reset",
     "dismiss": "Dismiss",
-    "add": "Add",
-    "search": "Search"
+    "search": "Search",
+    "confirm": "Confirm",
+    "tryAgain": "Try again",
+    "copy": "Copy"
   },
   "labels": {
     "status": "Status",
     "name": "Name",
     "created": "Created",
     "actions": "Actions",
-    "user": "User",
     "email": "Email",
-    "scopes": "Scopes",
-    "expires": "Expires",
-    "issued": "Issued",
-    "type": "Type",
-    "tenant": "Organization"
+    "type": "Type"
   },
   "states": {
     "loading": "Loading…",
-    "empty": "Nothing to show yet."
+    "copied": "Copied"
   },
-  "confirm": {
-    "cannotBeUndone": "This can’t be undone."
+  "status": {
+    "active": "Active",
+    "ok": "OK",
+    "accepted": "Accepted",
+    "authorized": "Authorized",
+    "recorded": "Recorded",
+    "invited": "Invited",
+    "pending": "Pending",
+    "inactive": "Inactive",
+    "draft": "Draft",
+    "retired": "Retired",
+    "disabled": "Disabled",
+    "suspended": "Suspended",
+    "revoked": "Revoked",
+    "expired": "Expired",
+    "deleted": "Deleted",
+    "declined": "Declined",
+    "denied": "Denied"
+  },
+  "language": {
+    "label": "Language",
+    "change": "Change language",
+    "current": "Language: {{language}}"
+  },
+  "themeToggle": {
+    "toggleTheme": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "errorComponent": {
+    "somethingWentWrong": "Something went wrong"
+  },
+  "accessBoundary": {
+    "checkingOrganizationAccess": "Checking organization access",
+    "organizationAccessCouldNot": "Organization access could not be verified",
+    "theConsoleCouldNot": "The console could not confirm your permissions. Retry the check, switch organizations, or use the account menu to sign out.",
+    "youDonTHave": "You don’t have access to this page",
+    "goToOverview": "Go to overview",
+    "createAnOrganizationToContinue": "Create an organization to continue",
+    "thisPageBelongsTo": "This page belongs to an organization. Create or join one first, then you’ll have access.",
+    "goToSetup": "Go to setup",
+    "retryAccessCheck": "Retry access check",
+    "requires": "This organization requires <strong>{{capability}}</strong>."
+  },
+  "accessModeIndicator": {
+    "checkingOrganizationAccess": "Checking organization access",
+    "mode": {
+      "setup": {
+        "label": "Organization setup required",
+        "description": "Create or select an organization to load operator permissions."
+      },
+      "full": {
+        "label": "Full console access",
+        "description": "All console capabilities are available in this organization."
+      },
+      "read-only": {
+        "label": "Read-only console access",
+        "description": "You can inspect organization data but cannot change it."
+      },
+      "restricted": {
+        "label": "Limited console access",
+        "description": "The console only shows areas granted to your organization role."
+      },
+      "none": {
+        "label": "No management access",
+        "description": "This organization has not granted management capabilities to your account."
+      },
+      "unknown": {
+        "label": "Access status unavailable",
+        "description": "The console could not verify organization permissions."
+      }
+    },
+    "effectiveCapabilities_one": "{{count}} effective capability",
+    "effectiveCapabilities_other": "{{count}} effective capabilities"
+  },
+  "sensitiveActionProvider": {
+    "cancelledNothingWasChanged": "Cancelled. Nothing was changed.",
+    "youDonTHave": "You don't have access to do that."
+  },
+  "stepUpDialog": {
+    "useARecoveryCodeInstead": "Use a recovery code instead",
+    "title": "Confirm it's you",
+    "confirm": "This action needs a fresh check: confirm with one of your second factors.",
+    "needFactor": "This action needs a fresh check: you need a second factor first.",
+    "noFactor": "None of your factors can confirm this. Set up a passkey or an authenticator app in <link>account security</link>, then try again.",
+    "codeSentTo": "Code sent to {{destination}}",
+    "recoveryCode": "Recovery code",
+    "authenticatorCode": "Code from your authenticator app",
+    "passkeyClosed": "The passkey prompt was closed. Try again.",
+    "failed": "That didn't work. Try again.",
+    "usePasskey": "Use a passkey",
+    "sendCodeTo": "Send a code to {{destination}}",
+    "verifying": "Verifying…",
+    "verify": "Verify"
+  },
+  "bulkBar": {
+    "clear": "Clear",
+    "selected": "{{count}} selected",
+    "progress": "({{done}} / {{total}} processed…)"
+  },
+  "listToolbar": {
+    "listControls": "List controls",
+    "toggleColumns": "Toggle columns",
+    "columns": "Columns",
+    "search": "Search…",
+    "comfortableRows": "Comfortable rows",
+    "compactRows": "Compact rows",
+    "allOf": "{{label}}: All",
+    "clear": "Clear",
+    "export": "Export",
+    "downloadCsv": "Download as CSV",
+    "downloadJson": "Download as JSON"
+  },
+  "logoField": {
+    "logo": "Logo",
+    "dropYourLogoHere": "Drop your logo here or click to upload",
+    "uploadALogoFile": "Upload a logo file",
+    "orProvideALogoUrl": "Or provide a logo URL",
+    "logoPreview": "Logo preview",
+    "removeLogo": "Remove logo",
+    "dropALogoHere": "Drop a logo here or click to upload",
+    "uploadViaUrl": "Upload via URL",
+    "logoUrl": "Logo URL",
+    "title": "Logo set",
+    "hint": "Use a clear logo with a transparent background.",
+    "ready": "Logo ready",
+    "loading": "Loading logo",
+    "uploadedPreview": "Uploaded file (preview)",
+    "errors": {
+      "unsafeSource": "Use an http(s) URL or upload an image file.",
+      "notRenderable": "Couldn't render that source as an image.",
+      "notImage": "That doesn't look like an image file.",
+      "tooLarge": "File is larger than {{size}} MB.",
+      "unreadable": "Couldn't read that file."
+    },
+    "formatsMax": "PNG, JPG, SVG, or WEBP (max {{size}} MB)",
+    "formatsUpTo": "PNG, JPG, SVG, or WEBP up to {{size}} MB",
+    "replace": "Replace",
+    "remove": "Remove"
+  },
+  "toast": {
+    "signedOutSuccessfully": "Signed out successfully",
+    "saved": "Saved"
+  },
+  "capability": {
+    "tenant": {
+      "read": "View organization settings",
+      "write": "Manage organization settings"
+    },
+    "user": {
+      "read": "View users",
+      "write": "Manage users"
+    },
+    "role": {
+      "read": "View roles and permissions",
+      "write": "Manage roles and permissions"
+    },
+    "group": {
+      "read": "View groups",
+      "write": "Manage groups"
+    },
+    "policy": {
+      "read": "View security policies",
+      "write": "Manage security policies"
+    },
+    "apikey": {
+      "read": "View machine access",
+      "write": "Manage machine access"
+    },
+    "connection": {
+      "read": "View identity connections",
+      "write": "Manage identity connections"
+    },
+    "webhook": {
+      "read": "View webhooks",
+      "write": "Manage webhooks"
+    },
+    "secret": {
+      "read": "View secrets metadata",
+      "write": "Manage secrets"
+    },
+    "branding": {
+      "write": "Manage organization branding"
+    },
+    "gdpr": {
+      "write": "Manage privacy requests"
+    },
+    "audit": {
+      "read": "View audit and security events",
+      "write": "Manage audit investigations"
+    },
+    "billing": {
+      "read": "View billing",
+      "write": "Manage billing"
+    },
+    "analytics": {
+      "read": "View organization analytics"
+    }
+  },
+  "readOnlyNotice": {
+    "title": "Read-only access",
+    "description": "You can inspect and export this data, but your organization role cannot change it."
+  },
+  "selection": {
+    "selectAll": "Select all rows"
+  },
+  "region": {
+    "apSouth1": "Asia Pacific (Mumbai)",
+    "usEast1": "US East (N. Virginia)",
+    "euWest1": "Europe (Ireland)"
+  },
+  "teamSize": {
+    "solo": "Just me",
+    "upTo10": "2–10",
+    "upTo50": "11–50",
+    "upTo200": "51–200",
+    "over200": "200+"
+  },
+  "skipToContent": "Skip to main content",
+  "pageTitle": {
+    "console": "Qeet ID · Control plane",
+    "description": "Qeet ID identity, authentication, authorization, and security operations console.",
+    "signIn": "Qeet ID – Sign in",
+    "signUp": "Qeet ID – Sign up",
+    "selectOrganization": "Qeet ID – Select an organization",
+    "verifyEmail": "Qeet ID – Verify your email",
+    "untitled": "Page",
+    "details": "Details"
+  },
+  "shortcuts": {
+    "group": {
+      "general": "General",
+      "goTo": "Go to"
+    },
+    "action": {
+      "openCommandPaletteSearch": "Open command palette / search",
+      "toggleQeetAi": "Toggle Qeet AI",
+      "showThisShortcutsPanel": "Show this shortcuts panel",
+      "closeAnyDrawerOrDialog": "Close any drawer or dialog"
+    }
+  },
+  "navGroup": {
+    "overview": "Overview",
+    "directory": "Directory",
+    "applications": "Applications",
+    "authentication": "Authentication",
+    "authorization": "Authorization",
+    "security": "Security",
+    "developer": "Developer",
+    "settings": "Settings"
   }
 }

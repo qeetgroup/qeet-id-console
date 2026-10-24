@@ -12,18 +12,26 @@ import {
   UserPlusIcon,
 } from "@qeetrix/icons";
 import type * as React from "react";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 import type { Capability } from "@/platform/security/capability-model";
 import { useCapabilities } from "@/platform/security/capability-provider";
-import { LiveIndicator } from "@/modules/activity";
+import {
+  actorTypeLabel,
+  categoryLabel,
+  formatEventTitle,
+  LiveIndicator,
+  severityLabel,
+} from "@/modules/activity";
 import type { ActivityEvent } from "@/modules/activity";
 import { useDashboardActivity } from "../use-dashboard-activity";
 import { DashboardPanel } from "./dashboard-panel";
+import i18n from "@/i18n";
 
 const ACTIVITY_SKELETON_IDS = ["one", "two", "three", "four", "five"] as const;
 
-function getOperatorActions(t: (key: string) => string) {
+function getOperatorActions(t: TFunction<"dashboard">) {
   return [
     {
       icon: UserPlusIcon,
@@ -51,8 +59,8 @@ function getOperatorActions(t: (key: string) => string) {
     },
     {
       icon: FlaskConicalIcon,
-      label: "Test an access decision",
-      description: "Evaluate a policy before it reaches production",
+      label: i18n.t("dashboard:dashboardActivity.testAnAccessDecision"),
+      description: i18n.t("dashboard:dashboardActivity.evaluateAPolicyBefore"),
       href: "/authorization/simulator",
       tone: "warning" as const,
       requiredPermissions: ["role.read"] satisfies Capability[],
@@ -76,16 +84,7 @@ function eventIcon(event: ActivityEvent): React.ReactNode {
   return <ActivityIcon />;
 }
 
-// ---------------------------------------------------------------------------
-// RecentActivityPanel — now self-contained, reads from the shared activity store
-// ---------------------------------------------------------------------------
-
-/**
- * Dashboard widget showing the latest ~10 live activity events.
- * Acquires the shared SSE subscription so events arrive in real-time.
- * When the stream is connecting, shows loading skeletons.
- * Links to the full Live Activity Center at /activity.
- */
+/** Renders the latest activity events, updated live, with a link to the full activity center. */
 export function RecentActivityPanel({ className }: { className?: string }) {
   const { t } = useTranslation("dashboard");
   const { events, status, connecting } = useDashboardActivity(undefined, true);
@@ -107,17 +106,17 @@ export function RecentActivityPanel({ className }: { className?: string }) {
         <Link
           to="/activity"
           className={buttonVariants({ variant: "ghost", size: "sm" })}
-          aria-label="Open full activity center"
+          aria-label={t("dashboardActivity.viewAllActivity")}
         >
           {t("activity.viewAll")}
         </Link>
       }
     >
-      {/* Disconnected / reconnecting with no events yet → show skeletons */}
+      {/* Skeletons while history loads and nothing has arrived yet. */}
       {connecting ? (
         <ul
           className="divide-y divide-border/60"
-          aria-label="Loading recent activity"
+          aria-label={t("dashboardActivity.loadingRecentActivity")}
           aria-busy="true"
         >
           {ACTIVITY_SKELETON_IDS.map((id) => (
@@ -143,7 +142,7 @@ export function RecentActivityPanel({ className }: { className?: string }) {
       ) : (
         <ol
           className="divide-y divide-border/60"
-          aria-label="Recent activity events"
+          aria-label={t("dashboardActivity.recentActivityEvents")}
           aria-live="polite"
         >
           {events.map((event) => {
@@ -166,19 +165,19 @@ export function RecentActivityPanel({ className }: { className?: string }) {
                   {eventIcon(event)}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{event.title}</p>
+                  <p className="truncate text-sm font-medium">{formatEventTitle(event)}</p>
                   <div className="mt-1 flex min-w-0 items-center gap-2">
                     {event.actor?.type && (
                       <Badge variant="muted" className="max-w-32 truncate text-[10px]">
-                        {event.actor.type}
+                        {actorTypeLabel(event.actor.type)}
                       </Badge>
                     )}
                     <span className="truncate text-[11px] text-muted-foreground">
-                      {event.category}
+                      {categoryLabel(event.category)}
                     </span>
                     {isCritical && (
                       <Badge variant="destructive" className="ml-auto text-[10px]">
-                        {event.severity}
+                        {severityLabel(event.severity)}
                       </Badge>
                     )}
                   </div>
@@ -193,19 +192,15 @@ export function RecentActivityPanel({ className }: { className?: string }) {
         </ol>
       )}
 
-      {/* Unread / critical alert for screen readers */}
+      {/* Announces critical or error events to screen readers. */}
       {hasCritical && (
         <div role="alert" className="sr-only">
-          Critical security events detected in the activity feed
+          {t("dashboardActivity.criticalSecurityEventsDetected")}
         </div>
       )}
     </DashboardPanel>
   );
 }
-
-// ---------------------------------------------------------------------------
-// OperatorActionsPanel — unchanged from original
-// ---------------------------------------------------------------------------
 
 const actionTone = {
   brand: "bg-primary/10 text-primary",
@@ -228,7 +223,7 @@ export function OperatorActionsPanel({ className }: { className?: string }) {
     <DashboardPanel
       className={className}
       title={t("quickActions.heading")}
-      description="Frequent operator workflows"
+      description={t("dashboardActivity.frequentOperatorWorkflows")}
       contentClassName="p-2 sm:p-2"
     >
       <nav aria-label={t("quickActions.heading")} className="space-y-1">

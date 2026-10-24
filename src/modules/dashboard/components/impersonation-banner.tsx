@@ -1,27 +1,22 @@
 import { Button } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
 import { LogOutIcon, UserCogIcon } from "@qeetrix/icons";
+import { Trans, useTranslation } from "react-i18next";
 
 import { api } from "@/platform/api/client";
 import { useImpersonationActor, useLogout } from "@/platform/auth/session";
 
 /**
- * Sticky banner shown whenever the current access token carries an RFC
- * 8693 `act` claim, i.e. the admin is signed in as another user. The
- * banner is deliberately loud (rose background, prominent exit button)
- * so the admin can't forget they're acting on behalf of someone else.
- *
- * Returns null when not impersonating, so it's safe to render
- * unconditionally near the top of the layout.
+ * Renders a deliberately loud sticky banner while the access token carries an RFC 8693 `act` claim
+ * (an admin acting as another user), so they can't forget; renders nothing otherwise.
  */
 export function ImpersonationBanner() {
+  const { t } = useTranslation("dashboard");
   const actor = useImpersonationActor();
   const logout = useLogout();
 
-  // POST /v1/admin/impersonate/exit is the planned endpoint (IMPROVEMENTS
-  // §4.5). Until it ships, fall back to a hard logout: the admin signs in
-  // again as themselves. The exit mutation is suppressed from the global
-  // success toast — the page reload is feedback enough.
+  // A failed exit call is ignored: a logout always follows, so the admin signs in again as
+  // themselves. Silent, since the reload is feedback enough.
   const exit = useMutation({
     mutationFn: () =>
       api<void>("/v1/admin/impersonate/exit", { method: "POST" }).catch(() => undefined),
@@ -41,8 +36,14 @@ export function ImpersonationBanner() {
       <div className="flex min-w-0 items-center gap-2">
         <UserCogIcon className="size-4 shrink-0" />
         <span className="truncate">
-          You are impersonating <strong>{actor.targetSubject}</strong>
-          <span className="opacity-80"> — signed in as {adminLabel}.</span>
+          {/* Trans escapes values before parsing its tags; unescape so a "<" in a name reads as typed. */}
+          <Trans
+            t={t}
+            shouldUnescape
+            i18nKey="impersonationBanner.message"
+            values={{ target: actor.targetSubject, admin: adminLabel }}
+            components={{ target: <strong />, admin: <span className="opacity-80" /> }}
+          />
         </span>
       </div>
       <Button
@@ -52,7 +53,7 @@ export function ImpersonationBanner() {
         disabled={exit.isPending}
         className="border-white/40 bg-white/10 text-white hover:bg-white/20"
       >
-        <LogOutIcon /> Exit impersonation
+        <LogOutIcon /> {t("impersonationBanner.exit")}
       </Button>
     </div>
   );

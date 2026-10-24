@@ -6,13 +6,16 @@ import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
+import { SECURITY_HEADERS } from "./src/platform/security/security-headers.ts";
+
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [
     devtools(),
-    nitro(),
+    // Security headers on every response, for the node-server image and Vercel output alike.
+    nitro({ routeRules: { "/**": { headers: { ...SECURITY_HEADERS } } } }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({ router: { virtualRouteConfig: "./src/app/routes.ts" } }),
     viteReact(),
     babel({ presets: [reactCompilerPreset()] }),
   ],

@@ -14,7 +14,7 @@ export function purgeLegacyTokenStorage() {
   try {
     for (const key of LEGACY_TOKEN_KEYS) window.localStorage.removeItem(key);
   } catch {
-    // Storage may be disabled; the application no longer reads these keys.
+    // Storage may be disabled; nothing reads these keys, so a failed purge is harmless.
   }
 }
 
@@ -32,9 +32,14 @@ const EMPTY_SESSION: PublicSession = {
 let currentSession = EMPTY_SESSION;
 let scopeGeneration = 0;
 const subscribers = new Set<() => void>();
-const clearListeners = new Set<() => void>();
+const clearListeners = new Set<(next: PublicSession) => void>();
 
-export function onSessionClear(listener: () => void): () => void {
+/**
+ * Runs `listener` whenever the security scope changes (sign-in, sign-out, or a user, tenant or
+ * impersonation switch), before the new session is visible. It receives the next session, so a
+ * module can tell a sign-out (`!next.isAuthenticated`) from a switch.
+ */
+export function onSessionClear(listener: (next: PublicSession) => void): () => void {
   clearListeners.add(listener);
   return () => {
     clearListeners.delete(listener);
@@ -45,10 +50,10 @@ function notifySubscribers() {
   for (const subscriber of subscribers) subscriber();
 }
 
-function runClearListeners() {
+function runClearListeners(next: PublicSession) {
   for (const listener of clearListeners) {
     try {
-      listener();
+      listener(next);
     } catch {
       // A module cleanup must not prevent the session transition.
     }
@@ -67,7 +72,7 @@ function securityScopeChanged(left: PublicSession, right: PublicSession): boolea
 
 function transitionScope(next: PublicSession) {
   scopeGeneration += 1;
-  runClearListeners();
+  runClearListeners(next);
   currentSession = next;
 }
 
@@ -151,11 +156,16 @@ if (typeof window !== "undefined") {
   });
 }
 
+// Inert on the server, where this module is shared by every concurrent request: a session held
+// here would leak into another person's render and move their scope generation. The server reads
+// the session per request from the cookie; the browser hydrates this store from that.
+const isServer = typeof window === "undefined";
+
 export const sessionStore = {
   getSnapshot: () => currentSession,
   getScopeGeneration: () => scopeGeneration,
   set: (next: PublicSession, options: { broadcast?: boolean } = {}) => {
-    if (sameSession(currentSession, next)) return;
+    if (isServer || sameSession(currentSession, next)) return;
     const scopeChanged = securityScopeChanged(currentSession, next);
     const authChanged = currentSession.isAuthenticated !== next.isAuthenticated;
     if (scopeChanged) transitionScope(next);
@@ -169,6 +179,7 @@ export const sessionStore = {
     sessionStore.set(session);
   },
   clear: () => {
+    if (isServer) return;
     const wasAuthenticated = currentSession.isAuthenticated;
     if (wasAuthenticated) transitionScope(EMPTY_SESSION);
     else currentSession = EMPTY_SESSION;

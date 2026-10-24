@@ -49,7 +49,7 @@ export type BillingDetailsProps = {
 };
 
 function PaymentInformation() {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   return (
     <section aria-label={t("billing.screen.payment.title")} className={SURFACE}>
       <h2 className="flex items-center gap-2 font-heading text-base font-semibold">
@@ -80,7 +80,7 @@ function PaymentInformation() {
 }
 
 export function BillingDetails(props: BillingDetailsProps) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   if (!props.loading && !props.error && props.profile)
     return <BillingProfileForm {...props} profile={props.profile} />;
 
@@ -128,7 +128,7 @@ function BillingProfileForm({
   canWrite,
   onSave,
 }: BillingDetailsProps & { profile: BillingProfile }) {
-  const { t, i18n } = useTranslation("settings");
+  const { t, i18n } = useTranslation("billing");
   const id = useId();
   const [draft, setDraft] = useState(profile);
   const [changed, setChanged] = useState(false);
@@ -199,7 +199,11 @@ function BillingProfileForm({
     ...new Set<string>([...BILLING_COUNTRIES, ...(draft.country ? [draft.country] : [])]),
   ];
   const taxError = showTaxError && !billingTaxIdValid(draft);
-  const field = (key: keyof BillingProfile, type = "text", className?: string) => (
+  const field = (
+    key: Exclude<keyof BillingProfile, "country" | "tax_id_type" | "tax_id">,
+    type = "text",
+    className?: string,
+  ) => (
     <Field className={className}>
       <FieldLabel htmlFor={`${id}-${key}`}>{t(`billing.screen.profile.${key}`)}</FieldLabel>
       <Input

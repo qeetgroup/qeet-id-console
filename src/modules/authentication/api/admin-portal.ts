@@ -1,12 +1,12 @@
-// Self-serve Admin Portal data layer. A link is a capability-scoped
-// ("saml"/"scim"), time-limited token an external IT admin — no Qeet ID
-// account — follows to configure this tenant's SSO themselves. The raw
-// token/url is returned exactly once, on generate.
+// Self-serve Admin Portal links: a time-limited token, scoped to SAML or SCIM, that lets an
+// external IT admin with no Qeet ID account configure this tenant's SSO. The raw token and URL are
+// returned once, on generate.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export type AdminPortalCapability = "saml" | "scim";
 
@@ -32,12 +32,10 @@ export interface GenerateAdminPortalLinkResponse {
   url: string;
 }
 
-const KEY = ["admin-portal-links"];
-
 export function useAdminPortalLinks() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...KEY, tenantId],
+    queryKey: authKeys.adminPortalLinks(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: AdminPortalLink[] }>(`/v1/tenants/${tenantId}/admin-portal/links`),
   });
@@ -47,13 +45,14 @@ export function useGenerateAdminPortalLink() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
+    gcTime: 0, // the link is a bearer credential, shown once
     mutationFn: (body: GenerateAdminPortalLinkInput) =>
       api<GenerateAdminPortalLinkResponse>(`/v1/tenants/${tenantId}/admin-portal/links`, {
         method: "POST",
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Admin portal link generated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.adminPortalLinks(tenantId) }),
+    meta: { successMessage: "authentication:toast.adminPortalLinkGenerated", silentError: true }, // the card shows it
   });
 }
 
@@ -65,8 +64,8 @@ export function useRevokeAdminPortalLink() {
       api<void>(`/v1/tenants/${tenantId}/admin-portal/links/${id}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-    meta: { successMessage: "Admin portal link revoked" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.adminPortalLinks(tenantId) }),
+    meta: { successMessage: "authentication:toast.adminPortalLinkRevoked" },
   });
 }
 

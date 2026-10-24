@@ -31,39 +31,47 @@ The shared `@qeetrix/ui` package remains the component foundation. Console-speci
 ## Architecture
 
 Layered, with the dependency direction enforced in CI (`bun run lint:boundaries`).
-Full detail in [`docs/architecture/target-architecture.md`](docs/architecture/target-architecture.md)
-and the decision records in [`docs/adr/`](docs/adr/).
+Full detail in [`docs/llm/`](docs/llm/) — start with [`context.md`](docs/llm/context.md).
 
 ```text
 src/
-├── app/            Bootstrap / providers
-├── routes/         File-based routes — URL concerns + composition only
-├── modules/        One folder per business capability (authentication,
-│                   authorization, billing, compliance, dashboard, developer,
-│                   onboarding, organizations, qeetai, security, users, activity,
-│                   timeline, search). Each: api/ components/ hooks/ store/ utils/
+├── app/            The composition root: the module list (modules.ts), the route tree
+│                   (routes.ts) and manifest registration (register.ts)
+├── routes/         The shell's routes: __root.tsx, the _app layout, healthz, api/ (SSE)
+├── modules/        One folder per business capability (18): account, activity,
+│                   authentication, authorization, billing, branding, compliance,
+│                   dashboard, developer, directory, groups, onboarding, organizations,
+│                   qeetai, search, security, timeline, users. Each: api/ components/
+│                   routes/ locales/, a manifest.tsx (what it adds to the shell), an
+│                   index.ts barrel and a pages.ts
 ├── platform/       Cross-cutting infrastructure: api (the one HTTP client), auth
-│                   (server-session/session-store), errors, query, security, telemetry,
-│                   feature-flags, config (env + navigation), components
+│                   (server-session, session-store, scoped-storage), errors, query,
+│                   security (capabilities, route capability, step-up, response headers),
+│                   telemetry, modules (manifest type + registry), feature-flags,
+│                   keyboard, forms, config (env, server config, sidebar), components,
+│                   theme
 ├── shared/         Generic, domain-agnostic: components/ hooks/ utils/ data/
-├── i18n/           Namespaced locale resources
+├── i18n/           i18next setup and the platform's common/errors catalogues
 ├── router.tsx      Router + query integration
 └── styles.css      Console semantic theme and product-level patterns
 ```
 
+`bun run new-module <id>` creates a module from the template and registers it.
+
 ### Boundaries (enforced)
 
 ```text
-app → routes → modules → platform → shared
+app → modules → platform → shared
 ```
 
-1. **Routes own URL concerns** — validate search params, guards, page composition; no reusable logic.
+0. **App composes** — it lists the modules and wires their routes, manifests and catalogues; nothing but the router imports it.
+1. **Routes own URL concerns** — each module's `routes/` validates search params, declares the page's capability, guards and composes the page; no reusable logic. Lint rejects module internals, `api()` and React Query in route files, with no exemptions.
 2. **Modules own product capability** — a module imports another module only via its public barrel (`@/modules/<name>`), never its internals.
-3. **Platform owns cross-cutting infrastructure** — the HTTP client, session, errors, security, telemetry, feature flags, config. Imports only platform + shared.
+3. **Platform owns cross-cutting infrastructure** — the HTTP client, session, errors, security, telemetry, feature flags, config. Imports only platform + shared; it reads modules only through the manifest registry.
 4. **Shared owns generic primitives** — no domain-specific imports.
 5. **Qeetrix owns UI primitives** (`@qeetrix/ui`); **console CSS owns identity** (`styles.css`).
 
-Violations (wrong-direction imports, cross-module internals, import cycles) fail CI via Biome.
+Violations (wrong-direction imports, cross-module internals, import cycles, direct `fetch`) fail CI via Biome and `src/__tests__/module-boundaries.test.ts`.
 
 ## Enterprise shell
 
@@ -83,11 +91,11 @@ inside an encrypted `HttpOnly` cookie and are never returned to browser code.
 Protected layouts resolve the session in `beforeLoad`; JSON requests and SSE
 streams inherit backend bearer authentication, refresh rotation, correlation,
 safe error handling, and CSRF protection from the platform boundary. See
-[`ADR-0009`](docs/adr/0009-server-resolved-bff-session.md).
+[`docs/llm/context.md`](docs/llm/context.md#the-bff--how-a-request-reaches-the-backend).
 
 ## Dashboard command center
 
-The overview route is deliberately thin. `features/dashboard/components/dashboard-overview.tsx` coordinates data and composes dedicated modules:
+The overview route is deliberately thin. `modules/dashboard/components/dashboard-overview.tsx` coordinates data and composes dedicated modules:
 
 - `dashboard-metrics.tsx` — primary metric rail and secondary directory indicators;
 - `dashboard-charts.tsx` — authentication, method-mix, MFA, and failed-login telemetry;
@@ -125,16 +133,20 @@ Prerequisites: [Bun](https://bun.sh) `1.3+` and a running Qeet ID backend
 ```bash
 bun install
 cp .env.example .env.local     # set VITE_API_URL if not using the default
-bun run dev                    # Vite dev server
+bun run dev                    # Vite dev server on http://localhost:3002
 ```
 
 Other scripts:
 
 ```bash
-bun run build       # production build (Vite + Nitro)
-bun run typecheck   # tsc --noEmit
-bun run test        # vitest
-bun run lint        # biome
+bun run build            # production build (Vite + Nitro)
+bun run typecheck        # tsc --noEmit
+bun run test             # vitest
+bun run test:coverage    # vitest + coverage thresholds (what CI runs)
+bun run test:e2e         # build, then Playwright: session, tenant isolation, CSP, WCAG 2.2 AA
+bun run check            # Biome format + lint; warnings fail
+bun run lint:boundaries  # layer rules
+bun run audit            # known high/critical vulnerabilities
 ```
 
 The TanStack devtools launcher is hidden by default so it never competes with operator UI —
@@ -146,13 +158,16 @@ VITE_ENABLE_DEVTOOLS=true bun run dev
 
 ## Configuration
 
-`VITE_*` values are exposed to the browser (inlined at build time). `SERVER_URL`
-and `SESSION_SECRET` are server-only. Schema lives in `src/platform/config/env.ts`.
+`VITE_*` values are exposed to the browser (inlined at build time); their schema is
+`src/platform/config/env.ts`. `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL` are read from
+the server environment at runtime. In production, `src/platform/config/server-config.ts` checks
+them: until they are valid, every request fails and the server log names the problem.
 
 | Variable | Scope | Dev | Prod |
 |---|---|---|---|
-| `VITE_API_URL` | client | `http://localhost:4001` | `https://api.id.qeet.in` |
-| `SERVER_URL` | server (SSR) | falls back to `VITE_API_URL` | `https://api.id.qeet.in` |
+| `VITE_API_URL` | client (build time) | `http://localhost:4001` | `https://api.id.qeet.in` |
+| `SERVER_URL` | server | falls back to `VITE_API_URL` | required (or `VITE_API_URL`) |
+| `PUBLIC_API_URL` | server → browser | falls back to `VITE_API_URL` | required unless `VITE_API_URL` was set at build |
 | `SESSION_SECRET` | server | development-only fallback | required, random 32+ characters |
 | `VITE_APP_TITLE` | client | `Qeet ID Admin` | `Qeet ID Admin` |
 
@@ -160,12 +175,12 @@ and `SESSION_SECRET` are server-only. Schema lives in `src/platform/config/env.t
 
 Deployed as a **TanStack Start** project on Vercel. It is SSR via Nitro, so the build emits
 Vercel's Build Output API (`.vercel/output`) — the dashboard's "Output Directory" field is
-ignored, and no framework config is needed. [`vercel.json`](vercel.json) only pins the Bun
-install/build commands:
-
-```json
-{ "installCommand": "bun install --frozen-lockfile", "buildCommand": "bun run build" }
-```
+ignored, and no framework config is needed. [`vercel.json`](vercel.json) pins the Bun
+install/build commands and turns off Vercel's Git deployments for `main`: production is deployed
+by [`deploy.yml`](.github/workflows/deploy.yml) (gate → `vercel build`/`deploy --prod` → version
+tag), while PR and `develop` previews still come from Vercel's Git integration. Security response
+headers come from Nitro route rules (`vite.config.ts`), which the build writes into the Vercel
+output.
 
 **Steps**
 

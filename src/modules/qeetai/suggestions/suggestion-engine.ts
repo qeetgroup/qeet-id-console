@@ -1,56 +1,40 @@
-// Suggestion engine: given the current ConsoleContext and a capability predicate,
-// returns the ranked, capability-visible suggestions for the current route.
-//
-// Ranking strategy:
-//   1. Exact route match → prefix match → global fallback.
-//   2. Within each source, preserve the declaration order from route-suggestions.ts.
-//   3. Filter out suggestions whose `requiredCapability` the operator lacks, and
-//      tool suggestions for change tools while those are switched off.
-//   4. If a context selection is active, boost tool suggestions that accept a
-//      matching `user_id` / `role_id` / `client_id` prefill (they float to top).
-
 import type { Capability } from "@/platform/security/capability-model";
 import type { ConsoleContext } from "../context/types/context.types";
 import { getTool, isWithheldChange } from "../tools";
-import { ROUTE_SUGGESTIONS, type Suggestion } from "./route-suggestions";
+import { extensionContributions } from "@/platform/modules/registry";
+import type { Suggestion } from "./route-suggestions";
 
-// ── Matcher ───────────────────────────────────────────────────────────────────
-
-/**
- * Resolve suggestions for a given pathname.
- * Exact match wins; then the longest matching prefix ending in `/*`; then null.
- */
-function matchSuggestions(pathname: string): Suggestion[] {
-  // Exact match.
-  if (pathname in ROUTE_SUGGESTIONS) {
-    return ROUTE_SUGGESTIONS[pathname].suggestions;
-  }
-
-  // Prefix match: collect all patterns ending in /* that match, keep longest.
-  let bestLen = -1;
-  let bestSuggestions: Suggestion[] = [];
-
-  for (const pattern of Object.keys(ROUTE_SUGGESTIONS)) {
-    if (!pattern.endsWith("/*")) continue;
-    const prefix = pattern.slice(0, -2); // strip /*
-    if (pathname.startsWith(prefix)) {
-      if (prefix.length > bestLen) {
-        bestLen = prefix.length;
-        bestSuggestions = ROUTE_SUGGESTIONS[pattern].suggestions;
-      }
-    }
-  }
-
-  return bestSuggestions;
+// True when `pattern` names `pathname` exactly; a `$param` segment matches any one segment.
+function matchesExactly(pattern: string, pathname: string): boolean {
+  const want = pattern.split("/");
+  const have = pathname.split("/");
+  return (
+    want.length === have.length && want.every((seg, i) => seg.startsWith("$") || seg === have[i])
+  );
 }
 
-// ── Selection boosting ────────────────────────────────────────────────────────
+/** Returns the exact match's suggestions, else the longest matching `/*` prefix's, else none. */
+function matchSuggestions(pathname: string): readonly Suggestion[] {
+  const entries = extensionContributions("qeetaiSuggestions").flatMap((map) => Object.entries(map));
+  const exact = entries.find(
+    ([pattern]) => !pattern.endsWith("/*") && matchesExactly(pattern, pathname),
+  );
+  if (exact) return exact[1];
 
-/**
- * Returns true if a tool suggestion should be boosted to the top because it
- * maps naturally to the current selection (e.g. `disable_user` when looking
- * at a user detail page).
- */
+  let bestLen = -1;
+  let best: readonly Suggestion[] = [];
+  for (const [pattern, suggestions] of entries) {
+    if (!pattern.endsWith("/*")) continue;
+    const prefix = pattern.slice(0, -2);
+    if ((pathname === prefix || pathname.startsWith(`${prefix}/`)) && prefix.length > bestLen) {
+      bestLen = prefix.length;
+      best = suggestions;
+    }
+  }
+  return best;
+}
+
+/** True for a tool suggestion that acts on the selected kind, e.g. `disable_user` for a user. */
 function matchesSelection(suggestion: Suggestion, selection: ConsoleContext["selection"]): boolean {
   if (!selection || suggestion.type !== "tool") return false;
 
@@ -76,14 +60,10 @@ function matchesSelection(suggestion: Suggestion, selection: ConsoleContext["sel
   return false;
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
-
 /**
- * Rank and filter suggestions for the current console context.
- *
- * @param ctx  - The ConsoleContext from `useConsoleContext`.
- * @param can  - The capability predicate from `useCapabilities().can`.
- * @returns    - Ordered, capability-visible suggestions (max 8).
+ * Returns up to 8 suggestions for the current route in declared order, minus those the operator
+ * lacks the capability for and withheld change tools. Tool suggestions that act on the page's
+ * selection come first, prefilled with its id.
  */
 export function rankSuggestions(
   ctx: ConsoleContext,
@@ -91,7 +71,6 @@ export function rankSuggestions(
 ): Suggestion[] {
   const raw = matchSuggestions(ctx.route.pathname);
 
-  // Filter by capability, and drop change tools the assistant can't run.
   const visible = raw.filter((s) => {
     if (s.type === "tool") {
       const tool = getTool(s.toolName);
@@ -101,13 +80,11 @@ export function rankSuggestions(
     return can(s.requiredCapability);
   });
 
-  // Separate boosted (selection-matched) from the rest.
   const boosted: Suggestion[] = [];
   const rest: Suggestion[] = [];
 
   for (const s of visible) {
     if (matchesSelection(s, ctx.selection)) {
-      // Prefill with the selection id where it fits.
       if (s.type === "tool" && ctx.selection) {
         const { id } = ctx.selection;
         const selectionPrefill: Record<string, unknown> = { ...s.prefillInput };
@@ -123,6 +100,6 @@ export function rankSuggestions(
     }
   }
 
-  // Boosted first, then the rest, capped at 8 to keep the strip compact.
+  // Capped to keep the suggestion strip compact.
   return [...boosted, ...rest].slice(0, 8);
 }

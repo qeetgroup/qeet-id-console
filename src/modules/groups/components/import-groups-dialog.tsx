@@ -13,17 +13,30 @@ import {
   Textarea,
 } from "@qeetrix/ui";
 import { CircleCheckIcon, CircleSlashIcon, CircleXIcon, LoaderCircleIcon } from "@qeetrix/icons";
+import type { ParseKeys } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { errorMessage } from "@/platform/errors/user-message";
-import { type ImportRow, useImportGroups } from "../api/groups";
+import { ErrorText } from "@/platform/components/error-reference";
+import { type ImportResult, type ImportRow, useImportGroups } from "../api/groups";
+
+// Why a row wasn't created, by the server's code; an unknown code reads as its status.
+const ROW_CODE_KEYS: Record<string, ParseKeys<"groups">> = {
+  "group.import_name_required": "import.rowCodes.nameRequired",
+  "group.import_name_exists": "import.rowCodes.nameExists",
+  "group.import_parent_not_found": "import.rowCodes.parentNotFound",
+};
+
+function rowReasonKey(row: ImportResult["rows"][number]): ParseKeys<"groups"> {
+  if (row.code && Object.hasOwn(ROW_CODE_KEYS, row.code)) {
+    return ROW_CODE_KEYS[row.code] ?? "import.rowFailed";
+  }
+  return row.status === "skipped" ? "import.rowSkipped" : "import.rowFailed";
+}
 
 /**
- * Parses pasted CSV-ish lines into import rows: `name, description, parent`.
- *
- * Only the first two commas split — a description may legitimately contain
- * commas, and losing the tail would silently corrupt the import.
+ * Parses pasted `name, description, parent` lines into import rows. Only the first and last commas
+ * split, so a description may contain commas without being truncated.
  */
 export function parseImportRows(text: string): ImportRow[] {
   return text
@@ -96,8 +109,10 @@ export function ImportGroupsDialog({
                 )}
                 <span className="min-w-0">
                   <span className="font-medium">{row.name}</span>
-                  {row.reason ? (
-                    <span className="block text-xs text-muted-foreground">{row.reason}</span>
+                  {row.status !== "created" ? (
+                    <span className="block text-xs text-muted-foreground">
+                      {t(rowReasonKey(row))}
+                    </span>
                   ) : null}
                 </span>
               </li>
@@ -124,7 +139,11 @@ export function ImportGroupsDialog({
                 onChange={(e) => setText(e.target.value)}
                 placeholder={t("import.placeholder")}
               />
-              {importM.error ? <FieldError>{errorMessage(importM.error)}</FieldError> : null}
+              {importM.error ? (
+                <FieldError>
+                  <ErrorText error={importM.error} />
+                </FieldError>
+              ) : null}
             </Field>
           </form>
         )}

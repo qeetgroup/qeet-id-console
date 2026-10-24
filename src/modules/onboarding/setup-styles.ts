@@ -1,5 +1,4 @@
-// Feature-local Tailwind tokens. Never override the sidebar or application theme.
-export const SETUP_THEME =
+export const SETUP_THEME = // feature-local tokens; never override the sidebar or app theme
   "font-sans text-(--setup-text) [--setup-text:var(--foreground)] [--setup-muted:var(--muted-foreground)] [--setup-surface:var(--card)] [--setup-soft:var(--surface-subtle)] [--setup-border:#e2e8f0] [--setup-accent:#d54b00] [--setup-accent-soft:#fff1e8] dark:[--setup-text:#eef2f7] dark:[--setup-muted:#b1bdce] dark:[--setup-surface:#111a22] dark:[--setup-soft:#19232d] dark:[--setup-border:#2b3946] dark:[--setup-accent:#ff963f] dark:[--setup-accent-soft:#302218]";
 
 export const SETUP_PANEL =

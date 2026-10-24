@@ -22,6 +22,7 @@ import StarterKit from "@tiptap/starter-kit";
 import {
   BoldIcon,
   CodeIcon,
+  type IconProps,
   ImageIcon,
   ItalicIcon,
   LinkIcon,
@@ -32,10 +33,24 @@ import {
   UnderlineIcon,
   Undo2Icon,
 } from "@qeetrix/icons";
-import { type Ref, useEffect, useImperativeHandle, useState } from "react";
+import { type ComponentType, type Ref, useEffect, useImperativeHandle, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { emailHTMLText, validEmailAssetURL, validEmailTemplateLink } from "../email-template-model";
+
+// Each tool is labelled `emails.toolbar.<key>`.
+type ToolbarKey =
+  | "bold"
+  | "italic"
+  | "underline"
+  | "link"
+  | "image"
+  | "bullet"
+  | "ordered"
+  | "quote"
+  | "code"
+  | "undo"
+  | "redo";
 
 export type EmailBodyEditorHandle = { insertVariable: (value: string) => void };
 
@@ -52,7 +67,7 @@ export function EmailBodyEditor({
   variables: string[];
   ref?: Ref<EmailBodyEditorHandle>;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const [dialog, setDialog] = useState<"link" | "image" | null>(null);
   const [url, setURL] = useState("");
   const [label, setLabel] = useState("");
@@ -118,7 +133,13 @@ export function EmailBodyEditor({
     }),
     [editor, disabled],
   );
-  const tools = [
+  const tools: {
+    key: ToolbarKey;
+    Icon: ComponentType<IconProps<"outline">>;
+    run: () => unknown;
+    active?: boolean;
+    disabled?: boolean;
+  }[] = [
     {
       key: "bold",
       Icon: BoldIcon,

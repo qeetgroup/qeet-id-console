@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-export const SIGNING_KEYS_KEY = ["signing-keys"] as const;
 
 import { api } from "@/platform/api/client";
+import { developerKeys } from "./keys";
 
 export interface SigningKey {
   kid: string;
@@ -12,7 +12,7 @@ export interface SigningKey {
 
 export function useSigningKeys() {
   return useQuery({
-    queryKey: SIGNING_KEYS_KEY,
+    queryKey: developerKeys.signingKeys(),
     queryFn: () => api<{ keys: SigningKey[] }>("/v1/oidc/signing-keys"),
   });
 }

@@ -18,7 +18,7 @@ import { LoaderCircleIcon, PlayIcon, TrashIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorText } from "@/platform/components/error-reference";
 import {
   type GroupTemplateNode,
   useApplyGroupTemplate,
@@ -28,16 +28,12 @@ import {
 } from "../api/groups";
 
 /**
- * Parses the indented outline in the textarea into the tree the API expects.
- *
- * Indentation is two spaces per level. A line indented more than one level
- * below its predecessor is attached at the deepest level that exists, rather
- * than rejected — a stray space shouldn't lose someone's typing.
+ * Parses the outline typed in the textarea (two spaces per level) into the API's tree. A line
+ * indented too deep attaches at the deepest open level, so a stray space loses nothing.
  */
 export function parseOutline(text: string): GroupTemplateNode[] {
   const roots: GroupTemplateNode[] = [];
-  // stack[d] is the node currently open at depth d.
-  const stack: GroupTemplateNode[] = [];
+  const stack: GroupTemplateNode[] = []; // stack[d] is the node open at depth d
 
   for (const raw of text.split("\n")) {
     if (!raw.trim()) continue;
@@ -48,6 +44,8 @@ export function parseOutline(text: string): GroupTemplateNode[] {
     if (depth === 0) roots.push(node);
     else {
       const parent = stack[depth - 1];
+      // depth is clamped to stack.length above, so a node is open at depth - 1.
+      if (!parent) throw new Error(`No open group at depth ${depth - 1}`);
       parent.children = parent.children ?? [];
       parent.children.push(node);
     }
@@ -161,7 +159,9 @@ export function GroupTemplatesDialog({
             </Field>
             {createM.error ? (
               <Field>
-                <FieldError>{errorMessage(createM.error)}</FieldError>
+                <FieldError>
+                  <ErrorText error={createM.error} />
+                </FieldError>
               </Field>
             ) : null}
             <Button type="submit" size="sm" disabled={createM.isPending}>

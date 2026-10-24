@@ -1,20 +1,14 @@
-// Resource source helpers: convert API SearchHit[] → SearchItem[].
-// The actual async query lives in UniversalSearch (useQuery); this module
-// provides the pure transformation so it can be reused or tested independently.
-
+import i18n, { isTranslationKey } from "@/i18n";
 import type { SearchHit, SearchItem } from "./types/registry.types";
 
+// The heading for a hit's type, as GET /v1/search names them; a type the console doesn't know
+// yet goes under a generic one.
 function typeToCategory(type: string): string {
-  // e.g. "user" → "Users", "organization" → "Organizations"
-  const s = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
-  return s.endsWith("s") ? s : `${s}s`;
+  const key = `search:resourceType.${type}`;
+  return i18n.t(isTranslationKey(key) ? key : "search:resourceType.other");
 }
 
-/**
- * Convert raw API search hits into canonical SearchItem objects.
- * Resource items have `kind: "resource"` and carry status/metadata for the
- * preview pane.
- */
+/** Maps GET /v1/search hits to `resource` items, keeping status and metadata for the preview. */
 export function resourceHitsToSearchItems(hits: SearchHit[]): SearchItem[] {
   return hits.map(
     (hit): SearchItem => ({

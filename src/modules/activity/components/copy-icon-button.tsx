@@ -1,10 +1,10 @@
-// Small icon-only copy control built on the shared useCopyToClipboard hook.
-// Sits above stretched-link row overlays via `relative z-1`, and reveals on
-// hover/focus inside a `group` when `revealOnHover` is set.
-
 import { cn, Tooltip, TooltipContent, TooltipTrigger, useCopyToClipboard } from "@qeetrix/ui";
 import { CheckIcon, ClipboardIcon } from "@qeetrix/icons";
 
+/**
+ * Renders an icon-only copy button. `relative z-1` keeps it clickable above stretched-link row
+ * overlays; with `revealOnHover` it shows only on hover or focus inside a `group`.
+ */
 export function CopyIconButton({
   text,
   label,

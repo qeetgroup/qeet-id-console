@@ -1,37 +1,29 @@
-// Tenant-wide trusted-device estate (adaptive MFA "remember this device").
-//
-// Distinct from `useDeviceAuthorizations()` in the security module, which lists
-// pending OAuth device-grant flows (TVs, CLIs waiting for approval). Same word,
-// different thing.
+// Devices remembered to skip the second factor at sign-in. Unrelated to OAuth device-grant
+// approvals (`useDeviceAuthorizations` in the security module).
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { userKeys } from "@/modules/users";
 import { ApiError, api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export interface TrustedDeviceSummary {
-  /** One browser cookie is one device, so a laptop + phone counts as two. */
-  devices: number;
-  /** Distinct people those devices belong to. */
-  users: number;
+  devices: number; // One browser cookie is one device, so a laptop + phone counts as two
+  users: number; // Distinct people those devices belong to
 }
 
 const EMPTY: TrustedDeviceSummary = { devices: 0, users: 0 };
 
-export const TRUSTED_DEVICES_KEY = ["trusted-devices", "summary"] as const;
-
 /**
- * Live trusted devices for the caller's tenant.
- *
- * Degrades to zeroes on 404/501 rather than erroring: the console and server
- * deploy independently, so a console running ahead of the API must not red-flag
- * the whole page over one tile. Mirrors `useAnalyticsOverview`.
- *
- * Expect 0 for most tenants — nothing writes a trusted device until a tenant
- * enables `remember_device_enabled`, which is off by default.
+ * Counts the live trusted devices in the caller's tenant. A server without the endpoint
+ * (404/501) yields zeroes, not an error, so one tile can't fail the page. Expect 0 unless the
+ * tenant turned on `remember_device_enabled`, which is off by default.
  */
 export function useTrustedDeviceSummary(enabled = true) {
+  const tenantId = useTenantId();
   return useQuery({
-    queryKey: TRUSTED_DEVICES_KEY,
+    queryKey: authKeys.trustedDeviceCount(tenantId),
     enabled,
     queryFn: async () => {
       try {
@@ -48,17 +40,13 @@ export function useTrustedDeviceSummary(enabled = true) {
 /** A device remembered so it skips the second factor at sign-in. */
 export interface TrustedDevice {
   id: string;
-  /** The organisation it was remembered in. */
-  tenant_id: string | null;
-  /** The device and browser in words, e.g. "Chrome on macOS". */
-  device: string;
+  tenant_id: string | null; // The organisation it was remembered in
+  device: string; // The device and browser in words, e.g. "Chrome on macOS"
   device_kind: "desktop" | "mobile" | "tablet" | "unknown";
   created_at: string;
-  /** When it last skipped the second factor. */
-  last_used_at: string | null;
+  last_used_at: string | null; // When it last skipped the second factor
   expires_at: string;
-  /** The request came from this device. */
-  current: boolean;
+  current: boolean; // The request came from this device
 }
 
 /** Whose remembered devices: the caller's own, or a member's (an administrator's view). */
@@ -70,20 +58,25 @@ function devicesPath(scope: TrustedDeviceScope): string {
     : `/v1/users/${scope.userId}/trusted-devices`;
 }
 
-function devicesKey(scope: TrustedDeviceScope) {
-  return ["trusted-devices", scope.kind === "self" ? "self" : scope.userId] as const;
+// A member's devices sit with the rest of that person's views.
+function devicesKey(tenantId: string | null, scope: TrustedDeviceScope) {
+  return scope.kind === "self"
+    ? authKeys.trustedDevices()
+    : [...userKeys.user(tenantId, scope.userId), "trusted-devices"];
 }
 
 /** The remembered devices in scope, newest first. */
 export function useTrustedDevices(scope: TrustedDeviceScope) {
+  const tenantId = useTenantId();
   return useQuery({
-    queryKey: devicesKey(scope),
+    queryKey: devicesKey(tenantId, scope),
     queryFn: () => api<{ items: TrustedDevice[] }>(devicesPath(scope)),
   });
 }
 
 /** Forgets one remembered device (by id) or all of them (no id). */
 export function useForgetTrustedDevices(scope: TrustedDeviceScope) {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (deviceId?: string) =>
@@ -94,8 +87,8 @@ export function useForgetTrustedDevices(scope: TrustedDeviceScope) {
         },
       ),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: devicesKey(scope) });
-      void qc.invalidateQueries({ queryKey: TRUSTED_DEVICES_KEY });
+      void qc.invalidateQueries({ queryKey: devicesKey(tenantId, scope) });
+      void qc.invalidateQueries({ queryKey: authKeys.trustedDeviceCount(tenantId) });
     },
     meta: { silent: true },
   });

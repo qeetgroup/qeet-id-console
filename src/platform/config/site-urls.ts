@@ -1,7 +1,5 @@
-// Public marketing and docs destinations the auth chrome links out to. These
-// are always the production hosts — the sign-in page is a public entry point,
-// so its Terms/Privacy/Security links must resolve for real visitors even when
-// the console itself is running against a local backend.
+// Always the production hosts: the sign-in page is a public entry point, so its links must
+// resolve for real visitors even when the console runs against a local backend.
 const WEBSITE_URL = "https://id.qeet.in";
 
 export const DOCS_URL = "https://docs.id.qeet.in";

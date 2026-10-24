@@ -10,7 +10,7 @@ import {
   within,
 } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({
@@ -40,7 +40,7 @@ vi.mock("@/platform/security/capability-provider", () => ({
 }));
 
 import { api } from "@/platform/api/client";
-import { navGroups } from "@/platform/config/navigation";
+import { getNavGroups, translateNavigation } from "@/platform/config/navigation";
 import { type DeveloperOverviewData, useDeveloperOverview } from "../api/overview";
 import { DeveloperOverviewView } from "../components/developer-overview";
 import { isCurrentCredential, summarizeDeveloperRecords } from "../overview-model";
@@ -93,7 +93,7 @@ describe("Developer overview metrics", () => {
     expect(metric.total).toBe(5);
     expect(metric.recent).toBe(3);
     expect(metric.series.map((point) => point.count)).toEqual([1, 0, 0, 0, 0, 1, 1]);
-    expect(metric.series[0].date).toBe("2026-09-06");
+    expect(metric.series[0]?.date).toBe("2026-09-06");
   });
 
   it("distinguishes empty lists from missing history", () => {
@@ -133,7 +133,7 @@ describe("Developer overview data", () => {
     ]) {
       expect(paths).toContain(`/v1/tenants/tenant-a/${path}`);
     }
-    expect(paths.some((path) => /reveal|rotate|\/token$/.test(path))).toBe(false);
+    expect(paths.some((path) => /reveal|rotate/.test(path) || path.endsWith("/token"))).toBe(false);
     expect(api).toHaveBeenCalledWith(
       "/v1/activity",
       expect.objectContaining({
@@ -235,27 +235,58 @@ describe("Developer overview data", () => {
     expect(result.current.activity.data?.[0]).toMatchObject({
       id: "public",
       area: "keys",
-      verb: "created",
+      action: "keyCreated",
     });
     expect(JSON.stringify(result.current.activity.data)).not.toMatch(
       /private|token|metadata|description/,
     );
   });
+
+  it("names each recorded developer action and reads any other as a generic change", async () => {
+    vi.mocked(api).mockImplementation(async (path) => {
+      if (path !== "/v1/activity") return { items: [] } as never;
+      const at = "2026-09-12T10:00:00Z";
+      return {
+        events: [
+          { id: "1", type: "webhook.subscription_auto_disabled", at },
+          { id: "2", type: "agent.kill_switch", at },
+          { id: "3", type: "auth_hook.updated", at },
+          { id: "4", type: "apikey.renamed", at },
+        ],
+      } as never;
+    });
+    const { result } = renderOverview();
+    await waitFor(() => expect(result.current.activity.data).toHaveLength(4));
+    expect(result.current.activity.data?.map(({ area, action }) => [area, action])).toEqual([
+      ["webhooks", "webhookAutoDisabled"],
+      ["agents", "agentsSuspended"],
+      ["hooks", "hookUpdated"],
+      ["keys", "changed"],
+    ]);
+  });
 });
 
 function viewData(): DeveloperOverviewData {
   const ids = ["keys", "tokens", "webhooks", "hooks", "agents", "secrets", "credentials"] as const;
-  const totals = [18, 126, 6, 4, 9, 23, 1];
+  const totals: Record<(typeof ids)[number], number> = {
+    keys: 18,
+    tokens: 126,
+    webhooks: 6,
+    hooks: 4,
+    agents: 9,
+    secrets: 23,
+    credentials: 1,
+  };
   return {
     tenantId: "tenant-a",
     accessState: "ready",
     canCreateKey: true,
     canCreateWebhook: true,
     areas:
-      navGroups
-        .find((group) => group.label === "Developer")
+      translateNavigation(getNavGroups())
+        .find((group) => group.id === "developer")
         ?.items.filter((item) => item.url !== "/developer") ?? [],
-    resources: ids.map((id, index) => ({
+    resources: ids.map((id) => ({
       id,
       allowed: true,
       loading: false,
@@ -263,7 +294,7 @@ function viewData(): DeveloperOverviewData {
       busy: false,
       retry: vi.fn(),
       data: {
-        total: totals[index],
+        total: totals[id],
         recent: 2,
         configured: id === "keys" || id === "webhooks",
         series: [
@@ -282,7 +313,7 @@ function viewData(): DeveloperOverviewData {
         {
           id: "event-1",
           area: "keys",
-          verb: "created",
+          action: "keyCreated",
           at: "2026-09-12T10:00:00Z",
           targetId: "key-123456",
         },
@@ -349,6 +380,7 @@ describe("Developer overview layout", () => {
   it("shows safe failures with working retries instead of zero totals", () => {
     const data = viewData();
     const resource = data.resources[0];
+    assert(resource, "expected the API keys resource");
     resource.error = true;
     resource.data = undefined;
     data.activity.error = true;
@@ -365,7 +397,9 @@ describe("Developer overview layout", () => {
 
   it("does not render denied cached counters or activity", () => {
     const data = viewData();
-    data.resources[5].allowed = false;
+    const secretsResource = data.resources[5];
+    assert(secretsResource, "expected the secrets resource");
+    secretsResource.allowed = false;
     data.activity.allowed = false;
     render(<DeveloperOverviewView data={data} />);
     const secrets = within(screen.getByRole("article", { name: "Secrets" }));

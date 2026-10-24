@@ -1,7 +1,5 @@
-// Pure derivations for the Authentication overview.
-//
-// No React, no i18n, no strings: every label is looked up in the view by id, so
-// this file is locale-independent and testable without booting anything.
+// Pure derivations for the Authentication overview. No React and no strings: the view looks up
+// every label by id, so this stays locale-independent and testable in isolation.
 
 import type { AnalyticsOverview } from "./api/analytics";
 import { EMPTY_OVERVIEW } from "./api/analytics";
@@ -11,9 +9,8 @@ import { MFA_TARGET_PCT } from "./dashboard-insights";
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
 
 /**
- * The sign-in methods the auth policy can switch on. The email and SMS
- * one-time-code flags are not among them: no such sign-in exists, and the
- * server refuses to switch them on.
+ * The sign-in methods the auth policy can switch on. Email and SMS one-time codes are excluded: no
+ * such sign-in exists and the server refuses to enable them.
  */
 export const SIGN_IN_METHODS = [
   "password_enabled",
@@ -24,11 +21,8 @@ export const SIGN_IN_METHODS = [
 export type SignInMethod = (typeof SIGN_IN_METHODS)[number];
 
 /**
- * How many sign-in methods are enabled.
- *
- * Deliberately excludes `remember_device_enabled` — that is adaptive MFA
- * (skip the second factor on a known device), not a way to sign in. Counting it
- * would let a tenant appear to have six methods.
+ * Returns how many sign-in methods are enabled. Excludes `remember_device_enabled`: skipping the
+ * second factor on a known device is not a way to sign in.
  */
 export function countSignInMethods(policy?: Partial<Record<SignInMethod, boolean>>): number {
   if (!policy) return 0;
@@ -37,25 +31,13 @@ export function countSignInMethods(policy?: Partial<Record<SignInMethod, boolean
 
 export type MfaCoverage = {
   pct: number;
-  /**
-   * Percentage-POINT change vs 7 days ago, not a percent change and not a
-   * 30-day window (`analytics.go:215` diffs against `INTERVAL '7 days'`).
-   * Only ever set on the analytics branch — the user-stats fallback has no
-   * history, and inventing one is what we set out not to do.
-   */
-  deltaPp?: number;
+  deltaPp?: number; // percentage-point change over 7 days; only analytics has history
   source: "analytics" | "users" | "none";
 };
 
 /**
- * MFA coverage, preferring the source that carries a real delta.
- *
- * The two sources disagree on purpose: `analytics.mfa_adoption_pct` counts
- * confirmed TOTP only, while `UserStats.mfa_enabled` counts TOTP or OTP factors
- * or push devices. The users figure is the broader truth; the analytics figure
- * is the only one with a trend. We take analytics when it is really present so
- * the page can show one honest arrow, and fall back to the broader count with
- * no arrow rather than showing a number with a fabricated trend.
+ * Returns MFA coverage, preferring analytics (confirmed TOTP only, but with a trend) over user
+ * stats (any TOTP, OTP or push factor, no trend), so the page never shows a fabricated trend.
  */
 export function resolveMfaCoverage(
   analytics?: AnalyticsOverview,
@@ -78,20 +60,16 @@ export type AuthPostureId = "signin" | "social" | "mfa" | "sso" | "devices";
 export type AuthPostureItem = {
   id: AuthPostureId;
   ok: boolean;
-  /** 0–100 before weighting. */
-  score: number;
+  score: number; // 0–100, before weighting
   weight: number;
-  /** Where the matching recommended action sends the operator. */
-  to: string;
+  to: string; // where the matching recommended action leads
 };
 
 export type AuthPosture = {
   score: number;
   state: HealthState;
-  /** Always five, always in comp order. */
-  items: AuthPostureItem[];
-  /** The failing subset, heaviest first — drives both the badge and the callout. */
-  pending: AuthPostureItem[];
+  items: AuthPostureItem[]; // all five checks, in display order
+  pending: AuthPostureItem[]; // failing checks, heaviest first; drives badge and callout
 };
 
 export type AuthPostureInput = {
@@ -102,19 +80,12 @@ export type AuthPostureInput = {
   trustedDevices: number;
 };
 
-/** Two methods is the threshold: one is a single point of failure for sign-in. */
-const SIGN_IN_TARGET = 2;
+const SIGN_IN_TARGET = 2; // one method is a single point of failure for sign-in
 
 /**
- * Posture = how completely the authentication surface is set up.
- *
- * Deliberately NOT `computeIdentityHealth`, which scores *operational* health
- * from login success rate and stickiness. A security posture that drops because
- * fewer people signed in today would be wrong, and four of these five checks are
- * configuration facts that `AnalyticsOverview` cannot see at all.
- *
- * One function produces both the checklist and the recommended actions, so the
- * "N pending" badge can never disagree with the ticks above it.
+ * Scores how completely authentication is configured. Unlike `computeIdentityHealth` it ignores
+ * sign-in traffic, so posture never drops on a quiet day. The checklist and recommended actions
+ * share these items, so the "N pending" badge always matches the ticks.
  */
 export function deriveAuthPosture(input: AuthPostureInput): AuthPosture {
   const items: AuthPostureItem[] = [
@@ -133,11 +104,10 @@ export function deriveAuthPosture(input: AuthPostureInput): AuthPosture {
       to: "/auth/social",
     },
     {
-      // Heaviest: MFA is the biggest single lever on account takeover.
       id: "mfa",
       score: clamp((input.mfaCoveragePct / MFA_TARGET_PCT) * 100),
       ok: input.mfaCoveragePct >= MFA_TARGET_PCT,
-      weight: 0.35,
+      weight: 0.35, // heaviest: MFA is the biggest single lever on account takeover
       to: "/auth/mfa/totp",
     },
     {
@@ -165,7 +135,7 @@ export function deriveAuthPosture(input: AuthPostureInput): AuthPosture {
   };
 }
 
-/** Same thresholds as the dashboard's identity health, so grading is consistent. */
+/** Grades a 0–100 score with the same thresholds as the dashboard's identity health. */
 export function stateFromScore(score: number): HealthState {
   if (score >= 75) return "healthy";
   if (score >= 50) return "attention";

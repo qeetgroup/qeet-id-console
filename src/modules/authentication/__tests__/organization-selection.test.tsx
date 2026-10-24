@@ -10,7 +10,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({
@@ -47,6 +47,12 @@ import {
   mostRecentOrganization,
   organizationImage,
 } from "../organization-selection-model";
+
+function fixture(index: number): EligibleOrganization {
+  const organization = fixtures()[index];
+  assert(organization, `no organization fixture at ${index}`);
+  return organization;
+}
 
 function fixtures(): EligibleOrganization[] {
   return [
@@ -145,7 +151,7 @@ function renderPage() {
 
 beforeEach(() => {
   context.userId = "user-a";
-  context.tenantId = fixtures()[0].id;
+  context.tenantId = fixture(0).id;
   context.navigate.mockReset();
   context.logout.mockReset();
   vi.mocked(api).mockReset();
@@ -193,7 +199,7 @@ describe("Organization selector", () => {
     fireEvent.click(screen.getByRole("radio", { name: "Globalsphere" }));
     expect(props.onContinue).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Continue to dashboard" }));
-    await waitFor(() => expect(props.onContinue).toHaveBeenCalledWith(fixtures()[1].id));
+    await waitFor(() => expect(props.onContinue).toHaveBeenCalledWith(fixture(1).id));
   });
 
   it("does not invent a last-used organization or automatically choose an unused one", () => {
@@ -242,7 +248,7 @@ describe("Organization selector", () => {
     const { container } = render(<OrganizationSelectorView {...viewProps()} />);
     fireEvent.click(screen.getByRole("radio", { name: "Nova Systems" }));
     await selectOption("Sort organizations", "Name: Z to A");
-    expect(screen.getAllByRole("radio")[0].getAttribute("aria-label")).toBe("Quantum Works");
+    expect(screen.getAllByRole("radio")[0]?.getAttribute("aria-label")).toBe("Quantum Works");
     fireEvent.click(screen.getByRole("button", { name: "List view" }));
     expect(container.querySelector('[data-organization-layout="list"]')).toBeTruthy();
     expect((screen.getByRole("radio", { name: "Nova Systems" }) as HTMLInputElement).checked).toBe(
@@ -320,7 +326,7 @@ describe("Organization selector", () => {
 
 describe("Organization selection data", () => {
   it("retries a failed automatic switch after refreshing the single membership", async () => {
-    vi.mocked(api).mockResolvedValue({ items: [fixtures()[1]], next_cursor: "" });
+    vi.mocked(api).mockResolvedValue({ items: [fixture(1)], next_cursor: "" });
     vi.mocked(switchToTenant).mockRejectedValueOnce(new Error("offline"));
     renderPage();
     await screen.findByRole("alert");
@@ -351,7 +357,7 @@ describe("Organization selection data", () => {
       last_used_at: "invalid",
     }));
     expect(mostRecentOrganization(organizations)).toBeNull();
-    expect(filterOrganizations(organizations, "", "", "recent", "en")[0].name).toBe(
+    expect(filterOrganizations(organizations, "", "", "recent", "en")[0]?.name).toBe(
       "Acme Technologies",
     );
     expect(organizationImage("javascript:alert(1)")).toBeUndefined();
@@ -365,20 +371,20 @@ describe("Organization selection data", () => {
     expect(switchToTenant).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("radio", { name: "Globalsphere" }));
     fireEvent.click(screen.getByRole("button", { name: "Continue to dashboard" }));
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixtures()[1].id));
+    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixture(1).id));
   });
 
   it("continues automatically when there is only one current organization", async () => {
-    vi.mocked(api).mockResolvedValue({ items: [fixtures()[0]], next_cursor: "" });
+    vi.mocked(api).mockResolvedValue({ items: [fixture(0)], next_cursor: "" });
     renderPage();
     await waitFor(() => expect(context.navigate).toHaveBeenCalledWith({ to: "/", replace: true }));
     expect(switchToTenant).not.toHaveBeenCalled();
   });
 
   it("switches automatically when the only remaining membership is not the current tenant", async () => {
-    vi.mocked(api).mockResolvedValue({ items: [fixtures()[1]], next_cursor: "" });
+    vi.mocked(api).mockResolvedValue({ items: [fixture(1)], next_cursor: "" });
     renderPage();
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixtures()[1].id));
+    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixture(1).id));
   });
 
   it("keeps org-less accounts on the existing onboarding path", async () => {

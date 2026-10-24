@@ -12,19 +12,13 @@ import { QeetMark } from "@/shared/components/qeet-mark";
 interface OrgOnboardingProps {
   title?: string;
   subtitle?: string;
-  /** Shown on the plan step (e.g. to cancel creating an additional org). */
-  onCancel?: () => void;
-  /** Where to go once a free/enterprise org settles (paid plans redirect to pay). */
-  onDone?: () => void;
+  onCancel?: () => void; // shown on the plan step, e.g. to cancel an additional org
+  onDone?: () => void; // after a free or enterprise create; paid plans leave for checkout
 }
 
-/**
- * Full-width onboarding surface that hosts the create-organization flow. Used
- * for first-run (a tenant-less user right after email verification) and for
- * creating an additional organization later.
- */
+/** Renders the create-organization flow as a full-width page, for a first or an additional org. */
 export function OrgOnboarding({ title, subtitle, onCancel, onDone }: OrgOnboardingProps) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("onboarding");
   return (
     <section
       data-slot="org-setup"
@@ -52,7 +46,7 @@ export function OrgOnboarding({ title, subtitle, onCancel, onDone }: OrgOnboardi
                   step === "plan" && "size-9",
                 )}
               >
-                <QeetMark height={27} aria-label="Qeet ID" />
+                <QeetMark height={27} aria-label={t("orgOnboarding.qeetId")} />
               </span>
               <div>
                 <div className="flex items-center gap-3 leading-3.5">

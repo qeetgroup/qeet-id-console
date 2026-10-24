@@ -1,28 +1,100 @@
-// MFA data layer. These endpoints are scoped to the authenticated user (the
-// API derives the user from the JWT), so no tenant id is needed in the path.
+// The signed-in user's MFA factors. The server takes the user from the session, so paths carry
+// no user or tenant id.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { api } from "@/platform/api/client";
+import { authKeys } from "./keys";
 
-// ---- TOTP ----
+const totpStatusSchema = z.object({
+  enrolled: z.boolean(), // True once the account has a *confirmed* TOTP factor
+});
+export type TotpStatus = z.infer<typeof totpStatusSchema>;
 
-export interface TotpStatus {
-  /** True once the account has a *confirmed* TOTP factor. */
-  enrolled: boolean;
-}
-
-// Lets the TOTP screen render an "active" state on load instead of always
-// re-offering enrollment: re-running enroll/start rotates the secret and clears
-// confirmation server-side, so a stale prompt could break a working factor.
+/**
+ * Returns whether TOTP is enrolled, so the screen can show it as active rather than re-offer
+ * setup: restarting enrolment rotates the secret and would break a working factor.
+ */
 export function useTotpStatus() {
   return useQuery({
-    queryKey: ["mfa", "totp"],
-    queryFn: () => api<TotpStatus>("/v1/mfa/totp"),
+    queryKey: authKeys.totp(),
+    queryFn: () => api("/v1/mfa/totp", { schema: totpStatusSchema }),
   });
 }
 
-// ---- Recovery codes ----
+const totpEnrollmentSchema = z.object({
+  secret: z.string().min(1),
+  provisioning_url: z.string().startsWith("otpauth://"),
+  replacing: z.boolean().optional(), // A confirmed app exists and works until this one is confirmed
+});
+export type TotpEnrollment = z.infer<typeof totpEnrollmentSchema>;
+
+// Both confirming a new app and regenerating answer with a fresh set, shown once.
+const recoveryCodesSchema = z.object({
+  recovery_codes: z.array(z.string().min(1)),
+  warning: z.string().optional(),
+});
+export type RecoveryCodes = z.infer<typeof recoveryCodesSchema>;
+
+/**
+ * Starts setting up an authenticator app and resolves with its secret. While a confirmed app is
+ * held this needs a step-up, and the new app replaces it only once confirmed.
+ */
+export function startTotpEnrollment(): Promise<TotpEnrollment> {
+  return api("/v1/mfa/totp/enroll/start", {
+    method: "POST",
+    body: {},
+    schema: totpEnrollmentSchema,
+  });
+}
+
+/** Confirms the app being set up with a code from it; resolves with the new recovery codes. */
+export function confirmTotpEnrollment(code: string): Promise<RecoveryCodes> {
+  return api("/v1/mfa/totp/enroll/confirm", {
+    method: "POST",
+    body: { code },
+    schema: recoveryCodesSchema,
+  });
+}
+
+/** Starts setting up an authenticator app; a replacement waits beside the confirmed one. */
+export function useStartTotpEnrollment() {
+  const qc = useQueryClient();
+  return useMutation({
+    gcTime: 0, // the response holds the new app's secret
+    mutationFn: startTotpEnrollment,
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.totp() }),
+    meta: { silent: true }, // the page shows a failure on its card
+  });
+}
+
+/** Confirms the app being set up; resolves with recovery codes that are shown once. */
+export function useConfirmTotpEnrollment() {
+  const qc = useQueryClient();
+  return useMutation({
+    gcTime: 0, // the response holds the recovery codes
+    mutationFn: confirmTotpEnrollment,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: authKeys.totp() });
+      void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
+    },
+    meta: { successMessage: "authentication:mfa.totp.toastEnabled", silentError: true },
+  });
+}
+
+/** Removes the authenticator app and, with it, the recovery codes. */
+export function useDisableTotp() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<void>("/v1/mfa/totp", { method: "DELETE" }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: authKeys.totp() });
+      void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
+    },
+    meta: { successMessage: "authentication:mfa.totp.toastDisabled" },
+  });
+}
 
 export interface RecoveryStatus {
   enrolled: boolean;
@@ -32,7 +104,7 @@ export interface RecoveryStatus {
 
 export function useRecoveryStatus() {
   return useQuery({
-    queryKey: ["mfa", "recovery-codes"],
+    queryKey: authKeys.recoveryCodes(),
     queryFn: () => api<RecoveryStatus>("/v1/mfa/recovery-codes"),
   });
 }
@@ -40,41 +112,37 @@ export function useRecoveryStatus() {
 export function useRegenerateRecoveryCodes() {
   const qc = useQueryClient();
   return useMutation({
+    gcTime: 0, // the response holds the new codes
     mutationFn: () =>
-      api<{ recovery_codes: string[]; warning: string }>("/v1/mfa/recovery-codes/regenerate", {
-        method: "POST",
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["mfa", "recovery-codes"] }),
-    // silent: a 403 step_up_required is handled locally by opening the step-up
-    // dialog rather than surfacing a dead-end toast (QID-17). The success toast
-    // is emitted by the screen after the (possibly re-run) mutation resolves.
+      api("/v1/mfa/recovery-codes/regenerate", { method: "POST", schema: recoveryCodesSchema }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() }),
+    // The screen opens step-up on a 403 instead of a dead-end toast, and shows its own success
+    // toast once the (possibly retried) call resolves.
     meta: { silent: true },
   });
 }
 
-// ---- Step-up verification ----
-//
-// Step-up is a cross-cutting security gate (paired with the platform step-up
-// dialog + useSensitiveAction), so it now lives in platform/security. Re-exported
-// here so existing former @/lib/mfa importers keep working during migration.
+// Step-up verification is a platform security gate, owned by @/platform/security.
 export { isStepUpRequired, useStepUpVerify } from "@/platform/security/step-up";
 
-// ---- Email / SMS OTP factors ----
+const otpChannelSchema = z.enum(["email", "sms"]);
+export type OtpChannel = z.infer<typeof otpChannelSchema>;
 
-export type OtpChannel = "email" | "sms";
+const otpFactorSchema = z.object({
+  id: z.string(),
+  channel: otpChannelSchema,
+  destination: z.string(), // Masked for display
+  verified: z.boolean(),
+  created_at: z.string(),
+});
+export type OtpFactor = z.infer<typeof otpFactorSchema>;
 
-export interface OtpFactor {
-  id: string;
-  channel: OtpChannel;
-  destination: string; // masked
-  verified: boolean;
-  created_at: string;
-}
+const otpFactorListSchema = z.object({ items: z.array(otpFactorSchema) });
 
 export function useOtpFactors() {
   return useQuery({
-    queryKey: ["mfa", "otp-factors"],
-    queryFn: () => api<{ items: OtpFactor[] }>("/v1/mfa/otp/factors"),
+    queryKey: authKeys.otpFactors(),
+    queryFn: () => api("/v1/mfa/otp/factors", { schema: otpFactorListSchema }),
   });
 }
 
@@ -85,7 +153,7 @@ export function useEnrollOtpStart() {
         method: "POST",
         body,
       }),
-    meta: { successMessage: "Verification code sent" },
+    meta: { successMessage: "authentication:toast.verificationCodeSent", silentError: true }, // the sheet shows it
   });
 }
 
@@ -97,8 +165,8 @@ export function useConfirmOtpFactor() {
         method: "POST",
         body: { code },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["mfa", "otp-factors"] }),
-    meta: { successMessage: "Factor confirmed" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.otpFactors() }),
+    meta: { successMessage: "authentication:toast.factorConfirmed", silentError: true },
   });
 }
 
@@ -108,7 +176,7 @@ export function useChallengeOtpFactor() {
       api<{ message: string }>(`/v1/mfa/otp/factors/${id}/challenge`, {
         method: "POST",
       }),
-    meta: { successMessage: "Test code sent" },
+    meta: { successMessage: "authentication:toast.testCodeSent" },
   });
 }
 
@@ -116,7 +184,7 @@ export function useDeleteOtpFactor() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/mfa/otp/factors/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["mfa", "otp-factors"] }),
-    meta: { successMessage: "Factor removed" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.otpFactors() }),
+    meta: { successMessage: "authentication:toast.factorRemoved" },
   });
 }

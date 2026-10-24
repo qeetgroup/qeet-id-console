@@ -1,12 +1,14 @@
-// Derive up-to-two-letter initials from a name or email. Domain-independent —
-// the single source for avatar/monogram fallbacks across the console.
-// "Mareedu Saibabu" → "MS"; "qeetgroup@gmail.com" → "QG"; robust to single words.
+/**
+ * Returns up to two initials for a name or email, e.g. "Mareedu Saibabu" → "MS" and
+ * "a@qeet.in" → "AQ".
+ */
 export function initials(name: string): string {
   const parts = name
     .trim()
     .split(/[\s@._-]+/)
     .filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+  const [first, second] = parts;
+  if (first === undefined) return "?";
+  if (second === undefined) return first.slice(0, 2).toUpperCase();
+  return (first.charAt(0) + second.charAt(0)).toUpperCase();
 }

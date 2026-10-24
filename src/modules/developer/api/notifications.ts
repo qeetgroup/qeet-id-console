@@ -1,12 +1,8 @@
-// Notifications inbox data layer. The backend endpoint isn't shipped yet
-// (IMPROVEMENTS §8.7), so the hook falls back to an empty list on any
-// error rather than surfacing a 404 toast every poll. When the endpoint
-// lands, the hook automatically starts returning real data without any
-// call-site change.
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
+import { useTenantId } from "@/platform/auth/session";
+import { developerKeys } from "./keys";
 
 export type NotificationKind = "info" | "warning" | "alert" | "success";
 
@@ -15,12 +11,9 @@ export interface Notification {
   kind: NotificationKind;
   title: string;
   description?: string;
-  /** RFC 3339 timestamp. */
   created_at: string;
-  /** ISO timestamp if the user has marked it read. */
-  read_at?: string | null;
-  /** Optional in-app link the notification opens. */
-  href?: string | null;
+  read_at?: string | null; // set once the user has read it
+  href?: string | null; // in-app link the notification opens
 }
 
 interface NotificationsResponse {
@@ -31,21 +24,17 @@ interface NotificationsResponse {
 const EMPTY: NotificationsResponse = { items: [], unread_count: 0 };
 
 /**
- * Fetches the current user's notification inbox. Refetches every 60s
- * while the tab is focused so the unread badge stays roughly current
- * without a websocket. Background polling is paused by TanStack Query
- * when the tab is hidden, so this is cheap.
+ * Fetches the current user's notification inbox, polling every minute while the tab is visible.
+ * A backend without the endpoint (404) yields an empty inbox.
  */
 export function useNotifications() {
   return useQuery({
-    queryKey: ["notifications"],
+    queryKey: developerKeys.notifications(useTenantId()),
     queryFn: async (): Promise<NotificationsResponse> => {
       try {
         return await api<NotificationsResponse>("/v1/notifications");
       } catch (err) {
-        // Until the backend ships, the endpoint returns 404. Swallow that
-        // single case so we don't spam error toasts every minute; let any
-        // other status (auth, server error) bubble up.
+        // Only a missing endpoint reads as empty; auth and server errors still surface.
         if (err instanceof ApiError && err.status === 404) return EMPTY;
         throw err;
       }
@@ -53,23 +42,21 @@ export function useNotifications() {
     refetchInterval: 60_000,
     refetchIntervalInBackground: false,
     staleTime: 30_000,
-    // Don't trigger the global error toast — the bell already shows a
-    // failure state via its own UI.
-    meta: { silent: true },
+    meta: { silent: true }, // a failing poll would otherwise toast every minute
   });
 }
 
-/** Mark all in-app notifications as read. */
+/** Marks all in-app notifications read; a backend without the endpoint (404) is a no-op. */
 export function useMarkAllRead() {
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () =>
       api<void>("/v1/notifications/mark-all-read", { method: "POST" }).catch((err) => {
-        // Same 404 fallback as the GET — endpoint not shipped yet.
         if (err instanceof ApiError && err.status === 404) return;
         throw err;
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.notifications(tenantId) }),
     meta: { silent: true },
   });
 }

@@ -17,7 +17,6 @@ import {
   SelectValue,
   Skeleton,
   type StatusKind,
-  StatusPill,
   Table,
   TableBody,
   TableCell,
@@ -37,11 +36,26 @@ import {
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
+import { StatusPill } from "@/platform/components/status-pill";
+import { isOneOf } from "@/shared/utils/one-of";
 import { type CsvColumn, exportToCsv } from "@/shared/utils/data-export";
 import { formatMoney, type Invoice, type Plan } from "../api/billing";
 
 const ACTION =
   "h-8 rounded-md px-3 text-xs focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11";
+// Each status reads `billing.screen.invoices.status.<status>`; any other reads as unknown.
+const INVOICE_STATUSES = [
+  "paid",
+  "open",
+  "pending",
+  "failed",
+  "uncollectible",
+  "refunded",
+  "draft",
+  "void",
+] as const;
+
 const INVOICE_STATUS_KINDS = new Map<string, StatusKind>([
   ["paid", "success"],
   ["open", "warning"],
@@ -77,7 +91,7 @@ export type BillingInvoicesProps = {
 };
 
 function InvoiceStatusPill({ status }: { status: string }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   const normalized = status.toLowerCase();
   const kind = INVOICE_STATUS_KINDS.get(normalized) ?? "neutral";
 
@@ -88,16 +102,16 @@ function InvoiceStatusPill({ status }: { status: string }) {
       className={kind === "info" ? "bg-info/10 text-info" : undefined}
     >
       {t(
-        kind === "neutral"
-          ? "billing.screen.status.unknown"
-          : `billing.screen.invoices.status.${normalized}`,
+        isOneOf(INVOICE_STATUSES, normalized)
+          ? `billing.screen.invoices.status.${normalized}`
+          : "billing.screen.status.unknown",
       )}
     </StatusPill>
   );
 }
 
 export function BillingInvoices(props: BillingInvoicesProps) {
-  const { t, i18n } = useTranslation("settings");
+  const { t } = useTranslation("billing");
   const id = useId();
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState<Invoice | null>(null);
@@ -110,16 +124,18 @@ export function BillingInvoices(props: BillingInvoicesProps) {
     );
   const selectedInvoice = invoices.find((invoice) => invoice.id === selected?.id);
   const planName = (code: string) => props.plans.find((plan) => plan.code === code)?.name ?? code;
-  const statusLabel = (status: string) =>
-    t(
-      INVOICE_STATUS_KINDS.has(status.toLowerCase())
-        ? `billing.screen.invoices.status.${status.toLowerCase()}`
+  const statusLabel = (status: string) => {
+    const normalized = status.toLowerCase();
+    return t(
+      isOneOf(INVOICE_STATUSES, normalized)
+        ? `billing.screen.invoices.status.${normalized}`
         : "billing.screen.status.unknown",
     );
+  };
   const dateLabel = (value: string) => {
     const date = new Date(value);
     return Number.isFinite(date.getTime())
-      ? new Intl.DateTimeFormat(i18n.language, {
+      ? new Intl.DateTimeFormat(formatLocale(), {
           month: "short",
           day: "numeric",
           year: "numeric",

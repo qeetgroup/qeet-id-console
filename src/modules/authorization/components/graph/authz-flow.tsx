@@ -42,7 +42,7 @@ function Flow({
   const [nodes, setNodes, onNodesChange] = useNodesState(nodesProp);
   const [edges, setEdges, onEdgesChange] = useEdgesState(edgesProp);
 
-  // Reseed when the source data changes (a new query result, a new selection).
+  // Reseed the local, draggable state when the source data changes.
   useEffect(() => setNodes(nodesProp), [nodesProp, setNodes]);
   useEffect(
     () => setEdges(reduceMotion ? edgesProp.map((e) => ({ ...e, animated: false })) : edgesProp),
@@ -74,8 +74,8 @@ function Flow({
 }
 
 /**
- * Reusable React Flow surface for the authorization graphs. Client-only (the
- * console SSRs), reduced-motion aware, with pan/zoom, minimap and controls.
+ * Renders an authorization graph with React Flow, only in the browser since the console is
+ * server-rendered. Edges stop animating under reduced motion.
  */
 export function AuthzFlow({ height = 440, ...props }: AuthzFlowProps) {
   return (

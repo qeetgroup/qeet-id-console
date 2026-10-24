@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import i18n from "@/i18n";
 import { type AnalyticsOverview, EMPTY_OVERVIEW } from "../api/analytics";
 import {
   computeIdentityHealth,
@@ -25,7 +26,8 @@ describe("computeIdentityHealth", () => {
       }),
     );
     expect(health.score).toBeGreaterThanOrEqual(85);
-    expect(health.grade).toBe("Excellent");
+    expect(health.grade).toBe("excellent");
+    expect(i18n.t(`dashboard:insights.grade.${health.grade}`)).toBe("Excellent");
     expect(health.areas.find((a) => a.id === "mfa")?.state).toBe("healthy");
   });
 
@@ -59,6 +61,16 @@ describe("deriveAttentionItems", () => {
     const items = deriveAttentionItems(overview({ mfa_adoption_pct: metric(30) }));
     const mfa = items.find((i) => i.id === "mfa-adoption");
     expect(mfa?.severity).toBe("critical");
+  });
+
+  it("words an item from its catalogue keys and the measured values", () => {
+    const [mfa] = deriveAttentionItems(overview({ mfa_adoption_pct: metric(30) }));
+    if (!mfa) throw new Error("expected an MFA attention item");
+    expect(i18n.t(mfa.title)).toBe("MFA adoption below target");
+    expect(i18n.t(mfa.detail, mfa.params)).toBe(
+      "30.0% of active users have a second factor — short of the 80% target.",
+    );
+    expect(i18n.t(mfa.actionLabel)).toBe("Strengthen MFA");
   });
 
   it("surfaces rising failed sign-ins", () => {

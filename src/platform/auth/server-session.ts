@@ -112,9 +112,10 @@ export function clearServerSessionCookie() {
 function accessClaims(accessToken?: string): AccessClaims | null {
   if (!accessToken) return null;
   const parts = accessToken.split(".");
-  if (parts.length !== 3) return null;
+  const payload = parts[1];
+  if (parts.length !== 3 || payload === undefined) return null;
   try {
-    return JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8")) as AccessClaims;
+    return JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as AccessClaims;
   } catch {
     return null;
   }

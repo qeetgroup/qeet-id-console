@@ -9,31 +9,35 @@ import {
   TrashIcon,
   XIcon,
 } from "@qeetrix/icons";
+import type { TFunction } from "i18next";
 import { useMemo, useState } from "react";
-import { useQeetAIRuntime } from "../../qeetai-provider";
+import { useTranslation } from "react-i18next";
+import { formatLocale } from "@/i18n";
+import { useQeetAIRuntime } from "@/modules/qeetai/qeetai-provider";
 import {
   conversationActions,
   conversationStore,
   searchConversations,
   sortConversations,
-} from "../../store/conversation-store";
-import { workspaceActions } from "../../store/workspace-store";
-import type { Conversation } from "../../types/qeetai.types";
+} from "@/modules/qeetai/store/conversation-store";
+import { workspaceActions } from "@/modules/qeetai/store/workspace-store";
+import type { Conversation } from "@/modules/qeetai/types/qeetai.types";
 
-function formatRelative(ts: number): string {
+function formatRelative(ts: number, t: TFunction<["qeetai", "common"]>): string {
   const diff = Date.now() - ts;
   const min = Math.floor(diff / 60_000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min}m ago`;
+  if (min < 1) return t("qeetai:historyPanel.justNow");
+  if (min < 60) return t("qeetai:historyPanel.minutesAgo", { count: min });
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
+  if (hr < 24) return t("qeetai:historyPanel.hoursAgo", { count: hr });
   const day = Math.floor(hr / 24);
-  if (day < 7) return `${day}d ago`;
-  return new Date(ts).toLocaleDateString();
+  if (day < 7) return t("qeetai:historyPanel.daysAgo", { count: day });
+  return new Date(ts).toLocaleDateString(formatLocale());
 }
 
-/** Conversation history: search, then pin / rename / delete / select. */
+/** Renders the conversation history: search, then pin, rename, delete or open. */
 export function HistoryPanel() {
+  const { t } = useTranslation("qeetai");
   const conversations = useStore(conversationStore, (s) => s.conversations);
   const activeId = useStore(conversationStore, (s) => s.activeId);
   const [query, setQuery] = useState("");
@@ -54,16 +58,16 @@ export function HistoryPanel() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search conversations…"
-            aria-label="Search conversations"
+            placeholder={t("historyPanel.searchConversations")}
+            aria-label={t("historyPanel.searchConversations2")}
             className="ps-8"
           />
         </div>
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Close history"
-          title="Close history"
+          aria-label={t("historyPanel.closeHistory")}
+          title={t("historyPanel.closeHistory")}
           onClick={() => workspaceActions.closeHistory()}
         >
           <XIcon />
@@ -73,7 +77,7 @@ export function HistoryPanel() {
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
         {rows.length === 0 ? (
           <p className="p-6 text-center text-sm text-muted-foreground">
-            {query ? "No conversations match your search." : "No conversations yet."}
+            {t(query ? "historyPanel.noMatches" : "historyPanel.empty")}
           </p>
         ) : (
           <ul className="flex flex-col gap-0.5">
@@ -98,16 +102,19 @@ function ConversationRow({
   conversation: Conversation;
   active: boolean;
 }) {
+  const { t } = useTranslation(["qeetai", "common"]);
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(conversation.title);
   const { confirm } = useQeetAIRuntime();
+  // A conversation has no title until its first message names it.
+  const title = conversation.title || t("historyPanel.untitled");
 
   async function remove() {
     const ok = await confirm({
-      title: "Delete conversation?",
-      body: "This permanently removes the conversation and its messages from this browser.",
-      affected: [{ label: "Conversation", value: conversation.title }],
-      confirmText: "Delete",
+      title: t("historyPanel.deleteConversation"),
+      body: t("historyPanel.deleteBody"),
+      affected: [{ label: t("historyPanel.conversation"), value: title }],
+      confirmText: t("common:actions.delete"),
       tone: "destructive",
     });
     if (ok) conversationActions.remove(conversation.id);
@@ -133,11 +140,16 @@ function ConversationRow({
             if (e.key === "Enter") commitRename();
             if (e.key === "Escape") setRenaming(false);
           }}
-          aria-label="Conversation title"
+          aria-label={t("historyPanel.conversationTitle")}
           className="h-8"
           autoFocus
         />
-        <Button size="icon-sm" variant="ghost" aria-label="Save title" onClick={commitRename}>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          aria-label={t("historyPanel.saveTitle")}
+          onClick={commitRename}
+        >
           <CheckIcon className="size-4" />
         </Button>
       </li>
@@ -161,12 +173,18 @@ function ConversationRow({
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1">
               {conversation.pinned ? (
-                <PinIcon className="size-3 shrink-0 text-primary" aria-label="Pinned" />
+                <PinIcon
+                  className="size-3 shrink-0 text-primary"
+                  aria-label={t("historyPanel.pinned")}
+                />
               ) : null}
-              <span className="truncate text-sm font-medium">{conversation.title}</span>
+              <span className="truncate text-sm font-medium">{title}</span>
             </span>
             <span className="block truncate text-xs text-muted-foreground">
-              {formatRelative(conversation.updatedAt)} · {conversation.messages.length} messages
+              {t("historyPanel.details", {
+                time: formatRelative(conversation.updatedAt, t),
+                count: conversation.messages.length,
+              })}
             </span>
           </span>
         </button>
@@ -175,8 +193,8 @@ function ConversationRow({
           <Button
             size="icon-xs"
             variant="ghost"
-            aria-label={conversation.pinned ? "Unpin" : "Pin"}
-            title={conversation.pinned ? "Unpin" : "Pin"}
+            aria-label={t(conversation.pinned ? "historyPanel.unpin" : "historyPanel.pin")}
+            title={t(conversation.pinned ? "historyPanel.unpin" : "historyPanel.pin")}
             onClick={() => conversationActions.togglePin(conversation.id)}
             className={conversation.pinned ? "text-primary" : undefined}
           >
@@ -185,8 +203,8 @@ function ConversationRow({
           <Button
             size="icon-xs"
             variant="ghost"
-            aria-label="Rename"
-            title="Rename"
+            aria-label={t("historyPanel.rename")}
+            title={t("historyPanel.rename")}
             onClick={() => {
               setDraft(conversation.title);
               setRenaming(true);
@@ -197,8 +215,8 @@ function ConversationRow({
           <Button
             size="icon-xs"
             variant="ghost"
-            aria-label="Delete conversation"
-            title="Delete"
+            aria-label={t("historyPanel.deleteConversation2")}
+            title={t("common:actions.delete")}
             onClick={remove}
           >
             <TrashIcon className="size-3.5" />

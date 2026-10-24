@@ -1,3 +1,5 @@
+import i18n from "@/i18n";
+
 export const CONSOLE_CAPABILITIES = [
   "tenant.read",
   "tenant.write",
@@ -30,34 +32,6 @@ export type Capability = (typeof CONSOLE_CAPABILITIES)[number];
 export type CapabilitySet = ReadonlySet<string>;
 export type AccessResolution = "resolving" | "ready" | "error";
 export type AccessMode = "setup" | "full" | "read-only" | "restricted" | "none" | "unknown";
-
-const CAPABILITY_LABELS: Record<Capability, string> = {
-  "tenant.read": "View organization settings",
-  "tenant.write": "Manage organization settings",
-  "user.read": "View users",
-  "user.write": "Manage users",
-  "role.read": "View roles and permissions",
-  "role.write": "Manage roles and permissions",
-  "group.read": "View groups",
-  "group.write": "Manage groups",
-  "policy.read": "View security policies",
-  "policy.write": "Manage security policies",
-  "apikey.read": "View machine access",
-  "apikey.write": "Manage machine access",
-  "connection.read": "View identity connections",
-  "connection.write": "Manage identity connections",
-  "webhook.read": "View webhooks",
-  "webhook.write": "Manage webhooks",
-  "secret.read": "View secrets metadata",
-  "secret.write": "Manage secrets",
-  "branding.write": "Manage organization branding",
-  "gdpr.write": "Manage privacy requests",
-  "audit.read": "View audit and security events",
-  "audit.write": "Manage audit investigations",
-  "billing.read": "View billing",
-  "billing.write": "Manage billing",
-  "analytics.read": "View organization analytics",
-};
 
 export function createCapabilitySet(items: readonly string[] | undefined): CapabilitySet {
   return new Set((items ?? []).filter(Boolean));
@@ -97,6 +71,7 @@ export function classifyAccessMode(permissions: CapabilitySet, hasWorkspace: boo
   return "restricted";
 }
 
+/** Returns a capability's name as an operator reads it, such as "View users". */
 export function capabilityLabel(permission: Capability): string {
-  return CAPABILITY_LABELS[permission];
+  return i18n.t(`common:capability.${permission}`);
 }

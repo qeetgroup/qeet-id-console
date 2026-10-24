@@ -18,9 +18,10 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { ChevronRightIcon, Clock3Icon } from "@qeetrix/icons";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import type { NavGroup, NavItem } from "@/platform/config/navigation";
 import { isNavBranchActive, isNavPathActive } from "@/platform/config/navigation-state";
-import { useDirectoryData } from "../api/directory";
+import { useDirectoryData } from "@/modules/directory";
 
 export type NavBadge = {
   label: string;
@@ -32,7 +33,6 @@ function NavigationBadge({ badge }: { badge: NavBadge }) {
   return (
     <span
       title={badge.description}
-      aria-label={badge.description}
       className={cn(
         "ms-auto shrink-0 rounded-sm px-1.5 py-0.5 text-[10px] leading-3 font-medium tabular-nums",
         badge.tone === "neutral" && "bg-sidebar-accent text-sidebar-foreground/75",
@@ -56,7 +56,7 @@ function NavMenuItem({
   expandBranches: boolean;
   badges: Record<string, NavBadge>;
 }) {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "directory"]);
   const isActive = isNavPathActive(pathname, item.url);
   const isBranchActive = isNavBranchActive(pathname, item);
 
@@ -127,7 +127,7 @@ function NavMenuItem({
                 {subItem.planned ? (
                   <>
                     <Clock3Icon className="ms-auto size-3.5 shrink-0" aria-hidden="true" />
-                    <span className="sr-only">{t("directory.planned")}</span>
+                    <span className="sr-only">{t("directory:directory.planned")}</span>
                   </>
                 ) : null}
               </SidebarMenuSubButton>
@@ -137,7 +137,9 @@ function NavMenuItem({
                 {subItem.planned ? (
                   <Tooltip>
                     <TooltipTrigger render={button} />
-                    <TooltipContent side="right">{t("directory.plannedHint")}</TooltipContent>
+                    <TooltipContent side="right">
+                      {t("directory:directory.plannedHint")}
+                    </TooltipContent>
                   </Tooltip>
                 ) : (
                   button
@@ -152,9 +154,8 @@ function NavMenuItem({
 }
 
 /**
- * Renders one group's items — the body of the two-pane sidebar's section panel.
- * The rail (in AppSidebar) selects which group lands here, so only a single
- * group is ever visible at once, which is what keeps the panel short.
+ * Renders one nav group's items: the body of the sidebar's section panel. The rail picks the
+ * group, so only one is ever visible and the panel stays short.
  */
 export function SectionNav({
   group,
@@ -172,7 +173,7 @@ export function SectionNav({
           key={item.title}
           item={item}
           pathname={pathname}
-          expandBranches={group.label === "Directory" && pathname === "/directory"}
+          expandBranches={group.id === "directory" && pathname === "/directory"}
           badges={badges}
         />
       ))}
@@ -181,31 +182,38 @@ export function SectionNav({
 }
 
 export function DirectoryNav({ group }: { group: NavGroup }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "directory"]);
   const { permissions, invitations, scim, ldap } = useDirectoryData(false);
   const badges: Record<string, NavBadge> = {};
 
   if (permissions.invitations && invitations.isSuccess && invitations.data > 0) {
     badges["/invitations"] = {
-      label: invitations.data > 99 ? "99+" : invitations.data.toLocaleString(i18n.resolvedLanguage),
-      description: t("directory.status.pendingInvitations", { count: invitations.data }),
+      label: invitations.data > 99 ? "99+" : invitations.data.toLocaleString(formatLocale()),
+      description: t("directory:directory.status.pendingInvitations", { count: invitations.data }),
       tone: "warning",
     };
   }
   if (permissions.connections && scim.isSuccess && scim.data.token_set) {
     badges["/auth/connections/scim"] = {
-      label: t("directory.status.configured"),
-      description: t("directory.status.scimConfigured"),
+      label: t("directory:directory.status.configured"),
+      description: t("directory:directory.status.scimConfigured"),
       tone: "success",
     };
   }
   if (permissions.connections && ldap.isSuccess && ldap.data.items.length > 0) {
     const inactive = ldap.data.items.filter((connection) => connection.status !== "active").length;
     badges["/auth/connections/ldap"] = {
-      label: t(inactive ? "directory.status.attention" : "directory.status.active"),
-      description: t(inactive ? "directory.status.ldapAttention" : "directory.status.ldapActive", {
-        count: inactive || ldap.data.items.length,
-      }),
+      label: t(
+        inactive ? "directory:directory.status.attention" : "directory:directory.status.active",
+      ),
+      description: t(
+        inactive
+          ? "directory:directory.status.ldapAttention"
+          : "directory:directory.status.ldapActive",
+        {
+          count: inactive || ldap.data.items.length,
+        },
+      ),
       tone: inactive ? "warning" : "success",
     };
   }
@@ -216,8 +224,13 @@ export function DirectoryNav({ group }: { group: NavGroup }) {
 const SECTION_SKELETON_ROWS = ["one", "two", "three", "four", "five"] as const;
 
 export function SectionNavSkeleton() {
+  const { t } = useTranslation("dashboard");
   return (
-    <div role="status" aria-live="polite" aria-label="Checking available console sections">
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label={t("navMain.checkingAvailableConsoleSections")}
+    >
       <SidebarMenu className="gap-0.5">
         {SECTION_SKELETON_ROWS.map((row) => (
           <SidebarMenuItem key={row}>
@@ -228,7 +241,7 @@ export function SectionNavSkeleton() {
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
-      <span className="sr-only">Checking organization access</span>
+      <span className="sr-only">{t("navMain.checkingOrganizationAccess")}</span>
     </div>
   );
 }

@@ -24,14 +24,14 @@ function requirePasskeySupport() {
   if (!browserSupportsWebAuthn()) throw new PasskeyUnsupportedError();
 }
 
-/** Browser errors get curated copy; backend details never reach the form. */
+/** Returns curated copy for a passkey failure; backend details never reach the form. */
 export function passkeyErrorMessage(error: unknown): string {
   if (error instanceof ApiError) return errorMessage(error);
   if (error instanceof PasskeyUnsupportedError) {
-    return i18n.t("passkey.unsupported", { ns: "auth-flow" });
+    return i18n.t("auth-flow:passkey.unsupported");
   }
   const isCancelled = error instanceof Error && error.name === "NotAllowedError";
-  return i18n.t(isCancelled ? "passkey.cancelled" : "passkey.failed", { ns: "auth-flow" });
+  return i18n.t(isCancelled ? "auth-flow:passkey.cancelled" : "auth-flow:passkey.failed");
 }
 
 export async function signInWithPasskey(): Promise<PasskeySession> {
@@ -67,8 +67,8 @@ export async function signUpWithPasskey(input: PasskeySignupInput): Promise<Pass
 export type InvitePasskeyInput = { token: string; display_name?: string };
 
 /**
- * Accept an invitation by founding the new account on a passkey. The server
- * takes the email and organisation from the invitation; the token only names it.
+ * Accepts an invitation by creating the new account on a passkey. The server takes the email and
+ * organisation from the invitation; the token only names it.
  */
 export async function acceptInviteWithPasskey(input: InvitePasskeyInput): Promise<PasskeySession> {
   requirePasskeySupport();
@@ -89,7 +89,7 @@ export function useAcceptInviteWithPasskey() {
   return useMutation({
     mutationFn: acceptInviteWithPasskey,
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "Invitation accepted" },
+    meta: { successMessage: "authentication:toast.invitationAccepted" },
   });
 }
 
@@ -97,14 +97,10 @@ export function useAcceptInviteWithPasskey() {
 const AUTOFILL_RENEW_AFTER_MS = 4.5 * 60 * 1000;
 
 /**
- * Passkey sign-in from the browser's own prompt: as the sign-in form loads, a
- * discoverable ceremony starts in the background with conditional mediation,
- * so the browser lists the user's passkeys in the email field's suggestions
- * and picking one signs in with nothing typed. Nothing starts where the
- * browser lacks it. The ceremony is renewed before its server state expires
- * and stopped silently when the user signs in another way (the returned
- * function, or any other passkey ceremony, stops it); a cancelled or replaced
- * ceremony is never reported. A picked passkey the server refuses is.
+ * Offers passkey sign-in in the browser's autofill, where supported: a background
+ * conditional-mediation ceremony, so picking a suggested passkey signs in with nothing typed. It
+ * renews before the server state expires and stops silently when the returned function or another
+ * ceremony cancels it; only a passkey the server refuses reaches onError.
  */
 export function startPasskeyAutofill({
   onSignedIn,
@@ -169,7 +165,7 @@ export function usePasskeyLogin() {
   return useMutation({
     mutationFn: signInWithPasskey,
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "Signed in successfully" },
+    meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
 }
 
@@ -182,8 +178,8 @@ export function usePasskeySignup({
     mutationFn: signUpWithPasskey,
     onSuccess,
     meta: {
-      successMessage: "Account created successfully",
-      successDescription: "Check your email for the verification code.",
+      successMessage: "authentication:toast.accountCreatedSuccessfully",
+      successDescription: "authentication:toast.checkEmailForCode",
     },
   });
 }

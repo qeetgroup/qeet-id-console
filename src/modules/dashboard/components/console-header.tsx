@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button, Separator, SidebarTrigger } from "@qeetrix/ui";
 import { KeyboardIcon, SearchIcon } from "@qeetrix/icons";
 
@@ -21,6 +22,7 @@ export function ConsoleHeader({
   onOpenShortcuts,
   searchAvailable,
 }: ConsoleHeaderProps) {
+  const { t } = useTranslation(["dashboard", "common"]);
   return (
     <header className="console-topbar">
       <div className="flex min-w-0 items-center gap-2">
@@ -29,18 +31,21 @@ export function ConsoleHeader({
         <DynamicBreadcrumb />
       </div>
 
+      {/* Named by its visible text, so speech input can say what it reads; the keycap is
+          announced through aria-keyshortcuts instead. */}
       <button
         type="button"
         onClick={onOpenPalette}
         className="console-command-trigger"
-        aria-label={
-          searchAvailable ? "Search the control plane" : "Search unavailable while access loads"
-        }
+        aria-keyshortcuts="Meta+K Control+K"
+        title={searchAvailable ? undefined : t("consoleHeader.searchUnavailable")}
         disabled={!searchAvailable}
       >
         <SearchIcon className="size-4 shrink-0" aria-hidden="true" />
-        <span className="min-w-0 flex-1 truncate">Search the control plane</span>
-        <kbd className="console-keycap">⌘ + K</kbd>
+        <span className="min-w-0 flex-1 truncate">{t("consoleHeader.searchTheControlPlane")}</span>
+        <span className="flex shrink-0" aria-hidden="true">
+          <kbd className="console-keycap">⌘ + K</kbd>
+        </span>
       </button>
 
       <div className="ms-auto flex shrink-0 items-center gap-0.5">
@@ -48,7 +53,7 @@ export function ConsoleHeader({
           variant="ghost"
           size="icon"
           className="md:hidden"
-          aria-label="Search"
+          aria-label={t("common:actions.search")}
           onClick={onOpenPalette}
           disabled={!searchAvailable}
         >
@@ -58,8 +63,8 @@ export function ConsoleHeader({
           variant="ghost"
           size="icon"
           className="hidden 2xl:inline-flex"
-          aria-label="Keyboard shortcuts"
-          title="Keyboard shortcuts (?)"
+          aria-label={t("consoleHeader.keyboardShortcuts")}
+          title={t("consoleHeader.keyboardShortcuts2")}
           onClick={onOpenShortcuts}
         >
           <KeyboardIcon />

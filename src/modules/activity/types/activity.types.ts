@@ -1,10 +1,8 @@
-// Shared contract types for the Enterprise Live Activity Center.
-// Must be kept in sync with the backend's /v1/activity API.
+// Wire types of the backend's /v1/activity API; keep them in sync with it.
 
 export type Severity = "info" | "success" | "warning" | "error" | "critical";
 
-/** Coarse outcome bucket — a friendly grouping over severity, mirrors the
- *  backend summary's by_outcome. success | warning | failed | info. */
+/** Outcome bucket over severity, matching the summary's by_outcome keys. */
 export type Outcome = "success" | "warning" | "failed" | "info";
 
 /** Whether the feed streams live SSE events or shows a pinned historical window. */
@@ -21,16 +19,14 @@ export interface ActivityEvent {
   description?: string;
   actor?: { id?: string; name?: string; type?: string };
   target?: { type?: string; id?: string; label?: string };
-  /** RFC3339 timestamp */
-  at: string;
+  at: string; // RFC 3339 timestamp
   source?: string;
   ip?: string;
   location?: string;
   device?: string;
   browser?: string;
   status?: string;
-  /** Correlation ID of the originating request; drives related-events + copy. */
-  request_id?: string;
+  request_id?: string; // Id of the originating request, which correlates related events
   metadata?: Record<string, unknown>;
 }
 
@@ -77,10 +73,8 @@ export interface ActivityFilters {
   to: string;
   source: string;
   status: string;
-  /** Exact IP match. Applied client-side over loaded events (no server column). */
-  ip: string;
-  /** Exact resource-type match (event.target.type). Applied client-side. */
-  resource: string;
+  ip: string; // Exact IP match; the server ignores it, so it applies only to loaded events
+  resource: string; // Exact `target.type` match, applied only to loaded events
 }
 
 export const DEFAULT_FILTERS: ActivityFilters = {
@@ -97,7 +91,9 @@ export const DEFAULT_FILTERS: ActivityFilters = {
   resource: "",
 };
 
+export type DateBucket = "today" | "yesterday" | "thisWeek" | "lastWeek" | "lastMonth" | "older";
+
 export interface DateGroup {
-  label: string;
+  key: DateBucket; // labelled `activity:dateGroup.<key>`
   events: ActivityEvent[];
 }

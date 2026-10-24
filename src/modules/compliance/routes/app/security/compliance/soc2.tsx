@@ -1,0 +1,12 @@
+import { createFileRoute } from "@tanstack/react-router";
+
+import { ComplianceEvidencePage } from "@/modules/compliance/pages";
+
+export const Route = createFileRoute("/_app/security/compliance/soc2")({
+  staticData: { capability: "audit.read" },
+  component: Soc2Page,
+});
+
+function Soc2Page() {
+  return <ComplianceEvidencePage framework="soc2" />;
+}

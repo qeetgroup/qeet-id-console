@@ -1,20 +1,8 @@
-// Credentials tools — create_oauth_client, rotate_oauth_client_secret,
-// rotate_signing_keys. The OAuth client tools are secret-bearing: any secret
-// material (client_secret) goes into ToolResult.sensitiveArtifact and is NEVER
-// included in summary/data or sent back to the model.
-//
-// Endpoints:
-//   POST /v1/oidc/clients                                          — create_oauth_client
-//   POST /v1/tenants/{id}/oidc/clients/{cid}/rotate-secret        — rotate_oauth_client_secret
-//   (none: signing keys rotate by deployment)                      — rotate_signing_keys
-
 import { z } from "zod";
-import { OIDC_CLIENTS_KEY } from "@/modules/authentication";
+import { createOidcClient, authKeys, rotateOidcClientSecret } from "@/modules/authentication";
 
-import { api } from "@/platform/api/client";
+import i18n from "@/i18n";
 import type { ToolDefinition } from "../types/tool.types";
-
-// ── create_oauth_client ───────────────────────────────────────────────────────
 
 const createOAuthClientInput = z.object({
   name: z.string(),
@@ -25,48 +13,40 @@ const createOAuthClientInput = z.object({
 });
 type CreateOAuthClientInput = z.infer<typeof createOAuthClientInput>;
 
-interface CreateOidcResponse {
-  client: {
-    id: string;
-    client_id: string;
-    name: string;
-    type: string;
-  };
-  client_secret: string;
-  warning: string;
-}
-
 export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
   name: "create_oauth_client",
   category: "credentials",
-  title: "Create OAuth client",
+  title: "qeetai:tools.titles.createOAuthClient",
   description:
     "Register a new OAuth/OIDC client application. Confidential clients return a client_secret exactly once — it is shown to the operator only and is never sent to the model.",
   input: createOAuthClientInput,
   requiredCapability: "connection.write",
   destructive: false,
   mutates: true,
-  consoleScreen: { label: "Applications", to: "/auth/connections/oidc" },
+  consoleScreen: { label: "qeetai:tools.screens.applications", to: "/auth/connections/oidc" },
   confirm: (input) => ({
-    title: "Create OAuth client",
-    body: "This registers a new OAuth/OIDC client. Confidential clients mint a client secret shown once.",
-    affected: [{ label: "Client name", value: input.name }],
-    confirmText: "Create client",
+    title: i18n.t("qeetai:tools.titles.createOAuthClient"),
+    body: i18n.t("qeetai:tools.confirm.createOAuthClient.body"),
+    affected: [{ label: i18n.t("qeetai:tools.fields.clientName"), value: input.name }],
+    confirmText: i18n.t("qeetai:tools.confirm.createOAuthClient.action"),
     tone: "default",
   }),
   auditLabel: "qeetai.create_oauth_client",
   async run(ctx, input) {
-    const res = await api<CreateOidcResponse>("/v1/oidc/clients", {
-      method: "POST",
-      body: { tenant_id: ctx.tenantId, ...input },
-      signal: ctx.signal,
-    });
-    ctx.queryClient.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
+    const res = await createOidcClient(ctx.tenantId, input, ctx.signal);
+    ctx.queryClient.invalidateQueries({ queryKey: authKeys.oidcClients(ctx.tenantId) });
 
-    // Redact: secret never in summary or data — goes to sensitiveArtifact only.
+    // The secret goes only to sensitiveArtifact, so it never reaches the model.
     return {
       ok: true,
       summary: `OAuth client "${res.client.name}" registered (client_id: ${res.client.client_id}, type: ${res.client.type}).${input.type === "confidential" ? " The client secret has been shown to the operator separately and cannot be retrieved again." : ""}`,
+      display: {
+        key:
+          input.type === "confidential"
+            ? "qeetai:toolCallCard.results.clientRegisteredWithSecret"
+            : "qeetai:toolCallCard.results.clientRegistered",
+        values: { name: res.client.name },
+      },
       data: {
         id: res.client.id,
         client_id: res.client.client_id,
@@ -77,7 +57,7 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
         input.type === "confidential" && res.client_secret
           ? {
               kind: "secret" as const,
-              label: `Client secret for "${res.client.name}"`,
+              label: i18n.t("qeetai:tools.secrets.clientSecret", { name: res.client.name }),
               value: res.client_secret,
             }
           : undefined,
@@ -85,54 +65,45 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
   },
 };
 
-// ── rotate_oauth_client_secret ────────────────────────────────────────────────
-
 const rotateOAuthClientSecretInput = z.object({ client_id: z.string() });
 type RotateOAuthClientSecretInput = z.infer<typeof rotateOAuthClientSecretInput>;
-
-interface RotateSecretResponse {
-  client_secret: string;
-  warning: string;
-}
 
 export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecretInput> = {
   name: "rotate_oauth_client_secret",
   category: "credentials",
-  title: "Rotate OAuth client secret",
+  title: "qeetai:tools.titles.rotateOAuthClientSecret",
   description:
     "Rotate a confidential OAuth client's secret. The old secret stops working. The new secret is shown to the operator once and never sent to the model. Destructive: requires confirmation.",
   input: rotateOAuthClientSecretInput,
   requiredCapability: "connection.write",
   destructive: true,
   mutates: true,
-  consoleScreen: { label: "Applications", to: "/auth/connections/oidc" },
+  consoleScreen: { label: "qeetai:tools.screens.applications", to: "/auth/connections/oidc" },
   confirm: (input) => ({
-    title: "Rotate client secret",
-    body: "The existing client secret will stop working immediately. Update your application before confirming. The new secret is shown once only.",
-    affected: [{ label: "Client ID", value: input.client_id }],
-    confirmText: "Rotate",
+    title: i18n.t("qeetai:tools.confirm.rotateOAuthClientSecret.title"),
+    body: i18n.t("qeetai:tools.confirm.rotateOAuthClientSecret.body"),
+    affected: [{ label: i18n.t("qeetai:tools.fields.clientId"), value: input.client_id }],
+    confirmText: i18n.t("qeetai:tools.confirm.rotateOAuthClientSecret.action"),
     tone: "destructive",
   }),
   auditLabel: "qeetai.rotate_oauth_client_secret",
   async run(ctx, input) {
-    const res = await api<RotateSecretResponse>(
-      `/v1/tenants/${ctx.tenantId}/oidc/clients/${input.client_id}/rotate-secret`,
-      {
-        method: "POST",
-        signal: ctx.signal,
-      },
-    );
-    ctx.queryClient.invalidateQueries({ queryKey: OIDC_CLIENTS_KEY });
+    const res = await rotateOidcClientSecret(ctx.tenantId, input.client_id, ctx.signal);
+    ctx.queryClient.invalidateQueries({ queryKey: authKeys.oidcClients(ctx.tenantId) });
 
-    // Redact: new secret goes to sensitiveArtifact only, never in summary/data.
+    // The new secret goes only to sensitiveArtifact, so it never reaches the model.
     return {
       ok: true,
       summary: `Client secret rotated for client ${input.client_id}. The new secret has been shown to the operator separately and cannot be retrieved again.`,
+      display: {
+        key: "qeetai:toolCallCard.results.secretRotated",
+        values: { clientId: input.client_id },
+      },
       data: { client_id: input.client_id },
       sensitiveArtifact: res.client_secret
         ? {
             kind: "secret" as const,
-            label: `New client secret for ${input.client_id}`,
+            label: i18n.t("qeetai:tools.secrets.newClientSecret", { clientId: input.client_id }),
             value: res.client_secret,
           }
         : undefined,
@@ -140,15 +111,13 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
   },
 };
 
-// ── rotate_signing_keys ───────────────────────────────────────────────────────
-
 const rotateSigningKeysInput = z.object({});
 type RotateSigningKeysInput = z.infer<typeof rotateSigningKeysInput>;
 
 export const rotateSigningKeysTool: ToolDefinition<RotateSigningKeysInput> = {
   name: "rotate_signing_keys",
   category: "credentials",
-  title: "Rotate signing keys",
+  title: "qeetai:tools.titles.rotateSigningKeys",
   description:
     "Signing keys rotate by deployment, not from the console, so this explains where rotation happens and changes nothing.",
   input: rotateSigningKeysInput,
@@ -156,20 +125,22 @@ export const rotateSigningKeysTool: ToolDefinition<RotateSigningKeysInput> = {
   destructive: true,
   mutates: true,
   consoleScreen: {
-    label: "Signing keys",
+    label: "qeetai:tools.screens.signingKeys",
     to: "/auth/api/signing-keys",
     hint: "Signing keys rotate by deployment; the current keys are listed",
   },
   confirm: () => ({
-    title: "Rotate signing keys",
-    body: "Signing keys rotate by deployment, not from the console. Nothing will be changed.",
-    affected: [{ label: "Action", value: "None" }],
-    confirmText: "OK",
+    title: i18n.t("qeetai:tools.titles.rotateSigningKeys"),
+    body: i18n.t("qeetai:tools.confirm.rotateSigningKeys.body"),
+    affected: [
+      { label: i18n.t("qeetai:tools.fields.action"), value: i18n.t("qeetai:tools.values.none") },
+    ],
+    confirmText: i18n.t("qeetai:tools.confirm.rotateSigningKeys.action"),
     tone: "default",
   }),
   auditLabel: "qeetai.rotate_signing_keys",
-  // The rotate route was removed from the server: keys rotate by deployment only.
-  // The tool stays so a request for it is answered, not met with "unknown tool".
+  // Keys rotate by deployment only; the tool exists so a request to rotate gets that answer
+  // rather than "unknown tool".
   async run() {
     const message = "Signing keys rotate by deployment, not from the console. Nothing was changed.";
     return { ok: false, summary: message, error: { code: "rotation_by_deployment", message } };

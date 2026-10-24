@@ -1,0 +1,70 @@
+name: Docker image
+
+# Builds and smoke-tests the image, and generates the SBOM, on pull requests that touch
+# their inputs, before release/** publishes and attests the image for the test kit.
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - package.json
+      - bun.lock
+      - .npmrc
+      - vite.config.ts
+      - src/start.ts
+      - src/platform/config/**
+      - .github/workflows/docker.yml
+      - .github/workflows/sbom.yml
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and smoke-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build
+        run: docker build --tag qeet-id-console:pr .
+
+      # Configured: serves /healthz with security headers. Unconfigured: fails every request.
+      - name: Smoke test
+        run: |
+          secret=$(head -c 48 /dev/urandom | base64)
+          docker run -d --name configured -p 3000:3000 \
+            -e SESSION_SECRET="$secret" -e SERVER_URL=http://127.0.0.1:9 \
+            -e PUBLIC_API_URL=https://api.example.test qeet-id-console:pr
+          docker run -d --name unconfigured -p 3001:3000 qeet-id-console:pr
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:3000/healthz > /dev/null && break; sleep 1; done
+          curl -fsS -D headers.txt http://127.0.0.1:3000/healthz
+          grep -qi '^content-security-policy:' headers.txt
+          grep -qi '^strict-transport-security:' headers.txt
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3001/healthz)
+          if [ "$code" != "500" ]; then
+            echo "::error::an unconfigured container answered $code, expected 500"
+            exit 1
+          fi
+          docker logs unconfigured 2>&1 | grep -q 'Refusing to start'
+
+      - name: Container logs on failure
+        if: failure()
+        run: |
+          docker logs configured || true
+          docker logs unconfigured || true
+
+  # The SBOM the release image and the deploy attest, so a dependency change that breaks it
+  # fails here rather than after a release push.
+  sbom:
+    name: SBOM
+    permissions:
+      contents: read
+    uses: ./.github/workflows/sbom.yml

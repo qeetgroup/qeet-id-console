@@ -1,0 +1,170 @@
+// A chronological view of one user's whole lifecycle, gated on audit.read and user.read; the
+// server enforces tenant isolation.
+
+import { EmptyState } from "@qeetrix/ui";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeftIcon, ClockIcon, ShieldIcon } from "@qeetrix/icons";
+import { useCallback, useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
+
+import type { ActivityEvent } from "@/modules/activity";
+import { PageHeader } from "@/platform/components/page-header";
+import { useCapabilities } from "@/platform/security/capability-provider";
+
+import { TimelineProvider, useTimeline } from "../timeline-provider";
+import { IdentityTimeline } from "./identity-timeline";
+import { TimelineDetailsDrawer } from "./timeline-details-drawer";
+import { TimelineExportMenu } from "./timeline-export-menu";
+import { TimelineFilters } from "./timeline-filters";
+import { TimelineSummaryStrip } from "./timeline-summary-strip";
+
+/** Renders one user's identity timeline page. */
+export function IdentityTimelinePage({ userId }: { userId: string }) {
+  return (
+    <TimelineProvider userId={userId}>
+      <TimelinePage userId={userId} />
+    </TimelineProvider>
+  );
+}
+
+function TimelinePage({ userId }: { userId: string }) {
+  const { t } = useTranslation(["timeline", "common"]);
+  const access = useCapabilities();
+  const canRead = access.can("audit.read") && access.can("user.read");
+
+  const {
+    events,
+    groups,
+    filters,
+    setFilters,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isError,
+    retry,
+    setSelectedEventId,
+    selectedEventId,
+  } = useTimeline();
+
+  const [selectedEvent, setSelectedEvent] = useState<ActivityEvent | null>(null);
+
+  const handleSelectEvent = useCallback(
+    (event: ActivityEvent) => {
+      setSelectedEvent(event);
+      setSelectedEventId(event.id);
+    },
+    [setSelectedEventId],
+  );
+
+  const handleCloseDrawer = useCallback(() => {
+    setSelectedEvent(null);
+    setSelectedEventId(null);
+  }, [setSelectedEventId]);
+
+  const selectedIndex = useMemo(
+    () => events.findIndex((e) => e.id === selectedEvent?.id),
+    [events, selectedEvent],
+  );
+  const prevEvent = selectedIndex > 0 ? events[selectedIndex - 1] : null;
+  const nextEvent =
+    selectedIndex >= 0 && selectedIndex < events.length - 1 ? events[selectedIndex + 1] : null;
+
+  if (!canRead) {
+    return (
+      <div className="flex min-w-0 flex-col gap-4">
+        <PageHeader
+          title={t("identityTimelinePage.identityTimeline")}
+          description={t("identityTimelinePage.aChronologicalViewOf")}
+        />
+        <div className="enterprise-panel flex min-h-64 items-center justify-center">
+          <EmptyState
+            icon={ShieldIcon}
+            title={t("identityTimelinePage.accessRestricted")}
+            description={
+              <Trans
+                t={t}
+                i18nKey="identityTimelinePage.needsCapabilities"
+                components={{ code: <code className="font-mono" /> }}
+              />
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 flex-col gap-4">
+      {/* Back link + page header */}
+      <Link
+        to="/users/$userId"
+        params={{ userId }}
+        className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+      >
+        <ArrowLeftIcon className="size-3" aria-hidden="true" />
+        {t("identityTimelinePage.backToUser")}
+      </Link>
+
+      <PageHeader
+        title={t("identityTimelinePage.identityTimeline")}
+        description={t("identityTimelinePage.chronologicalViewOfThis")}
+        actions={
+          <div className="flex items-center gap-2">
+            <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:inline-flex">
+              <ClockIcon className="size-3.5" aria-hidden="true" />
+              {isLoading
+                ? t("common:states.loading")
+                : t(
+                    hasNextPage ? "identityTimelinePage.loadedMore" : "identityTimelinePage.loaded",
+                    {
+                      count: events.length,
+                    },
+                  )}
+            </span>
+            <TimelineExportMenu events={events} userId={userId} disabled={isLoading} />
+          </div>
+        }
+      />
+
+      {/* Computed from the loaded events only; a card toggles its category. */}
+      <TimelineSummaryStrip
+        events={events}
+        loading={isLoading}
+        activeCategories={filters.category}
+        onSelectCategories={(categories) => setFilters({ category: categories })}
+      />
+
+      {/* Filter panel */}
+      <div className="enterprise-panel p-4">
+        <TimelineFilters />
+      </div>
+
+      {/* Timeline */}
+      <div className="enterprise-panel min-h-96 overflow-hidden">
+        <IdentityTimeline
+          groups={groups}
+          isLoadingHistory={isLoading}
+          isFetchingNextPage={isFetchingNextPage}
+          hasNextPage={hasNextPage}
+          onLoadMore={fetchNextPage}
+          onSelectEvent={handleSelectEvent}
+          selectedEventId={selectedEventId}
+          isError={isError}
+          onRetry={retry}
+        />
+      </div>
+
+      {/* Always mounted, so it can animate its transitions. */}
+      <TimelineDetailsDrawer
+        event={selectedEvent}
+        userId={userId}
+        prevEvent={prevEvent}
+        nextEvent={nextEvent}
+        onClose={handleCloseDrawer}
+        onSelectPrev={prevEvent ? () => handleSelectEvent(prevEvent) : undefined}
+        onSelectNext={nextEvent ? () => handleSelectEvent(nextEvent) : undefined}
+      />
+    </div>
+  );
+}

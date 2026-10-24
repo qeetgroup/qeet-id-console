@@ -7,10 +7,8 @@ import { socialStartUrl, usePlatformSocialProviders } from "../api/flows";
 
 import { AuthDivider } from "./auth-form-card";
 
-// Display catalog for the platform social providers. A button is rendered ONLY
-// when the backend reports the provider as configured (its keys are set) — see
-// usePlatformSocialProviders → GET /v1/social/platform/providers. Nothing is
-// shown as a disabled placeholder.
+// Platform social providers the console can show. A button renders only when the server reports
+// the provider as configured, never as a disabled placeholder.
 const CATALOG: { id: string; label: string; icon: ReactNode }[] = [
   { id: "google", label: "Google", icon: <Google /> },
   { id: "github", label: "GitHub", icon: <Github className="dark:invert" /> },
@@ -18,21 +16,25 @@ const CATALOG: { id: string; label: string; icon: ReactNode }[] = [
   { id: "apple", label: "Apple", icon: <Apple className="invert dark:invert-0" /> },
 ];
 
+// One whole phrase per action, so no sentence is assembled from a verb and a provider name.
+const ACTION_LABEL = {
+  continue: "form.socialContinue",
+  signIn: "form.socialSignIn",
+  signUp: "form.socialSignUp",
+} as const;
+
 /**
- * The "Or continue with" divider + one button per configured social provider.
- * Renders nothing at all when no providers are configured, so the auth forms
- * show only what actually works.
+ * Renders the "Or continue with" divider and one button per configured social provider, or
+ * nothing when none is configured, so the forms show only what works.
  */
 export function SocialButtons({
-  verb = "Continue",
+  action = "continue",
   intent = "login",
   disabled = false,
 }: {
-  verb?: string;
+  action?: keyof typeof ACTION_LABEL;
   disabled?: boolean;
-  // "signup" permits just-in-time account creation; "login" (default) requires
-  // an existing account.
-  intent?: "login" | "signup";
+  intent?: "login" | "signup"; // "signup" may create an account; "login" requires an existing one
 }) {
   const { t } = useTranslation("auth-flow");
   const q = usePlatformSocialProviders();
@@ -51,7 +53,7 @@ export function SocialButtons({
             variant="outline"
             type="button"
             disabled={disabled}
-            aria-label={t("form.socialLabel", { verb, provider: p.label })}
+            aria-label={t(ACTION_LABEL[action], { provider: p.label })}
             onClick={() => {
               window.location.href = socialStartUrl(p.id, intent);
             }}

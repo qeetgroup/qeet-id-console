@@ -2,21 +2,14 @@ import { QeetLogo } from "@qeetrix/icons";
 import { cn } from "@qeetrix/ui";
 
 type QeetMarkProps = {
-  /** Rendered height in px. The mark is square, so this is also its width. */
-  height: number;
+  height: number; // px; the mark is square, so also its width
   className?: string;
-  /** Names the mark. Without it the mark is decorative. */
-  "aria-label"?: string;
+  "aria-label"?: string; // names the mark; without it the mark is decorative
 };
 
 /**
- * The Qeet mark, following the console theme: the light-surface file in light
- * mode, the dark-surface file in dark mode.
- *
- * `@qeetrix/icons` logos are images and cannot see the theme, so both files
- * render and the `dark:` variant shows one, as the Qeetrix logo docs prescribe.
- * This replaces the theme-adaptive `QeetLogoMark` that `@qeetrix/ui` 1.x
- * exported from `@qeetrix/ui/brand`, which 2.x removed.
+ * Renders the Qeet mark for the console theme. `@qeetrix/icons` logos are images that can't see
+ * the theme, so both files render and the `dark:` variant shows one, as the logo docs prescribe.
  */
 export function QeetMark({ height, className, ...label }: QeetMarkProps) {
   return (

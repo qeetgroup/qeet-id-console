@@ -1,13 +1,12 @@
-import { env } from "@/platform/config/env";
-import { DEFAULT_FLAGS, type FeatureFlag } from "@/platform/feature-flags/flags";
+import { readPublicConfig } from "@/platform/config/public-config";
+import { flagDefinitions } from "@/platform/modules/registry";
 
-// Resolve the effective flag map. Starts from defaults and applies known
-// build-time overrides. This is where a remote flag service would merge in
-// later — behind the same map, so callers never change.
-export function evaluateFlags(): Record<FeatureFlag, boolean> {
-  return {
-    ...DEFAULT_FLAGS,
-    // Build-time kill switch already honoured by the shell (air-gapped builds).
-    qeetai: env.VITE_QEETAI_ENABLED !== "false",
-  };
+/**
+ * Returns whether each flag the modules declare is on: its build default, unless the deployment
+ * turned it off at runtime (CONSOLE_FLAGS_OFF), which needs no new build.
+ */
+export function evaluateFlags(
+  off: readonly string[] = readPublicConfig().flagsOff ?? [],
+): Record<string, boolean> {
+  return Object.fromEntries(flagDefinitions().map((f) => [f.id, f.enabled && !off.includes(f.id)]));
 }

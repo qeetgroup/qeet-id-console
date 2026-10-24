@@ -1,10 +1,7 @@
-// SSE reader for a qeetai turn. POSTs to the streaming endpoint and turns the
-// backend's `event: <type>\ndata: <json>` frames into the typed StreamEvent
-// stream the conversation UI consumes. Keep-alive comments (": ping") are
-// skipped, and an aborted turn resolves to a clean `done: stopped`.
-
-import { clearBrowserSession, refreshSessionForRequest } from "@/platform/api/client";
-import { newRequestId } from "@/platform/telemetry/tracing";
+import i18n from "@/i18n";
+import { openEventStream, readServerSentEvents } from "@/platform/api/event-stream";
+import { ApiError } from "@/platform/errors/api-error";
+import { errorMessage } from "@/platform/errors/user-message";
 
 import type { StreamEvent } from "./ai-provider";
 
@@ -29,12 +26,11 @@ function mapEvent(name: string, data: Record<string, unknown>): StreamEvent | nu
         status: data.status === "succeeded" ? "succeeded" : "failed",
         summary: typeof data.summary === "string" ? data.summary : "",
       };
-    case "error":
-      return {
-        type: "error",
-        code: String(data.code ?? "error"),
-        message: String(data.message ?? "The assistant hit an error."),
-      };
+    case "error": {
+      // The frame's own message is backend text: show copy keyed on the code.
+      const code = String(data.code ?? "error");
+      return { type: "error", code, message: errorMessage(new ApiError(0, code, "")) };
+    }
     case "done": {
       const reason = data.reason;
       return {
@@ -49,106 +45,68 @@ function mapEvent(name: string, data: Record<string, unknown>): StreamEvent | nu
   }
 }
 
-function parseFrame(frame: string): StreamEvent | null {
-  let event = "message";
-  const dataLines: string[] = [];
-  for (const line of frame.split("\n")) {
-    if (line.startsWith(":")) continue; // comment / keep-alive
-    if (line.startsWith("event:")) event = line.slice(6).trim();
-    else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
-  }
-  if (dataLines.length === 0) return null;
+function parseData(data: string): Record<string, unknown> | null {
   try {
-    return mapEvent(event, JSON.parse(dataLines.join("\n")) as Record<string, unknown>);
+    const parsed: unknown = JSON.parse(data);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
   } catch {
     return null;
   }
 }
 
+/**
+ * Streams one turn through the same-origin `/api/qeetai-stream` proxy as StreamEvents. A
+ * refusal or a dropped stream ends with an error event and `done: error`; an aborted turn ends
+ * with `done: stopped`.
+ */
 export async function* streamQeetAITurn(
   path: string,
   body: unknown,
   signal: AbortSignal,
 ): AsyncIterable<StreamEvent> {
-  const url = new URL("/api/qeetai-stream", window.location.origin);
-  url.searchParams.set("path", path.startsWith("/") ? path : `/${path}`);
-
-  const request = () =>
-    fetch(url, {
+  let stream: ReadableStream<Uint8Array>;
+  try {
+    stream = await openEventStream("/api/qeetai-stream", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "text/event-stream",
-        "X-Request-Id": newRequestId(),
-      },
-      body: JSON.stringify(body),
+      query: { path: path.startsWith("/") ? path : `/${path}` },
+      body,
       signal,
     });
+  } catch (err) {
+    if (signal.aborted) {
+      yield { type: "done", reason: "stopped" };
+      return;
+    }
+    if (err instanceof ApiError) {
+      // Copy keyed on the code; the body's message is backend text.
+      yield { type: "error", code: err.code, message: errorMessage(err) };
+    } else {
+      yield {
+        type: "error",
+        code: "network_error",
+        message: i18n.t("qeetai:stream.unreachable"),
+      };
+    }
+    yield { type: "done", reason: "error" };
+    return;
+  }
 
-  let res: Response;
   try {
-    res = await request();
-    if (res.status === 401 && (await refreshSessionForRequest(signal, true))) {
-      res = await request();
+    for await (const message of readServerSentEvents(stream)) {
+      const data = parseData(message.data);
+      const event = data && mapEvent(message.event, data);
+      if (event) yield event;
     }
   } catch {
     if (signal.aborted) {
       yield { type: "done", reason: "stopped" };
       return;
     }
-    yield { type: "error", code: "network_error", message: "Could not reach Qeet AI." };
+    yield {
+      type: "error",
+      code: "stream_error",
+      message: i18n.t("qeetai:stream.interrupted"),
+    };
     yield { type: "done", reason: "error" };
-    return;
-  }
-
-  if (!res.ok || !res.body) {
-    if (res.status === 401) await clearBrowserSession();
-    let code = `http_${res.status}`;
-    let message = res.statusText || "Request failed";
-    try {
-      const parsed = (await res.json()) as { error?: { code?: string; message?: string } };
-      if (parsed?.error) {
-        code = parsed.error.code ?? code;
-        message = parsed.error.message ?? message;
-      }
-    } catch {
-      /* non-JSON error body — keep the status-derived message */
-    }
-    yield { type: "error", code, message };
-    yield { type: "done", reason: "error" };
-    return;
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      let sep = buffer.indexOf("\n\n");
-      while (sep !== -1) {
-        const frame = buffer.slice(0, sep);
-        buffer = buffer.slice(sep + 2);
-        const event = parseFrame(frame);
-        if (event) yield event;
-        sep = buffer.indexOf("\n\n");
-      }
-    }
-  } catch {
-    if (signal.aborted) {
-      yield { type: "done", reason: "stopped" };
-      return;
-    }
-    yield { type: "error", code: "stream_error", message: "The response stream was interrupted." };
-    yield { type: "done", reason: "error" };
-    return;
-  } finally {
-    try {
-      await reader.cancel();
-    } catch {
-      /* reader already released */
-    }
   }
 }

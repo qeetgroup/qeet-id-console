@@ -91,7 +91,7 @@ describe("api() BFF request", () => {
     await expect(api("/v1/auth/login", { method: "POST", anonymous: true })).rejects.toMatchObject({
       code: "bad_creds",
     });
-    expect(proxyApiRequest.mock.calls[0][0].data.anonymous).toBe(true);
+    expect(proxyApiRequest.mock.calls[0]?.[0].data.anonymous).toBe(true);
     expect(onAuthLost).not.toHaveBeenCalled();
   });
 
@@ -130,6 +130,44 @@ describe("api() BFF request", () => {
     await expect(api("/v1/thing")).rejects.toBeInstanceOf(ApiError);
     expect(sessionStore.getSnapshot().isAuthenticated).toBe(false);
     expect(onAuthLost).toHaveBeenCalledOnce();
+  });
+
+  it("signs out without trying to renew a session the BFF reports ended", async () => {
+    proxyApiRequest.mockResolvedValue({
+      status: 401,
+      data: { error: { code: "auth.session_revoked" } },
+      session: EMPTY_SESSION,
+      sessionChanged: true,
+    });
+    sessionStore.set(AUTHENTICATED_SESSION);
+
+    await expect(api("/v1/thing")).rejects.toMatchObject({ code: "auth.session_revoked" });
+    expect(refreshServerSessionNow).not.toHaveBeenCalled();
+    expect(proxyApiRequest).toHaveBeenCalledOnce();
+    expect(sessionStore.getSnapshot().isAuthenticated).toBe(false);
+    expect(onAuthLost).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the person signed in when the session can't be renewed right now", async () => {
+    sessionStore.set(AUTHENTICATED_SESSION);
+    proxyApiRequest.mockResolvedValue({
+      status: 401,
+      data: { error: { code: "auth.session_expired", message: "Expired" } },
+      session: AUTHENTICATED_SESSION,
+      sessionChanged: false,
+    });
+    refreshServerSessionNow.mockResolvedValue({
+      session: AUTHENTICATED_SESSION,
+      unavailable: true,
+    });
+
+    await expect(api("/v1/thing")).rejects.toMatchObject({
+      code: "client.session_refresh_unavailable",
+      retryable: true,
+    });
+    expect(sessionStore.getSnapshot().isAuthenticated).toBe(true);
+    expect(onAuthLost).not.toHaveBeenCalled();
+    expect(clearServerSession).not.toHaveBeenCalled();
   });
 
   it("parses with an opt-in schema and fails closed on mismatch", async () => {
@@ -216,7 +254,7 @@ describe("api() step-up", () => {
     });
     expect(handler).toHaveBeenCalledWith({ allowedMethods: ["webauthn"] });
     expect(proxyApiRequest).toHaveBeenCalledTimes(2);
-    expect(proxyApiRequest.mock.calls[1][0].data).toMatchObject({
+    expect(proxyApiRequest.mock.calls[1]?.[0].data).toMatchObject({
       path: "/v1/api-keys",
       method: "POST",
       body: { name: "ci" },

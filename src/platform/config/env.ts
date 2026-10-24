@@ -1,45 +1,24 @@
+// First: the schema below parses at load, and Zod must not probe for eval before it.
+import "./zod";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+// Client (VITE_*) variables only. Server variables are read from process.env at runtime and
+// checked at startup by server-config.ts; `import.meta.env` never carries them.
 export const env = createEnv({
-  server: {
-    SERVER_URL: z.string().url().optional(),
-    SESSION_SECRET: z.string().min(32).optional(),
-  },
+  server: {},
 
-  /**
-   * The prefix that client-side variables must have. This is enforced both at
-   * a type-level and at runtime.
-   */
   clientPrefix: "VITE_",
 
   client: {
     VITE_APP_TITLE: z.string().min(1).optional(),
     VITE_API_URL: z.string().url().optional(),
-    // Build-time kill switch for the Qeet AI surface. Defaults on; the real
-    // runtime gate is the backend `/v1/qeetai/status`. Set "false" to omit the
-    // organization entirely (e.g. an air-gapped build).
+    // Build-time kill switch for Qeet AI, on by default; "false" turns it off entirely, as for
+    // an air-gapped build. The runtime gate is the backend's `/v1/qeetai/status`.
     VITE_QEETAI_ENABLED: z.enum(["true", "false"]).optional(),
   },
 
-  /**
-   * What object holds the environment variables at runtime. This is usually
-   * `process.env` or `import.meta.env`.
-   */
   runtimeEnv: import.meta.env,
 
-  /**
-   * By default, this library will feed the environment variables directly to
-   * the Zod validator.
-   *
-   * This means that if you have an empty string for a value that is supposed
-   * to be a number (e.g. `PORT=` in a ".env" file), Zod will incorrectly flag
-   * it as a type mismatch violation. Additionally, if you have an empty string
-   * for a value that is supposed to be a string with a default value (e.g.
-   * `DOMAIN=` in an ".env" file), the default value will never be applied.
-   *
-   * In order to solve these issues, we recommend that all new projects
-   * explicitly specify this option as true.
-   */
-  emptyStringAsUndefined: true,
+  emptyStringAsUndefined: true, // `VAR=` counts as unset, not as an empty value
 });

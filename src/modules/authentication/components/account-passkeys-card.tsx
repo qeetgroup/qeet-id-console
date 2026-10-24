@@ -9,15 +9,19 @@ import {
   FieldDescription,
   FieldLabel,
   Input,
-  StatusPill,
 } from "@qeetrix/ui";
 import { FingerprintPatternIcon, LoaderCircleIcon, PlusIcon } from "@qeetrix/icons";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import { errorMessage } from "@/platform/errors/user-message";
-import { useConfirmDialog } from "@/shared/components/confirm-dialog";
+import { isStepUpRequired } from "@/platform/security/step-up";
+import {
+  settleSensitiveAction,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import {
   canAddPasskey,
   PASSKEY_NAME_MAX_LENGTH,
@@ -30,14 +34,13 @@ import { isLastSignInMethod, useSignInMethods } from "../api/sign-in-methods";
 import { PasskeysTable, passkeyDisplayName } from "./passkeys-table";
 
 /**
- * The Passkeys card of the user's own security settings: their passkeys, with
- * rename and remove, and adding a new one with an optional name. Adding is
- * offered only when their organization allows passkeys.
+ * Renders the Passkeys card of the user's own security settings: rename, remove, and add with an
+ * optional name. Adding is offered only when their organization allows passkeys.
  */
 export function AccountPasskeysCard({ className }: { className?: string }) {
   const { t } = useTranslation("account");
-  const { t: tAuth } = useTranslation("auth");
-  const [confirmDialog, openConfirm] = useConfirmDialog();
+  const { t: tAuth } = useTranslation("authentication");
+  const runSensitive = useSensitiveAction();
   const passkeysQ = usePasskeys();
   const rename = useRenamePasskey();
   const register = useRegisterPasskey();
@@ -52,28 +55,34 @@ export function AccountPasskeysCard({ className }: { className?: string }) {
   function add(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setAddError(null);
-    register.mutate(
-      { name },
-      {
-        onSuccess: () => {
-          setName("");
-          toast.success(t("security.passkeys.added"));
-        },
-        // A dismissed browser prompt is not a failure worth alarming about;
-        // anything else gets the user-safe copy for its code.
-        onError: (err) =>
-          setAddError(
-            err instanceof Error && err.name === "NotAllowedError"
-              ? t("security.passkeys.cancelled")
-              : errorMessage(err),
-          ),
-      },
-    );
+    runSensitive({
+      actionLabel: t("security.passkeys.add"),
+      run: () =>
+        register.mutateAsync(
+          { name },
+          {
+            // A dismissed browser prompt is not a failure worth alarming about, and a cancelled
+            // step-up has said so already; anything else gets the user-safe copy for its code.
+            onError: (err) =>
+              setAddError(
+                isStepUpRequired(err)
+                  ? null
+                  : err instanceof Error && err.name === "NotAllowedError"
+                    ? t("security.passkeys.cancelled")
+                    : errorMessage(err),
+              ),
+          },
+        ),
+    })
+      .then(() => {
+        setName("");
+        toast.success(t("security.passkeys.added"));
+      })
+      .catch(settleSensitiveAction);
   }
 
   return (
     <Card className={className}>
-      {confirmDialog}
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -95,25 +104,23 @@ export function AccountPasskeysCard({ className }: { className?: string }) {
               passkeys={passkeys}
               onRename={(p, newName) => rename.mutateAsync({ id: p.id, name: newName })}
               onRemove={(p) =>
-                openConfirm({
-                  title: t("security.passkeys.removeConfirm", {
-                    name: passkeyDisplayName(p, tAuth("loginMethods.passkeys.unnamed")),
-                  }),
-                  variant: "destructive",
-                  confirmLabel: t("security.passkeys.remove"),
-                  onConfirm: () => remove.mutate(p.id),
-                })
+                runSensitive({
+                  confirm: {
+                    title: t("security.passkeys.removeConfirm", {
+                      name: passkeyDisplayName(p, tAuth("loginMethods.passkeys.unnamed")),
+                    }),
+                    confirmLabel: t("security.passkeys.remove"),
+                    tone: "destructive",
+                  },
+                  actionLabel: t("security.passkeys.removeAction"),
+                  run: () => remove.mutateAsync(p.id),
+                }).catch(settleSensitiveAction)
               }
               isRemoving={remove.isPending}
               removeBlockedReason={lastMethod ? t("security.lastMethod") : undefined}
             />
           </div>
         )}
-        {remove.error ? (
-          <p role="alert" className="text-sm text-destructive">
-            {errorMessage(remove.error)}
-          </p>
-        ) : null}
         {passkeysQ.isSuccess &&
           (canAddPasskey(passkeysQ.data) ? (
             <form onSubmit={add} className="grid max-w-md gap-3">

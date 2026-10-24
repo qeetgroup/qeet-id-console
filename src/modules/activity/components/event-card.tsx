@@ -28,13 +28,11 @@ import {
   WebhookIcon,
 } from "@qeetrix/icons";
 import { type ComponentType, useState } from "react";
+import { useTranslation } from "react-i18next";
 
+import { actorTypeLabel, categoryLabel, formatEventTitle } from "../event-labels";
 import type { ActivityEvent, Severity } from "../types/activity.types";
 import { SeverityBadge } from "./severity-badge";
-
-// ---------------------------------------------------------------------------
-// Category → icon mapping
-// ---------------------------------------------------------------------------
 
 const CATEGORY_ICONS: Record<string, ComponentType<IconProps<"outline">>> = {
   authentication: LogInIcon,
@@ -70,10 +68,6 @@ export function getCategoryIcon(category: string): ComponentType<IconProps<"outl
   return CATEGORY_ICONS[key] ?? ActivityIcon;
 }
 
-// ---------------------------------------------------------------------------
-// EventCard
-// ---------------------------------------------------------------------------
-
 type EventCardProps = {
   event: ActivityEvent;
   isNew?: boolean;
@@ -82,10 +76,7 @@ type EventCardProps = {
   onClick?: () => void;
 };
 
-/**
- * A single activity event row. Supports a compact mode (dashboard widget)
- * and a full mode (activity page timeline). Keyboard-accessible.
- */
+/** Renders an event as a compact clickable row, or as a full card with expandable metadata. */
 export function EventCard({
   event,
   isNew = false,
@@ -93,6 +84,7 @@ export function EventCard({
   compact = false,
   onClick,
 }: EventCardProps) {
+  const { t } = useTranslation("activity");
   const [expanded, setExpanded] = useState(false);
   const CategoryIcon = getCategoryIcon(event.category);
   const SeverityIcon = SEVERITY_ICON[event.severity];
@@ -117,7 +109,11 @@ export function EventCard({
           isSelected && "bg-muted/55",
         )}
         onClick={onClick}
-        aria-label={`${event.title}${event.actor?.name ? `, by ${event.actor.name}` : ""}`}
+        aria-label={
+          event.actor?.name
+            ? t("eventCard.titleBy", { title: formatEventTitle(event), actor: event.actor.name })
+            : formatEventTitle(event)
+        }
       >
         <span
           className={cn(
@@ -129,14 +125,16 @@ export function EventCard({
           <CategoryIcon />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{event.title}</p>
+          <p className="truncate text-sm font-medium">{formatEventTitle(event)}</p>
           <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
             {event.actor?.type && (
               <Badge variant="muted" className="max-w-24 truncate text-[10px]">
-                {event.actor.type}
+                {actorTypeLabel(event.actor.type)}
               </Badge>
             )}
-            <span className="truncate text-[11px] text-muted-foreground">{event.category}</span>
+            <span className="truncate text-[11px] text-muted-foreground">
+              {categoryLabel(event.category)}
+            </span>
           </div>
         </div>
         <TimeSince
@@ -147,7 +145,6 @@ export function EventCard({
     );
   }
 
-  // Full event card (activity page timeline)
   return (
     <article
       className={cn(
@@ -158,7 +155,7 @@ export function EventCard({
         isNew && "border-success/30 bg-success/10",
         isSelected && "ring-2 ring-ring",
       )}
-      aria-label={event.title}
+      aria-label={formatEventTitle(event)}
     >
       {/* Header row */}
       <div className="flex min-w-0 items-start gap-3">
@@ -175,11 +172,13 @@ export function EventCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{event.title}</span>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+              {formatEventTitle(event)}
+            </span>
             <SeverityBadge severity={event.severity} />
             {isNew && (
               <Badge variant="success" className="text-[10px]">
-                New
+                {t("eventCard.new")}
               </Badge>
             )}
           </div>
@@ -188,7 +187,7 @@ export function EventCard({
           )}
         </div>
 
-        {/* Timestamp + expand toggle */}
+        {/* Timestamp + details button */}
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <TimeSince value={event.at} className="text-[11px] text-muted-foreground tabular-nums" />
           {onClick && (
@@ -196,15 +195,15 @@ export function EventCard({
               type="button"
               className="inline-flex items-center gap-1 text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               onClick={onClick}
-              aria-label="Open event details"
+              aria-label={t("eventCard.openEventDetails")}
             >
-              Details <ChevronRightIcon className="size-3" aria-hidden="true" />
+              {t("eventCard.details")} <ChevronRightIcon className="size-3" aria-hidden="true" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Meta row: actor, target, source */}
+      {/* Meta row: actor, target, source, IP */}
       <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
         {event.actor && (
           <div className="flex items-center gap-1.5">
@@ -216,14 +215,22 @@ export function EventCard({
                       <AvatarFallback className="text-[8px]">{actorInitials}</AvatarFallback>
                     </Avatar>
                     <span className="max-w-32 truncate">
-                      {event.actor.name ?? event.actor.id ?? event.actor.type ?? "Unknown"}
+                      {event.actor.name ?? event.actor.id ?? event.actor.type ?? t("actor.unknown")}
                     </span>
                   </span>
                 }
               />
               <TooltipContent>
-                {event.actor.type && <p className="text-xs">Type: {event.actor.type}</p>}
-                {event.actor.id && <p className="font-mono text-xs">ID: {event.actor.id}</p>}
+                {event.actor.type && (
+                  <p className="text-xs">
+                    {t("eventCard.actorType", { type: actorTypeLabel(event.actor.type) })}
+                  </p>
+                )}
+                {event.actor.id && (
+                  <p className="font-mono text-xs">
+                    {t("eventCard.actorId", { id: event.actor.id })}
+                  </p>
+                )}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -277,7 +284,7 @@ export function EventCard({
             ) : (
               <ChevronRightIcon className="size-3" aria-hidden="true" />
             )}
-            Metadata
+            {t("eventCard.metadata")}
           </button>
           {expanded && (
             <pre

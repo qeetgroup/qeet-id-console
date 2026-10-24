@@ -1,11 +1,9 @@
-import type { ToolExecution } from "../../tools/types/tool.types";
+import type { ToolExecution } from "@/modules/qeetai/tools/types/tool.types";
 import { ToolCallCard } from "./tool-call-card";
 
 /**
- * The tool executions of a single assistant turn, stacked in order. The
- * turn-level "thinking" phase is shown by the message's streaming indicator;
- * this renders the concrete tool steps (calling → executing → finished) with
- * their results and any retry affordance.
+ * Renders one assistant turn's tool executions in order, with a retry button when `onRetry` is
+ * given. The turn's "thinking" phase is the message's streaming indicator, not shown here.
  */
 export function ExecutionTimeline({
   executions,

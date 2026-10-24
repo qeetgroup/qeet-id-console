@@ -1,22 +1,10 @@
-// ABAC (attribute-based access control) data layer for the Authorization
-// section. Backs /v1/tenants/{tenantID}/abac/policies (CRUD) and
-// /v1/tenants/{tenantID}/abac/evaluate (the policy decision point).
-//
-// The backend stores each policy's `condition` as a recursive JSON tree:
-//   {"all": [...nodes]}   AND   — every child must be true
-//   {"any": [...nodes]}   OR    — at least one child true
-//   {"not": node}         NOT   — inverts the child
-//   {"attr":"subject.dept","op":"eq","value":"eng"}   comparison leaf
-// Attribute paths are dot-notation with a namespace prefix
-// (subject.* | resource.* | context.*). Decisions are deny-wins, ordered by
-// priority desc. See domains/access/authorization/abac/abac.go.
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { TranslationKey } from "@/i18n";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
-
-// ── Domain enums ─────────────────────────────────────────────────────────────
+import type { ReasonFields } from "./decision";
+import { authzKeys } from "./keys";
 
 export const NAMESPACES = ["subject", "resource", "context"] as const;
 export type Namespace = (typeof NAMESPACES)[number];
@@ -38,37 +26,68 @@ export const OPERATORS = [
 ] as const;
 export type Operator = (typeof OPERATORS)[number];
 
-/** Operators that don't take a right-hand value. */
-export const NULLARY_OPERATORS: readonly Operator[] = ["exists"];
-/** Operators whose value is a list (comma-separated in the UI). */
-export const LIST_OPERATORS: readonly Operator[] = ["in", "nin"];
+export const NULLARY_OPERATORS: readonly Operator[] = ["exists"]; // take no right-hand value
+export const LIST_OPERATORS: readonly Operator[] = ["in", "nin"]; // comma-separated in the UI
+const STRING_OPERATORS: readonly Operator[] = ["prefix", "suffix", "regex"]; // value stays a string
+// Operators whose value may name another attribute; never regex, so a pattern can't come from
+// request data.
+export const REFERENCE_OPERATORS: readonly Operator[] = [
+  "eq",
+  "ne",
+  "gt",
+  "gte",
+  "lt",
+  "lte",
+  "in",
+  "nin",
+  "contains",
+];
+const ATTRIBUTE_PATH = new RegExp(`^(${NAMESPACES.join("|")})(\\.[^.\\s]+)+$`);
 
-export const OPERATOR_LABELS: Record<Operator, string> = {
-  eq: "equals",
-  ne: "not equals",
-  in: "in",
-  nin: "not in",
-  contains: "contains",
-  gt: "greater than",
-  gte: "greater or equal",
-  lt: "less than",
-  lte: "less or equal",
-  exists: "exists",
-  prefix: "starts with",
-  suffix: "ends with",
-  regex: "matches regex",
+// Catalogue keys; the policy DSL keeps its own English keywords (see policy-codegen).
+export const OPERATOR_LABELS: Record<Operator, TranslationKey> = {
+  eq: "authorization:operators.eq",
+  ne: "authorization:operators.ne",
+  in: "authorization:operators.in",
+  nin: "authorization:operators.nin",
+  contains: "authorization:operators.contains",
+  gt: "authorization:operators.gt",
+  gte: "authorization:operators.gte",
+  lt: "authorization:operators.lt",
+  lte: "authorization:operators.lte",
+  exists: "authorization:operators.exists",
+  prefix: "authorization:operators.prefix",
+  suffix: "authorization:operators.suffix",
+  regex: "authorization:operators.regex",
 };
 
 export type Effect = "allow" | "deny";
 
-// ── Wire shape (backend JSON) ────────────────────────────────────────────────
+/** A leaf value naming another attribute, compared with the leaf's own. */
+export type AttributeRef = { attr: string };
 
+/**
+ * A stored policy condition: `all` (AND), `any` (OR), `not`, or a comparison leaf whose `attr`
+ * is a dot path under `subject.`, `resource.` or `context.`, and whose `value` is a literal or
+ * an AttributeRef. A comparison with an absent attribute matches a deny and never an allow.
+ */
 export type ConditionJson =
   | { all: ConditionJson[] }
   | { any: ConditionJson[] }
   | { not: ConditionJson }
   | { attr: string; op: Operator; value?: unknown };
 
+function isAttributeRef(value: unknown): value is AttributeRef {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.keys(value).length === 1 &&
+    typeof (value as { attr?: unknown }).attr === "string"
+  );
+}
+
+/** A stored ABAC policy. Deny wins, and policies are evaluated by descending priority. */
 export interface AbacPolicy {
   id: string;
   tenant_id: string;
@@ -95,12 +114,11 @@ export interface AbacPolicyInput {
   enabled: boolean;
 }
 
-/** POST /abac/evaluate?explain=true response. */
-export interface AbacDecision {
+/** POST /abac/evaluate?explain=true response; `reason` is English, `reason_code` its code. */
+export interface AbacDecision extends ReasonFields {
   allow: boolean;
   effect: Effect | "";
   matched_policy_id?: string | null;
-  reason?: string;
   trace?: string[];
 }
 
@@ -111,8 +129,6 @@ export interface AbacEvaluationInput {
   context?: Record<string, unknown>;
 }
 
-// ── Editable tree (the UI's representation, with stable ids) ──────────────────
-
 let _seq = 0;
 export function nid(prefix = "n"): string {
   _seq += 1;
@@ -120,15 +136,23 @@ export function nid(prefix = "n"): string {
     if (typeof crypto !== "undefined" && crypto.randomUUID)
       return `${prefix}_${crypto.randomUUID()}`;
   } catch {
-    /* fall through */
+    // fall back to a time-based id
   }
   return `${prefix}_${Date.now().toString(36)}_${_seq}`;
 }
 
+/** The editable form of a condition; every node carries a stable id for React keys. */
 export type CondNode =
   | { id: string; kind: "group"; combinator: "all" | "any"; children: CondNode[] }
   | { id: string; kind: "not"; child: CondNode }
-  | { id: string; kind: "leaf"; attr: string; op: Operator; value: string };
+  | {
+      id: string;
+      kind: "leaf";
+      attr: string;
+      op: Operator;
+      value: string;
+      ref?: boolean; // `value` names another attribute rather than a literal
+    };
 
 export function emptyLeaf(): CondNode {
   return { id: nid("leaf"), kind: "leaf", attr: "subject.", op: "eq", value: "" };
@@ -138,7 +162,7 @@ export function emptyGroup(combinator: "all" | "any" = "all"): CondNode {
   return { id: nid("grp"), kind: "group", combinator, children: [emptyLeaf()] };
 }
 
-/** Serialize a UI condition tree into the backend JSON form. */
+/** Returns the stored form of an editable condition; list values are split on commas. */
 export function toConditionJson(node: CondNode): ConditionJson {
   switch (node.kind) {
     case "group": {
@@ -149,6 +173,10 @@ export function toConditionJson(node: CondNode): ConditionJson {
       return { not: toConditionJson(node.child) };
     case "leaf": {
       if (NULLARY_OPERATORS.includes(node.op)) return { attr: node.attr, op: node.op };
+      if (node.ref) return { attr: node.attr, op: node.op, value: { attr: node.value.trim() } };
+      if (STRING_OPERATORS.includes(node.op)) {
+        return { attr: node.attr, op: node.op, value: node.value.trim() };
+      }
       if (LIST_OPERATORS.includes(node.op)) {
         return {
           attr: node.attr,
@@ -164,15 +192,17 @@ export function toConditionJson(node: CondNode): ConditionJson {
   }
 }
 
-/** Best-effort scalar coercion: numbers and booleans stay typed, else string. */
+/** Returns `raw` as a boolean or number when it is exactly one, otherwise as the string. */
 function coerce(raw: string): unknown {
   if (raw === "true") return true;
   if (raw === "false") return false;
-  if (raw !== "" && !Number.isNaN(Number(raw))) return Number(raw);
+  // Only a canonical numeral: "02134" or "1.50" would lose characters as a number.
+  const n = Number(raw);
+  if (Number.isFinite(n) && String(n) === raw) return n;
   return raw;
 }
 
-/** Parse a backend condition tree back into the editable UI form. */
+/** Returns the editable form of a stored condition; null becomes an empty ALL group. */
 export function fromConditionJson(json: ConditionJson | null | undefined): CondNode {
   if (!json) return emptyGroup();
   if ("all" in json) {
@@ -194,6 +224,16 @@ export function fromConditionJson(json: ConditionJson | null | undefined): CondN
   if ("not" in json) {
     return { id: nid("not"), kind: "not", child: fromConditionJson(json.not) };
   }
+  if (isAttributeRef(json.value)) {
+    return {
+      id: nid("leaf"),
+      kind: "leaf",
+      attr: json.attr,
+      op: json.op,
+      value: json.value.attr,
+      ref: true,
+    };
+  }
   const value = Array.isArray(json.value)
     ? json.value.join(", ")
     : json.value == null
@@ -202,19 +242,53 @@ export function fromConditionJson(json: ConditionJson | null | undefined): CondN
   return { id: nid("leaf"), kind: "leaf", attr: json.attr, op: json.op, value };
 }
 
-/** Count the comparison leaves in a tree (for the complexity meter). */
+/**
+ * Why the backend would refuse a condition, as a code translated at `authorization:conditionProblem.<code>`;
+ * `op` is the operator at fault.
+ */
+export interface ConditionProblem {
+  code: "notReferenceable" | "badReference" | "selfReference" | "needsValue";
+  op: Operator;
+}
+
+/**
+ * Returns why the backend would refuse a condition, or null when it can be saved. Mirrors the
+ * engine's validation, so the form says so before the request does.
+ */
+export function conditionProblem(node: CondNode): ConditionProblem | null {
+  if (node.kind === "group") {
+    for (const child of node.children) {
+      const problem = conditionProblem(child);
+      if (problem) return problem;
+    }
+    return null;
+  }
+  if (node.kind === "not") return conditionProblem(node.child);
+  const { op } = node;
+  if (node.ref) {
+    if (!REFERENCE_OPERATORS.includes(op)) return { code: "notReferenceable", op };
+    const other = node.value.trim();
+    if (!ATTRIBUTE_PATH.test(other)) return { code: "badReference", op };
+    if (other === node.attr) return { code: "selfReference", op };
+    return null;
+  }
+  // An empty affix, substring or pattern would match every string.
+  const needsValue = STRING_OPERATORS.includes(op) || op === "contains";
+  if (needsValue && node.value.trim() === "") return { code: "needsValue", op };
+  return null;
+}
+
+/** Returns the number of comparison leaves in a condition. */
 export function countLeaves(node: CondNode): number {
   if (node.kind === "leaf") return 1;
   if (node.kind === "not") return countLeaves(node.child);
   return node.children.reduce((n, c) => n + countLeaves(c), 0);
 }
 
-// ── Query hooks ──────────────────────────────────────────────────────────────
-
 export function useAbacPolicies() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["abac-policies", tenantId],
+    queryKey: authzKeys.abacPolicies(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: AbacPolicy[] }>(`/v1/tenants/${tenantId}/abac/policies`),
   });
@@ -223,7 +297,7 @@ export function useAbacPolicies() {
 export function useAbacPolicy(id: string | null) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["abac-policy", tenantId, id],
+    queryKey: authzKeys.abacPolicy(tenantId, id),
     enabled: !!tenantId && !!id,
     queryFn: () => api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies/${id}`),
   });
@@ -233,10 +307,12 @@ export function useCreateAbacPolicy() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: AbacPolicyInput) =>
-      api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["abac-policies"] }),
-    meta: { successMessage: "Policy created" },
+    mutationFn: (body: AbacPolicyInput) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies`, { method: "POST", body });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
+    meta: { successMessage: "authorization:toast.policyCreated", silentError: true }, // its forms show the error
   });
 }
 
@@ -244,13 +320,15 @@ export function useUpdateAbacPolicy(id: string) {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: AbacPolicyInput) =>
-      api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies/${id}`, { method: "PATCH", body }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["abac-policies"] });
-      qc.invalidateQueries({ queryKey: ["abac-policy"] });
+    mutationFn: (body: AbacPolicyInput) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<AbacPolicy>(`/v1/tenants/${tenantId}/abac/policies/${id}`, {
+        method: "PATCH",
+        body,
+      });
     },
-    meta: { successMessage: "Policy updated" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
+    meta: { successMessage: "authorization:toast.policyUpdated", silentError: true },
   });
 }
 
@@ -258,23 +336,27 @@ export function useDeleteAbacPolicy() {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/abac/policies/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["abac-policies"] }),
-    meta: { successMessage: "Policy deleted" },
+    mutationFn: (id: string) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<void>(`/v1/tenants/${tenantId}/abac/policies/${id}`, { method: "DELETE" });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.abacPolicies(tenantId) }),
+    meta: { successMessage: "authorization:toast.policyDeleted" },
   });
 }
 
-/** One-shot ABAC decision with the full grant-path trace. */
+/** Evaluates one request against the ABAC policies and returns the decision with its trace. */
 export function useAbacEvaluate() {
   const tenantId = useTenantId();
   return useMutation({
-    mutationFn: (input: AbacEvaluationInput) =>
-      api<AbacDecision>(`/v1/tenants/${tenantId}/abac/evaluate`, {
+    mutationFn: (input: AbacEvaluationInput) => {
+      if (!tenantId) throw new Error("No tenant selected");
+      return api<AbacDecision>(`/v1/tenants/${tenantId}/abac/evaluate`, {
         method: "POST",
         body: input,
         query: { explain: "true" },
-      }),
+      });
+    },
     meta: { silent: true },
   });
 }

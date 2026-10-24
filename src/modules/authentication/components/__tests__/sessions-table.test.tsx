@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { Session } from "../../api/sessions";
+import type { Session } from "@/modules/authentication/api/sessions";
 import { SessionsTable } from "../sessions-table";
 
 afterEach(cleanup);

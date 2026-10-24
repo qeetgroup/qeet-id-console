@@ -3,10 +3,9 @@ import { lazy, Suspense, useEffect, useState } from "react";
 
 import { ClientOnly } from "./client-only";
 
-// Monaco is heavy and client-only, so it is code-split and lazily loaded. Until
-// it mounts (and during SSR), we render the read-only qeetrix CodeBlock so the
-// content is always visible and copyable — a graceful, dependency-safe fallback.
-const MonacoEditor = lazy(() => import("@monaco-editor/react"));
+// Monaco is heavy and browser-only, so it loads lazily, from this console's own bundle; until it
+// mounts, and during SSR, a read-only CodeBlock keeps the content visible and copyable.
+const MonacoEditor = lazy(() => import("./monaco-editor"));
 
 function useIsDark(): boolean {
   const [dark, setDark] = useState(false);
@@ -28,8 +27,7 @@ export interface MonacoPanelProps {
   onChange?: (value: string) => void;
   height?: number | string;
   className?: string;
-  /** Label for assistive tech when editable. */
-  ariaLabel?: string;
+  ariaLabel?: string; // accessible name for the editor
 }
 
 export function MonacoPanel({
@@ -54,7 +52,7 @@ export function MonacoPanel({
   return (
     <ClientOnly fallback={fallback}>
       <Suspense fallback={fallback}>
-        <div className={className} style={{ height: heightStr }} aria-label={ariaLabel}>
+        <div className={className} style={{ height: heightStr }}>
           <MonacoEditor
             height="100%"
             language={language}
@@ -63,6 +61,8 @@ export function MonacoPanel({
             loading={fallback}
             onChange={(v) => onChange?.(v ?? "")}
             options={{
+              // The label belongs on Monaco's focusable textarea; a wrapper div can't carry it.
+              ...(ariaLabel ? { ariaLabel } : {}),
               readOnly,
               domReadOnly: readOnly,
               minimap: { enabled: false },

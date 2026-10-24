@@ -1,10 +1,10 @@
 import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { KeyRoundIcon, ShieldCheckIcon } from "@qeetrix/icons";
+import { useTranslation } from "react-i18next";
 
 import { NODE_W } from "./layout";
 
-// Type → colour mapping mirrors the original ReBAC SVG so the visual language
-// carries over. Tailwind classes (not inline colours) keep dark-mode correct.
+// Tailwind classes rather than inline colours, so each type keeps its colour in dark mode.
 const TYPE_STYLES: Record<string, string> = {
   user: "border-blue-400 bg-blue-50 dark:border-blue-500/60 dark:bg-blue-950/40",
   group: "border-purple-400 bg-purple-50 dark:border-purple-500/60 dark:bg-purple-950/40",
@@ -47,6 +47,7 @@ export type RoleNodeData = {
 };
 
 export function RoleNode({ data }: NodeProps) {
+  const { t } = useTranslation("authorization");
   const d = data as RoleNodeData;
   return (
     <div
@@ -60,12 +61,14 @@ export function RoleNode({ data }: NodeProps) {
       <div className="flex items-center gap-1.5">
         <ShieldCheckIcon className="size-3.5 text-blue-600 dark:text-blue-400" aria-hidden />
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          role{d.isSystem ? " · system" : ""}
+          {d.isSystem ? t("roleHierarchyGraph.systemRole") : t("roleHierarchyGraph.role")}
         </p>
       </div>
       <p className="truncate text-sm font-medium">{d.name}</p>
       {d.permCount != null && (
-        <p className="text-[10px] text-muted-foreground">{d.permCount} permissions</p>
+        <p className="text-[10px] text-muted-foreground">
+          {t("roleHierarchyGraph.permissionCount", { count: d.permCount })}
+        </p>
       )}
       <Handle type="source" position={Position.Right} className="!bg-muted-foreground" />
     </div>
@@ -75,6 +78,7 @@ export function RoleNode({ data }: NodeProps) {
 export type PermNodeData = { key: string };
 
 export function PermNode({ data }: NodeProps) {
+  const { t } = useTranslation("authorization");
   const d = data as PermNodeData;
   return (
     <div
@@ -85,7 +89,7 @@ export function PermNode({ data }: NodeProps) {
       <div className="flex items-center gap-1.5">
         <KeyRoundIcon className="size-3.5 text-muted-foreground" aria-hidden />
         <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          permission
+          {t("roleHierarchyGraph.permission")}
         </p>
       </div>
       <p className="truncate font-mono text-xs">{d.key}</p>

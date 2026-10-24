@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge, Button, Combobox, Input } from "@qeetrix/ui";
 import { FolderPlusIcon, PlusIcon, TrashIcon } from "@qeetrix/icons";
 
@@ -9,18 +11,20 @@ import {
   NAMESPACES,
   type Namespace,
   NULLARY_OPERATORS,
+  nid,
   OPERATOR_LABELS,
   OPERATORS,
   type Operator,
-} from "../../api/abac";
+  REFERENCE_OPERATORS,
+} from "@/modules/authorization/api/abac";
 
+// Namespaces are attribute-path syntax (`subject.dept`), so they show as written.
 const NS_ITEMS = NAMESPACES.map((n) => ({ label: n, value: n }));
-const OP_ITEMS = OPERATORS.map((o) => ({ label: OPERATOR_LABELS[o], value: o }));
+const OPERANDS = ["value", "attribute"] as const;
 
 /**
- * Visual, no-code editor for an ABAC condition tree. Nested AND (`all`) / OR
- * (`any`) groups, NOT wrappers, and comparison leaves across 13 operators.
- * Emits the editable CondNode form; callers serialize with toConditionJson.
+ * Renders a no-code editor for an ABAC condition: nested ALL/ANY groups, NOT wrappers and
+ * comparison leaves. Emits the editable CondNode form; serialize it with toConditionJson.
  */
 export function ConditionTree({
   value,
@@ -43,15 +47,21 @@ function NodeEditor({
   onRemove?: () => void;
   depth: number;
 }) {
+  const { t } = useTranslation("authorization");
   if (node.kind === "leaf")
     return <LeafEditor node={node} onChange={onChange} onRemove={onRemove} />;
   if (node.kind === "not") {
     return (
       <div className="rounded-lg border border-rose-500/30 bg-rose-500/5 p-3">
         <div className="mb-2 flex items-center justify-between">
-          <Badge variant="destructive">NOT</Badge>
+          <Badge variant="destructive">{t("conditionTree.not")}</Badge>
           {onRemove && (
-            <Button variant="ghost" size="icon-xs" onClick={onRemove} aria-label="Remove NOT">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={onRemove}
+              aria-label={t("conditionTree.removeNot")}
+            >
               <TrashIcon />
             </Button>
           )}
@@ -65,14 +75,12 @@ function NodeEditor({
     );
   }
 
-  // group
   const combinatorColor =
     node.combinator === "all"
       ? "border-blue-500/30 bg-blue-500/5"
       : "border-amber-500/30 bg-amber-500/5";
 
-  // `node` is narrowed to the group variant here; capture it so the closures
-  // below (which TypeScript would otherwise widen) keep the narrowed type.
+  // `node` is narrowed to a group here; capturing it keeps that type inside the closures below.
   const group = node;
   const updateChild = (index: number, child: CondNode) => {
     onChange({ ...group, children: group.children.map((c, i) => (i === index ? child : c)) });
@@ -91,18 +99,23 @@ function NodeEditor({
             onClick={() => onChange({ ...node, combinator: "all" })}
             className={`rounded px-2 py-0.5 ${node.combinator === "all" ? "bg-blue-500/20 text-blue-700 dark:text-blue-300" : "text-muted-foreground"}`}
           >
-            ALL (AND)
+            {t("conditionTree.all")}
           </button>
           <button
             type="button"
             onClick={() => onChange({ ...node, combinator: "any" })}
             className={`rounded px-2 py-0.5 ${node.combinator === "any" ? "bg-amber-500/20 text-amber-700 dark:text-amber-300" : "text-muted-foreground"}`}
           >
-            ANY (OR)
+            {t("conditionTree.any")}
           </button>
         </div>
         {onRemove && (
-          <Button variant="ghost" size="icon-xs" onClick={onRemove} aria-label="Remove group">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={onRemove}
+            aria-label={t("conditionTree.removeGroup")}
+          >
             <TrashIcon />
           </Button>
         )}
@@ -126,14 +139,14 @@ function NodeEditor({
           size="xs"
           onClick={() => onChange({ ...node, children: [...node.children, emptyLeaf()] })}
         >
-          <PlusIcon /> Condition
+          <PlusIcon /> {t("conditionTree.addCondition")}
         </Button>
         <Button
           variant="outline"
           size="xs"
           onClick={() => onChange({ ...node, children: [...node.children, emptyGroup("all")] })}
         >
-          <FolderPlusIcon /> Group
+          <FolderPlusIcon /> {t("conditionTree.addGroup")}
         </Button>
         <Button
           variant="outline"
@@ -141,14 +154,11 @@ function NodeEditor({
           onClick={() =>
             onChange({
               ...node,
-              children: [
-                ...node.children,
-                { id: `not_${Date.now()}`, kind: "not", child: emptyLeaf() },
-              ],
+              children: [...node.children, { id: nid("not"), kind: "not", child: emptyLeaf() }],
             })
           }
         >
-          <PlusIcon /> NOT
+          <PlusIcon /> {t("conditionTree.not")}
         </Button>
       </div>
     </div>
@@ -164,11 +174,18 @@ function LeafEditor({
   onChange: (node: CondNode) => void;
   onRemove?: () => void;
 }) {
+  const { t, i18n } = useTranslation("authorization");
   const dot = node.attr.indexOf(".");
   const ns: Namespace = (dot >= 0 ? node.attr.slice(0, dot) : "subject") as Namespace;
   const field = dot >= 0 ? node.attr.slice(dot + 1) : node.attr;
   const isNullary = NULLARY_OPERATORS.includes(node.op);
   const isList = LIST_OPERATORS.includes(node.op);
+  const canReference = REFERENCE_OPERATORS.includes(node.op);
+  const opItems = OPERATORS.map((o) => ({ label: i18n.t(OPERATOR_LABELS[o]), value: o }));
+  const operandItems = useMemo(
+    () => OPERANDS.map((o) => ({ label: t(`conditionTree.operand.${o}`), value: o })),
+    [t],
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md border bg-background p-2">
@@ -177,30 +194,49 @@ function LeafEditor({
           items={NS_ITEMS}
           value={ns}
           onValueChange={(v) => onChange({ ...node, attr: `${v ?? "subject"}.${field}` })}
-          aria-label="Namespace"
+          aria-label={t("conditionTree.namespace")}
         />
       </div>
       <Input
         className="w-40 font-mono text-xs"
-        placeholder="attribute"
+        placeholder={t("conditionTree.attributePlaceholder")}
         value={field}
-        aria-label="Attribute path"
+        aria-label={t("conditionTree.attributePath")}
         onChange={(e) => onChange({ ...node, attr: `${ns}.${e.target.value}` })}
       />
       <div className="w-40 shrink-0">
         <Combobox
-          items={OP_ITEMS}
+          items={opItems}
           value={node.op}
-          onValueChange={(v) => onChange({ ...node, op: (v ?? "eq") as Operator })}
-          aria-label="Operator"
+          onValueChange={(v) => {
+            const op = (v ?? "eq") as Operator;
+            onChange({ ...node, op, ref: REFERENCE_OPERATORS.includes(op) && node.ref });
+          }}
+          aria-label={t("conditionTree.operator")}
         />
       </div>
+      {canReference && (
+        <div className="w-28 shrink-0">
+          <Combobox
+            items={operandItems}
+            value={node.ref ? "attribute" : "value"}
+            onValueChange={(v) => onChange({ ...node, ref: v === "attribute" })}
+            aria-label={t("conditionTree.compareWith")}
+          />
+        </div>
+      )}
       {!isNullary && (
         <Input
           className="w-44 font-mono text-xs"
-          placeholder={isList ? "a, b, c" : "value"}
+          placeholder={
+            node.ref
+              ? "resource.owner_id"
+              : isList
+                ? "a, b, c"
+                : t("conditionTree.valuePlaceholder")
+          }
           value={node.value}
-          aria-label="Value"
+          aria-label={node.ref ? t("conditionTree.otherAttribute") : t("conditionTree.value")}
           onChange={(e) => onChange({ ...node, value: e.target.value })}
         />
       )}
@@ -210,7 +246,7 @@ function LeafEditor({
           size="icon-xs"
           className="ml-auto"
           onClick={onRemove}
-          aria-label="Remove condition"
+          aria-label={t("conditionTree.removeCondition")}
         >
           <TrashIcon />
         </Button>

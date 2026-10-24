@@ -1,134 +1,135 @@
+import i18n, { type TranslationKey } from "@/i18n";
 import { type ErrorCode, ERROR_CODES, type ErrorKind } from "@/platform/errors/error-codes";
 import { normalizeError } from "@/platform/errors/normalize-error";
 
-// The leak stop. Backend `error.message`/`detail` may carry internal context
-// (stack hints, infra names), so the UI must NEVER render them directly. Instead
-// we map known stable codes to curated copy and fall back to a safe generic
-// message per kind. Seeded with the codes actually in flight today so common
-// flows keep meaningful text; unknown codes degrade to the generic fallback.
-//
-// (Copy is English for now — the console's security surfaces are English-only
-// until the i18n backfill; wiring these to i18n keys is tracked separately.)
-const CODE_MESSAGES: Record<string, string> = {
-  [ERROR_CODES.STEP_UP_REQUIRED]: "This action needs a fresh identity check.",
-  [ERROR_CODES.SESSION_EXPIRED]: "Your session has expired. Please sign in again.",
-  [ERROR_CODES.INVALID_STATE]: "That sign-in link is no longer valid. Please start again.",
-  // Signup conflict. The backend returns 409 auth.email_exists, which classifies
-  // as `api` and would otherwise land on the generic "Something went wrong"
-  // fallback — useless on a signup form, where the fix is to sign in instead.
-  [ERROR_CODES.EMAIL_EXISTS]:
-    "An account with this email already exists. Please sign in instead, or use a different email.",
-  // Verification OTP. All three code failures are HTTP 400 -> `validation`, so
-  // without curated copy they collapse into the same "details aren't valid"
-  // fallback — which doesn't tell the user whether to retype or request a new code.
-  [ERROR_CODES.VERIFY_CODE_INVALID]:
-    "That code isn't correct. Check the 6 digits from your email and try again.",
-  [ERROR_CODES.VERIFY_CODE_USED]: "That code has already been used. Request a new one.",
-  [ERROR_CODES.VERIFY_CODE_EXPIRED]: "That code has expired. Request a new one.",
-  // The guess budget for one code is spent; the code is retired, so "try again"
-  // would be wrong advice — only a new code can work.
-  [ERROR_CODES.VERIFY_ATTEMPTS_EXCEEDED]:
-    "Too many incorrect attempts. Request a new code to continue.",
-  [ERROR_CODES.VERIFY_USER_NOT_FOUND]: "We couldn't find that account. Please start again.",
-  [ERROR_CODES.VERIFY_NO_EMAIL]: "This account has no email address to verify.",
-  [ERROR_CODES.VERIFY_EMAIL_TAKEN]: "That email address is already in use by another account.",
-  // Org creation is gated server-side on a verified email (tenant/http.go). It
-  // arrives as 403 -> `authz`, whose fallback ("You don't have access to do
-  // that") sends the user hunting for a permissions problem instead of telling
-  // them the one thing that fixes it.
-  [ERROR_CODES.VERIFY_EMAIL_NOT_VERIFIED]:
-    "Please verify your email address first, then create your organization.",
-  // 429 classifies as `api`; the resend button is throttled hard (anti-bombing),
-  // so this is reachable from the OTP step by clicking "Resend code" repeatedly.
-  [ERROR_CODES.TOO_MANY_REQUESTS]: "Too many attempts. Please wait a moment and try again.",
-  [ERROR_CODES.HTTP_429]: "Too many attempts. Please wait a moment and try again.",
-  // Sign-in. `auth.invalid_credentials` is a 401, so it inherited "Please sign
-  // in again to continue." — which describes a session problem, not a typo in
-  // the password, and sends the user looking in the wrong place entirely.
-  [ERROR_CODES.INVALID_CREDENTIALS]: "Invalid email or password.",
-  [ERROR_CODES.ACCOUNT_LOCKED]:
-    "Too many failed attempts. Your account is temporarily locked — please try again later.",
+// The leak stop: a backend `error.message` or `detail` can carry internal context, so the UI
+// never renders it. Known codes map to curated copy, the rest to a safe message per kind.
+// Each value is an `errors` catalogue key.
+const CODE_MESSAGES: Record<string, TranslationKey> = {
+  [ERROR_CODES.STEP_UP_REQUIRED]: "errors:code.stepUpRequired",
+  [ERROR_CODES.SESSION_EXPIRED]: "errors:code.sessionExpired",
+  [ERROR_CODES.SESSION_REFRESH_UNAVAILABLE]: "errors:code.sessionRefreshUnavailable",
+  [ERROR_CODES.INVALID_STATE]: "errors:code.invalidState",
+  // 409 -> `api`, whose generic fallback is useless on a sign-up form: the fix is to sign in.
+  [ERROR_CODES.EMAIL_EXISTS]: "errors:code.emailExists",
+  // All three are 400 -> `validation`, whose fallback doesn't say whether to retype the code or
+  // request a new one.
+  [ERROR_CODES.VERIFY_CODE_INVALID]: "errors:code.verifyCodeInvalid",
+  [ERROR_CODES.VERIFY_CODE_USED]: "errors:code.verifyCodeUsed",
+  [ERROR_CODES.VERIFY_CODE_EXPIRED]: "errors:code.verifyCodeExpired",
+  // The code is retired after too many guesses, so only a new one can work.
+  [ERROR_CODES.VERIFY_ATTEMPTS_EXCEEDED]: "errors:code.verifyAttemptsExceeded",
+  [ERROR_CODES.VERIFY_USER_NOT_FOUND]: "errors:code.verifyUserNotFound",
+  [ERROR_CODES.VERIFY_NO_EMAIL]: "errors:code.verifyNoEmail",
+  [ERROR_CODES.VERIFY_EMAIL_TAKEN]: "errors:code.verifyEmailTaken",
+  // Creating an organization needs a verified email. 403 -> `authz`, whose fallback sends the
+  // person hunting for a missing permission.
+  [ERROR_CODES.VERIFY_EMAIL_NOT_VERIFIED]: "errors:code.verifyEmailNotVerified",
+  // 429 -> `api`; resending a code is throttled hard, so repeated "Resend code" clicks reach it.
+  [ERROR_CODES.TOO_MANY_REQUESTS]: "errors:code.tooManyRequests",
+  [ERROR_CODES.HTTP_429]: "errors:code.tooManyRequests",
+  [ERROR_CODES.INVALID_CREDENTIALS]: "errors:code.invalidCredentials", // a 401, not a session problem
+  [ERROR_CODES.ACCOUNT_LOCKED]: "errors:code.accountLocked",
   // 503 -> `api`, whose "Something went wrong" reads like a fault in the form.
-  [ERROR_CODES.SIGN_IN_UNAVAILABLE]:
-    "Sign-in is temporarily unavailable. Please try again in a moment.",
-  // Also a 401, and "sign in again" is actively wrong here: retrying cannot help.
-  [ERROR_CODES.ACCOUNT_SUSPENDED]:
-    "Your account is no longer active. Please contact your administrator.",
-  [ERROR_CODES.ACCOUNT_INACTIVE]: "Your account isn't active. Contact your administrator.",
-  [ERROR_CODES.SESSION_REVOKED]: "Your session was revoked. Please sign in again.",
-  [ERROR_CODES.SESSION_TIMED_OUT]: "Your session has timed out. Please sign in again.",
-  [ERROR_CODES.SESSION_LIMIT]:
-    "You're signed in on too many devices for this organisation. Sign out of one of them, then try again.",
-  // 403 -> `authz`, whose "You don't have access to do that" reads like a
-  // missing permission; the network is what the organisation refuses.
-  [ERROR_CODES.ADDRESS_NOT_ALLOWED]:
-    "Your organisation doesn't allow sign-in from this network. Contact your administrator.",
-  // 409 -> `api`. The console signs in from its own server, so it's that
-  // server's address the rules must keep allowing.
-  [ERROR_CODES.RULES_LOCK_OUT_CALLER]:
-    "This change would block the address you're working from and lock you out. Add an allow rule that covers it first.",
-  [ERROR_CODES.LAST_SIGN_IN_METHOD]:
-    "This is your only way to sign in. Add a passkey or set a password before removing it.",
-  [ERROR_CODES.SOCIAL_PROVIDER_IN_USE]:
-    "Some people can sign in only with this provider. Switch it off instead, or give them another way to sign in first.",
-  [ERROR_CODES.NOT_TENANT_MEMBER]: "You're not a member of this organization.",
-  [ERROR_CODES.SELF_REGISTRATION_DISABLED]: "Self-registration isn't enabled for this application.",
-  [ERROR_CODES.PASSWORD_WEAK]: "Choose a stronger password.",
-  [ERROR_CODES.PASSWORD_BREACHED]:
-    "This password has appeared in known data breaches. Please choose a different one.",
-  // The rule that refused a new password. The exact minimum length isn't in the
-  // error code, so the length copy can't name the number.
-  [ERROR_CODES.PASSWORD_TOO_SHORT]: "Your password is too short. Please choose a longer one.",
-  [ERROR_CODES.PASSWORD_NO_UPPERCASE]: "Your password must contain an uppercase letter.",
-  [ERROR_CODES.PASSWORD_NO_NUMBER]: "Your password must contain a number.",
-  [ERROR_CODES.PASSWORD_NO_SYMBOL]: "Your password must contain a symbol.",
-  [ERROR_CODES.PASSWORD_POLICY_BREACHED]:
-    "This password has appeared in known data breaches. Please choose a different one.",
-  [ERROR_CODES.PASSKEY_LOGIN_FAILED]:
-    "We couldn't sign you in with that passkey. Try again, or use your password.",
-  [ERROR_CODES.FORBIDDEN]: "You don't have access to do that.",
-  // 409 -> `api`, so this used to read "Something went wrong. Please try
-  // again." on the org setup form — advice that can never succeed, since the
-  // retry resubmits the same slug. Name it, and point at the field that fixes
-  // it: the slug, not the name (names aren't unique, so theirs can stay).
-  [ERROR_CODES.ORG_SLUG_TAKEN]:
-    "That organization URL is already taken. Choose a different URL — your organization name can stay the same.",
-  [ERROR_CODES.MFA_CODE_INVALID]: "That code isn't valid. Check your authenticator and try again.",
-  [ERROR_CODES.MFA_CODE_SEND_LIMITED]:
-    "A code was sent recently. Wait a moment before asking for another.",
-  [ERROR_CODES.MFA_FACTOR_LIMIT]:
-    "You've set up as many email and SMS codes as an account can have. Remove one to add another.",
-  [ERROR_CODES.MFA_DELIVERY_UNAVAILABLE]:
-    "Codes can't be sent this way right now. Use another way to verify.",
-  [ERROR_CODES.MFA_DELIVERY_FAILED]:
-    "We couldn't send your code. Try again in a moment, or use another way to verify.",
-  [ERROR_CODES.AUTH_RISK_VERIFICATION_UNAVAILABLE]:
-    "We couldn't confirm this sign-in. Ask your administrator for help.",
-  [ERROR_CODES.BILLING_PLAN_LIMIT]: "You've reached your plan's limit.",
-  [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "This feature isn't included in your plan.",
-  [ERROR_CODES.NETWORK]: "Can't reach the server. Check your connection and try again.",
+  [ERROR_CODES.SIGN_IN_UNAVAILABLE]: "errors:code.signInUnavailable",
+  // Also a 401, where "sign in again" is wrong: retrying can't help.
+  [ERROR_CODES.ACCOUNT_SUSPENDED]: "errors:code.accountSuspended",
+  [ERROR_CODES.ACCOUNT_INACTIVE]: "errors:code.accountInactive",
+  [ERROR_CODES.SESSION_REVOKED]: "errors:code.sessionRevoked",
+  [ERROR_CODES.SESSION_TIMED_OUT]: "errors:code.sessionTimedOut",
+  [ERROR_CODES.SESSION_LIMIT]: "errors:code.sessionLimit",
+  // 403 -> `authz`, whose fallback suggests a missing permission; the network is what's refused.
+  [ERROR_CODES.ADDRESS_NOT_ALLOWED]: "errors:code.addressNotAllowed",
+  // 409 -> `api`. Without a relay key the API sees this console server's address, so that is
+  // what the rules must keep allowing.
+  [ERROR_CODES.RULES_LOCK_OUT_CALLER]: "errors:code.rulesLockOutCaller",
+  [ERROR_CODES.LAST_SIGN_IN_METHOD]: "errors:code.lastSignInMethod",
+  [ERROR_CODES.SOCIAL_PROVIDER_IN_USE]: "errors:code.socialProviderInUse",
+  [ERROR_CODES.NOT_TENANT_MEMBER]: "errors:code.notTenantMember",
+  [ERROR_CODES.SELF_REGISTRATION_DISABLED]: "errors:code.selfRegistrationDisabled",
+  [ERROR_CODES.PASSWORD_WEAK]: "errors:code.passwordWeak",
+  [ERROR_CODES.PASSWORD_BREACHED]: "errors:code.passwordBreached",
+  // The minimum length isn't in the error code, so the copy can't name it.
+  [ERROR_CODES.PASSWORD_TOO_SHORT]: "errors:code.passwordTooShort",
+  [ERROR_CODES.PASSWORD_NO_UPPERCASE]: "errors:code.passwordNoUppercase",
+  [ERROR_CODES.PASSWORD_NO_NUMBER]: "errors:code.passwordNoNumber",
+  [ERROR_CODES.PASSWORD_NO_SYMBOL]: "errors:code.passwordNoSymbol",
+  [ERROR_CODES.PASSWORD_POLICY_BREACHED]: "errors:code.passwordBreached",
+  [ERROR_CODES.PASSKEY_LOGIN_FAILED]: "errors:code.passkeyLoginFailed",
+  [ERROR_CODES.FORBIDDEN]: "errors:kind.authz",
+  // 409 -> `api`, and a retry resubmits the same slug, so point at the field that fixes it: the
+  // slug, not the name (names aren't unique).
+  [ERROR_CODES.ORG_SLUG_TAKEN]: "errors:code.orgSlugTaken",
+  [ERROR_CODES.MFA_CODE_INVALID]: "errors:code.mfaCodeInvalid",
+  [ERROR_CODES.MFA_CODE_SEND_LIMITED]: "errors:code.mfaCodeSendLimited",
+  [ERROR_CODES.MFA_FACTOR_LIMIT]: "errors:code.mfaFactorLimit",
+  [ERROR_CODES.MFA_DELIVERY_UNAVAILABLE]: "errors:code.mfaDeliveryUnavailable",
+  [ERROR_CODES.MFA_DELIVERY_FAILED]: "errors:code.mfaDeliveryFailed",
+  [ERROR_CODES.AUTH_RISK_VERIFICATION_UNAVAILABLE]: "errors:code.authRiskVerificationUnavailable",
+  [ERROR_CODES.BILLING_PLAN_LIMIT]: "errors:code.billingPlanLimit",
+  [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "errors:code.billingUpgradeRequired",
+  [ERROR_CODES.USER_IMPORT_EMPTY]: "errors:code.userImportEmpty",
+  [ERROR_CODES.USER_IMPORT_BATCH_TOO_LARGE]: "errors:code.userImportBatchTooLarge",
+  [ERROR_CODES.USER_IMPORT_FILE_TOO_LARGE]: "errors:code.userImportFileTooLarge",
+  [ERROR_CODES.USER_IMPORT_SOURCE_INVALID]: "errors:code.userImportSourceInvalid",
+  [ERROR_CODES.WEBHOOK_URL_REQUIRED]: "errors:code.webhookUrlRequired",
+  [ERROR_CODES.WEBHOOK_EVENTS_REQUIRED]: "errors:code.webhookEventsRequired",
+  // The list comes from the server's catalogue, so a refusal means it changed since it loaded.
+  [ERROR_CODES.WEBHOOK_EVENT_UNKNOWN]: "errors:code.webhookEventUnknown",
+  [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 
-const KIND_FALLBACK: Record<ErrorKind, string> = {
-  auth: "Please sign in again to continue.",
-  authz: "You don't have access to do that.",
-  validation: "Some of the details entered aren't valid. Please review and try again.",
-  network: "Can't reach the server. Check your connection and try again.",
-  api: "Something went wrong. Please try again.",
-  unknown: "Something went wrong. Please try again.",
+const KIND_FALLBACK: Record<ErrorKind, TranslationKey> = {
+  auth: "errors:kind.auth",
+  authz: "errors:kind.authz",
+  validation: "errors:kind.validation",
+  network: "errors:kind.network",
+  api: "errors:kind.api",
+  unknown: "errors:kind.api",
 };
 
-/** A user-safe message for a code/kind — never the raw backend message. */
+/** Returns user-safe copy for a code, or the kind's fallback; never the backend message. */
 export function userMessageForCode(code: ErrorCode, kind: ErrorKind): string {
-  return CODE_MESSAGES[code] ?? KIND_FALLBACK[kind];
+  return i18n.t(CODE_MESSAGES[code] ?? KIND_FALLBACK[kind]);
 }
 
 /**
- * Convenience: normalize any thrown value and return its user-safe message.
- * Use this everywhere an error is shown inline instead of rendering
- * `error.message` (which would leak raw backend detail).
+ * Returns the user-safe message for any thrown value. Use it wherever an error is shown inline:
+ * `error.message` can leak backend detail.
  */
 export function errorMessage(err: unknown): string {
   const app = normalizeError(err);
   return userMessageForCode(app.code, app.kind);
+}
+
+// Per-field copy for the codes the backend's request validation uses.
+const FIELD_MESSAGES: Record<string, TranslationKey> = {
+  required: "errors:field.required",
+  invalid_email: "errors:field.invalidEmail",
+  too_short: "errors:field.tooShort",
+  too_long: "errors:field.tooLong",
+  invalid_url: "errors:field.invalidUrl",
+  invalid_phone: "errors:field.invalidPhone",
+  invalid_uuid: "errors:field.invalidUuid",
+  not_allowed: "errors:field.notAllowed",
+  out_of_range: "errors:field.outOfRange",
+};
+
+/** Returns user-safe copy for a field's validation code; never the backend's own text. */
+export function fieldMessageForCode(code: string): string {
+  return i18n.t(FIELD_MESSAGES[code] ?? "errors:field.invalid");
+}
+
+/** Returns copy for each field a 422 rejected, keyed by the request body's JSON name. */
+export function fieldErrorMessages(err: unknown): Record<string, string> {
+  const messages: Record<string, string> = {};
+  for (const { field, code } of normalizeError(err).fields) {
+    messages[field] ??= fieldMessageForCode(code);
+  }
+  return messages;
+}
+
+/** Returns the failed request's id, for the person to quote to support. */
+export function errorReference(err: unknown): string | undefined {
+  return normalizeError(err).requestId;
 }

@@ -1,7 +1,3 @@
-// Timeline date-grouping helper — extends activity's filter-manager approach.
-// Adds "Last Week" and "Last Month" buckets so user lifecycle timelines
-// spanning months remain legible. Accepts an optional `now` for deterministic testing.
-
 import type { ActivityEvent, DateGroup } from "@/modules/activity";
 
 const MS_PER_DAY = 86_400_000;
@@ -11,13 +7,9 @@ function startOfDayMs(now: Date): number {
 }
 
 /**
- * Groups timeline events by relative date bucket:
- *   Today / Yesterday / Last Week / Last Month / Older
- *
- * Expects events in newest-first order; output groups preserve that order.
- * Compared to activity's `groupByDate`, this adds a "Last Month" bucket so
- * user lifecycle timelines that span months (account creation, first login,
- * password resets…) are legible without everything collapsing into "Older".
+ * Groups newest-first events into Today / Yesterday / Last Week / Last Month / Older, keeping
+ * their order. Unlike activity's groupByDate it has a Last Month bucket, so a timeline that
+ * spans months doesn't collapse into Older.
  */
 export function groupTimelineByDate(events: ActivityEvent[], now = new Date()): DateGroup[] {
   if (events.length === 0) return [];
@@ -43,10 +35,10 @@ export function groupTimelineByDate(events: ActivityEvent[], now = new Date()): 
   }
 
   const result: DateGroup[] = [];
-  if (today.length > 0) result.push({ label: "Today", events: today });
-  if (yesterday.length > 0) result.push({ label: "Yesterday", events: yesterday });
-  if (lastWeek.length > 0) result.push({ label: "Last Week", events: lastWeek });
-  if (lastMonth.length > 0) result.push({ label: "Last Month", events: lastMonth });
-  if (older.length > 0) result.push({ label: "Older", events: older });
+  if (today.length > 0) result.push({ key: "today", events: today });
+  if (yesterday.length > 0) result.push({ key: "yesterday", events: yesterday });
+  if (lastWeek.length > 0) result.push({ key: "lastWeek", events: lastWeek });
+  if (lastMonth.length > 0) result.push({ key: "lastMonth", events: lastMonth });
+  if (older.length > 0) result.push({ key: "older", events: older });
   return result;
 }

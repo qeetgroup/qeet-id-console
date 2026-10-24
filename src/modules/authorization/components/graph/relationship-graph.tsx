@@ -1,12 +1,13 @@
 import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
-import type { RelationGraph } from "../../api/relationships";
+import type { RelationGraph } from "@/modules/authorization/api/relationships";
 import { AuthzFlow } from "./authz-flow";
 import { layeredLayout } from "./layout";
 import { relationshipNodeTypes } from "./nodes";
 
-/** ReBAC identity graph rendered with React Flow (replaces the SVG canvas). */
+/** Renders the ReBAC identity graph laid out from `rootId`. */
 export function RelationshipGraph({
   graph,
   rootId,
@@ -16,6 +17,7 @@ export function RelationshipGraph({
   rootId: string;
   height?: number;
 }) {
+  const { t } = useTranslation("authorization");
   const { nodes, edges } = useMemo(() => {
     const pos = layeredLayout(
       graph.nodes,
@@ -46,7 +48,7 @@ export function RelationshipGraph({
       edges={edges}
       nodeTypes={relationshipNodeTypes}
       height={height}
-      ariaLabel="ReBAC relationship graph"
+      ariaLabel={t("relationshipGraph.rebacRelationshipGraph")}
     />
   );
 }

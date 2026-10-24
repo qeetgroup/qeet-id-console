@@ -1,19 +1,17 @@
-// QeetAI REST data layer over the Go backend (`/v1/qeetai/*`). Conversation
-// streaming lives in features/qeetai/ai/streaming-client.ts; this module owns
-// the plain request/reply endpoints: the provider-status probe (used to pick the
-// live vs. graceful provider) and server-side conversation creation (used lazily
-// the first time a local conversation streams a turn).
+// Request/reply endpoints under `/v1/qeetai`; turn streaming is in ai/streaming-client.ts.
 
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { qeetaiKeys } from "./keys";
 
 export interface QeetAIStatus {
   configured: boolean;
-  // available folds in the plan gate: true only when Qeet AI is configured for
-  // the tenant (its own key, or the platform key on a plan that includes it).
-  // BYOK (source="tenant") is available on any plan. Older servers omit these.
+  /**
+   * True when Qeet AI can be used: the tenant's own key (any plan), or the platform key on a
+   * plan that includes it. Servers that omit it send only `configured`.
+   */
   available?: boolean;
   provider?: string;
   model?: string;
@@ -33,10 +31,8 @@ export interface QeetAIProviderConfig {
   model?: string;
   base_url?: string;
   max_tokens?: number;
-  /** Last 4 chars of the tenant's own key, when set. */
-  last4?: string;
-  /** True when a deployment-level key exists as a fallback. */
-  platform_fallback?: boolean;
+  last4?: string; // Last 4 chars of the tenant's own key, when set
+  platform_fallback?: boolean; // True when a deployment-level key exists as a fallback
 }
 
 /** Write payload for setting/rotating the tenant's BYOK key. */
@@ -57,16 +53,13 @@ export interface ServerConversation {
   updated_at: string;
 }
 
-export const QEETAI_STATUS_KEY = ["qeetai", "status"] as const;
-
 /**
- * Whether a model provider is configured on the server. Cached for a few minutes
- * and non-retrying — an unconfigured deployment is a normal steady state, not an
- * error, so it must not spam the network or toast.
+ * Returns whether Qeet AI is configured. Cached for minutes, never retried and silent: an
+ * unconfigured deployment is a normal state, not an error to toast.
  */
 export function useQeetAIStatus() {
   return useQuery({
-    queryKey: QEETAI_STATUS_KEY,
+    queryKey: qeetaiKeys.status(),
     queryFn: ({ signal }) => api<QeetAIStatus>("/v1/qeetai/status", { signal }),
     staleTime: 5 * 60_000,
     retry: false,
@@ -74,7 +67,7 @@ export function useQeetAIStatus() {
   });
 }
 
-/** Create a server-side conversation and return it (id used for streaming). */
+/** Creates the server-side conversation a local one streams its turns to. */
 export function createQeetAIConversation(title?: string): Promise<ServerConversation> {
   return api<ServerConversation>("/v1/qeetai/conversations", {
     method: "POST",
@@ -82,15 +75,13 @@ export function createQeetAIConversation(title?: string): Promise<ServerConversa
   });
 }
 
-// --- BYOK provider config (org owner/admin; gated by secret.write on the server) ---
+// The tenant's own provider key (BYOK): the server requires secret.write.
 
-export const QEETAI_PROVIDER_CONFIG_KEY = ["qeetai", "provider-config"] as const;
-
-/** Read the tenant's effective Qeet AI provider config (masked). */
+/** Returns the tenant's effective provider config, with the key masked. */
 export function useQeetAIProviderConfig(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: [...QEETAI_PROVIDER_CONFIG_KEY, tenantId],
+    queryKey: qeetaiKeys.providerConfig(tenantId),
     queryFn: ({ signal }) => api<QeetAIProviderConfig>("/v1/qeetai/provider-config", { signal }),
     enabled: !!tenantId && enabled,
     staleTime: 30_000,
@@ -98,19 +89,19 @@ export function useQeetAIProviderConfig(enabled = true) {
   });
 }
 
-/** Set (or rotate) the tenant's BYOK provider key. */
+/** Sets or rotates the tenant's own provider key. */
 export function setQeetAIProviderConfig(
   input: SetQeetAIProviderInput,
 ): Promise<QeetAIProviderConfig> {
   return api<QeetAIProviderConfig>("/v1/qeetai/provider-config", { method: "PUT", body: input });
 }
 
-/** Validate a provider key + endpoint with a live probe (does not save). */
+/** Checks a provider key and endpoint with a live call, without saving them. */
 export function testQeetAIProviderConfig(input: SetQeetAIProviderInput): Promise<{ ok: boolean }> {
   return api<{ ok: boolean }>("/v1/qeetai/provider-config/test", { method: "POST", body: input });
 }
 
-/** Remove the tenant's BYOK key, reverting to the platform fallback (or none). */
+/** Removes the tenant's own key, falling back to the platform key, if any. */
 export function deleteQeetAIProviderConfig(): Promise<void> {
   return api<void>("/v1/qeetai/provider-config", { method: "DELETE" });
 }

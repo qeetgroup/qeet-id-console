@@ -9,22 +9,23 @@ import {
   FieldGroup,
   FieldLabel,
   Input,
-  QRCode,
 } from "@qeetrix/ui";
-import { CheckIcon, CopyIcon, DownloadIcon, LoaderCircleIcon } from "@qeetrix/icons";
+import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import { errorMessage } from "@/platform/errors/user-message";
 
 import { type MfaEnrollment, startMfaEnrollment } from "../api/mfa-sign-in";
 import type { MfaProof } from "../api/flows";
+import { LazyQRCode } from "./lazy-qr-code";
+import { RecoveryCodeList } from "./recovery-code-list";
 
 /**
- * The sign-in step for an account that must have a second factor and holds
- * none: set up an authenticator app, then confirm it with a code, which
- * completes the sign-in. While the organisation's grace period runs
- * (dueAt), the setup can be put off.
+ * Renders the sign-in step for an account that must have a second factor and holds none: set up
+ * an authenticator app, then confirm it with a code to complete the sign-in. Until `dueAt`, the
+ * end of the organisation's grace period, the setup can be put off.
  */
 export function MfaEnrollmentStep({
   mfaToken,
@@ -39,7 +40,7 @@ export function MfaEnrollmentStep({
   errorMessage?: string;
   onSubmit: (proof: MfaProof) => void;
 }) {
-  const { t, i18n } = useTranslation("auth-flow");
+  const { t } = useTranslation("auth-flow");
   const [app, setApp] = useState<MfaEnrollment | null>(null);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function MfaEnrollmentStep({
   }
 
   const due = dueAt
-    ? new Intl.DateTimeFormat(i18n.language, { dateStyle: "long" }).format(new Date(dueAt))
+    ? new Intl.DateTimeFormat(formatLocale(), { dateStyle: "long" }).format(new Date(dueAt))
     : null;
   const busy = isLoading || starting;
   const shownError = startError ?? submitError;
@@ -96,7 +97,7 @@ export function MfaEnrollmentStep({
                   <Field>
                     <FieldLabel id="enroll-scan">{t("signIn.enroll.scanLabel")}</FieldLabel>
                     <div className="flex justify-center">
-                      <QRCode
+                      <LazyQRCode
                         value={app.provisioning_url}
                         size={200}
                         aria-labelledby="enroll-scan"
@@ -169,8 +170,8 @@ export function MfaEnrollmentStep({
 }
 
 /**
- * The recovery codes minted when a sign-in set up an authenticator app, shown
- * once before the person continues into the console.
+ * Renders the recovery codes minted when a sign-in set up an authenticator app, shown once before
+ * the person continues into the console.
  */
 export function RecoveryCodesStep({
   codes,
@@ -180,23 +181,6 @@ export function RecoveryCodesStep({
   onContinue: () => void;
 }) {
   const { t } = useTranslation("auth-flow");
-  const [copied, setCopied] = useState(false);
-
-  function copy() {
-    void navigator.clipboard?.writeText(codes.join("\n"));
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  }
-
-  function download() {
-    const blob = new Blob([`${codes.join("\n")}\n`], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "qeet-id-recovery-codes.txt";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
@@ -209,19 +193,12 @@ export function RecoveryCodesStep({
                 {t("signIn.enroll.codesSubtitle")}
               </p>
             </div>
-            <ul className="grid grid-cols-2 gap-2 rounded-lg border bg-muted/30 p-4 font-mono text-sm">
-              {codes.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={copy}>
-                {copied ? <CheckIcon /> : <CopyIcon />} {t("signIn.enroll.copyBtn")}
-              </Button>
-              <Button type="button" variant="outline" size="sm" onClick={download}>
-                <DownloadIcon /> {t("signIn.enroll.downloadBtn")}
-              </Button>
-            </div>
+            <RecoveryCodeList
+              codes={codes}
+              copyLabel={t("signIn.enroll.copyBtn")}
+              copiedLabel={t("signIn.enroll.copiedBtn")}
+              downloadLabel={t("signIn.enroll.downloadBtn")}
+            />
             <Field>
               <Button type="button" onClick={onContinue}>
                 {t("signIn.enroll.continueBtn")}

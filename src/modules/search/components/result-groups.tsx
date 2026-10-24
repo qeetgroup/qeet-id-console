@@ -1,21 +1,17 @@
-// ResultGroups: renders the grouped list of search results inside the listbox.
-// Categories appear as sticky headers; items are rendered via ResultRow.
-
 import type { SearchItem, SearchResultGroup } from "../registry/types/registry.types";
 import { ResultRow } from "./result-row";
 
 interface ResultGroupsProps {
   groups: SearchResultGroup[];
   query: string;
-  /** Flat-list index of the currently highlighted item. */
-  highlightIndex: number;
-  /** Flat list (same order as groups flattened). */
-  allItems: SearchItem[];
+  highlightIndex: number; // Index into `allItems`
+  allItems: SearchItem[]; // Every item, in group order
   onHighlight(idx: number): void;
   onSelect(item: SearchItem): void;
   getItemId(idx: number): string;
 }
 
+/** Renders the results as listbox option groups under sticky category headers. */
 export function ResultGroups({
   groups,
   query,
@@ -32,10 +28,8 @@ export function ResultGroups({
       {groups.map(({ category, items }) => {
         const headerId = `us-group-${category.toLowerCase().replace(/\s+/g, "-")}`;
         return (
-          // role="group" + aria-labelledby is the correct ARIA pattern for grouping options
-          // inside a role="listbox" (ARIA APG §3.14 Listbox). <fieldset> is the semantic
-          // equivalent for form fields but is not valid inside a listbox subtree.
-          // biome-ignore lint/a11y/useSemanticElements: role="group" is correct for listbox option groups per ARIA APG
+          // <fieldset> isn't valid inside a listbox; role="group" is the APG pattern there.
+          // biome-ignore lint/a11y/useSemanticElements: listbox option groups need role="group"
           <div key={category} role="group" aria-labelledby={headerId}>
             <div
               id={headerId}

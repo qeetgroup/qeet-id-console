@@ -29,7 +29,12 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { errorMessage } from "@/platform/errors/user-message";
+import { formatLocale } from "@/i18n";
+import { ErrorText } from "@/platform/components/error-reference";
+import {
+  settleSensitiveAction,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
 import {
   type TenantDomain,
   useAddDomain,
@@ -42,12 +47,13 @@ import {
 const DOCS = "https://docs.qeet.in/qeet-id/domains";
 
 export function VerifiedDomainsTab() {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   const domainsQ = useDomains();
   const addM = useAddDomain();
   const verifyM = useVerifyDomain();
   const removeM = useRemoveDomain();
   const settingsM = useUpdateDomainSettings();
+  const runSensitive = useSensitiveAction();
   const [search, setSearch] = useState("");
   const [draft, setDraft] = useState("");
 
@@ -64,6 +70,12 @@ export function VerifiedDomainsTab() {
   const pending = items.filter((d) => d.status === "pending").length;
   const attention = items.filter((d) => d.status === "attention").length;
   const defaults = items.filter((d) => d.is_default).length;
+
+  const updateSettings = (input: Parameters<typeof settingsM.mutateAsync>[0]) =>
+    runSensitive({
+      actionLabel: t("workspace.domains.actionLabels.settings"),
+      run: () => settingsM.mutateAsync(input),
+    }).catch(settleSensitiveAction);
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -114,7 +126,13 @@ export function VerifiedDomainsTab() {
             onSubmit={(e) => {
               e.preventDefault();
               const value = draft.trim();
-              if (value) addM.mutate(value, { onSuccess: () => setDraft("") });
+              if (!value) return;
+              runSensitive({
+                actionLabel: t("workspace.domains.actionLabels.add"),
+                run: () => addM.mutateAsync(value),
+              })
+                .then(() => setDraft(""))
+                .catch(settleSensitiveAction);
             }}
           >
             <Input
@@ -134,7 +152,9 @@ export function VerifiedDomainsTab() {
           </form>
           {addM.error ? (
             <Field className="mt-2">
-              <FieldError>{errorMessage(addM.error)}</FieldError>
+              <FieldError>
+                <ErrorText error={addM.error} />
+              </FieldError>
             </Field>
           ) : null}
         </CardContent>
@@ -219,7 +239,7 @@ export function VerifiedDomainsTab() {
                             )}
                           />
                           {d.last_checked_at
-                            ? new Date(d.last_checked_at).toLocaleString(undefined, {
+                            ? new Date(d.last_checked_at).toLocaleString(formatLocale(), {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
@@ -250,28 +270,41 @@ export function VerifiedDomainsTab() {
                             ) : null}
                             <DropdownMenuItem
                               onClick={() =>
-                                settingsM.mutate({ id: d.id, sso_enabled: !d.sso_enabled })
+                                updateSettings({ id: d.id, sso_enabled: !d.sso_enabled })
                               }
                             >
                               {t("workspace.domains.table.toggleSso")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                                settingsM.mutate({ id: d.id, jit_enabled: !d.jit_enabled })
+                                updateSettings({ id: d.id, jit_enabled: !d.jit_enabled })
                               }
                             >
                               {t("workspace.domains.table.toggleJit")}
                             </DropdownMenuItem>
                             {!d.is_default ? (
                               <DropdownMenuItem
-                                onClick={() => settingsM.mutate({ id: d.id, is_default: true })}
+                                onClick={() => updateSettings({ id: d.id, is_default: true })}
                               >
                                 {t("workspace.domains.table.makeDefault")}
                               </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuItem
                               variant="destructive"
-                              onClick={() => removeM.mutate(d.id)}
+                              onClick={() =>
+                                runSensitive({
+                                  confirm: {
+                                    title: t("workspace.domains.remove.title"),
+                                    description: t("workspace.domains.remove.description", {
+                                      domain: d.domain,
+                                    }),
+                                    confirmLabel: t("workspace.domains.table.remove"),
+                                    tone: "destructive",
+                                  },
+                                  actionLabel: t("workspace.domains.table.remove"),
+                                  run: () => removeM.mutateAsync(d.id),
+                                }).catch(settleSensitiveAction)
+                              }
                             >
                               {t("workspace.domains.table.remove")}
                             </DropdownMenuItem>
@@ -346,7 +379,7 @@ function DomainKpi({
 }
 
 function StatusPill({ status }: { status: TenantDomain["status"] }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   if (status === "verified") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
@@ -372,7 +405,7 @@ function StatusPill({ status }: { status: TenantDomain["status"] }) {
 }
 
 function YesNo({ on }: { on: boolean }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("organizations");
   return (
     <span
       className={cn(

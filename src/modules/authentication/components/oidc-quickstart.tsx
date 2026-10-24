@@ -1,9 +1,5 @@
-// Integration quickstart for a registered OIDC application: a framework picker
-// with a copy-paste "add login" snippet pre-filled with the app's real values
-// (issuer, client_id, redirect URI, scopes), plus a one-click "Test login" that
-// opens the hosted authorize flow (PKCE S256) against the app's first redirect
-// URI. This is the activation surface — time-to-first-login — shown right after
-// creation and again on the app's detail page.
+// Integration quickstart for a registered OIDC application: a sign-in snippet per framework,
+// pre-filled with the app's real values, and a "Test login" that opens the hosted authorize flow.
 
 import {
   Button,
@@ -12,30 +8,32 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CopyableSecret,
   SegmentedControl,
   SegmentedControlItem,
 } from "@qeetrix/ui";
 import { CheckIcon, CopyIcon, ExternalLinkIcon, PlayIcon } from "@qeetrix/icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { getApiBaseUrl } from "@/platform/api/client";
 import type { OidcClient } from "../api/oidc-clients";
+import i18n from "@/i18n";
 
-// The OIDC issuer (authority) is the API origin; SDKs discover the rest at
-// {issuer}/.well-known/openid-configuration (see the server's discovery handler).
-// Resolved per call: the API origin is runtime configuration.
+// The issuer is the API origin, where SDKs find /.well-known/openid-configuration. Resolved per
+// call because the API origin is runtime configuration.
 const issuer = () => new URL(getApiBaseUrl()).origin;
 
 type Framework = "config" | "nextjs" | "react" | "go";
 
-const FRAMEWORKS: { value: Framework; label: string }[] = [
-  { value: "config", label: "Endpoints" },
-  { value: "nextjs", label: "Next.js" },
-  { value: "react", label: "React SPA" },
-  { value: "go", label: "Go" },
-];
+const FRAMEWORKS: Framework[] = ["config", "nextjs", "react", "go"];
+
+// Framework names stay untranslated; "config" is the plain endpoint list, named through i18n.
+const FRAMEWORK_NAMES: Record<Exclude<Framework, "config">, string> = {
+  nextjs: "Next.js",
+  react: "React SPA",
+  go: "Go",
+};
 
 function buildSnippet(fw: Framework, client: OidcClient): string {
   const redirect = client.redirect_uris[0] ?? "http://localhost:3000/callback";
@@ -132,14 +130,13 @@ function base64url(bytes: Uint8Array): string {
     .replace(/=+$/, "");
 }
 
-// Opens the hosted authorize flow for this client with a fresh PKCE challenge.
-// We don't complete the exchange in the console — the point is to prove login
-// works end-to-end and land on the app's own redirect URI.
+// Opens the hosted authorize flow with a fresh PKCE challenge. The console never completes the
+// exchange: the point is to prove sign-in works and land on the app's own redirect URI.
 async function testLogin(client: OidcClient) {
   const redirectUri = client.redirect_uris[0];
   if (!redirectUri) {
-    toast.error("Add a redirect URI first", {
-      description: "This app has no redirect URI to return to after login.",
+    toast.error(i18n.t("oidc:quickstart.noRedirectTitle"), {
+      description: i18n.t("oidc:quickstart.noRedirectText"),
     });
     return;
   }
@@ -162,6 +159,7 @@ async function testLogin(client: OidcClient) {
 }
 
 function CodeBlock({ code }: { code: string }) {
+  const { t } = useTranslation("oidc");
   const [copied, setCopied] = useState(false);
   return (
     <div className="relative">
@@ -172,11 +170,11 @@ function CodeBlock({ code }: { code: string }) {
         variant="ghost"
         size="icon"
         className="absolute top-2 right-2"
-        aria-label="Copy snippet"
+        aria-label={t("quickstart.copySnippet")}
         onClick={() => {
           void navigator.clipboard?.writeText(code);
           setCopied(true);
-          toast.success("Copied to clipboard");
+          toast.success(t("quickstart.copied"));
           window.setTimeout(() => setCopied(false), 1500);
         }}
       >
@@ -187,40 +185,28 @@ function CodeBlock({ code }: { code: string }) {
 }
 
 /**
- * OidcQuickstart renders the integration quickstart for one client. Pass
- * `secret` right after creation to reveal the one-time client secret alongside
- * the snippet; omit it elsewhere (the snippet references it from an env var).
+ * Renders the integration quickstart for one client. The snippet reads the client secret from an
+ * env var; right after creation, the caller shows the one-time secret in a OneTimeSecret.
  */
-export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?: string }) {
+export function OidcQuickstart({ client }: { client: OidcClient }) {
+  const { t } = useTranslation("oidc");
   const [fw, setFw] = useState<Framework>("config");
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Integrate this application</CardTitle>
-        <CardDescription>
-          Drop the snippet into your app to add “Sign in with Qeet ID”, then test the flow.
-        </CardDescription>
+        <CardTitle className="text-base">{t("quickstart.title")}</CardTitle>
+        <CardDescription>{t("quickstart.description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {secret && (
-          <div className="flex flex-col gap-2 rounded-md border border-emerald-500/40 bg-emerald-50/50 p-3 dark:bg-emerald-950/20">
-            <p className="text-xs font-medium">
-              Copy your credentials now — the secret is shown only once.
-            </p>
-            <CopyableSecret value={client.client_id} label="client_id=" size="sm" />
-            <CopyableSecret value={secret} label="client_secret=" size="sm" />
-          </div>
-        )}
-
         <SegmentedControl
           value={fw}
           onValueChange={(v) => setFw(v as Framework)}
-          aria-label="Framework"
+          aria-label={t("quickstart.framework")}
         >
           {FRAMEWORKS.map((f) => (
-            <SegmentedControlItem key={f.value} value={f.value}>
-              {f.label}
+            <SegmentedControlItem key={f} value={f}>
+              {f === "config" ? t("quickstart.endpoints") : FRAMEWORK_NAMES[f]}
             </SegmentedControlItem>
           ))}
         </SegmentedControl>
@@ -229,7 +215,7 @@ export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?
 
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => testLogin(client)}>
-            <PlayIcon className="size-4" /> Test login
+            <PlayIcon className="size-4" /> {t("quickstart.testLogin")}
           </Button>
           <Button
             variant="outline"
@@ -238,12 +224,13 @@ export function OidcQuickstart({ client, secret }: { client: OidcClient; secret?
               window.open(`${issuer()}/.well-known/openid-configuration`, "_blank", "noopener")
             }
           >
-            <ExternalLinkIcon className="size-4" /> Discovery document
+            <ExternalLinkIcon className="size-4" /> {t("quickstart.discovery")}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          “Test login” opens the hosted sign-in for this app and returns to its first redirect URI (
-          {client.redirect_uris[0] ?? "none set"}).
+          {client.redirect_uris[0]
+            ? t("quickstart.testLoginHelp", { uri: client.redirect_uris[0] })
+            : t("quickstart.testLoginHelpNone")}
         </p>
       </CardContent>
     </Card>

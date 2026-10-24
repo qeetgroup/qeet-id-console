@@ -1,11 +1,11 @@
-// OAuth grant administration. Access tokens themselves are stateless JWTs;
-// what's listable/revocable is the stored OIDC refresh-token grant per
-// (client, user). Revoking a grant invalidates the whole rotation chain.
+// OAuth grant administration. Access tokens are stateless JWTs, so what can be listed and revoked
+// is the stored refresh-token grant per (client, user); revoking it ends the rotation chain.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "./keys";
 
 export interface OAuthGrant {
   id: string;
@@ -20,7 +20,7 @@ export interface OAuthGrant {
 export function useOAuthGrants() {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: ["oauth-grants", tenantId],
+    queryKey: authKeys.oauthGrants(tenantId),
     enabled: !!tenantId,
     queryFn: () => api<{ items: OAuthGrant[] }>(`/v1/tenants/${tenantId}/oauth/grants`),
   });
@@ -34,7 +34,7 @@ export function useRevokeOAuthGrant() {
       api<void>(`/v1/tenants/${tenantId}/oauth/grants/${id}`, {
         method: "DELETE",
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["oauth-grants"] }),
-    meta: { successMessage: "Grant revoked" },
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oauthGrants(tenantId) }),
+    meta: { successMessage: "authentication:toast.grantRevoked" },
   });
 }

@@ -1,24 +1,40 @@
-// Conversation state for the QeetAI: the list of conversations, which one is
-// active, and every message within them. Persisted to localStorage so a thread
-// survives reloads. A standalone TanStack Store (module singleton) for the same
-// reason as the workspace store — multiple, disconnected parts of the UI read
-// and mutate it.
+// Conversations and their messages, persisted through scopedStorage: a thread survives a
+// reload, but one person's history never loads for another and is wiped on sign-out.
 
 import { Store } from "@tanstack/react-store";
+
+import { scopedStorage } from "@/platform/auth/scoped-storage";
 
 import { maskPII, redactPII } from "../redact";
 import type { ToolExecution } from "../tools/types/tool.types";
 import type { Conversation, Message, MessageStatus } from "../types/qeetai.types";
 
-const STORE_KEY = "qeetid.qeetai.conversations";
+const STORE_VERSION = 2;
 const MAX_CONVERSATIONS = 100;
-// Cap the size of any single persisted tool input/data blob. Large payloads are
-// dropped (a marker is stored) rather than bloating localStorage.
+// Conversations untouched for this long are dropped on load and on save.
+const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+// A persisted tool input or data blob larger than this is replaced by a `truncated` marker.
 const MAX_BLOB_CHARS = 4000;
 
 export interface ConversationState {
   conversations: Conversation[];
   activeId: string | null;
+}
+
+interface PersistedConversations extends ConversationState {
+  version: number;
+}
+
+const EMPTY_STATE: ConversationState = { conversations: [], activeId: null };
+
+const storage = scopedStorage("qeetid.qeetai.conversations", {
+  // The old scope's history leaves memory before the new session is visible.
+  onScopeChange: () => conversationStore.setState(() => EMPTY_STATE),
+});
+
+function withinRetention(conversations: Conversation[]): Conversation[] {
+  const cutoff = Date.now() - RETENTION_MS;
+  return conversations.filter((c) => typeof c.updatedAt === "number" && c.updatedAt >= cutoff);
 }
 
 export const conversationStore = new Store<ConversationState>({
@@ -31,15 +47,15 @@ function uid(prefix: string): string {
     if (typeof crypto !== "undefined" && crypto.randomUUID)
       return `${prefix}_${crypto.randomUUID()}`;
   } catch {
-    /* fall through to the time-based id */
+    // fall through to the time-based id
   }
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/** A conversation's title is derived from its first user message until renamed. */
+/** Returns a title for a conversation from its first user message; empty for a blank one. */
 export function deriveTitle(text: string): string {
   const trimmed = text.trim().replace(/\s+/g, " ");
-  if (!trimmed) return "New conversation";
+  if (!trimmed) return "";
   return trimmed.length > 48 ? `${trimmed.slice(0, 47)}…` : trimmed;
 }
 
@@ -47,13 +63,13 @@ function capBlob(value: unknown): unknown {
   try {
     if (JSON.stringify(value).length > MAX_BLOB_CHARS) return { truncated: true };
   } catch {
-    /* unserialisable — drop it */
+    // unserialisable — drop it
     return { truncated: true };
   }
   return value;
 }
 
-/** Redact PII and cap oversized tool blobs on a single execution. */
+/** Returns an execution's persistable copy: PII redacted, oversized blobs capped. */
 function sanitizeExecution(exec: ToolExecution): ToolExecution {
   const result = exec.result
     ? {
@@ -62,8 +78,7 @@ function sanitizeExecution(exec: ToolExecution): ToolExecution {
         data: exec.result.data
           ? (capBlob(redactPII(exec.result.data)) as Record<string, unknown>)
           : undefined,
-        // Secret material is diverted to the in-memory secrets store before this
-        // point; make doubly sure it never reaches localStorage.
+        // Already moved to the secrets store; cleared again so it can never reach localStorage.
         sensitiveArtifact: undefined,
       }
     : exec.result;
@@ -71,23 +86,17 @@ function sanitizeExecution(exec: ToolExecution): ToolExecution {
 }
 
 /**
- * The in-memory store keeps full tool data (the operator's own screen). The
- * persisted copy is redacted + size-capped so no PII or secret material lands
- * in localStorage — where any script/extension could read it and it would
- * otherwise survive logout.
+ * Returns the copy written to localStorage, redacted and size-capped, since any script or
+ * extension can read it there. Memory keeps full tool data for the operator's own screen.
  */
 function sanitizeForPersistence(state: ConversationState): ConversationState {
   return {
     ...state,
     conversations: state.conversations.map((c) => ({
       ...c,
-      // The title is derived from the first user message, so it can carry the
-      // same PII — mask it before it lands in localStorage.
-      title: maskPII(c.title),
+      title: maskPII(c.title), // Titles come from the first user message, so they can carry PII too
       messages: c.messages.map((m) => ({
         ...m,
-        // Mask emails/IPs in the message text too — prompts/answers can contain
-        // PII and would otherwise sit in localStorage in the clear.
         content: maskPII(m.content),
         toolExecutions: m.toolExecutions?.map(sanitizeExecution),
       })),
@@ -96,22 +105,22 @@ function sanitizeForPersistence(state: ConversationState): ConversationState {
 }
 
 function persist(state: ConversationState) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORE_KEY, JSON.stringify(sanitizeForPersistence(state)));
-  } catch {
-    /* best-effort persistence */
-  }
+  const conversations = withinRetention(state.conversations);
+  const payload: PersistedConversations = {
+    version: STORE_VERSION,
+    ...sanitizeForPersistence({
+      conversations,
+      activeId: conversations.some((c) => c.id === state.activeId) ? state.activeId : null,
+    }),
+  };
+  storage.write(payload);
 }
 
 function touch(conversation: Conversation): Conversation {
   return { ...conversation, updatedAt: Date.now() };
 }
 
-/**
- * Sort key: pinned first, then most-recently-updated. Returned as a new array
- * so callers can render a stable, ordered history list.
- */
+/** Returns a sorted copy: pinned first, then most recently updated. */
 export function sortConversations(list: Conversation[]): Conversation[] {
   return [...list].sort((a, b) => {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
@@ -120,13 +129,13 @@ export function sortConversations(list: Conversation[]): Conversation[] {
 }
 
 export const conversationActions = {
-  /** Create a fresh, empty conversation and make it active. */
+  /** Creates an empty conversation and makes it active. */
   create(): string {
     const id = uid("conv");
     const now = Date.now();
     const conversation: Conversation = {
       id,
-      title: "New conversation",
+      title: "",
       messages: [],
       pinned: false,
       createdAt: now,
@@ -141,7 +150,6 @@ export const conversationActions = {
     return id;
   },
 
-  /** Remember the server-side UUID once a conversation is created on the backend. */
   setServerConversationId(localId: string, serverId: string) {
     conversationStore.setState((s) => {
       const conversations = s.conversations.map((c) => (c.id === localId ? { ...c, serverId } : c));
@@ -160,7 +168,7 @@ export const conversationActions = {
     });
   },
 
-  /** Append a message, creating an active conversation if none exists. */
+  /** Appends a message to the active conversation, creating one if there is none. */
   appendMessage(input: {
     role: Message["role"];
     content: string;
@@ -199,7 +207,6 @@ export const conversationActions = {
     return { conversationId, messageId };
   },
 
-  /** Replace a message's streamed content and/or lifecycle status. */
   updateMessage(
     conversationId: string,
     messageId: string,
@@ -219,7 +226,6 @@ export const conversationActions = {
     });
   },
 
-  /** Append a text chunk to a streaming message (the streaming hot path). */
   appendChunk(conversationId: string, messageId: string, chunk: string) {
     conversationStore.setState((s) => {
       const conversations = s.conversations.map((c) => {
@@ -237,7 +243,6 @@ export const conversationActions = {
     });
   },
 
-  /** Insert or update a tool execution on a message (drives the live timeline). */
   upsertMessageExecution(conversationId: string, messageId: string, exec: ToolExecution) {
     conversationStore.setState((s) => {
       const conversations = s.conversations.map((c) => {
@@ -260,7 +265,7 @@ export const conversationActions = {
     });
   },
 
-  /** Drop every message after `messageId` (keeping it) — for edit/regenerate. */
+  /** Drops every message after `messageId`, keeping that one. */
   truncateAfter(conversationId: string, messageId: string) {
     conversationStore.setState((s) => {
       const conversations = s.conversations.map((c) => {
@@ -275,7 +280,7 @@ export const conversationActions = {
     });
   },
 
-  /** Replace a user message's text and drop everything after it (edit + resend). */
+  /** Replaces a user message's text and drops every message after it. */
   editUserMessage(conversationId: string, messageId: string, content: string) {
     const clean = content.trim();
     if (!clean) return;
@@ -329,31 +334,30 @@ export const conversationActions = {
     });
   },
 
+  /** Forgets the current person's history, in memory and in storage. */
   clearAll() {
-    const next: ConversationState = { conversations: [], activeId: null };
-    conversationStore.setState(() => next);
-    persist(next);
+    conversationStore.setState(() => EMPTY_STATE);
+    storage.remove();
   },
 };
 
 /**
- * Rehydrate conversations from storage. Call once from a client mount effect —
- * never during render, to keep SSR output deterministic.
+ * Replaces the store with the signed-in person's saved history (empty when signed out). Call it
+ * from a client effect keyed on useStorageScope(), never in render, so SSR stays deterministic.
  */
 export function hydrateConversations() {
-  if (typeof window === "undefined") return;
-  try {
-    const raw = window.localStorage.getItem(STORE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw) as Partial<ConversationState>;
-    if (!parsed || !Array.isArray(parsed.conversations)) return;
-    conversationStore.setState(() => ({
-      conversations: parsed.conversations as Conversation[],
-      activeId: parsed.activeId ?? null,
-    }));
-  } catch {
-    /* corrupt payload — start clean rather than crash the console */
+  const parsed = storage.read() as Partial<PersistedConversations> | null;
+  if (parsed?.version !== STORE_VERSION || !Array.isArray(parsed.conversations)) {
+    conversationStore.setState(() => EMPTY_STATE);
+    return;
   }
+  const conversations = withinRetention(parsed.conversations as Conversation[]);
+  conversationStore.setState(() => ({
+    conversations,
+    activeId: conversations.some((c) => c.id === parsed.activeId)
+      ? (parsed.activeId ?? null)
+      : null,
+  }));
 }
 
 /** Case-insensitive search over titles and message content. */

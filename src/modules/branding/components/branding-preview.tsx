@@ -32,7 +32,7 @@ export function BrandingPreview({
   draft: BrandingDraft;
   logoReady: boolean;
 }) {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation("branding");
   const [mode, setMode] = useState<"desktop" | "mobile">("desktop");
   const primary = normalizeBrandColor(draft.primary_color) ?? BRANDING_COLORS.primary;
   const accent = normalizeBrandColor(draft.secondary_color) ?? BRANDING_COLORS.secondary;

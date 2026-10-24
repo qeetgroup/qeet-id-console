@@ -1,0 +1,145 @@
+{
+  "branding": {
+    "description": "Customize your organization's identity for hosted login and organization emails.",
+    "workspace": {
+      "title": "Branding",
+      "docs": "View documentation",
+      "form": "Organization branding",
+      "loading": "Loading branding",
+      "loadError": "Branding settings couldn't be loaded.",
+      "noAccess": "You don't have access to branding settings.",
+      "retry": "Retry",
+      "readOnly": "Read-only access",
+      "upgrade": "Custom branding requires Starter or a higher plan.",
+      "comparePlans": "Compare plans",
+      "unsaved": "You have unsaved changes",
+      "upToDate": "No unsaved changes",
+      "saved": "Branding changes saved",
+      "reset": "Reset changes",
+      "leave": {
+        "title": "Discard branding changes?",
+        "description": "Your unsaved changes will be lost when you leave this page.",
+        "stay": "Keep editing",
+        "discard": "Discard and leave"
+      },
+      "identity": {
+        "title": "Brand identity",
+        "description": "Your organization's logo for hosted authentication.",
+        "hint": "Transparent SVG or PNG. Original proportions are preserved."
+      },
+      "fields": {
+        "primary_color": "Primary color",
+        "secondary_color": "Secondary / accent color",
+        "background_color": "Background color",
+        "custom_domain": "Login domain",
+        "email_from_name": "From name",
+        "email_from_address": "From address",
+        "email_reply_to": "Reply-to (optional)"
+      },
+      "colors": {
+        "title": "Brand colors",
+        "description": "Your color palette for hosted sign-in pages.",
+        "primary_color": "Buttons, links, and focus.",
+        "secondary_color": "Brand-panel highlights.",
+        "background_color": "Behind the sign-in form.",
+        "pick": "Pick {{color}}",
+        "swatch": "Set {{color}} to {{hex}}",
+        "automatic": "Automatic",
+        "resetBackground": "Use automatic background",
+        "preview": "Color preview",
+        "primaryButton": "Primary button",
+        "secondaryButton": "Secondary",
+        "contrast": "Button text contrast {{ratio}}:1 (WCAG AA)",
+        "linkWarning": "Primary color on white is {{ratio}}:1. Small links need 4.5:1 contrast."
+      },
+      "domain": {
+        "description": "A custom hostname for your hosted login experience.",
+        "setup": "Domain ownership, DNS routing, and TLS must be configured separately.",
+        "notConfigured": "Not configured",
+        "unsaved": "Unsaved domain",
+        "verified": "Ownership verified",
+        "pending": "Ownership not verified",
+        "unknown": "Ownership not reported",
+        "tls": "TLS certificate: not reported",
+        "tlsStates": {
+          "not_started": "TLS certificate: not started",
+          "pending": "TLS certificate: pending",
+          "issued": "TLS certificate: issued"
+        },
+        "live": "Login endpoint: live",
+        "notLive": "Login endpoint: not available",
+        "instructions": "DNS instructions"
+      },
+      "email": {
+        "title": "Outgoing email identity",
+        "description": "Sender name and reply-to for organization invitations and tenant magic links.",
+        "providerNote": "The platform's provider-approved From address remains in use. A custom sender address needs email-provider configuration; saving it here does not activate it.",
+        "fromNamePlaceholder": "Example Auth"
+      },
+      "preview": {
+        "sidebar": "Branding preview and application context",
+        "title": "Hosted login preview",
+        "description": "Your logo and colors on a sample sign-in form.",
+        "size": "Preview size",
+        "desktop": "Desktop view",
+        "mobile": "Mobile view",
+        "signIn": "Sign in to your account",
+        "emailHint": "Enter your email to continue",
+        "caption": "Sample hosted sign-in appearance with your current logo and colors.",
+        "note": "Appearance preview. Sign-in methods and layout follow your application's authentication policy."
+      },
+      "appears": {
+        "title": "Where your brand appears",
+        "login": {
+          "title": "Hosted sign-in",
+          "description": "Logo, primary color, accent, and page background."
+        },
+        "email": {
+          "title": "Organization emails",
+          "description": "Sender name and reply-to for invitations and tenant magic links."
+        },
+        "domain": {
+          "title": "Custom login domain",
+          "description": "Your hostname after DNS and TLS configuration."
+        },
+        "security": {
+          "title": "Account security",
+          "description": "Account recovery, verification, and MFA retain the Qeet ID identity."
+        }
+      },
+      "validation": {
+        "color": "Enter a three- or six-digit hex color, such as #f97316.",
+        "logo": "Use an HTTP or HTTPS image URL without credentials, or an image file up to 2 MB.",
+        "domain": "Enter a hostname without a protocol, port, path, or spaces.",
+        "email": "Enter one valid email address.",
+        "header": "Sender names cannot contain line breaks."
+      }
+    },
+    "customDomain": {
+      "title": "Custom domain"
+    },
+    "preview": {
+      "continue": "Continue",
+      "securedBy": "Secured by"
+    },
+    "footer": {
+      "save": "Save changes",
+      "saving": "Saving…"
+    }
+  },
+  "nav": {
+    "settings": {
+      "branding": {
+        "title": "Branding",
+        "description": "Logo, colors and hosted-page theme."
+      }
+    }
+  },
+  "commands": {
+    "branding": {
+      "title": "Manage Branding",
+      "subtitle": "Customise the hosted login UI",
+      "keywords": "branding, theme, logo, colors, login page"
+    }
+  }
+}

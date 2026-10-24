@@ -1,29 +1,17 @@
 import {
   Button,
   cn,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Field,
-  FieldError,
-  FieldLabel,
-  Input,
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  Skeleton,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  TimeSince,
 } from "@qeetrix/ui";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -39,8 +27,8 @@ import {
 } from "@qeetrix/icons";
 import { useDeferredValue, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+import { formatLocale } from "@/i18n";
 import { useTenantId } from "@/platform/auth/session";
 import { PageHeader } from "@/platform/components/page-header";
 import { errorMessage } from "@/platform/errors/user-message";
@@ -52,24 +40,27 @@ import {
   type DirectoryEventPage,
   type EventFilters,
   fetchDirectoryExport,
-  useCreateDirectoryAlert,
   useDirectoryConnections,
   useDirectoryEvents,
 } from "../api/directory";
-import type { DirectoryConnection } from "../directory-model";
+import { type DirectoryConnection, formatDirectoryDuration } from "../directory-model";
 import {
   DIRECTORY_ACTION,
   DIRECTORY_PAGE,
   DIRECTORY_PANEL,
-  DirectoryPanel,
+  DirectoryDaysSelect,
   DirectoryPagination,
+  DirectoryPanel,
   DirectoryQueryError,
   DirectorySearch,
   DirectorySelect,
+  DirectorySkeletonRows,
   DirectoryStat,
   DirectoryStatus,
-  formatDirectoryDuration,
 } from "./directory-ui";
+import { DirectoryAlertDialog } from "./sync-activity-page-alert-dialog";
+import { EventDetails } from "./sync-activity-page-details";
+import { SyncVolumePanel } from "./sync-activity-page-volume";
 
 export function SyncActivityPage() {
   const tenantId = useTenantId();
@@ -151,9 +142,8 @@ export function SyncActivityView({
   exporting: boolean;
   exportError?: string;
 }) {
-  const { t, i18n } = useTranslation("dashboard");
+  const { t } = useTranslation("directory");
   const [selected, setSelected] = useState<DirectoryEvent | null>(null);
-  const [series, setSeries] = useState<"users" | "groups">("users");
   const summary = page?.summary;
   const latest = page?.items[0];
   const nameFor = (id: string) =>
@@ -199,15 +189,7 @@ export function SyncActivityView({
         aria-label={t("directory.activity.filters")}
         className={cn(DIRECTORY_PANEL, "flex flex-wrap gap-2 p-3")}
       >
-        <DirectorySelect
-          label={t("directory.dateRange")}
-          value={String(filters.days)}
-          onChange={(value) => change({ days: Number(value) })}
-          options={[7, 30, 90].map((days) => ({
-            value: String(days),
-            label: t("directory.lastDays", { days }),
-          }))}
-        />
+        <DirectoryDaysSelect value={filters.days} onChange={(days) => change({ days })} />
         <DirectorySelect
           label={t("directory.connectionsPage.table")}
           value={filters.connection_id}
@@ -223,7 +205,7 @@ export function SyncActivityView({
           onChange={(status) => change({ status })}
           options={[
             { value: "all", label: t("directory.allStatuses") },
-            ...["success", "warning", "failed"].map((status) => ({
+            ...(["success", "warning", "failed"] as const).map((status) => ({
               value: status,
               label: t(`directory.activity.${status}`),
             })),
@@ -291,88 +273,86 @@ export function SyncActivityView({
           <Table className="min-w-220 text-xs [&_td]:px-4 [&_td]:py-2.5 [&_th]:px-4 [&_th]:text-[10px]">
             <TableHeader className="border-y border-border/60 bg-muted/25">
               <TableRow>
-                {[
-                  "connection",
-                  "trigger",
-                  "started",
-                  "duration",
-                  "users",
-                  "groups",
-                  "result",
-                  "actions",
-                ].map((column) => (
+                {(
+                  [
+                    "connection",
+                    "trigger",
+                    "started",
+                    "duration",
+                    "users",
+                    "groups",
+                    "result",
+                    "actions",
+                  ] as const
+                ).map((column) => (
                   <TableHead key={column}>{t(`directory.activity.${column}`)}</TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading
-                ? [0, 1, 2].map((index) => (
-                    <TableRow key={index}>
-                      <TableCell colSpan={8}>
-                        <Skeleton className="h-8 w-full" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : page?.items.map((event) => (
-                    <TableRow key={event.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <span className="grid size-8 place-items-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                            <NetworkIcon className="size-4" />
-                          </span>
-                          <div className="min-w-0">
-                            <span className="font-medium">{nameFor(event.connection_id)}</span>
-                            <p className="mt-0.5 text-[10px] text-muted-foreground">
-                              {t(`directory.activity.operation.${event.operation}`, {
-                                defaultValue: event.operation,
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px]">
-                          {t(`directory.activity.triggerTypes.${event.trigger}`)}
+              {loading ? (
+                <DirectorySkeletonRows colSpan={8} />
+              ) : (
+                page?.items.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <span className="grid size-8 place-items-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                          <NetworkIcon className="size-4" />
                         </span>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(event.started_at).toLocaleString(i18n.resolvedLanguage)}
-                      </TableCell>
-                      <TableCell>{formatDirectoryDuration(event.duration_ms)}</TableCell>
-                      <TableCell className="tabular-nums">
-                        {event.users_synced.toLocaleString(i18n.resolvedLanguage)}
-                      </TableCell>
-                      <TableCell className="tabular-nums">
-                        {event.groups_synced.toLocaleString(i18n.resolvedLanguage)}
-                      </TableCell>
-                      <TableCell>
-                        <DirectoryStatus
-                          label={t(`directory.activity.${event.status}`)}
-                          tone={
-                            event.status === "success"
-                              ? "success"
-                              : event.status === "failed"
-                                ? "danger"
-                                : "warning"
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          aria-label={t("directory.activity.details", {
-                            name: nameFor(event.connection_id),
-                          })}
-                          onClick={() => setSelected(event)}
-                        >
-                          <EllipsisIcon />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        <div className="min-w-0">
+                          <span className="font-medium">{nameFor(event.connection_id)}</span>
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">
+                            {t(`directory.activity.operation.${event.operation}`, {
+                              defaultValue: event.operation,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="rounded bg-muted px-1.5 py-0.5 text-[10px]">
+                        {t(`directory.activity.triggerTypes.${event.trigger}`)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {new Date(event.started_at).toLocaleString(formatLocale())}
+                    </TableCell>
+                    <TableCell>{formatDirectoryDuration(event.duration_ms)}</TableCell>
+                    <TableCell className="tabular-nums">
+                      {event.users_synced.toLocaleString(formatLocale())}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {event.groups_synced.toLocaleString(formatLocale())}
+                    </TableCell>
+                    <TableCell>
+                      <DirectoryStatus
+                        label={t(`directory.activity.${event.status}`)}
+                        tone={
+                          event.status === "success"
+                            ? "success"
+                            : event.status === "failed"
+                              ? "danger"
+                              : "warning"
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        aria-label={t("directory.activity.details", {
+                          name: nameFor(event.connection_id),
+                        })}
+                        onClick={() => setSelected(event)}
+                      >
+                        <EllipsisIcon />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
               {!loading && !page?.items.length ? (
                 <TableRow>
                   <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
@@ -393,73 +373,7 @@ export function SyncActivityView({
       </section>
 
       <div className="grid gap-3 @min-[800px]/directory-page:grid-cols-[1.5fr_1fr]">
-        <DirectoryPanel
-          title={t("directory.activity.volumeTitle")}
-          description={t("directory.activity.volumeDescription")}
-          action={
-            <fieldset className="flex shrink-0 rounded-md border border-border bg-muted/30 p-0.5">
-              <legend className="sr-only">{t("directory.activity.series")}</legend>
-              {(["users", "groups"] as const).map((value) => (
-                <button
-                  type="button"
-                  key={value}
-                  aria-pressed={series === value}
-                  className={cn(
-                    "rounded-sm px-3 py-1 text-[10px] outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    series === value && "bg-primary/10 text-primary",
-                  )}
-                  onClick={() => setSeries(value)}
-                >
-                  {t(`directory.activity.${value}`)}
-                </button>
-              ))}
-            </fieldset>
-          }
-        >
-          {page?.volume.length ? (
-            <div
-              className="h-48 w-full"
-              role="img"
-              aria-label={t("directory.activity.volumeTitle")}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={page.volume}>
-                  <CartesianGrid stroke="var(--border)" vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-                    tickFormatter={(value: string) => value.slice(5)}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-                    axisLine={false}
-                    tickLine={false}
-                    width={38}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--card)",
-                      borderColor: "var(--border)",
-                      color: "var(--foreground)",
-                    }}
-                  />
-                  <Bar
-                    dataKey={series}
-                    fill={series === "users" ? "var(--color-blue-400)" : "var(--color-violet-400)"}
-                    maxBarSize={24}
-                    isAnimationActive={false}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="grid h-48 place-items-center text-xs text-muted-foreground">
-              {t("directory.activity.emptyVolume")}
-            </div>
-          )}
-        </DirectoryPanel>
+        <SyncVolumePanel volume={page?.volume} />
         <DirectoryPanel title={t("directory.activity.latestTitle")}>
           {latest ? (
             <EventDetails event={latest} name={nameFor(latest.connection_id)} />
@@ -485,126 +399,5 @@ export function SyncActivityView({
         </SheetContent>
       </Sheet>
     </div>
-  );
-}
-
-function EventDetails({ event, name }: { event: DirectoryEvent; name: string }) {
-  const { t } = useTranslation("dashboard");
-  return (
-    <div className="text-xs">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <strong>{name}</strong>
-        <TimeSince
-          value={event.started_at}
-          className="shrink-0 text-[10px] text-muted-foreground"
-        />
-      </div>
-      <dl className="divide-y divide-border/50">
-        {[
-          [t("directory.activity.duration"), formatDirectoryDuration(event.duration_ms)],
-          [t("directory.activity.users"), event.users_synced],
-          [t("directory.activity.groups"), event.groups_synced],
-          [t("directory.activity.trigger"), t(`directory.activity.triggerTypes.${event.trigger}`)],
-          [t("directory.activity.result"), t(`directory.activity.${event.status}`)],
-        ].map(([label, value]) => (
-          <div key={String(label)} className="flex justify-between gap-4 py-1.5">
-            <dt className="text-muted-foreground">{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <div
-        className={cn(
-          "mt-3 rounded-md p-3",
-          event.status === "success"
-            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-            : "bg-rose-500/10 text-rose-700 dark:text-rose-400",
-        )}
-      >
-        <p className="font-medium">{t(`directory.activity.${event.status}`)}</p>
-        <p className="mt-1 text-[11px]">{event.message}</p>
-      </div>
-    </div>
-  );
-}
-
-function DirectoryAlertDialog({
-  connections,
-  onClose,
-}: {
-  connections: DirectoryConnection[];
-  onClose: () => void;
-}) {
-  const { t } = useTranslation("dashboard");
-  const [name, setName] = useState("");
-  const [connection, setConnection] = useState("");
-  const [threshold, setThreshold] = useState(1);
-  const mutation = useCreateDirectoryAlert();
-  return (
-    <Dialog open onOpenChange={(open) => !open && !mutation.isPending && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t("directory.activity.createAlert")}</DialogTitle>
-          <DialogDescription>{t("directory.activity.alertDescription")}</DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!name.trim() || mutation.isPending) return;
-            mutation.mutate(
-              { name: name.trim(), connection_id: connection || null, threshold },
-              { onSuccess: onClose },
-            );
-          }}
-        >
-          <fieldset disabled={mutation.isPending} className="space-y-4">
-            <Field>
-              <FieldLabel htmlFor="directory-alert-name">
-                {t("directory.activity.alertName")}
-              </FieldLabel>
-              <Input
-                id="directory-alert-name"
-                value={name}
-                maxLength={100}
-                required
-                onChange={(event) => setName(event.target.value)}
-              />
-            </Field>
-            <DirectorySelect
-              label={t("directory.activity.connection")}
-              value={connection}
-              onChange={setConnection}
-              options={[
-                { value: "all", label: t("directory.allConnections") },
-                ...connections.map((item) => ({ value: item.id, label: item.name })),
-              ]}
-            />
-            <Field>
-              <FieldLabel htmlFor="directory-alert-threshold">
-                {t("directory.activity.threshold")}
-              </FieldLabel>
-              <Input
-                id="directory-alert-threshold"
-                type="number"
-                min={1}
-                max={100}
-                required
-                value={threshold}
-                onChange={(event) => setThreshold(Number(event.target.value))}
-              />
-            </Field>
-            {mutation.isError ? <FieldError>{errorMessage(mutation.error)}</FieldError> : null}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                {t("directory.cancel")}
-              </Button>
-              <Button type="submit" disabled={!name.trim() || mutation.isPending}>
-                {t("directory.activity.createAlert")}
-              </Button>
-            </DialogFooter>
-          </fieldset>
-        </form>
-      </DialogContent>
-    </Dialog>
   );
 }
