@@ -209,8 +209,8 @@ export function useRotateClientSecret(id: string) {
 }
 
 /**
- * An OIDC client holding a machine grant type (client_credentials, token-exchange) outside the
- * agents and service-accounts registry: unmanaged software that can act without a human.
+ * An OIDC client holding a token-exchange grant outside the agents and service-accounts registry:
+ * unmanaged software that can act without a human. (Applications can't hold client_credentials.)
  */
 export interface ShadowAICandidate {
   id: string;

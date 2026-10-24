@@ -32,6 +32,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { StatusPill } from "@/platform/components/status-pill";
 import { toastError } from "@/platform/errors/error-toast";
 
 import { brandingKeys, saveBranding, useBranding } from "@/modules/branding";
@@ -60,6 +61,8 @@ export function CustomLoginDomainTab() {
 
   const status = statusQ.data;
   const records = status?.records ?? [];
+  // Live: DNS verified, the certificate issued and the endpoint answering over HTTPS.
+  const active = status?.status === "active";
 
   const save = async () => {
     setSaving(true);
@@ -92,10 +95,14 @@ export function CustomLoginDomainTab() {
             </span>
             <div className="min-w-0">
               <p className="font-heading text-base font-semibold">
-                {t("workspace.domains.custom.bannerTitle")}
+                {active
+                  ? t("workspace.domains.custom.bannerLiveTitle")
+                  : t("workspace.domains.custom.bannerTitle")}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {t("workspace.domains.custom.bannerDetail")}{" "}
+                {active
+                  ? t("workspace.domains.custom.bannerLiveDetail")
+                  : t("workspace.domains.custom.bannerDetail")}{" "}
                 <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
                   https://{saved || t("workspace.domains.custom.placeholder")}
                 </code>
@@ -104,22 +111,24 @@ export function CustomLoginDomainTab() {
             </div>
           </div>
           <div className="flex shrink-0 flex-col items-start gap-2 lg:w-72 lg:self-stretch lg:justify-center lg:border-s lg:ps-5">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
-              <CircleIcon className="size-3" />
-              {status?.status === "active"
+            <StatusPill kind={active ? "success" : saved ? "warning" : "muted"}>
+              {active
                 ? t("workspace.domains.custom.bannerActive")
                 : saved
                   ? t("workspace.domains.custom.bannerPending")
                   : t("workspace.domains.custom.bannerNone")}
-            </span>
-            <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground">
-                {t("workspace.domains.custom.bannerSub")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("workspace.domains.custom.bannerNote")}
-              </p>
-            </div>
+            </StatusPill>
+            {/* Only a saved domain still provisioning is waiting on anything. */}
+            {saved && !active && (
+              <div className="space-y-0.5">
+                <p className="text-xs text-muted-foreground">
+                  {t("workspace.domains.custom.bannerSub")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t("workspace.domains.custom.bannerNote")}
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -258,10 +267,16 @@ export function CustomLoginDomainTab() {
                   {t("workspace.domains.custom.provisioning.title")}
                 </CardTitle>
               </div>
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
-                <CircleIcon className="size-3" />
-                {t("workspace.domains.custom.provisioning.inProgress")}
-              </span>
+              <StatusPill
+                kind={active ? "success" : saved ? "warning" : "muted"}
+                className="shrink-0"
+              >
+                {active
+                  ? t("workspace.domains.custom.provisioning.complete")
+                  : saved
+                    ? t("workspace.domains.custom.provisioning.inProgress")
+                    : t("workspace.domains.custom.provisioning.notStarted")}
+              </StatusPill>
             </CardHeader>
             <CardContent className="space-y-4">
               <Row
@@ -282,17 +297,27 @@ export function CustomLoginDomainTab() {
                 label={t("workspace.domains.custom.provisioning.tls")}
                 done={status?.tls_state === "issued"}
                 state={
-                  status?.tls_state === "pending"
-                    ? t("workspace.domains.custom.provisioning.tlsPending")
-                    : t("workspace.domains.custom.provisioning.tlsNotStarted")
+                  status?.tls_state === "issued"
+                    ? t("workspace.domains.custom.provisioning.tlsIssued")
+                    : status?.tls_state === "pending"
+                      ? t("workspace.domains.custom.provisioning.tlsPending")
+                      : t("workspace.domains.custom.provisioning.tlsNotStarted")
                 }
                 detail={status?.tls_detail ?? ""}
               />
               <StageRow
                 label={t("workspace.domains.custom.provisioning.endpoint")}
                 done={status?.endpoint_state === "live"}
-                state={t("workspace.domains.custom.provisioning.endpointNone")}
-                detail={t("workspace.domains.custom.provisioning.endpointNoneDetail")}
+                state={
+                  status?.endpoint_state === "live"
+                    ? t("workspace.domains.custom.provisioning.endpointLive")
+                    : t("workspace.domains.custom.provisioning.endpointNone")
+                }
+                detail={
+                  status?.endpoint_state === "live"
+                    ? (status.endpoint_url ?? `https://${saved}`)
+                    : t("workspace.domains.custom.provisioning.endpointNoneDetail")
+                }
               />
             </CardContent>
           </Card>

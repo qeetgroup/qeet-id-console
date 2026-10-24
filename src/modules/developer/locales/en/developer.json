@@ -293,7 +293,7 @@
     },
     "shadow": {
       "title": "Shadow AI discovery",
-      "description": "OAuth clients that picked up a machine grant type (client_credentials / token-exchange) without ever going through the agents/service-accounts registry — unmanaged automation acting under this organization, ranked by live grants.",
+      "description": "OAuth applications holding a token-exchange grant outside the agents and service-accounts registry: unmanaged automation acting for this organization, ranked by live grants.",
       "empty": "No unreviewed candidates.",
       "emptyDescription": "Every machine-grant OIDC client has been acknowledged.",
       "acknowledge": "Acknowledge",

@@ -236,7 +236,19 @@
     "apikey_revoked": "API key revoked",
     "tenant_created": "Organization created",
     "webhook_delivery_failed": "Webhook delivery failed",
-    "fallback": "Event"
+    "fallback": "Event",
+    "invite_created": "Invitation sent",
+    "invite_resent": "Invitation re-sent",
+    "invite_revoked": "Invitation revoked",
+    "invite_accepted": "Invitation accepted",
+    "invite_declined": "Invitation declined",
+    "gdpr_erasure_requested": "Data erasure requested",
+    "gdpr_erasure_canceled": "Data erasure cancelled",
+    "gdpr_erasure_completed": "Personal data erased",
+    "gdpr_erasure_quarantined": "Data erasure held for review",
+    "gdpr_export_requested": "Data export requested",
+    "gdpr_export_completed": "Data export ready",
+    "gdpr_export_failed": "Data export failed"
   },
   "result": {
     "success": "Success",

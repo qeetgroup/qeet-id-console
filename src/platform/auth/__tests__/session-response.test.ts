@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   organizationSelectionBlocksPath,
+  organizationSelectionPageSchema,
   requiresOrganizationSelection,
   signInRequiresOrganizationSelection,
 } from "../organization-selection";
@@ -48,6 +49,23 @@ describe("session response policy", () => {
     expect(requiresOrganizationSelection({ items: [organization], next_cursor: "more" })).toBe(
       true,
     );
+  });
+
+  it("reads a membership without a role, sent as null, as one with no roles", () => {
+    const own = {
+      id: "11111111-1111-4111-8111-111111111111",
+      name: "Example",
+      slug: "example",
+      plan: "free",
+      region: "us-east-1",
+      logo_url: "",
+      domain: "",
+      roles: null,
+      last_used_at: null,
+    };
+    const page = organizationSelectionPageSchema.parse({ items: [own], next_cursor: "" });
+    expect(page.items[0]?.roles).toEqual([]);
+    expect(requiresOrganizationSelection({ items: [own], next_cursor: "" })).toBe(false);
   });
 
   it("keeps selection pending on missing, failed or malformed membership data", async () => {

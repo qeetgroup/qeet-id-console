@@ -107,18 +107,23 @@ export function NotificationsInbox() {
               <EmptyState />
             ) : (
               <ul className="divide-y">
-                {items.map((n) => (
-                  <NotificationItem
-                    key={n.id}
-                    item={n}
-                    onSelect={() => {
-                      if (n.href) {
-                        navigate({ to: n.href });
-                        setOpen(false);
+                {items.map((n) => {
+                  const href = n.href;
+                  return (
+                    <NotificationItem
+                      key={n.id}
+                      item={n}
+                      onSelect={
+                        href
+                          ? () => {
+                              navigate({ to: href });
+                              setOpen(false);
+                            }
+                          : undefined
                       }
-                    }}
-                  />
-                ))}
+                    />
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -141,39 +146,47 @@ export function NotificationsInbox() {
   );
 }
 
-function NotificationItem({ item, onSelect }: { item: Notification; onSelect: () => void }) {
+/** Renders a notification; only one with a link (a CIBA request has none) is a button. */
+function NotificationItem({ item, onSelect }: { item: Notification; onSelect?: () => void }) {
   const { t } = useTranslation("dashboard");
   const Icon = KIND_ICON[item.kind] ?? InfoIcon;
+  const className = cn(
+    "flex w-full items-start gap-3 px-3 py-2.5 text-left",
+    onSelect && "transition-colors hover:bg-muted/50",
+    !item.read_at && "bg-muted/30",
+  );
+  const content = (
+    <>
+      <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <p className="truncate text-sm font-medium">{item.title}</p>
+          {!item.read_at && (
+            <StatusPill kind={KIND_PILL[item.kind] ?? "info"} dot={false} className="text-[10px]">
+              {t("notificationsInbox.new")}
+            </StatusPill>
+          )}
+        </div>
+        {item.description && (
+          <p className="line-clamp-2 text-xs text-muted-foreground">{item.description}</p>
+        )}
+        <TimeSince
+          value={item.created_at}
+          className="mt-0.5 block text-[11px]"
+          refreshIntervalMs={0}
+        />
+      </div>
+    </>
+  );
   return (
     <li>
-      <button
-        type="button"
-        onClick={onSelect}
-        className={cn(
-          "flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/50",
-          !item.read_at && "bg-muted/30",
-        )}
-      >
-        <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <p className="truncate text-sm font-medium">{item.title}</p>
-            {!item.read_at && (
-              <StatusPill kind={KIND_PILL[item.kind] ?? "info"} dot={false} className="text-[10px]">
-                {t("notificationsInbox.new")}
-              </StatusPill>
-            )}
-          </div>
-          {item.description && (
-            <p className="line-clamp-2 text-xs text-muted-foreground">{item.description}</p>
-          )}
-          <TimeSince
-            value={item.created_at}
-            className="mt-0.5 block text-[11px]"
-            refreshIntervalMs={0}
-          />
-        </div>
-      </button>
+      {onSelect ? (
+        <button type="button" onClick={onSelect} className={className}>
+          {content}
+        </button>
+      ) : (
+        <div className={className}>{content}</div>
+      )}
     </li>
   );
 }

@@ -10,7 +10,11 @@ export const eligibleOrganizationSchema = z.object({
   region: z.string(),
   logo_url: z.string(),
   domain: z.string(),
-  roles: z.array(z.string()),
+  // An organization's own account is a member without a role: [] today, null from an older server.
+  roles: z
+    .array(z.string())
+    .nullable()
+    .transform((roles) => roles ?? []),
   last_used_at: z.string().datetime({ offset: true }).nullable(),
 });
 

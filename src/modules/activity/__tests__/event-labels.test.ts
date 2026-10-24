@@ -18,6 +18,16 @@ describe("formatEventTitle", () => {
     expect(formatEventTitle({ type: "auth.mfa_verified" })).toBe("MFA verification succeeded");
   });
 
+  it("words invitations and data requests", () => {
+    expect(formatEventTitle({ type: "invite.created" })).toBe("Invitation sent");
+    expect(formatEventTitle({ type: "invite.declined" })).toBe("Invitation declined");
+    expect(formatEventTitle({ type: "gdpr.erasure_requested" })).toBe("Data erasure requested");
+    expect(formatEventTitle({ type: "gdpr.erasure_quarantined" })).toBe(
+      "Data erasure held for review",
+    );
+    expect(formatEventTitle({ type: "gdpr.export_failed" })).toBe("Data export failed");
+  });
+
   it("never leaks an enum-shaped server title", () => {
     expect(formatEventTitle({ type: "auth.login.succeeded", title: "Auth Login_succeeded" })).toBe(
       "Successful sign-in",

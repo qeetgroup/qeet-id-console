@@ -455,7 +455,11 @@
           "tlsNotStarted": "Not started",
           "tlsPending": "In progress",
           "endpointNone": "Not available",
-          "endpointNoneDetail": "Will be enabled after provisioning completes."
+          "endpointNoneDetail": "Will be enabled after provisioning completes.",
+          "complete": "Complete",
+          "notStarted": "Not started",
+          "tlsIssued": "Issued",
+          "endpointLive": "Live"
         },
         "helpful": {
           "title": "Helpful information",
@@ -479,7 +483,9 @@
         "verifying": "Checking…",
         "save": "Save changes",
         "saving": "Saving…",
-        "guide": "View setup guide"
+        "guide": "View setup guide",
+        "bannerLiveTitle": "Custom hosted login is live",
+        "bannerLiveDetail": "People in your organization sign in at"
       },
       "help": {
         "title": "Need help?",
