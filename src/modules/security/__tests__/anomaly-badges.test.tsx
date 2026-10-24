@@ -45,16 +45,19 @@ describe("An anomaly's severity and status", () => {
     expect(variant("Very High")).toBe("outline");
   });
 
-  it("names a status in words, not the server's value", () => {
+  it("shows an anomaly open until it is resolved, whatever its status says", () => {
     render(
       <>
-        <AnomalyStatusBadge status="open" />
-        <AnomalyStatusBadge status="resolved" />
-        <AnomalyStatusBadge status="under_review" />
+        <AnomalyStatusBadge anomaly={{ status: "rate-limited", resolved_at: null }} />
+        <AnomalyStatusBadge anomaly={{ status: "open" }} />
+        <AnomalyStatusBadge anomaly={{ status: "resolved", resolved_at: "2026-10-24T09:00:00Z" }} />
+        <AnomalyStatusBadge
+          anomaly={{ status: "rate-limited", resolved_at: "2026-10-24T09:00:00Z" }}
+        />
       </>,
     );
-    expect(screen.getByText("Open")).toBeTruthy();
-    expect(screen.getByText("Resolved")).toBeTruthy();
-    expect(screen.getByText("Under Review")).toBeTruthy();
+    expect(screen.getAllByText("Open")).toHaveLength(2);
+    expect(screen.getAllByText("Resolved")).toHaveLength(2);
+    expect(screen.queryByText(/rate/i)).toBeNull();
   });
 });

@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import { humanizeMissingKey } from "@/i18n";
 import { isOneOf } from "@/shared/utils/one-of";
 
-// The server's severities and statuses are open strings; these are the ones it sends today.
+import { type Anomaly, isAnomalyResolved } from "../api/anomalies";
+
+// The server's severities are open strings; these are the ones it sends today.
 const SEVERITIES = ["low", "medium", "high", "critical"] as const;
 type AnomalySeverity = (typeof SEVERITIES)[number];
-const STATUSES = ["open", "resolved"] as const;
-type AnomalyStatus = (typeof STATUSES)[number];
 
 const SEVERITY_LABEL: Record<AnomalySeverity, ParseKeys<"security">> = {
   low: "threats.anomalies.severity.low",
@@ -23,11 +23,6 @@ const SEVERITY_VARIANT: Record<AnomalySeverity, "outline" | "secondary" | "destr
   medium: "secondary",
   high: "destructive",
   critical: "destructive",
-};
-
-const STATUS_LABEL: Record<AnomalyStatus, ParseKeys<"security">> = {
-  open: "threats.anomalies.status.open",
-  resolved: "threats.anomalies.status.resolved",
 };
 
 /**
@@ -49,12 +44,18 @@ export function AnomalySeverityBadge({ severity }: { severity: string }) {
   );
 }
 
-/** Renders an anomaly's status, open or resolved; one the console doesn't know reads as words. */
-export function AnomalyStatusBadge({ status }: { status: string }) {
+/** Renders whether an anomaly is open or resolved; see `isAnomalyResolved`. */
+export function AnomalyStatusBadge({
+  anomaly,
+}: {
+  anomaly: Pick<Anomaly, "status" | "resolved_at">;
+}) {
   const { t } = useTranslation("security");
   return (
     <Badge variant="outline">
-      {isOneOf(STATUSES, status) ? t(STATUS_LABEL[status]) : humanizeMissingKey(status)}
+      {isAnomalyResolved(anomaly)
+        ? t("threats.anomalies.status.resolved")
+        : t("threats.anomalies.status.open")}
     </Badge>
   );
 }

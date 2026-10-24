@@ -76,6 +76,8 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.WEBHOOK_EVENTS_REQUIRED]: "errors:code.webhookEventsRequired",
   // The list comes from the server's catalogue, so a refusal means it changed since it loaded.
   [ERROR_CODES.WEBHOOK_EVENT_UNKNOWN]: "errors:code.webhookEventUnknown",
+  // 400 -> `validation`, which doesn't say which value or what to use instead.
+  [ERROR_CODES.OIDC_GRANT_TYPE_UNSUPPORTED]: "errors:code.oidcGrantTypeUnsupported",
   [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 

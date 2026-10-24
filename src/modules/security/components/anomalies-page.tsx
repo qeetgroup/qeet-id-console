@@ -24,7 +24,12 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "@/platform/components/page-header";
-import { useAnomalies, useAnomalySummary, useResolveAnomaly } from "@/modules/security";
+import {
+  isAnomalyResolved,
+  useAnomalies,
+  useAnomalySummary,
+  useResolveAnomaly,
+} from "@/modules/security";
 import { AnomalySeverityBadge, AnomalyStatusBadge } from "./anomaly-badges";
 
 /** Renders sign-in anomalies and their summary, with resolve. */
@@ -134,13 +139,13 @@ export function AnomaliesPage() {
                       <AnomalySeverityBadge severity={i.severity} />
                     </TableCell>
                     <TableCell>
-                      <AnomalyStatusBadge status={i.status} />
+                      <AnomalyStatusBadge anomaly={i} />
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       <TimeSince value={i.created_at} />
                     </TableCell>
                     <TableCell className="text-right">
-                      {i.status === "resolved" ? (
+                      {isAnomalyResolved(i) ? (
                         <span className="text-xs text-muted-foreground">
                           {t("threats.anomalies.resolved")}
                         </span>

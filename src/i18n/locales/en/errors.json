@@ -50,7 +50,8 @@
     "userImportSourceInvalid": "This export format isn't supported.",
     "webhookUrlRequired": "Enter a URL for the webhook.",
     "webhookEventsRequired": "Choose at least one event for the webhook.",
-    "webhookEventUnknown": "One of the chosen events can't be subscribed to any more. Reload the page and choose again."
+    "webhookEventUnknown": "One of the chosen events can't be subscribed to any more. Reload the page and choose again.",
+    "oidcGrantTypeUnsupported": "An application can't use one of these grant types. For client_credentials, a machine caller signs in as a service principal instead."
   },
   "kind": {
     "auth": "Please sign in again to continue.",

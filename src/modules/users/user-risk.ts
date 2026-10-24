@@ -1,4 +1,4 @@
-import type { Anomaly } from "@/modules/security";
+import { type Anomaly, isAnomalyResolved } from "@/modules/security";
 
 export type RiskLevel = "low" | "medium" | "high";
 
@@ -12,9 +12,7 @@ export interface UserRisk {
  * otherwise low. None at all is low, since the server records an anomaly only when it sees one.
  */
 export function deriveUserRisk(anomalies: Anomaly[], userId: string): UserRisk {
-  const open = anomalies.filter(
-    (a) => a.user_id === userId && a.status !== "resolved" && !a.resolved_at,
-  );
+  const open = anomalies.filter((a) => a.user_id === userId && !isAnomalyResolved(a));
   if (open.length === 0) return { level: "low", openCount: 0 };
   const hasHigh = open.some((a) => a.severity === "high" || a.severity === "critical");
   const hasMedium = open.some((a) => a.severity === "medium");

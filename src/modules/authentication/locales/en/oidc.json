@@ -152,7 +152,8 @@
       "delete": "Delete this application"
     },
     "validation": {
-      "name": "Enter a name."
+      "name": "Enter a name.",
+      "clientCredentials": "Remove client_credentials: applications can't use it. A machine caller signs in as a service principal instead."
     }
   },
   "quickstart": {

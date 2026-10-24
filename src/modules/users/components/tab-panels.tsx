@@ -152,7 +152,7 @@ export function SecurityTab({
                       <AnomalySeverityBadge severity={s.severity} />
                     </TableCell>
                     <TableCell>
-                      <AnomalyStatusBadge status={s.status} />
+                      <AnomalyStatusBadge anomaly={s} />
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       <TimeSince value={s.created_at} />

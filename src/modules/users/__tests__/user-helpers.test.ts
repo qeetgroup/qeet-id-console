@@ -195,6 +195,14 @@ describe("deriveUserRisk", () => {
     expect(deriveUserRisk(feed, "user-1")).toEqual({ level: "low", openCount: 0 });
     expect(deriveUserRisk(feed, "user-2")).toEqual({ level: "high", openCount: 1 });
   });
+
+  it("counts an unresolved anomaly as open whatever its status, as the lockout's rate-limited", () => {
+    const risk = deriveUserRisk(
+      [anomaly({ severity: "critical", status: "rate-limited" })],
+      "user-1",
+    );
+    expect(risk).toEqual({ level: "high", openCount: 1 });
+  });
 });
 
 describe("User 360 tabs", () => {

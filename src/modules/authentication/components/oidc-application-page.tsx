@@ -296,7 +296,14 @@ function OidcClientEditForm({ client }: { client: OidcClient }) {
         name: z.string().trim().min(1, t("detail.validation.name")),
         redirect_uris: z.string(),
         post_logout_uris: z.string(),
-        grant_types: z.string(),
+        // The server refuses an application holding it, on any change, since machine callers
+        // became service principals; one registered before must drop it to be saved.
+        grant_types: z
+          .string()
+          .refine(
+            (v) => !splitList(v).includes("client_credentials"),
+            t("detail.validation.clientCredentials"),
+          ),
         scopes: z.string(),
         logo_uri: presentationUriField,
         client_uri: presentationUriField,

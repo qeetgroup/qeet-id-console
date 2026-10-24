@@ -19,6 +19,14 @@ export interface Anomaly {
   resolved_at?: string | null;
 }
 
+/**
+ * Whether an anomaly is resolved. Until then it is open, whatever its status says: the sign-in
+ * lockout's detections record theirs as "rate-limited".
+ */
+export function isAnomalyResolved(anomaly: Pick<Anomaly, "status" | "resolved_at">): boolean {
+  return !!anomaly.resolved_at || anomaly.status === "resolved";
+}
+
 export interface AnomalySummary {
   open: number;
   resolved_24h: number;

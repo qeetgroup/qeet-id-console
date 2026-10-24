@@ -79,6 +79,13 @@ describe("userMessageForCode (leak stop)", () => {
     expect(userMessageForCode(app.code, app.kind)).toMatch(/temporarily unavailable/i);
   });
 
+  it("points a refused client_credentials grant at service principals", () => {
+    const app = normalizeError(
+      new ApiError(400, "oidc.grant_type_unsupported", "That grant type isn't supported."),
+    );
+    expect(userMessageForCode(app.code, app.kind)).toMatch(/service principal/i);
+  });
+
   it("returns curated copy for a known code", () => {
     expect(userMessageForCode("step_up_required", "auth")).toMatch(/identity check/i);
     expect(userMessageForCode("billing.plan_limit", "api")).toMatch(/plan's limit/i);

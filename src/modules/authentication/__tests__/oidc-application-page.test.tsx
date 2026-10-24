@@ -128,6 +128,25 @@ describe("An application's logo and home page", () => {
     expect(updates).toHaveLength(3);
   });
 
+  it("asks an application registered with client_credentials to drop it before saving", async () => {
+    renderPage({ ...base, grant_types: ["authorization_code", "client_credentials"] });
+
+    fireEvent.change(await screen.findByLabelText(/^Home page/), {
+      target: { value: "https://app.example.com" },
+    });
+    save();
+
+    expect(await screen.findByText(/Remove client_credentials/)).toBeTruthy();
+    expect(updates).toHaveLength(0);
+
+    fireEvent.change(screen.getByLabelText(/^Grant types/), {
+      target: { value: "authorization_code" },
+    });
+    save();
+    await waitFor(() => expect(updates).toHaveLength(1));
+    expect(updates[0]).toMatchObject({ grant_types: ["authorization_code"] });
+  });
+
   it("refuses an http or malformed address with a clear message, sending nothing", async () => {
     renderPage(base);
 

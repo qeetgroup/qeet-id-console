@@ -66,6 +66,7 @@ export const ERROR_CODES = {
   WEBHOOK_URL_REQUIRED: "webhook.url_required", // 422
   WEBHOOK_EVENTS_REQUIRED: "webhook.events_required", // 422
   WEBHOOK_EVENT_UNKNOWN: "webhook.event_unknown", // 422: not in the server's catalogue
+  OIDC_GRANT_TYPE_UNSUPPORTED: "oidc.grant_type_unsupported", // 400: client_credentials, or unknown
   TOO_MANY_REQUESTS: "too_many_requests", // throttling
   HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
   NETWORK: "network_error", // client-synthesised
