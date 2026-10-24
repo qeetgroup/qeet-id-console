@@ -1,4 +1,7 @@
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Button,
   Card,
@@ -18,6 +21,8 @@ import {
 } from "@/platform/security/sensitive-action-provider";
 import {
   ArrowLeftIcon,
+  ExternalLinkIcon,
+  ImageOffIcon,
   KeySquareIcon,
   LoaderCircleIcon,
   RefreshCwIcon,
@@ -37,6 +42,11 @@ import {
   useRotateClientSecret,
   useUpdateOidcClient,
 } from "../api/oidc-clients";
+import {
+  applicationHomePage,
+  applicationLogo,
+  presentationUriField,
+} from "../application-presentation-model";
 import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
 import { useMemo } from "react";
 import { z } from "zod";
@@ -88,6 +98,8 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
   const deleteM = useDeleteOidcClient();
   const runSensitive = useSensitiveAction();
   const [rotatedSecret, setRotatedSecret] = useState<string | null>(null);
+  const logo = applicationLogo(client.logo_uri);
+  const homePage = applicationHomePage(client.client_uri);
 
   // Rotating the client secret invalidates the old one immediately — confirm +
   // step-up before minting a new secret.
@@ -125,9 +137,37 @@ function OidcClientDetail({ client }: { client: OidcClient }) {
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <Card className="lg:col-span-2">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
-          <div>
-            <CardTitle className="text-xl">{client.name}</CardTitle>
-            <CardDescription className="font-mono">{client.client_id}</CardDescription>
+          {/* The logo and home page's host, as the hosted sign-in page shows them. */}
+          <div className="flex min-w-0 items-start gap-3">
+            {logo && (
+              <Avatar className="size-10 shrink-0 rounded-lg border bg-background">
+                <AvatarImage
+                  src={logo}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  className="object-contain p-1"
+                />
+                <AvatarFallback delay={600} className="rounded-lg">
+                  <ImageOffIcon aria-hidden="true" />
+                  <span className="sr-only">{t("presentation.logoUnavailable")}</span>
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <div className="min-w-0">
+              <CardTitle className="text-xl">{client.name}</CardTitle>
+              <CardDescription className="font-mono">{client.client_id}</CardDescription>
+              {homePage && (
+                <a
+                  href={homePage.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 inline-flex max-w-full items-center gap-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  <span className="truncate">{homePage.host}</span>
+                  <ExternalLinkIcon className="size-3 shrink-0" aria-hidden="true" />
+                </a>
+              )}
+            </div>
           </div>
           <StatusPill kind={client.type === "confidential" ? "info" : "muted"}>
             {client.type === "confidential"
@@ -240,10 +280,12 @@ function editValues(client: OidcClient) {
     post_logout_uris: (client.post_logout_uris ?? []).join("\n"),
     grant_types: client.grant_types.join(" "),
     scopes: client.scopes.join(" "),
+    logo_uri: client.logo_uri ?? "",
+    client_uri: client.client_uri ?? "",
   };
 }
 
-/** Renders the form that edits an application's name, URIs, grants and scopes. */
+/** Renders the form that edits an application's name, URIs, grants, scopes, logo and home page. */
 function OidcClientEditForm({ client }: { client: OidcClient }) {
   const { t } = useTranslation(["oidc", "common"]);
   const runSensitive = useSensitiveAction();
@@ -256,6 +298,8 @@ function OidcClientEditForm({ client }: { client: OidcClient }) {
         post_logout_uris: z.string(),
         grant_types: z.string(),
         scopes: z.string(),
+        logo_uri: presentationUriField,
+        client_uri: presentationUriField,
       }),
     [t],
   );
@@ -269,6 +313,8 @@ function OidcClientEditForm({ client }: { client: OidcClient }) {
         post_logout_uris: splitList(value.post_logout_uris),
         grant_types: splitList(value.grant_types),
         scopes: splitList(value.scopes),
+        logo_uri: value.logo_uri.trim(), // "" clears it
+        client_uri: value.client_uri.trim(),
       };
       await runSensitive({
         actionLabel: t("detail.stepUp.update"),
@@ -325,6 +371,30 @@ function OidcClientEditForm({ client }: { client: OidcClient }) {
         <form.AppField name="scopes">
           {(field) => (
             <field.TextField label={t("detail.scopes")} description={t("detail.scopesHelp")} />
+          )}
+        </form.AppField>
+        <form.AppField name="logo_uri">
+          {(field) => (
+            <field.TextField
+              type="url"
+              label={t("presentation.logoUri")}
+              description={t("presentation.logoUriHelp")}
+              autoComplete="off"
+              spellCheck={false}
+              className="font-mono text-xs"
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="client_uri">
+          {(field) => (
+            <field.TextField
+              type="url"
+              label={t("presentation.clientUri")}
+              description={t("presentation.clientUriHelp")}
+              autoComplete="off"
+              spellCheck={false}
+              className="font-mono text-xs"
+            />
           )}
         </form.AppField>
         <FormError error={updateM.error} />

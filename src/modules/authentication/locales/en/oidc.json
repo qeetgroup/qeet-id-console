@@ -168,5 +168,19 @@
     "testLoginHelpNone": "“Test login” opens the hosted sign-in for this app and returns to its first redirect URI (none set).",
     "noRedirectTitle": "Add a redirect URI first",
     "noRedirectText": "This app has no redirect URI to return to after login."
+  },
+  "presentation": {
+    "logoUri": "Logo URL",
+    "logoUriHelp": "Optional. Shown on the hosted sign-in page. An https:// address of up to 2048 characters, without a user name, password or #fragment.",
+    "clientUri": "Home page",
+    "clientUriHelp": "Optional. The hosted sign-in page shows its host. An https:// address of up to 2048 characters, without a user name, password or #fragment.",
+    "logoUnavailable": "The logo couldn't be loaded.",
+    "validation": {
+      "tooLong": "Use at most 2048 characters.",
+      "malformed": "Enter a full address, such as https://app.example.com.",
+      "notHttps": "Use an https:// address: http and other schemes aren't accepted.",
+      "credentials": "Leave out the user name and password.",
+      "fragment": "Leave out the #fragment."
+    }
   }
 }

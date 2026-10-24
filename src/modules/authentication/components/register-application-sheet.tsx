@@ -22,6 +22,7 @@ import {
 } from "@/platform/security/sensitive-action-provider";
 
 import { type OidcClient, useCreateOidcClient } from "../api/oidc-clients";
+import { presentationUriField } from "../application-presentation-model";
 
 const NAME_MAX_LENGTH = 200;
 const DEFAULT_SCOPES = "openid profile email";
@@ -91,6 +92,8 @@ function RegisterApplicationForm({
           .string()
           .refine((v) => lines(v).every(isUrl), t("create.validation.uri")),
         scopes: z.string(),
+        logo_uri: presentationUriField,
+        client_uri: presentationUriField,
       }),
     [t],
   );
@@ -101,6 +104,8 @@ function RegisterApplicationForm({
       redirect_uris: "",
       post_logout_uris: "",
       scopes: DEFAULT_SCOPES,
+      logo_uri: "",
+      client_uri: "",
     },
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
@@ -111,6 +116,8 @@ function RegisterApplicationForm({
         post_logout_uris: lines(value.post_logout_uris),
         grant_types: ["authorization_code", "refresh_token"],
         scopes: (value.scopes.trim() || DEFAULT_SCOPES).split(/\s+/),
+        logo_uri: value.logo_uri.trim(),
+        client_uri: value.client_uri.trim(),
       };
       await runSensitive({ actionLabel: t("create.stepUp"), run: () => createM.mutateAsync(body) })
         .then((res) => res && onCreated(res.client, res.client_secret ?? ""))
@@ -211,6 +218,32 @@ function RegisterApplicationForm({
           <form.AppField name="scopes">
             {(field) => (
               <field.TextField label={t("create.scopes")} description={t("create.scopesHelp")} />
+            )}
+          </form.AppField>
+
+          <form.AppField name="logo_uri">
+            {(field) => (
+              <field.TextField
+                type="url"
+                label={t("presentation.logoUri")}
+                description={t("presentation.logoUriHelp")}
+                placeholder="https://app.acme.com/logo.svg"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="client_uri">
+            {(field) => (
+              <field.TextField
+                type="url"
+                label={t("presentation.clientUri")}
+                description={t("presentation.clientUriHelp")}
+                placeholder="https://app.acme.com/"
+                autoComplete="off"
+                spellCheck={false}
+              />
             )}
           </form.AppField>
 

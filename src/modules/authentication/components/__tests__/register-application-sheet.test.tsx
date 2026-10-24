@@ -98,6 +98,38 @@ describe("RegisterApplicationSheet", () => {
     expect(sensitive.calls[0]?.confirm).toBeUndefined();
   });
 
+  it("registers with a logo and home page, trimmed, refusing an http one before sending", async () => {
+    const { onCreated } = renderSheet();
+    const sheet = screen.getByRole("dialog");
+    const logo = within(sheet).getByLabelText(/^Logo URL/);
+
+    fireEvent.change(logo, { target: { value: "http://billing.example.com/logo.png" } });
+    submit();
+    expect(
+      await within(sheet).findByText(
+        "Use an https:// address: http and other schemes aren't accepted.",
+      ),
+    ).toBeTruthy();
+    expect(api).not.toHaveBeenCalled();
+
+    fireEvent.change(logo, { target: { value: " https://billing.example.com/logo.png " } });
+    fireEvent.change(within(sheet).getByLabelText(/^Home page/), {
+      target: { value: "https://billing.example.com" },
+    });
+    submit();
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(api).toHaveBeenCalledWith(
+      "/v1/oidc/clients",
+      expect.objectContaining({
+        body: expect.objectContaining({
+          logo_uri: "https://billing.example.com/logo.png",
+          client_uri: "https://billing.example.com",
+        }),
+      }),
+    );
+  });
+
   it("stays open with a curated message when registration fails", async () => {
     failure = new ApiError(500, "internal", "pq: duplicate key value");
     const { onCreated, onOpenChange } = renderSheet();

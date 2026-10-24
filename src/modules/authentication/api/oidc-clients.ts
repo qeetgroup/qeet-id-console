@@ -22,6 +22,9 @@ const oidcClientSchema = z.object({
   created_at: z.string(),
   // When a confidential app's exemption from sending a proof key and nonce ends; null: none.
   pkce_exempt_until: z.string().nullish(),
+  // The logo and home page the hosted sign-in page shows; "" or absent: none.
+  logo_uri: z.string().optional(),
+  client_uri: z.string().optional(),
 });
 export type OidcClient = z.infer<typeof oidcClientSchema>;
 
@@ -57,6 +60,8 @@ export interface CreateOidcInput {
   post_logout_uris?: string[];
   grant_types?: string[];
   scopes?: string[];
+  logo_uri?: string; // "" for none
+  client_uri?: string; // "" for none
 }
 
 const createOidcResponseSchema = z
@@ -77,6 +82,8 @@ export interface UpdateOidcInput {
   post_logout_uris?: string[];
   grant_types?: string[];
   scopes?: string[];
+  logo_uri?: string; // "" clears it
+  client_uri?: string; // "" clears it
 }
 
 const rotateSecretResponseSchema = z.object({
