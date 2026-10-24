@@ -19,9 +19,10 @@ export function useRelationTuples(object: string) {
     queryKey: authzKeys.relationTuples(tenantId, object),
     enabled: !!tenantId && !!object,
     queryFn: () =>
-      api<{ items: RelationTuple[] }>(
-        `/v1/tenants/${tenantId}/relation-tuples?object=${encodeURIComponent(object)}`,
-      ),
+      // As `query`: the console's server refuses a path that carries its own query string.
+      api<{ items: RelationTuple[] }>(`/v1/tenants/${tenantId}/relation-tuples`, {
+        query: { object },
+      }),
   });
 }
 
@@ -95,15 +96,13 @@ export interface RelationGraph {
 /** Fetches the graph of every subject reachable through `relation` on `object`. */
 export function useRelationGraph(object: string, relation: string, depth?: number) {
   const tenantId = useTenantId();
-  const params = new URLSearchParams({
-    object,
-    relation,
-    ...(depth != null ? { depth: String(depth) } : {}),
-  });
   return useQuery({
     queryKey: authzKeys.relationGraph(tenantId, object, relation, depth),
     enabled: !!tenantId && !!object && !!relation,
-    queryFn: () => api<RelationGraph>(`/v1/tenants/${tenantId}/relation-tuples/graph?${params}`),
+    queryFn: () =>
+      api<RelationGraph>(`/v1/tenants/${tenantId}/relation-tuples/graph`, {
+        query: { object, relation, depth },
+      }),
   });
 }
 
@@ -114,8 +113,8 @@ export function useSubjectTuples(subject: string) {
     queryKey: authzKeys.subjectTuples(tenantId, subject),
     enabled: !!tenantId && !!subject,
     queryFn: () =>
-      api<{ items: RelationTuple[] }>(
-        `/v1/tenants/${tenantId}/relation-tuples?subject=${encodeURIComponent(subject)}`,
-      ),
+      api<{ items: RelationTuple[] }>(`/v1/tenants/${tenantId}/relation-tuples`, {
+        query: { subject },
+      }),
   });
 }
