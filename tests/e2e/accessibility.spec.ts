@@ -152,14 +152,15 @@ for (const theme of THEMES) {
 
     test("sign-in", async ({ page }) => {
       await page.goto("/sign-in");
-      await settle(page, page.getByRole("button", { name: "Sign in", exact: true }));
+      await settle(page, page.getByRole("button", { name: "Continue", exact: true }));
       await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
+      await expect(page.locator("html")).toHaveAttribute("data-qx-color-scheme", theme);
       await expectAccessible(page);
     });
 
     test("sign-up", async ({ page }) => {
       await page.goto("/sign-up");
-      await settle(page, page.getByRole("button", { name: "Create account" }));
+      await settle(page, page.getByRole("button", { name: "Create account with a passkey" }));
       await expectAccessible(page);
     });
 

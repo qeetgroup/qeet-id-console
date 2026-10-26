@@ -1,177 +1,285 @@
-import { Button, cn, Field, FieldError, FieldLabel, Input, PasswordInput } from "@qeetrix/ui";
-import { Link } from "@tanstack/react-router";
-import {
-  ArrowRightIcon,
-  BuildingIcon,
-  LoaderCircleIcon,
-  LockKeyholeIcon,
-  MailIcon,
-} from "@qeetrix/icons";
-import type * as React from "react";
-import { useEffect, useState } from "react";
+import { ArrowRightIcon, BuildingIcon, FingerprintPatternIcon, MailIcon } from "@qeetrix/icons";
+import { Avatar, Button, Field, Heading, Link, Text, TextField } from "@qeetrix/react";
+import { Alert, Form, PasswordInput } from "@qeetrix/react/experimental";
+import { Link as RouterLink } from "@tanstack/react-router";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useSSODiscovery } from "../api/sso";
 
-import { AuthDivider, AuthFormCard, PasskeyButton } from "./auth-form-card";
-import { BrandHero } from "./brand-hero";
-import { SocialButtons } from "./social-buttons";
+import { EntryConsent, EntryOr } from "./entry-shell";
+import { ProviderButtons } from "./provider-buttons";
 
 export type LoginFormValues = {
   email: string;
   password: string;
 };
 
-type LoginFormProps = React.ComponentProps<"div"> & {
+type LoginFormProps = {
   isLoading?: boolean;
   isPasskeyLoading?: boolean;
   errorMessage?: string;
+  /** Back from a password reset: say the new password is in place. */
+  resetDone?: boolean;
   onLogin?: (values: LoginFormValues) => void;
   onPasskeyLogin?: () => void;
 };
 
+/**
+ * Sign-in, email first: the work email decides the way in. A domain with single sign-on goes to
+ * its identity provider; anyone else gets the password step, with a passkey a tap away throughout.
+ */
 export function LoginForm({
-  className,
   isLoading = false,
   isPasskeyLoading = false,
   errorMessage,
+  resetDone = false,
   onLogin,
   onPasskeyLogin,
-  ...props
 }: LoginFormProps) {
   const { t } = useTranslation("auth-flow");
+  const [step, setStep] = useState<"email" | "password">("email");
   const [email, setEmail] = useState("");
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
-  // Debounce the email that drives SSO discovery, so typing isn't a request per keystroke.
-  const [debouncedEmail, setDebouncedEmail] = useState("");
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedEmail(email), 350);
-    return () => clearTimeout(t);
-  }, [email]);
 
-  const sso = useSSODiscovery(debouncedEmail);
-  const ssoHit = sso.data;
-  const isBusy = isLoading || isPasskeyLoading;
+  // Debounce the email that drives SSO discovery, so typing isn't a request per keystroke.
+  const [lookup, setLookup] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setLookup(email.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [email]);
+  const sso = useSSODiscovery(lookup);
+  const ssoHit = lookup === email.trim() ? sso.data : null;
+
+  // Continue waits for the lookup of exactly this email, so a fast Enter can't skip an SSO domain.
+  const [continuing, setContinuing] = useState(false);
+  useEffect(() => {
+    if (!continuing || lookup !== email.trim() || sso.isFetching) return;
+    setContinuing(false);
+    if (sso.data) window.location.href = sso.data.redirect_url;
+    else setStep("password");
+  }, [continuing, lookup, email, sso.isFetching, sso.data]);
+
+  const isBusy = isLoading || isPasskeyLoading || continuing;
+  const isDisabled = !hydrated || isBusy;
+
+  const failure = errorMessage ? (
+    <Alert tone="danger" title={t("signIn.failedTitle")} announce="urgent">
+      {errorMessage}
+    </Alert>
+  ) : null;
+
+  if (step === "password") {
+    return (
+      <PasswordStep
+        email={email.trim()}
+        failure={failure}
+        isLoading={isLoading}
+        isPasskeyLoading={isPasskeyLoading}
+        isDisabled={isDisabled}
+        onBack={() => setStep("email")}
+        onLogin={(password) => onLogin?.({ email: email.trim(), password })}
+        onPasskeyLogin={onPasskeyLogin}
+      />
+    );
+  }
 
   return (
-    <div className={cn("auth-entry auth-entry-signin", className)} {...props}>
-      <BrandHero />
-      <AuthFormCard>
-        <form
-          method="post"
-          aria-labelledby="signin-title"
-          aria-busy={isBusy}
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!hydrated || isBusy) return;
-            if (ssoHit) {
-              // Browser redirect to the IdP — leaves the SPA entirely.
-              window.location.href = ssoHit.redirect_url;
-              return;
-            }
-            const data = new FormData(e.currentTarget);
-            onLogin?.({
-              email: String(data.get("email") ?? "").trim(),
-              password: String(data.get("password") ?? ""),
-            });
-          }}
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("signIn.title")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {t("signIn.lede")}
+        </Text>
+      </div>
+
+      {resetDone && (
+        <Alert tone="success" title={t("signIn.resetDoneTitle")} announce="polite">
+          {t("signIn.resetDoneText")}
+        </Alert>
+      )}
+      {failure}
+
+      <Form
+        aria-label={t("signIn.title")}
+        className="entry-form"
+        summary={false}
+        aria-busy={isBusy}
+        onFormSubmit={() => {
+          if (isDisabled) return;
+          setLookup(email.trim());
+          setContinuing(true);
+        }}
+      >
+        <TextField
+          label={t("signIn.emailLabel")}
+          name="email"
+          type="email"
+          icon={MailIcon}
+          placeholder={t("signIn.emailPlaceholder")}
+          autoComplete="username webauthn"
+          autoCapitalize="none"
+          spellCheck={false}
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+        {ssoHit && (
+          <Alert
+            tone="info"
+            icon={BuildingIcon}
+            title={t("signIn.ssoTitle", { provider: ssoHit.provider_name })}
+          >
+            {t("signIn.ssoText")}
+          </Alert>
+        )}
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          icon={ArrowRightIcon}
+          loading={continuing}
+          disabled={isDisabled}
         >
-          <div className="auth-form-header">
-            <p className="auth-form-eyebrow">{t("signIn.eyebrow")}</p>
-            <h1 id="signin-title" className="auth-form-title">
-              {t("signIn.title")}
-            </h1>
-            <p className="auth-form-description">{t("signIn.description")}</p>
+          {ssoHit
+            ? t("form.ssoContinue", { provider: ssoHit.provider_name })
+            : t("signIn.continue")}
+        </Button>
+      </Form>
+
+      {/* An SSO domain signs in only through its identity provider: no passkey or social bypass. */}
+      {!ssoHit && (
+        <>
+          <EntryOr />
+          <div className="entry-form">
+            <Button
+              variant="soft"
+              size="lg"
+              fullWidth
+              icon={FingerprintPatternIcon}
+              loading={isPasskeyLoading}
+              disabled={isDisabled || !onPasskeyLogin}
+              onClick={onPasskeyLogin}
+            >
+              {t("signIn.passkey")}
+            </Button>
+            <ProviderButtons action="signIn" disabled={isDisabled} />
           </div>
+        </>
+      )}
 
-          <div className="auth-fields">
-            <Field className="auth-field" disabled={isBusy}>
-              <FieldLabel htmlFor="email">{t("form.email")}</FieldLabel>
-              <div className="auth-input-wrap">
-                <MailIcon className="auth-input-icon" aria-hidden="true" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="username webauthn"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  placeholder={t("form.emailPlaceholder")}
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </Field>
+      <div className="entry-links">
+        <Link render={<RouterLink to="/magic" />}>{t("magic.requestTitle")}</Link>
+        <span>
+          {t("signIn.newHere")}{" "}
+          <Link render={<RouterLink to="/sign-up" />}>{t("signIn.createOrganisation")}</Link>
+        </span>
+      </div>
+      <EntryConsent action="signIn" />
+    </>
+  );
+}
 
-            {ssoHit ? (
-              <div className="auth-sso-notice" role="status">
-                <BuildingIcon className="size-4" aria-hidden="true" />
-                <div>
-                  <p className="font-medium">{ssoHit.provider_name}</p>
-                  <p>{t("form.ssoDescription", { kind: ssoHit.kind.toUpperCase() })}</p>
-                </div>
-              </div>
-            ) : (
-              <Field className="auth-field" disabled={isBusy}>
-                <div className="auth-field-row">
-                  <FieldLabel htmlFor="password">{t("form.password")}</FieldLabel>
-                  <Link to="/forgot-password" className="auth-link">
-                    {t("form.forgotPassword")}
-                  </Link>
-                </div>
-                <div className="auth-input-wrap">
-                  <LockKeyholeIcon className="auth-input-icon" aria-hidden="true" />
-                  <PasswordInput
-                    id="password"
-                    name="password"
-                    autoComplete="current-password"
-                    placeholder={t("form.passwordPlaceholder")}
-                    required
-                  />
-                </div>
-              </Field>
-            )}
-          </div>
+/** The password step: who is signing in, with a way back, and the passkey as the alternative. */
+function PasswordStep({
+  email,
+  failure,
+  isLoading,
+  isPasskeyLoading,
+  isDisabled,
+  onBack,
+  onLogin,
+  onPasskeyLogin,
+}: {
+  email: string;
+  failure: ReactNode;
+  isLoading: boolean;
+  isPasskeyLoading: boolean;
+  isDisabled: boolean;
+  onBack: () => void;
+  onLogin: (password: string) => void;
+  onPasskeyLogin?: () => void;
+}) {
+  const { t } = useTranslation("auth-flow");
+  // Focus the password from an effect, since the a11y lint rule forbids autoFocus.
+  const passwordRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    passwordRef.current?.focus();
+  }, []);
 
-          {errorMessage && <FieldError className="auth-form-error">{errorMessage}</FieldError>}
+  return (
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("signIn.welcomeBack")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {t("signIn.passwordLede")}
+        </Text>
+      </div>
 
-          <Button type="submit" className="auth-submit" disabled={!hydrated || isBusy}>
-            {isLoading && <LoaderCircleIcon className="animate-spin" aria-hidden="true" />}
-            {ssoHit
-              ? t("form.ssoContinue", { provider: ssoHit.provider_name })
-              : t(isLoading ? "signIn.submitting" : "signIn.submit")}
-            {!isLoading && <ArrowRightIcon aria-hidden="true" />}
-          </Button>
+      <div className="entry-account">
+        <Avatar name={email} size="md" decorative />
+        <span className="entry-who">{email}</span>
+        <button
+          type="button"
+          className="entry-text-button"
+          aria-label={t("signIn.changeLabel")}
+          onClick={onBack}
+        >
+          {t("signIn.change")}
+        </button>
+      </div>
 
-          {!ssoHit && (
-            <>
-              <AuthDivider>{t("passkey.signinDivider")}</AuthDivider>
-              <PasskeyButton
-                isLoading={isPasskeyLoading}
-                disabled={!hydrated || isBusy || !onPasskeyLogin}
-                onClick={onPasskeyLogin}
-              />
-            </>
-          )}
+      {failure}
 
-          <SocialButtons action="signIn" disabled={!hydrated || isBusy} />
+      <Form
+        aria-label={t("signIn.title")}
+        className="entry-form"
+        summary={false}
+        aria-busy={isLoading || isPasskeyLoading}
+        onFormSubmit={(values) => {
+          if (isDisabled) return;
+          onLogin(String(values.password ?? ""));
+        }}
+      >
+        {/* The account's email, for password managers to save beside the password. */}
+        <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />
+        <Field label={t("form.password")} name="password">
+          <PasswordInput ref={passwordRef} autoComplete="current-password" required />
+        </Field>
+        <div className="entry-links">
+          <span />
+          <Link render={<RouterLink to="/forgot-password" />}>{t("signIn.forgotPassword")}</Link>
+        </div>
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          icon={ArrowRightIcon}
+          loading={isLoading}
+          disabled={isDisabled}
+        >
+          {t(isLoading ? "signIn.submitting" : "signIn.submit")}
+        </Button>
+      </Form>
 
-          <p className="auth-form-switch">
-            <Link to="/magic" className="auth-link">
-              {t("magic.requestTitle")}
-            </Link>
-          </p>
-
-          <p className="auth-form-switch">
-            {t("signIn.noAccount")}{" "}
-            <Link to="/sign-up" className="auth-link">
-              {t("signIn.signupLink")}
-            </Link>
-          </p>
-        </form>
-      </AuthFormCard>
-    </div>
+      <EntryOr />
+      <Button
+        variant="soft"
+        size="lg"
+        fullWidth
+        icon={FingerprintPatternIcon}
+        loading={isPasskeyLoading}
+        disabled={isDisabled || !onPasskeyLogin}
+        onClick={onPasskeyLogin}
+      >
+        {t("signIn.passkeyInstead")}
+      </Button>
+      <EntryConsent action="signIn" />
+    </>
   );
 }

@@ -3,6 +3,9 @@ import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/rea
 import { AuthShell } from "@/modules/authentication/pages";
 import { getServerSession } from "@/platform/api/server-proxy";
 
+// Pages already on @qeetrix/react: each renders its own EntryShell, so the layout adds no frame.
+const ENTRY_PAGES = new Set(["/sign-in", "/sign-up", "/forgot-password", "/magic"]);
+
 export const Route = createFileRoute("/_auth")({
   beforeLoad: async () => {
     const session = await getServerSession();
@@ -15,11 +18,11 @@ export const Route = createFileRoute("/_auth")({
 
 function AuthLayout() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const intent =
-    pathname === "/sign-up" ? "signup" : pathname === "/sign-in" ? "signin" : undefined;
+  if (ENTRY_PAGES.has(pathname)) return <Outlet />;
 
+  // The pages still on @qeetrix/ui (invitations, the SSO return) keep their frame.
   return (
-    <AuthShell intent={intent}>
+    <AuthShell>
       <Outlet />
     </AuthShell>
   );

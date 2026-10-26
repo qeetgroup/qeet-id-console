@@ -1,224 +1,344 @@
-import {
-  Button,
-  buttonVariants,
-  cn,
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  PasswordInput,
-} from "@qeetrix/ui";
-import { Link } from "@tanstack/react-router";
-import { CircleCheckIcon, LoaderCircleIcon } from "@qeetrix/icons";
+import { ArrowRightIcon, FingerprintPatternIcon, MailIcon } from "@qeetrix/icons";
+import { Button, Field, Heading, Link, Text, TextField } from "@qeetrix/react";
+import { Alert, Form, PasswordInput } from "@qeetrix/react/experimental";
+import { Link as RouterLink } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
-import { AuthFormCard } from "./auth-form-card";
-import { BrandHero } from "./brand-hero";
+import { passkeyErrorMessage, usePasskeyLogin } from "../api/passkey-flows";
+import { EntryPanel, useEntrySteps } from "./entry-panel";
+import { EntryInboxLinks, EntryOr, EntryShell } from "./entry-shell";
 import { useForgotPassword, useResetPassword } from "@/modules/authentication";
+import { ApiError } from "@/platform/errors/api-error";
+import { ERROR_CODES } from "@/platform/errors/error-codes";
+import { errorMessage } from "@/platform/errors/user-message";
+
+// A link that can't be used again: say so, and send a new one from the same page.
+const DEAD_LINK_CODES: readonly string[] = [
+  ERROR_CODES.RECOVERY_LINK_EXPIRED,
+  ERROR_CODES.RECOVERY_LINK_USED,
+  ERROR_CODES.RESET_LINK_INVALID,
+];
 
 // One route, two modes: without ?token= request a reset link; with it, set a new password.
 /** Renders the password reset: request a link, then set a new password from it. */
 export function ForgotPasswordPage() {
+  const steps = useEntrySteps();
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
     setToken(new URLSearchParams(window.location.search).get("token"));
   }, []);
 
-  // The `auth-entry` shell of every auth page, so the card's width and offset match theirs.
+  const forgot = useForgotPassword();
+  const reset = useResetPassword();
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  // Always show "sent": a 4xx must not reveal whether the email has an account.
+  const request = (email: string) =>
+    forgot.mutate({ email }, { onSettled: () => setSentTo(email) });
+
+  const linkDead = reset.error instanceof ApiError && DEAD_LINK_CODES.includes(reset.error.code);
+
+  let content: React.ReactNode;
+  let current = 1;
+  if (sentTo !== null) {
+    content = (
+      <SentPanel
+        email={sentTo}
+        devToken={forgot.data?.dev_reset_token}
+        onAgain={() => {
+          forgot.reset();
+          setSentTo(null);
+        }}
+      />
+    );
+  } else if (token && linkDead) {
+    content = <ExpiredPanel isPending={forgot.isPending} onRequest={request} />;
+  } else if (token) {
+    content = (
+      <ResetPanel
+        isPending={reset.isPending}
+        errorMessage={reset.error ? errorMessage(reset.error) : undefined}
+        onReset={(password) => reset.mutate({ token, new_password: password })}
+      />
+    );
+  } else {
+    current = 0;
+    content = <RequestPanel isPending={forgot.isPending} onRequest={request} />;
+  }
+
   return (
-    <div className="auth-entry">
-      <BrandHero />
-      <AuthFormCard>{token ? <ResetPanel token={token} /> : <RequestPanel />}</AuthFormCard>
+    <EntryShell panel={<EntryPanel steps={steps.recovery} current={current} />}>
+      {content}
+    </EntryShell>
+  );
+}
+
+function BackToSignIn() {
+  const { t } = useTranslation("auth-flow");
+  return (
+    <div className="entry-links">
+      <span>
+        {t("forgotPassword.rememberedIt")}{" "}
+        <Link render={<RouterLink to="/sign-in" />}>{t("forgotPassword.backToSignIn")}</Link>
+      </span>
     </div>
   );
 }
 
-function RequestPanel() {
+/** The work email, focused on arrival; shared by the request and the expired-link steps. */
+function EmailForm({
+  label,
+  submit,
+  isPending,
+  onRequest,
+}: {
+  label: string;
+  submit: string;
+  isPending: boolean;
+  onRequest: (email: string) => void;
+}) {
   const { t } = useTranslation("auth-flow");
-  const forgot = useForgotPassword();
-  const [submitted, setSubmitted] = useState(false);
+  // Focus the email from an effect, since the a11y lint rule forbids autoFocus.
   const emailRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     emailRef.current?.focus();
   }, []);
 
-  if (submitted) {
-    return <SuccessPanel devToken={forgot.data?.dev_reset_token} />;
-  }
-
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const data = new FormData(e.currentTarget);
-        const email = String(data.get("email") ?? "").trim();
-        if (!email) return;
-        // Always show success: a 4xx must not reveal whether the email exists.
-        forgot.mutate({ email }, { onSettled: () => setSubmitted(true) });
+    <Form
+      aria-label={label}
+      className="entry-form"
+      summary={false}
+      aria-busy={isPending}
+      onFormSubmit={(values) => {
+        const email = String(values.email ?? "").trim();
+        if (email && !isPending) onRequest(email);
       }}
     >
-      <FieldGroup>
-        <div className="auth-form-header">
-          <h1 className="auth-form-title">{t("forgotPassword.title")}</h1>
-          <p className="auth-form-description">{t("forgotPassword.subtitle")}</p>
-        </div>
-
-        <Field className="auth-field">
-          <FieldLabel htmlFor="email">{t("forgotPassword.emailLabel")}</FieldLabel>
-          <Input
-            ref={emailRef}
-            id="email"
-            name="email"
-            type="email"
-            placeholder="m@example.com"
-            required
-          />
-        </Field>
-
-        <Field>
-          <Button type="submit" className="auth-submit" disabled={forgot.isPending}>
-            {forgot.isPending && <LoaderCircleIcon className="animate-spin" />}
-            {forgot.isPending ? t("forgotPassword.sendingBtn") : t("forgotPassword.sendBtn")}
-          </Button>
-        </Field>
-
-        <FieldDescription className="auth-form-switch">
-          {t("forgotPassword.rememberedIt")}{" "}
-          <Link to="/sign-in" className="auth-link">
-            {t("forgotPassword.backToSignIn")}
-          </Link>
-        </FieldDescription>
-      </FieldGroup>
-    </form>
+      <TextField
+        ref={emailRef}
+        label={t("forgotPassword.emailLabel")}
+        name="email"
+        type="email"
+        icon={MailIcon}
+        placeholder={t("forgotPassword.emailPlaceholder")}
+        autoComplete="username"
+        autoCapitalize="none"
+        spellCheck={false}
+        required
+      />
+      <Button
+        type="submit"
+        size="lg"
+        fullWidth
+        icon={ArrowRightIcon}
+        loading={isPending}
+        disabled={isPending}
+      >
+        {isPending ? t("forgotPassword.sendingBtn") : submit}
+      </Button>
+    </Form>
   );
 }
 
-function ResetPanel({ token }: { token: string }) {
+/** Forgot password: the work email; a passkey makes the reset unnecessary. */
+function RequestPanel({
+  isPending,
+  onRequest,
+}: {
+  isPending: boolean;
+  onRequest: (email: string) => void;
+}) {
   const { t } = useTranslation("auth-flow");
-  const reset = useResetPassword();
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [mismatch, setMismatch] = useState(false);
+  const passkey = usePasskeyLogin();
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (password !== confirm) {
-          setMismatch(true);
-          return;
-        }
-        setMismatch(false);
-        reset.mutate({ token, new_password: password });
-      }}
-    >
-      <FieldGroup>
-        <div className="auth-form-header">
-          <h1 className="auth-form-title">{t("forgotPassword.reset.title")}</h1>
-          <p className="auth-form-description">{t("forgotPassword.reset.subtitle")}</p>
-        </div>
-
-        <Field className="auth-field">
-          <FieldLabel htmlFor="new-password">{t("forgotPassword.reset.passwordLabel")}</FieldLabel>
-          <PasswordInput
-            id="new-password"
-            name="new-password"
-            autoComplete="new-password"
-            placeholder={t("forgotPassword.reset.passwordPlaceholder")}
-            minLength={8}
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Field>
-
-        <Field className="auth-field">
-          <FieldLabel htmlFor="confirm-password">
-            {t("forgotPassword.reset.confirmLabel")}
-          </FieldLabel>
-          <PasswordInput
-            id="confirm-password"
-            name="confirm-password"
-            autoComplete="new-password"
-            placeholder={t("forgotPassword.reset.confirmPlaceholder")}
-            minLength={8}
-            required
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-          />
-        </Field>
-
-        {mismatch && (
-          <Field>
-            <FieldError>{t("forgotPassword.reset.mismatch")}</FieldError>
-          </Field>
-        )}
-
-        <Field>
-          <Button type="submit" className="auth-submit" disabled={reset.isPending}>
-            {reset.isPending && <LoaderCircleIcon className="animate-spin" />}
-            {reset.isPending
-              ? t("forgotPassword.reset.submittingBtn")
-              : t("forgotPassword.reset.submitBtn")}
-          </Button>
-        </Field>
-
-        <FieldDescription className="auth-form-switch">
-          {t("forgotPassword.rememberedIt")}{" "}
-          <Link to="/sign-in" className="auth-link">
-            {t("forgotPassword.backToSignIn")}
-          </Link>
-        </FieldDescription>
-      </FieldGroup>
-    </form>
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("forgotPassword.title")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {t("forgotPassword.subtitle")}
+        </Text>
+      </div>
+      {passkey.error && (
+        <Alert tone="danger" title={t("signIn.failedTitle")} announce="urgent">
+          {passkeyErrorMessage(passkey.error)}
+        </Alert>
+      )}
+      <EmailForm
+        label={t("forgotPassword.title")}
+        submit={t("forgotPassword.sendBtn")}
+        isPending={isPending}
+        onRequest={onRequest}
+      />
+      <EntryOr />
+      <Button
+        variant="soft"
+        size="lg"
+        fullWidth
+        icon={FingerprintPatternIcon}
+        loading={passkey.isPending}
+        disabled={passkey.isPending || isPending}
+        onClick={() => passkey.mutate()}
+      >
+        {t("forgotPassword.passkeyInstead")}
+      </Button>
+      <BackToSignIn />
+    </>
   );
 }
 
-function SuccessPanel({ devToken }: { devToken?: string }) {
+/** Sent: the same words whether or not the account exists, so the page can't find accounts. */
+function SentPanel({
+  email,
+  devToken,
+  onAgain,
+}: {
+  email: string;
+  devToken?: string;
+  onAgain: () => void;
+}) {
   const { t } = useTranslation("auth-flow");
   return (
-    <div className="flex flex-col gap-4">
-      <div className="auth-form-header">
-        <span className="mx-auto grid size-12 place-items-center rounded-full bg-emerald-500/10 text-emerald-500">
-          <CircleCheckIcon className="size-6" />
-        </span>
-        <h1 className="auth-form-title mt-3">{t("forgotPassword.successTitle")}</h1>
-        <p className="auth-form-description">{t("forgotPassword.successText")}</p>
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("forgotPassword.successTitle")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          <Trans
+            t={t}
+            i18nKey="forgotPassword.successText"
+            values={{ email }}
+            components={{ email: <b className="entry-strong" /> }}
+          />
+        </Text>
       </div>
 
-      {/* Dev only: the backend hands back the token so the reset link works
-          without a real email provider. */}
+      {/* Dev only: the backend hands back the token so the reset link works without email. */}
       {devToken ? (
-        <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-start">
-          <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-            {t("forgotPassword.devLinkTitle")}
-          </p>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            {t("forgotPassword.devLinkText")}
-          </p>
-          <a
-            href={`/forgot-password?token=${encodeURIComponent(devToken)}`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-2 w-full")}
-          >
-            {t("forgotPassword.devLinkButton")}
-          </a>
-        </div>
+        <Alert
+          tone="warning"
+          title={t("forgotPassword.devLinkTitle")}
+          actions={
+            <Link href={`/forgot-password?token=${encodeURIComponent(devToken)}`}>
+              {t("forgotPassword.devLinkButton")}
+            </Link>
+          }
+        >
+          {t("forgotPassword.devLinkText")}
+        </Alert>
       ) : null}
 
-      <Link to="/sign-in" className={cn(buttonVariants({ variant: "outline" }), "auth-submit")}>
-        {t("forgotPassword.successBackBtn")}
-      </Link>
+      <EntryInboxLinks />
 
-      <p className="auth-form-switch">
-        {t("forgotPassword.successResend")}{" "}
-        <Link to="/forgot-password" className="auth-link">
-          {t("forgotPassword.successResendLink")}
-        </Link>
-        .
-      </p>
-    </div>
+      <div className="entry-links">
+        <span>
+          {t("forgotPassword.successResend")}{" "}
+          <button type="button" className="entry-text-button" onClick={onAgain}>
+            {t("forgotPassword.successResendLink")}
+          </button>
+        </span>
+        <Link render={<RouterLink to="/sign-in" />}>{t("forgotPassword.backToSignIn")}</Link>
+      </div>
+    </>
+  );
+}
+
+/** Reset: one new password (its show toggle replaces "confirm"), and what saving it does. */
+function ResetPanel({
+  isPending,
+  errorMessage: failure,
+  onReset,
+}: {
+  isPending: boolean;
+  errorMessage?: string;
+  onReset: (password: string) => void;
+}) {
+  const { t } = useTranslation("auth-flow");
+  // Focus the password from an effect, since the a11y lint rule forbids autoFocus.
+  const passwordRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    passwordRef.current?.focus();
+  }, []);
+
+  return (
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("forgotPassword.reset.title")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {t("forgotPassword.reset.subtitle")}
+        </Text>
+      </div>
+      {failure && (
+        <Alert tone="danger" title={t("forgotPassword.reset.failedTitle")} announce="urgent">
+          {failure}
+        </Alert>
+      )}
+      <Form
+        aria-label={t("forgotPassword.reset.title")}
+        className="entry-form"
+        summary={false}
+        aria-busy={isPending}
+        onFormSubmit={(values) => {
+          if (!isPending) onReset(String(values.new_password ?? ""));
+        }}
+      >
+        <Field
+          label={t("forgotPassword.reset.passwordLabel")}
+          name="new_password"
+          description={t("forgotPassword.reset.passwordHelp")}
+        >
+          <PasswordInput ref={passwordRef} autoComplete="new-password" minLength={8} required />
+        </Field>
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          icon={ArrowRightIcon}
+          loading={isPending}
+          disabled={isPending}
+        >
+          {isPending
+            ? t("forgotPassword.reset.submittingBtn")
+            : t("forgotPassword.reset.submitBtn")}
+        </Button>
+      </Form>
+      <BackToSignIn />
+    </>
+  );
+}
+
+/** The link was used, is older than 60 minutes or isn't real: send a new one from here. */
+function ExpiredPanel({
+  isPending,
+  onRequest,
+}: {
+  isPending: boolean;
+  onRequest: (email: string) => void;
+}) {
+  const { t } = useTranslation("auth-flow");
+  return (
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("forgotPassword.reset.title")}
+        </Heading>
+      </div>
+      <Alert tone="danger" title={t("forgotPassword.expired.title")} announce="urgent">
+        {t("forgotPassword.expired.text")}
+      </Alert>
+      <EmailForm
+        label={t("forgotPassword.expired.submit")}
+        submit={t("forgotPassword.expired.submit")}
+        isPending={isPending}
+        onRequest={onRequest}
+      />
+      <BackToSignIn />
+    </>
   );
 }

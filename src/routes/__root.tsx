@@ -1,4 +1,5 @@
-import { ThemeProvider } from "@qeetrix/ui";
+import { type ColorScheme, QeetrixProvider } from "@qeetrix/react";
+import { ThemeProvider, useTheme } from "@qeetrix/ui";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import {
   createRootRouteWithContext,
@@ -7,7 +8,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Toaster } from "sonner";
 
 import { publicConfigScript } from "@/platform/config/api-base-url";
@@ -21,9 +23,10 @@ import i18n from "@/i18n";
 const THEME_STORAGE_KEY = "qeetid-admin-theme";
 const DEVTOOLS_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEVTOOLS === "true";
 
-// Runs while <head> parses and puts the saved (or system) theme class on <html>, so the first
-// paint is right; ThemeProvider alone would apply it after hydration, with a visible flash.
-const themeFlashScript = `(function(){try{var k="${THEME_STORAGE_KEY}";var t=localStorage.getItem(k);if(t!=="dark"&&t!=="light"&&t!=="system")t="system";var resolved=t==="system"?(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;var h=document.documentElement;h.classList.remove("light","dark");h.classList.add(resolved);h.style.colorScheme=resolved;}catch(e){}})();`;
+// Runs while <head> parses and puts the saved (or system) theme on <html>, so the first paint is
+// right; ThemeProvider alone would apply it after hydration, with a visible flash. It sets both
+// switches during the migration: the class @qeetrix/ui reads and the attribute @qeetrix/react reads.
+const themeFlashScript = `(function(){try{var k="${THEME_STORAGE_KEY}";var t=localStorage.getItem(k);if(t!=="dark"&&t!=="light"&&t!=="system")t="system";var resolved=t==="system"?(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;var h=document.documentElement;h.classList.remove("light","dark");h.classList.add(resolved);h.setAttribute("data-qx-color-scheme",resolved);h.style.colorScheme=resolved;}catch(e){}})();`;
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
@@ -71,7 +74,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider defaultTheme="system" storageKey={THEME_STORAGE_KEY}>
-          {children}
+          <QeetrixBridge>{children}</QeetrixBridge>
           <Toaster position="bottom-right" closeButton richColors />
           {DEVTOOLS_ENABLED ? (
             <TanStackDevtools
@@ -90,6 +93,22 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
+  );
+}
+
+// Wraps the app in @qeetrix/react's provider, following @qeetrix/ui's theme so one switch sets
+// both libraries' colour scheme, and the console's language for the library's own strings.
+function QeetrixBridge({ children }: { children: ReactNode }) {
+  const { theme } = useTheme();
+  const { i18n: i18next } = useTranslation();
+  const language = i18next.resolvedLanguage ?? "en";
+  return (
+    <QeetrixProvider
+      colorScheme={theme satisfies ColorScheme}
+      locale={language === "en" ? "en-IN" : language === "hi" ? "hi-IN" : language}
+    >
+      {children}
+    </QeetrixProvider>
   );
 }
 

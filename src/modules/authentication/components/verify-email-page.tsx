@@ -4,6 +4,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useConfirmEmailVerification, useStartEmailVerification } from "@/modules/authentication";
+import { EntryPanel, useEntrySteps } from "./entry-panel";
+import { EntryShell } from "./entry-shell";
 import { VerifyEmailStep } from "./verify-email-step";
 import type { PublicSession } from "@/platform/auth/server-session";
 import { meKeys, useLogout, useMe } from "@/platform/auth/session";
@@ -13,6 +15,7 @@ import { errorMessage } from "@/platform/errors/user-message";
 /** Renders email verification for a signed-in, unverified account. */
 export function VerifyEmailPage({ session }: { session: PublicSession }) {
   const { t } = useTranslation("auth-flow");
+  const steps = useEntrySteps();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const me = useMe();
@@ -30,13 +33,18 @@ export function VerifyEmailPage({ session }: { session: PublicSession }) {
   const verificationError = confirmVerify.error ?? startVerify.error;
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+    <EntryShell panel={<EntryPanel steps={steps.verify} current={1} />}>
       <VerifyEmailStep
         email={me.data?.email ?? ""}
         isLoading={confirmVerify.isPending}
         isResending={startVerify.isPending}
+        resent={startVerify.isSuccess}
         errorMessage={verificationError ? errorMessage(verificationError) : undefined}
-        onResend={() => userId && startVerify.mutate(userId)}
+        onResend={() => {
+          if (!userId) return;
+          confirmVerify.reset();
+          startVerify.mutate(userId);
+        }}
         onSubmit={(code) => {
           if (!userId) return;
           confirmVerify.mutate(
@@ -54,19 +62,19 @@ export function VerifyEmailPage({ session }: { session: PublicSession }) {
         // The only other way out of this page. Without it an unverified user
         // who can't reach their inbox is stuck with no way to switch accounts.
         footer={
-          <p className="text-center text-sm text-muted-foreground">
+          <span>
             {t("verifyEmail.wrongAccount")}{" "}
             <button
               type="button"
-              className="underline underline-offset-4 disabled:opacity-50"
+              className="entry-text-button"
               onClick={() => logout.mutate()}
               disabled={logout.isPending}
             >
               {t("verifyEmail.signOut")}
             </button>
-          </p>
+          </span>
         }
       />
-    </div>
+    </EntryShell>
   );
 }
