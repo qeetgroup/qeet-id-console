@@ -24,7 +24,9 @@ export async function hydrated(page: Page) {
 async function submitSignIn(page: Page, email: string) {
   await page.goto("/sign-in");
   await hydrated(page);
-  await page.getByLabel("Email").fill(email);
+  // Email first: the work email, then the password step.
+  await page.getByLabel("Work email").fill(email);
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
   await page.getByRole("textbox", { name: "Password", exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }

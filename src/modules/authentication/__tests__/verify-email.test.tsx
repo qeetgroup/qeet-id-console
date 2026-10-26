@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
+import { ThemeProvider } from "@qeetrix/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { AnchorHTMLAttributes } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import "@/i18n";
@@ -11,7 +13,12 @@ vi.mock("@/platform/api/client", async () => {
   );
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@tanstack/react-router", () => ({ useNavigate: () => vi.fn() }));
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: () => vi.fn(),
+  Link: ({ to, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }) => (
+    <a href={to} {...props} />
+  ),
+}));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 import { api } from "@/platform/api/client";
@@ -35,8 +42,14 @@ afterEach(() => {
   vi.mocked(api).mockReset();
 });
 
+/** Pastes a code into the first of the six slots, as from the email. */
+function pasteCode(code: string) {
+  const first = screen.getAllByRole("textbox")[0] as HTMLInputElement;
+  fireEvent.paste(first, { clipboardData: { getData: () => code } });
+}
+
 describe("VerifyEmailStep", () => {
-  it("keeps a code pasted with whitespace around it, as copied from the email", () => {
+  it("keeps a code pasted with whitespace around it, as copied from the email", async () => {
     const onSubmit = vi.fn();
     render(
       <VerifyEmailStep
@@ -47,14 +60,29 @@ describe("VerifyEmailStep", () => {
         onSubmit={onSubmit}
       />,
     );
-    const input = screen.getByLabelText("Verification code") as HTMLInputElement;
-    // A maxLength would cut "\n 063367" to "\n 0633" before the digits are taken.
-    expect(input.hasAttribute("maxlength")).toBe(false);
+    expect(screen.getAllByRole("textbox")).toHaveLength(6);
+    pasteCode("\n 063367 \n");
+    const verify = screen.getByRole("button", { name: "Verify email" });
+    await waitFor(() => expect(verify.matches(":disabled")).toBe(false));
+    fireEvent.click(verify);
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith("063367"));
+  });
 
-    fireEvent.change(input, { target: { value: "\n 063367 \n" } });
-    expect(input.value).toBe("063367");
-    fireEvent.click(screen.getByRole("button", { name: "Verify email" }));
-    expect(onSubmit).toHaveBeenCalledWith("063367");
+  it("waits a minute before another resend", () => {
+    const onResend = vi.fn();
+    render(
+      <VerifyEmailStep
+        email="new@example.com"
+        isLoading={false}
+        isResending={false}
+        onResend={onResend}
+        onSubmit={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Resend code" }));
+    expect(onResend).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("button", { name: "Resend code" })).toBeNull();
+    expect(screen.getByText(/You can resend in/)).toBeTruthy();
   });
 });
 
@@ -66,13 +94,18 @@ describe("VerifyEmailPage", () => {
     );
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <VerifyEmailPage session={session} />
+        {/* The page's theme menu needs the provider __root.tsx supplies in-app. */}
+        <ThemeProvider storageKey="test-theme">
+          <VerifyEmailPage session={session} />
+        </ThemeProvider>
       </QueryClientProvider>,
     );
     expect(sessionStore.getUserId()).toBe("user-1");
 
-    fireEvent.change(screen.getByLabelText("Verification code"), { target: { value: "063367" } });
-    fireEvent.click(screen.getByRole("button", { name: "Verify email" }));
+    pasteCode("063367");
+    const verify = screen.getByRole("button", { name: "Verify email" });
+    await waitFor(() => expect(verify.matches(":disabled")).toBe(false));
+    fireEvent.click(verify);
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith("/v1/users/user-1/verify/email/confirm", {
         method: "POST",

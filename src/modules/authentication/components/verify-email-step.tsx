@@ -1,17 +1,14 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-} from "@qeetrix/ui";
-import { LoaderCircleIcon } from "@qeetrix/icons";
-import { useEffect, useRef, useState } from "react";
+import { ArrowRightIcon } from "@qeetrix/icons";
+import { Button, Field, Heading, Text } from "@qeetrix/react";
+import { Alert, Form, OTPInput } from "@qeetrix/react/experimental";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
+
+import { EntryInboxLinks } from "./entry-shell";
+
+const CODE_LENGTH = 6;
+// A resend waits this long, so nobody floods their own inbox (the server throttles too).
+const RESEND_COOLDOWN_SECONDS = 60;
 
 /**
  * Renders the sign-up email code step. The standalone `/verify-email` route holds an unverified
@@ -21,6 +18,7 @@ export function VerifyEmailStep({
   email,
   isLoading,
   isResending,
+  resent = false,
   errorMessage,
   onResend,
   onSubmit,
@@ -29,91 +27,130 @@ export function VerifyEmailStep({
   email: string;
   isLoading: boolean;
   isResending: boolean;
+  /** A new code went out from this page. */
+  resent?: boolean;
   errorMessage?: string;
   onResend: () => void;
   onSubmit: (code: string) => void;
-  footer?: React.ReactNode;
+  footer?: ReactNode;
 }) {
   const { t } = useTranslation("auth-flow");
   const [code, setCode] = useState("");
-  // Focus the code field from an effect, since the a11y lint rule forbids autoFocus.
-  const codeRef = useRef<HTMLInputElement>(null);
+
+  // A refused code clears the slots, so the next attempt starts empty.
   useEffect(() => {
-    codeRef.current?.focus();
+    if (errorMessage) setCode("");
+  }, [errorMessage]);
+
+  // Focus the first slot from an effect, since the a11y lint rule forbids autoFocus.
+  const slotsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    slotsRef.current?.querySelector("input")?.focus();
   }, []);
 
+  const [cooldown, setCooldown] = useState(0);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <Card>
-        <CardContent className="p-6 md:p-8">
-          <form
-            aria-busy={isLoading}
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (isLoading) return;
-              onSubmit(code.trim());
-            }}
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("verifyEmail.title")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          <Trans
+            t={t}
+            i18nKey="verifyEmail.sentTo"
+            values={{ email }}
+            components={{ email: <b className="entry-strong" /> }}
+          />
+        </Text>
+      </div>
+
+      {errorMessage ? (
+        <Alert tone="danger" title={t("verifyEmail.wrongTitle")} announce="urgent">
+          {errorMessage}
+        </Alert>
+      ) : resent ? (
+        <Alert tone="success" title={t("verifyEmail.resentTitle")} announce="polite">
+          {t("verifyEmail.resentText")}
+        </Alert>
+      ) : null}
+
+      <Form
+        aria-label={t("verifyEmail.title")}
+        className="entry-form"
+        summary={false}
+        aria-busy={isLoading}
+        onFormSubmit={() => {
+          if (isLoading || code.length < CODE_LENGTH) return;
+          onSubmit(code);
+        }}
+      >
+        <div ref={slotsRef}>
+          <Field
+            label={t("verifyEmail.codeLabel")}
+            name="code"
+            description={t("verifyEmail.expiry")}
+            invalid={Boolean(errorMessage)}
           >
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">{t("verifyEmail.title")}</h1>
-                <p className="text-balance text-muted-foreground">
-                  <Trans
-                    t={t}
-                    i18nKey="verifyEmail.sentTo"
-                    values={{ email }}
-                    components={{ email: <span className="font-medium" /> }}
-                  />
-                </p>
-              </div>
+            <OTPInput
+              length={CODE_LENGTH}
+              groups={[3, 3]}
+              size="lg"
+              autoComplete="one-time-code"
+              value={code}
+              onValueChange={setCode}
+            />
+          </Field>
+        </div>
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          icon={ArrowRightIcon}
+          loading={isLoading}
+          disabled={isLoading || code.length < CODE_LENGTH}
+        >
+          {isLoading ? t("verifyEmail.submitting") : t("verifyEmail.submit")}
+        </Button>
+      </Form>
 
-              <Field>
-                <FieldLabel htmlFor="code">{t("verifyEmail.codeLabel")}</FieldLabel>
-                <Input
-                  ref={codeRef}
-                  id="code"
-                  name="code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  required
-                  value={code}
-                  // No maxLength: it would cut a code pasted with spaces around it before the
-                  // digits are taken, leaving too few to submit.
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                />
-                <FieldDescription>{t("verifyEmail.expiry")}</FieldDescription>
-              </Field>
+      <EntryInboxLinks />
 
-              {errorMessage && (
-                <Field>
-                  <FieldError>{errorMessage}</FieldError>
-                </Field>
-              )}
-
-              <Field>
-                <Button type="submit" disabled={isLoading || code.trim().length < 6}>
-                  {isLoading && <LoaderCircleIcon className="animate-spin" />}
-                  {isLoading ? t("verifyEmail.submitting") : t("verifyEmail.submit")}
-                </Button>
-              </Field>
-
-              <FieldDescription className="text-center">
-                {t("verifyEmail.noCode")}{" "}
-                <button
-                  type="button"
-                  className="underline underline-offset-4 disabled:opacity-50"
-                  onClick={onResend}
-                  disabled={isResending}
-                >
-                  {isResending ? t("verifyEmail.resending") : t("verifyEmail.resend")}
-                </button>
-              </FieldDescription>
-
-              {footer}
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+      <div className="entry-links">
+        {cooldown > 0 ? (
+          <span>
+            {t("verifyEmail.noCode")}{" "}
+            <Trans
+              t={t}
+              i18nKey="verifyEmail.resendIn"
+              values={{ time: `0:${String(cooldown).padStart(2, "0")}` }}
+              components={{ time: <span className="entry-num" /> }}
+            />
+          </span>
+        ) : (
+          <span>
+            {t("verifyEmail.noCode")}{" "}
+            <button
+              type="button"
+              className="entry-text-button"
+              disabled={isResending}
+              onClick={() => {
+                setCooldown(RESEND_COOLDOWN_SECONDS);
+                onResend();
+              }}
+            >
+              {isResending ? t("verifyEmail.resending") : t("verifyEmail.resend")}
+            </button>
+          </span>
+        )}
+        {footer}
+      </div>
+    </>
   );
 }

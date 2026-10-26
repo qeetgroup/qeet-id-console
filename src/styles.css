@@ -1,5 +1,21 @@
 @import "@qeetrix/ui/styles.css";
+/*
+ * @qeetrix/react, during the migration: its tokens load after @qeetrix/ui's, so the screens still
+ * on @qeetrix/ui get the same (contrast-fixed) values for the --qx-* names both define.
+ */
+@import "@qeetrix/tokens/tokens.css";
+@import "@qeetrix/react/styles.css" layer(components);
 @import "./modules/authentication/components/auth-page.css";
+@import "./modules/authentication/components/entry.css";
+
+/*
+ * Migration bridge: Tailwind's preflight, loaded for the @qeetrix/ui screens, makes every svg a
+ * block, which drops @qeetrix/react's inline icons (an external link's arrow) onto a line of their
+ * own. Goes with Tailwind at the cut-over.
+ */
+.qx-link .qx-link-icon {
+  display: inline-block;
+}
 
 :root {
   color-scheme: light;

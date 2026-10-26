@@ -12,6 +12,10 @@ export const ERROR_CODES = {
   SESSION_REFRESH_UNAVAILABLE: "client.session_refresh_unavailable",
   INVALID_STATE: "auth.invalid_state",
   EMAIL_EXISTS: "auth.email_exists", // sign-up
+  // password reset links: each answers the reset page with a "send a new link" step
+  RESET_LINK_INVALID: "recovery.reset_link_invalid",
+  RECOVERY_LINK_USED: "recovery.link_used",
+  RECOVERY_LINK_EXPIRED: "recovery.link_expired",
   // sign-in credentials and account state: several are 401s, whose `auth` fallback ("Please
   // sign in again") is wrong for each of them
   INVALID_CREDENTIALS: "auth.invalid_credentials",

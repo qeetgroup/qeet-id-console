@@ -162,8 +162,9 @@ export function useForgotPassword() {
 }
 
 /**
- * Completes a password reset with the emailed token and a new password, then opens sign-in.
- * Anonymous: there is no session yet.
+ * Completes a password reset with the emailed token and a new password, then opens sign-in, which
+ * confirms the change (`?reset=done`). Anonymous: there is no session yet. The reset page shows
+ * its own errors, including the expired-link step.
  */
 export function useResetPassword() {
   const navigate = useNavigate();
@@ -174,8 +175,8 @@ export function useResetPassword() {
         body: in_,
         anonymous: true,
       }),
-    onSuccess: () => navigate({ to: "/sign-in" }),
-    meta: { successMessage: "authentication:toast.passwordResetSignIn" },
+    onSuccess: () => navigate({ href: "/sign-in?reset=done" }),
+    meta: { silentError: true },
   });
 }
 

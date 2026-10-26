@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { MagicLinkPage } from "@/modules/authentication/pages";
+import { MagicLinkPage } from "@/modules/authentication/entry-pages";
 import { searchText } from "@/shared/utils/search-params";
 
 export const Route = createFileRoute("/_auth/magic")({

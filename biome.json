@@ -242,8 +242,8 @@
                 },
                 "patterns": [
                   {
-                    "group": ["@/modules/*/**", "!@/modules/*/pages"],
-                    "message": "A route imports its own module's pages relatively, another module through its barrel (@/modules/<name>) or route entry (@/modules/<name>/pages), never internals."
+                    "group": ["@/modules/*/**", "!@/modules/*/pages", "!@/modules/*/entry-pages"],
+                    "message": "A route imports its own module's pages relatively, another module through its barrel (@/modules/<name>) or route entry (@/modules/<name>/pages, or entry-pages for the pages already on @qeetrix/react), never internals."
                   },
                   {
                     "group": ["@qeetrix/ui"],

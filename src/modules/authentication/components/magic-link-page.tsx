@@ -1,14 +1,14 @@
-import { Button, buttonVariants, Card, CardContent, Field, FieldLabel, Input } from "@qeetrix/ui";
-import { ErrorText } from "@/platform/components/error-reference";
-import { errorMessage } from "@/platform/errors/user-message";
-import { Link } from "@tanstack/react-router";
-import { CircleCheckIcon, LoaderCircleIcon, MailIcon } from "@qeetrix/icons";
+import { ArrowRightIcon, FingerprintPatternIcon, MailIcon } from "@qeetrix/icons";
+import { Button, Heading, Link, Spinner, Text, TextField } from "@qeetrix/react";
+import { Alert, Form } from "@qeetrix/react/experimental";
+import { Link as RouterLink } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import type { TFunction } from "i18next";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
-import { BrandHero } from "./brand-hero";
-import { ApiError } from "@/platform/api/client";
+import { passkeyErrorMessage, usePasskeyLogin } from "../api/passkey-flows";
+import { AuthShell } from "./auth-shell";
+import { EntryPanel, useEntrySteps } from "./entry-panel";
+import { EntryInboxLinks, EntryOr, EntryShell } from "./entry-shell";
 import {
   isMfaChallenge,
   MfaChallengeStep,
@@ -16,14 +16,18 @@ import {
   useRequestMagicLink,
   useResendMagicLink,
 } from "@/modules/authentication";
+import { ApiError } from "@/platform/api/client";
+import { errorMessage } from "@/platform/errors/user-message";
 
 // One route, two modes, like /forgot-password: without ?token= ask for a link; with it, sign in
 // with the link, or send a new one to the same address if it no longer works.
 /** Renders magic-link sign-in: request a link, or sign in with the one opened. */
 export function MagicLinkPage({ token }: { token?: string }) {
-  const { t } = useTranslation("auth-flow");
+  const steps = useEntrySteps();
   const consume = useConsumeMagicLink();
   const resend = useResendMagicLink();
+  const request = useRequestMagicLink();
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   const firedRef = useRef(false); // stops strict mode's second run spending the token
   useEffect(() => {
@@ -32,144 +36,234 @@ export function MagicLinkPage({ token }: { token?: string }) {
     consume.mutate(token);
   }, [token, consume]);
 
-  // The link proved the first factor; the account holds a second, or must
-  // have one. The link is spent, so this step is the only way on.
+  // The link proved the first factor; the account holds a second, or must have one. The link is
+  // spent, so this step is the only way on. It keeps its current frame until its own redesign.
   if (consume.data && isMfaChallenge(consume.data)) {
-    return <MfaChallengeStep challenge={consume.data} />;
+    return (
+      <AuthShell intent="signin">
+        <MfaChallengeStep challenge={consume.data} />
+      </AuthShell>
+    );
+  }
+
+  let content: React.ReactNode;
+  let current = 0;
+  if (token) {
+    current = consume.isError ? 1 : 2;
+    content = <LinkStatus token={token} consume={consume} resend={resend} />;
+  } else if (sentTo !== null) {
+    current = 1;
+    content = (
+      <SentPanel
+        email={sentTo}
+        onAgain={() => {
+          request.reset();
+          setSentTo(null);
+        }}
+      />
+    );
+  } else {
+    content = (
+      <RequestPanel
+        isPending={request.isPending}
+        error={request.error}
+        onRequest={(email) => request.mutate(email, { onSuccess: () => setSentTo(email) })}
+      />
+    );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-            {token ? renderStatus({ token, consume, resend, t }) : <RequestLink />}
-          </div>
-          <BrandHero />
-        </CardContent>
-      </Card>
-    </div>
+    <EntryShell panel={<EntryPanel steps={steps.magic} current={current} />}>{content}</EntryShell>
   );
+}
+
+function BackToSignIn() {
+  const { t } = useTranslation("auth-flow");
+  return <Link render={<RouterLink to="/sign-in" />}>{t("magic.backToSignIn")}</Link>;
 }
 
 /** Asks for a sign-in link; the answer is the same for any address. */
-function RequestLink() {
+function RequestPanel({
+  isPending,
+  error,
+  onRequest,
+}: {
+  isPending: boolean;
+  error: unknown;
+  onRequest: (email: string) => void;
+}) {
   const { t } = useTranslation("auth-flow");
-  const request = useRequestMagicLink();
-  const [email, setEmail] = useState("");
-  if (request.isSuccess) {
-    return (
-      <>
-        <MailIcon className="size-10 text-sky-500" />
-        <h1 className="text-2xl font-bold">{t("magic.sentTitle")}</h1>
-        <p className="text-balance text-muted-foreground">{t("magic.sentText")}</p>
-        <Link to="/sign-in" className={`${buttonVariants({ variant: "outline" })} mt-2`}>
-          {t("magic.backToSignIn")}
-        </Link>
-      </>
-    );
-  }
+  const passkey = usePasskeyLogin();
+  // Focus the email from an effect, since the a11y lint rule forbids autoFocus.
+  const emailRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    emailRef.current?.focus();
+  }, []);
+
   return (
-    <form
-      className="flex w-full max-w-sm flex-col gap-3 text-left"
-      onSubmit={(e) => {
-        e.preventDefault();
-        request.mutate(email.trim());
-      }}
-    >
-      <h1 className="text-center text-2xl font-bold">{t("magic.requestTitle")}</h1>
-      <p className="text-balance text-center text-muted-foreground">{t("magic.requestText")}</p>
-      <Field>
-        <FieldLabel htmlFor="magic-email">{t("magic.emailLabel")}</FieldLabel>
-        <Input
-          id="magic-email"
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("magic.requestTitle")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {t("magic.requestText")}
+        </Text>
+      </div>
+      {error ? (
+        <Alert tone="danger" title={t("magic.failedTitle")} announce="urgent">
+          {errorMessage(error)}
+        </Alert>
+      ) : passkey.error ? (
+        <Alert tone="danger" title={t("signIn.failedTitle")} announce="urgent">
+          {passkeyErrorMessage(passkey.error)}
+        </Alert>
+      ) : null}
+      <Form
+        aria-label={t("magic.requestTitle")}
+        className="entry-form"
+        summary={false}
+        aria-busy={isPending}
+        onFormSubmit={(values) => {
+          const email = String(values.email ?? "").trim();
+          if (email && !isPending) onRequest(email);
+        }}
+      >
+        <TextField
+          ref={emailRef}
+          label={t("magic.emailLabel")}
+          name="email"
           type="email"
+          icon={MailIcon}
+          placeholder={t("magic.emailPlaceholder")}
           autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
           required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
         />
-      </Field>
-      {request.error && (
-        <p role="alert" className="text-sm text-destructive">
-          <ErrorText error={request.error} />
-        </p>
-      )}
-      <Button type="submit" disabled={request.isPending || !email.trim()}>
-        {request.isPending && <LoaderCircleIcon className="animate-spin" />}
-        {t("magic.requestBtn")}
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          icon={ArrowRightIcon}
+          loading={isPending}
+          disabled={isPending}
+        >
+          {t("magic.requestBtn")}
+        </Button>
+      </Form>
+      <EntryOr />
+      <Button
+        variant="soft"
+        size="lg"
+        fullWidth
+        icon={FingerprintPatternIcon}
+        loading={passkey.isPending}
+        disabled={passkey.isPending || isPending}
+        onClick={() => passkey.mutate()}
+      >
+        {t("magic.passkeyInstead")}
       </Button>
-      <Link to="/sign-in" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-        {t("magic.backToSignIn")}
-      </Link>
-    </form>
+      <div className="entry-links">
+        <BackToSignIn />
+      </div>
+    </>
   );
 }
 
-function renderStatus({
+/** Sent: the same words for any address, so the page can't be used to find accounts. */
+function SentPanel({ email, onAgain }: { email: string; onAgain: () => void }) {
+  const { t } = useTranslation("auth-flow");
+  return (
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("magic.sentTitle")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          <Trans
+            t={t}
+            i18nKey="magic.sentText"
+            values={{ email }}
+            components={{ email: <b className="entry-strong" /> }}
+          />
+        </Text>
+      </div>
+      <EntryInboxLinks />
+      <div className="entry-links">
+        <span>
+          {t("magic.didntGet")}{" "}
+          <button type="button" className="entry-text-button" onClick={onAgain}>
+            {t("magic.sendAgain")}
+          </button>
+        </span>
+        <BackToSignIn />
+      </div>
+    </>
+  );
+}
+
+/** Signing in with the opened link: waiting, done, or a link that no longer works. */
+function LinkStatus({
   token,
   consume,
   resend,
-  t,
 }: {
   token: string;
   consume: ReturnType<typeof useConsumeMagicLink>;
   resend: ReturnType<typeof useResendMagicLink>;
-  t: TFunction<"auth-flow">;
 }) {
-  if (consume.isPending || consume.isIdle) {
-    return (
-      <>
-        <LoaderCircleIcon className="size-10 animate-spin text-sky-500" />
-        <h1 className="text-2xl font-bold">{t("magic.loadingTitle")}</h1>
-        <p className="text-balance text-muted-foreground">{t("magic.loadingText")}</p>
-      </>
-    );
-  }
+  const { t } = useTranslation("auth-flow");
 
-  if (consume.isSuccess) {
+  if (consume.isPending || consume.isIdle || consume.isSuccess) {
+    const done = consume.isSuccess;
     return (
-      <>
-        <CircleCheckIcon className="size-10 text-emerald-500" />
-        <h1 className="text-2xl font-bold">{t("magic.successTitle")}</h1>
-        <p className="text-balance text-muted-foreground">{t("magic.successText")}</p>
-      </>
+      <div className="entry-heading" role="status">
+        <Spinner size="lg" />
+        <Heading level={1} size="display-sm">
+          {done ? t("magic.successTitle") : t("magic.loadingTitle")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {done ? t("magic.successText") : t("magic.loadingText")}
+        </Text>
+      </div>
     );
   }
 
   // An expired or used link (400) gets its own, actionable copy.
-  const status = consume.error instanceof ApiError ? consume.error.status : undefined;
-  const detail = errorMessage(consume.error);
-  const isExpiredOrUsed = status === 400;
+  const expired = consume.error instanceof ApiError && consume.error.status === 400;
 
   return (
     <>
-      <MailIcon className="size-10 text-rose-500" />
-      <h1 className="text-2xl font-bold">
-        {isExpiredOrUsed ? t("magic.expiredTitle") : t("magic.errorTitle")}
-      </h1>
-      <p className="text-balance text-muted-foreground">
-        {isExpiredOrUsed ? t("magic.expiredText") : detail}
-      </p>
-      <div className="mt-4 flex gap-2">
-        <Link to="/sign-in" className={buttonVariants({ variant: "outline", size: "sm" })}>
-          {t("magic.backToSignIn")}
-        </Link>
-        {resend.isSuccess ? (
-          <p role="status" className="text-sm text-muted-foreground">
-            {t("magic.resentText")}
-          </p>
-        ) : (
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={resend.isPending}
-            onClick={() => resend.mutate(token)}
-          >
-            {resend.isPending && <LoaderCircleIcon className="animate-spin" />}
-            {t("magic.sendNewLink")}
-          </Button>
-        )}
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {expired ? t("magic.expiredTitle") : t("magic.errorTitle")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {expired ? t("magic.expiredText") : errorMessage(consume.error)}
+        </Text>
+      </div>
+      {resend.isSuccess && (
+        <Alert tone="success" title={t("magic.resentTitle")} announce="polite">
+          {t("magic.resentText")}
+        </Alert>
+      )}
+      {resend.isSuccess ? (
+        <EntryInboxLinks />
+      ) : (
+        <Button
+          size="lg"
+          fullWidth
+          icon={ArrowRightIcon}
+          loading={resend.isPending}
+          disabled={resend.isPending}
+          onClick={() => resend.mutate(token)}
+        >
+          {t("magic.sendNewLink")}
+        </Button>
+      )}
+      <div className="entry-links">
+        <BackToSignIn />
       </div>
     </>
   );

@@ -2,3 +2,6 @@
 # Only resolve versions public for 3 days (in seconds), like Dependabot's cooldown.
 # Frozen-lockfile installs are unaffected.
 minimumReleaseAge = 259200
+# Our own design-system packages are published through approval-gated releases, so they skip the
+# cooldown. Every third-party package keeps it.
+minimumReleaseAgeExcludes = ["@qeetrix/react", "@qeetrix/tokens", "@qeetrix/icons"]

@@ -139,13 +139,9 @@
     "socialSignUp": "Sign up with {{provider}}"
   },
   "signIn": {
-    "eyebrow": "WELCOME BACK",
     "title": "Sign in to Qeet ID",
-    "description": "Secure access for you and your organization.",
     "submit": "Sign in",
     "submitting": "Signing in…",
-    "noAccount": "Don’t have an account?",
-    "signupLink": "Sign up",
     "mfa": {
       "title": "Two-factor authentication",
       "subtitle": "Enter the 6-digit code from your authenticator app, or a recovery code.",
@@ -179,57 +175,77 @@
       "continueBtn": "Continue"
     },
     "noSocialAccount": "No account uses that provider yet. Sign up first, then sign in.",
-    "socialSigningIn": "Signing you in…"
+    "socialSigningIn": "Signing you in…",
+    "lede": "Enter your work email. We’ll take you to your passkey, password or company sign-in.",
+    "emailLabel": "Work email",
+    "emailPlaceholder": "e.g. priya@acme.in",
+    "continue": "Continue",
+    "passkey": "Sign in with a passkey",
+    "newHere": "New to Qeet ID?",
+    "createOrganisation": "Create an organisation",
+    "welcomeBack": "Welcome back",
+    "passwordLede": "Enter your password to continue to the console.",
+    "change": "Change",
+    "changeLabel": "Use a different email",
+    "forgotPassword": "Forgot password?",
+    "passkeyInstead": "Use a passkey instead",
+    "failedTitle": "We couldn’t sign you in",
+    "ssoTitle": "Your organisation signs in with {{provider}}",
+    "ssoText": "You’ll sign in there, then come straight back here.",
+    "resetDoneTitle": "Your password is updated",
+    "resetDoneText": "Sign in with it now. We’ve signed you out on your other devices."
   },
   "signUp": {
-    "eyebrowLight": "JOIN QEET ID",
-    "eyebrowDark": "GET STARTED",
-    "titleLight": "Create your account",
-    "titleDark": "Create your Qeet ID account",
-    "descriptionLight": "You’ll set up your first organization right after verifying your email.",
-    "descriptionDark": "Verify your email, then set up your first organization.",
     "name": "Full name",
-    "namePlaceholder": "Jane Doe",
+    "namePlaceholder": "e.g. Priya Sharma",
     "email": "Work email",
-    "emailPlaceholderLight": "jane@acme.com",
-    "emailPlaceholderDark": "you@company.com",
-    "emailHelp": "We’ll send a verification code to your email.",
-    "passwordPlaceholderLight": "At least 8 characters",
-    "passwordPlaceholderDark": "Create a strong password",
-    "confirmPassword": "Confirm password",
-    "confirmPlaceholder": "Re-enter your password",
-    "passwordFeedback": "Use 12+ characters mixing upper/lower case, digits, and symbols.",
-    "mismatch": "Passwords don’t match.",
+    "emailHelp": "We’ll send a 6-digit code to verify it.",
     "submit": "Create account",
     "submitting": "Creating account…",
-    "hasAccount": "Already have an account?"
+    "hasAccount": "Already have an account?",
+    "title": "Create your account",
+    "lede": "You’ll set up your organisation right after you verify your email.",
+    "emailPlaceholder": "e.g. priya@acme.in",
+    "passwordHelp": "At least 8 characters.",
+    "submitPasskey": "Create account with a passkey",
+    "passwordInstead": "Use a password instead",
+    "passkeyInstead": "Use a passkey instead",
+    "emailExistsTitle": "{{email}} already has an account",
+    "emailExistsText": "Sign in with it, or use a different work email.",
+    "signInInstead": "Sign in instead",
+    "signIn": "Sign in",
+    "failedTitle": "We couldn’t create your account"
   },
   "forgotPassword": {
-    "title": "Reset your password",
-    "subtitle": "Enter the email address tied to your Qeet ID account and we'll send you a reset link.",
-    "emailLabel": "Email",
+    "title": "Forgot your password?",
+    "subtitle": "Enter your work email and we’ll send you a link to set a new one.",
+    "emailLabel": "Work email",
     "sendingBtn": "Sending reset link…",
     "sendBtn": "Send reset link",
     "rememberedIt": "Remembered it?",
     "backToSignIn": "Back to sign in",
     "successTitle": "Check your inbox",
-    "successText": "If an account exists for that email, we've sent a one-time reset link. The link expires in 60 minutes.",
+    "successText": "If an account exists for <email>{{email}}</email>, we’ve sent a link to set a new password. It expires in 60 minutes.",
     "successResend": "Didn't get it? Check spam, or",
-    "successResendLink": "try again",
-    "successBackBtn": "Back to sign in",
+    "successResendLink": "send it again",
     "devLinkTitle": "Dev mode — reset link",
     "devLinkText": "Email isn't sent locally. Use this link to set a new password.",
     "devLinkButton": "Open reset link",
     "reset": {
       "title": "Set a new password",
-      "subtitle": "Choose a new password for your account. This signs out your other sessions.",
+      "subtitle": "Choose a new password for your account. Saving it signs you out on every other device.",
       "passwordLabel": "New password",
-      "confirmLabel": "Confirm new password",
-      "submitBtn": "Reset password",
-      "submittingBtn": "Resetting…",
-      "mismatch": "Passwords don't match.",
-      "passwordPlaceholder": "At least 8 characters",
-      "confirmPlaceholder": "Re-enter your password"
+      "submitBtn": "Save new password",
+      "submittingBtn": "Saving…",
+      "passwordHelp": "At least 8 characters.",
+      "failedTitle": "We couldn’t save your password"
+    },
+    "emailPlaceholder": "e.g. priya@acme.in",
+    "passkeyInstead": "Sign in with a passkey instead",
+    "expired": {
+      "title": "This link has expired",
+      "text": "Reset links work once and last 60 minutes. Send yourself a new one.",
+      "submit": "Send a new link"
     }
   },
   "magic": {
@@ -239,16 +255,22 @@
     "successTitle": "Welcome back",
     "successText": "Redirecting to your dashboard…",
     "expiredTitle": "Link no longer valid",
-    "expiredText": "This link was either already used or has expired. Sign-in links work once and only for a short time.",
+    "expiredText": "Sign-in links work once and only for a short time. Send a new one to the same address.",
     "errorTitle": "Couldn't sign you in",
     "sendNewLink": "Send a new link",
     "resentText": "If the address has an account, a new sign-in link is on its way.",
     "requestTitle": "Email me a sign-in link",
     "requestText": "We'll email you a link that signs you in once. It works for a short time.",
-    "emailLabel": "Email",
+    "emailLabel": "Work email",
     "requestBtn": "Send sign-in link",
     "sentTitle": "Check your email",
-    "sentText": "If that address has an account, a sign-in link is on its way. It works once and for a short time."
+    "sentText": "If <email>{{email}}</email> has an account, a sign-in link is on its way. It works once and for a short time.",
+    "emailPlaceholder": "e.g. priya@acme.in",
+    "passkeyInstead": "Sign in with a passkey instead",
+    "didntGet": "Didn’t get it? Check spam, or",
+    "sendAgain": "send it again",
+    "resentTitle": "New link sent",
+    "failedTitle": "We couldn’t send the link"
   },
   "invite": {
     "invalidTitle": "Invalid invite link",
@@ -284,8 +306,8 @@
     "failed": "Single sign-on failed."
   },
   "verifyEmail": {
-    "title": "Verify your email",
-    "sentTo": "We sent a 6-digit code to <email>{{email}}</email>. Enter it below to finish creating your account.",
+    "title": "Check your email",
+    "sentTo": "We sent a 6-digit code to <email>{{email}}</email>. Enter it to finish creating your account.",
     "codeLabel": "Verification code",
     "expiry": "The code expires in 10 minutes.",
     "submit": "Verify email",
@@ -294,6 +316,90 @@
     "resend": "Resend code",
     "resending": "Resending…",
     "wrongAccount": "Wrong account?",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "wrongTitle": "That code didn’t work",
+    "resentTitle": "New code sent",
+    "resentText": "Codes from earlier emails no longer work.",
+    "resendIn": "You can resend in <time>{{time}}</time>"
+  },
+  "entry": {
+    "help": "Need help?",
+    "or": "or",
+    "language": "Language",
+    "legal": {
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "trust": "Trust Center"
+    },
+    "panel": {
+      "label": "About Qeet ID",
+      "title": "Your fingerprint is the password",
+      "text": "Passkeys replace passwords with the lock already on your device. Faster to use, impossible to phish."
+    },
+    "facts": {
+      "passkeysTitle": "Passkeys first",
+      "passkeysText": "Your face, fingerprint or security key. Nothing to phish.",
+      "organisationsTitle": "Built for organisations",
+      "organisationsText": "Single sign-on, directory sync and roles for every team.",
+      "standardsTitle": "Open standards",
+      "standardsText": "OIDC, SAML, SCIM and WebAuthn, out of the box."
+    },
+    "steps": {
+      "signIn": {
+        "emailTitle": "Enter your work email",
+        "emailText": "We find your organisation.",
+        "touchTitle": "Touch the sensor",
+        "touchText": "Face, fingerprint or security key.",
+        "inTitle": "You’re in",
+        "inText": "No password typed, nothing to steal."
+      },
+      "signUp": {
+        "identityTitle": "Your name and work email",
+        "identityText": "We send a code to verify it.",
+        "passkeyTitle": "Create your passkey",
+        "passkeyText": "Face, fingerprint or security key.",
+        "organisationTitle": "Set up your organisation",
+        "organisationText": "Invite your team when you’re ready."
+      },
+      "verify": {
+        "accountTitle": "Create your account",
+        "accountText": "Name, work email and passkey.",
+        "verifyTitle": "Verify your email",
+        "verifyText": "Enter the 6-digit code we sent.",
+        "organisationTitle": "Set up your organisation",
+        "organisationText": "Invite your team when you’re ready."
+      },
+      "recovery": {
+        "emailTitle": "Enter your work email",
+        "emailText": "We send a one-time link.",
+        "passwordTitle": "Set a new password",
+        "passwordText": "It signs you out everywhere else.",
+        "passkeyTitle": "Add a passkey",
+        "passkeyText": "Never reset a password again."
+      },
+      "magic": {
+        "emailTitle": "Enter your work email",
+        "emailText": "We email you a one-time link.",
+        "openTitle": "Open the link",
+        "openText": "It works once, for a short time.",
+        "inTitle": "You’re in",
+        "inText": "No password needed."
+      }
+    },
+    "providers": {
+      "signInGroup": "Other ways to sign in",
+      "signUpGroup": "Other ways to sign up",
+      "unavailableTitle": "{{provider}} sign-in isn’t available yet",
+      "unavailableText": "Use your work email or a passkey for now."
+    },
+    "inbox": {
+      "group": "Open your inbox",
+      "gmail": "Open Gmail",
+      "outlook": "Open Outlook"
+    },
+    "consent": {
+      "signIn": "By continuing, you agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+      "signUp": "By creating an account, you agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+    }
   }
 }
