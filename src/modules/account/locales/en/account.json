@@ -1,111 +1,247 @@
 {
   "nav": {
-    "profile": "Profile",
-    "security": "Security",
-    "sessions": "Sessions",
-    "data": "Data & deletion",
-    "backToAdmin": "Back to admin →",
-    "yourAccount": "Your account",
-    "sections": "Account sections"
+    "myAccount": "My account"
   },
+  "area": {
+    "title": "My account",
+    "description": "Your own profile and sign-in, the same in every organisation you belong to.",
+    "pages": {
+      "profile": {
+        "label": "Profile",
+        "line": "Your name, photo and email address."
+      },
+      "security": {
+        "label": "Security",
+        "line": "Two-step verification, passkeys and your password."
+      },
+      "sessions": {
+        "label": "Sessions",
+        "line": "Where you're signed in."
+      },
+      "data": {
+        "label": "Data & Privacy",
+        "line": "Download your data, or delete your account."
+      }
+    }
+  },
+  "loading": "Loading",
+  "loadFailed": "This didn't load",
+  "tryAgain": "Try again",
+  "cancel": "Cancel",
+  "save": "Save",
   "profile": {
-    "title": "Profile",
-    "description": "The name, photo and contact details we show across Qeet ID.",
-    "picture": {
-      "label": "Profile picture",
+    "verified": "Verified",
+    "photo": {
       "upload": "Upload photo",
-      "remove": "Remove",
-      "help": "PNG or JPG; a square image works best. Applied when you save.",
-      "errorNotImage": "Please choose an image file.",
-      "errorTooLarge": "Image is too large (max 8 MB).",
-      "errorProcess": "Couldn't process that image — try a different file."
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "notImage": "Choose an image file: PNG, JPG, WebP or GIF.",
+      "tooLarge": "That image is over 8 MB. Choose a smaller one.",
+      "unreadable": "That image couldn't be read. Try another file."
     },
-    "displayName": "Display name",
-    "displayNamePlaceholder": "How you'd like to be addressed",
-    "email": "Email",
-    "emailHelp": "A code goes to the new address; the change applies once you enter it.",
-    "emailChange": "Change",
-    "emailNew": "New email address",
-    "emailNewPlaceholder": "new@email.com",
-    "emailSend": "Send code",
-    "emailResend": "Resend code",
-    "emailCode": "Code",
-    "emailConfirm": "Confirm",
-    "emailChangeAction": "Change your email address",
-    "save": "Save changes",
-    "saving": "Saving…",
-    "language": "Language",
-    "languageHelp": "Your preferred language for the console.",
+    "details": {
+      "title": "Personal details",
+      "description": "How you appear to the people in your organisations, and the address you sign in with.",
+      "name": "Name",
+      "nameHint": "Shown on your profile, in member lists and in the audit log.",
+      "noName": "Not set",
+      "nameRequired": "Enter your name.",
+      "edit": "Edit",
+      "email": "Email",
+      "emailHint": "You sign in with it, and password resets go to it.",
+      "change": "Change"
+    },
+    "email": {
+      "title": "Change your email address",
+      "description": "We'll send a 6-digit code to the new address. You keep signing in with {{email}} until you confirm it.",
+      "newAddress": "New email address",
+      "placeholder": "e.g. priya@acme.in",
+      "send": "Send code",
+      "sendAction": "Change your email address",
+      "invalid": "Enter an email address, like name@example.com.",
+      "same": "That's the address you use now.",
+      "codeTitle": "Check your new inbox",
+      "codeDescription": "We sent a 6-digit code to {{email}}. Enter it to make this your sign-in address.",
+      "code": "Code from the email",
+      "codeRequired": "Enter the 6-digit code.",
+      "resend": "Resend code",
+      "different": "Use a different address",
+      "confirm": "Confirm new address"
+    },
+    "about": {
+      "title": "About this account",
+      "organisations": "Organisations",
+      "memberOf_one": "Member of {{count}} organisation",
+      "memberOf_other": "Member of {{count}} organisations",
+      "openNow": "{{name}} is open now.",
+      "switch": "Switch",
+      "thisSignIn": "This sign-in",
+      "deviceIn": "{{device}}, in {{country}}.",
+      "seeSessions": "See sessions",
+      "memberSince": "Member since",
+      "accountId": "Account ID",
+      "accountIdHint": "Quote it if you contact support.",
+      "copyId": "Copy",
+      "copyIdLabel": "Copy your account ID",
+      "none": "Not in an organisation yet",
+      "noneHint": "Create one, or join one you're invited to.",
+      "choose": "Choose"
+    },
     "toast": {
       "updated": "Profile updated"
-    },
-    "validation": {
-      "email": "Enter a valid email address.",
-      "code_one": "Enter the {{count}}-digit code.",
-      "code_other": "Enter the {{count}}-digit code."
     }
   },
   "security": {
-    "lastMethod": "This is your only way to sign in. Add a passkey or set a password before removing it.",
-    "password": {
-      "title": "Password",
-      "description": "Use a strong, unique password. We recommend a password manager.",
-      "noneDescription": "Your account signs in with a social provider or a passkey. Add a password as a backup way to sign in.",
-      "set": "Set",
-      "notSet": "Not set",
-      "current": "Current password",
-      "new": "New password",
-      "newHelp_one": "At least {{count}} character.",
-      "newHelp_other": "At least {{count}} characters.",
-      "update": "Update password",
-      "add": "Set a password",
-      "changed": "Your password has been updated.",
-      "added": "Password set.",
-      "forgot": "Forgot password?",
-      "resetSent": "We've emailed you a password reset link.",
-      "validation": {
-        "current": "Enter your current password.",
-        "length_one": "Use at least {{count}} character.",
-        "length_other": "Use at least {{count}} characters."
-      }
+    "title": "Security",
+    "description": "How you sign in, and what protects your account. Your organisation's rules are set by its administrators.",
+    "on": "On",
+    "off": "Off",
+    "remove": "Remove",
+    "removeNamed": "Remove {{name}}",
+    "lastMethod": "It's your only way to sign in. Add a passkey or a password before removing it.",
+    "twoStep": {
+      "title": "Two-step verification",
+      "description": "A second step after your password, so a stolen password isn't enough."
+    },
+    "app": {
+      "name": "Authenticator app",
+      "line": "Codes from an app such as Google Authenticator or 1Password",
+      "setUp": "Set up",
+      "replace": "Replace",
+      "turnOff": "Turn off",
+      "setupTitle": "Set up an authenticator app",
+      "setupDescription": "Scan the code with your app, or type the key into it. Then enter the 6-digit code it shows.",
+      "replaceTitle": "Set up your new authenticator app",
+      "replaceDescription": "Scan the code with the new app, or type the key into it. Your current app keeps working until you confirm this one.",
+      "replaceConfirmTitle": "Replace your authenticator app?",
+      "replaceConfirmDescription": "You'll scan a new code with the new app. The one you use now keeps working until you confirm it.",
+      "turnOffConfirmTitle": "Turn off the authenticator app?",
+      "turnOffConfirmDescription": "Its codes stop working, and so do your recovery codes. If your organisation requires a second step, you'll be asked to set one up when you next sign in.",
+      "qrLabel": "QR code for your authenticator app",
+      "keyHint": "Can't scan it? Type this setup key into the app instead.",
+      "copyKey": "Copy key",
+      "copyKeyLabel": "Copy the setup key",
+      "code": "Code from the app",
+      "codeRequired": "Enter the 6-digit code from the app.",
+      "confirm": "Turn on"
+    },
+    "codes": {
+      "name": "Recovery codes",
+      "line": "{{remaining}} of {{total}} left · for when you can't use the others",
+      "lineNone": "Codes to sign in with when you can't use the others",
+      "new": "Get new codes",
+      "newConfirmTitle": "Get new recovery codes?",
+      "newConfirmDescription": "The codes you have now stop working. Save the new ones somewhere safe.",
+      "title": "Save your recovery codes",
+      "description": "Each code signs you in once if you can't use your app or phone. We won't show them again.",
+      "count_one": "{{count}} code",
+      "count_other": "{{count}} codes",
+      "copy": "Copy all",
+      "copyLabel": "Copy all the recovery codes",
+      "download": "Download",
+      "saved": "I've saved these codes somewhere safe",
+      "done": "Done"
+    },
+    "phone": {
+      "link": "Link a phone",
+      "action": "Link a phone",
+      "title": "Link a phone",
+      "description": "Open Qeet Auth on your phone, go to Settings and scan this code. It links one phone, once.",
+      "preparing": "Getting a code",
+      "qrLabel": "QR code to link a phone with Qeet Auth",
+      "orType": "Or type this code in the app:",
+      "expiresIn": "Expires in {{time}}",
+      "expired": "This code has expired. Get a new one to link your phone.",
+      "newCode": "Get a new code",
+      "linked": "Phone linked. It can now approve your sign-ins.",
+      "line": "Approves your sign-ins · linked {{linked}} · last used {{used}}"
+    },
+    "otp": {
+      "add": "Add a number or email",
+      "action": "Add a number or email",
+      "title": "Add a number or email",
+      "description": "We'll send a code there when you sign in.",
+      "channel": "Send codes by",
+      "sms": "Text message",
+      "email": "Email",
+      "smsLabel": "Phone number",
+      "smsPlaceholder": "+91 98765 43210",
+      "smsHint": "With the country code.",
+      "smsRequired": "Enter a phone number.",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "e.g. priya@acme.in",
+      "emailRequired": "Enter an email address.",
+      "send": "Send code",
+      "codeTitle": "Enter the code",
+      "codeDescription": "We sent a 6-digit code to {{destination}}.",
+      "code": "Code",
+      "codeRequired": "Enter the 6-digit code.",
+      "resend": "Resend code",
+      "confirm": "Confirm",
+      "smsName": "Text message",
+      "emailName": "Email",
+      "unconfirmed": "Not confirmed",
+      "finish": "Confirm",
+      "line": "{{destination}} · added {{added}}",
+      "removeConfirm": "Remove {{destination}}?",
+      "removeDescription": "Codes stop going there. Your other ways to sign in keep working.",
+      "removeAction": "Remove a number or email"
     },
     "passkeys": {
       "title": "Passkeys",
-      "description": "Faster, phishing-resistant sign-in using Touch ID, Face ID, Windows Hello, or a security key.",
-      "enrolled_one": "{{count}} enrolled",
-      "enrolled_other": "{{count}} enrolled",
-      "notEnrolled": "Not enrolled",
-      "nameLabel": "Name (optional)",
+      "description": "Sign in with your face, fingerprint or device PIN. Nothing to remember, nothing to phish.",
+      "add": "Add a passkey",
+      "addTitle": "Add a passkey",
+      "addDescription": "Your browser will ask you to confirm with your face, fingerprint or device PIN.",
+      "nameLabel": "Name",
       "nameHint": "Leave it empty to name it after this browser. You can rename it later.",
-      "add": "Add passkey",
+      "namePlaceholder": "e.g. Work laptop",
+      "nameRequired": "Enter a name.",
+      "create": "Continue",
       "adding": "Waiting for your device…",
       "added": "Passkey added",
       "cancelled": "The passkey wasn't created. You can try again.",
-      "disabled": "Your organization has turned off passkeys, so you can't add one.",
-      "removeConfirm": "Remove passkey \"{{name}}\"?",
-      "remove": "Remove",
-      "removeAction": "Remove this passkey"
+      "disabled": "Your organisation has turned off passkeys, so you can't add one.",
+      "empty": "No passkeys yet.",
+      "line": "Added {{added}} · not used yet",
+      "lineUsed": "Added {{added}} · last used {{used}}",
+      "rename": "Rename",
+      "renameNamed": "Rename {{name}}",
+      "unnamed": "Passkey",
+      "removeConfirm": "Remove the passkey \"{{name}}\"?",
+      "removeDescription": "You can no longer sign in with it. Add it again to use it.",
+      "removeAction": "Remove a passkey",
+      "enrolled_one": "{{count}} enrolled",
+      "enrolled_other": "{{count}} enrolled",
+      "notEnrolled": "Not enrolled",
+      "remove": "Remove"
     },
-    "mfa": {
-      "title": "Two-factor authentication",
-      "description": "Add a second factor (authenticator app, SMS, or email code) to require a second step on every sign-in.",
-      "totp": "Authenticator app (TOTP)",
-      "smsEmail": "SMS or email codes"
-    },
-    "connected": {
-      "title": "Connected accounts",
-      "description": "Social and identity providers linked to your account. You can sign in with any of them; unlink the ones you no longer use.",
-      "empty": "No connected accounts. Link one by signing in with a provider from the sign-in screen.",
-      "linkedAt": "· linked {{date}}",
-      "unlink": "Unlink",
-      "unlinkConfirm": "Unlink {{provider}}?",
-      "unlinkDescription": "You can no longer sign in with it. Link it again to use it.",
-      "unlinkAction": "Unlink this account",
-      "linkAction": "Link {{provider}} to your account",
-      "notConnected": "Not connected",
-      "link": "Link",
-      "linked": "{{provider}} connected.",
-      "alreadyLinked": "That account is already linked to a different Qeet ID."
+    "password": {
+      "title": "Password",
+      "description": "Used with your email address. A passkey is safer: it can't be phished.",
+      "name": "Password",
+      "set": "Set",
+      "notSet": "Not set",
+      "line": "Change it if you think someone else knows it.",
+      "lineNone": "You sign in with a passkey or a connected account. Add a password as a backup.",
+      "change": "Change",
+      "add": "Add",
+      "changeTitle": "Change your password",
+      "addTitle": "Add a password",
+      "addDescription": "Then you can also sign in with your email address and this password.",
+      "current": "Current password",
+      "currentRequired": "Enter your current password.",
+      "new": "New password",
+      "newHint_one": "At least {{count}} character.",
+      "newHint_other": "At least {{count}} characters.",
+      "tooShort_one": "Use at least {{count}} character.",
+      "tooShort_other": "Use at least {{count}} characters.",
+      "forgot": "Forgotten it? Email me a reset link",
+      "resetSent": "We've emailed a reset link to {{email}}.",
+      "submitChange": "Change password",
+      "submitAdd": "Add password",
+      "changed": "Your password has been changed.",
+      "added": "Password added."
     },
     "devices": {
       "title": "Remembered devices",
@@ -124,14 +260,16 @@
       "forgetAllConfirm": "Forget all remembered devices?",
       "forgetAllDescription": "Each will be asked for the second factor at its next sign-in.",
       "forgotOne": "Device forgotten",
-      "forgotAll": "Remembered devices forgotten"
+      "forgotAll": "Remembered devices forgotten",
+      "shortDescription": "These skip two-step verification until they expire.",
+      "line": "Remembered {{remembered}} · expires {{expires}}",
+      "forgetNamed": "Forget {{device}}"
     },
     "phones": {
       "title": "Linked phones",
       "description": "Phones with the Qeet Auth app approve your sign-ins. Remove any you no longer have; it stops approving at once.",
       "memberDescription": "Phones this person linked to approve their sign-ins. Remove one that may be lost or stolen; their other factors stay.",
       "empty": "No linked phones.",
-      "link": "Link a phone",
       "platform": {
         "ios": "iPhone or iPad",
         "android": "Android"
@@ -145,97 +283,95 @@
       "removeAction": "Remove this phone",
       "removed": "Phone removed",
       "dialog": {
-        "title": "Link a phone",
+        "close": "Close",
         "description": "Open Qeet Auth on your phone, go to Settings and scan this code. It links one phone, once.",
-        "scan": "Scan with Qeet Auth",
-        "orType": "Or type this code in the app:",
-        "expiresIn": "Expires in {{time}}",
         "expired": "This code has expired. Get a new one to link your phone.",
-        "newCode": "Get a new code",
+        "expiresIn": "Expires in {{time}}",
         "linked": "Phone linked. It can now approve your sign-ins.",
-        "close": "Close"
-      }
+        "newCode": "Get a new code",
+        "orType": "Or type this code in the app:",
+        "scan": "Scan with Qeet Auth",
+        "title": "Link a phone"
+      },
+      "link": "Link a phone"
     },
-    "title": "Security",
-    "description": "Password, two-factor authentication, and active sessions for your account."
+    "connected": {
+      "title": "Connected accounts",
+      "description": "Sign in with one of these instead of your password.",
+      "line": "{{email}} · connected {{when}}",
+      "notConnected": "Not connected",
+      "connect": "Connect",
+      "connectNamed": "Connect {{provider}}",
+      "disconnect": "Disconnect",
+      "disconnectNamed": "Disconnect {{provider}}",
+      "disconnectConfirm": "Disconnect {{provider}}?",
+      "disconnectDescription": "You can no longer sign in with it. Connect it again to use it.",
+      "linked": "{{provider}} connected.",
+      "alreadyLinked": "That account is already connected to a different Qeet ID."
+    }
   },
   "sessions": {
     "title": "Sessions",
-    "description": "All devices and browsers currently signed in to your account. Revoke any you don't recognise.",
-    "active": {
-      "title": "Active sessions",
-      "description": "Every place you're currently signed in. Revoke any session you don't recognise.",
-      "signOutOthers": "Sign out other sessions",
-      "emptyTitle": "No active sessions.",
-      "thisDevice": "This device"
+    "description": "Where you're signed in. Sign out of anything you don't recognise.",
+    "here": {
+      "title": "This device",
+      "activeNow": "Active now",
+      "signedIn": "Signed in {{when}}",
+      "ends": "ends {{when}}"
     },
-    "columns": {
-      "device": "Device",
-      "ip": "IP",
-      "created": "Created",
-      "lastSeen": "Last seen",
-      "status": "Status",
-      "actions": "Actions"
+    "others": {
+      "title": "Other sessions",
+      "description": "Each one is a browser or app still signed in as you.",
+      "empty": "No other sessions are signed in as you.",
+      "signOutAll": "Sign out of all others",
+      "confirmTitle": "Sign out of all your other sessions?",
+      "confirmDescription": "Every session except this one ends and can no longer be renewed, including any not listed here. A device that is signed in may keep access for a few more minutes, until its current access runs out. You stay signed in here.",
+      "done_one": "Signed out of {{count}} other session",
+      "done_other": "Signed out of {{count}} other sessions",
+      "none": "There were no other sessions to sign out of",
+      "failed": "Couldn't sign out your other sessions. Try again.",
+      "lastActive": "Last active",
+      "signedIn": "signed in {{when}}",
+      "unrecognised": "Don't recognise one? Sign out of it, then change your password or remove the passkey it used in <security>Security</security>.",
+      "doneDescription": "They can no longer renew their access. Access they already hold runs out within a few minutes."
     },
-    "revoke": {
-      "title": "Revoke this session?",
-      "description": "Whoever holds it will be signed out.",
-      "label": "Revoke",
-      "button": "Revoke",
-      "selfHelp": "Use the sign-out menu to end the session you're currently using.",
-      "action": "Revoke this session"
+    "signOut": {
+      "button": "Sign out",
+      "label": "Sign out of {{device}}",
+      "title": "Sign out of {{device}}?",
+      "description": "Whoever is using it is signed out at once.",
+      "action": "Sign out of a session"
     },
-    "revokeAll": {
-      "title": "Sign out all other sessions?",
-      "description": "Every session except this one ends and can no longer be renewed, including any not listed here. A device that is signed in may keep access for a few more minutes, until its current access runs out. You stay signed in here.",
-      "label": "Sign out other sessions",
-      "toast": {
-        "done_one": "Signed out of {{count}} other session",
-        "done_other": "Signed out of {{count}} other sessions",
-        "doneDescription": "They can no longer renew their access. Access they already hold runs out within a few minutes.",
-        "none": "There were no other sessions to sign out",
-        "failed": "Couldn't sign out your other sessions. Try again."
-      }
-    },
-    "signOutEverywhere": {
+    "everywhere": {
       "title": "Sign out everywhere",
-      "description": "Lost a device? End every sign-in at once: this session, your other devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account.",
+      "description": "Lost a device? This ends every session, this one included, signs you out of the Qeet ID sign-in page in any browser, and out of the apps you use with this account.",
       "button": "Sign out everywhere",
-      "confirm": {
-        "title": "Sign out everywhere?",
-        "description": "Every session ends, this one included, and none can be renewed: your devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account. Your remembered devices are forgotten too. A device or app that is signed in may keep access for a few more minutes, until its current access runs out. You will need to sign in again.",
-        "label": "Sign out everywhere"
-      },
-      "toast": {
-        "done_one": "Signed out everywhere: {{count}} sign-in ended",
-        "done_other": "Signed out everywhere: {{count}} sign-ins ended",
-        "doneDescription": "None of them can be renewed. Access a device or app already holds runs out within a few minutes.",
-        "failed": "Couldn't sign you out everywhere. You are still signed in here; try again."
-      }
+      "confirmTitle": "Sign out everywhere?",
+      "confirmDescription": "Every session ends, this one included, and none can be renewed: your devices, the Qeet ID sign-in page in any browser, and the apps you signed in to with this account. Your remembered devices are forgotten too. A device or app that is signed in may keep access for a few more minutes, until its current access runs out. You will need to sign in again.",
+      "done_one": "Signed out everywhere: {{count}} sign-in ended",
+      "done_other": "Signed out everywhere: {{count}} sign-ins ended",
+      "failed": "Couldn't sign you out everywhere. You are still signed in here; try again.",
+      "doneDescription": "None of them can be renewed. Access a device or app already holds runs out within a few minutes."
     }
   },
   "data": {
+    "title": "Data & Privacy",
+    "description": "A copy of what we hold about you, and how to delete it.",
     "export": {
-      "title": "Export your data",
-      "description": "Download a JSON archive of the personal data we hold about your account — profile, sessions, passkeys, and organization roles.",
+      "title": "Download your data",
+      "description": "A JSON file with your profile, sessions, passkeys and organisation roles.",
       "button": "Download my data",
       "done": "Your data has been downloaded"
     },
     "delete": {
       "title": "Delete your account",
-      "description": "Permanently erases your personal data (email, name, phone) and sign-in credentials, and signs you out right away. Audit-log references are kept with PII redacted so administrators can still verify historical events. This can't be undone.",
+      "description": "Erases your name, email, phone and sign-in methods, and signs you out. Audit records keep a redacted reference so administrators can still check past events. This can't be undone.",
+      "password": "Your password",
+      "passwordHint": "To confirm it's you.",
+      "passwordRequired": "Enter your password to confirm.",
       "button": "Delete my account",
-      "confirm": {
-        "title": "Delete your account?",
-        "description": "This permanently erases your personal data and signs you out immediately. It can't be undone.",
-        "label": "Delete my account"
-      },
-      "password": "Confirm your password",
-      "validation": {
-        "password": "Enter your password to confirm."
-      }
-    },
-    "title": "Data",
-    "description": "Export or delete your personal data."
+      "confirmTitle": "Delete your account?",
+      "confirmDescription": "Your personal data and sign-in methods are erased and you're signed out at once. This can't be undone."
+    }
   }
 }

@@ -2,6 +2,7 @@
 // Lives beside the route with a "-" prefix so the router generator ignores it.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
@@ -20,6 +21,7 @@ const navigate = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-router")>()),
   useNavigate: () => navigate,
+  Link: ({ to, children }: { to: string; children?: ReactNode }) => <a href={to}>{children}</a>,
 }));
 
 import { toast } from "sonner";
@@ -39,6 +41,7 @@ function session(id: string, revoked = false): Session {
     tenant_id: "",
     ip: "203.0.113.9",
     user_agent: "Mozilla/5.0 Chrome",
+    device: `Chrome on ${id}`,
     created_at: now,
     last_seen_at: now,
     revoked_at: revoked ? now : null,
@@ -88,7 +91,7 @@ function renderPage() {
 }
 
 async function signOutOtherSessions() {
-  const trigger = await screen.findByRole("button", { name: /sign out (other|elsewhere)/i });
+  const trigger = await screen.findByRole("button", { name: /sign out of all others/i });
   fireEvent.click(trigger);
   const cancel = await screen.findByRole("button", { name: "Cancel" });
   const dialog = cancel.closest('[role="dialog"], [role="alertdialog"]');
@@ -182,29 +185,40 @@ describe("Account › Sessions › sign out everywhere", () => {
   });
 });
 
-// Opens the confirmation for revoking the session at `row` and returns its dialog.
-async function openRevokeConfirmation(row: number): Promise<HTMLElement> {
-  const revoke = (await screen.findAllByRole("button", { name: /^revoke$/i }))[row];
-  if (!revoke) throw new Error("Revoke button is missing");
-  fireEvent.click(revoke);
+// Opens the confirmation for signing out of one session and returns its dialog.
+async function openSignOutConfirmation(id: string): Promise<HTMLElement> {
+  fireEvent.click(await screen.findByRole("button", { name: `Sign out of Chrome on ${id}` }));
   return screen.findByRole("alertdialog");
 }
 
-describe("Account › Sessions › revoke one session", () => {
-  it("asks for confirmation before revoking the session", async () => {
+describe("Account › Sessions › this device and the others", () => {
+  it("shows this device apart, and lists only the other live sessions with a way to end each", async () => {
     renderPage();
-    const dialog = await openRevokeConfirmation(1);
 
-    expect(within(dialog).getByText("Revoke this session?")).toBeTruthy();
+    expect(await screen.findByText("Chrome on current")).toBeTruthy();
+    expect(screen.getByText("Active now")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Sign out of Chrome on current" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Sign out of Chrome on other-1" })).toBeTruthy();
+    // A revoked session is over: nothing to end.
+    expect(screen.queryByText("Chrome on other-2")).toBeNull();
+  });
+});
+
+describe("Account › Sessions › sign out of one session", () => {
+  it("asks for confirmation before ending the session", async () => {
+    renderPage();
+    const dialog = await openSignOutConfirmation("other-1");
+
+    expect(within(dialog).getByText("Sign out of Chrome on other-1?")).toBeTruthy();
     expect(requests()).not.toContain("DELETE /v1/auth/sessions/other-1");
-    fireEvent.click(within(dialog).getByRole("button", { name: /^revoke$/i }));
+    fireEvent.click(within(dialog).getByRole("button", { name: /^sign out$/i }));
 
     await waitFor(() => expect(requests()).toContain("DELETE /v1/auth/sessions/other-1"));
   });
 
   it("changes nothing when the confirmation is cancelled", async () => {
     renderPage();
-    const dialog = await openRevokeConfirmation(1);
+    const dialog = await openSignOutConfirmation("other-1");
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
 
     await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());

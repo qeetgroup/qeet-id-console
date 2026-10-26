@@ -5,6 +5,11 @@
   "routes": {
     "/_app/": 264.9,
     "/_app/$": 264.9,
+    "/_app/account": 83.7,
+    "/_app/account/data": 1.1,
+    "/_app/account/profile": 1.1,
+    "/_app/account/security": 1.1,
+    "/_app/account/sessions": 1.1,
     "/_app/activity": 188.5,
     "/_app/analytics": 264.9,
     "/_app/applications": 264.9,
@@ -99,11 +104,6 @@
     "/_auth/sign-in": 148.6,
     "/_auth/sign-up": 148.6,
     "/_auth/sso/callback": 148.6,
-    "/account": 4.4,
-    "/account/data": 77.2,
-    "/account/profile": 77.1,
-    "/account/security": 77.2,
-    "/account/sessions": 77.2,
     "/create-organization": 92.9,
     "/select-organization": 280.2,
     "/verify-email": 280.2

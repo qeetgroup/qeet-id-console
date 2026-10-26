@@ -75,6 +75,7 @@ export type Me = {
   email_verified_at?: string | null;
   status: string;
   metadata?: Record<string, unknown> | null;
+  created_at?: string; // when the account was made
 };
 
 /**

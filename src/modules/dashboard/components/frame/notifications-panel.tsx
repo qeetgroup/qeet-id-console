@@ -27,9 +27,9 @@ const KIND_ICON = {
   info: InfoIcon,
 } as const satisfies Record<NotificationKind, unknown>;
 
-/** Whether anything is unread, for the dot on the bar's bell. */
-export function useHasUnreadNotifications(): boolean {
-  return (useNotifications().data?.unread_count ?? 0) > 0;
+/** Whether anything is unread, for the dot on the bar's bell; `enabled` false skips asking. */
+export function useHasUnreadNotifications(enabled = true): boolean {
+  return (useNotifications(enabled).data?.unread_count ?? 0) > 0;
 }
 
 /**

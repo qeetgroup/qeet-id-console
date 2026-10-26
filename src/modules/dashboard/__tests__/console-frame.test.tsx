@@ -34,11 +34,11 @@ vi.mock("@/platform/security/capability-provider", () => ({
     retry: vi.fn(),
   }),
 }));
-const session = vi.hoisted(() => ({ logout: vi.fn() }));
+const session = vi.hoisted(() => ({ logout: vi.fn(), tenantId: "t1" as string | null }));
 vi.mock("@/platform/auth/session", () => ({
   useMe: () => ({ data: { id: "u1", email: "alan@example.com", display_name: "Alan Admin" } }),
   useLogout: () => ({ mutate: session.logout, isPending: false }),
-  useTenantId: () => "t1",
+  useTenantId: () => session.tenantId,
 }));
 const orgs = vi.hoisted(() => ({ items: [] as { id: string; name: string }[] }));
 vi.mock("@/modules/organizations", () => ({
@@ -73,6 +73,7 @@ function renderInApp(node: ReactNode) {
 beforeEach(() => {
   route.pathname = "/users";
   route.pageHeader = false;
+  session.tenantId = "t1";
   orgs.items = [];
   notes.data = { unread_count: 0, items: [] };
 });
@@ -95,6 +96,31 @@ describe("the navigation", () => {
     ).toBe("true");
     // Sub-pages are the page's tabs, not rows here.
     expect(within(nav).queryByRole("link", { name: "Invitations" })).toBeNull();
+  });
+
+  it("ends with My account, one entry for the person's own pages, current on each of them", () => {
+    route.pathname = "/account/security";
+    renderInApp(<ConsoleSidebar />);
+    const nav = screen.getByRole("navigation", { name: "Qeet ID" });
+    const mine = within(nav).getByRole("link", { name: "My account" });
+    expect(mine.getAttribute("href")).toBe("/account");
+    expect(mine.getAttribute("aria-current")).toBe("page");
+    // Its pages are listed inside it, not here.
+    expect(within(nav).queryByRole("link", { name: "Security" })).toBeNull();
+  });
+
+  it("without an organisation, lists only My account and the way to choose one", () => {
+    session.tenantId = null;
+    route.pathname = "/account/profile";
+    renderInApp(<ConsoleSidebar />);
+    const nav = screen.getByRole("navigation", { name: "Qeet ID" });
+    expect(
+      within(nav)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["My account"]);
+    const choose = screen.getByRole("link", { name: "Choose an organisation" });
+    expect(choose.getAttribute("href")).toBe("/select-organization");
   });
 
   it("finds the page a sub-page or detail path belongs to, the longest match winning", () => {

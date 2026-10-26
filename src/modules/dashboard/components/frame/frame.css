@@ -20,6 +20,31 @@
   white-space: nowrap;
 }
 
+/* Without an organisation, the foot of the navigation: the way to choose or create one. */
+.frame-choose-organization {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-md);
+  text-decoration: none;
+}
+
+.frame-choose-organization svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.frame-choose-organization:hover {
+  color: var(--qx-color-text-default);
+}
+
+.frame-choose-organization:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-border-width-strong) * -1);
+}
+
 /* The account menu. */
 .frame-account-trigger {
   display: inline-grid;

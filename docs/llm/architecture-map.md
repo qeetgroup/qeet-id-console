@@ -32,7 +32,7 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 |---|---|---|
 | `src/modules/*/routes/app/` | `src/routes/_app.tsx` | authenticated — redirects to `/sign-in` |
 | `src/modules/authentication/routes/public/_auth/` | `…/public/_auth.tsx` | **reverse** — redirects away if signed in |
-| `src/modules/account/routes/public/account/` | `…/public/account.tsx` | authenticated; end-user self-service, outside the admin shell |
+| `src/modules/account/routes/app/account/` | `…/app/account.tsx` | My account, inside the shell: one sidebar entry, its pages in a column; open without an organisation too |
 | `src/routes/api/` | — | server-only SSE handlers |
 
 ## The BFF — the one path to the backend
@@ -96,6 +96,7 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | Feature flags (declared in manifests; `CONSOLE_FLAGS_OFF`) | `src/platform/feature-flags/` |
 | Page chrome | `src/platform/components/page-header.tsx` |
 | Frame of the pages outside the console (sign-in to create-organization) | `src/platform/components/entry-shell.tsx`, `entry-shell.css` |
+| My account: its area (header, column of pages), page parts and the security sections | `src/modules/account/components/account-area.tsx`, `account-parts.tsx`, `account.css`, `security/` |
 
 ## Modules
 
@@ -146,5 +147,4 @@ have 10 (about 5% of the keys), so only English is offered until one is complete
 | Container image | `Dockerfile` (health check on `/healthz`) |
 
 > **`src/app/` is the composition root**, not a provider tree: it lists the modules and wires their
-> routes, manifests and catalogues. Providers are composed in `__root.tsx` and the `_app` /
-> `account` layouts.
+> routes, manifests and catalogues. Providers are composed in `__root.tsx` and the `_app` layout.

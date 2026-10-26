@@ -1,120 +1,110 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qeetrix/ui";
 import { DownloadIcon, TrashIcon } from "@qeetrix/icons";
-import { useMemo } from "react";
+import { Button, Card, Field } from "@qeetrix/react";
+import { PasswordInput } from "@qeetrix/react/experimental";
+import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
 import { usePasswordStatus } from "@/modules/authentication";
-import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
+  SensitiveActionCancelled,
   settleSensitiveAction,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import { useDeleteAccount, useExportAccount } from "../api/account-data";
+import { AccountPage, Failure, Section } from "./account-parts";
 
-/** Renders the signed-in person's data: download an export, or erase the account. */
+/** The person's data: a copy of what's held about them, and erasing the account. */
 export function AccountDataPage() {
   const { t } = useTranslation("account");
-  const exportM = useExportAccount();
-
+  const exportData = useExportAccount();
   return (
-    <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <DownloadIcon className="size-5 text-muted-foreground" />
-            <CardTitle className="text-base">{t("data.export.title")}</CardTitle>
-          </div>
-          <CardDescription>{t("data.export.description")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="outline" onClick={() => exportM.mutate()} disabled={exportM.isPending}>
-            <DownloadIcon /> {t("data.export.button")}
+    <AccountPage title={t("data.title")} description={t("data.description")}>
+      <Section
+        title={t("data.export.title")}
+        description={t("data.export.description")}
+        action={
+          <Button
+            variant="soft"
+            icon={DownloadIcon}
+            loading={exportData.isPending}
+            onClick={() => exportData.mutate()}
+          >
+            {t("data.export.button")}
           </Button>
-        </CardContent>
-      </Card>
-
-      <Card className="border-rose-500/40">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <TrashIcon className="size-5 text-rose-600 dark:text-rose-400" />
-            <CardTitle className="text-base">{t("data.delete.title")}</CardTitle>
-          </div>
-          <CardDescription>{t("data.delete.description")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DeleteAccountForm />
-        </CardContent>
-      </Card>
-    </div>
+        }
+      />
+      <DeleteAccount />
+    </AccountPage>
   );
 }
 
-function DeleteAccountForm() {
+/**
+ * Erasing the account, after a confirmation and a step-up. An account that signs in only with a
+ * provider or a passkey has no password to confirm with.
+ */
+function DeleteAccount() {
   const { t } = useTranslation("account");
   const runSensitive = useSensitiveAction();
-  const deleteM = useDeleteAccount();
-  // An account that signs in only with a provider or a passkey has no password to confirm.
+  const remove = useDeleteAccount();
   const hasPassword = usePasswordStatus().data?.has_password ?? true;
-  const schema = useMemo(
-    () =>
-      z.object({
-        password: hasPassword
-          ? z.string().min(1, t("data.delete.validation.password"))
-          : z.string(),
-      }),
-    [hasPassword, t],
-  );
-  const form = useAppForm({
-    defaultValues: { password: "" },
-    validators: { onSubmit: schema },
-    onSubmit: async ({ value, formApi }) => {
-      await runSensitive({
-        confirm: {
-          title: t("data.delete.confirm.title"),
-          description: t("data.delete.confirm.description"),
-          confirmLabel: t("data.delete.confirm.label"),
-          tone: "destructive",
-        },
-        actionLabel: t("data.delete.button"),
-        run: () => deleteM.mutateAsync(hasPassword ? value.password : null),
-      }).catch((err: unknown) => {
-        applyServerErrors(formApi, err);
-        settleSensitiveAction(err);
-      });
-    },
-  });
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null); // the password field's
+  const [failure, setFailure] = useState<string | null>(null); // the request's
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    setFailure(null);
+    if (hasPassword && !password) return setError(t("data.delete.passwordRequired"));
+    setError(null);
+    runSensitive({
+      confirm: {
+        title: t("data.delete.confirmTitle"),
+        description: t("data.delete.confirmDescription"),
+        confirmLabel: t("data.delete.button"),
+        tone: "destructive",
+      },
+      actionLabel: t("data.delete.button"),
+      run: () => remove.mutateAsync(hasPassword ? password : null),
+    }).catch((err: unknown) => {
+      settleSensitiveAction(err);
+      if (!(err instanceof SensitiveActionCancelled)) setFailure(errorMessage(err));
+    });
+  }
 
   return (
-    <form
-      className="flex flex-col gap-3"
-      noValidate
-      onSubmit={(e) => {
-        e.preventDefault();
-        void form.handleSubmit();
-      }}
+    <Card
+      tone="danger"
+      title={t("data.delete.title")}
+      level={3}
+      description={t("data.delete.description")}
+      className="account-danger"
     >
-      {hasPassword && (
-        <div className="max-w-xs">
-          <form.AppField name="password">
-            {(field) => (
-              <field.PasswordField
-                label={t("data.delete.password")}
-                autoComplete="current-password"
-                required
-              />
-            )}
-          </form.AppField>
-        </div>
-      )}
-      <FormError error={deleteM.error} />
-      <div>
-        <form.AppForm>
-          <form.SubmitButton variant="outline" icon={<TrashIcon />}>
+      <form className="account-panel-form" noValidate onSubmit={submit}>
+        {hasPassword ? (
+          <Field
+            label={t("data.delete.password")}
+            description={t("data.delete.passwordHint")}
+            error={error ?? undefined}
+            invalid={!!error}
+          >
+            <PasswordInput
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setError(null);
+              }}
+            />
+          </Field>
+        ) : null}
+        {failure && <Failure>{failure}</Failure>}
+        <span className="account-panel-actions">
+          <Button type="submit" tone="danger" icon={TrashIcon} loading={remove.isPending}>
             {t("data.delete.button")}
-          </form.SubmitButton>
-        </form.AppForm>
-      </div>
-    </form>
+          </Button>
+        </span>
+      </form>
+    </Card>
   );
 }

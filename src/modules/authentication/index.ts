@@ -2,6 +2,8 @@
 // Session identity is not here; it is platform state in @/platform/auth/session.
 export * from "./api/flows";
 export { authKeys } from "./api/keys";
+export { useEligibleOrganizations } from "./api/organization-selection";
+export * from "./api/mfa";
 export * from "./api/mfa-sign-in";
 export * from "./api/auth-policy";
 export * from "./api/oidc-clients";

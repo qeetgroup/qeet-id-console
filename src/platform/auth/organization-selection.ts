@@ -44,9 +44,14 @@ export async function signInRequiresOrganizationSelection(
   }
 }
 
+/** My account: the person's own pages, open before an organisation is chosen or exists. */
+export function isAccountPath(pathname: string): boolean {
+  return pathname === "/account" || pathname.startsWith("/account/");
+}
+
 export function organizationSelectionBlocksPath(
   required: boolean | undefined,
   pathname: string,
 ): boolean {
-  return required === true && pathname !== "/account" && !pathname.startsWith("/account/");
+  return required === true && !isAccountPath(pathname);
 }

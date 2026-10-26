@@ -11,13 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as appRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './modules/authentication/routes/public/_auth'
-import { Route as AccountRouteImport } from './modules/account/routes/public/account'
 import { Route as CreateOrganizationRouteImport } from './modules/onboarding/routes/public/create-organization'
 import { Route as healthzRouteImport } from './routes/healthz'
 import { Route as SelectOrganizationRouteImport } from './modules/authentication/routes/public/select-organization'
 import { Route as VerifyEmailRouteImport } from './modules/authentication/routes/public/verify-email'
 import { Route as IndexRouteImport } from './modules/dashboard/routes/app/index'
 import { Route as SplatRouteImport } from './modules/dashboard/routes/app/$'
+import { Route as AccountRouteImport } from './modules/account/routes/app/account'
 import { Route as ActivityRouteImport } from './modules/activity/routes/app/activity'
 import { Route as AnalyticsRouteImport } from './modules/dashboard/routes/app/analytics'
 import { Route as ApplicationsRouteImport } from './modules/dashboard/routes/app/applications'
@@ -27,12 +27,12 @@ import { Route as AuthForgotPasswordRouteImport } from './modules/authentication
 import { Route as AuthMagicRouteImport } from './modules/authentication/routes/public/_auth/magic'
 import { Route as AuthSignInRouteImport } from './modules/authentication/routes/public/_auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './modules/authentication/routes/public/_auth/sign-up'
-import { Route as AccountDataRouteImport } from './modules/account/routes/public/account/data'
-import { Route as AccountProfileRouteImport } from './modules/account/routes/public/account/profile'
-import { Route as AccountSecurityRouteImport } from './modules/account/routes/public/account/security'
-import { Route as AccountSessionsRouteImport } from './modules/account/routes/public/account/sessions'
 import { Route as ApiActivityStreamRouteImport } from './routes/api/activity-stream'
 import { Route as ApiQeetaiStreamRouteImport } from './routes/api/qeetai-stream'
+import { Route as AccountDataRouteImport } from './modules/account/routes/app/account/data'
+import { Route as AccountProfileRouteImport } from './modules/account/routes/app/account/profile'
+import { Route as AccountSecurityRouteImport } from './modules/account/routes/app/account/security'
+import { Route as AccountSessionsRouteImport } from './modules/account/routes/app/account/sessions'
 import { Route as AuthSocialRouteImport } from './modules/authentication/routes/app/auth/social'
 import { Route as AuthorizationIndexRouteImport } from './modules/authorization/routes/app/authorization/index'
 import { Route as AuthorizationAbacRouteImport } from './modules/authorization/routes/app/authorization/abac'
@@ -128,11 +128,6 @@ const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AccountRoute = AccountRouteImport.update({
-  id: '/account',
-  path: '/account',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CreateOrganizationRoute = CreateOrganizationRouteImport.update({
   id: '/create-organization',
   path: '/create-organization',
@@ -161,6 +156,11 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => appRoute,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => appRoute,
 } as any)
 const ActivityRoute = ActivityRouteImport.update({
@@ -208,6 +208,16 @@ const AuthSignUpRoute = AuthSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => AuthRoute,
 } as any)
+const ApiActivityStreamRoute = ApiActivityStreamRouteImport.update({
+  id: '/api/activity-stream',
+  path: '/api/activity-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiQeetaiStreamRoute = ApiQeetaiStreamRouteImport.update({
+  id: '/api/qeetai-stream',
+  path: '/api/qeetai-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountDataRoute = AccountDataRouteImport.update({
   id: '/data',
   path: '/data',
@@ -227,16 +237,6 @@ const AccountSessionsRoute = AccountSessionsRouteImport.update({
   id: '/sessions',
   path: '/sessions',
   getParentRoute: () => AccountRoute,
-} as any)
-const ApiActivityStreamRoute = ApiActivityStreamRouteImport.update({
-  id: '/api/activity-stream',
-  path: '/api/activity-stream',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiQeetaiStreamRoute = ApiQeetaiStreamRouteImport.update({
-  id: '/api/qeetai-stream',
-  path: '/api/qeetai-stream',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSocialRoute = AuthSocialRouteImport.update({
   id: '/auth/social',
@@ -693,12 +693,12 @@ const AuthConnectionsOidcClientIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/account': typeof AccountRouteWithChildren
   '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/$': typeof SplatRoute
+  '/account': typeof AccountRouteWithChildren
   '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
   '/applications': typeof ApplicationsRoute
@@ -708,12 +708,12 @@ export interface FileRoutesByFullPath {
   '/magic': typeof AuthMagicRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/api/activity-stream': typeof ApiActivityStreamRoute
+  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/account/data': typeof AccountDataRoute
   '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/account/sessions': typeof AccountSessionsRoute
-  '/api/activity-stream': typeof ApiActivityStreamRoute
-  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/auth/social': typeof AuthSocialRoute
   '/authorization/abac': typeof AuthorizationAbacRoute
   '/authorization/access-tester': typeof AuthorizationAccessTesterRoute
@@ -803,12 +803,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/account': typeof AccountRouteWithChildren
   '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/$': typeof SplatRoute
+  '/account': typeof AccountRouteWithChildren
   '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
   '/applications': typeof ApplicationsRoute
@@ -818,12 +818,12 @@ export interface FileRoutesByTo {
   '/magic': typeof AuthMagicRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/api/activity-stream': typeof ApiActivityStreamRoute
+  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/account/data': typeof AccountDataRoute
   '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/account/sessions': typeof AccountSessionsRoute
-  '/api/activity-stream': typeof ApiActivityStreamRoute
-  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/auth/social': typeof AuthSocialRoute
   '/authorization/abac': typeof AuthorizationAbacRoute
   '/authorization/access-tester': typeof AuthorizationAccessTesterRoute
@@ -915,12 +915,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof appRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
-  '/account': typeof AccountRouteWithChildren
   '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_app/$': typeof SplatRoute
+  '/_app/account': typeof AccountRouteWithChildren
   '/_app/activity': typeof ActivityRoute
   '/_app/analytics': typeof AnalyticsRoute
   '/_app/applications': typeof ApplicationsRoute
@@ -930,13 +930,13 @@ export interface FileRoutesById {
   '/_auth/magic': typeof AuthMagicRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
-  '/account/data': typeof AccountDataRoute
-  '/account/profile': typeof AccountProfileRoute
-  '/account/security': typeof AccountSecurityRoute
-  '/account/sessions': typeof AccountSessionsRoute
   '/api/activity-stream': typeof ApiActivityStreamRoute
   '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/_app/': typeof IndexRoute
+  '/_app/account/data': typeof AccountDataRoute
+  '/_app/account/profile': typeof AccountProfileRoute
+  '/_app/account/security': typeof AccountSecurityRoute
+  '/_app/account/sessions': typeof AccountSessionsRoute
   '/_app/auth/social': typeof AuthSocialRoute
   '/_app/authorization/abac': typeof AuthorizationAbacRoute
   '/_app/authorization/access-tester': typeof AuthorizationAccessTesterRoute
@@ -1028,12 +1028,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/account'
     | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/$'
+    | '/account'
     | '/activity'
     | '/analytics'
     | '/applications'
@@ -1043,12 +1043,12 @@ export interface FileRouteTypes {
     | '/magic'
     | '/sign-in'
     | '/sign-up'
+    | '/api/activity-stream'
+    | '/api/qeetai-stream'
     | '/account/data'
     | '/account/profile'
     | '/account/security'
     | '/account/sessions'
-    | '/api/activity-stream'
-    | '/api/qeetai-stream'
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
@@ -1138,12 +1138,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/account'
     | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/$'
+    | '/account'
     | '/activity'
     | '/analytics'
     | '/applications'
@@ -1153,12 +1153,12 @@ export interface FileRouteTypes {
     | '/magic'
     | '/sign-in'
     | '/sign-up'
+    | '/api/activity-stream'
+    | '/api/qeetai-stream'
     | '/account/data'
     | '/account/profile'
     | '/account/security'
     | '/account/sessions'
-    | '/api/activity-stream'
-    | '/api/qeetai-stream'
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
@@ -1249,12 +1249,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_auth'
-    | '/account'
     | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/_app/$'
+    | '/_app/account'
     | '/_app/activity'
     | '/_app/analytics'
     | '/_app/applications'
@@ -1264,13 +1264,13 @@ export interface FileRouteTypes {
     | '/_auth/magic'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
-    | '/account/data'
-    | '/account/profile'
-    | '/account/security'
-    | '/account/sessions'
     | '/api/activity-stream'
     | '/api/qeetai-stream'
     | '/_app/'
+    | '/_app/account/data'
+    | '/_app/account/profile'
+    | '/_app/account/security'
+    | '/_app/account/sessions'
     | '/_app/auth/social'
     | '/_app/authorization/abac'
     | '/_app/authorization/access-tester'
@@ -1362,7 +1362,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   appRoute: typeof appRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
-  AccountRoute: typeof AccountRouteWithChildren
   CreateOrganizationRoute: typeof CreateOrganizationRoute
   healthzRoute: typeof healthzRoute
   SelectOrganizationRoute: typeof SelectOrganizationRoute
@@ -1385,13 +1384,6 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/account': {
-      id: '/account'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create-organization': {
@@ -1434,6 +1426,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/account': {
+      id: '/_app/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/activity': {
@@ -1499,34 +1498,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignUpRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/account/data': {
-      id: '/account/data'
-      path: '/data'
-      fullPath: '/account/data'
-      preLoaderRoute: typeof AccountDataRouteImport
-      parentRoute: typeof AccountRoute
-    }
-    '/account/profile': {
-      id: '/account/profile'
-      path: '/profile'
-      fullPath: '/account/profile'
-      preLoaderRoute: typeof AccountProfileRouteImport
-      parentRoute: typeof AccountRoute
-    }
-    '/account/security': {
-      id: '/account/security'
-      path: '/security'
-      fullPath: '/account/security'
-      preLoaderRoute: typeof AccountSecurityRouteImport
-      parentRoute: typeof AccountRoute
-    }
-    '/account/sessions': {
-      id: '/account/sessions'
-      path: '/sessions'
-      fullPath: '/account/sessions'
-      preLoaderRoute: typeof AccountSessionsRouteImport
-      parentRoute: typeof AccountRoute
-    }
     '/api/activity-stream': {
       id: '/api/activity-stream'
       path: '/api/activity-stream'
@@ -1540,6 +1511,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/qeetai-stream'
       preLoaderRoute: typeof ApiQeetaiStreamRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/account/data': {
+      id: '/_app/account/data'
+      path: '/data'
+      fullPath: '/account/data'
+      preLoaderRoute: typeof AccountDataRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/_app/account/profile': {
+      id: '/_app/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AccountProfileRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/_app/account/security': {
+      id: '/_app/account/security'
+      path: '/security'
+      fullPath: '/account/security'
+      preLoaderRoute: typeof AccountSecurityRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/_app/account/sessions': {
+      id: '/_app/account/sessions'
+      path: '/sessions'
+      fullPath: '/account/sessions'
+      preLoaderRoute: typeof AccountSessionsRouteImport
+      parentRoute: typeof AccountRoute
     }
     '/_app/auth/social': {
       id: '/_app/auth/social'
@@ -2146,8 +2145,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AccountRouteChildren {
+  AccountDataRoute: typeof AccountDataRoute
+  AccountProfileRoute: typeof AccountProfileRoute
+  AccountSecurityRoute: typeof AccountSecurityRoute
+  AccountSessionsRoute: typeof AccountSessionsRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountDataRoute: AccountDataRoute,
+  AccountProfileRoute: AccountProfileRoute,
+  AccountSecurityRoute: AccountSecurityRoute,
+  AccountSessionsRoute: AccountSessionsRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
+
 interface appRouteChildren {
   SplatRoute: typeof SplatRoute
+  AccountRoute: typeof AccountRouteWithChildren
   ActivityRoute: typeof ActivityRoute
   AnalyticsRoute: typeof AnalyticsRoute
   ApplicationsRoute: typeof ApplicationsRoute
@@ -2242,6 +2259,7 @@ interface appRouteChildren {
 
 const appRouteChildren: appRouteChildren = {
   SplatRoute: SplatRoute,
+  AccountRoute: AccountRouteWithChildren,
   ActivityRoute: ActivityRoute,
   AnalyticsRoute: AnalyticsRoute,
   ApplicationsRoute: ApplicationsRoute,
@@ -2358,27 +2376,9 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-interface AccountRouteChildren {
-  AccountDataRoute: typeof AccountDataRoute
-  AccountProfileRoute: typeof AccountProfileRoute
-  AccountSecurityRoute: typeof AccountSecurityRoute
-  AccountSessionsRoute: typeof AccountSessionsRoute
-}
-
-const AccountRouteChildren: AccountRouteChildren = {
-  AccountDataRoute: AccountDataRoute,
-  AccountProfileRoute: AccountProfileRoute,
-  AccountSecurityRoute: AccountSecurityRoute,
-  AccountSessionsRoute: AccountSessionsRoute,
-}
-
-const AccountRouteWithChildren =
-  AccountRoute._addFileChildren(AccountRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   appRoute: appRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
-  AccountRoute: AccountRouteWithChildren,
   CreateOrganizationRoute: CreateOrganizationRoute,
   healthzRoute: healthzRoute,
   SelectOrganizationRoute: SelectOrganizationRoute,

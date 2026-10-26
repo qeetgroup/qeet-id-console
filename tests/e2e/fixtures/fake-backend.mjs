@@ -193,6 +193,9 @@ const server = createServer(async (request, response) => {
     return send(response, 200, pair);
   }
 
+  // Public, as on the server: the sign-in page and the account pages read it.
+  if (path === "/v1/social/platform/providers") return send(response, 200, { providers: [] });
+
   const authorization = request.headers.authorization ?? "";
   const principal = accessTokens.get(authorization.replace(/^Bearer\s+/i, ""));
   if (!principal) return fail(response, 401, "auth.session_expired", "Session expired.");
@@ -323,6 +326,68 @@ const server = createServer(async (request, response) => {
           features.pro,
           8000000,
           99000,
+        ),
+      ],
+    });
+  }
+  // The signed-in person's own sign-in settings, which the account pages read.
+  const ago = (ms) => new Date(Date.now() - ms).toISOString();
+  if (path === "/v1/mfa/totp") return send(response, 200, { enrolled: true });
+  if (path === "/v1/mfa/recovery-codes") {
+    return send(response, 200, { enrolled: true, total: 10, remaining: 8 });
+  }
+  if (path === "/v1/auth/password") return send(response, 200, { has_password: true });
+  if (path === "/v1/auth/sign-in-methods") {
+    return send(response, 200, { password: true, passkeys: 1, linked_identities: 0, total: 2 });
+  }
+  if (path === "/v1/passkeys" && method === "GET") {
+    return send(response, 200, {
+      items: [
+        {
+          id: "passkey-1",
+          user_id: user.id,
+          name: "MacBook Pro (Touch ID)",
+          transports: ["internal"],
+          created_at: ago(60 * 86_400_000),
+          last_used_at: ago(5 * 60_000),
+        },
+      ],
+      enrollment_allowed: true,
+    });
+  }
+  if (path === "/v1/auth/sessions" && method === "GET") {
+    const session = (id, device, device_kind, country, ip, since, seen) => ({
+      id,
+      user_id: user.id,
+      tenant_id: principal.tenantId ?? "",
+      ip,
+      device,
+      device_kind,
+      country,
+      created_at: ago(since),
+      last_seen_at: ago(seen),
+      status: "active",
+      current: id === principal.sessionId,
+    });
+    return send(response, 200, {
+      items: [
+        session(
+          principal.sessionId,
+          "Chrome on macOS",
+          "desktop",
+          "IN",
+          "103.21.58.14",
+          3 * 3_600_000,
+          0,
+        ),
+        session(
+          "session-phone",
+          "Safari on iPhone",
+          "mobile",
+          "IN",
+          "49.36.112.7",
+          2 * 86_400_000,
+          2 * 3_600_000,
         ),
       ],
     });

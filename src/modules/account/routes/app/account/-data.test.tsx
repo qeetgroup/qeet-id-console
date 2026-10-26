@@ -72,7 +72,7 @@ function renderPage() {
 }
 
 async function openDeleteConfirmation(): Promise<HTMLElement> {
-  fireEvent.change(await screen.findByLabelText(/^Confirm your password/), {
+  fireEvent.change(await screen.findByLabelText(/^Your password/), {
     target: { value: "hunter2!" },
   });
   fireEvent.click(screen.getByRole("button", { name: /delete my account/i }));
