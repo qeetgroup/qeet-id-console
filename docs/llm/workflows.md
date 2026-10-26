@@ -98,11 +98,11 @@ internals, `api()` or `@tanstack/react-query` (lint); it reads params and search
 to the page as props. No route is exempt from this, and none may be.
 
 During the move to `@qeetrix/react` (`docs/migration/qeetrix-react.md`), pages already rebuilt on
-it are exported from a second route entry, `entry-pages.ts` (for authentication: sign in, sign up,
-verify email, magic link, forgot and reset password), so routes still on `@qeetrix/ui` don't load
-the new library through a shared `pages.ts`. Biome allows `@/modules/<name>/entry-pages` as it does
-`pages`. Those pages are styled with `@qeetrix/react` components and a small token-only CSS file,
-never Tailwind.
+it are exported from a second route entry, `entry-pages.ts` (for authentication: sign in with its
+two-step challenge and setup, sign up, verify email, magic link, forgot and reset password, and
+choosing an organisation), so routes still on `@qeetrix/ui` don't load the new library through a
+shared `pages.ts`. Biome allows `@/modules/<name>/entry-pages` as it does `pages`. Those pages are
+styled with `@qeetrix/react` components and a small token-only CSS file, never Tailwind.
 
 ## Change session or auth behaviour
 
