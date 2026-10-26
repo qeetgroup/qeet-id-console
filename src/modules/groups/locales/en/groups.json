@@ -207,7 +207,7 @@
   },
   "commands": {
     "createGroup": {
-      "title": "Create Group",
+      "title": "Create group",
       "subtitle": "Create a user group for bulk access control",
       "keywords": "add group, new group, user group"
     }

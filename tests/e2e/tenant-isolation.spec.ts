@@ -41,14 +41,17 @@ test("switching organization moves every tab and stops reading the old one's dat
   await signInTo(page, MULTI.email, ORG_ONE.name);
   const otherTab = await context.newPage();
   await otherTab.goto("/");
-  await expect(otherTab.getByRole("button", { name: new RegExp(ORG_ONE.name) })).toBeVisible();
+  // The top bar names the organization; switching is in the account menu, through the picker.
+  await expect(otherTab.getByRole("banner").getByText(ORG_ONE.name, { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: new RegExp(ORG_ONE.name) }).click();
-  await page.getByRole("menuitem", { name: new RegExp(ORG_TWO.name) }).click();
+  await page.getByLabel("Account menu").click();
+  await page.getByRole("menuitem", { name: /Switch organisation/ }).click();
+  await expect(page).toHaveURL(/\/select-organization$/);
+  await page.getByText(ORG_TWO.name, { exact: true }).click();
 
   // The switch reloads both tabs into the new organization.
   for (const tab of [page, otherTab]) {
-    await expect(tab.getByRole("button", { name: new RegExp(ORG_TWO.name) })).toBeVisible();
+    await expect(tab.getByRole("banner").getByText(ORG_TWO.name, { exact: true })).toBeVisible();
   }
 
   // Fresh loads from either tab now read only the new organization.

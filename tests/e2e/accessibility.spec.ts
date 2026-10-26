@@ -189,7 +189,7 @@ for (const theme of THEMES) {
     test("command palette", async ({ page }) => {
       await signIn(page, ADMIN.email);
       await settle(page, page.getByText("1,240"));
-      await page.getByRole("button", { name: "Search the control plane" }).click();
+      await page.getByRole("button", { name: "Search or jump to…" }).click();
       await settle(page, page.getByRole("dialog"));
       await expectAccessible(page);
     });

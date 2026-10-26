@@ -491,17 +491,17 @@
   },
   "commands": {
     "createUser": {
-      "title": "Create User",
+      "title": "Create user",
       "subtitle": "Invite a new user to this organization",
       "keywords": "invite, add user, new user, onboard"
     },
     "users": {
-      "title": "Manage Users",
+      "title": "Manage users",
       "subtitle": "View and manage all organization users",
       "keywords": "users list, all users, user management"
     },
     "invitations": {
-      "title": "Invite User",
+      "title": "Invite user",
       "subtitle": "Send an organization invitation",
       "keywords": "send invite, invitation, onboard"
     }

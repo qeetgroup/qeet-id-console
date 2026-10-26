@@ -579,12 +579,12 @@
   },
   "commands": {
     "createOrganization": {
-      "title": "Create Organization",
+      "title": "Create organization",
       "subtitle": "Add a new organization or sub-organization",
       "keywords": "add org, new organization, create organization, new tenant, create tenant"
     },
     "organizationSettings": {
-      "title": "Organization Settings",
+      "title": "Organization settings",
       "subtitle": "General, domains, security policy",
       "keywords": "settings, organization, general, config"
     }

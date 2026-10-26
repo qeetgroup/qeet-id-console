@@ -1,4 +1,4 @@
 // Public API of the search module; other modules import from here only.
 
-export { UniversalSearch } from "./components/universal-search";
+export { SearchPalette } from "./components/search-palette";
 export { SearchProvider } from "./search-provider";

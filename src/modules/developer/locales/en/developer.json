@@ -769,32 +769,32 @@
   },
   "commands": {
     "apiKeys": {
-      "title": "Generate API Key",
+      "title": "Generate API key",
       "subtitle": "Create a new machine-access API key",
       "keywords": "api key, machine identity, service account, token"
     },
     "signingKeys": {
-      "title": "Rotate Signing Keys",
+      "title": "Rotate signing keys",
       "subtitle": "Manage JWKS signing and encryption keys",
       "keywords": "jwks, rotate keys, signing, encryption key"
     },
     "webhooks": {
-      "title": "Manage Webhooks",
+      "title": "Manage webhooks",
       "subtitle": "Configure outbound event webhooks",
       "keywords": "webhooks, events, integrations, outbound"
     },
     "authHooks": {
-      "title": "Auth Hooks",
+      "title": "Auth hooks",
       "subtitle": "Configure pre/post authentication hooks",
       "keywords": "hooks, actions, login hook, auth pipeline"
     },
     "agents": {
-      "title": "Agent Governance",
+      "title": "Agent governance",
       "subtitle": "Manage machine-to-machine and AI agents",
       "keywords": "agents, bots, m2m, machine identity, ai agent"
     },
     "credentials": {
-      "title": "Verifiable Credentials",
+      "title": "Verifiable credentials",
       "subtitle": "Issue and manage W3C verifiable credentials",
       "keywords": "vc, credentials, w3c, ssi"
     }

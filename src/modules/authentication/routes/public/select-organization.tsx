@@ -12,7 +12,8 @@ export const Route = createFileRoute("/select-organization")({
     if (!session.isAuthenticated) throw redirect({ to: "/sign-in" });
     if (!(await hasVerifiedEmail(context.queryClient, session.userId)))
       throw redirect({ to: "/verify-email" });
-    if (!session.organizationSelectionRequired) throw redirect({ to: "/" });
+    // Open after choosing too: the account menu's "Switch organisation" comes here. With one
+    // organisation the page itself goes on to the console.
     return { session };
   },
   component: function SelectOrganizationRoute() {

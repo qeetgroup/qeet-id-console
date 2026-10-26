@@ -283,11 +283,6 @@
     "totalUsers": "Total users",
     "dauAvg": "DAU (avg)"
   },
-  "appSidebar": {
-    "qeetIdOverview": "Qeet ID overview",
-    "consoleSections": "Console sections",
-    "controlPlane": "Control plane"
-  },
   "applicationsOverview": {
     "registeredApps": "Registered apps",
     "machineApps": "Machine apps",
@@ -335,12 +330,6 @@
     "statAdded_one": "+{{count}} from last 30 days",
     "statAdded_other": "+{{count}} from last 30 days",
     "statNoChange": "No change"
-  },
-  "consoleHeader": {
-    "searchTheControlPlane": "Search the control plane",
-    "keyboardShortcuts": "Keyboard shortcuts",
-    "keyboardShortcuts2": "Keyboard shortcuts (?)",
-    "searchUnavailable": "Search unavailable while access loads"
   },
   "dashboardActivity": {
     "testAnAccessDecision": "Test an access decision",
@@ -401,30 +390,6 @@
       "unknown": "Unknown access"
     },
     "range": "Time range"
-  },
-  "headerUser": {
-    "accountMenu": "Account menu",
-    "myAccount": "My account",
-    "securityMfa": "Security & MFA",
-    "organizationSettings": "Organization settings",
-    "apiKeys": "API Keys",
-    "billing": "Billing",
-    "signOut": "Sign out",
-    "signingOut": "Signing out…"
-  },
-  "navMain": {
-    "checkingAvailableConsoleSections": "Checking available console sections",
-    "checkingOrganizationAccess": "Checking organization access"
-  },
-  "notificationsInbox": {
-    "notifications": "Notifications",
-    "viewAllActivity": "View all activity →",
-    "new": "New",
-    "youReAllCaughtUp": "You're all caught up",
-    "newActivityInYour": "New activity in your organization will show up here.",
-    "unreadLabel_one": "Notifications ({{count}} unread)",
-    "unreadLabel_other": "Notifications ({{count}} unread)",
-    "markAllRead": "Mark all read"
   },
   "onboardingChecklist": {
     "setYourBrand": "Set your brand",
@@ -503,32 +468,14 @@
     "keyboardShortcuts": "Keyboard shortcuts",
     "moveAroundWithoutTouching": "Move around without touching the mouse."
   },
-  "teamSwitcher": {
-    "noOrganization": "No organization",
-    "createATenantBoundary": "Create a tenant boundary",
-    "organizations": "Organizations",
-    "noOrganizationsYet": "No organizations yet",
-    "currentOrganization": "Current organization",
-    "addOrganization": "Add organization"
-  },
-  "verifyEmailBanner": {
-    "emailVerificationCode": "Email verification code",
-    "message": "Verify <email>{{email}}</email> to unlock organization creation.",
-    "verify": "Verify",
-    "sendCode": "Send verification code"
-  },
   "notFound": {
     "title": "Page not found",
-    "description": "There's nothing at this address. Check the link, or go back to the dashboard.",
+    "description": "There's nothing at this address. Check the link, or go to the dashboard.",
     "home": "Go to the dashboard"
   },
   "authenticationOverview": {
     "deltaPp": "{{value}}pp",
     "mfaChip": "{{method}} {{count}}"
-  },
-  "impersonationBanner": {
-    "message": "You are impersonating <target>{{target}}</target><admin> — signed in as {{admin}}.</admin>",
-    "exit": "Exit impersonation"
   },
   "authOverview": {
     "description": "How people prove who they are — sign-in methods, social providers, SSO, MFA and devices.",
@@ -696,7 +643,7 @@
   },
   "commands": {
     "dashboard": {
-      "title": "Open Dashboard",
+      "title": "Open dashboard",
       "subtitle": "Go to the organization overview",
       "keywords": "home, overview, main"
     },
@@ -717,6 +664,51 @@
     },
     "prompts": {
       "explainOAuth": "Explain the OAuth 2.0 grant types available in Qeet ID and when to use each."
+    }
+  },
+  "frame": {
+    "product": "Qeet ID",
+    "navigation": "Qeet ID",
+    "search": "Search or jump to…",
+    "searchUnavailable": "Search is available once your access has loaded",
+    "qeetAi": "Qeet AI",
+    "accountMenu": "Account menu",
+    "switchOrganization": "Switch organisation",
+    "youAreIn": "You're in {{name}}",
+    "myAccount": "My account",
+    "securityAndSignIn": "Security and sign-in",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "language": "Language",
+    "keyboardShortcuts": "Keyboard shortcuts",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…",
+    "breadcrumb": "Breadcrumb",
+    "pageViews": "{{page}} views",
+    "help": {
+      "title": "Help",
+      "docs": "Documentation",
+      "docsText": "Guides and the API reference.",
+      "shortcuts": "Keyboard shortcuts",
+      "shortcutsText": "Move around without the mouse."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "list": "Notifications",
+      "unread_one": "{{count}} unread",
+      "unread_other": "{{count}} unread",
+      "noUnread": "No unread notifications",
+      "markAllRead": "Mark all as read",
+      "new": "New",
+      "viewAll": "View all activity",
+      "emptyTitle": "You're all caught up",
+      "emptyText": "Sign-in alerts, sync results and key rotations will show here.",
+      "loading": "Loading notifications",
+      "errorTitle": "Notifications didn't load",
+      "errorText": "Check your connection, then try again.",
+      "tryAgain": "Try again"
     }
   }
 }

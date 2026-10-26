@@ -880,12 +880,12 @@
   },
   "commands": {
     "createRole": {
-      "title": "Create Role",
+      "title": "Create role",
       "subtitle": "Define a new RBAC role with custom permissions",
       "keywords": "add role, new role, rbac"
     },
     "policyBuilder": {
-      "title": "Build Policy",
+      "title": "Build policy",
       "subtitle": "Create and test authorization policies",
       "keywords": "policy, abac, rego, cedar, rules"
     }

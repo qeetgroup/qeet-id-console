@@ -8,7 +8,7 @@ function typeToCategory(type: string): string {
   return i18n.t(isTranslationKey(key) ? key : "search:resourceType.other");
 }
 
-/** Maps GET /v1/search hits to `resource` items, keeping status and metadata for the preview. */
+/** Maps GET /v1/search hits to `resource` items; the status shows beside the result. */
 export function resourceHitsToSearchItems(hits: SearchHit[]): SearchItem[] {
   return hits.map(
     (hit): SearchItem => ({

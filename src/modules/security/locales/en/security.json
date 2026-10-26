@@ -517,12 +517,12 @@
   },
   "commands": {
     "auditLogs": {
-      "title": "View Audit Logs",
+      "title": "View audit logs",
       "subtitle": "Browse and filter security audit events",
       "keywords": "audit, logs, events, security"
     },
     "exportAudit": {
-      "title": "Export Audit Logs",
+      "title": "Export audit logs",
       "subtitle": "Download audit events for compliance",
       "keywords": "export, download, compliance, audit csv"
     }
