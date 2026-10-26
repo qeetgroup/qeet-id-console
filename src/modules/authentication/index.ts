@@ -23,5 +23,3 @@ export { PasskeysTable, passkeyDisplayName } from "./components/passkeys-table";
 export { AccountPasskeysCard } from "./components/account-passkeys-card";
 export { TrustedDevicesCard } from "./components/trusted-devices-card";
 export { LinkedPhonesCard } from "./components/linked-phones-card";
-export { MfaEnrollmentStep, RecoveryCodesStep } from "./components/mfa-enrollment-step";
-export { MfaChallengeStep, MfaStep } from "./components/mfa-challenge-step";

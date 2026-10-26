@@ -6,12 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { passkeyErrorMessage, usePasskeyLogin } from "../api/passkey-flows";
-import { AuthShell } from "./auth-shell";
 import { EntryPanel, useEntrySteps } from "./entry-panel";
 import { EntryInboxLinks, EntryOr, EntryShell } from "./entry-shell";
+import { LazyMfaChallengeStep, preloadMfaChallengeStep } from "./lazy-mfa-challenge-step";
 import {
   isMfaChallenge,
-  MfaChallengeStep,
   useConsumeMagicLink,
   useRequestMagicLink,
   useResendMagicLink,
@@ -33,17 +32,14 @@ export function MagicLinkPage({ token }: { token?: string }) {
   useEffect(() => {
     if (!token || firedRef.current) return;
     firedRef.current = true;
+    preloadMfaChallengeStep();
     consume.mutate(token);
   }, [token, consume]);
 
   // The link proved the first factor; the account holds a second, or must have one. The link is
-  // spent, so this step is the only way on. It keeps its current frame until its own redesign.
+  // spent, so this step is the only way on.
   if (consume.data && isMfaChallenge(consume.data)) {
-    return (
-      <AuthShell intent="signin">
-        <MfaChallengeStep challenge={consume.data} />
-      </AuthShell>
-    );
+    return <LazyMfaChallengeStep challenge={consume.data} />;
   }
 
   let content: React.ReactNode;

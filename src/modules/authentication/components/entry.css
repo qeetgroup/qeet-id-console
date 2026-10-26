@@ -282,6 +282,215 @@
   gap: var(--qx-space-gap-sm);
 }
 
+/*
+ * A ruled list of actions, a row each: other ways to confirm a sign-in, and the organisations to
+ * open. To propose as a library ActionList.
+ */
+.entry-options {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+  overflow: hidden;
+}
+.entry-options > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+.entry-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  inline-size: 100%;
+  min-block-size: 3.5rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  border: 0;
+  background: transparent;
+  color: var(--qx-color-text-default);
+  text-align: start;
+  font: var(--qx-typography-label-md);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+  cursor: pointer;
+  transition: background-color var(--qx-motion-duration-fast) var(--qx-motion-easing-standard);
+}
+.entry-option:hover:not(:disabled) {
+  background: var(--qx-color-bg-neutral-subtle-hover);
+}
+.entry-option:disabled {
+  color: var(--qx-color-text-disabled);
+  cursor: not-allowed;
+}
+.entry-option:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-focus-ring-width) * -1);
+}
+.entry-option > svg {
+  color: var(--qx-color-icon-subtle);
+}
+.entry-option-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.entry-option-text strong {
+  overflow: hidden;
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.entry-option-text small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.entry-option[data-waiting] {
+  background: var(--qx-color-bg-neutral-subtle);
+  cursor: default;
+}
+/* An organisation row: its logo, name, tags and a chevron. */
+.entry-option[data-kind="organisation"] {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  min-block-size: 3.75rem;
+}
+/* The organisation being opened: the selected tint and the Ember bar on its start edge (rules §11). */
+.entry-option[data-opening] {
+  background: var(--qx-color-bg-selected);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+  cursor: progress;
+}
+/* A long list scrolls inside a frame about seven rows tall, so the page doesn't grow without end. */
+.entry-options[data-scroll] {
+  max-block-size: 26.25rem;
+  overflow-y: auto;
+}
+
+.entry-option-tags {
+  display: flex;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* A numbered how-to, ruled between steps. */
+.entry-howto {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: howto;
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+.entry-howto li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 2px var(--qx-space-gap-md);
+  padding-block: var(--qx-space-inset-sm);
+  counter-increment: howto;
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+}
+.entry-howto > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+.entry-howto li::before {
+  content: counter(howto, decimal-leading-zero);
+  grid-row: span 2;
+  padding-block-start: 2px;
+  color: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-code-sm);
+}
+.entry-howto strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+.entry-howto span {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* The QR code beside its setup key, in one ruled card. */
+.entry-qr {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--qx-space-gap-lg);
+  padding: var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+.entry-qr-key {
+  display: grid;
+  justify-items: start;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+.entry-qr-key code {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-md);
+  word-break: break-all;
+}
+.entry-qr-placeholder {
+  inline-size: 152px;
+  block-size: 152px;
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+/* Recovery codes: a numbered, ruled grid with its actions on top. */
+.entry-codes {
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  overflow: hidden;
+}
+.entry-codes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-xs) var(--qx-space-inset-xs)
+    var(--qx-space-inset-md);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  background: var(--qx-color-surface-sunken);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+.entry-codes-head > div {
+  display: flex;
+  gap: var(--qx-space-gap-xs);
+}
+.entry-codes ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: code;
+}
+.entry-codes li {
+  display: flex;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  counter-increment: code;
+  font: var(--qx-typography-code-md);
+}
+.entry-codes ol > :nth-child(-n + 2) {
+  border-block-start: 0;
+}
+.entry-codes ol > :nth-child(even) {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+.entry-codes li::before {
+  content: counter(code, decimal-leading-zero);
+  color: var(--qx-color-text-subtlest);
+}
+
 /* The theme menu holds three short choices: narrower than the library's 200px menu. */
 .entry-theme-menu {
   min-inline-size: 10rem;

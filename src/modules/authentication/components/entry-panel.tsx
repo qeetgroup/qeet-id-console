@@ -113,6 +113,30 @@ export function useEntrySteps() {
         text: t("entry.steps.verify.organisationText"),
       },
     ],
+    confirm: [
+      { title: t("entry.steps.confirm.signInTitle"), text: t("entry.steps.confirm.signInText") },
+      { title: t("entry.steps.confirm.confirmTitle"), text: t("entry.steps.confirm.confirmText") },
+      { title: t("entry.steps.confirm.inTitle"), text: t("entry.steps.confirm.inText") },
+    ],
+    setup: [
+      { title: t("entry.steps.setup.signInTitle"), text: t("entry.steps.setup.signInText") },
+      { title: t("entry.steps.setup.setupTitle"), text: t("entry.steps.setup.setupText") },
+      { title: t("entry.steps.setup.codesTitle"), text: t("entry.steps.setup.codesText") },
+    ],
+    organisation: [
+      {
+        title: t("entry.steps.organisation.signInTitle"),
+        text: t("entry.steps.organisation.signInText"),
+      },
+      {
+        title: t("entry.steps.organisation.chooseTitle"),
+        text: t("entry.steps.organisation.chooseText"),
+      },
+      {
+        title: t("entry.steps.organisation.openTitle"),
+        text: t("entry.steps.organisation.openText"),
+      },
+    ],
     magic: [
       { title: t("entry.steps.magic.emailTitle"), text: t("entry.steps.magic.emailText") },
       { title: t("entry.steps.magic.openTitle"), text: t("entry.steps.magic.openText") },

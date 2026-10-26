@@ -53,8 +53,7 @@ export async function signInToPicker(page: Page, email = MULTI.email) {
 /** Signs in a member of several organizations and enters `organization` from the picker. */
 export async function signInTo(page: Page, email: string, organization: string) {
   await signInToPicker(page, email);
-  await page.getByText(organization, { exact: true }).click(); // the card's label selects it
-  await page.getByRole("button", { name: "Continue to dashboard" }).click();
+  await page.getByText(organization, { exact: true }).click(); // the row opens it in one click
   await expect(page).toHaveURL(`${APP_URL}/`);
   await expect(page.getByLabel("Account menu")).toBeVisible();
 }

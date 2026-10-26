@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { SelectOrganizationPage } from "@/modules/authentication/pages";
+import { SelectOrganizationPage } from "@/modules/authentication/entry-pages";
 import { getServerSession } from "@/platform/api/server-proxy";
 import { hasVerifiedEmail } from "@/platform/auth/email-verification";
 import i18n from "@/i18n";

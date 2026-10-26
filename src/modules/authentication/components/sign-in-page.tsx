@@ -5,16 +5,11 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { passkeyErrorMessage, startPasskeyAutofill, usePasskeyLogin } from "../api/passkey-flows";
-import { AuthShell } from "./auth-shell";
 import { EntryPanel, useEntrySteps } from "./entry-panel";
 import { EntryShell } from "./entry-shell";
+import { LazyMfaChallengeStep, preloadMfaChallengeStep } from "./lazy-mfa-challenge-step";
 import { LoginForm } from "./signin-form";
-import {
-  isMfaChallenge,
-  MfaChallengeStep,
-  useConsumeSocialCode,
-  useLogin,
-} from "@/modules/authentication";
+import { isMfaChallenge, useConsumeSocialCode, useLogin } from "@/modules/authentication";
 import { errorMessage } from "@/platform/errors/user-message";
 
 /** Renders sign-in: email first, then SSO, password or passkey (with autofill), and social return. */
@@ -70,14 +65,9 @@ export function SignInPage() {
 
   // After a correct password, an account that holds or must have a second factor gets a
   // challenge instead of tokens: the second-factor step, or setting up an authenticator app.
-  // That step keeps its current frame until its own redesign.
   const challenge = login.data && isMfaChallenge(login.data) ? login.data : null;
   if (challenge) {
-    return (
-      <AuthShell intent="signin">
-        <MfaChallengeStep challenge={challenge} />
-      </AuthShell>
-    );
+    return <LazyMfaChallengeStep challenge={challenge} />;
   }
 
   return (
@@ -107,6 +97,7 @@ export function SignInPage() {
             stopAutofill.current();
             setAutofillError(null);
             passkey.reset();
+            preloadMfaChallengeStep();
             login.mutate(values);
           }}
           onPasskeyLogin={() => {
