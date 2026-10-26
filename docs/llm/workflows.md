@@ -43,6 +43,13 @@ The dev server or a build regenerates `src/routeTree.gen.ts` for a new route fil
 reads it, and `AccessBoundary` enforces it in the UI. Both are UX — the backend still decides.
 A nav entry naming a different capability from its route fails `route-capability.test.ts`.
 
+**Where a page sits comes from the navigation.** The frame (`modules/dashboard/components/frame`)
+draws a band above every page not yet rebuilt on `@qeetrix/react`: the breadcrumb (area › page)
+and, on a page's sub-pages (its `nav` children), their tabs. A sub-entry is a tab, not a sidebar
+row. A page rebuilt with the library `PageHeader` sets `staticData: { pageHeader: true }` on its
+route and puts the breadcrumb and tabs in its own header; the frame then draws neither and drops
+the old page padding.
+
 ## Call a new endpoint
 
 ```text

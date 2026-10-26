@@ -75,14 +75,17 @@ Violations (wrong-direction imports, cross-module internals, import cycles, dire
 
 ## Enterprise shell
 
-`routes/_app.tsx` is the authenticated shell boundary. It composes:
+`routes/_app.tsx` is the authenticated shell boundary. It renders `ConsoleFrame`
+(`modules/dashboard/components/frame`), the `@qeetrix/react` `AppShell`:
 
-- `AppSidebar` for workspace context and domain navigation;
-- `ConsoleHeader` for breadcrumbs, command search, notifications, preferences, and account access;
-- one semantic `main` content landmark with a skip link;
-- command-palette and shortcut dialogs at shell scope.
+- the top bar: Qeet ID, the organisation's name, search (⌘K), Qeet AI and the account menu
+  (switching organisation, account, theme, shortcuts, sign out);
+- the navigation, one entry per area that opens to its pages; a page's sub-pages are its tabs;
+- the Notifications and Help panels on the end edge;
+- one `main` landmark with the shell's skip link, and the search palette and shortcuts dialog.
 
-The sidebar account menu was intentionally removed. Account actions live in one predictable location in the top bar. The navigation rail uses real route state rather than a static active flag and keeps parent branches active on detail routes.
+Pages not yet rebuilt keep their own header and spacing, under a band with their breadcrumb and
+sub-page tabs.
 
 ## Session boundary
 
