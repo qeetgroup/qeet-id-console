@@ -875,17 +875,17 @@
   },
   "commands": {
     "oauthClients": {
-      "title": "Create OAuth Client",
+      "title": "Create OAuth client",
       "subtitle": "Register an OIDC / OAuth 2.0 application",
       "keywords": "oauth, oidc, client, application, app"
     },
     "passkeys": {
-      "title": "Configure Passkeys",
+      "title": "Configure passkeys",
       "subtitle": "Manage WebAuthn / passkey settings",
       "keywords": "webauthn, fido2, passkey, biometric"
     },
     "mfa": {
-      "title": "Multi-factor Auth Settings",
+      "title": "Multi-factor auth settings",
       "subtitle": "Configure TOTP, SMS, and recovery codes",
       "keywords": "mfa, totp, 2fa, two factor, authenticator"
     }

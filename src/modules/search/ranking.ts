@@ -8,11 +8,10 @@ export interface RankCandidate {
 }
 
 export interface RankContext {
-  /** Recent item ids; with no query, only recents and favorites are listed. */
+  /** Recent item ids; with no query, only recents are listed. */
   recentIds: ReadonlySet<string>;
   /** Open count per recent id, for the frequency boost. */
   recentAccessCounts: ReadonlyMap<string, number>;
-  favoriteIds: ReadonlySet<string>; // Pinned item ids, for the favorites boost
   currentPathname: string; // The current route, for the shared-path-segment boost
 }
 
@@ -123,9 +122,9 @@ export function score(query: string, candidate: RankCandidate): number {
 }
 
 /**
- * Ranks candidates best first. With a query only matches are kept; without one, only favorites
- * and recents, from a base score of 50. Favorites get +30, frequently opened items up to +25,
- * and items sharing path segments with the current route +2 per segment.
+ * Ranks candidates best first. With a query only matches are kept; without one, only recents,
+ * from a base score of 50. Frequently opened items get up to +25, and items sharing path segments
+ * with the current route +2 per segment.
  */
 export function rankItems<T extends RankCandidate>(
   items: T[],
@@ -141,13 +140,9 @@ export function rankItems<T extends RankCandidate>(
       baseScore = score(query, item);
       if (baseScore === 0) continue;
     } else {
-      const isFav = ctx.favoriteIds.has(item.id);
-      const isRecent = ctx.recentIds.has(item.id);
-      if (!isFav && !isRecent) continue;
+      if (!ctx.recentIds.has(item.id)) continue;
       baseScore = 50;
     }
-
-    if (ctx.favoriteIds.has(item.id)) baseScore += 30;
 
     const accessCount = ctx.recentAccessCounts.get(item.id) ?? 0;
     if (accessCount > 0) {

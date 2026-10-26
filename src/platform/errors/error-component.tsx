@@ -1,17 +1,18 @@
-import { useTranslation } from "react-i18next";
-import type { ErrorComponentProps } from "@tanstack/react-router";
-import { Button } from "@qeetrix/ui";
 import { RefreshCwIcon, TriangleAlertIcon } from "@qeetrix/icons";
+import { Button } from "@qeetrix/react";
+import type { ErrorComponentProps } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
 import { ErrorReference } from "@/platform/components/error-reference";
+import { StatePage } from "@/platform/components/state-page";
 import { normalizeError } from "@/platform/errors/normalize-error";
 import { userMessageForCode } from "@/platform/errors/user-message";
 import { captureError } from "@/platform/telemetry/errors";
-import { PageState } from "@/shared/components/page-state";
 
 /**
  * Renders the router's fallback for an uncaught render or loader error: user-safe copy from the
- * error's code, never the backend message, with the error reported to telemetry.
+ * error's code, never the backend message, with its support reference, and the error reported to
+ * telemetry.
  */
 export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
   const { t } = useTranslation("common");
@@ -19,23 +20,18 @@ export function RootErrorComponent({ error, reset }: ErrorComponentProps) {
   captureError(error, { source: "error-boundary" });
 
   return (
-    <div className="grid min-h-[60vh] place-items-center p-6">
-      <PageState
-        code="—"
-        icon={TriangleAlertIcon}
-        title={t("errorComponent.somethingWentWrong")}
-        description={
-          <>
-            {userMessageForCode(appError.code, appError.kind)}
-            <ErrorReference error={appError} className="mt-2" />
-          </>
-        }
-        actions={
-          <Button onClick={reset}>
-            <RefreshCwIcon /> {t("actions.tryAgain")}
-          </Button>
-        }
-      />
-    </div>
+    <StatePage
+      tone="danger"
+      icon={TriangleAlertIcon}
+      title={t("errorComponent.somethingWentWrong")}
+      description={userMessageForCode(appError.code, appError.kind)}
+      actions={
+        <Button icon={RefreshCwIcon} onClick={reset}>
+          {t("actions.tryAgain")}
+        </Button>
+      }
+    >
+      <ErrorReference error={appError} />
+    </StatePage>
   );
 }

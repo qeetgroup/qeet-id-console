@@ -137,7 +137,7 @@
   },
   "commands": {
     "branding": {
-      "title": "Manage Branding",
+      "title": "Manage branding",
       "subtitle": "Customise the hosted login UI",
       "keywords": "branding, theme, logo, colors, login page"
     }

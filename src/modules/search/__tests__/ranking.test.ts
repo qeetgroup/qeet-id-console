@@ -15,7 +15,6 @@ import {
 const emptyCtx: RankContext = {
   recentIds: new Set(),
   recentAccessCounts: new Map(),
-  favoriteIds: new Set(),
   currentPathname: "/",
 };
 
@@ -177,19 +176,6 @@ describe("rankItems", () => {
     }
   });
 
-  it("applies a favorites boost to favourited items", () => {
-    const ctx: RankContext = {
-      ...emptyCtx,
-      favoriteIds: new Set(["nav.roles"]),
-    };
-    const result = rankItems(items, "r", ctx);
-    const rolesResult = result.find((r) => r.item.id === "nav.roles");
-    const otherResult = result.find((r) => r.item.id !== "nav.roles");
-    if (rolesResult && otherResult) {
-      expect(rolesResult.score).toBeGreaterThan(otherResult.score);
-    }
-  });
-
   it("applies a frequency boost proportional to accessCount", () => {
     const ctx: RankContext = {
       ...emptyCtx,
@@ -205,7 +191,7 @@ describe("rankItems", () => {
     }
   });
 
-  it("returns only recents/favorites when query is empty", () => {
+  it("returns only recents when the query is empty", () => {
     const ctx: RankContext = {
       ...emptyCtx,
       recentIds: new Set(["nav.roles"]),
@@ -216,7 +202,7 @@ describe("rankItems", () => {
     expect(result[0]?.item.id).toBe("nav.roles");
   });
 
-  it("returns an empty array with no query and no recents/favorites", () => {
+  it("returns an empty array with no query and no recents", () => {
     const result = rankItems(items, "", emptyCtx);
     expect(result).toHaveLength(0);
   });
