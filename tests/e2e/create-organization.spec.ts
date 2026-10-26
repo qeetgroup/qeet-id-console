@@ -51,6 +51,22 @@ test("a new account with no organisation goes straight to setting one up", async
   await expect(page).toHaveURL(/\/create-organization$/);
 });
 
+test("a new account opens My account in the console, and nothing else of it", async ({ page }) => {
+  await signInToEntry(page, FRESH.email, "/create-organization");
+  await page.goto("/account/profile");
+  await expect(page).toHaveURL(/\/account\/profile$/);
+  await hydrated(page);
+  const nav = page.getByRole("navigation", { name: "Qeet ID" });
+  await expect(nav.getByRole("link", { name: "My account" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(nav.getByRole("link", { name: "Dashboard" })).toHaveCount(0);
+  await expect(page.getByText("Not in an organisation yet")).toBeVisible();
+  await page.getByRole("link", { name: "Choose an organisation" }).click();
+  await expect(page).toHaveURL(/\/(select|create)-organization$/);
+});
+
 test("a new account that was invited sees the invitation, not the plans", async ({ page }) => {
   await signInToEntry(page, INVITED.email, "/select-organization");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Join Org Two");

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { QeetAI } from "@/modules/qeetai";
 import { scopedStorage } from "@/platform/auth/scoped-storage";
+import { useTenantId } from "@/platform/auth/session";
 import { useFeatureFlag } from "@/platform/feature-flags/provider";
 import { useGlobalShortcuts } from "@/platform/keyboard/shortcuts";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -29,8 +30,10 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
   const { t } = useTranslation("dashboard");
   const navigate = useNavigate();
   const access = useCapabilities();
-  const qeetaiEnabled = useFeatureFlag("qeetai");
-  const hasUnread = useHasUnreadNotifications();
+  // Without an organisation only My account is open: no panels, no Qeet AI.
+  const hasOrg = !!useTenantId();
+  const qeetaiEnabled = useFeatureFlag("qeetai") && hasOrg;
+  const hasUnread = useHasUnreadNotifications(hasOrg);
   const ownHeader = useMatches({
     select: (matches) => matches.some((m) => m.staticData?.pageHeader),
   });
@@ -51,21 +54,23 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
     canNavigate: access.canAccessPath,
   });
 
-  const drawers: AppShellDrawer[] = [
-    {
-      id: "notifications",
-      label: t("frame.notifications.title"),
-      icon: BellIcon,
-      badge: hasUnread,
-      content: <NotificationsPanel />,
-    },
-    {
-      id: "help",
-      label: t("frame.help.title"),
-      icon: CircleQuestionMarkIcon,
-      content: <HelpPanel onShortcuts={openShortcuts} />,
-    },
-  ];
+  const drawers: AppShellDrawer[] = !hasOrg
+    ? []
+    : [
+        {
+          id: "notifications",
+          label: t("frame.notifications.title"),
+          icon: BellIcon,
+          badge: hasUnread,
+          content: <NotificationsPanel />,
+        },
+        {
+          id: "help",
+          label: t("frame.help.title"),
+          icon: CircleQuestionMarkIcon,
+          content: <HelpPanel onShortcuts={openShortcuts} />,
+        },
+      ];
 
   return (
     <>

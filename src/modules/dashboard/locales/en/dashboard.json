@@ -591,6 +591,7 @@
       "errorTitle": "Notifications didn't load",
       "errorText": "Check your connection, then try again.",
       "tryAgain": "Try again"
-    }
+    },
+    "chooseOrganization": "Choose an organisation"
   }
 }

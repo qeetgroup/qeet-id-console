@@ -26,8 +26,13 @@ test("keeps two people's sessions apart under concurrent requests", async ({ bro
 
   for (let round = 0; round < 3; round++) {
     await Promise.all(pages.map((page) => page.goto("/account/profile")));
+    // Each tab's profile names its own person, in the email row.
     await Promise.all(
-      pages.map((page, i) => expect(page.locator("#email")).toHaveValue(people[i]?.email ?? "")),
+      pages.map((page, i) =>
+        expect(
+          page.getByRole("main").getByText(people[i]?.email ?? "", { exact: true }),
+        ).toBeVisible(),
+      ),
     );
   }
 

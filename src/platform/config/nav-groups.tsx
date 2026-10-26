@@ -6,6 +6,7 @@ import {
   LayoutDashboardIcon,
   Settings2Icon,
   ShieldCheckIcon,
+  UserRoundIcon,
   UsersIcon,
 } from "@qeetrix/icons";
 import type { ReactNode } from "react";
@@ -33,4 +34,6 @@ export const NAV_GROUP_DEFINITIONS: readonly NavGroupDefinition[] = [
   { id: "security", label: "common:navGroup.security", icon: <ShieldCheckIcon /> },
   { id: "developer", label: "common:navGroup.developer", icon: <CodeXmlIcon /> },
   { id: "settings", label: "common:navGroup.settings", icon: <Settings2Icon /> },
+  // The person's own pages, not the organisation's: shown flat, after Settings.
+  { id: "account", label: "common:navGroup.account", icon: <UserRoundIcon /> },
 ];

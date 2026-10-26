@@ -279,7 +279,8 @@
     "authorization": "Authorization",
     "security": "Security",
     "developer": "Developer",
-    "settings": "Settings"
+    "settings": "Settings",
+    "account": "My account"
   },
   "entryFrame": {
     "help": "Need help?",

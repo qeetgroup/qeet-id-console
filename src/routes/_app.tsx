@@ -1,10 +1,13 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 
 import { ConsoleFrame } from "@/modules/dashboard";
 import { getServerSession } from "@/platform/api/server-proxy";
 import { hasVerifiedEmail } from "@/platform/auth/email-verification";
-import { organizationSelectionBlocksPath } from "@/platform/auth/organization-selection";
+import {
+  isAccountPath,
+  organizationSelectionBlocksPath,
+} from "@/platform/auth/organization-selection";
 import { useIdleLogout } from "@/platform/auth/session";
 import { sessionStore } from "@/platform/auth/session-store";
 import { AccessBoundary } from "@/platform/security/access-boundary";
@@ -33,8 +36,10 @@ export const Route = createFileRoute("/_app")({
       throw redirect({ to: "/select-organization", replace: true });
     }
     // Without an organisation there is no console to show: the picker offers the person's
-    // invitations, or takes them on to create one.
-    if (!session.tenantId) throw redirect({ to: "/select-organization", replace: true });
+    // invitations, or takes them on to create one. My account stays open to them.
+    if (!session.tenantId && !isAccountPath(location.pathname)) {
+      throw redirect({ to: "/select-organization", replace: true });
+    }
     return { session };
   },
   component: AppLayout,
@@ -44,7 +49,9 @@ function AppLayout() {
   const { session } = Route.useRouteContext();
   useIdleLogout(IDLE_TIMEOUT_MS);
 
-  useEffect(() => {
+  // Before the pages' own effects send their first requests: hydrating later moves the session
+  // scope under them, and the client drops their answers as stale.
+  useLayoutEffect(() => {
     sessionStore.hydrate(session);
   }, [session]);
 

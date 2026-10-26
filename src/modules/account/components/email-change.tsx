@@ -1,177 +1,168 @@
-import { Button, Field, FieldDescription, FieldLabel, Input } from "@qeetrix/ui";
-import { useMemo, useState } from "react";
+import { Button, Field, TextField } from "@qeetrix/react";
+import { OTPInput } from "@qeetrix/react/experimental";
+import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
 
 import { useConfirmEmailChange, useStartEmailChange } from "@/modules/authentication";
-import { applyServerErrors, FormError, useAppForm } from "@/platform/forms/app-form";
+import { errorMessage } from "@/platform/errors/user-message";
 import {
+  SensitiveActionCancelled,
   settleSensitiveAction,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
+import { Failure, OpenDetail, Panel } from "./account-parts";
 
 const CODE_LENGTH = 6;
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * Renders the email address and the change that replaces it: a code goes to the new address,
- * and entering it confirms. Password resets go to this address, so sending the code needs a
- * step-up.
+ * Changing the sign-in email, opened under its row at full width: the new address first, then the
+ * code sent to it. Password resets go to this address, so sending the code needs a step-up. Until
+ * the code is confirmed, the old address still signs in.
  */
-export function EmailChange({ email, onChanged }: { email: string; onChanged: () => void }) {
+export function EmailChange({
+  current,
+  onClose,
+  onChanged,
+}: {
+  current: string;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
   const { t } = useTranslation("account");
-  const [changing, setChanging] = useState(false);
-  // The address a code was sent to; the confirm step shows once it is set.
-  const [sentTo, setSentTo] = useState<string | null>(null);
-  const close = () => {
-    setChanging(false);
-    setSentTo(null);
-  };
+  const runSensitive = useSensitiveAction();
+  const start = useStartEmailChange();
+  const confirm = useConfirmEmailChange();
+  const [address, setAddress] = useState("");
+  const [sentTo, setSentTo] = useState<string | null>(null); // the code step shows once it's set
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null); // the field's
+  const [failure, setFailure] = useState<string | null>(null); // the request's
+
+  function send(to: string) {
+    setError(null);
+    setFailure(null);
+    runSensitive({ actionLabel: t("profile.email.sendAction"), run: () => start.mutateAsync(to) })
+      .then((sent) => {
+        if (sent === undefined) return;
+        setSentTo(to);
+        setCode("");
+      })
+      .catch((err: unknown) => {
+        settleSensitiveAction(err);
+        if (!(err instanceof SensitiveActionCancelled)) setFailure(errorMessage(err));
+      });
+  }
+
+  function submitAddress(event: FormEvent) {
+    event.preventDefault();
+    const to = address.trim();
+    if (!EMAIL.test(to)) return setError(t("profile.email.invalid"));
+    if (to.toLowerCase() === current.toLowerCase()) return setError(t("profile.email.same"));
+    send(to);
+  }
+
+  function submitCode(event: FormEvent) {
+    event.preventDefault();
+    setFailure(null);
+    if (code.length < CODE_LENGTH) return setError(t("profile.email.codeRequired"));
+    setError(null);
+    confirm.mutate(code, {
+      onSuccess: onChanged,
+      onError: (err) => {
+        setCode("");
+        setFailure(errorMessage(err));
+      },
+    });
+  }
+
+  const cancel = (
+    <Button variant="ghost" size="lg" onClick={onClose}>
+      {t("cancel")}
+    </Button>
+  );
 
   return (
-    <Field className="border-t pt-6">
-      <FieldLabel htmlFor="email">{t("profile.email")}</FieldLabel>
-      {!changing ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <Input id="email" className="max-w-xs" value={email} disabled />
-          <Button type="button" variant="outline" size="sm" onClick={() => setChanging(true)}>
-            {t("profile.emailChange")}
-          </Button>
-        </div>
+    <OpenDetail label={t("profile.details.email")}>
+      {sentTo ? (
+        <Panel
+          title={t("profile.email.codeTitle")}
+          description={t("profile.email.codeDescription", { email: sentTo })}
+        >
+          <form className="account-panel-form" noValidate onSubmit={submitCode}>
+            <Field label={t("profile.email.code")} error={error ?? undefined} invalid={!!error}>
+              <OTPInput
+                length={CODE_LENGTH}
+                groups={[3, 3]}
+                autoComplete="one-time-code"
+                autoFocus
+                value={code}
+                onValueChange={(value) => {
+                  setCode(value);
+                  setError(null);
+                }}
+              />
+            </Field>
+            <span className="account-panel-links">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={start.isPending}
+                onClick={() => send(sentTo)}
+              >
+                {t("profile.email.resend")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSentTo(null);
+                  setError(null);
+                  setFailure(null);
+                }}
+              >
+                {t("profile.email.different")}
+              </Button>
+            </span>
+            {failure && <Failure>{failure}</Failure>}
+            <span className="account-panel-actions">
+              <Button size="lg" type="submit" loading={confirm.isPending}>
+                {t("profile.email.confirm")}
+              </Button>
+              {cancel}
+            </span>
+          </form>
+        </Panel>
       ) : (
-        <div className="grid max-w-sm gap-3 rounded-md border bg-muted/30 p-3">
-          <NewEmailForm onSent={setSentTo} onCancel={close} resend={sentTo !== null} />
-          {sentTo && (
-            <ConfirmCodeForm
-              key={sentTo}
-              onConfirmed={() => {
-                close();
-                onChanged();
+        <Panel
+          title={t("profile.email.title")}
+          description={t("profile.email.description", { email: current })}
+        >
+          <form className="account-panel-form" noValidate onSubmit={submitAddress}>
+            <TextField
+              label={t("profile.email.newAddress")}
+              type="email"
+              autoComplete="email"
+              placeholder={t("profile.email.placeholder")}
+              autoFocus
+              value={address}
+              error={error ?? undefined}
+              invalid={!!error}
+              onChange={(event) => {
+                setAddress(event.target.value);
+                setError(null);
               }}
             />
-          )}
-        </div>
+            {failure && <Failure>{failure}</Failure>}
+            <span className="account-panel-actions">
+              <Button size="lg" type="submit" loading={start.isPending}>
+                {t("profile.email.send")}
+              </Button>
+              {cancel}
+            </span>
+          </form>
+        </Panel>
       )}
-      <FieldDescription>{t("profile.emailHelp")}</FieldDescription>
-    </Field>
-  );
-}
-
-function NewEmailForm({
-  onSent,
-  onCancel,
-  resend,
-}: {
-  onSent: (email: string) => void;
-  onCancel: () => void;
-  resend: boolean;
-}) {
-  const { t } = useTranslation(["account", "common"]);
-  const runSensitive = useSensitiveAction();
-  const startM = useStartEmailChange();
-  const schema = useMemo(() => z.object({ email: z.email(t("profile.validation.email")) }), [t]);
-  const form = useAppForm({
-    defaultValues: { email: "" },
-    validators: { onSubmit: schema },
-    onSubmit: async ({ value, formApi }) => {
-      const email = value.email.trim();
-      await runSensitive({
-        actionLabel: t("profile.emailChangeAction"),
-        run: () => startM.mutateAsync(email),
-      })
-        .then((sent) => sent !== undefined && onSent(email))
-        .catch((err: unknown) => {
-          applyServerErrors(formApi, err);
-          settleSensitiveAction(err);
-        });
-    },
-  });
-
-  return (
-    <form
-      className="grid gap-2"
-      noValidate
-      onSubmit={(e) => {
-        e.preventDefault();
-        void form.handleSubmit();
-      }}
-    >
-      <form.AppField name="email">
-        {(field) => (
-          <field.TextField
-            label={t("profile.emailNew")}
-            type="email"
-            autoComplete="email"
-            placeholder={t("profile.emailNewPlaceholder")}
-            required
-          />
-        )}
-      </form.AppField>
-      <FormError error={startM.error} />
-      <div className="flex items-center gap-2">
-        <form.AppForm>
-          <form.SubmitButton variant="outline">
-            {resend ? t("profile.emailResend") : t("profile.emailSend")}
-          </form.SubmitButton>
-        </form.AppForm>
-        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-          {t("common:actions.cancel")}
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-function ConfirmCodeForm({ onConfirmed }: { onConfirmed: () => void }) {
-  const { t } = useTranslation("account");
-  const confirmM = useConfirmEmailChange();
-  const schema = useMemo(
-    () =>
-      z.object({
-        code: z
-          .string()
-          .trim()
-          .length(CODE_LENGTH, t("profile.validation.code", { count: CODE_LENGTH })),
-      }),
-    [t],
-  );
-  const form = useAppForm({
-    defaultValues: { code: "" },
-    validators: { onSubmit: schema },
-    onSubmit: async ({ value, formApi }) => {
-      await confirmM
-        .mutateAsync(value.code.trim())
-        .then(onConfirmed)
-        .catch((err: unknown) => applyServerErrors(formApi, err));
-    },
-  });
-
-  return (
-    <form
-      className="grid gap-2"
-      noValidate
-      onSubmit={(e) => {
-        e.preventDefault();
-        void form.handleSubmit();
-      }}
-    >
-      <div className="flex items-end gap-2">
-        <div className="max-w-40">
-          <form.AppField name="code">
-            {(field) => (
-              <field.TextField
-                label={t("profile.emailCode")}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                required
-              />
-            )}
-          </form.AppField>
-        </div>
-        <form.AppForm>
-          <form.SubmitButton>{t("profile.emailConfirm")}</form.SubmitButton>
-        </form.AppForm>
-      </div>
-      <FormError error={confirmM.error} />
-    </form>
+    </OpenDetail>
   );
 }

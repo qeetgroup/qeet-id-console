@@ -64,7 +64,22 @@ const CONSOLE_PAGES: Target[] = [
   {
     name: "account profile",
     path: "/account/profile",
-    ready: (page) => page.getByRole("textbox", { name: "Display name" }),
+    ready: (page) => page.getByText("Member of", { exact: false }),
+  },
+  {
+    name: "account security",
+    path: "/account/security",
+    ready: (page) => page.getByText("MacBook Pro (Touch ID)"),
+  },
+  {
+    name: "account sessions",
+    path: "/account/sessions",
+    ready: (page) => page.getByText("Safari on iPhone"),
+  },
+  {
+    name: "account data",
+    path: "/account/data",
+    ready: (page) => page.getByRole("heading", { name: "Delete your account" }),
   },
 ];
 
