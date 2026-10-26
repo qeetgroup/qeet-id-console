@@ -1,17 +1,7 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  CopyableSecret,
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-} from "@qeetrix/ui";
-import { LoaderCircleIcon } from "@qeetrix/icons";
-import { useEffect, useRef, useState } from "react";
+import { ArrowRightIcon, DownloadIcon, QrCodeIcon } from "@qeetrix/icons";
+import { Button, Checkbox, Field, Heading, Text } from "@qeetrix/react";
+import { Alert, CopyButton, Form, OTPInput } from "@qeetrix/react/experimental";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
@@ -19,13 +9,22 @@ import { errorMessage } from "@/platform/errors/user-message";
 
 import { type MfaEnrollment, startMfaEnrollment } from "../api/mfa-sign-in";
 import type { MfaProof } from "../api/flows";
-import { LazyQRCode } from "./lazy-qr-code";
-import { RecoveryCodeList } from "./recovery-code-list";
+
+const CODE_LENGTH = 6;
+const FILE_NAME = "qeet-id-recovery-codes.txt";
+
+// The QR encoder loads only once setup starts.
+const EntryQrCode = lazy(() => import("./entry-qr-code").then((m) => ({ default: m.EntryQrCode })));
+
+/** A setup key in groups of four, as authenticator apps print it. */
+function groupKey(secret: string): string {
+  return secret.replace(/\s+/g, "").replace(/(.{4})(?=.)/g, "$1 ");
+}
 
 /**
- * Renders the sign-in step for an account that must have a second factor and holds none: set up
- * an authenticator app, then confirm it with a code to complete the sign-in. Until `dueAt`, the
- * end of the organisation's grace period, the setup can be put off.
+ * Renders the sign-in step for an account that must have a second factor and holds none: what to
+ * do, then the QR code beside its setup key, then a code from the app to complete the sign-in.
+ * Until `dueAt`, the end of the organisation's grace period, the setup can be put off.
  */
 export function MfaEnrollmentStep({
   mfaToken,
@@ -45,12 +44,16 @@ export function MfaEnrollmentStep({
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const codeRef = useRef<HTMLInputElement>(null);
+  const codeRef = useRef<HTMLDivElement>(null);
 
   // Ready for the code once the app is set up.
   useEffect(() => {
-    if (app) codeRef.current?.focus();
+    if (app) codeRef.current?.querySelector("input")?.focus();
   }, [app]);
+  // A refused code clears the slots, so the next attempt starts empty.
+  useEffect(() => {
+    if (submitError) setCode("");
+  }, [submitError]);
 
   async function start() {
     setStartError(null);
@@ -68,110 +71,131 @@ export function MfaEnrollmentStep({
     ? new Intl.DateTimeFormat(formatLocale(), { dateStyle: "long" }).format(new Date(dueAt))
     : null;
   const busy = isLoading || starting;
-  const shownError = startError ?? submitError;
+  const skip = due && (
+    <Button
+      variant="ghost"
+      size="lg"
+      fullWidth
+      disabled={busy}
+      onClick={() => onSubmit({ skip: true })}
+    >
+      {t("signIn.enroll.skipBtn", { date: due })}
+    </Button>
+  );
+
+  if (!app) {
+    return (
+      <>
+        <div className="entry-heading">
+          <Heading level={1} size="display-sm">
+            {t("signIn.enroll.title")}
+          </Heading>
+          <Text tone="subtle" size="lg">
+            {due ? t("signIn.enroll.subtitleDue", { date: due }) : t("signIn.enroll.subtitle")}
+          </Text>
+        </div>
+        {(startError ?? submitError) && (
+          <Alert tone="danger" title={t("signIn.enroll.startFailedTitle")} announce="urgent">
+            {startError ?? submitError}
+          </Alert>
+        )}
+        <ol className="entry-howto">
+          <li>
+            <strong>{t("signIn.enroll.installTitle")}</strong>
+            <span>{t("signIn.enroll.installText")}</span>
+          </li>
+          <li>
+            <strong>{t("signIn.enroll.scanStepTitle")}</strong>
+            <span>{t("signIn.enroll.scanStepText")}</span>
+          </li>
+          <li>
+            <strong>{t("signIn.enroll.codeStepTitle")}</strong>
+            <span>{t("signIn.enroll.codeStepText")}</span>
+          </li>
+        </ol>
+        <Button
+          size="lg"
+          fullWidth
+          icon={QrCodeIcon}
+          loading={starting}
+          disabled={busy}
+          onClick={() => void start()}
+        >
+          {t("signIn.enroll.startBtn")}
+        </Button>
+        {skip}
+      </>
+    );
+  }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <Card>
-        <CardContent className="p-6 md:p-8">
-          <form
-            aria-busy={busy}
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (busy || !app) return;
-              onSubmit({ code: code.trim() });
-            }}
-          >
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">{t("signIn.enroll.title")}</h1>
-                <p className="text-balance text-muted-foreground">
-                  {due
-                    ? t("signIn.enroll.subtitleDue", { date: due })
-                    : t("signIn.enroll.subtitle")}
-                </p>
-              </div>
-
-              {app ? (
-                <>
-                  <Field>
-                    <FieldLabel id="enroll-scan">{t("signIn.enroll.scanLabel")}</FieldLabel>
-                    <div className="flex justify-center">
-                      <LazyQRCode
-                        value={app.provisioning_url}
-                        size={200}
-                        aria-labelledby="enroll-scan"
-                        aria-describedby="enroll-key"
-                      />
-                    </div>
-                  </Field>
-                  <Field>
-                    <FieldLabel>{t("signIn.enroll.keyLabel")}</FieldLabel>
-                    <div id="enroll-key">
-                      <CopyableSecret value={app.secret} size="sm" />
-                    </div>
-                    <FieldDescription>{t("signIn.enroll.keyHint")}</FieldDescription>
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="enroll-code">{t("signIn.enroll.codeLabel")}</FieldLabel>
-                    <Input
-                      ref={codeRef}
-                      id="enroll-code"
-                      name="code"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                    />
-                  </Field>
-                </>
-              ) : (
-                <Field>
-                  <Button type="button" disabled={busy} onClick={start}>
-                    {starting && <LoaderCircleIcon className="animate-spin" />}
-                    {t("signIn.enroll.startBtn")}
-                  </Button>
-                </Field>
-              )}
-
-              {shownError && (
-                <Field>
-                  <FieldError>{shownError}</FieldError>
-                </Field>
-              )}
-
-              {app && (
-                <Field>
-                  <Button type="submit" disabled={busy || code.trim().length === 0}>
-                    {isLoading && <LoaderCircleIcon className="animate-spin" />}
-                    {isLoading ? t("signIn.mfa.verifyingBtn") : t("signIn.enroll.confirmBtn")}
-                  </Button>
-                </Field>
-              )}
-
-              {due && (
-                <Field>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={busy}
-                    onClick={() => onSubmit({ skip: true })}
-                  >
-                    {t("signIn.enroll.skipBtn")}
-                  </Button>
-                </Field>
-              )}
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("signIn.enroll.scanTitle")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {t("signIn.enroll.scanLede")}
+        </Text>
+      </div>
+      {submitError && (
+        <Alert tone="danger" title={t("signIn.mfa.failedTitle")} announce="urgent">
+          {submitError}
+        </Alert>
+      )}
+      <div className="entry-qr">
+        <Suspense fallback={<div className="entry-qr-placeholder" />}>
+          <EntryQrCode value={app.provisioning_url} label={t("signIn.enroll.qrLabel")} />
+        </Suspense>
+        <div className="entry-qr-key">
+          {t("signIn.enroll.keyHint")}
+          <code>{groupKey(app.secret)}</code>
+          <CopyButton value={app.secret} label={t("signIn.enroll.copyKeyLabel")}>
+            {t("signIn.enroll.copyKey")}
+          </CopyButton>
+        </div>
+      </div>
+      <Form
+        aria-label={t("signIn.enroll.scanTitle")}
+        className="entry-form"
+        summary={false}
+        aria-busy={busy}
+        onFormSubmit={() => {
+          if (busy || code.length < CODE_LENGTH) return;
+          onSubmit({ code });
+        }}
+      >
+        <div ref={codeRef}>
+          <Field label={t("signIn.enroll.codeLabel")} name="code" invalid={Boolean(submitError)}>
+            <OTPInput
+              length={CODE_LENGTH}
+              groups={[3, 3]}
+              size="lg"
+              autoComplete="one-time-code"
+              value={code}
+              onValueChange={setCode}
+            />
+          </Field>
+        </div>
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          icon={ArrowRightIcon}
+          loading={isLoading}
+          disabled={busy || code.length < CODE_LENGTH}
+        >
+          {isLoading ? t("signIn.mfa.verifyingBtn") : t("signIn.enroll.confirmBtn")}
+        </Button>
+      </Form>
+      {skip}
+    </>
   );
 }
 
 /**
- * Renders the recovery codes minted when a sign-in set up an authenticator app, shown once before
- * the person continues into the console.
+ * Renders the recovery codes minted when a sign-in set up an authenticator app, shown once: copy
+ * or download them, and say they're saved before going on into the console.
  */
 export function RecoveryCodesStep({
   codes,
@@ -181,32 +205,53 @@ export function RecoveryCodesStep({
   onContinue: () => void;
 }) {
   const { t } = useTranslation("auth-flow");
+  const [saved, setSaved] = useState(false);
+
+  function download() {
+    const url = URL.createObjectURL(new Blob([`${codes.join("\n")}\n`], { type: "text/plain" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = FILE_NAME;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <Card>
-        <CardContent className="p-6 md:p-8">
-          <FieldGroup>
-            <div className="flex flex-col items-center gap-2 text-center">
-              <h1 className="text-2xl font-bold">{t("signIn.enroll.codesTitle")}</h1>
-              <p className="text-balance text-muted-foreground">
-                {t("signIn.enroll.codesSubtitle")}
-              </p>
-            </div>
-            <RecoveryCodeList
-              codes={codes}
-              copyLabel={t("signIn.enroll.copyBtn")}
-              copiedLabel={t("signIn.enroll.copiedBtn")}
-              downloadLabel={t("signIn.enroll.downloadBtn")}
-            />
-            <Field>
-              <Button type="button" onClick={onContinue}>
-                {t("signIn.enroll.continueBtn")}
-              </Button>
-            </Field>
-          </FieldGroup>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("signIn.enroll.codesTitle")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {t("signIn.enroll.codesSubtitle")}
+        </Text>
+      </div>
+      <div className="entry-codes">
+        <div className="entry-codes-head">
+          {t("signIn.enroll.codesCount", { count: codes.length })}
+          <div>
+            <CopyButton size="sm" value={codes.join("\n")} label={t("signIn.enroll.copyAllLabel")}>
+              {t("signIn.enroll.copyAll")}
+            </CopyButton>
+            <Button variant="ghost" tone="neutral" size="sm" icon={DownloadIcon} onClick={download}>
+              {t("signIn.enroll.downloadBtn")}
+            </Button>
+          </div>
+        </div>
+        <ol>
+          {codes.map((code) => (
+            <li key={code}>{code}</li>
+          ))}
+        </ol>
+      </div>
+      <Checkbox
+        label={t("signIn.enroll.savedCheck")}
+        checked={saved}
+        onCheckedChange={(checked) => setSaved(checked === true)}
+      />
+      <Button size="lg" fullWidth icon={ArrowRightIcon} disabled={!saved} onClick={onContinue}>
+        {t("signIn.enroll.continueBtn")}
+      </Button>
+    </>
   );
 }

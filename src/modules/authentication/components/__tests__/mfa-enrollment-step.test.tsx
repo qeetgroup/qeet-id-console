@@ -20,19 +20,28 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
+/** Pastes a code into the first of the six slots, as from the app. */
+function pasteCode(code: string) {
+  const first = screen.getAllByRole("textbox")[0] as HTMLInputElement;
+  fireEvent.paste(first, { clipboardData: { getData: () => code } });
+}
+
 describe("sign-in authenticator app setup", () => {
   it("sets up the app for the challenge and completes it with a code", async () => {
     const onSubmit = vi.fn();
     render(<MfaEnrollmentStep mfaToken="tok" isLoading={false} onSubmit={onSubmit} />);
-    expect(screen.queryByRole("button", { name: "Skip for now" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Skip until/ })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Set up an authenticator app" }));
-    await waitFor(() => expect(screen.getByText("JBSWY3DPEHPK3PXP")).toBeTruthy());
+    // The setup key reads in groups of four, as authenticator apps print it.
+    await waitFor(() => expect(screen.getByText("JBSW Y3DP EHPK 3PXP")).toBeTruthy());
     expect(startMfaEnrollment).toHaveBeenCalledWith("tok");
 
-    fireEvent.change(screen.getByLabelText("Code from the app"), { target: { value: " 123456 " } });
-    fireEvent.click(screen.getByRole("button", { name: "Confirm and sign in" }));
-    expect(onSubmit).toHaveBeenCalledWith({ code: "123456" });
+    pasteCode("123456");
+    const confirm = screen.getByRole("button", { name: "Confirm and sign in" });
+    await waitFor(() => expect(confirm.matches(":disabled")).toBe(false));
+    fireEvent.click(confirm);
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ code: "123456" }));
   });
 
   it("offers to skip only while the grace period runs", () => {
@@ -45,8 +54,8 @@ describe("sign-in authenticator app setup", () => {
         onSubmit={onSubmit}
       />,
     );
-    expect(screen.getByText(/requires a second step when you sign in from/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Skip for now" }));
+    expect(screen.getByText(/asks for a second step when you sign in, from/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Skip until/ }));
     expect(onSubmit).toHaveBeenCalledWith({ skip: true });
   });
 
@@ -55,20 +64,27 @@ describe("sign-in authenticator app setup", () => {
     render(<MfaEnrollmentStep mfaToken="tok" isLoading={false} onSubmit={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "Set up an authenticator app" }));
     await waitFor(() => expect(screen.getByText(errorMessage(new Error("boom")))).toBeTruthy());
-    expect(screen.queryByLabelText("Code from the app")).toBeNull();
+    expect(screen.queryByText("Code from the app")).toBeNull();
     expect(
-      screen.getByRole("button", { name: "Set up an authenticator app" }).hasAttribute("disabled"),
+      screen.getByRole("button", { name: "Set up an authenticator app" }).matches(":disabled"),
     ).toBe(false);
   });
 });
 
 describe("recovery codes after setup", () => {
-  it("lists the codes once and continues", () => {
+  it("lists the codes once and continues only once they're saved", () => {
     const onContinue = vi.fn();
     render(<RecoveryCodesStep codes={["aaaa-bbbb", "cccc-dddd"]} onContinue={onContinue} />);
     expect(screen.getByText("aaaa-bbbb")).toBeTruthy();
     expect(screen.getByText("cccc-dddd")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(screen.getByText("2 recovery codes")).toBeTruthy();
+    const next = screen.getByRole("button", { name: "Continue to the console" });
+    fireEvent.click(next);
+    expect(onContinue).not.toHaveBeenCalled();
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "I’ve saved these codes somewhere safe" }),
+    );
+    fireEvent.click(next);
     expect(onContinue).toHaveBeenCalled();
   });
 });

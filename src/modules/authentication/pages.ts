@@ -15,7 +15,6 @@ export { PasswordlessPage } from "./components/passwordless-page";
 export { SamlConnectionsPage } from "./components/saml-connections-page";
 export { SamlProvidersPage } from "./components/saml-providers-page";
 export { ScimPage } from "./components/scim-page";
-export { SelectOrganizationPage } from "./components/select-organization-page";
 export { SocialProvidersPage } from "./components/social-providers-page";
 export { SsoCallbackPage } from "./components/sso-callback-page";
 export { TokensPage } from "./components/oauth-tokens-page";
