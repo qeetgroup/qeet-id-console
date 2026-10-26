@@ -80,6 +80,21 @@ describe("check-bundle-size", () => {
     expect(routeChain(routes, "__root__")).toEqual(["__root__"]);
   });
 
+  it("measures a page under a layout the manifest leaves out from the root", () => {
+    // A pathless layout with no client code of its own has no entry, so nothing names its pages.
+    const withGuard: Record<string, ManifestRoute> = {
+      __root__: { children: ["/_auth"], preloads: ["/assets/entry.js"] },
+      "/_auth/magic": { preloads: ["/assets/magic.js"] },
+    };
+    expect(routeChain(withGuard, "/_auth/magic")).toEqual(["__root__", "/_auth/magic"]);
+    const { routes: own } = measure(
+      withGuard,
+      (url) => (url === "/assets/magic.js" ? ["/assets/ui.js"] : []),
+      (url) => gzip[url] ?? 1_500,
+    );
+    expect(own["/_auth/magic"]).toBe(1_500 + 20_000);
+  });
+
   it("measures the shell as the root and /_app with all they import", () => {
     expect(measured.shell).toBe(50_000 + 60_000 + 10_000 + 20_000);
   });

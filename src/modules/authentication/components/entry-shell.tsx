@@ -1,6 +1,7 @@
 import { CheckIcon, MonitorIcon, MoonIcon, QeetLogo, SunIcon } from "@qeetrix/icons";
 import { Google, Microsoft } from "@thesvg/react";
 import {
+  Avatar,
   IconButton,
   Link,
   Menu,
@@ -8,6 +9,7 @@ import {
   MenuItem,
   MenuTrigger,
   SkipLink,
+  Text,
 } from "@qeetrix/react";
 import { useTheme } from "@qeetrix/ui";
 import { Link as RouterLink } from "@tanstack/react-router";
@@ -15,8 +17,10 @@ import { lazy, type ReactNode, Suspense } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { OFFERED_LANGUAGES } from "@/i18n";
+import type { Me } from "@/platform/auth/session";
 import { DOCS_URL, PRIVACY_URL, TERMS_URL, SECURITY_URL } from "@/platform/config/site-urls";
 import { useIsDark } from "@/platform/theme/use-is-dark";
+import { organizationImage } from "../organization-selection-model";
 
 // With only English offered there is nothing to pick, so the picker and its Select load only once
 // a second language is.
@@ -123,6 +127,36 @@ export function EntryInboxLinks() {
         {t("entry.inbox.outlook")}
       </a>
     </nav>
+  );
+}
+
+/** Who is signed in, with the way out: above a choice made as that account. */
+export function EntryAccount({
+  user,
+  disabled,
+  onSignOut,
+}: {
+  user: Pick<Me, "email" | "display_name" | "avatar_url">;
+  disabled?: boolean;
+  onSignOut: () => void;
+}) {
+  const { t } = useTranslation("auth-flow");
+  const name = user.display_name?.trim() || user.email;
+  return (
+    <div className="entry-account">
+      <Avatar name={name} src={organizationImage(user.avatar_url)} size="md" decorative />
+      <span className="entry-who">
+        <Text weight="medium">{name}</Text>
+        {user.display_name?.trim() && (
+          <Text size="sm" tone="subtle">
+            {user.email}
+          </Text>
+        )}
+      </span>
+      <button type="button" className="entry-text-button" disabled={disabled} onClick={onSignOut}>
+        {t("entry.signOut")}
+      </button>
+    </div>
   );
 }
 

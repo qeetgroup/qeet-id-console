@@ -16,6 +16,17 @@ export const ERROR_CODES = {
   RESET_LINK_INVALID: "recovery.reset_link_invalid",
   RECOVERY_LINK_USED: "recovery.link_used",
   RECOVERY_LINK_EXPIRED: "recovery.link_expired",
+  // invitation links: a dead one says why; an existing account signs in to accept
+  INVITE_LINK_INVALID: "invite.link_invalid",
+  INVITE_INVALID: "invite.invalid",
+  INVITE_EXPIRED: "invite.expired",
+  INVITE_ACCOUNT_EXISTS: "invite.account_exists",
+  INVITE_EMAIL_MISMATCH: "invite.email_mismatch",
+  INVITE_EMAIL_NOT_VERIFIED: "invite.email_not_verified",
+  // SAML single sign-on: the one-time code from /saml/acs, exchanged on /sso/callback
+  SAML_LOGIN_CODE_INVALID: "saml.login_code_invalid",
+  SAML_LOGIN_CODE_USED: "saml.login_code_used",
+  SAML_LOGIN_CODE_EXPIRED: "saml.login_code_expired",
   // sign-in credentials and account state: several are 401s, whose `auth` fallback ("Please
   // sign in again") is wrong for each of them
   INVALID_CREDENTIALS: "auth.invalid_credentials",

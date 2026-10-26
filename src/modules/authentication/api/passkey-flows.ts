@@ -89,7 +89,7 @@ export function useAcceptInviteWithPasskey() {
   return useMutation({
     mutationFn: acceptInviteWithPasskey,
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "authentication:toast.invitationAccepted" },
+    meta: { successMessage: "authentication:toast.invitationAccepted", silentError: true },
   });
 }
 

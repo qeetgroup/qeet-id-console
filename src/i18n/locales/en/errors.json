@@ -51,7 +51,16 @@
     "webhookUrlRequired": "Enter a URL for the webhook.",
     "webhookEventsRequired": "Choose at least one event for the webhook.",
     "webhookEventUnknown": "One of the chosen events can't be subscribed to any more. Reload the page and choose again.",
-    "oidcGrantTypeUnsupported": "An application can't use one of these grant types. For client_credentials, a machine caller signs in as a service principal instead."
+    "oidcGrantTypeUnsupported": "An application can't use one of these grant types. For client_credentials, a machine caller signs in as a service principal instead.",
+    "inviteLinkInvalid": "This invitation link doesn’t work. Open it again from the email, or ask for a new invitation.",
+    "inviteInvalid": "This invitation is no longer valid. It may have been used or withdrawn.",
+    "inviteExpired": "This invitation has expired. Ask for a new one.",
+    "inviteAccountExists": "You already have a Qeet ID. Sign in, then open the invitation link again.",
+    "inviteEmailMismatch": "This invitation was sent to a different email address.",
+    "inviteEmailNotVerified": "Verify your email address to accept invitations.",
+    "samlLoginCodeInvalid": "That sign-in code is invalid. Please sign in again.",
+    "samlLoginCodeUsed": "That sign-in code has already been used. Please sign in again.",
+    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again."
   },
   "kind": {
     "auth": "Please sign in again to continue.",

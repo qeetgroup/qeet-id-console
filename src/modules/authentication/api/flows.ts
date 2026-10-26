@@ -139,7 +139,8 @@ export function useConsumeSamlCode() {
         anonymous: true,
       }),
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "authentication:toast.signedInSuccessfully" },
+    // /sso/callback shows the failure itself, so the global error toast is off.
+    meta: { successMessage: "authentication:toast.signedInSuccessfully", silentError: true },
   });
 }
 

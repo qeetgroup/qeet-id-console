@@ -153,5 +153,15 @@ export function useEntrySteps() {
         text: t("entry.steps.recovery.passkeyText"),
       },
     ],
+    invite: [
+      { title: t("entry.steps.invite.openTitle"), text: t("entry.steps.invite.openText") },
+      { title: t("entry.steps.invite.chooseTitle"), text: t("entry.steps.invite.chooseText") },
+      { title: t("entry.steps.invite.joinTitle"), text: t("entry.steps.invite.joinText") },
+    ],
+    sso: [
+      { title: t("entry.steps.sso.providerTitle"), text: t("entry.steps.sso.providerText") },
+      { title: t("entry.steps.sso.returnTitle"), text: t("entry.steps.sso.returnText") },
+      { title: t("entry.steps.sso.openTitle"), text: t("entry.steps.sso.openText") },
+    ],
   } satisfies Record<string, EntryStep[]>;
 }

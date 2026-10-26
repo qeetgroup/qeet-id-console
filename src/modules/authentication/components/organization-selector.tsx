@@ -23,6 +23,7 @@ import {
   mostRecentOrganization,
   organizationImage,
 } from "../organization-selection-model";
+import { EntryAccount } from "./entry-shell";
 
 // The roles and plans with their own copy; any other shows as the server names it.
 const KNOWN_ROLES = ["owner", "admin", "member"] as const;
@@ -129,7 +130,6 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
   );
   const visible = collapsed ? matches.slice(0, SHORT_LIST) : matches;
   const disabled = opening !== null || !!props.signingOut;
-  const accountName = props.user?.display_name?.trim() || props.user?.email || "";
 
   const roleLabel = (name: string) => {
     const role = name.toLowerCase();
@@ -183,30 +183,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
       </div>
 
       {props.user && (
-        <div className="entry-account">
-          <Avatar
-            name={accountName}
-            src={organizationImage(props.user.avatar_url)}
-            size="md"
-            decorative
-          />
-          <span className="entry-who">
-            <Text weight="medium">{accountName}</Text>
-            {props.user.display_name?.trim() && (
-              <Text size="sm" tone="subtle">
-                {props.user.email}
-              </Text>
-            )}
-          </span>
-          <button
-            type="button"
-            className="entry-text-button"
-            disabled={disabled}
-            onClick={props.onSignOut}
-          >
-            {t("organizationSelection.signOut")}
-          </button>
-        </div>
+        <EntryAccount user={props.user} disabled={disabled} onSignOut={props.onSignOut} />
       )}
 
       {props.loading ? (
