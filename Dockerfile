@@ -17,7 +17,7 @@ RUN for attempt in 1 2 3; do \
 
 # Built once on the build platform: .output is plain JavaScript, so it runs on any
 # architecture. The guard fails the build if a native addon appears.
-FROM --platform=$BUILDPLATFORM node:26.12.0-slim@sha256:e556a144463cc8dc53afe8de6d2fa0db5c132fd39ffa232c17641bd40df2bf11 AS build
+FROM --platform=$BUILDPLATFORM node:26.12.1-slim@sha256:36793bcbb160a6a16cede1e62b93f84e26b78a972a8a4c0b879c1c12f22761ec AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -27,7 +27,7 @@ RUN NITRO_PRESET=node-server ./node_modules/.bin/vite build \
       find .output -name '*.node' >&2; exit 1; \
     fi
 
-FROM node:26.12.0-slim@sha256:e556a144463cc8dc53afe8de6d2fa0db5c132fd39ffa232c17641bd40df2bf11
+FROM node:26.12.1-slim@sha256:36793bcbb160a6a16cede1e62b93f84e26b78a972a8a4c0b879c1c12f22761ec
 ARG VERSION=""
 ARG REVISION=""
 ENV NODE_ENV=production \
