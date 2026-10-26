@@ -25,6 +25,18 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   // Creating an organization needs a verified email. 403 -> `authz`, whose fallback sends the
   // person hunting for a missing permission.
   [ERROR_CODES.VERIFY_EMAIL_NOT_VERIFIED]: "errors:code.verifyEmailNotVerified",
+  // A dead invitation link is a 400 or 410 -> `validation` or `api`, whose fallbacks read like a
+  // fault in a form; each says why and what to do.
+  [ERROR_CODES.INVITE_LINK_INVALID]: "errors:code.inviteLinkInvalid",
+  [ERROR_CODES.INVITE_INVALID]: "errors:code.inviteInvalid",
+  [ERROR_CODES.INVITE_EXPIRED]: "errors:code.inviteExpired",
+  [ERROR_CODES.INVITE_ACCOUNT_EXISTS]: "errors:code.inviteAccountExists",
+  [ERROR_CODES.INVITE_EMAIL_MISMATCH]: "errors:code.inviteEmailMismatch",
+  [ERROR_CODES.INVITE_EMAIL_NOT_VERIFIED]: "errors:code.inviteEmailNotVerified",
+  // A spent or stale SSO code: only signing in again gets a new one.
+  [ERROR_CODES.SAML_LOGIN_CODE_INVALID]: "errors:code.samlLoginCodeInvalid",
+  [ERROR_CODES.SAML_LOGIN_CODE_USED]: "errors:code.samlLoginCodeUsed",
+  [ERROR_CODES.SAML_LOGIN_CODE_EXPIRED]: "errors:code.samlLoginCodeExpired",
   // 429 -> `api`; resending a code is throttled hard, so repeated "Resend code" clicks reach it.
   [ERROR_CODES.TOO_MANY_REQUESTS]: "errors:code.tooManyRequests",
   [ERROR_CODES.HTTP_429]: "errors:code.tooManyRequests",

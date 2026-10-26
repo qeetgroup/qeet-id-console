@@ -127,6 +127,7 @@ describe("session response policy", () => {
       "/v1/auth/refresh",
       "/v1/invites/accept",
       "/v1/me/invites/example/accept",
+      "/v1/me/invites/accept",
       "/v1/admin/impersonate",
     ]) {
       expect(isSignInRequest(path, "POST")).toBe(false);
@@ -139,6 +140,7 @@ describe("session response policy", () => {
     expect(isSessionIssuingRequest("/v1/passkeys/login/finish", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/signup/passkey/finish", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/me/invites/invite-1/accept", "POST")).toBe(true);
+    expect(isSessionIssuingRequest("/v1/me/invites/accept", "POST")).toBe(true);
     expect(isSessionIssuingRequest("/v1/tenants", "POST")).toBe(true);
 
     expect(isSessionIssuingRequest("/v1/oauth/token-code", "POST")).toBe(false);

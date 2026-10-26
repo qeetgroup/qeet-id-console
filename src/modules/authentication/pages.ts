@@ -1,7 +1,5 @@
 // The authentication pages, for routes only; see src/modules/users/pages.ts. The entry pages,
 // on @qeetrix/react, are in entry-pages.ts.
-export { AcceptInvitePage } from "./components/accept-invite-page";
-export { AuthShell } from "./components/auth-shell";
 export { ConnectionsPage } from "./components/connections-page";
 export { ConsentGrantsPage } from "./components/consent-grants-page";
 export { LdapPage } from "./components/ldap-page";
@@ -16,6 +14,5 @@ export { SamlConnectionsPage } from "./components/saml-connections-page";
 export { SamlProvidersPage } from "./components/saml-providers-page";
 export { ScimPage } from "./components/scim-page";
 export { SocialProvidersPage } from "./components/social-providers-page";
-export { SsoCallbackPage } from "./components/sso-callback-page";
 export { TokensPage } from "./components/oauth-tokens-page";
 export { TotpPage } from "./components/totp-page";

@@ -25,9 +25,26 @@ export function useAcceptInvite() {
       }),
 
     onSuccess: () => navigate({ to: "/" }),
-    meta: { successMessage: "authentication:toast.invitationAccepted" },
+    // The invitation page shows the failure itself, so the global error toast is off.
+    meta: { successMessage: "authentication:toast.invitationAccepted", silentError: true },
   });
 }
+
+/**
+ * Accepts an invitation link as the signed-in account: the server joins it to the invited
+ * organization and returns a session there, then the console reloads into it.
+ */
+export function useAcceptInviteAsMe() {
+  return useMutation({
+    mutationFn: (token: string) =>
+      api<SessionResponse>("/v1/me/invites/accept", { method: "POST", body: { token } }),
+    onSuccess: () => {
+      if (typeof window !== "undefined") window.location.assign("/");
+    },
+    meta: { successMessage: "authentication:toast.invitationAccepted", silentError: true },
+  });
+}
+
 /** What an invitation link names, before the invitee chooses how to accept. */
 export interface InvitePreview {
   organization: { name: string; slug: string };

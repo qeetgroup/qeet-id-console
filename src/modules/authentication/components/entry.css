@@ -258,6 +258,14 @@
   text-align: center;
 }
 
+/* A wait that reads as a line under the heading: a spinner and what's happening. */
+.entry-status {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+}
+
 .entry-foot {
   display: flex;
   flex-wrap: wrap;

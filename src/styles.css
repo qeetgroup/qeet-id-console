@@ -5,7 +5,6 @@
  */
 @import "@qeetrix/tokens/tokens.css";
 @import "@qeetrix/react/styles.css" layer(components);
-@import "./modules/authentication/components/auth-page.css";
 @import "./modules/authentication/components/entry.css";
 
 /*

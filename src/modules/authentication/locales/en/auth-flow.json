@@ -24,7 +24,6 @@
     "noMatches": "No matching organisations",
     "create": "Create a new organisation",
     "createDescription": "Choose a plan and set up another organisation for your account.",
-    "signOut": "Sign out",
     "accountSettings": "Account settings",
     "description_one": "You belong to {{count}} organisation. Pick it to open its console.",
     "description_other": "You belong to {{count}} organisations. Pick one to open its console.",
@@ -39,71 +38,9 @@
   },
   "layout": {
     "skipToForm": "Skip to authentication form",
-    "navigation": "Qeet ID resources",
-    "legalNavigation": "Legal and trust",
-    "security": "Security",
-    "business": "For Business",
-    "help": "Help",
-    "terms": "Terms of Service",
-    "privacy": "Privacy Policy",
-    "trust": "Trust Center",
-    "simpleAccess": "SIMPLE ACCESS.",
-    "strongerTogether": "STRONGER TOGETHER.",
-    "tagline": "Security for a more open world.",
-    "signinConsent": "By signing in, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
-    "signupConsent": "By signing up, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
-  },
-  "hero": {
-    "eyebrow": "A MORE SECURE, OPEN TOMORROW",
-    "titleLine1": "Identity for",
-    "titleLine2": "what’s next",
-    "description": "Qeet ID makes it simple and secure for people and organizations to sign in with passkeys.",
-    "features": {
-      "first": {
-        "title": "Passkeys first",
-        "description": "A faster, more secure way to sign in."
-      },
-      "second": {
-        "title": "Built for organizations",
-        "description": "Flexible, scalable, and developer friendly."
-      },
-      "third": {
-        "title": "People at the center",
-        "description": "Secure access for every team, everywhere."
-      }
-    },
-    "signup": {
-      "titleLine1": "Create your",
-      "titleLine2": "organization",
-      "titleLine3": "with confidence",
-      "description": "Join thousands of teams using Qeet ID for secure, simple access. Verify your email, then create your first organization in minutes.",
-      "lightDescription": "Qeet ID makes it simple and secure for people and organizations to get started and grow with passkeys.",
-      "lightFeatures": {
-        "first": "A faster, more secure way to sign up.",
-        "second": "Get your first organization up and running right after verifying your email.",
-        "third": "Secure access for every team, everywhere."
-      },
-      "features": {
-        "first": {
-          "title": "Built for modern teams",
-          "description": "Simple, secure, and ready to scale."
-        },
-        "second": {
-          "title": "Passkeys-first by design",
-          "description": "A faster, more secure way to get started."
-        },
-        "third": {
-          "title": "Your data stays yours",
-          "description": "Enterprise-grade security and privacy."
-        }
-      }
-    }
+    "legalNavigation": "Legal and trust"
   },
   "passkey": {
-    "button": "Use a passkey",
-    "waiting": "Follow your device’s prompt…",
-    "signinDivider": "Or sign in with a passkey",
-    "signupDivider": "Or sign up with a passkey",
     "unsupported": "Passkeys aren’t available in this browser. Try a supported browser or use another sign-in method.",
     "cancelled": "No passkey was selected. Try again or use another sign-in method.",
     "failed": "Couldn’t complete the passkey request. Please try again or use another sign-in method."
@@ -282,37 +219,51 @@
     "failedTitle": "We couldn’t send the link"
   },
   "invite": {
-    "invalidTitle": "Invalid invite link",
-    "invalidDescription": "This link is missing its token. Ask your organization admin to resend the invite.",
-    "backToSignIn": "Back to sign in",
-    "acceptTitle": "Accept your invite",
-    "acceptDescription": "Set a password to finish joining the organization — you'll be signed in afterwards.",
-    "acceptDescriptionFor": "{{organization}} invited {{email}}. Choose how you’ll sign in — you’ll be signed in afterwards.",
-    "displayNameLabel": "Display name",
-    "displayNamePlaceholder": "How you'd like to be addressed",
-    "passwordLabel": "Password",
+    "title": "Join {{organization}}",
+    "expires": "Create your Qeet ID to accept the invitation. It expires on {{date}}.",
+    "expiresSignedIn": "The invitation expires on {{date}}.",
+    "email": "Work email",
+    "emailHelp": "The invitation was sent here.",
+    "name": "Full name",
+    "namePlaceholder": "e.g. Priya Sharma",
+    "password": "Password",
     "passwordHelp": "At least 8 characters.",
-    "joiningBtn": "Joining…",
-    "acceptBtn": "Accept invite",
-    "passkeyDivider": "Or join with a passkey",
-    "loadingTitle": "Checking your invite…",
-    "unavailableTitle": "This invite can’t be used",
-    "accountExistsTitle": "You already have a Qeet ID with this email.",
-    "accountExistsHelp": "Sign in, then accept this invitation from your dashboard.",
-    "accountExistsCta": "Sign in to accept"
+    "joinPasskey": "Join with a passkey",
+    "joinPassword": "Join with a password",
+    "joining": "Joining…",
+    "passwordInstead": "Use a password instead",
+    "passkeyInstead": "Use a passkey instead",
+    "failedTitle": "We couldn’t accept the invitation",
+    "existsLede": "{{email}} already has a Qeet ID.",
+    "existsTitle": "Sign in to accept",
+    "existsText": "Sign in with it, then open this invitation link again.",
+    "signIn": "Sign in",
+    "accept": "Accept and join",
+    "accepting": "Joining…",
+    "mismatchTitle": "This invitation is for {{email}}",
+    "mismatchText": "Sign out, then open the invitation link again and sign in with that address.",
+    "checking": "Checking your invitation…",
+    "checkingTitle": "Your invitation",
+    "unavailableTitle": "This invitation can’t be used",
+    "incompleteTitle": "This link is incomplete",
+    "incompleteText": "Open the invitation email again and use its button, or ask for a new invitation.",
+    "backToSignIn": "Back to sign in"
   },
   "sso": {
-    "noCodeTitle": "No sign-in code",
-    "noCodeText": "This page completes a SAML single sign-on. Start the flow from your identity provider, or sign in directly.",
-    "backToSignIn": "Back to sign in",
-    "loadingTitle": "Signing you in…",
-    "loadingText": "Completing single sign-on.",
-    "successTitle": "Signed in",
-    "successText": "Redirecting to your dashboard…",
-    "errorTitle": "Couldn't complete sign-in",
-    "errorTrailer": "The code is single-use and short-lived — start the SSO flow again from your identity provider.",
+    "signingTitle": "Signing you in",
+    "signingText": "Your identity provider confirmed it’s you.",
+    "checking": "Checking your sign-in code…",
+    "opening": "Opening your console…",
+    "failedTitle": "Single sign‑on didn’t finish",
+    "failedHint": "Each code works once, for a short time. Signing in again gets you a new one.",
+    "signInAgain": "Sign in again",
+    "offlineTitle": "We couldn’t reach Qeet ID",
+    "offlineText": "Check your connection, then try again. Your sign-in code hasn’t been used yet.",
     "tryAgain": "Try again",
-    "failed": "Single sign-on failed."
+    "noCodeTitle": "Nothing to finish here",
+    "noCodeText": "This page completes single sign-on from your company’s identity provider. Start there, or sign in with your work email.",
+    "signIn": "Sign in",
+    "backToSignIn": "Back to sign in"
   },
   "verifyEmail": {
     "title": "Check your email",
@@ -417,6 +368,22 @@
         "chooseText": "The one you want to work in now.",
         "openTitle": "Open the console",
         "openText": "You can switch organisations later."
+      },
+      "invite": {
+        "openTitle": "Open your invitation",
+        "openText": "From the email your team sent.",
+        "chooseTitle": "Choose how you’ll sign in",
+        "chooseText": "A passkey, or a password.",
+        "joinTitle": "Join your team",
+        "joinText": "Straight into its console."
+      },
+      "sso": {
+        "providerTitle": "Your identity provider",
+        "providerText": "You signed in with your company account.",
+        "returnTitle": "Back to Qeet ID",
+        "returnText": "We check its one-time code.",
+        "openTitle": "Open the console",
+        "openText": "Straight to your organisation."
       }
     },
     "providers": {
@@ -433,6 +400,7 @@
     "consent": {
       "signIn": "By continuing, you agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
       "signUp": "By creating an account, you agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
-    }
+    },
+    "signOut": "Sign out"
   }
 }
