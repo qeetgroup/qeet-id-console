@@ -95,6 +95,7 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | Query devtools plugin (dev only) | `src/platform/query/query-devtools.tsx` |
 | Feature flags (declared in manifests; `CONSOLE_FLAGS_OFF`) | `src/platform/feature-flags/` |
 | Page chrome | `src/platform/components/page-header.tsx` |
+| Frame of the pages outside the console (sign-in to create-organization) | `src/platform/components/entry-shell.tsx`, `entry-shell.css` |
 
 ## Modules
 

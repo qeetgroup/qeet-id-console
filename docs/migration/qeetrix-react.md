@@ -178,7 +178,7 @@ screen-to-template map in Appendix A.
 | List | 39 |
 | Settings | 28 |
 | Overview | 9 |
-| Public page | 9 |
+| Public page | 10 |
 | Detail | 7 |
 | Workspace | 7 |
 | Create or edit | 5 |
@@ -320,6 +320,7 @@ The next phase starts only after you've reviewed it.
 | `directory/routes/app/users/suspended` | List |
 | `groups/routes/app/groups/$groupId` | Detail |
 | `groups/routes/app/groups/index` | List |
+| `onboarding/routes/public/create-organization` | Public page |
 | `organizations/routes/app/organizations/$orgId` | Detail |
 | `organizations/routes/app/organizations/index` | List |
 | `organizations/routes/app/organizations/tenants` | List |

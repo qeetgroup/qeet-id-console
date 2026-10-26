@@ -281,7 +281,8 @@ flaking. No retries: a flake is a bug. Run them after any change to `src/platfor
 
 **Accessibility** (`tests/e2e/accessibility.spec.ts`, same job) holds the console to WCAG 2.2 AA:
 axe (`@axe-core/playwright`, tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`) scans
-sign-in, sign-up, verify-email, select-organization, the dashboard, users, a user's detail page,
+sign-in, sign-up, verify-email, select-organization, create-organization (its plans and its
+details), the dashboard, users, a user's detail page,
 groups, roles, the security and developer overviews, organization settings and the account profile,
 each in the light and the dark theme (set as the theme toggle saves it, `qeetid-admin-theme` in
 `localStorage`), and with the command palette, the invite sheet, a confirm dialog and the account
