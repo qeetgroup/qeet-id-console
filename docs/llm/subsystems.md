@@ -127,7 +127,7 @@ keyboard/shortcuts.ts          useGlobalShortcuts, shortcutGroups (the shortcuts
 | `developer` | `api`, `components`, `routes` | 12 / 0 | 11 |
 | `directory` | `api`, `components`, `routes` | 6 / 0 | 5 |
 | `groups` | `api`, `components`, `routes` | 2 / 0 | 3 |
-| `onboarding` | flat | — | 3 |
+| `onboarding` | `api`, `components`, `routes` | 0 / 1 | 2 |
 | `organizations` | `api`, `components`, `routes` | 7 / 0 | 6 |
 | `qeetai` | `ai`, `api`, `components`, `context`, `hooks`, `routes`, `store`, `suggestions`, `tools`, `types` | 1 / 0 | 13 |
 | `search` | `api`, `components`, `registry`, `store` | — | 3 |
@@ -167,11 +167,12 @@ module's routes may share a prefix with another's (`/auth/…` is `authenticatio
 
 | Where | Files | Notes |
 |---|---|---|
-| `src/routes/_app.tsx` | 1 | Authenticated operator shell. Wraps children in `CapabilityProvider > SensitiveActionProvider > AccessBoundary`. 10-minute idle logout, measured across every tab |
+| `src/routes/_app.tsx` | 1 | Authenticated operator shell. Wraps children in `CapabilityProvider > SensitiveActionProvider > AccessBoundary`. 10-minute idle logout, measured across every tab. A session without an organisation goes to `/select-organization` (its invitations, or on to create the first); an old sign-up checkout return to `/` goes to `/create-organization` |
 | `src/routes/__root.tsx`, `healthz.ts` | 2 | Document, theme, toaster; the container health check |
 | `src/routes/api/` | 2 | `activity-stream.ts`, `qeetai-stream.ts` — server-only SSE |
 | `*/routes/app/` | 91 | Every page inside the shell; the catch-all "Page not found" is `dashboard/routes/app/$.tsx` |
 | `authentication/routes/public/` | 9 | `_auth.tsx` (reverse guard) with `sign-in` `sign-up` `forgot-password` `magic` `invite.accept` `sso.callback`; `select-organization`, `verify-email` |
+| `onboarding/routes/public/` | 1 | `create-organization`: signed in and verified, outside the shell like `select-organization`; opened from the picker, Directory › Organizations and, with no `from` and no organisation, straight after signing up (no Cancel). `?from=` names where Cancel returns; a hosted checkout returns here (`?checkout=`, Razorpay fields) to finish or, cancelled, restore the details |
 | `account/routes/public/` | 5 | `account.tsx` with `profile` `security` `sessions` `data` — end-user self-service, deliberately outside the admin shell |
 
 A route states the capability its page requires as `staticData: { capability }`; the router hands

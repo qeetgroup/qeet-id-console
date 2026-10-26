@@ -47,12 +47,37 @@ export const CHECKLIST_INTRO: Record<string, TranslationKey> = {
 const STASH_KEY = "qeetid-pending-onboarding";
 const STASH_TTL_MS = 24 * 60 * 60 * 1000; // an abandoned checkout's profile expires
 
+/**
+ * What was entered before a paid plan's checkout: put back if the payment is cancelled, and named
+ * while the paid organisation is being made.
+ */
+export interface OrganisationDraft {
+  name: string;
+  region: string;
+  tier: string;
+  cycle: "month" | "year";
+  currency: string;
+}
+
 /** A profile waiting for the organization it was entered for, which may not exist yet. */
 export interface PendingOnboarding {
   profile: OnboardingProfile;
   slug: string; // the organization it belongs to
   userId: string; // the person who entered it
+  draft?: OrganisationDraft;
   stashedAt: number;
+}
+
+function isDraft(value: unknown): value is OrganisationDraft {
+  const draft = value as Partial<OrganisationDraft> | null;
+  return (
+    !!draft &&
+    typeof draft.name === "string" &&
+    typeof draft.region === "string" &&
+    typeof draft.tier === "string" &&
+    (draft.cycle === "month" || draft.cycle === "year") &&
+    typeof draft.currency === "string"
+  );
 }
 
 export function stashOnboardingProfile(pending: Omit<PendingOnboarding, "stashedAt">) {
@@ -79,7 +104,12 @@ export function readPendingOnboarding(userId: string | null): PendingOnboarding 
       localStorage.removeItem(STASH_KEY);
       return null;
     }
-    return pending.userId === userId ? (pending as PendingOnboarding) : null;
+    if (pending.userId !== userId) return null;
+    // A draft that doesn't have the right shape is dropped; the profile still applies.
+    return {
+      ...(pending as PendingOnboarding),
+      draft: isDraft(pending.draft) ? pending.draft : undefined,
+    };
   } catch {
     return null;
   }

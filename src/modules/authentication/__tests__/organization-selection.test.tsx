@@ -32,6 +32,17 @@ vi.mock("@/platform/auth/session", () => ({
   useIdleLogout: vi.fn(),
 }));
 vi.mock("../api/flows", () => ({ switchToTenant: vi.fn().mockResolvedValue(undefined) }));
+// Invitations waiting for this email: none, unless a test adds some.
+const invites = vi.hoisted(() => ({
+  items: [] as { id: string; tenant_name: string; email: string; expires_at: string }[],
+  accept: vi.fn(),
+  decline: vi.fn(),
+}));
+vi.mock("../api/flows-invitations", () => ({
+  useMyInvitations: () => ({ data: { items: invites.items }, isPending: false }),
+  useAcceptInvitation: () => ({ mutate: invites.accept }),
+  useDeclineInvitation: () => ({ mutate: invites.decline }),
+}));
 
 import { api } from "@/platform/api/client";
 import type { EligibleOrganization } from "@/platform/auth/organization-selection";
@@ -130,17 +141,24 @@ function render(node: ReactNode) {
   });
 }
 
-function renderPage() {
+function renderPage(onCreate = vi.fn()) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return {
     ...render(
       <QueryClientProvider client={client}>
-        <OrganizationSelectionPage onCreate={vi.fn()} />
+        <OrganizationSelectionPage onCreate={onCreate} />
       </QueryClientProvider>,
     ),
     client,
   };
 }
+
+const invitation = (id: string, tenant_name: string) => ({
+  id,
+  tenant_name,
+  email: "operator@example.test",
+  expires_at: new Date(Date.now() + 6 * 86_400_000).toISOString(),
+});
 
 beforeEach(() => {
   context.userId = "user-a";
@@ -150,6 +168,9 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue({ items: fixtures(), next_cursor: "" });
   vi.mocked(switchToTenant).mockReset().mockResolvedValue(undefined);
+  invites.items = [];
+  invites.accept.mockReset();
+  invites.decline.mockReset();
 });
 afterEach(() => {
   cleanup();
@@ -376,11 +397,77 @@ describe("Organization selection data", () => {
     await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixture(1).id));
   });
 
-  it("keeps org-less accounts on the existing onboarding path", async () => {
+  it("takes an account with no organisation and no invitation on to create its first", async () => {
     vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
     renderPage();
-    await waitFor(() => expect(context.navigate).toHaveBeenCalledWith({ to: "/", replace: true }));
+    await waitFor(() =>
+      expect(context.navigate).toHaveBeenCalledWith({ to: "/create-organization", replace: true }),
+    );
     expect(switchToTenant).not.toHaveBeenCalled();
+  });
+
+  it("shows a new account its invitation instead: join it, decline it, or create one", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India")];
+    const onCreate = vi.fn();
+    renderPage(onCreate);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Join Globex India" }),
+    ).toBeTruthy();
+    expect(screen.getByText(/Invited as operator@example.test · expires in 6 days/)).toBeTruthy();
+    expect(context.navigate).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Create a new organisation instead" }));
+    expect(onCreate).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "Join Globex India" }));
+    expect(invites.accept).toHaveBeenCalledWith("inv-1", expect.anything());
+    // Joining reloads into the organisation; until then nothing else can start.
+    expect(
+      screen
+        .getByRole("button", { name: "Create a new organisation instead" })
+        .getAttribute("aria-disabled"),
+    ).toBe("true");
+  });
+
+  it("says in place when joining fails, and leaves the invitation to try again", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India")];
+    invites.accept.mockImplementation((_id, options) => options.onError(new Error("private")));
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Join Globex India" }));
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "We couldn't add you to that organisation",
+    );
+    expect(document.body.textContent).not.toContain("private");
+    expect(
+      screen.getByRole("button", { name: "Join Globex India" }).getAttribute("aria-disabled"),
+    ).not.toBe("true");
+  });
+
+  it("lists several invitations, each joined or declined on its own row", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India"), invitation("inv-2", "Initech")];
+    invites.decline.mockImplementation((_id, options) => options.onSettled());
+    renderPage();
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "You've been invited" }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Decline the invitation to Initech" }));
+    expect(invites.decline).toHaveBeenCalledWith("inv-2", expect.anything());
+    fireEvent.click(screen.getByRole("button", { name: "Join Globex India" }));
+    expect(invites.accept).toHaveBeenCalledWith("inv-1", expect.anything());
+  });
+
+  it("shows a member their invitations above their organisations, and doesn't go on without them", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [fixture(1)], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India")];
+    renderPage();
+    const list = await screen.findByRole("list", { name: "Invitations" });
+    expect(list.textContent).toContain("Globex India");
+    expect(screen.getByRole("list", { name: "Your organisations" }).textContent).toContain(
+      "Globalsphere",
+    );
+    expect(switchToTenant).not.toHaveBeenCalled();
+    expect(context.navigate).not.toHaveBeenCalled();
   });
 
   it("does not fetch memberships without an authenticated identity", () => {

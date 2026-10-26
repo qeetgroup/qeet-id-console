@@ -104,6 +104,7 @@
     "/account/profile": 77.1,
     "/account/security": 77.2,
     "/account/sessions": 77.2,
+    "/create-organization": 92.9,
     "/select-organization": 280.2,
     "/verify-email": 280.2
   }

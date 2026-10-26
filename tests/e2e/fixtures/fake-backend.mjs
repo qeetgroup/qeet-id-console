@@ -36,6 +36,18 @@ const users = {
     tenantIds: ["22222222-2222-4222-8222-222222222222"],
     admin: true, // every console capability, so pages show their actions
   },
+  // New accounts with no organisation yet: one with nothing waiting, one invited to Org Two.
+  "fresh@example.com": {
+    id: "88888888-0000-4000-8000-000000000001",
+    name: "Fay Fresh",
+    tenantIds: [],
+  },
+  "invited@example.com": {
+    id: "88888888-0000-4000-8000-000000000002",
+    name: "Ivan Invited",
+    tenantIds: [],
+    invitedTo: ["33333333-3333-4333-8333-333333333333"],
+  },
   "unverified@example.com": {
     id: "77777777-7777-4777-8777-777777777777",
     name: "Uma Unverified",
@@ -233,8 +245,92 @@ const server = createServer(async (request, response) => {
     return send(response, 200, { configured: false, available: false, source: "none" });
   }
   if (path === "/v1/notifications") return send(response, 200, { items: [], unread_count: 0 });
+  // The server's built-in catalogue (qeet-id-server billing/plans.go), in two currencies.
+  if (path === "/v1/me/invites") {
+    return send(response, 200, {
+      items: (user.invitedTo ?? []).map((tenantId) => ({
+        id: `invite-${tenantId.slice(0, 8)}`,
+        tenant_id: tenantId,
+        tenant_name: tenants[tenantId].name,
+        tenant_slug: tenants[tenantId].slug,
+        email: principal.email,
+        role_id: null,
+        expires_at: new Date(Date.now() + 6 * 86_400_000).toISOString(),
+        created_at: new Date(Date.now() - 2 * 3_600_000).toISOString(),
+      })),
+    });
+  }
+  if (path === "/v1/billing/plans") {
+    const plan = (code, name, description, features, INR, USD) => ({
+      id: code,
+      code,
+      name,
+      description,
+      interval: code.endsWith("_year") ? "year" : "month",
+      features,
+      prices: { INR, USD },
+    });
+    const features = {
+      free: [
+        "Up to 10,000 monthly active users",
+        "Passkeys, social & password login",
+        "7-day audit log",
+      ],
+      starter: ["Up to 25,000 MAU", "Custom branding & domain", "Webhooks & 30-day audit log"],
+      pro: [
+        "Up to 100,000 MAU (then metered)",
+        "Enterprise SSO — SAML & OIDC included",
+        "Audit export (90-day) & Qeet AI",
+      ],
+      enterprise: [
+        "Unlimited MAU & organizations",
+        "SCIM & LDAP directory sync",
+        "99.99% SLA · named CSM",
+      ],
+    };
+    return send(response, 200, {
+      items: [
+        plan("free", "Free", "For prototypes and early projects.", features.free, 0, 0),
+        plan(
+          "starter",
+          "Starter",
+          "For teams shipping to production.",
+          features.starter,
+          240000,
+          2900,
+        ),
+        plan("pro", "Pro", "For scaling B2B/B2C — no SSO tax.", features.pro, 800000, 9900),
+        plan(
+          "enterprise",
+          "Enterprise",
+          "Governance, compliance & control for large orgs.",
+          features.enterprise,
+          2490000,
+          29900,
+        ),
+        plan(
+          "starter_year",
+          "Starter",
+          "For teams shipping to production. Billed yearly.",
+          features.starter,
+          2400000,
+          29000,
+        ),
+        plan(
+          "pro_year",
+          "Pro",
+          "For scaling B2B/B2C — no SSO tax. Billed yearly.",
+          features.pro,
+          8000000,
+          99000,
+        ),
+      ],
+    });
+  }
   if (method === "GET") {
     const tenant = tenants[principal.tenantId];
+    // A new account has no organisation: nothing tenant-scoped to read.
+    if (!tenant) return send(response, 200, { items: [] });
     const context = { tenantId: principal.tenantId, tenant, principalId: user.id };
     return send(response, 200, tenantRead(path, url.searchParams, context) ?? { items: [] });
   }

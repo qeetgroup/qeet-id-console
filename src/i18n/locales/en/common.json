@@ -256,7 +256,8 @@
     "selectOrganization": "Qeet ID – Select an organization",
     "verifyEmail": "Qeet ID – Verify your email",
     "untitled": "Page",
-    "details": "Details"
+    "details": "Details",
+    "createOrganization": "Qeet ID – Create an organisation"
   },
   "shortcuts": {
     "group": {
@@ -279,5 +280,13 @@
     "security": "Security",
     "developer": "Developer",
     "settings": "Settings"
+  },
+  "entryFrame": {
+    "help": "Need help?",
+    "legalNavigation": "Legal and trust",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "trust": "Trust Center",
+    "language": "Language"
   }
 }

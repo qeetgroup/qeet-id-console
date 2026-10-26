@@ -428,5 +428,3 @@ export function DashboardOverview() {
     </div>
   );
 }
-
-export { NoWorkspaceOnboarding } from "./no-workspace-onboarding";

@@ -1,0 +1,396 @@
+/*
+ * Creating an organisation: a welcoming page in the entry frame's wide column (design rules §17),
+ * because four plans side by side need the width. The plans are one choice drawn like the
+ * library's choice tiles at plan size; the later steps put the form in a 560px column with the
+ * plan beside it. Token values only.
+ */
+
+.create {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+.create-head {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+.create-head-text {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  max-inline-size: 44rem;
+}
+
+.create-head-text h1 {
+  text-wrap: balance;
+}
+
+.create-head-text h1:focus {
+  outline: none;
+}
+
+.create-steps {
+  max-inline-size: 36rem;
+}
+
+.create-signed-in {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.create-finishing {
+  max-inline-size: 35rem;
+}
+
+/* ── Plan ───────────────────────────────────────────────────────────────────── */
+
+.create-plan-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.create-currency {
+  inline-size: 10rem;
+}
+
+.create-plans {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.create-plans[data-loading] {
+  gap: var(--qx-space-gap-sm);
+  border: 0;
+  background: none;
+}
+
+.create-plan-skeleton {
+  block-size: 22rem;
+}
+
+.create-plan {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  align-content: start;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-lg);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  cursor: pointer;
+  transition-property: background-color, box-shadow;
+  transition-duration: var(--qx-motion-duration-fast);
+  transition-timing-function: var(--qx-motion-easing-standard);
+}
+
+.create-plan:first-child {
+  border-inline-start: 0;
+}
+
+.create-plan:hover:not([data-selected], [data-unavailable]) {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+/* Selected (rule §11): the Ember tint, the checked radio and the Ember frame of a choice tile. */
+.create-plan[data-selected] {
+  background: var(--qx-color-bg-selected);
+  box-shadow: inset 0 0 0 var(--qx-border-width-strong) var(--qx-color-border-brand);
+}
+
+.create-plan:has(.create-plan-radio:focus-visible) {
+  z-index: 1;
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: var(--qx-focus-ring-width);
+}
+
+.create-plan[data-unavailable] {
+  cursor: not-allowed;
+  color: var(--qx-color-text-disabled);
+}
+
+.create-plan-top {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-block-size: 24px;
+}
+
+.create-plan-top [data-slot="badge"] {
+  margin-inline-start: auto;
+}
+
+/* The radio of rule §9: 16px, a strong 1px ring, and a 5px Ember ring once chosen. */
+.create-plan-radio {
+  display: inline-grid;
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+  padding: 0;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-strong);
+  border-radius: var(--qx-radius-full);
+  background: var(--qx-color-surface-default);
+  cursor: inherit;
+  outline: none;
+}
+
+.create-plan-radio[data-checked] {
+  border: 5px solid var(--qx-color-border-brand);
+}
+
+.create-plan-radio[data-disabled] {
+  border-color: var(--qx-color-border-disabled);
+  background: var(--qx-color-bg-disabled);
+}
+
+.create-plan-name {
+  font: var(--qx-typography-title-md);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-heading);
+}
+
+.create-plan-line,
+.create-plan-note,
+.create-plan-price span {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.create-plan-line {
+  min-block-size: 2lh;
+}
+
+.create-plan-price-block {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  margin-block-start: var(--qx-space-gap-sm);
+}
+
+.create-plan-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--qx-space-gap-xs);
+}
+
+.create-plan-price strong {
+  font: var(--qx-typography-heading-md);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Yearly: the same twelve months at the monthly price, struck through before the yearly one. */
+.create-plan-price s {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.create-plan-note {
+  padding-block-end: var(--qx-space-inset-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.create-plan-note strong {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+}
+
+.create-plan-features {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--qx-typography-body-sm);
+}
+
+.create-plan-features li {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: var(--qx-space-gap-sm);
+}
+
+.create-plan-features svg {
+  inline-size: 16px;
+  block-size: 16px;
+  color: var(--qx-color-icon-subtle);
+}
+
+/* ── Actions and the later steps ───────────────────────────────────────────── */
+
+.create-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--qx-space-gap-sm);
+}
+
+.create-back {
+  margin-inline-end: auto;
+}
+
+.create-split {
+  display: grid;
+  grid-template-columns: minmax(0, 35rem) minmax(16rem, 22rem);
+  justify-content: space-between;
+  align-items: start;
+  gap: var(--qx-space-layout-md);
+}
+
+.create-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+}
+
+.create-form .create-actions {
+  margin-block-start: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-inset-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.create-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+}
+
+.create-logo img {
+  inline-size: 48px;
+  block-size: 48px;
+  flex: none;
+  object-fit: contain;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+}
+
+.create-logo > :last-child {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+/* The plan and what happens next: a ruled panel of two sections. */
+.create-summary {
+  display: grid;
+  margin: 0;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.create-summary > section {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-lg);
+}
+
+.create-summary > section + section {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.create-summary h2 {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.create-summary-plan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  font: var(--qx-typography-title-md);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-heading);
+}
+
+.create-summary-price {
+  font: var(--qx-typography-label-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.create-summary-next {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.create-summary-next svg {
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 2px;
+  color: var(--qx-color-icon-subtle);
+}
+
+/* The chosen plan's ticks are Ember (after the summary's, which share the list's look). */
+.create-plan[data-selected] .create-plan-features svg {
+  color: var(--qx-color-icon-brand);
+}
+
+@media (max-width: 1100px) {
+  .create-plans {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .create-plan:nth-child(3) {
+    border-inline-start: 0;
+  }
+
+  .create-plan:nth-child(n + 3) {
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+
+  .create-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .create-summary {
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .create-plans {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .create-plan {
+    border-inline-start: 0;
+  }
+
+  .create-plan + .create-plan {
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+
+  /* A phone shows the features of the chosen plan only, so the four fit on a screen or two. */
+  .create-plan-features {
+    display: none;
+  }
+
+  .create-plan[data-selected] .create-plan-features {
+    display: grid;
+  }
+
+  .create-actions > * {
+    flex: 1 1 auto;
+  }
+
+  /* The phone keeps the way out; the name would crowd the legal links. */
+  .create-signed-in > :first-child {
+    display: none;
+  }
+}

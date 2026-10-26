@@ -2,84 +2,9 @@
  * The entry pages (sign in, sign up, verify email, forgot and reset password), on @qeetrix/react and
  * the Qeetrix design rules: a welcoming page with comfortable density, a Geo display headline and
  * one 400px column; square corners, ruled surfaces, no shadows in the page flow, and Ember only
- * where it means something. Token values only.
+ * where it means something. Token values only. The frame around them is platform's
+ * (entry-shell.css); this is what goes inside it, and the brand panel beside it.
  */
-
-.entry {
-  min-block-size: 100dvh;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
-  background: var(--qx-color-surface-canvas);
-  color: var(--qx-color-text-default);
-  font: var(--qx-typography-body-md);
-  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── The form side ─────────────────────────────────────────────────────────── */
-
-.entry-side {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: var(--qx-space-layout-md);
-  padding: var(--qx-space-layout-sm) var(--qx-space-layout-md);
-}
-
-.entry-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--qx-space-gap-md);
-}
-
-.entry-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--qx-space-gap-sm);
-  color: inherit;
-  text-decoration: none;
-  font: var(--qx-typography-title-md);
-  font-variation-settings: "GEOM" var(--qx-font-geometry-heading);
-}
-
-.entry-brand:focus-visible {
-  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
-  outline-offset: var(--qx-focus-ring-offset);
-}
-
-/* The logo has a drawing for each scheme; CSS picks it, so the first paint is already right. */
-.entry-logo-light,
-.entry-logo-dark {
-  display: inline-flex;
-}
-
-.entry-logo-dark,
-[data-qx-color-scheme="dark"] .entry-logo-light {
-  display: none;
-}
-
-[data-qx-color-scheme="dark"] .entry-logo-dark {
-  display: inline-flex;
-}
-
-/* The product name sits after a 1px rule, the same seam the Button puts before its icon. */
-.entry-brand-rule {
-  inline-size: 1px;
-  block-size: 20px;
-  background: var(--qx-color-border-default);
-}
-
-.entry-main {
-  align-self: center;
-  justify-self: center;
-  inline-size: min(400px, 100%);
-  display: grid;
-  gap: var(--qx-space-layout-sm);
-}
-
-.entry-main:focus {
-  outline: none;
-}
 
 .entry-heading {
   display: grid;
@@ -266,30 +191,6 @@
   color: var(--qx-color-text-subtle);
 }
 
-.entry-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--qx-space-gap-md);
-  padding-block-start: var(--qx-space-inset-md);
-  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
-  color: var(--qx-color-text-subtle);
-  font: var(--qx-typography-body-sm);
-}
-
-.entry-foot nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--qx-space-gap-lg);
-}
-
-.entry-foot-end {
-  display: flex;
-  align-items: center;
-  gap: var(--qx-space-gap-sm);
-}
-
 /*
  * A ruled list of actions, a row each: other ways to confirm a sign-in, and the organisations to
  * open. To propose as a library ActionList.
@@ -361,6 +262,26 @@
   background: var(--qx-color-bg-neutral-subtle);
   cursor: default;
 }
+/* An invitation row: the organisation, who it was sent to, then Decline and Join at its end. */
+.entry-invite {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3.75rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+}
+
+.entry-invite[data-single] {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.entry-invite-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
 /* An organisation row: its logo, name, tags and a chevron. */
 .entry-option[data-kind="organisation"] {
   grid-template-columns: auto minmax(0, 1fr) auto auto;
@@ -497,11 +418,6 @@
 .entry-codes li::before {
   content: counter(code, decimal-leading-zero);
   color: var(--qx-color-text-subtlest);
-}
-
-/* The theme menu holds three short choices: narrower than the library's 200px menu. */
-.entry-theme-menu {
-  min-inline-size: 10rem;
 }
 
 /* ── The brand panel ───────────────────────────────────────────────────────── */
@@ -726,15 +642,7 @@
 /* ── Small screens: the form only ──────────────────────────────────────────── */
 
 @media (max-width: 960px) {
-  .entry {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .entry-panel {
     display: none;
-  }
-
-  .entry-side {
-    padding: var(--qx-space-inset-lg);
   }
 }
