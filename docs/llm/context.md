@@ -116,7 +116,7 @@ Multi-tab clients must serialise refresh or they trigger the backend's own theft
 
 ### Idle sign-out — one timer across tabs
 
-`useIdleLogout` (10 minutes in the shell, `/account` and the organization selector) runs
+`useIdleLogout` (10 minutes in the shell, My account included, and the organization selector) runs
 `watchIdle` (`src/platform/auth/idle-activity.ts`). Each tab writes the time of its newest
 activity to `localStorage` `qeetid.last-activity` — a bare timestamp, so unscoped — at most every
 15 s with a trailing write, and never over a newer one. When a tab's timer fires it re-arms for
@@ -250,8 +250,8 @@ File-based via `tanstackStart()`, from a virtual config: `src/app/routes.ts` mou
 (`src/routes`: `__root`, `_app`, `healthz`, `api/` for server-only SSE) and every module's
 `routes/public/` at the root and `routes/app/` inside `_app`. `src/routeTree.gen.ts` is
 **generated, committed and read-only**. The groups: `_app` (authenticated shell), `_auth`
-(reverse guard, `authentication`), `account` (end-user self-service, deliberately outside the
-admin shell), `api`.
+(reverse guard, `authentication`), `api`. My account (`/account/*`) is inside `_app`, and open
+there without an organisation: the shell then lists only it.
 
 Each route declares its page's capability as `staticData: { capability }`; the router registers
 them (`route-capability.ts`), and the access boundary and link checks resolve a path against them —
@@ -283,7 +283,8 @@ flaking. No retries: a flake is a bug. Run them after any change to `src/platfor
 axe (`@axe-core/playwright`, tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`) scans
 sign-in, sign-up, verify-email, select-organization, create-organization (its plans and its
 details), the dashboard, users, a user's detail page,
-groups, roles, the security and developer overviews, organization settings and the account profile,
+groups, roles, the security and developer overviews, organization settings and the four account
+pages (profile, security, sessions, data),
 each in the light and the dark theme (set as the theme toggle saves it, `qeetid-admin-theme` in
 `localStorage`), and with the command palette, the invite sheet, a confirm dialog and the account
 menu open. Each scan waits for hydration, the page's real content, no skeleton or `aria-busy`
