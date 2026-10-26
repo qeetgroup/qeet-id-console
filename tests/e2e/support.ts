@@ -11,6 +11,8 @@ export const SECOND = { email: "second@example.com", name: "Grace Second" };
 export const MULTI = { email: "multi@example.com", name: "Max Multi" }; // member of both tenants
 export const ADMIN = { email: "admin@example.com", name: "Alan Admin" }; // every capability
 export const UNVERIFIED = { email: "unverified@example.com", name: "Uma Unverified" };
+export const FRESH = { email: "fresh@example.com", name: "Fay Fresh" }; // no organisation yet
+export const INVITED = { email: "invited@example.com", name: "Ivan Invited" }; // invited to Org Two
 export const MEMBER = { id: "88888888-8888-4888-8888-888888888888", name: "Member of Org One" };
 export const ORG_ONE = { id: "22222222-2222-4222-8222-222222222222", name: "Org One" };
 export const ORG_TWO = { id: "33333333-3333-4333-8333-333333333333", name: "Org Two" };
@@ -41,6 +43,13 @@ export async function signIn(page: Page, email = OPERATOR.email) {
 export async function signInUnverified(page: Page, email = UNVERIFIED.email) {
   await submitSignIn(page, email);
   await expect(page).toHaveURL(`${APP_URL}/verify-email`);
+}
+
+/** Signs in `email` and waits on `path`: where an account without a console lands. */
+export async function signInToEntry(page: Page, email: string, path: string) {
+  await submitSignIn(page, email);
+  await expect(page).toHaveURL(new RegExp(`${path}$`));
+  await hydrated(page);
 }
 
 /** Signs in a member of several organizations, who lands on the organization picker. */

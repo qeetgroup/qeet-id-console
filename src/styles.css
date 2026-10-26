@@ -5,7 +5,9 @@
  */
 @import "@qeetrix/tokens/tokens.css";
 @import "@qeetrix/react/styles.css" layer(components);
+@import "./platform/components/entry-shell.css";
 @import "./modules/authentication/components/entry.css";
+@import "./modules/onboarding/components/create-organization.css";
 @import "./modules/dashboard/components/frame/frame.css";
 
 /*

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as appRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './modules/authentication/routes/public/_auth'
 import { Route as AccountRouteImport } from './modules/account/routes/public/account'
+import { Route as CreateOrganizationRouteImport } from './modules/onboarding/routes/public/create-organization'
 import { Route as healthzRouteImport } from './routes/healthz'
 import { Route as SelectOrganizationRouteImport } from './modules/authentication/routes/public/select-organization'
 import { Route as VerifyEmailRouteImport } from './modules/authentication/routes/public/verify-email'
@@ -130,6 +131,11 @@ const AuthRoute = AuthRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateOrganizationRoute = CreateOrganizationRouteImport.update({
+  id: '/create-organization',
+  path: '/create-organization',
   getParentRoute: () => rootRouteImport,
 } as any)
 const healthzRoute = healthzRouteImport.update({
@@ -688,6 +694,7 @@ const AuthConnectionsOidcClientIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRouteWithChildren
+  '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -797,6 +804,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRouteWithChildren
+  '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -908,6 +916,7 @@ export interface FileRoutesById {
   '/_app': typeof appRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/account': typeof AccountRouteWithChildren
+  '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
@@ -1020,6 +1029,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
@@ -1129,6 +1139,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
@@ -1239,6 +1250,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/account'
+    | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
@@ -1351,6 +1363,7 @@ export interface RootRouteChildren {
   appRoute: typeof appRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   AccountRoute: typeof AccountRouteWithChildren
+  CreateOrganizationRoute: typeof CreateOrganizationRoute
   healthzRoute: typeof healthzRoute
   SelectOrganizationRoute: typeof SelectOrganizationRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
@@ -1379,6 +1392,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create-organization': {
+      id: '/create-organization'
+      path: '/create-organization'
+      fullPath: '/create-organization'
+      preLoaderRoute: typeof CreateOrganizationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/healthz': {
@@ -2359,6 +2379,7 @@ const rootRouteChildren: RootRouteChildren = {
   appRoute: appRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   AccountRoute: AccountRouteWithChildren,
+  CreateOrganizationRoute: CreateOrganizationRoute,
   healthzRoute: healthzRoute,
   SelectOrganizationRoute: SelectOrganizationRoute,
   VerifyEmailRoute: VerifyEmailRoute,

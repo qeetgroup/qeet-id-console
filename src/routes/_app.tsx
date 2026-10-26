@@ -22,9 +22,19 @@ export const Route = createFileRoute("/_app")({
     if (!(await hasVerifiedEmail(context.queryClient, session.userId))) {
       throw redirect({ to: "/verify-email" });
     }
+    // A new organisation's checkout started before payments returned to the create-organisation
+    // page comes back to the dashboard; that page finishes it. (Billing's own upgrades return to
+    // /settings/billing and stay.)
+    const search = location.search as Record<string, unknown>;
+    if (location.pathname === "/" && (search.checkout || search.razorpay_payment_link_id)) {
+      throw redirect({ to: "/create-organization", search: search as never, replace: true });
+    }
     if (organizationSelectionBlocksPath(session.organizationSelectionRequired, location.pathname)) {
       throw redirect({ to: "/select-organization", replace: true });
     }
+    // Without an organisation there is no console to show: the picker offers the person's
+    // invitations, or takes them on to create one.
+    if (!session.tenantId) throw redirect({ to: "/select-organization", replace: true });
     return { session };
   },
   component: AppLayout,

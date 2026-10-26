@@ -6,11 +6,6 @@ import {
   Button,
   Card,
   CardContent,
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
   Table,
   TableBody,
   TableCell,
@@ -21,7 +16,7 @@ import {
   TooltipProvider,
 } from "@qeetrix/ui";
 import { DataState } from "@/platform/components/data-state";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { BuildingComplexIcon, PlusIcon, RefreshCwIcon } from "@qeetrix/icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,7 +29,6 @@ import { type OrgActionHandlers, OrgRowActions } from "./org-row-actions";
 import { OrgPreviewDrawer } from "./org-preview-drawer";
 import { type OrgKpiFilter, OrgsKpis } from "./orgs-kpis";
 import { initials } from "@/shared/utils/initials";
-import { CreateOrgFlow } from "@/modules/onboarding";
 import { useTenantId } from "@/platform/auth/session";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { useListView } from "@/shared/hooks/use-list-view";
@@ -54,14 +48,17 @@ const orgCsvColumns: CsvColumn<Org>[] = [
   { header: "created_at", value: (o) => o.created_at },
 ];
 
-/** Renders the organizations the caller belongs to, with KPIs, filters and the create and edit sheets. */
+/**
+ * Renders the organizations the caller belongs to, with KPIs, filters and the edit sheet. New
+ * opens the create-organisation page, and its Cancel comes back here.
+ */
 export function OrgsPage() {
   const { t, i18n } = useTranslation("organizations");
   const currentTenantId = useTenantId();
   const access = useCapabilities();
   const canWrite = access.can("tenant.write");
   const actions = useOrgActions();
-  const [creating, setCreating] = useState(false);
+  const navigate = useNavigate();
   const [editing, setEditing] = useState<Org | null>(null);
   const [previewOrg, setPreviewOrg] = useState<Org | null>(null);
 
@@ -114,7 +111,12 @@ export function OrgsPage() {
                 <RefreshCwIcon className={listQ.isFetching ? "animate-spin" : ""} />
                 {t("tenants.refresh")}
               </Button>
-              <Button size="sm" onClick={() => setCreating(true)}>
+              <Button
+                size="sm"
+                onClick={() =>
+                  void navigate({ to: "/create-organization", search: { from: "organizations" } })
+                }
+              >
                 <PlusIcon /> {t("tenants.new")}
               </Button>
             </>
@@ -292,34 +294,8 @@ export function OrgsPage() {
           onClose={() => setPreviewOrg(null)}
         />
 
-        <CreateOrgSheet open={creating} onOpenChange={setCreating} />
-
         <EditOrgSheet org={editing} onOpenChange={(o) => !o && setEditing(null)} />
       </div>
     </TooltipProvider>
-  );
-}
-
-type CreateOrgSheetProps = {
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
-};
-
-// Runs the same plan → name → pay flow as onboarding, so a paid organization is actually
-// charged rather than just labelled.
-function CreateOrgSheet({ open, onOpenChange }: CreateOrgSheetProps) {
-  const { t } = useTranslation("organizations");
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="flex w-full flex-col sm:max-w-xl">
-        <SheetHeader>
-          <SheetTitle>{t("tenants.create.title")}</SheetTitle>
-          <SheetDescription>{t("tenants.create.description")}</SheetDescription>
-        </SheetHeader>
-        <div className="flex-1 overflow-y-auto p-4">
-          <CreateOrgFlow planStacked onCancel={() => onOpenChange(false)} />
-        </div>
-      </SheetContent>
-    </Sheet>
   );
 }

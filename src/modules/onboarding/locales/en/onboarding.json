@@ -1,64 +1,142 @@
 {
-  "setup": {
-    "eyebrow": "Organization setup",
-    "title": "Set up your organization",
-    "planSubtitle": "Pick a plan to get started — you can change or cancel it anytime.",
-    "detailsSubtitle": "A few details help us tailor your experience — you can change these anytime.",
-    "cancel": "Cancel setup",
-    "back": "Back",
-    "continue": "Continue",
-    "skip": "Skip for now",
-    "optional": "Optional",
-    "progress": {
-      "label": "Organization setup progress",
-      "plan": "Choose plan",
-      "profile": "Project details",
-      "name": "Organization details",
-      "invite": "Invite your team",
-      "launch": "Launch",
-      "complete": "Complete",
-      "current": "Current step",
-      "next": "Next",
-      "later": "After creation"
+  "create": {
+    "signedInAs": "Signed in as {{name}}",
+    "steps": {
+      "plan": "Plan",
+      "project": "Your project",
+      "details": "Details",
+      "sales": "Talk to sales"
     },
-    "plans": {
-      "billingCycle": "Billing cycle",
+    "plan": {
+      "title": "Create an organisation",
+      "lead": "Choose a plan for it. You'll be its owner, and you can change the plan later in Billing.",
+      "firstTitle": "Set up your organisation",
+      "firstLead": "Your account is ready. Choose a plan for your organisation; you'll be its owner, and you can change the plan later in Billing.",
+      "cycle": "Billing cycle",
       "month": "Monthly",
       "year": "Yearly",
-      "saving": "Save {{percent}}%",
+      "yearSaving": "Yearly · save {{percent}}%",
       "currency": "Currency",
+      "group": "Plan",
       "popular": "Most popular",
-      "current": "Current",
-      "currentPlan": "Current plan",
-      "chooseFree": "Choose Free",
-      "choose": "Choose plan",
-      "contactSales": "Contact sales",
       "custom": "Custom",
       "perMonth": "/ month",
       "perYear": "/ year",
-      "annualContract": "Annual contract",
-      "yearlyEquivalent": "≈ {{amount}} / month, billed yearly",
-      "unavailable": "Unavailable in this currency or cycle",
-      "loading": "Loading plans",
-      "empty": "No plans are available right now.",
-      "error": "We couldn’t load the plans. Please try again.",
-      "retry": "Try again"
+      "instead": "Instead of {{price}}",
+      "free": "Free for as long as you like",
+      "sales": "Annual contract, through our sales team",
+      "monthly": "Billed monthly",
+      "orYearly": "Or {{price}} billed yearly, <save>saving {{saving}}</save>",
+      "yearly": "{{monthly}} a month · <save>you save {{saving}} ({{percent}}%)</save>",
+      "unavailable": "Not offered in {{currency}} on this billing cycle",
+      "loading": "Loading the plans",
+      "errorTitle": "We couldn't load the plans",
+      "errorBody": "Check your connection, then try again. Nothing has been created.",
+      "emptyTitle": "No plans are available right now",
+      "emptyBody": "Try again in a few minutes. Nothing has been created.",
+      "retry": "Try again",
+      "continue": "Continue with {{plan}}",
+      "talkToSales": "Talk to sales"
+    },
+    "project": {
+      "title": "Tell us about your project",
+      "lead": "Optional. We use it to put the right setup steps first. Skip it if you like.",
+      "useCase": "What are you building?",
+      "useCaseHint": "For example, a B2B SaaS product or internal tools.",
+      "teamSize": "How big is your team?",
+      "teamSizeHint": "Everyone working on this project.",
+      "role": "What's your role?",
+      "roleHint": "So we can suggest the right guides.",
+      "placeholder": "Choose one",
+      "skip": "Skip"
+    },
+    "details": {
+      "title": "Name your organisation",
+      "lead": "This is how your team and the people you invite will see it.",
+      "name": "Organisation name",
+      "namePlaceholder": "e.g. Acme Pvt Ltd",
+      "nameHint": "Shown across Qeet ID and to the people you invite.",
+      "nameRequired": "Enter a name for the organisation.",
+      "slug": "Organisation URL",
+      "slugPlaceholder": "e.g. acme",
+      "slugHint": "Lowercase letters, numbers and hyphens. It can't be changed later.",
+      "slugInvalid": "Use 2 to 64 lowercase letters, numbers and hyphens.",
+      "slugTaken": "{{slug}} is already taken. Choose another URL; the name can stay the same.",
+      "region": "Data region",
+      "regionHint": "Where its data is stored.",
+      "logo": "Logo",
+      "logoHint": "We'll use its initials until you add one.",
+      "logoTypes": "PNG, JPG, SVG or WebP, up to 2 MB",
+      "logoPreview": "Logo preview",
+      "logoUnreadable": "That file couldn't be read. Try another image.",
+      "failedTitle": "The organisation wasn't created",
+      "create": "Create organisation",
+      "creating": "Creating…",
+      "payment": "Continue to payment",
+      "opening": "Opening payment…"
+    },
+    "sales": {
+      "title": "Talk to our sales team",
+      "lead": "Enterprise is set up with our team: SSO enforcement, SCIM, data residency and an SLA.",
+      "name": "Your name",
+      "email": "Work email",
+      "emailRequired": "Enter your work email, so our team can reply.",
+      "company": "Company",
+      "companyPlaceholder": "e.g. Acme Pvt Ltd",
+      "teamSize": "Team size",
+      "message": "What are you looking for?",
+      "messagePlaceholder": "e.g. SAML for 3 customer IdPs, data in India, go-live in March",
+      "send": "Send to sales",
+      "sending": "Sending…",
+      "failedTitle": "Your request wasn't sent",
+      "sentTitle": "Thanks, we'll be in touch",
+      "sentLead": "Our team will be in touch shortly to plan your rollout.",
+      "sentAlertTitle": "Your request was sent",
+      "sentAlertBody": "We'll reply to {{email}}. No organisation has been created yet.",
+      "startFree": "Start on Free meanwhile"
     },
     "summary": {
-      "plan": "{{name}} plan",
-      "description": "Your selected organization plan",
-      "change": "Change plan"
+      "label": "Your plan",
+      "change": "Change",
+      "free": "Free",
+      "custom": "Custom pricing",
+      "perMonth": "{{price}} a month",
+      "perYear": "{{price}} a year",
+      "next": "What happens next",
+      "nextFree": "It's created straight away, and you're taken into it.",
+      "nextPaid": "You'll pay on the next page. The organisation is created once the payment goes through; leave before paying and nothing is created or charged.",
+      "nextSales": "Our team gets in touch to plan your rollout. You can start on Free meanwhile and move up later."
     },
+    "back": "Back",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "leave": {
+      "select-organization": "Back to your organisations",
+      "organizations": "Back to Organizations",
+      "home": "Back to the console"
+    },
+    "signOut": "Sign out",
+    "cancelled": {
+      "title": "Payment cancelled",
+      "body": "Nothing was created or charged. Your details are kept; continue when you're ready.",
+      "bodyPlain": "Nothing was created or charged. Choose a plan to try again."
+    },
+    "finishing": {
+      "title": "Finishing your organisation",
+      "lead": "Payment received for {{name}} on {{plan}}. You'll be taken into it in a moment.",
+      "leadPlain": "Payment received. You'll be taken into your new organisation in a moment.",
+      "status": "Setting up {{name}}…",
+      "statusPlain": "Setting up your organisation…",
+      "slowTitle": "Still setting it up",
+      "slowLead": "Payment received for {{name}} on {{plan}}. It's taking longer than usual.",
+      "slowLeadPlain": "Payment received. It's taking longer than usual.",
+      "slowAlertTitle": "Your payment went through",
+      "slowAlertBody": "The organisation appears as soon as it's ready. Nothing more is charged if you check again or leave this page. If it isn't there in a few minutes, contact support.",
+      "checkAgain": "Check again"
+    }
+  },
+  "setup": {
     "profile": {
-      "title": "Tell us about your project",
-      "description": "This helps us personalize your setup and recommendations.",
-      "useCase": "What are you building?",
-      "useCaseHint": "e.g. B2B SaaS, consumer app, internal tools, etc.",
-      "teamSize": "How big is your team?",
-      "teamSizeHint": "Total number of people working on this project.",
-      "role": "Your role",
-      "roleHint": "Helps us tailor content and recommendations.",
-      "placeholder": "Select…",
       "useCases": {
         "consumer": "Consumer app (sign-ups & social login)",
         "internal": "Internal tools (employees & SSO)",
@@ -74,113 +152,11 @@
         "other": "Other"
       }
     },
-    "organization": {
-      "title": "Create your organization",
-      "description": "This will be your home in Qeet ID. You can update these details later.",
-      "name": "Organization name",
-      "namePlaceholder": "Acme Corporation",
-      "nameHint": "This is the name that will appear across Qeet ID for your team.",
-      "slug": "Slug",
-      "slugPlaceholder": "acme",
-      "slugHint": "Lowercase letters, numbers and hyphens. Used in URLs.",
-      "region": "Data region",
-      "regionHint": "Choose where your organization’s data will be stored.",
-      "logo": "Logo",
-      "logoHint": "Optional — we’ll use an initials avatar if you skip it.",
-      "create": "Create organization",
-      "enterprise": "Create & contact sales",
-      "payment": "Continue to payment",
-      "busy": "Setting up…"
-    },
-    "artwork": {
-      "organization": "Your organization",
-      "users": "Users",
-      "applications": "Applications",
-      "security": "Security",
-      "more": "And more…",
-      "headlineFirst": "Secure identities.",
-      "headlineSecond": "Build what’s next.",
-      "caption": "Built for modern teams."
-    },
-    "guidance": {
-      "profileTitle": "Why we ask this",
-      "profileIntro": "These details help us:",
-      "organizationTitle": "A strong foundation for your team",
-      "organizationIntro": "Your organization brings your team, applications and security settings together in one place.",
-      "organizationIntroDark": "This information helps us to:",
-      "organizationBenefits": {
-        "workspace": "Create a secure and isolated workspace for your team",
-        "region": "Route your data to the right region",
-        "defaults": "Personalize your experience and defaults",
-        "identity": "Represent your organization across Qeet ID"
-      },
-      "tipsTitle": "Tips for success",
-      "benefits": {
-        "checklist": "Tailor your setup checklist",
-        "integrations": "Recommend relevant integrations",
-        "dashboard": "Personalize your dashboard experience",
-        "resources": "Share helpful resources"
-      },
-      "changeTitle": "You can change this later",
-      "changeDescription": "As your needs evolve, you can update these details in your organization settings.",
-      "tips": {
-        "name": {
-          "title": "Naming tips",
-          "description": "Use a clear, recognizable name. You can change it later in organization settings."
-        },
-        "region": {
-          "title": "Data residency",
-          "description": "Choose the region closest to your users to meet your compliance and performance requirements."
-        },
-        "branding": {
-          "title": "Branding can be changed later",
-          "description": "Your logo is optional and can be updated anytime. We’ll use your initials if you skip it for now."
-        }
-      },
-      "quote": "“Secure identities for a more open world.”",
-      "team": "— The Qeet ID team"
-    },
-    "notes": {
-      "nextTitle": "What happens next?",
-      "nextDescription": "Get up and running in a few simple steps.",
-      "next": {
-        "plan": {
-          "title": "Choose your plan",
-          "description": "Select the plan that fits your needs."
-        },
-        "details": {
-          "title": "Create your organization",
-          "description": "Set up your project and organization details."
-        },
-        "launch": {
-          "title": "Start building",
-          "description": "Invite your team and connect your applications."
-        }
-      },
-      "securityTitle": "Security & billing, by design",
-      "securityDescription": "Built with account protection and clear billing in mind.",
-      "learnMore": "Learn more about Qeet ID security (opens in a new tab)",
-      "protections": {
-        "payments": "Secure hosted checkout",
-        "invoices": "Billing and tax invoices",
-        "control": "Plan changes as you grow"
-      }
-    },
     "checklistIntro": {
       "b2bSaas": "Get customers signing into your product — register your app first.",
       "consumer": "Wire up sign-in and make it yours — start with your app and branding.",
       "internal": "Bring your team in and connect your identity provider.",
       "apiPlatform": "Set up machine-to-machine access — start with an API key."
-    },
-    "checkout": {
-      "cancelled": "Payment cancelled — no organization was created.",
-      "finishing": "Payment received — we're finishing your organization setup. This can take a moment; refresh shortly or contact support if it doesn't appear."
     }
-  },
-  "createOrgFlow": {
-    "organizationCreatedOurTeam": "Organization created — our team will reach out about Enterprise setup."
-  },
-  "orgOnboarding": {
-    "qeetId": "Qeet ID"
   }
 }

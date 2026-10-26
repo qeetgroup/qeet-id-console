@@ -83,14 +83,14 @@ export interface ReceivedInvite {
 }
 
 /**
- * Returns pending invitations addressed to the current user's email, so a user with no
- * organization can find them in-app rather than only through the email link.
+ * Returns pending invitations addressed to the current user's email, so the organisation picker
+ * can offer them, not only the email link: to a new account first, and to a member as well.
  */
 export function useMyInvitations() {
   return useQuery({
     queryKey: authKeys.invitations(),
-    // A server without this endpoint (404/501) yields no invites: this renders on the pre-org
-    // landing screen, where an error toast would be noise.
+    // A server without this endpoint (404/501) yields no invites: the organisation picker asks on
+    // every visit, where an error toast would be noise.
     queryFn: async (): Promise<{ items: ReceivedInvite[] }> => {
       try {
         return await api<{ items: ReceivedInvite[] }>("/v1/me/invites");
@@ -131,6 +131,6 @@ export function useAcceptInvitation() {
     onSuccess: () => {
       if (typeof window !== "undefined") window.location.assign("/");
     },
-    meta: { successMessage: "authentication:toast.invitationAccepted" },
+    meta: { silent: true }, // the picker shows a failure in place; success reloads into it
   });
 }

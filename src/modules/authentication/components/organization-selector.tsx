@@ -17,6 +17,11 @@ import {
 import { errorMessage } from "@/platform/errors/user-message";
 import { isOneOf } from "@/shared/utils/one-of";
 import { switchToTenant } from "../api/flows";
+import {
+  useAcceptInvitation,
+  useDeclineInvitation,
+  useMyInvitations,
+} from "../api/flows-invitations";
 import { useEligibleOrganizations } from "../api/organization-selection";
 import {
   filterOrganizations,
@@ -24,6 +29,12 @@ import {
   organizationImage,
 } from "../organization-selection-model";
 import { EntryAccount } from "./entry-shell";
+import {
+  type InvitationAction,
+  InvitationList,
+  InvitedView,
+  type PickerInvitation,
+} from "./invitation-list";
 
 // The roles and plans with their own copy; any other shows as the server names it.
 const KNOWN_ROLES = ["owner", "admin", "member"] as const;
@@ -40,6 +51,12 @@ export type OrganizationSelectorViewProps = {
   fetching: boolean;
   signingOut?: boolean;
   entryError?: string | null;
+  /** Invitations waiting for this email; each can be joined or declined here. */
+  invitations?: readonly PickerInvitation[];
+  invitationAction?: InvitationAction;
+  joinError?: string | null;
+  onJoin?: (invitation: PickerInvitation) => void;
+  onDecline?: (invitation: PickerInvitation) => void;
   onRetry: () => unknown;
   onContinue: (organizationId: string) => Promise<unknown>;
   onCreate: () => void;
@@ -58,20 +75,43 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
   const [retry, setRetry] = useState(0);
   const automaticAttempt = useRef(-1);
   useIdleLogout(10 * 60 * 1000);
+  // Invitations come before going on: someone invited joins their team rather than being taken
+  // into an organisation, or on to create one. If they can't be read, nothing waits for them.
+  const invitationsQ = useMyInvitations();
+  const invitations = invitationsQ.data?.items ?? [];
+  const invitationsKnown = !invitationsQ.isPending;
+  const accept = useAcceptInvitation();
+  const decline = useDeclineInvitation();
+  const [invitationAction, setInvitationAction] = useState<InvitationAction>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   useEffect(() => {
     if (
       !organizations.isSuccess ||
+      !invitationsKnown ||
+      invitations.length > 0 ||
       organizations.data.length > 1 ||
       automaticAttempt.current === retry
     )
       return;
     automaticAttempt.current = retry;
+    // One organisation opens; none goes on to create the first.
     const only = organizations.data[0];
-    const enter =
-      only && only.id !== tenantId ? switchToTenant(only.id) : navigate({ to: "/", replace: true });
+    const enter = !only
+      ? navigate({ to: "/create-organization", replace: true })
+      : only.id !== tenantId
+        ? switchToTenant(only.id)
+        : navigate({ to: "/", replace: true });
     void Promise.resolve(enter).catch((failure) => setEntryError(errorMessage(failure)));
-  }, [organizations.data, organizations.isSuccess, tenantId, navigate, retry]);
+  }, [
+    organizations.data,
+    organizations.isSuccess,
+    invitationsKnown,
+    invitations.length,
+    tenantId,
+    navigate,
+    retry,
+  ]);
 
   return (
     <OrganizationSelectorView
@@ -79,10 +119,33 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
       user={me.isError ? undefined : me.data}
       loading={
         organizations.isPending ||
-        (organizations.isSuccess && organizations.data.length < 2 && !entryError)
+        !invitationsKnown ||
+        (organizations.isSuccess &&
+          organizations.data.length < 2 &&
+          invitations.length === 0 &&
+          !entryError)
       }
       error={organizations.isError}
       entryError={entryError}
+      invitations={invitations}
+      invitationAction={invitationAction}
+      joinError={joinError}
+      onJoin={(invitation) => {
+        setJoinError(null);
+        setInvitationAction({ id: invitation.id, action: "join" });
+        // Success reloads into the organisation, so the action stays on until then.
+        accept.mutate(invitation.id, {
+          onError: (failure) => {
+            setInvitationAction(null);
+            setJoinError(errorMessage(failure));
+          },
+        });
+      }}
+      onDecline={(invitation) => {
+        setJoinError(null);
+        setInvitationAction({ id: invitation.id, action: "decline" });
+        decline.mutate(invitation.id, { onSettled: () => setInvitationAction(null) });
+      }}
       fetching={organizations.isFetching}
       signingOut={logout.isPending}
       onRetry={async () => {
@@ -129,7 +192,8 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
     i18n.language,
   );
   const visible = collapsed ? matches.slice(0, SHORT_LIST) : matches;
-  const disabled = opening !== null || !!props.signingOut;
+  const disabled = opening !== null || !!props.signingOut || !!props.invitationAction;
+  const invitations = props.invitations ?? [];
 
   const roleLabel = (name: string) => {
     const role = name.toLowerCase();
@@ -169,6 +233,29 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
     </Button>
   );
 
+  // Invited, with no organisation yet: the invitations are the page, creating one the alternative.
+  if (!props.loading && !props.error && organizations.length === 0 && invitations.length > 0) {
+    return (
+      <InvitedView
+        invitations={invitations}
+        user={props.user}
+        pending={props.invitationAction ?? null}
+        joinError={props.joinError}
+        disabled={disabled}
+        onJoin={(invitation) => props.onJoin?.(invitation)}
+        onDecline={(invitation) => props.onDecline?.(invitation)}
+        onCreate={props.onCreate}
+        onSignOut={props.onSignOut}
+      />
+    );
+  }
+
+  const joinFailed = props.joinError && (
+    <Alert tone="danger" title={t("organizationSelection.joinFailedTitle")} announce="urgent">
+      {props.joinError}
+    </Alert>
+  );
+
   return (
     <>
       <div className="entry-heading">
@@ -203,6 +290,24 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
         </Alert>
       ) : (
         <>
+          {invitations.length > 0 && (
+            <>
+              <Text size="sm" tone="subtle">
+                {t("organizationSelection.invitations")}
+              </Text>
+              <InvitationList
+                invitations={invitations}
+                pending={props.invitationAction ?? null}
+                disabled={disabled}
+                onJoin={(invitation) => props.onJoin?.(invitation)}
+                onDecline={(invitation) => props.onDecline?.(invitation)}
+              />
+              {joinFailed}
+              <Text size="sm" tone="subtle">
+                {t("organizationSelection.available")}
+              </Text>
+            </>
+          )}
           {long && (
             <TextField
               type="search"

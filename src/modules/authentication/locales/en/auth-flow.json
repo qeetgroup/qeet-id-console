@@ -23,7 +23,6 @@
     "notReported": "Not reported",
     "noMatches": "No matching organisations",
     "create": "Create a new organisation",
-    "createDescription": "Choose a plan and set up another organisation for your account.",
     "accountSettings": "Account settings",
     "description_one": "You belong to {{count}} organisation. Pick it to open its console.",
     "description_other": "You belong to {{count}} organisations. Pick one to open its console.",
@@ -34,11 +33,21 @@
     "recentLabel": "Recently used",
     "allLabel": "All organisations, A to Z",
     "showAll": "Show all {{count}} organisations",
-    "showRecent": "Show recently used only"
-  },
-  "layout": {
-    "skipToForm": "Skip to authentication form",
-    "legalNavigation": "Legal and trust"
+    "showRecent": "Show recently used only",
+    "invitations": "Invitations",
+    "invitedAs": "Invited as {{email}} · expires {{when}}",
+    "join": "Join",
+    "joinNamed": "Join {{name}}",
+    "decline": "Decline",
+    "declineNamed": "Decline the invitation to {{name}}",
+    "joinTitle": "Join {{name}}",
+    "joinLead": "You've been invited to {{name}}. Join to open its console with your team.",
+    "joining": "Joining {{name}}…",
+    "declineInvitation": "Decline the invitation",
+    "invitedTitle": "You've been invited",
+    "invitedLead": "Join your team's organisation to open its console.",
+    "createInstead": "Create a new organisation instead",
+    "joinFailedTitle": "We couldn't add you to that organisation"
   },
   "passkey": {
     "unsupported": "Passkeys aren’t available in this browser. Try a supported browser or use another sign-in method.",
@@ -283,14 +292,7 @@
     "resendIn": "You can resend in <time>{{time}}</time>"
   },
   "entry": {
-    "help": "Need help?",
     "or": "or",
-    "language": "Language",
-    "legal": {
-      "terms": "Terms",
-      "privacy": "Privacy",
-      "trust": "Trust Center"
-    },
     "panel": {
       "label": "About Qeet ID",
       "title": "Your fingerprint is the password",

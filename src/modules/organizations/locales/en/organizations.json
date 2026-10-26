@@ -40,10 +40,6 @@
       "title": "Delete this organization?",
       "delete": "Delete"
     },
-    "create": {
-      "title": "New organization",
-      "description": "You'll become the owner of this organization and switch into it once it's created."
-    },
     "edit": {
       "title": "Edit organization",
       "description": "Slug can't be changed once an organization is created.",

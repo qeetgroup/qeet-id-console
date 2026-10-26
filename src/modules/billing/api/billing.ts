@@ -286,3 +286,18 @@ export function startSignupCheckout(input: {
     },
   });
 }
+
+/** An Enterprise enquiry. `source` records where it was sent from, e.g. "onboarding". */
+export interface SalesLead {
+  name: string;
+  email: string;
+  company: string;
+  team_size: string;
+  message: string;
+  source: string;
+}
+
+/** Sends an enquiry the server stores and emails to sales, so none is lost to a mail client. */
+export function submitSalesLead(lead: SalesLead): Promise<{ status: string }> {
+  return api<{ status: string }>("/v1/sales/leads", { method: "POST", body: lead });
+}

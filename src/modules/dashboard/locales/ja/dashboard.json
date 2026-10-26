@@ -62,9 +62,5 @@
     "viewAll": "すべて表示",
     "emptyTitle": "まだアクティビティがありません",
     "emptyDescription": "ユーザーが組織と操作するとイベントが表示されます。"
-  },
-  "noWorkspace": {
-    "title": "最初の組織を作成",
-    "cta": "組織を作成"
   }
 }

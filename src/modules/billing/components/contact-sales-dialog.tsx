@@ -27,16 +27,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TEAM_SIZES } from "@/shared/data/team-sizes";
-import { api } from "@/platform/api/client";
 
-type LeadBody = {
-  name: string;
-  email: string;
-  company: string;
-  team_size: string;
-  message: string;
-  source: string;
-};
+import { type SalesLead, submitSalesLead } from "../api/billing";
 
 export function ContactSalesDialog({
   open,
@@ -50,8 +42,7 @@ export function ContactSalesDialog({
   const { t, i18n } = useTranslation(["billing", "common"]);
   const [teamSize, setTeamSize] = useState("");
   const submitM = useMutation({
-    mutationFn: (body: LeadBody) =>
-      api<{ status: string }>("/v1/sales/leads", { method: "POST", body }),
+    mutationFn: (lead: SalesLead) => submitSalesLead(lead),
     meta: { successMessage: "billing:toast.thanksOurTeamWill" },
     onSuccess: () => onOpenChange(false),
   });

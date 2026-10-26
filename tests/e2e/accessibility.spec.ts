@@ -1,5 +1,5 @@
 // WCAG 2.2 AA, checked by axe in a real browser against the production build: the signed-out
-// screens and the main console pages in both themes, and the overlays a page scan can't reach
+// screens, creating an organisation and the main console pages in both themes, and the overlays a page scan can't reach
 // (command palette, a create sheet, a confirm dialog, a menu). Any violation fails.
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Locator, type Page, test } from "@playwright/test";
@@ -8,9 +8,11 @@ import {
   ADMIN,
   BACKEND_URL,
   hydrated,
+  INVITED,
   MEMBER,
   ORG_TWO,
   signIn,
+  signInToEntry,
   signInToPicker,
   signInUnverified,
   UNVERIFIED,
@@ -173,6 +175,23 @@ for (const theme of THEMES) {
     test("select-organization", async ({ page }) => {
       await signInToPicker(page);
       await settle(page, page.getByText(ORG_TWO.name, { exact: true }));
+      await expectAccessible(page);
+    });
+
+    test("select-organization, invited", async ({ page }) => {
+      await signInToEntry(page, INVITED.email, "/select-organization");
+      await settle(page, page.getByRole("button", { name: "Join Org Two" }));
+      await expectAccessible(page);
+    });
+
+    test("create-organization", async ({ page }) => {
+      await signIn(page, ADMIN.email);
+      await page.goto("/create-organization?from=organizations");
+      await settle(page, page.getByRole("radio", { name: "Pro" }));
+      await expectAccessible(page);
+      await page.getByRole("button", { name: "Continue with Free" }).click();
+      await page.getByRole("button", { name: "Skip", exact: true }).click();
+      await settle(page, page.getByRole("textbox", { name: "Organisation name" }));
       await expectAccessible(page);
     });
 
