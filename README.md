@@ -161,6 +161,44 @@ suspension (`people-suspended.tsx`). The old `/users/suspended` address redirect
 The rules behind them are pure functions with their own tests: `invitations-model.ts`,
 `deleted-model.ts` and `add-people-model.ts`.
 
+## Groups list
+
+Directory › Groups (`/groups`) is rebuilt on `@qeetrix/react`: `modules/groups/components/list/`.
+**The table is the tree.** Families fold; up to 50 groups they start open, past that folded, so the
+list opens at the top level. Pages hold 25, 50 or 100 rows, and a family that runs past a page
+break carries its path onto the next page ("Continued · Engineering › Identity"). A search or a
+filter lists the matches flat, each with its path.
+
+- `groups-list-page.tsx`: the header (breadcrumb, actions, the band), the table and its pager, and
+  the drawers and dialogs it opens. `../group-drawer.tsx` is New group and Edit group in one
+  drawer: the name checked as it's typed (unique in an organisation), "Inside" searched by path,
+  members as pills, and the role's reach said plainly. `../group-members-drawer.tsx` is a group's
+  members: add several at once (one toast), remove one through the confirm, which says what they
+  lose. `../group-templates-drawer.tsx` makes a template's groups inside any group, flagging names
+  already taken first (the server makes all or none); `../import-groups-drawer.tsx` reads a CSV (or
+  pasted rows), checks every row before anything is sent, then shows what wasn't made and why;
+- `groups-band.tsx`: the Users band's parts (`people.css`, loaded with the console's styles): groups
+  over 15 months, the share of people in a group, group sizes, and what needs a look (empty groups,
+  roles granted to no one, people in no group). Each opens the list, or Users, filtered to it;
+- `groups-toolbar.tsx`: search, size, roles granted and the group to look inside, then Expand or
+  Collapse all; `groups-table.tsx`: the tree cell, the columns and a row's menu.
+
+The filters live in the address (`?q=&size=&grants=&role=&inside=&look=`), and the rules are pure
+functions in `groups-model.ts`. A group's size is the people it covers, its groups' included; the
+roles it grants reach only its own members (the server's rule), so a group that grants a role and
+has no members grants it to no one. The server lists groups without their roles (QTID-961), so the
+page reads each group's roles, all of them up to 100 groups and only the page's past that. The
+library's Table has no tree rows yet (QTRX-25): each group's name is its link, beside its fold
+button. Users takes `?group=none` (people in no group) from the band's link.
+
+A group's page (`/groups/:id`, `components/page/`) has its facts in the header (members, the roles
+it grants, where it sits, when it was made), then ruled sections: where it sits (`group-family.tsx`,
+its family as a picture, each group sized by people and opening its page), members, the roles it
+grants, the groups inside it, and details. Deleting a group deletes the groups inside it too (their
+parent link cascades), with their memberships and role grants; `use-delete-group.ts` says so in the
+confirm, from the list or the page. The console's one confirm (`SensitiveActionProvider`) is the
+`@qeetrix/react` alert dialog: red intent line for a destructive action, amber otherwise.
+
 ## Styling rules
 
 - Use semantic tokens such as `bg-card`, `text-muted-foreground`, `text-success`, and `border-border`.

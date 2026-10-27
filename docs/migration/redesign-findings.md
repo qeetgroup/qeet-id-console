@@ -133,6 +133,21 @@ Each line: the question, then the options; **(R)** marks the recommended one.
 - Directories tabs: keep 6 · **(R)** 4 (Connections, Sync activity, Sync errors, Mappings); SCIM and
   LDAP from Add connection and a connection's row.
 - Group detail: **(R)** one page of ruled sections · tabs.
+- **Groups list, redesigned for scale (2026-10-27, approved and built):** the table is the tree
+  (families fold; over 50 groups they start folded; 25/50/100 rows a page; a family past a page
+  break carries its path), search and filters list matches flat with their path, and the Users
+  band's parts sit above it. The node-link groups tree stays off the list (unreadable past ~50
+  groups); a group's own family picture goes on its page. Mock-ups: `groups/` (sample of 261
+  groups for scale). QTID-961 (roles in the list), QTRX-25 (Table tree rows); Users gained
+  `?group=none`.
+- **The rest of Groups (2026-10-27, approved and built):** New/Edit group drawer (name checked as
+  typed, "Inside" by path, members as pills, the role's reach said plainly); Members drawer; New
+  from a template (any parent; taken names flagged, since apply is all or nothing); Import (CSV or
+  paste, every row checked before sending); a group's page with its family picture. Delete now says
+  that the groups inside go too (`parent_id ON DELETE CASCADE`), and the console's shared confirm is
+  the `@qeetrix/react` alert dialog. **Open server gap (user to decide on a QTID ticket):** a
+  template's groups have fixed names and names are unique, so each template can be made once per
+  organisation; applying should take a name or prefix for its groups.
 - Server error text on Sync errors: **(R)** a small "For your directory admin" code line · hide it.
 
 **Organisations** — `organizations/`
@@ -262,6 +277,8 @@ Asked for by several modules (most-requested first):
   `dashboard/components/overview/overview-parts.tsx`): `Sparkline` (a line, a 10% wash, a ringed
   end dot; a shared scale across a set), `Gauge` (a semicircle against a target, square ends),
   `DotPlot` (ranked amounts) and `SplitBar` (parts of one whole with a 2px gap).
+- **`Table` tree rows (QTRX-25):** depth, fold and open, the fold control outside the row link, a
+  row's path when its parent is off the page; the Groups list draws its own for now.
 - **Part-of-whole charts (QTRX-24):** a nested treemap and proportional circles, drawn in the
   console for the Dashboard's Organisation row (`overview-organisation.tsx`, `squarify()` in
   `overview-directory-model.ts`).
