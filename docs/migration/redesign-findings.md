@@ -95,9 +95,25 @@ Each line: the question, then the options; **(R)** marks the recommended one.
   - With it, the user had the console stop saving the set-up answers on the first dashboard load
     (`useApplyOnboardingProfile`, removed): `PATCH /v1/tenants/{id}` needs a step-up, so a new
     administrator met a "Confirm it's you" they couldn't pass. No server change.
+  - **One overview (the user's decision, 2026-10-27).** The area overviews (Applications,
+    Authentication, Directory, Authorization, Security, Developer, Settings) are gone: they repeated
+    the Dashboard and added a click before the work. Each old URL redirects to its area's main page
+    (`/auth/connections/oidc`, `/auth/login-methods/password`, `/users`, `/authorization/roles`,
+    `/security/threats/bots` (the sidebar's first page until Threats' landing is decided),
+    `/auth/api/keys`, `/settings/organization/general`). What only they showed moved to the
+    Dashboard, nothing twice:
+    - Needs attention: a directory connection that can't reach its server (an open critical
+      connection error), groups with no members, wildcard permissions, allow policies with no
+      condition;
+    - Setup: a Groups row, LDAP "Failing" when its check fails, departments in Your team;
+    - a new Organisation row before Setup: departments and their teams (treemap, each opens Users
+      filtered to it) and where people work (circles by city, a row per country).
+    The groups tree goes to the Groups page. Mock-up: `directory/dashboard-row/`; branch
+    `feat/dashboard-only-overview`.
 - Applications landing: **(R)** `/applications` is the one Applications list, `/auth/connections/oidc`
   redirects to it, the sidebar loses Applications › Overview · or keep a separate landing page.
 - Settings overview: **(R)** drop it, Settings opens on General · or keep the lean list.
+  *Decided 2026-10-27: dropped (one overview).*
 - Authentication overview numbers: **(R)** none at the top (shares live in the methods table) · or
   a 3-number row.
 - Two-step figure: **(R)** users stats · or analytics.
@@ -112,7 +128,8 @@ Each line: the question, then the options; **(R)** marks the recommended one.
 - Role on import: **(R)** one role for everyone in the file (needs server) · bulk assign afterwards.
 
 **Directory and Groups** — `directory/`
-- Directory landing: **(R)** keep the overview · open Directory on Users.
+- Directory landing: **(R)** keep the overview · open Directory on Users. *Decided 2026-10-27: open
+  on Users (one overview).*
 - Directories tabs: keep 6 · **(R)** 4 (Connections, Sync activity, Sync errors, Mappings); SCIM and
   LDAP from Add connection and a connection's row.
 - Group detail: **(R)** one page of ruled sections · tabs.
@@ -147,7 +164,8 @@ Each line: the question, then the options; **(R)** marks the recommended one.
 - SAML apps: **(R, this wave)** stay under SSO · an Applications "SAML apps" tab.
 
 **Authorization lists** — `authz-lists/`
-- Overview: **(R)** keep the lean overview (findings + changes) · open on Roles.
+- Overview: **(R)** keep the lean overview (findings + changes) · open on Roles. *Decided
+  2026-10-27: open on Roles; the findings are in the Dashboard's Needs attention.*
 - Roles vs RBAC: **(R)** RBAC is the comparison matrix, Roles is where you change a role, one shared
   drawer · put the matrix on Roles and drop RBAC.
 - Permissions vs Resources: **(R)** Resources is the cross-model view · fold into Permissions.
@@ -186,7 +204,8 @@ Each line: the question, then the options; **(R)** marks the recommended one.
 - GDPR data-export requests (server lists them, no console page): **(R)** later · add to GDPR tab.
 
 **Developer overview and webhooks** — `developer-overview/`
-- Overview: **(R)** keep the attention overview · drop it, open on API keys.
+- Overview: **(R)** keep the attention overview · drop it, open on API keys. *Decided 2026-10-27:
+  dropped, opens on API keys; its alerts were already the Dashboard's.*
 - Infrastructure: **(R)** read-only facts page · hide until the server reports health.
 - Off endpoint words: **(R)** Turned off / Disabled (§2) · one word "Off".
 
@@ -243,6 +262,9 @@ Asked for by several modules (most-requested first):
   `dashboard/components/overview/overview-parts.tsx`): `Sparkline` (a line, a 10% wash, a ringed
   end dot; a shared scale across a set), `Gauge` (a semicircle against a target, square ends),
   `DotPlot` (ranked amounts) and `SplitBar` (parts of one whole with a 2px gap).
+- **Part-of-whole charts (QTRX-24):** a nested treemap and proportional circles, drawn in the
+  console for the Dashboard's Organisation row (`overview-organisation.tsx`, `squarify()` in
+  `overview-directory-model.ts`).
 - **Chart palette (tokens):** the `--qx-color-dataviz-categorical-*` slots fail the dataviz
   validator.
   - In dark mode 7 of 8 sit above the lightness band (L 0.67); only slot 1 passes.

@@ -98,8 +98,10 @@ safe error handling, and CSRF protection from the platform boundary. See
 
 ## Dashboard command center
 
-The Dashboard (`/`) is rebuilt on `@qeetrix/react`: `modules/dashboard/components/overview/`.
-`overview-page.tsx` reads each source the person may see, and passes it to the panels:
+The Dashboard (`/`) is rebuilt on `@qeetrix/react`: `modules/dashboard/components/overview/`. It
+is the console's one overview: the areas have none, and their old overview URLs redirect to each
+area's main page. `overview-page.tsx` reads each source the person may see (the directory, groups,
+authorization and people through `use-directory-insights.ts`), and passes it to the panels:
 
 - `overview-pulse.tsx`: four measures across the top, each with a sparkline; two-step coverage
   on a meter with its target;
@@ -110,13 +112,16 @@ The Dashboard (`/`) is rebuilt on `@qeetrix/react`: `modules/dashboard/component
   two-step coverage as a gauge;
 - `overview-people.tsx`: weekly active people, and the applications people use;
 - `overview-activity.tsx`: the latest events (`use-dashboard-activity.ts`, refreshed live);
+- `overview-organisation.tsx`: departments and their teams as a treemap, and where people work;
 - `overview-setup.tsx`: the organisation's set-up as a checklist;
 - `overview-parts.tsx`: the ruled panels and four small charts the library doesn't have yet
   (proposals for `@qeetrix/react`).
 
 The rules behind the numbers are plain functions with their own tests: `overview-model.ts` (what
-needs attention, bursts, axes, app usage) and `overview-setup-model.ts` (the checklist). The page
-only reads: loading it never changes the organisation.
+needs attention, bursts, axes, app usage), `overview-setup-model.ts` (the checklist) and
+`overview-directory-model.ts` (the directory's and authorization's alerts, the LDAP and Groups items,
+the organisation's shape and the treemap layout). The page only reads: loading it never changes
+the organisation.
 
 ## Users list
 
