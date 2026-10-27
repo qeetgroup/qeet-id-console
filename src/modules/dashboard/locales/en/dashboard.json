@@ -593,5 +593,250 @@
       "tryAgain": "Try again"
     },
     "chooseOrganization": "Choose an organisation"
+  },
+  "overview": {
+    "title": "Overview",
+    "description": "How sign-in is going, and what needs you.",
+    "invite": "Invite people",
+    "chart": "Chart",
+    "table": "Table",
+    "groups": {
+      "security": "Sign-in and security",
+      "people": "People and apps",
+      "setup": "Setup"
+    },
+    "pulse": {
+      "signIns": "Sign-ins today",
+      "signInsNote": {
+        "up": "Up from {{n}} yesterday · 14 days",
+        "down": "Down from {{n}} yesterday · 14 days",
+        "same": "The same as yesterday · 14 days"
+      },
+      "failed": "Failed sign-ins, 24 hours",
+      "failedNote": "{{n}} yesterday · 14 days",
+      "active": "People active today",
+      "activeNote": "{{pct}}% of the {{mau}} active this month",
+      "twoStep": "Two-step verification",
+      "twoStepNote": "{{have}} of {{total}} people · target {{target}}%",
+      "twoStepMeter": "Two-step verification: {{pct}}% of people, against a target of {{target}}%"
+    },
+    "signIns": {
+      "title": "Sign-ins, last 14 days",
+      "note": "Every sign-in, and the failed ones on the same scale. Hover a day for its methods.",
+      "view": "Sign-ins: view",
+      "day": "Day",
+      "signIns": "Sign-ins",
+      "failed": "Failed",
+      "signInsLower": "sign-ins",
+      "failedLower": "failed",
+      "endToday": "{{n}} today",
+      "endFailed": "{{n}} failed"
+    },
+    "methods": {
+      "title": "How people sign in",
+      "note": "Share of the last 30 days, and each method's last 14 days on one scale",
+      "action": "Methods",
+      "method": "Method",
+      "days": "14 days",
+      "share": "Share",
+      "sso": "Single sign-on",
+      "oidc": "OpenID Connect",
+      "passkeyHint": "Can't be phished",
+      "empty": "No sign-ins in the last 30 days."
+    },
+    "failedHours": {
+      "title": "Failed sign-ins, last 24 hours",
+      "note": "Hour by hour, in your time.",
+      "noneNote": "Hour by hour. None in the last 24 hours.",
+      "burstsNote_one": "Hour by hour. Quiet, apart from one burst.",
+      "burstsNote_other": "Hour by hour. Quiet, apart from {{count}} bursts.",
+      "burst": "{{n}} at {{time}}",
+      "tip": "failed sign-ins",
+      "action": "Activity"
+    },
+    "twoStep": {
+      "title": "Two-step verification",
+      "note": "People with a second factor, against the {{target}}% target",
+      "action": "Require it",
+      "gauge": "{{pct}}% of people have a second factor; the target is {{target}}%",
+      "ofPeople": "{{have}} of {{total}} people",
+      "target": "Target {{pct}}%",
+      "split": "{{have}} people have a second factor, {{missing}} don't",
+      "have": "Have one",
+      "none": "None yet",
+      "devices": "Remembered devices",
+      "devicesValue_one": "{{count}} for {{people}} people",
+      "devicesValue_other": "{{count}} for {{people}} people",
+      "authenticator": "Authenticator app"
+    },
+    "activePeople": {
+      "title": "Active people, by week",
+      "note": "Seen at least once in the week, and on an average day",
+      "action": "Analytics",
+      "week": "In the week",
+      "day": "On an average day",
+      "weekLower": "in the week",
+      "dayLower": "on an average day"
+    },
+    "apps": {
+      "title": "Applications people use",
+      "note": "People signed in to each, of {{total}}",
+      "action": "Applications",
+      "empty": "Nobody has signed in to an application yet.",
+      "unused_one": "1 has no one: {{names}}",
+      "unused_other": "{{count}} have no one: {{names}}"
+    },
+    "activity": {
+      "title": "Recent activity",
+      "action": "Activity",
+      "loading": "Loading the latest events…",
+      "today": "Today",
+      "earlier": "Earlier",
+      "emptyTitle": "No activity yet",
+      "emptyText": "Sign-ins and changes show here as they happen."
+    },
+    "attention": {
+      "title": "Needs attention",
+      "critical_one": "{{count}} critical",
+      "critical_other": "{{count}} critical",
+      "others_one": "{{count}} more to look at",
+      "others_other": "{{count}} more to look at",
+      "more": "Show {{count}} more",
+      "fewer": "Show fewer",
+      "clearTitle": "Nothing needs attention",
+      "clearText": "No failing webhooks, keys about to expire or open risk alerts.",
+      "webhookOff": {
+        "title": "Webhook turned off",
+        "detail": "Deliveries to {{host}} kept failing, so it was turned off",
+        "action": "Open"
+      },
+      "webhooksFailing": {
+        "title_one": "A webhook is failing",
+        "title_other": "{{count}} webhooks failing",
+        "detail": "{{hosts}}",
+        "action": "Review"
+      },
+      "anomaly": {
+        "title": "{{type}}",
+        "detail": "{{detail}}",
+        "detailFrom": "{{detail}} · from {{ip}}",
+        "action": "Investigate"
+      },
+      "keysExpiring": {
+        "title_one": "An API key expires in {{days}} days",
+        "title_other": "{{count}} API keys expire soon",
+        "detail": "{{name}} expires first, in {{days}} days",
+        "action": "Review keys"
+      },
+      "twoStep": {
+        "title": "Two-step verification is under the target",
+        "detail": "{{have}} of {{total}} people have a second factor; the target is {{target}}%",
+        "action": "Require it"
+      }
+    },
+    "setup": {
+      "progress": "{{done}} of {{total}} done",
+      "note": "What's set up, and what still needs you",
+      "summary": {
+        "done_one": "{{count}} done",
+        "done_other": "{{count}} done",
+        "failing_one": "{{count}} failing",
+        "failing_other": "{{count}} failing",
+        "attention_one": "{{count}} needs attention",
+        "attention_other": "{{count}} need attention",
+        "setup_one": "{{count}} in setup",
+        "setup_other": "{{count}} in setup",
+        "none_one": "{{count}} not set up",
+        "none_other": "{{count}} not set up"
+      },
+      "states": {
+        "done": "Done",
+        "failing": "Failing",
+        "attention": "Needs attention",
+        "setup": "In setup",
+        "none": "Not set up"
+      },
+      "groups": {
+        "signIn": "Sign-in",
+        "people": "People and directory",
+        "developers": "Developers and billing"
+      },
+      "items": {
+        "sso": "Single sign-on",
+        "methods": "Sign-in methods",
+        "twoStep": "Two-step verification",
+        "samlApps": "Apps people sign in to",
+        "team": "Your team",
+        "domain": "Domain",
+        "scim": "Directory sync (SCIM)",
+        "ldap": "LDAP",
+        "apps": "Applications",
+        "apiKeys": "API keys",
+        "webhooks": "Webhooks",
+        "plan": "Plan"
+      },
+      "details": {
+        "connected": "Connected · {{names}}",
+        "draft": "Draft · {{names}}",
+        "draftSince": "{{names}}, a draft since {{date}}",
+        "live": "Live · {{names}}",
+        "liveAndDraft": "{{live}} live · {{draft}} in setup",
+        "ssoNone": "People sign in with Qeet ID's own methods",
+        "samlAppsNone": "No apps sign people in through Qeet ID yet",
+        "list": "{{list}}",
+        "methodsNone": "No sign-in method is turned on",
+        "twoStepMissing_one": "{{count}} of {{total}} people has none",
+        "twoStepMissing_other": "{{count}} of {{total}} people have none",
+        "twoStepEveryone": "Everyone has a second factor",
+        "team_one": "{{count}} person",
+        "team_other": "{{count}} people",
+        "teamPending_one": "{{count}} people · {{pending}} invitation pending",
+        "teamPending_other": "{{count}} people · {{pending}} invitations pending",
+        "teamOnlyYou": "Only you so far",
+        "verified": "Verified · {{names}}",
+        "domainPending": "Waiting for its DNS record · {{domain}}",
+        "domainCheckFailed": "The last check failed · {{domain}}",
+        "domainNone": "Add your company's domain, then prove you own it",
+        "scimProvisioned_one": "{{count}} person kept in sync",
+        "scimProvisioned_other": "{{count}} people kept in sync",
+        "scimNone": "People are added by hand or through the API",
+        "ldapNone": "No directory server connected",
+        "apps_one": "{{count}} registered",
+        "apps_other": "{{count}} registered",
+        "appsUnused_one": "{{count}} registered · {{unused}} never used",
+        "appsUnused_other": "{{count}} registered · {{unused}} never used",
+        "appsNone": "No application signs people in with Qeet ID yet",
+        "keysActive_one": "{{count}} active",
+        "keysActive_other": "{{count}} active",
+        "keysExpiring_one": "{{count}} active · it expires in {{days}} days",
+        "keysExpiring_other": "{{count}} active · one expires in {{days}} days",
+        "keysNone": "For your own scripts and servers",
+        "webhooksActive_one": "{{count}} active",
+        "webhooksActive_other": "{{count}} active",
+        "webhooksFailing": "{{failing}} failing · {{off}} turned off",
+        "webhooksNone": "Tell your systems when something happens",
+        "planMonthly": "{{plan}} · {{amount}} a month · renews {{date}}",
+        "planYearly": "{{plan}} · {{amount}} a year · renews {{date}}",
+        "planFree": "{{plan}}",
+        "planTrial": "{{plan}} trial · ends {{date}}",
+        "planPaymentDue": "{{plan}} · the last payment failed"
+      },
+      "actions": {
+        "finish": "Finish",
+        "setUp": "Set up",
+        "add": "Add",
+        "check": "Check",
+        "verify": "Verify",
+        "create": "Create",
+        "rotate": "Rotate",
+        "fix": "Fix",
+        "billing": "Billing",
+        "choosePlan": "Choose a plan",
+        "review": "Review",
+        "requireIt": "Require it",
+        "invite": "Invite",
+        "register": "Register"
+      }
+    }
   }
 }

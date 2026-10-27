@@ -34,7 +34,7 @@ export interface AnomalySummary {
   high_severity_24h: number;
 }
 
-export function useAnomalies() {
+export function useAnomalies(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: securityKeys.anomalyList(tenantId),
@@ -46,7 +46,7 @@ export function useAnomalies() {
         throw err;
       }
     },
-    enabled: !!tenantId,
+    enabled: enabled && !!tenantId,
     staleTime: 30_000,
   });
 }

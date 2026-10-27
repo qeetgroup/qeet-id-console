@@ -17,11 +17,11 @@ export interface OAuthGrant {
   expires_at: string;
 }
 
-export function useOAuthGrants() {
+export function useOAuthGrants(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: authKeys.oauthGrants(tenantId),
-    enabled: !!tenantId,
+    enabled: enabled && !!tenantId,
     queryFn: () => api<{ items: OAuthGrant[] }>(`/v1/tenants/${tenantId}/oauth/grants`),
   });
 }

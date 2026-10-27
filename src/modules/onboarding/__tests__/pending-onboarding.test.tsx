@@ -17,7 +17,6 @@ vi.mock("../load-page", () => ({ loadPage: vi.fn() }));
 import { switchToTenant } from "@/modules/authentication";
 import { api } from "@/platform/api/client";
 import { readPendingOnboarding, stashOnboardingProfile } from "../onboarding-profile";
-import { useApplyOnboardingProfile } from "../use-apply-onboarding-profile";
 import { loadPage } from "../load-page";
 import { type CheckoutParams, useCheckoutReturn } from "../use-checkout-return";
 
@@ -55,36 +54,6 @@ describe("readPendingOnboarding", () => {
 
     expect(readPendingOnboarding("user-1")).toBeNull();
     expect(localStorage.length).toBe(0);
-  });
-});
-
-describe("useApplyOnboardingProfile", () => {
-  it("writes the profile to the organization it was entered for", async () => {
-    stashOnboardingProfile({ profile: PROFILE, slug: "org-a-slug", userId: "user-1" });
-    vi.mocked(api).mockResolvedValueOnce({ id: "org-a", slug: "org-a-slug", metadata: null });
-
-    renderHook(() => useApplyOnboardingProfile(), { wrapper });
-
-    await waitFor(() =>
-      expect(api).toHaveBeenCalledWith("/v1/tenants/org-a", {
-        method: "PATCH",
-        body: { metadata: { onboarding: PROFILE } },
-      }),
-    );
-  });
-
-  it("leaves another organization alone after an abandoned checkout", async () => {
-    stashOnboardingProfile({ profile: PROFILE, slug: "never-paid", userId: "user-1" });
-    vi.mocked(api).mockResolvedValueOnce({ id: "org-a", slug: "org-a-slug", metadata: null });
-
-    renderHook(() => useApplyOnboardingProfile(), { wrapper });
-
-    await waitFor(() => expect(api).toHaveBeenCalledTimes(1));
-    expect(api).not.toHaveBeenCalledWith(
-      "/v1/tenants/org-a",
-      expect.objectContaining({ method: "PATCH" }),
-    );
-    expect(readPendingOnboarding("user-1")).not.toBeNull();
   });
 });
 

@@ -1,0 +1,759 @@
+/*
+ * The Dashboard (overview-page.tsx). Placement and token values only (--qx-*). Panels in a row share
+ * one ruled sheet: raised surface, 1px lines, 4px outer corners, no shadow (design rules §12).
+ */
+
+.overview {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+/* ── The pulse band: the measures on the console's ruled grid, fading out ─────────────────── */
+
+.overview-pulse {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(var(--overview-pulse-cells, 4), minmax(0, 1fr));
+  margin: 0;
+  overflow: hidden;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.overview-pulse::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--qx-color-border-subtle) 1px, transparent 1px) 0 0 / 2rem 2rem,
+    linear-gradient(90deg, var(--qx-color-border-subtle) 1px, transparent 1px) 0 0 / 2rem 2rem;
+  mask-image: linear-gradient(90deg, black, transparent 85%);
+  opacity: 0.5;
+}
+
+.overview-pulse-cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label label"
+    "value trend"
+    "note note"
+    "meter meter";
+  align-content: start;
+  column-gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-lg);
+}
+
+.overview-pulse-cell + .overview-pulse-cell {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.overview-pulse-label {
+  grid-area: label;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+
+.overview-pulse-value {
+  grid-area: value;
+  margin: var(--qx-space-gap-xs) 0 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-heading-lg);
+}
+
+.overview-pulse-note {
+  grid-area: note;
+  margin: var(--qx-space-gap-xs) 0 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-pulse-note.is-danger {
+  color: var(--qx-color-text-danger);
+}
+
+.overview-pulse-note.is-warning {
+  color: var(--qx-color-text-warning);
+}
+
+.overview-pulse-trend {
+  grid-area: trend;
+  align-self: end;
+  margin: 0;
+}
+
+.overview-pulse-meter {
+  grid-area: meter;
+  position: relative;
+  margin: var(--qx-space-gap-md) 0 0;
+}
+
+/* The target: a hairline tick across the meter's track. */
+.overview-pulse-target {
+  position: absolute;
+  inset-block: -3px;
+  inline-size: 2px;
+  background: var(--qx-color-text-default);
+}
+
+.overview-spark {
+  display: block;
+  overflow: visible;
+}
+
+/* ── Groups, sheets and panels ────────────────────────────────────────────────────────────── */
+
+.overview-group {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+}
+
+/* label.caps, the one capitalised role, with the rule above it (design rules §5). */
+.overview-group-label {
+  margin: 0;
+  padding-block-start: var(--qx-space-gap-lg);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+}
+
+.overview-sheet {
+  display: grid;
+  grid-template-columns: var(--overview-columns);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+/* A panel's loading or failed state takes its place in the sheet. */
+.overview-sheet > [data-slot="data-state"] {
+  min-block-size: 16rem;
+}
+
+.overview-sheet > * + * {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.overview-panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-inline-size: 0;
+}
+
+.overview-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-lg);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.overview-panel-head > :last-child:not(div) {
+  margin-block-start: -4px;
+  margin-inline-end: calc(-1 * var(--qx-space-inset-sm));
+}
+
+.overview-panel-title {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-title-sm);
+}
+
+.overview-panel-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: 2px 0 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-panel-body {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-md);
+  min-inline-size: 0;
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-lg) var(--qx-space-inset-lg);
+}
+
+.overview-panel-body.is-flush {
+  gap: 0;
+  padding: 0;
+}
+
+.overview-empty,
+.overview-foot {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-foot {
+  padding-block-start: var(--qx-space-gap-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+/* ── Charts ───────────────────────────────────────────────────────────────────────────────── */
+
+.overview-chart svg {
+  overflow: visible;
+}
+
+.overview-chart-label {
+  fill: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-tip {
+  display: grid;
+  gap: 2px;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  border-radius: var(--qx-radius-overlay);
+  background: var(--qx-color-surface-overlay);
+  box-shadow: var(--qx-shadow-overlay);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-tip strong {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.overview-tip-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.overview-tip-row b {
+  color: var(--qx-color-text-default);
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-tip-sub {
+  max-inline-size: 15rem;
+}
+
+.overview-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-keys li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.overview-key {
+  inline-size: 12px;
+  block-size: 2px;
+}
+
+.overview-swatch {
+  display: inline-block;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 2px;
+}
+
+/* The methods: a compact table — the method, its own 14-day line, its share. */
+.overview-methods {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.overview-methods th,
+.overview-methods td {
+  padding-block: var(--qx-space-gap-sm);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.overview-methods thead th {
+  padding-block-start: 0;
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+
+.overview-methods tbody tr + tr > * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.overview-methods tbody th {
+  display: grid;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+}
+
+.overview-methods small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-methods .is-num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-methods tbody .is-num {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.overview-methods td:nth-child(2) {
+  inline-size: 104px;
+  padding-inline: var(--qx-space-gap-md);
+}
+
+/* The gauge: its words in text tokens, never the series colour. */
+.overview-gauge {
+  --overview-gauge-track: color-mix(
+    in oklab,
+    var(--qx-color-dataviz-warning) 20%,
+    var(--qx-color-surface-raised)
+  );
+  display: grid;
+  justify-items: center;
+  margin: 0;
+}
+
+.overview-gauge svg {
+  overflow: visible;
+}
+
+.overview-gauge-value {
+  fill: var(--qx-color-text-default);
+  font: var(--qx-typography-heading-md);
+}
+
+.overview-gauge-note {
+  fill: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* One bar split into parts, a 2px surface gap between them. */
+.overview-split {
+  display: flex;
+  gap: 2px;
+  block-size: 8px;
+}
+
+.overview-split > span:first-child {
+  border-start-start-radius: 2px;
+  border-end-start-radius: 2px;
+}
+
+.overview-split > span:last-child {
+  border-start-end-radius: 2px;
+  border-end-end-radius: 2px;
+}
+
+.overview-facts {
+  display: grid;
+  margin: 0;
+}
+
+.overview-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-gap-sm);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-facts > div + div {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.overview-facts dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+}
+
+.overview-facts dd {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The dot plot: a hairline from zero, a ringed dot at the value, the value just after it. */
+.overview-dots {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview-dots li {
+  display: grid;
+  gap: 6px;
+}
+
+.overview-dots-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+}
+
+.overview-dots-label small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview-dots-plot {
+  position: relative;
+  block-size: 12px;
+  margin-inline-end: 2.5rem;
+  background:
+    linear-gradient(var(--qx-color-dataviz-grid), var(--qx-color-dataviz-grid)) 0 50% / 100% 1px
+    no-repeat;
+}
+
+.overview-dots-stem {
+  position: absolute;
+  inset-block-start: 5px;
+  inset-inline-start: 0;
+  block-size: 2px;
+  background: var(--qx-color-dataviz-categorical-1);
+}
+
+.overview-dots-dot {
+  position: absolute;
+  inset-block-start: 0;
+  inline-size: 12px;
+  block-size: 12px;
+  margin-inline-start: -6px;
+  border: 2px solid var(--qx-color-surface-raised);
+  border-radius: var(--qx-radius-full);
+  background: var(--qx-color-dataviz-categorical-1);
+}
+
+.overview-dots-value {
+  position: absolute;
+  inset-block-start: -2px;
+  margin-inline-start: 12px;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Needs attention: ruled rows, edge to edge ────────────────────────────────────────────── */
+
+.overview-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3.5rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-lg);
+}
+
+.overview-row + .overview-row {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.overview-row-icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-bg-neutral-subtle);
+  color: var(--qx-color-icon-default);
+}
+
+.overview-row-icon svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.overview-row-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.overview-row-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.overview-row-name strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.overview-row-text small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-row > a,
+.overview-row > button {
+  margin-inline-end: calc(-1 * var(--qx-space-inset-sm));
+}
+
+.overview-more {
+  padding: var(--qx-space-gap-sm) var(--qx-space-inset-sm);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.overview-clear {
+  padding-block: var(--qx-space-layout-sm);
+}
+
+/* ── Set-up: the summary bar across the top, then the items in ruled panels ───────────────── */
+
+.overview-setup-head {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-lg) var(--qx-space-layout-sm);
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-lg);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+/* The heading spans the sheet, so the panels' side rules start below it. */
+.overview-setup > .overview-setup-head + * {
+  border-inline-start: 0;
+}
+
+.overview-setup-progress {
+  display: grid;
+  flex: 0 1 30rem;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 18rem;
+}
+
+.overview-setup-bar {
+  display: flex;
+  gap: 2px;
+  block-size: 8px;
+}
+
+.overview-setup-bar > span {
+  flex: 1;
+}
+
+.overview-setup-bar > span:first-child {
+  border-start-start-radius: 2px;
+  border-end-start-radius: 2px;
+}
+
+.overview-setup-bar > span:last-child {
+  border-start-end-radius: 2px;
+  border-end-end-radius: 2px;
+}
+
+.overview-setup-bar .is-done,
+.overview-swatch.is-done {
+  background: var(--qx-color-icon-success);
+}
+
+.overview-setup-bar .is-failing,
+.overview-swatch.is-failing {
+  background: var(--qx-color-icon-danger);
+}
+
+.overview-setup-bar .is-attention,
+.overview-swatch.is-attention {
+  background: var(--qx-color-icon-warning);
+}
+
+.overview-setup-bar .is-setup,
+.overview-swatch.is-setup {
+  background: var(--qx-color-icon-info);
+}
+
+.overview-setup-bar .is-none,
+.overview-swatch.is-none {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+.overview-swatch.is-none {
+  box-shadow: inset 0 0 0 1px var(--qx-color-border-strong);
+}
+
+.overview-setup-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-setup-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.overview-setup-group {
+  grid-template-rows: auto 1fr;
+  align-content: start;
+}
+
+.overview-setup-title {
+  margin: 0;
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-lg) var(--qx-space-gap-sm);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-title-sm);
+}
+
+.overview-setup-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* An item: its state icon, the name over one line of detail, and an action only when it needs one. */
+.overview-setup-item {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-lg);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.overview-setup-item > svg {
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 2px;
+}
+
+.overview-setup-item > a,
+.overview-setup-item > button {
+  margin-block-start: -2px;
+  margin-inline-end: calc(-1 * var(--qx-space-inset-sm));
+}
+
+.overview-setup-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.overview-setup-text strong {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.overview-setup-text small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-setup-word {
+  font-weight: var(--qx-typography-label-sm-font-weight);
+}
+
+.overview-setup-word::after {
+  content: " · ";
+  font-weight: 400;
+}
+
+.is-attention .overview-setup-word {
+  color: var(--qx-color-text-warning);
+}
+
+.is-failing .overview-setup-word {
+  color: var(--qx-color-text-danger);
+}
+
+.is-setup .overview-setup-word {
+  color: var(--qx-color-text-info);
+}
+
+.is-none .overview-setup-word {
+  color: var(--qx-color-text-default);
+}
+
+/* Done items stay quiet: the check says it, and the word is there for screen readers only. */
+.is-done .overview-setup-word {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Narrow screens: panels stack; rules run between them instead of beside ───────────────── */
+
+@media (max-width: 1100px) {
+  .overview-pulse {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview-pulse-cell:nth-child(3) {
+    border-inline-start: 0;
+  }
+
+  .overview-pulse-cell:nth-child(n + 3) {
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+
+  .overview-sheet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .overview-sheet > * + * {
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+
+  .overview-setup > .overview-setup-head + * {
+    border-block-start: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .overview-pulse {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .overview-pulse-cell + .overview-pulse-cell {
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+}
