@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
@@ -12,15 +12,10 @@ vi.mock("@/platform/security/capability-provider", () => ({
 }));
 
 import { api } from "@/platform/api/client";
-import type { PublicSession } from "@/platform/auth/server-session";
-import { sessionStore } from "@/platform/auth/session-store";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import type { SecuritySummary } from "../api/user360";
-import type { UserStats } from "../api/users";
 import { DangerZone } from "../components/danger-zone";
-import { SaveView, type UsersViewState } from "../components/filter-extras";
 import { SecurityPosture } from "../components/posture-tiles";
-import { UsersKpis } from "../components/users-kpis";
 
 beforeEach(() => {
   navigate.mockReset();
@@ -158,104 +153,6 @@ describe("SecurityPosture", () => {
   });
 });
 
-function stats(overrides: Partial<UserStats> = {}): UserStats {
-  return {
-    total: 200,
-    active: 150,
-    suspended: 10,
-    invited: 40,
-    mfa_enabled: 120,
-    mfa_missing: 80,
-    new_last_30d: 40,
-    ...overrides,
-  };
-}
-
-function card(name: RegExp): string {
-  return screen.getByRole("button", { name }).textContent ?? "";
-}
-
-describe("UsersKpis", () => {
-  it("shows each count with its share of the total, and 30-day growth on Total", () => {
-    render(<UsersKpis stats={stats()} loading={false} onFilter={vi.fn()} />);
-
-    // 40 new on a base of 160 → 25%.
-    expect(card(/Total users/)).toContain("200");
-    expect(card(/Total users/)).toContain("25% vs last 30 days");
-    expect(card(/Active users/)).toContain("75% of total");
-    expect(card(/MFA enabled/)).toContain("60% of total");
-    expect(card(/MFA missing/)).toContain("40% of total");
-    expect(card(/Suspended/)).toContain("5% of total");
-  });
-
-  it("rounds shares to one decimal place", () => {
-    render(
-      <UsersKpis
-        stats={stats({ total: 3, active: 1, mfa_enabled: 2, mfa_missing: 1, suspended: 0 })}
-        loading={false}
-        onFilter={vi.fn()}
-      />,
-    );
-
-    expect(card(/Active users/)).toContain("33.3% of total");
-    expect(card(/MFA enabled/)).toContain("66.7% of total");
-    expect(card(/Suspended/)).toContain("0% of total");
-  });
-
-  it("reports no growth when every member is new, and 0% shares for an empty tenant", () => {
-    const { unmount } = render(
-      <UsersKpis stats={stats({ total: 5, new_last_30d: 5 })} loading={false} onFilter={vi.fn()} />,
-    );
-    expect(card(/Total users/)).toContain("0% vs last 30 days");
-    unmount();
-
-    render(
-      <UsersKpis
-        stats={{
-          total: 0,
-          active: 0,
-          suspended: 0,
-          invited: 0,
-          mfa_enabled: 0,
-          mfa_missing: 0,
-          new_last_30d: 0,
-        }}
-        loading={false}
-        onFilter={vi.fn()}
-      />,
-    );
-    expect(card(/Active users/)).toContain("0% of total");
-  });
-
-  it("filters the table by the card that was clicked", () => {
-    const onFilter = vi.fn();
-    render(<UsersKpis stats={stats()} loading={false} onFilter={onFilter} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Total users/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Active users/ }));
-    fireEvent.click(screen.getByRole("button", { name: /MFA enabled/ }));
-    fireEvent.click(screen.getByRole("button", { name: /MFA missing/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Suspended/ }));
-
-    expect(onFilter.mock.calls).toEqual([
-      ["all"],
-      ["active"],
-      ["mfa_enabled"],
-      ["mfa_missing"],
-      ["suspended"],
-    ]);
-  });
-
-  it("renders no cards while loading or when there are no counts", () => {
-    const { container, rerender } = render(<UsersKpis loading onFilter={vi.fn()} />);
-    expect(screen.queryAllByRole("button")).toHaveLength(0);
-    expect(container.firstChild).not.toBeNull();
-
-    rerender(<UsersKpis loading={false} onFilter={vi.fn()} />);
-    expect(container.firstChild).toBeNull();
-  });
-});
-
 function renderDangerZone(suspended: boolean) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -342,96 +239,5 @@ describe("DangerZone", () => {
     await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
     expect(api).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
-  });
-});
-
-function session(userId: string, tenantId: string): PublicSession {
-  return {
-    isAuthenticated: true,
-    expiresAt: "2030-01-01T00:00:00Z",
-    sessionId: `session-${userId}`,
-    userId,
-    tenantId,
-    version: 1,
-    impersonationActor: null,
-  };
-}
-
-const CURRENT: UsersViewState = {
-  search: "asha",
-  status: "active",
-  role: "admin",
-  mfa: "enabled",
-  emailVerified: "verified",
-};
-
-const VIEWS_KEY = "qeetid.users.savedViews:user-1:tenant-a";
-
-function openSaveView(onApply = vi.fn()) {
-  render(<SaveView current={CURRENT} onApply={onApply} />);
-  fireEvent.click(screen.getByRole("button", { name: "Save view" }));
-  return onApply;
-}
-
-describe("SaveView", () => {
-  beforeEach(() => {
-    window.localStorage.clear();
-    act(() => sessionStore.hydrate(session("user-1", "tenant-a")));
-  });
-
-  it("saves the current filters under a trimmed name for this person and tenant", async () => {
-    openSaveView();
-    expect(await screen.findByText("No saved views yet.")).toBeTruthy();
-
-    const name = screen.getByPlaceholderText("View name");
-    const save = screen.getByRole("button", { name: "Save" });
-    fireEvent.change(name, { target: { value: "   " } });
-    expect((save as HTMLButtonElement).disabled).toBe(true);
-
-    fireEvent.change(name, { target: { value: "  Admins  " } });
-    fireEvent.click(save);
-
-    expect(screen.getByRole("button", { name: "Admins" })).toBeTruthy();
-    expect((name as HTMLInputElement).value).toBe("");
-    expect(JSON.parse(window.localStorage.getItem(VIEWS_KEY) ?? "null")).toEqual({
-      Admins: CURRENT,
-    });
-  });
-
-  it("saves on Enter and applies a saved view when it is picked", async () => {
-    const onApply = openSaveView();
-    const name = await screen.findByPlaceholderText("View name");
-
-    fireEvent.change(name, { target: { value: "Admins" } });
-    fireEvent.keyDown(name, { key: "Enter" });
-    fireEvent.click(screen.getByRole("button", { name: "Admins" }));
-
-    expect(onApply).toHaveBeenCalledWith(CURRENT);
-  });
-
-  it("removes a saved view", async () => {
-    window.localStorage.setItem(VIEWS_KEY, JSON.stringify({ Admins: CURRENT, Viewers: CURRENT }));
-    openSaveView();
-
-    expect(await screen.findByRole("button", { name: "Admins" })).toBeTruthy();
-    const [first] = screen.getAllByRole("button", { name: "Delete" });
-    assert(first, "expected a delete button per saved view");
-    fireEvent.click(first);
-
-    expect(screen.queryByRole("button", { name: "Admins" })).toBeNull();
-    expect(JSON.parse(window.localStorage.getItem(VIEWS_KEY) ?? "null")).toEqual({
-      Viewers: CURRENT,
-    });
-  });
-
-  it("never shows views saved in another tenant", async () => {
-    window.localStorage.setItem(
-      "qeetid.users.savedViews:user-1:tenant-b",
-      JSON.stringify({ "Other tenant": CURRENT }),
-    );
-    openSaveView();
-
-    expect(await screen.findByText("No saved views yet.")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Other tenant" })).toBeNull();
   });
 });

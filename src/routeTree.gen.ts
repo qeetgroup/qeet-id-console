@@ -81,7 +81,7 @@ import { Route as UsersUserIdRouteImport } from './modules/users/routes/app/user
 import { Route as UsersDeletedRouteImport } from './modules/users/routes/app/users/deleted'
 import { Route as UsersImportRouteImport } from './modules/users/routes/app/users/import'
 import { Route as UsersSessionsRouteImport } from './modules/users/routes/app/users/sessions'
-import { Route as UsersSuspendedRouteImport } from './modules/directory/routes/app/users/suspended'
+import { Route as UsersSuspendedRouteImport } from './modules/users/routes/app/users/suspended'
 import { Route as AuthInviteDotacceptRouteImport } from './modules/authentication/routes/public/_auth/invite.accept'
 import { Route as AuthSsoDotcallbackRouteImport } from './modules/authentication/routes/public/_auth/sso.callback'
 import { Route as AuthApiConsentGrantsRouteImport } from './modules/authentication/routes/app/auth/api/consent-grants'

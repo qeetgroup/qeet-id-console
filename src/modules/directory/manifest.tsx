@@ -15,15 +15,6 @@ export const manifest = defineModule({
       icon: <GaugeIcon />,
     },
     {
-      id: "directory.suspended",
-      group: "directory",
-      parent: "directory.users",
-      order: 30,
-      title: "directory:nav.directory.suspended.title",
-      url: "/users/suspended",
-      capability: "user.read",
-    },
-    {
       id: "directory.directories",
       group: "directory",
       order: 50,

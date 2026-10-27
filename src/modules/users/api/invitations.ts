@@ -39,6 +39,15 @@ export interface CreateInvitationInput {
   role_id?: string;
 }
 
+/** One call per invitation, for bulk actions and several addresses at once to fan out. */
+export const inviteCalls = {
+  create: (body: CreateInvitationInput) =>
+    api<{ invite: Invitation }>("/v1/invites", { method: "POST", body }), // never the token
+  resend: (id: string) =>
+    api<{ invite: Invitation }>(`/v1/invites/${id}/resend`, { method: "POST" }),
+  revoke: (id: string) => api<void>(`/v1/invites/${id}`, { method: "DELETE" }),
+};
+
 export function useCreateInvitation() {
   const qc = useQueryClient();
   return useMutation({

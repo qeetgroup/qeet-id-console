@@ -1,5 +1,5 @@
 // What this module adds to the console shell; see src/platform/modules/manifest.ts.
-import { MailIcon, UserPlusIcon, UsersIcon } from "@qeetrix/icons";
+import { MailIcon, UserPlusIcon, UsersIcon, UserXIcon } from "@qeetrix/icons";
 
 import { defineModule } from "@/platform/modules/manifest";
 
@@ -57,6 +57,14 @@ export const manifest = defineModule({
       text: "users:commands.users",
       icon: <UsersIcon className="size-4" />,
       to: "/users",
+      capability: "user.read",
+    },
+    {
+      // Suspended is a filter on All users; this keeps it one search away.
+      id: "cmd.navigate.suspended",
+      text: "users:commands.suspended",
+      icon: <UserXIcon className="size-4" />,
+      to: "/users/suspended",
       capability: "user.read",
     },
     {

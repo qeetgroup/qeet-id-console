@@ -252,6 +252,77 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
   const user = userPath && people.find((u) => u.id === userPath[1]);
   if (user) return userViews(user, tenantId, tenant, userPath[2] ?? "");
 
+  if (path === "/v1/users/suspended") {
+    const items = people
+      .filter((u) => u.status === "suspended")
+      .map((u) => ({
+        id: u.id,
+        email: u.email,
+        display_name: u.display_name,
+        avatar_url: null,
+        team: "",
+        reason: "offboarding",
+        source: "manual",
+        risk: "low",
+        review: "pending",
+        suspended_at: ago(5 * DAY_MS),
+        last_sign_in: u.last_seen_at ?? null,
+        can_manage: true,
+      }));
+    return {
+      items,
+      total: items.length,
+      limit: 50,
+      offset: 0,
+      summary: {
+        total: items.length,
+        high_risk: 0,
+        policy: 0,
+        manual: items.length,
+        pending: items.length,
+      },
+      reasons: items.length ? [{ key: "offboarding", count: items.length }] : [],
+      risks: items.length ? [{ key: "low", count: items.length }] : [],
+      queue: items,
+      teams: [],
+    };
+  }
+  if (path === "/v1/users/deleted") {
+    return {
+      items: [
+        {
+          id: "ffffffff-ffff-4fff-8fff-fffffffffff1",
+          email: `anil@${tenant.slug}.example`,
+          display_name: "Anil Bhatia",
+          deleted_at: ago(17 * DAY_MS),
+          deleted_by: principalId,
+          created_at: CREATED,
+        },
+      ],
+    };
+  }
+  if (path === `${tenantPath}/invites`) {
+    const invite = (n, status, sentDaysAgo, acceptedDaysAgo) => ({
+      id: `aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa${String(n).padStart(2, "0")}`,
+      tenant_id: tenantId,
+      email: `${["kavya", "ravi", "omar", "imran"][n - 1]}@${tenant.slug}.example`,
+      role_id: null,
+      status,
+      expires_at: ago((sentDaysAgo - 14) * DAY_MS),
+      accepted_at: acceptedDaysAgo === undefined ? null : ago(acceptedDaysAgo * DAY_MS),
+      created_at: ago(sentDaysAgo * DAY_MS),
+    });
+    return {
+      items: [
+        invite(1, "pending", 2),
+        invite(2, "accepted", 30, 28),
+        invite(3, "expired", 40),
+        invite(4, "revoked", 10),
+      ],
+    };
+  }
+  if (path === `${tenantPath}/retention`)
+    return { deleted_users_enabled: true, deleted_users_days: 90 };
   if (path === "/v1/activity") return { events: activity(query, principalId), next_cursor: "" };
   if (path === `${tenantPath}/analytics/overview`) return analyticsOverview();
   if (path === `${tenantPath}/roles`) return { items: roles(tenantId) };

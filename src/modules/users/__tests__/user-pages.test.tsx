@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
@@ -21,7 +21,6 @@ vi.mock("@tanstack/react-router", () => ({
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 
-import { DeletedUsersPage } from "../components/deleted-users-page";
 import { ImportUsersPage } from "../components/import-users-page";
 
 function renderPage(ui: ReactNode) {
@@ -37,52 +36,6 @@ function renderPage(ui: ReactNode) {
 
 beforeEach(() => vi.mocked(api).mockReset());
 afterEach(cleanup);
-
-describe("DeletedUsersPage", () => {
-  beforeEach(() => {
-    vi.mocked(api).mockImplementation(async (path) =>
-      path === "/v1/users/deleted"
-        ? {
-            items: [
-              {
-                id: "user-1",
-                email: "asha@example.test",
-                display_name: null,
-                deleted_at: "2026-10-01T00:00:00Z",
-                created_at: "2026-01-01T00:00:00Z",
-              },
-            ],
-          }
-        : undefined,
-    );
-  });
-
-  it("purges a user for good only after the admin confirms", async () => {
-    renderPage(<DeletedUsersPage />);
-
-    fireEvent.click(await screen.findByRole("button", { name: /Delete forever/ }));
-    const dialog = await screen.findByRole("alertdialog");
-    expect(dialog.textContent).toContain("Permanently delete asha@example.test?");
-    expect(api).not.toHaveBeenCalledWith("/v1/users/user-1/purge", { method: "DELETE" });
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Delete forever" }));
-
-    await waitFor(() =>
-      expect(api).toHaveBeenCalledWith("/v1/users/user-1/purge", { method: "DELETE" }),
-    );
-  });
-
-  it("restores a user without a confirmation", async () => {
-    renderPage(<DeletedUsersPage />);
-
-    fireEvent.click(await screen.findByRole("button", { name: /Restore/ }));
-
-    await waitFor(() =>
-      expect(api).toHaveBeenCalledWith("/v1/users/user-1/restore", { method: "POST" }),
-    );
-    expect(screen.queryByRole("alertdialog")).toBeNull();
-  });
-});
 
 describe("ImportUsersPage", () => {
   function upload(name: string, text: string) {

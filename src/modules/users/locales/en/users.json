@@ -504,6 +504,11 @@
       "title": "Invite user",
       "subtitle": "Send an organization invitation",
       "keywords": "send invite, invitation, onboard"
+    },
+    "suspended": {
+      "title": "Suspended users",
+      "subtitle": "Who can't sign in, and why",
+      "keywords": "suspended, blocked, reactivate, review"
     }
   },
   "shortcuts": {
@@ -532,5 +537,341 @@
       "userActivity": "Summarize recent user activity and any anomalies in the audit log.",
       "userRecentActivity": "Summarize the most recent audit events for the currently selected user."
     }
+  },
+  "people": {
+    "title": "Users",
+    "description": "Everyone in {{org}}, how they sign in, and who needs a look.",
+    "descriptionNoName": "Everyone in this organisation, how they sign in, and who needs a look.",
+    "moreActions": "More actions",
+    "importFromFile": "Import from a file",
+    "exportCsv": "Export to CSV",
+    "exportJson": "Export to JSON",
+    "addUser": "Add user",
+    "capped": {
+      "title": "Showing the first {{n}} of {{total}} people",
+      "description": "Search, the filters and the counts above cover these people only."
+    },
+    "empty": {
+      "filteredTitle": "No one matches",
+      "filteredDescription": "No one has all of these at once. Remove a filter, or clear them all.",
+      "clear": "Clear filters",
+      "description": "Add the first person, or import a file of them."
+    },
+    "roles": {
+      "owner": "Owner"
+    },
+    "noRole": "No role",
+    "columns": {
+      "person": "Person",
+      "role": "Role",
+      "signIn": "Sign-in",
+      "active": "Last active",
+      "joined": "Joined"
+    },
+    "signIn": {
+      "on": "Two-step on",
+      "off": "No two-step",
+      "offAdmin": "No two-step · admin"
+    },
+    "neverSignedIn": "Never signed in",
+    "actions": {
+      "changeRole": "Change role",
+      "addToGroup": "Add to a group",
+      "assignRole": "Assign a role",
+      "requireTwoStep": "Require two-step verification",
+      "resetTwoStep": "Reset two-step verification",
+      "signOutEverywhere": "Sign out everywhere",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate"
+    },
+    "bulk": {
+      "requireTwoStep": "Require two-step ({{n}})",
+      "progress": "{{label}} · {{done}} of {{total}}"
+    },
+    "band": {
+      "people": "People",
+      "activeAndNew": "{{active}} active · +{{n}} in the last 30 days",
+      "activeNoneNew": "{{active}} active · no one new in 30 days",
+      "growthLabel": "People at the end of each month: {{from}} to {{to}} over {{months}} months",
+      "months": "{{months}} months",
+      "twoStep": "Two-step verification",
+      "percent": "{{n}}%",
+      "twoStepNote": "{{n}} of {{total}} people · target {{target}}%",
+      "twoStepLabel": "Two-step verification: {{n}}% of people, target {{target}}%",
+      "withoutTwoStep": "{{n}} without it →",
+      "lastActive": "Last active",
+      "needsALook": "Needs a look"
+    },
+    "recency": {
+      "today": "Today",
+      "week": "This week",
+      "month": "This month",
+      "older": "Longer ago",
+      "never": "Never"
+    },
+    "looks": {
+      "admins-no-two-step": "Admins without two-step",
+      "dormant": "Not seen for 30 days",
+      "never": "Never signed in",
+      "unverified": "Email not verified",
+      "suspended": "Suspended"
+    },
+    "filters": {
+      "search": "Search people",
+      "searchPlaceholder": "Name or email",
+      "department": "Department",
+      "twoStep": "Two-step",
+      "on": "On",
+      "off": "Off",
+      "anyRole": "Any role",
+      "anyDepartment": "Any department",
+      "anyTwoStep": "Any two-step",
+      "anyTime": "Any time",
+      "summary": "{{n}} of {{total}} people",
+      "status": "Status",
+      "anyStatus": "Any status",
+      "statuses": {
+        "active": "Active",
+        "suspended": "Suspended"
+      }
+    },
+    "suspended": {
+      "label": "Suspended people",
+      "reason": "Reason",
+      "risk": "Risk",
+      "review": "Review",
+      "since": "Suspended",
+      "lastSignIn": "Last sign-in",
+      "never": "Never",
+      "external": "At the provider",
+      "anyReason": "Any reason",
+      "anyRisk": "Any risk",
+      "anyReview": "Any review",
+      "reasons": {
+        "unspecified": "No reason given",
+        "provider": "At the identity provider",
+        "suspicious_activity": "Suspicious activity",
+        "policy_violation": "Broke a policy",
+        "account_compromise": "Account compromised",
+        "offboarding": "Offboarding",
+        "inactive": "Inactive",
+        "other": "Other"
+      },
+      "sources": {
+        "manual": "By an admin",
+        "policy": "By a policy",
+        "provider": "By the identity provider"
+      },
+      "risks": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low",
+        "unknown": "Not assessed"
+      },
+      "riskBadge": {
+        "high": "High risk",
+        "medium": "Medium risk",
+        "low": "Low risk",
+        "unknown": "Not assessed"
+      },
+      "reviews": {
+        "pending": "Waiting",
+        "reviewed": "Reviewed"
+      },
+      "summary": "{{n}} suspended · {{manual}} by an admin, {{policy}} by a policy",
+      "reviewTitle": "Review {{name}}'s suspension",
+      "reviewDescription": "Record why they're suspended and how risky the account is. They stay suspended either way.",
+      "riskHelp": "How likely the account is to be misused.",
+      "markReviewed": "Mark as reviewed",
+      "markReviewedHelp": "It leaves the waiting-for-review count.",
+      "saveReview": "Save review",
+      "cancel": "Cancel",
+      "reviewAction": "Review the suspension…",
+      "openProfile": "Open their profile",
+      "reactivate": "Reactivate",
+      "reactivateN": "Reactivate ({{n}})",
+      "loadFailed": "The suspended people couldn't load",
+      "retry": "Try again",
+      "emptyTitle": "No one is suspended",
+      "emptyDescription": "Everyone in this organisation can sign in."
+    }
+  },
+  "invites": {
+    "title": "Invitations",
+    "description": "Everyone you've invited to this organisation, and whether they've joined.",
+    "invitePeople": "Invite people",
+    "band": {
+      "waiting": "Waiting to join",
+      "noneWaiting": "Everyone invited has answered",
+      "nextExpiresToday": "The next link expires today",
+      "nextExpires_one": "The next link expires in 1 day",
+      "nextExpires_other": "The next link expires in {{count}} days",
+      "seeWaiting": "See who's waiting →",
+      "timeToJoin": "Time to join",
+      "days": "{{n}} days",
+      "noneJoined": "No one has joined yet",
+      "allWithin_one": "The median · everyone within a day",
+      "allWithin_other": "The median · everyone within {{count}} days",
+      "joinBarsLabel": "{{n}} people joined, all within {{days}} days of a {{link}}-day link",
+      "sent": "Sent",
+      "sentRecently": "{{n}} in the last 30 days",
+      "sentLabel": "Invitations sent each month: {{n}} over {{months}} months",
+      "months": "{{months}} months",
+      "outcomes": "Outcomes",
+      "outcome": {
+        "accepted": "Joined",
+        "pending": "Waiting",
+        "expired": "Expired before they joined",
+        "revoked": "Revoked"
+      }
+    },
+    "columns": {
+      "invited": "Invited",
+      "status": "Status",
+      "sent": "Sent",
+      "outcome": "Outcome"
+    },
+    "status": {
+      "pending": "Waiting",
+      "accepted": "Joined",
+      "expired": "Expired",
+      "revoked": "Revoked",
+      "declined": "Declined"
+    },
+    "outcome": {
+      "expiresToday": "Expires today",
+      "expiresIn": "Expires in {{n}} days",
+      "joinedSameDay": "Joined the same day",
+      "joinedAfter_one": "Joined after a day",
+      "joinedAfter_other": "Joined after {{count}} days",
+      "expired": "Expired"
+    },
+    "actions": {
+      "resend": "Resend the email",
+      "sendAgain": "Send it again",
+      "inviteAgain": "Invite again",
+      "copyEmail": "Copy email address",
+      "copied": "Email address copied",
+      "revoke": "Revoke",
+      "openProfile": "Open their profile",
+      "noLongerMember": "No longer a member"
+    },
+    "bulk": {
+      "resend": "Resend ({{n}})"
+    },
+    "confirm": {
+      "revokeOne": "Revoke the invitation for {{email}}?",
+      "revokeMany": "Revoke {{n}} invitations?",
+      "revokeDescription": "Their links stop working. You can invite them again later."
+    },
+    "filters": {
+      "search": "Search invitations",
+      "searchPlaceholder": "Email",
+      "anyStatus": "Any status",
+      "sent": {
+        "7": "Last 7 days",
+        "30": "Last 30 days",
+        "older": "Longer ago"
+      },
+      "summary": "{{n}} of {{total}} invitations"
+    },
+    "empty": {
+      "title": "No invitations yet",
+      "description": "Invite people by email; they show here until they join.",
+      "filteredDescription": "No invitation has all of these at once."
+    }
+  },
+  "deletedPage": {
+    "title": "Deleted",
+    "description": "People removed from this organisation. Restore brings someone back; after {{n}} days they're deleted for good.",
+    "descriptionNoPurge": "People removed from this organisation. Restore brings someone back, or delete them for good.",
+    "someone": "Someone",
+    "you": "You",
+    "restore": "Restore",
+    "restoreN": "Restore ({{n}})",
+    "purge": "Delete forever",
+    "purgeEllipsis": "Delete forever…",
+    "purgeMany": "Delete {{n}} people forever? This can't be undone.",
+    "purgeDue": "Due today",
+    "inDays_one": "in 1 day",
+    "inDays_other": "in {{count}} days",
+    "columns": {
+      "deleted": "Deleted",
+      "by": "Deleted by",
+      "purged": "Purged"
+    },
+    "band": {
+      "bin": "In the recycle bin",
+      "binNote": "Restorable until they're purged",
+      "next": "Next purge",
+      "usedLabel": "{{used}} of {{days}} days in the bin",
+      "used": "{{used}} of {{days}} days used",
+      "noAutoPurge": "Nothing is purged automatically",
+      "noneDue": "No one is waiting",
+      "kept": "Kept for",
+      "days": "{{n}} days",
+      "untilDeleted": "Until deleted",
+      "thenPurged": "Then purged automatically, for good",
+      "autoPurgeOff": "Automatic purge is off",
+      "change": "Change in Compliance › Retention →",
+      "noRetentionAccess": "Set in Compliance › Retention"
+    },
+    "retentionSettings": "Retention settings",
+    "filters": {
+      "search": "Search deleted people",
+      "anyone": "Anyone",
+      "purge": {
+        "7": "Within 7 days",
+        "30": "Within 30 days",
+        "later": "Later"
+      },
+      "summary": "{{n}} of {{total}} people"
+    },
+    "empty": {
+      "title": "The recycle bin is empty",
+      "description": "People you delete wait here, restorable, before they're purged."
+    }
+  },
+  "addPeople": {
+    "title": "Add people",
+    "description": "They join {{org}} with the role you choose.",
+    "descriptionNoName": "They join this organisation with the role you choose.",
+    "how": "How will they join?",
+    "invite": "Invite by email",
+    "recommended": "Recommended",
+    "inviteDescription": "They get a link, valid for 14 days, and choose their own password.",
+    "create": "Create the account now",
+    "createDescription": "You set a first password; they can sign in straight away.",
+    "addresses": "Email addresses",
+    "addressesHelp": "One per line, or separated by commas. Up to {{n}} at a time.",
+    "addressesPlaceholder": "name@company.com",
+    "checksLabel": "What happens to each address",
+    "checks": {
+      "new": "New invitation",
+      "invited": "Already invited · we'll send it again",
+      "member": "Already a member · skipped",
+      "invalid": "Not an email address"
+    },
+    "errors": {
+      "noAddresses": "Add at least one email address that isn't already a member.",
+      "tooMany": "Up to {{n}} addresses at a time.",
+      "alreadyMember": "Already a member of this organisation.",
+      "phone": "Include the country code, e.g. +91 98765 43210."
+    },
+    "email": "Work email",
+    "emailHelp": "They sign in with this.",
+    "name": "Name",
+    "nameHelp": "Shown in lists and the audit log.",
+    "phonePlaceholder": "+91 98765 43210",
+    "phoneHelp": "For text-message codes. Include the country code.",
+    "password": "First password",
+    "import": "Adding many? Import a file",
+    "sendAction": "Send invitations",
+    "send": "Send invitations",
+    "sendN_one": "Send 1 invitation",
+    "sendN_other": "Send {{count}} invitations",
+    "sent_one": "Sent 1 invitation",
+    "sent_other": "Sent {{count}} invitations",
+    "cancel": "Cancel"
   }
 }

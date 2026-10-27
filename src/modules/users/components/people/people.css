@@ -1,0 +1,512 @@
+/*
+ * Directory › Users (people-page.tsx). Placement and token values only (--qx-*).
+ * The recency scale is the sequential ramp, stepped per theme so the steps stay apart and the
+ * lightest still clears the surface (validated --ordinal: light 7·6·5·4, dark 7·6·4·2).
+ */
+
+/* The recency colours, for the band (in the header) and the table alike. */
+.ppl,
+.ppl-band {
+  --ppl-today: var(--qx-color-dataviz-sequential-7);
+  --ppl-week: var(--qx-color-dataviz-sequential-6);
+  --ppl-month: var(--qx-color-dataviz-sequential-5);
+  --ppl-older: var(--qx-color-dataviz-sequential-4);
+  --ppl-never: var(--qx-color-border-strong);
+}
+
+.ppl {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+/* ── The insight band: four measures on the console's ruled grid, fading out ───────────────── */
+
+.ppl-band {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.15fr);
+  margin: 0;
+  overflow: hidden;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.ppl-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--qx-color-border-subtle) 1px, transparent 1px) 0 0 / 2rem 2rem,
+    linear-gradient(90deg, var(--qx-color-border-subtle) 1px, transparent 1px) 0 0 / 2rem 2rem;
+  mask-image: linear-gradient(90deg, black, transparent 80%);
+  opacity: 0.5;
+}
+
+/* In the page header's summary: edge to edge between its rules, inset to the page gutter
+   (until the library has a summary band, QTRX-18). */
+.qx-page-header-summary .ppl-band {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.qx-page-header-summary .ppl-cell:first-child {
+  padding-inline-start: var(--qx-page-gutter);
+}
+
+.qx-page-header-summary .ppl-cell:last-child {
+  padding-inline-end: var(--qx-page-gutter);
+}
+
+.ppl-cell {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-lg);
+}
+
+.ppl-cell + .ppl-cell {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.ppl-cell dd {
+  margin: 0;
+}
+
+.ppl-label {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+
+.ppl-value {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-heading-lg);
+}
+
+.ppl-note {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.ppl-note.is-warning {
+  color: var(--qx-color-text-warning);
+}
+
+.ppl-cell > .ppl-chart {
+  display: flex;
+  align-items: end;
+  gap: var(--qx-space-gap-sm);
+  margin-block-start: var(--qx-space-gap-sm);
+}
+
+.ppl-chart-caption {
+  white-space: nowrap;
+  color: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-body-sm);
+}
+
+.ppl-cell > .ppl-meter {
+  position: relative;
+  margin-block-start: var(--qx-space-gap-sm);
+}
+
+/* The Meter's target tick (QTRX-14). */
+.ppl-target {
+  position: absolute;
+  inset-block: -3px;
+  inline-size: 2px;
+  background: var(--qx-color-text-default);
+}
+
+.ppl-link a {
+  color: var(--qx-color-text-brand);
+  font: var(--qx-typography-label-sm);
+  text-decoration: none;
+}
+
+.ppl-link a:hover {
+  text-decoration: underline;
+}
+
+.ppl-skeleton-label {
+  inline-size: 40%;
+}
+
+.ppl-skeleton-value {
+  inline-size: 30%;
+  block-size: var(--qx-size-control-md);
+}
+
+/* Last active: the share bar (the Dashboard's SplitBar), today to never. */
+.ppl-recency {
+  margin-block: var(--qx-space-gap-md) var(--qx-space-gap-sm);
+}
+
+.ppl-swatch.is-today {
+  background: var(--ppl-today);
+}
+
+.ppl-swatch.is-week {
+  background: var(--ppl-week);
+}
+
+.ppl-swatch.is-month {
+  background: var(--ppl-month);
+}
+
+.ppl-swatch.is-older {
+  background: var(--ppl-older);
+}
+
+.ppl-swatch.is-never {
+  background: var(--ppl-never);
+}
+
+.ppl-swatch {
+  display: inline-block;
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 2px;
+}
+
+.ppl-recency-legend ul,
+.ppl-looks ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ppl-recency-legend ul {
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-lg);
+}
+
+.ppl-recency-legend a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-decoration: none;
+}
+
+.ppl-recency-legend b {
+  color: var(--qx-color-text-default);
+  font-weight: var(--qx-typography-label-sm-font-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.ppl-recency-legend a:hover {
+  color: var(--qx-color-text-default);
+}
+
+/* Needs a look: ruled rows of counts, each a way into the list. */
+.ppl-looks li + li {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.ppl-looks a {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-block: 6px;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-sm);
+  text-decoration: none;
+}
+
+.ppl-looks a:hover span {
+  text-decoration: underline;
+}
+
+.ppl-looks b {
+  font-weight: var(--qx-typography-label-sm-font-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.ppl-looks li.is-zero a,
+.ppl-looks li.is-zero b {
+  color: var(--qx-color-text-subtlest);
+}
+
+b.is-warning {
+  color: var(--qx-color-text-warning);
+}
+
+b.is-danger {
+  color: var(--qx-color-text-danger);
+}
+
+/* ── The table's cells ────────────────────────────────────────────────────────────────────── */
+
+/* Fills the table's bar (a flex row), so the filters use its whole width before they wrap
+   (QTRX-17). */
+.ppl-toolbar {
+  flex: 1 1 auto;
+  display: grid;
+  gap: var(--qx-space-gap-md);
+}
+
+/* Search first, then the filters, all one field height, wrapping on narrow screens. */
+.ppl-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.ppl-search {
+  flex: 1 1 13rem;
+  max-inline-size: 20rem;
+}
+
+.ppl-filter {
+  flex: 0 1 10.5rem;
+  min-inline-size: 8.5rem;
+}
+
+.ppl-running {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.ppl-person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.ppl-two {
+  display: grid;
+  gap: 1px;
+}
+
+.ppl-two small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.ppl-signin {
+  display: grid;
+  gap: 2px;
+}
+
+.ppl-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--qx-typography-body-sm);
+  white-space: nowrap;
+}
+
+.ppl-flag svg {
+  inline-size: 14px;
+  block-size: 14px;
+  flex: none;
+}
+
+.ppl-flag.is-ok {
+  color: var(--qx-color-text-subtle);
+}
+
+.ppl-flag.is-ok svg {
+  color: var(--qx-color-icon-success);
+}
+
+.ppl-flag.is-warning {
+  color: var(--qx-color-text-default);
+}
+
+.ppl-flag.is-warning svg {
+  color: var(--qx-color-icon-warning);
+}
+
+.ppl-flag.is-danger {
+  color: var(--qx-color-text-danger);
+}
+
+.ppl-flag.is-danger svg {
+  color: var(--qx-color-icon-danger);
+}
+
+.ppl-nowrap {
+  white-space: nowrap;
+}
+
+.ppl-seen {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  white-space: nowrap;
+}
+
+/* ── Invitations, Suspended, Deleted and the Add people drawer ─────────────────────────────── */
+
+/* Deleted has three measures, not four. */
+.ppl-band.is-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sub-warn {
+  color: var(--qx-color-text-warning);
+}
+
+.sub-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.sub-done-icon {
+  inline-size: 14px;
+  block-size: 14px;
+  color: var(--qx-color-icon-success);
+}
+
+/* Time to join: people per day after the email, day 0 to the link's expiry (marked). */
+.sub-bars {
+  display: block;
+  overflow: visible;
+}
+
+.sub-bars-axis {
+  stroke: var(--qx-color-dataviz-axis);
+  stroke-width: 1;
+}
+
+.sub-bars-bar {
+  fill: var(--qx-color-dataviz-categorical-1);
+}
+
+.sub-bars-expiry {
+  stroke: var(--qx-color-dataviz-reference);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+.sub-bars-tick {
+  fill: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-label-sm);
+}
+
+/* Forms in a drawer or dialog: one column, the form's rhythm. */
+.sub-form {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+/* Add people: what happens to each address, ruled rows under the field (until QTRX-22). */
+.add-checks ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.add-check {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding-block: 8px;
+  font: var(--qx-typography-body-sm);
+}
+
+.add-check + .add-check {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.add-check-icon {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.add-check-email {
+  overflow: hidden;
+  color: var(--qx-color-text-default);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-check-note {
+  color: var(--qx-color-text-subtle);
+  white-space: nowrap;
+}
+
+.add-check.is-new .add-check-icon {
+  color: var(--qx-color-icon-success);
+}
+
+.add-check.is-invited .add-check-icon {
+  color: var(--qx-color-icon-info);
+}
+
+.add-check.is-member .add-check-icon,
+.add-check.is-invalid .add-check-icon {
+  color: var(--qx-color-icon-subtle);
+}
+
+.add-check.is-member .add-check-email {
+  color: var(--qx-color-text-subtle);
+  text-decoration: line-through;
+}
+
+.add-check.is-invalid .add-check-note {
+  color: var(--qx-color-text-danger);
+}
+
+/* The footer: the import link at the start, the buttons at the end (until QTRX-23). */
+.add-import {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-end: auto;
+}
+
+.add-import-icon {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+/* ── Narrow screens ───────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1180px) {
+  .ppl-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ppl-cell:nth-child(3) {
+    border-inline-start: 0;
+  }
+
+  .ppl-cell:nth-child(n + 3) {
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+}
+
+@media (max-width: 640px) {
+  .ppl-band {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ppl-cell + .ppl-cell {
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+}
+
+/* Dark: the ramp stepped further apart, so each step still clears the dark surface. */
+[data-qx-color-scheme="dark"] .ppl,
+[data-qx-color-scheme="dark"] .ppl-band {
+  --ppl-month: var(--qx-color-dataviz-sequential-4);
+  --ppl-older: var(--qx-color-dataviz-sequential-2);
+}

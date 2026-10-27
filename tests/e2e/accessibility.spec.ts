@@ -32,6 +32,17 @@ const CONSOLE_PAGES: Target[] = [
   { name: "dashboard", path: "/", ready: (page) => page.getByText("1,240") },
   { name: "users", path: "/users", ready: (page) => page.getByText("Priya Patel") },
   {
+    name: "users, suspended",
+    path: "/users?status=suspended",
+    ready: (page) => page.getByRole("table", { name: "Suspended people" }).getByText("Sam Lee"),
+  },
+  {
+    name: "invitations",
+    path: "/invitations",
+    ready: (page) => page.getByText("kavya@org-one.example"),
+  },
+  { name: "deleted users", path: "/users/deleted", ready: (page) => page.getByText("Anil Bhatia") },
+  {
     name: "user detail",
     path: `/users/${MEMBER.id}`,
     ready: (page) => page.getByRole("heading", { name: MEMBER.name }),
@@ -228,12 +239,12 @@ for (const theme of THEMES) {
       await expectAccessible(page);
     });
 
-    test("invite sheet", async ({ page }) => {
+    test("add people drawer", async ({ page }) => {
       await signIn(page, ADMIN.email);
       await page.goto("/invitations");
-      await settle(page, page.getByRole("button", { name: "Send invite" }));
-      await page.getByRole("button", { name: "Send invite" }).click();
-      await settle(page, page.getByRole("dialog", { name: "Send invitation" }));
+      await settle(page, page.getByRole("button", { name: "Invite people" }));
+      await page.getByRole("button", { name: "Invite people" }).click();
+      await settle(page, page.getByRole("dialog", { name: "Add people" }));
       await expectAccessible(page);
     });
 

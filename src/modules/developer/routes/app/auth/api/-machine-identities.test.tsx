@@ -31,9 +31,12 @@ vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) 
     },
   };
 });
-vi.mock("@/shared/hooks/use-create-intent", async () => {
+vi.mock("@/shared/hooks/use-create-intent", async (importOriginal) => {
   const { useState } = await import("react");
-  return { useCreateIntent: () => useState(false) };
+  return {
+    ...(await importOriginal<typeof import("@/shared/hooks/use-create-intent")>()),
+    useCreateIntent: () => useState(false),
+  };
 });
 
 import { api } from "@/platform/api/client";
