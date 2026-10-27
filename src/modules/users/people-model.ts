@@ -74,8 +74,9 @@ export const RISKS = ["high", "medium", "low", "unknown"] as const;
 export const REVIEWS = ["pending", "reviewed"] as const;
 
 /**
- * The list's address: `?q=…&status=…&role=…&dept=…&twostep=on|off&seen=…&look=…`, with
- * `reason`, `risk` and `review` while Suspended is chosen, and `action=create`.
+ * The list's address: `?q=…&status=…&role=…&dept=…&twostep=on|off&seen=…&look=…&group=none`,
+ * with `reason`, `risk` and `review` while Suspended is chosen, and `action=create`. `group=none`
+ * (people in no group) comes from the Groups page's band; the list has no control for it.
  */
 export const usersListSearch = createIntentSearch.extend({
   q: searchText(),
@@ -88,6 +89,7 @@ export const usersListSearch = createIntentSearch.extend({
   twostep: searchEnum(["on", "off"]),
   seen: searchEnum(RECENCY),
   look: searchEnum(LOOKS),
+  group: searchEnum(["none"]),
 });
 export type UsersListSearch = z.infer<typeof usersListSearch>;
 
@@ -103,6 +105,7 @@ export function matches(user: User, filters: PeopleFilters, now: number): boolea
   if (filters.twostep === "off" && user.mfa_enabled) return false;
   if (filters.seen && recency(user, now) !== filters.seen) return false;
   if (filters.look && !needsLook(user, filters.look, now)) return false;
+  if (filters.group === "none" && (user.groups_count ?? 0) > 0) return false;
   const query = filters.q?.trim().toLowerCase();
   if (query) {
     const fields = [user.display_name, user.email, user.phone, user.id];

@@ -22,6 +22,7 @@ const ANY = "";
 // The filters that only make sense for everyone, and those only for suspended people: choosing a
 // status clears the other kind.
 const PEOPLE_ONLY = {
+  group: undefined,
   role: undefined,
   dept: undefined,
   twostep: undefined,
@@ -78,6 +79,12 @@ export function PeopleToolbar({
     tags.push({ id: "role", label: t("people.columns.role"), value: roleLabel(t, filters.role) });
   if (filters.dept)
     tags.push({ id: "dept", label: t("people.filters.department"), value: filters.dept });
+  if (filters.group)
+    tags.push({
+      id: "group",
+      label: t("people.filters.group"),
+      value: t("people.filters.inNoGroup"),
+    });
   if (filters.twostep)
     tags.push({
       id: "twostep",

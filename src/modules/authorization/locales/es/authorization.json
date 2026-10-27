@@ -21,20 +21,5 @@
     "viaGroup": "Grupo · {{group}}",
     "grantedBy": "concedido por",
     "roleShort": "rol {{id}}…"
-  },
-  "groupRoles": {
-    "title": "Roles",
-    "description": "Los miembros de este grupo heredan los permisos de estos roles.",
-    "addPlaceholder": "Agregar un rol…",
-    "loadingRoles": "Cargando roles…",
-    "allGranted": "Todos los roles ya concedidos",
-    "selectAriaLabel": "Seleccionar un rol para conceder",
-    "addRole": "Agregar rol",
-    "emptyTitle": "Aún no se han concedido roles a este grupo.",
-    "emptyDescription": "Use el selector de arriba para conceder un rol — cada miembro hereda sus permisos.",
-    "roleHeader": "Rol",
-    "grantedHeader": "Concedido",
-    "actionsHeader": "Acciones",
-    "revokeTitle": "¿Quitar este rol del grupo?"
   }
 }

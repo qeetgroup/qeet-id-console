@@ -1,0 +1,68 @@
+/*
+ * New from a template (group-templates-drawer.tsx): the outline of what a template makes, each group
+ * under its parent on a ruled guide. Placement and token values only (--qx-*).
+ */
+
+.grp-tpl-preview {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.grp-tpl-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-block-end: var(--qx-space-gap-xs);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.grp-tpl-title {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.grp-tpl-delete {
+  font: var(--qx-typography-body-sm);
+}
+
+.grp-tpl-tree {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.grp-tpl-tree.is-nested {
+  margin-block-start: 2px;
+  padding-inline-start: var(--qx-space-gap-lg);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.grp-tpl-tree li {
+  display: grid;
+  padding-block: 3px;
+}
+
+.grp-tpl-node {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.grp-tpl-name {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.grp-tpl-about {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* The outline is typed with spaces, so it's set in the monospace face. */
+.grp-tpl-outline textarea {
+  font-family: var(--qx-font-family-mono);
+}

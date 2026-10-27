@@ -21,20 +21,5 @@
     "viaGroup": "Grupo · {{group}}",
     "grantedBy": "concedido por",
     "roleShort": "função {{id}}…"
-  },
-  "groupRoles": {
-    "title": "Funções",
-    "description": "Os membros deste grupo herdam as permissões dessas funções.",
-    "addPlaceholder": "Adicionar uma função…",
-    "loadingRoles": "Carregando funções…",
-    "allGranted": "Todas as funções já foram concedidas",
-    "selectAriaLabel": "Selecionar uma função para conceder",
-    "addRole": "Adicionar função",
-    "emptyTitle": "Nenhuma função concedida a este grupo ainda.",
-    "emptyDescription": "Use o seletor acima para conceder uma função — cada membro herda suas permissões.",
-    "roleHeader": "Função",
-    "grantedHeader": "Concedido",
-    "actionsHeader": "Ações",
-    "revokeTitle": "Remover esta função do grupo?"
   }
 }

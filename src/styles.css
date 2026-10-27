@@ -12,6 +12,8 @@
 @import "./modules/dashboard/components/frame/frame.css";
 @import "./modules/dashboard/components/overview/overview.css";
 @import "./modules/dashboard/components/overview/overview-organisation.css";
+/* The Users list's band, toolbar and cells, reused unchanged by other list pages (Groups). */
+@import "./modules/users/components/people/people.css";
 
 /*
  * Migration bridge: Tailwind's preflight, loaded for the @qeetrix/ui screens, makes every svg a

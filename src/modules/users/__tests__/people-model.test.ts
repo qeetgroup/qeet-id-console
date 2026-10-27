@@ -97,6 +97,12 @@ describe("matches", () => {
     expect(matches(u, { look: "admins-no-two-step", dept: "Design" }, NOW)).toBe(false);
   });
 
+  it("keeps people in no group, for the Groups page's link", () => {
+    expect(matches(person({ groups_count: 0 }), { group: "none" }, NOW)).toBe(true);
+    expect(matches(person({ groups_count: undefined }), { group: "none" }, NOW)).toBe(true);
+    expect(matches(person({ groups_count: 2 }), { group: "none" }, NOW)).toBe(false);
+  });
+
   it("searches the name, email, phone and ID, ignoring case", () => {
     const u = person({ phone: "+91 98450 12345", id: "6607bc8c" });
     expect(matches(u, { q: "PRIYA" }, NOW)).toBe(true);

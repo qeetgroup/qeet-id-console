@@ -21,20 +21,5 @@
     "viaGroup": "Gruppe · {{group}}",
     "grantedBy": "gewährt durch",
     "roleShort": "Rolle {{id}}…"
-  },
-  "groupRoles": {
-    "title": "Rollen",
-    "description": "Mitglieder dieser Gruppe erben die Berechtigungen dieser Rollen.",
-    "addPlaceholder": "Eine Rolle hinzufügen…",
-    "loadingRoles": "Rollen werden geladen…",
-    "allGranted": "Alle Rollen bereits gewährt",
-    "selectAriaLabel": "Eine Rolle zum Gewähren auswählen",
-    "addRole": "Rolle hinzufügen",
-    "emptyTitle": "Dieser Gruppe wurden noch keine Rollen gewährt.",
-    "emptyDescription": "Verwenden Sie den obigen Selektor, um eine Rolle zu gewähren — jedes Mitglied erbt deren Berechtigungen.",
-    "roleHeader": "Rolle",
-    "grantedHeader": "Gewährt",
-    "actionsHeader": "Aktionen",
-    "revokeTitle": "Diese Rolle aus der Gruppe entfernen?"
   }
 }
