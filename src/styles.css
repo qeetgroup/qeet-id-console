@@ -10,6 +10,7 @@
 @import "./modules/onboarding/components/create-organization.css";
 @import "./modules/account/components/account.css";
 @import "./modules/dashboard/components/frame/frame.css";
+@import "./modules/dashboard/components/overview/overview.css";
 
 /*
  * Migration bridge: Tailwind's preflight, loaded for the @qeetrix/ui screens, makes every svg a
@@ -415,7 +416,8 @@ body {
   box-shadow: inset 2px 0 0 var(--primary);
 }
 
-[data-slot="table-head"] {
+/* The old tables only: unscoped, it also restyled @qeetrix/react's Table header. */
+.console-legacy [data-slot="table-head"] {
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;

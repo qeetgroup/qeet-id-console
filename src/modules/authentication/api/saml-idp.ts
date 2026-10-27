@@ -40,11 +40,11 @@ export const idpMetadataUrl = (tenantId: string) => `${idpEntityId(tenantId)}/me
 /** The organisation's SingleSignOnService URL, for an SP configured by hand. */
 export const idpSsoUrl = (tenantId: string) => `${idpEntityId(tenantId)}/sso`;
 
-export function useSamlProviders() {
+export function useSamlProviders(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: authKeys.samlProviders(tenantId),
-    enabled: !!tenantId,
+    enabled: enabled && !!tenantId,
     queryFn: () => api<{ items: SamlProvider[] }>(`/v1/tenants/${tenantId}/saml-providers`),
   });
 }

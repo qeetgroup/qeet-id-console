@@ -37,11 +37,11 @@ export interface CreateSamlInput {
 export const samlMetadataUrl = (id: string) => `${getApiBaseUrl()}/saml/metadata/${id}`;
 export const samlLoginUrl = (id: string) => `${getApiBaseUrl()}/saml/login/${id}`;
 
-export function useSamlConnections() {
+export function useSamlConnections(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: authKeys.saml(tenantId),
-    enabled: !!tenantId,
+    enabled: enabled && !!tenantId,
     queryFn: () => api<{ items: SamlConnection[] }>(`/v1/tenants/${tenantId}/saml`),
   });
 }
