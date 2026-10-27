@@ -165,54 +165,6 @@
     "totalUsers": "Total users",
     "dauAvg": "DAU (avg)"
   },
-  "applicationsOverview": {
-    "registeredApps": "Registered apps",
-    "machineApps": "Machine apps",
-    "activeGrants": "Active grants",
-    "apiKeys": "API keys",
-    "customScopes": "Custom scopes",
-    "applications": "Applications",
-    "yourRegisteredOidcOauth": "Your registered OIDC / OAuth relying-party apps.",
-    "viewConfigureAndManage": "View, configure, and manage client applications.",
-    "nonInteractiveServiceAnd": "Non-interactive service and machine identities.",
-    "manageMachineToMachine": "Manage machine-to-machine applications and credentials.",
-    "oauthGrants": "OAuth grants",
-    "consentsUsersHaveGranted": "Consents users have granted to your apps.",
-    "viewAndManageOauth": "View and manage OAuth grants and consent records.",
-    "manageApiKeysFor": "Manage API keys for programmatic access.",
-    "createRotateAndRevoke": "Create, rotate, and revoke API keys.",
-    "scopesPermissions": "Scopes & permissions",
-    "defineAndManageCustom": "Define and manage custom scopes and permissions.",
-    "controlWhatYourApplications": "Control what your applications can access.",
-    "registerApplication": "Register application",
-    "createANewOidc": "Create a new OIDC / OAuth app",
-    "createMachineApp": "Create machine app",
-    "setUpANon": "Set up a non-interactive app",
-    "generateApiKey": "Generate API key",
-    "createAnApiKey": "Create an API key for accessing APIs",
-    "reviewGrants": "Review grants",
-    "viewAndManageOauthGrants": "View and manage OAuth grants",
-    "exploreAndManage": "Explore and manage",
-    "jumpToAnyArea": "Jump to any area in applications.",
-    "applicationAreas": "Application areas",
-    "gettingStarted": "Getting started",
-    "setUpYourFirst": "Set up your first application or explore the available capabilities.",
-    "registerAnApplication": "Register an application",
-    "setUpYourFirst2": "Set up your first client application.",
-    "configurePermissions": "Configure permissions",
-    "addRequestedScopes": "Add requested scopes.",
-    "integrateAndTest": "Integrate and test",
-    "useOurSdksOr": "Use our SDKs or OAuth flows.",
-    "quickActions": "Quick actions",
-    "commonTasksToManage": "Common tasks to manage your applications.",
-    "description": "Manage client applications, machine identities, API keys, permissions, and OAuth consent across your organization.",
-    "registerApp": "Register app",
-    "viewDocumentation": "View documentation",
-    "statAcrossApps": "Across registered apps",
-    "statAdded_one": "+{{count}} from last 30 days",
-    "statAdded_other": "+{{count}} from last 30 days",
-    "statNoChange": "No change"
-  },
   "dashboardActivity": {
     "testAnAccessDecision": "Test an access decision",
     "evaluateAPolicyBefore": "Evaluate a policy before it reaches production",
@@ -304,48 +256,6 @@
     "recommendedForPrivilegedOperators": "Recommended for privileged operators",
     "addPasskey": "Add a passkey"
   },
-  "settingsOverview": {
-    "organizationSetup": "Organization setup",
-    "finishSetup": "Finish setup",
-    "completeYourConfigurationFor": "Complete your configuration for the best experience.",
-    "goToTheNext": "Go to the next unfinished setting",
-    "yourOrganizationIsActive": "Your organization is active and in good standing.",
-    "operational": "Operational",
-    "settingsAreas": "Settings areas",
-    "description": "Configure your organization — profile, domains, branding, security, billing and AI.",
-    "plan": "{{plan}} plan",
-    "established": "Est. {{date}}",
-    "verifiedDomains_one": "{{count}} verified domain",
-    "verifiedDomains_other": "{{count}} verified domains",
-    "noVerifiedDomains": "No verified domains",
-    "complete": "Complete",
-    "notConfigured": "Not configured",
-    "templatesConfigured_one": "{{count}} template configured",
-    "templatesConfigured_other": "{{count}} templates configured",
-    "defaultTemplates": "Using default templates",
-    "strong": "Strong",
-    "reviewRecommended": "Review recommended",
-    "passkeysOn": "Passkeys enabled",
-    "passkeysOff": "Passkeys off",
-    "mfaOptional": "MFA optional",
-    "mfaRequired": "MFA required",
-    "noSubscription": "No subscription",
-    "renews": "Renews {{date}}",
-    "connected": "Connected",
-    "notConnected": "Not connected",
-    "oneModel": "1 model",
-    "progress": "{{complete}} of {{total}} complete",
-    "areas_one": "{{count}} area",
-    "areas_other": "{{count}} areas",
-    "greeting": {
-      "morning": "Good morning",
-      "morningNamed": "Good morning, {{name}}",
-      "afternoon": "Good afternoon",
-      "afternoonNamed": "Good afternoon, {{name}}",
-      "evening": "Good evening",
-      "eveningNamed": "Good evening, {{name}}"
-    }
-  },
   "shortcutsDialog": {
     "keyboardShortcuts": "Keyboard shortcuts",
     "moveAroundWithoutTouching": "Move around without touching the mouse."
@@ -355,149 +265,6 @@
     "description": "There's nothing at this address. Check the link, or go to the dashboard.",
     "home": "Go to the dashboard"
   },
-  "authenticationOverview": {
-    "deltaPp": "{{value}}pp",
-    "mfaChip": "{{method}} {{count}}"
-  },
-  "authOverview": {
-    "description": "How people prove who they are — sign-in methods, social providers, SSO, MFA and devices.",
-    "kpi": {
-      "signIn": {
-        "label": "Sign-in methods",
-        "detail": "{{count}} of 5 available"
-      },
-      "social": {
-        "label": "Social providers",
-        "none": "None configured"
-      },
-      "sso": {
-        "label": "SSO connections",
-        "detail": "{{inbound}} inbound · {{outbound}} outbound"
-      },
-      "mfa": {
-        "label": "MFA coverage",
-        "detail": "of active users",
-        "delta": "vs 7 days ago"
-      },
-      "devices": {
-        "label": "Registered devices",
-        "detail_one": "across {{count}} person",
-        "detail_other": "across {{count}} people",
-        "none": "No trusted devices yet"
-      }
-    },
-    "areas": {
-      "title": "Authentication Areas",
-      "description": "Explore and configure each area of authentication.",
-      "documentation": "View documentation",
-      "signin": {
-        "title": "Sign-in",
-        "description": "Passwords, passwordless, passkeys and magic links.",
-        "stat": "{{count}} of 5 methods enabled"
-      },
-      "social": {
-        "title": "Social",
-        "description": "Google, Microsoft, Apple, GitHub and more.",
-        "stat_one": "{{count}} provider configured",
-        "stat_other": "{{count}} providers configured"
-      },
-      "sso": {
-        "title": "SSO",
-        "description": "SAML connections and Qeet ID as an IdP.",
-        "stat_one": "{{count}} connection configured",
-        "stat_other": "{{count}} connections configured"
-      },
-      "mfa": {
-        "title": "MFA",
-        "description": "TOTP and SMS / email second factors.",
-        "stat": "{{pct}}% user coverage"
-      },
-      "devices": {
-        "title": "Devices",
-        "description": "Trusted devices and OAuth device authorizations.",
-        "stat_one": "{{count}} trusted device",
-        "stat_other": "{{count}} trusted devices"
-      },
-      "methods": {
-        "password": "Password",
-        "passkey": "Passkeys",
-        "magicLink": "Magic links"
-      },
-      "chips": {
-        "rememberOn": "Remember device on",
-        "rememberOff": "Remember device off",
-        "samlIn": "{{count}} SAML",
-        "samlOut": "{{count}} SAML IdP"
-      }
-    },
-    "activity": {
-      "title": "Recent activity",
-      "description": "Latest changes to your authentication settings.",
-      "viewAll": "View all activity",
-      "emptyTitle": "No recent activity",
-      "emptyDescription": "Changes to sign-in methods, providers and policies will appear here."
-    },
-    "posture": {
-      "title": "Security posture",
-      "overall": "Overall",
-      "state": {
-        "healthy": "Good",
-        "attention": "Needs attention",
-        "critical": "At risk"
-      },
-      "summary": {
-        "healthy": "Your authentication setup is in good shape, with a few opportunities to improve.",
-        "attention": "Your authentication setup has gaps worth closing.",
-        "critical": "Your authentication setup needs attention before rollout."
-      },
-      "items": {
-        "signin": "Sign-in methods configured",
-        "social": "Social providers configured",
-        "mfa": "Increase MFA adoption",
-        "sso": "SSO configured",
-        "devices": "Device management active"
-      },
-      "callout": {
-        "title": "Get to 90%+",
-        "allClear": "Everything is configured",
-        "allClearDetail": "No outstanding setup steps for authentication."
-      }
-    },
-    "actions": {
-      "title": "Recommended actions",
-      "pending": "{{count}} pending",
-      "items": {
-        "signin": {
-          "title": "Add a sign-in method",
-          "description": "A second method keeps people signing in if one fails",
-          "verb": "Set up"
-        },
-        "social": {
-          "title": "Add another social provider",
-          "description": "Expand sign-in options (e.g. Microsoft, Apple)",
-          "verb": "Add"
-        },
-        "mfa": {
-          "title": "Increase MFA adoption",
-          "description": "Encourage more users to enable MFA",
-          "verb": "Review"
-        },
-        "sso": {
-          "title": "Configure SSO",
-          "description": "Enable SAML or OIDC for your organization",
-          "verb": "Set up"
-        },
-        "devices": {
-          "title": "Review device trust",
-          "description": "Audit and manage registered devices",
-          "verb": "Review"
-        }
-      }
-    },
-    "states": {
-      "unavailable": "Unavailable"
-    }
-  },
   "nav": {
     "overview": {
       "dashboard": {
@@ -505,21 +272,6 @@
       },
       "analytics": {
         "title": "Analytics"
-      }
-    },
-    "applications": {
-      "overview": {
-        "title": "Overview"
-      }
-    },
-    "authentication": {
-      "overview": {
-        "title": "Overview"
-      }
-    },
-    "settings": {
-      "overview": {
-        "title": "Overview"
       }
     }
   },
@@ -603,7 +355,8 @@
     "groups": {
       "security": "Sign-in and security",
       "people": "People and apps",
-      "setup": "Setup"
+      "setup": "Setup",
+      "organisation": "Organisation"
     },
     "pulse": {
       "signIns": "Sign-ins today",
@@ -704,7 +457,7 @@
       "more": "Show {{count}} more",
       "fewer": "Show fewer",
       "clearTitle": "Nothing needs attention",
-      "clearText": "No failing webhooks, keys about to expire or open risk alerts.",
+      "clearText": "No failing connections or webhooks, no keys about to expire and no open risk alerts.",
       "webhookOff": {
         "title": "Webhook turned off",
         "detail": "Deliveries to {{host}} kept failing, so it was turned off",
@@ -732,6 +485,31 @@
         "title": "Two-step verification is under the target",
         "detail": "{{have}} of {{total}} people have a second factor; the target is {{target}}%",
         "action": "Require it"
+      },
+      "directoryDown": {
+        "title": "{{name}} can't reach its server",
+        "detail_one": "{{type}} · its last check failed {{count}} day ago: {{reason}}",
+        "detail_other": "{{type}} · its last check failed {{count}} days ago: {{reason}}",
+        "detailToday": "{{type}} · its last check failed today: {{reason}}",
+        "action": "Fix it"
+      },
+      "groupsEmpty": {
+        "title_one": "A group has no members",
+        "title_other": "{{count}} groups have no members",
+        "detail": "{{names}}",
+        "action": "Add members"
+      },
+      "wildcard": {
+        "title_one": "A wildcard permission grants broad access",
+        "title_other": "{{count}} wildcard permissions grant broad access",
+        "detail": "A permission containing * matches every action it covers; prefer exact keys",
+        "action": "Review"
+      },
+      "allowAll": {
+        "title_one": "An allow policy has no condition",
+        "title_other": "{{count}} allow policies have no condition",
+        "detail": "An enabled allow policy with no condition matches every request",
+        "action": "Review"
       }
     },
     "setup": {
@@ -773,7 +551,8 @@
         "apps": "Applications",
         "apiKeys": "API keys",
         "webhooks": "Webhooks",
-        "plan": "Plan"
+        "plan": "Plan",
+        "groups": "Groups"
       },
       "details": {
         "connected": "Connected · {{names}}",
@@ -790,9 +569,20 @@
         "twoStepEveryone": "Everyone has a second factor",
         "team_one": "{{count}} person",
         "team_other": "{{count}} people",
-        "teamPending_one": "{{count}} people · {{pending}} invitation pending",
-        "teamPending_other": "{{count}} people · {{pending}} invitations pending",
+        "teamPending_one": "{{people}} people · {{count}} invitation pending",
+        "teamPending_other": "{{people}} people · {{count}} invitations pending",
+        "teamDepartments_one": "{{count}} person · {{departments}} departments",
+        "teamDepartments_other": "{{count}} people · {{departments}} departments",
+        "teamDepartmentsPending_one": "{{people}} people · {{departments}} departments · {{count}} invitation pending",
+        "teamDepartmentsPending_other": "{{people}} people · {{departments}} departments · {{count}} invitations pending",
         "teamOnlyYou": "Only you so far",
+        "groups_one": "{{count}} group",
+        "groups_other": "{{count}} groups",
+        "groupsEmpty_one": "{{groups}} groups · {{count}} has no members",
+        "groupsEmpty_other": "{{groups}} groups · {{count}} have no members",
+        "groupsAllEmpty_one": "{{count}} group, with no members yet",
+        "groupsAllEmpty_other": "{{count}} groups, none with members yet",
+        "groupsNone": "Put people in groups to give them access together",
         "verified": "Verified · {{names}}",
         "domainPending": "Waiting for its DNS record · {{domain}}",
         "domainCheckFailed": "The last check failed · {{domain}}",
@@ -801,6 +591,9 @@
         "scimProvisioned_other": "{{count}} people kept in sync",
         "scimNone": "People are added by hand or through the API",
         "ldapNone": "No directory server connected",
+        "checkFailing_one": "{{names}}: its check failed {{count}} day ago",
+        "checkFailing_other": "{{names}}: its check failed {{count}} days ago",
+        "checkFailingToday": "{{names}}: its check failed today",
         "apps_one": "{{count}} registered",
         "apps_other": "{{count}} registered",
         "appsUnused_one": "{{count}} registered · {{unused}} never used",
@@ -835,8 +628,38 @@
         "review": "Review",
         "requireIt": "Require it",
         "invite": "Invite",
-        "register": "Register"
+        "register": "Register",
+        "addMembers": "Add members"
       }
+    },
+    "organisation": {
+      "mapTitle": "How {{name}} is organised",
+      "mapTitleYours": "How your organisation is organised",
+      "mapNote_one": "{{count}} department and its teams, sized by people",
+      "mapNote_other": "{{count}} departments and their teams, sized by people",
+      "mapLabel": "Departments and their teams",
+      "tile_one": "{{name}}, {{count}} person",
+      "tile_other": "{{name}}, {{count}} people",
+      "tileTeams_one": "{{name}}, {{count}} person: {{teams}}",
+      "tileTeams_other": "{{name}}, {{count}} people: {{teams}}",
+      "teamCount": "{{team}} {{count}}",
+      "noDepartment": "No department",
+      "noTeam": "No team",
+      "noTeamFoot_one": "{{count}} person is in a department but no team",
+      "noTeamFoot_other": "{{count}} people are in a department but no team",
+      "noDepartmentFoot_one": "{{count}} person has no department",
+      "noDepartmentFoot_other": "{{count}} people have no department",
+      "placesTitle": "Where people work",
+      "placesNote_one": "{{count}} city in {{countries}} countries, sized by people",
+      "placesNote_other": "{{count}} cities in {{countries}} countries, sized by people",
+      "placesNoteOneCountry_one": "{{count}} city, sized by people",
+      "placesNoteOneCountry_other": "{{count}} cities in {{country}}, sized by people",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people",
+      "cityPeople_one": "{{city}}, {{count}} person",
+      "cityPeople_other": "{{city}}, {{count}} people",
+      "cityShare": "{{share}} of people work in {{city}}",
+      "elsewhere": "Elsewhere"
     }
   }
 }

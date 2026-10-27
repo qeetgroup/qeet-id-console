@@ -1,5 +1,5 @@
 // What this module adds to the console shell; see src/platform/modules/manifest.ts.
-import { ChartColumnIcon, GaugeIcon, LayoutDashboardIcon } from "@qeetrix/icons";
+import { ChartColumnIcon, LayoutDashboardIcon } from "@qeetrix/icons";
 
 import { defineModule } from "@/platform/modules/manifest";
 
@@ -22,30 +22,6 @@ export const manifest = defineModule({
       url: "/analytics",
       icon: <ChartColumnIcon />,
       capability: "analytics.read",
-    },
-    {
-      id: "applications.overview",
-      group: "applications",
-      order: 10,
-      title: "dashboard:nav.applications.overview.title",
-      url: "/applications",
-      icon: <GaugeIcon />,
-    },
-    {
-      id: "authentication.overview",
-      group: "authentication",
-      order: 10,
-      title: "dashboard:nav.authentication.overview.title",
-      url: "/authentication",
-      icon: <GaugeIcon />,
-    },
-    {
-      id: "settings.overview",
-      group: "settings",
-      order: 10,
-      title: "dashboard:nav.settings.overview.title",
-      url: "/settings",
-      icon: <GaugeIcon />,
     },
   ],
   commands: [
@@ -72,7 +48,8 @@ export const manifest = defineModule({
   ],
   extensions: {
     qeetaiSuggestions: {
-      "/applications": [
+      // The Applications list (Applications › Overview is gone; the Dashboard is the one overview).
+      "/auth/connections/oidc": [
         {
           type: "tool",
           toolName: "create_oauth_client",

@@ -57,6 +57,8 @@ export function deriveOverviewAttention(input: {
   anomalies?: Anomaly[];
   /** Two-step coverage from the people themselves, so it matches the rest of the page. */
   userStats?: UserStats;
+  /** Alerts from other areas (the directory, authorization), ranked with the rest. */
+  extra?: OverviewAttention[];
   now?: Date;
 }): OverviewAttention[] {
   const now = input.now ?? new Date();
@@ -155,6 +157,7 @@ export function deriveOverviewAttention(input: {
       // With the people's own count, the analytics estimate of two-step coverage would contradict it.
       ...deriveAttentionItems(input.overview).filter((i) => !(stats && i.id === "mfa-adoption")),
     );
+  items.push(...(input.extra ?? []));
 
   return items.sort(
     (a, b) => RANK[a.severity] - RANK[b.severity] || (b.since ?? "").localeCompare(a.since ?? ""),

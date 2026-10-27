@@ -1,6 +1,7 @@
-// The Dashboard (/): the first page every administrator sees. Four measures across the top; sign-ins
-// over 14 days beside what needs attention; then sign-in and security, people and apps, and the
-// organisation's set-up as a checklist. Each panel reads only what the person may: a panel whose
+// The Dashboard (/): the first page every administrator sees, and the console's one overview. Four
+// measures across the top; sign-ins over 14 days beside what needs attention (the directory's and
+// authorization's alerts too); then sign-in and security, people and apps, how the organisation is
+// made up, and its set-up as a checklist. Each panel reads only what the person may: a panel whose
 // data they can't read isn't shown, and a set-up item whose source they can't read drops out.
 // Nothing here writes: loading the Dashboard never changes the organisation.
 
@@ -26,7 +27,7 @@ import {
 } from "@/modules/authentication";
 import { useSubscription } from "@/modules/billing";
 import { apiKeyQueries, webhookQueries } from "@/modules/developer";
-import { useDomains } from "@/modules/organizations";
+import { orgQueries, useDomains } from "@/modules/organizations";
 import { useAnomalies } from "@/modules/security";
 import { invitationQueries, useUserStats } from "@/modules/users";
 import { useTenantId } from "@/platform/auth/session";
@@ -37,12 +38,14 @@ import { appsInUse, deriveOverviewAttention } from "@/modules/dashboard/overview
 import { deriveSetup } from "@/modules/dashboard/overview-setup-model";
 import { RecentActivityPanel } from "./overview-activity";
 import { NeedsAttentionPanel } from "./overview-attention";
+import { OrgMapPanel, PlacesPanel } from "./overview-organisation";
 import { Group } from "./overview-parts";
 import { ActivePeoplePanel, AppsPanel } from "./overview-people";
 import { PulseBand } from "./overview-pulse";
 import { FailedHoursPanel, TwoStepPanel } from "./overview-security";
 import { SignInMethodsPanel, SignInsPanel } from "./overview-sign-ins";
 import { SetupPanel } from "./overview-setup";
+import { useDirectoryInsights } from "./use-directory-insights";
 
 const columns = (n: number) => `repeat(${n}, minmax(0, 1fr))`;
 const providerName = (p: string) => p.charAt(0).toUpperCase() + p.slice(1);
@@ -93,6 +96,10 @@ export function OverviewPage() {
   });
   const anomalies = useAnomalies(can.audit);
   const subscription = useSubscription(can.billing);
+  const directory = useDirectoryInsights();
+  const orgName = useQuery({ ...orgQueries.list(), enabled: !!tenantId }).data?.items.find(
+    (item) => item.id === tenantId,
+  )?.name;
 
   // A backend without the analytics endpoint answers with an empty overview: nothing to chart.
   const overview = analytics.data?.login_trend_14d.length ? analytics.data : undefined;
@@ -117,9 +124,12 @@ export function OverviewPage() {
     apiKeys: keys.data?.items,
     anomalies: anomalies.data?.items,
     userStats: stats.data,
+    extra: directory.attention,
   });
   const attentionLoading =
-    [webhooks, keys, anomalies].some((q) => q.isLoading) || (can.analytics && analytics.isLoading);
+    [webhooks, keys, anomalies].some((q) => q.isLoading) ||
+    directory.attentionLoading ||
+    (can.analytics && analytics.isLoading);
 
   const p = policy.data;
   const methods = p
@@ -137,9 +147,12 @@ export function OverviewPage() {
     methods,
     userStats: stats.data,
     pendingInvites: invites.data?.items.filter((i) => i.status === "pending").length,
+    departments: directory.shape?.named,
+    groups: directory.groups,
     domains: domains.data?.items,
     scim: scim.data,
     ldap: ldap.data?.items,
+    failing: directory.failing,
     clients: clients.data?.items,
     unusedClients: usage.unused.length,
     apiKeys: keys.data?.items,
@@ -154,22 +167,23 @@ export function OverviewPage() {
         maximumFractionDigits: 0,
       }).format(minor / 100),
   });
-  const setupLoading = [
-    stats,
-    invites,
-    policy,
-    social,
-    saml,
-    samlApps,
-    scim,
-    ldap,
-    clients,
-    grants,
-    domains,
-    keys,
-    webhooks,
-    subscription,
-  ].some((q) => q.isLoading);
+  const setupLoading =
+    [
+      stats,
+      invites,
+      policy,
+      social,
+      saml,
+      samlApps,
+      scim,
+      ldap,
+      clients,
+      grants,
+      domains,
+      keys,
+      webhooks,
+      subscription,
+    ].some((q) => q.isLoading) || directory.setupLoading;
 
   const security: ReactNode[] = [];
   if (overview)
@@ -194,6 +208,14 @@ export function OverviewPage() {
       />,
     );
   if (can.audit) peopleAndApps.push(<RecentActivityPanel key="activity" />);
+
+  const organisation: ReactNode[] = [];
+  if (directory.shape?.named)
+    organisation.push(<OrgMapPanel key="map" shape={directory.shape} orgName={orgName} />);
+  if (directory.places?.length)
+    organisation.push(
+      <PlacesPanel key="places" places={directory.places} people={directory.people?.length ?? 0} />,
+    );
 
   return (
     <>
@@ -237,6 +259,15 @@ export function OverviewPage() {
           {peopleAndApps.length ? (
             <Group label={t("overview.groups.people")} columns={columns(peopleAndApps.length)}>
               {peopleAndApps}
+            </Group>
+          ) : null}
+
+          {organisation.length ? (
+            <Group
+              label={t("overview.groups.organisation")}
+              columns={organisation.length > 1 ? "minmax(0, 1.55fr) minmax(0, 1fr)" : columns(1)}
+            >
+              {organisation}
             </Group>
           ) : null}
 

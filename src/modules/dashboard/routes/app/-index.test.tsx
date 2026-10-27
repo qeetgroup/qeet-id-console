@@ -140,7 +140,81 @@ const RESPONSES: Record<string, unknown> = {
     last_used_at: null,
     provisioned_count: 0,
   },
-  "/v1/tenants/t1/ldap": { items: [] },
+  "/v1/tenants/t1/ldap": {
+    items: [
+      {
+        id: "l1",
+        name: "Staging Directory (test)",
+        server_url: "ldaps://ldap.staging.qeet.in:636",
+        status: "draft",
+        created_at: day(-19),
+      },
+    ],
+  },
+  "/v1/tenants/t1/directory/connections": {
+    items: [
+      {
+        id: "l1",
+        name: "Staging Directory (test)",
+        reference: "l1",
+        type: "ldap",
+        status: "draft",
+        health: "unknown",
+        environment: null,
+        scope: "users-on-signin",
+        created_at: day(-19),
+        last_activity_at: null,
+        last_sync_at: null,
+        user_count: null,
+        group_count: null,
+        server_url: "ldaps://ldap.staging.qeet.in:636",
+      },
+    ],
+  },
+  "/v1/tenants/t1/directory/errors": {
+    items: [
+      {
+        id: "e1",
+        connection_id: "l1",
+        category: "connection",
+        severity: "critical",
+        resolution: "open",
+        started_at: day(-6),
+        message: "ldaps://ldap.staging.qeet.in:636: no such host",
+        error_code: "DIR-502",
+      },
+    ],
+    total: 1,
+    limit: 100,
+    offset: 0,
+    summary: { open: 1, critical: 1, warning: 0, retried: 0, impacted_users: 0 },
+    categories: [],
+    connections: [],
+    remediations: [],
+  },
+  "/v1/tenants/t1/groups": {
+    items: [
+      { id: "g1", tenant_id: "t1", name: "Engineering", description: "", member_count: 3 },
+      { id: "g2", tenant_id: "t1", name: "Partnerships", description: "", member_count: 0 },
+    ],
+  },
+  "/v1/permissions": { items: [{ id: "p1", key: "users.*", description: "" }] },
+  "/v1/tenants/t1/abac/policies": { items: [] },
+  "/v1/tenants": { items: [{ id: "t1", name: "Qeet Group" }] },
+  "/v1/users": {
+    items: [
+      {
+        id: "u1",
+        metadata: { department: "Engineering", team: "Payments", location: "Bengaluru, IN" },
+      },
+      {
+        id: "u2",
+        metadata: { department: "Engineering", team: "Payments", location: "Bengaluru, IN" },
+      },
+      { id: "u3", metadata: { department: "Sales", location: "Berlin, DE" } },
+      { id: "u4", metadata: {} },
+    ],
+  },
   "/v1/tenants/t1/oidc/clients": {
     items: [
       {
@@ -260,10 +334,51 @@ describe("the Dashboard", () => {
     expect(within(panel).queryByText("MFA adoption below target")).toBeNull();
   });
 
+  it("brings in the directory's and authorization's alerts, which their overviews used to carry", async () => {
+    renderPage();
+    const panel = (await screen.findByRole("heading", { name: "Needs attention" })).closest(
+      "section",
+    ) as HTMLElement;
+    const down = (
+      await within(panel).findByText("Staging Directory (test) can't reach its server")
+    ).closest("li") as HTMLElement;
+    expect(down.textContent).toContain("LDAP · its last check failed 6 days ago: no such host");
+    expect(within(down).getByRole("link", { name: "Fix it" }).getAttribute("href")).toBe(
+      "/directory/connections",
+    );
+    fireEvent.click(await within(panel).findByRole("button", { name: /^Show \d+ more$/ }));
+    expect(await within(panel).findByText("A group has no members")).toBeTruthy();
+    expect(within(panel).getByText("Partnerships")).toBeTruthy();
+    expect(
+      await within(panel).findByText("A wildcard permission grants broad access"),
+    ).toBeTruthy();
+  });
+
+  it("shows how the organisation is made up: departments and their teams, and where people work", async () => {
+    renderPage();
+    expect(
+      await screen.findByRole("heading", { name: "How Qeet Group is organised" }),
+    ).toBeTruthy();
+    const map = screen.getByRole("list", { name: "Departments and their teams" });
+    expect(
+      within(map)
+        .getByRole("link", { name: "Engineering, 2 people: Payments 2" })
+        .getAttribute("href"),
+    ).toBe("/users");
+    expect(within(map).getByText("No department, 1 person")).toBeTruthy();
+    expect(
+      screen.getByText("1 person is in a department but no team · 1 person has no department"),
+    ).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Where people work" })).toBeTruthy();
+    expect(screen.getByText("2 cities in 2 countries, sized by people")).toBeTruthy();
+    expect(screen.getByText("Bengaluru, 2 people")).toBeTruthy();
+    expect(screen.getByText("50% of people work in Bengaluru")).toBeTruthy();
+  });
+
   it("shows the set-up as a checklist, with an action only where something's needed", async () => {
     renderPage();
     const progress = await screen.findByText(/of \d+ done$/);
-    expect(progress.textContent).toBe("7 of 12 done");
+    expect(progress.textContent).toBe("7 of 13 done");
     const sso = screen
       .getByText("Single sign-on", { selector: "strong" })
       .closest("li") as HTMLElement;
@@ -273,6 +388,10 @@ describe("the Dashboard", () => {
     expect(within(scim).getByRole("link", { name: "Set up" }).getAttribute("href")).toBe(
       "/auth/connections/scim",
     );
+    const ldap = screen.getByText("LDAP", { selector: "strong" }).closest("li") as HTMLElement;
+    expect(ldap.textContent).toContain("Staging Directory (test): its check failed 6 days ago");
+    const groups = screen.getByText("Groups", { selector: "strong" }).closest("li") as HTMLElement;
+    expect(groups.textContent).toContain("2 groups · 1 has no members");
   });
 
   it("switches the sign-ins chart to a table of every day", async () => {

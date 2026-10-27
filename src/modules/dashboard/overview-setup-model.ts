@@ -13,8 +13,10 @@ import type {
 } from "@/modules/authentication";
 import type { Subscription } from "@/modules/billing";
 import type { ApiKey, Webhook } from "@/modules/developer";
+import type { Group } from "@/modules/groups";
 import type { TenantDomain } from "@/modules/organizations";
 import type { UserStats } from "@/modules/users";
+import { type Failure, groupsItem, ldapItem } from "./overview-directory-model";
 import { DAY_MS, KEY_EXPIRY_SOON_DAYS } from "./overview-model";
 
 type Params = Record<string, string | number>;
@@ -47,9 +49,14 @@ export interface SetupSources {
   methods?: string[]; // the sign-in methods turned on, already named
   userStats?: UserStats;
   pendingInvites?: number;
+  /** How many departments people are in, from their profiles. */
+  departments?: number;
   domains?: TenantDomain[];
   scim?: ScimConfig;
   ldap?: LdapConnection[];
+  /** Directory connections whose connection check is failing, by id. */
+  failing?: ReadonlyMap<string, Failure>;
+  groups?: Group[];
   clients?: OidcClient[];
   unusedClients?: number;
   apiKeys?: ApiKey[];
@@ -177,36 +184,21 @@ function domainItem(domains: TenantDomain[]): SetupItem {
   };
 }
 
-function ldapItem(ldap: LdapConnection[], formatDate: (iso: string) => string): SetupItem {
-  const base = { id: "ldap", name: "dashboard:overview.setup.items.ldap" as const };
-  const to = "/auth/connections/ldap";
-  const active = ldap.filter((c) => c.status === "active");
-  const draft = ldap.filter((c) => c.status === "draft");
-  if (active.length)
+/** "45 people · 7 departments · 3 invitations pending": departments only once there are two. */
+function teamDetail(people: number, departments: number, pending: number): Phrase {
+  const d = departments > 1;
+  if (pending)
     return {
-      ...base,
-      state: "done",
-      detail: {
-        key: "dashboard:overview.setup.details.connected",
-        params: { names: names(active) },
-      },
-    };
-  const firstDraft = draft[0];
-  if (firstDraft)
-    return {
-      ...base,
-      state: "setup",
-      detail: {
-        key: "dashboard:overview.setup.details.draftSince",
-        params: { names: names(draft, 1), date: formatDate(firstDraft.created_at) },
-      },
-      action: { label: "dashboard:overview.setup.actions.finish", to },
+      key: d
+        ? "dashboard:overview.setup.details.teamDepartmentsPending"
+        : "dashboard:overview.setup.details.teamPending",
+      params: { count: pending, people, departments },
     };
   return {
-    ...base,
-    state: "none",
-    detail: { key: "dashboard:overview.setup.details.ldapNone" },
-    action: { label: "dashboard:overview.setup.actions.setUp", to },
+    key: d
+      ? "dashboard:overview.setup.details.teamDepartments"
+      : "dashboard:overview.setup.details.team",
+    params: { count: people, departments },
   };
 }
 
@@ -401,12 +393,7 @@ export function deriveSetup(s: SetupSources): SetupGroup[] {
             id: "team",
             name: "dashboard:overview.setup.items.team",
             state: "done",
-            detail: {
-              key: pending
-                ? "dashboard:overview.setup.details.teamPending"
-                : "dashboard:overview.setup.details.team",
-              params: { count: s.userStats.total, pending },
-            },
+            detail: teamDetail(s.userStats.total, s.departments ?? 0, pending),
           }
         : {
             id: "team",
@@ -417,6 +404,7 @@ export function deriveSetup(s: SetupSources): SetupGroup[] {
           },
     );
   }
+  if (s.groups) people.push(groupsItem(s.groups));
   if (s.domains) people.push(domainItem(s.domains));
   if (s.scim)
     people.push(
@@ -441,7 +429,7 @@ export function deriveSetup(s: SetupSources): SetupGroup[] {
             },
           },
     );
-  if (s.ldap) people.push(ldapItem(s.ldap, formatDate));
+  if (s.ldap) people.push(ldapItem(s.ldap, formatDate, s.failing, now));
 
   if (s.clients)
     developers.push(

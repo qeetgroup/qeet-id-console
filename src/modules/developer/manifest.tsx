@@ -4,7 +4,6 @@ import {
   BotIcon,
   CpuIcon,
   FileKeyIcon,
-  GaugeIcon,
   KeyRoundIcon,
   LockKeyholeIcon,
   RefreshCwIcon,
@@ -28,14 +27,6 @@ export const manifest = defineModule({
       url: "/auth/api/machine-identities",
       icon: <CpuIcon />,
       capability: "apikey.read",
-    },
-    {
-      id: "developer.overview",
-      group: "developer",
-      order: 10,
-      title: "developer:nav.developer.overview.title",
-      url: "/developer",
-      icon: <GaugeIcon />,
     },
     {
       id: "developer.apiKeys",

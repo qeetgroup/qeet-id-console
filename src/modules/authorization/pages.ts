@@ -2,7 +2,6 @@
 export { AbacPoliciesPage } from "./components/abac-policies-page";
 export { AccessTesterPage } from "./components/access-tester-page";
 export { AuthorizationAuditPage } from "./components/authorization-audit-page";
-export { AuthorizationOverviewPage } from "./components/authorization-overview-page";
 export { AuthorizationSettingsPage } from "./components/authorization-settings-page";
 export { DecisionExplorerPage } from "./components/decision-explorer-page";
 export { PermissionsPage } from "./components/permissions-page";

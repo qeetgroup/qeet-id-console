@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { SettingsOverview } from "@/modules/dashboard/pages";
-
+// The Dashboard is the console's one overview; this area opens on General, and an old link or
+// bookmark to its overview lands there.
 export const Route = createFileRoute("/_app/settings/")({
-  component: SettingsOverview,
+  beforeLoad: () => {
+    throw redirect({ to: "/settings/organization/general", replace: true });
+  },
 });

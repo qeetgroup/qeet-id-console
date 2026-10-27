@@ -1,42 +1,4 @@
 {
-  "overview": {
-    "description": "Your organization's security posture at a glance. Jump into any area below.",
-    "sections": {
-      "threatProtection": {
-        "title": "Threat Protection",
-        "description": "Bot detection, anomalies, rate limits and IP allowlists."
-      },
-      "sessions": {
-        "title": "Sessions",
-        "description": "Active sessions across the organization — revoke any you don't recognise."
-      },
-      "deviceAuthorizations": {
-        "title": "Device Authorizations",
-        "description": "Devices that completed the device-authorization flow."
-      },
-      "rateLimits": {
-        "title": "Rate Limits",
-        "description": "Per-endpoint gateway limits and organization network policy."
-      },
-      "auditLogs": {
-        "title": "Audit Logs",
-        "description": "Hash-chained, append-only record of every security event."
-      },
-      "compliance": {
-        "title": "Compliance",
-        "description": "SOC 2, GDPR, ISO 27001 and data-retention controls."
-      }
-    },
-    "empty": {
-      "noAreas": "No security areas are available",
-      "noOrg": "Create an organization first",
-      "noAreasDescription": "Your organization role does not include security or audit visibility. Ask an organization administrator if you need access.",
-      "noOrgDescription": "Organization security and audit tools appear once you create or join an organization. Your personal account security lives under Account → Security.",
-      "goToOverview": "Go to overview",
-      "goToSetup": "Go to setup"
-    },
-    "available": "{{count}} available"
-  },
   "sessions": {
     "description": "Every active and revoked session for your account. Revoking a session terminates the refresh token immediately.",
     "refresh": "Refresh",
@@ -452,11 +414,6 @@
   "logStreamingPage": {
     "enabled": "Enabled"
   },
-  "securityOverviewPage": {
-    "securityOperations": "Security operations",
-    "investigateIdentityRiskEnforce": "Investigate identity risk, enforce policy, and verify control evidence.",
-    "availableSecurityAreas": "Available security areas"
-  },
   "toast": {
     "rateLimitsSaved": "Rate limits saved",
     "rateLimitsResetTo": "Rate limits reset to platform defaults",
@@ -480,9 +437,6 @@
       }
     },
     "security": {
-      "overview": {
-        "title": "Overview"
-      },
       "threats": {
         "title": "Threats"
       },

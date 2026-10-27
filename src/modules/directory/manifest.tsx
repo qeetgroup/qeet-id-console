@@ -1,19 +1,11 @@
 // What this module adds to the console shell; see src/platform/modules/manifest.ts.
-import { GaugeIcon, NetworkIcon } from "@qeetrix/icons";
+import { NetworkIcon } from "@qeetrix/icons";
 
 import { defineModule } from "@/platform/modules/manifest";
 
 export const manifest = defineModule({
   id: "directory",
   nav: [
-    {
-      id: "directory.overview",
-      group: "directory",
-      order: 10,
-      title: "directory:nav.directory.overview.title",
-      url: "/directory",
-      icon: <GaugeIcon />,
-    },
     {
       id: "directory.directories",
       group: "directory",

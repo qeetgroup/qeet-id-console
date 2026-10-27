@@ -1,6 +1,5 @@
 {
   "directory": {
-    "title": "Overview",
     "notReported": "Not reported",
     "notSet": "Not set",
     "filter": "Filter",
@@ -341,64 +340,16 @@
       "rowActions": "Actions for {{name}}",
       "view": "View connection"
     },
-    "description": "Everyone and everything in your organization: users, organizations, groups and directory-sync connections.",
-    "summaryLabel": "Directory overview",
     "loadError": "Some directory details couldn't be loaded.",
     "retry": "Retry",
-    "unavailable": "Unavailable",
-    "restricted": "Restricted",
-    "loadingMetric": "Loading {{label}}",
     "chartSummary": "{{label}}: {{value}}",
     "planned": "Planned",
     "plannedHint": "This view is planned and is not available yet.",
-    "noOrganizationTitle": "Choose an organization first",
-    "noOrganizationDescription": "Create or join an organization to manage its directory.",
-    "accessTitle": "Checking directory access",
-    "accessDescription": "Directory details appear once your organization access is available.",
-    "goToOverview": "Go to overview",
-    "actions": {
-      "addUser": "Add user",
-      "inviteUsers": "Invite users",
-      "createGroup": "Create group",
-      "addConnection": "Add directory connection",
-      "connectionType": "Directory type",
-      "billing": "View plan and billing"
-    },
     "users": {
-      "title": "Users",
-      "description": "People with access to your organization.",
-      "view": "View all users",
-      "manage": "Manage users",
-      "total": "Total users",
-      "pending": "Pending invitations",
-      "deleted": "Deleted users"
-    },
-    "organizations": {
-      "title": "Organizations",
-      "description": "Organization boundaries, plans and regions.",
-      "view": "View organizations",
-      "manage": "Manage organizations",
-      "total": "Your organizations",
-      "plan": "Current plan",
-      "region": "Region"
+      "title": "Users"
     },
     "groups": {
-      "title": "Groups",
-      "description": "Bundle users to grant access together.",
-      "view": "View groups",
-      "manage": "Manage groups",
-      "total": "Total groups",
-      "topLevel": "Top-level groups",
-      "nested": "Nested groups"
-    },
-    "directories": {
-      "title": "Directories",
-      "description": "SCIM and LDAP / AD directory-sync connections.",
-      "view": "View directories",
-      "manage": "Manage connections",
-      "enabled": "Enabled connections",
-      "inactive": "Inactive connections",
-      "supported": "Supported types"
+      "title": "Groups"
     },
     "status": {
       "configured": "Configured",
@@ -414,11 +365,6 @@
       "ldapActive_other": "{{count}} active LDAP / AD connections. Live sync health is not reported.",
       "ldapAttention_one": "{{count}} LDAP / AD connection is draft or disabled.",
       "ldapAttention_other": "{{count}} LDAP / AD connections are draft or disabled."
-    },
-    "footer": {
-      "title": "Get more out of Qeet ID",
-      "description": "Centralize your directory, automate user management, and keep access secure.",
-      "documentation": "View documentation"
     }
   },
   "toast": {
@@ -428,9 +374,6 @@
   },
   "nav": {
     "directory": {
-      "overview": {
-        "title": "Overview"
-      },
       "suspended": {
         "title": "Suspended"
       },

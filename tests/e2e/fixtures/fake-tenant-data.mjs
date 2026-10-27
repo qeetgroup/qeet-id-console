@@ -34,13 +34,16 @@ export function members(tenantId, tenant) {
     last_seen_ip: "203.0.113.10",
   };
   if (tenant.slug !== "org-one") return [first];
+  // Profiles say where each person sits and works, for the Dashboard's Organisation row.
+  const at = (department, team, location) => ({ metadata: { department, team, location } });
   return [
-    first,
+    { ...first, ...at("Engineering", "Platform", "Bengaluru, IN") },
     {
       id: INVITED_ID,
       tenant_id: tenantId,
       email: "priya@org-one.example",
       display_name: "Priya Patel",
+      ...at("Engineering", "Payments", "Bengaluru, IN"),
       status: "invited",
       roles: [],
       created_at: CREATED,
@@ -52,6 +55,7 @@ export function members(tenantId, tenant) {
       tenant_id: tenantId,
       email: "sam@org-one.example",
       display_name: "Sam Lee",
+      ...at("Support", undefined, "Berlin, DE"),
       status: "suspended",
       email_verified_at: CREATED,
       roles: ["Support"],
@@ -327,6 +331,18 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
   if (path === `${tenantPath}/analytics/overview`) return analyticsOverview();
   if (path === `${tenantPath}/roles`) return { items: roles(tenantId) };
   if (path === `${tenantPath}/groups`) return { items: groups(tenantId) };
+  if (path === `${tenantPath}/directory/errors`) {
+    return {
+      items: [],
+      total: 0,
+      limit: Number(query.get("limit") ?? 25),
+      offset: 0,
+      summary: { open: 0, critical: 0, warning: 0, retried: 0, impacted_users: 0 },
+      categories: [],
+      connections: [],
+      remediations: [],
+    };
+  }
   if (path === `${tenantPath}/api-keys`) {
     return {
       items: [

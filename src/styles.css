@@ -11,6 +11,7 @@
 @import "./modules/account/components/account.css";
 @import "./modules/dashboard/components/frame/frame.css";
 @import "./modules/dashboard/components/overview/overview.css";
+@import "./modules/dashboard/components/overview/overview-organisation.css";
 
 /*
  * Migration bridge: Tailwind's preflight, loaded for the @qeetrix/ui screens, makes every svg a
