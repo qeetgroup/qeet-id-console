@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { AuthenticationOverview } from "@/modules/dashboard/pages";
-
+// The Dashboard is the console's one overview; this area opens on Sign-in methods, and an old link or
+// bookmark to its overview lands there.
 export const Route = createFileRoute("/_app/authentication")({
-  component: AuthenticationOverview,
+  beforeLoad: () => {
+    throw redirect({ to: "/auth/login-methods/password", replace: true });
+  },
 });

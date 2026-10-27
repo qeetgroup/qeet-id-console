@@ -211,6 +211,47 @@ describe("deriveSetup", () => {
     expect(items.filter((i) => i.state !== "done").every((i) => i.action)).toBe(true);
   });
 
+  it("puts Groups after the team, counts departments, and says a failing LDAP is failing", () => {
+    const people = deriveSetup({
+      userStats: { total: 45, mfa_missing: 0 } as never,
+      pendingInvites: 3,
+      departments: 7,
+      groups: [{ id: "g", name: "People", member_count: 0 } as never],
+      domains: [],
+      ldap: [
+        { id: "l", name: "Staging Directory", status: "draft", created_at: days(-18) } as never,
+      ],
+      failing: new Map([["l", { at: days(-6), message: "no such host", code: "DIR-502" }]]),
+      now: NOW,
+    }).find((g) => g.id === "people")?.items;
+    expect(people?.map((i) => i.id)).toEqual(["team", "groups", "domain", "ldap"]);
+    expect(people?.[0]?.detail).toEqual({
+      key: "dashboard:overview.setup.details.teamDepartmentsPending",
+      params: { count: 3, people: 45, departments: 7 },
+    });
+    expect(people?.[3]).toMatchObject({ state: "failing", detail: { params: { count: 6 } } });
+  });
+
+  it("leaves out departments until there are two, and plurals the invitations", () => {
+    const team = (departments: number, pendingInvites: number) =>
+      deriveSetup({
+        userStats: { total: 45, mfa_missing: 0 } as never,
+        departments,
+        pendingInvites,
+      })
+        .find((g) => g.id === "people")
+        ?.items.find((i) => i.id === "team")?.detail;
+    expect(team(1, 0)).toEqual({
+      key: "dashboard:overview.setup.details.team",
+      params: { count: 45, departments: 1 },
+    });
+    expect(team(1, 1)).toMatchObject({
+      key: "dashboard:overview.setup.details.teamPending",
+      params: { count: 1, people: 45 },
+    });
+    expect(team(7, 0)?.key).toBe("dashboard:overview.setup.details.teamDepartments");
+  });
+
   it("leaves out what it can't read, and a group with nothing in it", () => {
     const groups = deriveSetup({ apiKeys: [], now: NOW });
     expect(groups.map((g) => g.id)).toEqual(["developers"]);

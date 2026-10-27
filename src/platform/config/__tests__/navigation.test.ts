@@ -36,12 +36,19 @@ describe("console navigation state", () => {
     const directory = navGroups.find((group) => group.id === "directory");
 
     expect(directory?.items.map((item) => item.title)).toEqual([
-      "Overview",
       "Users",
       "Groups",
       "Organizations",
       "Directories",
     ]);
+  });
+
+  it("has one overview, the Dashboard: each area opens on its main page", () => {
+    const overviews = navGroups
+      .filter((group) => group.id !== "overview")
+      .flatMap((group) => group.items.flatMap((item) => [item, ...(item.items ?? [])]))
+      .filter((item) => item.title === "Overview");
+    expect(overviews).toEqual([]);
   });
 
   it("exposes the completed Directory views with short labels and scoped access", () => {

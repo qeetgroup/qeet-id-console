@@ -4,7 +4,6 @@ export { ApiKeysPage } from "./components/api-keys-page";
 export { AuthHooksPage } from "./components/auth-hooks-page";
 export { BotsPage } from "./components/bots-page";
 export { CredentialsPage } from "./components/credentials-page";
-export { DeveloperOverview } from "./components/developer-overview";
 export { InfrastructurePage } from "./components/infrastructure-page";
 export { MachineIdentitiesPage } from "./components/machine-identities-page";
 export { SecretsPage } from "./components/secrets-page";

@@ -6,7 +6,6 @@ import {
   MonitorSmartphoneIcon,
   ScrollTextIcon,
   ShieldAlertIcon,
-  ShieldCheckIcon,
 } from "@qeetrix/icons";
 
 import { defineModule } from "@/platform/modules/manifest";
@@ -23,14 +22,6 @@ export const manifest = defineModule({
       url: "/security/device-authorizations",
       icon: <MonitorSmartphoneIcon />,
       capability: "connection.read",
-    },
-    {
-      id: "security.overview",
-      group: "security",
-      order: 10,
-      title: "security:nav.security.overview.title",
-      url: "/security",
-      icon: <ShieldCheckIcon />,
     },
     {
       id: "security.threats",

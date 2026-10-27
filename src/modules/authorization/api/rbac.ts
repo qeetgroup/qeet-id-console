@@ -34,11 +34,12 @@ export function useRoles() {
 }
 
 /** The permissions a role can be granted. */
-export function usePermissions() {
+export function usePermissions(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: authzKeys.permissions(tenantId),
     queryFn: () => api<{ items: Permission[] }>("/v1/permissions"),
+    enabled,
   });
 }
 

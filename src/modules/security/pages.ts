@@ -9,5 +9,4 @@ export { IpAllowlistPage } from "./components/ip-allowlist-page";
 export { LogStreamingPage } from "./components/log-streaming-page";
 export { RateLimitsPage } from "./components/rate-limits-page";
 export { RiskSettingsPage } from "./components/risk-settings-page";
-export { SecurityOverviewPage } from "./components/security-overview-page";
 export { SecuritySessionsPage } from "./components/security-sessions-page";

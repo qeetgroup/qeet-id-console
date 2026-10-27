@@ -1,5 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { DirectoryOverview } from "@/modules/directory/pages";
-
-export const Route = createFileRoute("/_app/directory/")({ component: DirectoryOverview });
+// The Dashboard is the console's one overview; this area opens on Users, and an old link or
+// bookmark to its overview lands there.
+export const Route = createFileRoute("/_app/directory/")({
+  beforeLoad: () => {
+    throw redirect({ to: "/users", replace: true });
+  },
+});

@@ -1,0 +1,212 @@
+/*
+ * The Dashboard's Organisation row: departments and their teams as a treemap, and where people
+ * work as circles sized by people. One data hue, in two tints by depth; graphite for people with no
+ * department or team. Text wears text tokens, never the data hue.
+ */
+
+/* ── How the organisation is organised: a squarified treemap ──────────────────────────────── */
+
+.overview-org-map {
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: 1000 / 330;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A department's tile; its link is the header row, stretched over the tile by ::after. */
+.overview-org-cell {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px;
+  overflow: hidden;
+  border: 2px solid var(--qx-color-surface-raised);
+  background: color-mix(
+    in srgb,
+    var(--qx-color-dataviz-categorical-1) 16%,
+    var(--qx-color-surface-raised)
+  );
+  color: var(--qx-color-text-default);
+}
+
+.overview-org-cell:hover {
+  background: color-mix(
+    in srgb,
+    var(--qx-color-dataviz-categorical-1) 24%,
+    var(--qx-color-surface-raised)
+  );
+}
+
+.overview-org-cell.is-none {
+  background: color-mix(
+    in srgb,
+    var(--qx-color-dataviz-reference) 16%,
+    var(--qx-color-surface-raised)
+  );
+}
+
+.overview-org-dept {
+  display: flex;
+  flex: none;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm);
+  padding: 4px 6px 2px;
+  color: inherit;
+  font: var(--qx-typography-label-sm);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.overview-org-dept::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+.overview-org-dept:focus-visible {
+  outline: none;
+}
+
+.overview-org-dept:focus-visible::after {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-border-width-strong) * -1);
+}
+
+.overview-org-dept-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Drawn under the link: a click on a team opens the department. */
+.overview-org-teams {
+  position: relative;
+  flex: 1 1 auto;
+  pointer-events: none;
+  min-block-size: 0;
+}
+
+.overview-org-team {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 6px;
+  overflow: hidden;
+  border: 1px solid var(--qx-color-surface-raised);
+  background: color-mix(
+    in srgb,
+    var(--qx-color-dataviz-categorical-1) 34%,
+    var(--qx-color-surface-raised)
+  );
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-org-team.is-none {
+  background: color-mix(
+    in srgb,
+    var(--qx-color-dataviz-reference) 22%,
+    var(--qx-color-surface-raised)
+  );
+  color: var(--qx-color-text-subtle);
+}
+
+.overview-org-team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview-org-team-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-org-foot {
+  margin: var(--qx-space-gap-md) 0 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Where people work: a row per country, a circle per city ──────────────────────────────── */
+
+.overview-places {
+  display: grid;
+}
+
+.overview-places-country {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  margin: 0;
+  padding-block: var(--qx-space-gap-md);
+}
+
+.overview-places-country + .overview-places-country {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.overview-places-caption {
+  display: grid;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.overview-places-name {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.overview-places-cities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--qx-space-gap-sm) var(--qx-space-gap-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overview-places-city {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.overview-places-label {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  white-space: nowrap;
+}
+
+.overview-places-dot {
+  fill: var(--qx-color-dataviz-categorical-1);
+}
+
+.overview-places-dot.is-other {
+  fill: var(--qx-color-dataviz-reference);
+}
+
+.overview-places-dot-count {
+  fill: var(--qx-color-text-inverse);
+  font: var(--qx-typography-label-md);
+}
+
+.overview-places-foot {
+  margin: 0;
+  padding-block-start: var(--qx-space-gap-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+@media (max-width: 600px) {
+  .overview-places-country {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

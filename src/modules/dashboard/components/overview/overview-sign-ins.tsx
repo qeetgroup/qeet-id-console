@@ -249,7 +249,9 @@ export function SignInMethodsPanel({
     <Panel
       title={t("overview.methods.title")}
       note={t("overview.methods.note")}
-      action={<LinkButton to="/authentication">{t("overview.methods.action")}</LinkButton>}
+      action={
+        <LinkButton to="/auth/login-methods/password">{t("overview.methods.action")}</LinkButton>
+      }
     >
       {rows.length ? (
         <table className="overview-methods">

@@ -29,7 +29,12 @@ type Target = {
 };
 
 const CONSOLE_PAGES: Target[] = [
-  { name: "dashboard", path: "/", ready: (page) => page.getByText("1,240") },
+  // The console's one overview, with the Organisation row (departments, where people work).
+  {
+    name: "dashboard",
+    path: "/",
+    ready: (page) => page.getByRole("heading", { name: "Where people work" }),
+  },
   { name: "users", path: "/users", ready: (page) => page.getByText("Priya Patel") },
   {
     name: "users, suspended",
@@ -56,16 +61,6 @@ const CONSOLE_PAGES: Target[] = [
     name: "authorization roles",
     path: "/authorization/roles",
     ready: (page) => page.getByText("Reads members and resets their sign-in."),
-  },
-  {
-    name: "security overview",
-    path: "/security",
-    ready: (page) => page.getByRole("heading", { name: "Security operations" }),
-  },
-  {
-    name: "developer overview",
-    path: "/developer",
-    ready: (page) => page.getByText("API key created"),
   },
   {
     name: "organization settings",

@@ -107,7 +107,7 @@ export function deriveAttentionItems(overview: AnalyticsOverview): AttentionItem
       title: "dashboard:insights.attention.mfaAdoption.title",
       detail: "dashboard:insights.attention.mfaAdoption.detail",
       params: { pct: mfa.toFixed(1), target: MFA_TARGET_PCT },
-      to: "/authentication",
+      to: "/settings/organization/security-policy",
       actionLabel: "dashboard:insights.attention.mfaAdoption.action",
     });
   }

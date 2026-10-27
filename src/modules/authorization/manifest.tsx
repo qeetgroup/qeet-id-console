@@ -16,15 +16,6 @@ export const manifest = defineModule({
   id: "authorization",
   nav: [
     {
-      id: "authorization.overview",
-      group: "authorization",
-      order: 10,
-      title: "authorization:nav.authorization.overview.title",
-      url: "/authorization",
-      icon: <GaugeIcon />,
-      capability: "role.read",
-    },
-    {
       id: "authorization.roles",
       group: "authorization",
       order: 20,

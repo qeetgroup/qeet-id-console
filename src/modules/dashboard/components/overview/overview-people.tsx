@@ -140,7 +140,7 @@ export function AppsPanel({
     <Panel
       title={t("overview.apps.title")}
       note={t("overview.apps.note", { total: num(people) })}
-      action={<LinkButton to="/applications">{t("overview.apps.action")}</LinkButton>}
+      action={<LinkButton to="/auth/connections/oidc">{t("overview.apps.action")}</LinkButton>}
     >
       {shown.length ? (
         <DotPlot
