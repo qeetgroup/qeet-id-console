@@ -31,7 +31,6 @@ describe("navigation candidates", () => {
     expect(paths.has("/auth/connections/ldap")).toBe(true);
     expect(paths.has("/users/deleted")).toBe(true);
     for (const path of [
-      "/users/suspended",
       "/directory/connections",
       "/directory/sync-activity",
       "/directory/sync-errors",

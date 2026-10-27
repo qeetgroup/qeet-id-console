@@ -84,6 +84,13 @@ export function useSuspendedUsers(filters: SuspendedFilters) {
   });
 }
 
+/** One call per person, for the list's bulk actions to fan out (see people-bulk.tsx). */
+export const suspensionCalls = {
+  reactivate: (userId: string) => api<void>(`/v1/users/${userId}/reactivate`, { method: "POST" }),
+  review: (userId: string, review: SuspensionReview) =>
+    api<void>(`/v1/users/${userId}/suspension`, { method: "PUT", body: review }),
+};
+
 export function useReactivateUsers() {
   const tenantId = useTenantId();
   const queryClient = useQueryClient();
@@ -107,24 +114,4 @@ export function useReviewSuspension() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.suspended(tenantId) }),
     meta: { successMessage: "users:toast.reviewSaved", silentError: true }, // the page shows the error
   });
-}
-
-export async function fetchSuspendedExport(filters: SuspendedFilters) {
-  const records: SuspendedDirectoryUser[] = [];
-  for (let offset = 0; offset < 10000; offset += 100) {
-    const page = await api("/v1/users/suspended", {
-      query: { ...filters, limit: 100, offset },
-      schema: suspendedPageSchema,
-    });
-    if (page.total > 10000)
-      throw new Error("Narrow the filters before exporting more than 10,000 records.");
-    records.push(...page.items);
-    if (records.length >= page.total || !page.items.length) break;
-  }
-  return records;
-}
-
-export function safeSuspendedCsvValue(value: string | null): string {
-  if (!value) return "";
-  return /^[=+@-]/.test(value.trimStart()) || /^[\t\r\n]/.test(value) ? `'${value}` : value;
 }

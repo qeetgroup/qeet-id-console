@@ -293,7 +293,7 @@ prop for Billing ("Current plan").
   a `next_cursor`); the summary ignores the chosen range; events have no location.
 
 **Users and directory**
-- `GET /v1/users`: search, filters, sort and total (filters only filter the loaded page today).
+- `GET /v1/users`: search, filters, sort and total, and the Users list counts in `/v1/users/stats` — **QTID-960**. Until then the rebuilt list reads up to 2,000 people and works over them in the browser.
 - `POST /v1/users/bulk`: `role_id` and metadata; a role for an import.
 - Per-user risk endpoint; per-user sign-in method summary; which role or group grants each permission.
 - Admin ending one member session (only revoke-all exists); member passkeys list and removal;

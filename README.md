@@ -118,6 +118,44 @@ The rules behind the numbers are plain functions with their own tests: `overview
 needs attention, bursts, axes, app usage) and `overview-setup-model.ts` (the checklist). The page
 only reads: loading it never changes the organisation.
 
+## Users list
+
+Directory › Users (`/users`) is rebuilt on `@qeetrix/react`: `modules/users/components/people/`.
+
+- `people-page.tsx`: the header (breadcrumb, actions, the band, the tabs), the table and its
+  pager, and the add, edit and set-password sheets;
+- `people-band.tsx`: the key numbers in the header, above the tabs: people over 15 months, two-step
+  coverage against its target, when people were last active, and what needs a look. Each part
+  links to the list filtered to it;
+- `people-toolbar.tsx`: search, then role, department, two-step and last active, with counts;
+  what's applied shows as tags;
+- `people-table.tsx`: the columns and a row's menu; `people-bulk.tsx`: the selection's actions,
+  five requests at a time.
+
+The search and filters live in the address (`?q=&role=&dept=&twostep=&seen=&look=`), so a view can
+be shared. `/v1/users` can't filter or count yet (QTID-960), so the page reads everyone, 200 at a
+time, up to 2,000 people (`userQueries.directory`), and works over them in `people-model.ts`.
+Above 2,000 it says the search, filters and counts cover the first 2,000 only. A rebuilt page with
+sub-pages draws them with `PageTabs`, `PageTabList` and `PageBreadcrumb` from `@/modules/dashboard`.
+What the library lacks for this page is tracked as QTRX-13 to QTRX-21; each local stand-in names
+its ticket in a comment, to swap once `@qeetrix/react` has it.
+
+Users has three tabs: All users, Invitations and Deleted. **Suspended is a filter on All users**
+(`?status=suspended`), not a page: it asks `GET /v1/users/suspended` (searched, filtered and paged on
+the server) and shows why, how risky, since when and the review, with Reactivate and Review the
+suspension (`people-suspended.tsx`). The old `/users/suspended` address redirects there.
+
+- `components/invitations/`: the Invitations tab — who's waiting, how fast people join (with the
+  link's 14 days marked), sends over 15 months, outcomes; Resend, Revoke and Invite again;
+- `components/deleted/`: the recycle bin — who's purged next and when, how long people are kept
+  (the retention rule, read only with `policy.read`); Restore and Delete forever;
+- `components/add-people/`: Add people, the one way in from Users and Invitations — invite by
+  email (several addresses, each checked against the directory and pending invitations first) or
+  create the account now. It joins the organisation you're in.
+
+The rules behind them are pure functions with their own tests: `invitations-model.ts`,
+`deleted-model.ts` and `add-people-model.ts`.
+
 ## Styling rules
 
 - Use semantic tokens such as `bg-card`, `text-muted-foreground`, `text-success`, and `border-border`.

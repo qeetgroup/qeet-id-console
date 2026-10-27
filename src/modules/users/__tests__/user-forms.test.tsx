@@ -32,11 +32,9 @@ vi.mock("@/modules/organizations", () => ({
 }));
 
 import { api } from "@/platform/api/client";
-import { ApiError } from "@/platform/errors/api-error";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 
 import type { User } from "../api/users";
-import { CreateUserSheet } from "../components/create-user-sheet";
 import { EditUserSheet } from "../components/edit-user-sheet";
 import { SetPasswordSheet } from "../components/set-password-sheet";
 
@@ -70,63 +68,6 @@ beforeEach(() => {
 });
 
 afterEach(cleanup);
-
-describe("CreateUserSheet", () => {
-  it("names each problem on its field and sends nothing", async () => {
-    renderWithProviders(<CreateUserSheet open onOpenChange={vi.fn()} tenantId="tenant-a" />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Create user" }));
-
-    expect(await screen.findByText("Enter a valid email address.")).toBeTruthy();
-    expect(screen.getByText("Use at least 8 characters.")).toBeTruthy();
-    expect(api).not.toHaveBeenCalled();
-  });
-
-  it("creates the user with an E.164 phone and the default member role", async () => {
-    const onOpenChange = vi.fn();
-    renderWithProviders(<CreateUserSheet open onOpenChange={onOpenChange} tenantId="tenant-a" />);
-
-    type(/^Email/, "bea@example.test");
-    type(/^Phone/, "555 555 0100");
-    type(/^Initial password/, "correct horse");
-    fireEvent.click(screen.getByRole("button", { name: "Create user" }));
-
-    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
-    expect(vi.mocked(api).mock.calls[0]).toEqual([
-      "/v1/users",
-      {
-        method: "POST",
-        body: {
-          tenant_id: "tenant-a",
-          email: "bea@example.test",
-          password: "correct horse",
-          phone: expect.stringMatching(/^\+\d+5555550100$/),
-        },
-      },
-    ]);
-    expect(vi.mocked(api).mock.calls[1]?.[0]).toBe(
-      "/v1/users/new-user/tenants/tenant-a/roles/role-member",
-    );
-  });
-
-  it("marks the field a 422 names, in the console's words", async () => {
-    vi.mocked(api).mockRejectedValue(
-      new ApiError(422, "validation_failed", "backend text", undefined, false, undefined, {
-        requestId: "req-7",
-        fields: [{ field: "email", code: "invalid_email" }],
-      }),
-    );
-    renderWithProviders(<CreateUserSheet open onOpenChange={vi.fn()} tenantId="tenant-a" />);
-
-    type(/^Email/, "bea@example.test");
-    type(/^Initial password/, "correct horse");
-    fireEvent.click(screen.getByRole("button", { name: "Create user" }));
-
-    expect(await screen.findByText("Enter a valid email address.")).toBeTruthy();
-    expect(screen.getByText("req-7")).toBeTruthy();
-    expect(screen.queryByText("backend text")).toBeNull();
-  });
-});
 
 describe("EditUserSheet", () => {
   it("saves profile changes without a confirmation", async () => {

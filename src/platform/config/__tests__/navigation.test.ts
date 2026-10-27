@@ -49,10 +49,10 @@ describe("console navigation state", () => {
     const users = directory?.items.find((item) => item.title === "Users");
     const directories = directory?.items.find((item) => item.title === "Directories");
 
+    // Suspended is a filter on All users, not a sub-page.
     expect(users?.items?.map((item) => item.title)).toEqual([
       "All users",
       "Invitations",
-      "Suspended",
       "Deleted",
     ]);
     expect(directories?.items?.map((item) => item.title)).toEqual([
@@ -63,7 +63,6 @@ describe("console navigation state", () => {
       "Sync errors",
       "Mappings",
     ]);
-    expect(users?.items?.find((item) => item.title === "Suspended")?.planned).toBeUndefined();
     for (const item of directories?.items ?? []) {
       expect(item.title.length).toBeLessThanOrEqual(13);
       expect(item.requiredPermission).toBe("connection.read");

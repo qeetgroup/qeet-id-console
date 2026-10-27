@@ -143,8 +143,10 @@ describe("the breadcrumb and sub-page tabs above a page not yet rebuilt", () => 
     expect(
       within(tabs).getByRole("tab", { name: "Invitations" }).getAttribute("aria-selected"),
     ).toBe("true");
-    fireEvent.click(within(tabs).getByRole("tab", { name: "Suspended" }));
-    expect(route.navigate).toHaveBeenCalledWith({ to: "/users/suspended" });
+    // Suspended is a filter on All users, not a tab.
+    expect(within(tabs).queryByRole("tab", { name: "Suspended" })).toBeNull();
+    fireEvent.click(within(tabs).getByRole("tab", { name: "Deleted" }));
+    expect(route.navigate).toHaveBeenCalledWith({ to: "/users/deleted" });
   });
 
   it("leaves a rebuilt page's own header alone", () => {

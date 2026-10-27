@@ -13,11 +13,12 @@ export interface RetentionPolicy {
   deleted_users_days: number;
 }
 
-export function useRetentionPolicy() {
+/** The tenant's retention rules; `enabled: false` for someone who can't read them (policy.read). */
+export function useRetentionPolicy(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: complianceKeys.retention(tenantId),
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<RetentionPolicy>(`/v1/tenants/${tenantId}/retention`),
   });
 }

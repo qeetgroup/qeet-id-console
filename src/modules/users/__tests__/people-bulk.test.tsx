@@ -27,7 +27,7 @@ import { SensitiveActionProvider } from "@/platform/security/sensitive-action-pr
 import * as dataExport from "@/shared/utils/data-export";
 import { userKeys } from "../api/keys";
 import type { User } from "../api/users";
-import { BulkActions } from "../components/bulk-actions";
+import { PeopleBulkActions } from "../components/people/people-bulk";
 
 const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25, offset: 0 });
 const USER_STATS: QueryKey = userKeys.stats("tenant-a");
@@ -47,7 +47,11 @@ function users(count: number) {
   return Array.from({ length: count }, (_, i) => user(`user-${i + 1}`));
 }
 
-function renderBulk(selected: User[], tenantId: string | null = "tenant-a") {
+function renderBulk(
+  selected: User[],
+  tenantId: string | null = "tenant-a",
+  currentUserId: string | null = "someone-else",
+) {
   context.tenantId = tenantId;
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -57,7 +61,7 @@ function renderBulk(selected: User[], tenantId: string | null = "tenant-a") {
   render(
     <QueryClientProvider client={client}>
       <SensitiveActionProvider>
-        <BulkActions selectedUsers={selected} onDone={onDone} />
+        <PeopleBulkActions selected={selected} currentUserId={currentUserId} onDone={onDone} />
       </SensitiveActionProvider>
     </QueryClientProvider>,
   );
@@ -97,11 +101,11 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("BulkActions", () => {
-  it("requires MFA for every selected user, then reports, refreshes and clears the selection", async () => {
+describe("PeopleBulkActions", () => {
+  it("requires two-step for every selected user, then reports, refreshes and clears the selection", async () => {
     const { client, onDone } = renderBulk(users(3));
 
-    fireEvent.click(screen.getByRole("button", { name: "Require MFA" }));
+    fireEvent.click(screen.getByRole("button", { name: "Require two-step (3)" }));
 
     await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
     expect(actionCalls()).toEqual(
@@ -124,13 +128,13 @@ describe("BulkActions", () => {
     );
     const { onDone } = renderBulk(users(7));
 
-    fireEvent.click(screen.getByRole("button", { name: "Require MFA" }));
+    fireEvent.click(screen.getByRole("button", { name: "Require two-step (7)" }));
 
-    expect(await screen.findByText("Require MFA · 0/7")).toBeTruthy();
+    expect(await screen.findByText("Require two-step verification · 0 of 7")).toBeTruthy();
     await waitFor(() => expect(pending).toHaveLength(5));
 
     pending[0]?.();
-    expect(await screen.findByText("Require MFA · 1/7")).toBeTruthy();
+    expect(await screen.findByText("Require two-step verification · 1 of 7")).toBeTruthy();
     await waitFor(() => expect(pending).toHaveLength(6));
 
     for (const resolve of pending.slice(1)) resolve();
@@ -149,7 +153,8 @@ describe("BulkActions", () => {
     });
     const { client, onDone } = renderBulk(users(3));
 
-    fireEvent.click(screen.getByRole("button", { name: "Suspend user" }));
+    fireEvent.click(screen.getByRole("button", { name: "More" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Suspend user" }));
     const dialog = await screen.findByRole("alertdialog");
     expect(dialog.textContent).toContain("Suspend 3 users?");
     expect(actionCalls()).toEqual([]);
@@ -175,7 +180,8 @@ describe("BulkActions", () => {
     });
     const { onDone } = renderBulk(users(2));
 
-    fireEvent.click(screen.getByRole("button", { name: "Revoke all sessions" }));
+    fireEvent.click(screen.getByRole("button", { name: "More" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Sign out everywhere" }));
     const dialog = await screen.findByRole("alertdialog");
     expect(dialog.textContent).toContain("Revoke sessions for 2 users?");
     fireEvent.click(within(dialog).getByRole("button", { name: "Revoke all" }));
@@ -191,7 +197,8 @@ describe("BulkActions", () => {
   it("sends nothing when a confirmation is cancelled", async () => {
     const { onDone } = renderBulk(users(2));
 
-    fireEvent.click(screen.getByRole("button", { name: "Suspend user" }));
+    fireEvent.click(screen.getByRole("button", { name: "More" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Suspend user" }));
     const dialog = await screen.findByRole("alertdialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
 
@@ -203,7 +210,7 @@ describe("BulkActions", () => {
   it("opens the role picker and assigns the chosen role to every selected user", async () => {
     const { onDone } = renderBulk(users(2));
 
-    fireEvent.click(screen.getByRole("button", { name: "Assign role" }));
+    fireEvent.click(screen.getByRole("button", { name: "Assign a role" }));
     expect(await screen.findByText("Assign which role?")).toBeTruthy();
     fireEvent.click(await screen.findByRole("menuitem", { name: "Viewer" }));
 
@@ -218,7 +225,7 @@ describe("BulkActions", () => {
   it("offers no role to assign when no tenant is selected", async () => {
     const { onDone } = renderBulk(users(2), null);
 
-    fireEvent.click(screen.getByRole("button", { name: "Assign role" }));
+    fireEvent.click(screen.getByRole("button", { name: "Assign a role" }));
     const viewer = await screen.findByRole("menuitem", { name: "Viewer" });
     expect(viewer.getAttribute("aria-disabled")).toBe("true");
     fireEvent.click(viewer);
@@ -230,7 +237,7 @@ describe("BulkActions", () => {
   it("opens the group picker and adds every selected user to the chosen group", async () => {
     const { onDone } = renderBulk(users(2));
 
-    fireEvent.click(screen.getByRole("button", { name: "Add to group" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add to a group" }));
     expect(await screen.findByText("Add to which group?")).toBeTruthy();
     fireEvent.click(await screen.findByRole("menuitem", { name: "Engineering" }));
 
@@ -242,9 +249,11 @@ describe("BulkActions", () => {
     expect(success).toHaveBeenCalledWith("Updated 2 users");
   });
 
-  it("reads the tenant's groups for the group picker", async () => {
+  it("reads the tenant's groups when the group picker opens, not before", async () => {
     renderBulk(users(1));
+    expect(api).not.toHaveBeenCalledWith("/v1/tenants/tenant-a/groups");
 
+    fireEvent.click(screen.getByRole("button", { name: "Add to a group" }));
     await waitFor(() => expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/groups"));
   });
 
@@ -292,6 +301,29 @@ describe("BulkActions", () => {
       "user-1,user-1@example.test,Asha,active,admin|viewer,true,2026-10-20T00:00:00Z,2026-09-01T00:00:00Z",
       "user-2,user-2@example.test,,active,,,,2026-09-01T00:00:00Z",
     ]);
+  });
+
+  it("leaves the person using the console out of signing out, suspending and deleting", async () => {
+    const { onDone } = renderBulk(users(3), "tenant-a", "user-2");
+
+    fireEvent.click(screen.getByRole("button", { name: "More" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Suspend user" }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(dialog.textContent).toContain("Suspend 2 users?");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Suspend user" }));
+
+    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
+    expect(actionCalls().map(([path]) => path)).toEqual(["/v1/users/user-1", "/v1/users/user-3"]);
+  });
+
+  it("can't take access away when only the person using the console is selected", async () => {
+    renderBulk(users(1), "tenant-a", "user-1");
+
+    fireEvent.click(screen.getByRole("button", { name: "More" }));
+    for (const name of ["Sign out everywhere", "Suspend user", "Delete user"]) {
+      const item = await screen.findByRole("menuitem", { name });
+      expect(item.getAttribute("aria-disabled")).toBe("true");
+    }
   });
 
   it("exports the selection as JSON", async () => {

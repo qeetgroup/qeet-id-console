@@ -45,7 +45,6 @@ vi.mock("@tanstack/react-router", () => ({
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { MappingsPage } from "../components/mappings-page";
-import { SuspendedPage } from "../components/suspended-page";
 
 const MAPPINGS = "/v1/tenants/tenant-a/directory/connections/ldap-a/mappings";
 
@@ -78,21 +77,6 @@ const mapping = {
   version: 1,
 };
 
-const suspendedUser = {
-  id: "user-a",
-  email: "priya@example.test",
-  display_name: "Priya Sharma",
-  avatar_url: null,
-  team: "Engineering",
-  reason: "policy_violation",
-  source: "manual",
-  risk: "high",
-  review: "pending",
-  suspended_at: "2026-09-10T12:00:00Z",
-  last_sign_in: "2026-09-09T12:00:00Z",
-  can_manage: true,
-};
-
 beforeEach(() => {
   sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
@@ -102,20 +86,6 @@ beforeEach(() => {
     if (path === MAPPINGS && method === "GET")
       return { items: [mapping], targets: { department: "string" } };
     if (path.startsWith(`${MAPPINGS}/`)) return method === "DELETE" ? undefined : mapping;
-    if (path === "/v1/users/suspended") {
-      return {
-        items: [suspendedUser],
-        total: 1,
-        limit: 25,
-        offset: 0,
-        summary: { total: 1, high_risk: 1, policy: 1, manual: 1, pending: 1 },
-        reasons: [{ key: "policy_violation", count: 1 }],
-        risks: [{ key: "high", count: 1 }],
-        queue: [suspendedUser],
-        teams: ["Engineering"],
-      };
-    }
-    if (path === "/v1/users/user-a/reactivate") return undefined;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
@@ -197,24 +167,5 @@ describe("Attribute mappings › sensitive actions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add mapping" }));
     const dialog = await screen.findByRole("dialog", { name: "Add mapping" });
     expect(within(dialog).queryByText(invalid)).toBeNull();
-  });
-});
-
-describe("Suspended users › sensitive actions", () => {
-  it("reactivates the selected users after confirmation", async () => {
-    renderWithProvider(<SuspendedPage />);
-    fireEvent.click(await screen.findByRole("checkbox", { name: "Select Priya Sharma" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Reactivate 1 selected" }));
-
-    const dialog = await screen.findByRole("alertdialog");
-    expect(within(dialog).getByText("Reactivate 1 user?")).toBeTruthy();
-    expect(writes()).toEqual([]);
-    fireEvent.click(within(dialog).getByRole("button", { name: "Reactivate" }));
-
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/users/user-a/reactivate"]));
-    expect(sensitiveCalls[0]).toMatchObject({
-      capability: "user.write",
-      actionLabel: "Reactivate these users",
-    });
   });
 });
