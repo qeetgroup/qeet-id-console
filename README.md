@@ -98,16 +98,25 @@ safe error handling, and CSRF protection from the platform boundary. See
 
 ## Dashboard command center
 
-The overview route is deliberately thin. `modules/dashboard/components/dashboard-overview.tsx` coordinates data and composes dedicated modules:
+The Dashboard (`/`) is rebuilt on `@qeetrix/react`: `modules/dashboard/components/overview/`.
+`overview-page.tsx` reads each source the person may see, and passes it to the panels:
 
-- `dashboard-metrics.tsx` — primary metric rail and secondary directory indicators;
-- `dashboard-charts.tsx` — authentication, method-mix, MFA, and failed-login telemetry;
-- `dashboard-activity.tsx` — recent audit events and operator actions;
-- `dashboard-panel.tsx` — a shared, accessible data-surface boundary;
-- `dashboard-model.ts` — testable formatting and transformation logic;
-- `use-dashboard-activity.ts` — the independently refreshed audit stream.
+- `overview-pulse.tsx`: four measures across the top, each with a sparkline; two-step coverage
+  on a meter with its target;
+- `overview-sign-ins.tsx`: sign-ins against failed sign-ins over 14 days (with a table view),
+  and each sign-in method's share and its own 14-day line;
+- `overview-attention.tsx`: what needs attention, most severe first, each with its one action;
+- `overview-security.tsx`: the last 24 hours of failed sign-ins with their bursts marked, and
+  two-step coverage as a gauge;
+- `overview-people.tsx`: weekly active people, and the applications people use;
+- `overview-activity.tsx`: the latest events (`use-dashboard-activity.ts`, refreshed live);
+- `overview-setup.tsx`: the organisation's set-up as a checklist;
+- `overview-parts.tsx`: the ruled panels and four small charts the library doesn't have yet
+  (proposals for `@qeetrix/react`).
 
-The analytics overview remains one backend round trip. Recent activity refreshes independently every 15 seconds. Charts include text labels and hidden table alternatives so colour and pointer interaction are not the only ways to read data.
+The rules behind the numbers are plain functions with their own tests: `overview-model.ts` (what
+needs attention, bursts, axes, app usage) and `overview-setup-model.ts` (the checklist). The page
+only reads: loading it never changes the organisation.
 
 ## Styling rules
 
