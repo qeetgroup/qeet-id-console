@@ -1,180 +1,253 @@
 {
+  "type": {
+    "confidential": "Confidential",
+    "public": "Public"
+  },
+  "kinds": {
+    "web": "Web app",
+    "spa": "Single-page app",
+    "mobile": "Mobile app",
+    "cli": "Command line",
+    "service": "Service"
+  },
+  "grants": {
+    "browser": "Browser sign-in",
+    "browserHint": "Authorisation code, with a proof key",
+    "refresh": "Refresh",
+    "refreshHint": "Stay signed in with a refresh token",
+    "device": "Device code",
+    "deviceHint": "Sign in on a device without a browser, such as a command line",
+    "exchange": "Token exchange",
+    "exchangeHint": "Swap one token for another, for a service acting for a person",
+    "ciba": "Sign-in on another device",
+    "cibaHint": "Ask the person to approve on their phone (CIBA)"
+  },
+  "status": {
+    "active": "Active",
+    "localhost": "This computer only",
+    "pkceExempt": "PKCE off until {{date}}",
+    "pkceExemptTitle": "It doesn't have to send a proof key until {{date}}",
+    "pkceEnded": "PKCE exemption ended"
+  },
   "list": {
-    "description": "OAuth 2.0 / OIDC applications that delegate authentication to Qeet ID. Confidential apps receive a client secret on registration; public apps use PKCE.",
+    "title": "Applications",
+    "description": "Apps that sign people in with Qeet ID.",
     "register": "Register application",
-    "registerFirst": "Register your first application",
-    "registeredTitle": "Registered applications",
-    "appCount_one": "{{count}} app",
-    "appCount_other": "{{count}} apps",
-    "shownOf": "Showing {{shown}} of {{total}}",
-    "searchPlaceholder": "Search applications by name, client ID or scope…",
-    "resultCount_one": "{{count}} result",
-    "resultCount_other": "{{count}} results",
-    "emptyTitle": "No applications registered yet",
-    "emptyDescription": "Register an OAuth / OIDC application to get started. Define your application, set redirect URIs, and configure the required scopes.",
-    "emptyTitleFiltered": "No applications match your filters",
-    "emptyDescriptionFiltered": "Try a different search term, or clear the filters to see every registered application.",
-    "clearFilters": "Clear filters"
-  },
-  "stats": {
-    "total": "Total applications",
-    "totalCaption": "Registered in this organization",
-    "public": "Public clients",
-    "publicCaption": "Use PKCE (no client secret)",
-    "confidential": "Confidential clients",
-    "confidentialCaption": "Use a client secret",
-    "recent": "Recently registered",
-    "recentEmpty": "No applications yet"
-  },
-  "filters": {
-    "type": "Type",
-    "typePublic": "Public",
-    "typeConfidential": "Confidential"
-  },
-  "table": {
-    "name": "Name",
-    "clientId": "Client ID",
-    "type": "Type",
-    "redirectUris": "Redirect URIs",
-    "scopes": "Scopes",
-    "created": "Created",
-    "actions": "Actions",
-    "selectAll": "Select all applications",
-    "selectRow": "Select {{name}}",
-    "pkceExempt": "PKCE exempt",
-    "pkceEndingSoon": "PKCE exemption ends soon"
-  },
-  "bulk": {
-    "delete": "Delete selected"
-  },
-  "help": {
-    "docsTitle": "Read the documentation",
-    "docsDescription": "Learn how to integrate with Qeet ID",
-    "examplesTitle": "See integration examples",
-    "examplesDescription": "SDKs, libraries and sample code",
-    "supportTitle": "Get help",
-    "supportDescription": "Visit our support center"
-  },
-  "credentials": {
-    "title": "Client credentials for {{name}}",
-    "description": "Copy the secret now — it’s bcrypt-hashed server-side after this and can’t be shown again."
-  },
-  "delete": {
-    "title": "Delete this application?",
-    "titleBulk_one": "Delete {{count}} application?",
-    "titleBulk_other": "Delete {{count}} applications?",
-    "descriptionBulk_one": "{{count}} application will be deleted. Every app using its client ID will immediately stop being able to authenticate. This can’t be undone.",
-    "descriptionBulk_other": "{{count}} applications will be deleted. Every app using their client IDs will immediately stop being able to authenticate. This can’t be undone.",
-    "confirmDescription": "Apps using the client ID for {{name}} will immediately stop being able to authenticate. This can’t be undone.",
-    "stepUp": "Delete this application",
-    "stepUpBulk": "Delete these applications"
-  },
-  "create": {
-    "title": "Register OAuth / OIDC application",
-    "description": "Create an OIDC client. Confidential clients receive a one-time client secret.",
-    "name": "Name",
-    "nameHelp": "A friendly name to identify this application in your organization.",
-    "type": "Application type",
-    "typePublic": "Public — SPA, mobile (PKCE)",
-    "typeConfidential": "Confidential — server-side app (client secret)",
-    "typePublicHelp": "Public clients run in browsers or mobile apps and use PKCE. They do not receive a client secret.",
-    "typeConfidentialHelp": "Confidential clients run on a server that can keep a secret. They receive a client secret on registration.",
-    "publicCalloutTitle": "Public clients use PKCE",
-    "publicCalloutBody": "PKCE helps protect authorization codes in public clients such as SPAs and mobile apps.",
-    "confidentialCalloutTitle": "The client secret is shown once",
-    "confidentialCalloutBody": "Copy it as soon as it appears — it’s hashed server-side and can’t be shown again. You can rotate it later.",
-    "redirectUris": "Redirect URIs",
-    "redirectUrisHelp": "One URL per line. Must be HTTPS in production; localhost is allowed for development.",
-    "postLogoutUris": "Post-logout redirect URIs",
-    "postLogoutUrisHelp": "Optional. One URL per line. Users will be redirected here after signing out.",
-    "scopes": "Scopes",
-    "scopesHelp": "Space-separated list of OAuth scopes. Common scopes include openid, profile, and email.",
-    "submit": "Register application",
-    "submitting": "Registering…",
-    "stepUp": "Register this application",
-    "validation": {
-      "name": "Enter a name.",
-      "redirectUris": "Add at least one redirect URI.",
-      "uri": "Enter one full URL per line."
+    "search": "Search applications",
+    "searchPlaceholder": "Name or client ID",
+    "anyKind": "All kinds",
+    "columns": {
+      "name": "Name",
+      "type": "Kind",
+      "signsInAt": "Signs in at",
+      "status": "Status",
+      "people": "Signed in",
+      "created": "Created"
     },
-    "namePlaceholder": "My SPA"
-  },
-  "detail": {
-    "backToList": "All applications",
-    "notFoundTitle": "No application \"{{clientId}}\" in this organization",
-    "notFoundDescription": "It may have been deleted, or you may not have permission to view it. Use the back link above to return to the list.",
-    "name": "Name",
-    "redirectUris": "Redirect URIs",
-    "redirectUrisHelp": "One per line (or comma-separated).",
-    "postLogoutUris": "Post-logout redirect URIs",
-    "grantTypes": "Grant types",
-    "grantTypesHelp": "Space- or comma-separated.",
-    "scopes": "Scopes",
-    "scopesHelp": "Space- or comma-separated.",
-    "metadataTitle": "Metadata",
-    "createdLabel": "Created",
-    "rowIdLabel": "Row ID",
-    "tenantLabel": "Organization",
-    "grantTypesLabel": "Grant types",
-    "secretTitle": "Client secret",
-    "secretDescription": "Rotating invalidates the current secret immediately. The new value is shown once.",
-    "secretCopyHint": "Copy it now — it’s bcrypt-hashed server-side and can’t be shown again.",
-    "rotateSecret": "Rotate secret",
-    "dangerZoneTitle": "Danger zone",
-    "dangerZoneDescription": "Deleting stops every app using this client ID from authenticating.",
-    "deleteApplication": "Delete application",
-    "deleteTitle": "Delete this application?",
-    "proofKey": {
-      "title": "Proof key (PKCE)",
-      "required": "Every sign-in must send a proof key (PKCE, S256) and, when it asks for openid, a nonce. Requests without them are refused.",
-      "exempt": "Exempt",
-      "endingSoon": "Ends soon",
-      "exemptUntil": "Exempt until {{date}}: sign-ins may leave out the proof key and nonce until then. After that, they must send them.",
-      "ended": "Its exemption ended on {{date}}. Every sign-in must now send a proof key (PKCE, S256) and, with openid, a nonce."
+    "noRedirect": "No browser sign-in",
+    "noRedirectDevice": "Device code, no redirect",
+    "look": {
+      "pkce": "PKCE exemptions",
+      "localhost": "This computer only"
     },
-    "secretFailures": {
-      "title": "Secret attempts",
-      "description": "Wrong client secrets presented for this application, newest first. Too many in a short time lock it out for a while; the right secret then fails too, with the same answer.",
-      "locked": "Locked out",
-      "lockedUntil": "Locked out until {{date}}: every request authenticating as this application is refused until then.",
-      "none": "No recent failed attempts.",
-      "error": "Couldn't load the recent attempts."
+    "shown": "{{n}} of {{total}} applications",
+    "actions": {
+      "open": "Open",
+      "copy": "Copy client ID",
+      "copied": "Client ID copied",
+      "delete": "Delete"
     },
-    "deleteConfirmDescription": "Apps using the client ID for {{name}} will immediately stop being able to authenticate. This can’t be undone.",
-    "rotateConfirm": {
-      "title": "Rotate client secret?",
-      "description": "A new client secret is generated immediately and the current one stops working. Update the client application with the new secret.",
-      "label": "Rotate secret"
+    "empty": {
+      "title": "No applications yet",
+      "description": "Register an app to let people sign in to it with Qeet ID."
     },
-    "stepUp": {
-      "update": "Update this application",
-      "rotate": "Rotate this client secret",
-      "delete": "Delete this application"
-    },
-    "validation": {
-      "name": "Enter a name.",
-      "clientCredentials": "Remove client_credentials: applications can't use it. A machine caller signs in as a service principal instead."
+    "emptyFiltered": {
+      "title": "No applications match",
+      "description": "Nothing here matches the search or the view.",
+      "clear": "Show every application"
     }
   },
-  "quickstart": {
-    "title": "Integrate this application",
-    "description": "Drop the snippet into your app to add “Sign in with Qeet ID”, then test the flow.",
-    "framework": "Framework",
-    "endpoints": "Endpoints",
-    "copySnippet": "Copy snippet",
-    "copied": "Copied to clipboard",
-    "testLogin": "Test login",
-    "discovery": "Discovery document",
-    "testLoginHelp": "“Test login” opens the hosted sign-in for this app and returns to its first redirect URI ({{uri}}).",
-    "testLoginHelpNone": "“Test login” opens the hosted sign-in for this app and returns to its first redirect URI (none set).",
-    "noRedirectTitle": "Add a redirect URI first",
-    "noRedirectText": "This app has no redirect URI to return to after login."
+  "band": {
+    "apps": "Applications",
+    "appsNote": "{{confidential}} confidential · {{public}} public",
+    "signedIn": "People signed in",
+    "signedInNote": "Holding a live sign-in to one of them now",
+    "grants": "OAuth grants",
+    "needsALook": "Needs a look"
+  },
+  "delete": {
+    "button": "Delete application",
+    "title": "Delete {{name}}?",
+    "description": "Every app using this client ID stops signing people in, and people signed in to it can't renew their sign-in.",
+    "confirm": "Delete application",
+    "action": "Delete the application"
+  },
+  "drawer": {
+    "title": "Register an application",
+    "description": "An app that signs people in with Qeet ID, over OpenID Connect.",
+    "editTitle": "Edit {{name}}",
+    "editDescription": "Changes apply to the next sign-in.",
+    "madeTitle": "{{name}} is registered",
+    "madeDescription": "Copy its secret before you close this.",
+    "secretTitle": "Copy the client secret now",
+    "secretDescription": "You won't see it again: Qeet ID keeps only a hash. Put it in the app's environment; if it's lost, rotate it.",
+    "name": "Name",
+    "nameHint": "People see it on the hosted sign-in page.",
+    "namePlaceholder": "Support Desk",
+    "type": "Kind",
+    "typeConfidential": "Runs on a server (confidential)",
+    "typePublic": "Runs in a browser or on a device (public)",
+    "typeConfidentialHint": "It keeps a client secret, shown once when it's made.",
+    "typePublicHint": "It has no secret: it proves each sign-in with a proof key.",
+    "redirects": "Redirect URIs",
+    "redirectsHint": "One a line. Where Qeet ID may send people back after they sign in; localhost is fine while you build.",
+    "afterSignOut": "After sign-out",
+    "afterSignOutHint": "One a line. Where people may land after they sign out.",
+    "grants": "Grants",
+    "grantsHint": "How the app gets tokens. A public app can't hold the ones that need a secret.",
+    "scopes": "Scopes",
+    "scopesHint": "Separated by spaces. openid, profile and email are the usual ones.",
+    "required": {
+      "name": "Enter a name.",
+      "redirect": "Add at least one redirect URI.",
+      "uri": "Enter one full URL a line.",
+      "clientCredentials": "Drop client_credentials: apps can't use it any more. A machine caller is a service principal."
+    },
+    "cancel": "Cancel",
+    "register": "Register application",
+    "registerAction": "Register the application",
+    "save": "Save",
+    "saveAction": "Change the application",
+    "saved": "{{name}} saved",
+    "done": "Done"
+  },
+  "app": {
+    "back": "Applications",
+    "more": "More actions",
+    "edit": "Edit",
+    "views": "Application views",
+    "overview": "Overview",
+    "integrate": "Integrate",
+    "kindAt": "{{kind}} at {{at}}",
+    "people_one": "{{n}} person signed in",
+    "people_other": "{{n}} people signed in",
+    "created": "created {{date}}",
+    "notFound": {
+      "title": "Application not found",
+      "description": "No application here has the ID {{clientId}}. It may have been deleted."
+    },
+    "test": {
+      "button": "Test sign-in",
+      "noRedirect": "Add a redirect URI first",
+      "noRedirectText": "There's nowhere to send you back to after signing in."
+    },
+    "pkce": {
+      "exemptTitle": "PKCE is off for this app until {{date}}",
+      "exemptText": "After that, its sign-ins must send a proof key and a nonce, or they fail. Update {{name}} to send them before then.",
+      "endedTitle": "Its PKCE exemption ended on {{date}}",
+      "endedText": "Its sign-ins now fail unless they send a proof key and a nonce. Update {{name}} to send them.",
+      "see": "See what to send"
+    },
+    "credentials": {
+      "title": "Credentials",
+      "note": "What the app presents to Qeet ID.",
+      "clientId": "Client ID",
+      "copy": "Copy",
+      "copyClientId": "Copy the client ID",
+      "secret": "Client secret",
+      "secretSet": "Set",
+      "secretHint": "Shown once when it was made. Rotating stops the old one at once.",
+      "type": "Kind",
+      "confidentialHint": "Runs on a server and keeps a client secret.",
+      "publicHint": "Has no secret: it sends a proof key with each sign-in."
+    },
+    "signIn": {
+      "title": "Sign-in",
+      "note": "Where Qeet ID sends people, and what the app may ask for.",
+      "redirects": "Redirect URIs",
+      "redirectsHint": "Test sign-in returns to the first.",
+      "afterSignOut": "After sign-out",
+      "grants": "Grants",
+      "scopes": "Scopes",
+      "none": "None"
+    },
+    "security": {
+      "title": "Security",
+      "note": "What protects its sign-ins.",
+      "pkce": "PKCE",
+      "pkceRequired": "Required",
+      "pkceRequiredHint": "Each sign-in must send a proof key and a nonce, as every app must.",
+      "pkceOffUntil": "Off until {{date}}",
+      "pkceExemptHint": "Until then, its sign-ins may leave out the proof key and nonce. Every other app must send them.",
+      "pkceEnded": "Required since {{date}}",
+      "pkceEndedHint": "Its exemption has ended, so its sign-ins must send a proof key and a nonce.",
+      "ends": "Ends {{when}}",
+      "wrongSecrets": "Wrong secrets",
+      "wrongSecretsHint": "Ten wrong secrets in 15 minutes lock the app out for a while (the server's default).",
+      "wrongSecretsError": "Couldn't be read",
+      "noneRecently": "None recently",
+      "recent_one": "{{count}} recently, the last {{when}}",
+      "recent_other": "{{count}} recently, the last {{when}}",
+      "locked": "Locked out",
+      "lockedUntil": "Locked out until {{date}}"
+    },
+    "look": {
+      "title": "Sign-in page",
+      "note": "How the app looks on Qeet ID's hosted sign-in page.",
+      "logo": "Logo",
+      "home": "Home page",
+      "homeHint": "The sign-in page shows {{host}}.",
+      "notSet": "Not set"
+    },
+    "rotate": {
+      "button": "Rotate secret",
+      "short": "Rotate",
+      "title": "Rotate the secret of {{name}}?",
+      "description": "The secret {{name}} uses now stops working at once, and its sign-ins fail until it has the new one.",
+      "confirm": "Rotate secret",
+      "action": "Rotate the client secret",
+      "madeTitle": "Copy the new secret now",
+      "madeDescription": "You won't see it again. Put it in the app's environment; the old one has stopped working."
+    },
+    "danger": {
+      "title": "Delete this application",
+      "note": "Every app using this client ID stops signing people in."
+    },
+    "endpoints": {
+      "title": "Endpoints",
+      "note": "Most libraries need only the issuer: they read the rest from discovery.",
+      "issuer": "Issuer",
+      "copyIssuer": "Copy the issuer",
+      "discovery": "Discovery",
+      "copyDiscovery": "Copy the discovery URL",
+      "authorize": "Authorise",
+      "copyAuthorize": "Copy the authorisation endpoint",
+      "token": "Token",
+      "copyToken": "Copy the token endpoint",
+      "userinfo": "User info",
+      "copyUserinfo": "Copy the user info endpoint",
+      "jwks": "Keys (JWKS)",
+      "copyJwks": "Copy the JWKS URL"
+    },
+    "snippet": {
+      "title": "Add sign-in to the app",
+      "noteConfidential": "Filled in with this app's client ID and scopes. The secret comes from an environment variable.",
+      "notePublic": "Filled in with this app's client ID and scopes. A public app has no secret.",
+      "framework": "Framework",
+      "testNote": "Test sign-in opens this app's sign-in and returns to {{uri}}.",
+      "testNoteNone": "Add a redirect URI to test sign-in."
+    }
+  },
+  "toast": {
+    "registered": "Application registered",
+    "deleted": "Application deleted",
+    "secretRotated": "Client secret rotated"
   },
   "presentation": {
-    "logoUri": "Logo URL",
-    "logoUriHelp": "Optional. Shown on the hosted sign-in page. An https:// address of up to 2048 characters, without a user name, password or #fragment.",
+    "logoUri": "Logo",
+    "logoUriHelp": "Shown on the hosted sign-in page. An https:// address of up to 2048 characters, without a user name, password or #fragment.",
     "clientUri": "Home page",
-    "clientUriHelp": "Optional. The hosted sign-in page shows its host. An https:// address of up to 2048 characters, without a user name, password or #fragment.",
+    "clientUriHelp": "The hosted sign-in page shows its host. An https:// address of up to 2048 characters, without a user name, password or #fragment.",
     "logoUnavailable": "The logo couldn't be loaded.",
     "validation": {
       "tooLong": "Use at most 2048 characters.",

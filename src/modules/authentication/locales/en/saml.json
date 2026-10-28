@@ -1,59 +1,312 @@
 {
-  "page": {
-    "title": "SAML IdP — Service Providers",
-    "description": "Qeet ID acts as the SAML 2.0 Identity Provider here. Each Service Provider below trusts this IdP and receives signed assertions for its users.",
-    "addProvider": "Add service provider"
-  },
-  "metadata": {
-    "title": "IdP metadata",
-    "description": "Service providers import your organisation’s metadata document to trust Qeet ID as their IdP. Hand this URL to each SP’s SAML configuration.",
-    "hint": "Most SPs accept a metadata URL directly; it serves the signed IdP descriptor (entity ID, SSO URL, signing certificate). For an SP configured by hand, use the values below.",
-    "entityId": "IdP entity ID",
-    "ssoUrl": "Single sign-on URL"
-  },
-  "list": {
-    "title": "Service providers",
-    "count_one": "{{count}} provider trusting this IdP.",
-    "count_other": "{{count}} providers trusting this IdP.",
-    "emptyTitle": "No service providers yet.",
-    "emptyDescription": "Add the apps that should accept SSO from this IdP."
-  },
-  "table": {
-    "name": "Name",
-    "entityId": "Entity ID",
-    "acsUrl": "ACS URL",
-    "status": "Status",
-    "lastLogin": "Last login",
-    "actions": "Actions"
-  },
-  "delete": {
-    "title": "Remove this service provider?",
-    "confirmDescription": "{{name}} will no longer accept SSO from this IdP. This can’t be undone.",
-    "stepUp": "Remove this service provider"
-  },
-  "form": {
-    "addTitle": "Add service provider",
-    "editTitle": "Edit service provider",
-    "description": "Enter the SP’s SAML entity ID and Assertion Consumer Service (ACS) URL — both come from the SP’s own metadata.",
-    "name": "Name",
-    "entityId": "Entity ID / issuer",
-    "acsUrl": "ACS URL",
-    "acsUrlHelp": "Where signed assertions are POSTed back.",
-    "nameIdFormat": "NameID format",
-    "nameIdFormatHelp": "Optional. Defaults to email address.",
-    "nameIdAttribute": "NameID attribute",
-    "nameIdAttributeHelp": "Optional. Which user attribute populates the NameID.",
-    "certificate": "SP certificate",
-    "certificateHelp": "Optional. Required only if the SP signs its requests.",
-    "addSubmit": "Add provider",
-    "addSubmitting": "Adding…",
-    "stepUpAdd": "Add this service provider",
-    "stepUpEdit": "Update this service provider",
-    "validation": {
-      "name": "Enter a name.",
-      "entityId": "Enter the service provider's entity ID.",
-      "acsUrl": "Enter the assertion consumer service URL."
+  "signIn": {
+    "yourOrg": "your organisation",
+    "theProvider": "your identity provider",
+    "gate": {
+      "title": "SAML isn't in your plan",
+      "description": "Upgrade to let people sign in through your identity provider, and to sign them in to SAML apps."
     },
-    "namePlaceholder": "Acme Analytics"
+    "readOnly": {
+      "title": "You can see this connection, not change it",
+      "description": "Changing a connection needs the connection.write permission."
+    },
+    "notFound": {
+      "title": "Connection not found",
+      "description": "It may have been deleted. SSO lists every SAML connection.",
+      "back": "Back to SSO"
+    },
+    "page": {
+      "description": "SAML sign-in for {{org}}",
+      "descriptionUsed": "SAML sign-in for {{org}} · last sign-in {{when}}",
+      "more": "More actions",
+      "edit": "Edit connection",
+      "new": "New connection",
+      "test": "Test sign-in"
+    },
+    "steps": {
+      "label": "Setting up SAML sign-in",
+      "provider": "Identity provider",
+      "ours": "Qeet ID's details",
+      "oursNote": "ACS URL and entity ID",
+      "theirs": "{{provider}}'s details",
+      "theirsNote": "Certificate valid to {{date}}",
+      "attributes": "Attributes",
+      "turnOn": "Test and turn on",
+      "on": "On",
+      "onUsed": "On · signed in {{when}}"
+    },
+    "certificate": {
+      "endingTitle_one": "{{provider}}'s signing certificate ends tomorrow",
+      "endingTitle_other": "{{provider}}'s signing certificate ends in {{count}} days",
+      "endedTitle": "{{provider}}'s signing certificate has ended",
+      "endingDescription": "From {{date}}, sign-ins through it fail. Get the new certificate from {{provider}} and add it here.",
+      "replace": "Replace certificate"
+    },
+    "provider": {
+      "title": "Identity provider",
+      "note": "The service your people sign in with.",
+      "name": "Name",
+      "rename": "Rename",
+      "kind": "Provider",
+      "kindHint": "Worked out from its sign-in URL.",
+      "other": "Another SAML identity provider"
+    },
+    "ours": {
+      "title": "Give {{provider}} these details",
+      "note": "Paste them into the SAML app you set up for Qeet ID in {{provider}}.",
+      "acs": "ACS URL",
+      "acsHint": "Where {{provider}} sends people back after they sign in.",
+      "copyAcs": "Copy the ACS URL",
+      "entity": "Entity ID",
+      "entityHint": "Tells {{provider}} which service it's signing people in to. Also called the audience.",
+      "copyEntity": "Copy the entity ID",
+      "nameId": "Name ID",
+      "nameIdValue": "The person's email address",
+      "nameIdHint": "Qeet ID reads the email from the {{attribute}} attribute, and from the Name ID when it isn't sent.",
+      "metadata": "Metadata",
+      "metadataFile": "Qeet ID's SAML metadata",
+      "metadataHint": "For a provider that imports a file or URL instead.",
+      "open": "Open"
+    },
+    "theirs": {
+      "title": "{{provider}}'s details",
+      "note": "Where to send people, and the certificate that proves a sign-in came from {{provider}}.",
+      "update": "Update",
+      "ssoUrl": "Sign-in URL",
+      "entity": "Entity ID",
+      "certificate": "Certificate",
+      "certificateValue": "{{subject}} · valid until {{date}}",
+      "fingerprint": "SHA-256 {{print}}",
+      "valid": "Valid",
+      "endsIn_one": "Ends tomorrow",
+      "endsIn_other": "Ends in {{count}} days",
+      "ended": "Ended",
+      "unreadable": "Can't be read here: run the checks"
+    },
+    "attributes": {
+      "title": "Attributes",
+      "note": "Which parts of {{provider}}'s sign-in response fill each person's profile.",
+      "edit": "Edit",
+      "email": "Email",
+      "emailHint": "It matches people to their account here; without it, the Name ID is used.",
+      "nameIdOnly": "From the Name ID",
+      "name": "Display name",
+      "nameHint": "Their display name when their account is made here.",
+      "notSent": "Not read",
+      "newPeople": "New people",
+      "newPeopleText": "Added to {{org}} the first time they sign in, only for an address on a domain {{org}} has verified. An account already here is linked only if its address is verified and it doesn't administer {{org}}."
+    },
+    "turnOn": {
+      "title": "Test and turn on",
+      "note": "The checks read the settings above; nothing is sent to {{provider}}. Test sign-in then goes through {{provider}} for real.",
+      "run": "Run the checks",
+      "again": "Check again",
+      "notChecked": "Not checked yet",
+      "checkedAt": "Checked {{when}}"
+    },
+    "checks": {
+      "entity": "The provider's entity ID is set",
+      "ssoUrl": "The sign-in URL uses https",
+      "certificate": "The certificate can be read",
+      "validity": "The certificate is in date",
+      "email": "The email attribute is set",
+      "until": "Until {{date}}"
+    },
+    "status": {
+      "title": "Status",
+      "lastSignIn": "last sign-in {{when}}, {{date}}",
+      "word": {
+        "draft": "Draft",
+        "active": "On",
+        "disabled": "Off"
+      },
+      "means": {
+        "draft": "Being set up: it signs nobody in until you turn it on.",
+        "active": "People sign in through it.",
+        "disabled": "Sign-ins through it are refused. The accounts it made stay."
+      }
+    },
+    "idpInitiated": {
+      "title": "Started in {{provider}}",
+      "accepted": "Accepted",
+      "notAccepted": "Not accepted",
+      "acceptedHint": "{{provider}} can also start a sign-in, from its own app list. Every other check still runs, and a response used twice is still refused.",
+      "notAcceptedHint": "Only sign-ins that start at Qeet ID are accepted: each response must answer a request Qeet ID sent, in the same browser.",
+      "accept": "Accept",
+      "stop": "Stop accepting",
+      "confirmTitle": "Accept sign-ins that start in {{name}}?",
+      "confirmDescription": "{{name}} can then sign people in without a request from Qeet ID. Qeet ID still checks the signature and refuses a response used twice, but can't tie it to the browser that asked.",
+      "acceptAction": "Accept sign-ins started by the identity provider",
+      "stopAction": "Stop accepting sign-ins started by the identity provider"
+    },
+    "on": {
+      "button": "Turn on",
+      "action": "Turn on the SAML connection",
+      "done": "{{name}} is on: people can sign in through it"
+    },
+    "off": {
+      "button": "Turn off",
+      "title": "Turn off {{name}}?",
+      "description": "People can't sign in through {{name}} until you turn it back on. Their accounts stay as they are.",
+      "confirm": "Turn off",
+      "action": "Turn off the SAML connection",
+      "done": "{{name}} is off"
+    },
+    "delete": {
+      "button": "Delete connection",
+      "zoneTitle": "Delete this connection",
+      "zoneOn": "People who sign in through {{name}} will need another way in.",
+      "zoneOff": "It isn't on, so nobody signs in through it now.",
+      "title": "Delete {{name}}?",
+      "description": "People can no longer sign in through {{name}}. Their accounts, groups and roles stay; anyone who signs in only this way needs another way in.",
+      "confirm": "Delete connection",
+      "action": "Delete the SAML connection"
+    }
+  },
+  "drawer": {
+    "title": "New SAML connection",
+    "description": "Your identity provider's details, from its metadata or typed in. It starts as a draft; Qeet ID's own details come on its page next.",
+    "editTitle": "Edit {{name}}",
+    "editDescription": "Changes apply to the next sign-in.",
+    "name": "Name",
+    "nameHint": "Only administrators see it.",
+    "namePlaceholder": "Okta (employees)",
+    "metadata": "Metadata file",
+    "metadataHint": "Read here: nothing is uploaded. It fills in the sign-in URL, entity ID and certificate.",
+    "metadataFile": "An XML file from your identity provider",
+    "metadataPaste": "Or paste the metadata",
+    "readMetadata": "Read metadata",
+    "metadataRead": "Read the details of {{entity}}",
+    "metadataProblem": {
+      "invalidXml": "That isn't metadata Qeet ID can read.",
+      "missingEntityId": "The metadata has no entity ID.",
+      "missingSsoUrl": "The metadata has no sign-in URL.",
+      "missingCertificate": "The metadata has no signing certificate.",
+      "tooLarge": "That file is too large to be metadata."
+    },
+    "ssoUrl": "Sign-in URL",
+    "ssoUrlHint": "Where Qeet ID sends people to sign in. An https:// address.",
+    "entityId": "Entity ID",
+    "entityIdHint": "The identity provider's issuer.",
+    "certificate": "Signing certificate",
+    "certificateHint": "PEM, or the base64 from its metadata.",
+    "emailAttribute": "Email attribute",
+    "emailAttributeHint": "Leave it empty to use the Name ID.",
+    "nameAttribute": "Name attribute",
+    "nameAttributeHint": "Optional.",
+    "required": {
+      "name": "Enter a name.",
+      "entityId": "Enter the identity provider's entity ID.",
+      "ssoUrl": "Enter an https:// address with a host.",
+      "certificate": "Paste a certificate Qeet ID can read."
+    },
+    "cancel": "Cancel",
+    "create": "Create connection",
+    "createAction": "Create a SAML connection",
+    "save": "Save",
+    "saveAction": "Change the SAML connection",
+    "saved": "{{name}} saved"
+  },
+  "apps": {
+    "title": "SAML apps",
+    "description": "Qeet ID signs your people in to these apps.",
+    "descriptionCounts": "Qeet ID signs your people in to these apps · {{on}} on, {{setup}} in setup",
+    "add": "Add app",
+    "steps": {
+      "label": "Setting up SAML apps",
+      "ours": "Qeet ID's details",
+      "oursNote": "The same for every app",
+      "add": "Add the app",
+      "addNote_one": "{{n}} app added",
+      "addNote_other": "{{n}} apps added",
+      "turnOn": "Test and turn on",
+      "turnOnSetup_one": "{{n}} app still in setup",
+      "turnOnSetup_other": "{{n}} apps still in setup",
+      "turnOnDone": "Every app is on"
+    },
+    "ours": {
+      "title": "Give each app Qeet ID's details",
+      "note": "Most apps import the metadata URL. For one set up by hand, copy the rest.",
+      "metadata": "Metadata URL",
+      "metadataHint": "The app reads everything below from it, and Qeet ID's signing certificate.",
+      "copyMetadata": "Copy the metadata URL",
+      "entity": "Entity ID",
+      "entityHint": "Also called the issuer or IdP identifier.",
+      "copyEntity": "Copy the entity ID",
+      "sso": "Sign-in URL",
+      "ssoHint": "Also called the SSO URL. It takes Redirect and POST.",
+      "copySso": "Copy the sign-in URL",
+      "nameId": "Name ID",
+      "nameIdValue": "The person's email address",
+      "nameIdHint": "Every app gets the email address as the Name ID, in the format it asks for."
+    },
+    "list": {
+      "title": "Apps",
+      "note": "Anyone in {{org}} with an active account can be signed in to an app that isn't turned off, including one still in setup.",
+      "lastSignIn": "last sign-in {{when}}",
+      "added": "added {{date}} · no sign-in yet",
+      "test": "Test sign-in",
+      "edit": "Edit",
+      "more": "More actions for {{name}}",
+      "emptyTitle": "No apps yet",
+      "emptyDescription": "Add one with what the app gave you: its entity ID and where it takes the sign-in response.",
+      "format": "Name ID {{format}}"
+    },
+    "on": {
+      "button": "Turn on",
+      "action": "Turn on the SAML app",
+      "done": "{{name}} is on"
+    },
+    "off": {
+      "button": "Turn off",
+      "title": "Turn off {{name}}?",
+      "description": "Qeet ID stops signing people in to {{name}} until you turn it back on.",
+      "confirm": "Turn off",
+      "action": "Turn off the SAML app",
+      "done": "{{name}} is off"
+    },
+    "remove": {
+      "button": "Remove app",
+      "title": "Remove {{name}}?",
+      "description": "Qeet ID stops signing people in to {{name}}. Their accounts here stay; they'll need another way into {{name}}.",
+      "confirm": "Remove app",
+      "action": "Remove the SAML app"
+    }
+  },
+  "appDrawer": {
+    "title": "Add an app",
+    "description": "Copy these from the app's SAML settings. Qeet ID's details are on this page.",
+    "editTitle": "Edit {{name}}",
+    "editDescription": "Changes apply to the next sign-in.",
+    "name": "Name",
+    "nameHint": "Only administrators see it.",
+    "entityId": "Entity ID",
+    "entityIdHint": "The app's entity ID, or audience. Each app's is different.",
+    "acsUrl": "ACS URL",
+    "acsUrlHint": "Where the app takes the sign-in response: https, or http to this computer.",
+    "nameIdFormat": "Name ID format",
+    "nameIdFormatHint": "The format the app asks for. The value is the person's email address either way.",
+    "formats": {
+      "email": "Email address",
+      "unspecified": "Unspecified",
+      "persistent": "Persistent"
+    },
+    "required": {
+      "name": "Enter a name.",
+      "entityId": "Enter the app's entity ID.",
+      "acsUrl": "Enter an https:// address, or http:// to localhost."
+    },
+    "add": "Add app",
+    "addAction": "Add a SAML app",
+    "save": "Save",
+    "saveAction": "Change the SAML app",
+    "saved": "{{name}} saved",
+    "recommended": "{{format}} (recommended)"
+  },
+  "toast": {
+    "signInCreated": "SAML connection created, as a draft",
+    "signInDeleted": "SAML connection deleted",
+    "appAdded": "App added",
+    "appRemoved": "App removed"
   }
 }

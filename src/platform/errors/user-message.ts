@@ -106,6 +106,10 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.QEETAI_PROVIDER_KEY_INVALID]: "errors:code.qeetaiProviderKeyInvalid",
   [ERROR_CODES.QEETAI_PROVIDER_MODEL_INVALID]: "errors:code.qeetaiProviderModelInvalid",
   [ERROR_CODES.QEETAI_PROVIDER_ERROR]: "errors:code.qeetaiProviderError",
+  [ERROR_CODES.DOMAIN_INVALID]: "errors:code.domainInvalid",
+  [ERROR_CODES.DOMAIN_EXISTS]: "errors:code.domainExists",
+  [ERROR_CODES.DOMAIN_RECORD_MISSING]: "errors:code.domainRecordMissing",
+  [ERROR_CODES.DOMAIN_CLAIMED_BY_OTHER]: "errors:code.domainClaimedByOther",
   [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 

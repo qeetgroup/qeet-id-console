@@ -1,7 +1,8 @@
 // Domain verification: a tenant claims an email domain, publishes the returned DNS TXT record, then
-// verifies it.
+// verifies it. The reads, which the Dashboard and Branding share; the changes are Settings ›
+// Domains' own (domain-changes.ts).
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -50,65 +51,6 @@ export function useDomains(enabled = true) {
     queryKey: orgKeys.domains(tenantId),
     queryFn: () => api<{ items: TenantDomain[] }>(`/v1/tenants/${tenantId}/domains`),
     enabled: !!tenantId && enabled,
-  });
-}
-
-export function useAddDomain() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (domain: string) =>
-      api<TenantDomain>(`/v1/tenants/${tenantId}/domains`, {
-        method: "POST",
-        body: { domain },
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
-    meta: { successMessage: "organizations:toast.domainAdded" },
-  });
-}
-
-export function useVerifyDomain() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) =>
-      api<TenantDomain>(`/v1/tenants/${tenantId}/domains/${id}/verify`, {
-        method: "POST",
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
-    meta: { successMessage: "organizations:toast.domainVerified" },
-  });
-}
-
-export function useRemoveDomain() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/domains/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
-    meta: { successMessage: "organizations:toast.domainRemoved" },
-  });
-}
-
-export function useUpdateDomainSettings() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (in_: {
-      id: string;
-      sso_enabled?: boolean;
-      jit_enabled?: boolean;
-      is_default?: boolean;
-    }) => {
-      const { id, ...body } = in_;
-      return api<TenantDomain>(`/v1/tenants/${tenantId}/domains/${id}`, {
-        method: "PATCH",
-        body,
-      });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.domains(tenantId) }),
-    meta: { successMessage: "organizations:toast.domainUpdated" },
   });
 }
 
