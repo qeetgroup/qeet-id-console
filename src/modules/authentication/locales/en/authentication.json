@@ -479,7 +479,7 @@
       },
       "sso": {
         "title": "SSO",
-        "description": "SAML connections and Qeet ID as an IdP."
+        "description": "SAML sign-in, SAML apps and setup links."
       },
       "saml": {
         "title": "SAML"
@@ -496,10 +496,6 @@
       },
       "smsEmail": {
         "title": "SMS / email"
-      },
-      "connections": {
-        "title": "Connections",
-        "description": "Every connection: SAML and LDAP sign-in, SCIM, SAML apps and setup links"
       }
     },
     "developer": {
@@ -524,6 +520,11 @@
       "title": "Multi-factor auth settings",
       "subtitle": "Configure TOTP, SMS, and recovery codes",
       "keywords": "mfa, totp, 2fa, two factor, authenticator"
+    },
+    "setupLinks": {
+      "title": "Setup links",
+      "subtitle": "Let an IT admin set up SAML or SCIM without a Qeet ID account",
+      "keywords": "setup link, admin portal, it admin, saml, scim, sso, delegate"
     }
   }
 }

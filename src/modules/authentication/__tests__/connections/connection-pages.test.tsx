@@ -41,7 +41,7 @@ vi.mock("@tanstack/react-router", () => {
     return query ? `${path}?${query}` : path;
   };
   return {
-    useLocation: () => ({ pathname: "/auth/connections", searchStr: "", hash: "" }),
+    useLocation: () => ({ pathname: "/auth/connections/saml", searchStr: "", hash: "" }),
     useNavigate: () => nav.navigate,
     useSearch: () => ({}),
     Navigate: (props: unknown) => {
@@ -87,14 +87,13 @@ vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) 
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
-import { ConnectionsListPage } from "@/modules/authentication/components/connections/connections-list-page";
+import { SsoListPage } from "@/modules/authentication/components/connections/sso-list-page";
 import { LdapConnectionPage } from "@/modules/authentication/components/ldap/ldap-connection-page";
 import { LdapIndexPage } from "@/modules/authentication/components/ldap/ldap-index-page";
 import { OidcAppPage } from "@/modules/authentication/components/oidc/oidc-app-page";
 import { OidcAppsPage } from "@/modules/authentication/components/oidc/oidc-apps-page";
 import { SamlAppsPage } from "@/modules/authentication/components/saml/saml-apps-page";
 import { SamlConnectionPage } from "@/modules/authentication/components/saml/saml-connection-page";
-import { SamlIndexPage } from "@/modules/authentication/components/saml/saml-index-page";
 import { ScimPage } from "@/modules/authentication/components/scim/scim-page";
 import { OKTA_CERT } from "./fixtures";
 
@@ -408,29 +407,56 @@ async function menu(item: string | RegExp, trigger: string | RegExp = "More acti
   fireEvent.click(await screen.findByRole("menuitem", { name: item }));
 }
 
-describe("Authentication › Connections", () => {
-  it("lists every connection in one status word, with the kinds not set up offered", async () => {
-    renderPage(<ConnectionsListPage filters={{}} onFiltersChange={vi.fn()} />);
-    const table = await screen.findByRole("table", { name: "Connections" });
+describe("Authentication › SSO", () => {
+  const sso = () => (
+    <SsoListPage
+      filters={{}}
+      onFiltersChange={vi.fn()}
+      creating={false}
+      onCreatingChange={vi.fn()}
+    />
+  );
+
+  it("lists the SAML connections and apps in one status word, and points LDAP and SCIM home", async () => {
+    renderPage(sso());
+    const table = await screen.findByRole("table", { name: "SSO" });
     const row = (name: string) => within(table).getByText(name).closest("tr") as HTMLElement;
     await within(table).findByText("Okta");
     expect(within(row("Okta")).getByText("Connected")).toBeTruthy();
     expect(within(row("Slack")).getByText("SAML app")).toBeTruthy();
-    // Its tests failed, and the problem is still open: it needs attention, not "In setup".
-    expect(within(row("Staging Directory (test)")).getByText("Needs attention")).toBeTruthy();
+    // LDAP and SCIM have one home, Directories › Connections.
+    expect(within(table).queryByText("Staging Directory (test)")).toBeNull();
     expect(
-      within(row("Staging Directory (test)")).getByText("Its latest check failed"),
-    ).toBeTruthy();
-    expect(screen.getByRole("region", { name: "Not set up yet" }).textContent).toContain(
-      "SCIM provisioning",
-    );
+      screen.getByRole("link", { name: "Directories › Connections" }).getAttribute("href"),
+    ).toBe("/directory/connections");
+    expect(screen.queryByText("Kept in sync by SCIM")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Not set up yet" })).toBeNull();
     expect(screen.getByRole("link", { name: /Need attention/ }).getAttribute("href")).toBe(
-      "/auth/connections?show=attention",
+      "/auth/connections/saml?show=attention",
     );
+    expect(vi.mocked(api).mock.calls.some(([path]) => String(path).includes("/ldap"))).toBe(false);
+  });
+
+  it("offers a kind that isn't set up yet, and opens New SAML connection from the list", async () => {
+    state.saml = [];
+    const onCreatingChange = vi.fn();
+    renderPage(
+      <SsoListPage
+        filters={{}}
+        onFiltersChange={vi.fn()}
+        creating={false}
+        onCreatingChange={onCreatingChange}
+      />,
+    );
+    const offers = await screen.findByRole("region", { name: "Not set up yet" });
+    expect(offers.textContent).toContain("SAML sign-in");
+    expect(offers.textContent).not.toContain("SCIM");
+    fireEvent.click(within(offers).getByRole("button", { name: /Set up SAML/ }));
+    expect(onCreatingChange).toHaveBeenCalledWith(true);
   });
 
   it("makes a setup link through the sensitive-action path, then shows it once", async () => {
-    renderPage(<ConnectionsListPage filters={{}} onFiltersChange={vi.fn()} />);
+    renderPage(sso());
     fireEvent.click(await screen.findByRole("button", { name: "Create setup link" }));
     fireEvent.click(await screen.findByRole("button", { name: "Create link" }));
     await screen.findByText("https://login.example.com/admin-portal#tok");
@@ -443,7 +469,7 @@ describe("Authentication › Connections", () => {
   });
 
   it("revokes a setup link only once its confirm is accepted", async () => {
-    renderPage(<ConnectionsListPage filters={{}} onFiltersChange={vi.fn()} />);
+    renderPage(sso());
     fireEvent.click(await screen.findByRole("button", { name: "Revoke" }));
     const dialog = await confirmWith("Revoke link");
     expect(dialog.textContent).toContain("can't make another change");
@@ -629,7 +655,9 @@ describe("SSO › a SAML connection", () => {
 
   it("starts a new connection from the provider's metadata, as a draft", async () => {
     state.saml = [];
-    renderPage(<SamlIndexPage creating onCreatingChange={vi.fn()} />);
+    renderPage(
+      <SsoListPage filters={{}} onFiltersChange={vi.fn()} creating onCreatingChange={vi.fn()} />,
+    );
     const drawer = await screen.findByRole("dialog");
     const xml = `<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://www.okta.com/exk9"><IDPSSODescriptor><KeyDescriptor use="signing"><KeyInfo><X509Data><X509Certificate>${OKTA_CERT.replace(/-----[^-]+-----/g, "")}</X509Certificate></X509Data></KeyInfo></KeyDescriptor><SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://acme.okta.com/sso/saml"/></IDPSSODescriptor></EntityDescriptor>`;
     fireEvent.change(within(drawer).getByLabelText(/Or paste the metadata/), {

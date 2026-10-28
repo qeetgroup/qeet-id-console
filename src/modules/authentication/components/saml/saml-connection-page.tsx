@@ -102,7 +102,11 @@ export function SamlConnectionPage({ id }: { id: string }) {
             title={t("signIn.notFound.title")}
             description={t("signIn.notFound.description")}
             actions={
-              <Button variant="soft" tone="neutral" render={<RouterLink to="/auth/connections" />}>
+              <Button
+                variant="soft"
+                tone="neutral"
+                render={<RouterLink to="/auth/connections/saml" />}
+              >
                 {t("signIn.notFound.back")}
               </Button>
             }

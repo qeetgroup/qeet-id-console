@@ -199,6 +199,13 @@ li[data-state="ok"] .cx-check-word {
   white-space: nowrap;
 }
 
+/* One quiet line under the table: where the other connections live. */
+.cx-elsewhere {
+  margin: var(--qx-space-gap-md) 0 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
 /* The list's setup links, under the table. */
 .cx-links {
   margin-block-start: var(--qx-space-layout-sm);

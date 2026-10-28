@@ -10,27 +10,10 @@
       "title": "You can see this connection, not change it",
       "description": "Changing a connection needs the connection.write permission."
     },
-    "index": {
-      "title": "SAML sign-in",
-      "description": "People sign in through your identity provider: Okta, Entra ID, Google Workspace or another.",
-      "new": "New connection",
-      "howTitle": "How SAML sign-in works",
-      "howNote": "Qeet ID trusts what your identity provider says about a person, because it signs it.",
-      "steps": {
-        "start": "Someone signs in at Qeet ID",
-        "startNote": "Qeet ID sends them to your identity provider with a sign-in request.",
-        "provider": "Your identity provider checks them",
-        "providerNote": "With its own password, two-step and rules.",
-        "back": "It sends them back, signed",
-        "backNote": "Qeet ID checks the signature with its certificate, then signs them in by their email."
-      },
-      "emptyTitle": "No SAML connection yet",
-      "emptyDescription": "Start one with your identity provider's details: its metadata, or its sign-in URL and certificate."
-    },
     "notFound": {
       "title": "Connection not found",
-      "description": "It may have been deleted. Connections lists every connection.",
-      "back": "Back to Connections"
+      "description": "It may have been deleted. SSO lists every SAML connection.",
+      "back": "Back to SSO"
     },
     "page": {
       "description": "SAML sign-in for {{org}}",

@@ -3,8 +3,8 @@ import {
   AppWindowIcon,
   FingerprintPatternIcon,
   HandshakeIcon,
+  LinkIcon,
   LogInIcon,
-  PlugIcon,
   Share2Icon,
   ShieldCheckIcon,
   TicketIcon,
@@ -92,17 +92,7 @@ export const manifest = defineModule({
       capability: "connection.read",
     },
     {
-      // Every connection in one list: SAML and LDAP sign-in, SCIM, SAML apps, and setup links.
-      id: "authentication.connections",
-      group: "authentication",
-      order: 35,
-      title: "authentication:nav.authentication.connections.title",
-      description: "authentication:nav.authentication.connections.description",
-      url: "/auth/connections",
-      icon: <PlugIcon />,
-      capability: "connection.read",
-    },
-    {
+      // SSO opens the one list of SAML sign-in connections and SAML apps, with the setup links.
       id: "authentication.sso",
       group: "authentication",
       order: 40,
@@ -173,6 +163,14 @@ export const manifest = defineModule({
       icon: <LogInIcon className="size-4" />,
       to: "/auth/connections/oidc",
       capability: "connection.write",
+    },
+    {
+      // Setup links live on the SSO list, a search away.
+      id: "cmd.navigate.setup-links",
+      text: "authentication:commands.setupLinks",
+      icon: <LinkIcon className="size-4" />,
+      to: "/auth/connections/saml",
+      capability: "connection.read",
     },
     {
       id: "cmd.navigate.passkeys",

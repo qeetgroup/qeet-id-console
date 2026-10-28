@@ -313,7 +313,7 @@ export function ScimPage() {
                     action={
                       <Button
                         variant="ghost"
-                        render={<RouterLink to="/auth/connections" hash="setup-links" />}
+                        render={<RouterLink to="/auth/connections/saml" hash="setup-links" />}
                       >
                         {t("scim.token.linksOpen")}
                       </Button>

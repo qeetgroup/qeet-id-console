@@ -139,59 +139,45 @@ describe("one status vocabulary", () => {
   });
 });
 
-describe("every connection in one list", () => {
+describe("the SSO list", () => {
   const rows = (over: Partial<Parameters<typeof connectionRows>[0]> = {}) =>
     connectionRows({
       saml: [saml()],
-      ldap: [ldap()],
-      scim: { token_set: false, created_at: null, last_used_at: null, provisioned_count: 0 },
       apps: [app(), app({ id: "a2", name: "AWS", status: "draft", last_login_at: null })],
       certificateEnds: (c) => readCertificate(c.idp_certificate)?.notAfter ?? null,
-      failing: new Set(),
       now: NOW,
       ...over,
     });
 
-  it("lists SAML, LDAP and the apps, and SCIM only once it has a token", () => {
+  it("lists the SAML connections, then the SAML apps", () => {
     expect(rows().map((r) => `${r.kind}:${r.status}`)).toEqual([
       "saml:connected",
-      "ldap:setup",
       "app:connected",
       "app:setup",
     ]);
-    const withScim = rows({
-      scim: { token_set: true, created_at: null, last_used_at: null, provisioned_count: 3 },
-    });
-    expect(withScim.find((r) => r.kind === "scim")).toMatchObject({
-      status: "connected",
-      line: "/scim/v2",
-    });
+    expect(rows()[0]).toMatchObject({ line: "acme.okta.com", on: true, draft: false });
   });
 
-  it("marks a failing directory and a certificate ending soon as needing attention", () => {
-    const r = rows({ failing: new Set(["l1"]), now: Date.parse("2036-10-15T00:00:00Z") });
-    expect(r.find((x) => x.kind === "ldap")).toMatchObject({
-      status: "attention",
-      problem: "check",
-    });
+  it("marks a certificate ending soon as needing attention, its own state unchanged", () => {
+    const r = rows({ now: Date.parse("2036-10-15T00:00:00Z") });
     expect(r.find((x) => x.kind === "saml")).toMatchObject({
       status: "attention",
       problem: "certificate",
+      on: true,
     });
+    expect(
+      rows({ saml: [saml({ status: "disabled" })], now: Date.parse("2036-10-15T00:00:00Z") })[0],
+    ).toMatchObject({ status: "off" });
   });
 
-  it("narrows by group, view and search, and sorts by last use with never last", () => {
+  it("narrows by kind, view and search, and sorts by last use with never last", () => {
     const all = rows();
     const name = (r: { name: string }) => r.name;
-    expect(shownRows(all, { type: "apps" }, name).map(name)).toEqual(["Slack", "AWS"]);
-    expect(shownRows(all, { show: "setup" }, name).map(name)).toEqual(["Staging Directory", "AWS"]);
-    expect(shownRows(all, { q: "okta" }, name).map(name)).toEqual(["Okta"]);
-    expect(byLastUsed(all, "descending").map(name)).toEqual([
-      "Okta",
-      "Slack",
-      "Staging Directory",
-      "AWS",
-    ]);
+    expect(shownRows(all, { type: "apps" }).map(name)).toEqual(["Slack", "AWS"]);
+    expect(shownRows(all, { type: "signin" }).map(name)).toEqual(["Okta"]);
+    expect(shownRows(all, { show: "setup" }).map(name)).toEqual(["AWS"]);
+    expect(shownRows(all, { q: "okta" }).map(name)).toEqual(["Okta"]);
+    expect(byLastUsed(all, "descending").map(name)).toEqual(["Okta", "Slack", "AWS"]);
   });
 
   it("says whether a setup link is open, ended or revoked", () => {

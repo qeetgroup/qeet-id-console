@@ -1,21 +1,14 @@
-import {
-  AppWindowIcon,
-  ArrowRightIcon,
-  NetworkIcon,
-  PlusIcon,
-  ServerIcon,
-  WorkflowIcon,
-} from "@qeetrix/icons";
+import { AppWindowIcon, ArrowRightIcon, PlusIcon, WorkflowIcon } from "@qeetrix/icons";
 import {
   Badge,
   Button,
   formatDateTime,
   formatNumber,
   formatRelativeTime,
+  Link,
   Menu,
   MenuContent,
   MenuItem,
-  MenuSeparator,
   MenuTrigger,
   Skeleton,
   Table,
@@ -31,17 +24,16 @@ import {
   PageContent,
   PageHeader,
 } from "@qeetrix/react/experimental";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link as RouterLink, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import { useAdminPortalLinks } from "@/modules/authentication/api/admin-portal";
-import { useLdapConnections } from "@/modules/authentication/api/ldap";
 import { useSamlConnections } from "@/modules/authentication/api/saml";
 import { useSamlProviders } from "@/modules/authentication/api/saml-idp";
-import { useScimConfig } from "@/modules/authentication/api/scim";
 import { readCertificate } from "@/modules/authentication/certificate-model";
+import { SamlDrawer } from "@/modules/authentication/components/saml/saml-drawer";
 import {
   byLastUsed,
   type ConnectionKind,
@@ -52,48 +44,42 @@ import {
   setupLinkState,
   shownRows,
 } from "@/modules/authentication/connections-model";
-import { PageBreadcrumb } from "@/modules/dashboard";
-import { useDirectoryConnections, useDirectoryErrors } from "@/modules/directory";
+import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { StatusBadge } from "./connection-parts";
-import { ConnectionsBand, Toolbar } from "./connections-band";
 import { SetupLinks } from "./setup-links";
+import { SsoBand, SsoToolbar } from "./sso-band";
 import "./connections.css";
 
-const KIND_ICON = {
-  saml: WorkflowIcon,
-  ldap: ServerIcon,
-  scim: NetworkIcon,
-  app: AppWindowIcon,
-} as const;
+const KIND_ICON = { saml: WorkflowIcon, app: AppWindowIcon } as const;
 
-/** A connection's own page, by its kind. */
+/** A connection's own page: a SAML connection's setup page, or the SAML apps. */
 function pageOf(row: Pick<ConnectionRow, "kind" | "id">) {
-  switch (row.kind) {
-    case "saml":
-      return { to: "/auth/connections/saml/$id", params: { id: row.id } } as const;
-    case "ldap":
-      return { to: "/directory/connections/ldap/$id", params: { id: row.id } } as const;
-    case "scim":
-      return { to: "/directory/connections/scim" } as const;
-    default:
-      return { to: "/auth/connections/saml-idp" } as const;
-  }
+  return row.kind === "saml"
+    ? ({ to: "/auth/connections/saml/$id", params: { id: row.id } } as const)
+    : ({ to: "/auth/connections/saml-idp" } as const);
 }
 
-export type ConnectionsListPageProps = {
+export type SsoListPageProps = {
   filters: ConnectionListFilters;
   onFiltersChange: (next: ConnectionListFilters) => void;
+  /** New SAML connection asked for (`?action=create`): its drawer opens. */
+  creating: boolean;
+  onCreatingChange: (open: boolean) => void;
 };
 
 /**
- * Authentication › Connections: every connection in one list. How people sign in from other
- * systems (SAML and LDAP), how they're kept in sync (SCIM), and the apps Qeet ID signs them in to
- * (SAML apps), each in one status word and opening its own page; the kinds not set up yet are
- * offered under the list, then the setup links. Directories › Connections shows the SCIM and LDAP
- * ones with their sync health.
+ * Authentication › SSO: the one home of SAML. The connections people sign in through (each opens
+ * its setup page) and the SAML apps Qeet ID signs them in to, in one status word each; the kinds
+ * not set up yet offered under the list; then the setup links, which let an outside IT admin set
+ * up SAML or SCIM. LDAP and SCIM have their one home in Directories › Connections.
  */
-export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsListPageProps) {
+export function SsoListPage({
+  filters,
+  onFiltersChange,
+  creating,
+  onCreatingChange,
+}: SsoListPageProps) {
   const { t } = useTranslation("connections");
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
@@ -102,59 +88,33 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
   const [sort, setSort] = useState<TableSort | null>({ column: "used", direction: "descending" });
 
   const samlQ = useSamlConnections();
-  const ldapQ = useLdapConnections();
-  const scimQ = useScimConfig();
   const appsQ = useSamlProviders();
-  const directoryQ = useDirectoryConnections();
-  // A directory connection with an open problem needs attention, however long ago it failed: the
-  // directory's health turns "not checked" after a day without events.
-  const openQ = useDirectoryErrors({
-    days: 90,
-    connection_id: "",
-    severity: "",
-    resolution: "open",
-    q: "",
-    limit: 100,
-    offset: 0,
-  });
   const linksQ = useAdminPortalLinks();
-  const queries = [samlQ, ldapQ, scimQ, appsQ];
+  const queries = [samlQ, appsQ];
   const loaded = queries.every((q) => !!q.data);
   const failed = queries.find((q) => q.isError);
   const now = samlQ.dataUpdatedAt || Date.now();
 
-  const rows = useMemo(() => {
-    const failing = new Set([
-      ...(directoryQ.data ?? [])
-        .filter((c) => c.health === "failed" || c.health === "warning")
-        .map((c) => c.id),
-      ...(openQ.data?.items ?? []).map((e) => e.connection_id),
-    ]);
-    return connectionRows({
-      saml: samlQ.data?.items ?? [],
-      ldap: ldapQ.data?.items ?? [],
-      scim: scimQ.data,
-      apps: appsQ.data?.items ?? [],
-      certificateEnds: (c) => readCertificate(c.idp_certificate)?.notAfter ?? null,
-      failing,
-      now,
-    });
-  }, [samlQ.data, ldapQ.data, scimQ.data, appsQ.data, directoryQ.data, openQ.data, now]);
-
-  const nameOf = (row: ConnectionRow) => (row.kind === "scim" ? t("kinds.scim") : row.name);
-  const matching = shownRows(rows, filters, nameOf);
+  const rows = useMemo(
+    () =>
+      connectionRows({
+        saml: samlQ.data?.items ?? [],
+        apps: appsQ.data?.items ?? [],
+        certificateEnds: (c) => readCertificate(c.idp_certificate)?.notAfter ?? null,
+        now,
+      }),
+    [samlQ.data, appsQ.data, now],
+  );
+  const matching = shownRows(rows, filters);
   const shown = sort?.column === "used" ? byLastUsed(matching, sort.direction) : matching;
 
   const count = (test: (r: ConnectionRow) => boolean) => rows.filter(test).length;
-  const scimSet = !!scimQ.data?.token_set;
   const activeLinks = (linksQ.data?.items ?? []).filter(
     (l) => setupLinkState(l, now) === "active",
   ).length;
   const missing = (
     [
       ["saml", !(samlQ.data?.items.length ?? 0)],
-      ["ldap", !(ldapQ.data?.items.length ?? 0)],
-      ["scim", !scimSet],
       ["app", !(appsQ.data?.items.length ?? 0)],
     ] as const
   )
@@ -162,11 +122,7 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
     .map(([kind]) => kind);
 
   const newConnection = (kind: ConnectionKind) => {
-    if (kind === "saml")
-      void navigate({ to: "/auth/connections/saml", search: { action: "create" } });
-    else if (kind === "ldap")
-      void navigate({ to: "/directory/connections/ldap", search: { action: "create" } });
-    else if (kind === "scim") void navigate({ to: "/directory/connections/scim" });
+    if (kind === "saml") onCreatingChange(true);
     else void navigate({ to: "/auth/connections/saml-idp", search: { action: "create" } });
   };
 
@@ -177,8 +133,8 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
       primary: true,
       cell: (r) => (
         <span className="cx-name">
-          <strong>{nameOf(r)}</strong>
-          <small>{r.kind === "ldap" || r.kind === "scim" ? <code>{r.line}</code> : r.line}</small>
+          <strong>{r.name}</strong>
+          <small>{r.line}</small>
         </span>
       ),
     },
@@ -191,7 +147,7 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
     {
       id: "status",
       header: t("list.columns.status"),
-      width: 210,
+      width: 230,
       cell: (r) => (
         <span className="cx-name">
           <span>
@@ -241,17 +197,6 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
                 <MenuItem icon={WorkflowIcon} onClick={() => newConnection("saml")}>
                   {t("kinds.saml")}
                 </MenuItem>
-                <MenuItem icon={ServerIcon} onClick={() => newConnection("ldap")}>
-                  {t("kinds.ldap")}
-                </MenuItem>
-                <MenuItem
-                  icon={NetworkIcon}
-                  disabled={scimSet}
-                  onClick={() => newConnection("scim")}
-                >
-                  {scimSet ? t("kinds.scimSet") : t("kinds.scim")}
-                </MenuItem>
-                <MenuSeparator />
                 <MenuItem icon={AppWindowIcon} onClick={() => newConnection("app")}>
                   {t("kinds.app")}
                 </MenuItem>
@@ -261,15 +206,10 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
         }
         summary={
           loaded ? (
-            <ConnectionsBand
-              rows={rows}
-              links={activeLinks}
-              people={scimQ.data?.provisioned_count}
-              scimSet={scimSet}
-            />
+            <SsoBand rows={rows} links={activeLinks} />
           ) : failed ? undefined : (
-            <div className="ppl-band" aria-hidden="true">
-              {[0, 1, 2, 3].map((cell) => (
+            <div className="ppl-band is-three" aria-hidden="true">
+              {[0, 1, 2].map((cell) => (
                 <div key={cell} className="ppl-cell">
                   <Skeleton className="ppl-skeleton-label" />
                   <Skeleton className="ppl-skeleton-value" />
@@ -278,6 +218,11 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
               ))}
             </div>
           )
+        }
+        tabs={
+          <PageTabs>
+            <PageTabList />
+          </PageTabs>
         }
       />
       <PageContent>
@@ -301,19 +246,18 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
                 label={t("list.title")}
                 rows={shown}
                 rowId={(r) => `${r.kind}:${r.id}`}
-                rowLabel={nameOf}
+                rowLabel={(r) => r.name}
                 columns={columns}
                 sort={sort}
                 onSortChange={setSort}
                 loading={!loaded}
-                renderRowLink={(r) => <Link {...pageOf(r)} />}
+                renderRowLink={(r) => <RouterLink {...pageOf(r)} />}
                 toolbar={
-                  <Toolbar
+                  <SsoToolbar
                     filters={filters}
                     onFiltersChange={onFiltersChange}
                     counts={{
                       signin: count((r) => KIND_GROUP[r.kind] === "signin"),
-                      provisioning: count((r) => KIND_GROUP[r.kind] === "provisioning"),
                       apps: count((r) => KIND_GROUP[r.kind] === "apps"),
                     }}
                   />
@@ -328,7 +272,7 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
                 empty={
                   <EmptyState
                     size="section"
-                    icon={NetworkIcon}
+                    icon={WorkflowIcon}
                     title={rows.length ? t("list.emptyFiltered.title") : t("list.empty.title")}
                     description={
                       rows.length
@@ -345,6 +289,13 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
                   />
                 }
               />
+              {/* LDAP and SCIM have one home, Directories › Connections. */}
+              <p className="cx-elsewhere">
+                {t("list.elsewhere")}{" "}
+                <Link render={<RouterLink to="/directory/connections" />}>
+                  {t("list.elsewhereLink")}
+                </Link>
+              </p>
               {loaded && missing.length ? (
                 <section className="account-section" aria-label={t("offers.label")}>
                   <ul className="account-rows">
@@ -384,6 +335,7 @@ export function ConnectionsListPage({ filters, onFiltersChange }: ConnectionsLis
           <SetupLinks canWrite={canWrite} />
         </div>
       </PageContent>
+      <SamlDrawer open={creating} onOpenChange={onCreatingChange} />
     </>
   );
 }

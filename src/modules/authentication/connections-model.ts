@@ -1,5 +1,5 @@
-// Authentication › Connections: the rules every connection page shares, pure so the pages and
-// their tests read the same ones. One status vocabulary for every kind (redesign-findings §2):
+// The connection pages' shared rules (SSO, its SAML pages, and the SCIM and LDAP pages under
+// Directories › Connections), pure so the pages and their tests read the same ones. One status vocabulary for every kind (redesign-findings §2):
 // Connected · Needs attention · In setup · Turned off · Not set up.
 
 import type { LdapConnection } from "./api/ldap";
@@ -46,15 +46,14 @@ export function certificateEnding(notAfter: Date | null | undefined, now: number
   return notAfter.getTime() - now <= CERTIFICATE_WARNING_DAYS * DAY;
 }
 
-// ── The one list of every connection ─────────────────────────────────────────────────────────
+// ── SSO: the one list of SAML sign-in connections and SAML apps ──────────────────────────────
+// LDAP and SCIM have their one home in Directories › Connections.
 
-/** What a connection does: people sign in through it, it keeps people in sync, or it's an app. */
-export type ConnectionGroup = "signin" | "provisioning" | "apps";
-export type ConnectionKind = "saml" | "ldap" | "scim" | "app";
+/** What a connection does: people sign in through it, or Qeet ID signs them in to an app. */
+export type ConnectionGroup = "signin" | "apps";
+export type ConnectionKind = "saml" | "app";
 export const KIND_GROUP: Record<ConnectionKind, ConnectionGroup> = {
   saml: "signin",
-  ldap: "signin",
-  scim: "provisioning",
   app: "apps",
 };
 
@@ -62,18 +61,18 @@ export type ConnectionRow = {
   id: string;
   kind: ConnectionKind;
   name: string;
-  /** Where it points: the provider's or server's host, the SCIM path, the app's host. */
+  /** Where it points: the provider's sign-in host, or the app's. */
   line: string;
   status: SetupStatus;
   /** Its own state on the server, whatever needs a look: on (signs people in), or a draft. */
   on: boolean;
   draft: boolean;
-  /** Why it needs a look, when it does: a certificate ending, a failing check. */
-  problem?: "certificate" | "check";
+  /** Why it needs a look, when it does: its certificate ending. */
+  problem?: "certificate";
   lastUsed: string | null;
 };
 
-export const CONNECTION_GROUPS = ["signin", "provisioning", "apps"] as const;
+export const CONNECTION_GROUPS = ["signin", "apps"] as const;
 export const CONNECTION_SHOWS = ["attention", "setup"] as const;
 export type ConnectionListFilters = {
   q?: string;
@@ -102,26 +101,18 @@ export function hostnameOf(url: string | null | undefined): string {
 }
 
 /**
- * Every connection in one list: SAML sign-in, LDAP, SCIM (listed once it has a token, else
- * offered under the list) and the SAML apps Qeet ID signs people in to. `certificateEnds` gives a
- * SAML connection's certificate end, read in the browser; `failing` marks the LDAP connections
- * whose latest check failed (the directory's health).
+ * The SSO list: the SAML connections people sign in through, then the SAML apps Qeet ID signs them
+ * in to. `certificateEnds` gives a connection's certificate end, read in the browser.
  */
 export function connectionRows({
   saml,
-  ldap,
-  scim,
   apps,
   certificateEnds,
-  failing,
   now,
 }: {
   saml: readonly SamlConnection[];
-  ldap: readonly LdapConnection[];
-  scim?: ScimConfig;
   apps: readonly SamlProvider[];
   certificateEnds: (c: SamlConnection) => Date | null;
-  failing: ReadonlySet<string>;
   now: number;
 }): ConnectionRow[] {
   const rows: ConnectionRow[] = [];
@@ -139,31 +130,6 @@ export function connectionRows({
       lastUsed: c.last_login_at,
     });
   }
-  for (const c of ldap) {
-    const fails = c.status !== "disabled" && failing.has(c.id);
-    rows.push({
-      id: c.id,
-      kind: "ldap",
-      name: c.name,
-      line: hostOf(c.server_url),
-      status: connectionStatus(c.status, fails),
-      on: c.status === "active",
-      draft: c.status === "draft",
-      problem: fails ? "check" : undefined,
-      lastUsed: c.last_login_at,
-    });
-  }
-  if (scim?.token_set)
-    rows.push({
-      id: "scim",
-      kind: "scim",
-      name: "",
-      line: "/scim/v2",
-      status: "connected",
-      on: true,
-      draft: false,
-      lastUsed: scim.last_used_at,
-    });
   for (const a of apps)
     rows.push({
       id: a.id,
@@ -182,14 +148,13 @@ export function connectionRows({
 export function shownRows(
   rows: readonly ConnectionRow[],
   filters: ConnectionListFilters,
-  nameOf: (row: ConnectionRow) => string,
 ): ConnectionRow[] {
   const q = filters.q?.trim().toLowerCase();
   return rows.filter(
     (r) =>
       (!filters.type || KIND_GROUP[r.kind] === filters.type) &&
       (!filters.show || r.status === filters.show) &&
-      (!q || nameOf(r).toLowerCase().includes(q) || r.line.toLowerCase().includes(q)),
+      (!q || r.name.toLowerCase().includes(q) || r.line.toLowerCase().includes(q)),
   );
 }
 

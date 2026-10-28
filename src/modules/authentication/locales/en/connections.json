@@ -23,27 +23,21 @@
   },
   "kinds": {
     "saml": "SAML sign-in",
-    "ldap": "LDAP or Active Directory",
-    "scim": "SCIM provisioning",
-    "scimSet": "SCIM provisioning · already set up",
     "app": "SAML app"
   },
   "kind": {
     "saml": "SAML sign-in",
-    "ldap": "LDAP sign-in",
-    "scim": "Provisioning",
     "app": "SAML app"
   },
   "list": {
-    "title": "Connections",
-    "description": "How people sign in from other systems, how they're kept in sync, and the apps Qeet ID signs them in to.",
+    "title": "SSO",
+    "description": "The SAML connections people sign in through, and the SAML apps Qeet ID signs them in to.",
     "new": "New connection",
     "search": "Search connections",
     "searchPlaceholder": "Name or address",
     "anyKind": "All kinds",
     "groups": {
-      "signin": "Sign-in",
-      "provisioning": "Provisioning",
+      "signin": "SAML sign-in",
       "apps": "SAML apps"
     },
     "columns": {
@@ -53,38 +47,34 @@
       "used": "Last used"
     },
     "problem": {
-      "certificate": "Its certificate ends within 30 days",
-      "check": "Its latest check failed"
+      "certificate": "Its certificate ends within 30 days"
     },
     "show": {
       "attention": "Needs attention",
       "setup": "In setup"
     },
-    "shown": "{{n}} of {{total}} connections",
+    "shown": "{{n}} of {{total}}",
     "never": "Never",
     "actions": {
       "open": "Open",
       "finish": "Finish setting up"
     },
     "empty": {
-      "title": "No connections yet",
-      "description": "Add one below: people can then sign in with it, or be kept in sync by it."
+      "title": "No SAML connections or apps yet",
+      "description": "Add one below: people then sign in through your identity provider, or Qeet ID signs them in to an app."
     },
     "emptyFiltered": {
       "title": "No connections match",
       "description": "Nothing here matches the search or the view.",
       "clear": "Show every connection"
-    }
+    },
+    "elsewhere": "LDAP and SCIM connections are in",
+    "elsewhereLink": "Directories › Connections"
   },
   "band": {
-    "signIn": "Sign in through",
+    "signIn": "Sign in through SAML",
     "onSetup": "{{on}} on · {{setup}} in setup",
     "showSignIn": "Show sign-in connections",
-    "provisioning": "Kept in sync by SCIM",
-    "scimPeople_one": "person its identity provider manages",
-    "scimPeople_other": "people its identity provider manages",
-    "scimNone": "Not set up: your identity provider can add and remove people here",
-    "openScim": "SCIM provisioning",
     "apps": "SAML apps",
     "showApps": "Show SAML apps",
     "needsALook": "Needs a look",
@@ -98,16 +88,12 @@
     "label": "Not set up yet",
     "saml": "People sign in through Okta, Entra ID, Google Workspace or another identity provider.",
     "samlAction": "Set up SAML",
-    "ldap": "People sign in with their directory password, and are added here the first time they do.",
-    "ldapAction": "Connect a directory",
-    "scim": "Your identity provider adds, updates and removes people here as they change there.",
-    "scimAction": "Set up SCIM",
     "app": "Qeet ID signs your people in to another app, such as Slack or AWS.",
     "appAction": "Add an app"
   },
   "links": {
     "title": "Setup links",
-    "note": "Let the IT admin who runs your identity provider set up SAML or SCIM, without a Qeet ID account.",
+    "note": "Let the IT admin who runs your identity provider set up SAML sign-in or SCIM provisioning, without a Qeet ID account.",
     "saml": "SAML sign-in",
     "samlNote": "Add, change, test and delete SAML connections",
     "scim": "SCIM provisioning",

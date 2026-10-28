@@ -1,3 +1,4 @@
+// The SSO list's toolbar and its key numbers (sso-list-page.tsx).
 import { formatNumber, Select } from "@qeetrix/react";
 import { SearchField } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
@@ -15,7 +16,7 @@ import {
 const ANY = "";
 
 /** Search, then the kind, in one row; each kind with its count (until QTRX-20). */
-export function Toolbar({
+export function SsoToolbar({
   filters,
   onFiltersChange,
   counts,
@@ -63,20 +64,11 @@ export function Toolbar({
 }
 
 /**
- * The list's key numbers: how people sign in from other systems, who's kept in sync by SCIM, the
- * apps Qeet ID signs people in to, and what needs a look; each a way into the list.
+ * The SSO list's key numbers: the SAML connections people sign in through, the SAML apps Qeet ID
+ * signs them in to (each on, and in setup, by the server's own state), and what needs a look; each
+ * a way into the list.
  */
-export function ConnectionsBand({
-  rows,
-  links,
-  people,
-  scimSet,
-}: {
-  rows: ConnectionRow[];
-  links: number;
-  people?: number;
-  scimSet: boolean;
-}) {
+export function SsoBand({ rows, links }: { rows: ConnectionRow[]; links: number }) {
   const { t } = useTranslation("connections");
   const n = (value: number) => formatNumber(value, formatLocale());
   const of = (group: (typeof CONNECTION_GROUPS)[number]) =>
@@ -89,7 +81,7 @@ export function ConnectionsBand({
   const inSetup = rows.filter((r) => r.status === "setup").length;
 
   return (
-    <dl className="ppl-band">
+    <dl className="ppl-band is-three">
       <div className="ppl-cell">
         <dt className="ppl-label">{t("band.signIn")}</dt>
         <dd className="ppl-value">{n(signIn.length)}</dd>
@@ -98,21 +90,11 @@ export function ConnectionsBand({
         </dd>
         {signIn.length ? (
           <dd className="ppl-link">
-            <Link to="/auth/connections" search={{ type: "signin" }}>
+            <Link to="/auth/connections/saml" search={{ type: "signin" }}>
               {t("band.showSignIn")}
             </Link>
           </dd>
         ) : null}
-      </div>
-      <div className="ppl-cell">
-        <dt className="ppl-label">{t("band.provisioning")}</dt>
-        <dd className="ppl-value">{n(scimSet ? (people ?? 0) : 0)}</dd>
-        <dd className="ppl-note">
-          {scimSet ? t("band.scimPeople", { count: people ?? 0 }) : t("band.scimNone")}
-        </dd>
-        <dd className="ppl-link">
-          <Link to="/directory/connections/scim">{t("band.openScim")}</Link>
-        </dd>
       </div>
       <div className="ppl-cell">
         <dt className="ppl-label">{t("band.apps")}</dt>
@@ -122,7 +104,7 @@ export function ConnectionsBand({
         </dd>
         {apps.length ? (
           <dd className="ppl-link">
-            <Link to="/auth/connections" search={{ type: "apps" }}>
+            <Link to="/auth/connections/saml" search={{ type: "apps" }}>
               {t("band.showApps")}
             </Link>
           </dd>
@@ -133,19 +115,19 @@ export function ConnectionsBand({
         <dd className="ppl-looks">
           <ul>
             <li className={attention ? undefined : "is-zero"}>
-              <Link to="/auth/connections" search={{ show: "attention" }}>
+              <Link to="/auth/connections/saml" search={{ show: "attention" }}>
                 <span>{t("band.looks.attention")}</span>
                 <b className={attention ? "is-warning" : undefined}>{n(attention)}</b>
               </Link>
             </li>
             <li className={inSetup ? undefined : "is-zero"}>
-              <Link to="/auth/connections" search={{ show: "setup" }}>
+              <Link to="/auth/connections/saml" search={{ show: "setup" }}>
                 <span>{t("band.looks.setup")}</span>
                 <b>{n(inSetup)}</b>
               </Link>
             </li>
             <li className={links ? undefined : "is-zero"}>
-              <Link to="/auth/connections" hash="setup-links">
+              <Link to="/auth/connections/saml" hash="setup-links">
                 <span>{t("band.looks.links")}</span>
                 <b>{n(links)}</b>
               </Link>

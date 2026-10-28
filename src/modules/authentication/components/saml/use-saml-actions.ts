@@ -75,7 +75,7 @@ export function useSamlActions() {
         actionLabel: t("signIn.delete.action"),
         run: () =>
           deleteM.mutateAsync(c.id).then(() => {
-            void navigate({ to: "/auth/connections", replace: true });
+            void navigate({ to: "/auth/connections/saml", replace: true });
           }),
       }).catch(settleSensitiveAction),
   };
