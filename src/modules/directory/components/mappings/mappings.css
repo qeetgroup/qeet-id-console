@@ -1,0 +1,74 @@
+/*
+ * Directory › Directories › Mappings (mappings-page.tsx). Placement and token values only
+ * (--qx-*). The sections and their rows are My account's (account.css, loaded with the console's
+ * styles); these are a mapping's value, the test's entry and the profile it makes.
+ */
+
+.map {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+/* A mapping: the attribute in code, how it's changed, then Required or Off. */
+.map-value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* Attributes, patterns and paths are code, wherever the page names them. */
+.map code {
+  font: var(--qx-typography-code-sm);
+}
+
+.map-value code.map-off {
+  color: var(--qx-color-text-subtle);
+  text-decoration: line-through;
+}
+
+.map-how {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.map-none {
+  color: var(--qx-color-text-subtle);
+}
+
+/* Remove sits apart from Cancel and Save, at the end of the row. */
+.map-remove {
+  margin-inline-start: auto;
+}
+
+/* The test: the entry, then the profile it makes. */
+.map-test {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.map-entry textarea,
+textarea.map-entry {
+  font: var(--qx-typography-code-sm);
+}
+
+.map-result {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.map-result-head {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.map-issues {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+.map-from {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
