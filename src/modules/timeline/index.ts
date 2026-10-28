@@ -1,17 +1,5 @@
 // Public API of the timeline module; other modules import from here only.
-export { IdentityTimeline } from "./components/identity-timeline";
-export { TimelineDetailsDrawer } from "./components/timeline-details-drawer";
-export { TimelineFilters as TimelineFilterBar } from "./components/timeline-filters";
-export { TimelineItem } from "./components/timeline-item";
-export { groupTimelineByDate } from "./grouping";
-export { TimelineProvider, useTimeline } from "./timeline-provider";
-export type { TimelinePage } from "./timeline-history";
-export { buildTimelineQuery, fetchTimelinePage, TIMELINE_LIMIT } from "./timeline-history";
-export {
-  DEFAULT_TIMELINE_FILTERS,
-  type TimelineFilters,
-  type TimelineStoreState,
-  timelineActions,
-  timelineStore,
-} from "./timeline-store";
-export { useIdentityTimeline } from "./use-identity-timeline";
+// The view is for a person's page (users); a route must not import this barrel, or the view and
+// its CSS load with the shell.
+export { PersonTimeline } from "./components/page/person-timeline";
+export type { TimelineSearch } from "./timeline-model";

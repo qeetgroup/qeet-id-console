@@ -2,7 +2,7 @@
 // suspended, and taking a role, a group or this organisation away. Kept out of users.ts, which the
 // shell carries through the barrel.
 
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { ActivityEvent } from "@/modules/activity";
 import { ApiError, api } from "@/platform/api/client";
@@ -35,51 +35,6 @@ export function useSignInHistory(userId: string, enabled: boolean) {
       activityPage({ subject: userId, types: "auth.login_succeeded", limit: SIGN_IN_SAMPLE }),
     enabled: enabled && !!userId,
     staleTime: 30_000,
-    meta: { silent: true },
-  });
-}
-
-/** What the Activity tab narrows the person's events to. */
-export interface PersonActivityFilters {
-  since: "" | "24h" | "7d" | "30d";
-  category: string;
-  failed: boolean;
-}
-
-export const NO_ACTIVITY_FILTERS: PersonActivityFilters = {
-  since: "",
-  category: "",
-  failed: false,
-};
-
-const SINCE_MS = { "24h": 86_400_000, "7d": 7 * 86_400_000, "30d": 30 * 86_400_000 } as const;
-
-/** Events about the person (as actor or target), newest first, a page of 50 at a time. */
-export function usePersonActivity(
-  userId: string,
-  filters: PersonActivityFilters,
-  enabled: boolean,
-) {
-  const tenantId = useTenantId();
-  return useInfiniteQuery({
-    queryKey: [...userKeys.view(tenantId, userId, "activity"), filters],
-    queryFn: ({ pageParam }: { pageParam: string }) =>
-      activityPage({
-        subject: userId,
-        limit: 50,
-        cursor: pageParam || undefined,
-        category: filters.category || undefined,
-        // The server's severity is a floor: errors and critical events are the failures.
-        severity: filters.failed ? "error" : undefined,
-        from: filters.since
-          ? new Date(Date.now() - SINCE_MS[filters.since]).toISOString()
-          : undefined,
-      }),
-    initialPageParam: "",
-    getNextPageParam: (page) => page.next_cursor || undefined,
-    enabled: enabled && !!userId,
-    staleTime: 30_000,
-    placeholderData: (previous) => previous,
     meta: { silent: true },
   });
 }

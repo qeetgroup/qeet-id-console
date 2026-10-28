@@ -137,6 +137,16 @@ beforeEach(() => {
           },
         ],
       };
+    if (path === "/v1/activity/summary")
+      return {
+        total: 3,
+        unique_actors: 1,
+        security_alerts: 0,
+        by_severity: {},
+        by_category: { authentication: 3 },
+        by_outcome: { success: 3, warning: 0, failed: 0, info: 0 },
+        series: [],
+      };
     if (path === "/v1/activity")
       return {
         events: [
@@ -163,7 +173,13 @@ function renderPage(
   return render(
     <QueryClientProvider client={client}>
       <SensitiveActionProvider>
-        <UserDetailPage userId="u1" tab={tab} onTabChange={() => {}} />
+        <UserDetailPage
+          userId="u1"
+          tab={tab}
+          onTabChange={() => {}}
+          activity={{}}
+          onActivityChange={() => {}}
+        />
       </SensitiveActionProvider>
     </QueryClientProvider>,
   );
@@ -345,13 +361,10 @@ describe("the person's page", () => {
     await waitFor(() => expect(sent("/v1/users/u1/sessions/revoke-all", "POST")).toBeTruthy());
   });
 
-  it("lists their events, and opens one with a way into Activity", async () => {
+  it("shows their timeline as the Activity view: their events by day, with Export", async () => {
     renderPage("activity");
 
-    const table = await screen.findByRole("table", { name: "Ananya's activity" });
-    fireEvent.click((await within(table).findAllByRole("button"))[0] as HTMLElement);
-    const drawer = await screen.findByRole("dialog");
-    expect(within(drawer).getByText("Single sign-on")).toBeTruthy();
-    expect(within(drawer).getByRole("link", { name: /Open in Activity/ })).toBeTruthy();
+    expect(await screen.findByRole("list", { name: "Events, newest first" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Export" })).toBeTruthy();
   });
 });

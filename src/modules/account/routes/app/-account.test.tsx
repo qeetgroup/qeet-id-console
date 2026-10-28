@@ -23,7 +23,6 @@ import { Route } from "./account";
 const options = Route.options as unknown as {
   component: () => React.JSX.Element;
   beforeLoad: (ctx: { location: { pathname: string } }) => void;
-  staticData: { pageHeader?: boolean };
 };
 
 afterEach(cleanup);
@@ -47,10 +46,9 @@ describe("My account", () => {
     expect(screen.getByText("The chosen page")).toBeTruthy();
   });
 
-  it("opens on Profile, and draws its own header in the console", () => {
+  it("opens on Profile", () => {
     expect(() => options.beforeLoad({ location: { pathname: "/account" } })).toThrow();
     expect(() => options.beforeLoad({ location: { pathname: "/account/" } })).toThrow();
     expect(() => options.beforeLoad({ location: { pathname: "/account/security" } })).not.toThrow();
-    expect(options.staticData.pageHeader).toBe(true);
   });
 });

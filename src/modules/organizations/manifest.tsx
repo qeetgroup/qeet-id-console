@@ -66,13 +66,13 @@ export const manifest = defineModule({
     {
       id: "cmd.create.organization",
       text: "organizations:commands.createOrganization",
-      icon: <BuildingComplexIcon className="size-4" />,
+      icon: <BuildingComplexIcon />,
       to: "/create-organization",
     },
     {
       id: "cmd.navigate.organization-settings",
       text: "organizations:commands.organizationSettings",
-      icon: <Settings2Icon className="size-4" />,
+      icon: <Settings2Icon />,
       to: "/settings/organization/general",
       capability: "tenant.read",
     },

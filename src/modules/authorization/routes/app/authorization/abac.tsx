@@ -9,7 +9,7 @@ import { searchText } from "@/shared/utils/search-params";
 const abacSearch = z.object({ policy: searchText() });
 
 export const Route = createFileRoute("/_app/authorization/abac")({
-  staticData: { capability: "policy.read", pageHeader: true },
+  staticData: { capability: "policy.read" },
   validateSearch: abacSearch,
   component: AbacRoute,
 });

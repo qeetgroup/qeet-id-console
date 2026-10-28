@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ThemeProvider } from "@qeetrix/ui";
+import { QeetrixProvider } from "@qeetrix/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
@@ -7,12 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "@/i18n";
 
-const route = vi.hoisted(() => ({ pathname: "/users", pageHeader: false, navigate: vi.fn() }));
+const route = vi.hoisted(() => ({ pathname: "/users", navigate: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({
   useLocation: () => ({ pathname: route.pathname, searchStr: "", hash: "" }),
   useNavigate: () => route.navigate,
-  useMatches: ({ select }: { select: (m: unknown[]) => unknown }) =>
-    select([{ staticData: { pageHeader: route.pageHeader } }]),
   Link: ({
     to,
     children,
@@ -59,20 +57,19 @@ import { AccountMenu } from "../components/frame/account-menu";
 import { ConsoleSidebar } from "../components/frame/console-sidebar";
 import { currentNavItemUrl } from "../components/frame/current-page";
 import { NotificationsPanel } from "../components/frame/notifications-panel";
-import { PageNav } from "../components/frame/page-nav";
+import { PageBreadcrumb, PageTabList, PageTabs } from "../components/frame/page-place";
 import { getNavGroups, translateNavigation } from "@/platform/config/navigation";
 
 function renderInApp(node: ReactNode) {
   return render(
     <QueryClientProvider client={new QueryClient()}>
-      <ThemeProvider storageKey="frame-test-theme">{node}</ThemeProvider>
+      <QeetrixProvider defaultColorScheme="light">{node}</QeetrixProvider>
     </QueryClientProvider>,
   );
 }
 
 beforeEach(() => {
   route.pathname = "/users";
-  route.pageHeader = false;
   session.tenantId = "t1";
   orgs.items = [];
   notes.data = { unread_count: 0, items: [] };
@@ -132,10 +129,17 @@ describe("the navigation", () => {
   });
 });
 
-describe("the breadcrumb and sub-page tabs above a page not yet rebuilt", () => {
+describe("a page's breadcrumb and sub-page tabs", () => {
   it("names the area and page, and moves between sub-pages", () => {
     route.pathname = "/invitations";
-    renderInApp(<PageNav />);
+    renderInApp(
+      <>
+        <PageBreadcrumb />
+        <PageTabs>
+          <PageTabList />
+        </PageTabs>
+      </>,
+    );
     const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });
     expect(within(crumbs).getByText("Directory")).toBeTruthy();
     expect(within(crumbs).getByRole("link", { name: "Users" }).getAttribute("href")).toBe("/users");
@@ -147,12 +151,6 @@ describe("the breadcrumb and sub-page tabs above a page not yet rebuilt", () => 
     expect(within(tabs).queryByRole("tab", { name: "Suspended" })).toBeNull();
     fireEvent.click(within(tabs).getByRole("tab", { name: "Deleted" }));
     expect(route.navigate).toHaveBeenCalledWith({ to: "/users/deleted" });
-  });
-
-  it("leaves a rebuilt page's own header alone", () => {
-    route.pageHeader = true;
-    const { container } = renderInApp(<PageNav />);
-    expect(container.textContent).toBe("");
   });
 });
 

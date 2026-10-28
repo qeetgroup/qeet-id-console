@@ -31,7 +31,8 @@ const RESIZE_STEP = 24;
 /**
  * Qeet AI's panel on the end edge, under the top bar: drawn as the frame's own panels
  * (Notifications, Help), with its title, New conversation, History and Close, and a start edge
- * that resizes it. It floats over the page; on a phone it takes the whole width.
+ * that resizes it. From 1200px up the page makes room for it, as it does for the frame's panels;
+ * narrower, it floats over the page, and on a phone it takes the whole width.
  */
 export function QeetAIPanel() {
   const { t } = useTranslation("qeetai");
@@ -42,6 +43,7 @@ export function QeetAIPanel() {
   const panelRef = useRef<HTMLElement>(null);
   useOnePanelAtATime(open);
   useFocusWhileOpen(open, panelRef);
+  useRoomForPanel(open, width);
 
   if (!open) return null;
 
@@ -185,4 +187,22 @@ function ResizeHandle({ width }: { width: number }) {
       onKeyDown={onKeyDown}
     />
   );
+}
+
+/**
+ * While the panel is open, puts its width on <html> (`data-qai-open`, `--qai-panel-width`), so the
+ * page's main area can give way to it (qeetai-panel.css). Until QTRX-75 lets Qeet AI be one of
+ * AppShell's own panels, which make room by themselves.
+ */
+function useRoomForPanel(open: boolean, width: number) {
+  useEffect(() => {
+    if (!open) return;
+    const root = document.documentElement;
+    root.setAttribute("data-qai-open", "");
+    root.style.setProperty("--qai-panel-width", `${width}px`);
+    return () => {
+      root.removeAttribute("data-qai-open");
+      root.style.removeProperty("--qai-panel-width");
+    };
+  }, [open, width]);
 }

@@ -9,7 +9,7 @@ import { searchText } from "@/shared/utils/search-params";
 const rebacSearch = z.object({ object: searchText(), relation: searchText() });
 
 export const Route = createFileRoute("/_app/authorization/rebac")({
-  staticData: { capability: "role.read", pageHeader: true },
+  staticData: { capability: "role.read" },
   validateSearch: rebacSearch,
   component: RebacRoute,
 });

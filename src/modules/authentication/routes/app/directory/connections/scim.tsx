@@ -5,6 +5,6 @@ import { ScimPage } from "@/modules/authentication/pages";
 // SCIM is a connection, so its page sits under Connections (it was a Directories tab at
 // /auth/connections/scim, which redirects here). Rebuilt on @qeetrix/react: it draws its own header.
 export const Route = createFileRoute("/_app/directory/connections/scim")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   component: ScimPage,
 });

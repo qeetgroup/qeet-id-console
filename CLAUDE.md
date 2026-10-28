@@ -31,7 +31,7 @@ Read them when a task needs organization or product understanding; this reposito
 5. **Never relax the SSRF guard** in `server-request-policy.ts`, and never exempt a server function from CSRF.
 6. **Never hand-edit `src/routeTree.gen.ts`**, and never import across a layer boundary.
 7. **Person or tenant data in browser storage goes through `scopedStorage`** (`src/platform/auth/scoped-storage.ts`) — never an unscoped `localStorage` key.
-8. **Use the platform `DataState` and `StatusPill`** (`@/platform/components/data-state`, `@/platform/components/status-pill`), not `@qeetrix/ui`'s: the design-system `DataState` prints the raw error message, and its `StatusPill` names a status in English.
+8. **Build with `@qeetrix/react` and token-only CSS** (`--qx-*`): `@qeetrix/ui` and Tailwind are gone (lint bans the import). Its `DataState` never prints the raw error; show `errorMessage(err)` where a page says more.
 9. **Translation keys are typed**: a key no `en` catalogue holds fails the typecheck. Name every namespace a component reads (`useTranslation(["users", "common"])`), hold keys as data as `TranslationKey`, and never cast a key (`src/i18n/README.md`).
 
 ## Working style

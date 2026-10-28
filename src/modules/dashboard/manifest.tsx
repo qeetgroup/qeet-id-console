@@ -28,13 +28,13 @@ export const manifest = defineModule({
     {
       id: "cmd.navigate.dashboard",
       text: "dashboard:commands.dashboard",
-      icon: <LayoutDashboardIcon className="size-4" />,
+      icon: <LayoutDashboardIcon />,
       to: "/",
     },
     {
       id: "cmd.navigate.analytics",
       text: "dashboard:commands.analytics",
-      icon: <ChartColumnIcon className="size-4" />,
+      icon: <ChartColumnIcon />,
       to: "/analytics",
       capability: "analytics.read",
     },

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ThemeProvider } from "@qeetrix/ui";
+import { QeetrixProvider } from "@qeetrix/react";
 import { cleanup, fireEvent, render as renderUI, screen, waitFor } from "@testing-library/react";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -42,7 +42,9 @@ function completion(data?: { recovery_codes?: string[] }) {
 // The entry frame's theme menu needs the provider __root.tsx supplies in-app.
 function render(node: ReactNode) {
   return renderUI(node, {
-    wrapper: ({ children }) => <ThemeProvider storageKey="mfa-test">{children}</ThemeProvider>,
+    wrapper: ({ children }) => (
+      <QeetrixProvider defaultColorScheme="light">{children}</QeetrixProvider>
+    ),
   });
 }
 

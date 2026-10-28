@@ -89,6 +89,39 @@ const CONSOLE_PAGES: Target[] = [
     path: "/settings/organization/general",
     ready: (page) => page.getByRole("heading", { name: "About this organisation" }),
   },
+  // The pages rebuilt in the agent wave (2026-10-28), scanned as the fake backend leaves them (an
+  // empty read for anything it has no data for), so their empty states and chrome are covered;
+  // ready once the page's own heading shows. Give one fake data to scan its full content too.
+  ...(
+    [
+      ["activity", "/activity"],
+      ["audit log", "/security/audit-logs"],
+      ["anomalies", "/security/threats/anomalies"],
+      ["ip rules", "/security/threats/ip-allowlist"],
+      ["compliance", "/security/compliance/soc2"],
+      ["analytics", "/analytics"],
+      ["sso", "/auth/connections/saml"],
+      ["password", "/auth/login-methods/password"],
+      ["social sign-in", "/auth/social"],
+      ["oauth grants", "/auth/api/consent-grants"],
+      ["machine access", "/developer/machine-access"],
+      ["webhooks", "/developer/webhooks"],
+      ["authorization testing", "/authorization/testing"],
+      ["abac", "/authorization/abac"],
+      ["sync errors", "/directory/sync-errors"],
+      ["mappings", "/directory/attribute-mappings"],
+      ["billing", "/settings/billing"],
+      ["branding", "/settings/branding"],
+      ["domains", "/settings/organization/domains"],
+      ["qeet ai settings", "/settings/qeet-ai"],
+      ["import people", "/users/import"],
+      ["person activity", `/users/${MEMBER.id}?tab=activity`],
+    ] as const
+  ).map(([name, path]) => ({
+    name,
+    path,
+    ready: (page: Page) => page.locator("#main-content h1").first(),
+  })),
   {
     name: "account profile",
     path: "/account/profile",
@@ -112,18 +145,11 @@ const CONSOLE_PAGES: Target[] = [
 ];
 
 /**
- * Violations from inside `@qeetrix/ui` that the console can't fix: each excuses one rule on one
- * element, every other rule still applies to it, and each is raised with qeetrix.
+ * Violations from inside the design system that the console can't fix: each excuses one rule on
+ * one element, every other rule still applies to it, and each is raised with Qeetrix (QTRX).
+ * None open since @qeetrix/ui left (2026-10-28).
  */
-const DESIGN_SYSTEM_ISSUES = [
-  {
-    // QTRX-7: Button variant="destructive" sets --qx-color-text-danger on
-    // --qx-color-feedback-error-subtle, 4.09:1 on a dark-theme dialog (AA needs 4.5:1). Remove
-    // this entry once a fixed @qeetrix/ui is released.
-    rule: "color-contrast",
-    element: '.dark [role="alertdialog"] [data-slot="button"][data-variant="destructive"]',
-  },
-];
+const DESIGN_SYSTEM_ISSUES: { rule: string; element: string }[] = [];
 
 /** Waits for the content, every panel's data and finite animations, so axe sees the page still. */
 async function settle(page: Page, content: Locator) {
@@ -198,7 +224,6 @@ for (const theme of THEMES) {
     test("sign-in", async ({ page }) => {
       await page.goto("/sign-in");
       await settle(page, page.getByRole("button", { name: "Continue", exact: true }));
-      await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
       await expect(page.locator("html")).toHaveAttribute("data-qx-color-scheme", theme);
       await expectAccessible(page);
     });
@@ -243,7 +268,7 @@ for (const theme of THEMES) {
         await signIn(page, ADMIN.email);
         await page.goto(target.path);
         await settle(page, target.ready(page));
-        await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
+        await expect(page.locator("html")).toHaveAttribute("data-qx-color-scheme", theme);
         await expectAccessible(page);
       });
     }

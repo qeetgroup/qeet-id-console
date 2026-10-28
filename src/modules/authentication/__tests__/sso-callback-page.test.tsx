@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ThemeProvider } from "@qeetrix/ui";
+import { QeetrixProvider } from "@qeetrix/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { AnchorHTMLAttributes } from "react";
@@ -33,9 +33,9 @@ function renderPage(hash = "#saml_code=abc") {
   return render(
     <QueryClientProvider client={new QueryClient()}>
       {/* The page's theme menu needs the provider __root.tsx supplies in-app. */}
-      <ThemeProvider storageKey="test-theme">
+      <QeetrixProvider defaultColorScheme="light">
         <SsoCallbackPage />
-      </ThemeProvider>
+      </QeetrixProvider>
     </QueryClientProvider>,
   );
 }

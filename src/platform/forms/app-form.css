@@ -17,9 +17,8 @@
 }
 
 /*
- * Migration bridge: Tailwind's preflight, loaded for the @qeetrix/ui screens, makes every svg a
- * block, which drops an icon an old page puts in a field's label onto a line of its own. Goes with
- * Tailwind at the cut-over.
+ * The console's base reset (src/base.css) makes every svg a block, which would drop an icon a page
+ * puts in a field's label onto a line of its own.
  */
 .qx-field-label > svg {
   display: inline-block;

@@ -4,6 +4,6 @@ import { RetentionPage } from "@/modules/compliance/pages";
 
 // Rebuilt on @qeetrix/react: the page draws its own header.
 export const Route = createFileRoute("/_app/security/compliance/retention")({
-  staticData: { capability: "policy.read", pageHeader: true },
+  staticData: { capability: "policy.read" },
   component: RetentionPage,
 });

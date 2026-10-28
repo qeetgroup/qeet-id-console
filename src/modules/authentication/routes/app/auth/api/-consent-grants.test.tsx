@@ -98,8 +98,7 @@ function renderList(filters = {}) {
 }
 
 describe("Applications › OAuth grants", () => {
-  it("has the route draw its own header, with filters in the address", () => {
-    expect(Route.options.staticData).toMatchObject({ pageHeader: true });
+  it("keeps its filters in the address", () => {
     const search = Route.options.validateSearch as unknown as {
       parse: (v: unknown) => unknown;
     };

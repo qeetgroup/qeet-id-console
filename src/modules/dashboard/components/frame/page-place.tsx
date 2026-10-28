@@ -8,8 +8,8 @@ import { filterNavigation, safeNavigation, useNavGroups } from "@/platform/confi
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { currentNavItem, currentSubPageUrl } from "./current-page";
 
-// Where the path sits in the navigation, and the sub-pages this person can open: what PageNav
-// draws above a page not yet rebuilt, for a rebuilt page to put in its own PageHeader.
+// Where the path sits in the navigation, and the sub-pages this person can open, for a page to put
+// in its own PageHeader.
 function usePagePlace() {
   const { pathname } = useLocation();
   const access = useCapabilities();

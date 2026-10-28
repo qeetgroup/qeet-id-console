@@ -93,9 +93,9 @@ export function TimelineEvents({
           });
   const lookBack = (
     <Link
-      to="/users/$userId/timeline"
+      to="/users/$userId"
       params={{ userId }}
-      search={{ ...filters, period: "90d" }}
+      search={{ tab: "activity", ...filters, period: "90d" }}
       replace
     >
       {t("events.lookBack")}

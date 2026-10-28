@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-// Lives beside the route with a "-" prefix so the router generator ignores it.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -18,15 +17,9 @@ const router = vi.hoisted(() => ({
   navigate: vi.fn(),
   search: {} as Record<string, string | undefined>,
 }));
-// The page reads its param and address from its own route; links render as plain anchors.
+// Links render as plain anchors.
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-router")>()),
-  createFileRoute: () => (options: object) => ({
-    options,
-    useParams: () => ({ userId: "u-1" }),
-    useSearch: () => router.search,
-    useNavigate: () => router.navigate,
-  }),
   Link: ({
     children,
     to,
@@ -52,10 +45,9 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
   },
 }));
 
+import { PersonTimeline } from "@/modules/timeline/components/page/person-timeline";
 import { api } from "@/platform/api/client";
-import { Route } from "./$userId_.timeline";
 
-const TimelineRoute = Route.options.component as () => React.JSX.Element;
 const at = (day: number, hour: number) => new Date(2026, 9, day, hour, 0).toISOString();
 const ANANYA = { id: "u-1", name: "Ananya Iyer", type: "user" };
 
@@ -163,7 +155,7 @@ function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
-      <TimelineRoute />
+      <PersonTimeline userId="u-1" filters={router.search} onFiltersChange={router.navigate} />
     </QueryClientProvider>,
   );
 }
@@ -174,12 +166,10 @@ const reads = () =>
     ...((options?.query ?? {}) as Record<string, unknown>),
   }));
 
-describe("a person's timeline", () => {
+describe("a person's timeline, their page's Activity view", () => {
   it("sums the period up before the events: sign-ins and how, what failed, where from", async () => {
     renderPage();
-    expect(await screen.findByRole("heading", { name: "Timeline", level: 1 })).toBeTruthy();
-    const back = await screen.findByRole("link", { name: /Ananya Iyer/ });
-    expect(back.getAttribute("href")).toBe("/users/u-1");
+    expect(await screen.findByText(/^What Ananya Iyer did/)).toBeTruthy();
     expect(await screen.findByText("2 of 3 with a second step or a passkey")).toBeTruthy();
     expect(screen.getByText("Mostly with a passkey")).toBeTruthy();
     expect(screen.getByText("1 wrong password")).toBeTruthy();
@@ -188,7 +178,7 @@ describe("a person's timeline", () => {
     expect(screen.getByText("With Edge and Chrome")).toBeTruthy();
     expect(screen.getByText("Most from 203.0.113.10 (3)")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Show the failures" }).getAttribute("href")).toBe(
-      "/users/u-1/timeline?result=failed",
+      "/users/u-1?tab=activity&result=failed",
     );
     // The browser's own date order ("27 October" or "October 27").
     expect(
@@ -253,8 +243,7 @@ describe("a person's timeline", () => {
     fireEvent.pointerDown(option, { pointerType: "mouse", button: 0 });
     fireEvent.click(option);
     await waitFor(() => expect(router.navigate).toHaveBeenCalled());
-    const [{ search }] = router.navigate.mock.calls.at(-1) as [{ search: () => object }];
-    expect(search()).toEqual({ result: "failed", period: "7d" });
+    expect(router.navigate.mock.calls.at(-1)).toEqual([{ result: "failed", period: "7d" }]);
   });
 
   it("says so when the role can't read the audit log, and reads none of it", async () => {

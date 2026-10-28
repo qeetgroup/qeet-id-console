@@ -12,7 +12,7 @@ const testingSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/authorization/testing")({
-  staticData: { capability: "role.read", pageHeader: true },
+  staticData: { capability: "role.read" },
   validateSearch: testingSearch,
   component: TestingRoute,
 });

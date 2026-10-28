@@ -14,7 +14,7 @@ const templatesSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/authorization/templates")({
-  staticData: { capability: "policy.read", pageHeader: true },
+  staticData: { capability: "policy.read" },
   validateSearch: templatesSearch,
   component: TemplatesRoute,
 });

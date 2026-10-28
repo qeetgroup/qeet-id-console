@@ -35,6 +35,7 @@ import { useTranslation } from "react-i18next";
 import { formatLocale } from "@/i18n";
 import { PageBreadcrumb } from "@/modules/dashboard";
 import { useRegisterContext } from "@/modules/qeetai";
+import { PersonTimeline, type TimelineSearch } from "@/modules/timeline";
 import { useSignInHistory } from "@/modules/users/api/person";
 import {
   type UserDetail,
@@ -56,7 +57,6 @@ import { ApiError } from "@/platform/errors/api-error";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { PersonAccess } from "./person-access";
-import { PersonActivity } from "./person-activity";
 import { PersonOverview } from "./person-overview";
 import { RawRecordDrawer } from "./person-raw";
 import { PersonSecurity } from "./person-security";
@@ -77,15 +77,15 @@ export interface Standing {
  * last active and since when they're here. The views: Overview (how they sign in, what they can
  * do and why, recent activity, their details), Access, Security, Sessions and Activity.
  */
-export function UserDetailPage({
-  userId,
-  tab,
-  onTabChange,
-}: {
-  userId: string;
+/** The open view, and the Activity view's period and filters: all from the address. */
+interface PersonView {
   tab: User360Tab;
   onTabChange: (tab: User360Tab) => void;
-}) {
+  activity: TimelineSearch;
+  onActivityChange: (next: TimelineSearch) => void;
+}
+
+export function UserDetailPage({ userId, ...view }: { userId: string } & PersonView) {
   const { t } = useTranslation("users");
   const access = useCapabilities();
   const tenantId = useTenantId();
@@ -151,7 +151,7 @@ export function UserDetailPage({
   const home = user.tenant_id === tenantId;
   const self = user.id === me;
   const standing: Standing = { canWrite, home, self, manage: canWrite && home && !self };
-  return <Person user={user} standing={standing} tab={tab} onTabChange={onTabChange} />;
+  return <Person user={user} standing={standing} {...view} />;
 }
 
 function Person({
@@ -159,18 +159,15 @@ function Person({
   standing,
   tab,
   onTabChange,
-}: {
-  user: UserDetail;
-  standing: Standing;
-  tab: User360Tab;
-  onTabChange: (tab: User360Tab) => void;
-}) {
+  activity,
+  onActivityChange,
+}: { user: UserDetail; standing: Standing } & PersonView) {
   const { t } = useTranslation("users");
   const locale = formatLocale();
   const access = useCapabilities();
   const navigate = useNavigate();
   const canAudit = access.can("audit.read");
-  const { full, first } = personNames(user);
+  const { full } = personNames(user);
 
   const securityQ = useUserSecurity(user.id);
   const accessQ = useUserAccess(user.id);
@@ -467,7 +464,7 @@ function Person({
           />
         </TabsPanel>
         <TabsPanel value="activity">
-          <PersonActivity user={user} first={first} canView={canAudit} />
+          <PersonTimeline userId={user.id} filters={activity} onFiltersChange={onActivityChange} />
         </TabsPanel>
       </PageContent>
 

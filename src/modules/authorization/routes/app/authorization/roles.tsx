@@ -15,7 +15,7 @@ const rolesSearch = createIntentSearch.extend({
 });
 
 export const Route = createFileRoute("/_app/authorization/roles")({
-  staticData: { capability: "role.read", pageHeader: true },
+  staticData: { capability: "role.read" },
   validateSearch: rolesSearch,
   component: RolesRoute,
 });

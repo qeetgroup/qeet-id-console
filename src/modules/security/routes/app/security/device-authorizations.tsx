@@ -13,7 +13,7 @@ const devicesSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/security/device-authorizations")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: devicesSearch,
   component: DevicesRoute,
 });

@@ -7,7 +7,6 @@ import { OrgsListPage } from "@/modules/organizations/pages";
 // view of the list can be shared and the header's numbers can link into it. The schema comes from
 // the barrel, not pages: the route's options load with the shell, its component later.
 export const Route = createFileRoute("/_app/organizations/")({
-  staticData: { pageHeader: true },
   validateSearch: orgsListSearch,
   component: OrgsRoute,
 });

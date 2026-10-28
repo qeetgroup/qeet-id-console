@@ -121,3 +121,30 @@
 .tl-more a:hover {
   text-decoration: underline;
 }
+
+/* ── On a person's page: the Activity view ─────────────────────────────────────────────────── */
+
+.tl-view {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+/* The band sits inside the view, so it's ruled top and bottom like the page header's. */
+.tl-view > .ppl-band {
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+/* What the view holds, then Export. */
+.tl-view-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.tl-view-bar p {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-md);
+}

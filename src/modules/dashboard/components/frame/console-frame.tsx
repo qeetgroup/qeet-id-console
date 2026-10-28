@@ -1,6 +1,6 @@
 import { BellIcon, CircleQuestionMarkIcon } from "@qeetrix/icons";
 import { AppShell, type AppShellDrawer } from "@qeetrix/react/experimental";
-import { useMatches, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -16,15 +16,14 @@ import { ConsoleSidebar } from "./console-sidebar";
 import { ConsoleTopBar } from "./console-top-bar";
 import { HelpPanel } from "./help-panel";
 import { NotificationsPanel, useHasUnreadNotifications } from "./notifications-panel";
-import { PageNav } from "./page-nav";
 
 // Whether the navigation is the icon rail, per person and organisation.
 const collapsedPreference = scopedStorage("qeetid.sidebar-collapsed");
 
 /**
  * The console's frame on @qeetrix/react: the top bar, the navigation, the Notifications and Help
- * panels, search (⌘K) and the keyboard shortcuts. A page not yet rebuilt gets the breadcrumb and
- * its sub-page tabs above it, and keeps its old spacing.
+ * panels, search (⌘K) and the keyboard shortcuts. Each page draws its own header (PageHeader, with
+ * PageBreadcrumb and PageTabs from page-place.tsx).
  */
 export function ConsoleFrame({ children }: { children: ReactNode }) {
   const { t } = useTranslation("dashboard");
@@ -34,9 +33,6 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
   const hasOrg = !!useTenantId();
   const qeetaiEnabled = useFeatureFlag("qeetai") && hasOrg;
   const hasUnread = useHasUnreadNotifications(hasOrg);
-  const ownHeader = useMatches({
-    select: (matches) => matches.some((m) => m.staticData?.pageHeader),
-  });
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [panel, setPanel] = useState<string | null>(null);
@@ -93,8 +89,7 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
         }}
         mainId="main-content"
       >
-        <PageNav />
-        {ownHeader ? children : <div className="console-legacy console-content">{children}</div>}
+        {children}
       </AppShell>
       {qeetaiEnabled ? <QeetAI /> : null}
       <CommandPaletteLauncher open={paletteOpen} onOpenChange={setPaletteOpen} />

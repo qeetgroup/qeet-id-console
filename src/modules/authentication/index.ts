@@ -20,6 +20,3 @@ export * from "./api/scim";
 export { type LdapConnection, useLdapConnections } from "./api/ldap";
 export * from "./api/sso";
 export * from "./api/sessions";
-export { SessionsTable } from "./components/sessions-table";
-export { TrustedDevicesCard } from "./components/trusted-devices-card";
-export { LinkedPhonesCard } from "./components/linked-phones-card";

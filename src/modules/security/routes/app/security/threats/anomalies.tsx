@@ -13,7 +13,7 @@ const anomaliesSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/security/threats/anomalies")({
-  staticData: { capability: "policy.read", pageHeader: true },
+  staticData: { capability: "policy.read" },
   validateSearch: anomaliesSearch,
   component: AnomaliesRoute,
 });

@@ -9,7 +9,6 @@ export const Route = createFileRoute("/_app/account")({
     }
   },
   // The area draws its own header, so the frame adds no breadcrumb above it.
-  staticData: { pageHeader: true },
   component: AccountLayout,
 });
 

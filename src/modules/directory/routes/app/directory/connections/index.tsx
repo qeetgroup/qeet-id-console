@@ -8,7 +8,7 @@ import { searchEnum } from "@/shared/utils/search-params";
 // list in the address (`?show=failing|draft`, the page's ConnectionsFilters). The schema is here:
 // the route's options load with the shell, and the directory's barrel would bring its API with it.
 export const Route = createFileRoute("/_app/directory/connections/")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: z.object({ show: searchEnum(["failing", "draft"]) }),
   component: ConnectionsRoute,
 });

@@ -8,7 +8,7 @@ import { searchEnum, searchText } from "@/shared/utils/search-params";
 // the address (`?q=…&app=<client id>&access=profile|email|phone`). The schema is here: the route's
 // options load with the shell, and the module's barrel would bring its API with it.
 export const Route = createFileRoute("/_app/auth/api/consent-grants")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: z.object({
     q: searchText(),
     app: searchText(),

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ThemeProvider } from "@qeetrix/ui";
+import { QeetrixProvider } from "@qeetrix/react";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { AnchorHTMLAttributes } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -219,11 +219,11 @@ describe("sign-up, passkey first", () => {
 describe("entry chrome", () => {
   it("keeps the legal links, the consent copy and the skip target", () => {
     render(
-      <ThemeProvider storageKey="test-theme">
+      <QeetrixProvider defaultColorScheme="light">
         <EntryShell panel={null}>
           <EntryConsent action="signUp" />
         </EntryShell>
-      </ThemeProvider>,
+      </QeetrixProvider>,
     );
     expect(screen.getByText(/By creating an account/)).toBeTruthy();
     const legal = within(screen.getByRole("navigation", { name: "Legal and trust" }));

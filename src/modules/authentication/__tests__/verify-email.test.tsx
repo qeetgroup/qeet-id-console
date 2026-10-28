@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ThemeProvider } from "@qeetrix/ui";
+import { QeetrixProvider } from "@qeetrix/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { AnchorHTMLAttributes } from "react";
@@ -95,9 +95,9 @@ describe("VerifyEmailPage", () => {
     render(
       <QueryClientProvider client={new QueryClient()}>
         {/* The page's theme menu needs the provider __root.tsx supplies in-app. */}
-        <ThemeProvider storageKey="test-theme">
+        <QeetrixProvider defaultColorScheme="light">
           <VerifyEmailPage session={session} />
-        </ThemeProvider>
+        </QeetrixProvider>
       </QueryClientProvider>,
     );
     expect(sessionStore.getUserId()).toBe("user-1");

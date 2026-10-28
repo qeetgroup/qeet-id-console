@@ -7,7 +7,7 @@ import { UnsavedChangesGuard } from "@/shared/components/unsaved-changes-guard";
 
 // Rebuilt on @qeetrix/react: the page draws its own header.
 export const Route = createFileRoute("/_app/settings/branding")({
-  staticData: { capability: "branding.write", pageHeader: true },
+  staticData: { capability: "branding.write" },
   component: BrandingPage,
 });
 

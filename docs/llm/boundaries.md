@@ -22,11 +22,11 @@ sensitive-action/step-up primitive.
 | SDKs | `qeet-id-{go,node,react}` |
 | Product documentation | `qeet-id-docs` |
 | Infrastructure | `qeet-id-deploy` |
-| The design system | `qeetrix-ui` — consumed as `@qeetrix/ui` |
+| The design system | `qeetrix-react`, `qeetrix-tokens`, `qeetrix-icons` — consumed as `@qeetrix/react`, `@qeetrix/tokens`, `@qeetrix/icons` |
 
 ## Consumes
 
-`api.id.qeet.in` **through its own BFF** (bearer attached server-side) · `@qeetrix/ui` ·
+`api.id.qeet.in` **through its own BFF** (bearer attached server-side) · `@qeetrix/react` ·
 unauthenticated federation redirects directly from the browser (e.g. social login start).
 
 ## Provides
@@ -79,7 +79,7 @@ relative-import rules — a violation fails the build. A module's catalogue name
 
 ```text
 qeet-id-server ──API contract──►  qeet-id-console
-qeetrix-ui     ──@qeetrix/ui───►  qeet-id-console
+qeetrix-react  ──@qeetrix/react►  qeet-id-console
 qeet-id-console ──redirects to──►  qeet-id-hosted  (OIDC sign-in)
 ```
 
@@ -87,7 +87,7 @@ This repository is **downstream of everything**. It initiates no contract.
 
 ## Safe to change without coordination
 
-UI copy and layout · a new page composed from existing endpoints · styling within `@qeetrix/ui` ·
+UI copy and layout · a new page composed from existing endpoints · styling with `--qx-*` tokens ·
 adding a test · internal refactoring inside one module · i18n strings · feature-flag defaults.
 
 ## Requires cross-repository coordination
@@ -99,7 +99,7 @@ adding a test · internal refactoring inside one module · i18n strings · featu
 | **CSRF cookie/header names** | Must match `qeet-id-server` and `qeet-id-hosted` |
 | A new permission surfaced in the UI | `qeet-id-server` must define it |
 | Error-code handling | `qeet-id-server` owns the codes |
-| `@qeetrix/ui` / `@qeetrix/icons` upgrade | `qeetrix-ui`, `qeetrix-icons` — pinned exactly to `2.1.6` / `1.0.12` (patch releases have removed exports and replaced the icon catalogue, so bump deliberately) |
+| `@qeetrix/react` / `@qeetrix/tokens` / `@qeetrix/icons` upgrade | `qeetrix-react`, `qeetrix-tokens`, `qeetrix-icons` — pinned exactly (`0.1.1` / `0.0.9` / `1.0.12`); bump deliberately and read the changelog |
 | Hostname change | `qeet-id-deploy`, backend CORS, WebAuthn origins |
 
 Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.

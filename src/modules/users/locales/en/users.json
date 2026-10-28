@@ -577,47 +577,6 @@
       "signOutNote": "Signing out everywhere also ends the apps {{name}} signed in to with this account and forgets their remembered devices. One session can't be ended on its own yet.",
       "rulerMore": "The ruler shows the latest {{shown}} of {{count}}; all are listed below."
     },
-    "activity": {
-      "label": "{{name}}'s activity",
-      "restrictedTitle": "Activity is hidden",
-      "restricted": "Seeing {{name}}'s activity needs the audit.read permission.",
-      "since": "When",
-      "sinceOptions": {
-        "any": "Any time",
-        "24h": "Last 24 hours",
-        "7d": "Last 7 days",
-        "30d": "Last 30 days"
-      },
-      "kind": "Kind",
-      "anyKind": "Any kind",
-      "result": "Result",
-      "anyResult": "Any result",
-      "failedOnly": "Failed",
-      "export": "Export",
-      "event": "Event",
-      "device": "Device",
-      "ip": "IP address",
-      "when": "When",
-      "failed": "Failed",
-      "results": {
-        "success": "Succeeded",
-        "failed": "Failed",
-        "blocked": "Blocked",
-        "warning": "Warning",
-        "info": "Info"
-      },
-      "none": "Nothing recorded",
-      "noneNote": "Events {{name}} takes part in show here.",
-      "noneFiltered": "No events match",
-      "noneFilteredNote": "Try another search or filter.",
-      "method": "Method",
-      "withStep": "With a second step",
-      "who": "By",
-      "type": "Event type",
-      "id": "Event ID",
-      "copyId": "Copy event ID",
-      "open": "Open in Activity"
-    },
     "raw": {
       "title": "{{name}}'s record",
       "description": "What the API returns for this person ({{id}}).",

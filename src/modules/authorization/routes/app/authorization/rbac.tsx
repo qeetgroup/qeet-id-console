@@ -9,7 +9,7 @@ import { searchText } from "@/shared/utils/search-params";
 const rbacSearch = z.object({ q: searchText(), resource: searchText(), role: searchText() });
 
 export const Route = createFileRoute("/_app/authorization/rbac")({
-  staticData: { capability: "role.read", pageHeader: true },
+  staticData: { capability: "role.read" },
   validateSearch: rbacSearch,
   component: RbacRoute,
 });

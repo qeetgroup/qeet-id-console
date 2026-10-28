@@ -5,7 +5,7 @@ import { InvitationsPage } from "@/modules/users/pages";
 
 // Rebuilt on @qeetrix/react: the page draws its own header, and its filters live in the address.
 export const Route = createFileRoute("/_app/invitations")({
-  staticData: { capability: "user.read", pageHeader: true },
+  staticData: { capability: "user.read" },
   validateSearch: invitationsSearch,
   component: InvitationsRoute,
 });

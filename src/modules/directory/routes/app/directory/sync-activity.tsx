@@ -8,7 +8,7 @@ import { searchEnum, searchText } from "@/shared/utils/search-params";
 // (sync-search.ts's ActivityFilters), so the band's links can narrow the list. The schema is here:
 // the route's options load with the shell, and the directory's barrel would bring its API with it.
 export const Route = createFileRoute("/_app/directory/sync-activity")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: z.object({
     period: searchEnum(["7d", "30d", "90d"]),
     connection: searchText(),

@@ -16,7 +16,7 @@ const versionsSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/authorization/versions")({
-  staticData: { capability: "policy.read", pageHeader: true },
+  staticData: { capability: "policy.read" },
   validateSearch: versionsSearch,
   component: VersionsRoute,
 });

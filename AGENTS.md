@@ -7,7 +7,7 @@ here and add nothing architectural.
 ## What this repository is
 
 The **operator console for Qeet ID** — `console.id.qeet.in`. TanStack Start + TanStack Router,
-React 19, Vite 8 + Nitro, Tailwind v4, `@qeetrix/ui`, bun. 18 modules under `src/modules/`.
+React 19, Vite 8 + Nitro, `@qeetrix/react` + `@qeetrix/tokens` (token-only CSS, no Tailwind), bun. 18 modules under `src/modules/`.
 
 It is a **client with a server side**: TanStack Start acts as a same-origin
 backend-for-frontend (BFF). **Backend tokens never reach the browser.**
@@ -67,8 +67,8 @@ Biome `noRestrictedImports` overrides in `biome.json` fail the build:
 - a route file (`src/modules/*/routes/**`, and the shell's few in `src/routes`) must not import
   `api` from `@/platform/api/client` or `@tanstack/react-query`: data access belongs to the
   module. No route is exempt; never add an override that exempts one.
-- `DataState` comes from `@/platform/components/data-state`, never `@qeetrix/ui` (rule 5), and
-  `StatusPill` from `@/platform/components/status-pill`: the kit's names a status in English.
+- `@qeetrix/ui` is banned: it and Tailwind were removed at the cut-over (2026-10-28). Components
+  come from `@qeetrix/react` (stable and `/experimental`), styling from `--qx-*` tokens.
 
 ### 4. All API traffic goes through one path
 `src/platform/api/client.ts` → server function `proxyApiRequest` → backend. **This is the only place
@@ -80,9 +80,9 @@ Biome bans the global `fetch`, `EventSource`, `WebSocket` and `XMLHttpRequest` o
 
 ### 5. Never render a backend `error.message`
 `src/platform/errors/user-message.ts` is "the leak stop" — backend messages may carry internal
-context. Map a code to safe copy via `userMessageForCode` / `errorMessage`. The `@qeetrix/ui`
-`DataState` prints `error.message` by default, so use the platform `DataState`
-(`src/platform/components/data-state.tsx`), which maps it first; lint enforces this.
+context. Map a code to safe copy via `userMessageForCode` / `errorMessage`. `@qeetrix/react`'s
+`DataState` never shows the raw error; where a page says more than its generic copy, it shows
+`errorMessage(err)` and the support reference (`ErrorReference`).
 
 ### 6. Redact telemetry
 `src/platform/telemetry/redact.ts` has a hard denylist (token, secret, password, cookie, api-key,
@@ -139,7 +139,7 @@ confirm dialog, a menu). Any violation fails the "Session E2E" job. Fix it in th
 - A decorative chart sets `accessibilityLayer={false}`, so recharts doesn't make it focusable.
 - A new page or overlay gets a scan in the spec, with fake-backend data for its real content.
 
-A violation from inside an `@qeetrix/ui` component that the console can't fix is excused for
+A violation from inside a `@qeetrix/react` component that the console can't fix is excused for
 **that rule on that element only**: an entry in the spec's `DESIGN_SYSTEM_ISSUES` (one rule, one
 element selector, every other rule still applies), with a comment naming it as a qeetrix issue, and
 raised as a QTRX ticket. Never disable a rule for a page, and never excuse a console-owned element.
@@ -188,12 +188,12 @@ One way to do each thing. `src/modules/users` is the reference implementation.
   their own markup: the signed-out screens (sign-in, sign-up, reset, magic link, invitation),
   whose `auth-*` styling and native fields serve password managers and passkey autofill, and
   state a form can't type, such as the ABAC condition tree, which sits beside its form.
-- **Loading and errors** — the platform `DataState` for every query-backed surface. It prints curated
-  copy and the request's support reference (`ErrorReference`). Toast a failure with
+- **Loading and errors** — `DataState` (`@qeetrix/react/experimental`) for every query-backed surface.
+  It never prints the raw error; add `errorMessage(err)` and `ErrorReference` where a page says more. Toast a failure with
   `toastError(err)` (`src/platform/errors/error-toast.ts`), never `toast.error(errorMessage(err))`.
-- **Confirmations** — a sensitive action through `useSensitiveAction` (rule 7); any other yes/no
-  through `useConfirmDialog` (`src/shared/components/confirm-dialog.tsx`). A raw `AlertDialog` is
-  only for a dialog with its own content, such as a form or typed confirmation.
+- **Confirmations** — every yes/no through the console's one confirm, `useSensitiveAction` (rule 7):
+  560px, its description says what happens to people, and it asks for a step-up only when the
+  server does. A raw `AlertDialog` is only for a dialog with its own content, such as a form.
 - **One-time secrets** — `OneTimeSecret` (`src/shared/components/one-time-secret.tsx`). Keep the
   value in component state only, and give the mutation that returns it `gcTime: 0`.
 - **Server wording** — render a fixed set of server values (a verify reason, a check result) by

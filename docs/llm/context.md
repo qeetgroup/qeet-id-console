@@ -8,7 +8,8 @@
 ## Identity
 
 The **operator console for Qeet ID**, served at `console.id.qeet.in`. TanStack Start ^1.168 +
-TanStack Router ^1.170, React 19, Vite 8 + Nitro, Tailwind v4, `@qeetrix/ui`, bun 1.3.14.
+TanStack Router ^1.170, React 19, Vite 8 + Nitro, `@qeetrix/react` + `@qeetrix/tokens` (token-only
+CSS, no Tailwind), bun 1.3.14.
 18 modules under `src/modules/`.
 
 **It has a server side.** TanStack Start acts as a same-origin backend-for-frontend. That is the
@@ -292,9 +293,8 @@ region left and finished animations; any violation fails with its rule, elements
 fake backend serves the pages' records from `tests/e2e/fixtures/fake-tenant-data.mjs` and has an
 `admin@example.com` with every capability (so actions render) and an `unverified@example.com`.
 Text over the shell's and sidebar's faint gradients is measured against their solid token (axe
-can't measure over a gradient). A violation from inside `@qeetrix/ui` is excused for that rule on
-that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12); today one, the
-dark-theme destructive button in a confirm dialog. Ports default to 43173 and 43101;
+can't measure over a gradient). A violation from inside `@qeetrix/react` is excused for that rule
+on that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12); none today. Ports default to 43173 and 43101;
 `E2E_APP_PORT` and `E2E_BACKEND_PORT` override them.
 
 Every module has tests; `users`, `security`, `compliance` and `authorization` pin their request
@@ -347,9 +347,8 @@ Verification commands are in `AGENTS.md` ("What CI enforces").
 
 **Dependency overrides** (`package.json` `overrides`) hold only security floors: transitive packages
 pinned at or above their first patched release because a parent still allowed a vulnerable one. Remove
-an entry once every parent requires a fixed version. The three audit ignores (`braces`, `zod` 3 and
-`body-parser`) are all reached only through the `shadcn` CLI in `@qeetrix/ui`, which the console
-never runs or bundles; they are documented in `dependency-audit.yml` and go when QTRX-4 lands.
+an entry once every parent requires a fixed version, or the package leaves the tree. `bun run audit`
+ignores no advisory.
 
 ## Security-critical areas
 
@@ -377,9 +376,8 @@ never runs or bundles; they are documented in `dependency-audit.yml` and go when
 - Biome warnings fail CI (`--error-on-warnings`): fix them, or suppress one with a specific reason.
 - TypeScript runs with `strict` plus `noUncheckedIndexedAccess`, `noImplicitReturns` and
   `noImplicitOverride`. Narrow an indexed value with a guard; `!` is a lint error.
-- `@qeetrix/ui`'s root import is slow to load in tests (each jsdom file pays it); the fix belongs in
-  `qeetrix` (QTRX-5). Its `DataState` prints `error.message` by default (QTRX-3), hence the platform
-  wrapper.
+- `@qeetrix/react`'s `DataState` never shows the raw error, so a page shows `errorMessage(err)` and
+  `ErrorReference` itself where it says more than the generic copy.
 
 ## Known documentation drift
 
