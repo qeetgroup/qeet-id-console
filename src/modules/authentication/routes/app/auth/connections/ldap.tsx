@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { LdapPage } from "@/modules/authentication/pages";
-
+// The page moved under Directory › Directories › Connections; old links and bookmarks land there.
 export const Route = createFileRoute("/_app/auth/connections/ldap")({
-  staticData: { capability: "connection.read" },
-  component: LdapPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/directory/connections/ldap", replace: true });
+  },
 });

@@ -1,0 +1,200 @@
+/*
+ * Directory › Directories › Connections (connections-page.tsx). Placement and token values only
+ * (--qx-*). The band is the Users band (people.css, loaded with the console's styles); these are
+ * the connection cell, health, the 30-day columns and the offers for a kind not set up.
+ */
+
+/* A connection: its kind, then its name over its address. */
+.dir-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+}
+
+.dir-kind {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-sunken);
+  color: var(--qx-color-icon-default);
+}
+
+.dir-two {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.dir-two small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dir-two small code {
+  font: var(--qx-typography-code-sm);
+}
+
+.dir-name {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+  text-decoration: none;
+}
+
+.dir-name:hover {
+  text-decoration: underline;
+}
+
+.dir-name:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Health in a row: an icon and a word in its status colour, the latest open problem under it. */
+.dir-status {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+.dir-status > svg {
+  flex: none;
+  margin-block-start: 2px;
+}
+
+.dir-status.is-healthy > svg {
+  color: var(--qx-color-icon-success);
+}
+
+.dir-status.is-failing > svg {
+  color: var(--qx-color-icon-danger);
+}
+
+.dir-status.is-failing > .dir-two > span {
+  color: var(--qx-color-text-danger);
+}
+
+.dir-status.is-unchecked > svg {
+  color: var(--qx-color-icon-subtle);
+}
+
+/* The band's Health cell: one ruled row a state, its icon in its status colour. */
+.dir-health ul {
+  display: grid;
+  margin: var(--qx-space-gap-xs) 0 var(--qx-space-gap-sm);
+  padding: 0;
+  list-style: none;
+}
+
+.dir-health li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding-block: 6px;
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-sm);
+}
+
+.dir-health b {
+  font-weight: var(--qx-typography-label-sm-font-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.dir-health li.is-ok svg {
+  color: var(--qx-color-icon-success);
+}
+
+.dir-health li.is-danger svg {
+  color: var(--qx-color-icon-danger);
+}
+
+.dir-health li.is-danger b {
+  color: var(--qx-color-text-danger);
+}
+
+.dir-health li.is-muted svg {
+  color: var(--qx-color-icon-subtle);
+}
+
+.dir-health li.is-zero,
+.dir-health li.is-zero b,
+.dir-health li.is-zero svg {
+  color: var(--qx-color-text-subtlest);
+}
+
+/* The last 30 days: a column a day of changes synced, its failures on top in the danger colour. */
+.dir-days-cell {
+  margin: 0;
+}
+
+.dir-days {
+  display: grid;
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+  align-items: end;
+  gap: 2px;
+  block-size: 2.75rem;
+  margin: var(--qx-space-gap-sm) 0 0;
+}
+
+.dir-day {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1px;
+  block-size: 100%;
+}
+
+.dir-day-ok {
+  display: block;
+  background: var(--ppl-month);
+}
+
+.dir-day-failed {
+  display: block;
+  background: var(--qx-color-bg-danger-bold);
+}
+
+/* A kind not set up yet, under the table: what it does, and how to start. */
+.dir-offers {
+  display: grid;
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dir-offer {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-gap-lg);
+}
+
+.dir-offer + .dir-offer {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.dir-offer-text p {
+  margin: 0;
+}
+
+.dir-offer-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.dir-offer-body {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
