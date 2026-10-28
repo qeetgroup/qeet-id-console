@@ -1,7 +1,7 @@
-// LDAP / Active Directory connections. bind_password is write-only: accepted on create and update,
-// never returned.
+// LDAP / Active Directory connections, read. bind_password is write-only: accepted on create and
+// update (ldap-actions.ts, which only the LDAP pages load), never returned.
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -47,56 +47,5 @@ export function useLdapConnections(enabled = true) {
     queryKey: authKeys.ldap(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<{ items: LdapConnection[] }>(`/v1/tenants/${tenantId}/ldap`),
-  });
-}
-
-export function useCreateLdapConnection() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: CreateLdapInput) =>
-      api<LdapConnection>(`/v1/tenants/${tenantId}/ldap`, {
-        method: "POST",
-        body,
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
-    meta: { successMessage: "authentication:toast.ldapConnectionCreated", silentError: true },
-  });
-}
-
-export function useUpdateLdapConnection() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...body }: Partial<CreateLdapInput> & { id: string }) =>
-      api<LdapConnection>(`/v1/tenants/${tenantId}/ldap/${id}`, {
-        method: "PATCH",
-        body,
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
-    meta: { successMessage: "authentication:toast.ldapConnectionUpdated" },
-  });
-}
-
-export function useDeleteLdapConnection() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/ldap/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
-    meta: { successMessage: "authentication:toast.ldapConnectionDeleted" },
-  });
-}
-
-/** Tests the service-account bind, proving the connection settings reach the directory. */
-export function useTestLdapConnection() {
-  const tenantId = useTenantId();
-  return useMutation({
-    mutationFn: (id: string) =>
-      api<{ ok: boolean }>(`/v1/tenants/${tenantId}/ldap/${id}/test`, {
-        method: "POST",
-      }),
-    meta: { successMessage: "authentication:toast.directoryBindSucceeded" },
   });
 }

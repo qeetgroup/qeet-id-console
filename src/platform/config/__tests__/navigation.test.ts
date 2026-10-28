@@ -51,6 +51,17 @@ describe("console navigation state", () => {
     expect(overviews).toEqual([]);
   });
 
+  it("opens SSO on the one list of SAML, with no separate Connections entry", () => {
+    // LDAP and SCIM have their one home in Directories › Connections.
+    const authentication = navGroups.find((group) => group.id === "authentication");
+    expect(authentication?.items.map((item) => item.url)).not.toContain("/auth/connections");
+    expect(
+      authentication?.items
+        .find((item) => item.url === "/auth/connections/saml")
+        ?.items?.map((item) => item.url),
+    ).toEqual(["/auth/connections/saml", "/auth/connections/saml-idp"]);
+  });
+
   it("exposes the completed Directory views with short labels and scoped access", () => {
     const directory = navGroups.find((group) => group.id === "directory");
     const users = directory?.items.find((item) => item.title === "Users");
@@ -110,6 +121,8 @@ describe("console navigation state", () => {
     expect(findNavGroupForPath(navGroups, "/security/audit-logs")).toBe("security");
     // SCIM lives under Directory › Connections, and its old address isn't a page any more.
     expect(findNavGroupForPath(navGroups, "/directory/connections/scim")).toBe("directory");
+    // A SAML connection's page sits under Authentication › SSO.
+    expect(findNavGroupForPath(navGroups, "/auth/connections/saml/abc")).toBe("authentication");
     expect(findNavGroupForPath(navGroups, "/unmapped-route")).toBeUndefined();
   });
 
