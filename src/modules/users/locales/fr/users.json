@@ -47,23 +47,8 @@
     "submit": "Créer l'utilisateur",
     "submitting": "Création en cours…"
   },
-  "edit": {
-    "title": "Modifier l'utilisateur",
-    "description": "L'email est immuable. Pour changer un mot de passe, utilisez l'action Définir le mot de passe.",
-    "email": "Email",
-    "displayName": "Nom affiché",
-    "phone": "Téléphone",
-    "phoneHelp": "Format E.164. Laissez vide pour effacer.",
-    "status": "Statut",
-    "statusActive": "Actif",
-    "statusSuspended": "Suspendu",
-    "statusSelfHelp": "Vous ne pouvez pas suspendre votre propre compte depuis cet écran.",
-    "statusHelp": "La suspension empêche la connexion mais conserve le compte."
-  },
   "setPassword": {
-    "title": "Définir un nouveau mot de passe",
     "newPassword": "Nouveau mot de passe",
-    "newPasswordHelp": "Minimum 8 caractères.",
     "confirmPassword": "Confirmer le nouveau mot de passe",
     "mismatch": "Les mots de passe ne correspondent pas",
     "submit": "Mettre à jour le mot de passe"

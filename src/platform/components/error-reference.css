@@ -1,0 +1,20 @@
+/*
+ * The support reference under an error (error-reference.tsx): a line of small subtle text, the id
+ * in code type, selected whole by one click. Token values only.
+ */
+
+.error-reference {
+  display: block;
+  font: var(--qx-typography-body-sm);
+  color: var(--qx-color-text-subtle);
+}
+
+.error-reference-id {
+  font: var(--qx-typography-code-sm);
+  user-select: all;
+}
+
+/* After the message it belongs to (ErrorText). */
+.error-reference-after {
+  margin-block-start: var(--qx-space-gap-xs);
+}
