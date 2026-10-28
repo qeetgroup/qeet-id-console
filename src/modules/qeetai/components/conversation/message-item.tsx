@@ -1,31 +1,13 @@
-import { Button, Textarea } from "@qeetrix/ui";
-import {
-  CheckIcon,
-  CopyIcon,
-  PencilIcon,
-  RotateCcwIcon,
-  SparklesIcon,
-  TriangleAlertIcon,
-} from "@qeetrix/icons";
-import { useCallback, useState } from "react";
+import { PencilIcon, RotateCcwIcon, TriangleAlertIcon } from "@qeetrix/icons";
+import { Button, IconButton, Spinner, Textarea, VisuallyHidden } from "@qeetrix/react";
+import { CopyButton } from "@qeetrix/react/experimental";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { UseQeetAIChat } from "@/modules/qeetai/hooks/use-qeetai-chat";
 import type { Message } from "@/modules/qeetai/types/qeetai.types";
 import { ExecutionTimeline } from "../execution/execution-timeline";
 import { MarkdownMessage } from "../markdown-message/markdown-message";
-import { type MessageAction, MessageActions } from "./message-actions";
-
-function useCopy(text: string): { copied: boolean; copy: () => void } {
-  const [copied, setCopied] = useState(false);
-  const copy = useCallback(() => {
-    void navigator.clipboard?.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
-  }, [text]);
-  return { copied, copy };
-}
 
 interface MessageItemProps {
   message: Message;
@@ -34,160 +16,124 @@ interface MessageItemProps {
 }
 
 /**
- * Renders one turn: a user message as an inline-editable bubble, an assistant message as
- * Markdown with copy and regenerate actions.
+ * One turn. What the person asked sits at the end on the neutral tint and can be edited and sent
+ * again; Qeet AI's answer is Markdown across the panel, with the tools it ran, Copy and, on the
+ * last answer, Regenerate. Each turn names its speaker for screen readers.
  */
 export function MessageItem({ message, isLast, chat }: MessageItemProps) {
-  const { t } = useTranslation(["qeetai", "common"]);
-  const { copied, copy } = useCopy(message.content);
+  const { t } = useTranslation("qeetai");
 
-  if (message.role === "user") {
-    return <UserMessage message={message} copied={copied} copy={copy} chat={chat} />;
-  }
+  if (message.role === "user") return <Question message={message} chat={chat} />;
 
   const streaming = message.status === "streaming";
   const errored = message.status === "error";
 
-  const actions: MessageAction[] = [
-    {
-      icon: copied ? (
-        <CheckIcon className="size-3.5 text-success" />
-      ) : (
-        <CopyIcon className="size-3.5" />
-      ),
-      label: t(copied ? "common:states.copied" : "common:actions.copy"),
-      onClick: copy,
-    },
-  ];
-  if (isLast && !streaming) {
-    actions.push({
-      icon: <RotateCcwIcon className="size-3.5" />,
-      label: t("messageItem.regenerate"),
-      onClick: chat.regenerate,
-    });
-  }
-
   return (
-    <div className="group flex gap-3">
-      <span
-        className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/15"
-        aria-hidden
-      >
-        <SparklesIcon className="size-3.5" />
-      </span>
-      <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
-        {message.content ? (
-          <MarkdownMessage content={message.content} />
-        ) : streaming ? (
-          <span className="text-sm text-muted-foreground">{t("messageItem.thinking")}</span>
-        ) : null}
-        {streaming && message.content ? (
-          <span
-            className="ms-0.5 inline-block h-4 w-0.5 translate-y-0.5 animate-pulse bg-primary align-middle motion-reduce:animate-none"
-            aria-hidden
-          />
-        ) : null}
-        {message.toolExecutions && message.toolExecutions.length > 0 ? (
-          <ExecutionTimeline executions={message.toolExecutions} />
-        ) : null}
-        {errored ? (
-          <p className="flex items-center gap-1.5 text-xs text-destructive" role="alert">
-            <TriangleAlertIcon className="size-3.5 shrink-0" />
-            {message.error ?? t("chat.turnFailed")}
-          </p>
-        ) : null}
-        {!streaming ? (
-          <MessageActions
-            actions={actions}
-            className="opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
-          />
-        ) : null}
-      </div>
+    <div className="qai-turn" data-role="assistant">
+      <VisuallyHidden>{t("transcript.assistant")}</VisuallyHidden>
+      {message.content ? (
+        <MarkdownMessage content={message.content} />
+      ) : streaming ? (
+        <span className="qai-thinking">
+          <Spinner size="sm" decorative />
+          {t("messageItem.thinking")}
+        </span>
+      ) : null}
+      {message.toolExecutions && message.toolExecutions.length > 0 ? (
+        <ExecutionTimeline executions={message.toolExecutions} />
+      ) : null}
+      {errored ? (
+        <p className="qai-turn-error" role="alert">
+          <TriangleAlertIcon shape="sharp" size={16} aria-hidden="true" />
+          {message.error ?? t("chat.turnFailed")}
+        </p>
+      ) : null}
+      {!streaming && message.content ? (
+        <div className="qai-turn-actions">
+          <CopyButton value={message.content} size="sm" label={t("messageItem.copyAnswer")} />
+          {isLast ? (
+            <IconButton
+              icon={RotateCcwIcon}
+              size="sm"
+              tone="neutral"
+              aria-label={t("messageItem.regenerate")}
+              onClick={chat.regenerate}
+            />
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function UserMessage({
-  message,
-  copied,
-  copy,
-  chat,
-}: {
-  message: Message;
-  copied: boolean;
-  copy: () => void;
-  chat: UseQeetAIChat;
-}) {
+/** What the person asked, with Copy and Edit; Edit swaps it for a field and Send. */
+function Question({ message, chat }: { message: Message; chat: UseQeetAIChat }) {
   const { t } = useTranslation(["qeetai", "common"]);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
+  const editRef = useRef<HTMLTextAreaElement>(null);
+
+  // The field takes focus as it replaces the question, so typing can start at once.
+  useEffect(() => {
+    if (editing) editRef.current?.focus();
+  }, [editing]);
 
   if (editing) {
     return (
-      <div className="flex flex-col items-end gap-2">
-        <Textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={3}
-          aria-label={t("messageItem.editMessage")}
-          className="w-full max-w-[85%]"
-          autoFocus
-        />
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              setDraft(message.content);
-              setEditing(false);
-            }}
-          >
-            {t("common:actions.cancel")}
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              chat.editAndResend(message.id, draft);
-              setEditing(false);
-            }}
-            disabled={!draft.trim()}
-          >
-            {t("messageItem.send")}
-          </Button>
+      <div className="qai-turn" data-role="user">
+        <div className="qai-edit">
+          <Textarea
+            ref={editRef}
+            value={draft}
+            onValueChange={(value) => setDraft(value)}
+            rows={3}
+            maxRows={8}
+            aria-label={t("messageItem.editMessage")}
+          />
+          <div className="qai-edit-actions">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setDraft(message.content);
+                setEditing(false);
+              }}
+            >
+              {t("common:actions.cancel")}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!draft.trim()}
+              onClick={() => {
+                chat.editAndResend(message.id, draft);
+                setEditing(false);
+              }}
+            >
+              {t("messageItem.send")}
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const actions: MessageAction[] = [
-    {
-      icon: copied ? (
-        <CheckIcon className="size-3.5 text-success" />
-      ) : (
-        <CopyIcon className="size-3.5" />
-      ),
-      label: t(copied ? "common:states.copied" : "common:actions.copy"),
-      onClick: copy,
-    },
-    {
-      icon: <PencilIcon className="size-3.5" />,
-      label: t("common:actions.edit"),
-      onClick: () => {
-        setDraft(message.content);
-        setEditing(true);
-      },
-    },
-  ];
-
   return (
-    <div className="group flex flex-col items-end gap-1">
-      <div className="max-w-[85%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-ee-sm bg-primary px-3.5 py-2 text-sm text-primary-foreground">
-        {message.content}
+    <div className="qai-turn" data-role="user">
+      <VisuallyHidden>{t("transcript.you")}</VisuallyHidden>
+      <div className="qai-question">{message.content}</div>
+      <div className="qai-turn-actions">
+        <CopyButton value={message.content} size="sm" label={t("messageItem.copyQuestion")} />
+        <IconButton
+          icon={PencilIcon}
+          size="sm"
+          tone="neutral"
+          aria-label={t("messageItem.editMessage")}
+          onClick={() => {
+            setDraft(message.content);
+            setEditing(true);
+          }}
+        />
       </div>
-      <MessageActions
-        actions={actions}
-        className="opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
-      />
     </div>
   );
 }

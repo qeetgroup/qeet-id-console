@@ -1,189 +1,120 @@
 // @vitest-environment jsdom
 // Lives beside the route with a "-" prefix so the router generator ignores it.
-import { QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
-vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/components/page-header", () => ({
-  PageHeader: ({ actions }: { actions?: ReactNode }) => <div>{actions}</div>,
-}));
+vi.mock("@/platform/api/client", async () => {
+  const { ApiError } = await import("@/platform/errors/api-error");
+  return { api: vi.fn(), ApiError };
+});
+vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
-// Records what each action asks the shared sensitive-action runner for, then runs it for real.
-const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
-vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@/platform/security/sensitive-action-provider")>();
-  return {
-    ...actual,
-    useSensitiveAction: () => {
-      const run = actual.useSensitiveAction();
-      return (o: Parameters<typeof run>[0]) => {
-        sensitiveCalls.push(o);
-        return run(o);
-      };
-    },
-  };
-});
+vi.mock("@/modules/dashboard", async () =>
+  (await import("@/modules/authentication/components/methods/__tests__/stubs")).dashboardStub(),
+);
+vi.mock("@tanstack/react-router", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-router")>()),
+  Link: (await import("@/modules/authentication/components/methods/__tests__/stubs")).RouterLink,
+}));
 
-import { toast } from "sonner";
+import { renderPage } from "@/modules/authentication/components/methods/__tests__/kit";
 import { api } from "@/platform/api/client";
-import { ApiError } from "@/platform/errors/api-error";
-import { getContext } from "@/platform/query/query-client";
-import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./totp";
 
 const TotpPage = Route.options.component as () => React.JSX.Element;
+const CODES = ["aaaa-1111", "bbbb-2222", "cccc-3333"];
 
 let enrolled: boolean;
-let recoveryTotal: number;
-let regenerate: () => Promise<unknown>;
+let recovery: { enrolled: boolean; total: number; remaining: number };
+let confirmed: unknown;
+let disabled: boolean;
 
 beforeEach(() => {
-  enrolled = true;
-  recoveryTotal = 10;
-  regenerate = async () => ({ recovery_codes: ["aaaa-bbbb"], warning: "" });
-  sensitiveCalls.length = 0;
-  vi.mocked(toast.success).mockReset();
-  vi.mocked(toast.error).mockReset();
+  enrolled = false;
+  recovery = { enrolled: false, total: 0, remaining: 0 };
+  confirmed = undefined;
+  disabled = false;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
     if (path === "/v1/mfa/totp" && method === "GET") return { enrolled };
-    if (path === "/v1/mfa/recovery-codes")
-      return { remaining: recoveryTotal, total: recoveryTotal };
-    if (path === "/v1/mfa/totp/enroll/start") {
-      return { secret: "JBSWY3DPEHPK3PXP", provisioning_url: "otpauth://totp/x?secret=y" };
+    if (path === "/v1/mfa/totp" && method === "DELETE") {
+      disabled = true;
+      return undefined;
     }
-    if (path === "/v1/mfa/totp" && method === "DELETE") return undefined;
-    if (path === "/v1/mfa/recovery-codes/regenerate") return regenerate();
+    if (path === "/v1/mfa/recovery-codes") return recovery;
+    if (path === "/v1/mfa/totp/enroll/start")
+      return {
+        secret: "JBSWY3DPEHPK3PXP",
+        provisioning_url: "otpauth://totp/Qeet:ada?secret=JBSWY3DPEHPK3PXP",
+        replacing: false,
+      };
+    if (path === "/v1/mfa/totp/enroll/confirm") {
+      confirmed = options?.body;
+      return { recovery_codes: CODES };
+    }
+    if (path === "/v1/mfa/recovery-codes/regenerate") return { recovery_codes: CODES };
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
 
 afterEach(cleanup);
 
-// The app's query client, so the shared success and error toasts run as they do in the console.
-function renderPage() {
-  render(
-    <QueryClientProvider client={getContext().queryClient}>
-      <SensitiveActionProvider>
-        <TotpPage />
-      </SensitiveActionProvider>
-    </QueryClientProvider>,
-  );
-}
-
-function writes() {
-  return vi
-    .mocked(api)
-    .mock.calls.map(([path, options]) => `${options?.method ?? "GET"} ${path}`)
-    .filter((r) => !r.startsWith("GET "));
-}
-
-async function confirmation(title: string) {
-  const dialog = await screen.findByRole("alertdialog");
-  expect(within(dialog).getByText(title)).toBeTruthy();
-  return dialog;
-}
-
-describe("MFA › Authenticator app", () => {
-  it("sets up a first app without a confirmation, worded for setting one up", async () => {
-    enrolled = false;
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Begin enrollment" }));
-
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/mfa/totp/enroll/start"]));
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Set up an authenticator app" });
-    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
+describe("MFA › TOTP (your own)", () => {
+  it("sets the app up under its row, then shows the recovery codes once", async () => {
+    renderPage(<TotpPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Set up" }));
+    expect(await screen.findByText("JBSW Y3DP EHPK 3PXP")).toBeTruthy();
+    const first = screen.getAllByRole("textbox", { name: /code from the app/i })[0] as HTMLElement;
+    fireEvent.paste(first, { clipboardData: { getData: () => "123456" } });
+    fireEvent.click(screen.getByRole("button", { name: "Turn on" }));
+    await waitFor(() => expect(confirmed).toEqual({ code: "123456" }));
+    expect(await screen.findByText("aaaa-1111")).toBeTruthy();
+    const done = screen.getByRole("button", { name: "Done" });
+    expect(done.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(screen.getByRole("checkbox", { name: /i've saved these codes/i }));
+    expect(done.getAttribute("aria-disabled")).not.toBe("true");
   });
 
-  it("confirms replacing the app before starting the new one", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Replace authenticator" }));
-    const dialog = await confirmation("Replace your authenticator?");
-    expect(writes()).toEqual([]);
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Replace" }));
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/mfa/totp/enroll/start"]));
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Replace your authenticator app" });
+  it("asks for the whole code before confirming", async () => {
+    renderPage(<TotpPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Set up" }));
+    await screen.findByText("JBSW Y3DP EHPK 3PXP");
+    fireEvent.click(screen.getByRole("button", { name: "Turn on" }));
+    expect(await screen.findByText("Enter the 6-digit code from the app.")).toBeTruthy();
+    expect(confirmed).toBeUndefined();
   });
 
-  it("disables the app only once confirmed, and says so once", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Disable TOTP" }));
-    const dialog = await confirmation("Disable TOTP for your account?");
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Disable TOTP" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/mfa/totp"]));
-    await waitFor(() =>
-      expect(toast.success).toHaveBeenCalledWith("TOTP disabled", expect.anything()),
-    );
-    expect(toast.success).toHaveBeenCalledTimes(1);
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Disable TOTP" });
+  it("confirms turning a set-up app off with what happens to the codes", async () => {
+    enrolled = true;
+    recovery = { enrolled: true, total: 10, remaining: 2 };
+    renderPage(<TotpPage />);
+    const codes = (await screen.findByRole("heading", { name: "Your recovery codes" })).closest(
+      "section",
+    ) as HTMLElement;
+    expect(within(codes).getByText("2 of 10 left")).toBeTruthy();
+    expect(within(codes).getByText("Running low")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Turn off" }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText(/so do your recovery codes/i)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Turn off" }));
+    await waitFor(() => expect(disabled).toBe(true));
   });
 
-  it("changes nothing when disabling is cancelled", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Disable TOTP" }));
-    const dialog = await confirmation("Disable TOTP for your account?");
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
-    expect(writes()).toEqual([]);
-  });
-
-  it("confirms regenerating recovery codes, since the old ones stop working", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Regenerate codes" }));
-    const dialog = await confirmation("Regenerate your recovery codes?");
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Regenerate" }));
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/mfa/recovery-codes/regenerate"]));
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("New recovery codes generated"));
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Regenerate your recovery codes" });
-  });
-
-  it("generates the first recovery codes without a confirmation", async () => {
-    recoveryTotal = 0;
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Generate codes" }));
-
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/mfa/recovery-codes/regenerate"]));
-    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
-  });
-
-  it("reports a failed regeneration once, without the backend's message", async () => {
-    recoveryTotal = 0;
-    regenerate = async () => {
-      throw new ApiError(500, "internal", "boom");
-    };
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Generate codes" }));
-
-    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
-    expect(JSON.stringify(vi.mocked(toast.error).mock.calls)).not.toContain("boom");
-    expect(toast.success).not.toHaveBeenCalled();
-  });
-
-  it("says nothing more when the person backs out of the step-up", async () => {
-    recoveryTotal = 0;
-    regenerate = async () => {
-      throw new ApiError(403, "step_up_required", "step up");
-    };
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Generate codes" }));
-
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/mfa/recovery-codes/regenerate"]));
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(toast.error).not.toHaveBeenCalled();
-    expect(toast.success).not.toHaveBeenCalled();
+  it("confirms new recovery codes, since they void the old ones", async () => {
+    enrolled = true;
+    recovery = { enrolled: true, total: 10, remaining: 8 };
+    renderPage(<TotpPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Get new codes" }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText(/the codes you have now stop working/i)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Get new codes" }));
+    expect(await screen.findByText("cccc-3333")).toBeTruthy();
   });
 });

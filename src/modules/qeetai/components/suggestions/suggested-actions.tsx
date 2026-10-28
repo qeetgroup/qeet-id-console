@@ -1,26 +1,17 @@
-import { cn } from "@qeetrix/ui";
-import { SparklesIcon } from "@qeetrix/icons";
+import { Button } from "@qeetrix/react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useCapabilities } from "@/platform/security/capability-provider";
-
 import { useConsoleContext } from "@/modules/qeetai/context/use-console-context";
 import { rankSuggestions } from "@/modules/qeetai/suggestions/suggestion-engine";
+import { useCapabilities } from "@/platform/security/capability-provider";
 
 /**
- * Renders the ranked suggestions for the current route. Picking one sends a prompt
- * suggestion's text, or a tool suggestion's label, as a message. Renders nothing when the
- * route has none.
+ * The ranked suggestions for the current page, above the composer: picking one sends a prompt
+ * suggestion's text, or a tool suggestion's label, as a message. Nothing when the page has none.
  */
-export function SuggestedActions({
-  onPick,
-  className,
-}: {
-  onPick: (text: string) => void;
-  className?: string;
-}) {
-  const { i18n } = useTranslation("qeetai");
+export function SuggestedActions({ onPick }: { onPick: (text: string) => void }) {
+  const { t, i18n } = useTranslation("qeetai");
   const context = useConsoleContext();
   const access = useCapabilities();
   const suggestions = useMemo(() => rankSuggestions(context, access.can), [context, access.can]);
@@ -28,21 +19,22 @@ export function SuggestedActions({
   if (suggestions.length === 0) return null;
 
   return (
-    <div className={cn("flex flex-wrap gap-1.5 px-3 pt-2", className)}>
+    <div className="qai-suggestions">
+      <span className="qai-suggestions-label">{t("suggestions.label")}</span>
       {suggestions.map((suggestion) => (
-        <button
+        <Button
           // Labels are unique within a route's suggestion list.
           key={`${suggestion.type}-${suggestion.label}`}
-          type="button"
+          size="sm"
+          variant="ghost"
+          tone="neutral"
           title={suggestion.description ? i18n.t(suggestion.description) : undefined}
           onClick={() =>
             onPick(i18n.t(suggestion.type === "prompt" ? suggestion.text : suggestion.label))
           }
-          className="inline-flex items-center gap-1.5 rounded-full border bg-card/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <SparklesIcon className="size-3 text-primary" aria-hidden />
           {i18n.t(suggestion.label)}
-        </button>
+        </Button>
       ))}
     </div>
   );

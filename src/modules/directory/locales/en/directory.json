@@ -1,351 +1,12 @@
 {
-  "directory": {
-    "notReported": "Not reported",
-    "notSet": "Not set",
-    "filter": "Filter",
-    "allTypes": "All types",
-    "noResults": "No matching records",
-    "clearFilters": "Clear filters",
-    "pagination": "{{from}}-{{to}} of {{total}}",
-    "previous": "Previous page",
-    "next": "Next page",
-    "cancel": "Cancel",
-    "dateRange": "Date range",
-    "lastDays": "Last {{days}} days",
-    "allConnections": "All connections",
-    "allStatuses": "All statuses",
-    "suspended": {
-      "title": "Suspended users",
-      "description": "Review temporarily disabled users. Reactivate accounts or update review decisions based on risk and reason.",
-      "export": "Export list",
-      "policies": "Review policies",
-      "summary": "Suspended user summary",
-      "total": "Total suspended",
-      "highRisk": "High risk",
-      "byPolicy": "Suspended by policy",
-      "manual": "Manually suspended",
-      "pending": "Pending review",
-      "clearPending": "Clear the pending review filter",
-      "filters": "Suspended user filters",
-      "search": "Search users by name, email or ID...",
-      "allReasons": "All reasons",
-      "allSources": "All sources",
-      "allTeams": "All teams",
-      "allRisks": "All risk levels",
-      "name": "Name",
-      "email": "Email",
-      "team": "Team",
-      "reason": "Suspension reason",
-      "source": "Source",
-      "risk": "Risk level",
-      "since": "Suspended since",
-      "status": "Status",
-      "lastSignIn": "Last sign-in",
-      "actions": "Actions",
-      "selectAll": "Select eligible users",
-      "select": "Select {{name}}",
-      "rowActions": "Actions for {{name}}",
-      "managedElsewhere": "This account is managed elsewhere or is read-only.",
-      "reactivate": "Reactivate",
-      "reactivateSelected": "Reactivate {{count}} selected",
-      "reactivateTitle_one": "Reactivate {{count}} user?",
-      "reactivateTitle_other": "Reactivate {{count}} users?",
-      "reactivateDescription": "These users can sign in again. Existing sessions remain revoked.",
-      "reactivateActionLabel": "Reactivate these users",
-      "review": "Review suspension",
-      "reviewState": "Review state",
-      "reviewed": "Reviewed",
-      "saveReview": "Save review",
-      "empty": "No suspended users match this view.",
-      "label": "Suspended",
-      "reasonsTitle": "Suspension reasons",
-      "reasonsDescription": "Recorded reasons for suspended accounts.",
-      "queueTitle": "Reactivation queue",
-      "queueDescription": "Suspended users awaiting review or reactivation.",
-      "viewPending": "View all {{count}} pending",
-      "noPending": "No pending reviews.",
-      "riskTitle": "Risk distribution",
-      "riskDescription": "Recorded risk assessments for suspended users.",
-      "reasons": {
-        "unspecified": "Not recorded",
-        "provider": "Provider deactivation",
-        "suspicious_activity": "Suspicious activity",
-        "policy_violation": "Policy violation",
-        "account_compromise": "Account compromise",
-        "offboarding": "Offboarding",
-        "inactive": "Inactive account",
-        "other": "Other",
-        "managed_elsewhere": "Managed elsewhere"
-      },
-      "sources": {
-        "unknown": "Unknown",
-        "manual": "Manual",
-        "scim": "SCIM",
-        "ldap": "LDAP / AD",
-        "policy": "Policy",
-        "external": "External"
-      },
-      "risks": {
-        "unknown": "Unknown",
-        "low": "Low risk",
-        "medium": "Medium risk",
-        "high": "High risk"
-      }
-    },
-    "mappings": {
-      "title": "Mappings",
-      "description": "Map external directory attributes into Qeet ID user profiles. Transform, validate, and preview your mappings.",
-      "test": "Test mapping",
-      "add": "Add mapping",
-      "edit": "Edit mapping",
-      "save": "Save mapping",
-      "delete": "Delete",
-      "deleteTitle_one": "Delete {{count}} mapping rule?",
-      "deleteTitle_other": "Delete {{count}} mapping rules?",
-      "deleteActionLabel": "Delete these mapping rules",
-      "sourceConnection": "Source connection",
-      "noConnection": "No connections",
-      "summary": "Mapping summary",
-      "active": "Active mappings",
-      "disabledCount": "{{count}} disabled",
-      "covered": "Required fields covered",
-      "validated": "Preview evaluated",
-      "notValidated": "Not validated",
-      "transforms": "Custom transforms",
-      "transformTypes": "Case, whitespace, extraction",
-      "warnings": "Validation warnings",
-      "valid": "Mapping valid",
-      "review": "Validation issues",
-      "rules": "Mappings",
-      "search": "Search mappings...",
-      "filter": "Mapping status",
-      "activeLabel": "Active",
-      "disabled": "Disabled",
-      "disable": "Disable",
-      "enable": "Enable",
-      "selected": "{{count}} selected",
-      "selectAll": "Select all mappings",
-      "select": "Select {{field}} mapping",
-      "source": "Source attribute",
-      "target": "Target field",
-      "type": "Type",
-      "transform": "Transform rule",
-      "previewValue": "Preview value",
-      "status": "Status",
-      "actions": "Actions",
-      "rowActions": "Actions for {{field}} mapping",
-      "empty": "No mapping rules configured.",
-      "preview": "Mapping preview",
-      "testData": "Test data",
-      "sourceData": "Source data (JSON)",
-      "mappedProfile": "Mapped Qeet ID profile",
-      "invalidSource": "Enter a valid JSON object smaller than 64 KB.",
-      "editorDescription": "Profile fields only. Group labels do not grant access or membership.",
-      "pattern": "Extraction pattern (one capture group)",
-      "required": "Required source field",
-      "types": {
-        "string": "String",
-        "array": "Array"
-      },
-      "transformOptions": {
-        "none": "None",
-        "trim": "Trim",
-        "lowercase": "Lowercase",
-        "uppercase": "Uppercase",
-        "extract": "Extract"
-      },
-      "targets": {
-        "email": "Email (new users)",
-        "display_name": "Display name",
-        "first_name": "First name",
-        "last_name": "Last name",
-        "department": "Department",
-        "title": "Title",
-        "manager_id": "Manager ID",
-        "groups": "Group labels"
-      },
-      "issues": {
-        "preview_too_large": "The test data or the mappings are too large to preview.",
-        "source_invalid": "The source attribute isn't a valid attribute name.",
-        "source_credential": "The source attribute names a credential, which can't be mapped.",
-        "target_unsupported": "This isn't a profile field that can be mapped.",
-        "target_duplicate": "Another active mapping already sets this field.",
-        "value_type_mismatch": "This field takes a different value type.",
-        "transform_unsupported": "This transform isn't supported.",
-        "pattern_unexpected": "A pattern applies only to the extract transform.",
-        "pattern_invalid": "The pattern must be 1 to 256 characters with one capture group.",
-        "source_missing": "The required source attribute is missing from the test data.",
-        "source_empty": "The required source attribute is empty.",
-        "value_not_string": "The source value must be text.",
-        "value_not_array": "The source value must be a list of text values.",
-        "value_too_long": "A source value is longer than 2,048 characters.",
-        "value_too_many": "The source list has more than 100 entries.",
-        "value_unmatched": "The source value doesn't match the extract pattern.",
-        "email_invalid": "The mapped email isn't a valid address.",
-        "display_name_too_long": "The mapped display name is longer than 200 characters.",
-        "unknown": "This mapping can't be applied as configured."
-      }
-    },
-    "errors": {
-      "title": "Sync errors",
-      "description": "Investigate failed provisioning and directory sync issues across your connections.",
-      "export": "Export report",
-      "retryFailed": "Retry failed checks",
-      "retryVisible": "Retry eligible checks in the current page.",
-      "sourceRetry": "Provider pushes and sign-ins must be retried at their source. Qeet does not retain their payloads or credentials.",
-      "filters": "Sync error filters",
-      "search": "Search errors by message, code or ID...",
-      "allSeverities": "All severities",
-      "summary": "Sync error summary",
-      "openErrors": "Open errors",
-      "critical": "Critical",
-      "warning": "Warning",
-      "retriedSuccess": "Retried successfully",
-      "impacted": "Impacted users",
-      "knownObjects": "Distinct known user IDs",
-      "connection": "Connection",
-      "code": "Error code",
-      "message": "Message",
-      "severity": "Severity",
-      "occurred": "Occurred at",
-      "objects": "Impacted objects",
-      "status": "Status",
-      "actions": "Actions",
-      "open": "Open",
-      "resolved": "Resolved",
-      "retried": "Retried",
-      "empty": "No errors match this view.",
-      "details": "View error {{code}}",
-      "detailTitle": "Error details",
-      "resolve": "Mark resolved",
-      "retry": "Retry check",
-      "categoriesTitle": "Error categories",
-      "categoriesDescription": "Breakdown of sync errors by category.",
-      "connectionsTitle": "Most affected connections",
-      "connectionsDescription": "Connections with the highest number of sync errors.",
-      "remediationTitle": "Recent remediation activity",
-      "noRemediation": "No remediation activity yet.",
-      "errors": "errors",
-      "actionResult": "{{succeeded}} of {{total}} operations completed successfully.",
-      "categories": {
-        "provisioning": "Provisioning",
-        "permission": "Permission",
-        "connection": "Connection",
-        "validation": "Validation",
-        "limit": "Limits"
-      },
-      "resource": {
-        "user": "User",
-        "group": "Group",
-        "connection": "Connection"
-      }
-    },
-    "activity": {
-      "title": "Sync activity",
-      "description": "Monitor provisioning and directory synchronization events across your identity providers.",
-      "export": "Export log",
-      "createAlert": "Create alert",
-      "filters": "Sync activity filters",
-      "search": "Search sync activity...",
-      "summary": "Sync activity summary",
-      "total": "Total operations",
-      "successful": "Successful operations",
-      "warnings": "Warning operations",
-      "failedRuns": "Failed operations",
-      "average": "Average duration",
-      "recordedDuration": "Observed operation duration",
-      "rate": "{{percent}}% of operations",
-      "noRuns": "No operations recorded",
-      "connection": "Connection",
-      "trigger": "Trigger",
-      "started": "Started at",
-      "duration": "Duration",
-      "users": "Users synced",
-      "groups": "Groups synced",
-      "result": "Result",
-      "actions": "Actions",
-      "success": "Success",
-      "warning": "Warning",
-      "failed": "Failed",
-      "empty": "No sync activity matches this view.",
-      "removedConnection": "Removed connection",
-      "details": "View operation for {{name}}",
-      "detailTitle": "Operation details",
-      "volumeTitle": "Sync volume",
-      "volumeDescription": "Users and groups changed by directory operations over time.",
-      "emptyVolume": "Sync volume appears after the first recorded operation.",
-      "series": "Volume series",
-      "latestTitle": "Latest operation",
-      "alertDescription": "Notify me in the console when failures reach this threshold within 15 minutes.",
-      "alertName": "Alert name",
-      "threshold": "Failure threshold",
-      "triggerTypes": {
-        "push": "Provider push",
-        "manual": "Manual",
-        "sign-in": "Sign-in"
-      },
-      "operation": {
-        "post": "Provision",
-        "put": "Replace",
-        "patch": "Update",
-        "delete": "Deprovision",
-        "test": "Connection check",
-        "sign-in": "Directory sign-in"
-      }
-    },
-    "connectionsPage": {
-      "healthy": "Healthy",
-      "warning": "Warning",
-      "failed": "Failed syncs",
-      "unknown": "Not monitored",
-      "lastSync": "Last successful sync",
-      "table": "Connections",
-      "type": "Type",
-      "status": "Status",
-      "active": "Active",
-      "draft": "Draft",
-      "disabled": "Disabled",
-      "configured": "Configured",
-      "view": "View connection"
-    },
-    "loadError": "Some directory details couldn't be loaded.",
-    "retry": "Retry",
-    "chartSummary": "{{label}}: {{value}}",
-    "planned": "Planned",
-    "plannedHint": "This view is planned and is not available yet.",
-    "users": {
-      "title": "Users"
-    },
-    "groups": {
-      "title": "Groups"
-    },
-    "status": {
-      "configured": "Configured",
-      "notConfigured": "Not configured",
-      "active": "Active",
-      "attention": "Attention",
-      "notConnected": "Not connected",
-      "pendingInvitations_one": "{{count}} pending invitation",
-      "pendingInvitations_other": "{{count}} pending invitations",
-      "suspendedUsers": "{{count}} suspended users",
-      "scimConfigured": "SCIM is configured. Live sync health is not reported.",
-      "ldapActive_one": "{{count}} active LDAP / AD connection. Live sync health is not reported.",
-      "ldapActive_other": "{{count}} active LDAP / AD connections. Live sync health is not reported.",
-      "ldapAttention_one": "{{count}} LDAP / AD connection is draft or disabled.",
-      "ldapAttention_other": "{{count}} LDAP / AD connections are draft or disabled."
-    }
-  },
   "toast": {
     "mappingSaved": "Mapping saved",
-    "mappingsDeleted": "Mappings deleted",
-    "directoryAlertCreated": "Directory alert created",
+    "mappingRemoved": "Mapping removed",
+    "alertCreated": "Alert created: you'll get a notice when it's reached",
     "scimTokenRevoked": "SCIM token revoked"
   },
   "nav": {
     "directory": {
-      "suspended": {
-        "title": "Suspended"
-      },
       "directories": {
         "title": "Directories",
         "description": "SCIM and LDAP / AD directory-sync connections."
@@ -495,6 +156,550 @@
       "on": "{{name}} is on: people can sign in with it",
       "off": "{{name}} is off",
       "deleted": "{{name}} deleted"
+    }
+  },
+  "sync": {
+    "period": "Period",
+    "periods": {
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days"
+    },
+    "connection": "Connection",
+    "anyConnection": "All connections",
+    "removed": "Removed connection",
+    "export": "Export",
+    "exportTooLarge": "That's over 10,000 rows. Choose a shorter period or one connection first.",
+    "exportFailed": "The export didn't finish",
+    "triggers": {
+      "push": "Sent by your identity provider",
+      "manual": "Run by an admin",
+      "sign-in": "At sign-in"
+    },
+    "changed": {
+      "people_one": "{{n}} person",
+      "people_other": "{{n}} people",
+      "groups_one": "{{n}} group",
+      "groups_other": "{{n}} groups",
+      "nothing": "Nothing",
+      "check": "A check only"
+    },
+    "results": {
+      "success": "Succeeded",
+      "warning": "Warning",
+      "failed": "Failed"
+    },
+    "resolutions": {
+      "open": "Open",
+      "resolved": "Resolved",
+      "retried": "Closed by a check"
+    },
+    "severities": {
+      "critical": "Critical",
+      "warning": "Warning"
+    },
+    "technical": "For your directory admin:",
+    "clear": "Clear filters",
+    "about": {
+      "person": "A person",
+      "newPerson": "A new person",
+      "signIn": "Someone signing in",
+      "group": "A group",
+      "connection": "No one"
+    },
+    "drawer": {
+      "description": "{{connection}} · {{date}}",
+      "result": "Result",
+      "status": "Status",
+      "severity": "Severity",
+      "run": "Run",
+      "cause": "What went wrong",
+      "startedBy": "Started by",
+      "changed": "Changed",
+      "affects": "Affects",
+      "took": "Took",
+      "code": "Code",
+      "close": "Close",
+      "resolved": "Marked resolved {{when}}",
+      "retried": "Closed by a check {{when}}"
+    }
+  },
+  "activity": {
+    "title": "Sync activity",
+    "description": "Every change your identity provider sent over SCIM, every sign-in through LDAP, and every connection check.",
+    "alertMe": "Alert me",
+    "run": {
+      "test": "Connection check",
+      "signIn": "Sign-in",
+      "user": {
+        "post": "Person added",
+        "put": "Person replaced",
+        "patch": "Person updated",
+        "delete": "Person removed"
+      },
+      "group": {
+        "post": "Group added",
+        "put": "Group replaced",
+        "patch": "Group updated",
+        "delete": "Group removed"
+      },
+      "other": "Directory change"
+    },
+    "band": {
+      "events_one": "event · {{n}} failed",
+      "events_other": "events · {{n}} failed",
+      "showFailed": "Show the {{n}} failed",
+      "byConnection": "By connection",
+      "noConnections": "No connections yet",
+      "synced": "Synced",
+      "syncedNote_one": "person · {{groups}}",
+      "syncedNote_other": "people · {{groups}}",
+      "syncedHow": "Added, updated or removed over SCIM, or signed in through LDAP.",
+      "latest": "Latest",
+      "latestNote": "{{run}} · {{connection}}",
+      "nothing": "Nothing in this period",
+      "connectionEvents_one": "{{n}} event",
+      "connectionEvents_other": "{{n}} events",
+      "connectionFailed": "{{n}} failed"
+    },
+    "columns": {
+      "started": "Started",
+      "run": "Run",
+      "changed": "Changed",
+      "took": "Took",
+      "result": "Result"
+    },
+    "filters": {
+      "search": "Search sync activity",
+      "searchPlaceholder": "Search, e.g. DIR-502",
+      "result": "Result",
+      "anyResult": "Any result",
+      "summary": "{{n}} of {{total}} runs"
+    },
+    "empty": {
+      "title": "No activity in the last {{days}} days",
+      "description": "A row appears each time your identity provider sends a change over SCIM, someone signs in through LDAP, or a connection is checked.",
+      "filteredTitle": "Nothing matches",
+      "filteredDescription": "No runs match these filters."
+    },
+    "rowLabel": "{{run}}, {{connection}}",
+    "actions": {
+      "view": "View details",
+      "openErrors": "Open in Sync errors"
+    },
+    "drawer": {
+      "failure": "The failure",
+      "failureOpen": "Open on Sync errors",
+      "retryOf": "A check run again from Sync errors"
+    },
+    "alert": {
+      "title": "Alert me when directories fail",
+      "description": "You get a notice in the console's notifications when failures reach a number within 15 minutes.",
+      "connection": "Connection",
+      "anyConnection": "Any connection",
+      "threshold": "Failures within 15 minutes",
+      "thresholdHelp": "From 1 to 100.",
+      "name": "Notice title",
+      "nameHelp": "What the notice says.",
+      "nameRequired": "Give the notice a title.",
+      "nameDefault": "Directory failures",
+      "nameDefaultFor": "{{name}} failing",
+      "onlyYou": "Only you get it, at most once every 15 minutes",
+      "onlyYouDetail": "Failures include sign-ins a directory refuses, such as a mistyped password. An alert can't be changed or removed here yet.",
+      "create": "Create alert",
+      "cancel": "Cancel"
+    }
+  },
+  "errors": {
+    "title": "Sync errors",
+    "description": "What failed, grouped by cause, with what to do. A failure stays open until a check passes or someone marks it resolved.",
+    "readOnly": {
+      "title": "You can see the failures, not change them",
+      "description": "Checking again and marking resolved need the connection.write permission."
+    },
+    "toFix": "To fix",
+    "problems_one": "{{n}} problem",
+    "problems_other": "{{n}} problems",
+    "allClear": {
+      "title": "Nothing to fix",
+      "description": "No failure is open."
+    },
+    "every": "Every failure",
+    "newest": "The newest {{n}} of {{total}} open failures.",
+    "problem": {
+      "times_one": "Failed once, {{last}}.",
+      "times_other": "Failed {{n}} times since {{first}}, most recently {{last}}.",
+      "ldapActive": "People who sign in with it can't until it's fixed.",
+      "ldapDraft": "No one is affected yet: it's a draft.",
+      "ldapOff": "No one is affected: it's turned off.",
+      "reach": "Affects {{what}}.",
+      "reachPeople_one": "{{n}} person",
+      "reachPeople_other": "{{n}} people",
+      "reachNew_one": "{{n}} new person",
+      "reachNew_other": "{{n}} new people",
+      "reachGroups_one": "{{n}} group",
+      "reachGroups_other": "{{n}} groups",
+      "fixTitle": "How to fix it",
+      "itsAddress": "the connection's address",
+      "checkAgain": "Check again",
+      "markResolved": "Mark resolved",
+      "passed": "The check passed. These failures are from before it: mark them resolved.",
+      "healthy": "It works again: its latest run in the last 24 hours succeeded. These failures are from before it: mark them resolved."
+    },
+    "links": {
+      "editConnection": "Edit connection",
+      "openConnection": "Open connection",
+      "openScim": "Open SCIM",
+      "checkMappings": "Check mappings"
+    },
+    "causes": {
+      "unreachable": {
+        "name": "Couldn't connect",
+        "title_one": "Qeet ID can't connect to {{name}}",
+        "title_other": "Qeet ID can't connect to {{name}}",
+        "steps": {
+          "1": {
+            "lead": "Check the address.",
+            "text": "Qeet ID tried <code>{{server}}</code>. If the host name or port is wrong, correct it on the connection."
+          },
+          "2": {
+            "lead": "Let Qeet ID reach it.",
+            "text": "If the server is only on your network, open your firewall to Qeet ID on port {{port}}, and check the server's certificate is valid."
+          },
+          "3": {
+            "lead": "Check the service account, then check again.",
+            "text": "The check signs in with the connection's bind DN and password. A check that passes closes its failure."
+          }
+        }
+      },
+      "signInRefused": {
+        "name": "Sign-in failed",
+        "title_one": "A sign-in through {{name}} failed",
+        "title_other": "{{n}} sign-ins through {{name}} failed",
+        "steps": {
+          "1": {
+            "lead": "Most are a mistyped password.",
+            "text": "A few now and then need nothing from you: the person tries again."
+          },
+          "2": {
+            "lead": "Many at once?",
+            "text": "Test the connection on its page, and check its user filter finds exactly one entry for each person."
+          },
+          "3": {
+            "lead": "Check the mappings.",
+            "text": "A sign-in is refused when a mapping marked Required finds nothing, or a mapping can't use a value."
+          }
+        }
+      },
+      "exists": {
+        "name": "Already taken",
+        "title_one": "{{name}} sent a person or group that clashes with one already taken",
+        "title_other": "{{name}} sent {{n}} people or groups that clash with ones already taken",
+        "steps": {
+          "1": {
+            "lead": "Find the clash.",
+            "text": "A group with that name or external ID is already here, or the person's email belongs to an account elsewhere or to a domain another organisation manages."
+          },
+          "2": {
+            "lead": "Change one of them.",
+            "text": "Rename the group here or in your identity provider, or give the person an email on one of your domains."
+          },
+          "3": {
+            "lead": "Send it again.",
+            "text": "Retry the change from your identity provider, then mark this resolved."
+          }
+        }
+      },
+      "notFound": {
+        "name": "Not found here",
+        "title_one": "{{name}} changed a person or group that isn't here",
+        "title_other": "{{name}} changed {{n}} people or groups that aren't here",
+        "steps": {
+          "1": {
+            "lead": "Check who it was.",
+            "text": "The change named a person or group this organisation doesn't have; they may have been deleted here."
+          },
+          "2": {
+            "lead": "Send them again.",
+            "text": "Unassign and reassign them in your identity provider, so it adds them afresh."
+          },
+          "3": {
+            "lead": "Then mark this resolved.",
+            "text": "If they shouldn't be here, there's nothing else to do."
+          }
+        }
+      },
+      "refusedData": {
+        "name": "Data refused",
+        "title_one": "Qeet ID refused a change from {{name}}",
+        "title_other": "Qeet ID refused {{n}} changes from {{name}}",
+        "steps": {
+          "1": {
+            "lead": "Check the user name.",
+            "text": "Each person needs a user name that's an email on a domain your organisation has verified."
+          },
+          "2": {
+            "lead": "Check the mappings.",
+            "text": "A change is refused when a mapping marked Required finds nothing, or a mapping can't use a value."
+          },
+          "3": {
+            "lead": "Send it again.",
+            "text": "Retry the change from your identity provider, then mark this resolved."
+          }
+        }
+      },
+      "tooMany": {
+        "name": "Too many at once",
+        "title_one": "{{name}} sent a change faster than Qeet ID takes them",
+        "title_other": "{{name}} sent {{n}} changes faster than Qeet ID takes them",
+        "steps": {
+          "1": {
+            "lead": "Nothing is lost here.",
+            "text": "Qeet ID turned the changes away; nothing was saved from them."
+          },
+          "2": {
+            "lead": "Send them again.",
+            "text": "Retry them from your identity provider."
+          },
+          "3": {
+            "lead": "Then mark this resolved.",
+            "text": "Nothing else needs to change here."
+          }
+        }
+      },
+      "denied": {
+        "name": "Not allowed",
+        "title_one": "{{name}} tried to change the organisation's owner",
+        "title_other": "{{name}} tried {{n}} times to change the organisation's owner",
+        "steps": {
+          "1": {
+            "lead": "The owner stays as they are.",
+            "text": "The directory can't suspend or remove the account that owns the organisation."
+          },
+          "2": {
+            "lead": "Leave them out of provisioning.",
+            "text": "Unassign the owner from Qeet ID in your identity provider."
+          },
+          "3": {
+            "lead": "Then mark this resolved.",
+            "text": "Nothing else needs to change here."
+          }
+        }
+      },
+      "failedHere": {
+        "name": "Failed in Qeet ID",
+        "title_one": "A change from {{name}} failed in Qeet ID",
+        "title_other": "{{n}} changes from {{name}} failed in Qeet ID",
+        "steps": {
+          "1": {
+            "lead": "Send it again.",
+            "text": "This failed on Qeet ID's side, not in your directory: retry it from your identity provider."
+          },
+          "2": {
+            "lead": "Still failing?",
+            "text": "Contact Qeet ID support with the code and the time below."
+          },
+          "3": {
+            "lead": "Then mark this resolved.",
+            "text": "Once a retry goes through."
+          }
+        }
+      }
+    },
+    "band": {
+      "open": "Open",
+      "openNote": "{{critical}} critical · {{warning}} warning",
+      "since": "Oldest {{when}}",
+      "noneOpen": "None open",
+      "byCause": "By cause",
+      "byConnection": "By connection",
+      "closed": "Closed in {{days}} days",
+      "closedNote": "{{resolved}} marked resolved · {{retried}} by a check",
+      "lastClosed": "Last {{when}}",
+      "nothing": "None"
+    },
+    "columns": {
+      "failed": "Failed",
+      "cause": "Cause",
+      "code": "Code",
+      "affects": "Affects",
+      "severity": "Severity",
+      "status": "Status"
+    },
+    "filters": {
+      "search": "Search failures",
+      "searchPlaceholder": "Search a code, message or person ID",
+      "status": "Status",
+      "anyStatus": "Any status",
+      "severity": "Severity",
+      "anySeverity": "Any severity",
+      "summary": "{{n}} of {{total}} failures"
+    },
+    "empty": {
+      "title": "No failures in the last {{days}} days",
+      "description": "Everything your directories sent, every sign-in and every check went through.",
+      "filteredTitle": "Nothing matches",
+      "filteredDescription": "No failures match these filters."
+    },
+    "rowLabel": "{{cause}}, {{connection}}, {{date}}",
+    "actions": {
+      "view": "View details"
+    },
+    "drawer": {
+      "retryElsewhere": "Qeet ID can't send this again: retry it from your identity provider or the person's next sign-in. It doesn't keep what was sent, or anyone's password."
+    },
+    "resolve": {
+      "title_one": "Mark this failure resolved?",
+      "title_other": "Mark {{n}} failures resolved?",
+      "description": "They leave To fix and the Sync errors count, and your name and the time are recorded. Nothing changes on the connection: if the cause is still there, the next failure is listed as a new one.",
+      "confirm": "Mark resolved",
+      "action": "Mark failures resolved"
+    },
+    "toast": {
+      "passed": "The check passed: {{name}} answers",
+      "stillFailing": "The check failed again",
+      "resolved_one": "Failure marked resolved",
+      "resolved_other": "{{n}} failures marked resolved",
+      "refused": "Some were closed already"
+    }
+  },
+  "mappings": {
+    "title": "Mappings",
+    "description": "Which directory attribute fills each Qeet ID field, for each connection.",
+    "readOnly": {
+      "title": "You can see the mappings, not change them",
+      "description": "Changing a mapping needs the connection.write permission."
+    },
+    "none": {
+      "title": "No connections to map yet",
+      "description": "Mappings belong to a connection: set up SCIM or connect a directory first.",
+      "action": "Open Connections"
+    },
+    "connection": {
+      "title": "Connection",
+      "for": "Mapping for",
+      "switch": "Switch",
+      "ldapHint": "LDAP / AD · reads <code>{{baseDn}}</code>",
+      "ldapHintNoDn": "LDAP / AD",
+      "scimHint": "SCIM · sent by your identity provider",
+      "status": "Status",
+      "open": "Open connection",
+      "draft": "It's a draft: these mappings apply once it's turned on.",
+      "disabled": "It's turned off: no one signs in with it now.",
+      "ldapOn": "Applied each time someone signs in through it.",
+      "scimOn": "Applied to each change your identity provider sends.",
+      "failing": "Its latest check failed."
+    },
+    "fields": {
+      "title": "Profile fields",
+      "descriptionLdap": "Which directory attribute fills each field, each time someone signs in through this connection. Email and display name set the person's account; the rest are kept with their directory profile.",
+      "descriptionScim": "Which attribute fills each field, with each change your identity provider sends. Email and display name set the person's account; the rest are kept with their directory profile.",
+      "names": {
+        "email": "Email",
+        "display_name": "Display name",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "title": "Job title",
+        "department": "Department",
+        "manager_id": "Manager ID",
+        "groups": "Group labels"
+      },
+      "notMapped": "Not mapped",
+      "map": "Map",
+      "change": "Change",
+      "mapField": "Map {{field}}",
+      "changeField": "Change the {{field}} mapping",
+      "fromLdap": {
+        "email": "From the connection's settings. It finds or makes the account at the first sign-in, and doesn't change the email after.",
+        "display_name": "From the connection's settings. It names new accounts; a mapping keeps the name up to date."
+      },
+      "fromScim": {
+        "email": "What your identity provider sends as the user name.",
+        "display_name": "What your identity provider sends as the display name."
+      },
+      "groupsHint": "Labels only: they don't add anyone to a group or grant access.",
+      "transforms": {
+        "trim": "trimmed",
+        "lowercase": "in lowercase",
+        "uppercase": "in uppercase",
+        "extract": "the part matching"
+      },
+      "required": "Required",
+      "off": "Off",
+      "offDefault": "Turned off: the default, {{attribute}}, fills it."
+    },
+    "editor": {
+      "attribute": "Directory attribute",
+      "attributeLdap": "An LDAP attribute name, such as departmentNumber.",
+      "attributeScim": "A SCIM attribute, or a path into the entry such as /name/givenName.",
+      "placeholderLdap": "e.g. departmentNumber",
+      "placeholderScim": "e.g. title",
+      "change": "Change the value",
+      "transforms": {
+        "none": "Use it as it is",
+        "trim": "Trim spaces",
+        "lowercase": "Lowercase",
+        "uppercase": "Uppercase",
+        "extract": "Keep part of it"
+      },
+      "pattern": "Pattern",
+      "patternHelp": "A regular expression with one group in brackets: the part it captures is kept. ^([^@]+)@ keeps what comes before the @.",
+      "required": "Required",
+      "requiredLdap": "Refuse the sign-in when the directory doesn't send it.",
+      "requiredScim": "Refuse the change when your identity provider doesn't send it.",
+      "enabled": "Use this mapping",
+      "enabledHelp": "Turned off, it's kept but not applied.",
+      "save": "Save mapping",
+      "saveAction": "Save the mapping",
+      "cancel": "Cancel",
+      "remove": "Remove mapping",
+      "conflict": "Someone changed this mapping meanwhile, or another mapping for this field is on. Reload the page and try again.",
+      "full": "A connection holds 50 mappings at most."
+    },
+    "remove": {
+      "title": "Remove the {{field}} mapping?",
+      "descriptionLdap": "People keep what it set. From their next sign-in, {{field}} no longer comes from the directory attribute ‘{{attribute}}’.",
+      "descriptionScim": "People keep what it set. From the next change your identity provider sends, {{field}} no longer comes from the attribute ‘{{attribute}}’.",
+      "confirm": "Remove mapping",
+      "action": "Remove the mapping"
+    },
+    "test": {
+      "title": "Test with a directory entry",
+      "description": "Paste one entry from the directory, or edit this example, to see the profile the saved mappings make. Nothing is saved.",
+      "run": "Run test",
+      "entry": "Directory entry (JSON)",
+      "invalid": "Enter one JSON object, under 64 KB.",
+      "result": "The profile it makes",
+      "valid": "Valid",
+      "refused_one": "{{n}} problem",
+      "refused_other": "{{n}} problems",
+      "refusedHint": "A sign-in or change with this entry would be refused until these are fixed.",
+      "empty": "Left empty",
+      "fromSettings": "from the connection's settings",
+      "unmapped": "Not mapped to a field:",
+      "stale": "The entry or the mappings changed since this test: run it again."
+    },
+    "issues": {
+      "preview_too_large": "The test data or the mappings are too large to preview.",
+      "source_invalid": "The source attribute isn't a valid attribute name.",
+      "source_credential": "The source attribute names a credential, which can't be mapped.",
+      "target_unsupported": "This isn't a profile field that can be mapped.",
+      "target_duplicate": "Another active mapping already sets this field.",
+      "value_type_mismatch": "This field takes a different value type.",
+      "transform_unsupported": "This transform isn't supported.",
+      "pattern_unexpected": "A pattern applies only to the extract transform.",
+      "pattern_invalid": "The pattern must be 1 to 256 characters with one capture group.",
+      "source_missing": "The required source attribute is missing from the test data.",
+      "source_empty": "The required source attribute is empty.",
+      "value_not_string": "The source value must be text.",
+      "value_not_array": "The source value must be a list of text values.",
+      "value_too_long": "A source value is longer than 2,048 characters.",
+      "value_too_many": "The source list has more than 100 entries.",
+      "value_unmatched": "The source value doesn't match the extract pattern.",
+      "email_invalid": "The mapped email isn't a valid address.",
+      "display_name_too_long": "The mapped display name is longer than 200 characters.",
+      "unknown": "This mapping can't be applied as configured.",
+      "source_required": "Name the directory attribute."
     }
   }
 }

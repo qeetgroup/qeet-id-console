@@ -1,4 +1,4 @@
-// Public API of the qeetai module. The shell imports it, so it stays light: the workspace and
+// Public API of the qeetai module. The shell imports it, so it stays light: the panel and
 // everything it composes load lazily through QeetAI.
 export { QeetAI } from "./components/qeetai";
 export { QeetAITrigger } from "./components/qeetai-trigger";

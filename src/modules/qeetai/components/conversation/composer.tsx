@@ -1,6 +1,6 @@
-import { Button, Textarea } from "@qeetrix/ui";
 import { ArrowUpIcon, SquareIcon } from "@qeetrix/icons";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { IconButton, Textarea } from "@qeetrix/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface ComposerProps {
@@ -9,26 +9,18 @@ interface ComposerProps {
   isStreaming: boolean;
 }
 
-const MAX_TEXTAREA_HEIGHT = 200;
-
+// Library gap (new): assistant parts, a message composer (a growing field with Send and Stop)
+// and transcript turns, built here from Textarea, IconButton and tokens (qeetai-panel.css).
 /**
- * Renders the message input: Enter sends, Shift+Enter adds a newline, and send becomes stop
- * while a turn streams. The textarea grows up to a cap, then scrolls.
+ * The message field: Enter sends, Shift+Enter adds a line, and Send becomes Stop while an answer
+ * streams. It grows with its text up to eight lines, then scrolls, and takes focus as it appears.
  */
 export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
   const { t } = useTranslation("qeetai");
   const [draft, setDraft] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fieldRef = useRef<HTMLTextAreaElement>(null);
 
-  const autosize = useCallback(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
-  }, []);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-measure after every draft change
-  useLayoutEffect(autosize, [autosize, draft]);
+  useEffect(() => fieldRef.current?.focus(), []);
 
   const submit = useCallback(() => {
     const text = draft.trim();
@@ -38,47 +30,47 @@ export function Composer({ onSend, onStop, isStreaming }: ComposerProps) {
   }, [draft, isStreaming, onSend]);
 
   return (
-    <div className="border-t bg-background/60 p-3">
-      <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border bg-card px-3 py-2 shadow-sm focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-ring/40">
-        <Textarea
-          ref={textareaRef}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          rows={1}
-          placeholder={t("composer.askQeetAiOr")}
-          aria-label={t("composer.messageQeetAi")}
-          className="max-h-[200px] min-h-9 flex-1 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+    <form
+      className="qai-composer"
+      aria-label={t("composer.label")}
+      onSubmit={(event) => {
+        event.preventDefault();
+        submit();
+      }}
+    >
+      <Textarea
+        ref={fieldRef}
+        value={draft}
+        onValueChange={(value) => setDraft(value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            submit();
+          }
+        }}
+        rows={1}
+        maxRows={8}
+        placeholder={t("composer.placeholder")}
+        aria-label={t("composer.label")}
+      />
+      {isStreaming ? (
+        <IconButton
+          icon={SquareIcon}
+          variant="soft"
+          aria-label={t("composer.stop")}
+          onClick={onStop}
         />
-        {isStreaming ? (
-          <Button
-            type="button"
-            size="icon"
-            variant="secondary"
-            onClick={onStop}
-            aria-label={t("composer.stopGenerating")}
-            title={t("composer.stopGenerating")}
-          >
-            <SquareIcon className="size-4" />
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            size="icon"
-            onClick={submit}
-            disabled={!draft.trim()}
-            aria-label={t("composer.sendMessage")}
-            title={t("composer.sendEnter")}
-          >
-            <ArrowUpIcon className="size-4" />
-          </Button>
-        )}
-      </div>
-    </div>
+      ) : (
+        <IconButton
+          type="submit"
+          icon={ArrowUpIcon}
+          variant="solid"
+          aria-label={t("composer.send")}
+          tooltip={t("composer.sendShortcut")}
+          disabled={!draft.trim()}
+        />
+      )}
+      <p className="qai-composer-note">{t("composer.note")}</p>
+    </form>
   );
 }

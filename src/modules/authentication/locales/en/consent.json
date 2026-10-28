@@ -1,27 +1,73 @@
 {
   "page": {
-    "title": "Consent grants",
-    "description": "OAuth refresh-token grants a user has consented to per application. Revoking a grant invalidates the whole refresh-token rotation chain for that (app, user) pair."
+    "title": "OAuth grants",
+    "description": "Applications people have signed in to and let keep them signed in. Revoking a grant ends it: the application has to send the person through sign-in again."
   },
-  "list": {
-    "title": "Active grants",
-    "count_one": "{{count}} grant across all applications.",
-    "count_other": "{{count}} grants across all applications.",
-    "emptyTitle": "No active consent grants.",
-    "emptyDescription": "Grants appear here once users authorize an OAuth / OIDC application."
-  },
-  "table": {
+  "rowLabel": "{{person}}, {{app}}",
+  "columns": {
+    "person": "Person",
     "application": "Application",
-    "user": "User",
-    "scopes": "Scopes",
-    "issued": "Issued",
-    "expires": "Expires",
-    "actions": "Actions"
+    "access": "Access",
+    "renewed": "Last renewed",
+    "ends": "Ends"
+  },
+  "access": {
+    "profile": "Profile",
+    "email": "Email",
+    "phone": "Phone number",
+    "signInOnly": "Sign-in only"
+  },
+  "band": {
+    "grants": "Grants",
+    "people_one": "For {{n}} person",
+    "people_other": "For {{n}} people",
+    "byApp": "By application",
+    "otherApps_one": "{{count}} other",
+    "otherApps_other": "{{count}} others",
+    "access": "What they let applications read",
+    "reads": {
+      "profile": "Name and profile",
+      "email": "Email address",
+      "phone": "Phone number"
+    }
+  },
+  "filters": {
+    "search": "Search grants",
+    "searchPlaceholder": "Search by name or email",
+    "anyApp": "All applications",
+    "anyAccess": "Any access",
+    "summary": "{{n}} of {{total}} grants"
+  },
+  "truncated": {
+    "title": "Showing the latest {{n}} grants",
+    "description": "Qeet ID lists up to 1,000 at a time. Older ones are still live; filter by application to see them."
+  },
+  "actions": {
+    "openPerson": "Open {{person}}'s profile",
+    "openApp": "Open {{app}}",
+    "revoke": "Revoke grant"
   },
   "revoke": {
-    "title": "Revoke this grant?",
-    "descriptionFallback": "This invalidates the refresh-token chain for this grant.",
-    "confirmDescription": "This immediately invalidates the refresh-token chain for {{email}} on this application. They’ll be prompted to re-consent on next sign-in.",
-    "stepUp": "Revoke this grant"
+    "action": "Revoke grants",
+    "confirm": "Revoke",
+    "oneTitle": "Revoke {{person}}'s grant for {{app}}?",
+    "oneDescription": "{{app}} can't renew {{person}}'s sign-in any more and has to send them through sign-in again. The access token it holds keeps working until it expires, within minutes.",
+    "manyTitle_one": "Revoke {{count}} grant?",
+    "manyTitle_other": "Revoke {{count}} grants?",
+    "manyDescription": "Each application can't renew those people's sign-ins any more and has to send them through sign-in again. Access tokens they hold keep working until they expire, within minutes.",
+    "many_one": "Revoke {{count}} grant",
+    "many_other": "Revoke {{count}} grants",
+    "progress": "Revoking {{done}} of {{total}}…",
+    "done_one": "{{count}} grant revoked",
+    "done_other": "{{count}} grants revoked",
+    "someFailed_one": "{{count}} grant couldn't be revoked. Try again.",
+    "someFailed_other": "{{count}} grants couldn't be revoked. Try again."
+  },
+  "empty": {
+    "title": "No grants yet",
+    "description": "A grant appears when someone signs in to one of your applications and it keeps them signed in.",
+    "filteredTitle": "No grants match",
+    "filteredDescription": "Search covers people's names and emails. Try another search or clear the filters.",
+    "clear": "Clear filters"
   }
 }

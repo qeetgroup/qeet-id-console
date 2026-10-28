@@ -7,7 +7,7 @@ import { useFeatureFlag } from "@/platform/feature-flags/provider";
 
 import { workspaceActions, workspaceStore } from "../store/workspace-store";
 
-/** Renders the top bar's button that toggles the Qeet AI workspace (also ⌘J), while it is on. */
+/** Renders the top bar's button that opens and closes the Qeet AI panel (also ⌘J), while it's on. */
 export function QeetAITrigger() {
   const { t } = useTranslation("qeetai");
   const enabled = useFeatureFlag("qeetai");

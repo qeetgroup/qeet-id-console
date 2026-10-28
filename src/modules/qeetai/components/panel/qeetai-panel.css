@@ -1,0 +1,561 @@
+/*
+ * The Qeet AI panel (qeetai-panel.tsx), drawn as the frame's own end-edge panels (AppShell's
+ * Notifications and Help): under the top bar, a 1px start rule, a header band on the canvas tone,
+ * then the body. It floats over the page, so it carries the overlay shadow (design rules §12).
+ * Ruled and flat inside: the transcript, tool cards, history rows and composer are separated by
+ * lines and tone. Token values only (--qx-*).
+ */
+
+/* ── The panel ───────────────────────────────────────────────────────────── */
+
+.qai-panel {
+  position: fixed;
+  /* Over the page's own sticky parts (a table's header is at --qx-z-sticky); it starts under the
+     top bar, so it never meets it. Menus and dialogs stay above. */
+  z-index: calc(var(--qx-z-sticky) + 1);
+  /* The top bar's height, as AppShell's --qx-app-shell-top (the panel is compact, as the frame). */
+  inset-block: calc(var(--qx-size-control-lg) + 16px) 0;
+  inset-inline-end: 0;
+  display: flex;
+  flex-direction: column;
+  inline-size: min(var(--qai-panel-width, 400px), 100vw);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  background: var(--qx-color-surface-default);
+  box-shadow: var(--qx-shadow-overlay);
+  color: var(--qx-color-text-default);
+  outline: 0;
+}
+
+.qai-panel-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm);
+  block-size: calc(var(--qx-size-control-lg) + 8px);
+  padding-inline: var(--qx-space-inset-lg) var(--qx-space-inset-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  background: var(--qx-color-surface-canvas);
+}
+
+.qai-panel-title {
+  margin: 0;
+  font: var(--qx-typography-label-md);
+  font-weight: var(--qx-typography-title-sm-font-weight);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-heading);
+}
+
+.qai-panel-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* The divider on the start edge: drag it, or use the arrow keys, to resize the panel. */
+.qai-panel-resize {
+  position: absolute;
+  z-index: 1;
+  inset-block: 0;
+  inset-inline-start: -4px;
+  inline-size: 8px;
+  cursor: col-resize;
+  touch-action: none;
+  outline: 0;
+}
+
+.qai-panel-resize::after {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 3px;
+  inline-size: var(--qx-border-width-strong);
+  background: transparent;
+  content: "";
+  transition: background-color var(--qx-motion-duration-fast) var(--qx-motion-easing-standard);
+}
+
+.qai-panel-resize:hover::after {
+  background: var(--qx-color-border-strong);
+}
+
+.qai-panel-resize:focus-visible::after {
+  background: var(--qx-color-border-focus);
+}
+
+/* The body's states (checking, off, a failure): on the panel's inset, as the frame's panels. */
+.qai-panel-state {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-lg);
+  overflow-y: auto;
+}
+
+.qai-off-note {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── The conversation: transcript, suggestions, composer ──────────────────── */
+
+.qai-conversation {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
+.qai-transcript {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--qx-space-inset-lg);
+}
+
+.qai-log {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+/* A new conversation: what it can do, then prompts to start from, ruled as the Help panel. */
+.qai-start {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-md);
+}
+
+.qai-start-head {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+.qai-start-head h3 {
+  margin: 0;
+  font: var(--qx-typography-title-sm);
+}
+
+.qai-start-head p,
+.qai-start-foot {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.qai-prompts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.qai-prompts > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.qai-prompt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  inline-size: 100%;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-xs);
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-md);
+  text-align: start;
+  cursor: pointer;
+}
+
+.qai-prompt svg {
+  color: var(--qx-color-icon-subtle);
+}
+
+.qai-prompt:hover {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+.qai-prompt:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-focus-ring-width) * -1);
+}
+
+/* Route suggestions once a conversation has started: small neutral actions in a wrapping row. */
+.qai-suggestions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-lg) 0;
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.qai-suggestions-label {
+  margin-inline-end: var(--qx-space-gap-xs);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+
+.qai-composer {
+  display: grid;
+  flex: none;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-lg);
+  background: var(--qx-color-surface-default);
+}
+
+.qai-suggestions + .qai-composer {
+  padding-block-start: var(--qx-space-inset-sm);
+}
+
+.qai-transcript + .qai-composer,
+.qai-start-scroll + .qai-composer {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.qai-composer-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Turns ───────────────────────────────────────────────────────────────── */
+
+.qai-turn {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+/* What the person asked: on the neutral tint at the end, not in Ember (it means nothing here). */
+.qai-turn[data-role="user"] {
+  justify-items: end;
+}
+
+.qai-question {
+  max-inline-size: 85%;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-bg-neutral-subtle);
+  font: var(--qx-typography-body-md);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.qai-edit {
+  display: grid;
+  justify-items: end;
+  gap: var(--qx-space-gap-sm);
+  inline-size: 100%;
+}
+
+.qai-edit > :first-child {
+  inline-size: 100%;
+}
+
+.qai-edit-actions,
+.qai-turn-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* A turn's own actions show while it's hovered or holds focus; always on touch screens. */
+@media (hover: hover) {
+  .qai-turn:not(:hover, :focus-within) .qai-turn-actions {
+    opacity: 0;
+  }
+}
+
+.qai-thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.qai-turn-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qx-space-gap-xs);
+  margin: 0;
+  color: var(--qx-color-text-danger);
+  font: var(--qx-typography-body-sm);
+}
+
+.qai-turn-error svg {
+  flex: none;
+  margin-block-start: 2px;
+}
+
+/* ── Answers (markdown-message.tsx): headings, lists, quotes, code, links ──── */
+
+.qai-md {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+  font: var(--qx-typography-body-md);
+  overflow-wrap: anywhere;
+}
+
+.qai-md :is(p, ul, ol, blockquote, h3, h4, h5, h6) {
+  margin: 0;
+}
+
+.qai-md :is(h3, h4, h5, h6) {
+  font: var(--qx-typography-title-sm);
+}
+
+.qai-md :is(ul, ol) {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  padding-inline-start: var(--qx-space-inset-lg);
+}
+
+.qai-md ul {
+  list-style: disc;
+}
+
+.qai-md ol {
+  list-style: decimal;
+}
+
+.qai-md blockquote {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  padding-inline-start: var(--qx-space-inset-md);
+  border-inline-start: var(--qx-border-width-strong) solid var(--qx-color-border-default);
+  color: var(--qx-color-text-subtle);
+}
+
+.qai-md p {
+  white-space: pre-wrap;
+}
+
+.qai-md .qai-code {
+  padding: 0 var(--qx-space-inset-xs);
+  border-radius: var(--qx-radius-sm);
+  background: var(--qx-color-bg-neutral-subtle);
+  font: var(--qx-typography-code-sm);
+  font-variant-ligatures: none;
+}
+
+/* ── Tool cards (tool-call-card.tsx): one ruled box per tool the turn ran ─── */
+
+.qai-tools {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.qai-tool {
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.qai-tool > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.qai-tool-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-xs) var(--qx-space-inset-xs)
+    var(--qx-space-inset-sm);
+}
+
+.qai-tool-icon {
+  display: inline-grid;
+  color: var(--qx-color-icon-subtle);
+}
+
+.qai-tool[data-tone="success"] .qai-tool-icon {
+  color: var(--qx-color-icon-success);
+}
+
+.qai-tool[data-tone="error"] .qai-tool-icon {
+  color: var(--qx-color-icon-danger);
+}
+
+.qai-tool-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+}
+
+.qai-tool-name strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.qai-tool-section {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-sm);
+  font: var(--qx-typography-body-sm);
+}
+
+.qai-tool-section > p {
+  margin: 0;
+}
+
+.qai-tool-result {
+  color: var(--qx-color-text-subtle);
+}
+
+.qai-tool-failure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* A secret shown once: on the warning tint, so it reads as something to act on now. */
+.qai-tool-secret {
+  background: var(--qx-color-bg-warning-subtle);
+}
+
+/* ── History (history-panel.tsx) ─────────────────────────────────────────── */
+
+.qai-history {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
+.qai-history-head {
+  display: grid;
+  flex: none;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-lg);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.qai-history-head p {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.qai-history-body {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+}
+
+.qai-history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qai-history-list > li {
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.qai-history-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  padding-inline-end: var(--qx-space-inset-sm);
+}
+
+.qai-history-row:hover {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+/* The conversation that's open: the Ember bar on its start edge (design rules §11). */
+.qai-history-row[data-current] {
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.qai-history-open {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-lg);
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-default);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.qai-history-open:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-focus-ring-width) * -1);
+}
+
+.qai-history-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.qai-history-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qai-history-title svg {
+  flex: none;
+  color: var(--qx-color-icon-subtle);
+}
+
+.qai-history-open small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* A conversation being renamed: its field where the title was, Save and Cancel after it. */
+.qai-history-rename {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-sm) var(--qx-space-inset-sm)
+    var(--qx-space-inset-lg);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+/* Phones: the panel takes the whole width under the top bar. */
+@media (width < 840px) {
+  .qai-panel {
+    inline-size: 100vw;
+  }
+
+  .qai-panel-resize {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .qai-panel,
+  .qai-panel-header,
+  .qai-tool,
+  .qai-question {
+    border-color: canvastext;
+  }
+
+  .qai-history-row[data-current] {
+    box-shadow: inset var(--qx-border-width-accent) 0 0 highlight;
+  }
+}

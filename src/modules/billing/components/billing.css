@@ -1,0 +1,144 @@
+/*
+ * Settings › Billing: My account's ruled sections (account.css), the Create organisation plan
+ * picker (create-organization.css) and the Users page's two-line cells (people.css), all loaded
+ * with the console's styles. Only what the page adds is here: placement and token values only.
+ */
+
+.bill-page {
+  max-inline-size: 70rem;
+}
+
+/* A plan without limits: the four counts on one ruled line, figures large. */
+.bill-usage dd {
+  font: var(--qx-typography-title-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.bill-meter {
+  inline-size: 10rem;
+}
+
+.bill-address {
+  display: grid;
+}
+
+/* The change-plan panel: the picker spans the panel; its note reads at a line's width. */
+.bill-change {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+}
+
+.bill-change-note {
+  max-inline-size: 44rem;
+}
+
+/* The billing details form: two columns, the long fields across both. */
+.bill-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--qx-space-form-gap) var(--qx-space-gap-lg);
+  max-inline-size: 42rem;
+}
+
+.bill-wide {
+  grid-column: 1 / -1;
+}
+
+.bill-mono input {
+  font: var(--qx-typography-code-md);
+  font-variant-ligatures: none;
+}
+
+.bill-invoices {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* An amount over the line under it, both at the cell's end. */
+.bill-end {
+  justify-items: end;
+}
+
+.bill-total {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The invoice drawer: its state, then its facts in groups under small labels. */
+.bill-drawer {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.bill-drawer-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.bill-group {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+.bill-group-label {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+}
+
+/* An invoice's amounts, as a tax invoice lists them: the label, then the figure at the end. */
+.bill-sum {
+  margin: 0;
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.bill-sum > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-inset-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  font: var(--qx-typography-body-md);
+}
+
+.bill-sum dt {
+  color: var(--qx-color-text-subtle);
+}
+
+.bill-sum dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.bill-sum .bill-sum-total {
+  border-block-end-color: var(--qx-color-border-strong);
+  font: var(--qx-typography-label-lg);
+  font-weight: 600;
+}
+
+.bill-sum .bill-sum-total dt {
+  color: var(--qx-color-text-default);
+}
+
+.bill-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 840px) {
+  .bill-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bill-meter {
+    inline-size: 6rem;
+  }
+}

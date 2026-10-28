@@ -1,15 +1,227 @@
 {
-  "identityTimelinePage": {
-    "identityTimeline": "Identity Timeline",
-    "aChronologicalViewOf": "A chronological view of this user's lifecycle events.",
-    "accessRestricted": "Access restricted",
-    "backToUser": "Back to user",
-    "chronologicalViewOfThis": "Chronological view of this user's lifecycle — authentication, access changes, security events, and more.",
-    "needsCapabilities": "You need the <code>audit.read</code> and <code>user.read</code> capabilities to view the timeline.",
-    "loaded_one": "{{count}} event loaded",
-    "loaded_other": "{{count}} events loaded",
-    "loadedMore_one": "{{count}} event+ loaded",
-    "loadedMore_other": "{{count}} events+ loaded"
+  "page": {
+    "title": "Timeline",
+    "description": "What {{name}} did, and what was done to their account, newest first.",
+    "thisPerson": "This person",
+    "users": "Users",
+    "export": "Export",
+    "exportCsv": "Download as CSV",
+    "exportJson": "Download as JSON",
+    "noAccessTitle": "Your role can't see activity",
+    "noAccessDescription": "A timeline is read from the audit log, which needs the audit.read permission.",
+    "notFoundTitle": "That person isn't here",
+    "notFoundDescription": "There's no one with this ID in the organisation, and nothing in the audit log about them.",
+    "backToUsers": "Back to Users"
+  },
+  "export": {
+    "empty": "Nothing to export for these filters.",
+    "done_one": "Exported {{count}} event",
+    "done_other": "Exported {{count}} events",
+    "capped": "The file stops at {{cap}} events. Choose a shorter period for the rest."
+  },
+  "filters": {
+    "period": "Period",
+    "periods": {
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days"
+    },
+    "kind": "Kind",
+    "anyKind": "Any kind",
+    "kinds": {
+      "authentication": "Signing in",
+      "authorization": "Roles and access",
+      "directory": "Account",
+      "security": "Security",
+      "developer": "Developer",
+      "system": "System"
+    },
+    "withCount": "{{label}} · {{n}}",
+    "result": "Result",
+    "anyResult": "Any result",
+    "failed": "Failed"
+  },
+  "band": {
+    "events": "Events",
+    "eventsNote": "On {{n}} of the last {{days}} days",
+    "noEvents": "None in the last {{days}} days",
+    "byDay": "Events by day since {{from}}: most on {{busiest}}, {{n}}.",
+    "byDayNone": "No events by day since {{from}}.",
+    "byDayFailed_one": "Failures on {{n}} day.",
+    "byDayFailed_other": "Failures on {{n}} days.",
+    "today": "Today",
+    "signIns": "Sign-ins",
+    "twoStep": "{{n}} of {{total}} with a second step or a passkey",
+    "mostly": "Mostly {{method}}",
+    "noSignIns": "None in the last {{days}} days",
+    "moves_one": "Not counting {{n}} switch into this organisation",
+    "moves_other": "Not counting {{n}} switches into this organisation",
+    "capped": "Counted from the latest {{n}}",
+    "failed": "Failed",
+    "nothingFailed": "Nothing failed",
+    "otherFailed": "{{n}} other",
+    "showFailed": "Show the failures",
+    "noAddresses": "No sign-ins or failed tries",
+    "browsers": "With {{browsers}}",
+    "mostFrom": "Most from {{ip}} ({{n}})",
+    "addresses": "Addresses"
+  },
+  "method": {
+    "saml": "with single sign-on",
+    "password": "with a password",
+    "ldap": "with their directory password",
+    "social": "with a social account",
+    "magic_link": "with an email link",
+    "passkey": "with a passkey",
+    "password_email_confirmed": "with a password, confirmed by email",
+    "other": "another way"
+  },
+  "failure": {
+    "wrong_password_one": "{{n}} wrong password",
+    "wrong_password_other": "{{n}} wrong passwords",
+    "code_invalid_one": "{{n}} wrong code",
+    "code_invalid_other": "{{n}} wrong codes",
+    "account_locked_one": "{{n}} while locked",
+    "account_locked_other": "{{n}} while locked",
+    "source_throttled_one": "{{n}} refused for too many tries",
+    "source_throttled_other": "{{n}} refused for too many tries",
+    "unknown_account_one": "{{n}} for no such account",
+    "unknown_account_other": "{{n}} for no such account",
+    "other_one": "{{n}} other",
+    "other_other": "{{n}} other"
+  },
+  "events": {
+    "label": "Events, newest first",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "more": "Show older events",
+    "end": "That's everything since {{date}}.",
+    "lookBack": "Look back 90 days",
+    "emptyTitle": "Nothing in the last {{days}} days",
+    "emptyDescription": "No events by or about {{name}} since {{date}}.",
+    "noMatchTitle": "Nothing matches",
+    "noMatchDescription": "No events like that in the last {{days}} days.",
+    "showAll": "Show every event"
+  },
+  "event": {
+    "signedIn": {
+      "saml": "Signed in with single sign-on",
+      "password": "Signed in with a password",
+      "ldap": "Signed in with their directory password",
+      "social": "Signed in with a social account",
+      "magic_link": "Signed in with an email link",
+      "passkey": "Signed in with a passkey",
+      "password_email_confirmed": "Signed in with a password, confirmed by email",
+      "other": "Signed in"
+    },
+    "signedInTwoStep": {
+      "saml": "Signed in with single sign-on and a second step",
+      "password": "Signed in with a password and a second step",
+      "ldap": "Signed in with their directory password and a second step",
+      "social": "Signed in with a social account and a second step",
+      "magic_link": "Signed in with an email link and a second step",
+      "passkey": "Signed in with a passkey",
+      "password_email_confirmed": "Signed in with a password and a second step",
+      "other": "Signed in with a second step"
+    },
+    "moved": {
+      "tenant_switch": "Switched into this organisation",
+      "tenant_create": "Entered this organisation after creating it"
+    },
+    "signInFailed": {
+      "wrong_password": "Sign-in failed: wrong password",
+      "code_invalid": "Sign-in failed: wrong code",
+      "account_locked": "Sign-in refused: the account is locked",
+      "source_throttled": "Sign-in refused: too many tries from one network",
+      "unknown_account": "Sign-in failed: no such account",
+      "other": "Sign-in failed"
+    },
+    "accountLocked": "Account locked",
+    "accountLockedAfter_one": "Account locked after {{n}} failed sign-in",
+    "accountLockedAfter_other": "Account locked after {{n}} failed sign-ins",
+    "sessionIdle": "Signed out after being idle",
+    "sessionEnded": "Signed out at the session's time limit",
+    "codeSent": {
+      "email": "Sent a code by email",
+      "sms": "Sent a code by text message",
+      "other": "Sent a code"
+    },
+    "samlApp": "Signed in to {{app}}",
+    "apiKeyCreated": "Created the API key “{{name}}”",
+    "invited": "Invited {{email}}",
+    "plain": {
+      "mfaChallenged": "Asked for a second step",
+      "mfaVerified": "Passed the second step",
+      "signInConfirmed": "Confirmed a sign-in by email",
+      "magicLinkRequested": "Sign-in link emailed",
+      "magicLinkConsumed": "Used the emailed sign-in link",
+      "trustedDeviceAdded": "Remembered a device",
+      "passwordChanged": "Changed their password",
+      "passwordResetRequested": "Password reset link emailed",
+      "passwordResetConfirmed": "Reset their password",
+      "otherSessionsRevoked": "Signed out of their other sessions",
+      "totpStarted": "Started setting up an authenticator app",
+      "totpEnrolled": "Set up an authenticator app",
+      "recoveryCodeUsed": "Used a recovery code",
+      "stepUpRequired": "Asked to confirm it's them",
+      "inviteAccepted": "Accepted an invitation",
+      "inviteDeclined": "Declined an invitation",
+      "emailVerificationStarted": "Started verifying their email address",
+      "emailVerified": "Verified their email address",
+      "emailVerificationFailed": "Couldn't verify their email address",
+      "apiKeyRevoked": "Revoked an API key"
+    },
+    "about": {
+      "created": "Account created",
+      "deleted": "Account deleted",
+      "suspended": "Suspended",
+      "reactivated": "Reactivated",
+      "suspensionReviewed": "Suspension reviewed",
+      "updated": "Profile or status changed",
+      "passwordSet": "Password set by an administrator",
+      "mfaRequiredSet": "Two-step requirement changed",
+      "otpFactorAdded": "One-time codes set up as a second step",
+      "signedOutEverywhere": "Signed out everywhere by an administrator",
+      "roleAssigned": "Given a role",
+      "roleUnassigned": "A role taken away"
+    },
+    "aboutRole": {
+      "roleAssigned": "Given the {{role}} role",
+      "roleUnassigned": "The {{role}} role taken away"
+    },
+    "toOther": {
+      "created": "Added {{name}}",
+      "deleted": "Deleted {{name}}",
+      "suspended": "Suspended {{name}}",
+      "reactivated": "Reactivated {{name}}",
+      "suspensionReviewed": "Reviewed the suspension of {{name}}",
+      "updated": "Changed the profile of {{name}}",
+      "passwordSet": "Set the password of {{name}}",
+      "mfaRequiredSet": "Changed the two-step requirement of {{name}}",
+      "otpFactorAdded": "Set up one-time codes for {{name}}",
+      "signedOutEverywhere": "Signed {{name}} out everywhere",
+      "roleAssigned": "Gave {{name}} a role",
+      "roleUnassigned": "Took a role from {{name}}"
+    },
+    "toOtherRole": {
+      "roleAssigned": "Gave {{name}} the {{role}} role",
+      "roleUnassigned": "Took the {{role}} role from {{name}}"
+    },
+    "aPerson": "a person"
+  },
+  "who": {
+    "system": "Qeet ID",
+    "scim": "SCIM",
+    "ldap": "LDAP sync",
+    "admin_portal": "Admin portal",
+    "anonymous": "Not signed in",
+    "device": "A device",
+    "client": "An application",
+    "someone": "Someone"
+  },
+  "app": {
+    "hosted": "Hosted sign-in page",
+    "console": "Console sign-in page"
   },
   "identityTimeline": {
     "loadingTimelineEvents": "Loading timeline events",
@@ -66,17 +278,6 @@
     "suspending": "Suspending…",
     "suspendUser": "Suspend user"
   },
-  "timelineExport": {
-    "empty": "No events to export in the current view.",
-    "exported_one": "Exported {{count, number}} event",
-    "exported_other": "Exported {{count, number}} events",
-    "loadedOnly": "Loaded events only — scroll to load more before exporting a longer range."
-  },
-  "timelineExportMenu": {
-    "export": "Export",
-    "exportAsCsv": "Export as CSV",
-    "exportAsJson": "Export as JSON"
-  },
   "timelineFilters": {
     "timelineFilters": "Timeline filters",
     "searchEventsUsersIps": "Search events, users, IPs, event IDs…",
@@ -107,14 +308,5 @@
     "system": "System",
     "openDetails": "{{title}}, {{result}} — open details",
     "outcome": "Outcome: {{result}}"
-  },
-  "timelineSummaryStrip": {
-    "totalEvents": "Total events",
-    "authentication": "Authentication",
-    "security": "Security",
-    "inThisView": "In this view",
-    "share": "{{percent}}% of events",
-    "directory": "Directory changes",
-    "developer": "Developer & system"
   }
 }

@@ -1,5 +1,5 @@
-// The model seam: every provider yields a typed async stream, so the conversation UI is the
-// same for the backend SSE provider and the unconfigured stub.
+// The model seam: a provider yields a typed async stream, so the conversation UI doesn't depend
+// on the transport (the backend's SSE today; a fake one in tests).
 
 import type { ConsoleContext } from "../context/types/context.types";
 
@@ -47,7 +47,7 @@ export interface ProviderStatus {
 }
 
 export interface AIProvider {
-  readonly id: string; // Stable identifier, e.g. "backend" or "unconfigured"
+  readonly id: string; // Stable identifier, e.g. "backend"
   /** Reports whether a model is configured. */
   status(signal?: AbortSignal): Promise<ProviderStatus>;
   /** Streams a turn; must stop when `opts.signal` aborts. */
