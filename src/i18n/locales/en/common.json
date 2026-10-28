@@ -110,17 +110,21 @@
   },
   "stepUpDialog": {
     "useARecoveryCodeInstead": "Use a recovery code instead",
+    "useAuthenticatorInstead": "Use your authenticator app instead",
     "title": "Confirm it's you",
     "confirm": "This action needs a fresh check: confirm with one of your second factors.",
     "needFactor": "This action needs a fresh check: you need a second factor first.",
     "noFactor": "None of your factors can confirm this. Set up a passkey or an authenticator app in <link>account security</link>, then try again.",
     "codeSentTo": "Code sent to {{destination}}",
     "recoveryCode": "Recovery code",
+    "recoveryPlaceholder": "e.g. 7KQ2-M9XD",
     "authenticatorCode": "Code from your authenticator app",
     "passkeyClosed": "The passkey prompt was closed. Try again.",
     "failed": "That didn't work. Try again.",
     "usePasskey": "Use a passkey",
     "sendCodeTo": "Send a code to {{destination}}",
+    "otherWays": "Other ways to confirm",
+    "or": "or",
     "verifying": "Verifying…",
     "verify": "Verify"
   },
@@ -168,6 +172,9 @@
     "formatsUpTo": "PNG, JPG, SVG, or WEBP up to {{size}} MB",
     "replace": "Replace",
     "remove": "Remove"
+  },
+  "oneTimeSecret": {
+    "secret": "secret"
   },
   "toast": {
     "signedOutSuccessfully": "Signed out successfully",
@@ -230,7 +237,7 @@
   },
   "readOnlyNotice": {
     "title": "Read-only access",
-    "description": "You can inspect and export this data, but your organization role cannot change it."
+    "description": "You can inspect and export this data, but your role in this organisation can't change it."
   },
   "selection": {
     "selectAll": "Select all rows"

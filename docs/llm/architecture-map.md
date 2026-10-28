@@ -90,7 +90,7 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | **Sidebar** (built from the manifests) | `src/platform/config/navigation.tsx` (`getNavGroups`, `useNavGroups`), `nav-groups.tsx` (the 8 groups) |
 | Global `g` shortcuts | `src/platform/keyboard/shortcuts.ts` |
 | Error taxonomy | `src/platform/errors/` |
-| **Forms kit** (TanStack Form + `@qeetrix/ui` fields, server field errors) | `src/platform/forms/app-form.tsx` |
+| **Forms kit** (TanStack Form + `@qeetrix/react` fields, server field errors) | `src/platform/forms/app-form.tsx` |
 | Query client, 403 recapability | `src/platform/query/query-client.ts` |
 | Query devtools plugin (dev only) | `src/platform/query/query-devtools.tsx` |
 | Feature flags (declared in manifests; `CONSOLE_FLAGS_OFF`) | `src/platform/feature-flags/` |

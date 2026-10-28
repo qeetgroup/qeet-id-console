@@ -2,7 +2,9 @@ import { Button, Dialog, DialogContent, DialogFooter } from "@qeetrix/react";
 import { useTranslation } from "react-i18next";
 import {
   createContext,
+  lazy,
   type ReactNode,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -13,10 +15,14 @@ import { toast } from "sonner";
 
 import { useCapabilities } from "@/platform/security/capability-provider";
 import type { Capability } from "@/platform/security/capability-model";
-import { StepUpDialog } from "@/platform/security/step-up-dialog";
 import { isStepUpRequired } from "@/platform/security/step-up";
 import { registerStepUpHandler } from "@/platform/security/step-up-gate";
 import { captureError } from "@/platform/telemetry/errors";
+
+// Loaded the first time a step-up is asked for: its code fields stay out of the shell's bundle.
+const StepUpDialog = lazy(() =>
+  import("@/platform/security/step-up-dialog").then((m) => ({ default: m.StepUpDialog })),
+);
 
 export type SensitiveActionOptions<T> = {
   capability?: Capability; // checked first; UX only, the backend still decides
@@ -75,6 +81,7 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
   const { can } = useCapabilities();
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const [stepUp, setStepUp] = useState<StepUpState | null>(null);
+  const [steppedUp, setSteppedUp] = useState(false); // once asked, it stays mounted, to close
   const canRef = useRef(can); // the latest `can`, without changing runSensitive's identity
   canRef.current = can;
   const actionLabelRef = useRef<string | undefined>(undefined); // the running action's wording
@@ -82,6 +89,7 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     registerStepUpHandler(async ({ allowedMethods }) => {
       const verified = await new Promise<boolean>((resolve) => {
+        setSteppedUp(true);
         setStepUp({ actionLabel: actionLabelRef.current, allowedMethods, resolve });
       });
       setStepUp(null);
@@ -159,18 +167,22 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
         </DialogContent>
       </Dialog>
 
-      <StepUpDialog
-        open={!!stepUp}
-        onOpenChange={(o) => {
-          if (!o && stepUp) {
-            stepUp.resolve(false);
-            setStepUp(null);
-          }
-        }}
-        onVerified={() => stepUp?.resolve(true)}
-        actionLabel={stepUp?.actionLabel}
-        allowedMethods={stepUp?.allowedMethods ?? null}
-      />
+      {steppedUp && (
+        <Suspense fallback={null}>
+          <StepUpDialog
+            open={!!stepUp}
+            onOpenChange={(o) => {
+              if (!o && stepUp) {
+                stepUp.resolve(false);
+                setStepUp(null);
+              }
+            }}
+            onVerified={() => stepUp?.resolve(true)}
+            actionLabel={stepUp?.actionLabel}
+            allowedMethods={stepUp?.allowedMethods ?? null}
+          />
+        </Suspense>
+      )}
     </SensitiveActionContext.Provider>
   );
 }

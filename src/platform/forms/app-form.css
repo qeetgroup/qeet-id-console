@@ -1,0 +1,17 @@
+/*
+ * The form fields' own parts (app-form.tsx): a switch's error, in its description's place, worded
+ * and drawn as a field's error. Token values only.
+ */
+
+.app-form-error {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--qx-space-gap-xs);
+  color: var(--qx-color-text-danger);
+}
+
+.app-form-error-icon {
+  flex: none;
+  margin-block-start: calc((1lh - var(--qx-size-icon-sm)) / 2);
+  color: var(--qx-color-icon-danger);
+}
