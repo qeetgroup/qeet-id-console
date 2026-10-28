@@ -1,0 +1,27 @@
+/*
+ * The form fields' own parts (app-form.tsx): a switch's error, in its description's place, worded
+ * and drawn as a field's error. Token values only.
+ */
+
+.app-form-error {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--qx-space-gap-xs);
+  color: var(--qx-color-text-danger);
+}
+
+.app-form-error-icon {
+  flex: none;
+  margin-block-start: calc((1lh - var(--qx-size-icon-sm)) / 2);
+  color: var(--qx-color-icon-danger);
+}
+
+/*
+ * The console's base reset (src/base.css) makes every svg a block, which would drop an icon a page
+ * puts in a field's label onto a line of its own.
+ */
+.qx-field-label > svg {
+  display: inline-block;
+  margin-inline-end: var(--qx-space-gap-xs);
+  vertical-align: -0.125em;
+}

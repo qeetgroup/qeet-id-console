@@ -147,7 +147,7 @@ describe("isReducibleToAbac", () => {
     expect(policyProblemMessage({ code: "needsValue", op: "prefix" })).toBe(
       "“starts with” needs a value.",
     );
-    expect(policyProblemMessage({ code: "mixedEngines" })).toMatch(/combines RBAC\/ReBAC/);
+    expect(policyProblemMessage({ code: "mixedEngines" })).toMatch(/a role or relationship block/);
   });
 });
 

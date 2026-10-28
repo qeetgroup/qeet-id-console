@@ -1,488 +1,826 @@
 {
-  "overview": {
-    "description": "Your organization's security posture at a glance. Jump into any area below.",
-    "sections": {
-      "threatProtection": {
-        "title": "Threat Protection",
-        "description": "Bot detection, anomalies, rate limits and IP allowlists."
-      },
-      "sessions": {
-        "title": "Sessions",
-        "description": "Active sessions across the organization — revoke any you don't recognise."
-      },
-      "deviceAuthorizations": {
-        "title": "Device Authorizations",
-        "description": "Devices that completed the device-authorization flow."
-      },
-      "rateLimits": {
-        "title": "Rate Limits",
-        "description": "Per-endpoint gateway limits and organization network policy."
-      },
-      "auditLogs": {
-        "title": "Audit Logs",
-        "description": "Hash-chained, append-only record of every security event."
-      },
-      "compliance": {
-        "title": "Compliance",
-        "description": "SOC 2, GDPR, ISO 27001 and data-retention controls."
-      }
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "change": "Change",
+    "close": "Close",
+    "on": "On",
+    "off": "Off",
+    "clearFilters": "Clear filters"
+  },
+  "deny": {
+    "title": "Deny {{ip}}?",
+    "descriptionOn": "Sign-ins and session renewals from {{ip}} are refused from now on, for everyone in this organisation. A session opened from it ends at its next renewal.",
+    "descriptionOff": "It's added to IP rules as a deny rule. Nothing is refused yet: IP rules are off. Once they're on, sign-ins and session renewals from {{ip}} are refused.",
+    "confirm": "Deny address",
+    "action": "Add an IP rule",
+    "label": "Denied from {{what}}",
+    "failed": "Couldn't add the deny rule."
+  },
+  "anomalies": {
+    "title": "Anomalies",
+    "description": "Sign-in attacks the lockout detected and slowed. Resolve each one once you've dealt with it.",
+    "type": {
+      "credential_stuffing": "Credential stuffing",
+      "password_spraying": "Password spraying"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "status": {
+      "open": "Open",
+      "resolved": "Resolved"
+    },
+    "line": {
+      "accounts_one": "Failed sign-ins against {{count}} account from one network",
+      "accounts_other": "Failed sign-ins against {{count}} accounts from one network",
+      "accountsIn_one": "Failed sign-ins against {{count}} account from one network in {{minutes}} minutes",
+      "accountsIn_other": "Failed sign-ins against {{count}} accounts from one network in {{minutes}} minutes",
+      "oneNetwork_one": "{{count}} failed sign-in from one network",
+      "oneNetwork_other": "{{count}} failed sign-ins from one network",
+      "oneNetworkIn_one": "{{count}} failed sign-in from one network in {{minutes}} minutes",
+      "oneNetworkIn_other": "{{count}} failed sign-ins from one network in {{minutes}} minutes",
+      "anyNetwork_one": "{{count}} failed sign-in from any network",
+      "anyNetwork_other": "{{count}} failed sign-ins from any network",
+      "networks_one": "{{count}} failed sign-in from {{networks}} networks",
+      "networks_other": "{{count}} failed sign-ins from {{networks}} networks"
+    },
+    "accounts_one": "{{n}} account",
+    "accounts_other": "{{n}} accounts",
+    "networks_one": "{{count}} network",
+    "networks_other": "{{count}} networks",
+    "columns": {
+      "anomaly": "Anomaly",
+      "severity": "Severity",
+      "target": "Targeted",
+      "source": "From",
+      "detected": "Detected",
+      "status": "Status"
+    },
+    "actions": {
+      "open": "Open the anomaly",
+      "resolve": "Resolve",
+      "deny": "Deny {{ip}}",
+      "account": "Open the account"
+    },
+    "resolve": {
+      "action": "Resolve an anomaly"
+    },
+    "band": {
+      "open": "Open",
+      "highToday": "{{n}} high severity in the last 24 hours",
+      "nothingOpen": "Nothing to deal with",
+      "showOpen": "Show the open ones",
+      "detected": "Detected, last {{days}} days",
+      "perDay": "A day at a time",
+      "fromLatest": "From the latest 50",
+      "chartLabel": "{{n}} detected in the last {{days}} days, a day at a time",
+      "kinds": "What they were",
+      "sources": "Addresses seen most",
+      "noSources": "No address recorded"
+    },
+    "filters": {
+      "search": "Search anomalies",
+      "searchPlaceholder": "Account or address",
+      "status": "Status",
+      "anyStatus": "Any status",
+      "type": "Kind",
+      "anyType": "Any kind",
+      "summary": "{{n}} of {{total}}"
     },
     "empty": {
-      "noAreas": "No security areas are available",
-      "noOrg": "Create an organization first",
-      "noAreasDescription": "Your organization role does not include security or audit visibility. Ask an organization administrator if you need access.",
-      "noOrgDescription": "Organization security and audit tools appear once you create or join an organization. Your personal account security lives under Account → Security.",
-      "goToOverview": "Go to overview",
-      "goToSetup": "Go to setup"
+      "title": "No sign-in attacks detected",
+      "description": "When the lockout slows repeated failed sign-ins, it shows here.",
+      "filteredTitle": "No anomalies match",
+      "filteredDescription": "Try another account or address, or clear the filters."
     },
-    "available": "{{count}} available"
-  },
-  "sessions": {
-    "description": "Every active and revoked session for your account. Revoking a session terminates the refresh token immediately.",
-    "refresh": "Refresh",
-    "list": {
-      "title": "Your sessions",
-      "count_one": "{{count}} session",
-      "count_other": "{{count}} sessions",
-      "empty": "No sessions recorded."
-    },
-    "confirm": {
-      "revokeTitle": "Revoke this session?",
-      "revokeLabel": "Revoke",
-      "revokeAction": "Revoke this session"
-    }
-  },
-  "auditLogs": {
-    "description": "Every state-changing event in this organization, written atomically with the underlying business row.",
-    "export": "Export",
-    "exporting": "Exporting {{format}}…",
-    "exportCsv": "Download as CSV",
-    "exportJson": "Download as JSON",
-    "exported_one": "Exported {{count}} event",
-    "exported_other": "Exported {{count}} events",
-    "exportCapped": "Capped at {{cap}} rows. Narrow the filter to capture older history.",
-    "refresh": "Refresh",
-    "filter": {
-      "searchPlaceholder": "Search events — e.g. \"failed login\", user.delete, -saml",
-      "searchLabel": "Free-text event search",
-      "search": "Search",
-      "clear": "Clear",
-      "actionPlaceholder": "Filter by action (e.g. user.create)",
-      "resourceTypePlaceholder": "Filter by resource type",
-      "actorPlaceholder": "Filter by actor user_id"
-    },
-    "list": {
-      "title": "Events",
-      "count_one": "{{count}} event on this page",
-      "count_other": "{{count}} events on this page",
-      "empty": "No events match your filters yet.",
-      "columns": {
-        "time": "Time",
-        "actor": "Actor",
-        "action": "Action",
-        "resource": "Resource",
-        "ip": "IP"
-      }
-    }
-  },
-  "auditIntelligence": {
-    "description": "Behavioral-baseline anomaly detection over the audit log: a first-time action type, an unusual hour, or a new IP for an admin's own history. Distinct from Threat Protection's Anomalies, which watches login/session signals.",
-    "refresh": "Refresh",
-    "reasonLabels": {
-      "new_action_type": "Never done this before",
-      "unusual_hour": "Unusual time of day",
-      "new_ip": "New IP address"
-    },
-    "summary": {
-      "open": "Open",
-      "highScore": "High score (open)",
-      "resolved7d": "Resolved (7d)"
-    },
-    "anomalies": {
-      "title": "Anomalies",
-      "description": "Scored by a background sweep, newest first.",
-      "status": "Anomaly status",
-      "statusOpen": "Open",
-      "statusResolved": "Resolved",
-      "emptyOpen": "No open anomalies.",
-      "emptyResolved": "Nothing resolved yet.",
+    "drawer": {
+      "openSince": "Open · detected",
       "resolved": "Resolved",
-      "resolve": "Resolve",
-      "columns": {
-        "action": "Action",
-        "actor": "Actor",
-        "reason": "Why it's flagged",
-        "score": "Score",
-        "when": "When",
-        "rowAction": "Action"
-      }
+      "lockedUntil": "Qeet ID locked password sign-in for the account from that network until {{when}}.",
+      "lockedEnded": "Qeet ID locked password sign-in for the account from that network until {{when}}. The lock has ended.",
+      "throttledUntil": "Qeet ID refused password sign-in from that network until {{when}}.",
+      "throttledEnded": "Qeet ID refused password sign-in from that network until {{when}}. That has ended.",
+      "from": "From",
+      "account": "Account",
+      "accountsTried": "Accounts tried",
+      "failures": "Failed sign-ins",
+      "failuresIn": "{{n}} in {{minutes}} minutes",
+      "detected": "Detected",
+      "seenBefore": "Seen before",
+      "others_one": "{{count}} other anomaly from this address",
+      "others_other": "{{count}} other anomalies from this address",
+      "noOthers": "Not in the latest 50",
+      "bots": "Bots",
+      "botHits_one": "{{count}} scored sign-in from this address, {{blocked}} would block",
+      "botHits_other": "{{count}} scored sign-ins from this address, {{blocked}} would block",
+      "noBotHits": "None in the last 50 scored sign-ins",
+      "ipRules": "IP rules",
+      "deniedOn": "Refused by the deny rule {{cidr}}",
+      "deniedOff": "The deny rule {{cidr}} covers it, but IP rules are off",
+      "noRuleOn": "No deny rule covers it",
+      "noRuleOff": "No deny rule covers it, and IP rules are off",
+      "whatToDo": "What to do",
+      "denyTitle": "Deny the address",
+      "denyOn": "Add {{ip}} as a deny rule: its sign-ins and session renewals are refused at once.",
+      "denyOff": "Add {{ip}} as a deny rule. It refuses sign-ins once IP rules are turned on.",
+      "checkTitle": "Check the account",
+      "checkLine": "See whether anyone got in: its sessions and recent sign-ins.",
+      "twoStepTitle": "Ask for two-step verification",
+      "twoStepLine": "A guessed password alone won't get in.",
+      "twoStepShare": "{{n}} of {{total}} people have it today.",
+      "twoStepLink": "Open the security policy",
+      "resolveNote": "Resolving marks it dealt with. It doesn't lift a lock or change anything for the account."
+    }
+  },
+  "bots": {
+    "title": "Bots",
+    "tableLabel": "Automated clients",
+    "rowLabel": "{{client}} from {{ip}}",
+    "detectionOnly": "Detection only",
+    "description": "Each password sign-in's client is scored from its user agent. Nothing is refused: a verdict says what would happen.",
+    "noUserAgent": "No user agent",
+    "sentNone": "Sent no user agent",
+    "local": "This server's own address",
+    "allowedBy": "Allowed: {{label}}",
+    "fromLatest": "From the last 50 scored sign-ins",
+    "copied": "User agent copied",
+    "copyFailed": "Couldn't copy the user agent",
+    "verdict": {
+      "blocked": "Would block",
+      "challenged": "Would challenge",
+      "allowed": "Allowed"
     },
-    "settings": {
-      "title": "Detection settings",
-      "description": "Tune sensitivity for this organization.",
-      "scoreThreshold": "Score threshold",
-      "coldStartGuard": "Cold-start guard (events)",
-      "save": "Save",
-      "saveAction": "Change anomaly detection settings",
-      "enabled": "Detect anomalies",
-      "validation": {
-        "threshold": "Use a score from 0 to 1.",
-        "events": "Use a whole number of 0 or more."
-      }
+    "kind": {
+      "script": "Scripts and automation",
+      "none": "No user agent",
+      "app": "Not a browser"
     },
-    "verify": {
-      "title": "Chain integrity",
-      "description": "Walk the organization's hash-chained audit log and confirm no row has been tampered with.",
-      "verify": "Verify integrity",
-      "verifying": "Verifying…",
-      "intact_one": "Intact: {{count}} row checked.",
-      "intact_other": "Intact: {{count}} rows checked.",
-      "broken": "Broken at row {{id}}.",
-      "brokenLink": "It doesn't link to the row before it.",
-      "brokenRow": "Its content no longer matches its hash."
+    "columns": {
+      "client": "Client",
+      "address": "Address",
+      "signIns": "Sign-ins",
+      "verdict": "Verdict",
+      "score": "Score",
+      "last": "Last seen"
+    },
+    "actions": {
+      "deny": "Deny {{ip}}",
+      "anomalies": "Show the address in Anomalies",
+      "copy": "Copy user agent"
+    },
+    "band": {
+      "wouldBlock": "Would block, last 24 hours",
+      "wouldBlockNote": "Scored {{threshold}} or more. Nothing was refused.",
+      "show": "Show them",
+      "wouldChallenge": "Would challenge, last 24 hours",
+      "wouldChallengeNote": "Scored from {{from}} to under {{threshold}}",
+      "hours": "24 hours",
+      "hoursLabel": "Sign-ins that would be blocked, an hour at a time, over the last 24 hours",
+      "kinds": "What they are",
+      "most": "Tried most",
+      "none": "No scored sign-ins yet"
+    },
+    "filters": {
+      "search": "Search clients",
+      "searchPlaceholder": "Address or client",
+      "verdict": "Verdict",
+      "anyVerdict": "Any verdict",
+      "summary": "{{n}} of {{total}}"
+    },
+    "empty": {
+      "title": "No automated clients",
+      "description": "A sign-in from a script or an app that isn't a browser shows here.",
+      "filteredTitle": "No clients match",
+      "filteredDescription": "Try another address or client, or clear the filters."
+    },
+    "detection": {
+      "title": "Detection",
+      "description": "A sign-in's client is scored from 0, a browser, to 1, a script. Sign-ins scoring under 0.30 aren't kept.",
+      "scoring": "Score sign-ins",
+      "onHint": "Each password sign-in is scored and the verdict kept",
+      "offHint": "Sign-ins aren't scored, and nothing is added to the list",
+      "wouldBlock": "Would block",
+      "atScore": "At a score of {{threshold}} or more",
+      "challengeHint": "From {{from}} it would challenge instead.",
+      "action": "Change bot detection"
+    }
+  },
+  "ipRules": {
+    "title": "IP rules",
+    "description": "Which addresses may sign in to this organisation.",
+    "effect": {
+      "allow": "Allow",
+      "deny": "Deny"
+    },
+    "enforce": {
+      "title": "Enforcement",
+      "description": "While on, every sign-in and session renewal is checked, and an address that can't be read is refused. A change that would refuse your own address isn't saved.",
+      "label": "Enforce rules",
+      "changedBy": "Last changed by {{who}},",
+      "changed": "Last changed",
+      "onTitle": "Turn IP rules on?",
+      "onDescription": "From now, sign-ins and session renewals from addresses the rules refuse are stopped, for everyone in this organisation. {{allow}} allow rules and {{deny}} deny rules apply.",
+      "onConfirm": "Turn on",
+      "offTitle": "Turn IP rules off?",
+      "offDescription": "Every address can sign in and renew sessions again. The rules are kept, unused, until you turn them back on.",
+      "offConfirm": "Turn off",
+      "action": "Change IP rule enforcement"
+    },
+    "check": {
+      "label": "Check an address",
+      "placeholder": "e.g. 203.0.113.34",
+      "button": "Check",
+      "required": "Enter an address to check.",
+      "allowed": "Would be allowed",
+      "refused": "Would be refused",
+      "allowedLine": "No rule refuses it.",
+      "noRules": "There are no rules.",
+      "denyRule": "The deny rule {{cidr}} matches it.",
+      "denyRuleUnnamed": "A deny rule matches it.",
+      "notAllowed": "No allow rule matches it.",
+      "unknown": "It isn't an address the rules can read.",
+      "whileOff": "Judged against the rules as they stand; nothing is refused while they're off."
+    },
+    "rules": {
+      "title": "Rules",
+      "description": "A deny rule always wins. Once any allow rule exists, an address must match one.",
+      "add": "Add rule",
+      "added": "added",
+      "addresses_one": "{{n}} address",
+      "addresses_other": "{{n}} addresses",
+      "manyAddresses": "a large range",
+      "emptyTitle": "No rules yet",
+      "emptyDescription": "Every address can sign in. Add an allow rule for your offices, or a deny rule for an address that's attacking you."
+    },
+    "add": {
+      "title": "Add a rule",
+      "range": "Address or range",
+      "rangePlaceholder": "e.g. 203.0.113.0/24",
+      "rangeHint": "An IPv4 or IPv6 address, or a range in CIDR form.",
+      "label": "Label",
+      "labelPlaceholder": "e.g. Pune office",
+      "effect": "Effect",
+      "allowHint": "Once any allow rule exists, an address outside every allow rule is refused.",
+      "denyHint": "Refuses the range, whatever the allow rules say.",
+      "required": "Enter an address or range.",
+      "invalid": "Enter an IP address or a CIDR range, such as 203.0.113.0/24.",
+      "button": "Add rule",
+      "action": "Add an IP rule",
+      "confirmTitle": "Add a rule for {{cidr}}?",
+      "confirmDeny": "IP rules are on: sign-ins and session renewals from {{cidr}} are refused from now on.",
+      "confirmAllow": "IP rules are on: {{cidr}} can sign in from now on.",
+      "confirmFirstAllow": "IP rules are on, and this is the first allow rule: from now on only {{cidr}} can sign in, and sessions from anywhere else end at their next renewal."
+    },
+    "remove": {
+      "button": "Remove",
+      "label": "Remove the rule for {{cidr}}",
+      "title": "Remove the rule for {{cidr}}?",
+      "descriptionOff": "The rule is deleted. Nothing changes for anyone now: IP rules are off.",
+      "descriptionDeny": "{{cidr}} can sign in again at once.",
+      "descriptionAllow": "Addresses only this rule allowed are refused at their next sign-in or session renewal.",
+      "descriptionLastAllow": "It's the last allow rule, so every address not denied can sign in again.",
+      "confirm": "Remove rule",
+      "action": "Remove an IP rule"
+    },
+    "refusals": {
+      "title": "Refused sign-ins",
+      "description": "The latest 20 sign-ins and session renewals the rules refused.",
+      "person": "Person",
+      "unknownPerson": "Not known",
+      "address": "Address",
+      "why": "Why",
+      "when": "When",
+      "byRule": "The deny rule {{cidr}}",
+      "byRemovedRule": "The deny rule {{cidr}}, since removed",
+      "byARemovedRule": "A deny rule since removed",
+      "notAllowed": "Not on an allow rule",
+      "unknown": "An address that couldn't be read",
+      "emptyTitle": "Nothing refused",
+      "emptyDescription": "No sign-in has been refused by these rules."
+    }
+  },
+  "risk": {
+    "title": "Risk",
+    "description": "Each sign-in that passes its password gets a risk score. A risky one must pass two-step verification, even on a remembered device; someone without a second factor confirms a code sent to their email.",
+    "action": "Change risk settings",
+    "levels": {
+      "title": "Risk levels",
+      "description": "Where medium and high start, and which level must pass two-step verification.",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "below": "Below {{n}}",
+      "between": "From {{from}} to under {{to}}",
+      "from": "{{n}} and above",
+      "asUsual": "Signs in as usual",
+      "mustPass": "Must pass two-step verification, even on a remembered device",
+      "asksBadge": "Asks for two-step",
+      "start": "Medium and high start at",
+      "startHint": "Medium from {{medium}}, high from {{high}}.",
+      "askAt": "Ask for two-step verification at",
+      "askHigh": "High risk",
+      "askHighHint": "Clearly automated, or several signals at once.",
+      "askMedium": "Medium or high risk",
+      "askMediumHint": "Also less certain ones, so more people are asked."
+    },
+    "signals": {
+      "title": "Signals",
+      "description": "What adds up to a sign-in's score, at most 1. An app that isn't a browser on a new device scores {{app}} + {{device}} = {{sum}}: {{level}}.",
+      "client": "Automated client",
+      "alwaysOn": "Always on",
+      "clientLine": "0 to 1 from the user agent: 0.95 for a script or headless browser, 0.90 with no user agent, 0.55 for an app that isn't a browser.",
+      "travel": "Impossible travel",
+      "travelLine": "Adds {{n}} for a new country within {{hours}} hours of the last sign-in. It needs the country from your proxy; without it, this adds nothing.",
+      "changeHours": "Change hours",
+      "hoursTitle": "Impossible travel",
+      "hours": "Within",
+      "hoursUnit": "hours",
+      "hoursHint": "Of the last sign-in. At least {{min}}.",
+      "hoursMin": "Enter at least {{min}} hours.",
+      "device": "New device",
+      "deviceLine": "Adds {{n}} for a browser and system the person hasn't signed in from before."
     }
   },
   "rateLimits": {
-    "description": "Per-endpoint rate limits and per-organization network policy. Per-organization / per-user / per-api-key overrides are supported by the API; managing them from this screen isn't available yet.",
-    "perEndpoint": {
-      "title": "Per-endpoint limits",
-      "description": "Built-in token-bucket limits applied at the gateway."
+    "title": "Rate limits",
+    "description": "How many requests Qeet ID takes before it answers “Too many requests”. Each limit holds a burst and refills at its rate.",
+    "yours": {
+      "title": "Your organisation",
+      "description": "On every signed-in request. You can lower these, not raise them: the platform's are the most allowed.",
+      "defaults": "Platform limits",
+      "lowered": "Lowered"
     },
-    "networkPolicy": {
-      "title": "Network access",
-      "description": "Which networks may sign in to this organization is set by IP rules.",
-      "openRules": "Open IP rules",
-      "enforced": "Enforced",
-      "notEnforced": "Not enforced",
-      "rules": "{{allow}} allow · {{deny}} deny"
-    },
-    "comingSoon": {
-      "title": "Per-organization rate-limit controls coming to this screen.",
-      "description": "The API already supports per-organization / per-user / per-api-key overrides; a UI to view and edit them from here is on the way."
-    },
-    "otherEndpoints": "Other authed endpoints",
-    "rate": "{{rate}} req / {{burst}} burst",
-    "unlimited": "unlimited",
-    "perIpSliding": "per IP, sliding"
-  },
-  "bots": {
-    "description": "Detection rules and recent challenges against suspected automated traffic.",
-    "refresh": "Refresh",
-    "stats": {
-      "blocked": "Blocked (24h)",
-      "challenged": "Challenged (24h)",
-      "threshold": "Bot score threshold"
-    },
-    "rules": {
-      "title": "Detection rules",
-      "description": "Heuristics evaluated on each authentication attempt. User-Agent fingerprinting is enforced today; the others are stored for upcoming enforcement.",
-      "uaCheck": "User-Agent fingerprinting",
-      "uaCheckHelp": "Score known bot UA strings and headless browsers.",
-      "honeypot": "Honeypot fields",
-      "honeypotHelp": "Hidden form inputs that bots will fill.",
-      "captcha": "CAPTCHA challenge",
-      "captchaHelp": "hCaptcha shown for score > threshold.",
-      "signature": "Request-signature analysis",
-      "signatureHelp": "TLS JA3 + header-order fingerprinting (beta).",
-      "saveAction": "Change bot protection settings"
-    },
-    "recent": {
-      "title": "Recent decisions",
-      "description": "Suspicious authentication attempts, newest first",
-      "empty": "No bot activity detected.",
-      "columns": {
-        "ip": "IP",
-        "userAgent": "User-Agent",
-        "verdict": "Verdict",
-        "score": "Score",
-        "when": "When"
+    "bucket": {
+      "tenant": {
+        "label": "Organisation",
+        "hint": "All signed-in requests in this organisation, from people, applications and keys"
+      },
+      "user": {
+        "label": "Each person",
+        "hint": "One person's requests, across their sessions"
+      },
+      "api_key": {
+        "label": "Each API key",
+        "hint": "One key's requests"
       }
     },
-    "verdict": {
-      "blocked": "blocked",
-      "challenged": "challenged",
-      "allowed": "allowed"
+    "value": {
+      "perSecond": "{{rate}} a second, bursts of {{burst}}",
+      "every": "1 every {{seconds}} seconds, bursts of {{burst}}"
+    },
+    "edit": {
+      "label": "Change {{bucket}}",
+      "rate": "Requests a second",
+      "rateHint": "At most {{max}}",
+      "rateRange": "From {{min}} to {{max}}.",
+      "burst": "Burst",
+      "burstHint": "At most {{max}}",
+      "burstRange": "A whole number from 1 to {{max}}.",
+      "action": "Change a rate limit"
+    },
+    "reset": {
+      "button": "Use the platform's",
+      "title": "Use the platform's limits?",
+      "description": "Your organisation, each person and each API key go back to the platform's limits, the most allowed. Requests your lower limits refused are taken again, at once.",
+      "confirm": "Use the platform's",
+      "action": "Reset rate limits"
+    },
+    "builtIn": {
+      "title": "Built-in limits",
+      "description": "Set by the platform for every organisation, against password guessing and floods. An address is an IPv4 address or an IPv6 /64 network.",
+      "signIn": {
+        "label": "Sign-in",
+        "value": "5 a second, bursts of 20",
+        "hint": "Per address: signing in and up, account recovery, invitations, and the sign-in page's other steps"
+      },
+      "directory": {
+        "label": "Directory sign-in",
+        "value": "5 a second, bursts of 20",
+        "hint": "Per address: signing in with an LDAP directory's password"
+      },
+      "codes": {
+        "label": "Codes",
+        "value": "1 every 10 seconds, bursts of 5",
+        "hint": "Per person: sending a verification code, and changing a password"
+      },
+      "pairing": {
+        "label": "Phone pairing",
+        "value": "1 every 10 seconds, bursts of 5",
+        "hint": "Per address: linking a phone with a pairing code"
+      },
+      "links": {
+        "label": "Sign-in links and resets",
+        "value": "3, then 1 every 5 minutes",
+        "hint": "Per email address, for sign-in links and password resets; sign-in links also 10 per caller, then 1 a minute"
+      },
+      "tokens": {
+        "label": "Tokens",
+        "value": "50 a second, bursts of 200",
+        "hint": "Per address: the token endpoint, which an application calls for everyone who signs in to it"
+      },
+      "protocols": {
+        "label": "Protocols",
+        "value": "50 a second, bursts of 200",
+        "hint": "Per address: OpenID Connect discovery and keys, SAML and SCIM"
+      }
     }
   },
-  "logStreaming": {
-    "description": "Stream this organization's audit events to your SIEM or log platform. New events are forwarded from when a sink is added (no history backfill); delivery is at-least-once.",
-    "addSink": {
-      "title": "Add a sink",
-      "description": "Splunk HEC (token in the HEC field), Datadog (DD-API-KEY), or a generic HTTP endpoint (optional Bearer token).",
-      "type": "Type",
-      "endpointLabel": "Endpoint URL",
-      "tokenLabel": "Token",
-      "tokenHelp": "Stored write-only; never shown again.",
-      "add": "Add",
-      "addAction": "Add a log sink",
-      "validation": {
-        "endpoint": "Enter the sink's endpoint URL."
-      }
-    },
-    "sinks": {
-      "title": "Sinks",
-      "description": "Toggle a sink to pause/resume forwarding.",
-      "empty": "No log sinks configured.",
-      "emptyDescription": "Add a sink above to start streaming audit events.",
-      "lastForwarded": "last forwarded",
-      "remove": "Remove",
-      "confirmRemoveTitle": "Remove this sink?",
-      "confirmRemoveLabel": "Remove",
-      "toggleAction": "Pause or resume a log sink",
-      "removeAction": "Remove this log sink"
+  "logStreams": {
+    "title": "Log streams",
+    "description": "Sends this organisation's audit events to your SIEM as they happen.",
+    "destinations": {
+      "title": "Destinations",
+      "description": "Each one gets every new event, at least once.",
+      "emptyTitle": "No destinations yet",
+      "emptyDescription": "Stream the audit log to Splunk, Datadog or any HTTPS endpoint, so your security team sees it with everything else."
     },
     "type": {
-      "http": "Generic HTTP",
-      "splunkHec": "Splunk HEC",
-      "datadog": "Datadog"
+      "splunk_hec": {
+        "name": "Splunk HEC",
+        "line": "HTTP Event Collector. The token is sent as “Splunk <token>”.",
+        "token": "HEC token",
+        "placeholder": "e.g. https://splunk.example.com:8088/services/collector/event"
+      },
+      "datadog": {
+        "name": "Datadog",
+        "line": "Logs intake. The API key is sent as DD-API-KEY.",
+        "token": "API key",
+        "placeholder": "e.g. https://http-intake.logs.datadoghq.eu/api/v2/logs"
+      },
+      "http": {
+        "name": "Generic HTTP",
+        "line": "Any HTTPS endpoint. A token, if any, is sent as a Bearer token.",
+        "token": "Token",
+        "placeholder": "e.g. https://logs.example.com/qeet-id"
+      }
     },
+    "status": {
+      "delivering": "Delivering",
+      "failing": "Failing",
+      "paused": "Paused",
+      "waiting": "No events yet"
+    },
+    "lastDelivered": "last delivered",
+    "added": "added",
+    "failing": {
+      "title": "Can't deliver to {{host}}",
+      "since": "Nothing has been delivered since {{when}}.",
+      "never": "Nothing has been delivered yet.",
+      "retry": "Qeet ID keeps the events and tries again, waiting longer each time, up to an hour; they're sent once it works. Check the endpoint with whoever runs it:"
+    },
+    "pausedNote": "Paused: nothing is sent. The events wait, and resuming sends everything since.",
+    "pause": {
+      "button": "Pause",
+      "action": "Pause a log stream"
+    },
+    "resume": {
+      "button": "Resume",
+      "action": "Resume a log stream"
+    },
+    "remove": {
+      "button": "Remove",
+      "label": "Remove {{host}}",
+      "title": "Remove {{host}}?",
+      "description": "Qeet ID stops sending events to {{host}}. Adding it again starts from then: the events in between aren't sent.",
+      "confirm": "Remove destination",
+      "action": "Remove a log stream"
+    },
+    "add": {
+      "open": "Add destination",
+      "title": "Add a destination",
+      "description": "It gets every audit event from now on; earlier events aren't sent.",
+      "where": "Where to send events",
+      "endpoint": "Endpoint URL",
+      "endpointHint": "HTTPS, at a public address.",
+      "endpointInvalid": "Enter an HTTPS address, such as https://logs.example.com/qeet-id.",
+      "tokenHint": "Stored encrypted and never shown again.",
+      "button": "Add destination",
+      "action": "Add a log stream"
+    },
+    "sent": {
+      "title": "What's sent",
+      "description": "The same for every destination.",
+      "events": "Events",
+      "eventsValue": "Every audit event from when a destination is added. Earlier events aren't sent.",
+      "delivery": "Delivery",
+      "deliveryValue": "Every 10 seconds, up to 100 events at a time",
+      "deliveryHint": "A batch that fails is sent again until the destination takes it.",
+      "format": "Format",
+      "formatValue": "JSON over HTTPS",
+      "formatHint": "Splunk HEC gets one envelope per event; Datadog a list of log entries; Generic HTTP an object with a list of events.",
+      "sample": "An event, as Generic HTTP receives it"
+    }
+  },
+  "devices": {
+    "title": "Device sign-ins",
+    "description": "Sign-ins from devices without a browser, such as a command-line tool: the device shows a code, and someone approves it on another screen. A code lasts 10 minutes.",
+    "rowLabel": "Code {{code}}",
     "state": {
-      "error": "error",
-      "streaming": "streaming",
-      "idle": "idle"
+      "waiting": "Waiting",
+      "approved": "Approved",
+      "denied": "Denied",
+      "expired": "Expired"
+    },
+    "outcome": {
+      "waiting": "Code expires {{when}}",
+      "approved": "Approved; the device collects its sign-in on its next check",
+      "approvedPolled": "Approved; the device last checked {{when}}",
+      "denied": "Refused, so the device got nothing",
+      "expired": "Not used: the code expired {{when}}"
+    },
+    "columns": {
+      "code": "Code",
+      "status": "Status",
+      "person": "Approved by",
+      "app": "Application",
+      "requested": "Requested"
+    },
+    "deny": {
+      "button": "Deny",
+      "title": "Deny code {{code}}?",
+      "description": "The device showing {{code}} for {{app}} gets no access, and the code can no longer be approved.",
+      "confirm": "Deny",
+      "action": "Deny a device sign-in"
+    },
+    "actions": {
+      "events": "The approver's events in the audit log",
+      "app": "Open the application"
+    },
+    "band": {
+      "waiting": "Waiting now",
+      "waitingNote": "For someone to approve them",
+      "showWaiting": "Show them",
+      "approved": "Approved",
+      "approvedNote": "By {{people}} people · {{denied}} denied · {{expired}} expired",
+      "showApproved": "Show them",
+      "recent": "Requested, last {{days}} days",
+      "chartLabel": "{{n}} requested in the last {{days}} days, a day at a time",
+      "apps": "By application",
+      "noApps": "No requests yet"
+    },
+    "filters": {
+      "search": "Search device sign-ins",
+      "searchPlaceholder": "Code or email",
+      "status": "Status",
+      "anyStatus": "Any status",
+      "app": "Application",
+      "anyApp": "Any application",
+      "summary": "{{n}} of {{total}}"
+    },
+    "empty": {
+      "title": "No device sign-ins",
+      "description": "When a device without a browser asks to sign in, its code shows here.",
+      "waitingTitle": "Nothing is waiting for approval",
+      "waitingDescription": "A request shows here while its code is live, for 10 minutes.",
+      "filteredTitle": "No device sign-ins match",
+      "filteredDescription": "Try another code or email, or show every status.",
+      "everything": "Show every status"
     }
   },
-  "threats": {
-    "anomalies": {
-      "description": "Behavioral anomalies detected across logins, sessions, and API access.",
-      "refresh": "Refresh",
-      "summary": {
-        "openIncidents": "Open incidents",
-        "resolved24h": "Resolved (24h)",
-        "affectedAccounts": "Affected accounts",
-        "highSeverity24h": "High severity (24h)"
+  "audit": {
+    "title": "Audit log",
+    "tableLabel": "Audit events",
+    "description": "Every change and sign-in in this organisation, each chained by its hash to the one before, so an edit or a deletion shows.",
+    "refresh": "Refresh",
+    "view": {
+      "label": "Events to show",
+      "all": "All events",
+      "flagged": "Flagged"
+    },
+    "result": {
+      "failed": "Failed",
+      "blocked": "Blocked"
+    },
+    "columns": {
+      "event": "Event",
+      "actor": "Actor",
+      "resource": "Resource",
+      "address": "Address",
+      "when": "When"
+    },
+    "actor": {
+      "system": "Qeet ID",
+      "systemLine": "System",
+      "systemFor": "System, for {{name}}",
+      "unknown": "Unknown",
+      "notSignedIn": "Not signed in",
+      "machine": "Not a person",
+      "person": "Person {{id}}"
+    },
+    "resource": {
+      "user": "User",
+      "session": "Session",
+      "group": "Group",
+      "invite": "Invitation",
+      "tenant": "Organisation",
+      "oidc_client": "Application",
+      "api_key": "API key",
+      "webhook_subscription": "Webhook",
+      "ip_rule": "IP rule",
+      "log_sink": "Log stream",
+      "domain": "Domain",
+      "scim_token": "SCIM token",
+      "oidc_device_code": "Device sign-in",
+      "personLine": "User · {{id}}"
+    },
+    "actionGroups": {
+      "current": "In the address",
+      "signIn": "Sign-in",
+      "sessions": "Sessions and devices",
+      "people": "People and groups",
+      "settings": "Security settings",
+      "keys": "Keys and applications"
+    },
+    "filters": {
+      "search": "Search events",
+      "searchPlaceholder": "e.g. “sign in failed” -saml",
+      "actor": "Actor",
+      "action": "Action",
+      "resource": "Resource",
+      "anyResource": "Any resource",
+      "summary": "{{n}} on this page"
+    },
+    "actions": {
+      "open": "Open the event",
+      "eventsByThem": "Events by this actor",
+      "sameKind": "Events on this kind of resource",
+      "copyId": "Copy event ID",
+      "copied": "Event ID copied"
+    },
+    "empty": {
+      "title": "No events yet",
+      "description": "Sign-ins and changes in this organisation are recorded here.",
+      "filteredTitle": "No events match these filters",
+      "filteredDescription": "Try another search, or remove a filter."
+    },
+    "export": {
+      "button": "Export",
+      "csv": "CSV",
+      "csvLine": "What's filtered, up to 10,000 events",
+      "json": "JSON",
+      "jsonLine": "Every field, for a SIEM",
+      "done_one": "Exported {{count}} event",
+      "done_other": "Exported {{count}} events",
+      "capped": "Stopped at {{cap}} events. Narrow the filters to export the rest."
+    },
+    "band": {
+      "day": "Last 24 hours",
+      "dayNote": "By {{people}} people · {{failed}} failed",
+      "dayUnknown": "Couldn't count them",
+      "dayLabel": "{{n}} events in the last 24 hours, over time",
+      "flagged": "Flagged",
+      "flaggedNote": "{{high}} high score · {{resolved}} resolved in 7 days",
+      "flaggedUnknown": "Couldn't count them",
+      "showFlagged": "Show flagged",
+      "chain": "Hash chain",
+      "streams": "Streaming to",
+      "streamsUnknown": "Couldn't read the destinations",
+      "streamsNone": "No destinations",
+      "streamsOk": "Every destination is delivering",
+      "streamsFailing_one": "{{count}} destination failing",
+      "streamsFailing_other": "{{count}} destinations failing",
+      "openStreams": "Open log streams"
+    },
+    "chain": {
+      "unchecked": "Not checked",
+      "intact": "Intact",
+      "broken": "Broken",
+      "what": "Each event carries the hash of the one before, so a changed or deleted event breaks the chain.",
+      "intactNote": "{{n}} events checked, none changed",
+      "brokenNote": {
+        "link": "An event doesn't follow the one before it: one was deleted or reordered.",
+        "row": "An event's contents changed after it was recorded.",
+        "other": "An event doesn't match its hash."
       },
-      "recent": {
-        "title": "Recent anomalies",
-        "description": "Most recent detections, newest first",
-        "empty": "No anomalies detected.",
-        "columns": {
-          "type": "Type",
-          "user": "User",
-          "detail": "Detail",
-          "severity": "Severity",
-          "status": "Status",
-          "when": "When",
-          "action": "Action"
-        }
-      },
+      "failed": "Couldn't check the chain. Try again.",
+      "check": "Check the chain",
+      "checkAgain": "Check again"
+    },
+    "flagged": {
+      "label": "Flagged actions",
+      "rowLabel": "{{action}} by {{who}}",
+      "badge": "Flagged",
+      "high": "High {{score}}",
+      "medium": "Medium {{score}}",
+      "status": "Status",
+      "open": "Open",
       "resolved": "Resolved",
+      "note": "{{high}} high score · {{resolved}} resolved in 7 days",
       "resolve": "Resolve",
-      "severity": {
-        "low": "Low",
-        "medium": "Medium",
-        "high": "High",
-        "critical": "Critical"
+      "resolveAction": "Resolve a flagged action",
+      "reason": {
+        "new_action_type": "First time",
+        "unusual_hour": "Unusual hour",
+        "new_ip": "New address"
       },
-      "status": {
-        "open": "Open",
-        "resolved": "Resolved"
-      }
+      "columns": {
+        "score": "Score",
+        "action": "Action",
+        "by": "By",
+        "why": "Why it's flagged"
+      },
+      "emptyOpen": "Nothing flagged",
+      "emptyResolved": "Nothing resolved yet",
+      "emptyDescription": "An admin action that's unusual for the person who did it shows here."
     },
-    "ipAllowlist": {
-      "description": "Ranges that may or may not sign in to this organization. Deny rules win over allow rules; if any allow rule exists, an address must match one.",
-      "enforcement": "Enforcement",
-      "disabledBanner": "Enforcement is off — these rules are stored but not applied. Switch it on once you've confirmed the address you work from is allowed.",
-      "quickAdd": {
-        "title": "Quick add",
-        "description": "Add a CIDR range or a single IP address.",
-        "cidrLabel": "CIDR / IP",
-        "labelLabel": "Label",
-        "actionLabel": "Action",
-        "actionAllow": "Allow",
-        "actionDeny": "Deny",
-        "add": "Add rule",
-        "addAction": "Add an IP rule",
-        "validation": {
-          "cidr": "Enter an address or range, such as 203.0.113.0/24."
-        }
-      },
-      "rules": {
-        "title": "Rules",
-        "count_one": "{{count}} rule",
-        "count_other": "{{count}} rules",
-        "empty": "No IP rules yet.",
-        "columns": {
-          "cidr": "CIDR",
-          "label": "Label",
-          "action": "Action",
-          "added": "Added",
-          "actions": "Actions"
-        },
-        "remove": "Remove",
-        "removeAction": "Remove this IP rule",
-        "confirmRemoveTitle": "Remove this IP rule?",
-        "confirmRemoveAllow": "Sign-ins from {{cidr}} will no longer be allowed by this rule, so while enforcement is on they may be refused.",
-        "confirmRemoveDeny": "Sign-ins from {{cidr}} will no longer be refused by this rule.",
-        "confirmRemoveLabel": "Remove rule"
-      },
-      "test": {
-        "title": "Test an address",
-        "description": "Evaluate an IP against the current rules before turning enforcement on.",
-        "ipLabel": "IP address",
-        "ipHelp": "Checked exactly as a sign-in from that address would be. An address that can't be read is refused.",
-        "check": "Check",
-        "allowed": "Allowed",
-        "blocked": "Blocked",
-        "reasons": {
-          "allowed": "An allow rule matches, or no rule refuses it.",
-          "denyRule": "A deny rule matches it.",
-          "notAllowed": "No allow rule matches it.",
-          "unknown": "The address couldn't be read.",
-          "enforcementOff": "Rules aren't enforced, so every address is allowed.",
-          "denyRuleNamed": "The deny rule {{cidr}} matches it."
-        },
-        "validation": {
-          "ip": "Enter an IP address."
-        }
-      },
-      "coverage": {
-        "title": "What the rules cover",
-        "applied": "While enforcement is on, every sign-in to this organization is checked: password, passkey, magic link, social and enterprise sign-in, invitations, sign-up, the device flow and sign-in to your applications, and every session renewal. A refused sign-in gets no session.",
-        "unknown": "If an address can't be determined, sign-in is refused.",
-        "console": "This console signs you in from its own server, so the rules see that server's address, not yours. A change that would block the address you're working from is refused, so you can't lock yourself out.",
-        "off": "Enforcement is off: the rules are stored but not applied to any sign-in."
-      },
-      "refusals": {
-        "title": "Recent refusals",
-        "description": "Sign-ins and renewals the rules refused, newest first.",
-        "empty": "Nothing has been refused.",
-        "columns": {
-          "when": "When",
-          "address": "Address",
-          "method": "Sign-in",
-          "rule": "Rule"
-        },
-        "noRule": "Outside every allow rule",
-        "unknownAddress": "Address unknown",
-        "removedRule": "{{cidr}} (removed)",
-        "paths": {
-          "password": "Password",
-          "hosted_password": "Password",
-          "passkey": "Passkey",
-          "magic_link": "Magic link",
-          "hosted_magic_link": "Magic link",
-          "social": "Social",
-          "hosted_social": "Social",
-          "saml": "Enterprise (SAML)",
-          "ldap": "Directory (LDAP)",
-          "invite_accept": "Invitation",
-          "hosted_signup": "Sign-up",
-          "tenant_create": "New organization",
-          "tenant_switch": "Organization switch",
-          "refresh": "Session renewal",
-          "oidc_authorize": "Application sign-in",
-          "device_approval": "Device approval",
-          "device": "Device",
-          "mfa": "Second factor"
-        }
-      },
-      "enforcementAction": "Change IP rule enforcement"
+    "detection": {
+      "open": "Detection settings",
+      "title": "Detection settings",
+      "description": "How unusual an admin action must be before it's flagged.",
+      "enabled": "Flag unusual admin actions",
+      "enabledHint": "Each action is scored against the person's own history: a first-time action adds 0.50, an unusual hour up to 0.30, a new address 0.20.",
+      "threshold": "Flag at a score of",
+      "thresholdHint": "From 0 to 1. Higher flags fewer actions.",
+      "thresholdRange": "Enter a score from 0 to 1.",
+      "baseline": "Learn first from",
+      "baselineHint": "Events a person needs before anything they do is flagged.",
+      "baselineRange": "Enter a whole number, 0 or more.",
+      "events": "events",
+      "action": "Change flagging settings"
     },
-    "rateLimits": {
-      "description": "Configure per-organization rate limits. Rate is tokens per second; burst is the maximum burst capacity. These override the platform defaults for this organization.",
-      "card": {
-        "title": "Rate Limits",
-        "description": "Limits are enforced per bucket (organization, user, API key). Burst allows short spikes above the sustained rate.",
-        "resetToDefaults": "Reset to defaults",
-        "resetConfirmTitle": "Reset all rate limits to platform defaults?",
-        "resetConfirmLabel": "Reset to defaults",
-        "rateLabel": "Rate (req/s)",
-        "burstLabel": "Burst",
-        "save": "Save changes",
-        "resetAction": "Reset rate limits to platform defaults",
-        "saveAction": "Change rate limits"
-      },
-      "rows": {
-        "tenant": {
-          "label": "Per-organization",
-          "description": "Total requests per second across all users in this organization."
-        },
-        "user": {
-          "label": "Per-user",
-          "description": "Requests per second per individual user account."
-        },
-        "apiKey": {
-          "label": "Per-API-key",
-          "description": "Requests per second per API key credential."
-        }
-      },
-      "validation": {
-        "positive": "Enter a whole number of 1 or more."
-      }
-    },
-    "riskSettings": {
-      "description": "Configure adaptive MFA. When a login's risk score — bot-likeness, plus impossible-travel and device-reputation if you enable them — exceeds your chosen threshold, MFA is required even on a remembered device.",
-      "thresholds": {
-        "title": "Risk Thresholds",
-        "description": "Bot scores range from 0 (clearly human) to 1 (clearly automated). A score above the High threshold forces MFA even on a trusted device.",
-        "medium": "Medium threshold (0.1–1.0)",
-        "mediumHelp": "Score at/above this triggers a step-up MFA challenge for unrecognised devices.",
-        "high": "High threshold (0.1–1.0)",
-        "highHelp": "Score at/above this forces MFA even on a trusted/remembered device.",
-        "forceAt": "Force MFA at level",
-        "forceAtHelp": "Which risk level overrides the trusted-device skip.",
-        "forceAtMedium": "Medium — force on any suspicious request",
-        "forceAtHigh": "High — force only on clearly automated requests"
-      },
-      "impossibleTravel": {
-        "title": "Impossible travel",
-        "description": "Flag a login from a new country too soon after the last one to be plausible travel. Off by default — also needs a trusted upstream proxy to supply a country header (see docs); with none configured this never fires.",
-        "minTravelHours": "Minimum plausible travel time (hours)"
-      },
-      "deviceReputation": {
-        "title": "Device reputation",
-        "description": "Flag a login from a browser + OS combination never seen before for that user. Off by default."
-      },
-      "save": "Save changes",
-      "saveAction": "Change risk settings",
-      "validation": {
-        "threshold": "Use a score from 0.1 to 1.",
-        "highAboveMedium": "The high threshold must be above the medium one.",
-        "travelHours": "Use 0.5 hours or more."
-      }
+    "drawer": {
+      "loading": "Event",
+      "flaggedWhy": "Flagged as unusual for this person: {{reasons}}.",
+      "action": "Action",
+      "actor": "Actor",
+      "resource": "Resource",
+      "address": "Address",
+      "device": "Device",
+      "request": "Request ID",
+      "event": "Event ID",
+      "copyAction": "Copy action",
+      "copyResource": "Copy resource ID",
+      "copyRequest": "Copy request ID",
+      "copyEvent": "Copy event ID",
+      "details": "Details Qeet ID recorded",
+      "byActor": "By {{name}}, around the same time",
+      "byThisActor": "By this actor, around the same time",
+      "noneNearby": "Nothing else within five minutes.",
+      "relatedFailed": "Couldn't load the events around it.",
+      "sameRequest_one": "{{n}} other event shares its request ID.",
+      "sameRequest_other": "{{n}} other events share its request ID.",
+      "noSameRequest": "No other event shares its request ID.",
+      "recorded": "The event as recorded",
+      "eventsBy": "Events by {{name}}",
+      "eventsByActor": "Events by this actor"
     }
   },
-  "activity": {
-    "description": "The 20 most recent events across this organization. Auto-refreshes every 15 seconds. For full filtering and search, head to Audit Logs."
-  },
-  "ipAllowlistPage": {
-    "officeNyc": "Office NYC"
-  },
-  "logStreamingPage": {
-    "enabled": "Enabled"
-  },
-  "securityOverviewPage": {
-    "securityOperations": "Security operations",
-    "investigateIdentityRiskEnforce": "Investigate identity risk, enforce policy, and verify control evidence.",
-    "availableSecurityAreas": "Available security areas"
+  "sessions": {
+    "title": "Your sessions",
+    "description": "Where you're signed in. Sign out of anything you don't recognise.",
+    "signedIn": "Signed in",
+    "lastActive": "Last active",
+    "here": {
+      "title": "This device",
+      "activeNow": "Active now"
+    },
+    "others": {
+      "title": "Other sessions",
+      "description": "Each one is a browser or app still signed in as you.",
+      "empty": "No other sessions are signed in as you.",
+      "signOutAll": "Sign out of all others",
+      "confirmTitle": "Sign out of all your other sessions?",
+      "confirmDescription": "Every session except this one ends and can no longer be renewed, including any not listed here. A device that is signed in may keep access for a few more minutes, until its current access runs out. You stay signed in here.",
+      "done_one": "Signed out of {{n}} other session",
+      "done_other": "Signed out of {{n}} other sessions",
+      "none": "There were no other sessions to sign out of",
+      "failed": "Couldn't sign out your other sessions. Try again."
+    },
+    "signOut": {
+      "button": "Sign out",
+      "label": "Sign out of {{device}}",
+      "title": "Sign out of {{device}}?",
+      "description": "Whoever is using it is signed out at once, and the session can't be renewed.",
+      "action": "Sign out of a session"
+    }
   },
   "toast": {
-    "rateLimitsSaved": "Rate limits saved",
-    "rateLimitsResetTo": "Rate limits reset to platform defaults",
-    "logSinkAdded": "Log sink added",
-    "logSinkUpdated": "Log sink updated",
-    "logSinkDeleted": "Log sink deleted",
-    "enforcementUpdated": "Enforcement updated",
+    "rateLimitsSaved": "Rate limit saved",
+    "rateLimitsResetTo": "Rate limits are the platform's again",
+    "logSinkAdded": "Destination added",
+    "logSinkUpdated": "Destination updated",
+    "logSinkDeleted": "Destination removed",
+    "enforcementUpdated": "IP rule enforcement changed",
     "ruleAdded": "Rule added",
     "ruleRemoved": "Rule removed",
-    "deviceAuthorizationRevoked": "Device authorization revoked",
+    "deviceAuthorizationRevoked": "Device sign-in denied",
     "riskSettingsSaved": "Risk settings saved",
-    "anomalyResolved": "Anomaly resolved",
-    "anomalySettingsUpdated": "Anomaly-detection settings updated",
-    "botProtectionSettingsSaved": "Bot protection settings saved"
+    "anomalyResolved": "Marked as resolved",
+    "anomalySettingsUpdated": "Detection settings saved",
+    "botProtectionSettingsSaved": "Bot detection changed"
   },
   "nav": {
     "authentication": {
       "devices": {
-        "title": "Devices",
-        "description": "OAuth device-authorization requests."
+        "title": "Device sign-ins",
+        "description": "Sign-ins from devices without a browser."
       }
     },
     "security": {
-      "overview": {
-        "title": "Overview"
-      },
       "threats": {
         "title": "Threats"
       },
@@ -505,10 +843,7 @@
         "title": "Monitoring"
       },
       "auditLogs": {
-        "title": "Audit logs"
-      },
-      "intelligence": {
-        "title": "Intelligence"
+        "title": "Audit log"
       },
       "logStreams": {
         "title": "Log streams"
@@ -517,31 +852,31 @@
   },
   "commands": {
     "auditLogs": {
-      "title": "View Audit Logs",
-      "subtitle": "Browse and filter security audit events",
+      "title": "View the audit log",
+      "subtitle": "Browse and filter every change and sign-in",
       "keywords": "audit, logs, events, security"
     },
     "exportAudit": {
-      "title": "Export Audit Logs",
+      "title": "Export the audit log",
       "subtitle": "Download audit events for compliance",
       "keywords": "export, download, compliance, audit csv"
     }
   },
   "shortcuts": {
-    "auditLogs": "Audit logs"
+    "auditLogs": "Audit log"
   },
   "qeetaiSuggestions": {
     "labels": {
-      "searchAuditLogs": "Search audit logs",
-      "summarizeAnomalies": "Summarize anomalies",
-      "failedLogins": "Show failed login attempts",
+      "searchAuditLogs": "Search the audit log",
+      "summarizeAnomalies": "Summarise anomalies",
+      "failedLogins": "Show failed sign-ins",
       "adminActions": "List recent admin actions",
-      "strictMfaPolicy": "Set strict MFA policy"
+      "strictMfaPolicy": "Set a strict two-step policy"
     },
     "prompts": {
-      "summarizeAnomalies": "Summarize any unusual or high-risk events in the recent audit log.",
-      "failedLogins": "Search the audit log for failed authentication events in the last 24 hours.",
-      "adminActions": "List the most recent administrative actions by all operators in this tenant."
+      "summarizeAnomalies": "Summarise any unusual or high-risk events in the recent audit log.",
+      "failedLogins": "Search the audit log for failed sign-ins in the last 24 hours.",
+      "adminActions": "List the most recent administrative actions by everyone in this organisation."
     }
   }
 }

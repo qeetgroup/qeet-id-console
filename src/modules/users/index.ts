@@ -6,5 +6,9 @@ export { type Invitation, invitationQueries } from "./api/invitations";
 export { type ImportRowError, importRowErrorMessage } from "./import-errors";
 export * from "./user-display";
 export { useUserActions } from "./use-user-actions";
-export { CopyId, CountRow, InfoRow } from "./components/user-detail-fields";
-export { isUser360Tab, USER360_TABS, type User360Tab } from "./tabs";
+// The list's address, for its route: light, so the route tree (in the shell) can hold it.
+export { growth, type PeopleFilters, TWO_STEP_TARGET, usersListSearch } from "./people-model";
+export { parseUserAgent } from "./user-agent";
+export { type InvitationFilters, invitationsSearch } from "./invitations-model";
+export { type DeletedFilters, deletedSearch } from "./deleted-model";
+export { isUser360Tab, USER360_TABS, type User360Tab, user360Tab } from "./tabs";

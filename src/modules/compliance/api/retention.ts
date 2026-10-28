@@ -1,9 +1,9 @@
 // The tenant's opt-in retention policy: how long soft-deleted users are kept before they are
-// purged. A background sweeper applies it; preview and run let an admin check or trigger it.
+// purged. A background sweeper applies it hourly. The changes are in retention-changes.ts, which
+// only the Retention page loads.
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
-import { userKeys } from "@/modules/users";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { complianceKeys } from "./keys";
@@ -13,56 +13,15 @@ export interface RetentionPolicy {
   deleted_users_days: number;
 }
 
-export function useRetentionPolicy() {
+/** The days the server accepts for the window (it clamps anything else to them). */
+export const RETENTION_DAYS = { min: 1, max: 3650 } as const;
+
+/** The tenant's retention rules; `enabled: false` for someone who can't read them (policy.read). */
+export function useRetentionPolicy(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: complianceKeys.retention(tenantId),
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<RetentionPolicy>(`/v1/tenants/${tenantId}/retention`),
-  });
-}
-
-export function useUpdateRetentionPolicy() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: RetentionPolicy) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<RetentionPolicy>(`/v1/tenants/${tenantId}/retention`, {
-        method: "PUT",
-        body,
-      });
-    },
-    onSuccess: (data) => qc.setQueryData(complianceKeys.retention(tenantId), data),
-    meta: { successMessage: "compliance:toast.retentionPolicySaved", silentError: true }, // the form shows it
-  });
-}
-
-export function useRetentionPreview() {
-  const tenantId = useTenantId();
-  return useMutation({
-    mutationFn: () => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<{ ripe_deleted_users: number; deleted_users_days: number }>(
-        `/v1/tenants/${tenantId}/retention/preview`,
-        { method: "POST" },
-      );
-    },
-    meta: { silent: true },
-  });
-}
-
-export function useRunRetention() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<{ purged: number }>(`/v1/tenants/${tenantId}/retention/run`, {
-        method: "POST",
-      });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) }),
-    meta: { successMessage: "compliance:toast.retentionPurgeComplete" },
   });
 }

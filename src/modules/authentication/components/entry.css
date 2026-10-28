@@ -1,0 +1,648 @@
+/*
+ * The entry pages (sign in, sign up, verify email, forgot and reset password), on @qeetrix/react and
+ * the Qeetrix design rules: a welcoming page with comfortable density, a Geo display headline and
+ * one 400px column; square corners, ruled surfaces, no shadows in the page flow, and Ember only
+ * where it means something. Token values only. The frame around them is platform's
+ * (entry-shell.css); this is what goes inside it, and the brand panel beside it.
+ */
+
+.entry-heading {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.entry-heading h1 {
+  text-wrap: balance;
+}
+
+.entry-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+}
+
+.entry-or {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.entry-or::before,
+.entry-or::after {
+  content: "";
+  flex: 1;
+  block-size: 1px;
+  background: var(--qx-color-border-subtle);
+}
+
+/*
+ * Other providers: one ruled row, cells divided by 1px lines, like a table's cells. The logos are
+ * the providers' own artwork. To move into @qeetrix/react as a ProviderButton.
+ */
+.entry-providers {
+  /* A fieldset (provider buttons) or a nav (inbox links): neither brings its own box. */
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+  overflow: hidden;
+}
+
+.entry-provider {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--qx-space-gap-sm);
+  block-size: var(--qx-size-control-lg);
+  padding-inline: var(--qx-space-inset-md);
+  border: 0;
+  background: transparent;
+  color: var(--qx-color-text-default);
+  text-decoration: none;
+  font: var(--qx-typography-label-md);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+  cursor: pointer;
+  transition: background-color var(--qx-motion-duration-fast) var(--qx-motion-easing-standard);
+}
+
+.entry-provider + .entry-provider {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.entry-provider:hover {
+  background: var(--qx-color-bg-neutral-subtle-hover);
+}
+
+.entry-provider:active {
+  background: var(--qx-color-bg-neutral-subtle-pressed);
+}
+
+.entry-provider:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-focus-ring-width) * -1);
+}
+
+.entry-provider:disabled {
+  color: var(--qx-color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* Monochrome logos drawn in black (GitHub) or white (Apple) are inverted where they'd vanish. */
+[data-qx-color-scheme="dark"] .entry-provider [data-invert="dark"],
+.entry-provider [data-invert="light"] {
+  filter: invert(1);
+}
+
+[data-qx-color-scheme="dark"] .entry-provider [data-invert="light"] {
+  filter: none;
+}
+
+.entry-provider svg {
+  inline-size: 18px;
+  block-size: 18px;
+  flex: none;
+}
+
+.entry-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm) var(--qx-space-gap-lg);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* A text button that reads as a link: Resend code, Sign out. */
+.entry-text-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-brand);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.entry-text-button:disabled {
+  color: var(--qx-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.entry-text-button:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: var(--qx-focus-ring-offset);
+}
+
+/* The account you're signing in as, on the password step: a ruled row with a way back. */
+.entry-account {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+}
+
+.entry-who {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.entry-strong {
+  color: var(--qx-color-text-default);
+  font-weight: 600;
+}
+
+.entry-num {
+  color: var(--qx-color-text-default);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.entry-consent {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.entry-waiting {
+  display: grid;
+  justify-items: center;
+  gap: var(--qx-space-gap-md);
+  color: var(--qx-color-text-subtle);
+  text-align: center;
+}
+
+/* A wait that reads as a line under the heading: a spinner and what's happening. */
+.entry-status {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+}
+
+/*
+ * A ruled list of actions, a row each: other ways to confirm a sign-in, and the organisations to
+ * open. To propose as a library ActionList.
+ */
+.entry-options {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+  overflow: hidden;
+}
+.entry-options > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+.entry-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  inline-size: 100%;
+  min-block-size: 3.5rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  border: 0;
+  background: transparent;
+  color: var(--qx-color-text-default);
+  text-align: start;
+  font: var(--qx-typography-label-md);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+  cursor: pointer;
+  transition: background-color var(--qx-motion-duration-fast) var(--qx-motion-easing-standard);
+}
+.entry-option:hover:not(:disabled) {
+  background: var(--qx-color-bg-neutral-subtle-hover);
+}
+.entry-option:disabled {
+  color: var(--qx-color-text-disabled);
+  cursor: not-allowed;
+}
+.entry-option:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-focus-ring-width) * -1);
+}
+.entry-option > svg {
+  color: var(--qx-color-icon-subtle);
+}
+.entry-option-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.entry-option-text strong {
+  overflow: hidden;
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.entry-option-text small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.entry-option[data-waiting] {
+  background: var(--qx-color-bg-neutral-subtle);
+  cursor: default;
+}
+/* An invitation row: the organisation, who it was sent to, then Decline and Join at its end. */
+.entry-invite {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3.75rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+}
+
+.entry-invite[data-single] {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.entry-invite-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* An organisation row: its logo, name, tags and a chevron. */
+.entry-option[data-kind="organisation"] {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  min-block-size: 3.75rem;
+}
+/* The organisation being opened: the selected tint and the Ember bar on its start edge (rules §11). */
+.entry-option[data-opening] {
+  background: var(--qx-color-bg-selected);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+  cursor: progress;
+}
+/* A long list scrolls inside a frame about seven rows tall, so the page doesn't grow without end. */
+.entry-options[data-scroll] {
+  max-block-size: 26.25rem;
+  overflow-y: auto;
+}
+
+.entry-option-tags {
+  display: flex;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* A numbered how-to, ruled between steps. */
+.entry-howto {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: howto;
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+.entry-howto li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 2px var(--qx-space-gap-md);
+  padding-block: var(--qx-space-inset-sm);
+  counter-increment: howto;
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+}
+.entry-howto > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+.entry-howto li::before {
+  content: counter(howto, decimal-leading-zero);
+  grid-row: span 2;
+  padding-block-start: 2px;
+  color: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-code-sm);
+}
+.entry-howto strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+.entry-howto span {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* The QR code beside its setup key, in one ruled card. */
+.entry-qr {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--qx-space-gap-lg);
+  padding: var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+.entry-qr-key {
+  display: grid;
+  justify-items: start;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+.entry-qr-key code {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-md);
+  word-break: break-all;
+}
+.entry-qr-placeholder {
+  inline-size: 152px;
+  block-size: 152px;
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+/* Recovery codes: a numbered, ruled grid with its actions on top. */
+.entry-codes {
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  overflow: hidden;
+}
+.entry-codes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-xs) var(--qx-space-inset-xs)
+    var(--qx-space-inset-md);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  background: var(--qx-color-surface-sunken);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+.entry-codes-head > div {
+  display: flex;
+  gap: var(--qx-space-gap-xs);
+}
+.entry-codes ol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: code;
+}
+.entry-codes li {
+  display: flex;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  counter-increment: code;
+  font: var(--qx-typography-code-md);
+}
+.entry-codes ol > :nth-child(-n + 2) {
+  border-block-start: 0;
+}
+.entry-codes ol > :nth-child(even) {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+.entry-codes li::before {
+  content: counter(code, decimal-leading-zero);
+  color: var(--qx-color-text-subtlest);
+}
+
+/* ── The brand panel ───────────────────────────────────────────────────────── */
+
+.entry-panel {
+  /* It stays in view while a long form scrolls beside it. */
+  position: sticky;
+  inset-block-start: 0;
+  align-self: start;
+  block-size: 100dvh;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: var(--qx-space-layout-md);
+  padding: var(--qx-space-layout-lg) var(--qx-space-layout-lg) var(--qx-space-layout-md);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  /* The Qeetrix welcome page's light: faint Ember from the top corner, a breath of info below. */
+  background:
+    radial-gradient(
+      55% 45% at 90% 8%,
+      color-mix(in oklab, var(--qx-color-bg-brand-bold) 14%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      45% 40% at 0% 100%,
+      color-mix(in oklab, var(--qx-color-bg-info-bold) 7%, transparent),
+      transparent 70%
+    ),
+    var(--qx-color-surface-default);
+  color: var(--qx-color-text-default);
+}
+
+/* The ruled grid of the console design, fading out from the top. */
+.entry-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--qx-color-border-subtle) 1px, transparent 1px) 0 0 / 2rem 2rem,
+    linear-gradient(90deg, var(--qx-color-border-subtle) 1px, transparent 1px) 0 0 / 2rem 2rem;
+  mask-image: radial-gradient(90% 75% at 60% 0%, black, transparent 75%);
+  opacity: 0.6;
+}
+
+.entry-panel-body {
+  align-self: center;
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+  max-inline-size: 36rem;
+}
+
+.entry-panel-copy {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+}
+
+.entry-panel-copy h2 {
+  text-wrap: balance;
+}
+
+.entry-panel-copy p {
+  margin: 0;
+  max-inline-size: 30rem;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-lg);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+  text-wrap: pretty;
+}
+
+/* A passkey inside the Ember frame: the focus frame every Qeetrix control wears. */
+.entry-mark-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-layout-sm);
+  margin-block-start: var(--qx-space-gap-xl);
+  padding-inline-start: 18px;
+}
+
+.entry-mark {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 14rem;
+  aspect-ratio: 1;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  color: var(--qx-color-icon-default);
+}
+
+/* 2px Ember, 2px away, as on a focused control (rules §10). */
+.entry-mark::before {
+  content: "";
+  position: absolute;
+  inset: calc((var(--qx-focus-ring-offset) + var(--qx-focus-ring-width) + 1px) * -1);
+  border: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  border-radius: calc(var(--qx-radius-surface) + var(--qx-focus-ring-offset));
+}
+
+/* Registration ticks at the corners: the drawing is exact. */
+.entry-tick {
+  position: absolute;
+  inline-size: 14px;
+  block-size: 14px;
+  border: 0 solid var(--qx-color-border-strong);
+}
+
+.entry-tick[data-corner="start-top"] {
+  inset-block-start: -18px;
+  inset-inline-start: -18px;
+  border-block-start-width: 1px;
+  border-inline-start-width: 1px;
+}
+
+.entry-tick[data-corner="end-top"] {
+  inset-block-start: -18px;
+  inset-inline-end: -18px;
+  border-block-start-width: 1px;
+  border-inline-end-width: 1px;
+}
+
+.entry-tick[data-corner="start-bottom"] {
+  inset-block-end: -18px;
+  inset-inline-start: -18px;
+  border-block-end-width: 1px;
+  border-inline-start-width: 1px;
+}
+
+.entry-tick[data-corner="end-bottom"] {
+  inset-block-end: -18px;
+  inset-inline-end: -18px;
+  border-block-end-width: 1px;
+  border-inline-end-width: 1px;
+}
+
+/* Three facts in ruled columns: a 1px rule above, 1px rules between. */
+.entry-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+}
+
+.entry-fact {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-md) 0;
+}
+
+.entry-fact:first-child {
+  padding-inline-start: 0;
+}
+
+.entry-fact + .entry-fact {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.entry-fact svg {
+  margin-block-end: var(--qx-space-gap-xs);
+  color: var(--qx-color-icon-subtle);
+}
+
+.entry-fact strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.entry-fact span {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* The steps of a flow: done in success, the current one in Ember (rules §11), the rest subtle. */
+.entry-steps {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+}
+
+.entry-steps li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px var(--qx-space-gap-md);
+}
+
+.entry-steps li > svg {
+  color: var(--qx-color-icon-success);
+}
+
+.entry-steps li[data-state="current"] > svg {
+  color: var(--qx-color-icon-brand);
+}
+
+.entry-steps li[data-state="next"] > svg {
+  color: var(--qx-color-icon-subtle);
+}
+
+.entry-steps strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.entry-steps li[data-state="next"] strong {
+  color: var(--qx-color-text-subtle);
+  font-weight: 500;
+}
+
+.entry-steps span {
+  grid-column: 2;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Small screens: the form only ──────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .entry-panel {
+    display: none;
+  }
+}

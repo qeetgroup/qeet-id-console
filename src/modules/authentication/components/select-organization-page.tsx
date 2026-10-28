@@ -1,34 +1,30 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@qeetrix/ui";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-import { CreateOrgFlow } from "@/modules/onboarding";
 import type { PublicSession } from "@/platform/auth/server-session";
 import { sessionStore } from "@/platform/auth/session-store";
+import { EntryPanel, useEntrySteps } from "./entry-panel";
+import { EntryShell } from "./entry-shell";
 import { OrganizationSelectionPage } from "./organization-selector";
 
 /**
- * Renders organization selection for a person who belongs to several, or to none yet, with the
- * flow that creates one.
+ * Renders organization selection for a person who belongs to several, or to none yet. Creating
+ * one opens its own page, and Cancel there comes back here.
  */
 export function SelectOrganizationPage({ session }: { session: PublicSession }) {
-  const { t } = useTranslation("auth-flow");
-  const [creating, setCreating] = useState(false);
+  const steps = useEntrySteps();
+  const navigate = useNavigate();
   useEffect(() => {
     sessionStore.hydrate(session);
   }, [session]);
   return (
-    <>
-      <OrganizationSelectionPage key={session.userId} onCreate={() => setCreating(true)} />
-      <Dialog open={creating} onOpenChange={setCreating}>
-        <DialogContent className="max-h-[90dvh] min-w-0 overflow-y-auto sm:max-w-5xl">
-          <DialogHeader>
-            <DialogTitle>{t("organizationSelection.create")}</DialogTitle>
-            <DialogDescription>{t("organizationSelection.createDescription")}</DialogDescription>
-          </DialogHeader>
-          {creating && <CreateOrgFlow onCancel={() => setCreating(false)} />}
-        </DialogContent>
-      </Dialog>
-    </>
+    <EntryShell panel={<EntryPanel steps={steps.organisation} current={1} />}>
+      <OrganizationSelectionPage
+        key={session.userId}
+        onCreate={() =>
+          void navigate({ to: "/create-organization", search: { from: "select-organization" } })
+        }
+      />
+    </EntryShell>
   );
 }

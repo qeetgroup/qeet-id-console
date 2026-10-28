@@ -285,11 +285,11 @@ export function countLeaves(node: CondNode): number {
   return node.children.reduce((n, c) => n + countLeaves(c), 0);
 }
 
-export function useAbacPolicies() {
+export function useAbacPolicies(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: authzKeys.abacPolicies(tenantId),
-    enabled: !!tenantId,
+    enabled: !!tenantId && enabled,
     queryFn: () => api<{ items: AbacPolicy[] }>(`/v1/tenants/${tenantId}/abac/policies`),
   });
 }

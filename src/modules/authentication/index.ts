@@ -2,6 +2,8 @@
 // Session identity is not here; it is platform state in @/platform/auth/session.
 export * from "./api/flows";
 export { authKeys } from "./api/keys";
+export { useEligibleOrganizations } from "./api/organization-selection";
+export * from "./api/mfa";
 export * from "./api/mfa-sign-in";
 export * from "./api/auth-policy";
 export * from "./api/oidc-clients";
@@ -18,10 +20,3 @@ export * from "./api/scim";
 export { type LdapConnection, useLdapConnections } from "./api/ldap";
 export * from "./api/sso";
 export * from "./api/sessions";
-export { SessionsTable } from "./components/sessions-table";
-export { PasskeysTable, passkeyDisplayName } from "./components/passkeys-table";
-export { AccountPasskeysCard } from "./components/account-passkeys-card";
-export { TrustedDevicesCard } from "./components/trusted-devices-card";
-export { LinkedPhonesCard } from "./components/linked-phones-card";
-export { MfaEnrollmentStep, RecoveryCodesStep } from "./components/mfa-enrollment-step";
-export { MfaChallengeStep, MfaStep } from "./components/mfa-challenge-step";

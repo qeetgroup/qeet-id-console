@@ -1,0 +1,306 @@
+/*
+ * The console frame's own parts, on @qeetrix/react and its tokens only (no Tailwind): the scope
+ * name, the account menu's theme columns, the Notifications and Help panels, and the band that
+ * carries the breadcrumb and sub-page tabs above a page not yet rebuilt.
+ */
+
+/* The organisation's name in the top bar's scope path: a mark and the name, never a control. */
+.frame-scope {
+  display: inline-flex;
+  min-inline-size: 0;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.frame-scope-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Without an organisation, the foot of the navigation: the way to choose or create one. */
+.frame-choose-organization {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-md);
+  text-decoration: none;
+}
+
+.frame-choose-organization svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.frame-choose-organization:hover {
+  color: var(--qx-color-text-default);
+}
+
+.frame-choose-organization:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-border-width-strong) * -1);
+}
+
+/* The account menu. */
+.frame-account-trigger {
+  display: inline-grid;
+  padding: 0;
+  border: 0;
+  border-radius: var(--qx-radius-full);
+  background: none;
+  cursor: pointer;
+}
+
+.frame-account-trigger:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+.qx-menu.frame-account-menu {
+  min-inline-size: 15rem;
+}
+
+.frame-account-who {
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+}
+
+/* The theme as three columns inside the menu, drawn like ThemeSwitcher's segmented toggles. */
+.frame-theme {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-md) var(--qx-space-inset-sm);
+}
+
+.frame-theme-option {
+  display: grid;
+  justify-items: center;
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-xs);
+  border-radius: var(--qx-radius-control);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+
+.frame-theme-option[data-highlighted] {
+  background: var(--qx-color-bg-neutral-subtle);
+  color: var(--qx-color-text-default);
+  box-shadow: inset 0 0 0 var(--qx-border-width-strong) var(--qx-color-border-focus);
+}
+
+.frame-theme-option[data-checked] {
+  background: var(--qx-color-bg-neutral-bold);
+  color: var(--qx-color-text-inverse);
+}
+
+/* The Help panel. */
+.frame-help {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.frame-help > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.frame-help-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--qx-space-gap-sm);
+  inline-size: 100%;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-xs);
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-default);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.frame-help-row:hover {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+.frame-help-row:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: -2px;
+}
+
+.frame-help-row > span {
+  display: grid;
+  gap: 2px;
+}
+
+.frame-help-row strong {
+  font: var(--qx-typography-label-md);
+}
+
+.frame-help-row small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* The Notifications panel. */
+.frame-notes {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.frame-notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm);
+}
+
+.frame-notes-foot {
+  font: var(--qx-typography-label-sm);
+}
+
+.frame-notes-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.frame-notes-list > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.frame-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-xs);
+  color: var(--qx-color-text-default);
+  text-decoration: none;
+}
+
+a.frame-note:hover {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+a.frame-note:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: -2px;
+}
+
+.frame-note-icon {
+  margin-block-start: 2px;
+  color: var(--qx-color-icon-subtle);
+}
+
+.frame-note[data-kind="alert"] .frame-note-icon {
+  color: var(--qx-color-icon-danger);
+}
+
+.frame-note[data-kind="warning"] .frame-note-icon {
+  color: var(--qx-color-icon-warning);
+}
+
+.frame-note[data-kind="success"] .frame-note-icon {
+  color: var(--qx-color-icon-success);
+}
+
+.frame-note[data-kind="info"] .frame-note-icon {
+  color: var(--qx-color-icon-info);
+}
+
+.frame-note-text {
+  display: grid;
+  min-inline-size: 0;
+  gap: 2px;
+}
+
+.frame-note-title {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm);
+}
+
+.frame-note-title strong {
+  font: var(--qx-typography-label-md);
+}
+
+.frame-note[data-unread] .frame-note-title strong {
+  font-weight: 600;
+}
+
+.frame-note-text small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.frame-note-text time {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* The keyboard shortcuts drawer: groups under caps labels, each shortcut a ruled row with its keys. */
+.frame-shortcuts {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.frame-shortcuts-group h3 {
+  margin: 0 0 var(--qx-space-gap-xs);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+}
+
+.frame-shortcuts-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.frame-shortcuts-group li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-inset-xs);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.frame-shortcuts-group li:last-child {
+  border-block-end: 0;
+}
+
+.frame-shortcuts-keys {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: var(--qx-space-gap-xs);
+}
+
+.frame-shortcuts-keys kbd {
+  display: inline-grid;
+  min-inline-size: 1.5rem;
+  place-items: center;
+  padding: 0 var(--qx-space-inset-xs);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-chip);
+  background: var(--qx-color-surface-sunken);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-sm);
+}

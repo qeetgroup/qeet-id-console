@@ -1,15 +1,15 @@
 import {
-  Button,
-  Card,
-  CardContent,
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-} from "@qeetrix/ui";
+  ArrowRightIcon,
+  ChevronRightIcon,
+  FingerprintPatternIcon,
+  KeyRoundIcon,
+  MailIcon,
+  MessageSquareIcon,
+  SmartphoneIcon,
+} from "@qeetrix/icons";
+import { Button, Field, Heading, Link, Spinner, Text, TextField } from "@qeetrix/react";
+import { Alert, Form, OTPInput } from "@qeetrix/react/experimental";
 import { useNavigate } from "@tanstack/react-router";
-import { LoaderCircleIcon } from "@qeetrix/icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -22,14 +22,19 @@ import {
   useCompleteMfaLogin,
 } from "../api/flows";
 import { completeWithPush, mfaPasskeyProof, sendMfaCode } from "../api/mfa-sign-in";
+import { EntryPanel, useEntrySteps } from "./entry-panel";
+import { EntryOr, EntryShell } from "./entry-shell";
 import { MfaEnrollmentStep, RecoveryCodesStep } from "./mfa-enrollment-step";
 
+const CODE_LENGTH = 6;
+
 /**
- * Renders a sign-in's second-factor challenge after a password or magic link: the factor step or,
- * for an account that must have a second factor and holds none, authenticator setup and then its
- * recovery codes. Completing it opens the console.
+ * Renders a sign-in's second-factor challenge after a password or magic link, in the entry frame:
+ * the factor step or, for an account that must have a second factor and holds none, authenticator
+ * setup and then its recovery codes. Completing it opens the console.
  */
 export function MfaChallengeStep({ challenge }: { challenge: MfaChallenge }) {
+  const steps = useEntrySteps();
   const mfa = useCompleteMfaLogin();
   const navigate = useNavigate();
   const submitError = mfa.error ? errorMessage(mfa.error) : undefined;
@@ -38,35 +43,43 @@ export function MfaChallengeStep({ challenge }: { challenge: MfaChallenge }) {
   // Setting the app up signed the person in: show its recovery codes once.
   const recoveryCodes = mfa.data?.recovery_codes;
   if (recoveryCodes?.length) {
-    return <RecoveryCodesStep codes={recoveryCodes} onContinue={() => navigate({ to: "/" })} />;
+    return (
+      <EntryShell panel={<EntryPanel steps={steps.setup} current={2} />}>
+        <RecoveryCodesStep codes={recoveryCodes} onContinue={() => navigate({ to: "/" })} />
+      </EntryShell>
+    );
   }
   if (challenge.enrollment_required) {
     return (
-      <MfaEnrollmentStep
-        mfaToken={challenge.mfa_token}
-        dueAt={challenge.enrollment_due_at}
-        isLoading={mfa.isPending}
-        errorMessage={submitError}
-        onSubmit={submit}
-      />
+      <EntryShell panel={<EntryPanel steps={steps.setup} current={1} />}>
+        <MfaEnrollmentStep
+          mfaToken={challenge.mfa_token}
+          dueAt={challenge.enrollment_due_at}
+          isLoading={mfa.isPending}
+          errorMessage={submitError}
+          onSubmit={submit}
+        />
+      </EntryShell>
     );
   }
   return (
-    <MfaStep
-      mfaToken={challenge.mfa_token}
-      factors={challenge.factors ?? []}
-      isLoading={mfa.isPending}
-      errorMessage={submitError}
-      onSubmit={submit}
-      onSignedIn={() => navigate({ to: "/" })}
-    />
+    <EntryShell panel={<EntryPanel steps={steps.confirm} current={1} />}>
+      <MfaStep
+        mfaToken={challenge.mfa_token}
+        factors={challenge.factors ?? []}
+        isLoading={mfa.isPending}
+        errorMessage={submitError}
+        onSubmit={submit}
+        onSignedIn={() => navigate({ to: "/" })}
+      />
+    </EntryShell>
   );
 }
 
 /**
- * Renders the second-factor step: a code field (authenticator app, recovery code, or a code sent
- * by email or SMS) and, for the factors this person holds, sending a code, using a passkey, or
- * approving on their phone.
+ * Renders the second-factor step: a 6-slot code (authenticator app, or a code sent by email or
+ * SMS), a recovery code in its place, a passkey, and the other ways this person holds as one
+ * ruled list: approving on their phone, or a code sent to an address or number.
  */
 export function MfaStep({
   mfaToken,
@@ -85,24 +98,32 @@ export function MfaStep({
 }) {
   const { t } = useTranslation("auth-flow");
   const [code, setCode] = useState("");
+  const [recovery, setRecovery] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [pending, setPending] = useState<"passkey" | "push" | "send" | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
   const pushAbort = useRef<AbortController | null>(null);
-  // Focus the code field from an effect, since the a11y lint rule forbids autoFocus. Unmounting
-  // also stops waiting for a push approval.
-  const codeRef = useRef<HTMLInputElement>(null);
+  // Focus the code from an effect, since the a11y lint rule forbids autoFocus. Unmounting also
+  // stops waiting for a push approval.
+  const codeRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    codeRef.current?.focus();
-    return () => pushAbort.current?.abort();
+    codeRef.current?.querySelector("input")?.focus();
   }, []);
+  useEffect(() => () => pushAbort.current?.abort(), []);
+  // A refused code clears the field, so the next attempt starts empty.
+  useEffect(() => {
+    if (submitError) setCode("");
+  }, [submitError]);
 
+  const hasAuthenticator = factors.some((f) => f.type === "totp");
+  const hasRecovery = factors.some((f) => f.type === "recovery_code");
   const codeFactors = factors.filter((f) => (f.type === "email" || f.type === "sms") && f.id);
   const hasPasskey = factors.some((f) => f.type === "passkey");
   const hasPush = factors.some((f) => f.type === "push");
-  const onlyAuthenticator = factors.every((f) => f.type === "totp" || f.type === "recovery_code");
+  // A code goes in the slots when the app makes one or a code can be sent; recovery has its own.
+  const takesCode = hasAuthenticator || codeFactors.length > 0 || hasRecovery;
   const busy = isLoading || pending !== null;
-  const shownError = stepError ?? submitError;
+  const ready = recovery ? code.trim().length > 0 : code.length === CODE_LENGTH;
 
   async function run(kind: "passkey" | "push" | "send", fn: () => Promise<void>) {
     setStepError(null);
@@ -110,7 +131,8 @@ export function MfaStep({
     try {
       await fn();
     } catch (err) {
-      const cancelled = err instanceof Error && err.name === "NotAllowedError";
+      const cancelled =
+        err instanceof Error && (err.name === "NotAllowedError" || err.name === "AbortError");
       if (!cancelled) setStepError(errorMessage(err));
     } finally {
       setPending(null);
@@ -118,96 +140,147 @@ export function MfaStep({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <Card>
-        <CardContent className="p-6 md:p-8">
-          <form
-            aria-busy={busy}
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (busy) return;
-              setStepError(null);
-              onSubmit({ code: code.trim() });
-            }}
-          >
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">{t("signIn.mfa.title")}</h1>
-                <p className="text-balance text-muted-foreground">
-                  {onlyAuthenticator ? t("signIn.mfa.subtitle") : t("signIn.mfa.subtitleAny")}
-                </p>
-              </div>
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("signIn.mfa.title")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {recovery
+            ? t("signIn.mfa.recoveryLede")
+            : hasAuthenticator
+              ? t("signIn.mfa.subtitle")
+              : t("signIn.mfa.subtitleAny")}
+        </Text>
+      </div>
 
-              <Field>
-                <FieldLabel htmlFor="code">{t("signIn.mfa.codeLabel")}</FieldLabel>
-                <Input
-                  ref={codeRef}
-                  id="code"
-                  name="code"
-                  inputMode="numeric"
+      {submitError ? (
+        <Alert tone="danger" title={t("signIn.mfa.failedTitle")} announce="urgent">
+          {submitError}
+        </Alert>
+      ) : stepError ? (
+        <Alert tone="danger" title={t("signIn.mfa.stepFailedTitle")} announce="urgent">
+          {stepError}
+        </Alert>
+      ) : sentTo !== null ? (
+        <Alert
+          tone="success"
+          title={t("signIn.mfa.codeSentTitle", { destination: sentTo })}
+          announce="polite"
+        >
+          {t("signIn.mfa.codeSentText")}
+        </Alert>
+      ) : null}
+
+      {takesCode && (
+        <Form
+          aria-label={t("signIn.mfa.title")}
+          className="entry-form"
+          summary={false}
+          aria-busy={busy}
+          onFormSubmit={() => {
+            if (busy || !ready) return;
+            setStepError(null);
+            onSubmit({ code: code.trim() });
+          }}
+        >
+          <div ref={codeRef}>
+            {recovery ? (
+              <TextField
+                label={t("signIn.mfa.recoveryLabel")}
+                name="code"
+                icon={KeyRoundIcon}
+                placeholder={t("signIn.mfa.recoveryPlaceholder")}
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+              />
+            ) : (
+              <Field label={t("signIn.mfa.codeLabel")} name="code" invalid={Boolean(submitError)}>
+                <OTPInput
+                  length={CODE_LENGTH}
+                  groups={[3, 3]}
+                  size="lg"
                   autoComplete="one-time-code"
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onValueChange={setCode}
                 />
-                {sentTo && (
-                  <p role="status" className="text-sm text-muted-foreground">
-                    {t("signIn.mfa.codeSentTo", { destination: sentTo })}
-                  </p>
-                )}
               </Field>
+            )}
+          </div>
+          {hasRecovery && (
+            <div className="entry-links">
+              <span />
+              <button
+                type="button"
+                className="entry-text-button"
+                onClick={() => {
+                  setRecovery(!recovery);
+                  setCode("");
+                }}
+              >
+                {recovery ? t("signIn.mfa.useAuthenticator") : t("signIn.mfa.useRecovery")}
+              </button>
+            </div>
+          )}
+          <Button
+            type="submit"
+            size="lg"
+            fullWidth
+            icon={ArrowRightIcon}
+            loading={isLoading}
+            disabled={busy || !ready}
+          >
+            {isLoading ? t("signIn.mfa.verifyingBtn") : t("signIn.mfa.verifyBtn")}
+          </Button>
+        </Form>
+      )}
 
-              {shownError && (
-                <Field>
-                  <FieldError>{shownError}</FieldError>
-                </Field>
-              )}
-
-              <Field>
-                <Button type="submit" disabled={busy || code.trim().length === 0}>
-                  {isLoading && <LoaderCircleIcon className="animate-spin" />}
-                  {isLoading ? t("signIn.mfa.verifyingBtn") : t("signIn.mfa.verifyBtn")}
-                </Button>
-              </Field>
-
-              {(codeFactors.length > 0 || hasPasskey || hasPush) && (
-                <Field className="gap-2">
-                  <p className="text-center text-xs text-muted-foreground">{t("signIn.mfa.or")}</p>
-                  {codeFactors.map((f) => (
-                    <Button
-                      key={f.id}
+      {(hasPasskey || hasPush || codeFactors.length > 0) && (
+        <>
+          {takesCode && <EntryOr />}
+          {hasPasskey && (
+            <Button
+              variant="soft"
+              size="lg"
+              fullWidth
+              icon={FingerprintPatternIcon}
+              loading={pending === "passkey"}
+              disabled={busy}
+              onClick={() =>
+                run("passkey", async () => {
+                  onSubmit(await mfaPasskeyProof(mfaToken));
+                })
+              }
+            >
+              {t("signIn.mfa.usePasskey")}
+            </Button>
+          )}
+          {(hasPush || codeFactors.length > 0) && (
+            <ul className="entry-options" aria-label={t("signIn.mfa.otherWays")}>
+              {hasPush && (
+                <li>
+                  {pending === "push" ? (
+                    <div className="entry-option" data-waiting="" role="status">
+                      <Spinner size="sm" />
+                      <span className="entry-option-text">
+                        <strong>{t("signIn.mfa.pushWaitingTitle")}</strong>
+                        <small>{t("signIn.mfa.pushWaitingText")}</small>
+                      </span>
+                      <button
+                        type="button"
+                        className="entry-text-button"
+                        onClick={() => pushAbort.current?.abort()}
+                      >
+                        {t("signIn.mfa.cancel")}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
                       type="button"
-                      variant="outline"
-                      disabled={busy}
-                      onClick={() =>
-                        run("send", async () => {
-                          await sendMfaCode(mfaToken, f.id as string);
-                          setSentTo(f.destination ?? "");
-                          codeRef.current?.focus();
-                        })
-                      }
-                    >
-                      {t("signIn.mfa.sendCodeTo", { destination: f.destination })}
-                    </Button>
-                  ))}
-                  {hasPasskey && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={busy}
-                      onClick={() =>
-                        run("passkey", async () => {
-                          onSubmit(await mfaPasskeyProof(mfaToken));
-                        })
-                      }
-                    >
-                      {pending === "passkey" && <LoaderCircleIcon className="animate-spin" />}
-                      {t("signIn.mfa.usePasskey")}
-                    </Button>
-                  )}
-                  {hasPush && (
-                    <Button
-                      type="button"
-                      variant="outline"
+                      className="entry-option"
                       disabled={busy}
                       onClick={() =>
                         run("push", async () => {
@@ -217,16 +290,57 @@ export function MfaStep({
                         })
                       }
                     >
-                      {pending === "push" && <LoaderCircleIcon className="animate-spin" />}
-                      {pending === "push" ? t("signIn.mfa.pushWaiting") : t("signIn.mfa.pushBtn")}
-                    </Button>
+                      <SmartphoneIcon shape="sharp" size={20} aria-hidden="true" />
+                      <span className="entry-option-text">
+                        <strong>{t("signIn.mfa.pushTitle")}</strong>
+                        <small>{t("signIn.mfa.pushText")}</small>
+                      </span>
+                      <ChevronRightIcon shape="sharp" size={16} aria-hidden="true" />
+                    </button>
                   )}
-                </Field>
+                </li>
               )}
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+              {codeFactors.map((factor) => {
+                const Icon = factor.type === "sms" ? MessageSquareIcon : MailIcon;
+                return (
+                  <li key={factor.id}>
+                    <button
+                      type="button"
+                      className="entry-option"
+                      disabled={busy}
+                      onClick={() =>
+                        run("send", async () => {
+                          await sendMfaCode(mfaToken, factor.id as string);
+                          setRecovery(false);
+                          setCode("");
+                          setSentTo(factor.destination ?? "");
+                          codeRef.current?.querySelector("input")?.focus();
+                        })
+                      }
+                    >
+                      <Icon shape="sharp" size={20} aria-hidden="true" />
+                      <span className="entry-option-text">
+                        <strong>
+                          {factor.type === "sms"
+                            ? t("signIn.mfa.smsTitle")
+                            : t("signIn.mfa.emailTitle")}
+                        </strong>
+                        <small>{t("signIn.mfa.sendTo", { destination: factor.destination })}</small>
+                      </span>
+                      <ChevronRightIcon shape="sharp" size={16} aria-hidden="true" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </>
+      )}
+
+      <div className="entry-links">
+        {/* A full load: the challenge lives in this page's state, and going back starts over. */}
+        <Link href="/sign-in">{t("forgotPassword.backToSignIn")}</Link>
+      </div>
+    </>
   );
 }

@@ -8,7 +8,8 @@
 ## Identity
 
 The **operator console for Qeet ID**, served at `console.id.qeet.in`. TanStack Start ^1.168 +
-TanStack Router ^1.170, React 19, Vite 8 + Nitro, Tailwind v4, `@qeetrix/ui`, bun 1.3.14.
+TanStack Router ^1.170, React 19, Vite 8 + Nitro, `@qeetrix/react` + `@qeetrix/tokens` (token-only
+CSS, no Tailwind), bun 1.3.14.
 18 modules under `src/modules/`.
 
 **It has a server side.** TanStack Start acts as a same-origin backend-for-frontend. That is the
@@ -116,7 +117,7 @@ Multi-tab clients must serialise refresh or they trigger the backend's own theft
 
 ### Idle sign-out — one timer across tabs
 
-`useIdleLogout` (10 minutes in the shell, `/account` and the organization selector) runs
+`useIdleLogout` (10 minutes in the shell, My account included, and the organization selector) runs
 `watchIdle` (`src/platform/auth/idle-activity.ts`). Each tab writes the time of its newest
 activity to `localStorage` `qeetid.last-activity` — a bare timestamp, so unscoped — at most every
 15 s with a trailing write, and never over a newer one. When a tab's timer fires it re-arms for
@@ -250,8 +251,8 @@ File-based via `tanstackStart()`, from a virtual config: `src/app/routes.ts` mou
 (`src/routes`: `__root`, `_app`, `healthz`, `api/` for server-only SSE) and every module's
 `routes/public/` at the root and `routes/app/` inside `_app`. `src/routeTree.gen.ts` is
 **generated, committed and read-only**. The groups: `_app` (authenticated shell), `_auth`
-(reverse guard, `authentication`), `account` (end-user self-service, deliberately outside the
-admin shell), `api`.
+(reverse guard, `authentication`), `api`. My account (`/account/*`) is inside `_app`, and open
+there without an organisation: the shell then lists only it.
 
 Each route declares its page's capability as `staticData: { capability }`; the router registers
 them (`route-capability.ts`), and the access boundary and link checks resolve a path against them —
@@ -281,8 +282,10 @@ flaking. No retries: a flake is a bug. Run them after any change to `src/platfor
 
 **Accessibility** (`tests/e2e/accessibility.spec.ts`, same job) holds the console to WCAG 2.2 AA:
 axe (`@axe-core/playwright`, tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`) scans
-sign-in, sign-up, verify-email, select-organization, the dashboard, users, a user's detail page,
-groups, roles, the security and developer overviews, organization settings and the account profile,
+sign-in, sign-up, verify-email, select-organization, create-organization (its plans and its
+details), the dashboard, users, a user's detail page,
+groups, roles, the security and developer overviews, organization settings and the four account
+pages (profile, security, sessions, data),
 each in the light and the dark theme (set as the theme toggle saves it, `qeetid-admin-theme` in
 `localStorage`), and with the command palette, the invite sheet, a confirm dialog and the account
 menu open. Each scan waits for hydration, the page's real content, no skeleton or `aria-busy`
@@ -290,9 +293,8 @@ region left and finished animations; any violation fails with its rule, elements
 fake backend serves the pages' records from `tests/e2e/fixtures/fake-tenant-data.mjs` and has an
 `admin@example.com` with every capability (so actions render) and an `unverified@example.com`.
 Text over the shell's and sidebar's faint gradients is measured against their solid token (axe
-can't measure over a gradient). A violation from inside `@qeetrix/ui` is excused for that rule on
-that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12); today one, the
-dark-theme destructive button in a confirm dialog. Ports default to 43173 and 43101;
+can't measure over a gradient). A violation from inside `@qeetrix/react` is excused for that rule
+on that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12); none today. Ports default to 43173 and 43101;
 `E2E_APP_PORT` and `E2E_BACKEND_PORT` override them.
 
 Every module has tests; `users`, `security`, `compliance` and `authorization` pin their request
@@ -345,9 +347,8 @@ Verification commands are in `AGENTS.md` ("What CI enforces").
 
 **Dependency overrides** (`package.json` `overrides`) hold only security floors: transitive packages
 pinned at or above their first patched release because a parent still allowed a vulnerable one. Remove
-an entry once every parent requires a fixed version. The three audit ignores (`braces`, `zod` 3 and
-`body-parser`) are all reached only through the `shadcn` CLI in `@qeetrix/ui`, which the console
-never runs or bundles; they are documented in `dependency-audit.yml` and go when QTRX-4 lands.
+an entry once every parent requires a fixed version, or the package leaves the tree. `bun run audit`
+ignores no advisory.
 
 ## Security-critical areas
 
@@ -375,9 +376,8 @@ never runs or bundles; they are documented in `dependency-audit.yml` and go when
 - Biome warnings fail CI (`--error-on-warnings`): fix them, or suppress one with a specific reason.
 - TypeScript runs with `strict` plus `noUncheckedIndexedAccess`, `noImplicitReturns` and
   `noImplicitOverride`. Narrow an indexed value with a guard; `!` is a lint error.
-- `@qeetrix/ui`'s root import is slow to load in tests (each jsdom file pays it); the fix belongs in
-  `qeetrix` (QTRX-5). Its `DataState` prints `error.message` by default (QTRX-3), hence the platform
-  wrapper.
+- `@qeetrix/react`'s `DataState` never shows the raw error, so a page shows `errorMessage(err)` and
+  `ErrorReference` itself where it says more than the generic copy.
 
 ## Known documentation drift
 

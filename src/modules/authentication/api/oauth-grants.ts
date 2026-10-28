@@ -1,5 +1,6 @@
 // OAuth grant administration. Access tokens are stateless JWTs, so what can be listed and revoked
-// is the stored refresh-token grant per (client, user); revoking it ends the rotation chain.
+// is the stored refresh-token grant per (client, user); revoking it ends the rotation chain. The
+// list isn't paged: past 1,000 grants the server sends the first 1,000 and `truncated`.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -17,12 +18,13 @@ export interface OAuthGrant {
   expires_at: string;
 }
 
-export function useOAuthGrants() {
+export function useOAuthGrants(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: authKeys.oauthGrants(tenantId),
-    enabled: !!tenantId,
-    queryFn: () => api<{ items: OAuthGrant[] }>(`/v1/tenants/${tenantId}/oauth/grants`),
+    enabled: enabled && !!tenantId,
+    queryFn: () =>
+      api<{ items: OAuthGrant[]; truncated?: boolean }>(`/v1/tenants/${tenantId}/oauth/grants`),
   });
 }
 

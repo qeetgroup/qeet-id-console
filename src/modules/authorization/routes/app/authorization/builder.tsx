@@ -1,8 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { PolicyBuilderPage } from "@/modules/authorization/pages";
-
+// The Builder became ABAC's New policy: an old link, a bookmark or a template opens it there (a
+// template hands its policy over through the store, which survives the redirect).
 export const Route = createFileRoute("/_app/authorization/builder")({
   staticData: { capability: "policy.read" },
-  component: PolicyBuilderPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/authorization/abac", search: { policy: "new" }, replace: true });
+  },
 });

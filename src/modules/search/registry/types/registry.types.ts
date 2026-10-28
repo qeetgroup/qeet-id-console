@@ -4,13 +4,6 @@ import type { Capability } from "@/platform/security/capability-model";
 
 export type SearchItemKind = "navigation" | "command" | "resource" | "recent" | "favorite";
 
-export interface QuickAction {
-  id: string;
-  label: string;
-  icon?: ReactNode;
-  run(ctx: SearchContext): void;
-}
-
 export interface SearchItem {
   id: string; // Stable unique key across all sources
   kind: SearchItemKind;
@@ -22,11 +15,10 @@ export interface SearchItem {
   url?: string;
   capability?: Capability;
   status?: string; // A well-known status, rendered by StatusPill
-  updatedAt?: string; // ISO 8601, shown in the preview pane
+  updatedAt?: string; // ISO 8601
   metadata?: Record<string, string>;
   /** Runs the item; without it, selecting the item navigates to `url`. */
   run?(ctx: SearchContext): void;
-  quickActions?: QuickAction[];
 }
 
 export interface SearchContext {

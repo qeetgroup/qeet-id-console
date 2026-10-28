@@ -1,5 +1,5 @@
 // WCAG 2.2 AA, checked by axe in a real browser against the production build: the signed-out
-// screens and the main console pages in both themes, and the overlays a page scan can't reach
+// screens, creating an organisation and the main console pages in both themes, and the overlays a page scan can't reach
 // (command palette, a create sheet, a confirm dialog, a menu). Any violation fails.
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Locator, type Page, test } from "@playwright/test";
@@ -8,9 +8,11 @@ import {
   ADMIN,
   BACKEND_URL,
   hydrated,
+  INVITED,
   MEMBER,
   ORG_TWO,
   signIn,
+  signInToEntry,
   signInToPicker,
   signInUnverified,
   UNVERIFIED,
@@ -27,8 +29,24 @@ type Target = {
 };
 
 const CONSOLE_PAGES: Target[] = [
-  { name: "dashboard", path: "/", ready: (page) => page.getByText("1,240") },
+  // The console's one overview, with the Organisation row (departments, where people work).
+  {
+    name: "dashboard",
+    path: "/",
+    ready: (page) => page.getByRole("heading", { name: "Where people work" }),
+  },
   { name: "users", path: "/users", ready: (page) => page.getByText("Priya Patel") },
+  {
+    name: "users, suspended",
+    path: "/users?status=suspended",
+    ready: (page) => page.getByRole("table", { name: "Suspended people" }).getByText("Sam Lee"),
+  },
+  {
+    name: "invitations",
+    path: "/invitations",
+    ready: (page) => page.getByText("kavya@org-one.example"),
+  },
+  { name: "deleted users", path: "/users/deleted", ready: (page) => page.getByText("Anil Bhatia") },
   {
     name: "user detail",
     path: `/users/${MEMBER.id}`,
@@ -40,45 +58,98 @@ const CONSOLE_PAGES: Target[] = [
     ready: (page) => page.getByText("Runs the shared infrastructure."),
   },
   {
+    name: "group page",
+    path: "/groups/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+    ready: (page) => page.getByRole("heading", { name: "Where it sits" }),
+  },
+  {
+    name: "organisations",
+    path: "/organizations",
+    ready: (page) =>
+      page.getByRole("table", { name: "Organisations" }).getByText("org-one.example"),
+  },
+  {
+    name: "organisation page",
+    path: "/organizations/22222222-2222-4222-8222-222222222222",
+    ready: (page) => page.getByRole("link", { name: "Organisation created" }),
+  },
+  {
+    name: "directory connections",
+    path: "/directory/connections",
+    ready: (page) =>
+      page.getByRole("table", { name: "Connections" }).getByText("Corporate Active Directory"),
+  },
+  {
     name: "authorization roles",
     path: "/authorization/roles",
     ready: (page) => page.getByText("Reads members and resets their sign-in."),
   },
   {
-    name: "security overview",
-    path: "/security",
-    ready: (page) => page.getByRole("heading", { name: "Security operations" }),
-  },
-  {
-    name: "developer overview",
-    path: "/developer",
-    ready: (page) => page.getByText("API key created"),
-  },
-  {
     name: "organization settings",
     path: "/settings/organization/general",
-    ready: (page) => page.getByRole("textbox", { name: "Organization name" }),
+    ready: (page) => page.getByRole("heading", { name: "About this organisation" }),
   },
+  // The pages rebuilt in the agent wave (2026-10-28), scanned as the fake backend leaves them (an
+  // empty read for anything it has no data for), so their empty states and chrome are covered;
+  // ready once the page's own heading shows. Give one fake data to scan its full content too.
+  ...(
+    [
+      ["activity", "/activity"],
+      ["audit log", "/security/audit-logs"],
+      ["anomalies", "/security/threats/anomalies"],
+      ["ip rules", "/security/threats/ip-allowlist"],
+      ["compliance", "/security/compliance/soc2"],
+      ["analytics", "/analytics"],
+      ["sso", "/auth/connections/saml"],
+      ["password", "/auth/login-methods/password"],
+      ["social sign-in", "/auth/social"],
+      ["oauth grants", "/auth/api/consent-grants"],
+      ["machine access", "/developer/machine-access"],
+      ["webhooks", "/developer/webhooks"],
+      ["authorization testing", "/authorization/testing"],
+      ["abac", "/authorization/abac"],
+      ["sync errors", "/directory/sync-errors"],
+      ["mappings", "/directory/attribute-mappings"],
+      ["billing", "/settings/billing"],
+      ["branding", "/settings/branding"],
+      ["domains", "/settings/organization/domains"],
+      ["qeet ai settings", "/settings/qeet-ai"],
+      ["import people", "/users/import"],
+      ["person activity", `/users/${MEMBER.id}?tab=activity`],
+    ] as const
+  ).map(([name, path]) => ({
+    name,
+    path,
+    ready: (page: Page) => page.locator("#main-content h1").first(),
+  })),
   {
     name: "account profile",
     path: "/account/profile",
-    ready: (page) => page.getByRole("textbox", { name: "Display name" }),
+    ready: (page) => page.getByText("Member of", { exact: false }),
+  },
+  {
+    name: "account security",
+    path: "/account/security",
+    ready: (page) => page.getByText("MacBook Pro (Touch ID)"),
+  },
+  {
+    name: "account sessions",
+    path: "/account/sessions",
+    ready: (page) => page.getByText("Safari on iPhone"),
+  },
+  {
+    name: "account data",
+    path: "/account/data",
+    ready: (page) => page.getByRole("heading", { name: "Delete your account" }),
   },
 ];
 
 /**
- * Violations from inside `@qeetrix/ui` that the console can't fix: each excuses one rule on one
- * element, every other rule still applies to it, and each is raised with qeetrix.
+ * Violations from inside the design system that the console can't fix: each excuses one rule on
+ * one element, every other rule still applies to it, and each is raised with Qeetrix (QTRX).
+ * None open since @qeetrix/ui left (2026-10-28).
  */
-const DESIGN_SYSTEM_ISSUES = [
-  {
-    // QTRX-7: Button variant="destructive" sets --qx-color-text-danger on
-    // --qx-color-feedback-error-subtle, 4.09:1 on a dark-theme dialog (AA needs 4.5:1). Remove
-    // this entry once a fixed @qeetrix/ui is released.
-    rule: "color-contrast",
-    element: '.dark [role="alertdialog"] [data-slot="button"][data-variant="destructive"]',
-  },
-];
+const DESIGN_SYSTEM_ISSUES: { rule: string; element: string }[] = [];
 
 /** Waits for the content, every panel's data and finite animations, so axe sees the page still. */
 async function settle(page: Page, content: Locator) {
@@ -152,14 +223,14 @@ for (const theme of THEMES) {
 
     test("sign-in", async ({ page }) => {
       await page.goto("/sign-in");
-      await settle(page, page.getByRole("button", { name: "Sign in", exact: true }));
-      await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
+      await settle(page, page.getByRole("button", { name: "Continue", exact: true }));
+      await expect(page.locator("html")).toHaveAttribute("data-qx-color-scheme", theme);
       await expectAccessible(page);
     });
 
     test("sign-up", async ({ page }) => {
       await page.goto("/sign-up");
-      await settle(page, page.getByRole("button", { name: "Create account" }));
+      await settle(page, page.getByRole("button", { name: "Create account with a passkey" }));
       await expectAccessible(page);
     });
 
@@ -175,12 +246,29 @@ for (const theme of THEMES) {
       await expectAccessible(page);
     });
 
+    test("select-organization, invited", async ({ page }) => {
+      await signInToEntry(page, INVITED.email, "/select-organization");
+      await settle(page, page.getByRole("button", { name: "Join Org Two" }));
+      await expectAccessible(page);
+    });
+
+    test("create-organization", async ({ page }) => {
+      await signIn(page, ADMIN.email);
+      await page.goto("/create-organization?from=organizations");
+      await settle(page, page.getByRole("radio", { name: "Pro" }));
+      await expectAccessible(page);
+      await page.getByRole("button", { name: "Continue with Free" }).click();
+      await page.getByRole("button", { name: "Skip", exact: true }).click();
+      await settle(page, page.getByRole("textbox", { name: "Organisation name" }));
+      await expectAccessible(page);
+    });
+
     for (const target of CONSOLE_PAGES) {
       test(target.name, async ({ page }) => {
         await signIn(page, ADMIN.email);
         await page.goto(target.path);
         await settle(page, target.ready(page));
-        await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
+        await expect(page.locator("html")).toHaveAttribute("data-qx-color-scheme", theme);
         await expectAccessible(page);
       });
     }
@@ -188,17 +276,17 @@ for (const theme of THEMES) {
     test("command palette", async ({ page }) => {
       await signIn(page, ADMIN.email);
       await settle(page, page.getByText("1,240"));
-      await page.getByRole("button", { name: "Search the control plane" }).click();
+      await page.getByRole("button", { name: "Search or jump to…" }).click();
       await settle(page, page.getByRole("dialog"));
       await expectAccessible(page);
     });
 
-    test("invite sheet", async ({ page }) => {
+    test("add people drawer", async ({ page }) => {
       await signIn(page, ADMIN.email);
       await page.goto("/invitations");
-      await settle(page, page.getByRole("button", { name: "Send invite" }));
-      await page.getByRole("button", { name: "Send invite" }).click();
-      await settle(page, page.getByRole("dialog", { name: "Send invitation" }));
+      await settle(page, page.getByRole("button", { name: "Invite people" }));
+      await page.getByRole("button", { name: "Invite people" }).click();
+      await settle(page, page.getByRole("dialog", { name: "Add people" }));
       await expectAccessible(page);
     });
 

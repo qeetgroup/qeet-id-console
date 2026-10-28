@@ -7,6 +7,7 @@ import "@/i18n";
 
 const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null, canRead: true }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
+vi.mock("@/modules/dashboard", () => ({ PageBreadcrumb: () => null }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, ...props }: ComponentProps<"a"> & { to: string }) => <a {...props} href={to} />,
 }));
@@ -42,7 +43,7 @@ import {
   EmailTemplatesPage,
   EmailTemplatesView,
   type EmailTemplatesViewProps,
-} from "../components/email-templates-page";
+} from "../components/emails/email-templates-page";
 
 import {
   emailDraftErrors,
@@ -109,6 +110,7 @@ function templates(): EmailTemplate[] {
 
 function viewProps(): EmailTemplatesViewProps {
   return {
+    name: "Acme",
     templates: templates(),
     capabilities: { rich_text: true, localization: true, test_email: true },
     brand: { name: "Qeet ID", primary: "#f97316" },
@@ -116,7 +118,7 @@ function viewProps(): EmailTemplatesViewProps {
     canRead: true,
     canWrite: true,
     loading: false,
-    error: false,
+    error: null,
     fetching: false,
     onRetry: vi.fn(),
     onSave: vi.fn(async (key, draft) => ({
@@ -124,7 +126,7 @@ function viewProps(): EmailTemplatesViewProps {
       ...draft,
       custom: true,
     })),
-    onReset: vi.fn(async (key) => templateFixture(key)),
+    onReset: vi.fn(async (template) => templateFixture(template.key)),
     onTest: vi.fn(async () => ({ status: "accepted" as const })),
   };
 }
@@ -135,11 +137,19 @@ function templateFixture(key: string) {
   return template;
 }
 
+// jsdom lays nothing out: ProseMirror measures a Range to scroll the caret into view.
+if (!Range.prototype.getClientRects) {
+  Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
+  Range.prototype.getBoundingClientRect = () => new DOMRect();
+}
+
 beforeEach(() => {
   context.tenantId = "tenant-a";
   context.canRead = true;
+  sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
+    if (/^\/v1\/tenants\/[^/]+$/.test(path)) return { id: context.tenantId, name: "Acme" };
     if (path.endsWith("/branding"))
       return { tenant_id: context.tenantId, primary_color: "#f97316", email_from_name: "Qeet ID" };
     if (path.endsWith("/email-templates"))
@@ -156,7 +166,6 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
-  document.documentElement.classList.remove("dark");
 });
 
 function renderPage() {
@@ -173,12 +182,12 @@ function renderPage() {
   return { ...render(tree()), tree, client };
 }
 
-async function selectOption(label: string, option: string) {
-  fireEvent.mouseDown(screen.getByRole("combobox", { name: label }), { button: 0 });
-  const target = await screen.findByRole("option", { name: option });
-  fireEvent.pointerDown(target, { pointerType: "mouse", button: 0 });
-  fireEvent.click(target);
-}
+// The library Button disables with aria-disabled, so it stays focusable.
+const isDisabled = (element: HTMLElement) =>
+  element.hasAttribute("disabled") || element.getAttribute("aria-disabled") === "true";
+const saveButton = () => screen.getByRole("button", { name: "Save template" });
+const subject = () => screen.getByLabelText(/^Subject/) as HTMLInputElement;
+const frame = () => screen.getByTitle("Email verification email preview");
 
 describe("Email template draft preview", () => {
   it("requires the action URL in both email alternatives", () => {
@@ -266,52 +275,38 @@ describe("Email template draft preview", () => {
 });
 
 describe("Emails workspace", () => {
-  it.each(["light", "dark"])(
-    "keeps the reference structure and orange accents in %s",
-    async (theme) => {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      const { container } = render(<EmailTemplatesView {...viewProps()} />);
-      expect(screen.getByRole("heading", { name: "Emails", level: 1 })).toBeTruthy();
-      expect(
-        screen.getByRole("navigation", { name: "Email templates" }).querySelectorAll("button"),
-      ).toHaveLength(5);
-      expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
-        "Content",
-        "Design",
-        "Localization",
-        "Advanced",
-      ]);
-      await screen.findByRole("textbox", { name: "Email body" });
-      const preview = screen.getByTitle("Email verification email preview");
-      expect(preview.getAttribute("sandbox")).toBe("");
-      expect(preview.getAttribute("srcdoc")).toContain("#f97316");
-      expect(screen.getByRole("button", { name: "Save template" }).hasAttribute("disabled")).toBe(
-        true,
-      );
-      for (const element of container.querySelectorAll("[class]"))
-        expect(element.getAttribute("class")).not.toMatch(
-          /\bdark:(hidden|block|grid|flex|order-|p[xy]-|m[xy]-)|(?:bg|text|border)-(blue|violet|purple)-/,
-        );
-    },
-  );
+  it("lists the templates beside one ruled editor with four tabs and a sandboxed preview", async () => {
+    const { container } = render(<EmailTemplatesView {...viewProps()} />);
+    expect(screen.getByRole("heading", { name: "Emails", level: 1 })).toBeTruthy();
+    const list = screen.getByRole("navigation", { name: "Email templates" });
+    expect(list.querySelectorAll(".mail-list button")).toHaveLength(5);
+    // The catalogue's developer wording is the console's own.
+    expect(within(list).getAllByText("Two-step code").length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Content",
+      "Design",
+      "Languages",
+      "Advanced",
+    ]);
+    await screen.findByRole("textbox", { name: "Body" });
+    expect(frame().getAttribute("sandbox")).toBe("");
+    expect(frame().getAttribute("srcdoc")).toContain("#f97316");
+    expect(isDisabled(saveButton())).toBe(true);
+    expect(container.querySelector("[class*='bg-'], [class*='text-muted']")).toBeNull();
+  });
 
   it("previews unsaved subject and preheader edits immediately and saves them", async () => {
     const props = viewProps();
     render(<EmailTemplatesView {...props} />);
-    fireEvent.change(screen.getByLabelText(/Subject/), { target: { value: "Updated {{code}}" } });
-    fireEvent.change(screen.getByLabelText("Preheader (optional)"), {
+    fireEvent.change(subject(), { target: { value: "Updated {{code}}" } });
+    fireEvent.change(screen.getByLabelText(/^Preheader/), {
       target: { value: "Expires in {{ttl}}" },
     });
-    await waitFor(() =>
-      expect(
-        screen.getByTitle("Email verification email preview").getAttribute("srcdoc"),
-      ).toContain("Updated 482913"),
-    );
-    expect(screen.getByTitle("Email verification email preview").getAttribute("srcdoc")).toContain(
-      "Expires in 10 minutes",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Save template" }));
-    await screen.findByText("Email template saved.");
+    await waitFor(() => expect(frame().getAttribute("srcdoc")).toContain("Updated 482913"));
+    expect(frame().getAttribute("srcdoc")).toContain("Expires in 10 minutes");
+    expect(screen.getByText("Unsaved changes")).toBeTruthy();
+    fireEvent.click(saveButton());
+    await screen.findByText("Template saved.");
     expect(props.onSave).toHaveBeenCalledWith(
       "verify_email",
       expect.objectContaining({
@@ -319,115 +314,106 @@ describe("Emails workspace", () => {
         options: expect.objectContaining({ preheader: "Expires in {{ttl}}" }),
       }),
     );
-    expect(screen.getByRole("button", { name: "Save template" }).hasAttribute("disabled")).toBe(
-      true,
-    );
+    expect(isDisabled(saveButton())).toBe(true);
   });
 
   it("retains per-template drafts while navigating and preserves edits across a refetch", () => {
     const props = viewProps();
     const view = render(<EmailTemplatesView {...props} />);
-    fireEvent.change(screen.getByLabelText(/Subject/), { target: { value: "Unsaved subject" } });
-    fireEvent.click(screen.getByRole("button", { name: /Password reset/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Email verification/ }));
-    expect((screen.getByLabelText(/Subject/) as HTMLInputElement).value).toBe("Unsaved subject");
+    fireEvent.change(subject(), { target: { value: "Unsaved subject" } });
+    const list = screen.getByRole("navigation", { name: "Email templates" });
+    expect(within(list).getByText("Unsaved")).toBeTruthy();
+    fireEvent.click(within(list).getByRole("button", { name: /Password reset/ }));
+    fireEvent.click(within(list).getByRole("button", { name: /Email verification/ }));
+    expect(subject().value).toBe("Unsaved subject");
     view.rerender(
       <EmailTemplatesView
         {...props}
         templates={templates().map((item) => ({ ...item, subject: "Changed server subject" }))}
       />,
     );
-    expect((screen.getByLabelText(/Subject/) as HTMLInputElement).value).toBe("Unsaved subject");
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    expect((screen.getByLabelText(/Subject/) as HTMLInputElement).value).toBe(
-      "Changed server subject",
-    );
+    expect(subject().value).toBe("Unsaved subject");
+    fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    expect(subject().value).toBe("Changed server subject");
   });
 
   it("inserts only valid variables into the focused subject field", async () => {
     render(<EmailTemplatesView {...viewProps()} />);
-    const subject = screen.getByLabelText(/Subject/) as HTMLInputElement;
-    fireEvent.focus(subject);
-    subject.setSelectionRange(0, 0);
-    fireEvent.click(screen.getByRole("button", { name: "Variables" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: "{{code}}" }));
-    expect(subject.value).toBe("{{code}}Verify your email");
-    expect(screen.queryByRole("menuitem", { name: "{{name}}" })).toBeNull();
+    fireEvent.focus(subject());
+    subject().setSelectionRange(0, 0);
+    fireEvent.click(screen.getByRole("button", { name: "Insert variable" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: /\{\{code\}\}/ }));
+    expect(subject().value).toBe("{{code}}Verify your email");
+    expect(screen.queryByRole("menuitem", { name: /\{\{name\}\}/ })).toBeNull();
   });
 
   it("formats body content with the real rich-text editor", async () => {
     render(<EmailTemplatesView {...viewProps()} />);
-    const body = await screen.findByRole("textbox", { name: "Email body" });
+    const body = await screen.findByRole("textbox", { name: "Body" });
     expect(body.getAttribute("contenteditable")).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: "Bold" }));
     expect(screen.getByRole("button", { name: "Bold" }).getAttribute("aria-pressed")).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: "Insert image" }));
-    fireEvent.change(screen.getByLabelText("URL"), { target: { value: "javascript:alert(1)" } });
-    expect(
-      within(screen.getByRole("dialog"))
-        .getByRole("button", { name: "Insert" })
-        .hasAttribute("disabled"),
-    ).toBe(true);
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByRole("textbox", { name: "Address" }), {
+      target: { value: "javascript:alert(1)" },
+    });
+    expect(isDisabled(within(dialog).getByRole("button", { name: "Insert" }))).toBe(true);
   });
 
-  it("saves design settings without changing the organization brand color", () => {
+  it("changes the header's alignment without touching the organisation's brand colour", () => {
     render(<EmailTemplatesView {...viewProps()} />);
     fireEvent.click(screen.getByRole("tab", { name: "Design" }));
-    fireEvent.click(screen.getByRole("button", { name: "Align left" }));
-    expect(screen.getByTitle("Email verification email preview").getAttribute("srcdoc")).toContain(
-      "text-align:left",
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Left" }));
+    expect(frame().getAttribute("srcdoc")).toContain("text-align:left");
     expect(screen.getByText("#f97316")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Manage branding" }).getAttribute("href")).toBe(
+    const links = screen.getAllByRole("link", { name: "Change in Branding" });
+    expect(links.map((link) => link.getAttribute("href"))).toEqual([
       "/settings/branding",
-    );
+      "/settings/branding",
+    ]);
+    // Branding has no logo, so the name shows: emails can't send an uploaded one either.
+    expect(screen.getByText("Branding has no logo yet, so the name shows instead.")).toBeTruthy();
   });
 
-  it("adds localized content and changes the default language", async () => {
+  it("adds a language as a copy of English and makes it the default", async () => {
     const props = viewProps();
     render(<EmailTemplatesView {...props} />);
-    fireEvent.click(screen.getByRole("tab", { name: "Localization" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Languages" }));
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
-    fireEvent.change(screen.getByLabelText(/Subject/), { target: { value: "Votre code" } });
-    fireEvent.click(screen.getByRole("tab", { name: "Localization" }));
-    await selectOption("Default language", "French");
-    fireEvent.click(screen.getByRole("button", { name: "Save template" }));
-    await screen.findByText("Email template saved.");
+    await waitFor(() => expect(subject().value).toBe("Verify your email"));
+    fireEvent.change(subject(), { target: { value: "Bestätigen Sie Ihre E-Mail" } });
+    fireEvent.click(screen.getByRole("tab", { name: "Languages" }));
+    fireEvent.click(screen.getByRole("button", { name: "Make default: German" }));
+    fireEvent.click(saveButton());
+    await screen.findByText("Template saved.");
     expect(props.onSave).toHaveBeenCalledWith(
       "verify_email",
       expect.objectContaining({
         subject: "Verify your email",
         options: expect.objectContaining({
-          default_locale: "fr",
+          default_locale: "de",
           translations: expect.objectContaining({
-            fr: expect.objectContaining({ subject: "Votre code" }),
+            de: expect.objectContaining({ subject: "Bestätigen Sie Ihre E-Mail" }),
           }),
         }),
       }),
     );
   });
 
-  it("shows the subject and preheader as an inbox row above the frame", () => {
+  it("shows the inbox line and where the links go, since the preview's links are inert", () => {
     render(<EmailTemplatesView {...viewProps()} />);
     expect(screen.getAllByText("Qeet ID").length).toBeGreaterThan(0);
-    expect(screen.getByText(/No preheader — the client will fall back/)).toBeTruthy();
-  });
-
-  it("lists resolved link destinations, since preview links are inert", () => {
-    render(<EmailTemplatesView {...viewProps()} />);
+    expect(screen.getByText(/No preheader: inboxes show the first line/)).toBeTruthy();
     expect(screen.getAllByText("Links in this email").length).toBeGreaterThan(0);
   });
 
-  it("opens all previews and changes preview size without dirtying the template", () => {
+  it("narrows the preview and opens all previews without dirtying the template", () => {
     render(<EmailTemplatesView {...viewProps()} />);
-    const frame = () => screen.getByTitle("Email verification email preview");
-    // Asserts that a width constraint appears, not its rem value, so retuning the width is safe.
-    expect(frame().className).not.toMatch(/max-w-/);
+    expect(frame().dataset.mode).toBe("desktop");
     fireEvent.click(screen.getByRole("button", { name: "Mobile" }));
-    expect(frame().className).toMatch(/max-w-/);
-    expect(screen.getByRole("button", { name: "Save template" }).hasAttribute("disabled")).toBe(
-      true,
-    );
+    expect(frame().dataset.mode).toBe("mobile");
+    expect(isDisabled(saveButton())).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "Preview all" }));
     expect(screen.getByRole("dialog").querySelectorAll("iframe")).toHaveLength(5);
   });
@@ -435,18 +421,18 @@ describe("Emails workspace", () => {
   it("blocks invalid variables and unsafe subject headers before save or test", () => {
     const props = viewProps();
     render(<EmailTemplatesView {...props} />);
-    fireEvent.change(screen.getByLabelText(/Subject/), { target: { value: "{{unsupported}}" } });
-    expect(screen.getByRole("alert").textContent).toContain("Use only the variables");
-    fireEvent.click(screen.getByRole("button", { name: "Save template" }));
+    fireEvent.change(subject(), { target: { value: "{{unsupported}}" } });
+    expect(screen.getByRole("alert").textContent).toContain("Use only this template's variables");
+    fireEvent.click(saveButton());
     expect(props.onSave).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Test email" }).hasAttribute("disabled")).toBe(true);
+    expect(isDisabled(screen.getByRole("button", { name: "Send test" }))).toBe(true);
   });
 
-  it("keeps the reason a test can't be sent reachable by keyboard without a verified recipient", () => {
+  it("keeps Send test focusable, with its reason, without a verified recipient", () => {
     render(<EmailTemplatesView {...viewProps()} recipient={undefined} />);
-    const button = screen.getByRole("button", { name: "Test email" });
-    expect(button.hasAttribute("disabled")).toBe(true);
-    expect(button.parentElement?.getAttribute("tabindex")).toBe("0");
+    const button = screen.getByRole("button", { name: "Send test" });
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    expect(button.hasAttribute("disabled")).toBe(false);
   });
 
   it("handles pending saves and errors without discarding the draft or leaking server details", async () => {
@@ -459,23 +445,25 @@ describe("Emails workspace", () => {
         }),
     );
     render(<EmailTemplatesView {...props} />);
-    fireEvent.change(screen.getByLabelText(/Subject/), { target: { value: "My draft" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save template" }));
-    fireEvent.click(screen.getByRole("button", { name: "Saving..." }));
+    fireEvent.change(subject(), { target: { value: "My draft" } });
+    fireEvent.click(saveButton());
+    fireEvent.click(saveButton());
     expect(props.onSave).toHaveBeenCalledTimes(1);
     await act(async () => reject(new Error("private database URL")));
     expect(screen.queryByText("private database URL")).toBeNull();
-    expect((screen.getByLabelText(/Subject/) as HTMLInputElement).value).toBe("My draft");
+    expect(subject().value).toBe("My draft");
   });
 
   it("shows error and denied states without exposing cached template content", () => {
     const props = viewProps();
-    const view = render(<EmailTemplatesView {...props} error />);
+    const view = render(<EmailTemplatesView {...props} error={new Error("private")} />);
     expect(screen.queryByText("Email verification")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(screen.queryByText("private")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(props.onRetry).toHaveBeenCalled();
     view.rerender(<EmailTemplatesView {...props} canRead={false} />);
-    expect(screen.queryByLabelText(/Subject/)).toBeNull();
+    expect(screen.queryByLabelText(/^Subject/)).toBeNull();
+    expect(screen.getByText("You don't have access to email templates.")).toBeTruthy();
   });
 
   it("keeps test sending disabled when no email provider is configured", () => {
@@ -485,12 +473,12 @@ describe("Emails workspace", () => {
         capabilities={{ rich_text: true, localization: true, test_email: false }}
       />,
     );
-    expect(screen.getByRole("button", { name: "Test email" }).hasAttribute("disabled")).toBe(true);
+    expect(isDisabled(screen.getByRole("button", { name: "Send test" }))).toBe(true);
   });
 });
 
 describe("Email template API actions", () => {
-  it("confirms reset and restores the server default to the editor", async () => {
+  it("confirms reset, saying what happens, and restores the server default to the editor", async () => {
     const fixtureAPI = vi.mocked(api).getMockImplementation();
     vi.mocked(api).mockImplementation(async (path, options) => {
       if (path.endsWith("/email-templates"))
@@ -507,14 +495,14 @@ describe("Email template API actions", () => {
     renderPage();
     await screen.findByDisplayValue("Saved custom subject");
     fireEvent.click(screen.getByRole("button", { name: "Reset to default" }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(dialog.textContent).toContain("Its saved text, design and translations are removed");
     expect(vi.mocked(api).mock.calls.some(([, options]) => options?.method === "DELETE")).toBe(
       false,
     );
-    fireEvent.click(
-      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Reset to default" }),
-    );
-    await screen.findByText("Template reset to default.");
-    expect((screen.getByLabelText(/Subject/) as HTMLInputElement).value).toBe("Verify your email");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Reset to default" }));
+    await screen.findByText("Template reset to the default.");
+    expect(subject().value).toBe("Verify your email");
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/email-templates/verify_email", {
       method: "DELETE",
     });
@@ -524,35 +512,36 @@ describe("Email template API actions", () => {
   it("does not allow read-only editing or test sending", async () => {
     const props = viewProps();
     render(<EmailTemplatesView {...props} canWrite={false} />);
-    expect((screen.getByLabelText(/Subject/) as HTMLInputElement).disabled).toBe(true);
+    expect(subject().disabled).toBe(true);
     expect(
-      (await screen.findByRole("textbox", { name: "Email body" })).getAttribute("contenteditable"),
+      (await screen.findByRole("textbox", { name: "Body" })).getAttribute("contenteditable"),
     ).toBe("false");
-    fireEvent.click(screen.getByRole("button", { name: "Test email" }));
+    fireEvent.click(screen.getByRole("button", { name: "Send test" }));
     expect(props.onTest).not.toHaveBeenCalled();
   });
 
-  it("confirms test mail and submits the current draft to the active tenant only", async () => {
+  it("confirms test mail and submits the current draft to the active organisation only", async () => {
     renderPage();
-    await screen.findByLabelText(/Subject/);
-    fireEvent.change(screen.getByLabelText(/Subject/), { target: { value: "Current draft" } });
-    fireEvent.click(screen.getByRole("button", { name: "Test email" }));
-    const dialog = screen.getByRole("alertdialog");
+    await screen.findByLabelText(/^Subject/);
+    fireEvent.change(subject(), { target: { value: "Current draft" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send test" }));
+    const dialog = await screen.findByRole("alertdialog");
     expect(dialog.textContent).toContain("operator@example.test");
     expect(vi.mocked(api).mock.calls.some(([path]) => path.endsWith("/test"))).toBe(false);
     fireEvent.click(within(dialog).getByRole("button", { name: "Send test email" }));
-    await screen.findByText("Test email accepted by the mail provider.");
+    await screen.findByText("Test email handed to the mail provider.");
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/email-templates/verify_email/test", {
       method: "POST",
       body: { draft: expect.objectContaining({ subject: "Current draft" }), locale: "en" },
     });
-    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Test email");
+    expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Send test");
   });
 
-  it("cancels a delayed test confirmation after the organization changes", async () => {
+  it("cancels a delayed test confirmation after the organisation changes", async () => {
     const view = renderPage();
-    await screen.findByLabelText(/Subject/);
-    fireEvent.click(screen.getByRole("button", { name: "Test email" }));
+    await screen.findByLabelText(/^Subject/);
+    fireEvent.click(screen.getByRole("button", { name: "Send test" }));
+    await screen.findByRole("alertdialog");
     context.tenantId = "tenant-b";
     view.rerender(view.tree());
     await waitFor(() => expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-b/email-templates"));

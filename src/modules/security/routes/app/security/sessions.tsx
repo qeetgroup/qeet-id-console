@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { SecuritySessionsPage } from "@/modules/security/pages";
+import { SessionsPage } from "@/modules/security/pages";
 
+// The person's own sessions, kept beside My account › Sessions for now (the user's decision).
+// Rebuilt on @qeetrix/react: the page draws its own header.
 export const Route = createFileRoute("/_app/security/sessions")({
-  component: SecuritySessionsPage,
+  component: SessionsPage,
 });

@@ -1,13 +1,10 @@
 // The security pages, for routes only; see src/modules/users/pages.ts.
-export { AuditLogsPage } from "./components/audit-logs-page";
-export { AnomaliesPage } from "./components/anomalies-page";
-export { AuditIntelligencePage } from "./components/audit-intelligence-page";
-export { BotProtectionPage } from "./components/bot-protection-page";
-export { DefaultRateLimitsPage } from "./components/default-rate-limits-page";
-export { DeviceAuthorizationsPage } from "./components/device-authorizations-page";
-export { IpAllowlistPage } from "./components/ip-allowlist-page";
-export { LogStreamingPage } from "./components/log-streaming-page";
+export { AuditLogPage } from "./components/audit/audit-log-page";
+export { DevicesPage } from "./components/devices-page";
+export { LogStreamsPage } from "./components/monitoring/log-streams-page";
 export { RateLimitsPage } from "./components/rate-limits-page";
-export { RiskSettingsPage } from "./components/risk-settings-page";
-export { SecurityOverviewPage } from "./components/security-overview-page";
-export { SecuritySessionsPage } from "./components/security-sessions-page";
+export { SessionsPage } from "./components/sessions-page";
+export { AnomaliesPage } from "./components/threats/anomalies-page";
+export { BotsPage } from "./components/threats/bots-page";
+export { IpRulesPage } from "./components/threats/ip-rules-page";
+export { RiskPage } from "./components/threats/risk-page";

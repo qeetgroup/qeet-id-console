@@ -63,15 +63,15 @@
   },
   "accessBoundary": {
     "checkingOrganizationAccess": "Checking organization access",
-    "organizationAccessCouldNot": "Organization access could not be verified",
-    "theConsoleCouldNot": "The console could not confirm your permissions. Retry the check, switch organizations, or use the account menu to sign out.",
-    "youDonTHave": "You don’t have access to this page",
-    "goToOverview": "Go to overview",
-    "createAnOrganizationToContinue": "Create an organization to continue",
-    "thisPageBelongsTo": "This page belongs to an organization. Create or join one first, then you’ll have access.",
+    "organizationAccessCouldNot": "We couldn't check your access",
+    "theConsoleCouldNot": "The console couldn't confirm your permissions in this organisation. Try again, or switch organisation from the account menu.",
+    "youDonTHave": "You don't have access to this page",
+    "goToOverview": "Go to the dashboard",
+    "createAnOrganizationToContinue": "Create an organisation to continue",
+    "thisPageBelongsTo": "This page belongs to an organisation. Create one, or accept an invitation, first.",
     "goToSetup": "Go to setup",
-    "retryAccessCheck": "Retry access check",
-    "requires": "This organization requires <strong>{{capability}}</strong>."
+    "retryAccessCheck": "Try again",
+    "requires": "This page needs the <strong>{{capability}}</strong> permission (<code>{{code}}</code>). Ask an admin of your organisation to give it to you."
   },
   "accessModeIndicator": {
     "checkingOrganizationAccess": "Checking organization access",
@@ -110,17 +110,21 @@
   },
   "stepUpDialog": {
     "useARecoveryCodeInstead": "Use a recovery code instead",
+    "useAuthenticatorInstead": "Use your authenticator app instead",
     "title": "Confirm it's you",
     "confirm": "This action needs a fresh check: confirm with one of your second factors.",
     "needFactor": "This action needs a fresh check: you need a second factor first.",
-    "noFactor": "None of your factors can confirm this. Set up a passkey or an authenticator app in <link>account security</link>, then try again.",
+    "noFactor": "None of your factors can confirm this. Set up a passkey or an authenticator app in <security>account security</security>, then try again.",
     "codeSentTo": "Code sent to {{destination}}",
     "recoveryCode": "Recovery code",
+    "recoveryPlaceholder": "e.g. 7KQ2-M9XD",
     "authenticatorCode": "Code from your authenticator app",
     "passkeyClosed": "The passkey prompt was closed. Try again.",
     "failed": "That didn't work. Try again.",
     "usePasskey": "Use a passkey",
     "sendCodeTo": "Send a code to {{destination}}",
+    "otherWays": "Other ways to confirm",
+    "or": "or",
     "verifying": "Verifying…",
     "verify": "Verify"
   },
@@ -168,6 +172,9 @@
     "formatsUpTo": "PNG, JPG, SVG, or WEBP up to {{size}} MB",
     "replace": "Replace",
     "remove": "Remove"
+  },
+  "oneTimeSecret": {
+    "secret": "secret"
   },
   "toast": {
     "signedOutSuccessfully": "Signed out successfully",
@@ -230,7 +237,7 @@
   },
   "readOnlyNotice": {
     "title": "Read-only access",
-    "description": "You can inspect and export this data, but your organization role cannot change it."
+    "description": "You can inspect and export this data, but your role in this organisation can't change it."
   },
   "selection": {
     "selectAll": "Select all rows"
@@ -256,7 +263,8 @@
     "selectOrganization": "Qeet ID – Select an organization",
     "verifyEmail": "Qeet ID – Verify your email",
     "untitled": "Page",
-    "details": "Details"
+    "details": "Details",
+    "createOrganization": "Qeet ID – Create an organisation"
   },
   "shortcuts": {
     "group": {
@@ -278,6 +286,15 @@
     "authorization": "Authorization",
     "security": "Security",
     "developer": "Developer",
-    "settings": "Settings"
+    "settings": "Settings",
+    "account": "My account"
+  },
+  "entryFrame": {
+    "help": "Need help?",
+    "legalNavigation": "Legal and trust",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "trust": "Trust Center",
+    "language": "Language"
   }
 }

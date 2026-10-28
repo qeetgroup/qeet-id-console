@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -10,13 +10,18 @@ export interface GroupRole {
   granted_at: string;
 }
 
+/** A group's roles as query options, so a list can read several groups' at once. */
+export const groupRoleQueries = {
+  list: (tenantId: string | null, groupId: string) =>
+    queryOptions({
+      queryKey: authzKeys.groupRoles(tenantId, groupId),
+      enabled: !!tenantId && !!groupId,
+      queryFn: () => api<{ items: GroupRole[] }>(`/v1/tenants/${tenantId}/groups/${groupId}/roles`),
+    }),
+};
+
 export function useGroupRoles(groupId: string) {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: authzKeys.groupRoles(tenantId, groupId),
-    enabled: !!tenantId && !!groupId,
-    queryFn: () => api<{ items: GroupRole[] }>(`/v1/tenants/${tenantId}/groups/${groupId}/roles`),
-  });
+  return useQuery(groupRoleQueries.list(useTenantId(), groupId));
 }
 
 /** Grants a role to a group; every member of the group inherits the role's permissions. */

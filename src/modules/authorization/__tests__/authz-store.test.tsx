@@ -7,6 +7,7 @@ import {
   authzStore,
   clearHistory,
   pushDecision,
+  rememberObjects,
   setBuilderDoc,
   useBuilderDoc,
   useDecisionHistory,
@@ -52,7 +53,15 @@ describe("decision history", () => {
     setBuilderDoc(doc);
     pushDecision(decision("d1"));
     clearHistory();
-    expect(authzStore.state).toEqual({ history: [], builderDoc: doc });
+    expect(authzStore.state).toMatchObject({ history: [], builderDoc: doc });
+  });
+});
+
+describe("relationship objects", () => {
+  it("keeps the objects opened newest first, once each", () => {
+    rememberObjects(["document:readme"]);
+    rememberObjects(["folder:finance", "document:readme"]);
+    expect(authzStore.state.objects.slice(0, 2)).toEqual(["folder:finance", "document:readme"]);
   });
 });
 

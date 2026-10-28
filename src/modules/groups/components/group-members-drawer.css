@@ -1,0 +1,47 @@
+/*
+ * Members of a group (group-members-drawer.tsx): a heading with the count, then ruled rows
+ * (avatar, tags, remove). Placement and token values only (--qx-*); the form is people.css's.
+ */
+
+.grp-mem {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.grp-mem-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-block-end: var(--qx-space-gap-xs);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.grp-mem-title {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.grp-mem-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.grp-mem-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding-block: var(--qx-space-gap-sm);
+}
+
+.grp-mem-row + .grp-mem-row {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.grp-mem-tags {
+  display: inline-flex;
+  gap: var(--qx-space-gap-xs);
+}

@@ -27,6 +27,13 @@ export const roleQueries = {
       queryFn: () => api<{ items: Role[] }>(`/v1/tenants/${tenantId}/roles`),
       enabled: !!tenantId,
     }),
+  /** A role's permissions; a list reads every role's at once. */
+  permissions: (tenantId: string | null, roleId: string | null) =>
+    queryOptions({
+      queryKey: authzKeys.rolePermissions(tenantId, roleId),
+      enabled: !!tenantId && !!roleId,
+      queryFn: () => api<{ items: Permission[] }>(`/v1/roles/${roleId}/permissions`),
+    }),
 };
 
 export function useRoles() {
@@ -34,11 +41,12 @@ export function useRoles() {
 }
 
 /** The permissions a role can be granted. */
-export function usePermissions() {
+export function usePermissions(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: authzKeys.permissions(tenantId),
     queryFn: () => api<{ items: Permission[] }>("/v1/permissions"),
+    enabled,
   });
 }
 
@@ -56,36 +64,7 @@ export function useCreateRole() {
 }
 
 export function useRolePermissions(roleId: string | null) {
-  const tenantId = useTenantId();
-  return useQuery({
-    queryKey: authzKeys.rolePermissions(tenantId, roleId),
-    enabled: !!roleId,
-    queryFn: () => api<{ items: Permission[] }>(`/v1/roles/${roleId}/permissions`),
-  });
-}
-
-export function useGrantPermission(roleId: string) {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (permId: string) =>
-      api<void>(`/v1/roles/${roleId}/permissions/${permId}`, { method: "POST" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: authzKeys.rolePermissions(tenantId, roleId) }),
-    meta: { successMessage: "authorization:toast.permissionGranted" },
-  });
-}
-
-export function useRevokePermission(roleId: string) {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (permId: string) =>
-      api<void>(`/v1/roles/${roleId}/permissions/${permId}`, { method: "DELETE" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: authzKeys.rolePermissions(tenantId, roleId) }),
-    meta: { successMessage: "authorization:toast.permissionRevoked" },
-  });
+  return useQuery(roleQueries.permissions(useTenantId(), roleId));
 }
 
 export { useEffectivePermissions } from "@/platform/security/effective-permissions";

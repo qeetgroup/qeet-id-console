@@ -1,22 +1,21 @@
 import { useNavigate } from "@tanstack/react-router";
-import { LoaderCircleIcon } from "@qeetrix/icons";
+import { Spinner, Text } from "@qeetrix/react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { passkeyErrorMessage, startPasskeyAutofill, usePasskeyLogin } from "../api/passkey-flows";
+import { EntryPanel, useEntrySteps } from "./entry-panel";
+import { EntryShell } from "./entry-shell";
+import { LazyMfaChallengeStep, preloadMfaChallengeStep } from "./lazy-mfa-challenge-step";
 import { LoginForm } from "./signin-form";
-import {
-  isMfaChallenge,
-  MfaChallengeStep,
-  useConsumeSocialCode,
-  useLogin,
-} from "@/modules/authentication";
+import { isMfaChallenge, useConsumeSocialCode, useLogin } from "@/modules/authentication";
 import { errorMessage } from "@/platform/errors/user-message";
 
-/** Renders sign-in: password, passkey (with autofill), SSO discovery and social return. */
+/** Renders sign-in: email first, then SSO, password or passkey (with autofill), and social return. */
 export function SignInPage() {
   const { t } = useTranslation("auth-flow");
+  const steps = useEntrySteps();
   const login = useLogin();
   const social = useConsumeSocialCode();
   const passkey = usePasskeyLogin();
@@ -56,49 +55,59 @@ export function SignInPage() {
     window.history.replaceState({}, "", window.location.pathname);
   }, [t]);
 
-  if (socialCode) {
-    return (
-      <div className="grid min-h-[50vh] place-items-center">
-        <div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
-          <LoaderCircleIcon className="size-6 animate-spin" />
-          <p className="text-sm">
-            {social.isError ? errorMessage(social.error) : t("signIn.socialSigningIn")}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Back from a password reset: confirm it on the page, then strip the param so a reload won't.
+  const [resetDone, setResetDone] = useState(false);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("reset") !== "done") return;
+    setResetDone(true);
+    window.history.replaceState({}, "", window.location.pathname);
+  }, []);
 
   // After a correct password, an account that holds or must have a second factor gets a
   // challenge instead of tokens: the second-factor step, or setting up an authenticator app.
   const challenge = login.data && isMfaChallenge(login.data) ? login.data : null;
-  if (challenge) return <MfaChallengeStep challenge={challenge} />;
+  if (challenge) {
+    return <LazyMfaChallengeStep challenge={challenge} />;
+  }
 
   return (
-    <LoginForm
-      isLoading={login.isPending}
-      isPasskeyLoading={passkey.isPending}
-      errorMessage={
-        passkey.error
-          ? passkeyErrorMessage(passkey.error)
-          : autofillError
-            ? passkeyErrorMessage(autofillError)
-            : login.error
-              ? errorMessage(login.error)
-              : undefined
-      }
-      onLogin={(values) => {
-        stopAutofill.current();
-        setAutofillError(null);
-        passkey.reset();
-        login.mutate(values);
-      }}
-      onPasskeyLogin={() => {
-        stopAutofill.current();
-        setAutofillError(null);
-        login.reset();
-        passkey.mutate();
-      }}
-    />
+    <EntryShell panel={<EntryPanel steps={steps.signIn} />}>
+      {socialCode ? (
+        <div className="entry-waiting" role="status">
+          <Spinner size="lg" />
+          <Text tone="subtle">
+            {social.isError ? errorMessage(social.error) : t("signIn.socialSigningIn")}
+          </Text>
+        </div>
+      ) : (
+        <LoginForm
+          isLoading={login.isPending}
+          isPasskeyLoading={passkey.isPending}
+          resetDone={resetDone}
+          errorMessage={
+            passkey.error
+              ? passkeyErrorMessage(passkey.error)
+              : autofillError
+                ? passkeyErrorMessage(autofillError)
+                : login.error
+                  ? errorMessage(login.error)
+                  : undefined
+          }
+          onLogin={(values) => {
+            stopAutofill.current();
+            setAutofillError(null);
+            passkey.reset();
+            preloadMfaChallengeStep();
+            login.mutate(values);
+          }}
+          onPasskeyLogin={() => {
+            stopAutofill.current();
+            setAutofillError(null);
+            login.reset();
+            passkey.mutate();
+          }}
+        />
+      )}
+    </EntryShell>
   );
 }

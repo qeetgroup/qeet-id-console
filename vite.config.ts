@@ -1,5 +1,4 @@
 import babel from "@rolldown/plugin-babel";
-import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
@@ -14,7 +13,6 @@ const config = defineConfig({
     devtools(),
     // Security headers on every response, for the node-server image and Vercel output alike.
     nitro({ routeRules: { "/**": { headers: { ...SECURITY_HEADERS } } } }),
-    tailwindcss(),
     tanstackStart({ router: { virtualRouteConfig: "./src/app/routes.ts" } }),
     viteReact(),
     babel({ presets: [reactCompilerPreset()] }),

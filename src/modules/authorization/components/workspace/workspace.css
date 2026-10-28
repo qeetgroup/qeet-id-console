@@ -1,0 +1,667 @@
+/*
+ * The Workspace template (workspace.tsx): the header, a toolbar, three ruled panes edge to edge.
+ * Token values only (--qx-*). The canvas is the page's canvas tone; panes sit on the default
+ * surface and the canvas's nodes on the raised one. No cards: 1px rules and tone separate them.
+ */
+
+.ws {
+  display: flex;
+  flex-direction: column;
+  block-size: calc(100dvh - var(--qx-app-shell-top, 0px));
+  min-block-size: 32rem;
+}
+
+.ws > .qx-tabs {
+  flex: none;
+}
+
+.ws-toolbar {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm) var(--qx-space-gap-lg);
+  min-block-size: calc(var(--qx-size-control-lg) + 2 * var(--qx-space-inset-sm));
+  padding: var(--qx-space-inset-sm) var(--qx-space-layout-md);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  background: var(--qx-color-surface-default);
+}
+
+.ws-toolbar-start,
+.ws-toolbar-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+}
+
+.ws-toolbar-end {
+  margin-inline-start: auto;
+}
+
+.ws-body {
+  flex: 1;
+  min-block-size: 0;
+  display: grid;
+  grid-template-columns: 15.5rem minmax(0, 1fr) 21rem;
+}
+
+.ws-body[data-layout="main-inspector"] {
+  grid-template-columns: minmax(0, 1fr) 24rem;
+}
+
+.ws-body[data-layout="list-main"] {
+  grid-template-columns: 15.5rem minmax(0, 1fr);
+}
+
+.ws-body[data-layout="main"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ── Panes ─────────────────────────────────────────────────────────────────── */
+
+.ws-pane {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  min-inline-size: 0;
+  background: var(--qx-color-surface-default);
+}
+
+.ws-pane[data-side="list"] {
+  border-inline-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.ws-pane[data-side="inspector"] {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.ws-pane-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-block-size: 2.5rem;
+  padding-inline: var(--qx-space-inset-lg);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.ws-pane-label,
+.ws-group-label {
+  color: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ws-pane-meta {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-pane-action {
+  margin-inline-start: auto;
+  font: var(--qx-typography-label-md);
+}
+
+.ws-pane-body {
+  flex: 1;
+  min-block-size: 0;
+  overflow: auto;
+}
+
+.ws-pane-foot {
+  flex: none;
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.ws-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-lg);
+}
+
+.ws-pane .ws-section + .ws-section,
+.ws-ruled {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+/* ── The centre: the canvas over its output ───────────────────────────────── */
+
+.ws-main {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-inline-size: 0;
+  min-block-size: 0;
+  background: var(--qx-color-surface-canvas);
+}
+
+.ws-main[data-output] {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.ws-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qx-space-gap-lg);
+  min-block-size: 0;
+  overflow: auto;
+  padding: var(--qx-space-inset-lg) var(--qx-space-inset-xl);
+}
+
+.ws-output {
+  display: flex;
+  flex-direction: column;
+  block-size: 15rem;
+  min-block-size: 0;
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  background: var(--qx-color-surface-default);
+}
+
+.ws-output-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-inline: calc(var(--qx-space-inset-lg) - 12px) var(--qx-space-inset-lg);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.ws-output-head .qx-tabs-list {
+  border-block-end: 0;
+  box-shadow: none;
+}
+
+.ws-output-end {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+}
+
+.ws-output-body {
+  flex: 1;
+  min-block-size: 0;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-lg);
+}
+
+/* ── Rows in panes ─────────────────────────────────────────────────────────── */
+
+.ws-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ws-list > li + li {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.ws-pane .ws-section > .ws-list {
+  margin-inline: calc(-1 * var(--qx-space-inset-lg));
+}
+
+.ws-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  inline-size: 100%;
+  min-block-size: 3rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-lg);
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-default);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+span.ws-row {
+  cursor: default;
+}
+
+a.ws-row {
+  text-decoration: none;
+}
+
+button.ws-row:hover,
+a.ws-row:hover {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+button.ws-row:focus-visible,
+a.ws-row:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(-1 * var(--qx-focus-ring-width));
+}
+
+/* The current item: the Ember bar on its start edge. */
+.ws-row[aria-current] {
+  background: var(--qx-color-bg-neutral-subtle);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.ws-row-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.ws-row-text strong {
+  overflow: hidden;
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-row-text small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A list whose names may run to two lines (ABAC's policies). */
+.ws-wrap strong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+}
+
+.ws-row-line {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+.ws-boxed {
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+/* A list led by a priority: ABAC's evaluation order, Testing's policies checked. */
+.ws-order .ws-row,
+.ws-order-end {
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+}
+
+.ws-priority {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-code-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.ws-order-end {
+  display: grid;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-lg);
+  background: var(--qx-color-surface-canvas);
+}
+
+.ws-order-end strong {
+  color: var(--qx-color-text-subtle);
+}
+
+/* ── Small parts ───────────────────────────────────────────────────────────── */
+
+.ws-code {
+  font: var(--qx-typography-code-sm);
+  overflow-wrap: anywhere;
+}
+
+.qx-table .ws-code {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+.ws-subtle {
+  color: var(--qx-color-text-subtle);
+}
+
+.ws-note {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.ws-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-xs);
+}
+
+.ws-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--qx-space-form-gap);
+  padding: var(--qx-space-inset-lg);
+}
+
+.ws-section .ws-form {
+  padding: 0;
+}
+
+.ws-form-pair,
+.ws-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--qx-space-gap-md);
+}
+
+.ws-span {
+  grid-column: 1 / -1;
+}
+
+.ws-form-end {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--qx-space-gap-xs);
+}
+
+.ws-start {
+  justify-content: flex-start;
+  margin-inline-start: calc(-1 * var(--qx-space-inset-sm));
+}
+
+/* Choices in a form start at the label's edge, at their own width. */
+.ws-form .qx-toggle-group,
+.ws-section .qx-toggle-group {
+  justify-self: start;
+  inline-size: fit-content;
+}
+
+.ws-foot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm);
+  min-block-size: 3rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-lg);
+}
+
+.ws-search {
+  inline-size: 16rem;
+}
+
+.ws-mono textarea,
+textarea.ws-mono {
+  font: var(--qx-typography-code-sm);
+}
+
+/* An effect is a plain word, as the policy lists show it (design rules: not a coloured badge). */
+.ws-effect {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+small .ws-effect {
+  font: var(--qx-typography-label-sm);
+}
+
+/* What the toolbar is working on: its name and state. */
+.ws-working {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.ws-working strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.ws-phone-only {
+  display: none;
+}
+
+/* ── Phone: one column; the panes stack ──────────────────────────────────── */
+
+@media (max-width: 839px) {
+  .ws {
+    block-size: auto;
+  }
+
+  .ws-toolbar {
+    padding-inline: var(--qx-space-inset-lg);
+  }
+
+  .ws-toolbar-start,
+  .ws-toolbar-end {
+    inline-size: 100%;
+  }
+
+  .ws-toolbar-end {
+    justify-content: flex-end;
+  }
+
+  .ws-toolbar-start > *,
+  .ws-search {
+    flex: 1 1 100%;
+    inline-size: auto;
+  }
+
+  .ws-body,
+  .ws-body[data-layout] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ws-hide-phone {
+    display: none;
+  }
+
+  .ws-phone-only {
+    display: grid;
+  }
+
+  .ws-pane[data-side] {
+    border-inline: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+
+  .ws-pane-body,
+  .ws-canvas,
+  .ws-output-body {
+    overflow: visible;
+  }
+
+  .ws-canvas {
+    padding: var(--qx-space-inset-lg);
+  }
+
+  .ws-output {
+    block-size: auto;
+  }
+
+  .ws-form-grid,
+  .ws-form-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── The answer: allowed or denied, in words (decision-parts.tsx) ─────────── */
+
+.ws-answer {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-lg);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-success);
+}
+
+.ws-answer[data-allowed="false"] {
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-danger);
+}
+
+.ws-answer-icon {
+  display: inline-grid;
+  padding-block-start: 2px;
+  color: var(--qx-color-icon-success);
+}
+
+.ws-answer-line .ws-answer-icon {
+  padding: 0;
+}
+
+.ws-answer[data-allowed="false"] .ws-answer-icon {
+  color: var(--qx-color-icon-danger);
+}
+
+.ws-answer-text {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+.ws-answer-q {
+  margin: 0;
+  font: var(--qx-typography-title-sm);
+  overflow-wrap: anywhere;
+}
+
+.ws-answer-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  font: var(--qx-typography-body-md);
+}
+
+.ws-answer-meta {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* In an output panel: the verdict on one line, the reason under it. */
+.ws-answer[data-compact] {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--qx-space-gap-xs);
+  padding-block: var(--qx-space-inset-sm);
+}
+
+.ws-answer-line {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+}
+
+.ws-answer-line .ws-answer-meta {
+  margin-inline-start: auto;
+}
+
+.ws-answer-reason {
+  margin: 0;
+  font: var(--qx-typography-body-md);
+}
+
+.ws-hops {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ws-hop {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+.ws-hops svg {
+  color: var(--qx-color-icon-subtle);
+}
+
+.ws-hops[data-direction="column"],
+.ws-hops[data-direction="column"] .ws-hop {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.ws-hops strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.ws-person {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-lg);
+}
+
+.ws-person-head {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.ws-person-name {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.ws-person-head strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.ws-person-head small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+}
+
+.ws-pad {
+  padding: var(--qx-space-inset-lg);
+}
+
+.ws-section.ws-flush {
+  padding: 0;
+}
+
+/* The JSON request editor (monaco-panel.tsx): a filled field's frame around Monaco. */
+.ws-editor {
+  overflow: hidden;
+  border-block-end: var(--qx-border-width-strong) solid var(--qx-color-border-strong);
+  border-radius: var(--qx-radius-control) var(--qx-radius-control) 0 0;
+  background: var(--qx-color-surface-raised);
+}
+
+.ws-editor-fallback {
+  overflow: auto;
+}

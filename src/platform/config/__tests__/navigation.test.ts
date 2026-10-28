@@ -32,16 +32,34 @@ describe("console navigation state", () => {
     expect(new Set(navGroups.map((group) => group.id)).size).toBe(navGroups.length);
   });
 
-  it("keeps Directory focused on people, groups, organizations and sync", () => {
+  it("keeps Directory focused on people, groups, organisations and sync", () => {
     const directory = navGroups.find((group) => group.id === "directory");
 
     expect(directory?.items.map((item) => item.title)).toEqual([
-      "Overview",
       "Users",
       "Groups",
-      "Organizations",
+      "Organisations",
       "Directories",
     ]);
+  });
+
+  it("has one overview, the Dashboard: each area opens on its main page", () => {
+    const overviews = navGroups
+      .filter((group) => group.id !== "overview")
+      .flatMap((group) => group.items.flatMap((item) => [item, ...(item.items ?? [])]))
+      .filter((item) => item.title === "Overview");
+    expect(overviews).toEqual([]);
+  });
+
+  it("opens SSO on the one list of SAML, with no separate Connections entry", () => {
+    // LDAP and SCIM have their one home in Directories › Connections.
+    const authentication = navGroups.find((group) => group.id === "authentication");
+    expect(authentication?.items.map((item) => item.url)).not.toContain("/auth/connections");
+    expect(
+      authentication?.items
+        .find((item) => item.url === "/auth/connections/saml")
+        ?.items?.map((item) => item.url),
+    ).toEqual(["/auth/connections/saml", "/auth/connections/saml-idp"]);
   });
 
   it("exposes the completed Directory views with short labels and scoped access", () => {
@@ -49,21 +67,19 @@ describe("console navigation state", () => {
     const users = directory?.items.find((item) => item.title === "Users");
     const directories = directory?.items.find((item) => item.title === "Directories");
 
+    // Suspended is a filter on All users, not a sub-page.
     expect(users?.items?.map((item) => item.title)).toEqual([
       "All users",
       "Invitations",
-      "Suspended",
       "Deleted",
     ]);
+    // SCIM and LDAP are connections, opened from Connections, not tabs of their own.
     expect(directories?.items?.map((item) => item.title)).toEqual([
       "Connections",
-      "SCIM",
-      "LDAP / AD",
       "Sync activity",
       "Sync errors",
       "Mappings",
     ]);
-    expect(users?.items?.find((item) => item.title === "Suspended")?.planned).toBeUndefined();
     for (const item of directories?.items ?? []) {
       expect(item.title.length).toBeLessThanOrEqual(13);
       expect(item.requiredPermission).toBe("connection.read");
@@ -103,8 +119,10 @@ describe("console navigation state", () => {
     expect(findNavGroupForPath(navGroups, "/")).toBe("overview");
     expect(findNavGroupForPath(navGroups, "/authorization/roles/42")).toBe("authorization");
     expect(findNavGroupForPath(navGroups, "/security/audit-logs")).toBe("security");
-    // SCIM lives under Directory even though /auth/connections/oidc is Applications.
-    expect(findNavGroupForPath(navGroups, "/auth/connections/scim")).toBe("directory");
+    // SCIM lives under Directory › Connections, and its old address isn't a page any more.
+    expect(findNavGroupForPath(navGroups, "/directory/connections/scim")).toBe("directory");
+    // A SAML connection's page sits under Authentication › SSO.
+    expect(findNavGroupForPath(navGroups, "/auth/connections/saml/abc")).toBe("authentication");
     expect(findNavGroupForPath(navGroups, "/unmapped-route")).toBeUndefined();
   });
 

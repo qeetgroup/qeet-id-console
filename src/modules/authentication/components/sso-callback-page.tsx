@@ -1,14 +1,14 @@
-import { Button, buttonVariants, Card, CardContent } from "@qeetrix/ui";
-import { errorMessage } from "@/platform/errors/user-message";
-import { Link } from "@tanstack/react-router";
-import { CircleCheckIcon, LoaderCircleIcon, ShieldXIcon, TriangleAlertIcon } from "@qeetrix/icons";
-import { useEffect, useRef, useState } from "react";
-import type { TFunction } from "i18next";
+import { ArrowRightIcon, RefreshCwIcon } from "@qeetrix/icons";
+import { Button, Heading, Link, Spinner, Text } from "@qeetrix/react";
+import { Link as RouterLink, useNavigate } from "@tanstack/react-router";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BrandHero } from "./brand-hero";
-import { ApiError } from "@/platform/api/client";
-import { useConsumeSamlCode } from "@/modules/authentication";
+import { normalizeError } from "@/platform/errors/normalize-error";
+import { errorMessage } from "@/platform/errors/user-message";
+import { useConsumeSamlCode } from "../api/flows";
+import { EntryPanel, useEntrySteps } from "./entry-panel";
+import { EntryShell } from "./entry-shell";
 
 // The SAML ACS passes the one-time code in the fragment (#saml_code=…), which, unlike a query
 // string, never reaches the server or its access logs.
@@ -20,8 +20,19 @@ function readSamlCode(): string | null {
 
 /** Renders the return from an identity provider: exchanges its one-time code for a session. */
 export function SsoCallbackPage() {
+  const steps = useEntrySteps();
+  return (
+    <EntryShell panel={<EntryPanel steps={steps.sso} current={1} />}>
+      <SsoStatus />
+    </EntryShell>
+  );
+}
+
+function SsoStatus() {
   const { t } = useTranslation("auth-flow");
+  const navigate = useNavigate();
   const consume = useConsumeSamlCode();
+  // Held here once read: the URL drops it, and a retry after a lost connection re-sends it.
   const [code] = useState(readSamlCode);
 
   const firedRef = useRef(false);
@@ -33,78 +44,70 @@ export function SsoCallbackPage() {
     consume.mutate(code);
   }, [code, consume]);
 
-  return (
-    <div className="flex flex-col gap-6">
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-            {renderStatus({ code, consume, t })}
-          </div>
-          <BrandHero />
-        </CardContent>
-      </Card>
-    </div>
+  const signIn = (label: string) => (
+    <Button
+      size="lg"
+      fullWidth
+      icon={ArrowRightIcon}
+      onClick={() => void navigate({ to: "/sign-in" })}
+    >
+      {label}
+    </Button>
   );
-}
 
-function renderStatus({
-  code,
-  consume,
-  t,
-}: {
-  code: string | null;
-  consume: ReturnType<typeof useConsumeSamlCode>;
-  t: TFunction<"auth-flow">;
-}) {
   if (!code) {
     return (
       <>
-        <TriangleAlertIcon className="size-10 text-amber-500" />
-        <h1 className="text-2xl font-bold">{t("sso.noCodeTitle")}</h1>
-        <p className="text-balance text-muted-foreground">{t("sso.noCodeText")}</p>
-        <Link to="/sign-in" className={`${buttonVariants({ variant: "outline" })} mt-2`}>
-          {t("sso.backToSignIn")}
-        </Link>
+        <Head title={t("sso.noCodeTitle")} lede={t("sso.noCodeText")} />
+        {signIn(t("sso.signIn"))}
       </>
     );
   }
 
-  if (consume.isPending || consume.isIdle) {
+  if (consume.isError) {
+    // A request that never reached Qeet ID left the code unspent, so sending it again can work.
+    if (normalizeError(consume.error).kind === "network") {
+      return (
+        <>
+          <Head title={t("sso.offlineTitle")} lede={t("sso.offlineText")} />
+          <Button size="lg" fullWidth icon={RefreshCwIcon} onClick={() => consume.mutate(code)}>
+            {t("sso.tryAgain")}
+          </Button>
+          <div className="entry-links">
+            <Link render={<RouterLink to="/sign-in" />}>{t("sso.backToSignIn")}</Link>
+          </div>
+        </>
+      );
+    }
     return (
       <>
-        <LoaderCircleIcon className="size-10 animate-spin text-sky-500" />
-        <h1 className="text-2xl font-bold">{t("sso.loadingTitle")}</h1>
-        <p className="text-balance text-muted-foreground">{t("sso.loadingText")}</p>
+        <Head title={t("sso.failedTitle")} lede={errorMessage(consume.error)} />
+        <Text tone="subtle">{t("sso.failedHint")}</Text>
+        {signIn(t("sso.signInAgain"))}
       </>
     );
   }
 
-  if (consume.isSuccess) {
-    return (
-      <>
-        <CircleCheckIcon className="size-10 text-emerald-500" />
-        <h1 className="text-2xl font-bold">{t("sso.successTitle")}</h1>
-        <p className="text-balance text-muted-foreground">{t("sso.successText")}</p>
-      </>
-    );
-  }
-
-  const detail = consume.error instanceof ApiError ? errorMessage(consume.error) : t("sso.failed");
   return (
     <>
-      <ShieldXIcon className="size-10 text-rose-500" />
-      <h1 className="text-2xl font-bold">{t("sso.errorTitle")}</h1>
-      <p className="text-balance text-muted-foreground">
-        {detail} {t("sso.errorTrailer")}
-      </p>
-      <div className="mt-4 flex gap-2">
-        <Link to="/sign-in" className={buttonVariants({ variant: "outline", size: "sm" })}>
-          {t("sso.backToSignIn")}
-        </Link>
-        <Button size="sm" variant="ghost" onClick={() => window.location.reload()}>
-          {t("sso.tryAgain")}
-        </Button>
+      <Head title={t("sso.signingTitle")} lede={t("sso.signingText")} />
+      <div className="entry-status" role="status">
+        <Spinner />
+        <Text tone="subtle">{consume.isSuccess ? t("sso.opening") : t("sso.checking")}</Text>
       </div>
     </>
+  );
+}
+
+function Head({ title, lede }: { title: string; lede: ReactNode }) {
+  return (
+    <div className="entry-heading">
+      <Heading level={1} size="display-sm">
+        {title}
+      </Heading>
+      <Text tone="subtle" size="lg">
+        {lede}
+      </Text>
+    </div>
   );
 }

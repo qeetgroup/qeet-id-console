@@ -1,6 +1,7 @@
-// Sign-in anomalies the server detects, such as brute force or credential stuffing.
+// Sign-in attacks the server's lockout detects (credential stuffing, password spraying). The
+// one change, resolving one, is in anomaly-actions.ts: only its page uses it.
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
@@ -15,6 +16,12 @@ export interface Anomaly {
   user_id?: string | null;
   user_email?: string | null;
   ip?: string | null;
+  /**
+   * The detection's own facts: `counter` (which count tripped: "source", "account" or
+   * "account_network"), `failures`, `distinct_accounts`, `window_minutes`, `network`,
+   * `locked_until` or `throttled_until`. Any may be missing.
+   */
+  metadata?: Record<string, unknown> | null;
   created_at: string;
   resolved_at?: string | null;
 }
@@ -34,7 +41,7 @@ export interface AnomalySummary {
   high_severity_24h: number;
 }
 
-export function useAnomalies() {
+export function useAnomalies(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: securityKeys.anomalyList(tenantId),
@@ -46,7 +53,7 @@ export function useAnomalies() {
         throw err;
       }
     },
-    enabled: !!tenantId,
+    enabled: enabled && !!tenantId,
     staleTime: 30_000,
   });
 }
@@ -58,20 +65,5 @@ export function useAnomalySummary() {
     queryFn: () => api<AnomalySummary>(`/v1/tenants/${tenantId}/security/anomalies/summary`),
     enabled: !!tenantId,
     staleTime: 30_000,
-  });
-}
-
-export function useResolveAnomaly() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<void>(`/v1/tenants/${tenantId}/security/anomalies/${id}/resolve`, {
-        method: "POST",
-      });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.anomalies(tenantId) }),
-    meta: { successMessage: "security:toast.anomalyResolved" },
   });
 }

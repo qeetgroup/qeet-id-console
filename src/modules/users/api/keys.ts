@@ -9,6 +9,7 @@ export const userKeys = {
   lists: (tenantId: string | null) => [...userKeys.tenant(tenantId), "list"] as const,
   list: (tenantId: string | null, params: UserListParams) =>
     [...userKeys.lists(tenantId), params] as const,
+  directory: (tenantId: string | null) => [...userKeys.lists(tenantId), "directory"] as const,
   stats: (tenantId: string | null) => [...userKeys.tenant(tenantId), "stats"] as const,
   trends: (tenantId: string | null) => [...userKeys.tenant(tenantId), "trends"] as const,
   deleted: (tenantId: string | null) => [...userKeys.tenant(tenantId), "deleted"] as const,

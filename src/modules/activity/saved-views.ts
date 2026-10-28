@@ -1,4 +1,4 @@
-// Saved views for the Activity workspace: built-in investigations plus the person's own views.
+// Saved views for the Activity page: built-in investigations plus the person's own views.
 // A view is a set of URL search params, so applying one is a navigation.
 
 import { Store } from "@tanstack/react-store";
@@ -13,43 +13,41 @@ export interface SavedView {
   name: string; // a built-in view's is a catalogue key; a person's own is their text
   search: ActivitySearch;
   builtin?: boolean;
-  icon?: string; // Icon name such as "ShieldCheck"; the saved-views bar doesn't render it
   createdAt: number;
 }
 
-export const ALL_EVENTS_VIEW_ID = "all-events"; // The id of the unfiltered default view
-
-/**
- * Built-in investigations, listed first and never persisted. They filter on category,
- * severity and free text, which survive renames of individual event types.
- */
 /** A built-in view, named by a catalogue key rather than a person's text. */
 export interface PresetView extends SavedView {
   name: TranslationKey;
 }
 
+/**
+ * Built-in investigations, never persisted. Each names the server's own actions (`type`, matched
+ * exactly by GET /v1/activity) or category, so it finds every such event in the range rather than
+ * what a word search happens to match. Failed and Critical are the page's tabs, not views.
+ */
 export const PRESET_VIEWS: PresetView[] = [
   {
-    id: ALL_EVENTS_VIEW_ID,
-    name: "activity:savedViews.preset.allEvents",
+    id: "failed-sign-ins",
+    name: "activity:savedViews.preset.failedSignIns",
     builtin: true,
-    icon: "Activity",
-    search: {},
+    search: {
+      type: [
+        "auth.sign_in_failed",
+        "auth.sign_in_refused",
+        "auth.sign_in_refused_session_limit",
+        "auth.account_locked",
+        "auth.address_refused",
+        "auth.source_throttled",
+        "auth.mfa_locked",
+      ].join(","),
+    },
     createdAt: 0,
   },
   {
-    id: "failed-logins",
-    name: "activity:savedViews.preset.failedLogins",
+    id: "access-changes",
+    name: "activity:savedViews.preset.accessChanges",
     builtin: true,
-    icon: "LogIn",
-    search: { category: "authentication", q: "login", severity: "error,critical" },
-    createdAt: 0,
-  },
-  {
-    id: "admin-actions",
-    name: "activity:savedViews.preset.adminActions",
-    builtin: true,
-    icon: "ShieldCheck",
     search: { category: "authorization" },
     createdAt: 0,
   },
@@ -57,32 +55,41 @@ export const PRESET_VIEWS: PresetView[] = [
     id: "mfa-changes",
     name: "activity:savedViews.preset.mfaChanges",
     builtin: true,
-    icon: "Fingerprint",
-    search: { category: "authentication", q: "mfa" },
+    search: {
+      type: [
+        "mfa.totp_enrolled",
+        "mfa.totp_disabled",
+        "mfa.otp_factor_added",
+        "mfa.otp_factor_removed",
+        "mfa.push_device_linked",
+        "mfa.push_device_unlinked",
+        "mfa.push_device_revoked",
+        "mfa.recovery_codes_regenerated",
+        "mfa.admin_reset",
+        "user.mfa_required_set",
+      ].join(","),
+    },
     createdAt: 0,
   },
   {
-    id: "security-alerts",
-    name: "activity:savedViews.preset.securityAlerts",
+    id: "people-suspended-or-removed",
+    name: "activity:savedViews.preset.suspendedOrRemoved",
     builtin: true,
-    icon: "ShieldAlert",
-    search: { severity: "critical,error" },
+    search: {
+      type: [
+        "user.suspended",
+        "user.deleted",
+        "user.purged",
+        "user.removed_from_organization",
+      ].join(","),
+    },
     createdAt: 0,
   },
   {
-    id: "suspended-users",
-    name: "activity:savedViews.preset.suspendedUsers",
+    id: "security-settings",
+    name: "activity:savedViews.preset.securitySettings",
     builtin: true,
-    icon: "UserX",
-    search: { q: "suspended" },
-    createdAt: 0,
-  },
-  {
-    id: "oauth-failures",
-    name: "activity:savedViews.preset.oauthFailures",
-    builtin: true,
-    icon: "KeyRound",
-    search: { category: "authentication", q: "oauth", severity: "error,critical" },
+    search: { category: "security" },
     createdAt: 0,
   },
 ];
@@ -111,14 +118,18 @@ function makeId(name: string): string {
   return `${slug || "view"}-${Date.now().toString(36)}`;
 }
 
+/** The filters of a search, without the open event or the applied view. */
+export function viewSearch(search: ActivitySearch): ActivitySearch {
+  const { event: _e, view: _v, ...filters } = search;
+  return filters;
+}
+
 export const savedViewsActions = {
   add(name: string, search: ActivitySearch): SavedView {
-    // A view keeps only the filters, not the open event, drawer tab or applied view.
-    const { event: _e, tab: _t, view: _v, ...filterSearch } = search;
     const view: SavedView = {
       id: makeId(name),
       name: name.trim(),
-      search: filterSearch,
+      search: viewSearch(search),
       createdAt: Date.now(),
     };
     savedViewsStore.setState((s) => {

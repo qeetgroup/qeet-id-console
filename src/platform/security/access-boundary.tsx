@@ -1,32 +1,41 @@
-import { Button, buttonVariants, Skeleton } from "@qeetrix/ui";
-import { Link, useLocation } from "@tanstack/react-router";
-import { LockKeyholeIcon, RefreshCwIcon, ShieldAlertIcon } from "@qeetrix/icons";
-import type { ReactNode } from "react";
+import {
+  ArrowRightIcon,
+  HouseIcon,
+  LockKeyholeIcon,
+  RefreshCwIcon,
+  ShieldAlertIcon,
+} from "@qeetrix/icons";
+import { Button, type QeetrixIcon, Skeleton, VisuallyHidden } from "@qeetrix/react";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { useEffect, useRef } from "react";
 
+import { StatePage } from "@/platform/components/state-page";
 import { useTenantId } from "@/platform/auth/session";
 import { getRequiredCapabilityForPath } from "@/platform/security/route-capability";
-import { PageState } from "@/shared/components/page-state";
 import { capabilityLabel } from "./capability-model";
 import { useCapabilities } from "./capability-provider";
 
+const ROWS = [0, 1, 2, 3, 4, 5];
+
+/** While access loads: the outline of a page header and a table, announced once. */
 function AccessLoadingState() {
   const { t } = useTranslation("common");
   return (
-    <div className="flex min-w-0 flex-col gap-6" role="status" aria-live="polite" aria-busy="true">
-      <span className="sr-only">{t("accessBoundary.checkingOrganizationAccess")}</span>
-      <div className="flex items-end justify-between gap-4 border-b border-border/70 pb-5">
-        <div className="space-y-3">
-          <Skeleton className="h-8 w-56 max-w-[70vw]" />
-          <Skeleton className="h-4 w-96 max-w-[80vw]" />
-        </div>
-        <Skeleton className="hidden h-9 w-28 sm:block" />
+    <div className="console-loading" role="status" aria-live="polite" aria-busy="true">
+      <VisuallyHidden>{t("accessBoundary.checkingOrganizationAccess")}</VisuallyHidden>
+      <div className="console-loading-head">
+        <Skeleton style={{ inlineSize: "14rem", blockSize: "1.75rem" }} />
+        <Skeleton style={{ inlineSize: "26rem", maxInlineSize: "80%" }} />
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Skeleton className="h-36 lg:col-span-2" />
-        <Skeleton className="h-36" />
-        <Skeleton className="h-72 lg:col-span-3" />
+      <div className="console-loading-rows">
+        {ROWS.map((row) => (
+          <div key={row} className="console-loading-row">
+            <Skeleton variant="circle" size="md" />
+            <Skeleton style={{ inlineSize: "12rem" }} />
+            <Skeleton style={{ inlineSize: "7rem" }} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -42,6 +51,7 @@ function focusStateHeading(root: HTMLDivElement | null) {
 export function AccessBoundary({ children }: { children: ReactNode }) {
   const { t } = useTranslation("common");
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const access = useCapabilities();
   const hasOrg = !!useTenantId();
   const stateRef = useRef<HTMLDivElement>(null);
@@ -56,17 +66,23 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
 
   if (access.state === "resolving") return <AccessLoadingState />;
 
+  const home = (label: string, icon: QeetrixIcon = HouseIcon) => (
+    <Button icon={icon} onClick={() => void navigate({ to: "/" })}>
+      {label}
+    </Button>
+  );
+
   if (access.state === "error") {
     return (
       <div ref={stateRef} role="alert">
-        <PageState
-          code="—"
+        <StatePage
+          tone="danger"
           icon={ShieldAlertIcon}
           title={t("accessBoundary.organizationAccessCouldNot")}
           description={t("accessBoundary.theConsoleCouldNot")}
           actions={
-            <Button onClick={access.retry}>
-              <RefreshCwIcon /> {t("accessBoundary.retryAccessCheck")}
+            <Button icon={RefreshCwIcon} onClick={access.retry}>
+              {t("accessBoundary.retryAccessCheck")}
             </Button>
           }
         />
@@ -80,38 +96,25 @@ export function AccessBoundary({ children }: { children: ReactNode }) {
     return (
       <div ref={stateRef}>
         {hasOrg ? (
-          <PageState
-            code="403"
+          <StatePage
             icon={LockKeyholeIcon}
             title={t("accessBoundary.youDonTHave")}
             description={
-              <>
-                <Trans
-                  t={t}
-                  i18nKey="accessBoundary.requires"
-                  values={{ capability: capabilityLabel(required) }}
-                  components={{ strong: <strong /> }}
-                />
-                <span className="mt-1 block font-mono text-xs">{required}</span>
-              </>
+              <Trans
+                t={t}
+                i18nKey="accessBoundary.requires"
+                values={{ capability: capabilityLabel(required), code: required }}
+                components={{ strong: <strong />, code: <code /> }}
+              />
             }
-            actions={
-              <Link to="/" className={buttonVariants()}>
-                {t("accessBoundary.goToOverview")}
-              </Link>
-            }
+            actions={home(t("accessBoundary.goToOverview"))}
           />
         ) : (
-          <PageState
-            code="—"
+          <StatePage
             icon={LockKeyholeIcon}
             title={t("accessBoundary.createAnOrganizationToContinue")}
             description={t("accessBoundary.thisPageBelongsTo")}
-            actions={
-              <Link to="/" className={buttonVariants()}>
-                {t("accessBoundary.goToSetup")}
-              </Link>
-            }
+            actions={home(t("accessBoundary.goToSetup"), ArrowRightIcon)}
           />
         )}
       </div>

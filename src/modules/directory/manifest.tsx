@@ -1,28 +1,11 @@
 // What this module adds to the console shell; see src/platform/modules/manifest.ts.
-import { GaugeIcon, NetworkIcon } from "@qeetrix/icons";
+import { NetworkIcon, ServerIcon, WorkflowIcon } from "@qeetrix/icons";
 
 import { defineModule } from "@/platform/modules/manifest";
 
 export const manifest = defineModule({
   id: "directory",
   nav: [
-    {
-      id: "directory.overview",
-      group: "directory",
-      order: 10,
-      title: "directory:nav.directory.overview.title",
-      url: "/directory",
-      icon: <GaugeIcon />,
-    },
-    {
-      id: "directory.suspended",
-      group: "directory",
-      parent: "directory.users",
-      order: 30,
-      title: "directory:nav.directory.suspended.title",
-      url: "/users/suspended",
-      capability: "user.read",
-    },
     {
       id: "directory.directories",
       group: "directory",
@@ -67,6 +50,23 @@ export const manifest = defineModule({
       order: 60,
       title: "directory:nav.directory.mappings.title",
       url: "/directory/attribute-mappings",
+      capability: "connection.read",
+    },
+  ],
+  // SCIM and LDAP are connections, not tabs: these keep them a search away.
+  commands: [
+    {
+      id: "cmd.directory.scim",
+      text: "directory:commands.scim",
+      icon: <WorkflowIcon />,
+      to: "/directory/connections/scim",
+      capability: "connection.read",
+    },
+    {
+      id: "cmd.directory.ldap",
+      text: "directory:commands.ldap",
+      icon: <ServerIcon />,
+      to: "/directory/connections/ldap",
       capability: "connection.read",
     },
   ],

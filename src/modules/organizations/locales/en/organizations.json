@@ -1,180 +1,205 @@
 {
-  "tenants": {
-    "description": "Every organization your account has access to. Click an organization to switch into it, or create a new one — you become its owner automatically.",
-    "refresh": "Refresh",
-    "new": "New organization",
-    "list": {
-      "count_one": "{{shown}} of {{total}} organization",
-      "count_other": "{{shown}} of {{total}} organizations",
-      "searchPlaceholder": "Search name, slug, region…",
-      "emptyFiltered": "No organizations match your filters.",
-      "empty": "No organizations yet."
+  "list": {
+    "title": "Organisations",
+    "description": "The organisations you belong to, and your role in each.",
+    "moreActions": "More actions",
+    "exportCsv": "Export CSV",
+    "exportJson": "Export JSON",
+    "new": "New organisation",
+    "band": {
+      "people": "People",
+      "inOrganisations_one": "In {{n}} organisation",
+      "inOrganisations_other": "In {{n}} organisations",
+      "inLargest": "In {{n}} organisations; the {{largest}} largest",
+      "barLabel": "{{name}}, {{n}} members",
+      "twoStep": "Two-step",
+      "percent": "{{n}}%",
+      "twoStepNote": "{{n}} of {{total}} people · target {{target}}%",
+      "twoStepLabel": "{{n}}% use two-step; the target is {{target}}%",
+      "belowIt_one": "{{n}} organisation is below it",
+      "belowIt_other": "{{n}} organisations are below it",
+      "yourRole": "Your role",
+      "otherRoles": "other roles",
+      "needsALook": "Needs a look",
+      "looks": {
+        "below-target": "Below the {{target}}% two-step target",
+        "stale": "Not opened in {{days}} days",
+        "deleting": "Being deleted",
+        "suspended": "Suspended",
+        "invitations": "Invitations waiting"
+      }
     },
     "filters": {
-      "status": {
-        "label": "Status",
-        "active": "Active",
-        "suspended": "Suspended",
-        "deleted": "Deleted"
-      },
-      "plan": {
-        "label": "Plan",
-        "free": "Free",
-        "starter": "Starter",
-        "pro": "Pro",
-        "enterprise": "Enterprise"
-      }
+      "search": "Search organisations",
+      "searchPlaceholder": "Search by name, URL or domain",
+      "role": "Your role",
+      "anyRole": "Any role",
+      "plan": "Plan",
+      "anyPlan": "Any plan",
+      "region": "Data region",
+      "anyRegion": "Any region",
+      "summary": "{{n}} of {{total}} organisations"
+    },
+    "plans": {
+      "enterprise": "Enterprise",
+      "pro": "Pro",
+      "starter": "Starter",
+      "free": "Free"
     },
     "columns": {
+      "organisation": "Organisation",
+      "role": "Your role",
+      "members": "Members",
+      "twoStep": "Two-step",
       "plan": "Plan",
-      "region": "Region",
-      "status": "Status",
-      "created": "Created",
-      "actions": "Actions"
-    },
-    "table": {
-      "current": "Current",
+      "opened": "Last opened",
       "switch": "Switch"
     },
-    "delete": {
-      "title": "Delete this organization?",
-      "delete": "Delete"
+    "row": {
+      "current": "Current",
+      "suspended": "Suspended",
+      "deleting": "Deleting {{date}}",
+      "noRole": "No role",
+      "twoStepLabel": "{{name}}: {{n}}% use two-step",
+      "switch": "Switch",
+      "switchTo": "Switch to {{name}}"
     },
-    "create": {
-      "title": "New organization",
-      "description": "You'll become the owner of this organization and switch into it once it's created."
+    "opened": {
+      "now": "Now",
+      "never": "Never",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{{n}} days ago"
     },
-    "edit": {
-      "title": "Edit organization",
-      "description": "Slug can't be changed once an organization is created.",
-      "name": "Name",
-      "slug": "Slug",
-      "slugHelp": "Immutable after creation.",
-      "plan": "Plan",
-      "status": "Status",
-      "statusActive": "Active",
-      "statusSuspended": "Suspended",
-      "statusHelp": "Use the Delete action to soft-delete an organization.",
-      "region": "Region",
-      "cancel": "Cancel",
-      "save": "Save changes",
-      "saving": "Saving…",
-      "logo": "Logo",
-      "logoHelp": "Shown across the console. Leave empty to use an initials avatar.",
-      "planHelp": "Plan changes are made through billing.",
-      "editAction": "Edit this organization",
-      "validation": {
-        "name": "Enter a name.",
-        "nameTooLong": "Keep the name to 200 characters."
-      }
+    "empty": {
+      "title": "No organisations",
+      "description": "Organisations you belong to show here.",
+      "filteredTitle": "No organisations match",
+      "filteredDescription": "Search looks at names, URLs and domains. Try fewer filters.",
+      "clear": "Clear search and filters"
     }
   },
-  "kpi": {
-    "total": "Organizations",
-    "active": "Active",
-    "suspended": "Suspended",
-    "members": "Members",
-    "mfaMembers": "MFA-enabled members",
-    "ofTotal": "{{pct}}% of total"
-  },
-  "table": {
-    "organization": "Organization",
-    "members": "Members",
-    "withMfa": "{{n}} with MFA"
-  },
-  "rowActions": {
-    "open": "Open organization",
-    "edit": "Edit organization",
-    "suspend": "Suspend",
-    "activate": "Reactivate",
-    "delete": "Delete organization"
-  },
-  "actionLabels": {
-    "suspend": "Suspend this organization",
-    "reactivate": "Reactivate this organization"
-  },
-  "preview": {
-    "copyId": "Copy organization ID",
-    "plan": "Plan",
-    "region": "Region",
-    "members": "Members",
-    "mfaMembers": "MFA-enabled members",
-    "created": "Created",
-    "switchHint": "Switch to this organization to view members, activity, and billing.",
-    "open": "Open Org 360"
-  },
-  "suspend": {
-    "title": "Suspend this organization?",
-    "description": "Members of {{name}} won’t be able to sign in until it’s reactivated."
-  },
-  "delete": {
-    "description": "This soft-deletes {{name}} ({{slug}}). Audit history is preserved."
-  },
-  "detail": {
-    "back": "Back to organizations",
-    "notFound": "Organization not found, or you don’t have access to it.",
-    "actions": "Actions",
-    "orgId": "Org ID",
-    "tabs": {
-      "overview": "Overview",
+  "page": {
+    "notFound": "Organisation not found",
+    "notFoundDescription": "It isn't one you belong to, or it has been deleted.",
+    "backToList": "Back to organisations",
+    "edit": "Edit details",
+    "switchTo": "Switch to {{name}}",
+    "band": {
       "members": "Members",
-      "security": "Security",
+      "twoStep": "{{n}} use two-step · {{share}}%",
+      "noTwoStep": "None use two-step",
+      "withoutTwoStep": "{{n}} without two-step",
+      "role": "Your role",
+      "canDelete": "You can delete it",
+      "canDeleteAfterSwitch": "After switching, you can delete it",
+      "ownerDeletes": "Only an owner can delete it",
+      "plan": "Plan",
+      "noCharge": "No charge",
+      "switchForBilling": "Switch to see its billing",
+      "price": "{{amount}} a {{interval}} · renews {{date}}",
+      "endsOn": "{{amount}} a {{interval}} · ends {{date}}",
+      "seeBilling": "See Billing",
       "billing": "Billing",
-      "activity": "Activity"
+      "per": {
+        "month": "month",
+        "year": "year"
+      },
+      "created": "Created",
+      "createdBy": "{{date}} by {{name}}",
+      "opened": "Last opened",
+      "neverOpened": "You haven't opened it yet"
     },
-    "switchGateTitle": "Switch to view this organization",
-    "switchGateDesc": "Members, security, billing and activity for {{name}} are only available while it’s your active organization.",
-    "identity": "Identity",
-    "updated": "Last updated",
-    "membersSummary": "Members",
-    "membersSummaryDesc": "Directory size and MFA coverage.",
-    "mau": "Monthly active",
-    "mfaAdoption": "MFA adoption",
-    "overviewSwitchHint": "Switch to this organization for live analytics (active users, MFA adoption).",
-    "membersDesc": "People who belong to this organization.",
-    "membersEmpty": "No members found.",
-    "memberCols": {
-      "user": "User",
-      "roles": "Roles",
-      "mfa": "MFA"
+    "other": {
+      "title": "You're working in {{name}}",
+      "titleNoName": "You're working in another organisation",
+      "description": "Switch to {{name}} to see its people, settings and history, or to change or delete it."
     },
-    "on": "On",
-    "off": "Off",
-    "manageMembers": "Manage members",
-    "loginMethods": "Login methods",
-    "loginMethodsDesc": "Authentication methods enabled for this organization.",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "password": "Password",
-    "passkeys": "Passkeys",
-    "magicLink": "Magic link",
-    "selfReg": "Self-registration",
-    "passwordPolicy": "Password policy",
-    "minLength": "Minimum length",
-    "reqUpper": "Require uppercase",
-    "reqNumber": "Require number",
-    "reqSymbol": "Require symbol",
-    "subscription": "Subscription",
-    "noSubscription": "No active subscription.",
-    "amount": "Amount",
-    "renews": "Renews",
-    "invoices": "Invoices",
-    "noInvoices": "No invoices yet.",
-    "invoiceCols": {
-      "date": "Date",
-      "amount": "Amount"
+    "identity": {
+      "heading": "Identity",
+      "change": "Change it in Settings › General",
+      "address": "Address",
+      "addressNote": "Its organisation URL. It can't be changed.",
+      "id": "ID",
+      "copyId": "Copy the organisation ID",
+      "created": "Created {{date}}",
+      "domain": "Domain",
+      "verified": "Verified",
+      "domainNote": "{{name}} manages the accounts on @{{domain}}: no other organisation can create them.",
+      "verifiedOn": "Verified {{date}} with a DNS record",
+      "verifiedBy": "Verified with a DNS record",
+      "domains": "Domains",
+      "noDomain": "No domain yet",
+      "noDomainNote": "Verify one to manage the accounts on it.",
+      "addDomain": "Add a domain",
+      "region": "Data region",
+      "regionNote": "{{area}}. Where its data is stored.",
+      "regionNoteUnknown": "Where its data is stored.",
+      "rulerLabel": "Its data region, {{region}}, among Qeet ID's: {{all}}",
+      "rulerTitle": "Data region: {{region}}"
     },
-    "activityDesc": "Recent audit events across this organization.",
-    "activityEmpty": "No activity recorded.",
-    "auditCols": {
-      "action": "Action",
-      "resource": "Resource",
-      "ip": "IP",
-      "when": "When"
+    "regionCity": {
+      "usEast1": "N. Virginia",
+      "euWest1": "Ireland",
+      "apSouth1": "Mumbai"
+    },
+    "regionArea": {
+      "usEast1": "US East",
+      "euWest1": "Europe",
+      "apSouth1": "Asia Pacific"
+    },
+    "history": {
+      "heading": "History",
+      "note": "Changes to the organisation itself: its details, branding and sign-in rules. Each opens its full record.",
+      "all": "All activity",
+      "changes": "Changes",
+      "since": "since {{date}}",
+      "by": "By",
+      "people_one": "{{n}} person",
+      "people_other": "{{n}} people",
+      "and": " and ",
+      "namesMore": "{{names}} and {{n}} more",
+      "last": "Last change",
+      "lastNote": "{{what}}, by {{who}}",
+      "byMonth": "Changes by month",
+      "byMonthLabel": "Changes by month since {{since}}: {{months}}",
+      "monthCount_one": "{{month}}, {{n}} change",
+      "monthCount_other": "{{month}}, {{n}} changes",
+      "noChanges": "none",
+      "empty": "No changes yet.",
+      "someone": "A member",
+      "qeetId": "Qeet ID",
+      "kinds": {
+        "tenant-created": "Organisation created",
+        "tenant-updated": "Details changed",
+        "tenant-deletion-scheduled": "Deletion scheduled for {{date}}",
+        "tenant-deletion-cancelled": "Deletion called off",
+        "tenant-suspended": "Suspended",
+        "tenant-reactivated": "Reactivated",
+        "branding-updated": "Branding changed",
+        "security-policy-updated": "Sign-in rules changed",
+        "rate-limits-updated": "Rate limits changed",
+        "rate-limits-deleted": "Rate limits reset",
+        "agent-kill-switch": "Every agent stopped",
+        "user-bulk-imported": "People imported"
+      }
+    },
+    "delete": {
+      "heading": "Delete {{name}}",
+      "note_one": "It's deleted {{days}} days after you ask, and any owner can keep it until then. On that day its {{n}} person loses access and is signed out.",
+      "note_other": "It's deleted {{days}} days after you ask, and any owner can keep it until then. On that day its {{n}} people lose access and are signed out.",
+      "button": "Delete organisation",
+      "confirmTitle": "Delete {{name}}?",
+      "confirmDescription_one": "It's deleted on {{date}}, {{days}} days from now. Until then it works as usual, and any owner can keep it. On that day its {{n}} person loses access and is signed out.",
+      "confirmDescription_other": "It's deleted on {{date}}, {{days}} days from now. Until then it works as usual, and any owner can keep it. On that day its {{n}} people lose access and are signed out.",
+      "confirm": "Delete organisation",
+      "action": "Delete the organisation",
+      "scheduledTitle": "{{name}} will be deleted on {{date}}",
+      "scheduledDescription_one": "Until then it works as usual. On that day its {{n}} person loses access and is signed out. Any owner can keep it until then.",
+      "scheduledDescription_other": "Until then it works as usual. On that day its {{n}} people lose access and are signed out. Any owner can keep it until then.",
+      "keep": "Keep {{name}}",
+      "keepAction": "Keep {{name}}"
     }
-  },
-  "members": {
-    "description": "Users who are members of this organisation."
   },
   "toast": {
     "securityPolicySaved": "Security policy saved",
@@ -182,59 +207,68 @@
     "domainVerified": "Domain verified",
     "domainRemoved": "Domain removed",
     "domainUpdated": "Domain updated",
-    "organizationUpdated": "Organization updated",
-    "organizationDeleted": "Organization deleted",
+    "organizationUpdated": "Organisation updated",
     "templateSaved": "Template saved",
-    "revertedToDefault": "Reverted to default"
+    "revertedToDefault": "Reset to the default",
+    "deletionScheduled": "Deletion scheduled",
+    "deletionCancelled": "The organisation will be kept",
+    "signInAddressSaved": "Sign-in address saved"
   },
   "emails": {
-    "delivery": {
-      "tenant": "Saved templates apply to this organization's invitations and magic links.",
-      "platform": "Platform-account verification, recovery, and MFA use Qeet-managed emails. This template can be saved, previewed, and tested."
-    },
     "title": "Emails",
-    "description": "Customize your organization's email templates with your own content, language, and brand.",
+    "description": "What {{name}}'s emails say, in which languages, and how they look.",
     "list": "Email templates",
-    "listDescription": "Transactional email templates in Qeet ID.",
-    "loading": "Loading email templates",
-    "loadError": "Email templates couldn't be loaded.",
-    "empty": "No email templates available.",
+    "picker": "Template",
+    "empty": "There are no email templates.",
     "noAccess": "You don't have access to email templates.",
-    "retry": "Retry",
     "previewAll": "Preview all",
-    "test": "Test email",
-    "templateTitle": "{{name}} template",
-    "custom": "Customized",
-    "default": "Default",
-    "reset": "Reset to default",
-    "resetTitle": "Reset this email template?",
-    "resetDescription": "This removes the saved content, design overrides, and translations for this template.",
-    "resetDone": "Template reset to default.",
+    "previewAllDescription": "Every template as it would be sent now, unsaved changes included, with sample values.",
+    "test": "Send test",
     "testTitle": "Send a test email?",
-    "testDescription": "A sample of the current draft will be sent to {{email}}. It contains sample values, not real sign-in links or codes.",
+    "testDescription": "A sample of this draft goes to {{email}}, with sample values instead of real links and codes. You can send one a minute.",
     "testSend": "Send test email",
-    "testRecipient": "Send a sample to {{email}}",
-    "testUnavailable": "An email provider and a verified account email are required.",
-    "testAccepted": "Test email accepted by the mail provider.",
-    "editorTabs": "Email template editor",
+    "testRecipient": "Sends a sample of this draft to {{email}}",
+    "testUnavailable": "Test emails need an email provider, and a verified address on your account.",
+    "testAccepted": "Test email handed to the mail provider.",
+    "custom": "Customised",
+    "default": "Default",
+    "unsaved": "Unsaved",
+    "unsavedChanges": "Unsaved changes",
+    "noChanges": "No unsaved changes",
+    "reset": "Reset to default",
+    "resetTitle": "Reset {{template}} to Qeet ID's default?",
+    "resetDescriptionTenant": "Its saved text, design and translations are removed, and {{name}}'s emails of this kind go back to Qeet ID's wording.",
+    "resetDescriptionPlatform": "Its saved text, design and translations are removed. Qeet ID sends this email with its own wording either way.",
+    "resetDone": "Template reset to the default.",
+    "save": "Save template",
+    "saveAction": "Save the email template",
+    "saved": "Template saved.",
+    "discardChanges": "Discard",
+    "cancel": "Cancel",
+    "editorTabs": "Template editor",
+    "editLanguage": "Language",
     "tabs": {
       "content": "Content",
       "design": "Design",
-      "localization": "Localization",
+      "languages": "Languages",
       "advanced": "Advanced"
     },
     "fields": {
       "subject": "Subject",
-      "preheader": "Preheader (optional)",
-      "body": "Email body"
+      "preheader": "Preheader",
+      "body": "Body"
     },
-    "variables": "Variables",
-    "language": "Language: {{name}}",
-    "editLanguage": "Editing language",
+    "subjectCount_one": "{{count}} of 200 characters",
+    "subjectCount_other": "{{count}} of 200 characters",
+    "preheaderPlaceholder": "e.g. It expires in 10 minutes.",
+    "preheaderHint": "Shown after the subject in most inboxes.",
+    "variables": "Insert variable",
+    "variableSample": "Sample: {{sample}}",
+    "tenantNameSample": "the sender name, from Branding",
     "characters_one": "{{count}} character",
     "characters_other": "{{count}} characters",
     "toolbar": {
-      "label": "Email formatting",
+      "label": "Formatting",
       "format": "Paragraph style",
       "paragraph": "Paragraph",
       "heading": "Heading {{level}}",
@@ -249,348 +283,149 @@
       "code": "Code block",
       "undo": "Undo",
       "redo": "Redo",
-      "url": "URL",
+      "url": "Address",
+      "urlPlaceholder": "e.g. https://qeet.in",
+      "linkHint": "A web address, or this template's own link variable.",
+      "imageHint": "A web address: emails can't show an uploaded image.",
       "alt": "Image description",
-      "linkLabel": "Link text (optional)",
+      "linkLabel": "Link text",
       "insert": "Insert"
     },
     "design": {
-      "title": "Email design",
-      "logo": "Show organization logo",
+      "logo": "Show {{name}}'s logo",
+      "logoHint": "At the top of the email, from Branding.",
+      "logoUploaded": "Branding's logo is an uploaded image, which emails can't show, so the name shows instead.",
+      "logoNone": "Branding has no logo yet, so the name shows instead.",
       "alignment": "Header alignment",
-      "left": "Align left",
-      "center": "Align center",
-      "brand": "Brand color",
-      "manage": "Manage branding"
+      "left": "Left",
+      "center": "Centre",
+      "brand": "Brand colour",
+      "brandHint": "The bar at the top and the buttons, from Branding.",
+      "sender": "Sender name",
+      "senderHint": "From Branding. Emails come from Qeet ID's own address with this name.",
+      "changeInBranding": "Change in Branding"
     },
-    "localization": {
-      "title": "Languages",
-      "remove": "Remove {{language}} translation",
-      "addLanguage": "New language",
-      "add": "Add",
-      "default": "Default language",
-      "note": "New language variants start with your English content. Review each translation before saving."
+    "languages": {
+      "default": "Default",
+      "defaultLine": "Sent when no other language matches the person's.",
+      "line": "Sent to people whose profile language is {{language}}.",
+      "edit": "Edit",
+      "editLabel": "Edit {{language}}",
+      "makeDefault": "Make default",
+      "makeDefaultLabel": "Make default: {{language}}",
+      "remove": "Remove {{language}}",
+      "add": "Add a language",
+      "addHint": "It starts as a copy of the English text. Review it before saving.",
+      "addButton": "Add",
+      "full": "A template holds up to {{max}} languages."
     },
     "advanced": {
       "key": "Template key",
-      "text": "Plain-text alternative",
-      "html": "HTML source",
-      "safety": "Scripts, embedded forms, unsafe links, and event handlers are removed from email HTML."
+      "keyHint": "How the API names it.",
+      "text": "Plain-text version",
+      "textHint": "For inboxes that don't show HTML. Keep its link variable in it.",
+      "html": "HTML",
+      "safety": "Scripts, forms, unsafe links and event handlers are removed when it's saved."
     },
-    "legacy": "Update the email-template API to enable rich text, preheaders, and translations. Plain-text editing remains available.",
+    "legacy": "This server keeps templates as plain text: rich text, preheaders and languages need a newer email-template API.",
     "validation": {
-      "actionLink": "Keep the template's action URL variable in both the email body and plain-text alternative.",
-      "required": "Every language needs a subject and email body.",
-      "length": "Subjects and preheaders are limited to 200 characters. The template body is too large.",
-      "header": "Subjects and preheaders cannot contain line breaks.",
-      "variables": "Use only the variables listed for this template."
+      "actionLink": "Keep the template's link variable in both the body and its plain-text version.",
+      "required": "Every language needs a subject and a body.",
+      "length": "A subject or preheader is over 200 characters, or the body is too long.",
+      "header": "A subject or preheader can't contain line breaks.",
+      "variables": "Use only this template's variables."
     },
-    "previewPanel": "Email preview",
-    "livePreview": "Live preview",
-    "previewDescription": "Current draft with sample values.",
-    "previewSize": "Preview size",
+    "previewPanel": "Preview",
+    "previewSize": "Preview width",
     "desktop": "Desktop",
     "mobile": "Mobile",
     "previewTitle": "{{name}} email preview",
-    "previewAllDescription": "All templates, including your unsaved drafts, with sample values.",
-    "summary": {
-      "brand": "Organization branding",
-      "languages": "Localized content",
-      "secure": "Protected test delivery"
+    "preview": {
+      "title": "Preview",
+      "now": "now",
+      "noSubject": "(no subject)",
+      "noPreheader": "No preheader: inboxes show the first line of the body.",
+      "linksTitle": "Links in this email",
+      "linksHint": "Links don't open in the preview; check where each goes here.",
+      "noLinks": "No links."
     },
-    "localeCount_one": "{{count}} language configured",
-    "localeCount_other": "{{count}} languages configured",
-    "selfOnly": "Test messages go only to your verified email.",
-    "cancel": "Cancel",
-    "save": "Save template",
-    "saving": "Saving...",
-    "saved": "Email template saved.",
-    "unsaved": "Unsaved changes",
-    "noChanges": "No unsaved changes",
-    "leaveTitle": "Discard email changes?",
-    "leaveDescription": "You have unsaved template changes. Leave this page without saving?",
-    "keepEditing": "Keep editing",
-    "discard": "Discard and leave",
+    "delivery": {
+      "tenant": "Once it's saved, this is what {{name}}'s people get.",
+      "platform": "Qeet ID sends this one with its own wording for now. You can still save, preview and test yours."
+    },
     "leave": {
       "title": "Discard template changes?",
       "description": "Your unsaved changes will be lost when you leave this page.",
       "stay": "Keep editing",
       "discard": "Discard and leave"
     },
-    "preview": {
-      "now": "now",
-      "noSubject": "(no subject)",
-      "noPreheader": "No preheader — the client will fall back to the first line of the body.",
-      "linksTitle": "Links in this email",
-      "linksHint": "Links are inert in the preview. Check each destination here.",
-      "noLinks": "This template contains no links."
-    },
     "sample": {
       "ttl": "10 minutes",
-      "tenantName": "Your organization"
-    }
-  },
-  "workspace": {
-    "general": {
-      "description": "Manage your organization profile, plan, region, and identity settings.",
-      "profile": {
-        "title": "Organization profile",
-        "description": "Basic information about your organization. This is visible to members of your organization.",
-        "slug": "Slug",
-        "slugHelp": "Immutable. Used in organization URLs and SCIM/SAML metadata.",
-        "name": "Organization name",
-        "plan": "Plan",
-        "region": "Region",
-        "status": "Status",
-        "statusActive": "Active",
-        "statusSuspended": "Suspended",
-        "statusHelp": "Suspending blocks new logins for everyone in this organization.",
-        "nameHelp": "This name will be shown across the console to your team members.",
-        "slugTooltip": "Set when the organization was created and cannot be changed.",
-        "logo": "Logo",
-        "logoTitle": "Organization logo",
-        "logoHint": "A square image works best. Recommended size is 512 × 512px.",
-        "planHelp": "Your current plan. Manage your plan in",
-        "planHelpLink": "billing",
-        "regionHelp": "Determines where your organization's data is stored."
-      },
-      "tenantId": {
-        "title": "Organization identity",
-        "description": "Technical details about your organization.",
-        "created": "Created",
-        "idLabel": "Organization ID",
-        "copy": "Copy organization ID",
-        "copied": "Organization ID copied"
-      },
-      "footer": {
-        "unsaved": "Unsaved changes",
-        "reset": "Reset",
-        "save": "Save changes",
-        "saving": "Saving…",
-        "unsavedDetail": "You have made changes to this page."
-      },
-      "tagline": "Secure identity for modern teams.",
-      "actionLabel": "Save your organization details",
-      "notes": {
-        "title": "Operational notes",
-        "description": "Important things to know about your organization settings.",
-        "slug": {
-          "title": "Slug is immutable",
-          "detail": "Your organization slug cannot be changed after creation as it's used in URLs and SSO metadata."
-        },
-        "region": {
-          "title": "Region impacts data residency",
-          "detail": "Your region determines where your organization's data is stored and processed."
-        },
-        "status": {
-          "title": "Status controls access",
-          "detail": "Suspending your organization will block new logins for everyone, but keep existing sessions active."
-        }
-      },
-      "validation": {
-        "name": "Enter the organization's name."
-      },
-      "suspend": {
-        "title": "Suspend this organization?",
-        "description": "No one in {{name}} can sign in until it is reactivated, including you.",
-        "confirm": "Suspend"
-      }
+      "tenantName": "Your organisation"
     },
-    "domains": {
-      "description": "Prove ownership of domains your members use, and — on paid plans — serve the hosted login from your own URL.",
-      "tabs": {
-        "verified": "Verified domains",
-        "custom": "Custom login domain"
+    "catalogue": {
+      "verify_email": {
+        "name": "Email verification",
+        "description": "Sent when someone verifies their email address."
       },
-      "custom": {
-        "bannerTitle": "Custom hosted login in progress",
-        "bannerDetail": "You're setting up a custom login domain for your organization. Complete the DNS setup below to enable Sign in at",
-        "bannerPending": "DNS pending",
-        "bannerActive": "Active",
-        "bannerNone": "Not configured",
-        "bannerSub": "DNS records added · Waiting for verification",
-        "bannerNote": "This usually takes a few minutes, but can take up to 24 hours.",
-        "title": "Custom login domain",
-        "detail": "Use your own domain for hosted login pages (e.g. auth.acme.com). One domain per organization. Leave blank to use the default Qeet ID-hosted URL.",
-        "label": "Login domain",
-        "placeholder": "auth.acme.com",
-        "hint": "This will be used for your organization's hosted login, e.g.",
-        "steps": {
-          "title": "Setup steps",
-          "1": {
-            "title": "Enter hostname",
-            "detail": "Add your login domain above."
-          },
-          "2": {
-            "title": "Configure DNS",
-            "detail": "Add CNAME and TXT records."
-          },
-          "3": {
-            "title": "TLS provisioning",
-            "detail": "We'll issue a certificate (after DNS is verified)."
-          },
-          "4": {
-            "title": "Validate routing",
-            "detail": "We'll confirm everything is working."
-          }
-        },
-        "records": {
-          "title": "Required DNS records",
-          "detail": "Add these records to your DNS provider. Records may take a few minutes to propagate.",
-          "guide": "View setup guide",
-          "copy": "Copy",
-          "copied": "Copied",
-          "note": "Keep these records in place. They're used to verify domain ownership and enable automatic certificate provisioning.",
-          "none": "Add a login domain above to see the records you need to publish."
-        },
-        "provisioning": {
-          "title": "Provisioning status",
-          "inProgress": "In progress",
-          "loginDomain": "Login domain",
-          "dns": "DNS verification",
-          "tls": "TLS certificate",
-          "endpoint": "Login endpoint",
-          "pending": "Pending",
-          "verified": "Verified",
-          "tlsNotStarted": "Not started",
-          "tlsPending": "In progress",
-          "endpointNone": "Not available",
-          "endpointNoneDetail": "Will be enabled after provisioning completes.",
-          "complete": "Complete",
-          "notStarted": "Not started",
-          "tlsIssued": "Issued",
-          "endpointLive": "Live"
-        },
-        "helpful": {
-          "title": "Helpful information",
-          "q1": {
-            "title": "How long does this take?",
-            "detail": "DNS verification usually takes a few minutes, but can take up to 24 hours depending on your DNS provider."
-          },
-          "q2": {
-            "title": "Is this secure?",
-            "detail": "Yes. We automatically provision and renew TLS certificates using industry-standard automation (ACME)."
-          },
-          "q3": {
-            "title": "Need help?",
-            "detail": "See the step-by-step guide or contact our support team.",
-            "cta": "View setup guide"
-          }
-        },
-        "footerNote": "For colors and logo, see",
-        "footerBranding": "Branding",
-        "verifyDns": "Verify DNS",
-        "verifying": "Checking…",
-        "save": "Save changes",
-        "saving": "Saving…",
-        "guide": "View setup guide",
-        "bannerLiveTitle": "Custom hosted login is live",
-        "bannerLiveDetail": "People in your organization sign in at"
+      "password_reset": {
+        "name": "Password reset",
+        "description": "Sent when someone asks to reset their password."
       },
-      "help": {
-        "title": "Need help?",
-        "detail": "Follow our domain verification guide.",
-        "cta": "View documentation"
+      "magic_link": {
+        "name": "Magic link",
+        "description": "A one-time link that signs someone in without a password."
       },
-      "kpis": {
-        "verified": "Verified domains",
-        "verifiedHint": "Domains ready to use",
-        "pending": "Pending verification",
-        "pendingHint": "Awaiting DNS verification",
-        "attention": "Attention required",
-        "attentionHint": "Needs your attention",
-        "default": "Default domain",
-        "defaultHint": "Used for Qeet ID links"
+      "invite": {
+        "name": "Invitation",
+        "description": "Sent when someone is invited to join the organisation."
       },
-      "add": {
-        "title": "Add a domain",
-        "detail": "Enter the email domain your members use, e.g. acme.com. We'll add a DNS TXT record for verification.",
-        "placeholder": "example.com",
-        "submit": "Add domain",
-        "submitting": "Adding…"
-      },
-      "table": {
-        "title": "Domains",
-        "subtitle": "Manage and monitor your domains. Verify domains to enable organization SSO and just-in-time provisioning.",
-        "search": "Search domains...",
-        "domain": "Domain",
-        "status": "Verification status",
-        "sso": "SSO eligible",
-        "jit": "JIT provisioning",
-        "lastChecked": "Last checked",
-        "actions": "Actions",
-        "default": "Default",
-        "yes": "Yes",
-        "no": "No",
-        "never": "Never checked",
-        "statusVerified": "Verified",
-        "statusPending": "Pending DNS",
-        "statusAttention": "Attention required",
-        "empty": "No domains yet. Add one above to get started.",
-        "verify": "Verify now",
-        "makeDefault": "Make default",
-        "toggleSso": "Toggle SSO eligibility",
-        "toggleJit": "Toggle JIT provisioning",
-        "remove": "Remove domain"
-      },
-      "remove": {
-        "title": "Remove this domain?",
-        "description": "{{domain}} will no longer route sign-ins to single sign-on or provision people just in time. To use it again, add it and verify it again."
-      },
-      "actionLabels": {
-        "add": "Add a domain",
-        "settings": "Change this domain's settings"
-      },
-      "how": {
-        "title": "How domain verification works",
-        "detail": "We add a DNS TXT record to your domain to verify ownership. After verification, you can enable organization SSO and, on paid plans, use a custom login domain.",
-        "cta": "View documentation"
+      "mfa_otp": {
+        "name": "Two-step code",
+        "description": "A one-time code for a second step, by email or text message."
       }
     }
-  },
-  "customLoginDomainTab": {
-    "loginDomainSaved": "Login domain saved"
   },
   "nav": {
     "directory": {
       "organizations": {
-        "title": "Organizations",
-        "description": "Organization boundaries, plans and regions."
+        "title": "Organisations",
+        "description": "The organisations you belong to, and your role in each."
       }
     },
     "settings": {
       "general": {
         "title": "General",
-        "description": "Organization name, profile and defaults."
+        "description": "The organisation's name, logo and profile."
       },
       "domains": {
         "title": "Domains",
-        "description": "Verified domains and the custom login URL."
+        "description": "Email domains, and the address people sign in at."
       },
       "emails": {
         "title": "Emails",
-        "description": "Customize transactional email templates."
+        "description": "What the organisation's emails say, and in which languages."
       },
       "security": {
         "title": "Security",
-        "description": "Org-wide security and session policy."
+        "description": "Sign-in rules for everyone in the organisation."
       }
     }
   },
   "commands": {
     "createOrganization": {
-      "title": "Create Organization",
+      "title": "Create organization",
       "subtitle": "Add a new organization or sub-organization",
       "keywords": "add org, new organization, create organization, new tenant, create tenant"
     },
     "organizationSettings": {
-      "title": "Organization Settings",
+      "title": "Organization settings",
       "subtitle": "General, domains, security policy",
       "keywords": "settings, organization, general, config"
     }
   },
   "shortcuts": {
-    "organizations": "Organizations",
+    "organizations": "Organisations",
     "organizationSettings": "Organization settings"
   },
   "qeetaiSuggestions": {
@@ -604,7 +439,295 @@
       "explainSecurity": "Explain the current authentication policy and its security implications."
     }
   },
-  "domains": {
-    "description": "Prove ownership of your email domains to enable organization SSO and just-in-time provisioning. Add a DNS TXT record, then verify."
+  "settings": {
+    "loading": "Loading",
+    "loadFailed": "This didn't load",
+    "tryAgain": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "add": "Add",
+    "change": "Change",
+    "close": "Close",
+    "yourOrganisation": "your organisation",
+    "dns": {
+      "type": "Type",
+      "name": "Name",
+      "value": "Value",
+      "copyName": "Copy the {{type}} record's name",
+      "copyValue": "Copy the {{type}} record's value"
+    },
+    "general": {
+      "title": "General",
+      "description": "{{name}}'s name, logo and profile, and what was set when it was created.",
+      "descriptionNoName": "Your organisation's name, logo and profile, and what was set when it was created.",
+      "planLine": "{{plan}} plan",
+      "actionLabel": "Change your organisation's details",
+      "logo": {
+        "add": "Add a logo",
+        "change": "Change logo",
+        "remove": "Remove",
+        "notImage": "Choose an image: a PNG, JPEG, WebP or GIF.",
+        "tooLarge": "Choose an image under 8 MB.",
+        "unreadable": "That image couldn't be read. Try another."
+      },
+      "details": {
+        "title": "Details",
+        "description": "How {{name}} appears to the people in it.",
+        "name": "Name",
+        "nameHint": "In the top bar, the organisation picker and invitations to join it.",
+        "nameRequired": "Enter a name."
+      },
+      "profile": {
+        "industry": "Industry",
+        "industryHint": "Shown under its name on its organisation page, with where it's based and its website.",
+        "industryPlaceholder": "e.g. Software",
+        "headquarters": "Headquarters",
+        "headquartersHint": "A city and country, such as Mumbai, India.",
+        "headquartersPlaceholder": "e.g. Mumbai, India",
+        "website": "Website",
+        "websiteHint": "Its public site, linked from its organisation page.",
+        "websitePlaceholder": "e.g. https://qeet.in",
+        "websiteInvalid": "Enter a web address, such as https://qeet.in.",
+        "notSet": "Not set"
+      },
+      "about": {
+        "title": "About this organisation",
+        "slug": "Slug",
+        "slugHint": "Its unique short name, set when {{name}} was created. It can't be changed.",
+        "region": "Data region",
+        "regionHint": "Chosen when {{name}} was created. It can't be changed.",
+        "plan": "Plan",
+        "manageBilling": "Manage billing",
+        "created": "Created",
+        "id": "Organisation ID",
+        "idHint": "Use it in the API, or quote it to support.",
+        "copyId": "Copy",
+        "copyIdLabel": "Copy the organisation ID"
+      }
+    },
+    "domains": {
+      "title": "Domains",
+      "description": "Prove {{name}} owns its email domains, and choose the address its people sign in at.",
+      "docs": "How verification works",
+      "email": {
+        "title": "Email domains",
+        "description": "{{name}} manages the accounts on a domain it verifies: its single sign-on and directories can create them there, and no other organisation can.",
+        "add": "Add domain",
+        "none": "No domains yet",
+        "noneLine": "Verify one, and {{name}} manages the accounts on it.",
+        "noAccess": "Seeing this organisation's domains needs permission to read its connections."
+      },
+      "status": {
+        "verified": "Verified",
+        "pending": "Not verified",
+        "attention": "Check failed"
+      },
+      "row": {
+        "verified": "Verified {{date}}",
+        "pending": "Waiting for its TXT record to be checked",
+        "manage": "Manage",
+        "manageLabel": "Manage {{domain}}"
+      },
+      "failure": {
+        "notFound": "The last check didn't find its TXT record.",
+        "lookup": "The last check couldn't look up its DNS.",
+        "other": "The last check failed."
+      },
+      "panel": {
+        "verified": "Verified {{date}} with the TXT record below. {{name}} manages the accounts on @{{domain}} and the domains under it.",
+        "pending": "Publish this TXT record at your DNS provider, then check it. Qeet ID checks only when you ask.",
+        "attention": "Checked {{date}}. {{reason}} DNS changes can take a while to show: check again once it's published.",
+        "recordVerified": "Qeet ID checked it once, when the domain was verified.",
+        "recordPending": "Some DNS providers want only the name's first part, _qeet-verification, and add {{domain}} themselves.",
+        "check": "Check now",
+        "remove": "Remove domain"
+      },
+      "remove": {
+        "actionLabel": "Remove a domain",
+        "title": "Remove {{domain}}?",
+        "descriptionVerified": "{{name}} stops managing the accounts on @{{domain}}: its single sign-on and directories can't create new ones there, and other organisations can. People who already have accounts keep them.",
+        "descriptionPending": "{{domain}} isn't verified, so no one's account changes. To verify it later, add it again and publish its new record.",
+        "confirm": "Remove domain"
+      },
+      "add": {
+        "title": "Add a domain",
+        "description": "Next, you'll publish a TXT record at your DNS provider to prove {{name}} owns it.",
+        "label": "Domain",
+        "placeholder": "e.g. qeet.co.in",
+        "hint": "The part after the @ in your people's email addresses.",
+        "invalid": "Enter a domain, such as qeet.co.in.",
+        "submit": "Add domain",
+        "actionLabel": "Add a domain"
+      },
+      "address": {
+        "title": "Sign-in address",
+        "description": "{{name}}'s people sign in at Qeet ID's own address. Give it one of yours instead, such as {{example}}.",
+        "descriptionSet": "{{name}}'s people sign in at https://{{host}} once it's live.",
+        "exampleDomain": "example.com",
+        "noAccess": "Seeing the sign-in address needs permission to read this organisation's connections.",
+        "status": {
+          "none": "Not set up",
+          "pending": "Setting up",
+          "active": "Live"
+        },
+        "yours": "Your own sign-in address",
+        "line": {
+          "not_configured": "Not set up",
+          "pending": "Setting up: its records, its certificate, then its first answer",
+          "active": "Live: people sign in here"
+        },
+        "setUp": "Set up",
+        "manage": "Manage",
+        "setUpTitle": "Set up a sign-in address",
+        "panel": {
+          "new": "One per organisation. You can remove it later to go back to Qeet ID's address.",
+          "not_configured": "One per organisation. You can remove it later to go back to Qeet ID's address.",
+          "pending": "Each time this page loads, Qeet ID checks every step again.",
+          "active": "{{name}}'s people sign in at https://{{host}}."
+        },
+        "label": "Address",
+        "placeholder": "e.g. auth.qeet.in",
+        "hint": "A subdomain of a domain you control.",
+        "invalid": "Enter an address, such as auth.qeet.in.",
+        "noBranding": "Branding didn't load, so the address can't be saved yet. Try again.",
+        "steps": {
+          "records": {
+            "label": "Publish two DNS records",
+            "todo": "A CNAME that points it at Qeet ID, and a TXT that proves it's yours. They show here once it's saved.",
+            "done": "Both records found."
+          },
+          "certificate": {
+            "label": "Certificate issued",
+            "todo": "Issued automatically once the records are found.",
+            "done": "Its HTTPS certificate is in place."
+          },
+          "live": {
+            "label": "Live",
+            "todo": "Qeet ID checks it answers over HTTPS, then people sign in there.",
+            "done": "People sign in at https://{{host}}."
+          }
+        },
+        "recordsNote": "DNS changes can take a while to show. Check again once both are published.",
+        "check": "Check again",
+        "change": "Change address",
+        "save": "Save address",
+        "remove": {
+          "button": "Remove address",
+          "actionLabel": "Remove the sign-in address",
+          "title": "Stop using {{host}}?",
+          "description": "{{name}}'s people sign in at Qeet ID's own address again, and https://{{host}} no longer signs them in.",
+          "confirm": "Remove address"
+        }
+      }
+    },
+    "security": {
+      "title": "Security",
+      "description": "The sign-in rules for everyone in {{name}}. Your own two-step verification is in <account>My account</account>.",
+      "actionLabel": "Change the security policy",
+      "duration": {
+        "days_one": "{{count}} day",
+        "days_other": "{{count}} days",
+        "hours_one": "{{count}} hour",
+        "hours_other": "{{count}} hours",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes"
+      },
+      "mfa": {
+        "title": "Two-step verification",
+        "description": "Whether people need a second step when they sign in. Someone an administrator marks as needing one must use it whatever this says.",
+        "badge": {
+          "optional": "Optional",
+          "required": "Everyone",
+          "admin_only": "Administrators"
+        },
+        "who": "Who needs it",
+        "value": {
+          "optional": "No one: only people who set one up",
+          "required": "Everyone",
+          "admin_only": "Administrators only"
+        },
+        "coverage": "{{n}} of {{total}} people have set one up.",
+        "graceRunning": "Turned on {{since}}; people who were members then have until {{until}} to set one up.",
+        "since": "Turned on {{since}}.",
+        "editTitle": "Change who needs two-step verification",
+        "editDescription": "Anyone who needs it and has none sets one up when they next sign in, or once their days run out.",
+        "mode": {
+          "required": "Everyone",
+          "admin_only": "Administrators only",
+          "optional": "No one"
+        },
+        "recommended": "Recommended",
+        "choice": {
+          "required": "Everyone sets one up before they get in.",
+          "requiredCount_one": "Everyone sets one up before they get in: {{count}} person hasn't yet.",
+          "requiredCount_other": "Everyone sets one up before they get in: {{count}} people haven't yet.",
+          "admin_only": "People whose roles let them change anything must use one; others may.",
+          "optional": "Only people who set one up are asked for it."
+        },
+        "days": "Days to set it up",
+        "daysHint": "For people who were members when it was turned on: until then they can sign in without one, and 0 asks them at their next sign-in. New members set one up at their first.",
+        "daysUnit": "days"
+      },
+      "passwords": {
+        "title": "Passwords",
+        "description": "The rules a password must meet are set, and enforced, in Sign-in › Password.",
+        "rules": "Password rules",
+        "open": "Open password rules",
+        "lineUnknown": "Its length, and the characters it needs",
+        "off": "Passwords are turned off: people sign in another way.",
+        "length_one": "At least {{count}} character",
+        "length_other": "At least {{count}} characters",
+        "lengthWith": "{{length}}, with {{needs}}",
+        "upper": "an upper-case letter",
+        "number": "a number",
+        "symbol": "a symbol"
+      },
+      "sessions": {
+        "title": "Sessions",
+        "description": "Changes apply to sessions that start after them; open ones keep the lifetime they started with.",
+        "maxAge": "Longest session",
+        "maxAgeHint": "However active they are, people sign in again after this, in apps too.",
+        "idle": "Idle timeout",
+        "idleHint": "A session unused for this long ends. It can't outlast the longest session.",
+        "perPerson": "Sessions per person",
+        "perPersonHint": "How many places one person can be signed in at once.",
+        "noLimit": "No limit",
+        "atMost": "At most {{n}}",
+        "atLimitEvict": "At the limit, a new sign-in ends their least recently used session.",
+        "atLimitRefuse": "At the limit, a new sign-in is refused.",
+        "limitTitle": "Change sessions per person",
+        "limitDescription": "A limit on the sessions each person has open at once.",
+        "limit": "Most sessions",
+        "limitHint": "From 1 to 1,000. Leave it empty for no limit.",
+        "atLimit": "When someone reaches it",
+        "evict": "End their least recently used session",
+        "refuse": "Refuse the new sign-in"
+      },
+      "stepUp": {
+        "title": "Confirming sensitive actions",
+        "description": "Before changing factors, keys, secrets, sign-in settings or roles, people confirm with a second step again.",
+        "window": "A confirmation lasts",
+        "windowHint": "In the session it was made in; signing out ends it.",
+        "factors": "Factors that count",
+        "all": "All {{n}}",
+        "some": "{{n}} of {{total}}",
+        "factorsTitle": "Change the factors that count",
+        "factorsDescription": "A second step with any of these confirms a sensitive action. At least one stays.",
+        "method": {
+          "webauthn": "Passkey",
+          "totp": "Authenticator app",
+          "recovery_code": "Recovery code",
+          "otp": "Email or text-message code",
+          "push": "Push approval"
+        }
+      },
+      "network": {
+        "title": "Network access",
+        "rules": "IP rules",
+        "line": "Which networks can sign in to {{name}} is set by its IP rules.",
+        "open": "Open IP rules"
+      }
+    }
   }
 }

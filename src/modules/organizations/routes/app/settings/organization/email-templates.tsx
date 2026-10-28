@@ -6,6 +6,7 @@ import { EmailTemplatesPage } from "@/modules/organizations/pages";
 import { UnsavedChangesGuard } from "@/shared/components/unsaved-changes-guard";
 
 export const Route = createFileRoute("/_app/settings/organization/email-templates")({
+  // Rebuilt on @qeetrix/react: the page draws its own header.
   staticData: { capability: "branding.write" },
   component: EmailTemplatesRoute,
 });

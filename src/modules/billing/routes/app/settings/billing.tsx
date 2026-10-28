@@ -4,7 +4,8 @@ import { z } from "zod";
 import { BillingSettingsPage } from "@/modules/billing/pages";
 import { searchEnum, searchText } from "@/shared/utils/search-params";
 
-// A plan link preselects the plan and interval; the payment provider returns with `checkout`.
+// A plan link opens Change plan on the plan and cycle; the payment provider returns with
+// `checkout`. Rebuilt on @qeetrix/react: the page draws its own header.
 const billingSearch = z.object({
   plan: searchText(),
   interval: searchEnum(["month", "year"]),

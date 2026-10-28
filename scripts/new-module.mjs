@@ -82,45 +82,47 @@ export function use${P}() {
   return useQuery(${c}Queries.list(useTenantId()));
 }
 `,
-    [`components/${id}-page.tsx`]: `import { Card, CardContent } from "@qeetrix/ui";
-import { LayoutGridIcon } from "@qeetrix/icons";
+    [`components/${id}-page.tsx`]: `import { LayoutGridIcon } from "@qeetrix/icons";
+import { Table, type TableColumn } from "@qeetrix/react";
+import { DataState, EmptyState, PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { useTranslation } from "react-i18next";
 
-import { DataState } from "@/platform/components/data-state";
-import { PageHeader } from "@/platform/components/page-header";
+import { PageBreadcrumb } from "@/modules/dashboard";
 
-import { use${P} } from "../api/${id}";
+import { use${P}, type ${P}Item } from "../api/${id}";
 
-/** Renders the ${id} list. */
+/** The ${id} list: the library PageHeader and Table, token-only CSS (see a rebuilt list page). */
 export function ${P}Page() {
   const { t } = useTranslation("${id}");
   const listQ = use${P}();
   const items = listQ.data?.items ?? [];
+  const columns: TableColumn<${P}Item>[] = [
+    { id: "name", header: t("page.name"), cell: (item) => item.name },
+  ];
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader title={t("page.title")} description={t("page.description")} />
-      <Card>
-        <CardContent className="p-0">
-          <DataState
-            isLoading={listQ.isLoading}
-            isError={listQ.isError}
-            error={listQ.error}
-            isEmpty={items.length === 0}
-            emptyIcon={LayoutGridIcon}
-            emptyTitle={t("page.empty")}
-          >
-            <ul className="divide-y">
-              {items.map((item) => (
-                <li key={item.id} className="px-4 py-3 text-sm">
-                  {item.name}
-                </li>
-              ))}
-            </ul>
-          </DataState>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <PageHeader
+        breadcrumb={<PageBreadcrumb />}
+        title={t("page.title")}
+        description={t("page.description")}
+      />
+      <PageContent>
+        {listQ.isError ? (
+          <DataState error={listQ.error} onRetry={() => listQ.refetch()} />
+        ) : (
+          <Table<${P}Item>
+            label={t("page.title")}
+            rows={items}
+            rowId={(item) => item.id}
+            rowLabel={(item) => item.name}
+            columns={columns}
+            loading={listQ.isLoading}
+            empty={<EmptyState icon={LayoutGridIcon} title={t("page.empty")} />}
+          />
+        )}
+      </PageContent>
+    </>
   );
 }
 `,
@@ -137,7 +139,8 @@ export const Route = createFileRoute("/_app/${id}")({
         nav: { title: title(id) },
         page: {
           title: title(id),
-          description: `Everything about ${title(id).toLowerCase()} in this organization.`,
+          description: `Everything about ${title(id).toLowerCase()} in this organisation.`,
+          name: "Name",
           empty: `No ${title(id).toLowerCase()} yet.`,
         },
       },

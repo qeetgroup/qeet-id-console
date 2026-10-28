@@ -1,25 +1,42 @@
-import { Card, CardContent, EmptyState } from "@qeetrix/ui";
-import { BotIcon } from "@qeetrix/icons";
+import { BotIcon, WebhookIcon, ZapIcon } from "@qeetrix/icons";
+import { Button } from "@qeetrix/react";
+import { EmptyState, PageContent, PageHeader } from "@qeetrix/react/experimental";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/platform/components/page-header";
+import { PageBreadcrumb } from "@/modules/dashboard";
 
-// A placeholder until the automations backend exists: no fake data and no dead controls.
-/** Renders the automations placeholder until their backend exists. */
+/**
+ * Developer › Bots: the server has no automations yet, so the page is off the sidebar and says so
+ * for an old link, pointing at what does the job today: webhooks and auth hooks.
+ */
 export function BotsPage() {
   const { t } = useTranslation("developer");
   return (
-    <div className="flex min-w-0 flex-col gap-6">
-      <PageHeader description={t("bots.description")} />
-      <Card>
-        <CardContent className="py-16">
-          <EmptyState
-            icon={BotIcon}
-            title={t("bots.comingSoon.title")}
-            description={t("bots.comingSoon.description")}
-          />
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <PageHeader
+        breadcrumb={<PageBreadcrumb />}
+        title={t("bots.title")}
+        description={t("bots.description")}
+      />
+      <PageContent>
+        <EmptyState
+          icon={BotIcon}
+          level={2}
+          title={t("bots.empty.title")}
+          description={t("bots.empty.description")}
+          actions={
+            <>
+              <Button variant="soft" icon={WebhookIcon} render={<Link to="/developer/webhooks" />}>
+                {t("bots.empty.webhooks")}
+              </Button>
+              <Button variant="ghost" icon={ZapIcon} render={<Link to="/developer/auth-hooks" />}>
+                {t("bots.empty.authHooks")}
+              </Button>
+            </>
+          }
+        />
+      </PageContent>
+    </>
   );
 }

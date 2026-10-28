@@ -1,7 +1,8 @@
-import { cn } from "@qeetrix/ui";
 import { Trans } from "react-i18next";
 
 import { errorMessage, errorReference } from "@/platform/errors/user-message";
+
+import "./error-reference.css";
 
 /**
  * Renders a failed request's support reference, the id the backend logged it under, or nothing
@@ -11,12 +12,12 @@ export function ErrorReference({ error, className }: { error: unknown; className
   const requestId = errorReference(error);
   if (!requestId) return null;
   return (
-    <span className={cn("block text-xs text-muted-foreground", className)}>
+    <span className={className ? `error-reference ${className}` : "error-reference"}>
       <Trans
         ns="errors"
         i18nKey="referenceLabel"
         values={{ id: requestId }}
-        components={{ id: <span className="select-all font-mono" /> }}
+        components={{ id: <span className="error-reference-id" /> }}
       />
     </span>
   );
@@ -27,7 +28,7 @@ export function ErrorText({ error }: { error: unknown }) {
   return (
     <>
       {errorMessage(error)}
-      <ErrorReference error={error} className="mt-1" />
+      <ErrorReference error={error} className="error-reference-after" />
     </>
   );
 }

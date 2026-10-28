@@ -1,4 +1,4 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
 import { formatLocale, humanizeMissingKey } from "@/i18n";
 import { api } from "@/platform/api/client";
@@ -91,35 +91,12 @@ export interface BillingProfile {
   tax_id: string;
 }
 
-/** Starts a no-card trial of a paid tier; only an org with no subscription yet is eligible. */
-export function useStartTrial() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: { plan_code: string; currency: string }) =>
-      api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "billing:toast.trialStarted", silentError: true },
-  });
-}
-
 export function useBillingProfile(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: billingKeys.profile(tenantId),
     enabled: !!tenantId && enabled,
     queryFn: () => api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`),
-  });
-}
-
-export function useSaveBillingProfile() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: BillingProfile) =>
-      api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.profile(tenantId) }),
-    meta: { successMessage: "billing:toast.billingProfileSaved", silentError: true },
   });
 }
 
@@ -178,73 +155,10 @@ export function useInvoices(enabled = true) {
   });
 }
 
-export function useChangePlan() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: { plan_code: string; currency: string }) =>
-      api<Subscription>(`/v1/tenants/${tenantId}/billing/subscription`, {
-        method: "PUT",
-        body,
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "billing:toast.subscriptionUpdated", silentError: true },
-  });
-}
-
 export interface CheckoutResult {
   status: "active" | "checkout";
   checkout_url?: string;
   provider?: string;
-}
-
-/**
- * Starts a plan change. The server either activates it directly (free plan, or no card provider
- * for the currency) or returns a hosted-checkout URL, which this follows; the provider then
- * returns the admin to the billing page.
- */
-export function useCheckout() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (body: {
-      plan_code: string;
-      currency: string;
-      country?: string;
-    }): Promise<CheckoutResult> => {
-      const base = `${window.location.origin}/settings/billing`;
-      return api<CheckoutResult>(`/v1/tenants/${tenantId}/billing/checkout`, {
-        method: "POST",
-        body: {
-          ...body,
-          success_url: `${base}?checkout=success`,
-          cancel_url: `${base}?checkout=cancelled`,
-        },
-      });
-    },
-    onSuccess: (res) => {
-      if (res.status === "checkout" && res.checkout_url) {
-        window.location.href = res.checkout_url;
-        return;
-      }
-      qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) });
-    },
-    meta: { successMessage: "billing:toast.subscriptionUpdated", silentError: true },
-  });
-}
-
-export function useCancelSubscription() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () =>
-      api<{ cancel_at_period_end: boolean }>(
-        `/v1/tenants/${tenantId}/billing/subscription/cancel`,
-        { method: "POST" },
-      ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
-    meta: { successMessage: "billing:toast.subscriptionWillCancelAt", silentError: true },
-  });
 }
 
 export type BillingInterval = "month" | "year";
@@ -285,4 +199,19 @@ export function startSignupCheckout(input: {
       cancel_url: input.cancelUrl,
     },
   });
+}
+
+/** An Enterprise enquiry. `source` records where it was sent from, e.g. "onboarding". */
+export interface SalesLead {
+  name: string;
+  email: string;
+  company: string;
+  team_size: string;
+  message: string;
+  source: string;
+}
+
+/** Sends an enquiry the server stores and emails to sales, so none is lost to a mail client. */
+export function submitSalesLead(lead: SalesLead): Promise<{ status: string }> {
+  return api<{ status: string }>("/v1/sales/leads", { method: "POST", body: lead });
 }

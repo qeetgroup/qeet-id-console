@@ -3,6 +3,7 @@ import {
   AppWindowIcon,
   FingerprintPatternIcon,
   HandshakeIcon,
+  LinkIcon,
   LogInIcon,
   Share2Icon,
   ShieldCheckIcon,
@@ -15,24 +16,6 @@ import { defineModule } from "@/platform/modules/manifest";
 export const manifest = defineModule({
   id: "authentication",
   nav: [
-    {
-      id: "directory.scim",
-      group: "directory",
-      parent: "directory.directories",
-      order: 20,
-      title: "authentication:nav.directory.scim.title",
-      url: "/auth/connections/scim",
-      capability: "connection.read",
-    },
-    {
-      id: "directory.ldapAd",
-      group: "directory",
-      parent: "directory.directories",
-      order: 30,
-      title: "authentication:nav.directory.ldapAd.title",
-      url: "/auth/connections/ldap",
-      capability: "connection.read",
-    },
     {
       id: "applications.applications",
       group: "applications",
@@ -109,6 +92,7 @@ export const manifest = defineModule({
       capability: "connection.read",
     },
     {
+      // SSO opens the one list of SAML sign-in connections and SAML apps, with the setup links.
       id: "authentication.sso",
       group: "authentication",
       order: 40,
@@ -176,20 +160,28 @@ export const manifest = defineModule({
     {
       id: "cmd.navigate.oauth-clients",
       text: "authentication:commands.oauthClients",
-      icon: <LogInIcon className="size-4" />,
+      icon: <LogInIcon />,
       to: "/auth/connections/oidc",
       capability: "connection.write",
     },
     {
+      // Setup links live on the SSO list, a search away.
+      id: "cmd.navigate.setup-links",
+      text: "authentication:commands.setupLinks",
+      icon: <LinkIcon />,
+      to: "/auth/connections/saml",
+      capability: "connection.read",
+    },
+    {
       id: "cmd.navigate.passkeys",
       text: "authentication:commands.passkeys",
-      icon: <FingerprintPatternIcon className="size-4" />,
+      icon: <FingerprintPatternIcon />,
       to: "/auth/login-methods/passkeys",
     },
     {
       id: "cmd.navigate.mfa",
       text: "authentication:commands.mfa",
-      icon: <ShieldCheckIcon className="size-4" />,
+      icon: <ShieldCheckIcon />,
       to: "/auth/mfa/totp",
     },
   ],
@@ -200,6 +192,7 @@ declare module "i18next" {
   interface ResourceNamespaceMap {
     "auth-flow": typeof import("./locales/en/auth-flow.json");
     authentication: typeof import("./locales/en/authentication.json");
+    connections: typeof import("./locales/en/connections.json");
     consent: typeof import("./locales/en/consent.json");
     oidc: typeof import("./locales/en/oidc.json");
     saml: typeof import("./locales/en/saml.json");

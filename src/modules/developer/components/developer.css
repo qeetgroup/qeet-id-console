@@ -1,0 +1,643 @@
+/*
+ * Developer: Machine access, Secrets, Signing keys, Verifiable credentials, Webhooks (list and
+ * page), Auth hooks, Infrastructure. Placement and token values only (--qx-*). The band, toolbar and
+ * filters are the Users page's (people.css, loaded with the console's styles); this file adds the
+ * cells, the record sections and the small pictures.
+ */
+
+.dev-page {
+  min-inline-size: 0;
+}
+
+.dev-subtle {
+  color: var(--qx-color-text-subtle);
+}
+
+.dev-nowrap {
+  white-space: nowrap;
+}
+
+.dev-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.dev-code,
+.dev-ident code,
+.dev-scopes code,
+.dev-masked {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-sm);
+}
+
+.dev-strong-code {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-md);
+  font-weight: 600;
+}
+
+.dev-code-title {
+  font: var(--qx-typography-code-md);
+}
+
+.dev-wrap {
+  overflow-wrap: anywhere;
+}
+
+.dev-masked {
+  color: var(--qx-color-text-subtle);
+  letter-spacing: 0.05em;
+}
+
+/* ── Cells: a name over its identifier; two lines; scopes as code ────────────────────────────── */
+
+.dev-name,
+.dev-two {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.dev-name strong {
+  overflow: hidden;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+  text-overflow: ellipsis;
+}
+
+.dev-ident {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+.dev-ident code {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dev-two small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dev-scopes {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-sm);
+}
+
+.dev-more {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-link);
+  font: var(--qx-typography-body-sm);
+  cursor: default;
+}
+
+.dev-more:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+.dev-inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* A legend swatch whose colour the band sets (a token, by name). */
+.dev-swatch {
+  display: inline-block;
+  flex: none;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: var(--qx-radius-sm);
+}
+
+/* A legend item or a look with nothing to open: the band's link, without the link. */
+.ppl-recency-legend .dev-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.ppl-looks .dev-look,
+.ppl-looks a[href^="#"] {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-block: 6px;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-sm);
+  text-decoration: none;
+}
+
+.ppl-looks li.is-zero .dev-look,
+.ppl-looks li.is-zero .dev-look * {
+  color: var(--qx-color-text-subtlest);
+}
+
+/* ── Drawers ──────────────────────────────────────────────────────────────────────────────── */
+
+.dev-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+}
+
+.dev-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.dev-code-area textarea,
+textarea.dev-code-area {
+  font: var(--qx-typography-code-sm);
+}
+
+.dev-events-field {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.dev-events-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.dev-result {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-gap-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-result-head {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-md);
+}
+
+/* ── Record and page sections (the Organisation page's rhythm) ─────────────────────────────── */
+
+.dev-record,
+.dev-sections {
+  display: grid;
+}
+
+/* What's true of it now, above its sections; empty when nothing is. */
+.dev-notice:not(:empty) {
+  padding-block-start: var(--qx-space-gap-lg);
+}
+
+.dev-section {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  min-inline-size: 0;
+  padding-block: var(--qx-space-layout-sm);
+}
+
+.dev-section + .dev-section,
+.dev-sections {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-sections {
+  margin-block-start: var(--qx-space-layout-sm);
+}
+
+.dev-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.dev-section-title {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-lg);
+}
+
+.dev-section-note {
+  margin: 0;
+  max-inline-size: 72ch;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.dev-quiet {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* A section's own filter, at its head's end: as wide as its words, not the head. */
+.dev-section-head > .dev-show {
+  flex: 0 0 auto;
+  inline-size: 14rem;
+}
+
+/* A record's band holds words and short numbers: one size down from a list's. */
+.dev-record-band .ppl-value {
+  font: var(--qx-typography-heading-md);
+}
+
+.dev-url {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+.dev-url code {
+  overflow-wrap: anywhere;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-code-sm);
+}
+
+/* ── Delivery health: a column a day, stacked by outcome ──────────────────────────────────── */
+
+.dev-health {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+}
+
+.dev-health-cols {
+  display: grid;
+  align-items: end;
+  gap: 3px;
+  block-size: 5rem;
+  padding-block-end: 1px;
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-dataviz-axis);
+}
+
+.dev-health-col {
+  display: flex;
+  align-items: flex-end;
+  block-size: 100%;
+}
+
+.dev-health-bar {
+  display: flex;
+  flex-direction: column-reverse;
+  inline-size: 100%;
+  min-block-size: 0;
+  max-inline-size: 1.5rem;
+  margin-inline: auto;
+}
+
+.dev-health-bar > span {
+  min-block-size: 2px;
+}
+
+.dev-health-axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-body-sm);
+}
+
+.dev-health-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-lg);
+}
+
+.dev-health-unit {
+  color: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-body-sm);
+}
+
+.dev-health-legend ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dev-health-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.dev-health-legend b {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Events it gets: an area a column, with how much of it the webhook takes ─────────────────── */
+
+.dev-areas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--qx-space-gap-lg) var(--qx-space-layout-sm);
+}
+
+.dev-area {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+}
+
+.dev-area-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-md);
+  padding-block-end: var(--qx-space-gap-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-area-name {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.dev-area-count {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.dev-area-meter,
+.dev-overlap {
+  display: block;
+  grid-column: 1 / -1;
+  block-size: 4px;
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+.dev-area-meter > span,
+.dev-overlap > span {
+  display: block;
+  block-size: 100%;
+  background: var(--qx-color-dataviz-sequential-6);
+}
+
+.dev-area-events {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dev-area-events li {
+  display: grid;
+  gap: 1px;
+}
+
+.dev-area-events small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Signing secret: two facts side by side, then the headers ──────────────────────────────── */
+
+.dev-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-fact {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+  padding: var(--qx-space-gap-lg) var(--qx-space-gap-lg) var(--qx-space-gap-lg) 0;
+}
+
+.dev-fact + .dev-fact {
+  padding-inline-start: var(--qx-space-gap-lg);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-fact p {
+  margin: 0;
+}
+
+.dev-fact-cap {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+}
+
+.dev-fact-value {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-heading-sm);
+}
+
+.dev-fact-value.is-none {
+  color: var(--qx-color-text-subtle);
+}
+
+.dev-fact-note {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.dev-overlap {
+  max-inline-size: 16rem;
+  margin-block: var(--qx-space-gap-xs);
+}
+
+.dev-headers {
+  display: grid;
+  margin: 0;
+}
+
+.dev-headers > div {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) 1fr;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-gap-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.dev-headers dd {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Signing keys: the three stages, in order ─────────────────────────────────────────────── */
+
+.dev-stages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-stage {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+  padding: var(--qx-space-gap-lg) var(--qx-space-gap-lg) var(--qx-space-gap-lg) 0;
+}
+
+.dev-stage + .dev-stage {
+  padding-inline-start: var(--qx-space-gap-lg);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dev-stage-arrow {
+  color: var(--qx-color-text-subtlest);
+}
+
+.dev-stage-what,
+.dev-stage-none {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.dev-stage.is-empty .dev-stage-none {
+  color: var(--qx-color-text-subtlest);
+}
+
+.dev-stage-keys {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dev-stage-keys li {
+  display: grid;
+  gap: 1px;
+}
+
+.dev-stage-keys code {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-md);
+}
+
+.dev-stage-keys small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Auth hooks: the call and its answer, side by side ─────────────────────────────────────── */
+
+.dev-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--qx-space-gap-lg);
+}
+
+.dev-rules {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  margin: 0;
+  list-style: disc;
+  padding-inline-start: var(--qx-space-gap-lg);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Infrastructure: each address, what it's for, and Copy ─────────────────────────────────── */
+
+.dev-endpoints {
+  display: grid;
+  margin: 0;
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-endpoint-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 10rem) 1fr auto;
+  align-items: start;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-gap-md);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.dev-endpoint-row dt {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.dev-endpoint-row dd {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.dev-endpoint-row small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* Narrow: side-by-side parts stack. */
+@media (max-width: 64rem) {
+  .dev-stages,
+  .dev-facts,
+  .dev-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dev-stage,
+  .dev-fact {
+    padding-inline: 0;
+  }
+
+  .dev-stage + .dev-stage,
+  .dev-fact + .dev-fact {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+
+  .dev-endpoint-row,
+  .dev-headers > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

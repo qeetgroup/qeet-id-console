@@ -1,0 +1,183 @@
+/*
+ * A group's page (group-page.tsx): ruled sections, the facts band in its header, and the family
+ * picture. Placement and token values only (--qx-*); the band is the Users band (people.css).
+ */
+
+/* Words, not big numbers: one size down from a list's band. */
+.grp-page-band .ppl-value {
+  font: var(--qx-typography-heading-sm);
+}
+
+.grp-page {
+  display: grid;
+}
+
+.grp-page-section {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-layout-sm);
+}
+
+.grp-page-section + .grp-page-section {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.grp-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.grp-page-title {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-lg);
+}
+
+.grp-page-count {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-md);
+}
+
+.grp-page-note,
+.grp-page-empty {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.grp-page-grant {
+  display: inline-flex;
+  gap: var(--qx-space-gap-sm);
+}
+
+.grp-page-grant-select {
+  inline-size: 14rem;
+}
+
+.grp-page-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.grp-page-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-gap-sm);
+}
+
+.grp-page-row + .grp-page-row {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.grp-page-two {
+  display: grid;
+  gap: 1px;
+}
+
+.grp-page-two small,
+.grp-page-when {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.grp-page-link {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+  text-decoration: none;
+}
+
+.grp-page-link:hover {
+  text-decoration: underline;
+}
+
+.grp-page-link:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+.grp-page-facts {
+  display: grid;
+  margin: 0;
+}
+
+.grp-page-fact {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  align-items: center;
+  padding-block: var(--qx-space-gap-sm);
+}
+
+.grp-page-fact + .grp-page-fact {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.grp-page-fact dt {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.grp-page-fact dd {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+}
+
+/* Where it sits: one data hue for people, graphite for this group, a warning ring when empty. */
+.grp-fam {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 1000px;
+  block-size: auto;
+  overflow: visible;
+}
+
+.grp-fam-link {
+  fill: none;
+  stroke: var(--qx-color-border-strong);
+  stroke-width: 1;
+}
+
+.grp-fam-dot {
+  fill: var(--qx-color-dataviz-categorical-1);
+  stroke: var(--qx-color-surface-default);
+  stroke-width: 2;
+}
+
+.grp-fam-dot.is-current {
+  fill: var(--qx-color-text-default);
+}
+
+.grp-fam-dot.is-empty {
+  fill: var(--qx-color-surface-raised);
+  stroke: var(--qx-color-dataviz-warning);
+}
+
+.grp-fam-label {
+  fill: var(--qx-color-text-default);
+  font: var(--qx-typography-body-sm);
+}
+
+.grp-fam-label.is-current {
+  font: var(--qx-typography-label-md);
+}
+
+.grp-fam-label.is-empty,
+.grp-fam-n,
+.grp-fam-none {
+  fill: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.grp-fam-node:hover .grp-fam-label {
+  text-decoration: underline;
+}
+
+.grp-fam-node:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+}

@@ -12,6 +12,21 @@ export const ERROR_CODES = {
   SESSION_REFRESH_UNAVAILABLE: "client.session_refresh_unavailable",
   INVALID_STATE: "auth.invalid_state",
   EMAIL_EXISTS: "auth.email_exists", // sign-up
+  // password reset links: each answers the reset page with a "send a new link" step
+  RESET_LINK_INVALID: "recovery.reset_link_invalid",
+  RECOVERY_LINK_USED: "recovery.link_used",
+  RECOVERY_LINK_EXPIRED: "recovery.link_expired",
+  // invitation links: a dead one says why; an existing account signs in to accept
+  INVITE_LINK_INVALID: "invite.link_invalid",
+  INVITE_INVALID: "invite.invalid",
+  INVITE_EXPIRED: "invite.expired",
+  INVITE_ACCOUNT_EXISTS: "invite.account_exists",
+  INVITE_EMAIL_MISMATCH: "invite.email_mismatch",
+  INVITE_EMAIL_NOT_VERIFIED: "invite.email_not_verified",
+  // SAML single sign-on: the one-time code from /saml/acs, exchanged on /sso/callback
+  SAML_LOGIN_CODE_INVALID: "saml.login_code_invalid",
+  SAML_LOGIN_CODE_USED: "saml.login_code_used",
+  SAML_LOGIN_CODE_EXPIRED: "saml.login_code_expired",
   // sign-in credentials and account state: several are 401s, whose `auth` fallback ("Please
   // sign in again") is wrong for each of them
   INVALID_CREDENTIALS: "auth.invalid_credentials",
@@ -49,6 +64,25 @@ export const ERROR_CODES = {
   VERIFY_EMAIL_NOT_VERIFIED: "verification.email_not_verified",
   FORBIDDEN: "auth.forbidden", // authz
   ORG_SLUG_TAKEN: "tenant.slug_taken", // a reused name derives a slug already taken
+  TENANT_OWNER_ONLY: "tenant.owner_only", // deleting an organisation, or calling it off
+  TENANT_DELETION_SCHEDULED: "tenant.deletion_scheduled", // its deletion is already scheduled
+  TENANT_DELETION_NOT_SCHEDULED: "tenant.deletion_not_scheduled", // nothing to call off
+  GROUP_NAME_EXISTS: "group.name_exists", // a group's name is unique in its organisation
+  GROUP_CYCLE: "group.cycle", // a group can't sit inside itself or its own groups
+  GROUP_TEMPLATE_NAME_EXISTS: "group.template_name_exists", // a template's name is unique too
+  // ABAC policies: the policy editor puts each on the field it names, or says why it can't save
+  ABAC_NAME_REQUIRED: "abac.name_required",
+  ABAC_RESOURCE_TYPE_REQUIRED: "abac.resource_type_required",
+  ABAC_ACTION_REQUIRED: "abac.action_required",
+  ABAC_CONDITION_INVALID: "abac.condition_invalid",
+  ABAC_POLICY_NAME_EXISTS: "abac.policy_name_exists",
+  ABAC_POLICY_LOCKS_OUT: "abac.policy_locks_out", // a deny that would stop its author changing policies
+  REBAC_OBJECT_INVALID: "rebac.object_invalid", // relationships: an object is "type:id"
+  REBAC_SUBJECT_INVALID: "rebac.subject_invalid", // "user:<id>", "type:id" or "type:id#relation"
+  REBAC_RELATION_REQUIRED: "rebac.relation_required",
+  RBAC_ROLE_NAME_EXISTS: "rbac.role_name_exists", // 409: a role's name is unique, ignoring case
+  RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: a permission or key scope the caller lacks; metadata names it
+  RBAC_SYSTEM_ROLE_FIXED: "rbac.system_role_fixed", // 403: the owner role's permissions are fixed
   BILLING_PLAN_LIMIT: "billing.plan_limit", // billing entitlements
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
   MFA_CODE_INVALID: "mfa.code_invalid", // mfa
@@ -63,10 +97,33 @@ export const ERROR_CODES = {
   USER_IMPORT_BATCH_TOO_LARGE: "user.import_batch_too_large",
   USER_IMPORT_FILE_TOO_LARGE: "user.import_file_too_large",
   USER_IMPORT_SOURCE_INVALID: "user.import_source_invalid",
+  // Who manages an account: a whole-account change (status, password, two-step, deletion) is the
+  // home organisation's; another one removes the person instead. 403/409s whose fallbacks name
+  // no fix.
+  USER_MANAGED_ELSEWHERE: "user.managed_elsewhere",
+  USER_CREDENTIALS_SHARED: "user.credentials_shared",
+  USER_MANAGED_HERE: "user.managed_here",
+  USER_DOMAIN_MANAGED: "user.domain_managed_elsewhere",
   WEBHOOK_URL_REQUIRED: "webhook.url_required", // 422
   WEBHOOK_EVENTS_REQUIRED: "webhook.events_required", // 422
   WEBHOOK_EVENT_UNKNOWN: "webhook.event_unknown", // 422: not in the server's catalogue
   OIDC_GRANT_TYPE_UNSUPPORTED: "oidc.grant_type_unsupported", // 400: client_credentials, or unknown
+  // Qeet AI (they predate the domain.reason form): a turn with no provider, and the answers to a
+  // test of a provider key, whose `api` and `validation` fallbacks don't say what to check.
+  QEETAI_UNCONFIGURED: "qeetai_unconfigured", // 503: no organisation key, no Qeet-managed one
+  QEETAI_PROVIDER_UNREACHABLE: "qeetai_provider_unreachable",
+  QEETAI_PROVIDER_KEY_INVALID: "qeetai_provider_key_invalid",
+  QEETAI_PROVIDER_MODEL_INVALID: "qeetai_provider_model_invalid",
+  QEETAI_PROVIDER_ERROR: "qeetai_provider_error",
+  // Settings › Domains: 400 / 409 / 422s whose fallbacks don't say what to fix.
+  DOMAIN_INVALID: "domainverify.invalid_domain",
+  DOMAIN_EXISTS: "domainverify.exists",
+  DOMAIN_RECORD_MISSING: "domainverify.dns_record_missing", // retryable: DNS can lag
+  DOMAIN_CLAIMED_BY_OTHER: "domainverify.claimed_by_other",
+  // Machine access, secrets and auth hooks (the developer pages).
+  SECRET_NAME_EXISTS: "secret.name_exists", // 409: names are unique in an organisation
+  AGENT_SPONSOR_NOT_MEMBER: "agent.sponsor_not_member", // 422: the sponsor isn't in the organisation
+  AUTHHOOK_URL_INVALID: "authhook.url_invalid", // 422: not a public https address
   TOO_MANY_REQUESTS: "too_many_requests", // throttling
   HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
   NETWORK: "network_error", // client-synthesised

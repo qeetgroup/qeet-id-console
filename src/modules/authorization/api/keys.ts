@@ -25,8 +25,4 @@ export const authzKeys = {
     [...authzKeys.relations(tenantId), "subject", subject] as const,
   relationGraph: (tenantId: string | null, object: string, relation: string, depth?: number) =>
     [...authzKeys.relations(tenantId), "graph", object, relation, depth] as const,
-  audit: (tenantId: string | null, filter: object) =>
-    [...authzKeys.tenant(tenantId), "audit", filter] as const,
-  policyChanges: (tenantId: string | null, from: string, limit: number) =>
-    [...authzKeys.tenant(tenantId), "policy-changes", from, limit] as const,
 };

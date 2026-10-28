@@ -40,13 +40,14 @@ export interface AuditAnomalySettings {
   min_baseline_events: number;
 }
 
-export function useAuditAnomalies(status?: "open" | "resolved") {
+/** The latest flags, newest first: 50 unless `limit` says otherwise (the server takes up to 200). */
+export function useAuditAnomalies(status?: "open" | "resolved", limit?: number) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: securityKeys.auditAnomalyList(tenantId, status ?? "all"),
+    queryKey: [...securityKeys.auditAnomalyList(tenantId, status ?? "all"), limit ?? 50],
     queryFn: () =>
       api<{ items: AuditAnomaly[] }>(`/v1/tenants/${tenantId}/audit/anomalies`, {
-        query: status ? { status } : undefined,
+        query: status || limit ? { status, limit } : undefined,
       }),
     enabled: !!tenantId,
     staleTime: 30_000,

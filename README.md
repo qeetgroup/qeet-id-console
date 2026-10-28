@@ -14,15 +14,15 @@ The console uses an institutional enterprise language rather than stock shadcn s
 - WCAG 2.2 AA contrast targets and semantic status colours;
 - desktop operator efficiency without sacrificing touch and mobile access.
 
-The shared `@qeetrix/ui` package remains the component foundation. Console-specific product character lives in `src/styles.css`; do not fork Qeetrix primitives or add local shadcn copies.
+`@qeetrix/react` is the component foundation, with `@qeetrix/tokens` for every colour, space and type size. Each page has a small token-only CSS file; do not fork Qeetrix primitives or restyle a library component's shape.
 
 ## Stack
 
 - TanStack Start and TanStack Router file-based routes
 - React 19 with React Compiler
 - TanStack Query for server state
-- Tailwind CSS 4 through the Vite plugin
-- Qeetrix UI for accessible primitives and design tokens
+- `@qeetrix/react` (Base UI) for accessible components, `@qeetrix/tokens` for design tokens
+- Plain CSS on `--qx-*` tokens, over a small base reset (`src/base.css`); no Tailwind
 - Recharts through Qeetrix chart wrappers
 - i18next for localization
 - Vitest for unit tests
@@ -69,20 +69,23 @@ app → modules → platform → shared
 2. **Modules own product capability** — a module imports another module only via its public barrel (`@/modules/<name>`), never its internals.
 3. **Platform owns cross-cutting infrastructure** — the HTTP client, session, errors, security, telemetry, feature flags, config. Imports only platform + shared; it reads modules only through the manifest registry.
 4. **Shared owns generic primitives** — no domain-specific imports.
-5. **Qeetrix owns UI primitives** (`@qeetrix/ui`); **console CSS owns identity** (`styles.css`).
+5. **Qeetrix owns UI primitives** (`@qeetrix/react`, `@qeetrix/tokens`); **page CSS owns layout**, with tokens only.
 
 Violations (wrong-direction imports, cross-module internals, import cycles, direct `fetch`) fail CI via Biome and `src/__tests__/module-boundaries.test.ts`.
 
 ## Enterprise shell
 
-`routes/_app.tsx` is the authenticated shell boundary. It composes:
+`routes/_app.tsx` is the authenticated shell boundary. It renders `ConsoleFrame`
+(`modules/dashboard/components/frame`), the `@qeetrix/react` `AppShell`:
 
-- `AppSidebar` for workspace context and domain navigation;
-- `ConsoleHeader` for breadcrumbs, command search, notifications, preferences, and account access;
-- one semantic `main` content landmark with a skip link;
-- command-palette and shortcut dialogs at shell scope.
+- the top bar: Qeet ID, the organisation's name, search (⌘K), Qeet AI and the account menu
+  (switching organisation, account, theme, shortcuts, sign out);
+- the navigation, one entry per area that opens to its pages; a page's sub-pages are its tabs;
+- the Notifications and Help panels on the end edge;
+- one `main` landmark with the shell's skip link, and the search palette and shortcuts dialog.
 
-The sidebar account menu was intentionally removed. Account actions live in one predictable location in the top bar. The navigation rail uses real route state rather than a static active flag and keeps parent branches active on detail routes.
+Pages not yet rebuilt keep their own header and spacing, under a band with their breadcrumb and
+sub-page tabs.
 
 ## Session boundary
 
@@ -95,16 +98,154 @@ safe error handling, and CSRF protection from the platform boundary. See
 
 ## Dashboard command center
 
-The overview route is deliberately thin. `modules/dashboard/components/dashboard-overview.tsx` coordinates data and composes dedicated modules:
+The Dashboard (`/`) is rebuilt on `@qeetrix/react`: `modules/dashboard/components/overview/`. It
+is the console's one overview: the areas have none, and their old overview URLs redirect to each
+area's main page. `overview-page.tsx` reads each source the person may see (the directory, groups,
+authorization and people through `use-directory-insights.ts`), and passes it to the panels:
 
-- `dashboard-metrics.tsx` — primary metric rail and secondary directory indicators;
-- `dashboard-charts.tsx` — authentication, method-mix, MFA, and failed-login telemetry;
-- `dashboard-activity.tsx` — recent audit events and operator actions;
-- `dashboard-panel.tsx` — a shared, accessible data-surface boundary;
-- `dashboard-model.ts` — testable formatting and transformation logic;
-- `use-dashboard-activity.ts` — the independently refreshed audit stream.
+- `overview-pulse.tsx`: four measures across the top, each with a sparkline; two-step coverage
+  on a meter with its target;
+- `overview-sign-ins.tsx`: sign-ins against failed sign-ins over 14 days (with a table view),
+  and each sign-in method's share and its own 14-day line;
+- `overview-attention.tsx`: what needs attention, most severe first, each with its one action;
+- `overview-security.tsx`: the last 24 hours of failed sign-ins with their bursts marked, and
+  two-step coverage as a gauge;
+- `overview-people.tsx`: weekly active people, and the applications people use;
+- `overview-activity.tsx`: the latest events (`use-dashboard-activity.ts`, refreshed live);
+- `overview-organisation.tsx`: departments and their teams as a treemap, and where people work;
+- `overview-setup.tsx`: the organisation's set-up as a checklist;
+- `overview-parts.tsx`: the ruled panels and four small charts the library doesn't have yet
+  (proposals for `@qeetrix/react`).
 
-The analytics overview remains one backend round trip. Recent activity refreshes independently every 15 seconds. Charts include text labels and hidden table alternatives so colour and pointer interaction are not the only ways to read data.
+The rules behind the numbers are plain functions with their own tests: `overview-model.ts` (what
+needs attention, bursts, axes, app usage), `overview-setup-model.ts` (the checklist) and
+`overview-directory-model.ts` (the directory's and authorization's alerts, the LDAP and Groups items,
+the organisation's shape and the treemap layout). The page only reads: loading it never changes
+the organisation.
+
+## Users list
+
+Directory › Users (`/users`) is rebuilt on `@qeetrix/react`: `modules/users/components/people/`.
+
+- `people-page.tsx`: the header (breadcrumb, actions, the band, the tabs), the table and its
+  pager, and the add, edit and set-password sheets;
+- `people-band.tsx`: the key numbers in the header, above the tabs: people over 15 months, two-step
+  coverage against its target, when people were last active, and what needs a look. Each part
+  links to the list filtered to it;
+- `people-toolbar.tsx`: search, then role, department, two-step and last active, with counts;
+  what's applied shows as tags;
+- `people-table.tsx`: the columns and a row's menu; `people-bulk.tsx`: the selection's actions,
+  five requests at a time.
+
+The search and filters live in the address (`?q=&role=&dept=&twostep=&seen=&look=`), so a view can
+be shared. `/v1/users` can't filter or count yet (QTID-960), so the page reads everyone, 200 at a
+time, up to 2,000 people (`userQueries.directory`), and works over them in `people-model.ts`.
+Above 2,000 it says the search, filters and counts cover the first 2,000 only. A rebuilt page with
+sub-pages draws them with `PageTabs`, `PageTabList` and `PageBreadcrumb` from `@/modules/dashboard`.
+What the library lacks for this page is tracked as QTRX-13 to QTRX-21; each local stand-in names
+its ticket in a comment, to swap once `@qeetrix/react` has it.
+
+Users has three tabs: All users, Invitations and Deleted. **Suspended is a filter on All users**
+(`?status=suspended`), not a page: it asks `GET /v1/users/suspended` (searched, filtered and paged on
+the server) and shows why, how risky, since when and the review, with Reactivate and Review the
+suspension (`people-suspended.tsx`). The old `/users/suspended` address redirects there.
+
+- `components/invitations/`: the Invitations tab — who's waiting, how fast people join (with the
+  link's 14 days marked), sends over 15 months, outcomes; Resend, Revoke and Invite again;
+- `components/deleted/`: the recycle bin — who's purged next and when, how long people are kept
+  (the retention rule, read only with `policy.read`); Restore and Delete forever;
+- `components/add-people/`: Add people, the one way in from Users and Invitations — invite by
+  email (several addresses, each checked against the directory and pending invitations first) or
+  create the account now. It joins the organisation you're in.
+
+The rules behind them are pure functions with their own tests: `invitations-model.ts`,
+`deleted-model.ts` and `add-people-model.ts`.
+
+## Groups list
+
+Directory › Groups (`/groups`) is rebuilt on `@qeetrix/react`: `modules/groups/components/list/`.
+**The table is the tree.** Families fold; up to 50 groups they start open, past that folded, so the
+list opens at the top level. Pages hold 25, 50 or 100 rows, and a family that runs past a page
+break carries its path onto the next page ("Continued · Engineering › Identity"). A search or a
+filter lists the matches flat, each with its path.
+
+- `groups-list-page.tsx`: the header (breadcrumb, actions, the band), the table and its pager, and
+  the drawers and dialogs it opens. `../group-drawer.tsx` is New group and Edit group in one
+  drawer: the name checked as it's typed (unique in an organisation), "Inside" searched by path,
+  members as pills, and the role's reach said plainly. `../group-members-drawer.tsx` is a group's
+  members: add several at once (one toast), remove one through the confirm, which says what they
+  lose. `../group-templates-drawer.tsx` makes a template's groups inside any group, flagging names
+  already taken first (the server makes all or none); `../import-groups-drawer.tsx` reads a CSV (or
+  pasted rows), checks every row before anything is sent, then shows what wasn't made and why;
+- `groups-band.tsx`: the Users band's parts (`people.css`, loaded with the console's styles): groups
+  over 15 months, the share of people in a group, group sizes, and what needs a look (empty groups,
+  roles granted to no one, people in no group). Each opens the list, or Users, filtered to it;
+- `groups-toolbar.tsx`: search, size, roles granted and the group to look inside, then Expand or
+  Collapse all; `groups-table.tsx`: the tree cell, the columns and a row's menu.
+
+The filters live in the address (`?q=&size=&grants=&role=&inside=&look=`), and the rules are pure
+functions in `groups-model.ts`. A group's size is the people it covers, its groups' included; the
+roles it grants reach only its own members (the server's rule), so a group that grants a role and
+has no members grants it to no one. The server lists groups without their roles (QTID-961), so the
+page reads each group's roles, all of them up to 100 groups and only the page's past that. The
+library's Table has no tree rows yet (QTRX-25): each group's name is its link, beside its fold
+button. Users takes `?group=none` (people in no group) from the band's link.
+
+A group's page (`/groups/:id`, `components/page/`) has its facts in the header (members, the roles
+it grants, where it sits, when it was made), then ruled sections: where it sits (`group-family.tsx`,
+its family as a picture, each group sized by people and opening its page), members, the roles it
+grants, the groups inside it, and details. Deleting a group deletes the groups inside it too (their
+parent link cascades), with their memberships and role grants; `use-delete-group.ts` says so in the
+confirm, from the list or the page. The console's one confirm (`SensitiveActionProvider`) is the
+`@qeetrix/react` alert dialog: red intent line for a destructive action, amber otherwise.
+
+## Organisations
+
+Directory › Organisations (`/organizations`) is rebuilt on `@qeetrix/react`:
+`modules/organizations/components/list/` and `components/page/`. It lists the organisations you
+belong to (every page of `GET /v1/tenants`), joined with your place in each from
+`GET /v1/me/organizations`: your roles, when you last opened it, its domain.
+
+- `orgs-list-page.tsx`: the header and its band (`orgs-band.tsx`, the Users band's parts: people
+  across the organisations with the largest as bars, two-step against the Users target, your roles,
+  and what needs a look), the toolbar (search, your role, plan, and data region when there's more
+  than one), and the table (`orgs-table.tsx`). Each row has Switch, which moves the session into it;
+  a name opens its page. There is no edit sheet (Settings › General edits the one you're in, and the
+  server changes no other), no preview drawer, and no Suspend: the server always refuses it.
+- An organisation's page (`/organizations/:id`) is its record, not a second dashboard: its facts in
+  the header; Identity (`org-identity.tsx`: its URL and ID, its domain and what verifying it means,
+  its data region on a ruler of Qeet ID's regions); History (`org-history.tsx`: the audit events on
+  the organisation itself, summed up, by month, then each with who, browser and address, each
+  opening its record in Activity); and, for an owner, Delete. Another organisation shows what the
+  list knows and Switch.
+- Deleting (`use-org-actions.ts`) is the server's: an owner asks, it's deleted 7 days later, and any
+  owner can keep it until then (`POST …/deletion/cancel`). The list doesn't carry the due date yet
+  (QTID-963), so only the organisation you're in shows it.
+
+The filters live in the address (`?q=&role=&plan=&region=&look=`), and the rules are pure functions
+in `orgs-model.ts`. The logo sits in the page title until `PageHeader` has a leading slot (QTRX-48).
+
+## Directories › Connections
+
+Directory › Directories has four tabs: Connections, Sync activity, Sync errors, Mappings. SCIM and
+LDAP / AD are connections, not tabs: each opens from its row or Add connection, at
+`/directory/connections/scim` and `/directory/connections/ldap` (the old `/auth/connections/scim`
+and `/ldap` redirect), and the command palette finds them by their commands. Connections
+(`modules/directory/components/connections/`) is rebuilt on `@qeetrix/react`:
+
+- `connections-page.tsx`: the header, its band (`connections-band.tsx`: where the organisation's
+  people come from, each connection's health, the last 30 days, what needs a look), the table and
+  the offers for a kind not set up; `connections-table.tsx`: the columns and a row's menu.
+- A connection's health is the server's (its latest event; past 24 hours, "not checked"), with its
+  latest open problem under it. The 30 days are the server's volume (people and groups synced a
+  day) with the month's failed events on top.
+- `use-connection-actions.ts`: Test, Turn on/off (turning off is confirmed), Delete and Revoke, each
+  confirm saying what happens to people. Their calls live in `api/directory.ts`; the SCIM and LDAP
+  pages' own copies in the authentication module go when those pages move here.
+
+`?show=failing|draft` narrows the list from the band. The rules are pure functions in
+`connections-model.ts`. LDAP doesn't count its people yet (QTID-964); MenuItem has no description
+line (QTRX-50).
 
 ## Styling rules
 
@@ -196,7 +337,7 @@ output.
 4. Add the custom domain **`console.id.qeet.in`** → create the CNAME Vercel provides in GoDaddy
    (`console.id` → `cname.vercel-dns.com`). That host is already in the backend's `ALLOWED_ORIGINS`.
 
-`@qeetrix/ui` resolves from the public npm registry, so a standalone install needs no monorepo.
+`@qeetrix/react`, `@qeetrix/tokens` and `@qeetrix/icons` resolve from the public npm registry, so a standalone install needs no monorepo.
 
 ## Related repositories
 
@@ -207,4 +348,4 @@ output.
 | [`qeet-id-website`](https://github.com/qeetgroup/qeet-id-website) | Marketing site — `id.qeet.in` |
 | `qeet-id-deploy` | Backend infrastructure + CD (Terraform) |
 
-Part of the [Qeet Group](https://github.com/qeetgroup) suite; built on the shared `@qeetrix/ui` design system.
+Part of the [Qeet Group](https://github.com/qeetgroup) suite; built on the shared Qeetrix design system (`@qeetrix/react`).

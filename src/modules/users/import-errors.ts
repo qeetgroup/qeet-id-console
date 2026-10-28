@@ -17,6 +17,7 @@ type RowErrorKey =
   | "fileMalformed"
   | "sourceInvalid"
   | "emailExists"
+  | "domainManaged"
   | "passwordTooShort"
   | "passwordNoUppercase"
   | "passwordNoNumber"
@@ -32,6 +33,7 @@ const ROW_ERROR_KEYS: Record<string, RowErrorKey> = {
   "user.import_row_malformed": "rowMalformed",
   "user.import_source_invalid": "sourceInvalid",
   "auth.email_exists": "emailExists",
+  "user.domain_managed_elsewhere": "domainManaged",
   "authpolicy.password_too_short": "passwordTooShort",
   "authpolicy.password_no_uppercase": "passwordNoUppercase",
   "authpolicy.password_no_number": "passwordNoNumber",

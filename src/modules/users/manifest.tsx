@@ -1,5 +1,5 @@
 // What this module adds to the console shell; see src/platform/modules/manifest.ts.
-import { MailIcon, UserPlusIcon, UsersIcon } from "@qeetrix/icons";
+import { MailIcon, UserPlusIcon, UsersIcon, UserXIcon } from "@qeetrix/icons";
 
 import { defineModule } from "@/platform/modules/manifest";
 
@@ -48,21 +48,29 @@ export const manifest = defineModule({
     {
       id: "cmd.create.user",
       text: "users:commands.createUser",
-      icon: <UserPlusIcon className="size-4" />,
+      icon: <UserPlusIcon />,
       to: "/users",
       capability: "user.write",
     },
     {
       id: "cmd.navigate.users",
       text: "users:commands.users",
-      icon: <UsersIcon className="size-4" />,
+      icon: <UsersIcon />,
       to: "/users",
+      capability: "user.read",
+    },
+    {
+      // Suspended is a filter on All users; this keeps it one search away.
+      id: "cmd.navigate.suspended",
+      text: "users:commands.suspended",
+      icon: <UserXIcon />,
+      to: "/users/suspended",
       capability: "user.read",
     },
     {
       id: "cmd.navigate.invitations",
       text: "users:commands.invitations",
-      icon: <MailIcon className="size-4" />,
+      icon: <MailIcon />,
       to: "/invitations",
       capability: "user.write",
     },

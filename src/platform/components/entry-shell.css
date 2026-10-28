@@ -1,0 +1,130 @@
+/*
+ * The frame of every page outside the console (EntryShell): the brand and help on top, the page's
+ * column, the legal links, theme and language in the foot, and the panel beside it on wide
+ * screens. Comfortable density and Geo headlines come from the pages. Token values only.
+ */
+
+.entry {
+  min-block-size: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+  background: var(--qx-color-surface-canvas);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-md);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.entry-side {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--qx-space-layout-md);
+  padding: var(--qx-space-layout-sm) var(--qx-space-layout-md);
+}
+
+.entry-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.entry-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: inherit;
+  text-decoration: none;
+  font: var(--qx-typography-title-md);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-heading);
+}
+
+.entry-brand:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: var(--qx-focus-ring-offset);
+}
+
+/* The logo has a drawing for each scheme; CSS picks it, so the first paint is already right. */
+.entry-logo-light,
+.entry-logo-dark {
+  display: inline-flex;
+}
+
+.entry-logo-dark,
+[data-qx-color-scheme="dark"] .entry-logo-light {
+  display: none;
+}
+
+[data-qx-color-scheme="dark"] .entry-logo-dark {
+  display: inline-flex;
+}
+
+/* The product name sits after a 1px rule, the same seam the Button puts before its icon. */
+.entry-brand-rule {
+  inline-size: 1px;
+  block-size: 20px;
+  background: var(--qx-color-border-default);
+}
+
+.entry-main {
+  align-self: center;
+  justify-self: center;
+  inline-size: min(400px, 100%);
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+.entry-main:focus {
+  outline: none;
+}
+
+/* Without the panel: one wide column from the top, for content side by side (four plans). */
+.entry[data-wide] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.entry[data-wide] .entry-main {
+  align-self: start;
+  inline-size: min(70rem, 100%);
+}
+
+.entry-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-inset-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.entry-foot nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-lg);
+}
+
+.entry-foot-end {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* The theme menu holds three short choices: narrower than the library's 200px menu. */
+.entry-theme-menu {
+  min-inline-size: 10rem;
+}
+
+/* ── Small screens: the column only ────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .entry-side {
+    padding: var(--qx-space-inset-lg);
+  }
+}

@@ -58,9 +58,9 @@ folders, every nav/command/shortcut target is a real route, a fake module shows 
 | `errors/` | Error taxonomy and user-safe copy |
 | `telemetry/` | Redaction, the server's JSON-line log (production, stdout, server-only), path templates, the browser error and Web Vitals reporter and its report endpoint, the DEV console logger, `captureError`, request ids (`tracing.ts`); nothing goes to a third party |
 | `query/` | QueryClient, global 403 recapability handler |
-| `forms/` | The forms kit: TanStack Form + `@qeetrix/ui` fields, server field errors |
-| `components/` | `page-header.tsx`, `theme-toggle.tsx`, `error-reference.tsx`, the leak-safe `data-state.tsx` and `status-pill.tsx` (status words from the catalogue) |
-| `theme/` | Theme provider wiring |
+| `forms/` | The forms kit: TanStack Form + `@qeetrix/react` fields, server field errors |
+| `components/` | `entry-shell.tsx` (the frame outside the console), `state-page.tsx`, `error-reference.tsx` |
+| `theme/` | The colour scheme: its storage and first-paint script (`color-scheme.ts`), `useIsDark` |
 
 **L4 pointers**
 
@@ -84,8 +84,6 @@ telemetry/client-reporter.ts   browser errors + Web Vitals: deduped, ≤10 a pag
 telemetry/client-report.ts     reportClientTelemetry server function: Zod allowlist and bounds
 api/server-proxy-log.ts        api.request / session.refresh lines for proxyApiRequest
 errors/user-message.ts         the leak stop
-components/data-state.tsx      DataState that maps errors through the leak stop (lint-enforced)
-components/status-pill.tsx     StatusPill naming a status from `common:status.*` (lint-enforced)
 config/server-config.ts        production config check, called from src/start.ts
 security/security-headers.ts   response headers, applied by Nitro route rules (vite.config.ts)
 security/content-security-policy.ts  the nonce CSP, set per response by src/start.ts
@@ -116,7 +114,7 @@ keyboard/shortcuts.ts          useGlobalShortcuts, shortcutGroups (the shortcuts
 
 | Module | Subdirs (besides `locales`) | Routes (`app` / `public`) | Test files |
 |---|---|---|---|
-| `account` | `api`, `components`, `routes` | 0 / 5 | 5 |
+| `account` | `api`, `components`, `routes` | 5 / 0 | 5 |
 | `activity` | `api`, `components`, `routes`, `types` | 1 / 0 | 7 |
 | `authentication` | `api`, `components`, `routes` | 16 / 9 | 35 |
 | `authorization` | `api`, `components`, `routes`, `store`, `utils` | 15 / 0 | 17 |
@@ -127,7 +125,7 @@ keyboard/shortcuts.ts          useGlobalShortcuts, shortcutGroups (the shortcuts
 | `developer` | `api`, `components`, `routes` | 12 / 0 | 11 |
 | `directory` | `api`, `components`, `routes` | 6 / 0 | 5 |
 | `groups` | `api`, `components`, `routes` | 2 / 0 | 3 |
-| `onboarding` | flat | — | 3 |
+| `onboarding` | `api`, `components`, `routes` | 0 / 1 | 2 |
 | `organizations` | `api`, `components`, `routes` | 7 / 0 | 6 |
 | `qeetai` | `ai`, `api`, `components`, `context`, `hooks`, `routes`, `store`, `suggestions`, `tools`, `types` | 1 / 0 | 13 |
 | `search` | `api`, `components`, `registry`, `store` | — | 3 |
@@ -167,12 +165,12 @@ module's routes may share a prefix with another's (`/auth/…` is `authenticatio
 
 | Where | Files | Notes |
 |---|---|---|
-| `src/routes/_app.tsx` | 1 | Authenticated operator shell. Wraps children in `CapabilityProvider > SensitiveActionProvider > AccessBoundary`. 10-minute idle logout, measured across every tab |
+| `src/routes/_app.tsx` | 1 | Authenticated operator shell. Wraps children in `CapabilityProvider > SensitiveActionProvider > AccessBoundary`. 10-minute idle logout, measured across every tab. A session without an organisation goes to `/select-organization` (its invitations, or on to create the first), except for My account (`/account/*`), where the shell shows only that entry; an old sign-up checkout return to `/` goes to `/create-organization` |
 | `src/routes/__root.tsx`, `healthz.ts` | 2 | Document, theme, toaster; the container health check |
 | `src/routes/api/` | 2 | `activity-stream.ts`, `qeetai-stream.ts` — server-only SSE |
-| `*/routes/app/` | 91 | Every page inside the shell; the catch-all "Page not found" is `dashboard/routes/app/$.tsx` |
+| `*/routes/app/` | 96 | Every page inside the shell; the catch-all "Page not found" is `dashboard/routes/app/$.tsx` |
 | `authentication/routes/public/` | 9 | `_auth.tsx` (reverse guard) with `sign-in` `sign-up` `forgot-password` `magic` `invite.accept` `sso.callback`; `select-organization`, `verify-email` |
-| `account/routes/public/` | 5 | `account.tsx` with `profile` `security` `sessions` `data` — end-user self-service, deliberately outside the admin shell |
+| `onboarding/routes/public/` | 1 | `create-organization`: signed in and verified, outside the shell like `select-organization`; opened from the picker, Directory › Organizations and, with no `from` and no organisation, straight after signing up (no Cancel). `?from=` names where Cancel returns; a hosted checkout returns here (`?checkout=`, Razorpay fields) to finish or, cancelled, restore the details |
 
 A route states the capability its page requires as `staticData: { capability }`; the router hands
 them to `registerRouteRequirements` once built.
@@ -187,8 +185,7 @@ ignores; they render the route's component, so they exercise the module page thr
 **Path** `src/shared/` · **May import** only `@/shared`, `@/i18n`, or external packages.
 
 ```text
-components/           confirm-dialog · logo-field · one-time-secret · page-state · qeet-mark ·
-                      unsaved-changes-guard · data-table/{bulk-bar,list-toolbar,selection,sort-header}
+components/           logo-field · one-time-secret · unsaved-changes-guard
 hooks/                use-create-intent · use-list-view
 utils/                data-export · format · initials · ip-format · search-params
 data/                 country-dial-codes · regions · team-sizes

@@ -1,0 +1,150 @@
+/*
+ * A person's timeline (timeline-page.tsx): the band's day bars, the filters row and each event's
+ * who and where. Placement and token values only (--qx-*); the band, its cells and the filters
+ * row are the Users page's (people.css, loaded with the console's styles).
+ */
+
+/* The first cell carries the day bars, so it takes more of the row (people.css keeps its two- and
+   one-column layouts below 1180px). */
+@media (min-width: 1181px) {
+  .tl-band {
+    grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ── The day bars: one a day, its height the day's events, its failed part on top ────────── */
+
+.tl-days {
+  margin-block-start: var(--qx-space-gap-sm);
+}
+
+.tl-days-chart {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+.tl-days-bars {
+  display: flex;
+  align-items: end;
+  gap: 1px;
+  block-size: 2.5rem;
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.tl-day {
+  position: relative;
+  flex: 1 1 0;
+  min-inline-size: 1px;
+  block-size: var(--tl-h);
+  min-block-size: 2px;
+  background: var(--qx-color-dataviz-categorical-1);
+}
+
+/* A day with nothing keeps its place, as a gap on the baseline. */
+.tl-day.is-empty {
+  block-size: 0;
+  min-block-size: 0;
+}
+
+.tl-day-failed {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--tl-f);
+  min-block-size: 2px;
+  background: var(--qx-color-dataviz-negative);
+}
+
+.tl-days-axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── The events ──────────────────────────────────────────────────────────────────────────── */
+
+.tl-page {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+  padding-block-start: var(--qx-space-gap-lg);
+}
+
+/* Each event: what (a link to its record in Activity), then who, from where, which app. */
+.tl-event-link {
+  color: var(--qx-color-text-default);
+  text-decoration: none;
+}
+
+.tl-event-link:hover {
+  text-decoration: underline;
+}
+
+.tl-event-link:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+.tl-by {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+.tl-by code {
+  font: var(--qx-typography-code-sm);
+}
+
+/* After the last loaded event: Show older events, or that this is everything. */
+.tl-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-gap-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.tl-more p {
+  margin: 0;
+}
+
+.tl-more a {
+  color: var(--qx-color-text-brand);
+  font: var(--qx-typography-label-sm);
+  text-decoration: none;
+}
+
+.tl-more a:hover {
+  text-decoration: underline;
+}
+
+/* ── On a person's page: the Activity view ─────────────────────────────────────────────────── */
+
+.tl-view {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+/* The band sits inside the view, so it's ruled top and bottom like the page header's. */
+.tl-view > .ppl-band {
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+/* What the view holds, then Export. */
+.tl-view-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.tl-view-bar p {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-md);
+}

@@ -30,7 +30,7 @@ bun run dev                    # serves on 3002 — see the port note below
                              @/modules/<name>/pages; params reach the page as props
 4  navigation entry          the module's manifest.tsx `nav`, with the same capability
 5  data access               the module's api/ dir, NEVER fetch from the component
-6  states                    the platform DataState for loading, empty and error
+6  states                    DataState (@qeetrix/react/experimental) for loading and error
 7  i18n                      add strings to the module's locales/en/<ns>.json; others fall back
 8  test
 9  bun run typecheck && bun run check && bun run lint:boundaries && bun run test
@@ -42,6 +42,11 @@ The dev server or a build regenerates `src/routeTree.gen.ts` for a new route fil
 **The route's `staticData.capability` is what gates the page.** `getRequiredCapabilityForPath`
 reads it, and `AccessBoundary` enforces it in the UI. Both are UX — the backend still decides.
 A nav entry naming a different capability from its route fails `route-capability.test.ts`.
+
+**Where a page sits comes from the navigation.** Every page draws its own `PageHeader`; its
+breadcrumb (area › page) is `PageBreadcrumb`, and a page with sub-pages (its `nav` children) puts
+`PageTabs` / `PageTabList` in the header (`modules/dashboard/components/frame/page-place.tsx`). A
+sub-entry is a tab, not a sidebar row.
 
 ## Call a new endpoint
 
@@ -96,6 +101,12 @@ A **route** stays thin: `createFileRoute`, its guards (`beforeLoad`, `head`), a 
 owning module's `pages.ts`. It may import a module's barrel and its `pages` entry, but not its
 internals, `api()` or `@tanstack/react-query` (lint); it reads params and search and passes them
 to the page as props. No route is exempt from this, and none may be.
+
+The authentication module exports the pages before the console (sign in with its two-step
+challenge and setup, sign up, verify email, magic link, forgot and reset password, an invitation,
+the SSO return and choosing an organisation) from a second route entry, `entry-pages.ts`, so a
+visitor's first load carries only those. Biome allows `@/modules/<name>/entry-pages` as it does
+`pages`. Every page is styled with `@qeetrix/react` components and a small token-only CSS file.
 
 ## Change session or auth behaviour
 

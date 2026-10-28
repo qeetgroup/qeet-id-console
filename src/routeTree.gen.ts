@@ -11,12 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as appRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './modules/authentication/routes/public/_auth'
-import { Route as AccountRouteImport } from './modules/account/routes/public/account'
+import { Route as CreateOrganizationRouteImport } from './modules/onboarding/routes/public/create-organization'
 import { Route as healthzRouteImport } from './routes/healthz'
 import { Route as SelectOrganizationRouteImport } from './modules/authentication/routes/public/select-organization'
 import { Route as VerifyEmailRouteImport } from './modules/authentication/routes/public/verify-email'
 import { Route as IndexRouteImport } from './modules/dashboard/routes/app/index'
 import { Route as SplatRouteImport } from './modules/dashboard/routes/app/$'
+import { Route as AccountRouteImport } from './modules/account/routes/app/account'
 import { Route as ActivityRouteImport } from './modules/activity/routes/app/activity'
 import { Route as AnalyticsRouteImport } from './modules/dashboard/routes/app/analytics'
 import { Route as ApplicationsRouteImport } from './modules/dashboard/routes/app/applications'
@@ -26,12 +27,12 @@ import { Route as AuthForgotPasswordRouteImport } from './modules/authentication
 import { Route as AuthMagicRouteImport } from './modules/authentication/routes/public/_auth/magic'
 import { Route as AuthSignInRouteImport } from './modules/authentication/routes/public/_auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './modules/authentication/routes/public/_auth/sign-up'
-import { Route as AccountDataRouteImport } from './modules/account/routes/public/account/data'
-import { Route as AccountProfileRouteImport } from './modules/account/routes/public/account/profile'
-import { Route as AccountSecurityRouteImport } from './modules/account/routes/public/account/security'
-import { Route as AccountSessionsRouteImport } from './modules/account/routes/public/account/sessions'
 import { Route as ApiActivityStreamRouteImport } from './routes/api/activity-stream'
 import { Route as ApiQeetaiStreamRouteImport } from './routes/api/qeetai-stream'
+import { Route as AccountDataRouteImport } from './modules/account/routes/app/account/data'
+import { Route as AccountProfileRouteImport } from './modules/account/routes/app/account/profile'
+import { Route as AccountSecurityRouteImport } from './modules/account/routes/app/account/security'
+import { Route as AccountSessionsRouteImport } from './modules/account/routes/app/account/sessions'
 import { Route as AuthSocialRouteImport } from './modules/authentication/routes/app/auth/social'
 import { Route as AuthorizationIndexRouteImport } from './modules/authorization/routes/app/authorization/index'
 import { Route as AuthorizationAbacRouteImport } from './modules/authorization/routes/app/authorization/abac'
@@ -47,6 +48,7 @@ import { Route as AuthorizationRolesRouteImport } from './modules/authorization/
 import { Route as AuthorizationSettingsRouteImport } from './modules/authorization/routes/app/authorization/settings'
 import { Route as AuthorizationSimulatorRouteImport } from './modules/authorization/routes/app/authorization/simulator'
 import { Route as AuthorizationTemplatesRouteImport } from './modules/authorization/routes/app/authorization/templates'
+import { Route as AuthorizationTestingRouteImport } from './modules/authorization/routes/app/authorization/testing'
 import { Route as AuthorizationVersionsRouteImport } from './modules/authorization/routes/app/authorization/versions'
 import { Route as DeveloperIndexRouteImport } from './modules/developer/routes/app/developer/index'
 import { Route as DeveloperAgentsRouteImport } from './modules/developer/routes/app/developer/agents'
@@ -54,9 +56,9 @@ import { Route as DeveloperAuthHooksRouteImport } from './modules/developer/rout
 import { Route as DeveloperBotsRouteImport } from './modules/developer/routes/app/developer/bots'
 import { Route as DeveloperCredentialsRouteImport } from './modules/developer/routes/app/developer/credentials'
 import { Route as DeveloperInfrastructureRouteImport } from './modules/developer/routes/app/developer/infrastructure'
+import { Route as DeveloperMachineAccessRouteImport } from './modules/developer/routes/app/developer/machine-access'
 import { Route as DirectoryIndexRouteImport } from './modules/directory/routes/app/directory/index'
 import { Route as DirectoryAttributeMappingsRouteImport } from './modules/directory/routes/app/directory/attribute-mappings'
-import { Route as DirectoryConnectionsRouteImport } from './modules/directory/routes/app/directory/connections'
 import { Route as DirectorySyncActivityRouteImport } from './modules/directory/routes/app/directory/sync-activity'
 import { Route as DirectorySyncErrorsRouteImport } from './modules/directory/routes/app/directory/sync-errors'
 import { Route as GroupsIndexRouteImport } from './modules/groups/routes/app/groups/index'
@@ -80,7 +82,7 @@ import { Route as UsersUserIdRouteImport } from './modules/users/routes/app/user
 import { Route as UsersDeletedRouteImport } from './modules/users/routes/app/users/deleted'
 import { Route as UsersImportRouteImport } from './modules/users/routes/app/users/import'
 import { Route as UsersSessionsRouteImport } from './modules/users/routes/app/users/sessions'
-import { Route as UsersSuspendedRouteImport } from './modules/directory/routes/app/users/suspended'
+import { Route as UsersSuspendedRouteImport } from './modules/users/routes/app/users/suspended'
 import { Route as AuthInviteDotacceptRouteImport } from './modules/authentication/routes/public/_auth/invite.accept'
 import { Route as AuthSsoDotcallbackRouteImport } from './modules/authentication/routes/public/_auth/sso.callback'
 import { Route as AuthApiConsentGrantsRouteImport } from './modules/authentication/routes/app/auth/api/consent-grants'
@@ -91,7 +93,6 @@ import { Route as AuthApiSigningKeysRouteImport } from './modules/developer/rout
 import { Route as AuthApiTokensRouteImport } from './modules/authentication/routes/app/auth/api/tokens'
 import { Route as AuthConnectionsIndexRouteImport } from './modules/authentication/routes/app/auth/connections/index'
 import { Route as AuthConnectionsLdapRouteImport } from './modules/authentication/routes/app/auth/connections/ldap'
-import { Route as AuthConnectionsSamlRouteImport } from './modules/authentication/routes/app/auth/connections/saml'
 import { Route as AuthConnectionsSamlIdpRouteImport } from './modules/authentication/routes/app/auth/connections/saml-idp'
 import { Route as AuthConnectionsScimRouteImport } from './modules/authentication/routes/app/auth/connections/scim'
 import { Route as AuthLoginMethodsMagicLinksRouteImport } from './modules/authentication/routes/app/auth/login-methods/magic-links'
@@ -102,6 +103,8 @@ import { Route as AuthMfaSmsEmailRouteImport } from './modules/authentication/ro
 import { Route as AuthMfaTotpRouteImport } from './modules/authentication/routes/app/auth/mfa/totp'
 import { Route as DeveloperWebhooksIndexRouteImport } from './modules/developer/routes/app/developer/webhooks/index'
 import { Route as DeveloperWebhooksIdRouteImport } from './modules/developer/routes/app/developer/webhooks/$id'
+import { Route as DirectoryConnectionsIndexRouteImport } from './modules/directory/routes/app/directory/connections/index'
+import { Route as DirectoryConnectionsScimRouteImport } from './modules/authentication/routes/app/directory/connections/scim'
 import { Route as SecurityComplianceGdprRouteImport } from './modules/compliance/routes/app/security/compliance/gdpr'
 import { Route as SecurityComplianceIso27001RouteImport } from './modules/compliance/routes/app/security/compliance/iso27001'
 import { Route as SecurityComplianceRetentionRouteImport } from './modules/compliance/routes/app/security/compliance/retention'
@@ -118,6 +121,10 @@ import { Route as SettingsOrganizationSecurityPolicyRouteImport } from './module
 import { Route as UsersUserId_DottimelineRouteImport } from './modules/timeline/routes/app/users/$userId_.timeline'
 import { Route as AuthConnectionsOidcIndexRouteImport } from './modules/authentication/routes/app/auth/connections/oidc/index'
 import { Route as AuthConnectionsOidcClientIdRouteImport } from './modules/authentication/routes/app/auth/connections/oidc/$clientId'
+import { Route as AuthConnectionsSamlIndexRouteImport } from './modules/authentication/routes/app/auth/connections/saml/index'
+import { Route as AuthConnectionsSamlIdRouteImport } from './modules/authentication/routes/app/auth/connections/saml/$id'
+import { Route as DirectoryConnectionsLdapIndexRouteImport } from './modules/authentication/routes/app/directory/connections/ldap/index'
+import { Route as DirectoryConnectionsLdapIdRouteImport } from './modules/authentication/routes/app/directory/connections/ldap/$id'
 
 const appRoute = appRouteImport.update({
   id: '/_app',
@@ -127,9 +134,9 @@ const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AccountRoute = AccountRouteImport.update({
-  id: '/account',
-  path: '/account',
+const CreateOrganizationRoute = CreateOrganizationRouteImport.update({
+  id: '/create-organization',
+  path: '/create-organization',
   getParentRoute: () => rootRouteImport,
 } as any)
 const healthzRoute = healthzRouteImport.update({
@@ -155,6 +162,11 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => appRoute,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => appRoute,
 } as any)
 const ActivityRoute = ActivityRouteImport.update({
@@ -202,6 +214,16 @@ const AuthSignUpRoute = AuthSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => AuthRoute,
 } as any)
+const ApiActivityStreamRoute = ApiActivityStreamRouteImport.update({
+  id: '/api/activity-stream',
+  path: '/api/activity-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiQeetaiStreamRoute = ApiQeetaiStreamRouteImport.update({
+  id: '/api/qeetai-stream',
+  path: '/api/qeetai-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountDataRoute = AccountDataRouteImport.update({
   id: '/data',
   path: '/data',
@@ -221,16 +243,6 @@ const AccountSessionsRoute = AccountSessionsRouteImport.update({
   id: '/sessions',
   path: '/sessions',
   getParentRoute: () => AccountRoute,
-} as any)
-const ApiActivityStreamRoute = ApiActivityStreamRouteImport.update({
-  id: '/api/activity-stream',
-  path: '/api/activity-stream',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiQeetaiStreamRoute = ApiQeetaiStreamRouteImport.update({
-  id: '/api/qeetai-stream',
-  path: '/api/qeetai-stream',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSocialRoute = AuthSocialRouteImport.update({
   id: '/auth/social',
@@ -309,6 +321,11 @@ const AuthorizationTemplatesRoute = AuthorizationTemplatesRouteImport.update({
   path: '/authorization/templates',
   getParentRoute: () => appRoute,
 } as any)
+const AuthorizationTestingRoute = AuthorizationTestingRouteImport.update({
+  id: '/authorization/testing',
+  path: '/authorization/testing',
+  getParentRoute: () => appRoute,
+} as any)
 const AuthorizationVersionsRoute = AuthorizationVersionsRouteImport.update({
   id: '/authorization/versions',
   path: '/authorization/versions',
@@ -344,6 +361,11 @@ const DeveloperInfrastructureRoute = DeveloperInfrastructureRouteImport.update({
   path: '/developer/infrastructure',
   getParentRoute: () => appRoute,
 } as any)
+const DeveloperMachineAccessRoute = DeveloperMachineAccessRouteImport.update({
+  id: '/developer/machine-access',
+  path: '/developer/machine-access',
+  getParentRoute: () => appRoute,
+} as any)
 const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
   id: '/directory/',
   path: '/directory/',
@@ -355,11 +377,6 @@ const DirectoryAttributeMappingsRoute =
     path: '/directory/attribute-mappings',
     getParentRoute: () => appRoute,
   } as any)
-const DirectoryConnectionsRoute = DirectoryConnectionsRouteImport.update({
-  id: '/directory/connections',
-  path: '/directory/connections',
-  getParentRoute: () => appRoute,
-} as any)
 const DirectorySyncActivityRoute = DirectorySyncActivityRouteImport.update({
   id: '/directory/sync-activity',
   path: '/directory/sync-activity',
@@ -533,11 +550,6 @@ const AuthConnectionsLdapRoute = AuthConnectionsLdapRouteImport.update({
   path: '/auth/connections/ldap',
   getParentRoute: () => appRoute,
 } as any)
-const AuthConnectionsSamlRoute = AuthConnectionsSamlRouteImport.update({
-  id: '/auth/connections/saml',
-  path: '/auth/connections/saml',
-  getParentRoute: () => appRoute,
-} as any)
 const AuthConnectionsSamlIdpRoute = AuthConnectionsSamlIdpRouteImport.update({
   id: '/auth/connections/saml-idp',
   path: '/auth/connections/saml-idp',
@@ -592,6 +604,18 @@ const DeveloperWebhooksIdRoute = DeveloperWebhooksIdRouteImport.update({
   path: '/developer/webhooks/$id',
   getParentRoute: () => appRoute,
 } as any)
+const DirectoryConnectionsIndexRoute =
+  DirectoryConnectionsIndexRouteImport.update({
+    id: '/directory/connections/',
+    path: '/directory/connections/',
+    getParentRoute: () => appRoute,
+  } as any)
+const DirectoryConnectionsScimRoute =
+  DirectoryConnectionsScimRouteImport.update({
+    id: '/directory/connections/scim',
+    path: '/directory/connections/scim',
+    getParentRoute: () => appRoute,
+  } as any)
 const SecurityComplianceGdprRoute = SecurityComplianceGdprRouteImport.update({
   id: '/security/compliance/gdpr',
   path: '/security/compliance/gdpr',
@@ -684,14 +708,38 @@ const AuthConnectionsOidcClientIdRoute =
     path: '/auth/connections/oidc/$clientId',
     getParentRoute: () => appRoute,
   } as any)
+const AuthConnectionsSamlIndexRoute =
+  AuthConnectionsSamlIndexRouteImport.update({
+    id: '/auth/connections/saml/',
+    path: '/auth/connections/saml/',
+    getParentRoute: () => appRoute,
+  } as any)
+const AuthConnectionsSamlIdRoute = AuthConnectionsSamlIdRouteImport.update({
+  id: '/auth/connections/saml/$id',
+  path: '/auth/connections/saml/$id',
+  getParentRoute: () => appRoute,
+} as any)
+const DirectoryConnectionsLdapIndexRoute =
+  DirectoryConnectionsLdapIndexRouteImport.update({
+    id: '/directory/connections/ldap/',
+    path: '/directory/connections/ldap/',
+    getParentRoute: () => appRoute,
+  } as any)
+const DirectoryConnectionsLdapIdRoute =
+  DirectoryConnectionsLdapIdRouteImport.update({
+    id: '/directory/connections/ldap/$id',
+    path: '/directory/connections/ldap/$id',
+    getParentRoute: () => appRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/account': typeof AccountRouteWithChildren
+  '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/$': typeof SplatRoute
+  '/account': typeof AccountRouteWithChildren
   '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
   '/applications': typeof ApplicationsRoute
@@ -701,12 +749,12 @@ export interface FileRoutesByFullPath {
   '/magic': typeof AuthMagicRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/api/activity-stream': typeof ApiActivityStreamRoute
+  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/account/data': typeof AccountDataRoute
   '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/account/sessions': typeof AccountSessionsRoute
-  '/api/activity-stream': typeof ApiActivityStreamRoute
-  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/auth/social': typeof AuthSocialRoute
   '/authorization/abac': typeof AuthorizationAbacRoute
   '/authorization/access-tester': typeof AuthorizationAccessTesterRoute
@@ -721,14 +769,15 @@ export interface FileRoutesByFullPath {
   '/authorization/settings': typeof AuthorizationSettingsRoute
   '/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/authorization/testing': typeof AuthorizationTestingRoute
   '/authorization/versions': typeof AuthorizationVersionsRoute
   '/developer/agents': typeof DeveloperAgentsRoute
   '/developer/auth-hooks': typeof DeveloperAuthHooksRoute
   '/developer/bots': typeof DeveloperBotsRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
   '/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
-  '/directory/connections': typeof DirectoryConnectionsRoute
   '/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/directory/sync-errors': typeof DirectorySyncErrorsRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
@@ -765,7 +814,6 @@ export interface FileRoutesByFullPath {
   '/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
   '/auth/api/tokens': typeof AuthApiTokensRoute
   '/auth/connections/ldap': typeof AuthConnectionsLdapRoute
-  '/auth/connections/saml': typeof AuthConnectionsSamlRoute
   '/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
   '/auth/connections/scim': typeof AuthConnectionsScimRoute
   '/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
@@ -775,6 +823,7 @@ export interface FileRoutesByFullPath {
   '/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
   '/security/compliance/retention': typeof SecurityComplianceRetentionRoute
@@ -791,16 +840,22 @@ export interface FileRoutesByFullPath {
   '/users/$userId/timeline': typeof UsersUserId_DottimelineRoute
   '/auth/connections/': typeof AuthConnectionsIndexRoute
   '/developer/webhooks/': typeof DeveloperWebhooksIndexRoute
+  '/directory/connections/': typeof DirectoryConnectionsIndexRoute
   '/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/auth/connections/saml/$id': typeof AuthConnectionsSamlIdRoute
+  '/directory/connections/ldap/$id': typeof DirectoryConnectionsLdapIdRoute
   '/auth/connections/oidc/': typeof AuthConnectionsOidcIndexRoute
+  '/auth/connections/saml/': typeof AuthConnectionsSamlIndexRoute
+  '/directory/connections/ldap/': typeof DirectoryConnectionsLdapIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/account': typeof AccountRouteWithChildren
+  '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/$': typeof SplatRoute
+  '/account': typeof AccountRouteWithChildren
   '/activity': typeof ActivityRoute
   '/analytics': typeof AnalyticsRoute
   '/applications': typeof ApplicationsRoute
@@ -810,12 +865,12 @@ export interface FileRoutesByTo {
   '/magic': typeof AuthMagicRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
+  '/api/activity-stream': typeof ApiActivityStreamRoute
+  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/account/data': typeof AccountDataRoute
   '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/account/sessions': typeof AccountSessionsRoute
-  '/api/activity-stream': typeof ApiActivityStreamRoute
-  '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/auth/social': typeof AuthSocialRoute
   '/authorization/abac': typeof AuthorizationAbacRoute
   '/authorization/access-tester': typeof AuthorizationAccessTesterRoute
@@ -830,14 +885,15 @@ export interface FileRoutesByTo {
   '/authorization/settings': typeof AuthorizationSettingsRoute
   '/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/authorization/testing': typeof AuthorizationTestingRoute
   '/authorization/versions': typeof AuthorizationVersionsRoute
   '/developer/agents': typeof DeveloperAgentsRoute
   '/developer/auth-hooks': typeof DeveloperAuthHooksRoute
   '/developer/bots': typeof DeveloperBotsRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
   '/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
-  '/directory/connections': typeof DirectoryConnectionsRoute
   '/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/directory/sync-errors': typeof DirectorySyncErrorsRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
@@ -874,7 +930,6 @@ export interface FileRoutesByTo {
   '/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
   '/auth/api/tokens': typeof AuthApiTokensRoute
   '/auth/connections/ldap': typeof AuthConnectionsLdapRoute
-  '/auth/connections/saml': typeof AuthConnectionsSamlRoute
   '/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
   '/auth/connections/scim': typeof AuthConnectionsScimRoute
   '/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
@@ -884,6 +939,7 @@ export interface FileRoutesByTo {
   '/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
   '/security/compliance/retention': typeof SecurityComplianceRetentionRoute
@@ -900,18 +956,24 @@ export interface FileRoutesByTo {
   '/users/$userId/timeline': typeof UsersUserId_DottimelineRoute
   '/auth/connections': typeof AuthConnectionsIndexRoute
   '/developer/webhooks': typeof DeveloperWebhooksIndexRoute
+  '/directory/connections': typeof DirectoryConnectionsIndexRoute
   '/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/auth/connections/saml/$id': typeof AuthConnectionsSamlIdRoute
+  '/directory/connections/ldap/$id': typeof DirectoryConnectionsLdapIdRoute
   '/auth/connections/oidc': typeof AuthConnectionsOidcIndexRoute
+  '/auth/connections/saml': typeof AuthConnectionsSamlIndexRoute
+  '/directory/connections/ldap': typeof DirectoryConnectionsLdapIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof appRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
-  '/account': typeof AccountRouteWithChildren
+  '/create-organization': typeof CreateOrganizationRoute
   '/healthz': typeof healthzRoute
   '/select-organization': typeof SelectOrganizationRoute
   '/verify-email': typeof VerifyEmailRoute
   '/_app/$': typeof SplatRoute
+  '/_app/account': typeof AccountRouteWithChildren
   '/_app/activity': typeof ActivityRoute
   '/_app/analytics': typeof AnalyticsRoute
   '/_app/applications': typeof ApplicationsRoute
@@ -921,13 +983,13 @@ export interface FileRoutesById {
   '/_auth/magic': typeof AuthMagicRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
-  '/account/data': typeof AccountDataRoute
-  '/account/profile': typeof AccountProfileRoute
-  '/account/security': typeof AccountSecurityRoute
-  '/account/sessions': typeof AccountSessionsRoute
   '/api/activity-stream': typeof ApiActivityStreamRoute
   '/api/qeetai-stream': typeof ApiQeetaiStreamRoute
   '/_app/': typeof IndexRoute
+  '/_app/account/data': typeof AccountDataRoute
+  '/_app/account/profile': typeof AccountProfileRoute
+  '/_app/account/security': typeof AccountSecurityRoute
+  '/_app/account/sessions': typeof AccountSessionsRoute
   '/_app/auth/social': typeof AuthSocialRoute
   '/_app/authorization/abac': typeof AuthorizationAbacRoute
   '/_app/authorization/access-tester': typeof AuthorizationAccessTesterRoute
@@ -942,14 +1004,15 @@ export interface FileRoutesById {
   '/_app/authorization/settings': typeof AuthorizationSettingsRoute
   '/_app/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/_app/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/_app/authorization/testing': typeof AuthorizationTestingRoute
   '/_app/authorization/versions': typeof AuthorizationVersionsRoute
   '/_app/developer/agents': typeof DeveloperAgentsRoute
   '/_app/developer/auth-hooks': typeof DeveloperAuthHooksRoute
   '/_app/developer/bots': typeof DeveloperBotsRoute
   '/_app/developer/credentials': typeof DeveloperCredentialsRoute
   '/_app/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/_app/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/_app/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
-  '/_app/directory/connections': typeof DirectoryConnectionsRoute
   '/_app/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/_app/directory/sync-errors': typeof DirectorySyncErrorsRoute
   '/_app/groups/$groupId': typeof GroupsGroupIdRoute
@@ -986,7 +1049,6 @@ export interface FileRoutesById {
   '/_app/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
   '/_app/auth/api/tokens': typeof AuthApiTokensRoute
   '/_app/auth/connections/ldap': typeof AuthConnectionsLdapRoute
-  '/_app/auth/connections/saml': typeof AuthConnectionsSamlRoute
   '/_app/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
   '/_app/auth/connections/scim': typeof AuthConnectionsScimRoute
   '/_app/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
@@ -996,6 +1058,7 @@ export interface FileRoutesById {
   '/_app/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/_app/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/_app/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/_app/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/_app/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/_app/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
   '/_app/security/compliance/retention': typeof SecurityComplianceRetentionRoute
@@ -1012,18 +1075,24 @@ export interface FileRoutesById {
   '/_app/users/$userId_/timeline': typeof UsersUserId_DottimelineRoute
   '/_app/auth/connections/': typeof AuthConnectionsIndexRoute
   '/_app/developer/webhooks/': typeof DeveloperWebhooksIndexRoute
+  '/_app/directory/connections/': typeof DirectoryConnectionsIndexRoute
   '/_app/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/_app/auth/connections/saml/$id': typeof AuthConnectionsSamlIdRoute
+  '/_app/directory/connections/ldap/$id': typeof DirectoryConnectionsLdapIdRoute
   '/_app/auth/connections/oidc/': typeof AuthConnectionsOidcIndexRoute
+  '/_app/auth/connections/saml/': typeof AuthConnectionsSamlIndexRoute
+  '/_app/directory/connections/ldap/': typeof DirectoryConnectionsLdapIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/account'
+    | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/$'
+    | '/account'
     | '/activity'
     | '/analytics'
     | '/applications'
@@ -1033,12 +1102,12 @@ export interface FileRouteTypes {
     | '/magic'
     | '/sign-in'
     | '/sign-up'
+    | '/api/activity-stream'
+    | '/api/qeetai-stream'
     | '/account/data'
     | '/account/profile'
     | '/account/security'
     | '/account/sessions'
-    | '/api/activity-stream'
-    | '/api/qeetai-stream'
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
@@ -1053,14 +1122,15 @@ export interface FileRouteTypes {
     | '/authorization/settings'
     | '/authorization/simulator'
     | '/authorization/templates'
+    | '/authorization/testing'
     | '/authorization/versions'
     | '/developer/agents'
     | '/developer/auth-hooks'
     | '/developer/bots'
     | '/developer/credentials'
     | '/developer/infrastructure'
+    | '/developer/machine-access'
     | '/directory/attribute-mappings'
-    | '/directory/connections'
     | '/directory/sync-activity'
     | '/directory/sync-errors'
     | '/groups/$groupId'
@@ -1097,7 +1167,6 @@ export interface FileRouteTypes {
     | '/auth/api/signing-keys'
     | '/auth/api/tokens'
     | '/auth/connections/ldap'
-    | '/auth/connections/saml'
     | '/auth/connections/saml-idp'
     | '/auth/connections/scim'
     | '/auth/login-methods/magic-links'
@@ -1107,6 +1176,7 @@ export interface FileRouteTypes {
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
+    | '/directory/connections/scim'
     | '/security/compliance/gdpr'
     | '/security/compliance/iso27001'
     | '/security/compliance/retention'
@@ -1123,16 +1193,22 @@ export interface FileRouteTypes {
     | '/users/$userId/timeline'
     | '/auth/connections/'
     | '/developer/webhooks/'
+    | '/directory/connections/'
     | '/auth/connections/oidc/$clientId'
+    | '/auth/connections/saml/$id'
+    | '/directory/connections/ldap/$id'
     | '/auth/connections/oidc/'
+    | '/auth/connections/saml/'
+    | '/directory/connections/ldap/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/account'
+    | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/$'
+    | '/account'
     | '/activity'
     | '/analytics'
     | '/applications'
@@ -1142,12 +1218,12 @@ export interface FileRouteTypes {
     | '/magic'
     | '/sign-in'
     | '/sign-up'
+    | '/api/activity-stream'
+    | '/api/qeetai-stream'
     | '/account/data'
     | '/account/profile'
     | '/account/security'
     | '/account/sessions'
-    | '/api/activity-stream'
-    | '/api/qeetai-stream'
     | '/auth/social'
     | '/authorization/abac'
     | '/authorization/access-tester'
@@ -1162,14 +1238,15 @@ export interface FileRouteTypes {
     | '/authorization/settings'
     | '/authorization/simulator'
     | '/authorization/templates'
+    | '/authorization/testing'
     | '/authorization/versions'
     | '/developer/agents'
     | '/developer/auth-hooks'
     | '/developer/bots'
     | '/developer/credentials'
     | '/developer/infrastructure'
+    | '/developer/machine-access'
     | '/directory/attribute-mappings'
-    | '/directory/connections'
     | '/directory/sync-activity'
     | '/directory/sync-errors'
     | '/groups/$groupId'
@@ -1206,7 +1283,6 @@ export interface FileRouteTypes {
     | '/auth/api/signing-keys'
     | '/auth/api/tokens'
     | '/auth/connections/ldap'
-    | '/auth/connections/saml'
     | '/auth/connections/saml-idp'
     | '/auth/connections/scim'
     | '/auth/login-methods/magic-links'
@@ -1216,6 +1292,7 @@ export interface FileRouteTypes {
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
+    | '/directory/connections/scim'
     | '/security/compliance/gdpr'
     | '/security/compliance/iso27001'
     | '/security/compliance/retention'
@@ -1232,17 +1309,23 @@ export interface FileRouteTypes {
     | '/users/$userId/timeline'
     | '/auth/connections'
     | '/developer/webhooks'
+    | '/directory/connections'
     | '/auth/connections/oidc/$clientId'
+    | '/auth/connections/saml/$id'
+    | '/directory/connections/ldap/$id'
     | '/auth/connections/oidc'
+    | '/auth/connections/saml'
+    | '/directory/connections/ldap'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
-    | '/account'
+    | '/create-organization'
     | '/healthz'
     | '/select-organization'
     | '/verify-email'
     | '/_app/$'
+    | '/_app/account'
     | '/_app/activity'
     | '/_app/analytics'
     | '/_app/applications'
@@ -1252,13 +1335,13 @@ export interface FileRouteTypes {
     | '/_auth/magic'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
-    | '/account/data'
-    | '/account/profile'
-    | '/account/security'
-    | '/account/sessions'
     | '/api/activity-stream'
     | '/api/qeetai-stream'
     | '/_app/'
+    | '/_app/account/data'
+    | '/_app/account/profile'
+    | '/_app/account/security'
+    | '/_app/account/sessions'
     | '/_app/auth/social'
     | '/_app/authorization/abac'
     | '/_app/authorization/access-tester'
@@ -1273,14 +1356,15 @@ export interface FileRouteTypes {
     | '/_app/authorization/settings'
     | '/_app/authorization/simulator'
     | '/_app/authorization/templates'
+    | '/_app/authorization/testing'
     | '/_app/authorization/versions'
     | '/_app/developer/agents'
     | '/_app/developer/auth-hooks'
     | '/_app/developer/bots'
     | '/_app/developer/credentials'
     | '/_app/developer/infrastructure'
+    | '/_app/developer/machine-access'
     | '/_app/directory/attribute-mappings'
-    | '/_app/directory/connections'
     | '/_app/directory/sync-activity'
     | '/_app/directory/sync-errors'
     | '/_app/groups/$groupId'
@@ -1317,7 +1401,6 @@ export interface FileRouteTypes {
     | '/_app/auth/api/signing-keys'
     | '/_app/auth/api/tokens'
     | '/_app/auth/connections/ldap'
-    | '/_app/auth/connections/saml'
     | '/_app/auth/connections/saml-idp'
     | '/_app/auth/connections/scim'
     | '/_app/auth/login-methods/magic-links'
@@ -1327,6 +1410,7 @@ export interface FileRouteTypes {
     | '/_app/auth/mfa/sms-email'
     | '/_app/auth/mfa/totp'
     | '/_app/developer/webhooks/$id'
+    | '/_app/directory/connections/scim'
     | '/_app/security/compliance/gdpr'
     | '/_app/security/compliance/iso27001'
     | '/_app/security/compliance/retention'
@@ -1343,14 +1427,19 @@ export interface FileRouteTypes {
     | '/_app/users/$userId_/timeline'
     | '/_app/auth/connections/'
     | '/_app/developer/webhooks/'
+    | '/_app/directory/connections/'
     | '/_app/auth/connections/oidc/$clientId'
+    | '/_app/auth/connections/saml/$id'
+    | '/_app/directory/connections/ldap/$id'
     | '/_app/auth/connections/oidc/'
+    | '/_app/auth/connections/saml/'
+    | '/_app/directory/connections/ldap/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   appRoute: typeof appRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
-  AccountRoute: typeof AccountRouteWithChildren
+  CreateOrganizationRoute: typeof CreateOrganizationRoute
   healthzRoute: typeof healthzRoute
   SelectOrganizationRoute: typeof SelectOrganizationRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
@@ -1374,11 +1463,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/account': {
-      id: '/account'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AccountRouteImport
+    '/create-organization': {
+      id: '/create-organization'
+      path: '/create-organization'
+      fullPath: '/create-organization'
+      preLoaderRoute: typeof CreateOrganizationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/healthz': {
@@ -1414,6 +1503,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/account': {
+      id: '/_app/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/activity': {
@@ -1479,34 +1575,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignUpRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/account/data': {
-      id: '/account/data'
-      path: '/data'
-      fullPath: '/account/data'
-      preLoaderRoute: typeof AccountDataRouteImport
-      parentRoute: typeof AccountRoute
-    }
-    '/account/profile': {
-      id: '/account/profile'
-      path: '/profile'
-      fullPath: '/account/profile'
-      preLoaderRoute: typeof AccountProfileRouteImport
-      parentRoute: typeof AccountRoute
-    }
-    '/account/security': {
-      id: '/account/security'
-      path: '/security'
-      fullPath: '/account/security'
-      preLoaderRoute: typeof AccountSecurityRouteImport
-      parentRoute: typeof AccountRoute
-    }
-    '/account/sessions': {
-      id: '/account/sessions'
-      path: '/sessions'
-      fullPath: '/account/sessions'
-      preLoaderRoute: typeof AccountSessionsRouteImport
-      parentRoute: typeof AccountRoute
-    }
     '/api/activity-stream': {
       id: '/api/activity-stream'
       path: '/api/activity-stream'
@@ -1520,6 +1588,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/qeetai-stream'
       preLoaderRoute: typeof ApiQeetaiStreamRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/account/data': {
+      id: '/_app/account/data'
+      path: '/data'
+      fullPath: '/account/data'
+      preLoaderRoute: typeof AccountDataRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/_app/account/profile': {
+      id: '/_app/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AccountProfileRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/_app/account/security': {
+      id: '/_app/account/security'
+      path: '/security'
+      fullPath: '/account/security'
+      preLoaderRoute: typeof AccountSecurityRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/_app/account/sessions': {
+      id: '/_app/account/sessions'
+      path: '/sessions'
+      fullPath: '/account/sessions'
+      preLoaderRoute: typeof AccountSessionsRouteImport
+      parentRoute: typeof AccountRoute
     }
     '/_app/auth/social': {
       id: '/_app/auth/social'
@@ -1626,6 +1722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthorizationTemplatesRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/authorization/testing': {
+      id: '/_app/authorization/testing'
+      path: '/authorization/testing'
+      fullPath: '/authorization/testing'
+      preLoaderRoute: typeof AuthorizationTestingRouteImport
+      parentRoute: typeof appRoute
+    }
     '/_app/authorization/versions': {
       id: '/_app/authorization/versions'
       path: '/authorization/versions'
@@ -1675,6 +1778,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeveloperInfrastructureRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/developer/machine-access': {
+      id: '/_app/developer/machine-access'
+      path: '/developer/machine-access'
+      fullPath: '/developer/machine-access'
+      preLoaderRoute: typeof DeveloperMachineAccessRouteImport
+      parentRoute: typeof appRoute
+    }
     '/_app/directory/': {
       id: '/_app/directory/'
       path: '/directory'
@@ -1687,13 +1797,6 @@ declare module '@tanstack/react-router' {
       path: '/directory/attribute-mappings'
       fullPath: '/directory/attribute-mappings'
       preLoaderRoute: typeof DirectoryAttributeMappingsRouteImport
-      parentRoute: typeof appRoute
-    }
-    '/_app/directory/connections': {
-      id: '/_app/directory/connections'
-      path: '/directory/connections'
-      fullPath: '/directory/connections'
-      preLoaderRoute: typeof DirectoryConnectionsRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/directory/sync-activity': {
@@ -1934,13 +2037,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthConnectionsLdapRouteImport
       parentRoute: typeof appRoute
     }
-    '/_app/auth/connections/saml': {
-      id: '/_app/auth/connections/saml'
-      path: '/auth/connections/saml'
-      fullPath: '/auth/connections/saml'
-      preLoaderRoute: typeof AuthConnectionsSamlRouteImport
-      parentRoute: typeof appRoute
-    }
     '/_app/auth/connections/saml-idp': {
       id: '/_app/auth/connections/saml-idp'
       path: '/auth/connections/saml-idp'
@@ -2009,6 +2105,20 @@ declare module '@tanstack/react-router' {
       path: '/developer/webhooks/$id'
       fullPath: '/developer/webhooks/$id'
       preLoaderRoute: typeof DeveloperWebhooksIdRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/directory/connections/': {
+      id: '/_app/directory/connections/'
+      path: '/directory/connections'
+      fullPath: '/directory/connections/'
+      preLoaderRoute: typeof DirectoryConnectionsIndexRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/directory/connections/scim': {
+      id: '/_app/directory/connections/scim'
+      path: '/directory/connections/scim'
+      fullPath: '/directory/connections/scim'
+      preLoaderRoute: typeof DirectoryConnectionsScimRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/security/compliance/gdpr': {
@@ -2123,11 +2233,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthConnectionsOidcClientIdRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/auth/connections/saml/': {
+      id: '/_app/auth/connections/saml/'
+      path: '/auth/connections/saml'
+      fullPath: '/auth/connections/saml/'
+      preLoaderRoute: typeof AuthConnectionsSamlIndexRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/auth/connections/saml/$id': {
+      id: '/_app/auth/connections/saml/$id'
+      path: '/auth/connections/saml/$id'
+      fullPath: '/auth/connections/saml/$id'
+      preLoaderRoute: typeof AuthConnectionsSamlIdRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/directory/connections/ldap/': {
+      id: '/_app/directory/connections/ldap/'
+      path: '/directory/connections/ldap'
+      fullPath: '/directory/connections/ldap/'
+      preLoaderRoute: typeof DirectoryConnectionsLdapIndexRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/directory/connections/ldap/$id': {
+      id: '/_app/directory/connections/ldap/$id'
+      path: '/directory/connections/ldap/$id'
+      fullPath: '/directory/connections/ldap/$id'
+      preLoaderRoute: typeof DirectoryConnectionsLdapIdRouteImport
+      parentRoute: typeof appRoute
+    }
   }
 }
 
+interface AccountRouteChildren {
+  AccountDataRoute: typeof AccountDataRoute
+  AccountProfileRoute: typeof AccountProfileRoute
+  AccountSecurityRoute: typeof AccountSecurityRoute
+  AccountSessionsRoute: typeof AccountSessionsRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountDataRoute: AccountDataRoute,
+  AccountProfileRoute: AccountProfileRoute,
+  AccountSecurityRoute: AccountSecurityRoute,
+  AccountSessionsRoute: AccountSessionsRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
+
 interface appRouteChildren {
   SplatRoute: typeof SplatRoute
+  AccountRoute: typeof AccountRouteWithChildren
   ActivityRoute: typeof ActivityRoute
   AnalyticsRoute: typeof AnalyticsRoute
   ApplicationsRoute: typeof ApplicationsRoute
@@ -2148,14 +2304,15 @@ interface appRouteChildren {
   AuthorizationSettingsRoute: typeof AuthorizationSettingsRoute
   AuthorizationSimulatorRoute: typeof AuthorizationSimulatorRoute
   AuthorizationTemplatesRoute: typeof AuthorizationTemplatesRoute
+  AuthorizationTestingRoute: typeof AuthorizationTestingRoute
   AuthorizationVersionsRoute: typeof AuthorizationVersionsRoute
   DeveloperAgentsRoute: typeof DeveloperAgentsRoute
   DeveloperAuthHooksRoute: typeof DeveloperAuthHooksRoute
   DeveloperBotsRoute: typeof DeveloperBotsRoute
   DeveloperCredentialsRoute: typeof DeveloperCredentialsRoute
   DeveloperInfrastructureRoute: typeof DeveloperInfrastructureRoute
+  DeveloperMachineAccessRoute: typeof DeveloperMachineAccessRoute
   DirectoryAttributeMappingsRoute: typeof DirectoryAttributeMappingsRoute
-  DirectoryConnectionsRoute: typeof DirectoryConnectionsRoute
   DirectorySyncActivityRoute: typeof DirectorySyncActivityRoute
   DirectorySyncErrorsRoute: typeof DirectorySyncErrorsRoute
   GroupsGroupIdRoute: typeof GroupsGroupIdRoute
@@ -2190,7 +2347,6 @@ interface appRouteChildren {
   AuthApiSigningKeysRoute: typeof AuthApiSigningKeysRoute
   AuthApiTokensRoute: typeof AuthApiTokensRoute
   AuthConnectionsLdapRoute: typeof AuthConnectionsLdapRoute
-  AuthConnectionsSamlRoute: typeof AuthConnectionsSamlRoute
   AuthConnectionsSamlIdpRoute: typeof AuthConnectionsSamlIdpRoute
   AuthConnectionsScimRoute: typeof AuthConnectionsScimRoute
   AuthLoginMethodsMagicLinksRoute: typeof AuthLoginMethodsMagicLinksRoute
@@ -2200,6 +2356,7 @@ interface appRouteChildren {
   AuthMfaSmsEmailRoute: typeof AuthMfaSmsEmailRoute
   AuthMfaTotpRoute: typeof AuthMfaTotpRoute
   DeveloperWebhooksIdRoute: typeof DeveloperWebhooksIdRoute
+  DirectoryConnectionsScimRoute: typeof DirectoryConnectionsScimRoute
   SecurityComplianceGdprRoute: typeof SecurityComplianceGdprRoute
   SecurityComplianceIso27001Route: typeof SecurityComplianceIso27001Route
   SecurityComplianceRetentionRoute: typeof SecurityComplianceRetentionRoute
@@ -2216,12 +2373,18 @@ interface appRouteChildren {
   UsersUserId_DottimelineRoute: typeof UsersUserId_DottimelineRoute
   AuthConnectionsIndexRoute: typeof AuthConnectionsIndexRoute
   DeveloperWebhooksIndexRoute: typeof DeveloperWebhooksIndexRoute
+  DirectoryConnectionsIndexRoute: typeof DirectoryConnectionsIndexRoute
   AuthConnectionsOidcClientIdRoute: typeof AuthConnectionsOidcClientIdRoute
+  AuthConnectionsSamlIdRoute: typeof AuthConnectionsSamlIdRoute
+  DirectoryConnectionsLdapIdRoute: typeof DirectoryConnectionsLdapIdRoute
   AuthConnectionsOidcIndexRoute: typeof AuthConnectionsOidcIndexRoute
+  AuthConnectionsSamlIndexRoute: typeof AuthConnectionsSamlIndexRoute
+  DirectoryConnectionsLdapIndexRoute: typeof DirectoryConnectionsLdapIndexRoute
 }
 
 const appRouteChildren: appRouteChildren = {
   SplatRoute: SplatRoute,
+  AccountRoute: AccountRouteWithChildren,
   ActivityRoute: ActivityRoute,
   AnalyticsRoute: AnalyticsRoute,
   ApplicationsRoute: ApplicationsRoute,
@@ -2242,14 +2405,15 @@ const appRouteChildren: appRouteChildren = {
   AuthorizationSettingsRoute: AuthorizationSettingsRoute,
   AuthorizationSimulatorRoute: AuthorizationSimulatorRoute,
   AuthorizationTemplatesRoute: AuthorizationTemplatesRoute,
+  AuthorizationTestingRoute: AuthorizationTestingRoute,
   AuthorizationVersionsRoute: AuthorizationVersionsRoute,
   DeveloperAgentsRoute: DeveloperAgentsRoute,
   DeveloperAuthHooksRoute: DeveloperAuthHooksRoute,
   DeveloperBotsRoute: DeveloperBotsRoute,
   DeveloperCredentialsRoute: DeveloperCredentialsRoute,
   DeveloperInfrastructureRoute: DeveloperInfrastructureRoute,
+  DeveloperMachineAccessRoute: DeveloperMachineAccessRoute,
   DirectoryAttributeMappingsRoute: DirectoryAttributeMappingsRoute,
-  DirectoryConnectionsRoute: DirectoryConnectionsRoute,
   DirectorySyncActivityRoute: DirectorySyncActivityRoute,
   DirectorySyncErrorsRoute: DirectorySyncErrorsRoute,
   GroupsGroupIdRoute: GroupsGroupIdRoute,
@@ -2284,7 +2448,6 @@ const appRouteChildren: appRouteChildren = {
   AuthApiSigningKeysRoute: AuthApiSigningKeysRoute,
   AuthApiTokensRoute: AuthApiTokensRoute,
   AuthConnectionsLdapRoute: AuthConnectionsLdapRoute,
-  AuthConnectionsSamlRoute: AuthConnectionsSamlRoute,
   AuthConnectionsSamlIdpRoute: AuthConnectionsSamlIdpRoute,
   AuthConnectionsScimRoute: AuthConnectionsScimRoute,
   AuthLoginMethodsMagicLinksRoute: AuthLoginMethodsMagicLinksRoute,
@@ -2294,6 +2457,7 @@ const appRouteChildren: appRouteChildren = {
   AuthMfaSmsEmailRoute: AuthMfaSmsEmailRoute,
   AuthMfaTotpRoute: AuthMfaTotpRoute,
   DeveloperWebhooksIdRoute: DeveloperWebhooksIdRoute,
+  DirectoryConnectionsScimRoute: DirectoryConnectionsScimRoute,
   SecurityComplianceGdprRoute: SecurityComplianceGdprRoute,
   SecurityComplianceIso27001Route: SecurityComplianceIso27001Route,
   SecurityComplianceRetentionRoute: SecurityComplianceRetentionRoute,
@@ -2312,8 +2476,13 @@ const appRouteChildren: appRouteChildren = {
   UsersUserId_DottimelineRoute: UsersUserId_DottimelineRoute,
   AuthConnectionsIndexRoute: AuthConnectionsIndexRoute,
   DeveloperWebhooksIndexRoute: DeveloperWebhooksIndexRoute,
+  DirectoryConnectionsIndexRoute: DirectoryConnectionsIndexRoute,
   AuthConnectionsOidcClientIdRoute: AuthConnectionsOidcClientIdRoute,
+  AuthConnectionsSamlIdRoute: AuthConnectionsSamlIdRoute,
+  DirectoryConnectionsLdapIdRoute: DirectoryConnectionsLdapIdRoute,
   AuthConnectionsOidcIndexRoute: AuthConnectionsOidcIndexRoute,
+  AuthConnectionsSamlIndexRoute: AuthConnectionsSamlIndexRoute,
+  DirectoryConnectionsLdapIndexRoute: DirectoryConnectionsLdapIndexRoute,
 }
 
 const appRouteWithChildren = appRoute._addFileChildren(appRouteChildren)
@@ -2338,27 +2507,10 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-interface AccountRouteChildren {
-  AccountDataRoute: typeof AccountDataRoute
-  AccountProfileRoute: typeof AccountProfileRoute
-  AccountSecurityRoute: typeof AccountSecurityRoute
-  AccountSessionsRoute: typeof AccountSessionsRoute
-}
-
-const AccountRouteChildren: AccountRouteChildren = {
-  AccountDataRoute: AccountDataRoute,
-  AccountProfileRoute: AccountProfileRoute,
-  AccountSecurityRoute: AccountSecurityRoute,
-  AccountSessionsRoute: AccountSessionsRoute,
-}
-
-const AccountRouteWithChildren =
-  AccountRoute._addFileChildren(AccountRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   appRoute: appRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
-  AccountRoute: AccountRouteWithChildren,
+  CreateOrganizationRoute: CreateOrganizationRoute,
   healthzRoute: healthzRoute,
   SelectOrganizationRoute: SelectOrganizationRoute,
   VerifyEmailRoute: VerifyEmailRoute,

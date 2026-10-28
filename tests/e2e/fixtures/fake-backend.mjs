@@ -36,6 +36,18 @@ const users = {
     tenantIds: ["22222222-2222-4222-8222-222222222222"],
     admin: true, // every console capability, so pages show their actions
   },
+  // New accounts with no organisation yet: one with nothing waiting, one invited to Org Two.
+  "fresh@example.com": {
+    id: "88888888-0000-4000-8000-000000000001",
+    name: "Fay Fresh",
+    tenantIds: [],
+  },
+  "invited@example.com": {
+    id: "88888888-0000-4000-8000-000000000002",
+    name: "Ivan Invited",
+    tenantIds: [],
+    invitedTo: ["33333333-3333-4333-8333-333333333333"],
+  },
   "unverified@example.com": {
     id: "77777777-7777-4777-8777-777777777777",
     name: "Uma Unverified",
@@ -113,11 +125,15 @@ function organization(tenantId) {
     plan: "enterprise",
     region: "us-east-1",
     logo_url: "",
-    domain: "",
+    domain: `${tenant.slug}.example`,
     roles: ["owner"],
     last_used_at: null,
     status: "active",
     created_at: "2026-01-01T00:00:00Z",
+    // The list's counts, and the details its page shows.
+    member_count: 4,
+    mfa_enabled_count: 3,
+    metadata: { industry: "Software", headquarters: "Bengaluru, IN" },
   };
 }
 
@@ -181,6 +197,9 @@ const server = createServer(async (request, response) => {
     return send(response, 200, pair);
   }
 
+  // Public, as on the server: the sign-in page and the account pages read it.
+  if (path === "/v1/social/platform/providers") return send(response, 200, { providers: [] });
+
   const authorization = request.headers.authorization ?? "";
   const principal = accessTokens.get(authorization.replace(/^Bearer\s+/i, ""));
   if (!principal) return fail(response, 401, "auth.session_expired", "Session expired.");
@@ -233,8 +252,154 @@ const server = createServer(async (request, response) => {
     return send(response, 200, { configured: false, available: false, source: "none" });
   }
   if (path === "/v1/notifications") return send(response, 200, { items: [], unread_count: 0 });
+  // The server's built-in catalogue (qeet-id-server billing/plans.go), in two currencies.
+  if (path === "/v1/me/invites") {
+    return send(response, 200, {
+      items: (user.invitedTo ?? []).map((tenantId) => ({
+        id: `invite-${tenantId.slice(0, 8)}`,
+        tenant_id: tenantId,
+        tenant_name: tenants[tenantId].name,
+        tenant_slug: tenants[tenantId].slug,
+        email: principal.email,
+        role_id: null,
+        expires_at: new Date(Date.now() + 6 * 86_400_000).toISOString(),
+        created_at: new Date(Date.now() - 2 * 3_600_000).toISOString(),
+      })),
+    });
+  }
+  if (path === "/v1/billing/plans") {
+    const plan = (code, name, description, features, INR, USD) => ({
+      id: code,
+      code,
+      name,
+      description,
+      interval: code.endsWith("_year") ? "year" : "month",
+      features,
+      prices: { INR, USD },
+    });
+    const features = {
+      free: [
+        "Up to 10,000 monthly active users",
+        "Passkeys, social & password login",
+        "7-day audit log",
+      ],
+      starter: ["Up to 25,000 MAU", "Custom branding & domain", "Webhooks & 30-day audit log"],
+      pro: [
+        "Up to 100,000 MAU (then metered)",
+        "Enterprise SSO — SAML & OIDC included",
+        "Audit export (90-day) & Qeet AI",
+      ],
+      enterprise: [
+        "Unlimited MAU & organizations",
+        "SCIM & LDAP directory sync",
+        "99.99% SLA · named CSM",
+      ],
+    };
+    return send(response, 200, {
+      items: [
+        plan("free", "Free", "For prototypes and early projects.", features.free, 0, 0),
+        plan(
+          "starter",
+          "Starter",
+          "For teams shipping to production.",
+          features.starter,
+          240000,
+          2900,
+        ),
+        plan("pro", "Pro", "For scaling B2B/B2C — no SSO tax.", features.pro, 800000, 9900),
+        plan(
+          "enterprise",
+          "Enterprise",
+          "Governance, compliance & control for large orgs.",
+          features.enterprise,
+          2490000,
+          29900,
+        ),
+        plan(
+          "starter_year",
+          "Starter",
+          "For teams shipping to production. Billed yearly.",
+          features.starter,
+          2400000,
+          29000,
+        ),
+        plan(
+          "pro_year",
+          "Pro",
+          "For scaling B2B/B2C — no SSO tax. Billed yearly.",
+          features.pro,
+          8000000,
+          99000,
+        ),
+      ],
+    });
+  }
+  // The signed-in person's own sign-in settings, which the account pages read.
+  const ago = (ms) => new Date(Date.now() - ms).toISOString();
+  if (path === "/v1/mfa/totp") return send(response, 200, { enrolled: true });
+  if (path === "/v1/mfa/recovery-codes") {
+    return send(response, 200, { enrolled: true, total: 10, remaining: 8 });
+  }
+  if (path === "/v1/auth/password") return send(response, 200, { has_password: true });
+  if (path === "/v1/auth/sign-in-methods") {
+    return send(response, 200, { password: true, passkeys: 1, linked_identities: 0, total: 2 });
+  }
+  if (path === "/v1/passkeys" && method === "GET") {
+    return send(response, 200, {
+      items: [
+        {
+          id: "passkey-1",
+          user_id: user.id,
+          name: "MacBook Pro (Touch ID)",
+          transports: ["internal"],
+          created_at: ago(60 * 86_400_000),
+          last_used_at: ago(5 * 60_000),
+        },
+      ],
+      enrollment_allowed: true,
+    });
+  }
+  if (path === "/v1/auth/sessions" && method === "GET") {
+    const session = (id, device, device_kind, country, ip, since, seen) => ({
+      id,
+      user_id: user.id,
+      tenant_id: principal.tenantId ?? "",
+      ip,
+      device,
+      device_kind,
+      country,
+      created_at: ago(since),
+      last_seen_at: ago(seen),
+      status: "active",
+      current: id === principal.sessionId,
+    });
+    return send(response, 200, {
+      items: [
+        session(
+          principal.sessionId,
+          "Chrome on macOS",
+          "desktop",
+          "IN",
+          "103.21.58.14",
+          3 * 3_600_000,
+          0,
+        ),
+        session(
+          "session-phone",
+          "Safari on iPhone",
+          "mobile",
+          "IN",
+          "49.36.112.7",
+          2 * 86_400_000,
+          2 * 3_600_000,
+        ),
+      ],
+    });
+  }
   if (method === "GET") {
     const tenant = tenants[principal.tenantId];
+    // A new account has no organisation: nothing tenant-scoped to read.
+    if (!tenant) return send(response, 200, { items: [] });
     const context = { tenantId: principal.tenantId, tenant, principalId: user.id };
     return send(response, 200, tenantRead(path, url.searchParams, context) ?? { items: [] });
   }

@@ -39,7 +39,7 @@ export const TEMPLATE_CATEGORIES = ["saas", "cloud", "regulated", "baseline"] as
 
 /**
  * A starter policy. `name` and `description` are catalogue keys, and the categories read
- * `authorization:policyTemplatesPage.categories.<category>`. The built doc is policy content, so it stays
+ * `authorization:lists.templates.categories.<category>`. The built doc is policy content, so it stays
  * as written.
  */
 export interface PolicyTemplate {

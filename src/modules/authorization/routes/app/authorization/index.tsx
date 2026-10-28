@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { AuthorizationOverviewPage } from "@/modules/authorization/pages";
-
+// The Dashboard is the console's one overview; this area opens on Roles, and an old link or
+// bookmark to its overview lands there.
 export const Route = createFileRoute("/_app/authorization/")({
-  staticData: { capability: "role.read" },
-  component: AuthorizationOverviewPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/authorization/roles", replace: true });
+  },
 });

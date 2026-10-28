@@ -10,6 +10,7 @@ import { gzipSync } from "node:zlib";
 
 /** The layout route every signed-in page renders inside; its initial JS is the shell. */
 export const SHELL_ROUTE = "/_app";
+const ROOT_ROUTE = "__root__";
 
 // A static import as Rolldown writes one: `import{a as b}from"./x.js"`, `import"./x.js"` or
 // `export{a}from"./x.js"`. A dynamic import("./x.js") loads later, so it doesn't count.
@@ -43,6 +44,10 @@ export function routeChain(routes, id) {
   }
   const chain = [];
   for (let at = id; at !== undefined; at = parentOf.get(at)) chain.unshift(at);
+  // The manifest leaves out a layout with no client code of its own (a pathless `_auth` that
+  // only guards), and with it the link to its pages. They render on the root, so they're
+  // measured from it, not skipped as roots.
+  if (chain[0] !== ROOT_ROUTE && Object.hasOwn(routes, ROOT_ROUTE)) chain.unshift(ROOT_ROUTE);
   return chain;
 }
 

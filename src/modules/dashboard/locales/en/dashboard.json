@@ -63,143 +63,6 @@
     "emptyTitle": "No activity yet",
     "emptyDescription": "Events will appear here as users interact with your organization."
   },
-  "noWorkspace": {
-    "title": "Create your first organization",
-    "cta": "Create organization",
-    "description": "Your account isn't tied to an organization yet. Create one to start managing users, configuring auth, and inviting teammates — you'll be its owner."
-  },
-  "welcome": {
-    "eyebrow": "Welcome to Qeet ID",
-    "description": "Your account isn't tied to an organization yet. Create one to manage users, configure authentication, and invite teammates — you’ll be its owner.",
-    "reviewSecurity": "Review account security",
-    "foundations": {
-      "title": "What an organization establishes",
-      "boundary": {
-        "title": "Organization boundary",
-        "description": "Isolate identities, policies, and administrators from every other organization."
-      },
-      "authentication": {
-        "title": "Authentication policy",
-        "description": "Configure passkeys, federation, MFA, and application credentials in one place."
-      },
-      "audit": {
-        "title": "Verifiable audit trail",
-        "description": "Record operator and identity events from the first configuration change."
-      }
-    },
-    "checklist": {
-      "title": "Get started with Qeet ID",
-      "description": "A few simple steps to set up your organization and start secure access for your team.",
-      "progress": "{{completed}} of {{total}} complete",
-      "progressLabel": "Organization setup progress",
-      "collapse": "Collapse getting-started checklist",
-      "expand": "Expand getting-started checklist",
-      "steps": {
-        "organization": {
-          "title": "Create your organization",
-          "description": "Set up your organization and basic details like name and domain."
-        },
-        "authentication": {
-          "title": "Configure authentication",
-          "description": "Set your passkey and MFA policies to match your security requirements."
-        },
-        "team": {
-          "title": "Invite your team",
-          "description": "Add teammates and grant the right access to get started."
-        }
-      }
-    },
-    "account": {
-      "complete": {
-        "title": "Your account is ready",
-        "description": "Your identity has been verified and your account is secure."
-      },
-      "pending": {
-        "title": "Finish securing your account",
-        "description": "Verify your email and review your account security to complete your setup."
-      },
-      "loading": {
-        "title": "Checking your account",
-        "description": "Checking your email verification and enrolled passkeys."
-      },
-      "unavailable": {
-        "title": "Account status unavailable",
-        "description": "We couldn’t check your account. Try again to see its current status."
-      },
-      "status": {
-        "pending": "Action needed",
-        "loading": "Checking…",
-        "unavailable": "Unable to check"
-      },
-      "retry": "Check again",
-      "rows": {
-        "identity": {
-          "label": "Identity verification",
-          "complete": "Identity verified",
-          "description": "Completed"
-        },
-        "passkey": {
-          "label": "Passkeys",
-          "complete": "Passkeys enabled",
-          "description": "Ready to use"
-        },
-        "account": {
-          "label": "Account security",
-          "complete": "Account secured",
-          "description": "No action required"
-        }
-      }
-    },
-    "help": {
-      "title": "Need help getting started?",
-      "description": "Explore our documentation or contact our team.",
-      "docs": {
-        "title": "View documentation",
-        "description": "Step-by-step guides and best practices"
-      },
-      "support": {
-        "title": "Contact support",
-        "description": "Get help from our team"
-      },
-      "newTab": "(opens in a new tab)"
-    },
-    "footer": {
-      "tagline": "Passkeys-first identity and access platform",
-      "navigation": "Dashboard resources",
-      "status": "Status",
-      "docs": "Documentation",
-      "privacy": "Privacy",
-      "terms": "Terms"
-    }
-  },
-  "invites": {
-    "title": "You’ve been invited",
-    "description": "Accept an invitation to join an existing organization.",
-    "invitedAs": "Invited as {{email}}",
-    "decline": "Decline",
-    "accept": "Accept & join",
-    "dismissed": "Invitation dismissed."
-  },
-  "analytics": {
-    "description": "Product analytics across organizations, applications, and authentication methods.",
-    "kpiHintVs30d": "vs last 30 days",
-    "kpiHintStickiness": "stickiness",
-    "kpiHintLast30d": "last 30 days",
-    "kpiHintVs30dAgo": "vs 30 days ago",
-    "activeUsersTitle": "Active users",
-    "activeUsersDesc": "Weekly WAU and average DAU · last 8 weeks",
-    "emptyActivity": "No session activity recorded in the last 8 weeks.",
-    "geoTitle": "Geography",
-    "geoDesc": "Users by region",
-    "emptyGeo": "Requires GeoIP enrichment.",
-    "apiTitle": "API volume",
-    "apiDesc": "Requests per day",
-    "emptyApi": "Requires request-volume instrumentation.",
-    "appsTitle": "Top applications",
-    "appsDesc": "Ranked by logins in the selected period",
-    "emptyApps": "Requires per-application login tagging on auth events."
-  },
-  "finalizingSubscription": "Finalizing your subscription…",
   "insights": {
     "attentionRequired": "Attention required",
     "signalsFromLiveTelemetry": "Signals from live telemetry that need an operator's eyes",
@@ -278,70 +141,6 @@
       "customRoles": "Custom roles"
     }
   },
-  "analyticsPage": {
-    "avgSessionsUser": "Avg sessions / user",
-    "totalUsers": "Total users",
-    "dauAvg": "DAU (avg)"
-  },
-  "appSidebar": {
-    "qeetIdOverview": "Qeet ID overview",
-    "consoleSections": "Console sections",
-    "controlPlane": "Control plane"
-  },
-  "applicationsOverview": {
-    "registeredApps": "Registered apps",
-    "machineApps": "Machine apps",
-    "activeGrants": "Active grants",
-    "apiKeys": "API keys",
-    "customScopes": "Custom scopes",
-    "applications": "Applications",
-    "yourRegisteredOidcOauth": "Your registered OIDC / OAuth relying-party apps.",
-    "viewConfigureAndManage": "View, configure, and manage client applications.",
-    "nonInteractiveServiceAnd": "Non-interactive service and machine identities.",
-    "manageMachineToMachine": "Manage machine-to-machine applications and credentials.",
-    "oauthGrants": "OAuth grants",
-    "consentsUsersHaveGranted": "Consents users have granted to your apps.",
-    "viewAndManageOauth": "View and manage OAuth grants and consent records.",
-    "manageApiKeysFor": "Manage API keys for programmatic access.",
-    "createRotateAndRevoke": "Create, rotate, and revoke API keys.",
-    "scopesPermissions": "Scopes & permissions",
-    "defineAndManageCustom": "Define and manage custom scopes and permissions.",
-    "controlWhatYourApplications": "Control what your applications can access.",
-    "registerApplication": "Register application",
-    "createANewOidc": "Create a new OIDC / OAuth app",
-    "createMachineApp": "Create machine app",
-    "setUpANon": "Set up a non-interactive app",
-    "generateApiKey": "Generate API key",
-    "createAnApiKey": "Create an API key for accessing APIs",
-    "reviewGrants": "Review grants",
-    "viewAndManageOauthGrants": "View and manage OAuth grants",
-    "exploreAndManage": "Explore and manage",
-    "jumpToAnyArea": "Jump to any area in applications.",
-    "applicationAreas": "Application areas",
-    "gettingStarted": "Getting started",
-    "setUpYourFirst": "Set up your first application or explore the available capabilities.",
-    "registerAnApplication": "Register an application",
-    "setUpYourFirst2": "Set up your first client application.",
-    "configurePermissions": "Configure permissions",
-    "addRequestedScopes": "Add requested scopes.",
-    "integrateAndTest": "Integrate and test",
-    "useOurSdksOr": "Use our SDKs or OAuth flows.",
-    "quickActions": "Quick actions",
-    "commonTasksToManage": "Common tasks to manage your applications.",
-    "description": "Manage client applications, machine identities, API keys, permissions, and OAuth consent across your organization.",
-    "registerApp": "Register app",
-    "viewDocumentation": "View documentation",
-    "statAcrossApps": "Across registered apps",
-    "statAdded_one": "+{{count}} from last 30 days",
-    "statAdded_other": "+{{count}} from last 30 days",
-    "statNoChange": "No change"
-  },
-  "consoleHeader": {
-    "searchTheControlPlane": "Search the control plane",
-    "keyboardShortcuts": "Keyboard shortcuts",
-    "keyboardShortcuts2": "Keyboard shortcuts (?)",
-    "searchUnavailable": "Search unavailable while access loads"
-  },
   "dashboardActivity": {
     "testAnAccessDecision": "Test an access decision",
     "evaluateAPolicyBefore": "Evaluate a policy before it reaches production",
@@ -402,30 +201,6 @@
     },
     "range": "Time range"
   },
-  "headerUser": {
-    "accountMenu": "Account menu",
-    "myAccount": "My account",
-    "securityMfa": "Security & MFA",
-    "organizationSettings": "Organization settings",
-    "apiKeys": "API Keys",
-    "billing": "Billing",
-    "signOut": "Sign out",
-    "signingOut": "Signing out…"
-  },
-  "navMain": {
-    "checkingAvailableConsoleSections": "Checking available console sections",
-    "checkingOrganizationAccess": "Checking organization access"
-  },
-  "notificationsInbox": {
-    "notifications": "Notifications",
-    "viewAllActivity": "View all activity →",
-    "new": "New",
-    "youReAllCaughtUp": "You're all caught up",
-    "newActivityInYour": "New activity in your organization will show up here.",
-    "unreadLabel_one": "Notifications ({{count}} unread)",
-    "unreadLabel_other": "Notifications ({{count}} unread)",
-    "markAllRead": "Mark all read"
-  },
   "onboardingChecklist": {
     "setYourBrand": "Set your brand",
     "uploadALogoAnd": "Upload a logo and pick your brand colours.",
@@ -457,217 +232,14 @@
     "recommendedForPrivilegedOperators": "Recommended for privileged operators",
     "addPasskey": "Add a passkey"
   },
-  "settingsOverview": {
-    "organizationSetup": "Organization setup",
-    "finishSetup": "Finish setup",
-    "completeYourConfigurationFor": "Complete your configuration for the best experience.",
-    "goToTheNext": "Go to the next unfinished setting",
-    "yourOrganizationIsActive": "Your organization is active and in good standing.",
-    "operational": "Operational",
-    "settingsAreas": "Settings areas",
-    "description": "Configure your organization — profile, domains, branding, security, billing and AI.",
-    "plan": "{{plan}} plan",
-    "established": "Est. {{date}}",
-    "verifiedDomains_one": "{{count}} verified domain",
-    "verifiedDomains_other": "{{count}} verified domains",
-    "noVerifiedDomains": "No verified domains",
-    "complete": "Complete",
-    "notConfigured": "Not configured",
-    "templatesConfigured_one": "{{count}} template configured",
-    "templatesConfigured_other": "{{count}} templates configured",
-    "defaultTemplates": "Using default templates",
-    "strong": "Strong",
-    "reviewRecommended": "Review recommended",
-    "passkeysOn": "Passkeys enabled",
-    "passkeysOff": "Passkeys off",
-    "mfaOptional": "MFA optional",
-    "mfaRequired": "MFA required",
-    "noSubscription": "No subscription",
-    "renews": "Renews {{date}}",
-    "connected": "Connected",
-    "notConnected": "Not connected",
-    "oneModel": "1 model",
-    "progress": "{{complete}} of {{total}} complete",
-    "areas_one": "{{count}} area",
-    "areas_other": "{{count}} areas",
-    "greeting": {
-      "morning": "Good morning",
-      "morningNamed": "Good morning, {{name}}",
-      "afternoon": "Good afternoon",
-      "afternoonNamed": "Good afternoon, {{name}}",
-      "evening": "Good evening",
-      "eveningNamed": "Good evening, {{name}}"
-    }
-  },
   "shortcutsDialog": {
     "keyboardShortcuts": "Keyboard shortcuts",
     "moveAroundWithoutTouching": "Move around without touching the mouse."
   },
-  "teamSwitcher": {
-    "noOrganization": "No organization",
-    "createATenantBoundary": "Create a tenant boundary",
-    "organizations": "Organizations",
-    "noOrganizationsYet": "No organizations yet",
-    "currentOrganization": "Current organization",
-    "addOrganization": "Add organization"
-  },
-  "verifyEmailBanner": {
-    "emailVerificationCode": "Email verification code",
-    "message": "Verify <email>{{email}}</email> to unlock organization creation.",
-    "verify": "Verify",
-    "sendCode": "Send verification code"
-  },
   "notFound": {
     "title": "Page not found",
-    "description": "There's nothing at this address. Check the link, or go back to the dashboard.",
+    "description": "There's nothing at this address. Check the link, or go to the dashboard.",
     "home": "Go to the dashboard"
-  },
-  "authenticationOverview": {
-    "deltaPp": "{{value}}pp",
-    "mfaChip": "{{method}} {{count}}"
-  },
-  "impersonationBanner": {
-    "message": "You are impersonating <target>{{target}}</target><admin> — signed in as {{admin}}.</admin>",
-    "exit": "Exit impersonation"
-  },
-  "authOverview": {
-    "description": "How people prove who they are — sign-in methods, social providers, SSO, MFA and devices.",
-    "kpi": {
-      "signIn": {
-        "label": "Sign-in methods",
-        "detail": "{{count}} of 5 available"
-      },
-      "social": {
-        "label": "Social providers",
-        "none": "None configured"
-      },
-      "sso": {
-        "label": "SSO connections",
-        "detail": "{{inbound}} inbound · {{outbound}} outbound"
-      },
-      "mfa": {
-        "label": "MFA coverage",
-        "detail": "of active users",
-        "delta": "vs 7 days ago"
-      },
-      "devices": {
-        "label": "Registered devices",
-        "detail_one": "across {{count}} person",
-        "detail_other": "across {{count}} people",
-        "none": "No trusted devices yet"
-      }
-    },
-    "areas": {
-      "title": "Authentication Areas",
-      "description": "Explore and configure each area of authentication.",
-      "documentation": "View documentation",
-      "signin": {
-        "title": "Sign-in",
-        "description": "Passwords, passwordless, passkeys and magic links.",
-        "stat": "{{count}} of 5 methods enabled"
-      },
-      "social": {
-        "title": "Social",
-        "description": "Google, Microsoft, Apple, GitHub and more.",
-        "stat_one": "{{count}} provider configured",
-        "stat_other": "{{count}} providers configured"
-      },
-      "sso": {
-        "title": "SSO",
-        "description": "SAML connections and Qeet ID as an IdP.",
-        "stat_one": "{{count}} connection configured",
-        "stat_other": "{{count}} connections configured"
-      },
-      "mfa": {
-        "title": "MFA",
-        "description": "TOTP and SMS / email second factors.",
-        "stat": "{{pct}}% user coverage"
-      },
-      "devices": {
-        "title": "Devices",
-        "description": "Trusted devices and OAuth device authorizations.",
-        "stat_one": "{{count}} trusted device",
-        "stat_other": "{{count}} trusted devices"
-      },
-      "methods": {
-        "password": "Password",
-        "passkey": "Passkeys",
-        "magicLink": "Magic links"
-      },
-      "chips": {
-        "rememberOn": "Remember device on",
-        "rememberOff": "Remember device off",
-        "samlIn": "{{count}} SAML",
-        "samlOut": "{{count}} SAML IdP"
-      }
-    },
-    "activity": {
-      "title": "Recent activity",
-      "description": "Latest changes to your authentication settings.",
-      "viewAll": "View all activity",
-      "emptyTitle": "No recent activity",
-      "emptyDescription": "Changes to sign-in methods, providers and policies will appear here."
-    },
-    "posture": {
-      "title": "Security posture",
-      "overall": "Overall",
-      "state": {
-        "healthy": "Good",
-        "attention": "Needs attention",
-        "critical": "At risk"
-      },
-      "summary": {
-        "healthy": "Your authentication setup is in good shape, with a few opportunities to improve.",
-        "attention": "Your authentication setup has gaps worth closing.",
-        "critical": "Your authentication setup needs attention before rollout."
-      },
-      "items": {
-        "signin": "Sign-in methods configured",
-        "social": "Social providers configured",
-        "mfa": "Increase MFA adoption",
-        "sso": "SSO configured",
-        "devices": "Device management active"
-      },
-      "callout": {
-        "title": "Get to 90%+",
-        "allClear": "Everything is configured",
-        "allClearDetail": "No outstanding setup steps for authentication."
-      }
-    },
-    "actions": {
-      "title": "Recommended actions",
-      "pending": "{{count}} pending",
-      "items": {
-        "signin": {
-          "title": "Add a sign-in method",
-          "description": "A second method keeps people signing in if one fails",
-          "verb": "Set up"
-        },
-        "social": {
-          "title": "Add another social provider",
-          "description": "Expand sign-in options (e.g. Microsoft, Apple)",
-          "verb": "Add"
-        },
-        "mfa": {
-          "title": "Increase MFA adoption",
-          "description": "Encourage more users to enable MFA",
-          "verb": "Review"
-        },
-        "sso": {
-          "title": "Configure SSO",
-          "description": "Enable SAML or OIDC for your organization",
-          "verb": "Set up"
-        },
-        "devices": {
-          "title": "Review device trust",
-          "description": "Audit and manage registered devices",
-          "verb": "Review"
-        }
-      }
-    },
-    "states": {
-      "unavailable": "Unavailable"
-    }
   },
   "nav": {
     "overview": {
@@ -677,26 +249,11 @@
       "analytics": {
         "title": "Analytics"
       }
-    },
-    "applications": {
-      "overview": {
-        "title": "Overview"
-      }
-    },
-    "authentication": {
-      "overview": {
-        "title": "Overview"
-      }
-    },
-    "settings": {
-      "overview": {
-        "title": "Overview"
-      }
     }
   },
   "commands": {
     "dashboard": {
-      "title": "Open Dashboard",
+      "title": "Open dashboard",
       "subtitle": "Go to the organization overview",
       "keywords": "home, overview, main"
     },
@@ -717,6 +274,427 @@
     },
     "prompts": {
       "explainOAuth": "Explain the OAuth 2.0 grant types available in Qeet ID and when to use each."
+    }
+  },
+  "frame": {
+    "product": "Qeet ID",
+    "navigation": "Qeet ID",
+    "search": "Search or jump to…",
+    "searchUnavailable": "Search is available once your access has loaded",
+    "qeetAi": "Qeet AI",
+    "accountMenu": "Account menu",
+    "switchOrganization": "Switch organisation",
+    "youAreIn": "You're in {{name}}",
+    "myAccount": "My account",
+    "securityAndSignIn": "Security and sign-in",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "language": "Language",
+    "keyboardShortcuts": "Keyboard shortcuts",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…",
+    "breadcrumb": "Breadcrumb",
+    "pageViews": "{{page}} views",
+    "help": {
+      "title": "Help",
+      "docs": "Documentation",
+      "docsText": "Guides and the API reference.",
+      "shortcuts": "Keyboard shortcuts",
+      "shortcutsText": "Move around without the mouse."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "list": "Notifications",
+      "unread_one": "{{count}} unread",
+      "unread_other": "{{count}} unread",
+      "noUnread": "No unread notifications",
+      "markAllRead": "Mark all as read",
+      "new": "New",
+      "viewAll": "View all activity",
+      "emptyTitle": "You're all caught up",
+      "emptyText": "Sign-in alerts, sync results and key rotations will show here.",
+      "loading": "Loading notifications",
+      "errorTitle": "Notifications didn't load",
+      "errorText": "Check your connection, then try again.",
+      "tryAgain": "Try again"
+    },
+    "chooseOrganization": "Choose an organisation"
+  },
+  "overview": {
+    "title": "Overview",
+    "description": "How sign-in is going, and what needs you.",
+    "invite": "Invite people",
+    "chart": "Chart",
+    "table": "Table",
+    "groups": {
+      "security": "Sign-in and security",
+      "people": "People and apps",
+      "setup": "Setup",
+      "organisation": "Organisation"
+    },
+    "pulse": {
+      "signIns": "Sign-ins today",
+      "signInsNote": {
+        "up": "Up from {{n}} yesterday · 14 days",
+        "down": "Down from {{n}} yesterday · 14 days",
+        "same": "The same as yesterday · 14 days"
+      },
+      "failed": "Failed sign-ins, 24 hours",
+      "failedNote": "{{n}} yesterday · 14 days",
+      "active": "People active today",
+      "activeNote": "{{pct}}% of the {{mau}} active this month",
+      "twoStep": "Two-step verification",
+      "twoStepNote": "{{have}} of {{total}} people · target {{target}}%",
+      "twoStepMeter": "Two-step verification: {{pct}}% of people, against a target of {{target}}%"
+    },
+    "signIns": {
+      "title": "Sign-ins, last 14 days",
+      "note": "Every sign-in, and the failed ones on the same scale. Hover a day for its methods.",
+      "view": "Sign-ins: view",
+      "day": "Day",
+      "signIns": "Sign-ins",
+      "failed": "Failed",
+      "signInsLower": "sign-ins",
+      "failedLower": "failed",
+      "endToday": "{{n}} today",
+      "endFailed": "{{n}} failed"
+    },
+    "methods": {
+      "title": "How people sign in",
+      "note": "Share of the last 30 days, and each method's last 14 days on one scale",
+      "action": "Methods",
+      "method": "Method",
+      "days": "14 days",
+      "share": "Share",
+      "sso": "Single sign-on",
+      "oidc": "OpenID Connect",
+      "passkeyHint": "Can't be phished",
+      "empty": "No sign-ins in the last 30 days."
+    },
+    "failedHours": {
+      "title": "Failed sign-ins, last 24 hours",
+      "note": "Hour by hour, in your time.",
+      "noneNote": "Hour by hour. None in the last 24 hours.",
+      "burstsNote_one": "Hour by hour. Quiet, apart from one burst.",
+      "burstsNote_other": "Hour by hour. Quiet, apart from {{count}} bursts.",
+      "burst": "{{n}} at {{time}}",
+      "tip": "failed sign-ins",
+      "action": "Activity"
+    },
+    "twoStep": {
+      "title": "Two-step verification",
+      "note": "People with a second factor, against the {{target}}% target",
+      "action": "Require it",
+      "gauge": "{{pct}}% of people have a second factor; the target is {{target}}%",
+      "ofPeople": "{{have}} of {{total}} people",
+      "target": "Target {{pct}}%",
+      "split": "{{have}} people have a second factor, {{missing}} don't",
+      "have": "Have one",
+      "none": "None yet",
+      "devices": "Remembered devices",
+      "devicesValue_one": "{{count}} for {{people}} people",
+      "devicesValue_other": "{{count}} for {{people}} people",
+      "authenticator": "Authenticator app"
+    },
+    "activePeople": {
+      "title": "Active people, by week",
+      "note": "Seen at least once in the week, and on an average day",
+      "action": "Analytics",
+      "week": "In the week",
+      "day": "On an average day",
+      "weekLower": "in the week",
+      "dayLower": "on an average day"
+    },
+    "apps": {
+      "title": "Applications people use",
+      "note": "People signed in to each, of {{total}}",
+      "action": "Applications",
+      "empty": "Nobody has signed in to an application yet.",
+      "unused_one": "1 has no one: {{names}}",
+      "unused_other": "{{count}} have no one: {{names}}"
+    },
+    "activity": {
+      "title": "Recent activity",
+      "action": "Activity",
+      "loading": "Loading the latest events…",
+      "today": "Today",
+      "earlier": "Earlier",
+      "emptyTitle": "No activity yet",
+      "emptyText": "Sign-ins and changes show here as they happen."
+    },
+    "attention": {
+      "title": "Needs attention",
+      "critical_one": "{{count}} critical",
+      "critical_other": "{{count}} critical",
+      "others_one": "{{count}} more to look at",
+      "others_other": "{{count}} more to look at",
+      "more": "Show {{count}} more",
+      "fewer": "Show fewer",
+      "clearTitle": "Nothing needs attention",
+      "clearText": "No failing connections or webhooks, no keys about to expire and no open risk alerts.",
+      "webhookOff": {
+        "title": "Webhook turned off",
+        "detail": "Deliveries to {{host}} kept failing, so it was turned off",
+        "action": "Open"
+      },
+      "webhooksFailing": {
+        "title_one": "A webhook is failing",
+        "title_other": "{{count}} webhooks failing",
+        "detail": "{{hosts}}",
+        "action": "Review"
+      },
+      "anomaly": {
+        "title": "{{type}}",
+        "detail": "{{detail}}",
+        "detailFrom": "{{detail}} · from {{ip}}",
+        "action": "Investigate"
+      },
+      "keysExpiring": {
+        "title_one": "An API key expires in {{days}} days",
+        "title_other": "{{count}} API keys expire soon",
+        "detail": "{{name}} expires first, in {{days}} days",
+        "action": "Review keys"
+      },
+      "twoStep": {
+        "title": "Two-step verification is under the target",
+        "detail": "{{have}} of {{total}} people have a second factor; the target is {{target}}%",
+        "action": "Require it"
+      },
+      "directoryDown": {
+        "title": "{{name}} can't reach its server",
+        "detail_one": "{{type}} · its last check failed {{count}} day ago: {{reason}}",
+        "detail_other": "{{type}} · its last check failed {{count}} days ago: {{reason}}",
+        "detailToday": "{{type}} · its last check failed today: {{reason}}",
+        "action": "Fix it"
+      },
+      "groupsEmpty": {
+        "title_one": "A group has no members",
+        "title_other": "{{count}} groups have no members",
+        "detail": "{{names}}",
+        "action": "Add members"
+      },
+      "wildcard": {
+        "title_one": "A wildcard permission grants broad access",
+        "title_other": "{{count}} wildcard permissions grant broad access",
+        "detail": "A permission containing * matches every action it covers; prefer exact keys",
+        "action": "Review"
+      },
+      "allowAll": {
+        "title_one": "An allow policy has no condition",
+        "title_other": "{{count}} allow policies have no condition",
+        "detail": "An enabled allow policy with no condition matches every request",
+        "action": "Review"
+      }
+    },
+    "setup": {
+      "progress": "{{done}} of {{total}} done",
+      "note": "What's set up, and what still needs you",
+      "summary": {
+        "done_one": "{{count}} done",
+        "done_other": "{{count}} done",
+        "failing_one": "{{count}} failing",
+        "failing_other": "{{count}} failing",
+        "attention_one": "{{count}} needs attention",
+        "attention_other": "{{count}} need attention",
+        "setup_one": "{{count}} in setup",
+        "setup_other": "{{count}} in setup",
+        "none_one": "{{count}} not set up",
+        "none_other": "{{count}} not set up"
+      },
+      "states": {
+        "done": "Done",
+        "failing": "Failing",
+        "attention": "Needs attention",
+        "setup": "In setup",
+        "none": "Not set up"
+      },
+      "groups": {
+        "signIn": "Sign-in",
+        "people": "People and directory",
+        "developers": "Developers and billing"
+      },
+      "items": {
+        "sso": "Single sign-on",
+        "methods": "Sign-in methods",
+        "twoStep": "Two-step verification",
+        "samlApps": "Apps people sign in to",
+        "team": "Your team",
+        "domain": "Domain",
+        "scim": "Directory sync (SCIM)",
+        "ldap": "LDAP",
+        "apps": "Applications",
+        "apiKeys": "API keys",
+        "webhooks": "Webhooks",
+        "plan": "Plan",
+        "groups": "Groups"
+      },
+      "details": {
+        "connected": "Connected · {{names}}",
+        "draft": "Draft · {{names}}",
+        "draftSince": "{{names}}, a draft since {{date}}",
+        "live": "Live · {{names}}",
+        "liveAndDraft": "{{live}} live · {{draft}} in setup",
+        "ssoNone": "People sign in with Qeet ID's own methods",
+        "samlAppsNone": "No apps sign people in through Qeet ID yet",
+        "list": "{{list}}",
+        "methodsNone": "No sign-in method is turned on",
+        "twoStepMissing_one": "{{count}} of {{total}} people has none",
+        "twoStepMissing_other": "{{count}} of {{total}} people have none",
+        "twoStepEveryone": "Everyone has a second factor",
+        "team_one": "{{count}} person",
+        "team_other": "{{count}} people",
+        "teamPending_one": "{{people}} people · {{count}} invitation pending",
+        "teamPending_other": "{{people}} people · {{count}} invitations pending",
+        "teamDepartments_one": "{{count}} person · {{departments}} departments",
+        "teamDepartments_other": "{{count}} people · {{departments}} departments",
+        "teamDepartmentsPending_one": "{{people}} people · {{departments}} departments · {{count}} invitation pending",
+        "teamDepartmentsPending_other": "{{people}} people · {{departments}} departments · {{count}} invitations pending",
+        "teamOnlyYou": "Only you so far",
+        "groups_one": "{{count}} group",
+        "groups_other": "{{count}} groups",
+        "groupsEmpty_one": "{{groups}} groups · {{count}} has no members",
+        "groupsEmpty_other": "{{groups}} groups · {{count}} have no members",
+        "groupsAllEmpty_one": "{{count}} group, with no members yet",
+        "groupsAllEmpty_other": "{{count}} groups, none with members yet",
+        "groupsNone": "Put people in groups to give them access together",
+        "verified": "Verified · {{names}}",
+        "domainPending": "Waiting for its DNS record · {{domain}}",
+        "domainCheckFailed": "The last check failed · {{domain}}",
+        "domainNone": "Add your company's domain, then prove you own it",
+        "scimProvisioned_one": "{{count}} person kept in sync",
+        "scimProvisioned_other": "{{count}} people kept in sync",
+        "scimNone": "People are added by hand or through the API",
+        "ldapNone": "No directory server connected",
+        "checkFailing_one": "{{names}}: its check failed {{count}} day ago",
+        "checkFailing_other": "{{names}}: its check failed {{count}} days ago",
+        "checkFailingToday": "{{names}}: its check failed today",
+        "apps_one": "{{count}} registered",
+        "apps_other": "{{count}} registered",
+        "appsUnused_one": "{{count}} registered · {{unused}} never used",
+        "appsUnused_other": "{{count}} registered · {{unused}} never used",
+        "appsNone": "No application signs people in with Qeet ID yet",
+        "keysActive_one": "{{count}} active",
+        "keysActive_other": "{{count}} active",
+        "keysExpiring_one": "{{count}} active · it expires in {{days}} days",
+        "keysExpiring_other": "{{count}} active · one expires in {{days}} days",
+        "keysNone": "For your own scripts and servers",
+        "webhooksActive_one": "{{count}} active",
+        "webhooksActive_other": "{{count}} active",
+        "webhooksFailing": "{{failing}} failing · {{off}} turned off",
+        "webhooksNone": "Tell your systems when something happens",
+        "planMonthly": "{{plan}} · {{amount}} a month · renews {{date}}",
+        "planYearly": "{{plan}} · {{amount}} a year · renews {{date}}",
+        "planFree": "{{plan}}",
+        "planTrial": "{{plan}} trial · ends {{date}}",
+        "planPaymentDue": "{{plan}} · the last payment failed"
+      },
+      "actions": {
+        "finish": "Finish",
+        "setUp": "Set up",
+        "add": "Add",
+        "check": "Check",
+        "verify": "Verify",
+        "create": "Create",
+        "rotate": "Rotate",
+        "fix": "Fix",
+        "billing": "Billing",
+        "choosePlan": "Choose a plan",
+        "review": "Review",
+        "requireIt": "Require it",
+        "invite": "Invite",
+        "register": "Register",
+        "addMembers": "Add members"
+      }
+    },
+    "organisation": {
+      "mapTitle": "How {{name}} is organised",
+      "mapTitleYours": "How your organisation is organised",
+      "mapNote_one": "{{count}} department and its teams, sized by people",
+      "mapNote_other": "{{count}} departments and their teams, sized by people",
+      "mapLabel": "Departments and their teams",
+      "tile_one": "{{name}}, {{count}} person",
+      "tile_other": "{{name}}, {{count}} people",
+      "tileTeams_one": "{{name}}, {{count}} person: {{teams}}",
+      "tileTeams_other": "{{name}}, {{count}} people: {{teams}}",
+      "teamCount": "{{team}} {{count}}",
+      "noDepartment": "No department",
+      "noTeam": "No team",
+      "noTeamFoot_one": "{{count}} person is in a department but no team",
+      "noTeamFoot_other": "{{count}} people are in a department but no team",
+      "noDepartmentFoot_one": "{{count}} person has no department",
+      "noDepartmentFoot_other": "{{count}} people have no department",
+      "placesTitle": "Where people work",
+      "placesNote_one": "{{count}} city in {{countries}} countries, sized by people",
+      "placesNote_other": "{{count}} cities in {{countries}} countries, sized by people",
+      "placesNoteOneCountry_one": "{{count}} city, sized by people",
+      "placesNoteOneCountry_other": "{{count}} cities in {{country}}, sized by people",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people",
+      "cityPeople_one": "{{city}}, {{count}} person",
+      "cityPeople_other": "{{city}}, {{count}} people",
+      "cityShare": "{{share}} of people work in {{city}}",
+      "elsewhere": "Elsewhere"
+    }
+  },
+  "analyticsReport": {
+    "title": "Analytics",
+    "description": "Sign-in trends for this organisation, {{from}} to {{to}}, against the {{days}} days before.",
+    "range": "Range",
+    "ranges": {
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days"
+    },
+    "band": {
+      "signIns": "Sign-ins",
+      "people": "People who signed in",
+      "failed": "Failed sign-ins",
+      "perPerson": "Sign-ins per person"
+    },
+    "change": {
+      "up_one": "Up {{pct}}% on the {{count}} day before",
+      "up_other": "Up {{pct}}% on the {{count}} days before",
+      "down_one": "Down {{pct}}% on the {{count}} day before",
+      "down_other": "Down {{pct}}% on the {{count}} days before",
+      "same_one": "Same as the {{count}} day before",
+      "same_other": "Same as the {{count}} days before",
+      "new_one": "None in the {{count}} day before",
+      "new_other": "None in the {{count}} days before",
+      "none_one": "None in the {{count}} day before either",
+      "none_other": "None in the {{count}} days before either"
+    },
+    "noAccessTitle": "These trends come from the audit log",
+    "noAccessDescription": "Your role can read analytics but not audit events, which sign-in trends are counted from. Ask an administrator for access to audit events.",
+    "emptyTitle_one": "No sign-ins in the last {{count}} day",
+    "emptyTitle_other": "No sign-ins in the last {{count}} days",
+    "emptyDescription": "Sign-ins and failed sign-ins show here, day by day, once people use Qeet ID.",
+    "signIns": {
+      "title": "Sign-ins by day",
+      "note": "Each day against the same day of the {{days}} days before. Days run midnight to midnight UTC; switching organisation isn't counted."
+    },
+    "failed": {
+      "title": "Failed sign-ins by day",
+      "note": "Wrong passwords and codes, unknown accounts, locks and throttles. In a burst only the first are recorded, so a spike reads low."
+    },
+    "signInsLower": "sign-ins",
+    "failedLower": "failed",
+    "thisPeriod": "This period",
+    "before_one": "The {{count}} day before",
+    "before_other": "The {{count}} days before",
+    "view": "{{title}}: chart or table",
+    "day": "Day",
+    "dayBefore": "Day, period before",
+    "tipToday": "{{unit}} so far today",
+    "tipOn": "on {{day}}",
+    "endToday": "{{n}} today",
+    "weekday": {
+      "title": "By day of the week",
+      "note_one": "Average sign-ins on each day, over {{n}} full day.",
+      "note_other": "Average sign-ins on each day, over {{n}} full days.",
+      "tip_one": "sign-ins on average, over {{n}} day",
+      "tip_other": "sign-ins on average, over {{n}} days"
     }
   }
 }

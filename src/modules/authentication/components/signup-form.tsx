@@ -1,33 +1,20 @@
 import {
-  Button,
-  cn,
-  Field,
-  FieldError,
-  FieldLabel,
-  Input,
-  PasswordInput,
-  PasswordStrengthMeter,
-  scorePassword,
-} from "@qeetrix/ui";
-import { Link } from "@tanstack/react-router";
-import {
   ArrowRightIcon,
-  LoaderCircleIcon,
+  FingerprintPatternIcon,
   LockKeyholeIcon,
   MailIcon,
   UserRoundIcon,
 } from "@qeetrix/icons";
-import type * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { Button, Field, Heading, Link, Text, TextField } from "@qeetrix/react";
+import { Alert, Form, PasswordInput } from "@qeetrix/react/experimental";
+import { Link as RouterLink } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import { useIsDark } from "@/platform/theme/use-is-dark";
 
 import type { PasskeySignupInput } from "../api/passkey-flows";
 
-import { AuthDivider, AuthFormCard, PasskeyButton } from "./auth-form-card";
-import { BrandHero } from "./brand-hero";
-import { SocialButtons } from "./social-buttons";
+import { EntryConsent, EntryOr } from "./entry-shell";
+import { ProviderButtons } from "./provider-buttons";
 
 export type SignupFormValues = {
   email: string;
@@ -35,212 +22,138 @@ export type SignupFormValues = {
   display_name: string;
 };
 
-type SignupFormProps = React.ComponentProps<"div"> & {
+type SignupFormProps = {
   isLoading?: boolean;
   isPasskeyLoading?: boolean;
   errorMessage?: string;
+  /** The email the server says already has an account: offer sign-in instead. */
+  existingEmail?: string;
   onSignup?: (values: SignupFormValues) => void;
   onPasskeySignup?: (values: PasskeySignupInput) => void;
 };
 
+/**
+ * Sign-up, passkey first: a name and a work email, then one touch creates the account and its
+ * passkey. A password is the fallback, with no "confirm password" field: its show toggle does that.
+ */
 export function SignupForm({
-  className,
   isLoading = false,
   isPasskeyLoading = false,
   errorMessage,
+  existingEmail,
   onSignup,
   onPasskeySignup,
-  ...props
 }: SignupFormProps) {
   const { t } = useTranslation("auth-flow");
-  // Placeholders differ between the light and dark comps; unlike the headings
-  // they are attributes, so the .auth-copy-light/-dark swap cannot reach them.
-  const isDark = useIsDark();
-  const [mismatch, setMismatch] = useState(false);
-  const [password, setPassword] = useState("");
+  const [method, setMethod] = useState<"passkey" | "password">("passkey");
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
-  const nameRef = useRef<HTMLInputElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const confirmRef = useRef<HTMLInputElement>(null);
-  const passwordScore = scorePassword(password);
-  const passwordFeedback = passwordScore < 3 ? [t("signUp.passwordFeedback")] : undefined;
   const isBusy = isLoading || isPasskeyLoading;
   const isDisabled = !hydrated || isBusy;
+  const withPassword = method === "password";
 
   return (
-    <div className={cn("auth-entry auth-entry-signup", className)} {...props}>
-      <BrandHero intent="signup" />
-      <AuthFormCard>
-        <form
-          method="post"
-          aria-labelledby="signup-title"
-          aria-busy={isBusy}
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!hydrated || isBusy) return;
-            const data = new FormData(e.currentTarget);
-            const identity = {
-              email: String(data.get("email") ?? "").trim(),
-              display_name: String(data.get("display_name") ?? "").trim(),
-            };
-            const submitter = (e.nativeEvent as SubmitEvent).submitter;
-            if (submitter?.getAttribute("data-auth-method") === "passkey") {
-              // Passkey signup requires identity fields, not a password. Validate
-              // only those fields; formNoValidate does not skip this validation.
-              if (!nameRef.current?.reportValidity() || !emailRef.current?.reportValidity()) {
-                return;
-              }
-              setMismatch(false);
-              onPasskeySignup?.(identity);
-              return;
-            }
-            const password = String(data.get("password") ?? "");
-            const confirm = String(data.get("confirm_password") ?? "");
-            if (password !== confirm) {
-              setMismatch(true);
-              confirmRef.current?.focus();
-              return;
-            }
-            setMismatch(false);
-            onSignup?.({ ...identity, password });
-          }}
+    <>
+      <div className="entry-heading">
+        <Heading level={1} size="display-sm">
+          {t("signUp.title")}
+        </Heading>
+        <Text tone="subtle" size="lg">
+          {t("signUp.lede")}
+        </Text>
+      </div>
+
+      {existingEmail ? (
+        <Alert
+          tone="warning"
+          title={t("signUp.emailExistsTitle", { email: existingEmail })}
+          actions={<Link render={<RouterLink to="/sign-in" />}>{t("signUp.signInInstead")}</Link>}
         >
-          <div className="auth-form-header">
-            <p className="auth-form-eyebrow">
-              <span className="auth-copy-light">{t("signUp.eyebrowLight")}</span>
-              <span className="auth-copy-dark">{t("signUp.eyebrowDark")}</span>
-            </p>
-            <h1 id="signup-title" className="auth-form-title">
-              <span className="auth-copy-light">{t("signUp.titleLight")}</span>
-              <span className="auth-copy-dark">{t("signUp.titleDark")}</span>
-            </h1>
-            <p className="auth-form-description">
-              <span className="auth-copy-light">{t("signUp.descriptionLight")}</span>
-              <span className="auth-copy-dark">{t("signUp.descriptionDark")}</span>
-            </p>
-          </div>
+          {t("signUp.emailExistsText")}
+        </Alert>
+      ) : errorMessage ? (
+        <Alert tone="danger" title={t("signUp.failedTitle")} announce="urgent">
+          {errorMessage}
+        </Alert>
+      ) : null}
 
-          <div className="auth-fields">
-            <Field className="auth-field" disabled={isBusy}>
-              <FieldLabel htmlFor="display_name">{t("signUp.name")}</FieldLabel>
-              <div className="auth-input-wrap">
-                <UserRoundIcon className="auth-input-icon" aria-hidden="true" />
-                <Input
-                  ref={nameRef}
-                  id="display_name"
-                  name="display_name"
-                  type="text"
-                  autoComplete="name"
-                  placeholder={t("signUp.namePlaceholder")}
-                  required
-                />
-              </div>
-            </Field>
+      <Form
+        aria-label={t("signUp.title")}
+        className="entry-form"
+        summary={false}
+        aria-busy={isBusy}
+        onFormSubmit={(values) => {
+          if (isDisabled) return;
+          const identity = {
+            email: String(values.email ?? "").trim(),
+            display_name: String(values.display_name ?? "").trim(),
+          };
+          if (withPassword) onSignup?.({ ...identity, password: String(values.password ?? "") });
+          else onPasskeySignup?.(identity);
+        }}
+      >
+        <TextField
+          label={t("signUp.name")}
+          name="display_name"
+          icon={UserRoundIcon}
+          placeholder={t("signUp.namePlaceholder")}
+          autoComplete="name"
+          required
+        />
+        <TextField
+          label={t("signUp.email")}
+          name="email"
+          type="email"
+          icon={MailIcon}
+          placeholder={t("signUp.emailPlaceholder")}
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          description={t("signUp.emailHelp")}
+          invalid={Boolean(existingEmail)}
+          required
+        />
+        {withPassword && (
+          <Field label={t("form.password")} name="password" description={t("signUp.passwordHelp")}>
+            <PasswordInput autoComplete="new-password" minLength={8} required />
+          </Field>
+        )}
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          icon={withPassword ? ArrowRightIcon : FingerprintPatternIcon}
+          loading={withPassword ? isLoading : isPasskeyLoading}
+          disabled={isDisabled || (!withPassword && !onPasskeySignup)}
+        >
+          {withPassword
+            ? t(isLoading ? "signUp.submitting" : "signUp.submit")
+            : t("signUp.submitPasskey")}
+        </Button>
+      </Form>
 
-            <Field className="auth-field" disabled={isBusy}>
-              <FieldLabel htmlFor="email">{t("signUp.email")}</FieldLabel>
-              <div className="auth-input-wrap">
-                <MailIcon className="auth-input-icon" aria-hidden="true" />
-                <Input
-                  ref={emailRef}
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  placeholder={t(
-                    isDark ? "signUp.emailPlaceholderDark" : "signUp.emailPlaceholderLight",
-                  )}
-                  required
-                  aria-describedby="signup-email-help"
-                />
-              </div>
-              <p id="signup-email-help" className="auth-field-help auth-copy-dark">
-                {t("signUp.emailHelp")}
-              </p>
-            </Field>
+      <EntryOr />
+      <div className="entry-form">
+        <Button
+          variant="soft"
+          size="lg"
+          fullWidth
+          icon={withPassword ? FingerprintPatternIcon : LockKeyholeIcon}
+          disabled={isDisabled}
+          onClick={() => setMethod(withPassword ? "passkey" : "password")}
+        >
+          {withPassword ? t("signUp.passkeyInstead") : t("signUp.passwordInstead")}
+        </Button>
+        {!withPassword && <ProviderButtons action="signUp" disabled={isDisabled} />}
+      </div>
 
-            <Field className="auth-field" disabled={isBusy}>
-              <FieldLabel htmlFor="password">{t("form.password")}</FieldLabel>
-              <div className="auth-input-wrap">
-                <LockKeyholeIcon className="auth-input-icon" aria-hidden="true" />
-                <PasswordInput
-                  id="password"
-                  name="password"
-                  autoComplete="new-password"
-                  placeholder={t(
-                    isDark ? "signUp.passwordPlaceholderDark" : "signUp.passwordPlaceholderLight",
-                  )}
-                  minLength={8}
-                  required
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setMismatch(false);
-                  }}
-                  aria-describedby={password.length > 0 ? "password-strength" : undefined}
-                />
-              </div>
-            </Field>
-
-            <Field className="auth-field" disabled={isBusy} data-invalid={mismatch || undefined}>
-              <FieldLabel htmlFor="confirm_password">{t("signUp.confirmPassword")}</FieldLabel>
-              <div className="auth-input-wrap">
-                <LockKeyholeIcon className="auth-input-icon" aria-hidden="true" />
-                <PasswordInput
-                  ref={confirmRef}
-                  id="confirm_password"
-                  name="confirm_password"
-                  autoComplete="new-password"
-                  placeholder={t("signUp.confirmPlaceholder")}
-                  minLength={8}
-                  required
-                  aria-invalid={mismatch || undefined}
-                  aria-describedby={mismatch ? "password-mismatch" : undefined}
-                  onChange={() => setMismatch(false)}
-                />
-              </div>
-              {mismatch && <FieldError id="password-mismatch">{t("signUp.mismatch")}</FieldError>}
-            </Field>
-          </div>
-
-          {password.length > 0 && (
-            <div id="password-strength" className="auth-password-strength">
-              <PasswordStrengthMeter value={password} feedback={passwordFeedback} />
-            </div>
-          )}
-
-          {errorMessage && !mismatch && (
-            <FieldError className="auth-form-error">{errorMessage}</FieldError>
-          )}
-
-          <Button type="submit" className="auth-submit" disabled={isDisabled}>
-            {isLoading && <LoaderCircleIcon className="animate-spin" aria-hidden="true" />}
-            {t(isLoading ? "signUp.submitting" : "signUp.submit")}
-            {!isLoading && <ArrowRightIcon aria-hidden="true" />}
-          </Button>
-
-          <AuthDivider>{t("passkey.signupDivider")}</AuthDivider>
-          <PasskeyButton
-            type="submit"
-            formNoValidate
-            data-auth-method="passkey"
-            isLoading={isPasskeyLoading}
-            disabled={isDisabled || !onPasskeySignup}
-          />
-
-          <SocialButtons action="signUp" intent="signup" disabled={isDisabled} />
-
-          <p className="auth-form-switch">
-            {t("signUp.hasAccount")}{" "}
-            <Link to="/sign-in" className="auth-link">
-              {t("signIn.submit")}
-            </Link>
-          </p>
-        </form>
-      </AuthFormCard>
-    </div>
+      <div className="entry-links">
+        <span>
+          {t("signUp.hasAccount")}{" "}
+          <Link render={<RouterLink to="/sign-in" />}>{t("signUp.signIn")}</Link>
+        </span>
+      </div>
+      <EntryConsent action="signUp" />
+    </>
   );
 }

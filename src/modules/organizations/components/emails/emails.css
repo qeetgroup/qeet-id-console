@@ -1,0 +1,514 @@
+/*
+ * Settings › Emails (Workspace template): the templates in a column, as My account lists its
+ * pages; the open one's editor as one ruled surface — toolbar, tabs, then the fields beside the
+ * live preview — with no cards inside it, no summary cards and no floating save bar. The body
+ * editor (tiptap) is drawn as a filled field with its own tool row. Token values only; the
+ * preview's own colours are the email's (email-template-model.ts), not the console's.
+ */
+
+.mail,
+.mail-state {
+  padding: var(--qx-space-layout-sm) var(--qx-space-layout-md) var(--qx-space-layout-lg);
+}
+
+.mail {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  align-items: start;
+  gap: var(--qx-space-layout-sm);
+}
+
+.mail-state {
+  max-inline-size: 50rem;
+}
+
+/* ── The templates ─────────────────────────────────────────────────────── */
+
+.mail-nav {
+  position: sticky;
+  inset-block-start: var(--qx-space-layout-sm);
+  min-inline-size: 0;
+}
+
+.mail-picker {
+  display: none;
+}
+
+/* The same column as My account's pages (.account-subnav), for buttons: a template isn't a page. */
+.mail-list {
+  display: grid;
+  margin: 0;
+  padding: var(--qx-space-inset-xs);
+  list-style: none;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.mail-list button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--qx-space-gap-md);
+  inline-size: 100%;
+  padding: var(--qx-space-inset-sm);
+  border: 0;
+  border-radius: var(--qx-radius-control);
+  background: transparent;
+  color: var(--qx-color-text-default);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.mail-list button:hover:not(:disabled) {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+.mail-list button:disabled {
+  cursor: not-allowed;
+  color: var(--qx-color-text-disabled);
+}
+
+.mail-list button:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-focus-ring-width) * -1);
+}
+
+.mail-list button[aria-current] {
+  background: var(--qx-color-bg-neutral-subtle);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.mail-list button[aria-current] .account-icon {
+  background: var(--qx-color-bg-brand-subtle);
+  color: var(--qx-color-icon-brand);
+}
+
+.mail-list-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-sm);
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.mail-list small {
+  display: block;
+  margin-block-start: 2px;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── The editor: one ruled surface ─────────────────────────────────────── */
+
+.mail-editor {
+  container: mail-editor / inline-size;
+  min-inline-size: 0;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.mail-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-lg);
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-md) var(--qx-space-inset-sm);
+}
+
+.mail-toolbar-title {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+.mail-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--qx-space-gap-sm);
+}
+
+.mail-toolbar-status {
+  grid-column: 2;
+  justify-self: end;
+  margin: 0;
+}
+
+.mail-language {
+  inline-size: 9.5rem;
+}
+
+/* The first tab's label on the toolbar's gutter: the list less each tab's own inset. */
+.mail-tabs {
+  padding-inline: calc(var(--qx-space-inset-md) - var(--qx-tabs-inset, 0px));
+}
+
+.mail-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 21.5rem);
+  min-block-size: 36rem;
+}
+
+.mail-fields {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-lg);
+  min-inline-size: 0;
+  padding: var(--qx-space-inset-lg) var(--qx-space-inset-md);
+}
+
+.mail-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+}
+
+/* Insert variable sits level with the Subject label, at the row's end. */
+.mail-form-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-end: calc(-1 * var(--qx-space-form-gap) - 1.75rem);
+}
+
+.mail-body-field {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* A label for a control a Field can't wrap (the body editor, a toggle group), as a Field's. */
+.mail-label {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+  font-variation-settings: "GEOM" var(--qx-font-geometry-body);
+}
+
+.mail-issues {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  color: var(--qx-color-text-danger);
+  font: var(--qx-typography-body-sm);
+}
+
+.mail-issues p {
+  margin: 0;
+}
+
+/* ── The body editor: a filled field with its own tool row ─────────────── */
+
+.mail-rte {
+  display: grid;
+  border-radius: var(--qx-radius-control) var(--qx-radius-control) 0 0;
+  background: var(--qx-color-bg-neutral-subtle);
+  box-shadow: inset 0 calc(-1 * var(--qx-border-width-default)) 0 var(--qx-color-border-strong);
+}
+
+.mail-rte:focus-within {
+  box-shadow: inset 0 calc(-1 * var(--qx-border-width-accent)) 0 var(--qx-color-border-brand);
+}
+
+.mail-rte-loading {
+  min-block-size: 18rem;
+}
+
+.mail-rte-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-xs);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.mail-rte-style {
+  min-inline-size: 7.5rem;
+  justify-content: space-between;
+}
+
+.mail-rte-sep {
+  inline-size: var(--qx-border-width-default);
+  block-size: 16px;
+  background: var(--qx-color-border-default);
+}
+
+.mail-rte-doc {
+  min-block-size: 14rem;
+  padding: var(--qx-space-inset-md);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-md);
+  overflow-wrap: anywhere;
+  outline: none;
+}
+
+.mail-rte[data-disabled] .mail-rte-doc {
+  color: var(--qx-color-text-subtle);
+}
+
+.mail-rte-doc > * {
+  margin: 0 0 var(--qx-space-gap-md);
+}
+
+.mail-rte-doc > :last-child {
+  margin-block-end: 0;
+}
+
+.mail-rte-doc h1 {
+  font: var(--qx-typography-heading-sm);
+}
+
+.mail-rte-doc h2,
+.mail-rte-doc h3 {
+  font: var(--qx-typography-title-sm);
+}
+
+.mail-rte-doc ul,
+.mail-rte-doc ol {
+  padding-inline-start: var(--qx-space-inset-lg);
+}
+
+.mail-rte-doc blockquote {
+  padding-inline-start: var(--qx-space-inset-sm);
+  border-inline-start: var(--qx-border-width-accent) solid var(--qx-color-border-brand);
+}
+
+.mail-rte-doc pre {
+  padding: var(--qx-space-inset-sm);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+  font: var(--qx-typography-code-sm);
+  white-space: pre-wrap;
+}
+
+.mail-rte-doc a {
+  color: var(--qx-color-text-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mail-rte-doc img {
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+.mail-rte-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.mail-dialog-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+}
+
+/* ── Design, languages, advanced ───────────────────────────────────────── */
+
+.mail-align {
+  justify-self: start;
+  inline-size: fit-content;
+}
+
+.mail-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.mail-swatch > span:first-child {
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: var(--qx-radius-sm);
+  box-shadow: inset 0 0 0 var(--qx-border-width-default) var(--qx-color-border-default);
+}
+
+.mail-locale {
+  font: var(--qx-typography-label-sm);
+}
+
+.mail-add-language {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) auto;
+  justify-content: start;
+  align-items: start;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* The Add button lines up with the field, under the label. */
+.mail-add-language > button {
+  margin-block-start: calc(
+    var(--qx-typography-label-sm-font-size) *
+    var(--qx-typography-label-sm-line-height) +
+    var(--qx-space-gap-xs)
+  );
+}
+
+.mail-code {
+  font: var(--qx-typography-code-sm);
+}
+
+/* ── The preview: the inspector ────────────────────────────────────────── */
+
+.mail-preview {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-md);
+  min-inline-size: 0;
+  padding: var(--qx-space-inset-lg) var(--qx-space-inset-md);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  background: var(--qx-color-surface-canvas);
+}
+
+.mail-preview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm);
+}
+
+.mail-sample {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  min-inline-size: 0;
+}
+
+.mail-inbox {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.mail-inbox-from {
+  display: flex;
+  align-items: baseline;
+  gap: var(--qx-space-gap-sm);
+}
+
+.mail-inbox-from strong,
+.mail-inbox-subject {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.mail-frame {
+  display: block;
+  inline-size: 100%;
+  block-size: 30rem;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+}
+
+/* A phone's width, centred in the inspector. */
+.mail-frame[data-mode="mobile"] {
+  justify-self: center;
+  max-inline-size: 22rem;
+}
+
+.mail-links {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+.mail-links ul {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mail-links li {
+  display: grid;
+}
+
+.mail-link {
+  overflow-wrap: anywhere;
+}
+
+.mail-delivery {
+  padding-block-start: var(--qx-space-gap-sm);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+/* Preview all: every template, three to a row where there's room. */
+.mail-all {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--qx-space-gap-lg);
+}
+
+.mail-all-item {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* An editor too narrow for the preview beside its fields stacks it under them. */
+@container mail-editor (max-width: 820px) {
+  .mail-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mail-preview {
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+}
+
+@container mail-editor (max-width: 600px) {
+  .mail-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mail-toolbar-actions {
+    justify-content: flex-start;
+  }
+
+  .mail-toolbar-status {
+    grid-column: 1;
+    justify-self: start;
+  }
+}
+
+/* A phone: the column becomes a picker above the editor. */
+@media (max-width: 900px) {
+  .mail,
+  .mail-state {
+    padding-inline: var(--qx-space-inset-lg);
+  }
+
+  .mail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mail-nav {
+    position: static;
+  }
+
+  .mail-picker {
+    display: flex;
+  }
+
+  .mail-list {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .mail-add-language {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mail-add-language > button {
+    margin-block-start: 0;
+  }
+}

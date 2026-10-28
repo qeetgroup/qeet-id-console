@@ -27,9 +27,10 @@ const EMPTY: NotificationsResponse = { items: [], unread_count: 0 };
  * Fetches the current user's notification inbox, polling every minute while the tab is visible.
  * A backend without the endpoint (404) yields an empty inbox.
  */
-export function useNotifications() {
+export function useNotifications(enabled = true) {
   return useQuery({
     queryKey: developerKeys.notifications(useTenantId()),
+    enabled,
     queryFn: async (): Promise<NotificationsResponse> => {
       try {
         return await api<NotificationsResponse>("/v1/notifications");

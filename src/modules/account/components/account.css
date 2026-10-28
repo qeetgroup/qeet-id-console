@@ -1,0 +1,535 @@
+/*
+ * "My account", inside the console: its pages in a column, each made of ruled sections (design
+ * rules §12: page sections are separated by lines and tone, not boxed), each with its own action.
+ * Lists inside them are ruled rows; facts are label and value rows edited in place; a change of
+ * several steps opens under its row with the Ember bar (§11). Token values only.
+ */
+
+/* ── Sections and their rows ───────────────────────────────────────────────── */
+
+.account-section {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-layout-sm);
+}
+
+.account-section:first-child {
+  padding-block-start: 0;
+}
+
+.account-section + .account-section {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.account-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-lg);
+}
+
+.account-section-title {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  max-inline-size: 40rem;
+}
+
+.account-section-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.account-section > .qx-card,
+.account-danger {
+  margin-block-start: var(--qx-space-layout-sm);
+}
+
+.account-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.account-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3.5rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+}
+
+.account-icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-bg-neutral-subtle);
+  color: var(--qx-color-icon-default);
+}
+
+.account-icon svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+/* Monochrome logos drawn in white (Apple) are inverted where they'd vanish. */
+.account-icon [data-invert="light"] {
+  filter: invert(1);
+}
+
+[data-qx-color-scheme="dark"] .account-icon [data-invert="light"] {
+  filter: none;
+}
+
+/* …and marks drawn in black (GitHub) where the surface is dark. */
+[data-qx-color-scheme="dark"] .account-icon [data-invert="dark"] {
+  filter: invert(1);
+}
+
+.account-icon-lg {
+  inline-size: 40px;
+  block-size: 40px;
+}
+
+.account-icon-lg svg {
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+.account-row-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.account-row-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.account-row-name strong,
+.account-row-text > strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.account-row-text small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.account-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* A row being renamed: its field where the name was, Cancel and Save where its actions were. */
+.account-row[data-editing] {
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.account-adds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-sm);
+}
+
+.account-mono {
+  font: var(--qx-typography-code-sm);
+}
+
+.account-note {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.account-failure {
+  margin: 0;
+  color: var(--qx-color-text-danger);
+  font: var(--qx-typography-body-sm);
+}
+
+.account-note a {
+  color: var(--qx-color-text-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── The area: its pages in a column, the chosen one beside it (as Emails lists its templates) ── */
+
+.account-layout {
+  display: grid;
+  grid-template-columns: 15.5rem minmax(0, 50rem);
+  align-items: start;
+  gap: var(--qx-space-layout-sm);
+  padding: var(--qx-space-layout-sm) var(--qx-space-layout-md) var(--qx-space-layout-lg);
+}
+
+.account-subnav {
+  position: sticky;
+  inset-block-start: var(--qx-space-layout-sm);
+  margin: 0;
+  padding: var(--qx-space-inset-xs);
+  list-style: none;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.account-subnav a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-sm);
+  border-radius: var(--qx-radius-control);
+  color: var(--qx-color-text-default);
+  text-decoration: none;
+}
+
+.account-subnav a:hover {
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+.account-subnav a:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(var(--qx-focus-ring-width) * -1);
+}
+
+/* The current page: the Ember bar and the brand tint on its icon. */
+.account-subnav a[aria-current="page"] {
+  background: var(--qx-color-bg-neutral-subtle);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.account-subnav a[aria-current="page"] .account-icon {
+  background: var(--qx-color-bg-brand-subtle);
+  color: var(--qx-color-icon-brand);
+}
+
+.account-subnav strong {
+  display: block;
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.account-subnav small {
+  display: block;
+  margin-block-start: 2px;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.account-body {
+  min-inline-size: 0;
+}
+
+/* A page's own heading, ruled off from its sections. */
+.account-page-title {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  padding-block-end: var(--qx-space-layout-sm);
+  margin-block-end: var(--qx-space-layout-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.account-page-title + .account-section {
+  padding-block-start: 0;
+}
+
+/* ── Facts: a label, its value and its action, edited in place ─────────────── */
+
+.account-details {
+  margin: 0;
+}
+
+.account-detail {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3.5rem;
+  padding-block: var(--qx-space-inset-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.account-detail dt {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-md);
+}
+
+.account-detail dd {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.account-detail-value {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-md);
+}
+
+.account-detail dd small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.account-detail .account-detail-action {
+  justify-items: end;
+}
+
+/* A text action sits on the row's edge, the way its label sits on the other. */
+.account-detail:not([data-editing]) .account-detail-action {
+  margin-inline-end: calc(-1 * var(--qx-space-inset-sm));
+}
+
+/* The fact being changed: its field where the value was, Cancel and Save where the action was. */
+.account-detail[data-editing] {
+  align-items: end;
+  padding: var(--qx-space-inset-md);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.account-detail[data-editing] dt {
+  align-self: start;
+  padding-block-start: var(--qx-space-inset-xs);
+}
+
+.account-detail .account-detail-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* ── A change of several steps, opened under its row ──────────────────────── */
+
+.account-panel {
+  display: grid;
+  gap: var(--qx-space-layout-xs, var(--qx-space-gap-lg));
+  padding: var(--qx-space-inset-md);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+/* Rows and opened panels in one list are ruled apart. */
+.account-row + .account-row,
+.account-row + .account-panel,
+.account-panel + .account-row,
+.account-panel + .account-panel {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.account-detail-open {
+  grid-template-columns: 9rem minmax(0, 1fr);
+  align-items: start;
+}
+
+.account-detail .account-panel {
+  padding: var(--qx-space-inset-xs) 0 var(--qx-space-inset-sm);
+  box-shadow: none;
+}
+
+/* The sign-in setup's QR card (.entry-qr), at the width of a form inside a panel. */
+.account-panel > .entry-qr {
+  max-inline-size: 32rem;
+}
+
+.account-panel-head {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  max-inline-size: 30rem;
+}
+
+.account-panel-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+  max-inline-size: 25rem;
+}
+
+.account-panel-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-sm);
+  margin-block-start: calc(-1 * var(--qx-space-gap-sm));
+  margin-inline-start: calc(-1 * var(--qx-space-inset-sm));
+}
+
+.account-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* ── Profile: who you are first ─────────────────────────────────────────────── */
+
+.account-identity {
+  margin-block-end: var(--qx-space-layout-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.account-identity-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-layout-sm);
+  padding-block-end: var(--qx-space-layout-sm);
+}
+
+.account-identity + .account-section {
+  padding-block-start: 0;
+}
+
+.account-identity-inner > [data-slot="avatar"] {
+  flex: none;
+  inline-size: 88px;
+  block-size: 88px;
+  font: var(--qx-typography-heading-md);
+}
+
+.account-identity-text {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+.account-identity-text h2 {
+  overflow-wrap: anywhere;
+}
+
+.account-identity-mail {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-md);
+}
+
+.account-identity-photo {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  margin-block-start: var(--qx-space-gap-xs);
+  margin-inline-start: calc(-1 * var(--qx-space-inset-sm));
+}
+
+/* ── Sessions: this device first, then the others ─────────────────────────── */
+
+.account-current {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.account-session {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 4rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+}
+
+.account-session + .account-session {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.account-session-when {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  font: var(--qx-typography-label-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.account-session .account-session-when small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.account-loading {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* Narrow: the four pages as tiles above the chosen one. */
+@media (max-width: 900px) {
+  .account-layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: var(--qx-space-inset-lg);
+  }
+
+  .account-subnav {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-subnav small {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .account-section-head {
+    flex-direction: column;
+  }
+
+  .account-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .account-row-actions {
+    grid-column: 2;
+    margin-inline-start: calc(-1 * var(--qx-space-inset-sm));
+  }
+
+  .account-detail {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .account-detail dt {
+    grid-column: 1 / -1;
+  }
+
+  .account-detail-open {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .account-panel-form {
+    max-inline-size: none;
+  }
+
+  .account-panel-actions > * {
+    flex: 1 1 100%;
+  }
+
+  .account-identity-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .account-session {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .account-session-when {
+    grid-column: 2;
+    justify-items: start;
+  }
+}

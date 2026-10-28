@@ -21,11 +21,14 @@ export interface User {
   tenant_id: string;
   email: string;
   display_name?: string | null;
+  avatar_url?: string | null;
   phone?: string | null;
   status: UserStatus;
   email_verified_at?: string | null;
   phone_verified_at?: string | null;
   roles?: string[] | null;
+  /** What the organisation records about them: department, title, location and the like. */
+  metadata?: Record<string, unknown> | null;
   created_at: string;
   updated_at?: string;
   mfa_enabled?: boolean; // Only the list endpoint fills these; a single-user read omits them
@@ -35,6 +38,13 @@ export interface User {
 }
 
 export type UserPage = { items: User[]; next_cursor?: string };
+
+/** The most people the Users list loads, 200 at a time, to filter, count and sort itself. */
+export const DIRECTORY_CAP = 2000;
+const DIRECTORY_PAGE = 200;
+
+/** Everyone in the organisation, up to DIRECTORY_CAP; `complete` is false when there are more. */
+export type UserDirectory = { items: User[]; complete: boolean };
 
 /** Tenant-wide member counts. */
 export interface UserStats {
@@ -59,6 +69,8 @@ export interface DeletedUser {
   email: string;
   display_name: string | null;
   deleted_at: string;
+  /** Who deleted them, when the server knows. */
+  deleted_by?: string | null;
   created_at: string;
 }
 
@@ -69,6 +81,27 @@ export const userQueries = {
       queryKey: userKeys.list(tenantId, params),
       queryFn: () => api<UserPage>("/v1/users", { query: params }),
       enabled: !!tenantId,
+    }),
+  // The list API has no filters or counts of its own yet, so the Users list walks it with the
+  // cursor and works over everyone it got.
+  directory: (tenantId: string | null) =>
+    queryOptions({
+      queryKey: userKeys.directory(tenantId),
+      queryFn: async ({ signal }): Promise<UserDirectory> => {
+        const items: User[] = [];
+        let cursor: string | undefined;
+        do {
+          const page: UserPage = await api<UserPage>("/v1/users", {
+            query: { limit: DIRECTORY_PAGE, cursor },
+            signal,
+          });
+          items.push(...page.items);
+          cursor = page.next_cursor || undefined;
+        } while (cursor && items.length < DIRECTORY_CAP);
+        return { items, complete: !cursor };
+      },
+      enabled: !!tenantId,
+      staleTime: 30_000,
     }),
   detail: (tenantId: string | null, userId: string) =>
     queryOptions({
@@ -111,8 +144,8 @@ function refreshUser(qc: QueryClient, tenantId: string | null, userId: string) {
   void qc.invalidateQueries({ queryKey: userKeys.user(tenantId, userId) });
 }
 
-export function useUsers(params: UserListParams) {
-  return useQuery(userQueries.list(useTenantId(), params));
+export function useUserDirectory() {
+  return useQuery(userQueries.directory(useTenantId()));
 }
 
 export function useUser(userId: string) {
@@ -255,11 +288,17 @@ export function useResetUserMfa() {
   });
 }
 
-/** Sets a user's password; the person isn't told it changed. */
+/**
+ * Sets someone's password. The server ends every way they're signed in and emails them that an
+ * administrator changed it, so their sessions and devices are read again.
+ */
 export function useSetUserPassword() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, password }: { userId: string; password: string }) =>
       api<void>(`/v1/users/${userId}/password`, { method: "POST", body: { password } }),
+    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
     meta: { successMessage: "users:toast.passwordUpdated" },
   });
 }
@@ -335,4 +374,6 @@ export const perUserCalls = {
   suspend: (userId: string) =>
     api<void>(`/v1/users/${userId}`, { method: "PATCH", body: { status: "suspended" } }),
   remove: (userId: string) => api<void>(`/v1/users/${userId}`, { method: "DELETE" }),
+  restore: (userId: string) => api<void>(`/v1/users/${userId}/restore`, { method: "POST" }),
+  purge: (userId: string) => api<void>(`/v1/users/${userId}/purge`, { method: "DELETE" }),
 };

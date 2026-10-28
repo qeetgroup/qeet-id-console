@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
@@ -32,11 +32,9 @@ vi.mock("@/modules/organizations", () => ({
 }));
 
 import { api } from "@/platform/api/client";
-import { ApiError } from "@/platform/errors/api-error";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 
 import type { User } from "../api/users";
-import { CreateUserSheet } from "../components/create-user-sheet";
 import { EditUserSheet } from "../components/edit-user-sheet";
 import { SetPasswordSheet } from "../components/set-password-sheet";
 
@@ -71,81 +69,24 @@ beforeEach(() => {
 
 afterEach(cleanup);
 
-describe("CreateUserSheet", () => {
-  it("names each problem on its field and sends nothing", async () => {
-    renderWithProviders(<CreateUserSheet open onOpenChange={vi.fn()} tenantId="tenant-a" />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Create user" }));
-
-    expect(await screen.findByText("Enter a valid email address.")).toBeTruthy();
-    expect(screen.getByText("Use at least 8 characters.")).toBeTruthy();
-    expect(api).not.toHaveBeenCalled();
-  });
-
-  it("creates the user with an E.164 phone and the default member role", async () => {
-    const onOpenChange = vi.fn();
-    renderWithProviders(<CreateUserSheet open onOpenChange={onOpenChange} tenantId="tenant-a" />);
-
-    type(/^Email/, "bea@example.test");
-    type(/^Phone/, "555 555 0100");
-    type(/^Initial password/, "correct horse");
-    fireEvent.click(screen.getByRole("button", { name: "Create user" }));
-
-    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
-    expect(vi.mocked(api).mock.calls[0]).toEqual([
-      "/v1/users",
-      {
-        method: "POST",
-        body: {
-          tenant_id: "tenant-a",
-          email: "bea@example.test",
-          password: "correct horse",
-          phone: expect.stringMatching(/^\+\d+5555550100$/),
-        },
-      },
-    ]);
-    expect(vi.mocked(api).mock.calls[1]?.[0]).toBe(
-      "/v1/users/new-user/tenants/tenant-a/roles/role-member",
-    );
-  });
-
-  it("marks the field a 422 names, in the console's words", async () => {
-    vi.mocked(api).mockRejectedValue(
-      new ApiError(422, "validation_failed", "backend text", undefined, false, undefined, {
-        requestId: "req-7",
-        fields: [{ field: "email", code: "invalid_email" }],
-      }),
-    );
-    renderWithProviders(<CreateUserSheet open onOpenChange={vi.fn()} tenantId="tenant-a" />);
-
-    type(/^Email/, "bea@example.test");
-    type(/^Initial password/, "correct horse");
-    fireEvent.click(screen.getByRole("button", { name: "Create user" }));
-
-    expect(await screen.findByText("Enter a valid email address.")).toBeTruthy();
-    expect(screen.getByText("req-7")).toBeTruthy();
-    expect(screen.queryByText("backend text")).toBeNull();
-  });
-});
-
 describe("EditUserSheet", () => {
   it("saves profile changes without a confirmation", async () => {
     const onOpenChange = vi.fn();
-    renderWithProviders(<EditUserSheet user={asha} isSelf={false} onOpenChange={onOpenChange} />);
+    renderWithProviders(<EditUserSheet user={asha} onOpenChange={onOpenChange} />);
 
-    type(/^Display name/, "Asha R");
+    type(/^Name/, "Asha R");
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
     expect(api).toHaveBeenCalledWith("/v1/users/user-1", {
       method: "PATCH",
-      body: { display_name: "Asha R", phone: null, status: "active" },
+      body: { display_name: "Asha R", phone: null },
     });
     expect(screen.queryByRole("alertdialog")).toBeNull();
   });
 
   it("refuses a phone number that isn't E.164", async () => {
-    renderWithProviders(<EditUserSheet user={asha} isSelf={false} onOpenChange={vi.fn()} />);
+    renderWithProviders(<EditUserSheet user={asha} onOpenChange={vi.fn()} />);
 
     type(/^Phone/, "555-0100");
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
@@ -156,6 +97,13 @@ describe("EditUserSheet", () => {
 });
 
 describe("SetPasswordSheet", () => {
+  it("says what setting it does to them before anything is sent", () => {
+    renderWithProviders(<SetPasswordSheet user={asha} onOpenChange={vi.fn()} />);
+
+    expect(screen.getByText("Asha is signed out everywhere")).toBeTruthy();
+    expect(screen.getByText(/emails them that it changed/)).toBeTruthy();
+  });
+
   it("refuses passwords that don't match", async () => {
     renderWithProviders(<SetPasswordSheet user={asha} onOpenChange={vi.fn()} />);
 
@@ -180,24 +128,5 @@ describe("SetPasswordSheet", () => {
       method: "POST",
       body: { password: "correct horse" },
     });
-  });
-});
-
-describe("EditUserSheet suspension", () => {
-  it("asks for the suspend confirmation before suspending, and sends nothing if cancelled", async () => {
-    renderWithProviders(<EditUserSheet user={asha} isSelf={false} onOpenChange={vi.fn()} />);
-
-    fireEvent.mouseDown(screen.getByRole("combobox", { name: /^Status/ }), { button: 0 });
-    const suspended = await screen.findByRole("option", { name: "Suspended" });
-    fireEvent.pointerDown(suspended, { pointerType: "mouse", button: 0 });
-    fireEvent.click(suspended);
-    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-
-    const dialog = await screen.findByRole("alertdialog");
-    expect(dialog.textContent).toContain("Suspend this user?");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-
-    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
-    expect(api).not.toHaveBeenCalled();
   });
 });

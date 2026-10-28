@@ -29,6 +29,7 @@ export interface CreateSamlProviderInput {
   name_id_format?: string;
   name_id_attribute?: string;
   certificate?: string;
+  status?: "draft" | "active" | "disabled";
 }
 
 /** The organisation's IdP entity ID, which its metadata and assertions carry. */
@@ -40,11 +41,15 @@ export const idpMetadataUrl = (tenantId: string) => `${idpEntityId(tenantId)}/me
 /** The organisation's SingleSignOnService URL, for an SP configured by hand. */
 export const idpSsoUrl = (tenantId: string) => `${idpEntityId(tenantId)}/sso`;
 
-export function useSamlProviders() {
+/** A sign-in to one app that starts at Qeet ID (IdP-initiated): the app's id names it. */
+export const idpSignInUrl = (tenantId: string, appId: string) =>
+  `${idpSsoUrl(tenantId)}?sp=${encodeURIComponent(appId)}`;
+
+export function useSamlProviders(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: authKeys.samlProviders(tenantId),
-    enabled: !!tenantId,
+    enabled: enabled && !!tenantId,
     queryFn: () => api<{ items: SamlProvider[] }>(`/v1/tenants/${tenantId}/saml-providers`),
   });
 }
@@ -59,11 +64,12 @@ export function useCreateSamlProvider() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "authentication:toast.serviceProviderAdded", silentError: true },
+    meta: { successMessage: "saml:toast.appAdded", silentError: true }, // the drawer shows it
   });
 }
 
-export function useUpdateSamlProvider() {
+/** `inline`: the caller shows a failure itself (a drawer), so it isn't toasted. */
+export function useUpdateSamlProvider({ inline = false }: { inline?: boolean } = {}) {
   const tenantId = useTenantId();
   const qc = useQueryClient();
   return useMutation({
@@ -73,7 +79,7 @@ export function useUpdateSamlProvider() {
         body,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "authentication:toast.serviceProviderUpdated", silentError: true },
+    meta: { silentError: inline },
   });
 }
 
@@ -86,6 +92,6 @@ export function useDeleteSamlProvider() {
         method: "DELETE",
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
-    meta: { successMessage: "authentication:toast.serviceProviderRemoved" },
+    meta: { successMessage: "saml:toast.appRemoved" },
   });
 }

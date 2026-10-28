@@ -25,6 +25,18 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   // Creating an organization needs a verified email. 403 -> `authz`, whose fallback sends the
   // person hunting for a missing permission.
   [ERROR_CODES.VERIFY_EMAIL_NOT_VERIFIED]: "errors:code.verifyEmailNotVerified",
+  // A dead invitation link is a 400 or 410 -> `validation` or `api`, whose fallbacks read like a
+  // fault in a form; each says why and what to do.
+  [ERROR_CODES.INVITE_LINK_INVALID]: "errors:code.inviteLinkInvalid",
+  [ERROR_CODES.INVITE_INVALID]: "errors:code.inviteInvalid",
+  [ERROR_CODES.INVITE_EXPIRED]: "errors:code.inviteExpired",
+  [ERROR_CODES.INVITE_ACCOUNT_EXISTS]: "errors:code.inviteAccountExists",
+  [ERROR_CODES.INVITE_EMAIL_MISMATCH]: "errors:code.inviteEmailMismatch",
+  [ERROR_CODES.INVITE_EMAIL_NOT_VERIFIED]: "errors:code.inviteEmailNotVerified",
+  // A spent or stale SSO code: only signing in again gets a new one.
+  [ERROR_CODES.SAML_LOGIN_CODE_INVALID]: "errors:code.samlLoginCodeInvalid",
+  [ERROR_CODES.SAML_LOGIN_CODE_USED]: "errors:code.samlLoginCodeUsed",
+  [ERROR_CODES.SAML_LOGIN_CODE_EXPIRED]: "errors:code.samlLoginCodeExpired",
   // 429 -> `api`; resending a code is throttled hard, so repeated "Resend code" clicks reach it.
   [ERROR_CODES.TOO_MANY_REQUESTS]: "errors:code.tooManyRequests",
   [ERROR_CODES.HTTP_429]: "errors:code.tooManyRequests",
@@ -60,24 +72,47 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   // 409 -> `api`, and a retry resubmits the same slug, so point at the field that fixes it: the
   // slug, not the name (names aren't unique).
   [ERROR_CODES.ORG_SLUG_TAKEN]: "errors:code.orgSlugTaken",
+  [ERROR_CODES.TENANT_OWNER_ONLY]: "errors:code.tenantOwnerOnly",
+  [ERROR_CODES.TENANT_DELETION_SCHEDULED]: "errors:code.tenantDeletionScheduled",
+  [ERROR_CODES.TENANT_DELETION_NOT_SCHEDULED]: "errors:code.tenantDeletionNotScheduled",
   [ERROR_CODES.MFA_CODE_INVALID]: "errors:code.mfaCodeInvalid",
   [ERROR_CODES.MFA_CODE_SEND_LIMITED]: "errors:code.mfaCodeSendLimited",
   [ERROR_CODES.MFA_FACTOR_LIMIT]: "errors:code.mfaFactorLimit",
   [ERROR_CODES.MFA_DELIVERY_UNAVAILABLE]: "errors:code.mfaDeliveryUnavailable",
   [ERROR_CODES.MFA_DELIVERY_FAILED]: "errors:code.mfaDeliveryFailed",
   [ERROR_CODES.AUTH_RISK_VERIFICATION_UNAVAILABLE]: "errors:code.authRiskVerificationUnavailable",
+  [ERROR_CODES.RBAC_ROLE_NAME_EXISTS]: "errors:code.rbacRoleNameExists",
+  // 403 -> `authz`, whose fallback says a permission is missing; the rule is about giving one.
+  [ERROR_CODES.RBAC_GRANT_EXCEEDS_CALLER]: "errors:code.rbacGrantExceedsCaller",
+  [ERROR_CODES.RBAC_SYSTEM_ROLE_FIXED]: "errors:code.rbacSystemRoleFixed",
   [ERROR_CODES.BILLING_PLAN_LIMIT]: "errors:code.billingPlanLimit",
   [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "errors:code.billingUpgradeRequired",
   [ERROR_CODES.USER_IMPORT_EMPTY]: "errors:code.userImportEmpty",
   [ERROR_CODES.USER_IMPORT_BATCH_TOO_LARGE]: "errors:code.userImportBatchTooLarge",
   [ERROR_CODES.USER_IMPORT_FILE_TOO_LARGE]: "errors:code.userImportFileTooLarge",
   [ERROR_CODES.USER_IMPORT_SOURCE_INVALID]: "errors:code.userImportSourceInvalid",
+  [ERROR_CODES.USER_MANAGED_ELSEWHERE]: "errors:code.userManagedElsewhere",
+  [ERROR_CODES.USER_CREDENTIALS_SHARED]: "errors:code.userCredentialsShared",
+  [ERROR_CODES.USER_MANAGED_HERE]: "errors:code.userManagedHere",
+  [ERROR_CODES.USER_DOMAIN_MANAGED]: "errors:code.userDomainManaged",
   [ERROR_CODES.WEBHOOK_URL_REQUIRED]: "errors:code.webhookUrlRequired",
   [ERROR_CODES.WEBHOOK_EVENTS_REQUIRED]: "errors:code.webhookEventsRequired",
   // The list comes from the server's catalogue, so a refusal means it changed since it loaded.
   [ERROR_CODES.WEBHOOK_EVENT_UNKNOWN]: "errors:code.webhookEventUnknown",
   // 400 -> `validation`, which doesn't say which value or what to use instead.
   [ERROR_CODES.OIDC_GRANT_TYPE_UNSUPPORTED]: "errors:code.oidcGrantTypeUnsupported",
+  [ERROR_CODES.QEETAI_UNCONFIGURED]: "errors:code.qeetaiUnconfigured",
+  [ERROR_CODES.QEETAI_PROVIDER_UNREACHABLE]: "errors:code.qeetaiProviderUnreachable",
+  [ERROR_CODES.QEETAI_PROVIDER_KEY_INVALID]: "errors:code.qeetaiProviderKeyInvalid",
+  [ERROR_CODES.QEETAI_PROVIDER_MODEL_INVALID]: "errors:code.qeetaiProviderModelInvalid",
+  [ERROR_CODES.QEETAI_PROVIDER_ERROR]: "errors:code.qeetaiProviderError",
+  [ERROR_CODES.DOMAIN_INVALID]: "errors:code.domainInvalid",
+  [ERROR_CODES.DOMAIN_EXISTS]: "errors:code.domainExists",
+  [ERROR_CODES.DOMAIN_RECORD_MISSING]: "errors:code.domainRecordMissing",
+  [ERROR_CODES.DOMAIN_CLAIMED_BY_OTHER]: "errors:code.domainClaimedByOther",
+  [ERROR_CODES.SECRET_NAME_EXISTS]: "errors:code.secretNameExists",
+  [ERROR_CODES.AGENT_SPONSOR_NOT_MEMBER]: "errors:code.agentSponsorNotMember",
+  [ERROR_CODES.AUTHHOOK_URL_INVALID]: "errors:code.authHookUrlInvalid",
   [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 

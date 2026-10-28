@@ -33,6 +33,13 @@ describe("PRESET_VIEWS", () => {
     expect(new Set(ids).size).toBe(ids.length);
     expect(PRESET_VIEWS.every((v) => v.builtin)).toBe(true);
   });
+
+  it("narrows by the server's own actions or a category, never by a word search", () => {
+    for (const view of PRESET_VIEWS) {
+      expect(view.search.q).toBeUndefined();
+      expect(view.search.type ?? view.search.category).toBeTruthy();
+    }
+  });
 });
 
 describe("savedViewsActions", () => {
@@ -40,13 +47,11 @@ describe("savedViewsActions", () => {
     const view = savedViewsActions.add("My triage", {
       severity: "error,critical",
       event: "evt-1",
-      tab: "raw",
       view: "old",
     });
     expect(view.name).toBe("My triage");
     expect(view.search.severity).toBe("error,critical");
     expect(view.search.event).toBeUndefined();
-    expect(view.search.tab).toBeUndefined();
     expect(view.search.view).toBeUndefined();
 
     expect(savedViewsStore.state.views).toHaveLength(1);

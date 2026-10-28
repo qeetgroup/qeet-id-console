@@ -3,7 +3,6 @@
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { authzKeys } from "@/modules/authorization";
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
@@ -193,8 +192,12 @@ export function useAssignGroupRole() {
       api<void>(`/v1/tenants/${tenantId}/groups/${in_.groupId}/roles/${in_.roleId}`, {
         method: "POST",
       }),
-    onSuccess: (_, in_) =>
-      qc.invalidateQueries({ queryKey: authzKeys.groupRoles(tenantId, in_.groupId) }),
+    // The authorization module loads only now: this file is in the groups barrel, which the shell
+    // imports (the list's route reads its search schema from it), so it stays light.
+    onSuccess: async (_, in_) => {
+      const { authzKeys } = await import("@/modules/authorization");
+      await qc.invalidateQueries({ queryKey: authzKeys.groupRoles(tenantId, in_.groupId) });
+    },
     meta: { silent: true }, // part of the create flow, which toasts "Group created"
   });
 }

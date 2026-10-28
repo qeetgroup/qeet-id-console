@@ -1,25 +1,18 @@
-import { SidebarProvider } from "@qeetrix/ui";
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useLayoutEffect } from "react";
 
-import { useFeatureFlag } from "@/platform/feature-flags/provider";
-import { CapabilityProvider, useCapabilities } from "@/platform/security/capability-provider";
-import { AccessBoundary } from "@/platform/security/access-boundary";
-import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
-import { AppSidebar } from "@/modules/dashboard";
-import { CommandPaletteLauncher } from "@/modules/dashboard";
-import { ConsoleHeader } from "@/modules/dashboard";
-import { ImpersonationBanner } from "@/modules/dashboard";
-import { ShortcutsDialog } from "@/modules/dashboard";
-import { VerifyEmailBanner } from "@/modules/dashboard";
-import { QeetAI } from "@/modules/qeetai";
+import { ConsoleFrame } from "@/modules/dashboard";
+import { getServerSession } from "@/platform/api/server-proxy";
 import { hasVerifiedEmail } from "@/platform/auth/email-verification";
-import { organizationSelectionBlocksPath } from "@/platform/auth/organization-selection";
+import {
+  isAccountPath,
+  organizationSelectionBlocksPath,
+} from "@/platform/auth/organization-selection";
 import { useIdleLogout } from "@/platform/auth/session";
 import { sessionStore } from "@/platform/auth/session-store";
-import { getServerSession } from "@/platform/api/server-proxy";
-import { useGlobalShortcuts } from "@/platform/keyboard/shortcuts";
+import { AccessBoundary } from "@/platform/security/access-boundary";
+import { CapabilityProvider } from "@/platform/security/capability-provider";
+import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -32,7 +25,19 @@ export const Route = createFileRoute("/_app")({
     if (!(await hasVerifiedEmail(context.queryClient, session.userId))) {
       throw redirect({ to: "/verify-email" });
     }
+    // A new organisation's checkout started before payments returned to the create-organisation
+    // page comes back to the dashboard; that page finishes it. (Billing's own upgrades return to
+    // /settings/billing and stay.)
+    const search = location.search as Record<string, unknown>;
+    if (location.pathname === "/" && (search.checkout || search.razorpay_payment_link_id)) {
+      throw redirect({ to: "/create-organization", search: search as never, replace: true });
+    }
     if (organizationSelectionBlocksPath(session.organizationSelectionRequired, location.pathname)) {
+      throw redirect({ to: "/select-organization", replace: true });
+    }
+    // Without an organisation there is no console to show: the picker offers the person's
+    // invitations, or takes them on to create one. My account stays open to them.
+    if (!session.tenantId && !isAccountPath(location.pathname)) {
       throw redirect({ to: "/select-organization", replace: true });
     }
     return { session };
@@ -42,72 +47,23 @@ export const Route = createFileRoute("/_app")({
 
 function AppLayout() {
   const { session } = Route.useRouteContext();
+  useIdleLogout(IDLE_TIMEOUT_MS);
 
-  useEffect(() => {
+  // Before the pages' own effects send their first requests: hydrating later moves the session
+  // scope under them, and the client drops their answers as stale.
+  useLayoutEffect(() => {
     sessionStore.hydrate(session);
   }, [session]);
 
   return (
     <CapabilityProvider>
       <SensitiveActionProvider>
-        <ConsoleFrame />
-      </SensitiveActionProvider>
-    </CapabilityProvider>
-  );
-}
-
-function ConsoleFrame() {
-  const { t } = useTranslation("common");
-  const navigate = useNavigate();
-  const access = useCapabilities();
-  const qeetaiEnabled = useFeatureFlag("qeetai");
-  useIdleLogout(IDLE_TIMEOUT_MS);
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
-
-  useGlobalShortcuts({
-    onHelp: useCallback(() => setShortcutsOpen(true), []),
-    navigate: useCallback((path: string) => navigate({ to: path }), [navigate]),
-    canNavigate: access.canAccessPath,
-  });
-
-  return (
-    <SidebarProvider
-      className="console-shell"
-      style={
-        {
-          // A 4rem icon rail plus a 15rem panel, wide enough for the longest labels and the tenant
-          // switcher; collapsed, only the rail shows.
-          "--sidebar-width": "19rem",
-          "--sidebar-width-icon": "4rem",
-        } as React.CSSProperties
-      }
-    >
-      {/* Hidden until focused, so keyboard users can skip past the navigation. */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:inset-s-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-md focus:ring-2 focus:ring-ring focus:outline-none"
-      >
-        {t("skipToContent")}
-      </a>
-      <AppSidebar />
-      <div className="console-workspace">
-        <ImpersonationBanner />
-        <VerifyEmailBanner />
-        <ConsoleHeader
-          onOpenPalette={() => setPaletteOpen(true)}
-          onOpenShortcuts={() => setShortcutsOpen(true)}
-          searchAvailable={access.state === "ready"}
-        />
-        <main id="main-content" tabIndex={-1} className="console-content focus:outline-none">
+        <ConsoleFrame>
           <AccessBoundary>
             <Outlet />
           </AccessBoundary>
-        </main>
-      </div>
-      {qeetaiEnabled ? <QeetAI /> : null}
-      <CommandPaletteLauncher open={paletteOpen} onOpenChange={setPaletteOpen} />
-      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
-    </SidebarProvider>
+        </ConsoleFrame>
+      </SensitiveActionProvider>
+    </CapabilityProvider>
   );
 }

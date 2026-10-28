@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getNavGroups } from "@/platform/config/navigation";
+import { commandContributions } from "@/platform/modules/registry";
 import { buildNavSearchItems } from "../registry/navigation-source";
 
 import {
@@ -15,7 +16,6 @@ import {
 const emptyCtx: RankContext = {
   recentIds: new Set(),
   recentAccessCounts: new Map(),
-  favoriteIds: new Set(),
   currentPathname: "/",
 };
 
@@ -28,11 +28,16 @@ describe("navigation candidates", () => {
 
     expect(planned).toHaveLength(0);
     for (const item of planned) expect(paths.has(item.url)).toBe(false);
-    expect(paths.has("/auth/connections/scim")).toBe(true);
-    expect(paths.has("/auth/connections/ldap")).toBe(true);
+    // SCIM and LDAP are found through their commands (directory manifest), not as tabs.
+    const commands = new Set(commandContributions().map((c) => c.to));
+    expect(commands.has("/directory/connections/scim")).toBe(true);
+    expect(commands.has("/directory/connections/ldap")).toBe(true);
+    // The old connections list redirects to SSO, whose setup links have their own command.
+    expect(paths.has("/auth/connections")).toBe(false);
+    expect(paths.has("/auth/connections/saml")).toBe(true);
+    expect(commands.has("/auth/connections/saml")).toBe(true);
     expect(paths.has("/users/deleted")).toBe(true);
     for (const path of [
-      "/users/suspended",
       "/directory/connections",
       "/directory/sync-activity",
       "/directory/sync-errors",
@@ -177,19 +182,6 @@ describe("rankItems", () => {
     }
   });
 
-  it("applies a favorites boost to favourited items", () => {
-    const ctx: RankContext = {
-      ...emptyCtx,
-      favoriteIds: new Set(["nav.roles"]),
-    };
-    const result = rankItems(items, "r", ctx);
-    const rolesResult = result.find((r) => r.item.id === "nav.roles");
-    const otherResult = result.find((r) => r.item.id !== "nav.roles");
-    if (rolesResult && otherResult) {
-      expect(rolesResult.score).toBeGreaterThan(otherResult.score);
-    }
-  });
-
   it("applies a frequency boost proportional to accessCount", () => {
     const ctx: RankContext = {
       ...emptyCtx,
@@ -205,7 +197,7 @@ describe("rankItems", () => {
     }
   });
 
-  it("returns only recents/favorites when query is empty", () => {
+  it("returns only recents when the query is empty", () => {
     const ctx: RankContext = {
       ...emptyCtx,
       recentIds: new Set(["nav.roles"]),
@@ -216,7 +208,7 @@ describe("rankItems", () => {
     expect(result[0]?.item.id).toBe("nav.roles");
   });
 
-  it("returns an empty array with no query and no recents/favorites", () => {
+  it("returns an empty array with no query and no recents", () => {
     const result = rankItems(items, "", emptyCtx);
     expect(result).toHaveLength(0);
   });

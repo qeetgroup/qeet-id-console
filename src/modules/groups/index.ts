@@ -1,7 +1,5 @@
 // Public API of the groups module.
 export * from "./api/groups";
 export { groupKeys } from "./api/keys";
-export { GroupHierarchy } from "./components/group-hierarchy";
-export { GroupTemplatesDialog } from "./components/group-templates-dialog";
-export { ImportGroupsDialog } from "./components/import-groups-dialog";
-export { NewGroupSheet } from "./components/new-group-sheet";
+// The list's address, for its route: light, so the route tree (in the shell) can hold it.
+export { type GroupFilters, groupsListSearch } from "./groups-model";

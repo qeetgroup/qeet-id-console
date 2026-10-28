@@ -62,9 +62,5 @@
     "viewAll": "Alle anzeigen",
     "emptyTitle": "Noch keine Aktivität",
     "emptyDescription": "Ereignisse erscheinen hier, sobald Nutzer mit Ihrem Organisation interagieren."
-  },
-  "noWorkspace": {
-    "title": "Erstellen Sie Ihre erste Organisation",
-    "cta": "Organisation erstellen"
   }
 }

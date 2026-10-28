@@ -49,18 +49,9 @@
           "level": "error",
           "options": {
             "paths": {
-              "@qeetrix/ui": {
-                "importNames": ["DataState"],
-                "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
-              }
+              "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28)."
             },
-            "patterns": [
-              {
-                "group": ["@qeetrix/ui"],
-                "importNamePattern": "StatusPill",
-                "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
-              }
-            ]
+            "patterns": []
           }
         },
         "noRestrictedGlobals": {
@@ -99,18 +90,10 @@
                       "@/integrations/**"
                     ],
                     "message": "shared/ is the lowest layer: import only @/shared, @/i18n, or external packages."
-                  },
-                  {
-                    "group": ["@qeetrix/ui"],
-                    "importNamePattern": "StatusPill",
-                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
                   }
                 ],
                 "paths": {
-                  "@qeetrix/ui": {
-                    "importNames": ["DataState"],
-                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
-                  }
+                  "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28)."
                 }
               }
             }
@@ -127,10 +110,7 @@
               "level": "error",
               "options": {
                 "paths": {
-                  "@qeetrix/ui": {
-                    "importNames": ["DataState"],
-                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
-                  }
+                  "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28)."
                 },
                 "patterns": [
                   {
@@ -142,11 +122,6 @@
                       "@/app/**"
                     ],
                     "message": "i18n/ holds locale resources and the i18next setup: it imports only external packages."
-                  },
-                  {
-                    "group": ["@qeetrix/ui"],
-                    "importNamePattern": "StatusPill",
-                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
                   }
                 ]
               }
@@ -167,18 +142,10 @@
                   {
                     "group": ["@/modules/**", "@/routes/**", "@/app/**", "@/lib/**"],
                     "message": "platform/ may depend only on @/platform, @/shared, @/i18n (never modules, routes, app, or the retired @/lib)."
-                  },
-                  {
-                    "group": ["@qeetrix/ui"],
-                    "importNamePattern": "StatusPill",
-                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
                   }
                 ],
                 "paths": {
-                  "@qeetrix/ui": {
-                    "importNames": ["DataState"],
-                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
-                  }
+                  "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28)."
                 }
               }
             }
@@ -202,18 +169,10 @@
                   {
                     "group": ["@/lib/**"],
                     "message": "@/lib is retired — import from the module/platform/shared home."
-                  },
-                  {
-                    "group": ["@qeetrix/ui"],
-                    "importNamePattern": "StatusPill",
-                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
                   }
                 ],
                 "paths": {
-                  "@qeetrix/ui": {
-                    "importNames": ["DataState"],
-                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
-                  }
+                  "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28)."
                 }
               }
             }
@@ -230,10 +189,7 @@
               "level": "error",
               "options": {
                 "paths": {
-                  "@qeetrix/ui": {
-                    "importNames": ["DataState"],
-                    "message": "Import DataState from @/platform/components/data-state: the @qeetrix/ui default error slot prints the backend's raw error.message."
-                  },
+                  "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28).",
                   "@tanstack/react-query": "Routes compose; data access lives in the owning module (its hooks / queryOptions). Move this into the module.",
                   "@/platform/api/client": {
                     "importNames": ["api"],
@@ -242,13 +198,8 @@
                 },
                 "patterns": [
                   {
-                    "group": ["@/modules/*/**", "!@/modules/*/pages"],
-                    "message": "A route imports its own module's pages relatively, another module through its barrel (@/modules/<name>) or route entry (@/modules/<name>/pages), never internals."
-                  },
-                  {
-                    "group": ["@qeetrix/ui"],
-                    "importNamePattern": "StatusPill",
-                    "message": "Import StatusPill from @/platform/components/status-pill: the @qeetrix/ui pill names a known status in English, whatever the chosen language."
+                    "group": ["@/modules/*/**", "!@/modules/*/pages", "!@/modules/*/entry-pages"],
+                    "message": "A route imports its own module's pages relatively, another module through its barrel (@/modules/<name>) or route entry (@/modules/<name>/pages, or entry-pages for the pages already on @qeetrix/react), never internals."
                   }
                 ]
               }

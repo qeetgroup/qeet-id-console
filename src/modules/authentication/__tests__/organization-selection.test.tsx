@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ThemeProvider } from "@qeetrix/ui";
+import { QeetrixProvider } from "@qeetrix/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   act,
@@ -32,6 +32,17 @@ vi.mock("@/platform/auth/session", () => ({
   useIdleLogout: vi.fn(),
 }));
 vi.mock("../api/flows", () => ({ switchToTenant: vi.fn().mockResolvedValue(undefined) }));
+// Invitations waiting for this email: none, unless a test adds some.
+const invites = vi.hoisted(() => ({
+  items: [] as { id: string; tenant_name: string; email: string; expires_at: string }[],
+  accept: vi.fn(),
+  decline: vi.fn(),
+}));
+vi.mock("../api/flows-invitations", () => ({
+  useMyInvitations: () => ({ data: { items: invites.items }, isPending: false }),
+  useAcceptInvitation: () => ({ mutate: invites.accept }),
+  useDeclineInvitation: () => ({ mutate: invites.decline }),
+}));
 
 import { api } from "@/platform/api/client";
 import type { EligibleOrganization } from "@/platform/auth/organization-selection";
@@ -123,31 +134,29 @@ function render(node: ReactNode) {
   const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
   return renderUI(node, {
     wrapper: ({ children }) => (
-      <ThemeProvider defaultTheme={theme} storageKey="organization-selector-test">
-        {children}
-      </ThemeProvider>
+      <QeetrixProvider defaultColorScheme={theme}>{children}</QeetrixProvider>
     ),
   });
 }
 
-async function selectOption(label: string, option: string) {
-  fireEvent.mouseDown(screen.getByRole("combobox", { name: label }), { button: 0 });
-  const target = await screen.findByRole("option", { name: option });
-  fireEvent.pointerDown(target, { pointerType: "mouse", button: 0 });
-  fireEvent.click(target);
-}
-
-function renderPage() {
+function renderPage(onCreate = vi.fn()) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return {
     ...render(
       <QueryClientProvider client={client}>
-        <OrganizationSelectionPage onCreate={vi.fn()} />
+        <OrganizationSelectionPage onCreate={onCreate} />
       </QueryClientProvider>,
     ),
     client,
   };
 }
+
+const invitation = (id: string, tenant_name: string) => ({
+  id,
+  tenant_name,
+  email: "operator@example.test",
+  expires_at: new Date(Date.now() + 6 * 86_400_000).toISOString(),
+});
 
 beforeEach(() => {
   context.userId = "user-a";
@@ -157,6 +166,9 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue({ items: fixtures(), next_cursor: "" });
   vi.mocked(switchToTenant).mockReset().mockResolvedValue(undefined);
+  invites.items = [];
+  invites.accept.mockReset();
+  invites.decline.mockReset();
 });
 afterEach(() => {
   cleanup();
@@ -164,124 +176,120 @@ afterEach(() => {
   document.documentElement.classList.remove("dark");
 });
 
-describe("Organization selector", () => {
-  it.each(["light", "dark"])(
-    "renders the same reference layout and real membership data in %s",
-    (theme) => {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      const { container } = render(<OrganizationSelectorView {...viewProps()} />);
-      expect(
-        screen.getByRole("heading", { level: 1, name: "Select an organization" }),
-      ).toBeTruthy();
-      expect(
-        screen.getByText(
-          "You're a member of 5 organizations. Choose one to continue to the dashboard.",
-        ),
-      ).toBeTruthy();
-      expect(screen.getAllByRole("radio")).toHaveLength(5);
-      expect(
-        (screen.getByRole("radio", { name: "Acme Technologies" }) as HTMLInputElement).checked,
-      ).toBe(true);
-      expect(screen.getByText("Last used")).toBeTruthy();
-      expect(screen.getByText("Billing manager")).toBeTruthy();
-      expect(screen.queryByText("Professional")).toBeNull();
-      expect(screen.queryByText("nova.com")).toBeNull();
-      for (const element of container.querySelectorAll("[class]"))
-        expect(element.getAttribute("class")).not.toMatch(
-          /\bdark:(hidden|block|grid|flex|order-|p[xy]-|m[xy]-)/,
-        );
-    },
-  );
+/** An organisation's row: its button is named by everything it shows, starting with the name. */
+function row(name: string) {
+  return screen.getByRole("button", { name: new RegExp(`^${name}`) });
+}
 
-  it("changes only the selected card until Continue explicitly submits", async () => {
+function sixth(): EligibleOrganization {
+  return {
+    ...fixture(2),
+    id: "66666666-1111-4111-8111-111111111111",
+    name: "Zenith Partners",
+    slug: "zenith",
+    domain: "zenith.example",
+  };
+}
+
+describe("Organization selector", () => {
+  it.each(["light", "dark"])("renders the memberships as one list in %s", (theme) => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    render(<OrganizationSelectorView {...viewProps()} />);
+    expect(screen.getByRole("heading", { level: 1, name: "Choose an organisation" })).toBeTruthy();
+    expect(
+      screen.getByText("You belong to 5 organisations. Pick one to open its console."),
+    ).toBeTruthy();
+    const list = screen.getByRole("list", { name: "Your organisations" });
+    expect(list.querySelectorAll("li")).toHaveLength(5);
+    expect(screen.getAllByText("Last used")).toHaveLength(1);
+    expect(screen.getByText("Billing manager")).toBeTruthy();
+    // No domain: the slug stands in; a plan with its own copy shows it.
+    expect(screen.getByText("nova · Pro")).toBeTruthy();
+    // Five is short enough to need no search.
+    expect(screen.queryByRole("searchbox")).toBeNull();
+  });
+
+  it("opens an organisation with one click", async () => {
     const props = viewProps();
     render(<OrganizationSelectorView {...props} />);
-    fireEvent.click(screen.getByRole("radio", { name: "Globalsphere" }));
-    expect(props.onContinue).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Continue to dashboard" }));
+    fireEvent.click(row("Globalsphere"));
     await waitFor(() => expect(props.onContinue).toHaveBeenCalledWith(fixture(1).id));
   });
 
-  it("does not invent a last-used organization or automatically choose an unused one", () => {
+  it("does not invent a last-used organization or open one by itself", () => {
+    const props = viewProps();
     render(
       <OrganizationSelectorView
-        {...viewProps()}
+        {...props}
         organizations={fixtures().map((organization) => ({ ...organization, last_used_at: null }))}
       />,
     );
     expect(screen.queryByText("Last used")).toBeNull();
-    expect(screen.getAllByRole("radio").some((input) => (input as HTMLInputElement).checked)).toBe(
-      false,
-    );
-    expect(
-      screen.getByRole("button", { name: "Continue to dashboard" }).hasAttribute("disabled"),
-    ).toBe(true);
-  });
-
-  it("searches names, domains and slugs without submitting a hidden selection", () => {
-    const props = viewProps();
-    render(<OrganizationSelectorView {...props} />);
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "GLOBAL.EXAMPLE" } });
-    expect(screen.getAllByRole("radio")).toHaveLength(1);
-    expect(
-      screen.getByRole("button", { name: "Continue to dashboard" }).hasAttribute("disabled"),
-    ).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: "Continue to dashboard" }));
     expect(props.onContinue).not.toHaveBeenCalled();
+  });
+
+  it("searches names, domains and slugs once the list is long", () => {
+    render(<OrganizationSelectorView {...viewProps()} organizations={[...fixtures(), sixth()]} />);
+    const search = screen.getByRole("searchbox", { name: "Search organisations" });
+    fireEvent.change(search, { target: { value: "GLOBAL.EXAMPLE" } });
+    expect(row("Globalsphere")).toBeTruthy();
+    expect(
+      screen.getByRole("list", { name: "Your organisations" }).querySelectorAll("li"),
+    ).toHaveLength(1);
+    expect(screen.getByText("Showing 1 of 6")).toBeTruthy();
+    fireEvent.change(search, { target: { value: "nova" } });
+    expect(row("Nova Systems")).toBeTruthy();
+    fireEvent.change(search, { target: { value: "not-a-member" } });
+    expect(screen.getByText("No matching organisations")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
-    expect(screen.getAllByRole("radio")).toHaveLength(5);
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "nova" } });
-    expect(screen.getByRole("radio", { name: "Nova Systems" })).toBeTruthy();
+    // Back to the most recently used.
+    expect(
+      screen.getByRole("list", { name: "Your organisations" }).querySelectorAll("li"),
+    ).toHaveLength(5);
   });
 
-  it("filters actual roles and retains the selected filter label", async () => {
-    render(<OrganizationSelectorView {...viewProps()} />);
-    await selectOption("Filter by role", "Admin");
-    expect(screen.getAllByRole("radio")).toHaveLength(2);
-    expect(screen.getByRole("combobox", { name: "Filter by role" }).textContent).toContain("Admin");
-    await selectOption("Filter by role", "Billing manager");
-    expect(screen.getAllByRole("radio")).toHaveLength(1);
-    expect(screen.getByRole("radio", { name: "Quantum Works" })).toBeTruthy();
+  it("starts a long list with the five most recently used, and shows all on request", () => {
+    render(<OrganizationSelectorView {...viewProps()} organizations={[...fixtures(), sixth()]} />);
+    const rows = () =>
+      [...screen.getByRole("list", { name: "Your organisations" }).querySelectorAll("li")].map(
+        (item) => item.querySelector("strong")?.textContent,
+      );
+    expect(screen.getByText("Recently used")).toBeTruthy();
+    expect(rows()).toHaveLength(5);
+    expect(rows()[0]).toBe("Acme Technologies");
+    fireEvent.click(screen.getByRole("button", { name: "Show all 6 organisations" }));
+    expect(screen.getByText("All organisations, A to Z")).toBeTruthy();
+    expect(rows()).toEqual([
+      "Acme Technologies",
+      "Globalsphere",
+      "GreenField Labs",
+      "Nova Systems",
+      "Quantum Works",
+      "Zenith Partners",
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: "Show recently used only" }));
+    expect(rows()).toHaveLength(5);
   });
 
-  it("sorts names and changes layout without losing the chosen organization", async () => {
-    const { container } = render(<OrganizationSelectorView {...viewProps()} />);
-    fireEvent.click(screen.getByRole("radio", { name: "Nova Systems" }));
-    await selectOption("Sort organizations", "Name: Z to A");
-    expect(screen.getAllByRole("radio")[0]?.getAttribute("aria-label")).toBe("Quantum Works");
-    fireEvent.click(screen.getByRole("button", { name: "List view" }));
-    expect(container.querySelector('[data-organization-layout="list"]')).toBeTruthy();
-    expect((screen.getByRole("radio", { name: "Nova Systems" }) as HTMLInputElement).checked).toBe(
-      true,
-    );
-  });
-
-  it("offers filter reset and explicit retry states", () => {
+  it("offers an explicit retry when the memberships can't be loaded", () => {
     const props = viewProps();
-    const view = render(<OrganizationSelectorView {...props} />);
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "not-a-member" } });
-    expect(screen.getByText("No matching organizations")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(screen.getAllByRole("radio")).toHaveLength(5);
-    view.rerender(<OrganizationSelectorView {...props} error />);
-    expect(screen.queryByRole("radio")).toBeNull();
+    render(<OrganizationSelectorView {...props} error />);
+    expect(screen.queryByRole("list", { name: "Your organisations" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(props.onRetry).toHaveBeenCalledTimes(1);
   });
 
-  it("disables stale selections removed by a background membership refresh", () => {
+  it("drops a membership removed by a background refresh", () => {
     const props = viewProps();
     const view = render(<OrganizationSelectorView {...props} />);
-    fireEvent.click(screen.getByRole("radio", { name: "Nova Systems" }));
+    expect(row("Nova Systems")).toBeTruthy();
     view.rerender(
       <OrganizationSelectorView
         {...props}
         organizations={fixtures().filter((organization) => organization.name !== "Nova Systems")}
       />,
     );
-    expect(
-      screen.getByRole("button", { name: "Continue to dashboard" }).hasAttribute("disabled"),
-    ).toBe(true);
+    expect(screen.queryByRole("button", { name: /^Nova Systems/ })).toBeNull();
   });
 
   it("prevents duplicate switching and presents a safe retryable error", async () => {
@@ -294,22 +302,23 @@ describe("Organization selector", () => {
         }),
     );
     render(<OrganizationSelectorView {...props} />);
-    fireEvent.click(screen.getByRole("button", { name: "Continue to dashboard" }));
-    fireEvent.click(screen.getByRole("button", { name: "Opening organization..." }));
+    fireEvent.click(row("Globalsphere"));
+    fireEvent.click(row("Acme Technologies"));
     expect(props.onContinue).toHaveBeenCalledTimes(1);
-    expect(screen.getAllByRole("radio").every((radio) => radio.matches(":disabled"))).toBe(true);
+    const rows = screen
+      .getByRole("list", { name: "Your organisations" })
+      .querySelectorAll("button");
+    expect([...rows].every((button) => button.matches(":disabled"))).toBe(true);
     await act(async () => rejectSwitch(new Error("private SQL membership query")));
     expect(screen.getByRole("alert")).toBeTruthy();
     expect(screen.queryByText("private SQL membership query")).toBeNull();
-    expect(
-      screen.getByRole("button", { name: "Continue to dashboard" }).hasAttribute("disabled"),
-    ).toBe(false);
+    expect(row("Globalsphere").matches(":disabled")).toBe(false);
   });
 
   it("connects create, account and sign-out actions", () => {
     const props = viewProps();
     render(<OrganizationSelectorView {...props} />);
-    fireEvent.click(screen.getByRole("button", { name: "Create a new organization" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create a new organisation" }));
     fireEvent.click(screen.getByRole("button", { name: "Account settings" }));
     fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
     expect(props.onCreate).toHaveBeenCalledTimes(1);
@@ -319,8 +328,8 @@ describe("Organization selector", () => {
 
   it("shows loading without presenting a partial eligible list", () => {
     render(<OrganizationSelectorView {...viewProps()} loading />);
-    expect(screen.getByRole("status", { name: "Loading your organizations..." })).toBeTruthy();
-    expect(screen.queryByRole("radio")).toBeNull();
+    expect(screen.getByRole("status", { name: "Loading your organisations…" })).toBeTruthy();
+    expect(screen.queryByRole("list", { name: "Your organisations" })).toBeNull();
   });
 });
 
@@ -364,13 +373,12 @@ describe("Organization selection data", () => {
     expect(organizationImage("https://user:password@example.test/logo.png")).toBeUndefined();
   });
 
-  it("keeps multiple organizations on the selector until Continue", async () => {
+  it("keeps several organizations on the picker until one is chosen", async () => {
     renderPage();
-    await screen.findByRole("radio", { name: "Globalsphere" });
+    await screen.findByRole("button", { name: /^Globalsphere/ });
     expect(context.navigate).not.toHaveBeenCalled();
     expect(switchToTenant).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("radio", { name: "Globalsphere" }));
-    fireEvent.click(screen.getByRole("button", { name: "Continue to dashboard" }));
+    fireEvent.click(row("Globalsphere"));
     await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixture(1).id));
   });
 
@@ -387,11 +395,77 @@ describe("Organization selection data", () => {
     await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixture(1).id));
   });
 
-  it("keeps org-less accounts on the existing onboarding path", async () => {
+  it("takes an account with no organisation and no invitation on to create its first", async () => {
     vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
     renderPage();
-    await waitFor(() => expect(context.navigate).toHaveBeenCalledWith({ to: "/", replace: true }));
+    await waitFor(() =>
+      expect(context.navigate).toHaveBeenCalledWith({ to: "/create-organization", replace: true }),
+    );
     expect(switchToTenant).not.toHaveBeenCalled();
+  });
+
+  it("shows a new account its invitation instead: join it, decline it, or create one", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India")];
+    const onCreate = vi.fn();
+    renderPage(onCreate);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Join Globex India" }),
+    ).toBeTruthy();
+    expect(screen.getByText(/Invited as operator@example.test · expires in 6 days/)).toBeTruthy();
+    expect(context.navigate).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Create a new organisation instead" }));
+    expect(onCreate).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "Join Globex India" }));
+    expect(invites.accept).toHaveBeenCalledWith("inv-1", expect.anything());
+    // Joining reloads into the organisation; until then nothing else can start.
+    expect(
+      screen
+        .getByRole("button", { name: "Create a new organisation instead" })
+        .getAttribute("aria-disabled"),
+    ).toBe("true");
+  });
+
+  it("says in place when joining fails, and leaves the invitation to try again", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India")];
+    invites.accept.mockImplementation((_id, options) => options.onError(new Error("private")));
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Join Globex India" }));
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "We couldn't add you to that organisation",
+    );
+    expect(document.body.textContent).not.toContain("private");
+    expect(
+      screen.getByRole("button", { name: "Join Globex India" }).getAttribute("aria-disabled"),
+    ).not.toBe("true");
+  });
+
+  it("lists several invitations, each joined or declined on its own row", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India"), invitation("inv-2", "Initech")];
+    invites.decline.mockImplementation((_id, options) => options.onSettled());
+    renderPage();
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "You've been invited" }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Decline the invitation to Initech" }));
+    expect(invites.decline).toHaveBeenCalledWith("inv-2", expect.anything());
+    fireEvent.click(screen.getByRole("button", { name: "Join Globex India" }));
+    expect(invites.accept).toHaveBeenCalledWith("inv-1", expect.anything());
+  });
+
+  it("shows a member their invitations above their organisations, and doesn't go on without them", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [fixture(1)], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India")];
+    renderPage();
+    const list = await screen.findByRole("list", { name: "Invitations" });
+    expect(list.textContent).toContain("Globex India");
+    expect(screen.getByRole("list", { name: "Your organisations" }).textContent).toContain(
+      "Globalsphere",
+    );
+    expect(switchToTenant).not.toHaveBeenCalled();
+    expect(context.navigate).not.toHaveBeenCalled();
   });
 
   it("does not fetch memberships without an authenticated identity", () => {

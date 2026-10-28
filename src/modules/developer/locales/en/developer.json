@@ -1,446 +1,85 @@
 {
-  "overview": {
-    "title": "Overview",
-    "description": "Keys, tokens, webhooks and the building blocks for integrating with Qeet ID.",
-    "createKey": "Create API key",
-    "createWebhook": "Create webhook",
-    "viewAll": "View all",
-    "retry": "Retry",
-    "retryMetric": "Retry {{label}}",
-    "loadingMetric": "Loading {{label}}",
-    "unavailable": "Unavailable",
-    "restricted": "Restricted",
-    "historyUnavailable": "History unavailable",
-    "recentCreations_one": "{{count}} created in 7 days",
-    "recentCreations_other": "{{count}} created in 7 days",
-    "checkingAccess": "Checking developer access",
-    "selectOrganization": "Choose an organization first",
-    "goToOverview": "Go to overview",
-    "metricsLabel": "Developer metrics",
-    "metrics": {
-      "keys": "API keys",
-      "tokens": "Active grants",
-      "webhooks": "Webhooks",
-      "hooks": "Auth hooks",
-      "agents": "Agents",
-      "secrets": "Secrets",
-      "credentials": "Credentials"
-    },
-    "explore": {
-      "title": "Explore and manage",
-      "description": "Manage the developer tools connected to your organization.",
-      "navigation": "Developer areas",
-      "count_one": "{{count}} area",
-      "count_other": "{{count}} areas",
-      "restricted": "Your role does not include access to these developer areas."
-    },
-    "activity": {
-      "title": "Recent developer activity",
-      "loading": "Loading developer activity",
-      "error": "Developer activity is unavailable.",
-      "empty": "No recent developer activity.",
-      "restricted": "Activity access is required to view this feed.",
-      "record": "Record {{id}}",
-      "organization": "Organization activity",
-      "actions": {
-        "keyCreated": "API key created",
-        "keyRevoked": "API key revoked",
-        "webhookCreated": "Webhook created",
-        "webhookEnabled": "Webhook enabled",
-        "webhookDisabled": "Webhook disabled",
-        "webhookAutoDisabled": "Webhook disabled after failed deliveries",
-        "webhookSecretRotated": "Webhook signing secret rotated",
-        "hookCreated": "Auth hook created",
-        "hookUpdated": "Auth hook updated",
-        "hookDeleted": "Auth hook deleted",
-        "agentCreated": "Agent registered",
-        "agentSuspended": "Agent suspended",
-        "agentResumed": "Agent resumed",
-        "agentDecommissioned": "Agent decommissioned",
-        "agentDeleted": "Agent deleted",
-        "agentsSuspended": "All agents suspended",
-        "agentsTransferred": "Agents moved to a new sponsor",
-        "secretCreated": "Secret created",
-        "secretUpdated": "Secret updated",
-        "secretRotated": "Secret rotated",
-        "secretRevealed": "Secret revealed",
-        "secretDeleted": "Secret deleted",
-        "credentialIssued": "Credential issued",
-        "credentialRevoked": "Credential revoked",
-        "changed": "Developer settings changed"
-      }
-    },
-    "quick": {
-      "title": "Quick actions",
-      "key": {
-        "title": "Create API key",
-        "description": "Credentials for API requests."
+  "nav": {
+    "developer": {
+      "machineAccess": {
+        "title": "Machine access",
+        "description": "API keys, machine identities and agents.",
+        "all": "All",
+        "apiKeys": "API keys",
+        "machineIdentities": "Machine identities",
+        "agents": "Agents"
       },
-      "webhook": {
-        "title": "Create webhook",
-        "description": "Subscribe to identity events."
+      "signingKeys": {
+        "title": "Signing keys",
+        "description": "The keys that sign every token."
       },
-      "docs": {
-        "title": "Read the documentation",
-        "description": "Guides and API reference."
-      },
-      "sdks": {
-        "title": "View SDKs",
-        "description": "Libraries for your stack."
-      },
-      "quickstart": {
-        "title": "Open the quickstart",
-        "description": "Your first Qeet ID integration."
-      }
-    },
-    "checklist": {
-      "title": "Integration checklist",
-      "progress": "{{completed}} of {{total}} complete",
-      "progressLabel": "Integration setup progress",
-      "complete": "Complete",
-      "pending": "Not complete",
-      "restricted": "No setup steps are available for your role.",
-      "keys": {
-        "title": "Create an API key",
-        "description": "Authenticate API requests."
+      "secrets": {
+        "title": "Secrets",
+        "description": "The vault services and agents read."
       },
       "webhooks": {
-        "title": "Set up a webhook",
-        "description": "Receive identity events."
+        "title": "Webhooks",
+        "description": "Endpoints Qeet ID posts events to."
       },
-      "hooks": {
-        "title": "Configure an auth hook",
-        "description": "Connect your sign-in policy."
-      },
-      "agents": {
-        "title": "Register an agent",
-        "description": "Assign an accountable identity."
+      "authHooks": {
+        "title": "Auth hooks",
+        "description": "Endpoints that allow or deny each sign-in."
       },
       "credentials": {
-        "title": "Issue a test credential",
-        "description": "Create a verifiable credential."
+        "title": "Verifiable credentials",
+        "description": "Signed statements about people."
+      },
+      "infrastructure": {
+        "title": "Infrastructure",
+        "description": "Endpoints and keys integrations use."
       }
     }
   },
-  "bots": {
-    "description": "Event-driven automations stitched together from triggers and actions.",
-    "comingSoon": {
-      "title": "Automations are coming soon",
-      "description": "Build no-code automations that react to identity events — sign-ins, role changes, risk signals — and run actions in response. This surface isn't available yet."
-    }
-  },
-  "infrastructure": {
-    "description": "Platform health across services, regions, and datastores.",
-    "comingSoon": {
-      "title": "Infrastructure health is coming soon",
-      "description": "Live service, region, and datastore health will surface here once platform telemetry is wired in. For now, use /readyz and /metrics (Prometheus/OTel) from your own observability stack."
-    }
-  },
-  "authHooks": {
-    "description": "Run a synchronous policy endpoint during sign-in. After credentials verify, Qeet POSTs a signed event to your hook (X-Qeet-Signature, HMAC-SHA256); the hook returns {decision:'allow'|'deny'}. Hooks are bounded by a 3s timeout.",
-    "add": {
-      "title": "Add a login hook",
-      "description": "Fired after a password is verified (the “post_login” trigger).",
-      "url": "Hook URL",
-      "urlPlaceholder": "https://policy.acme.com/qeet/login",
-      "secret": "Signing secret",
-      "secretPlaceholder": "write-only",
-      "submit": "Add",
-      "failOpen": "Fail open",
-      "failOpenDescription": "If the hook errors or times out, allow the sign-in (recommended). Turn off to block sign-ins when the hook is unreachable.",
-      "validation": {
-        "url": "Enter an https:// URL."
-      }
+  "commands": {
+    "apiKeys": {
+      "title": "API keys",
+      "subtitle": "Static keys for scripts and CI jobs",
+      "keywords": "api key, token, ci, script"
     },
-    "list": {
-      "title": "Hooks",
-      "description": "Toggle enabled / fail-open per hook.",
-      "empty": "No login hooks configured.",
-      "emptyDescription": "Add a hook above to gate sign-ins with your own policy.",
-      "failOpen": "fail-open",
-      "failClosed": "fail-closed",
-      "enabledAriaLabel": "Enabled",
-      "remove": "Remove",
-      "added": "added"
+    "signingKeys": {
+      "title": "Signing keys",
+      "subtitle": "The key set that signs every token",
+      "keywords": "jwks, signing keys, kid, rotate"
     },
-    "confirm": {
-      "removeTitle": "Remove this hook?",
-      "removeLabel": "Remove"
+    "webhooks": {
+      "title": "Webhooks",
+      "subtitle": "Endpoints Qeet ID posts events to",
+      "keywords": "webhooks, events, integrations, outbound, deliveries"
     },
-    "stepUp": {
-      "add": "Add this hook",
-      "enable": "Turn this hook on",
-      "disable": "Turn this hook off",
-      "remove": "Remove this hook"
-    }
-  },
-  "credentials": {
-    "description": "Issue W3C Verifiable Credentials as ES256-signed JWT-VCs (verifiable via the same JWKS) and revoke them. Relying parties verify a presented credential at POST /v1/credentials/verify.",
-    "issue": {
-      "title": "Issue a credential",
-      "description": "The subject is the credentialSubject id (user uuid, DID, or email). Claims is a JSON object; TTL 0 = non-expiring.",
-      "subject": "Subject",
-      "subjectPlaceholder": "user uuid / did:… / email",
-      "type": "Credential type",
-      "typePlaceholder": "EmploymentCredential",
-      "claims": "Claims (JSON)",
-      "ttl": "TTL (seconds)",
-      "submit": "Issue",
-      "signedLabel": "Signed credential (JWT-VC) — give this to the subject:",
-      "signedOnce": "Copy it now. It won’t be shown again.",
-      "validation": {
-        "subject": "Enter a subject.",
-        "type": "Enter a credential type.",
-        "claims": "Claims must be a JSON object.",
-        "ttl": "Use 0 or more seconds."
-      }
+    "authHooks": {
+      "title": "Auth hooks",
+      "subtitle": "Endpoints that allow or deny each sign-in",
+      "keywords": "hooks, actions, login hook, sign-in"
     },
-    "verify": {
-      "title": "Verify a credential",
-      "description": "Paste a JWT-VC to check its signature, expiry, and revocation.",
-      "submit": "Verify",
-      "credential": "Credential (JWT)",
-      "validation": "Paste a credential.",
-      "reason": {
-        "notCredential": "Not a verifiable credential.",
-        "signature": "The signature or expiry is invalid.",
-        "unknown": "This organization didn't issue it.",
-        "revoked": "It has been revoked."
-      }
-    },
-    "list": {
-      "title": "Issued credentials",
-      "description": "Registry of credentials issued by this organization.",
-      "empty": "No credentials issued yet.",
-      "revoked": "revoked",
-      "issued": "issued",
-      "expires": "expires",
-      "noExpiry": " · no expiry",
-      "revokeButton": "Revoke"
-    },
-    "confirm": {
-      "title": "Revoke this credential?",
-      "label": "Revoke"
-    },
-    "badge": {
-      "valid": "valid",
-      "invalid": "invalid"
-    },
-    "stepUp": {
-      "issue": "Issue this credential",
-      "revoke": "Revoke this credential"
-    }
-  },
-  "agents": {
-    "description": "First-class identities for AI agents / MCP clients, and the primitives that keep them accountable to a human: sponsorship, Shadow-AI discovery, ephemeral tokens, and an organization-wide kill-switch.",
-    "create": {
-      "title": "Create an agent",
-      "description": "The secret is shown once. Scopes are space-separated; token lifetime is clamped to 60–3600s. You’re recorded as the agent’s sponsor — its accountable human owner — and can transfer that later if it changes hands.",
-      "name": "Name",
-      "namePlaceholder": "support-assistant",
-      "scopes": "Scopes",
-      "scopesPlaceholder": "tickets:read kb:read",
-      "ttl": "Token TTL (s)",
-      "submit": "Create",
-      "secretNotice": "Agent {{name}} created — copy its credentials now (the secret won’t be shown again):",
-      "secretTitle": "Agent credentials",
-      "validation": {
-        "name": "Enter a name.",
-        "ttl": "Use 60 to 3,600 seconds."
-      }
-    },
-    "list": {
+    "agents": {
       "title": "Agents",
-      "description": "AI-agent identities in this organization.",
-      "suspendAll": "Suspend All",
-      "empty": "No agents yet.",
-      "emptyDescription": "Create an agent above to issue it ephemeral, scoped tokens."
+      "subtitle": "AI agents and the people who sponsor them",
+      "keywords": "agents, ai agent, sponsor, mcp"
     },
-    "confirm": {
-      "suspendAll": "Suspend all {{count}} active agent(s)?",
-      "suspendAllDescription": "Their tokens will stop working immediately.",
-      "suspendAllLabel": "Suspend All",
-      "delete": "Delete agent “{{name}}”?",
-      "deleteLabel": "Delete"
+    "credentials": {
+      "title": "Verifiable credentials",
+      "subtitle": "Issue, revoke and verify signed credentials",
+      "keywords": "vc, credentials, w3c, verify"
     },
-    "row": {
-      "suspended": "Suspended",
-      "active": "Active",
-      "noScopes": "no scopes",
-      "resume": "Resume",
-      "resumeTitle": "Resume agent",
-      "suspend": "Suspend",
-      "suspendTitle": "Suspend agent",
-      "delete": "Delete"
-    },
-    "sponsor": {
-      "title": "Sponsor transfer",
-      "description": "Every agent has a named human sponsor. When a sponsor is offboarded, reassign everything they own to a new sponsor in one call — no agent is left ownerless.",
-      "from": "From (departing sponsor)",
-      "to": "To (new sponsor)",
-      "search": "Search users…",
-      "noUsers": "No users found.",
-      "transfer": "Transfer",
-      "checking": "Checking…",
-      "count_one": "{{count}} agent sponsored by this user will move.",
-      "count_other": "{{count}} agents sponsored by this user will move.",
-      "confirm": {
-        "title": "Transfer {{count}} agent(s) to the new sponsor?",
-        "description": "This can’t be undone.",
-        "label": "Transfer"
-      },
-      "stepUp": "Transfer these agents"
-    },
-    "shadow": {
-      "title": "Shadow AI discovery",
-      "description": "OAuth applications holding a token-exchange grant outside the agents and service-accounts registry: unmanaged automation acting for this organization, ranked by live grants.",
-      "empty": "No unreviewed candidates.",
-      "emptyDescription": "Every machine-grant OIDC client has been acknowledged.",
-      "acknowledge": "Acknowledge",
-      "grants_one": "{{count}} live grant",
-      "grants_other": "{{count}} live grants"
-    },
-    "stepUp": {
-      "create": "Create this agent",
-      "suspend": "Suspend this agent",
-      "resume": "Resume this agent",
-      "delete": "Delete this agent",
-      "suspendAll": "Suspend every active agent"
+    "machineAccess": {
+      "title": "Machine access",
+      "subtitle": "API keys, machine identities and agents",
+      "keywords": "machine access, api key, machine identity, service account, agent, credential"
     }
   },
-  "webhooks": {
-    "description": "HTTP endpoints we POST events to. Every delivery is signed with HMAC-SHA256 in the X-Qeet-Signature header and retried with exponential backoff.",
-    "refresh": "Refresh",
-    "new": "New webhook",
-    "list": {
-      "title": "Subscriptions",
-      "count_one": "{{shown}} of {{total}} subscription",
-      "count_other": "{{shown}} of {{total}} subscriptions",
-      "searchPlaceholder": "Search URL or event…",
-      "emptyFiltered": "No webhooks match your filters.",
-      "empty": "No webhooks yet.",
-      "filters": {
-        "status": {
-          "label": "Status",
-          "active": "Active",
-          "disabled": "Disabled",
-          "failing": "Failing"
-        }
-      },
-      "columns": {
-        "url": "URL",
-        "events": "Events",
-        "status": "Status",
-        "created": "Created",
-        "actions": "Actions"
-      }
-    },
-    "table": {
-      "test": "Test",
-      "disable": "Disable",
-      "enable": "Enable"
-    },
-    "confirm": {
-      "disableTitle": "Disable webhook?",
-      "disableDescription": "Disable {{url}}?",
-      "disableLabel": "Disable"
-    },
-    "create": {
-      "title": "New webhook subscription",
-      "description": "We'll POST signed JSON to your URL for each selected event.",
-      "url": "URL",
-      "urlPlaceholder": "https://example.com/webhook",
-      "urlHelp": "Must respond 2xx within 10 seconds; we retry up to 10 times with exponential backoff.",
-      "events": "Events",
-      "eventsCount_one": "Selected {{count}} event.",
-      "eventsCount_other": "Selected {{count}} events.",
-      "cancel": "Cancel",
-      "submit": "Create",
-      "submitting": "Creating…",
-      "validation": {
-        "url": "Enter an https:// URL.",
-        "events": "Choose at least one event."
-      },
-      "noEvents": "No events are available to subscribe to."
-    },
-    "stepUp": {
-      "create": "Create this webhook",
-      "disable": "Disable this webhook",
-      "enable": "Enable this webhook",
-      "rotate": "Rotate this webhook's signing secret"
-    },
-    "revealed": {
-      "title": "Signing secret for {{url}}",
-      "description": "Use it to verify the X-Qeet-Signature header on each delivery. It’s shown only once: copy it now."
-    },
-    "state": {
-      "active": "Active",
-      "failing": "Failing",
-      "disabled": "Disabled",
-      "autoDisabled": "Disabled: failing"
-    },
-    "stateNote": {
-      "disabled": "An administrator disabled this endpoint. Enable it to resume deliveries.",
-      "failing": "Deliveries to this endpoint are failing. It's disabled automatically if they keep failing.",
-      "failingSince": "Deliveries to this endpoint started failing <since></since>. It's disabled automatically if they keep failing.",
-      "autoDisabled": "Disabled automatically because its deliveries kept failing. Fix the endpoint, then enable it.",
-      "autoDisabledSince": "Disabled automatically because its deliveries kept failing (they started <since></since>). Fix the endpoint, then enable it."
+  "shortcuts": {
+    "webhooks": "Webhooks"
+  },
+  "qeetaiSuggestions": {
+    "labels": {
+      "codeSnippet": "Generate a code snippet",
+      "apiExample": "Generate an API example"
     }
-  },
-  "webhookDetail": {
-    "back": "Webhooks",
-    "subscribedCount_one": "Subscribed to {{count}} event.",
-    "subscribedCount_other": "Subscribed to {{count}} events.",
-    "testEvent": "Send test event",
-    "disable": "Disable",
-    "created": "Created",
-    "confirm": {
-      "disableTitle": "Disable webhook?",
-      "disableLabel": "Disable",
-      "rotateTitle": "Rotate the signing secret?",
-      "rotateDescription": "A new secret is issued and shown once. The current one keeps signing deliveries for a while, so your receiver can switch without missing any.",
-      "rotateLabel": "Rotate"
-    },
-    "deliveries": {
-      "title": "Recent deliveries",
-      "description": "Last 50 attempts. Failures are retried with exponential backoff.",
-      "empty": "No deliveries yet.",
-      "emptyDescription": "When this webhook fires, attempts will appear here.",
-      "retry": "Retry",
-      "expand": "Expand",
-      "collapse": "Collapse",
-      "requestPayload": "Request payload",
-      "responseBody": "Response body",
-      "statusDelivered": "Delivered",
-      "statusDead": "Dead",
-      "statusPending": "Pending",
-      "columns": {
-        "when": "When",
-        "event": "Event",
-        "status": "Status",
-        "attempts": "Attempts",
-        "actions": "Actions"
-      }
-    },
-    "sample": {
-      "title": "Sample payload",
-      "description": "POSTed to the URL above. X-Qeet-Signature carries sha256= and the HMAC-SHA256, keyed by the signing secret, of X-Qeet-Timestamp, a dot, and the body."
-    },
-    "rotate": "Rotate secret",
-    "enable": "Enable",
-    "overlap": "The previous signing secret still signs deliveries, alongside the new one, until {{until}}.",
-    "rotated": {
-      "title": "New signing secret",
-      "description": "Update your receiver with it. Deliveries carry both signatures until {{until}}, when the previous secret stops signing. It's shown only once: copy it now."
-    },
-    "description": "Webhook endpoint configuration and delivery history."
-  },
-  "agentsPage": {
-    "agentGovernance": "Agent Governance"
-  },
-  "webhooksPage": {
-    "webhooksAreAPaidFeature": "Webhooks are a paid feature",
-    "receiveSignedHttpCallbacks": "Receive signed HTTP callbacks for events like user.created and session.revoked. Upgrade to Starter to create webhook subscriptions."
   },
   "toast": {
     "webhookCreated": "Webhook created",
@@ -454,9 +93,9 @@
     "secretDeleted": "Secret deleted",
     "agentCreated": "Agent created",
     "agentDeleted": "Agent deleted",
-    "agentStatusUpdated": "Agent status updated",
-    "allAgentAccessRevoked": "All agent access revoked",
-    "sponsorTransferred": "Sponsor transferred",
+    "agentStatusUpdated": "Agent updated",
+    "allAgentAccessRevoked": "Every active agent suspended",
+    "sponsorTransferred": "Sponsorship transferred",
     "hookAdded": "Hook added",
     "authHookUpdated": "Auth hook updated",
     "authHookDeleted": "Auth hook deleted",
@@ -546,267 +185,962 @@
       "deleted": "The organization was deleted, ending its sessions."
     }
   },
-  "keys": {
-    "description": "Long-lived secrets your apps and scripts use to call the Qeet ID API. Send as Authorization: ApiKey <raw>.",
-    "refreshBtn": "Refresh",
-    "newButton": "New API key",
-    "revealed": {
-      "title": "Your new key — copy it now",
-      "description": "This is the only time we'll show {{name}}. Store it in your secret manager.",
-      "missingTitle": "Key created without its secret",
-      "missingDescription": "{{name}} was created, but its secret didn't come back, so the key can't be used. Revoke it and create a new one.",
-      "dismiss": "Dismiss"
+  "drawer": {
+    "cancel": "Cancel"
+  },
+  "status": {
+    "active": "Active",
+    "expiring": "Expires soon",
+    "expired": "Expired",
+    "revoked": "Revoked",
+    "disabled": "Disabled",
+    "suspended": "Suspended"
+  },
+  "owner": {
+    "organisation": "Organisation",
+    "unknown": "Someone no longer listed",
+    "itsSponsor": "Its sponsor",
+    "person": "A person"
+  },
+  "scopes": {
+    "label": "Scopes",
+    "placeholder": "e.g. user.read",
+    "none": "No scopes",
+    "more": "+{{count}} more",
+    "notYours": "You don't hold it, so you can't grant it",
+    "vaultAll": "Reads every secret in the vault",
+    "vaultOne": "Reads the secret {{name}}"
+  },
+  "shownOnce": {
+    "done": "Done",
+    "key": "Copy the key now. You won't see it again.",
+    "clientSecret": "Copy the client secret now. You won't see it again.",
+    "secret": "Copy the secret now. You won't see it again.",
+    "hashed": "Qeet ID keeps only a hash of it, so nobody can see it again. Store it in your secret manager.",
+    "credential": "Copy the credential now. You won't see it again.",
+    "credentialWhy": "Qeet ID records that it issued it, not the credential itself. Give it to the person it is about.",
+    "signingSecret": "Copy the signing secret now. You won't see it again.",
+    "signingSecretWhy": "Your endpoint checks each delivery's X-Qeet-Signature with it. To get a new one, rotate it."
+  },
+  "machine": {
+    "title": {
+      "all": "Machine access",
+      "key": "API keys",
+      "identity": "Machine identities",
+      "agent": "Agents"
     },
-    "list": {
-      "title": "Active keys",
-      "count_one": "{{count}} key",
-      "count_other": "{{count}} keys",
-      "empty": "No API keys yet."
+    "description": {
+      "all": "Everything that calls Qeet ID without a person signing in, and who answers for it.",
+      "key": "Static keys for scripts and CI jobs. Each call sends one as <code>Authorization: ApiKey …</code>; a revoked key is refused from its next call.",
+      "identity": "Services that trade a client secret for tokens that last minutes, at <code>POST /v1/oauth/token</code>.",
+      "agent": "AI agents that act within their scopes, each sponsored by a person who answers for it. Their tokens last an hour at most."
+    },
+    "new": {
+      "all": "New credential",
+      "key": "New API key",
+      "identity": "New machine identity",
+      "agent": "New agent"
+    },
+    "search": {
+      "all": "Search by name, ID or scope",
+      "key": "Search by name, prefix or scope",
+      "identity": "Search by name, client ID or scope",
+      "agent": "Search by name, ID, scope or sponsor"
+    },
+    "kind": {
+      "key": "API key",
+      "identity": "Machine identity",
+      "agent": "Agent"
+    },
+    "kindPlural": {
+      "key": "API keys",
+      "identity": "Machine identities",
+      "agent": "Agents"
+    },
+    "reach": {
+      "read": "Read only",
+      "write": "Can change data",
+      "none": "Can call nothing"
+    },
+    "used": {
+      "today": "Today",
+      "week": "This week",
+      "month": "This month",
+      "older": "Over a month ago",
+      "never": "Never used"
+    },
+    "expiry": {
+      "expired": "Expired",
+      "expiring": "Within 30 days",
+      "later": "Later",
+      "never": "Never expires"
+    },
+    "ttl": {
+      "short": "10 minutes or less",
+      "medium": "Up to 30 minutes",
+      "long": "Up to an hour"
+    },
+    "looks": {
+      "expired": "Expired, not revoked",
+      "expiring": "Expire within 30 days",
+      "unused": "Unused for 90 days",
+      "noScopes": "Have no scopes",
+      "suspended": "Suspended agents",
+      "sponsorGone": "Sponsor suspended or gone",
+      "unmanaged": "Unmanaged AI clients"
+    },
+    "band": {
+      "working": {
+        "all": "Working",
+        "key": "Working keys",
+        "identity": "Working",
+        "agent": "Active"
+      },
+      "workingNote": "{{off}} off · {{total}} in all",
+      "growthLabel": "{{n}} made in the last {{months}} months",
+      "months": "{{months}} months",
+      "kinds": "Kind",
+      "reach": "What they can do",
+      "used": "Last used",
+      "expiry": "Expiry",
+      "topScopes": "Most granted",
+      "sponsors": "Sponsors",
+      "otherSponsors": "Others",
+      "ttl": "Tokens last",
+      "needsALook": "Needs a look"
     },
     "columns": {
       "name": "Name",
-      "prefix": "Prefix",
+      "kind": "Kind",
       "scopes": "Scopes",
-      "lastUsed": "Last used",
+      "owner": "Owner",
+      "sponsor": "Sponsor",
+      "used": "Last used",
+      "expires": "Expires",
+      "created": "Created",
       "status": "Status",
-      "actions": "Actions"
+      "ttl": "Tokens last"
     },
-    "lastUsedNever": "Never",
-    "revokeBtn": "Revoke",
+    "row": {
+      "never": "Never",
+      "neverUsed": "Never",
+      "notRecorded": "Qeet ID doesn’t record when these are used",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes"
+    },
+    "filters": {
+      "kind": "Kind",
+      "anyKind": "All kinds",
+      "reach": "What they can do",
+      "anyReach": "Any scopes",
+      "used": "Last used",
+      "anyUsed": "Any last use",
+      "sponsor": "Sponsor",
+      "anySponsor": "Any sponsor",
+      "status": "Status",
+      "anyStatus": "All statuses",
+      "summary": "{{n}} of {{total}}"
+    },
+    "actions": {
+      "replace": "Replace key…",
+      "replaceHint": "A new key with the same scopes; then revoke this one",
+      "revoke": "Revoke key…",
+      "disable": "Disable…",
+      "suspend": "Suspend…",
+      "resume": "Resume",
+      "delete": "Delete agent…",
+      "copy": {
+        "key": "Copy prefix",
+        "identity": "Copy client ID",
+        "agent": "Copy agent ID"
+      },
+      "copied": "Copied",
+      "copyFailed": "Couldn't copy it"
+    },
     "confirm": {
-      "title": "Revoke \"{{name}}\"?",
-      "description": "Any service using it will lose access immediately.",
-      "label": "Revoke"
+      "revokeTitle": "Revoke {{name}}?",
+      "revoke": "Anything still sending this key is refused from its next call. It stays in the list as revoked and can’t be turned back on.",
+      "revokePersonal": "Anything still sending this key, such as {{name}}’s scripts, is refused from its next call. It stays in the list as revoked and can’t be turned back on.",
+      "revokeLabel": "Revoke key",
+      "revokeAction": "Revoke an API key",
+      "disableTitle": "Disable {{name}}?",
+      "disable": "Its tokens are refused at once and it can’t get new ones. It can’t be turned back on: to restore access, create a new machine identity.",
+      "disableLabel": "Disable identity",
+      "disableAction": "Disable a machine identity",
+      "suspendTitle": "Suspend {{name}}?",
+      "suspend": "Its tokens are refused until you resume it, and it can’t get new ones. {{name}} stays its sponsor.",
+      "suspendLabel": "Suspend agent",
+      "suspendAction": "Suspend an agent",
+      "resumeAction": "Resume {{name}}",
+      "deleteTitle": "Delete {{name}}?",
+      "delete": "Its tokens are refused from their next call and it leaves the list for good. Its audit history stays. To stop it for now, suspend it instead.",
+      "deleteLabel": "Delete agent",
+      "deleteAction": "Delete an agent"
     },
-    "create": {
-      "title": "New API key",
-      "description": "The full key is shown once after creation — we only store a bcrypt hash.",
-      "nameLabel": "Name",
-      "scopesLabel": "Scopes (space-separated)",
-      "scopesHelp": "Leave empty for full access (least-privilege scoping recommended).",
-      "expiresLabel": "Expires at",
-      "expiresHelp": "Optional. Empty = never expires.",
-      "expiresPast": "The expiry must be in the future.",
-      "cancelBtn": "Cancel",
-      "createBtn": "Create key",
-      "creatingBtn": "Creating…",
-      "validation": {
-        "name": "Enter a name.",
-        "nameTooLong": "Keep the name to 200 characters."
-      }
-    },
-    "stepUp": {
-      "create": "Create this API key",
-      "revoke": "Revoke this API key"
+    "empty": {
+      "title": {
+        "all": "Nothing calls Qeet ID on its own yet",
+        "key": "No API keys yet",
+        "identity": "No machine identities yet",
+        "agent": "No agents yet"
+      },
+      "description": {
+        "all": "Give a service a machine identity, a script an API key, or an AI agent its own credentials.",
+        "key": "A key lets a script or CI job call the Qeet ID API. For a service, a machine identity’s short-lived tokens are safer.",
+        "identity": "A machine identity lets a service get short-lived tokens with a client ID and secret.",
+        "agent": "An agent acts within its scopes for the person who sponsors it, with tokens that last minutes."
+      },
+      "filteredTitle": "Nothing matches",
+      "filteredDescription": "Try other filters, or clear them to see everything.",
+      "clear": "Clear filters"
     }
   },
-  "machineIds": {
-    "description": "Service accounts for server-to-server calls. Authenticate via POST /v1/oauth/token with grant_type=client_credentials.",
-    "refreshBtn": "Refresh",
-    "newButton": "New identity",
-    "revealed": {
-      "title": "Client credentials for {{name}}",
-      "description": "We'll never show this secret again. Use it as client_id + client_secret on the token endpoint.",
-      "dismiss": "Dismiss"
-    },
-    "list": {
-      "title": "Service principals",
-      "count_one": "{{count}} identity",
-      "count_other": "{{count}} identities",
-      "empty": "No service principals yet."
-    },
+  "keyDrawer": {
+    "title": "New API key",
+    "description": "The key is shown once, when it’s made.",
+    "replaceTitle": "Replace {{name}}",
+    "replaceDescription": "A new key with the same scopes. Qeet ID has no rotate, so revoke the old key once nothing uses it.",
+    "replacementName": "{{name}} (new)",
+    "name": "Name",
+    "namePlaceholder": "e.g. GitHub Actions — deploys",
+    "nameRequired": "Enter a name.",
+    "scopesHelp": "What the key can do. Choose the fewest it needs: with none, it can call nothing.",
+    "scopesRequired": "Choose at least one scope.",
+    "expires": "Expires",
+    "in90": "In 90 days",
+    "in365": "In a year",
+    "never": "Never",
+    "neverHelp": "It works until someone revokes it",
+    "recommended": "Recommended",
+    "create": "Create key",
+    "stepUp": "Create an API key",
+    "madeExpires": "API key · expires {{date}}",
+    "madeNever": "API key · never expires",
+    "keyLabel": "API key",
+    "useIt": "Use it",
+    "missingTitle": "The key was made, but its secret didn’t arrive",
+    "missing": "It can never be used. Revoke it and make another.",
+    "thenRevoke": "Then revoke {{name}}",
+    "thenRevokeHint": "Once everything uses the new key, revoke the old one from the list: until then both work."
+  },
+  "identityDrawer": {
+    "title": "New machine identity",
+    "description": "Its client secret is shown once, when it’s made.",
+    "name": "Name",
+    "namePlaceholder": "e.g. qeet-pay-api",
+    "nameHelp": "Unique in the organisation.",
+    "nameRequired": "Enter a name.",
+    "scopesHelp": "What its tokens can do. Choose the fewest it needs.",
+    "scopesRequired": "Choose at least one scope.",
+    "create": "Create identity",
+    "stepUp": "Create a machine identity",
+    "made": "Machine identity",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "getToken": "Get a token"
+  },
+  "agentDrawer": {
+    "title": "New agent",
+    "description": "Its secret is shown once, when it’s made.",
+    "name": "Name",
+    "namePlaceholder": "e.g. Support Copilot",
+    "nameRequired": "Enter a name.",
+    "scopesHelp": "What its tokens can do, including the secrets it may read (vault:).",
+    "scopesRequired": "Choose at least one scope.",
+    "ttl": "Tokens last",
+    "ttl10": "10 minutes",
+    "ttl30": "30 minutes",
+    "ttl60": "1 hour",
+    "sponsor": "Sponsor",
+    "sponsorHelp": "The person who answers for it. You can transfer it later.",
+    "sponsorPlaceholder": "Choose a person",
+    "sponsorRequired": "Choose a sponsor.",
+    "create": "Create agent",
+    "stepUp": "Create an agent",
+    "made_one": "Agent · tokens last {{count}} minute",
+    "made_other": "Agent · tokens last {{count}} minutes",
+    "agentId": "Agent ID",
+    "secret": "Secret"
+  },
+  "transfer": {
+    "title": "Transfer sponsorship",
+    "description": "Moves every agent one person sponsors to another, in one step.",
+    "from": "From",
+    "fromPlaceholder": "Who sponsors them now",
+    "to": "To",
+    "toPlaceholder": "Who answers for them next",
+    "toHelp": "Someone active in the organisation.",
+    "preview_one": "{{n}} agent moves to {{name}}",
+    "preview_other": "{{n}} agents move to {{name}}",
+    "previewList": "{{names}}. {{name}} answers for them from now on; moving them back is another transfer.",
+    "submit": "Transfer agents",
+    "submitN_one": "Transfer {{n}} agent",
+    "submitN_other": "Transfer {{n}} agents",
+    "stepUp": "Transfer agent sponsorship"
+  },
+  "chooseKind": {
+    "title": "New credential",
+    "description": "What will use it decides the kind.",
+    "label": "What will use it",
+    "identity": "A service",
+    "identityHelp": "A machine identity: it trades a client secret for tokens that expire within minutes.",
+    "key": "A script or CI job",
+    "keyHelp": "An API key: one static key, the simplest to set up. It works until it expires or is revoked.",
+    "agent": "An AI agent",
+    "agentHelp": "An agent: a person sponsors it, its tokens last an hour at most, and every agent can be suspended at once.",
+    "continue": "Continue"
+  },
+  "unmanaged": {
+    "title": "Unmanaged AI clients",
+    "note": "Applications that can act for a person through a token-exchange grant and aren’t registered here. Review each: register it as an agent, or mark it reviewed.",
     "columns": {
-      "name": "Name",
-      "clientId": "Client ID",
-      "scopes": "Scopes",
-      "status": "Status",
-      "created": "Created",
-      "actions": "Actions"
+      "client": "Application",
+      "grants": "Live grants",
+      "created": "Added",
+      "review": "Review"
     },
-    "status": {
-      "active": "Active",
-      "disabled": "Disabled"
-    },
-    "disableBtn": "Disable",
-    "confirm": {
-      "title": "Disable \"{{name}}\"?",
-      "description": "Token issuance will be blocked immediately.",
-      "label": "Disable"
-    },
-    "create": {
-      "title": "New machine identity",
-      "description": "Creates a service principal usable via OAuth 2.0 client_credentials.",
-      "nameLabel": "Name",
-      "descriptionLabel": "Description",
-      "scopesLabel": "Scopes (space-separated)",
-      "cancelBtn": "Cancel",
-      "createBtn": "Create",
-      "creatingBtn": "Creating…",
-      "validation": {
-        "name": "Enter a name."
-      },
-      "descriptionPlaceholder": "What this identity is used for"
-    },
-    "stepUp": {
-      "create": "Create this machine identity",
-      "disable": "Disable this machine identity"
-    }
+    "grants_one": "{{n}} live grant",
+    "grants_other": "{{n}} live grants",
+    "review": "Mark as reviewed",
+    "none": "None found: every application with a token-exchange grant has been reviewed."
+  },
+  "suspendAll": {
+    "title": "Suspend every agent",
+    "note_one": "For an agent misbehaving when you don’t know which. The {{n}} active agent stops at once: its tokens are refused, and it gets no new one until you resume it.",
+    "note_other": "For an agent misbehaving when you don’t know which. The {{n}} active agents stop at once: their tokens are refused, and none gets a new one until you resume it.",
+    "noneActive": "No agent is active.",
+    "button": "Suspend all agents",
+    "confirmTitle_one": "Suspend the {{count}} active agent?",
+    "confirmTitle_other": "Suspend all {{count}} active agents?",
+    "confirm": "Their tokens are refused at once and none gets a new one. You resume them one at a time."
   },
   "secrets": {
-    "description": "Encrypted vault for integration secrets — 3rd-party API keys, tokens and signing material. Values are AES-256-GCM encrypted at rest and only shown via an audited reveal.",
-    "newButton": "New secret",
-    "list": {
-      "title": "Secrets",
-      "count_one": "{{count}} secret",
-      "count_other": "{{count}} secrets",
-      "empty": "No secrets yet."
-    },
+    "title": "Secrets",
+    "description": "Encrypted vault for the keys your services and agents read, such as a Stripe or Slack token. Lists never show a value; each reveal is written to the audit log.",
+    "new": "New secret",
+    "search": "Search by name or scope",
+    "anyScope": "All scopes",
+    "anyChanged": "Any last change",
+    "noScope": "No scope",
     "columns": {
       "name": "Name",
       "scope": "Scope",
       "value": "Value",
-      "updated": "Updated",
-      "actions": "Actions"
+      "changed": "Last changed",
+      "added": "Added"
     },
-    "hide": "Hide",
-    "reveal": "Reveal",
-    "rotate": "Rotate",
-    "rotateSheet": {
-      "title": "Rotate \"{{name}}\"",
-      "description": "Enter the new value. It's encrypted immediately and replaces the current one — anything still using the old value will break.",
-      "valueLabel": "New value",
-      "valueHelp": "Hidden as you type. It is never shown again after saving.",
-      "cancelBtn": "Cancel",
-      "submitBtn": "Rotate secret",
-      "savingBtn": "Rotating…"
+    "endsIn": "Ends in {{last4}}",
+    "shortHint": "Under 8 characters: too short to show its end",
+    "neverChanged": "Never",
+    "changed": {
+      "month": "This month",
+      "quarter": "1–3 months ago",
+      "year": "3–12 months ago",
+      "older": "Over a year ago",
+      "never": "Never changed"
     },
-    "deleteBtn": "Delete",
+    "looks": {
+      "stale": "Unchanged for a year",
+      "short": "Under 8 characters"
+    },
+    "band": {
+      "secrets": "Secrets",
+      "scopes_one": "In {{n}} scope",
+      "scopes_other": "In {{n}} scopes",
+      "growthLabel": "Secrets added in the last {{months}} months",
+      "byScope": "By scope",
+      "otherScopes": "Other scopes",
+      "changed": "Last changed"
+    },
+    "copyName": "Copy name",
+    "reveal": {
+      "menu": "Reveal value…",
+      "hint": "Written to the audit log",
+      "action": "Reveal a secret",
+      "recorded": "Revealed just now by {{name}}. The audit log records it.",
+      "value": "Value",
+      "copy": "Copy value",
+      "hide": "Hide"
+    },
+    "rotate": {
+      "menu": "Rotate…"
+    },
+    "delete": {
+      "menu": "Delete secret…",
+      "title": "Delete {{name}}?",
+      "description": "Services and agents that read vault:{{name}} get nothing from their next read, and the value is gone for good.",
+      "confirm": "Delete secret",
+      "action": "Delete a secret"
+    },
+    "empty": {
+      "title": "No secrets yet",
+      "description": "Store a key your services or agents need, and they read it with a vault: scope instead of keeping it themselves."
+    }
+  },
+  "secretDrawer": {
+    "title": "New secret",
+    "description": "Encrypted as soon as it’s saved.",
+    "name": "Name",
+    "namePlaceholder": "e.g. STRIPE_SECRET_KEY",
+    "nameHelp": "It can’t change once saved.",
+    "nameReadAs": "Read as vault:{{name}}. It can’t change once saved.",
+    "nameRequired": "Enter a name.",
+    "nameTaken": "A secret has this name already.",
+    "scope": "Scope",
+    "scopePlaceholder": "e.g. payments",
+    "scopeHelp": "A label that groups it with others. It doesn’t limit who can read it.",
+    "value": "Value",
+    "valueHelp": "After saving, only a reveal shows it.",
+    "valueRequired": "Enter the value.",
+    "save": "Save secret",
+    "stepUp": "Save a secret"
+  },
+  "rotateSecret": {
+    "title": "Rotate {{name}}",
+    "lastChanged": "Last changed {{when}}",
+    "neverChanged": "Never changed since it was added",
+    "warningTitle": "The old value is gone when you save",
+    "warning": "Qeet ID keeps no copy, so anything still using the old value of {{name}} fails. Update it at its source first.",
+    "value": "New value",
+    "valueHelp": "Hidden as you type. After saving, only a reveal shows it.",
+    "submit": "Rotate secret",
+    "stepUp": "Rotate a secret"
+  },
+  "signingKeys": {
+    "title": "Signing keys",
+    "description": "They sign every access token, ID token and verifiable credential Qeet ID issues. One key set serves every organisation.",
+    "copyJwks": "Copy JWKS URL",
+    "copyKid": "Copy key ID",
+    "stagesTitle": "Where each key is",
+    "stagesNote": "A key is published before it signs and stays published after, so apps always hold the key a token needs. Rotation runs in the deployment, not from the console.",
+    "stage": {
+      "candidate": "Next",
+      "active": "Active",
+      "retired": "Retired"
+    },
+    "does": {
+      "candidate": "Published in the key set so apps can cache it. It signs nothing yet.",
+      "active": "Signs every new token. There is only ever one.",
+      "retired": "Signs nothing. Still published, so tokens it signed keep verifying until it leaves the set."
+    },
+    "none": {
+      "candidate": "None published yet.",
+      "active": "None: nothing can be signed.",
+      "retired": "None."
+    },
+    "role": {
+      "candidate": "Published, signs nothing yet",
+      "active": "Signs every new token",
+      "retired": "Only checks tokens it signed"
+    },
+    "publishedUntil": "Published until {{date}}",
+    "setTitle": "The key set",
+    "setNote": "What /.well-known/jwks.json publishes now.",
+    "columns": {
+      "key": "Key",
+      "alg": "Algorithm",
+      "stage": "Stage",
+      "until": "Published until"
+    },
+    "whileInUse": "While in use",
+    "empty": {
+      "title": "No signing keys published",
+      "description": "The deployment has no key in its key set: no token can be signed or checked."
+    }
+  },
+  "credentials": {
+    "title": "Verifiable credentials",
+    "description": "Signed statements about people, such as their employment, that anyone can check against Qeet ID’s public keys.",
+    "search": "Search by subject, type or ID",
+    "anyType": "All types",
+    "rowLabel": "{{type}} for {{subject}}",
+    "columns": {
+      "type": "Type",
+      "subject": "Subject",
+      "issued": "Issued",
+      "expires": "Expires",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Valid",
+      "expiring": "Expires soon",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "looks": {
+      "expiring": "Expire within 30 days",
+      "noExpiry": "Never expire"
+    },
+    "band": {
+      "valid": "Valid",
+      "validNote": "Of {{total}} issued",
+      "growthLabel": "Credentials issued in the last {{months}} months",
+      "months": "{{months}} months",
+      "status": "Status",
+      "types": "Types"
+    },
+    "copyId": "Copy credential ID",
+    "issue": {
+      "open": "Issue credential"
+    },
+    "verify": {
+      "open": "Verify a credential"
+    },
+    "revoke": {
+      "menu": "Revoke…",
+      "title": "Revoke this {{type}}?",
+      "description": "Anyone who checks it from then on is told it’s revoked, though {{subject}} still holds it. It can’t be undone.",
+      "confirm": "Revoke credential",
+      "action": "Revoke a credential"
+    },
+    "empty": {
+      "title": "No credentials issued yet",
+      "description": "Issue one to give a person a signed statement, such as their employment, that others can check."
+    }
+  },
+  "issue": {
+    "title": "Issue a credential",
+    "description": "Signed with the active signing key and shown once, to give to the person.",
+    "subject": "Subject",
+    "subjectPlaceholder": "e.g. did:web:qeet.in:people:qee-1041",
+    "subjectHelp": "Who it’s about: their user ID, email or DID.",
+    "subjectRequired": "Enter who it’s about.",
+    "type": "Type",
+    "typePlaceholder": "e.g. EmployeeCredential",
+    "typeHelp": "What kind of statement it is.",
+    "typeUsed": "Used so far: {{types}}.",
+    "typeRequired": "Enter a type.",
+    "claims": "Claims",
+    "claimsHelp": "A JSON object: what the credential states.",
+    "claimsInvalid": "Enter a JSON object, such as {\"employeeId\": \"QEE-1041\"}.",
+    "validFor": "Valid for",
+    "year": "1 year",
+    "days90": "90 days",
+    "noExpiry": "No expiry",
+    "submit": "Issue credential",
+    "stepUp": "Issue a credential",
+    "made": "{{type}} issued",
+    "madeFor": "To {{subject}} · expires {{date}}",
+    "madeForever": "To {{subject}} · never expires",
+    "jwt": "Signed credential (JWT)"
+  },
+  "verify": {
+    "title": "Verify a credential",
+    "description": "The check anyone can run: its signature, its expiry, and whether it’s been revoked.",
+    "credential": "Credential (JWT)",
+    "submit": "Verify",
+    "close": "Close",
+    "valid": "Valid",
+    "invalid": "Not valid",
+    "validWhy": "Signed by Qeet ID, not expired and not revoked.",
+    "issuer": "Issuer",
+    "reason": {
+      "not_credential": "It isn’t a verifiable credential.",
+      "signature_invalid": "Its signature doesn’t check out, or it has expired.",
+      "unknown": "Qeet ID has no record of issuing it.",
+      "revoked": "It has been revoked.",
+      "other": "It couldn’t be verified."
+    }
+  },
+  "webhooks": {
+    "title": "Webhooks",
+    "description": "Qeet ID posts each event, signed, to these endpoints, and retries a failed one for about 2 days.",
+    "new": "New webhook",
+    "search": "Search webhooks",
+    "searchPlaceholder": "e.g. notify.qeet.in or user.created",
+    "listensTo": "Listens to",
+    "signingSecret": "Signing secret",
+    "verifySample": "Check a delivery (Node.js)",
+    "state": {
+      "active": "Active",
+      "failing": "Failing",
+      "autoDisabled": "Turned off",
+      "disabled": "Disabled"
+    },
+    "line": {
+      "failing": "Since {{since}} · turns off after {{date}}",
+      "autoDisabled": "After 3 days of failures · {{date}}",
+      "disabled": "By an administrator · {{date}}",
+      "overlap": "New signing secret · the old one stops {{when}}"
+    },
+    "area": {
+      "people": "People",
+      "signIn": "Sign-in and sessions",
+      "groups": "Groups",
+      "domains": "Domains",
+      "agents": "Agents",
+      "access": "Access policies",
+      "authHooks": "Auth hooks",
+      "logStreams": "Log streams",
+      "rateLimits": "Rate limits",
+      "credentials": "Credentials",
+      "applications": "Applications",
+      "organisation": "Organisation",
+      "test": "Test events"
+    },
+    "columns": {
+      "endpoint": "Endpoint",
+      "listensTo": "Listens to",
+      "status": "Status",
+      "created": "Created"
+    },
+    "row": {
+      "areasMore": "{{areas}} +{{n}}",
+      "events_one": "{{n}} event",
+      "events_other": "{{n}} events"
+    },
+    "band": {
+      "on": "On",
+      "onNote": "{{off}} off · {{total}} in all",
+      "status": "Status",
+      "listen": "Endpoints listening to"
+    },
+    "looks": {
+      "failing": "Failing: turn off after 3 days",
+      "autoDisabled": "Turned off by failures",
+      "overlap": "Old secret still signing"
+    },
+    "actions": {
+      "test": "Send test event",
+      "enableFirst": "Enable it first",
+      "rotate": "Rotate signing secret",
+      "disable": "Disable",
+      "enable": "Enable"
+    },
     "confirm": {
-      "title": "Delete secret \"{{name}}\"?",
-      "description": "Anything using it will break.",
-      "label": "Delete"
+      "disableTitle": "Disable {{host}}?",
+      "disable": "Events that happen while it’s off aren’t sent, now or later. Deliveries already waiting are held and go out when you enable it.",
+      "disableLabel": "Disable webhook",
+      "disableAction": "Disable a webhook",
+      "enableAction": "Enable {{host}}",
+      "rotateTitle": "Rotate the signing secret for {{host}}?",
+      "rotate": "You get a new secret, shown once. For 24 hours each delivery carries both signatures, so the endpoint can switch without missing one; rotating again in that time ends the older secret at once.",
+      "rotateLabel": "Rotate secret",
+      "rotateAction": "Rotate a webhook signing secret"
     },
-    "create": {
-      "title": "New secret",
-      "description": "The value is encrypted immediately and can't be read back except via reveal.",
-      "nameLabel": "Name",
-      "scopeLabel": "Scope",
-      "scopeHelp": "A free-text label for grouping, e.g. the integration it belongs to.",
-      "valueLabel": "Value",
-      "cancelBtn": "Cancel",
-      "createBtn": "Create secret",
-      "savingBtn": "Saving…"
+    "rotated": {
+      "title": "New signing secret for {{host}}",
+      "description": "The previous secret also signs each delivery until {{date}}."
     },
-    "stepUp": {
-      "create": "Create this secret",
-      "reveal": "Reveal this secret",
-      "rotate": "Rotate this secret",
-      "delete": "Delete this secret"
-    },
-    "revealed": {
-      "title": "Value of {{name}}",
-      "description": "Shown this once: copy it now, then hide it. Each reveal is recorded in the audit log."
-    },
-    "validation": {
-      "name": "Enter a name.",
-      "value": "Enter the secret's value."
+    "empty": {
+      "title": "No webhooks yet",
+      "description": "Add an endpoint to get people, group and session changes as they happen."
     }
   },
-  "apiKeysPage": {
-    "ciDeployKey": "CI deploy key"
+  "webhookDrawer": {
+    "title": "New webhook",
+    "description": "Qeet ID posts a signed JSON event to the endpoint for each event you pick. Neither can change later.",
+    "url": "Endpoint URL",
+    "urlPlaceholder": "e.g. https://hooks.acme.in/qeet-id",
+    "urlHelp": "A public https address. It must answer 2xx within 10 seconds; a failed delivery is retried for about 2 days.",
+    "urlInvalid": "Enter a full URL, starting https://.",
+    "events": "Events",
+    "chosen": "{{n}} of {{total}} chosen",
+    "eventsRequired": "Choose at least one event.",
+    "create": "Create webhook",
+    "stepUp": "Create a webhook",
+    "made": "Webhook created"
   },
-  "secretsPage": {
-    "billingOptional": "billing (optional)"
-  },
-  "nav": {
-    "applications": {
-      "machineApps": {
-        "title": "Machine apps",
-        "description": "Non-interactive service and machine identities."
+  "webhook": {
+    "notFound": "Webhook not found",
+    "notFoundDescription": "It may belong to another organisation, or the link is wrong.",
+    "backToList": "Back to webhooks",
+    "copyUrl": "Copy URL",
+    "more": "More actions",
+    "band": {
+      "delivered": "Delivered",
+      "percent": "{{n}}%",
+      "deliveredNote": "{{n}} of the last {{total}}, {{first}} on the first try",
+      "noDeliveries": "Nothing sent yet",
+      "toGo": "Still to go",
+      "held": "{{n}} held until it’s enabled",
+      "retrying": "{{n}} being retried",
+      "nothingWaiting": "Nothing waiting",
+      "gaveUp": "Gave up",
+      "gaveUpNote": "After {{max}} tries, or a refusal it won’t retry",
+      "events": "Events",
+      "created": "Created {{date}}"
+    },
+    "notice": {
+      "autoTitle": "Turned off on {{date}} after 3 days of failed deliveries",
+      "failingTitle": "Failing since {{since}}",
+      "failing": "Each delivery is retried for about 2 days. If it still fails, the webhook turns off at its first failure after {{date}}.",
+      "disabledTitle": "Disabled by an administrator on {{date}}",
+      "overlapTitle": "Signing secret rotated",
+      "overlap": "The previous secret also signs each delivery until {{when}}. Switch the endpoint to the new one before then.",
+      "auto_zero": "Nothing is waiting to go out; {{gaveUp}} gave up. Fix the endpoint first, then enable it and retry those.",
+      "auto_one": "{{held}} delivery is held and goes out when you enable it; {{gaveUp}} gave up. Fix the endpoint first, then enable it and retry those.",
+      "auto_other": "{{held}} deliveries are held and go out when you enable it; {{gaveUp}} gave up. Fix the endpoint first, then enable it and retry those.",
+      "disabled_zero": "Events that happen while it’s off aren’t sent, now or later.",
+      "disabled_one": "Events that happen while it’s off aren’t sent, now or later. {{held}} held delivery goes out when you enable it.",
+      "disabled_other": "Events that happen while it’s off aren’t sent, now or later. {{held}} held deliveries go out when you enable it."
+    },
+    "health": {
+      "title": "Deliveries over time",
+      "note": "The recent deliveries by when they were made. A failed one is retried with growing gaps, up to 60 times over about 2 days; a refusal (4xx, other than 408 and 429) isn’t retried.",
+      "none": "Nothing sent yet: test it to see a delivery here."
+    },
+    "deliveries": {
+      "title": "Recent deliveries",
+      "note": "Newest first. Open one for its request and the endpoint’s answer.",
+      "noteLimit": "The last {{n}}, newest first. Open one for its request and the endpoint’s answer.",
+      "show": "Show",
+      "all": "All · {{n}}",
+      "none": "No deliveries yet.",
+      "noneOff": "No deliveries. While it’s off, events aren’t sent.",
+      "rowLabel": "{{event}}, {{when}}",
+      "short": "Delivery {{id}}",
+      "columns": {
+        "event": "Event",
+        "status": "Status",
+        "answer": "Endpoint’s answer",
+        "attempts": "Attempts",
+        "made": "Made"
       }
     },
-    "developer": {
-      "overview": {
-        "title": "Overview"
-      },
-      "apiKeys": {
-        "title": "API keys",
-        "description": "Programmatic access keys for the API."
-      },
-      "signingKeys": {
-        "title": "Signing keys",
-        "description": "JWKS keys that sign your tokens."
-      },
-      "secrets": {
-        "title": "Secrets",
-        "description": "Encrypted secrets for integrations."
-      },
-      "webhooks": {
-        "title": "Webhooks",
-        "description": "Subscribe endpoints to Qeet ID events."
-      },
-      "authHooks": {
-        "title": "Auth hooks",
-        "description": "Run custom logic in the auth pipeline."
-      },
-      "agents": {
-        "title": "Agents",
-        "description": "AI agent identities and credentials."
-      },
-      "credentials": {
-        "title": "Credentials",
-        "description": "Verifiable credential issuance."
-      },
-      "bots": {
-        "title": "Bots",
-        "description": "Automated bot identities."
-      },
-      "infrastructure": {
-        "title": "Infrastructure",
-        "description": "Runtime, regions and system health."
+    "events": {
+      "title": "Events it gets",
+      "note": "To change them, create a new webhook: Qeet ID can’t change a webhook’s events or address.",
+      "ofArea": "{{n}} of {{total}}",
+      "undescribed": "An event this console doesn’t describe yet."
+    },
+    "secret": {
+      "title": "Signing secret",
+      "note": "Each delivery is signed with it, so the endpoint can tell it came from Qeet ID.",
+      "rotate": "Rotate",
+      "current": "Current secret",
+      "hidden": "Hidden",
+      "currentNote": "Shown once, when it was made or rotated.",
+      "previous": "Previous secret",
+      "until": "Still signs, stops {{when}}",
+      "overlapLabel": "The previous secret stops signing on {{when}}",
+      "previousNote": "Both secrets sign each delivery until {{when}}, so the endpoint can switch without missing one.",
+      "none": "None",
+      "noneNote": "After a rotation, the old secret signs for 24 hours too.",
+      "headers": {
+        "signature": {
+          "name": "X-Qeet-Signature",
+          "what": "\"sha256=\" and the HMAC-SHA256 of the timestamp, a dot and the body. Two, comma-separated, while a previous secret still signs."
+        },
+        "timestamp": {
+          "name": "X-Qeet-Timestamp",
+          "what": "When this attempt was signed, in Unix seconds. Reject old ones."
+        },
+        "event": {
+          "name": "X-Qeet-Event",
+          "what": "The event’s name."
+        },
+        "delivery": {
+          "name": "X-Qeet-Delivery-ID",
+          "what": "The same on every retry, so the endpoint can ignore a repeat."
+        }
       }
     }
   },
-  "commands": {
-    "apiKeys": {
-      "title": "Generate API Key",
-      "subtitle": "Create a new machine-access API key",
-      "keywords": "api key, machine identity, service account, token"
+  "delivery": {
+    "outcome": {
+      "delivered": "Delivered",
+      "retrying": "Retrying",
+      "queued": "Waiting",
+      "held": "Held",
+      "gaveUp": "Gave up"
     },
-    "signingKeys": {
-      "title": "Rotate Signing Keys",
-      "subtitle": "Manage JWKS signing and encryption keys",
-      "keywords": "jwks, rotate keys, signing, encryption key"
+    "line": {
+      "firstTry": "First try",
+      "onAttempt": "On attempt {{n}}",
+      "gaveUp": "After {{n}} attempts",
+      "refused": "Refused ({{code}}), not retried",
+      "held": "Goes out when it’s enabled",
+      "queued": "Waiting for its first try",
+      "next": "Next try {{when}} · {{n}} of {{max}}",
+      "nextNow": "Next try now · {{n}} of {{max}}"
     },
-    "webhooks": {
-      "title": "Manage Webhooks",
-      "subtitle": "Configure outbound event webhooks",
-      "keywords": "webhooks, events, integrations, outbound"
+    "answer": {
+      "code": "{{code}}",
+      "none": "—",
+      "host": "Host not found",
+      "timeout": "Timed out",
+      "refused": "Connection refused",
+      "tls": "TLS error",
+      "status": "Not a 2xx answer",
+      "other": "Couldn’t connect"
     },
-    "authHooks": {
-      "title": "Auth Hooks",
-      "subtitle": "Configure pre/post authentication hooks",
-      "keywords": "hooks, actions, login hook, auth pipeline"
+    "drawerDescription": "Delivery {{id}} · made {{when}}",
+    "usedUp": "It used all its attempts",
+    "usedUpNote": "A retry doesn’t reset the count: if it fails again it gives up at once. Fix the endpoint first.",
+    "facts": {
+      "status": "Status",
+      "attempts": "Attempts",
+      "attemptsOf": "{{n}} of {{max}}",
+      "answer": "Endpoint’s answer",
+      "error": "Error",
+      "made": "Made",
+      "delivered": "Delivered",
+      "gaveUp": "Gave up",
+      "next": "Next try",
+      "id": "Delivery ID"
     },
-    "agents": {
-      "title": "Agent Governance",
-      "subtitle": "Manage machine-to-machine and AI agents",
-      "keywords": "agents, bots, m2m, machine identity, ai agent"
+    "request": "Request body",
+    "response": "Response body (first 4,000 bytes)",
+    "noBody": "The endpoint answered with no body.",
+    "notReached": "No response: the endpoint wasn’t reached.",
+    "close": "Close",
+    "retry": "Retry now",
+    "sendAgain": "Send again",
+    "copyId": "Copy delivery ID"
+  },
+  "health": {
+    "label": "Deliveries by {{unit}} since {{from}}: {{parts}}",
+    "bucketLabel": "{{at}}: {{parts}}",
+    "unit": {
+      "minutes": "5 minutes",
+      "hour": "hour",
+      "day": "day"
     },
-    "credentials": {
-      "title": "Verifiable Credentials",
-      "subtitle": "Issue and manage W3C verifiable credentials",
-      "keywords": "vc, credentials, w3c, ssi"
+    "each": {
+      "minutes": "A column every 5 minutes",
+      "hour": "A column an hour",
+      "day": "A column a day"
+    },
+    "now": "Now"
+  },
+  "authHooks": {
+    "title": "Auth hooks",
+    "description": "On every sign-in, whatever the method, Qeet ID asks each hook that’s on to allow or deny it once the first factor is proven. It waits {{seconds}} seconds for each.",
+    "add": "Add hook",
+    "band": {
+      "on": "On",
+      "onNote": "Of {{total}} added",
+      "cantAnswer": "If one can’t answer",
+      "allows": "Allow the sign-in",
+      "blocks": "Block the sign-in",
+      "wait": "Longest wait",
+      "seconds": "{{n}} s",
+      "waitNote": "Hooks run in turn, each waiting up to {{seconds}} seconds: what a sign-in waits when all are slow."
+    },
+    "columns": {
+      "endpoint": "Endpoint",
+      "cantAnswer": "If it can’t answer",
+      "status": "Status",
+      "added": "Added"
+    },
+    "row": {
+      "allows": "Allows the sign-in",
+      "allowsLine": "An outage at its end never locks people out",
+      "blocks": "Blocks the sign-in",
+      "blocksLine": "If it’s down or slow, nobody can sign in",
+      "on": "On",
+      "off": "Off"
+    },
+    "actions": {
+      "off": "Turn off…",
+      "on": "Turn on",
+      "onAction": "Turn on an auth hook",
+      "block": "Block when it can’t answer…",
+      "blockHint": "For strict policies",
+      "allow": "Allow when it can’t answer",
+      "allowHint": "An outage never locks people out",
+      "allowAction": "Change an auth hook",
+      "remove": "Remove…"
+    },
+    "confirm": {
+      "offTitle": "Turn off {{host}}?",
+      "off": "Sign-ins stop waiting for it and nothing it would deny is denied, until you turn it back on.",
+      "offLabel": "Turn off",
+      "offAction": "Turn off an auth hook",
+      "blockTitle": "Block sign-ins when {{host}} can’t answer?",
+      "block": "If it’s down, takes over 3 seconds or answers with an error, nobody can sign in until it’s back.",
+      "blockLabel": "Block when it can’t answer",
+      "blockAction": "Change an auth hook",
+      "removeTitle": "Remove {{host}}?",
+      "remove": "Sign-ins stop waiting for it and nothing it would deny is denied. Its secret goes with it; adding it back needs a new one.",
+      "removeLabel": "Remove hook",
+      "removeAction": "Remove an auth hook"
+    },
+    "empty": {
+      "title": "No auth hooks",
+      "description": "Add one to let your own policy allow or deny each sign-in."
+    },
+    "call": {
+      "title": "What a hook gets and answers",
+      "note": "Qeet ID posts this JSON and reads the answer within 3 seconds. Hooks run oldest first; the first deny stops the sign-in.",
+      "request": "Qeet ID sends",
+      "answer": "The hook answers",
+      "signature": "Each call carries X-Qeet-Signature: \"sha256=\" and the HMAC-SHA256 of the body with the hook’s secret.",
+      "deny": "\"decision\": \"deny\" blocks the sign-in, with your \"message\" if you give one; anything else allows it.",
+      "claims": "\"claims\" are added to the person’s access token under \"claims\", and kept when it’s refreshed."
     }
   },
-  "shortcuts": {
-    "webhooks": "Webhooks"
+  "hookDrawer": {
+    "title": "Add auth hook",
+    "description": "It runs on every sign-in once it’s added.",
+    "url": "Hook URL",
+    "urlPlaceholder": "e.g. https://policy.acme.in/qeet/sign-in",
+    "urlHelp": "A public https address that answers within {{seconds}} seconds.",
+    "secret": "Signing secret",
+    "secretHelp": "Yours: each call is signed with it. It can’t be shown again.",
+    "secretRequired": "Enter a secret.",
+    "cantAnswer": "If the hook can’t answer",
+    "allow": "Allow the sign-in",
+    "allowHelp": "An outage at your end never locks people out. Each skipped check is recorded in Activity.",
+    "block": "Block the sign-in",
+    "blockHelp": "For strict policies. If your endpoint is down or slow, nobody can sign in.",
+    "submit": "Add hook",
+    "stepUp": "Add an auth hook"
   },
-  "qeetaiSuggestions": {
-    "labels": {
-      "rotateSigningKeys": "Rotate signing keys",
-      "codeSnippet": "Generate a code snippet",
-      "apiExample": "Generate an API example"
+  "infrastructure": {
+    "title": "Infrastructure",
+    "description": "The addresses and keys your integrations work with.",
+    "endpoints": {
+      "title": "Endpoints",
+      "note": "Every SDK finds the rest from the issuer.",
+      "copy": "Copy {{name}} URL",
+      "issuer": {
+        "label": "Issuer",
+        "what": "Where SDKs and apps start: its discovery document lists the rest."
+      },
+      "discovery": {
+        "label": "Discovery",
+        "what": "The OpenID configuration: endpoints, scopes and algorithms."
+      },
+      "jwks": {
+        "label": "JWKS",
+        "what": "The public keys that check tokens and credentials."
+      },
+      "token": {
+        "label": "Machine tokens",
+        "what": "Where machine identities trade a client secret for a token."
+      },
+      "agentToken": {
+        "label": "Agent tokens",
+        "what": "Where agents trade their secret for a token."
+      },
+      "verify": {
+        "label": "Credential check",
+        "what": "Where anyone verifies a credential Qeet ID issued."
+      }
+    },
+    "keys": {
+      "title": "Signing keys",
+      "note_one": "{{n}} key published in the key set.",
+      "note_other": "{{n}} keys published in the key set.",
+      "loading": "Reading the key set…",
+      "open": "Open signing keys"
+    },
+    "health": {
+      "title": "Service health",
+      "notReported": "Not reported",
+      "note": "Qeet ID reports no health to an organisation. Running it yourself? Its /readyz endpoint and its metrics feed your own monitoring."
+    }
+  },
+  "bots": {
+    "title": "Bots",
+    "description": "Automations that react to identity events.",
+    "empty": {
+      "title": "Bots aren’t available yet",
+      "description": "Until they are, webhooks send identity events to your own code, and auth hooks run it during sign-in.",
+      "webhooks": "Open webhooks",
+      "authHooks": "Open auth hooks"
     }
   }
 }

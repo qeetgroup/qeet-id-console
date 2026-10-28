@@ -29,7 +29,7 @@ import { startMfaEnrollment } from "../mfa-sign-in";
 import { listPasskeys, usePasskeys } from "../passkeys";
 import { listSessions, useSessions } from "../sessions";
 import { createOidcClient, rotateOidcClientSecret, useCreateOidcClient } from "../oidc-clients";
-import { useRotateScimToken } from "../scim";
+import { useRotateScimToken } from "../scim-actions";
 
 const SIGNED_OUT: PublicSession = {
   isAuthenticated: false,

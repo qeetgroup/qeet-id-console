@@ -15,125 +15,110 @@ vi.mock("@/platform/security/capability-provider", () => ({
 }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children }: { children: ReactNode }) => <a href="/users">{children}</a>,
-  useLocation: () => ({ pathname: "/users/deleted" }),
+  useLocation: () => ({ pathname: "/users/import" }),
+  useNavigate: () => vi.fn(),
+}));
+vi.mock("@/modules/organizations", () => ({
+  useOrgs: () => ({ data: { items: [{ id: "tenant-a", name: "Acme" }] } }),
 }));
 
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 
-import { DeletedUsersPage } from "../components/deleted-users-page";
-import { ImportUsersPage } from "../components/import-users-page";
+import { ImportUsersPage } from "../pages";
 
-function renderPage(ui: ReactNode) {
+let bulk: unknown = { succeeded: 0, failed: 0 };
+let members: { email: string }[] = [];
+
+function renderPage() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
     <QueryClientProvider client={client}>
-      <SensitiveActionProvider>{ui}</SensitiveActionProvider>
+      <SensitiveActionProvider>
+        <ImportUsersPage />
+      </SensitiveActionProvider>
     </QueryClientProvider>,
   );
 }
 
-beforeEach(() => vi.mocked(api).mockReset());
-afterEach(cleanup);
-
-describe("DeletedUsersPage", () => {
-  beforeEach(() => {
-    vi.mocked(api).mockImplementation(async (path) =>
-      path === "/v1/users/deleted"
-        ? {
-            items: [
-              {
-                id: "user-1",
-                email: "asha@example.test",
-                display_name: null,
-                deleted_at: "2026-10-01T00:00:00Z",
-                created_at: "2026-01-01T00:00:00Z",
-              },
-            ],
-          }
-        : undefined,
-    );
-  });
-
-  it("purges a user for good only after the admin confirms", async () => {
-    renderPage(<DeletedUsersPage />);
-
-    fireEvent.click(await screen.findByRole("button", { name: /Delete forever/ }));
-    const dialog = await screen.findByRole("alertdialog");
-    expect(dialog.textContent).toContain("Permanently delete asha@example.test?");
-    expect(api).not.toHaveBeenCalledWith("/v1/users/user-1/purge", { method: "DELETE" });
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Delete forever" }));
-
-    await waitFor(() =>
-      expect(api).toHaveBeenCalledWith("/v1/users/user-1/purge", { method: "DELETE" }),
-    );
-  });
-
-  it("restores a user without a confirmation", async () => {
-    renderPage(<DeletedUsersPage />);
-
-    fireEvent.click(await screen.findByRole("button", { name: /Restore/ }));
-
-    await waitFor(() =>
-      expect(api).toHaveBeenCalledWith("/v1/users/user-1/restore", { method: "POST" }),
-    );
-    expect(screen.queryByRole("alertdialog")).toBeNull();
+beforeEach(() => {
+  bulk = { succeeded: 0, failed: 0 };
+  members = [];
+  vi.mocked(api).mockReset();
+  vi.mocked(api).mockImplementation(async (path: string) => {
+    if (path === "/v1/users") return { items: members, next_cursor: "" };
+    if (path === "/v1/users/bulk") return bulk;
+    return { items: [] };
   });
 });
+afterEach(cleanup);
+
+function upload(name: string, text: string) {
+  const file = new File([text], name, { type: "text/csv" });
+  fireEvent.change(screen.getByLabelText(/^People file/), { target: { files: [file] } });
+}
+
+const bulkCall = () => vi.mocked(api).mock.calls.find(([path]) => path === "/v1/users/bulk");
 
 describe("ImportUsersPage", () => {
-  function upload(name: string, text: string) {
-    const file = new File([text], name, { type: "text/csv" });
-    fireEvent.change(screen.getByLabelText(/Drop your CSV or NDJSON file/), {
-      target: { files: [file] },
-    });
-  }
-
-  it("names a row without an email in the preview and leaves it out of the import", async () => {
-    vi.mocked(api).mockResolvedValue({ succeeded: 1, failed: 0 });
-    renderPage(<ImportUsersPage />);
+  it("names a row without an email when checking, and leaves it out of the import", async () => {
+    bulk = { succeeded: 1, failed: 0 };
+    renderPage();
 
     upload("users.csv", "email,display_name\na@example.test,Asha\n,Nobody\n");
 
     expect(await screen.findByText("Email is missing.")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Import 1 user" }));
+    expect(screen.getByText("1 row is left out")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Import 1 person" }));
 
     await waitFor(() =>
-      expect(api).toHaveBeenCalledWith("/v1/users/bulk", {
+      expect(bulkCall()?.[1]).toEqual({
         method: "POST",
         body: { tenant_id: "tenant-a", users: [{ email: "a@example.test", display_name: "Asha" }] },
       }),
     );
+    expect(await screen.findByText("1 person added to Acme")).toBeTruthy();
   });
 
-  it("shows each refused row by its file line, in the console's words", async () => {
-    vi.mocked(api).mockResolvedValue({
+  it("leaves out an address already here or used twice, before the server would refuse it", async () => {
+    members = [{ email: "a@example.test" }];
+    renderPage();
+
+    upload("users.csv", "email\nA@example.test\nb@example.test\nb@example.test\n");
+
+    expect(await screen.findByText("Already in the organisation")).toBeTruthy();
+    expect(screen.getByText("On an earlier line too")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Import 1 person" })).toBeTruthy();
+  });
+
+  it("lists each refused row by its line in the file, in the console's words", async () => {
+    bulk = {
       succeeded: 1,
       failed: 1,
       errors: [{ line: 2, email: "b@example.test", code: "auth.email_exists", message: "dup" }],
-    });
-    renderPage(<ImportUsersPage />);
+    };
+    renderPage();
 
     upload("users.csv", "email\na@example.test\n\nb@example.test\n");
-    fireEvent.click(await screen.findByRole("button", { name: "Import 2 users" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Import 2 people" }));
 
-    const row = (await screen.findByText("A user with this email already exists.")).closest("tr");
+    const table = await screen.findByRole("table", { name: "Not imported" });
+    const row = within(table).getByText("A user with this email already exists.").closest("tr");
     expect(row?.textContent).toContain("4");
     expect(screen.queryByText("dup")).toBeNull();
   });
 
-  it("refuses more users than one import can take", async () => {
-    renderPage(<ImportUsersPage />);
+  it("refuses more people than one import can take", async () => {
+    renderPage();
 
     const rows = Array.from({ length: 1001 }, (_, i) => `u${i}@example.test`).join("\n");
     upload("users.csv", `email\n${rows}\n`);
 
-    expect(await screen.findByText(/at most 1,000 users/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Import 1001 users" }).matches(":disabled")).toBe(
-      true,
-    );
+    expect(await screen.findByText("One import takes up to 1,000 people")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Import 1,001 people" }).getAttribute("aria-disabled"),
+    ).toBe("true");
   });
 });
