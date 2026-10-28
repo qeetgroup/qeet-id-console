@@ -48,6 +48,7 @@ import { Route as AuthorizationRolesRouteImport } from './modules/authorization/
 import { Route as AuthorizationSettingsRouteImport } from './modules/authorization/routes/app/authorization/settings'
 import { Route as AuthorizationSimulatorRouteImport } from './modules/authorization/routes/app/authorization/simulator'
 import { Route as AuthorizationTemplatesRouteImport } from './modules/authorization/routes/app/authorization/templates'
+import { Route as AuthorizationTestingRouteImport } from './modules/authorization/routes/app/authorization/testing'
 import { Route as AuthorizationVersionsRouteImport } from './modules/authorization/routes/app/authorization/versions'
 import { Route as DeveloperIndexRouteImport } from './modules/developer/routes/app/developer/index'
 import { Route as DeveloperAgentsRouteImport } from './modules/developer/routes/app/developer/agents'
@@ -55,6 +56,7 @@ import { Route as DeveloperAuthHooksRouteImport } from './modules/developer/rout
 import { Route as DeveloperBotsRouteImport } from './modules/developer/routes/app/developer/bots'
 import { Route as DeveloperCredentialsRouteImport } from './modules/developer/routes/app/developer/credentials'
 import { Route as DeveloperInfrastructureRouteImport } from './modules/developer/routes/app/developer/infrastructure'
+import { Route as DeveloperMachineAccessRouteImport } from './modules/developer/routes/app/developer/machine-access'
 import { Route as DirectoryIndexRouteImport } from './modules/directory/routes/app/directory/index'
 import { Route as DirectoryAttributeMappingsRouteImport } from './modules/directory/routes/app/directory/attribute-mappings'
 import { Route as DirectorySyncActivityRouteImport } from './modules/directory/routes/app/directory/sync-activity'
@@ -319,6 +321,11 @@ const AuthorizationTemplatesRoute = AuthorizationTemplatesRouteImport.update({
   path: '/authorization/templates',
   getParentRoute: () => appRoute,
 } as any)
+const AuthorizationTestingRoute = AuthorizationTestingRouteImport.update({
+  id: '/authorization/testing',
+  path: '/authorization/testing',
+  getParentRoute: () => appRoute,
+} as any)
 const AuthorizationVersionsRoute = AuthorizationVersionsRouteImport.update({
   id: '/authorization/versions',
   path: '/authorization/versions',
@@ -352,6 +359,11 @@ const DeveloperCredentialsRoute = DeveloperCredentialsRouteImport.update({
 const DeveloperInfrastructureRoute = DeveloperInfrastructureRouteImport.update({
   id: '/developer/infrastructure',
   path: '/developer/infrastructure',
+  getParentRoute: () => appRoute,
+} as any)
+const DeveloperMachineAccessRoute = DeveloperMachineAccessRouteImport.update({
+  id: '/developer/machine-access',
+  path: '/developer/machine-access',
   getParentRoute: () => appRoute,
 } as any)
 const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
@@ -757,12 +769,14 @@ export interface FileRoutesByFullPath {
   '/authorization/settings': typeof AuthorizationSettingsRoute
   '/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/authorization/testing': typeof AuthorizationTestingRoute
   '/authorization/versions': typeof AuthorizationVersionsRoute
   '/developer/agents': typeof DeveloperAgentsRoute
   '/developer/auth-hooks': typeof DeveloperAuthHooksRoute
   '/developer/bots': typeof DeveloperBotsRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
   '/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
   '/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/directory/sync-errors': typeof DirectorySyncErrorsRoute
@@ -871,12 +885,14 @@ export interface FileRoutesByTo {
   '/authorization/settings': typeof AuthorizationSettingsRoute
   '/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/authorization/testing': typeof AuthorizationTestingRoute
   '/authorization/versions': typeof AuthorizationVersionsRoute
   '/developer/agents': typeof DeveloperAgentsRoute
   '/developer/auth-hooks': typeof DeveloperAuthHooksRoute
   '/developer/bots': typeof DeveloperBotsRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
   '/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
   '/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/directory/sync-errors': typeof DirectorySyncErrorsRoute
@@ -988,12 +1004,14 @@ export interface FileRoutesById {
   '/_app/authorization/settings': typeof AuthorizationSettingsRoute
   '/_app/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/_app/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/_app/authorization/testing': typeof AuthorizationTestingRoute
   '/_app/authorization/versions': typeof AuthorizationVersionsRoute
   '/_app/developer/agents': typeof DeveloperAgentsRoute
   '/_app/developer/auth-hooks': typeof DeveloperAuthHooksRoute
   '/_app/developer/bots': typeof DeveloperBotsRoute
   '/_app/developer/credentials': typeof DeveloperCredentialsRoute
   '/_app/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/_app/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/_app/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
   '/_app/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/_app/directory/sync-errors': typeof DirectorySyncErrorsRoute
@@ -1104,12 +1122,14 @@ export interface FileRouteTypes {
     | '/authorization/settings'
     | '/authorization/simulator'
     | '/authorization/templates'
+    | '/authorization/testing'
     | '/authorization/versions'
     | '/developer/agents'
     | '/developer/auth-hooks'
     | '/developer/bots'
     | '/developer/credentials'
     | '/developer/infrastructure'
+    | '/developer/machine-access'
     | '/directory/attribute-mappings'
     | '/directory/sync-activity'
     | '/directory/sync-errors'
@@ -1218,12 +1238,14 @@ export interface FileRouteTypes {
     | '/authorization/settings'
     | '/authorization/simulator'
     | '/authorization/templates'
+    | '/authorization/testing'
     | '/authorization/versions'
     | '/developer/agents'
     | '/developer/auth-hooks'
     | '/developer/bots'
     | '/developer/credentials'
     | '/developer/infrastructure'
+    | '/developer/machine-access'
     | '/directory/attribute-mappings'
     | '/directory/sync-activity'
     | '/directory/sync-errors'
@@ -1334,12 +1356,14 @@ export interface FileRouteTypes {
     | '/_app/authorization/settings'
     | '/_app/authorization/simulator'
     | '/_app/authorization/templates'
+    | '/_app/authorization/testing'
     | '/_app/authorization/versions'
     | '/_app/developer/agents'
     | '/_app/developer/auth-hooks'
     | '/_app/developer/bots'
     | '/_app/developer/credentials'
     | '/_app/developer/infrastructure'
+    | '/_app/developer/machine-access'
     | '/_app/directory/attribute-mappings'
     | '/_app/directory/sync-activity'
     | '/_app/directory/sync-errors'
@@ -1698,6 +1722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthorizationTemplatesRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/authorization/testing': {
+      id: '/_app/authorization/testing'
+      path: '/authorization/testing'
+      fullPath: '/authorization/testing'
+      preLoaderRoute: typeof AuthorizationTestingRouteImport
+      parentRoute: typeof appRoute
+    }
     '/_app/authorization/versions': {
       id: '/_app/authorization/versions'
       path: '/authorization/versions'
@@ -1745,6 +1776,13 @@ declare module '@tanstack/react-router' {
       path: '/developer/infrastructure'
       fullPath: '/developer/infrastructure'
       preLoaderRoute: typeof DeveloperInfrastructureRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/developer/machine-access': {
+      id: '/_app/developer/machine-access'
+      path: '/developer/machine-access'
+      fullPath: '/developer/machine-access'
+      preLoaderRoute: typeof DeveloperMachineAccessRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/directory/': {
@@ -2266,12 +2304,14 @@ interface appRouteChildren {
   AuthorizationSettingsRoute: typeof AuthorizationSettingsRoute
   AuthorizationSimulatorRoute: typeof AuthorizationSimulatorRoute
   AuthorizationTemplatesRoute: typeof AuthorizationTemplatesRoute
+  AuthorizationTestingRoute: typeof AuthorizationTestingRoute
   AuthorizationVersionsRoute: typeof AuthorizationVersionsRoute
   DeveloperAgentsRoute: typeof DeveloperAgentsRoute
   DeveloperAuthHooksRoute: typeof DeveloperAuthHooksRoute
   DeveloperBotsRoute: typeof DeveloperBotsRoute
   DeveloperCredentialsRoute: typeof DeveloperCredentialsRoute
   DeveloperInfrastructureRoute: typeof DeveloperInfrastructureRoute
+  DeveloperMachineAccessRoute: typeof DeveloperMachineAccessRoute
   DirectoryAttributeMappingsRoute: typeof DirectoryAttributeMappingsRoute
   DirectorySyncActivityRoute: typeof DirectorySyncActivityRoute
   DirectorySyncErrorsRoute: typeof DirectorySyncErrorsRoute
@@ -2365,12 +2405,14 @@ const appRouteChildren: appRouteChildren = {
   AuthorizationSettingsRoute: AuthorizationSettingsRoute,
   AuthorizationSimulatorRoute: AuthorizationSimulatorRoute,
   AuthorizationTemplatesRoute: AuthorizationTemplatesRoute,
+  AuthorizationTestingRoute: AuthorizationTestingRoute,
   AuthorizationVersionsRoute: AuthorizationVersionsRoute,
   DeveloperAgentsRoute: DeveloperAgentsRoute,
   DeveloperAuthHooksRoute: DeveloperAuthHooksRoute,
   DeveloperBotsRoute: DeveloperBotsRoute,
   DeveloperCredentialsRoute: DeveloperCredentialsRoute,
   DeveloperInfrastructureRoute: DeveloperInfrastructureRoute,
+  DeveloperMachineAccessRoute: DeveloperMachineAccessRoute,
   DirectoryAttributeMappingsRoute: DirectoryAttributeMappingsRoute,
   DirectorySyncActivityRoute: DirectorySyncActivityRoute,
   DirectorySyncErrorsRoute: DirectorySyncErrorsRoute,

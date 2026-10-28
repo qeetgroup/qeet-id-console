@@ -1,0 +1,19 @@
+/*
+ * Authorization › Testing (testing-page.tsx): the request on the canvas, the answer docked under it.
+ * Token values only (--qx-*); the frame and the answer parts are workspace.css.
+ */
+
+.tst-request {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+  max-inline-size: 44rem;
+}
+
+.tst-decision {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.tst-decision .ws-section {
+  gap: var(--qx-space-gap-sm);
+}

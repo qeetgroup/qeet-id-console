@@ -2,13 +2,11 @@
 import {
   BadgeCheckIcon,
   BotIcon,
-  CpuIcon,
   FileKeyIcon,
   KeyRoundIcon,
   LockKeyholeIcon,
   RefreshCwIcon,
   ServerCogIcon,
-  SparklesIcon,
   WebhookIcon,
   ZapIcon,
 } from "@qeetrix/icons";
@@ -18,24 +16,52 @@ import { defineModule } from "@/platform/modules/manifest";
 export const manifest = defineModule({
   id: "developer",
   nav: [
+    // Machine access: every credential that calls Qeet ID without a person signing in, as one
+    // item with a tab per kind (its All tab is the item's own page).
     {
-      id: "applications.machineApps",
-      group: "applications",
-      order: 30,
-      title: "developer:nav.applications.machineApps.title",
-      description: "developer:nav.applications.machineApps.description",
-      url: "/auth/api/machine-identities",
-      icon: <CpuIcon />,
+      id: "developer.machineAccess",
+      group: "developer",
+      order: 20,
+      title: "developer:nav.developer.machineAccess.title",
+      description: "developer:nav.developer.machineAccess.description",
+      url: "/developer/machine-access",
+      icon: <KeyRoundIcon />,
       capability: "apikey.read",
     },
     {
-      id: "developer.apiKeys",
+      id: "developer.machineAccess.all",
       group: "developer",
+      parent: "developer.machineAccess",
+      order: 10,
+      title: "developer:nav.developer.machineAccess.all",
+      url: "/developer/machine-access",
+      capability: "apikey.read",
+    },
+    {
+      id: "developer.machineAccess.apiKeys",
+      group: "developer",
+      parent: "developer.machineAccess",
       order: 20,
-      title: "developer:nav.developer.apiKeys.title",
-      description: "developer:nav.developer.apiKeys.description",
+      title: "developer:nav.developer.machineAccess.apiKeys",
       url: "/auth/api/keys",
-      icon: <KeyRoundIcon />,
+      capability: "apikey.read",
+    },
+    {
+      id: "developer.machineAccess.machineIdentities",
+      group: "developer",
+      parent: "developer.machineAccess",
+      order: 30,
+      title: "developer:nav.developer.machineAccess.machineIdentities",
+      url: "/auth/api/machine-identities",
+      capability: "apikey.read",
+    },
+    {
+      id: "developer.machineAccess.agents",
+      group: "developer",
+      parent: "developer.machineAccess",
+      order: 40,
+      title: "developer:nav.developer.machineAccess.agents",
+      url: "/developer/agents",
       capability: "apikey.read",
     },
     {
@@ -69,6 +95,7 @@ export const manifest = defineModule({
       capability: "webhook.read",
     },
     {
+      // The server reads auth hooks with policy.read: they gate sign-in.
       id: "developer.authHooks",
       group: "developer",
       order: 70,
@@ -76,19 +103,10 @@ export const manifest = defineModule({
       description: "developer:nav.developer.authHooks.description",
       url: "/developer/auth-hooks",
       icon: <ZapIcon />,
-      capability: "connection.read",
+      capability: "policy.read",
     },
     {
-      id: "developer.agents",
-      group: "developer",
-      order: 80,
-      title: "developer:nav.developer.agents.title",
-      description: "developer:nav.developer.agents.description",
-      url: "/developer/agents",
-      icon: <SparklesIcon />,
-      capability: "apikey.read",
-    },
-    {
+      // The server reads credentials with secret.read.
       id: "developer.credentials",
       group: "developer",
       order: 90,
@@ -96,18 +114,9 @@ export const manifest = defineModule({
       description: "developer:nav.developer.credentials.description",
       url: "/developer/credentials",
       icon: <BadgeCheckIcon />,
-      capability: "apikey.read",
+      capability: "secret.read",
     },
-    {
-      id: "developer.bots",
-      group: "developer",
-      order: 100,
-      title: "developer:nav.developer.bots.title",
-      description: "developer:nav.developer.bots.description",
-      url: "/developer/bots",
-      icon: <BotIcon />,
-      capability: "apikey.read",
-    },
+    // Bots are off the sidebar until the server has automations (/developer/bots says so).
     {
       id: "developer.infrastructure",
       group: "developer",
@@ -120,6 +129,13 @@ export const manifest = defineModule({
     },
   ],
   commands: [
+    {
+      id: "cmd.navigate.machine-access",
+      text: "developer:commands.machineAccess",
+      icon: <KeyRoundIcon className="size-4" />,
+      to: "/developer/machine-access",
+      capability: "apikey.read",
+    },
     {
       id: "cmd.navigate.api-keys",
       text: "developer:commands.apiKeys",
@@ -146,7 +162,7 @@ export const manifest = defineModule({
       text: "developer:commands.authHooks",
       icon: <ZapIcon className="size-4" />,
       to: "/developer/auth-hooks",
-      capability: "connection.read",
+      capability: "policy.read",
     },
     {
       id: "cmd.navigate.agents",
@@ -160,7 +176,7 @@ export const manifest = defineModule({
       text: "developer:commands.credentials",
       icon: <BadgeCheckIcon className="size-4" />,
       to: "/developer/credentials",
-      capability: "apikey.read",
+      capability: "secret.read",
     },
   ],
   shortcuts: [
@@ -172,14 +188,6 @@ export const manifest = defineModule({
   ],
   extensions: {
     qeetaiSuggestions: {
-      "/auth/api/signing-keys": [
-        {
-          type: "tool",
-          toolName: "rotate_signing_keys",
-          label: "developer:qeetaiSuggestions.labels.rotateSigningKeys",
-          requiredCapability: "connection.write",
-        },
-      ],
       "/developer/*": [
         {
           type: "tool",
@@ -202,6 +210,5 @@ export const manifest = defineModule({
 declare module "i18next" {
   interface ResourceNamespaceMap {
     developer: typeof import("./locales/en/developer.json");
-    "signing-keys": typeof import("./locales/en/signing-keys.json");
   }
 }
