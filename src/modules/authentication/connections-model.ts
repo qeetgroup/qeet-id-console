@@ -65,6 +65,9 @@ export type ConnectionRow = {
   /** Where it points: the provider's or server's host, the SCIM path, the app's host. */
   line: string;
   status: SetupStatus;
+  /** Its own state on the server, whatever needs a look: on (signs people in), or a draft. */
+  on: boolean;
+  draft: boolean;
   /** Why it needs a look, when it does: a certificate ending, a failing check. */
   problem?: "certificate" | "check";
   lastUsed: string | null;
@@ -130,6 +133,8 @@ export function connectionRows({
       name: c.name,
       line: hostOf(c.idp_sso_url),
       status: connectionStatus(c.status, ending),
+      on: c.status === "active",
+      draft: c.status === "draft",
       problem: ending ? "certificate" : undefined,
       lastUsed: c.last_login_at,
     });
@@ -142,6 +147,8 @@ export function connectionRows({
       name: c.name,
       line: hostOf(c.server_url),
       status: connectionStatus(c.status, fails),
+      on: c.status === "active",
+      draft: c.status === "draft",
       problem: fails ? "check" : undefined,
       lastUsed: c.last_login_at,
     });
@@ -153,6 +160,8 @@ export function connectionRows({
       name: "",
       line: "/scim/v2",
       status: "connected",
+      on: true,
+      draft: false,
       lastUsed: scim.last_used_at,
     });
   for (const a of apps)
@@ -162,6 +171,8 @@ export function connectionRows({
       name: a.name,
       line: hostOf(a.acs_url),
       status: connectionStatus(a.status),
+      on: a.status === "active",
+      draft: a.status === "draft",
       lastUsed: a.last_login_at,
     });
   return rows;

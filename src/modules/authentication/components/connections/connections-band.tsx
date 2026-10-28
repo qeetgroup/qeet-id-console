@@ -83,11 +83,10 @@ export function ConnectionsBand({
     rows.filter((r) => KIND_GROUP[r.kind] === group);
   const signIn = of("signin");
   const apps = of("apps");
-  const on = (list: ConnectionRow[]) =>
-    list.filter((r) => r.status === "connected" || r.status === "attention").length;
-  const setup = (list: ConnectionRow[]) => list.filter((r) => r.status === "setup").length;
+  const on = (list: ConnectionRow[]) => list.filter((r) => r.on).length;
+  const setup = (list: ConnectionRow[]) => list.filter((r) => r.draft).length;
   const attention = rows.filter((r) => r.status === "attention").length;
-  const inSetup = setup(rows);
+  const inSetup = rows.filter((r) => r.status === "setup").length;
 
   return (
     <dl className="ppl-band">
