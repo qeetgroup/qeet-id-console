@@ -13,7 +13,8 @@ vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId 
 
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
-import { useAnomalies, useAnomalySummary, useResolveAnomaly } from "../api/anomalies";
+import { useAnomalies, useAnomalySummary } from "../api/anomalies";
+import { useResolveAnomaly } from "../api/anomaly-actions";
 import {
   useAuditAnomalies,
   useAuditAnomalySettings,

@@ -9,13 +9,10 @@ afterEach(cleanup);
 
 const badge = (text: string) => screen.getByText(text).closest('[data-slot="badge"]');
 
-// The kit's Badge marks its variant only in its classes.
-function variant(text: string) {
-  const classes = badge(text)?.className ?? "";
-  if (classes.includes("bg-destructive-subtle")) return "destructive";
-  if (classes.includes("bg-secondary")) return "secondary";
-  if (classes.includes("border-border")) return "outline";
-  return classes;
+// The library's Badge says its tone and variant in data attributes.
+function look(text: string) {
+  const el = badge(text);
+  return `${el?.getAttribute("data-tone")} ${el?.getAttribute("data-variant")}`;
 }
 
 describe("An anomaly's severity and status", () => {
@@ -26,10 +23,8 @@ describe("An anomaly's severity and status", () => {
         <AnomalySeverityBadge severity="high" />
       </>,
     );
-    expect(variant("Critical")).toBe("destructive");
-    expect(variant("High")).toBe("destructive");
-    expect(badge("Critical")?.className).toContain("ring-2");
-    expect(badge("High")?.className).not.toContain("ring-2");
+    expect(look("Critical")).toBe("danger solid");
+    expect(look("High")).toBe("danger subtle");
   });
 
   it("names each severity in words, a new one the quietest", () => {
@@ -40,9 +35,9 @@ describe("An anomaly's severity and status", () => {
         <AnomalySeverityBadge severity="very_high" />
       </>,
     );
-    expect(variant("Medium")).toBe("secondary");
-    expect(variant("Low")).toBe("outline");
-    expect(variant("Very High")).toBe("outline");
+    expect(look("Medium")).toBe("warning subtle");
+    expect(look("Low")).toBe("neutral subtle");
+    expect(look("Very High")).toBe("neutral subtle");
   });
 
   it("shows an anomaly open until it is resolved, whatever its status says", () => {

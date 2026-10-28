@@ -28,27 +28,29 @@ export const manifest = defineModule({
       group: "security",
       order: 20,
       title: "security:nav.security.threats.title",
-      url: "/security/threats/bots",
+      // Threats opens on Anomalies (redesign-findings, Threat protection).
+      url: "/security/threats/anomalies",
       icon: <ShieldAlertIcon />,
-      capability: "policy.read",
-    },
-    {
-      id: "security.bots",
-      group: "security",
-      parent: "security.threats",
-      order: 10,
-      title: "security:nav.security.bots.title",
-      url: "/security/threats/bots",
       capability: "policy.read",
     },
     {
       id: "security.anomalies",
       group: "security",
       parent: "security.threats",
-      order: 20,
+      order: 10,
       title: "security:nav.security.anomalies.title",
       url: "/security/threats/anomalies",
-      capability: "audit.read",
+      // The server lists anomalies under policy.read (bootstrap/permissions.go).
+      capability: "policy.read",
+    },
+    {
+      id: "security.bots",
+      group: "security",
+      parent: "security.threats",
+      order: 20,
+      title: "security:nav.security.bots.title",
+      url: "/security/threats/bots",
+      capability: "policy.read",
     },
     {
       id: "security.risk",
@@ -73,7 +75,7 @@ export const manifest = defineModule({
       group: "security",
       order: 30,
       title: "security:nav.security.rateLimits.title",
-      url: "/security/threats/rate-limits",
+      url: "/security/rate-limits",
       icon: <GaugeIcon />,
       capability: "policy.read",
     },
@@ -96,15 +98,6 @@ export const manifest = defineModule({
       capability: "audit.read",
     },
     {
-      id: "security.intelligence",
-      group: "security",
-      parent: "security.monitoring",
-      order: 20,
-      title: "security:nav.security.intelligence.title",
-      url: "/security/audit-intelligence",
-      capability: "audit.read",
-    },
-    {
       id: "security.logStreams",
       group: "security",
       parent: "security.monitoring",
@@ -118,14 +111,14 @@ export const manifest = defineModule({
     {
       id: "cmd.navigate.audit-logs",
       text: "security:commands.auditLogs",
-      icon: <ArchiveIcon className="size-4" />,
+      icon: <ArchiveIcon />,
       to: "/security/audit-logs",
       capability: "audit.read",
     },
     {
       id: "cmd.navigate.export-audit",
       text: "security:commands.exportAudit",
-      icon: <FileDownIcon className="size-4" />,
+      icon: <FileDownIcon />,
       to: "/security/audit-logs",
       capability: "audit.read",
     },
@@ -186,7 +179,6 @@ export const manifest = defineModule({
 // Types its translation keys from the English catalogues (src/i18n/index.ts has the platform's).
 declare module "i18next" {
   interface ResourceNamespaceMap {
-    device: typeof import("./locales/en/device.json");
     security: typeof import("./locales/en/security.json");
   }
 }

@@ -1,6 +1,7 @@
 // IP rules are CIDR ranges or bare IPs. Deny wins over allow, and once any allow rule exists an
-// address must match one. Rules apply only once the tenant turns enforcement on, so adding them
-// can't lock it out by accident.
+// address must match one. Rules apply only once the tenant turns enforcement on; then every
+// sign-in and session renewal is checked. A change that would refuse the caller's own address is
+// refused (risk.rules_lock_out_caller).
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -90,22 +91,30 @@ export function useCheckIp() {
 /**
  * A sign-in or renewal the IP rules refused, from its auth.address_refused audit event. `ruleId`
  * and `cidr` name the deny rule; both are null when no allow rule matched or the address was
- * unreadable.
+ * unreadable. `path` names the sign-in; the audit list doesn't return metadata yet, so it is
+ * usually "" and `reason` is read from the row: the deny rule is its resource, and an unreadable
+ * address is recorded without one (ipallow.refusalEvent).
  */
 export interface AddressRefusal {
   id: string;
   at: string;
   address: string;
   path: string;
-  reason: string;
+  reason: RefusalReason | "";
   ruleId: string | null;
   cidr: string | null;
+  actorUserId: string | null;
 }
+
+export type RefusalReason = "deny_rule" | "not_in_allow_rules" | "address_unknown";
+const REASONS: readonly string[] = ["deny_rule", "not_in_allow_rules", "address_unknown"];
 
 interface AuditRow {
   id: string;
   created_at: string;
   ip: string | null;
+  actor_user_id?: string | null;
+  resource_id?: string | null;
   metadata?: Record<string, unknown> | null;
 }
 
@@ -115,14 +124,27 @@ function text(v: unknown): string | null {
 
 export function toAddressRefusal(row: AuditRow): AddressRefusal {
   const m = row.metadata ?? {};
+  const ruleId = text(m.rule_id) ?? row.resource_id ?? null;
+  const said = text(m.reason);
+  const reason: AddressRefusal["reason"] =
+    said && REASONS.includes(said)
+      ? (said as RefusalReason)
+      : said
+        ? ""
+        : ruleId
+          ? "deny_rule"
+          : row.ip
+            ? "not_in_allow_rules"
+            : "address_unknown";
   return {
     id: row.id,
     at: row.created_at,
     address: text(m.address) ?? row.ip ?? "",
     path: text(m.path) ?? "",
-    reason: text(m.reason) ?? "",
-    ruleId: text(m.rule_id),
+    reason,
+    ruleId,
     cidr: text(m.cidr),
+    actorUserId: row.actor_user_id ?? null,
   };
 }
 
@@ -138,5 +160,25 @@ export function useAddressRefusals(limit = 20) {
       });
       return (res.items ?? []).map(toAddressRefusal);
     },
+  });
+}
+
+/**
+ * The latest change to enforcement: who made it and when (ip_rules.enforcement_changed). Each
+ * change is recorded with it, so the latest set today's state.
+ */
+export function useEnforcementChange() {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: securityKeys.enforcementChanges(tenantId),
+    enabled: !!tenantId,
+    queryFn: async () => {
+      const res = await api<{ items: AuditRow[] }>(`/v1/tenants/${tenantId}/audit`, {
+        query: { action: "ip_rules.enforcement_changed", limit: 1 },
+      });
+      const row = res.items?.[0];
+      return row ? { at: row.created_at, actorUserId: row.actor_user_id ?? null } : null;
+    },
+    meta: { silent: true },
   });
 }
