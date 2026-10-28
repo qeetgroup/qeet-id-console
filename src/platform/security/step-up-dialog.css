@@ -1,0 +1,135 @@
+/*
+ * "Confirm it's you" (step-up-dialog.tsx), drawn as the sign-in's second step: the code in six
+ * slots, a text button for a recovery code, "or", the passkey, then sending a code as a ruled list
+ * of other ways. Token values only.
+ */
+
+.step-up {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+}
+
+/* The action being confirmed, on its own line above the sentence. */
+.step-up-action {
+  display: block;
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+  color: var(--qx-color-text-default);
+}
+
+.step-up-loading {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--qx-space-inset-lg);
+}
+
+.step-up-note {
+  margin: 0;
+  font: var(--qx-typography-body-md);
+  color: var(--qx-color-text-subtle);
+}
+
+.step-up-code {
+  display: grid;
+  justify-items: start;
+  gap: var(--qx-space-gap-sm);
+}
+
+.step-up-code > div {
+  justify-self: stretch;
+}
+
+/* A text button that reads as a link, at the row's end as on the sign-in's second step. */
+.step-up-text-button {
+  justify-self: end;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-brand);
+  font: var(--qx-typography-body-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.step-up-text-button:disabled {
+  color: var(--qx-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.step-up-text-button:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: var(--qx-focus-ring-offset);
+}
+
+.step-up-or {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.step-up-or::before,
+.step-up-or::after {
+  content: "";
+  flex: 1;
+  block-size: var(--qx-border-width-default);
+  background: var(--qx-color-border-subtle);
+}
+
+.step-up-options {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+  overflow: hidden;
+}
+
+.step-up-options > * + * {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.step-up-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  inline-size: 100%;
+  min-block-size: var(--qx-size-control-lg);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  border: 0;
+  background: transparent;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--qx-motion-duration-fast) var(--qx-motion-easing-standard);
+}
+
+.step-up-option:hover:not(:disabled) {
+  background: var(--qx-color-bg-neutral-subtle-hover);
+}
+
+.step-up-option:disabled {
+  color: var(--qx-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.step-up-option:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(-1 * var(--qx-focus-ring-width));
+}
+
+.step-up-option > svg {
+  color: var(--qx-color-icon-subtle);
+}
+
+.step-up-option-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

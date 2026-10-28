@@ -1,13 +1,9 @@
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CopyableSecret,
-} from "@qeetrix/ui";
-import type { ReactNode } from "react";
+import { Button, VisuallyHidden } from "@qeetrix/react";
+import { Alert, CopyButton } from "@qeetrix/react/experimental";
+import { type ReactNode, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+
+import "./one-time-secret.css";
 
 type OneTimeSecretProps = {
   title: ReactNode;
@@ -19,9 +15,10 @@ type OneTimeSecretProps = {
 };
 
 /**
- * Renders a credential the backend returns only once, each value fully visible with a copy
- * button, until dismissed. Keep the value in component state only, never the query cache or
- * browser storage, and give the mutation that returns it `gcTime: 0`.
+ * Renders a credential the backend returns only once, until dismissed: the warning, then each
+ * value in full with its Copy button, which takes focus when it appears. Keep the value in
+ * component state only, never the query cache or browser storage, and give the mutation that
+ * returns it `gcTime: 0`.
  */
 export function OneTimeSecret({
   title,
@@ -31,23 +28,42 @@ export function OneTimeSecret({
   onDismiss,
   children,
 }: OneTimeSecretProps) {
+  const { t } = useTranslation("common");
+  const ref = useRef<HTMLDivElement>(null);
+
+  // It appears after the action that made the value, so the first Copy is where to go next.
+  useEffect(() => {
+    ref.current?.querySelector<HTMLElement>("[data-slot='one-time-secret-value'] button")?.focus();
+  }, []);
+
   return (
-    <Card className="border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/20">
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {values.map(({ label, value }) => (
-          <CopyableSecret key={label ?? value} label={label} value={value} />
-        ))}
-        {children}
-        <div className="flex justify-end">
-          <Button variant="ghost" size="sm" onClick={onDismiss}>
-            {dismissLabel}
-          </Button>
+    <div ref={ref} className="one-time-secret" data-slot="one-time-secret">
+      <Alert tone="warning" title={title} announce="polite">
+        {description}
+      </Alert>
+      {values.map(({ label, value }) => (
+        // Library gap (new): CopyField, a read-only value with its Copy button.
+        <div
+          key={label ?? value}
+          className="one-time-secret-value"
+          data-slot="one-time-secret-value"
+        >
+          <code className="one-time-secret-code">
+            {label}
+            {value}
+          </code>
+          <CopyButton value={value} size="lg">
+            {t("actions.copy")}{" "}
+            <VisuallyHidden>{label?.trim() || t("oneTimeSecret.secret")}</VisuallyHidden>
+          </CopyButton>
         </div>
-      </CardContent>
-    </Card>
+      ))}
+      {children}
+      <div className="one-time-secret-actions">
+        <Button variant="soft" onClick={onDismiss}>
+          {dismissLabel}
+        </Button>
+      </div>
+    </div>
   );
 }
