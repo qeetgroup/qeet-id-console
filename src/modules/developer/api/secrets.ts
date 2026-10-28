@@ -16,11 +16,11 @@ export interface Secret {
   updated_at: string;
 }
 
-export function useSecrets() {
+export function useSecrets(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
     queryKey: developerKeys.secrets(tenantId),
-    enabled: !!tenantId,
+    enabled: enabled && !!tenantId,
     queryFn: () => api<{ items: Secret[] }>(`/v1/tenants/${tenantId}/secrets`),
   });
 }

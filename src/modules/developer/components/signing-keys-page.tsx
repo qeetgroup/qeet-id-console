@@ -1,108 +1,178 @@
+import { ArrowRightIcon, FileKeyIcon } from "@qeetrix/icons";
+import { Badge, type BadgeTone, formatDate, Table, type TableColumn } from "@qeetrix/react";
 import {
-  Badge,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@qeetrix/ui";
-import { DataState } from "@/platform/components/data-state";
-import { InfoIcon, KeyRoundIcon } from "@qeetrix/icons";
-import { Trans, useTranslation } from "react-i18next";
+  CopyButton,
+  DataState,
+  EmptyState,
+  PageContent,
+  PageHeader,
+} from "@qeetrix/react/experimental";
+import { useTranslation } from "react-i18next";
 
-import { PageHeader } from "@/platform/components/page-header";
-import { StatusPill } from "@/platform/components/status-pill";
-import { useSigningKeys } from "../api/signing-keys";
+import { PageBreadcrumb } from "@/modules/dashboard";
+import { getApiBaseUrl } from "@/platform/config/api-base-url";
+import { type SigningKey, useSigningKeys } from "../api/signing-keys";
+import { DevSection, NameCell, useNumbers, When } from "./parts";
+import "./developer.css";
 
-// Signing keys rotate by deployment only, never from the console.
-const ROTATION_DOCS = "https://docs.id.qeet.in/docs/security/encryption-and-keys";
+// A key's life, in order: published first, then signing, then only verifying.
+const STAGES = ["candidate", "active", "retired"] as const;
+const TONE: Record<SigningKey["status"], BadgeTone> = {
+  candidate: "info",
+  active: "success",
+  retired: "neutral",
+};
 
-/** Renders the deployment's token signing keys and how they rotate. */
+/**
+ * Developer › Signing keys: the deployment's key set, shared by every organisation. The stages are
+ * the picture (next, signing, retired, each with its keys and what it does), then the keys. They
+ * rotate in the deployment: the console only shows them.
+ */
 export function SigningKeysPage() {
-  const { t } = useTranslation("signing-keys");
+  const { t } = useTranslation("developer");
+  const { locale } = useNumbers();
   const keysQ = useSigningKeys();
   const keys = keysQ.data?.keys ?? [];
+  const now = keysQ.dataUpdatedAt || Date.now();
+  const jwks = `${new URL(getApiBaseUrl()).origin}/.well-known/jwks.json`;
+  const order = (k: SigningKey) => STAGES.indexOf(k.status);
+  const sorted = [...keys].sort((a, b) => order(a) - order(b));
+
+  const columns: TableColumn<SigningKey>[] = [
+    {
+      id: "kid",
+      header: t("signingKeys.columns.key"),
+      primary: true,
+      cell: (k) => (
+        <NameCell
+          name={t(`signingKeys.role.${k.status}`)}
+          ident={k.kid}
+          copy={t("signingKeys.copyKid")}
+        />
+      ),
+    },
+    {
+      id: "alg",
+      header: t("signingKeys.columns.alg"),
+      width: 140,
+      cell: (k) => <code className="dev-code">{k.alg}</code>,
+    },
+    {
+      id: "stage",
+      header: t("signingKeys.columns.stage"),
+      width: 130,
+      cell: (k) => (
+        <Badge tone={TONE[k.status]} size="sm">
+          {t(`signingKeys.stage.${k.status}`)}
+        </Badge>
+      ),
+    },
+    {
+      id: "until",
+      header: t("signingKeys.columns.until"),
+      width: 170,
+      cell: (k) =>
+        k.status === "retired" && k.retire_at ? (
+          <When at={k.retire_at} now={now} />
+        ) : (
+          <span className="dev-subtle">{t("signingKeys.whileInUse")}</span>
+        ),
+    },
+  ];
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <PageHeader title={t("page.title")} description={t("page.description")} />
-
-      <Card className="border-blue-500/30 bg-blue-50/40 dark:bg-blue-950/20">
-        <CardContent className="flex items-start gap-3 py-4">
-          <InfoIcon className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-400" />
-          <p className="text-sm text-muted-foreground">
-            <Trans
-              t={t}
-              i18nKey="notice"
-              components={{
-                activeState: <span className="font-medium text-foreground" />,
-                retiredState: <span className="font-medium text-foreground" />,
-                procedure: (
-                  // biome-ignore lint/a11y/useAnchorContent: Trans fills in the link text.
-                  <a
-                    href={ROTATION_DOCS}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-foreground underline underline-offset-4"
-                  />
-                ),
-              }}
-            />
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("list.title")}</CardTitle>
-          <CardDescription>{t("list.count", { count: keys.length })}</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
+    <>
+      <PageHeader
+        breadcrumb={<PageBreadcrumb />}
+        title={t("signingKeys.title")}
+        count={keysQ.data ? keys.length : undefined}
+        description={t("signingKeys.description")}
+        actions={
+          <CopyButton value={jwks} variant="ghost">
+            {t("signingKeys.copyJwks")}
+          </CopyButton>
+        }
+      />
+      <PageContent>
+        <div className="dev-page">
           <DataState
-            isLoading={keysQ.isLoading}
-            isError={keysQ.isError}
-            error={keysQ.error}
-            isEmpty={keys.length === 0}
-            emptyIcon={KeyRoundIcon}
-            emptyTitle={t("list.emptyTitle")}
-            skeletonRows={2}
+            loading={keysQ.isLoading}
+            error={keysQ.isError ? keysQ.error : undefined}
+            onRetry={() => void keysQ.refetch()}
+            empty={!keys.length}
+            emptyState={
+              <EmptyState
+                size="section"
+                icon={FileKeyIcon}
+                title={t("signingKeys.empty.title")}
+                description={t("signingKeys.empty.description")}
+              />
+            }
           >
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("table.kid")}</TableHead>
-                  <TableHead>{t("table.algorithm")}</TableHead>
-                  <TableHead>{t("table.use")}</TableHead>
-                  <TableHead>{t("table.status")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {keys.map((k) => (
-                  <TableRow key={k.kid}>
-                    <TableCell className="font-mono text-xs">{k.kid}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{k.alg}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{k.use}</TableCell>
-                    <TableCell>
-                      <StatusPill
-                        status={k.status}
-                        kind={k.status === "active" ? "success" : "muted"}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DevSection
+              id="key-stages"
+              title={t("signingKeys.stagesTitle")}
+              note={t("signingKeys.stagesNote")}
+            >
+              <ol className="dev-stages">
+                {STAGES.map((stage, i) => {
+                  const here = sorted.filter((k) => k.status === stage);
+                  return (
+                    <li key={stage} className={here.length ? "dev-stage" : "dev-stage is-empty"}>
+                      <div className="dev-stage-head">
+                        <Badge tone={TONE[stage]} size="sm">
+                          {t(`signingKeys.stage.${stage}`)}
+                        </Badge>
+                        {i < STAGES.length - 1 ? (
+                          <ArrowRightIcon
+                            size={16}
+                            className="dev-stage-arrow"
+                            aria-hidden="true"
+                          />
+                        ) : null}
+                      </div>
+                      <p className="dev-stage-what">{t(`signingKeys.does.${stage}`)}</p>
+                      {here.length ? (
+                        <ul className="dev-stage-keys">
+                          {here.map((k) => (
+                            <li key={k.kid}>
+                              <code title={k.kid}>
+                                {k.kid.length > 14 ? `${k.kid.slice(0, 10)}…` : k.kid}
+                              </code>
+                              {k.status === "retired" && k.retire_at ? (
+                                <small>
+                                  {t("signingKeys.publishedUntil", {
+                                    date: formatDate(k.retire_at, locale, { dateStyle: "medium" }),
+                                  })}
+                                </small>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="dev-stage-none">{t(`signingKeys.none.${stage}`)}</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </DevSection>
+            <DevSection
+              id="key-set"
+              title={t("signingKeys.setTitle")}
+              note={t("signingKeys.setNote")}
+            >
+              <Table<SigningKey>
+                label={t("signingKeys.setTitle")}
+                rows={sorted}
+                rowId={(k) => k.kid}
+                rowLabel={(k) => k.kid}
+                columns={columns}
+              />
+            </DevSection>
           </DataState>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </PageContent>
+    </>
   );
 }

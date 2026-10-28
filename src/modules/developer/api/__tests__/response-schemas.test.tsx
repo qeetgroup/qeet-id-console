@@ -19,10 +19,11 @@ vi.mock("@/platform/api/server-proxy", () => ({
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-a" }));
 
 import { useCreateAgent } from "../agents";
-import { createApiKey, listApiKeys } from "../api-keys";
+import { createApiKey } from "../api-key-actions";
+import { listApiKeys } from "../api-keys";
 import { useIssueCredential } from "../credentials";
 import { useRevealSecret } from "../secrets";
-import { createServicePrincipal } from "../service-principals";
+import { createServicePrincipal } from "../service-principal-actions";
 
 const SIGNED_OUT: PublicSession = {
   isAuthenticated: false,

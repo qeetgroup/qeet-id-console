@@ -63,7 +63,11 @@
     "inviteEmailNotVerified": "Verify your email address to accept invitations.",
     "samlLoginCodeInvalid": "That sign-in code is invalid. Please sign in again.",
     "samlLoginCodeUsed": "That sign-in code has already been used. Please sign in again.",
-    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again."
+    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again.",
+    "rbacGrantExceedsCaller": "You can only grant scopes you hold yourself.",
+    "secretNameExists": "A secret has this name already.",
+    "agentSponsorNotMember": "The sponsor must be someone in this organisation.",
+    "authHookUrlInvalid": "Use a public https address for the hook."
   },
   "kind": {
     "auth": "Please sign in again to continue.",

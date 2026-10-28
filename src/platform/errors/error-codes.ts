@@ -88,6 +88,11 @@ export const ERROR_CODES = {
   WEBHOOK_EVENTS_REQUIRED: "webhook.events_required", // 422
   WEBHOOK_EVENT_UNKNOWN: "webhook.event_unknown", // 422: not in the server's catalogue
   OIDC_GRANT_TYPE_UNSUPPORTED: "oidc.grant_type_unsupported", // 400: client_credentials, or unknown
+  // Machine access, secrets and auth hooks (the developer pages).
+  RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: a scope the caller doesn't hold
+  SECRET_NAME_EXISTS: "secret.name_exists", // 409: names are unique in an organisation
+  AGENT_SPONSOR_NOT_MEMBER: "agent.sponsor_not_member", // 422: the sponsor isn't in the organisation
+  AUTHHOOK_URL_INVALID: "authhook.url_invalid", // 422: not a public https address
   TOO_MANY_REQUESTS: "too_many_requests", // throttling
   HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
   NETWORK: "network_error", // client-synthesised

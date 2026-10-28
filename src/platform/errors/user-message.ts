@@ -93,6 +93,10 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.WEBHOOK_EVENT_UNKNOWN]: "errors:code.webhookEventUnknown",
   // 400 -> `validation`, which doesn't say which value or what to use instead.
   [ERROR_CODES.OIDC_GRANT_TYPE_UNSUPPORTED]: "errors:code.oidcGrantTypeUnsupported",
+  [ERROR_CODES.RBAC_GRANT_EXCEEDS_CALLER]: "errors:code.rbacGrantExceedsCaller",
+  [ERROR_CODES.SECRET_NAME_EXISTS]: "errors:code.secretNameExists",
+  [ERROR_CODES.AGENT_SPONSOR_NOT_MEMBER]: "errors:code.agentSponsorNotMember",
+  [ERROR_CODES.AUTHHOOK_URL_INVALID]: "errors:code.authHookUrlInvalid",
   [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 
