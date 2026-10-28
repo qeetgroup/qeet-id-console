@@ -62,10 +62,9 @@ describe("console navigation state", () => {
       "Invitations",
       "Deleted",
     ]);
+    // SCIM and LDAP are connections, opened from Connections, not tabs of their own.
     expect(directories?.items?.map((item) => item.title)).toEqual([
       "Connections",
-      "SCIM",
-      "LDAP / AD",
       "Sync activity",
       "Sync errors",
       "Mappings",
@@ -109,8 +108,8 @@ describe("console navigation state", () => {
     expect(findNavGroupForPath(navGroups, "/")).toBe("overview");
     expect(findNavGroupForPath(navGroups, "/authorization/roles/42")).toBe("authorization");
     expect(findNavGroupForPath(navGroups, "/security/audit-logs")).toBe("security");
-    // SCIM lives under Directory even though /auth/connections/oidc is Applications.
-    expect(findNavGroupForPath(navGroups, "/auth/connections/scim")).toBe("directory");
+    // SCIM lives under Directory › Connections, and its old address isn't a page any more.
+    expect(findNavGroupForPath(navGroups, "/directory/connections/scim")).toBe("directory");
     expect(findNavGroupForPath(navGroups, "/unmapped-route")).toBeUndefined();
   });
 

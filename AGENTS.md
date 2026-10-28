@@ -180,7 +180,7 @@ One way to do each thing. `src/modules/users` is the reference implementation.
   `queryOptions` (`userQueries`) so hooks, prefetches and other modules share one cache entry. A
   mutation refreshes what it changed; its callers don't.
 - **Forms** — `useAppForm` from `src/platform/forms/app-form.tsx` (TanStack Form bound to the
-  `@qeetrix/ui` fields) with a Zod schema as the `onSubmit` validator. On a refusal call
+  `@qeetrix/react` fields) with a Zod schema as the `onSubmit` validator. On a refusal call
   `applyServerErrors(formApi, err)` so a 422 marks the fields it names, and render
   `<FormError error={mutation.error} />`; give that mutation `meta: { silentError: true }` so the
   error isn't toasted as well. A settings form keys on the loaded data (`dataUpdatedAt`) and saves

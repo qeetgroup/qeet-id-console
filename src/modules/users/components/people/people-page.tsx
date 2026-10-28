@@ -307,11 +307,7 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
       {canWrite ? <AddPeopleDrawer open={creating} onOpenChange={setCreating} /> : null}
       {canWrite ? (
         <>
-          <EditUserSheet
-            user={editing}
-            isSelf={!!editing && editing.id === currentUserId}
-            onOpenChange={(open) => !open && setEditing(null)}
-          />
+          <EditUserSheet user={editing} onOpenChange={(open) => !open && setEditing(null)} />
           <SetPasswordSheet
             user={settingPassword}
             onOpenChange={(open) => !open && setSettingPassword(null)}

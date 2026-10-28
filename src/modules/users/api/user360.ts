@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
+import type { ActivityEvent } from "@/modules/activity";
 import { ApiError, api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 
@@ -165,9 +166,9 @@ export function useUserSocialIdentities(userId: string) {
 export function useUserRecentActivity(userId: string, limit = 6, enabled = true) {
   return useQuery({
     queryKey: [...userKeys.view(useTenantId(), userId, "recent-activity"), limit],
-    queryFn: async (): Promise<{ events: RecentActivityEvent[] }> => {
+    queryFn: async (): Promise<{ events: ActivityEvent[] }> => {
       try {
-        return await api<{ events: RecentActivityEvent[] }>("/v1/activity", {
+        return await api<{ events: ActivityEvent[] }>("/v1/activity", {
           query: { subject: userId, limit },
         });
       } catch (err) {
@@ -182,22 +183,6 @@ export function useUserRecentActivity(userId: string, limit = 6, enabled = true)
   });
 }
 
-/** The subset of an activity event's fields the user overview reads. */
-export interface RecentActivityEvent {
-  id: string;
-  type: string; // e.g. auth.login_succeeded; titles are worded from it
-  category?: string;
-  severity?: "info" | "success" | "warning" | "error" | "critical";
-  title: string;
-  description?: string | null;
-  at: string;
-  ip?: string | null;
-  location?: string | null;
-  device?: string | null;
-  browser?: string | null;
-  status?: string | null;
-}
-
 /** Signs the user out everywhere by revoking all their live sessions; needs user.write. */
 export function useRevokeAllUserSessions() {
   const tenantId = useTenantId();
@@ -205,10 +190,9 @@ export function useRevokeAllUserSessions() {
   return useMutation({
     mutationFn: (userId: string) =>
       api<{ revoked: number }>(`/v1/users/${userId}/sessions/revoke-all`, { method: "POST" }),
-    onSuccess: (_res, userId) => {
-      void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "sessions") });
-      void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "security") });
-    },
+    // It also forgets their remembered devices and ends their app sign-ins: every view of them.
+    onSuccess: (_res, userId) =>
+      void qc.invalidateQueries({ queryKey: userKeys.user(tenantId, userId) }),
     meta: { successMessage: "users:toast.allSessionsRevoked" },
   });
 }

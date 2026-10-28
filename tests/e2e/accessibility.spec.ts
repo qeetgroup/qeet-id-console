@@ -74,6 +74,12 @@ const CONSOLE_PAGES: Target[] = [
     ready: (page) => page.getByRole("link", { name: "Organisation created" }),
   },
   {
+    name: "directory connections",
+    path: "/directory/connections",
+    ready: (page) =>
+      page.getByRole("table", { name: "Connections" }).getByText("Corporate Active Directory"),
+  },
+  {
     name: "authorization roles",
     path: "/authorization/roles",
     ready: (page) => page.getByText("Reads members and resets their sign-in."),
