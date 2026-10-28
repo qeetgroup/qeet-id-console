@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
@@ -72,21 +72,21 @@ afterEach(cleanup);
 describe("EditUserSheet", () => {
   it("saves profile changes without a confirmation", async () => {
     const onOpenChange = vi.fn();
-    renderWithProviders(<EditUserSheet user={asha} isSelf={false} onOpenChange={onOpenChange} />);
+    renderWithProviders(<EditUserSheet user={asha} onOpenChange={onOpenChange} />);
 
-    type(/^Display name/, "Asha R");
+    type(/^Name/, "Asha R");
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
     expect(api).toHaveBeenCalledWith("/v1/users/user-1", {
       method: "PATCH",
-      body: { display_name: "Asha R", phone: null, status: "active" },
+      body: { display_name: "Asha R", phone: null },
     });
     expect(screen.queryByRole("alertdialog")).toBeNull();
   });
 
   it("refuses a phone number that isn't E.164", async () => {
-    renderWithProviders(<EditUserSheet user={asha} isSelf={false} onOpenChange={vi.fn()} />);
+    renderWithProviders(<EditUserSheet user={asha} onOpenChange={vi.fn()} />);
 
     type(/^Phone/, "555-0100");
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
@@ -97,6 +97,13 @@ describe("EditUserSheet", () => {
 });
 
 describe("SetPasswordSheet", () => {
+  it("says what setting it does to them before anything is sent", () => {
+    renderWithProviders(<SetPasswordSheet user={asha} onOpenChange={vi.fn()} />);
+
+    expect(screen.getByText("Asha is signed out everywhere")).toBeTruthy();
+    expect(screen.getByText(/emails them that it changed/)).toBeTruthy();
+  });
+
   it("refuses passwords that don't match", async () => {
     renderWithProviders(<SetPasswordSheet user={asha} onOpenChange={vi.fn()} />);
 
@@ -121,24 +128,5 @@ describe("SetPasswordSheet", () => {
       method: "POST",
       body: { password: "correct horse" },
     });
-  });
-});
-
-describe("EditUserSheet suspension", () => {
-  it("asks for the suspend confirmation before suspending, and sends nothing if cancelled", async () => {
-    renderWithProviders(<EditUserSheet user={asha} isSelf={false} onOpenChange={vi.fn()} />);
-
-    fireEvent.mouseDown(screen.getByRole("combobox", { name: /^Status/ }), { button: 0 });
-    const suspended = await screen.findByRole("option", { name: "Suspended" });
-    fireEvent.pointerDown(suspended, { pointerType: "mouse", button: 0 });
-    fireEvent.click(suspended);
-    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-
-    const dialog = await screen.findByRole("alertdialog");
-    expect(dialog.textContent).toContain("Suspend this user?");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-
-    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
-    expect(api).not.toHaveBeenCalled();
   });
 });

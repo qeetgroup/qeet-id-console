@@ -60,6 +60,8 @@ export function LdapPage() {
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <PageHeader
+        // No nav entry names it now (it's a connection, opened from Connections).
+        title={t("ldap.pageTitle")}
         description={t("ldap.description")}
         actions={
           ldapLocked ? undefined : (

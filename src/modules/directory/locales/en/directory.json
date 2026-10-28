@@ -294,50 +294,18 @@
       }
     },
     "connectionsPage": {
-      "title": "All connections",
-      "description": "Manage identity sync connections across your organization. Connect your identity providers to sync users, groups, and attributes.",
-      "summary": "Connection summary",
-      "total": "Total connections",
-      "configuredSources": "Configured sources",
       "healthy": "Healthy",
-      "warnings": "Warnings",
       "warning": "Warning",
       "failed": "Failed syncs",
       "unknown": "Not monitored",
       "lastSync": "Last successful sync",
-      "latestRun": "Latest recorded sync",
-      "awaiting": "Awaiting sync telemetry",
-      "percent": "{{percent}}% of connections",
       "table": "Connections",
-      "add": "Add connection",
-      "search": "Search connections...",
-      "name": "Name",
       "type": "Type",
-      "environment": "Environment",
-      "scope": "Sync scope",
       "status": "Status",
-      "synced": "Synced",
-      "actions": "Actions",
-      "empty": "No directory connections yet",
-      "healthTitle": "Connection health",
-      "healthDescription": "Overall health of your identity connections.",
-      "coverageTitle": "Provisioning coverage",
-      "coverageDescription": "Users and groups provisioned from connected sources.",
-      "userCoverage": "User provisioning coverage",
-      "groupCoverage": "Group coverage is not reported yet.",
-      "eventsTitle": "Recent sync events",
-      "noEvents": "No sync events recorded yet.",
-      "users-and-groups": "Users and groups",
-      "users-on-signin": "Users on sign-in",
-      "push": "Inbound provisioning",
-      "jit": "Just-in-time provisioning",
       "active": "Active",
       "draft": "Draft",
       "disabled": "Disabled",
       "configured": "Configured",
-      "users": "users",
-      "groups": "groups",
-      "rowActions": "Actions for {{name}}",
       "view": "View connection"
     },
     "loadError": "Some directory details couldn't be loaded.",
@@ -370,7 +338,8 @@
   "toast": {
     "mappingSaved": "Mapping saved",
     "mappingsDeleted": "Mappings deleted",
-    "directoryAlertCreated": "Directory alert created"
+    "directoryAlertCreated": "Directory alert created",
+    "scimTokenRevoked": "SCIM token revoked"
   },
   "nav": {
     "directory": {
@@ -393,6 +362,139 @@
       "mappings": {
         "title": "Mappings"
       }
+    }
+  },
+  "commands": {
+    "scim": {
+      "title": "SCIM provisioning",
+      "subtitle": "Let your identity provider create, update and suspend people here",
+      "keywords": "scim, provisioning, okta, entra id, azure ad, google workspace, onelogin, scim token, directory sync"
+    },
+    "ldap": {
+      "title": "LDAP or Active Directory",
+      "subtitle": "People sign in with their directory password",
+      "keywords": "ldap, active directory, ad, directory server, bind, directory sign-in"
+    }
+  },
+  "connections": {
+    "title": "Connections",
+    "description": "Where your people come from: an identity provider that sends them over SCIM, and directories they sign in with.",
+    "add": "Add connection",
+    "addScimSet": "SCIM provisioning · already set up",
+    "kinds": {
+      "scim": "SCIM provisioning",
+      "ldap": "LDAP or Active Directory"
+    },
+    "kind": {
+      "scim": "SCIM",
+      "ldap": "LDAP sign-in"
+    },
+    "readOnly": {
+      "title": "You can see the connections, not change them",
+      "description": "Changing a connection needs the connection.write permission."
+    },
+    "columns": {
+      "connection": "Connection",
+      "kind": "Kind",
+      "people": "People",
+      "status": "Status",
+      "health": "Health",
+      "used": "Last used"
+    },
+    "status": {
+      "on": "On",
+      "off": "Off",
+      "draft": "Draft"
+    },
+    "health": {
+      "healthy": "Healthy",
+      "failing": "Failing",
+      "unchecked": "Not checked"
+    },
+    "problem": "{{what}} · {{when}}",
+    "never": "Never",
+    "notCounted": "LDAP doesn't count its people yet",
+    "show": {
+      "failing": "Failing connections",
+      "draft": "Drafts not turned on"
+    },
+    "shown": "{{n}} of {{total}} connections",
+    "emptyFiltered": {
+      "title": "None of the connections match",
+      "description": "Every connection is fine on this count.",
+      "clear": "Show every connection"
+    },
+    "band": {
+      "people": "People from directories",
+      "peopleNote": "of {{n}} people · {{here}} managed here",
+      "peopleLabel": "SCIM {{scim}}, LDAP {{ldap}}, managed here {{here}}",
+      "notCounted": "not counted",
+      "scim": "SCIM",
+      "ldap": "LDAP",
+      "ldapNotCounted": "LDAP, not counted yet",
+      "here": "managed here",
+      "health": "Health",
+      "healthNote": "Each connection's latest check; past 24 hours, not checked.",
+      "days": "Last {{days}} days",
+      "events_one": "event · {{n}} failed",
+      "events_other": "events · {{n}} failed",
+      "daysLabel": "People and groups synced a day for {{days}} days; {{n}} events failed",
+      "dayTitle": "{{date}}: {{changes}} synced, {{failed}} failed",
+      "failedLink": "{{n}} failed in Sync activity",
+      "needsALook": "Needs a look",
+      "looks": {
+        "errors": "Open sync errors",
+        "failing": "Failing connections",
+        "drafts": "Drafts not turned on"
+      }
+    },
+    "offers": {
+      "label": "Not set up yet",
+      "notSetUp": "Not set up",
+      "scim": {
+        "title": "SCIM provisioning",
+        "body": "Your identity provider (Okta, Entra ID, Google Workspace, OneLogin) creates, updates and suspends people here as they change there.",
+        "action": "Set up SCIM"
+      },
+      "ldap": {
+        "title": "LDAP or Active Directory",
+        "body": "People sign in with their directory password, and are added here the first time they do.",
+        "action": "Connect a directory"
+      }
+    },
+    "actions": {
+      "open": "Open",
+      "rotate": "Rotate token",
+      "revoke": "Revoke token",
+      "test": "Test connection",
+      "turnOn": "Turn on",
+      "turnOff": "Turn off",
+      "delete": "Delete {{name}}"
+    },
+    "off": {
+      "title": "Turn off {{name}}?",
+      "description": "People can't sign in with their password from {{host}} until you turn it back on. Their accounts stay as they are.",
+      "confirm": "Turn off"
+    },
+    "delete": {
+      "title": "Delete {{name}}?",
+      "description": "People can no longer sign in with their password from {{host}}. Their accounts, groups and roles stay; anyone who signs in only this way needs another way in. Its sync history stays in Activity.",
+      "confirm": "Delete connection",
+      "action": "Delete the LDAP connection"
+    },
+    "revoke": {
+      "title": "Revoke the SCIM token?",
+      "description_one": "Your identity provider can no longer send changes here: new people, updates and suspensions stop until you give it a new token. The {{n}} person it created stays as they are.",
+      "description_other": "Your identity provider can no longer send changes here: new people, updates and suspensions stop until you give it a new token. The {{n}} people it created stay as they are.",
+      "confirm": "Revoke token",
+      "action": "Revoke the SCIM token"
+    },
+    "toast": {
+      "testPassed": "{{name}} works: Qeet ID signed in with its service account",
+      "testFailed": "{{name}} didn't answer",
+      "on": "{{name}} is on: people can sign in with it",
+      "off": "{{name}} is off",
+      "deleted": "{{name}} deleted"
     }
   }
 }

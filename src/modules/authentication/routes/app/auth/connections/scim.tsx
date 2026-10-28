@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { ScimPage } from "@/modules/authentication/pages";
-
+// The page moved under Directory › Directories › Connections; old links and bookmarks land there.
 export const Route = createFileRoute("/_app/auth/connections/scim")({
-  staticData: { capability: "connection.read" },
-  component: ScimPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/directory/connections/scim", replace: true });
+  },
 });
