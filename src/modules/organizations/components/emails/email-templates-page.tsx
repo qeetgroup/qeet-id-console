@@ -1,17 +1,12 @@
-import { Button, cn, Skeleton, Tooltip, TooltipContent, TooltipTrigger } from "@qeetrix/ui";
+import { EyeIcon, MailIcon, SendIcon } from "@qeetrix/icons";
+import { Button, Tooltip } from "@qeetrix/react";
+import { EmptyState, PageHeader } from "@qeetrix/react/experimental";
 import { useQueryClient } from "@tanstack/react-query";
-import { EyeIcon, LoaderCircleIcon, MailIcon, RefreshCwIcon, SendIcon } from "@qeetrix/icons";
-import { useEffect, useId, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useBranding } from "@/modules/branding";
-import { useMe, useTenantId } from "@/platform/auth/session";
-import { errorMessage } from "@/platform/errors/user-message";
-import { useCapabilities } from "@/platform/security/capability-provider";
-import {
-  SensitiveActionCancelled,
-  useSensitiveAction,
-} from "@/platform/security/sensitive-action-provider";
+import { PageBreadcrumb } from "@/modules/dashboard";
 import {
   type EmailTemplate,
   type EmailTemplateCapabilities,
@@ -21,26 +16,32 @@ import {
   saveEmailTemplate,
   testEmailTemplate,
   useEmailTemplates,
-} from "../api/email-templates";
-import { orgKeys } from "../api/keys";
+} from "@/modules/organizations/api/email-templates";
+import { orgKeys } from "@/modules/organizations/api/keys";
+import { LoadFailed, Loading } from "@/modules/organizations/components/settings/settings-parts";
+import { useOrgName } from "@/modules/organizations/components/settings/use-org-name";
 import {
   type EmailBrand,
   emailDraftErrors,
   emailLocaleContent,
   emailTemplateInput,
   updateEmailLocale,
-} from "../email-template-model";
-import { EmailTemplateEditor } from "./email-templates-page-editor";
-import { EmailSaveBar, EmailSummaryCards } from "./email-templates-page-footer";
-import { EmailTemplateList } from "./email-templates-page-list";
-import { EmailPreviewAllDialog } from "./email-templates-page-preview";
-
-const SURFACE =
-  "min-w-0 rounded-lg border border-border/70 bg-card/90 shadow-xs dark:bg-card/70 dark:shadow-none";
-const ACTION =
-  "h-8 rounded-md px-3 text-xs focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11";
+} from "@/modules/organizations/email-template-model";
+import { useMe, useTenantId } from "@/platform/auth/session";
+import { errorMessage } from "@/platform/errors/user-message";
+import { useCapabilities } from "@/platform/security/capability-provider";
+import {
+  SensitiveActionCancelled,
+  useSensitiveAction,
+} from "@/platform/security/sensitive-action-provider";
+import { EmailTemplateEditor } from "./email-editor";
+import { EmailTemplateList } from "./email-list";
+import { EmailPreviewAllDialog } from "./email-preview";
+import "./emails.css";
 
 export type EmailTemplatesViewProps = {
+  /** The organisation's name, for the page's copy. */
+  name: string;
   templates: EmailTemplate[];
   capabilities?: EmailTemplateCapabilities;
   brand: EmailBrand;
@@ -48,11 +49,12 @@ export type EmailTemplatesViewProps = {
   canRead: boolean;
   canWrite: boolean;
   loading: boolean;
-  error: boolean;
+  /** Why the templates didn't load, or null. */
+  error: unknown;
   fetching: boolean;
   onRetry: () => unknown;
   onSave: (key: string, draft: EmailTemplateInput) => Promise<EmailTemplate>;
-  onReset: (key: string) => Promise<EmailTemplate>;
+  onReset: (template: EmailTemplate) => Promise<EmailTemplate>;
   onTest: (
     key: string,
     draft: EmailTemplateInput,
@@ -61,11 +63,17 @@ export type EmailTemplatesViewProps = {
   onDirtyChange?: (dirty: boolean) => void;
 };
 
+/**
+ * Settings › Emails, wired to the server: the templates (GET needs branding.write), the brand the
+ * preview uses, and saving, resetting and testing through the console's one confirm. Saving and
+ * resetting need a recent second step; a test goes to your own verified address, once a minute.
+ */
 export function EmailTemplatesPage({
   onDirtyChange,
 }: Pick<EmailTemplatesViewProps, "onDirtyChange">) {
   const { t } = useTranslation("organizations");
   const tenantId = useTenantId();
+  const name = useOrgName();
   const access = useCapabilities();
   const canRead = !!tenantId && access.state === "ready" && access.can("branding.write");
   const list = useEmailTemplates(canRead);
@@ -80,6 +88,7 @@ export function EmailTemplatesPage({
       active.current = null;
     };
   }, [tenantId, canRead]);
+  // A confirm still open when the organisation changes must not send to the new one.
   function requireScope() {
     if (!tenantId || active.current?.tenantId !== tenantId || !active.current.canWrite)
       throw new SensitiveActionCancelled();
@@ -100,6 +109,7 @@ export function EmailTemplatesPage({
   return (
     <EmailTemplatesView
       key={`${tenantId}:${canRead}`}
+      name={name}
       templates={canRead && !list.isError ? (list.data?.items ?? []) : []}
       capabilities={list.data?.capabilities}
       brand={{
@@ -111,31 +121,36 @@ export function EmailTemplatesPage({
       canRead={canRead}
       canWrite={canRead}
       loading={access.state === "resolving" || (canRead && list.isPending)}
-      error={list.isError}
+      error={list.isError ? list.error : null}
       fetching={list.isFetching}
       onRetry={list.refetch}
       onDirtyChange={onDirtyChange}
       onSave={async (key, draft) => {
         const result = await sensitive({
           capability: "branding.write",
-          actionLabel: t("emails.save"),
+          actionLabel: t("emails.saveAction"),
           run: () => saveEmailTemplate(requireScope(), key, draft),
         });
         if (!result) throw new SensitiveActionCancelled();
         cache(result);
         return result;
       }}
-      onReset={async (key) => {
+      onReset={async (template) => {
         const result = await sensitive({
           capability: "branding.write",
           actionLabel: t("emails.reset"),
           confirm: {
-            title: t("emails.resetTitle"),
-            description: t("emails.resetDescription"),
+            title: t("emails.resetTitle", { template: template.name }),
+            description: t(
+              template.delivery_scope === "tenant"
+                ? "emails.resetDescriptionTenant"
+                : "emails.resetDescriptionPlatform",
+              { name },
+            ),
             confirmLabel: t("emails.reset"),
             tone: "destructive",
           },
-          run: () => resetEmailTemplate(requireScope(), key),
+          run: () => resetEmailTemplate(requireScope(), template.key),
         });
         if (!result) throw new SensitiveActionCancelled();
         cache(result);
@@ -160,76 +175,50 @@ export function EmailTemplatesPage({
   );
 }
 
-export function EmailTemplatesView(props: EmailTemplatesViewProps) {
-  const { t } = useTranslation("organizations");
-  if (props.loading || props.error || !props.canRead || props.templates.length === 0)
-    return (
-      <div className="min-w-0 space-y-5">
-        <EmailPageHeading />
-        {props.loading ? (
-          <div
-            role="status"
-            aria-label={t("emails.loading")}
-            className="grid gap-3 sm:grid-cols-[200px_1fr]"
-          >
-            <Skeleton className="h-112 rounded-lg" />
-            <Skeleton className="h-112 rounded-lg" />
-          </div>
-        ) : (
-          <section
-            className={cn(
-              SURFACE,
-              "grid min-h-80 place-content-center justify-items-center gap-3 p-6 text-center",
-            )}
-          >
-            <MailIcon className="size-8 text-muted-foreground" aria-hidden="true" />
-            <h2 className="font-heading text-base font-semibold">
-              {t(
-                !props.canRead
-                  ? "emails.noAccess"
-                  : props.error
-                    ? "emails.loadError"
-                    : "emails.empty",
-              )}
-            </h2>
-            {props.canRead && props.error && (
-              <Button
-                variant="outline"
-                className={ACTION}
-                disabled={props.fetching}
-                onClick={() => void props.onRetry()}
-              >
-                <RefreshCwIcon />
-                {t("emails.retry")}
-              </Button>
-            )}
-          </section>
-        )}
-      </div>
-    );
-  return <EmailWorkspace {...props} />;
-}
-
-function EmailPageHeading({ children }: { children?: React.ReactNode }) {
+function EmailsHeader({ name, actions }: { name: string; actions?: ReactNode }) {
   const { t } = useTranslation("organizations");
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3 py-1">
-      <div className="min-w-0">
-        <h1 className="font-heading text-[28px] leading-9 font-semibold">{t("emails.title")}</h1>
-        <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
-          {t("emails.description")}
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">{children}</div>
-    </header>
+    <PageHeader
+      breadcrumb={<PageBreadcrumb />}
+      title={t("emails.title")}
+      description={t("emails.description", { name })}
+      actions={actions}
+    />
   );
 }
 
+/** The page in any state: loading, failed, no access or no templates, else the workspace. */
+export function EmailTemplatesView(props: EmailTemplatesViewProps) {
+  const { t } = useTranslation("organizations");
+  if (props.canRead && !props.loading && !props.error && props.templates.length > 0)
+    return <EmailWorkspace {...props} />;
+  return (
+    <>
+      <EmailsHeader name={props.name} />
+      <div className="mail-state">
+        {props.loading ? (
+          <Loading rows={4} />
+        ) : !props.canRead ? (
+          <EmptyState icon={MailIcon} title={t("emails.noAccess")} />
+        ) : props.error ? (
+          <LoadFailed error={props.error} onRetry={() => void props.onRetry()} />
+        ) : (
+          <EmptyState icon={MailIcon} title={t("emails.empty")} />
+        )}
+      </div>
+    </>
+  );
+}
+
+/**
+ * The workspace: the templates in a column (the Ember bar on the open one), and the open one's
+ * editor beside it — its toolbar, tabs, fields and live preview. A draft is kept per template
+ * while you move between them, and survives a refetch until it's saved or discarded.
+ */
 function EmailWorkspace(props: EmailTemplatesViewProps) {
   const firstTemplate = props.templates[0]; // the view renders this only with templates
   if (!firstTemplate) throw new Error("EmailWorkspace rendered without any email templates");
-  const { t, i18n } = useTranslation("organizations");
-  const id = useId();
+  const { t } = useTranslation("organizations");
   const [selectedKey, setSelectedKey] = useState(firstTemplate.key);
   const [saved, setSaved] = useState<Record<string, EmailTemplate>>(() =>
     Object.fromEntries(props.templates.map((item) => [item.key, item])),
@@ -237,7 +226,7 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
   const [drafts, setDrafts] = useState<Record<string, EmailTemplateInput>>({});
   const [locale, setLocale] = useState("en");
   const [previewAll, setPreviewAll] = useState(false);
-  const [pending, setPending] = useState<string | null>(null);
+  const [pending, setPending] = useState<"save" | "reset" | "test" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const busy = useRef(false);
@@ -245,17 +234,17 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
   const draft = drafts[template.key] ?? emailTemplateInput(template);
   const currentLocale = locale === "en" || draft.options.translations?.[locale] ? locale : "en";
   const content = emailLocaleContent(draft, currentLocale);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(emailTemplateInput(template));
-  const anyDirty = Object.entries(drafts).some(([key, value]) => {
-    const stored = saved[key];
-    return stored && JSON.stringify(value) !== JSON.stringify(emailTemplateInput(stored));
-  });
+  const dirtyKeys = Object.entries(drafts)
+    .filter(([key, value]) => {
+      const stored = saved[key];
+      return stored && JSON.stringify(value) !== JSON.stringify(emailTemplateInput(stored));
+    })
+    .map(([key]) => key);
+  const dirty = dirtyKeys.includes(template.key);
+  const anyDirty = dirtyKeys.length > 0;
   const errors = emailDraftErrors(draft, template.variables);
-  const modern = props.capabilities?.rich_text === true;
   const testable = !!props.capabilities?.test_email && !!props.recipient;
   const disabled = !props.canWrite || !!pending;
-  const localeName = (code: string) =>
-    new Intl.DisplayNames([i18n.language], { type: "language" }).of(code) ?? code;
 
   useEffect(() => {
     setSaved(Object.fromEntries(props.templates.map((item) => [item.key, item])));
@@ -297,7 +286,7 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
         setFeedback(t("emails.saved"));
       }
       if (kind === "reset") {
-        accept(await props.onReset(template.key));
+        accept(await props.onReset(template));
         setLocale("en");
         setFeedback(t("emails.resetDone"));
       }
@@ -315,45 +304,38 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
   }
 
   return (
-    <div className="@container/emails relative isolate flex min-w-0 flex-col gap-4 before:pointer-events-none before:absolute before:-inset-4 before:-z-10 before:bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] before:bg-size-[32px_32px] before:opacity-8 dark:before:opacity-4">
-      <EmailPageHeading>
-        <Button
-          variant="outline"
-          className={cn(ACTION, "bg-card/80")}
-          onClick={() => setPreviewAll(true)}
-        >
-          <EyeIcon />
-          {t("emails.previewAll")}
-        </Button>
-        <Tooltip>
-          {/* Focusable while the test can't run, so a keyboard user can reach the reason. */}
-          <TooltipTrigger
-            render={<span tabIndex={!testable ? 0 : undefined} className="inline-flex" />}
-          >
-            <Button
-              variant="outline"
-              className={cn(ACTION, "bg-card/80")}
-              disabled={disabled || !testable || errors.length > 0}
-              onClick={() => void run("test")}
-            >
-              {pending === "test" ? <LoaderCircleIcon className="animate-spin" /> : <SendIcon />}
-              {t("emails.test")}
+    <>
+      <EmailsHeader
+        name={props.name}
+        actions={
+          <>
+            <Button variant="ghost" icon={EyeIcon} onClick={() => setPreviewAll(true)}>
+              {t("emails.previewAll")}
             </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {t(testable ? "emails.testRecipient" : "emails.testUnavailable", {
-              email: props.recipient,
-            })}
-          </TooltipContent>
-        </Tooltip>
-      </EmailPageHeading>
-      <div className="grid min-w-0 items-stretch gap-3 @min-[640px]/emails:grid-cols-[190px_minmax(0,1fr)] @min-[1180px]/emails:grid-cols-[210px_minmax(0,1fr)]">
+            {/* The library Button disables with aria-disabled, so the reason stays reachable. */}
+            <Tooltip
+              content={t(testable ? "emails.testRecipient" : "emails.testUnavailable", {
+                email: props.recipient,
+              })}
+            >
+              <Button
+                variant="soft"
+                icon={SendIcon}
+                loading={pending === "test"}
+                disabled={disabled || !testable || errors.length > 0}
+                onClick={() => void run("test")}
+              >
+                {t("emails.test")}
+              </Button>
+            </Tooltip>
+          </>
+        }
+      />
+      <div className="mail">
         <EmailTemplateList
-          id={id}
           templates={props.templates}
           selectedKey={template.key}
-          drafts={drafts}
-          saved={saved}
+          dirtyKeys={dirtyKeys}
           disabled={!!pending}
           onSelect={(key) => {
             setSelectedKey(key);
@@ -363,41 +345,31 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
           }}
         />
         <EmailTemplateEditor
-          id={id}
+          name={props.name}
           template={template}
           draft={draft}
           content={content}
           currentLocale={currentLocale}
           errors={errors}
-          modern={modern}
-          disabled={disabled}
           capabilities={props.capabilities}
           brand={props.brand}
-          localeName={localeName}
+          disabled={disabled}
+          dirty={dirty}
+          pending={pending}
+          error={error}
+          feedback={feedback}
           onLocaleChange={setLocale}
           onChange={change}
           onUpdate={update}
+          onSave={() => void run("save")}
           onReset={() => void run("reset")}
+          onDiscard={() => {
+            discard(template.key);
+            setError(null);
+            setFeedback(null);
+          }}
         />
       </div>
-      <EmailSummaryCards
-        brandName={props.brand.name}
-        locales={1 + Object.keys(draft.options.translations ?? {}).length}
-      />
-      <EmailSaveBar
-        error={error}
-        feedback={feedback}
-        dirty={dirty}
-        disabled={disabled}
-        invalid={errors.length > 0}
-        saving={pending === "save"}
-        onDiscard={() => {
-          discard(template.key);
-          setError(null);
-          setFeedback(null);
-        }}
-        onSave={() => void run("save")}
-      />
       <EmailPreviewAllDialog
         open={previewAll}
         onOpenChange={setPreviewAll}
@@ -406,6 +378,6 @@ function EmailWorkspace(props: EmailTemplatesViewProps) {
         saved={saved}
         brand={props.brand}
       />
-    </div>
+    </>
   );
 }

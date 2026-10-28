@@ -1,0 +1,89 @@
+/*
+ * Settings › General, Domains and Security: My account's ruled sections, rows and in-place facts
+ * (account.css, loaded globally), plus the few parts only these pages have — a DNS record to
+ * publish, a panel's actions with Close at the end, a choice with its badge. Token values only.
+ */
+
+/* A panel's actions: the change ones first, Close at the far end. */
+.settings-panel-actions {
+  align-items: center;
+}
+
+.settings-spacer {
+  flex: 1;
+}
+
+/* A choice's name with its badge ("Everyone · Recommended"). */
+.settings-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* A rule opened under its label: its choices, then its fields and buttons. */
+.account-detail-open .account-panel {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.account-detail-open [role="radiogroup"],
+.account-detail-open [role="group"] {
+  max-inline-size: 36rem;
+}
+
+/* A DNS record to publish, each part on its own line with its own copy button. */
+.dns {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  max-inline-size: 40rem;
+}
+
+.dns-record {
+  margin: 0;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-canvas);
+}
+
+.dns-record > div {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 2.75rem;
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-sm) var(--qx-space-inset-xs)
+    var(--qx-space-inset-md);
+}
+
+.dns-record > div + div {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.dns-record dt {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+
+.dns-record dd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.dns-record dd .account-mono {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .dns-record > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  .settings-spacer {
+    display: none;
+  }
+}

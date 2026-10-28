@@ -87,7 +87,7 @@ const CONSOLE_PAGES: Target[] = [
   {
     name: "organization settings",
     path: "/settings/organization/general",
-    ready: (page) => page.getByRole("textbox", { name: "Organization name" }),
+    ready: (page) => page.getByRole("heading", { name: "About this organisation" }),
   },
   {
     name: "account profile",

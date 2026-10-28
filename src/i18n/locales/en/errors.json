@@ -63,7 +63,11 @@
     "inviteEmailNotVerified": "Verify your email address to accept invitations.",
     "samlLoginCodeInvalid": "That sign-in code is invalid. Please sign in again.",
     "samlLoginCodeUsed": "That sign-in code has already been used. Please sign in again.",
-    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again."
+    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again.",
+    "domainInvalid": "Enter a domain, such as qeet.co.in.",
+    "domainExists": "That domain has already been added.",
+    "domainRecordMissing": "The TXT record wasn't found yet. DNS changes can take a while to show: check again once it's published.",
+    "domainClaimedByOther": "Another organisation has already verified this domain, so it manages the accounts on it."
   },
   "kind": {
     "auth": "Please sign in again to continue.",
