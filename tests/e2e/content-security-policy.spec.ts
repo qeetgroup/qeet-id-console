@@ -69,8 +69,8 @@ test("the shell and the policy editor run under the policy, from this origin onl
   await hydrated(page);
   await page.goto("/authorization/simulator");
   await hydrated(page);
-  // The engine with a JSON input; its radio is visually hidden behind its label.
-  await page.locator('[data-slot="segmented-control-item"]', { hasText: "ABAC" }).click();
+  // The Simulator is part of Testing now; its Attributes question takes a JSON request.
+  await page.getByRole("button", { name: "Attributes", exact: true }).click();
   // Monaco mounts its editor, with its workers, in place of the read-only fallback.
   await expect(page.locator(".monaco-editor").first()).toBeVisible({ timeout: 20_000 });
   expect(violations).toEqual([]);

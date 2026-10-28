@@ -1,0 +1,235 @@
+/*
+ * Models › ReBAC (rebac-page.tsx): the object picker, the relationship graph and its panes. Token
+ * values only (--qx-*); the frame is workspace.css.
+ */
+
+/* The graph gets the room: narrower panes, a tighter gutter. */
+.ws-rebac .ws-body {
+  grid-template-columns: 14rem minmax(0, 1fr) 20rem;
+}
+
+.ws-rebac .ws-canvas {
+  padding: var(--qx-space-inset-lg);
+}
+
+/* The graph fills the canvas, so its viewport scrolls rather than the canvas. */
+.ws-rebac .ws-canvas > .ws-hide-phone {
+  display: flex;
+  flex: 1;
+  min-block-size: 0;
+}
+
+.rb-open {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qx-space-gap-xs);
+}
+
+.rb-object {
+  inline-size: 17rem;
+}
+
+.rb-relation {
+  inline-size: 9rem;
+}
+
+/* ── The graph ─────────────────────────────────────────────────────────────── */
+
+/* The tools stay put over the graph; the viewport scrolls under them. */
+.graph-frame {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-block-size: 0;
+}
+
+.graph-viewport {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: auto;
+  padding: var(--qx-space-inset-xs) 0;
+}
+
+.graph-scroll {
+  position: relative;
+  margin-inline: auto;
+}
+
+.graph {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform-origin: 0 0;
+}
+
+[dir="rtl"] .graph {
+  transform-origin: 100% 0;
+}
+
+.graph-lines {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.graph-lines line {
+  stroke: var(--qx-color-border-strong);
+  stroke-width: 1;
+}
+
+.graph-edge-label {
+  fill: var(--qx-color-text-subtle);
+  font: var(--qx-typography-code-sm);
+}
+
+.graph-node {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-sm);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+  color: var(--qx-color-text-default);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.graph-node:hover {
+  border-color: var(--qx-color-border-strong);
+}
+
+.graph-node:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(-1 * var(--qx-focus-ring-width));
+}
+
+.graph-node > svg {
+  flex: none;
+  color: var(--qx-color-icon-subtle);
+}
+
+.graph-node > span {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.graph-node strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font: var(--qx-typography-label-sm);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.graph-node small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.graph-node[data-root] {
+  border-color: var(--qx-color-border-strong);
+}
+
+.graph-node[data-current] {
+  border-color: var(--qx-color-border-strong);
+  background: var(--qx-color-bg-neutral-subtle);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.graph-tools {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  display: grid;
+  gap: 2px;
+  padding: 2px;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+}
+
+/* ── The panes ─────────────────────────────────────────────────────────────── */
+
+.rb-selected {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-lg);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.rb-selected-icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-bg-neutral-subtle);
+  color: var(--qx-color-icon-default);
+}
+
+.rb-selected-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.rb-selected-text strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.rb-person-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-lg);
+}
+
+.rb-named {
+  padding: var(--qx-space-inset-xs) 0;
+}
+
+.rb-cell-person {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* The Add relationship drawer's fields. */
+.ws-drawer-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+}
+
+.ws-drawer-form .qx-toggle-group {
+  justify-self: start;
+  inline-size: fit-content;
+}
+
+@media (max-width: 839px) {
+  .rb-open,
+  .rb-object,
+  .rb-relation {
+    flex: 1 1 100%;
+    inline-size: auto;
+  }
+}
+
+figure.graph {
+  margin: 0;
+}

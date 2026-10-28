@@ -81,6 +81,10 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.MFA_DELIVERY_UNAVAILABLE]: "errors:code.mfaDeliveryUnavailable",
   [ERROR_CODES.MFA_DELIVERY_FAILED]: "errors:code.mfaDeliveryFailed",
   [ERROR_CODES.AUTH_RISK_VERIFICATION_UNAVAILABLE]: "errors:code.authRiskVerificationUnavailable",
+  [ERROR_CODES.RBAC_ROLE_NAME_EXISTS]: "errors:code.rbacRoleNameExists",
+  // 403 -> `authz`, whose fallback says a permission is missing; the rule is about giving one.
+  [ERROR_CODES.RBAC_GRANT_EXCEEDS_CALLER]: "errors:code.rbacGrantExceedsCaller",
+  [ERROR_CODES.RBAC_SYSTEM_ROLE_FIXED]: "errors:code.rbacSystemRoleFixed",
   [ERROR_CODES.BILLING_PLAN_LIMIT]: "errors:code.billingPlanLimit",
   [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "errors:code.billingUpgradeRequired",
   [ERROR_CODES.USER_IMPORT_EMPTY]: "errors:code.userImportEmpty",
@@ -106,7 +110,6 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.DOMAIN_EXISTS]: "errors:code.domainExists",
   [ERROR_CODES.DOMAIN_RECORD_MISSING]: "errors:code.domainRecordMissing",
   [ERROR_CODES.DOMAIN_CLAIMED_BY_OTHER]: "errors:code.domainClaimedByOther",
-  [ERROR_CODES.RBAC_GRANT_EXCEEDS_CALLER]: "errors:code.rbacGrantExceedsCaller",
   [ERROR_CODES.SECRET_NAME_EXISTS]: "errors:code.secretNameExists",
   [ERROR_CODES.AGENT_SPONSOR_NOT_MEMBER]: "errors:code.agentSponsorNotMember",
   [ERROR_CODES.AUTHHOOK_URL_INVALID]: "errors:code.authHookUrlInvalid",

@@ -26,15 +26,9 @@ import {
   useUpdateAbacPolicy,
 } from "../api/abac";
 import { useExplainCheck } from "../api/access-check";
-import { useAuditEvents } from "../api/audit";
-import {
-  useCreateRole,
-  useGrantPermission,
-  usePermissions,
-  useRevokePermission,
-  useRolePermissions,
-  useRoles,
-} from "../api/rbac";
+import { AUTHZ_ACTIONS, KIND_ACTIONS, useAuthzChanges } from "../api/authz-activity";
+import { useCreateRole, usePermissions, useRolePermissions, useRoles } from "../api/rbac";
+import { useSaveRolePermissions } from "../api/role-save";
 import { authzKeys } from "../api/keys";
 import { useGrantGroupRole, useGroupRoles, useRevokeGroupRole } from "../api/rbac-groups";
 import {
@@ -365,18 +359,33 @@ describe("RBAC roles and permissions", () => {
     await expectIdle(() => useRolePermissions(null));
   });
 
-  it("grants a permission to a role and refreshes that role's permissions", async () => {
-    const { invalidated, meta } = await runMutation(() => useGrantPermission("r1"), "perm-1");
-    expect(api).toHaveBeenCalledWith("/v1/roles/r1/permissions/perm-1", { method: "POST" });
+  it("saves a role's permissions one call at a time, grants first, and refreshes it once", async () => {
+    const { invalidated, meta } = await runMutation(() => useSaveRolePermissions("r1"), {
+      grant: ["p-1", "p-2"],
+      revoke: ["p-3"],
+    });
+    expect(vi.mocked(api).mock.calls).toEqual([
+      ["/v1/roles/r1/permissions/p-1", { method: "POST" }],
+      ["/v1/roles/r1/permissions/p-2", { method: "POST" }],
+      ["/v1/roles/r1/permissions/p-3", { method: "DELETE" }],
+    ]);
     expect(invalidated).toEqual([authzKeys.rolePermissions("tenant-a", "r1")]);
-    expect(meta).toEqual({ successMessage: "authorization:toast.permissionGranted" });
+    expect(meta).toEqual({ successMessage: "authorization:toast.roleSaved", silentError: true });
   });
 
-  it("revokes a permission from a role and refreshes that role's permissions", async () => {
-    const { invalidated, meta } = await runMutation(() => useRevokePermission("r1"), "perm-1");
-    expect(api).toHaveBeenCalledWith("/v1/roles/r1/permissions/perm-1", { method: "DELETE" });
-    expect(invalidated).toEqual([authzKeys.rolePermissions("tenant-a", "r1")]);
-    expect(meta).toEqual({ successMessage: "authorization:toast.permissionRevoked" });
+  it("stops at the first refusal and still refreshes the role", async () => {
+    vi.mocked(api).mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("refused"));
+    const h = harness();
+    const { result } = renderHook(() => useSaveRolePermissions("r1"), { wrapper: h.wrapper });
+    await act(async () => {
+      await expect(
+        result.current.mutateAsync({ grant: ["p-1", "p-2"], revoke: ["p-3"] }),
+      ).rejects.toThrow("refused");
+    });
+    expect(api).toHaveBeenCalledTimes(2);
+    expect(h.invalidate).toHaveBeenCalledWith({
+      queryKey: authzKeys.rolePermissions("tenant-a", "r1"),
+    });
   });
 });
 
@@ -432,47 +441,28 @@ describe("access explain check", () => {
   });
 });
 
-describe("authorization audit feed", () => {
-  it("drops blank filters and defaults the page size to 100", async () => {
-    const filter = { action: "", resource_type: "role", q: "" };
-    const { client } = await runQuery(() => useAuditEvents(filter));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit", {
-      query: {
-        action: undefined,
-        resource_type: "role",
-        actor_user_id: undefined,
-        q: undefined,
-        limit: 100,
-        cursor: undefined,
-      },
+describe("authorization changes", () => {
+  it("asks the activity feed for the authorization actions only, with the filters", async () => {
+    vi.mocked(api).mockResolvedValue({ events: [] });
+    const h = harness();
+    renderHook(() => useAuthzChanges({ actor: "u1", q: "Contractors" }), { wrapper: h.wrapper });
+    await waitFor(() => expect(api).toHaveBeenCalled());
+    const [path, options] = vi.mocked(api).mock.calls[0] ?? [];
+    expect(path).toBe("/v1/activity");
+    expect(options?.query).toMatchObject({
+      types: AUTHZ_ACTIONS.join(","),
+      actor: "u1",
+      q: "Contractors",
     });
-    expect(client.getQueryData(authzKeys.audit("tenant-a", filter))).toEqual({ items: [] });
   });
 
-  it("passes every filter through, and waits for a tenant", async () => {
-    await runQuery(() =>
-      useAuditEvents({
-        action: "role.created",
-        resource_type: "role",
-        actor_user_id: "u1",
-        q: "admin",
-        limit: 25,
-        cursor: "c2",
-      }),
-    );
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit", {
-      query: {
-        action: "role.created",
-        resource_type: "role",
-        actor_user_id: "u1",
-        q: "admin",
-        limit: 25,
-        cursor: "c2",
-      },
+  it("narrows to one kind's actions", async () => {
+    vi.mocked(api).mockResolvedValue({ events: [] });
+    const h = harness();
+    renderHook(() => useAuthzChanges({ kind: "groupRoles" }), { wrapper: h.wrapper });
+    await waitFor(() => expect(api).toHaveBeenCalled());
+    expect(vi.mocked(api).mock.calls[0]?.[1]?.query).toMatchObject({
+      types: KIND_ACTIONS.groupRoles.join(","),
     });
-
-    vi.clearAllMocks();
-    session.tenantId = null;
-    await expectIdle(() => useAuditEvents());
   });
 });
