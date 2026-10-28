@@ -1,24 +1,13 @@
-import { CodeBlock } from "@qeetrix/ui";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { CodeBlock } from "@qeetrix/react/experimental";
+import { lazy, Suspense } from "react";
 
+import { useIsDark } from "@/platform/theme/use-is-dark";
 import { ClientOnly } from "./client-only";
 
-// Monaco is heavy and browser-only, so it loads lazily, from this console's own bundle; until it
-// mounts, and during SSR, a read-only CodeBlock keeps the content visible and copyable.
+// Until @qeetrix/react has an editable code field (CodeBlock is read-only): Monaco. It is heavy and
+// browser-only, so it loads lazily, from this console's own bundle; until it mounts, and during
+// SSR, a read-only CodeBlock keeps the content visible and copyable.
 const MonacoEditor = lazy(() => import("./monaco-editor"));
-
-function useIsDark(): boolean {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const el = document.documentElement;
-    const update = () => setDark(el.classList.contains("dark"));
-    update();
-    const obs = new MutationObserver(update);
-    obs.observe(el, { attributes: true, attributeFilter: ["class"] });
-    return () => obs.disconnect();
-  }, []);
-  return dark;
-}
 
 export interface MonacoPanelProps {
   value: string;
@@ -42,17 +31,18 @@ export function MonacoPanel({
   const dark = useIsDark();
   const heightStr = typeof height === "number" ? `${height}px` : height;
   const fallback = (
-    <CodeBlock
-      value={value}
-      language={language === "json" ? "json" : "text"}
-      maxHeight={heightStr}
-    />
+    <div className="ws-editor-fallback" style={{ maxBlockSize: heightStr }}>
+      <CodeBlock code={value} language={language === "json" ? "json" : "text"} />
+    </div>
   );
 
   return (
     <ClientOnly fallback={fallback}>
       <Suspense fallback={fallback}>
-        <div className={className} style={{ height: heightStr }}>
+        <div
+          className={className ? `ws-editor ${className}` : "ws-editor"}
+          style={{ height: heightStr }}
+        >
           <MonacoEditor
             height="100%"
             language={language}
@@ -71,7 +61,7 @@ export function MonacoPanel({
               scrollBeyondLastLine: false,
               automaticLayout: true,
               tabSize: 2,
-              wordWrap: "on",
+              wordWrap: "off",
               padding: { top: 10, bottom: 10 },
               renderLineHighlight: readOnly ? "none" : "line",
               overviewRulerLanes: 0,

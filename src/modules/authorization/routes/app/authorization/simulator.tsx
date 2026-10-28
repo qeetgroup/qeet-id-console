@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { PolicySimulatorPage } from "@/modules/authorization/pages";
-
+// The Simulator is part of Testing now; an old link or bookmark lands there.
 export const Route = createFileRoute("/_app/authorization/simulator")({
   staticData: { capability: "role.read" },
-  component: PolicySimulatorPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/authorization/testing", replace: true });
+  },
 });

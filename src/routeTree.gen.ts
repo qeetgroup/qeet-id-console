@@ -48,6 +48,7 @@ import { Route as AuthorizationRolesRouteImport } from './modules/authorization/
 import { Route as AuthorizationSettingsRouteImport } from './modules/authorization/routes/app/authorization/settings'
 import { Route as AuthorizationSimulatorRouteImport } from './modules/authorization/routes/app/authorization/simulator'
 import { Route as AuthorizationTemplatesRouteImport } from './modules/authorization/routes/app/authorization/templates'
+import { Route as AuthorizationTestingRouteImport } from './modules/authorization/routes/app/authorization/testing'
 import { Route as AuthorizationVersionsRouteImport } from './modules/authorization/routes/app/authorization/versions'
 import { Route as DeveloperIndexRouteImport } from './modules/developer/routes/app/developer/index'
 import { Route as DeveloperAgentsRouteImport } from './modules/developer/routes/app/developer/agents'
@@ -317,6 +318,11 @@ const AuthorizationSimulatorRoute = AuthorizationSimulatorRouteImport.update({
 const AuthorizationTemplatesRoute = AuthorizationTemplatesRouteImport.update({
   id: '/authorization/templates',
   path: '/authorization/templates',
+  getParentRoute: () => appRoute,
+} as any)
+const AuthorizationTestingRoute = AuthorizationTestingRouteImport.update({
+  id: '/authorization/testing',
+  path: '/authorization/testing',
   getParentRoute: () => appRoute,
 } as any)
 const AuthorizationVersionsRoute = AuthorizationVersionsRouteImport.update({
@@ -757,6 +763,7 @@ export interface FileRoutesByFullPath {
   '/authorization/settings': typeof AuthorizationSettingsRoute
   '/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/authorization/testing': typeof AuthorizationTestingRoute
   '/authorization/versions': typeof AuthorizationVersionsRoute
   '/developer/agents': typeof DeveloperAgentsRoute
   '/developer/auth-hooks': typeof DeveloperAuthHooksRoute
@@ -871,6 +878,7 @@ export interface FileRoutesByTo {
   '/authorization/settings': typeof AuthorizationSettingsRoute
   '/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/authorization/testing': typeof AuthorizationTestingRoute
   '/authorization/versions': typeof AuthorizationVersionsRoute
   '/developer/agents': typeof DeveloperAgentsRoute
   '/developer/auth-hooks': typeof DeveloperAuthHooksRoute
@@ -988,6 +996,7 @@ export interface FileRoutesById {
   '/_app/authorization/settings': typeof AuthorizationSettingsRoute
   '/_app/authorization/simulator': typeof AuthorizationSimulatorRoute
   '/_app/authorization/templates': typeof AuthorizationTemplatesRoute
+  '/_app/authorization/testing': typeof AuthorizationTestingRoute
   '/_app/authorization/versions': typeof AuthorizationVersionsRoute
   '/_app/developer/agents': typeof DeveloperAgentsRoute
   '/_app/developer/auth-hooks': typeof DeveloperAuthHooksRoute
@@ -1104,6 +1113,7 @@ export interface FileRouteTypes {
     | '/authorization/settings'
     | '/authorization/simulator'
     | '/authorization/templates'
+    | '/authorization/testing'
     | '/authorization/versions'
     | '/developer/agents'
     | '/developer/auth-hooks'
@@ -1218,6 +1228,7 @@ export interface FileRouteTypes {
     | '/authorization/settings'
     | '/authorization/simulator'
     | '/authorization/templates'
+    | '/authorization/testing'
     | '/authorization/versions'
     | '/developer/agents'
     | '/developer/auth-hooks'
@@ -1334,6 +1345,7 @@ export interface FileRouteTypes {
     | '/_app/authorization/settings'
     | '/_app/authorization/simulator'
     | '/_app/authorization/templates'
+    | '/_app/authorization/testing'
     | '/_app/authorization/versions'
     | '/_app/developer/agents'
     | '/_app/developer/auth-hooks'
@@ -1696,6 +1708,13 @@ declare module '@tanstack/react-router' {
       path: '/authorization/templates'
       fullPath: '/authorization/templates'
       preLoaderRoute: typeof AuthorizationTemplatesRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/authorization/testing': {
+      id: '/_app/authorization/testing'
+      path: '/authorization/testing'
+      fullPath: '/authorization/testing'
+      preLoaderRoute: typeof AuthorizationTestingRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/authorization/versions': {
@@ -2266,6 +2285,7 @@ interface appRouteChildren {
   AuthorizationSettingsRoute: typeof AuthorizationSettingsRoute
   AuthorizationSimulatorRoute: typeof AuthorizationSimulatorRoute
   AuthorizationTemplatesRoute: typeof AuthorizationTemplatesRoute
+  AuthorizationTestingRoute: typeof AuthorizationTestingRoute
   AuthorizationVersionsRoute: typeof AuthorizationVersionsRoute
   DeveloperAgentsRoute: typeof DeveloperAgentsRoute
   DeveloperAuthHooksRoute: typeof DeveloperAuthHooksRoute
@@ -2365,6 +2385,7 @@ const appRouteChildren: appRouteChildren = {
   AuthorizationSettingsRoute: AuthorizationSettingsRoute,
   AuthorizationSimulatorRoute: AuthorizationSimulatorRoute,
   AuthorizationTemplatesRoute: AuthorizationTemplatesRoute,
+  AuthorizationTestingRoute: AuthorizationTestingRoute,
   AuthorizationVersionsRoute: AuthorizationVersionsRoute,
   DeveloperAgentsRoute: DeveloperAgentsRoute,
   DeveloperAuthHooksRoute: DeveloperAuthHooksRoute,

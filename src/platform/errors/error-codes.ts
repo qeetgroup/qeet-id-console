@@ -70,6 +70,16 @@ export const ERROR_CODES = {
   GROUP_NAME_EXISTS: "group.name_exists", // a group's name is unique in its organisation
   GROUP_CYCLE: "group.cycle", // a group can't sit inside itself or its own groups
   GROUP_TEMPLATE_NAME_EXISTS: "group.template_name_exists", // a template's name is unique too
+  // ABAC policies: the policy editor puts each on the field it names, or says why it can't save
+  ABAC_NAME_REQUIRED: "abac.name_required",
+  ABAC_RESOURCE_TYPE_REQUIRED: "abac.resource_type_required",
+  ABAC_ACTION_REQUIRED: "abac.action_required",
+  ABAC_CONDITION_INVALID: "abac.condition_invalid",
+  ABAC_POLICY_NAME_EXISTS: "abac.policy_name_exists",
+  ABAC_POLICY_LOCKS_OUT: "abac.policy_locks_out", // a deny that would stop its author changing policies
+  REBAC_OBJECT_INVALID: "rebac.object_invalid", // relationships: an object is "type:id"
+  REBAC_SUBJECT_INVALID: "rebac.subject_invalid", // "user:<id>", "type:id" or "type:id#relation"
+  REBAC_RELATION_REQUIRED: "rebac.relation_required",
   RBAC_ROLE_NAME_EXISTS: "rbac.role_name_exists", // 409: a role's name is unique, ignoring case
   RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: names the permission in metadata
   RBAC_SYSTEM_ROLE_FIXED: "rbac.system_role_fixed", // 403: the owner role's permissions are fixed

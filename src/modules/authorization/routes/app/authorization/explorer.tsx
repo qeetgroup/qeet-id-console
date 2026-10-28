@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { DecisionExplorerPage } from "@/modules/authorization/pages";
-
+// The Decision explorer is Testing's list of this tab's decisions now; an old link lands there.
 export const Route = createFileRoute("/_app/authorization/explorer")({
   staticData: { capability: "role.read" },
-  component: DecisionExplorerPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/authorization/testing", replace: true });
+  },
 });
