@@ -1,0 +1,312 @@
+/*
+ * An organisation's page (org-page.tsx): ruled sections, the facts band in its header (the Users
+ * band, people.css), Identity's three panels and its region ruler, and History's summary and month
+ * strip. Placement and token values only (--qx-*).
+ */
+
+/* Words, not big numbers: one size down from a list's band. */
+.org-page-band .ppl-value {
+  font: var(--qx-typography-heading-sm);
+}
+
+/* The logo before the name, in the title, until PageHeader has a leading slot (QTRX-48). */
+.org-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+}
+
+.org-page {
+  display: grid;
+}
+
+/* What's true of it now (being deleted; not the one you're in), above its sections. */
+.org-page-notices {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-gap-lg);
+}
+
+.org-page-section {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block: var(--qx-space-layout-sm);
+}
+
+.org-page-section + .org-page-section {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.org-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.org-page-title {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-lg);
+}
+
+.org-page-note {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.org-page-link {
+  color: var(--qx-color-text-default);
+}
+
+/* ── Identity ─────────────────────────────────────────────────────────────────────────────── */
+
+/* Three ruled panels: address, domain, data region. The next section's rule closes them. */
+.org-id {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.org-id-cell {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+  padding: var(--qx-space-layout-sm) var(--qx-space-gap-lg) 0;
+}
+
+.org-id-cell:first-child {
+  padding-inline-start: 0;
+}
+
+.org-id-cell + .org-id-cell {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+/* The last section on the page (another organisation's): the panels close with their own rule. */
+.org-page-section:last-child > .org-id {
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.org-page-section:last-child > .org-id > .org-id-cell {
+  padding-block-end: var(--qx-space-layout-sm);
+}
+
+.org-id-cap {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+}
+
+.org-id-value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: var(--qx-space-gap-xs) 0 0;
+  overflow-wrap: anywhere;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-heading-md);
+}
+
+.org-id-value code {
+  font: var(--qx-typography-heading-md);
+  font-family: var(--qx-typography-code-md-font-family);
+}
+
+.org-id-value.is-none {
+  color: var(--qx-color-text-subtle);
+}
+
+.org-id-note {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.org-id-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  margin: var(--qx-space-gap-sm) 0 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.org-id-meta code {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-sm);
+  white-space: nowrap;
+}
+
+.org-id-meta-term {
+  color: var(--qx-color-text-subtlest);
+}
+
+/* The data region: Qeet ID's regions on a ruler of longitude, its own a solid Ember square. */
+.org-ruler {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  margin-block-start: var(--qx-space-gap-sm);
+}
+
+.org-ruler-line {
+  stroke: var(--qx-color-border-strong);
+  stroke-width: 1;
+}
+
+.org-ruler-tick {
+  stroke: var(--qx-color-border-default);
+  stroke-width: 1;
+}
+
+.org-ruler-here {
+  fill: var(--qx-color-bg-brand-bold);
+}
+
+.org-ruler-other {
+  fill: var(--qx-color-surface-default);
+  stroke: var(--qx-color-border-strong);
+  stroke-width: 1;
+}
+
+.org-ruler-label {
+  fill: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.org-ruler-label.is-here {
+  fill: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+}
+
+/* ── History ──────────────────────────────────────────────────────────────────────────────── */
+
+/* The summary: three facts, then the months since it was made. */
+.org-hist {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: end;
+  gap: var(--qx-space-layout-sm);
+  padding-block: var(--qx-space-gap-lg);
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.org-hist-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--qx-space-gap-lg);
+  margin: 0;
+}
+
+.org-hist-facts > div {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+}
+
+.org-hist-facts dd {
+  margin: 0;
+}
+
+.org-strip {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  margin: 0;
+}
+
+.org-strip-cells {
+  display: grid;
+  gap: 2px;
+  block-size: 2rem;
+}
+
+/* One cell a month: the data-viz sequential ramp, darker for more changes (lighter in dark). */
+.org-strip-cell {
+  display: grid;
+  place-items: center;
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+.org-strip-cell.is-1 {
+  background: var(--qx-color-dataviz-sequential-4);
+}
+
+.org-strip-cell.is-2 {
+  background: var(--qx-color-dataviz-sequential-6);
+}
+
+.org-strip-cell.is-3 {
+  background: var(--qx-color-dataviz-sequential-7);
+}
+
+.org-strip-cell b {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The busier steps are dark in light mode and light in dark mode: the inverse text reads on both. */
+.org-strip-cell.is-2 b,
+.org-strip-cell.is-3 b {
+  color: var(--qx-color-text-inverse);
+}
+
+.org-strip-axis {
+  display: grid;
+  color: var(--qx-color-text-subtlest);
+  font: var(--qx-typography-body-sm);
+}
+
+.org-strip-axis span {
+  white-space: nowrap;
+}
+
+.org-strip-axis span:last-child {
+  text-align: end;
+}
+
+/* Each change: what (a link to its record), then who, from which browser and address. */
+.org-change-link {
+  color: var(--qx-color-text-default);
+  text-decoration: none;
+}
+
+.org-change-link:hover {
+  text-decoration: underline;
+}
+
+.org-change-link:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+.org-by {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* Narrow: the panels and the summary stack. */
+@media (max-width: 64rem) {
+  .org-id,
+  .org-hist {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .org-id-cell {
+    padding-inline: 0;
+  }
+
+  .org-id-cell + .org-id-cell {
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+}

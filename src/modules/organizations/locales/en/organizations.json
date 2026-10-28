@@ -1,176 +1,205 @@
 {
-  "tenants": {
-    "description": "Every organization your account has access to. Click an organization to switch into it, or create a new one — you become its owner automatically.",
-    "refresh": "Refresh",
-    "new": "New organization",
-    "list": {
-      "count_one": "{{shown}} of {{total}} organization",
-      "count_other": "{{shown}} of {{total}} organizations",
-      "searchPlaceholder": "Search name, slug, region…",
-      "emptyFiltered": "No organizations match your filters.",
-      "empty": "No organizations yet."
+  "list": {
+    "title": "Organisations",
+    "description": "The organisations you belong to, and your role in each.",
+    "moreActions": "More actions",
+    "exportCsv": "Export CSV",
+    "exportJson": "Export JSON",
+    "new": "New organisation",
+    "band": {
+      "people": "People",
+      "inOrganisations_one": "In {{n}} organisation",
+      "inOrganisations_other": "In {{n}} organisations",
+      "inLargest": "In {{n}} organisations; the {{largest}} largest",
+      "barLabel": "{{name}}, {{n}} members",
+      "twoStep": "Two-step",
+      "percent": "{{n}}%",
+      "twoStepNote": "{{n}} of {{total}} people · target {{target}}%",
+      "twoStepLabel": "{{n}}% use two-step; the target is {{target}}%",
+      "belowIt_one": "{{n}} organisation is below it",
+      "belowIt_other": "{{n}} organisations are below it",
+      "yourRole": "Your role",
+      "otherRoles": "other roles",
+      "needsALook": "Needs a look",
+      "looks": {
+        "below-target": "Below the {{target}}% two-step target",
+        "stale": "Not opened in {{days}} days",
+        "deleting": "Being deleted",
+        "suspended": "Suspended",
+        "invitations": "Invitations waiting"
+      }
     },
     "filters": {
-      "status": {
-        "label": "Status",
-        "active": "Active",
-        "suspended": "Suspended",
-        "deleted": "Deleted"
-      },
-      "plan": {
-        "label": "Plan",
-        "free": "Free",
-        "starter": "Starter",
-        "pro": "Pro",
-        "enterprise": "Enterprise"
-      }
+      "search": "Search organisations",
+      "searchPlaceholder": "Search by name, URL or domain",
+      "role": "Your role",
+      "anyRole": "Any role",
+      "plan": "Plan",
+      "anyPlan": "Any plan",
+      "region": "Data region",
+      "anyRegion": "Any region",
+      "summary": "{{n}} of {{total}} organisations"
+    },
+    "plans": {
+      "enterprise": "Enterprise",
+      "pro": "Pro",
+      "starter": "Starter",
+      "free": "Free"
     },
     "columns": {
+      "organisation": "Organisation",
+      "role": "Your role",
+      "members": "Members",
+      "twoStep": "Two-step",
       "plan": "Plan",
-      "region": "Region",
-      "status": "Status",
-      "created": "Created",
-      "actions": "Actions"
-    },
-    "table": {
-      "current": "Current",
+      "opened": "Last opened",
       "switch": "Switch"
     },
-    "delete": {
-      "title": "Delete this organization?",
-      "delete": "Delete"
+    "row": {
+      "current": "Current",
+      "suspended": "Suspended",
+      "deleting": "Deleting {{date}}",
+      "noRole": "No role",
+      "twoStepLabel": "{{name}}: {{n}}% use two-step",
+      "switch": "Switch",
+      "switchTo": "Switch to {{name}}"
     },
-    "edit": {
-      "title": "Edit organization",
-      "description": "Slug can't be changed once an organization is created.",
-      "name": "Name",
-      "slug": "Slug",
-      "slugHelp": "Immutable after creation.",
-      "plan": "Plan",
-      "status": "Status",
-      "statusActive": "Active",
-      "statusSuspended": "Suspended",
-      "statusHelp": "Use the Delete action to soft-delete an organization.",
-      "region": "Region",
-      "cancel": "Cancel",
-      "save": "Save changes",
-      "saving": "Saving…",
-      "logo": "Logo",
-      "logoHelp": "Shown across the console. Leave empty to use an initials avatar.",
-      "planHelp": "Plan changes are made through billing.",
-      "editAction": "Edit this organization",
-      "validation": {
-        "name": "Enter a name.",
-        "nameTooLong": "Keep the name to 200 characters."
-      }
+    "opened": {
+      "now": "Now",
+      "never": "Never",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{{n}} days ago"
+    },
+    "empty": {
+      "title": "No organisations",
+      "description": "Organisations you belong to show here.",
+      "filteredTitle": "No organisations match",
+      "filteredDescription": "Search looks at names, URLs and domains. Try fewer filters.",
+      "clear": "Clear search and filters"
     }
   },
-  "kpi": {
-    "total": "Organizations",
-    "active": "Active",
-    "suspended": "Suspended",
-    "members": "Members",
-    "mfaMembers": "MFA-enabled members",
-    "ofTotal": "{{pct}}% of total"
-  },
-  "table": {
-    "organization": "Organization",
-    "members": "Members",
-    "withMfa": "{{n}} with MFA"
-  },
-  "rowActions": {
-    "open": "Open organization",
-    "edit": "Edit organization",
-    "suspend": "Suspend",
-    "activate": "Reactivate",
-    "delete": "Delete organization"
-  },
-  "actionLabels": {
-    "suspend": "Suspend this organization",
-    "reactivate": "Reactivate this organization"
-  },
-  "preview": {
-    "copyId": "Copy organization ID",
-    "plan": "Plan",
-    "region": "Region",
-    "members": "Members",
-    "mfaMembers": "MFA-enabled members",
-    "created": "Created",
-    "switchHint": "Switch to this organization to view members, activity, and billing.",
-    "open": "Open Org 360"
-  },
-  "suspend": {
-    "title": "Suspend this organization?",
-    "description": "Members of {{name}} won’t be able to sign in until it’s reactivated."
-  },
-  "delete": {
-    "description": "This soft-deletes {{name}} ({{slug}}). Audit history is preserved."
-  },
-  "detail": {
-    "back": "Back to organizations",
-    "notFound": "Organization not found, or you don’t have access to it.",
-    "actions": "Actions",
-    "orgId": "Org ID",
-    "tabs": {
-      "overview": "Overview",
+  "page": {
+    "notFound": "Organisation not found",
+    "notFoundDescription": "It isn't one you belong to, or it has been deleted.",
+    "backToList": "Back to organisations",
+    "edit": "Edit details",
+    "switchTo": "Switch to {{name}}",
+    "band": {
       "members": "Members",
-      "security": "Security",
+      "twoStep": "{{n}} use two-step · {{share}}%",
+      "noTwoStep": "None use two-step",
+      "withoutTwoStep": "{{n}} without two-step",
+      "role": "Your role",
+      "canDelete": "You can delete it",
+      "canDeleteAfterSwitch": "After switching, you can delete it",
+      "ownerDeletes": "Only an owner can delete it",
+      "plan": "Plan",
+      "noCharge": "No charge",
+      "switchForBilling": "Switch to see its billing",
+      "price": "{{amount}} a {{interval}} · renews {{date}}",
+      "endsOn": "{{amount}} a {{interval}} · ends {{date}}",
+      "seeBilling": "See Billing",
       "billing": "Billing",
-      "activity": "Activity"
+      "per": {
+        "month": "month",
+        "year": "year"
+      },
+      "created": "Created",
+      "createdBy": "{{date}} by {{name}}",
+      "opened": "Last opened",
+      "neverOpened": "You haven't opened it yet"
     },
-    "switchGateTitle": "Switch to view this organization",
-    "switchGateDesc": "Members, security, billing and activity for {{name}} are only available while it’s your active organization.",
-    "identity": "Identity",
-    "updated": "Last updated",
-    "membersSummary": "Members",
-    "membersSummaryDesc": "Directory size and MFA coverage.",
-    "mau": "Monthly active",
-    "mfaAdoption": "MFA adoption",
-    "overviewSwitchHint": "Switch to this organization for live analytics (active users, MFA adoption).",
-    "membersDesc": "People who belong to this organization.",
-    "membersEmpty": "No members found.",
-    "memberCols": {
-      "user": "User",
-      "roles": "Roles",
-      "mfa": "MFA"
+    "other": {
+      "title": "You're working in {{name}}",
+      "titleNoName": "You're working in another organisation",
+      "description": "Switch to {{name}} to see its people, settings and history, or to change or delete it."
     },
-    "on": "On",
-    "off": "Off",
-    "manageMembers": "Manage members",
-    "loginMethods": "Login methods",
-    "loginMethodsDesc": "Authentication methods enabled for this organization.",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "password": "Password",
-    "passkeys": "Passkeys",
-    "magicLink": "Magic link",
-    "selfReg": "Self-registration",
-    "passwordPolicy": "Password policy",
-    "minLength": "Minimum length",
-    "reqUpper": "Require uppercase",
-    "reqNumber": "Require number",
-    "reqSymbol": "Require symbol",
-    "subscription": "Subscription",
-    "noSubscription": "No active subscription.",
-    "amount": "Amount",
-    "renews": "Renews",
-    "invoices": "Invoices",
-    "noInvoices": "No invoices yet.",
-    "invoiceCols": {
-      "date": "Date",
-      "amount": "Amount"
+    "identity": {
+      "heading": "Identity",
+      "change": "Change it in Settings › General",
+      "address": "Address",
+      "addressNote": "Its organisation URL. It can't be changed.",
+      "id": "ID",
+      "copyId": "Copy the organisation ID",
+      "created": "Created {{date}}",
+      "domain": "Domain",
+      "verified": "Verified",
+      "domainNote": "{{name}} manages the accounts on @{{domain}}: no other organisation can create them.",
+      "verifiedOn": "Verified {{date}} with a DNS record",
+      "verifiedBy": "Verified with a DNS record",
+      "domains": "Domains",
+      "noDomain": "No domain yet",
+      "noDomainNote": "Verify one to manage the accounts on it.",
+      "addDomain": "Add a domain",
+      "region": "Data region",
+      "regionNote": "{{area}}. Where its data is stored.",
+      "regionNoteUnknown": "Where its data is stored.",
+      "rulerLabel": "Its data region, {{region}}, among Qeet ID's: {{all}}",
+      "rulerTitle": "Data region: {{region}}"
     },
-    "activityDesc": "Recent audit events across this organization.",
-    "activityEmpty": "No activity recorded.",
-    "auditCols": {
-      "action": "Action",
-      "resource": "Resource",
-      "ip": "IP",
-      "when": "When"
+    "regionCity": {
+      "usEast1": "N. Virginia",
+      "euWest1": "Ireland",
+      "apSouth1": "Mumbai"
+    },
+    "regionArea": {
+      "usEast1": "US East",
+      "euWest1": "Europe",
+      "apSouth1": "Asia Pacific"
+    },
+    "history": {
+      "heading": "History",
+      "note": "Changes to the organisation itself: its details, branding and sign-in rules. Each opens its full record.",
+      "all": "All activity",
+      "changes": "Changes",
+      "since": "since {{date}}",
+      "by": "By",
+      "people_one": "{{n}} person",
+      "people_other": "{{n}} people",
+      "and": " and ",
+      "namesMore": "{{names}} and {{n}} more",
+      "last": "Last change",
+      "lastNote": "{{what}}, by {{who}}",
+      "byMonth": "Changes by month",
+      "byMonthLabel": "Changes by month since {{since}}: {{months}}",
+      "monthCount_one": "{{month}}, {{n}} change",
+      "monthCount_other": "{{month}}, {{n}} changes",
+      "noChanges": "none",
+      "empty": "No changes yet.",
+      "someone": "A member",
+      "qeetId": "Qeet ID",
+      "kinds": {
+        "tenant-created": "Organisation created",
+        "tenant-updated": "Details changed",
+        "tenant-deletion-scheduled": "Deletion scheduled for {{date}}",
+        "tenant-deletion-cancelled": "Deletion called off",
+        "tenant-suspended": "Suspended",
+        "tenant-reactivated": "Reactivated",
+        "branding-updated": "Branding changed",
+        "security-policy-updated": "Sign-in rules changed",
+        "rate-limits-updated": "Rate limits changed",
+        "rate-limits-deleted": "Rate limits reset",
+        "agent-kill-switch": "Every agent stopped",
+        "user-bulk-imported": "People imported"
+      }
+    },
+    "delete": {
+      "heading": "Delete {{name}}",
+      "note_one": "It's deleted {{days}} days after you ask, and any owner can keep it until then. On that day its {{n}} person loses access and is signed out.",
+      "note_other": "It's deleted {{days}} days after you ask, and any owner can keep it until then. On that day its {{n}} people lose access and are signed out.",
+      "button": "Delete organisation",
+      "confirmTitle": "Delete {{name}}?",
+      "confirmDescription_one": "It's deleted on {{date}}, {{days}} days from now. Until then it works as usual, and any owner can keep it. On that day its {{n}} person loses access and is signed out.",
+      "confirmDescription_other": "It's deleted on {{date}}, {{days}} days from now. Until then it works as usual, and any owner can keep it. On that day its {{n}} people lose access and are signed out.",
+      "confirm": "Delete organisation",
+      "action": "Delete the organisation",
+      "scheduledTitle": "{{name}} will be deleted on {{date}}",
+      "scheduledDescription_one": "Until then it works as usual. On that day its {{n}} person loses access and is signed out. Any owner can keep it until then.",
+      "scheduledDescription_other": "Until then it works as usual. On that day its {{n}} people lose access and are signed out. Any owner can keep it until then.",
+      "keep": "Keep {{name}}",
+      "keepAction": "Keep {{name}}"
     }
-  },
-  "members": {
-    "description": "Users who are members of this organisation."
   },
   "toast": {
     "securityPolicySaved": "Security policy saved",
@@ -179,9 +208,10 @@
     "domainRemoved": "Domain removed",
     "domainUpdated": "Domain updated",
     "organizationUpdated": "Organization updated",
-    "organizationDeleted": "Organization deleted",
     "templateSaved": "Template saved",
-    "revertedToDefault": "Reverted to default"
+    "revertedToDefault": "Reverted to default",
+    "deletionScheduled": "Deletion scheduled",
+    "deletionCancelled": "The organisation will be kept"
   },
   "emails": {
     "delivery": {
@@ -550,8 +580,8 @@
   "nav": {
     "directory": {
       "organizations": {
-        "title": "Organizations",
-        "description": "Organization boundaries, plans and regions."
+        "title": "Organisations",
+        "description": "The organisations you belong to, and your role in each."
       }
     },
     "settings": {
@@ -586,7 +616,7 @@
     }
   },
   "shortcuts": {
-    "organizations": "Organizations",
+    "organizations": "Organisations",
     "organizationSettings": "Organization settings"
   },
   "qeetaiSuggestions": {

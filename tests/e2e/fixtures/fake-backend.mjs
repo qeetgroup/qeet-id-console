@@ -125,11 +125,15 @@ function organization(tenantId) {
     plan: "enterprise",
     region: "us-east-1",
     logo_url: "",
-    domain: "",
+    domain: `${tenant.slug}.example`,
     roles: ["owner"],
     last_used_at: null,
     status: "active",
     created_at: "2026-01-01T00:00:00Z",
+    // The list's counts, and the details its page shows.
+    member_count: 4,
+    mfa_enabled_count: 3,
+    metadata: { industry: "Software", headquarters: "Bengaluru, IN" },
   };
 }
 

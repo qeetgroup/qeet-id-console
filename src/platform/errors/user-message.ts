@@ -72,6 +72,9 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   // 409 -> `api`, and a retry resubmits the same slug, so point at the field that fixes it: the
   // slug, not the name (names aren't unique).
   [ERROR_CODES.ORG_SLUG_TAKEN]: "errors:code.orgSlugTaken",
+  [ERROR_CODES.TENANT_OWNER_ONLY]: "errors:code.tenantOwnerOnly",
+  [ERROR_CODES.TENANT_DELETION_SCHEDULED]: "errors:code.tenantDeletionScheduled",
+  [ERROR_CODES.TENANT_DELETION_NOT_SCHEDULED]: "errors:code.tenantDeletionNotScheduled",
   [ERROR_CODES.MFA_CODE_INVALID]: "errors:code.mfaCodeInvalid",
   [ERROR_CODES.MFA_CODE_SEND_LIMITED]: "errors:code.mfaCodeSendLimited",
   [ERROR_CODES.MFA_FACTOR_LIMIT]: "errors:code.mfaFactorLimit",

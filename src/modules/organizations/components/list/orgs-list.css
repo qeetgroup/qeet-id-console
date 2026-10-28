@@ -1,0 +1,116 @@
+/*
+ * Directory › Organisations (orgs-list-page.tsx). Placement and token values only (--qx-*). The
+ * band, toolbar and filters are the Users page's (people.css, loaded with the console's styles);
+ * only the organisation cell, the two-step meter and the band's People bars are new.
+ */
+
+/* An organisation: its logo, then its name (and badges) over its domain or URL. */
+.org-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+}
+
+.org-two {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.org-two small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-name-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+.org-name {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+  text-decoration: none;
+}
+
+.org-name:hover {
+  text-decoration: underline;
+}
+
+.org-name:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Two-step in a row: a short meter, then the share ("100%" fits). */
+.org-meter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4ch;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  inline-size: 100%;
+}
+
+.org-meter-n {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+/* The band's People cell: the largest organisations as bars, each opening its page. */
+.org-bars ul {
+  display: grid;
+  gap: 6px;
+  margin: var(--qx-space-gap-sm) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.org-bars li {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  font: var(--qx-typography-body-sm);
+}
+
+.org-bar-name {
+  overflow: hidden;
+  color: var(--qx-color-text-default);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-bar-name:hover {
+  text-decoration: underline;
+}
+
+.org-bar-name:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+.org-bar-track {
+  display: block;
+  block-size: 6px;
+  background: var(--qx-color-bg-neutral-subtle);
+}
+
+/* One series, the ramp's darkest step (people.css), so it reads as the band's other marks. */
+.org-bar-fill {
+  display: block;
+  block-size: 100%;
+  background: var(--ppl-today);
+}
+
+.org-bars b {
+  font-weight: var(--qx-typography-label-sm-font-weight);
+  font-variant-numeric: tabular-nums;
+}

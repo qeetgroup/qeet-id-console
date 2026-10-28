@@ -17,11 +17,11 @@ test.beforeEach(async ({ request }) => {
   await request.post(`${BACKEND_URL}/__test__/reset`);
 });
 
-test("from Directory › Organizations, and back", async ({ page }) => {
+test("from Directory › Organisations, and back", async ({ page }) => {
   await signIn(page, ADMIN.email);
   await page.goto("/organizations");
   await hydrated(page);
-  await page.getByRole("button", { name: "New organization" }).click();
+  await page.getByRole("button", { name: "New organisation" }).click();
   await expect(page).toHaveURL(/\/create-organization\?from=organizations$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Create an organisation");
   await page.getByRole("radio", { name: "Pro" }).click();

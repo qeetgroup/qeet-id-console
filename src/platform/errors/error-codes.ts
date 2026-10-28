@@ -64,6 +64,9 @@ export const ERROR_CODES = {
   VERIFY_EMAIL_NOT_VERIFIED: "verification.email_not_verified",
   FORBIDDEN: "auth.forbidden", // authz
   ORG_SLUG_TAKEN: "tenant.slug_taken", // a reused name derives a slug already taken
+  TENANT_OWNER_ONLY: "tenant.owner_only", // deleting an organisation, or calling it off
+  TENANT_DELETION_SCHEDULED: "tenant.deletion_scheduled", // its deletion is already scheduled
+  TENANT_DELETION_NOT_SCHEDULED: "tenant.deletion_not_scheduled", // nothing to call off
   GROUP_NAME_EXISTS: "group.name_exists", // a group's name is unique in its organisation
   GROUP_CYCLE: "group.cycle", // a group can't sit inside itself or its own groups
   GROUP_TEMPLATE_NAME_EXISTS: "group.template_name_exists", // a template's name is unique too

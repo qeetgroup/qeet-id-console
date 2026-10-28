@@ -32,13 +32,13 @@ describe("console navigation state", () => {
     expect(new Set(navGroups.map((group) => group.id)).size).toBe(navGroups.length);
   });
 
-  it("keeps Directory focused on people, groups, organizations and sync", () => {
+  it("keeps Directory focused on people, groups, organisations and sync", () => {
     const directory = navGroups.find((group) => group.id === "directory");
 
     expect(directory?.items.map((item) => item.title)).toEqual([
       "Users",
       "Groups",
-      "Organizations",
+      "Organisations",
       "Directories",
     ]);
   });

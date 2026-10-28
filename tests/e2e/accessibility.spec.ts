@@ -63,6 +63,17 @@ const CONSOLE_PAGES: Target[] = [
     ready: (page) => page.getByRole("heading", { name: "Where it sits" }),
   },
   {
+    name: "organisations",
+    path: "/organizations",
+    ready: (page) =>
+      page.getByRole("table", { name: "Organisations" }).getByText("org-one.example"),
+  },
+  {
+    name: "organisation page",
+    path: "/organizations/22222222-2222-4222-8222-222222222222",
+    ready: (page) => page.getByRole("link", { name: "Organisation created" }),
+  },
+  {
     name: "authorization roles",
     path: "/authorization/roles",
     ready: (page) => page.getByText("Reads members and resets their sign-in."),
