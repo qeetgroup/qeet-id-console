@@ -199,6 +199,32 @@ parent link cascades), with their memberships and role grants; `use-delete-group
 confirm, from the list or the page. The console's one confirm (`SensitiveActionProvider`) is the
 `@qeetrix/react` alert dialog: red intent line for a destructive action, amber otherwise.
 
+## Organisations
+
+Directory › Organisations (`/organizations`) is rebuilt on `@qeetrix/react`:
+`modules/organizations/components/list/` and `components/page/`. It lists the organisations you
+belong to (every page of `GET /v1/tenants`), joined with your place in each from
+`GET /v1/me/organizations`: your roles, when you last opened it, its domain.
+
+- `orgs-list-page.tsx`: the header and its band (`orgs-band.tsx`, the Users band's parts: people
+  across the organisations with the largest as bars, two-step against the Users target, your roles,
+  and what needs a look), the toolbar (search, your role, plan, and data region when there's more
+  than one), and the table (`orgs-table.tsx`). Each row has Switch, which moves the session into it;
+  a name opens its page. There is no edit sheet (Settings › General edits the one you're in, and the
+  server changes no other), no preview drawer, and no Suspend: the server always refuses it.
+- An organisation's page (`/organizations/:id`) is its record, not a second dashboard: its facts in
+  the header; Identity (`org-identity.tsx`: its URL and ID, its domain and what verifying it means,
+  its data region on a ruler of Qeet ID's regions); History (`org-history.tsx`: the audit events on
+  the organisation itself, summed up, by month, then each with who, browser and address, each
+  opening its record in Activity); and, for an owner, Delete. Another organisation shows what the
+  list knows and Switch.
+- Deleting (`use-org-actions.ts`) is the server's: an owner asks, it's deleted 7 days later, and any
+  owner can keep it until then (`POST …/deletion/cancel`). The list doesn't carry the due date yet
+  (QTID-963), so only the organisation you're in shows it.
+
+The filters live in the address (`?q=&role=&plan=&region=&look=`), and the rules are pure functions
+in `orgs-model.ts`. The logo sits in the page title until `PageHeader` has a leading slot (QTRX-48).
+
 ## Styling rules
 
 - Use semantic tokens such as `bg-card`, `text-muted-foreground`, `text-success`, and `border-border`.

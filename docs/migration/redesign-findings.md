@@ -151,11 +151,27 @@ Each line: the question, then the options; **(R)** marks the recommended one.
 - Server error text on Sync errors: **(R)** a small "For your directory admin" code line · hide it.
 
 **Organisations** — `organizations/`
+- **Built (2026-10-28, approved):** the list (`/organizations`) and an organisation's page
+  (`/organizations/:id`). Mock-ups: `organizations/redesign/` (`compare-*.png`). Verified server
+  facts that shaped it: Suspend is always refused (`tenant.self_suspend`), so Suspend is gone from
+  the row menu, the page and the edit sheet; changes and deletes reach only the organisation you're
+  in, so today's Delete (offered only on the others) could never work; deleting is owner-only and
+  **scheduled** 7 days out, with `deletion/cancel` to keep it. The list reads every page (it read
+  50) and your roles, last opened and domain from `/v1/me/organizations`. The page is the
+  organisation's record (the Dashboard is its overview): Identity (URL and ID; domain, and that its
+  verifier manages the accounts on it; data region on a ruler) and History (audit events on the
+  tenant, by month, each opening its record in Activity), Delete for owners. The edit sheet and the
+  preview drawer are gone (Settings › General edits). The sidebar says "Organisations".
+  QTID-962 (template prefix), QTID-963 (`deletion_due_at` in the list), QTRX-48 (PageHeader leading
+  slot); QTRX-8 commented (Button as a link).
 - Detail tabs for the current organisation: **(R)** read-only summaries linking out · drop Members,
-  Security, Billing.
+  Security, Billing. *Built as the record above, without the summaries (Dashboard-only overview).*
 - An organisation you're not in: **(R)** its record and Switch, no tabs · tabs that say "switch".
+  *Built.*
 - `/organizations/tenants` (a redirect to the list): **(R)** keep the redirect · delete the route.
 - Data region in General: **(R)** read-only after creation · keep "Change".
+- General's Status field offers Suspend, which the server always refuses: drop it in the Settings
+  batch (Delete lives on the organisation's page).
 - Created dates: **(R)** date with full date on hover · relative.
 - Password rules on Settings › Security: **(R)** drop them, one row linking to Sign-in › Password
   (the server only enforces those) · keep both.
@@ -351,8 +367,9 @@ prop for Billing ("Current plan").
 
 **Organisations**
 - Member count 46 vs 45 users (a deleted account counted?); MFA share 39% vs 38.6%.
-- `PATCH /v1/tenants` can't change `metadata` (headquarters, industry, website).
-- `/v1/tenants` is cursor-paged; per-organisation details locked to the active one.
+- `PATCH /v1/tenants` takes `metadata` now (headquarters, industry, website); General doesn't edit it.
+- `/v1/tenants` is cursor-paged; per-organisation details locked to the active one. Its items lack
+  `deletion_due_at` (QTID-963).
 - Branding logo is a `data:` URL, which emails reject, so "Show logo" has no effect.
 - The policy saves as one whole-object `PUT` (doesn't suit per-row saves with step-up).
 - The default hosted sign-in address isn't in any API.
