@@ -9,37 +9,58 @@ export type Branding = {
   settings?: Record<string, unknown> | null;
 };
 
-export const BRANDING_COLORS = { primary: "#f97316", secondary: "#8b5cf6" } as const;
-
-export type BrandingDraft = {
-  logo_url: string;
-  primary_color: string;
-  secondary_color: string;
-  background_color: string;
-  custom_domain: string;
-  email_from_name: string;
-  email_from_address: string;
-  email_reply_to: string;
+/** The values Branding changes, each saved on its own. */
+export type BrandingChange = {
+  logo_url?: string | null;
+  primary_color?: string | null;
+  background_color?: string | null;
+  email_from_name?: string;
+  email_from_address?: string;
+  email_reply_to?: string;
 };
 
-export type BrandingErrors = Partial<
-  Record<keyof BrandingDraft, "color" | "logo" | "domain" | "email" | "header">
->;
+const text = (value: unknown) => (typeof value === "string" ? value : "");
 
-export function brandingDraft(branding: Branding): BrandingDraft {
+/** The page background, from settings, when it's a colour the sign-in page would use. */
+export function brandingBackground(branding: Branding): string | null {
+  return normalizeBrandColor(text(branding.settings?.background_color));
+}
+
+export function brandingReplyTo(branding: Branding): string {
+  return text(branding.settings?.email_reply_to);
+}
+
+/**
+ * The whole record with one change applied. The server's PUT replaces every field, so everything
+ * this change doesn't touch goes back as stored: the accent colour (which the sign-in page never
+ * reads, so the page doesn't offer it), the sign-in address (changed in Settings › Domains) and
+ * every other setting.
+ */
+export function brandingWith(current: Branding, change: BrandingChange): Branding {
+  const settings: Record<string, unknown> = { ...(current.settings ?? {}) };
+  if ("background_color" in change) {
+    settings.background_color = normalizeBrandColor(change.background_color ?? "") ?? "";
+  }
+  if ("email_reply_to" in change) settings.email_reply_to = (change.email_reply_to ?? "").trim();
+  const kept = <Key extends keyof Branding>(key: Key) => current[key] ?? null;
   return {
-    logo_url: branding.logo_url ?? "",
-    primary_color: branding.primary_color || BRANDING_COLORS.primary,
-    secondary_color: branding.secondary_color || BRANDING_COLORS.secondary,
-    background_color:
-      typeof branding.settings?.background_color === "string"
-        ? branding.settings.background_color
-        : "",
-    custom_domain: branding.custom_domain ?? "",
-    email_from_name: branding.email_from_name ?? "",
-    email_from_address: branding.email_from_address ?? "",
-    email_reply_to:
-      typeof branding.settings?.email_reply_to === "string" ? branding.settings.email_reply_to : "",
+    tenant_id: current.tenant_id,
+    logo_url: "logo_url" in change ? change.logo_url?.trim() || null : kept("logo_url"),
+    primary_color:
+      "primary_color" in change
+        ? normalizeBrandColor(change.primary_color ?? "")
+        : kept("primary_color"),
+    secondary_color: kept("secondary_color"),
+    custom_domain: kept("custom_domain"),
+    email_from_name:
+      "email_from_name" in change
+        ? change.email_from_name?.trim() || null
+        : kept("email_from_name"),
+    email_from_address:
+      "email_from_address" in change
+        ? change.email_from_address?.trim() || null
+        : kept("email_from_address"),
+    settings,
   };
 }
 
@@ -54,6 +75,7 @@ export function normalizeBrandColor(value: string): string | null {
   return null;
 }
 
+/** A logo the sign-in page can show: an http(s) URL without credentials, or an image file up to 2 MB. */
 export function validBrandLogo(value: string): boolean {
   const source = value.trim();
   if (!source) return true;
@@ -70,54 +92,29 @@ export function validBrandLogo(value: string): boolean {
   }
 }
 
-export function validBrandDomain(value: string): boolean {
-  const domain = value.trim();
-  if (!domain) return true;
-  if (domain.length > 253 || /[\s/:?#@]/.test(domain)) return false;
-  const labels = domain.split(".");
-  return (
-    labels.length > 1 &&
-    labels.every((label) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label))
-  );
+/** What a logo is, for its row: the image type of a file, or the host it loads from. */
+export function brandLogoSource(
+  value: string,
+): { kind: "file"; type: "svg" | "png" | "jpeg" | "webp" } | { kind: "url"; host: string } | null {
+  const file = /^data:image\/(png|jpeg|webp|svg\+xml);base64,/i.exec(value.trim());
+  if (file?.[1]) {
+    const type = file[1].toLowerCase();
+    return { kind: "file", type: type === "svg+xml" ? "svg" : (type as "png" | "jpeg" | "webp") };
+  }
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" || url.protocol === "http:"
+      ? { kind: "url", host: url.host }
+      : null;
+  } catch {
+    return null;
+  }
 }
 
-export function validateBranding(draft: BrandingDraft): BrandingErrors {
-  const errors: BrandingErrors = {};
-  if (!normalizeBrandColor(draft.primary_color)) errors.primary_color = "color";
-  if (!normalizeBrandColor(draft.secondary_color)) errors.secondary_color = "color";
-  if (draft.background_color && !normalizeBrandColor(draft.background_color))
-    errors.background_color = "color";
-  if (!validBrandLogo(draft.logo_url)) errors.logo_url = "logo";
-  if (!validBrandDomain(draft.custom_domain)) errors.custom_domain = "domain";
-  if (
-    draft.email_from_address.trim() &&
-    !/^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(draft.email_from_address.trim())
-  )
-    errors.email_from_address = "email";
-  if (
-    draft.email_reply_to.trim() &&
-    !/^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(draft.email_reply_to.trim())
-  )
-    errors.email_reply_to = "email";
-  if (/[\r\n]/.test(draft.email_from_name)) errors.email_from_name = "header";
-  return errors;
-}
-
-export function brandingInput(draft: BrandingDraft, current: Branding): Branding {
-  const { background_color, email_reply_to, ...fields } = draft;
-  const settings = { ...current.settings };
-  if (background_color || "background_color" in settings)
-    settings.background_color = normalizeBrandColor(background_color) ?? "";
-  if (email_reply_to || "email_reply_to" in settings)
-    settings.email_reply_to = email_reply_to.trim();
-  return {
-    tenant_id: current.tenant_id,
-    ...Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, value.trim()])),
-    primary_color: normalizeBrandColor(draft.primary_color) ?? current.primary_color,
-    secondary_color: normalizeBrandColor(draft.secondary_color) ?? current.secondary_color,
-    custom_domain: draft.custom_domain.trim().toLowerCase(),
-    settings,
-  };
+/** One address, as the server accepts for the reply-to and sender. */
+export function validBrandEmail(value: string): boolean {
+  const address = value.trim();
+  return !address || /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(address);
 }
 
 function colorLuminance(color: string): number {
@@ -135,6 +132,11 @@ export function brandingContrast(first: string, second: string): number {
   return (Math.max(firstLight, secondLight) + 0.05) / (Math.min(firstLight, secondLight) + 0.05);
 }
 
+/**
+ * The label colour the sign-in page draws on a brand colour (qeet-id-hosted's
+ * readableForeground): near-black or white, whichever reads better, or black when neither
+ * reaches 4.5:1.
+ */
 export function brandingForeground(background: string): "#0a0a0a" | "#000000" | "#ffffff" {
   const dark = brandingContrast(background, "#0a0a0a");
   const light = brandingContrast(background, "#ffffff");
