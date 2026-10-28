@@ -112,7 +112,8 @@
     "gate": {
       "title": "LDAP / Active Directory sync is an Enterprise feature",
       "description": "Authenticate and sync users against your on-prem LDAP or Active Directory. Upgrade to Enterprise to connect a directory."
-    }
+    },
+    "pageTitle": "LDAP / AD"
   },
   "samlSp": {
     "description": "Service-provider–initiated SAML 2.0 connections to enterprise IdPs. Assertions are validated against the IdP signing certificate; users are provisioned on first login.",
@@ -339,7 +340,8 @@
     "gate": {
       "title": "SCIM directory sync is an Enterprise feature",
       "description": "Automatically provision and deprovision users from your identity provider (Okta, Entra ID…). Upgrade to Enterprise to enable SCIM."
-    }
+    },
+    "pageTitle": "SCIM"
   },
   "tokens": {
     "description": "Active OAuth / OIDC grants. Access tokens are short-lived JWTs that expire on their own; revoking a grant invalidates its refresh-token chain so it can't be renewed.",
@@ -806,14 +808,6 @@
     "factorRemoved": "Factor removed"
   },
   "nav": {
-    "directory": {
-      "scim": {
-        "title": "SCIM"
-      },
-      "ldapAd": {
-        "title": "LDAP / AD"
-      }
-    },
     "applications": {
       "applications": {
         "title": "Applications",

@@ -152,10 +152,11 @@ export function OrgsBand({
                     <b>{n(p.count)}</b> {p.id.toLowerCase()}
                   </Link>
                 ) : (
-                  <span>
+                  // The legend's style is its links'; the other roles open the whole list.
+                  <Link {...to({})}>
                     <span className={`ppl-swatch is-${p.swatch}`} aria-hidden="true" />
                     <b>{n(p.count)}</b> {t("list.band.otherRoles")}
-                  </span>
+                  </Link>
                 )}
               </li>
             ))}

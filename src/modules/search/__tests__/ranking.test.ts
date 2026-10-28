@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getNavGroups } from "@/platform/config/navigation";
+import { commandContributions } from "@/platform/modules/registry";
 import { buildNavSearchItems } from "../registry/navigation-source";
 
 import {
@@ -27,8 +28,10 @@ describe("navigation candidates", () => {
 
     expect(planned).toHaveLength(0);
     for (const item of planned) expect(paths.has(item.url)).toBe(false);
-    expect(paths.has("/auth/connections/scim")).toBe(true);
-    expect(paths.has("/auth/connections/ldap")).toBe(true);
+    // SCIM and LDAP are found through their commands (directory manifest), not as tabs.
+    const commands = new Set(commandContributions().map((c) => c.to));
+    expect(commands.has("/directory/connections/scim")).toBe(true);
+    expect(commands.has("/directory/connections/ldap")).toBe(true);
     expect(paths.has("/users/deleted")).toBe(true);
     for (const path of [
       "/directory/connections",
