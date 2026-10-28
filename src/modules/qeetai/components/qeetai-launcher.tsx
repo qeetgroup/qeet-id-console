@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { workspaceActions } from "../store/workspace-store";
 
 /**
- * Toggles the workspace on ⌘J / Ctrl+J and renders nothing. Not in useGlobalShortcuts, which
+ * Opens and closes the panel on ⌘J / Ctrl+J and renders nothing. Not in useGlobalShortcuts, which
  * ignores modifier keys and typing targets, so the shortcut also works from the composer.
  */
 export function QeetAILauncher() {

@@ -7,6 +7,11 @@ import type { PublicSession } from "@/platform/auth/server-session";
 import { sessionStore } from "@/platform/auth/session-store";
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn(async () => ({ items: [] })) }));
+// The runtime's confirm is the console's one, which the app layout provides.
+vi.mock("@/platform/security/sensitive-action-provider", () => ({
+  SensitiveActionCancelled: class extends Error {},
+  useSensitiveAction: () => vi.fn(async () => true),
+}));
 
 import { QeetAIRuntimeProvider } from "../qeetai-provider";
 import { conversationStore } from "../store/conversation-store";
