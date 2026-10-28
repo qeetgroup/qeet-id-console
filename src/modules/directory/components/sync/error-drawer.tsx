@@ -65,7 +65,7 @@ export function ErrorDrawer({
         <DrawerContent
           size="md"
           title={t(`errors.causes.${causeOf(event)}.name`)}
-          description={t("errors.drawer.description", {
+          description={t("sync.drawer.description", {
             connection: nameOf(event.connection_id),
             date: formatDateTime(event.started_at, locale),
           })}
@@ -73,40 +73,40 @@ export function ErrorDrawer({
           <DrawerBody>
             <div className="sync-drawer">
               <DescriptionList>
-                <DescriptionItem term={t("errors.drawer.status")}>
+                <DescriptionItem term={t("sync.drawer.status")}>
                   <Badge size="sm" tone={RESOLUTION_TONE[event.resolution]}>
                     {t(`sync.resolutions.${event.resolution}`)}
                   </Badge>
                   {event.resolved_at ? (
                     <Text size="sm" tone="subtle">
                       {event.resolution === "retried"
-                        ? t("errors.drawer.closedRetried", {
+                        ? t("sync.drawer.retried", {
                             when: whenText(event.resolved_at, now),
                           })
-                        : t("errors.drawer.closedResolved", {
+                        : t("sync.drawer.resolved", {
                             when: whenText(event.resolved_at, now),
                           })}
                     </Text>
                   ) : null}
                 </DescriptionItem>
-                <DescriptionItem term={t("errors.drawer.severity")}>
+                <DescriptionItem term={t("sync.drawer.severity")}>
                   <Badge size="sm" {...SEVERITY_BADGE[severity]}>
                     {t(`sync.severities.${severity}`)}
                   </Badge>
                 </DescriptionItem>
-                <DescriptionItem term={t("errors.drawer.run")}>{t(runKey(event))}</DescriptionItem>
-                <DescriptionItem term={t("errors.drawer.startedBy")}>
+                <DescriptionItem term={t("sync.drawer.run")}>{t(runKey(event))}</DescriptionItem>
+                <DescriptionItem term={t("sync.drawer.startedBy")}>
                   {t(`sync.triggers.${event.trigger}`)}
                 </DescriptionItem>
-                <DescriptionItem term={t("errors.drawer.affects")}>
+                <DescriptionItem term={t("sync.drawer.affects")}>
                   <Affects event={event} />
                 </DescriptionItem>
-                <DescriptionItem term={t("errors.drawer.code")}>
+                <DescriptionItem term={t("sync.drawer.code")}>
                   <code className="sync-code">
                     {event.error_code} · HTTP {event.http_status}
                   </code>
                 </DescriptionItem>
-                <DescriptionItem term={t("errors.drawer.took")}>
+                <DescriptionItem term={t("sync.drawer.took")}>
                   {formatDirectoryDuration(event.duration_ms)}
                 </DescriptionItem>
               </DescriptionList>
@@ -132,7 +132,7 @@ export function ErrorDrawer({
           </DrawerBody>
           <DrawerFooter>
             <Button variant="ghost" onClick={onClose}>
-              {t("errors.drawer.close")}
+              {t("sync.drawer.close")}
             </Button>
             {canWrite && isOpen ? (
               <Button

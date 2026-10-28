@@ -6,7 +6,7 @@
 // (federation/ldap authenticate, federation/scim createUser); the server's preview leaves those
 // out, so the console adds them as the sign-in would.
 
-import type { DirectoryMapping, MappingInput } from "./api/directory";
+import type { DirectoryMapping, MappingInput } from "./api/mappings";
 
 /** The fields, in the page's order: the account's two, then the directory profile's. */
 export const TARGETS = [

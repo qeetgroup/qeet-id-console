@@ -21,8 +21,8 @@ import {
   type EventFilters,
   useDirectoryConnections,
   useDirectoryErrors,
-  useDirectoryEvents,
 } from "@/modules/directory/api/directory";
+import { useDirectoryEvents } from "@/modules/directory/api/events";
 import {
   ExportTooLargeError,
   fetchActivityExport,

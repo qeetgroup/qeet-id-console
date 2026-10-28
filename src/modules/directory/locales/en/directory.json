@@ -1,110 +1,4 @@
 {
-  "directory": {
-    "filter": "Filter",
-    "allTypes": "All types",
-    "clearFilters": "Clear filters",
-    "suspended": {
-      "title": "Suspended users",
-      "description": "Review temporarily disabled users. Reactivate accounts or update review decisions based on risk and reason.",
-      "export": "Export list",
-      "policies": "Review policies",
-      "summary": "Suspended user summary",
-      "total": "Total suspended",
-      "highRisk": "High risk",
-      "byPolicy": "Suspended by policy",
-      "manual": "Manually suspended",
-      "pending": "Pending review",
-      "clearPending": "Clear the pending review filter",
-      "filters": "Suspended user filters",
-      "search": "Search users by name, email or ID...",
-      "allReasons": "All reasons",
-      "allSources": "All sources",
-      "allTeams": "All teams",
-      "allRisks": "All risk levels",
-      "name": "Name",
-      "email": "Email",
-      "team": "Team",
-      "reason": "Suspension reason",
-      "source": "Source",
-      "risk": "Risk level",
-      "since": "Suspended since",
-      "status": "Status",
-      "lastSignIn": "Last sign-in",
-      "actions": "Actions",
-      "selectAll": "Select eligible users",
-      "select": "Select {{name}}",
-      "rowActions": "Actions for {{name}}",
-      "managedElsewhere": "This account is managed elsewhere or is read-only.",
-      "reactivate": "Reactivate",
-      "reactivateSelected": "Reactivate {{count}} selected",
-      "reactivateTitle_one": "Reactivate {{count}} user?",
-      "reactivateTitle_other": "Reactivate {{count}} users?",
-      "reactivateDescription": "These users can sign in again. Existing sessions remain revoked.",
-      "reactivateActionLabel": "Reactivate these users",
-      "review": "Review suspension",
-      "reviewState": "Review state",
-      "reviewed": "Reviewed",
-      "saveReview": "Save review",
-      "empty": "No suspended users match this view.",
-      "label": "Suspended",
-      "reasonsTitle": "Suspension reasons",
-      "reasonsDescription": "Recorded reasons for suspended accounts.",
-      "queueTitle": "Reactivation queue",
-      "queueDescription": "Suspended users awaiting review or reactivation.",
-      "viewPending": "View all {{count}} pending",
-      "noPending": "No pending reviews.",
-      "riskTitle": "Risk distribution",
-      "riskDescription": "Recorded risk assessments for suspended users.",
-      "reasons": {
-        "unspecified": "Not recorded",
-        "provider": "Provider deactivation",
-        "suspicious_activity": "Suspicious activity",
-        "policy_violation": "Policy violation",
-        "account_compromise": "Account compromise",
-        "offboarding": "Offboarding",
-        "inactive": "Inactive account",
-        "other": "Other",
-        "managed_elsewhere": "Managed elsewhere"
-      },
-      "sources": {
-        "unknown": "Unknown",
-        "manual": "Manual",
-        "scim": "SCIM",
-        "ldap": "LDAP / AD",
-        "policy": "Policy",
-        "external": "External"
-      },
-      "risks": {
-        "unknown": "Unknown",
-        "low": "Low risk",
-        "medium": "Medium risk",
-        "high": "High risk"
-      }
-    },
-    "planned": "Planned",
-    "plannedHint": "This view is planned and is not available yet.",
-    "users": {
-      "title": "Users"
-    },
-    "groups": {
-      "title": "Groups"
-    },
-    "status": {
-      "configured": "Configured",
-      "notConfigured": "Not configured",
-      "active": "Active",
-      "attention": "Attention",
-      "notConnected": "Not connected",
-      "pendingInvitations_one": "{{count}} pending invitation",
-      "pendingInvitations_other": "{{count}} pending invitations",
-      "suspendedUsers": "{{count}} suspended users",
-      "scimConfigured": "SCIM is configured. Live sync health is not reported.",
-      "ldapActive_one": "{{count}} active LDAP / AD connection. Live sync health is not reported.",
-      "ldapActive_other": "{{count}} active LDAP / AD connections. Live sync health is not reported.",
-      "ldapAttention_one": "{{count}} LDAP / AD connection is draft or disabled.",
-      "ldapAttention_other": "{{count}} LDAP / AD connections are draft or disabled."
-    }
-  },
   "toast": {
     "mappingSaved": "Mapping saved",
     "mappingRemoved": "Mapping removed",
@@ -113,9 +7,6 @@
   },
   "nav": {
     "directory": {
-      "suspended": {
-        "title": "Suspended"
-      },
       "directories": {
         "title": "Directories",
         "description": "SCIM and LDAP / AD directory-sync connections."
@@ -308,7 +199,30 @@
       "warning": "Warning"
     },
     "technical": "For your directory admin:",
-    "clear": "Clear filters"
+    "clear": "Clear filters",
+    "about": {
+      "person": "A person",
+      "newPerson": "A new person",
+      "signIn": "Someone signing in",
+      "group": "A group",
+      "connection": "No one"
+    },
+    "drawer": {
+      "description": "{{connection}} · {{date}}",
+      "result": "Result",
+      "status": "Status",
+      "severity": "Severity",
+      "run": "Run",
+      "cause": "What went wrong",
+      "startedBy": "Started by",
+      "changed": "Changed",
+      "affects": "Affects",
+      "took": "Took",
+      "code": "Code",
+      "close": "Close",
+      "resolved": "Marked resolved {{when}}",
+      "retried": "Closed by a check {{when}}"
+    }
   },
   "activity": {
     "title": "Sync activity",
@@ -374,26 +288,9 @@
       "openErrors": "Open in Sync errors"
     },
     "drawer": {
-      "description": "{{connection}} · {{date}}",
-      "result": "Result",
-      "cause": "What went wrong",
-      "startedBy": "Started by",
-      "changed": "Changed",
-      "about": "About",
-      "took": "Took",
       "failure": "The failure",
       "failureOpen": "Open on Sync errors",
-      "failureResolved": "Marked resolved {{when}}",
-      "failureRetried": "Closed by a check {{when}}",
-      "retryOf": "A check run again from Sync errors",
-      "resources": {
-        "user": "A person",
-        "newUser": "A new person",
-        "signIn": "Someone signing in",
-        "group": "A group",
-        "connection": "The connection itself"
-      },
-      "close": "Close"
+      "retryOf": "A check run again from Sync errors"
     },
     "alert": {
       "title": "Alert me when directories fail",
@@ -629,13 +526,6 @@
       "severity": "Severity",
       "status": "Status"
     },
-    "affects": {
-      "person": "A person",
-      "newPerson": "A new person",
-      "signIn": "Someone signing in",
-      "group": "A group",
-      "noOne": "No one"
-    },
     "filters": {
       "search": "Search failures",
       "searchPlaceholder": "Search a code, message or person ID",
@@ -656,18 +546,7 @@
       "view": "View details"
     },
     "drawer": {
-      "description": "{{connection}} · {{date}}",
-      "status": "Status",
-      "severity": "Severity",
-      "run": "Run",
-      "startedBy": "Started by",
-      "affects": "Affects",
-      "code": "Code",
-      "took": "Took",
-      "closedResolved": "Marked resolved {{when}}",
-      "closedRetried": "Closed by a check {{when}}",
-      "retryElsewhere": "Qeet ID can't send this again: retry it from your identity provider or the person's next sign-in. It doesn't keep what was sent, or anyone's password.",
-      "close": "Close"
+      "retryElsewhere": "Qeet ID can't send this again: retry it from your identity provider or the person's next sign-in. It doesn't keep what was sent, or anyone's password."
     },
     "resolve": {
       "title_one": "Mark this failure resolved?",
@@ -678,14 +557,10 @@
     },
     "toast": {
       "passed": "The check passed: {{name}} answers",
-      "passedMany_one": "The check passed: {{n}} failure closed",
-      "passedMany_other": "The checks passed: {{n}} failures closed",
       "stillFailing": "The check failed again",
-      "stillFailingMany": "{{n}} of the checks failed again",
       "resolved_one": "Failure marked resolved",
       "resolved_other": "{{n}} failures marked resolved",
-      "refused_one": "{{n}} was closed already",
-      "refused_other": "{{n}} were closed already"
+      "refused": "Some were closed already"
     }
   },
   "mappings": {
@@ -778,7 +653,6 @@
       "saveAction": "Save the mapping",
       "cancel": "Cancel",
       "remove": "Remove mapping",
-      "sourceRequired": "Name the directory attribute.",
       "conflict": "Someone changed this mapping meanwhile, or another mapping for this field is on. Reload the page and try again.",
       "full": "A connection holds 50 mappings at most."
     },

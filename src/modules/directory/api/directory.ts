@@ -44,7 +44,7 @@ export const DEFAULT_EVENT_FILTERS: EventFilters = {
   offset: 0,
 };
 
-const eventSchema = z.object({
+export const eventSchema = z.object({
   id: z.string(),
   connection_id: z.string(),
   operation: z.string(),
@@ -66,23 +66,7 @@ const eventSchema = z.object({
   retry_of: z.string().nullable(),
   retryable: z.boolean(),
 });
-export const eventPageSchema = z.object({
-  items: z.array(eventSchema),
-  total: z.number().nonnegative(),
-  limit: z.number(),
-  offset: z.number(),
-  summary: z.object({
-    total: z.number(),
-    successful: z.number(),
-    warnings: z.number(),
-    failed: z.number(),
-    average_duration_ms: z.number().nullable(),
-  }),
-  volume: z.array(z.object({ date: z.string(), users: z.number(), groups: z.number() })),
-});
-
 export type DirectoryEvent = z.infer<typeof eventSchema>;
-export type DirectoryEventPage = z.infer<typeof eventPageSchema>;
 
 export type ErrorFilters = Omit<EventFilters, "status"> & { severity: string; resolution: string };
 export const DEFAULT_ERROR_FILTERS: ErrorFilters = {
@@ -113,50 +97,6 @@ export const errorPageSchema = z.object({
 });
 export type DirectoryErrorPage = z.infer<typeof errorPageSchema>;
 
-export const mappingSchema = z.object({
-  id: z.string(),
-  source_attribute: z.string(),
-  target_field: z.string(),
-  value_type: z.enum(["string", "array"]),
-  transform: z.enum(["none", "trim", "lowercase", "uppercase", "extract"]),
-  pattern: z.string(),
-  enabled: z.boolean(),
-  required: z.boolean(),
-  version: z.number().int(),
-});
-const mappingsSchema = z.object({
-  items: z.array(mappingSchema),
-  targets: z.record(z.string(), z.enum(["string", "array"])),
-});
-export const mappingPreviewSchema = z.object({
-  profile: z.record(z.string(), z.unknown()),
-  values: z.record(z.string(), z.unknown()),
-  // Each issue's `message` is backend text, so the schema drops it; the code carries the meaning.
-  issues: z.array(z.object({ mapping_id: z.string(), field: z.string(), code: z.string() })),
-  valid: z.boolean(),
-});
-export type DirectoryMapping = z.infer<typeof mappingSchema>;
-export type DirectoryMappings = z.infer<typeof mappingsSchema>;
-export type MappingPreview = z.infer<typeof mappingPreviewSchema>;
-export type MappingInput = Omit<DirectoryMapping, "id" | "version"> & {
-  id?: string;
-  version?: number;
-};
-
-export function mappingPath(tenantId: string | null, connectionId: string) {
-  return `/v1/tenants/${tenantId}/directory/connections/${encodeURIComponent(connectionId)}/mappings`;
-}
-
-export function useDirectoryMappings(connectionId: string) {
-  const tenantId = useTenantId();
-  const access = useCapabilities();
-  return useQuery({
-    queryKey: directoryKeys.mappings(tenantId, connectionId),
-    queryFn: () => api(mappingPath(tenantId, connectionId), { schema: mappingsSchema }),
-    enabled: !!tenantId && !!connectionId && access.can("connection.read"),
-  });
-}
-
 /** `keep`: a list's next page or filter keeps the rows on show while it loads. */
 export function useDirectoryErrors(filters: ErrorFilters, { keep = false } = {}) {
   const tenantId = useTenantId();
@@ -166,23 +106,6 @@ export function useDirectoryErrors(filters: ErrorFilters, { keep = false } = {})
     queryFn: () =>
       api(`/v1/tenants/${tenantId}/directory/errors`, { query: filters, schema: errorPageSchema }),
     enabled: !!tenantId && access.can("connection.read"),
-    staleTime: 15_000,
-    placeholderData: keep ? keepPreviousData : undefined,
-  });
-}
-
-/** `keep`: a list's next page or filter keeps the rows on show while it loads. */
-export function useDirectoryEvents(filters: EventFilters, enabled = true, { keep = false } = {}) {
-  const tenantId = useTenantId();
-  const access = useCapabilities();
-  return useQuery({
-    queryKey: directoryKeys.events(tenantId, filters),
-    queryFn: () =>
-      api(`/v1/tenants/${tenantId}/directory/activity`, {
-        query: filters,
-        schema: eventPageSchema,
-      }),
-    enabled: !!tenantId && access.can("connection.read") && enabled,
     staleTime: 15_000,
     placeholderData: keep ? keepPreviousData : undefined,
   });

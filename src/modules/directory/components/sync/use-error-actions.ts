@@ -33,21 +33,10 @@ export function useErrorActions(nameOf: (connectionId: string) => string) {
       toast.error(t("errors.toast.stillFailing"), { description: errorMessage(err) });
       return undefined;
     }
-    const one = targets.length === 1;
-    if (result.stillOpen)
-      toast.error(
-        one
-          ? t("errors.toast.stillFailing")
-          : t("errors.toast.stillFailingMany", { n: n(result.stillOpen) }),
-      );
-    else if (result.closed)
-      toast.success(
-        one
-          ? t("errors.toast.passed", { name: nameOf(targets[0]?.connection_id ?? "") })
-          : t("errors.toast.passedMany", { count: result.closed, n: n(result.closed) }),
-      );
-    if (result.refused)
-      toast.info(t("errors.toast.refused", { count: result.refused, n: n(result.refused) }));
+    if (result.closed)
+      toast.success(t("errors.toast.passed", { name: nameOf(targets[0]?.connection_id ?? "") }));
+    if (result.stillOpen) toast.error(t("errors.toast.stillFailing"));
+    if (result.refused) toast.info(t("errors.toast.refused"));
     return result;
   }
 
@@ -71,10 +60,7 @@ export function useErrorActions(nameOf: (connectionId: string) => string) {
               toast.success(
                 t("errors.toast.resolved", { count: result.closed, n: n(result.closed) }),
               );
-            if (result.refused)
-              toast.info(
-                t("errors.toast.refused", { count: result.refused, n: n(result.refused) }),
-              );
+            if (result.refused) toast.info(t("errors.toast.refused"));
           },
           (err: unknown) => toast.error(errorMessage(err)),
         ),

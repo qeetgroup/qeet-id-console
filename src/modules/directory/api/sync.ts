@@ -20,8 +20,8 @@ import {
   type ErrorFilters,
   type EventFilters,
   errorPageSchema,
-  eventPageSchema,
 } from "./directory";
+import { eventPageSchema } from "./events";
 import { directoryKeys } from "./keys";
 
 /** Each connection's events over `days`: one short read a connection, for its total and failures. */

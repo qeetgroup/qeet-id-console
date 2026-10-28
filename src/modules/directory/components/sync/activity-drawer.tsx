@@ -28,11 +28,11 @@ import { useChanged, useConnectionNames, whenText } from "./sync-parts";
 export function useAbout() {
   const { t } = useTranslation("directory");
   return (e: DirectoryEvent) => {
-    if (e.resource_type === "group") return t("activity.drawer.resources.group");
-    if (e.resource_type === "connection") return t("activity.drawer.resources.connection");
-    if (e.operation === "sign-in") return t("activity.drawer.resources.signIn");
-    if (!e.resource_id) return t("activity.drawer.resources.newUser");
-    return t("activity.drawer.resources.user");
+    if (e.resource_type === "group") return t("sync.about.group");
+    if (e.resource_type === "connection") return t("sync.about.connection");
+    if (e.operation === "sign-in") return t("sync.about.signIn");
+    if (!e.resource_id) return t("sync.about.newPerson");
+    return t("sync.about.person");
   };
 }
 
@@ -70,7 +70,7 @@ export function ActivityDrawer({
         <DrawerContent
           size="sm"
           title={t(runKey(event))}
-          description={t("activity.drawer.description", {
+          description={t("sync.drawer.description", {
             connection: nameOf(event.connection_id),
             date: formatDateTime(event.started_at, locale),
           })}
@@ -78,22 +78,22 @@ export function ActivityDrawer({
           <DrawerBody>
             <div className="sync-drawer">
               <DescriptionList>
-                <DescriptionItem term={t("activity.drawer.result")}>
+                <DescriptionItem term={t("sync.drawer.result")}>
                   <Badge tone={RESULT_TONE[event.status]} size="sm">
                     {t(`sync.results.${event.status}`)}
                   </Badge>
                 </DescriptionItem>
                 {failed ? (
-                  <DescriptionItem term={t("activity.drawer.cause")}>
+                  <DescriptionItem term={t("sync.drawer.cause")}>
                     {t(`errors.causes.${causeOf(event)}.name`)}
                   </DescriptionItem>
                 ) : null}
-                <DescriptionItem term={t("activity.drawer.startedBy")}>
+                <DescriptionItem term={t("sync.drawer.startedBy")}>
                   {event.retry_of
                     ? t("activity.drawer.retryOf")
                     : t(`sync.triggers.${event.trigger}`)}
                 </DescriptionItem>
-                <DescriptionItem term={t("activity.drawer.about")}>
+                <DescriptionItem term={t("sync.drawer.affects")}>
                   {event.resource_type === "user" &&
                   event.resource_id &&
                   event.operation !== "delete" ? (
@@ -108,10 +108,8 @@ export function ActivityDrawer({
                     about(event)
                   )}
                 </DescriptionItem>
-                <DescriptionItem term={t("activity.drawer.changed")}>
-                  {changed(event)}
-                </DescriptionItem>
-                <DescriptionItem term={t("activity.drawer.took")}>
+                <DescriptionItem term={t("sync.drawer.changed")}>{changed(event)}</DescriptionItem>
+                <DescriptionItem term={t("sync.drawer.took")}>
                   {formatDirectoryDuration(event.duration_ms)}
                 </DescriptionItem>
                 {failed ? (
@@ -120,10 +118,10 @@ export function ActivityDrawer({
                       ? t("activity.drawer.failureOpen")
                       : event.resolved_at
                         ? event.resolution === "retried"
-                          ? t("activity.drawer.failureRetried", {
+                          ? t("sync.drawer.retried", {
                               when: whenText(event.resolved_at, now),
                             })
-                          : t("activity.drawer.failureResolved", {
+                          : t("sync.drawer.resolved", {
                               when: whenText(event.resolved_at, now),
                             })
                         : t(`sync.resolutions.${event.resolution}`)}
@@ -144,7 +142,7 @@ export function ActivityDrawer({
           </DrawerBody>
           <DrawerFooter>
             <Button variant="ghost" onClick={onClose}>
-              {t("activity.drawer.close")}
+              {t("sync.drawer.close")}
             </Button>
             {failed ? (
               <Button icon={ArrowRightIcon} onClick={() => onOpenErrors(event)}>

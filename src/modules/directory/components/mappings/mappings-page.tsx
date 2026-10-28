@@ -20,8 +20,8 @@ import {
   DEFAULT_ERROR_FILTERS,
   useDirectoryConnections,
   useDirectoryErrors,
-  useDirectoryMappings,
 } from "@/modules/directory/api/directory";
+import { useDirectoryMappings } from "@/modules/directory/api/mappings";
 import { healthState } from "@/modules/directory/connections-model";
 import type { DirectoryConnection } from "@/modules/directory/directory-model";
 import {

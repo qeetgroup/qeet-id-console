@@ -4,8 +4,11 @@ import { Alert, DescriptionItem, DescriptionList } from "@qeetrix/react/experime
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { DirectoryMapping, MappingPreview } from "@/modules/directory/api/directory";
-import { usePreviewDirectoryMappings } from "@/modules/directory/api/mapping-actions";
+import {
+  type DirectoryMapping,
+  type MappingPreview,
+  usePreviewDirectoryMappings,
+} from "@/modules/directory/api/mappings";
 import { parseMappingSource } from "@/modules/directory/directory-model";
 import {
   type ConnectionKind,

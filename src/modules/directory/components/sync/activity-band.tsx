@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import { Sparkline } from "@/modules/dashboard";
-import type { DirectoryEvent, DirectoryEventPage } from "@/modules/directory/api/directory";
+import type { DirectoryEvent } from "@/modules/directory/api/directory";
+import type { DirectoryEventPage } from "@/modules/directory/api/events";
 import { dailyColumns } from "@/modules/directory/connections-model";
 import type { DirectoryConnection } from "@/modules/directory/directory-model";
 import { runKey } from "@/modules/directory/sync-model";

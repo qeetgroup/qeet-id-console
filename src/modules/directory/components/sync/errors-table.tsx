@@ -28,15 +28,15 @@ import { ANY, ConnectionSelect, PeriodSelect, useConnectionNames, When } from ".
 /** Who a failure reached, in words: a person (with their page), a new one, a group, no one. */
 export function Affects({ event }: { event: DirectoryEvent }) {
   const { t } = useTranslation("directory");
-  if (event.resource_type === "group") return <>{t("errors.affects.group")}</>;
+  if (event.resource_type === "group") return <>{t("sync.about.group")}</>;
   if (event.resource_type === "connection")
-    return <span className="sync-subtle">{t("errors.affects.noOne")}</span>;
-  if (event.operation === "sign-in") return <>{t("errors.affects.signIn")}</>;
-  if (!event.resource_id) return <>{t("errors.affects.newPerson")}</>;
-  if (event.operation === "delete") return <>{t("errors.affects.person")}</>;
+    return <span className="sync-subtle">{t("sync.about.connection")}</span>;
+  if (event.operation === "sign-in") return <>{t("sync.about.signIn")}</>;
+  if (!event.resource_id) return <>{t("sync.about.newPerson")}</>;
+  if (event.operation === "delete") return <>{t("sync.about.person")}</>;
   return (
     <Link render={<RouterLink to="/users/$userId" params={{ userId: event.resource_id }} />}>
-      {t("errors.affects.person")}
+      {t("sync.about.person")}
     </Link>
   );
 }

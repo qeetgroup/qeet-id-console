@@ -5,11 +5,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import i18n, { isTranslationKey, type TranslationKey } from "@/i18n";
-import type { DirectoryMapping, MappingInput } from "@/modules/directory/api/directory";
 import {
+  type DirectoryMapping,
+  type MappingInput,
   useDeleteDirectoryMapping,
   useSaveDirectoryMapping,
-} from "@/modules/directory/api/mapping-actions";
+} from "@/modules/directory/api/mappings";
 import {
   type ConnectionKind,
   checkMapping,
@@ -200,13 +201,7 @@ export function FieldEditor({
       required: draft.required,
     };
     const problem = checkMapping(input, kind);
-    if (problem)
-      return setErrors({
-        [problem.field]:
-          problem.code === "source_required"
-            ? t("mappings.editor.sourceRequired")
-            : issueText(problem.code),
-      });
+    if (problem) return setErrors({ [problem.field]: issueText(problem.code) });
     try {
       await runSensitive({
         capability: "connection.write",

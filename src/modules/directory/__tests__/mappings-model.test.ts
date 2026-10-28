@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { DirectoryMapping } from "../api/directory";
+import type { DirectoryMapping } from "../api/mappings";
 import {
   checkMapping,
   defaultProfile,
