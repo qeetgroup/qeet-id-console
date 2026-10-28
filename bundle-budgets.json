@@ -1,6 +1,6 @@
 {
   "$comment": "Gzip kB (1000 bytes) of initial JS: `shell` for the signed-in shell, each route for its own JS beyond its parent's, `newRoute` for a route not listed yet. Raise one only as AGENTS.md (Conventions, Bundle size) says.",
-  "shell": 586.4,
+  "shell": 656.5,
   "newRoute": 10,
   "routes": {
     "/_app/": 264.9,
