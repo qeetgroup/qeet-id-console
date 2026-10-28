@@ -1,18 +1,29 @@
 // @vitest-environment jsdom
 // Lives beside the route with a "-" prefix so the router generator ignores it.
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
-vi.mock("@/platform/components/page-header", () => ({ PageHeader: () => null }));
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
+const can = vi.hoisted(() => ({ write: true }));
 vi.mock("@/platform/security/capability-provider", () => ({
-  useCapabilities: () => ({ state: "ready", can: () => true }),
+  useCapabilities: () => ({
+    state: "ready",
+    can: (c?: string) => (c === "policy.write" ? can.write : true),
+  }),
+}));
+vi.mock("@/modules/dashboard", async () =>
+  (await import("@/modules/authentication/components/methods/__tests__/stubs")).dashboardStub([
+    { method: "password", value: 29.12 },
+  ]),
+);
+vi.mock("@tanstack/react-router", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-router")>()),
+  Link: (await import("@/modules/authentication/components/methods/__tests__/stubs")).RouterLink,
 }));
 // Records what each action asks the shared sensitive-action runner for, then runs it for real.
 const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
@@ -31,34 +42,34 @@ vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) 
   };
 });
 
+import { renderPage } from "@/modules/authentication/components/methods/__tests__/kit";
 import { api } from "@/platform/api/client";
-import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./password";
 
 const PasswordPage = Route.options.component as () => React.JSX.Element;
 const POLICY_PATH = "/v1/tenants/tenant-1/auth-policy";
 
-// The policy as the API returns it: the tenant has not set its own lockout,
-// so the three settings are null (the platform defaults), and the read-only
-// limits document the defaults and bounds.
-function storedPolicy(lockout: Record<string, number | null> = {}) {
+// The policy as the API returns it: the tenant has not set its own lockout, so the three settings
+// are null (the platform defaults), and the read-only limits document the defaults and bounds.
+function storedPolicy(patch: Record<string, unknown> = {}) {
   return {
     password_enabled: true,
     password_min_length: 12,
     password_require_uppercase: true,
-    password_require_number: false,
+    password_require_number: true,
     password_require_symbol: false,
     magic_link_enabled: true,
-    magic_link_ttl_minutes: 60,
+    magic_link_ttl_minutes: 30,
     passkey_enabled: true,
     otp_email_enabled: false,
     otp_sms_enabled: false,
     self_registration_enabled: true,
-    remember_device_enabled: false,
+    remember_device_enabled: true,
+    remember_device_days: 30,
     lockout_threshold: null,
     lockout_window_minutes: null,
     lockout_duration_minutes: null,
-    ...lockout,
+    ...patch,
     lockout_limits: {
       defaults: { threshold: 5, window_minutes: 15, duration_minutes: 15 },
       min: { threshold: 3, window_minutes: 1, duration_minutes: 1 },
@@ -73,6 +84,7 @@ let saved: Record<string, unknown> | undefined;
 beforeEach(() => {
   stored = storedPolicy();
   saved = undefined;
+  can.write = true;
   sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
@@ -81,80 +93,126 @@ beforeEach(() => {
       saved = options.body as Record<string, unknown>;
       return { ...stored, ...saved };
     }
+    if (path === "/v1/tenants/tenant-1/policy") return { mfa_enforcement: "optional" };
+    if (path === "/v1/users/stats") return { total: 45, mfa_enabled: 18 };
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });
 });
 
 afterEach(cleanup);
 
-function renderPage() {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-  render(
-    <QueryClientProvider client={client}>
-      <SensitiveActionProvider>
-        <PasswordPage />
-      </SensitiveActionProvider>
-    </QueryClientProvider>,
-  );
-}
+const section = async (name: string) =>
+  (await screen.findByRole("heading", { name })).closest("section") as HTMLElement;
 
-const threshold = () => screen.findByLabelText(/failed attempts before locking/i);
-const windowMinutes = () => screen.findByLabelText(/counting window/i);
-const duration = () => screen.findByLabelText(/lock duration/i);
-
-describe("Password settings — sign-in lockout", () => {
-  it("shows the platform defaults and the allowed range for each setting", async () => {
-    renderPage();
-    expect(((await threshold()) as HTMLInputElement).placeholder).toBe("5");
-    expect(((await windowMinutes()) as HTMLInputElement).placeholder).toBe("15");
-    expect(((await duration()) as HTMLInputElement).placeholder).toBe("15");
-    expect(screen.getByText(/between 3 and 20/i)).toBeTruthy();
+describe("Sign-in › Password", () => {
+  it("says whether password sign-in is on and how much it's used", async () => {
+    renderPage(<PasswordPage />);
+    const on = await section("Password sign-in");
+    expect(within(on).getByText("On")).toBeTruthy();
+    expect(within(on).getByText(/used for 29% of sign-ins in the last 30 days/i)).toBeTruthy();
   });
 
-  it("saves the tenant's lockout with the rest of the policy unchanged", async () => {
-    renderPage();
-    fireEvent.change(await threshold(), { target: { value: "3" } });
-    fireEvent.change(await windowMinutes(), { target: { value: "10" } });
-    fireEvent.change(await duration(), { target: { value: "2" } });
-    fireEvent.click(screen.getByRole("button", { name: /save/i }));
+  it("confirms turning it off with what happens to people, then saves the whole policy", async () => {
+    renderPage(<PasswordPage />);
+    const on = await section("Password sign-in");
+    fireEvent.click(within(on).getByRole("button", { name: "Turn off Password sign-in" }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText(/their passwords are kept/i)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Turn off" }));
+    await waitFor(() => expect(saved).toBeDefined());
+    expect(saved).toMatchObject({ password_enabled: false, self_registration_enabled: true });
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Change how people sign in" });
+  });
+
+  it("won't turn off the last way to sign in, and says why", async () => {
+    stored = storedPolicy({ passkey_enabled: false, magic_link_enabled: false });
+    renderPage(<PasswordPage />);
+    const on = await section("Password sign-in");
+    const button = within(on).getByRole("button", { name: "Turn off Password sign-in" });
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    expect(within(on).getByText(/it's the only way to sign in that's on/i)).toBeTruthy();
+  });
+
+  it("states the rules as facts and changes the minimum length in place", async () => {
+    renderPage(<PasswordPage />);
+    const rules = await section("Rules for new passwords");
+    expect(within(rules).getByText("12 characters")).toBeTruthy();
+    expect(within(rules).getByText("An uppercase letter and a number")).toBeTruthy();
+    expect(within(rules).getByText("A symbol isn't required.")).toBeTruthy();
+    fireEvent.click(within(rules).getByRole("button", { name: "Edit the minimum length" }));
+    fireEvent.change(within(rules).getByLabelText("Minimum length"), { target: { value: "14" } });
+    fireEvent.click(within(rules).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved).toMatchObject({ password_min_length: 14 }));
+    expect(saved).toMatchObject({ password_require_uppercase: true, remember_device_days: 30 });
+  });
+
+  it("refuses a minimum length the server wouldn't keep", async () => {
+    renderPage(<PasswordPage />);
+    const rules = await section("Rules for new passwords");
+    fireEvent.click(within(rules).getByRole("button", { name: "Edit the minimum length" }));
+    fireEvent.change(within(rules).getByLabelText("Minimum length"), { target: { value: "200" } });
+    fireEvent.click(within(rules).getByRole("button", { name: "Save" }));
+    expect(await within(rules).findByText("Enter a length from 8 to 128.")).toBeTruthy();
+    expect(saved).toBeUndefined();
+  });
+
+  it("changes which characters a password must hold", async () => {
+    renderPage(<PasswordPage />);
+    const rules = await section("Rules for new passwords");
+    fireEvent.click(
+      within(rules).getByRole("button", { name: "Edit what a password must include" }),
+    );
+    fireEvent.click(within(rules).getByRole("checkbox", { name: "A symbol" }));
+    fireEvent.click(within(rules).getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(saved).toMatchObject({
+        password_require_uppercase: true,
+        password_require_number: true,
+        password_require_symbol: true,
+      }),
+    );
+  });
+
+  it("shows the lockout's platform defaults, and saves a change with the rest kept", async () => {
+    renderPage(<PasswordPage />);
+    const lockout = await section("Lockout after wrong passwords");
+    expect(within(lockout).getAllByText("Default")).toHaveLength(3);
+    fireEvent.click(within(lockout).getByRole("button", { name: "Edit the lockout" }));
+    fireEvent.change(within(lockout).getByLabelText("Wrong passwords"), { target: { value: "3" } });
+    fireEvent.click(within(lockout).getByRole("button", { name: "Save lockout" }));
     await waitFor(() => expect(saved).toBeDefined());
     expect(saved).toMatchObject({
       lockout_threshold: 3,
-      lockout_window_minutes: 10,
-      lockout_duration_minutes: 2,
+      lockout_window_minutes: null,
+      lockout_duration_minutes: null,
       password_min_length: 12,
-      self_registration_enabled: true,
     });
   });
 
-  it("saves through the step-up path, the save being the confirmation", async () => {
-    renderPage();
-    fireEvent.change(await threshold(), { target: { value: "3" } });
-    fireEvent.click(screen.getByRole("button", { name: /save/i }));
-    await waitFor(() => expect(saved).toBeDefined());
-    expect(sensitiveCalls).toHaveLength(1);
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Change how people sign in" });
-    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
-  });
-
-  it("goes back to the platform default when a setting is cleared", async () => {
-    stored = storedPolicy({ lockout_threshold: 4 });
-    renderPage();
-    const input = (await threshold()) as HTMLInputElement;
-    expect(input.value).toBe("4");
-    fireEvent.change(input, { target: { value: "" } });
-    fireEvent.click(screen.getByRole("button", { name: /save/i }));
-    await waitFor(() => expect(saved).toBeDefined());
-    expect(saved?.lockout_threshold).toBeNull();
-  });
-
-  it("does not save a value outside the allowed range", async () => {
-    renderPage();
-    fireEvent.change(await threshold(), { target: { value: "2" } });
-    fireEvent.click(screen.getByRole("button", { name: /save/i }));
-    expect(await screen.findByText(/must be between 3 and 20/i)).toBeTruthy();
+  it("doesn't save a lockout outside the allowed range", async () => {
+    renderPage(<PasswordPage />);
+    const lockout = await section("Lockout after wrong passwords");
+    fireEvent.click(within(lockout).getByRole("button", { name: "Edit the lockout" }));
+    fireEvent.change(within(lockout).getByLabelText("Wrong passwords"), { target: { value: "2" } });
+    fireEvent.click(within(lockout).getByRole("button", { name: "Save lockout" }));
+    expect(await within(lockout).findByText("Enter a number from 3 to 20.")).toBeTruthy();
     expect(saved).toBeUndefined();
+  });
+
+  it("points to Settings › Security for the two-step rule, with who has it", async () => {
+    renderPage(<PasswordPage />);
+    const twoStep = await section("Two-step verification");
+    expect(await within(twoStep).findByText("Optional")).toBeTruthy();
+    expect(within(twoStep).getByText(/18 of 45 people have turned it on/)).toBeTruthy();
+    expect(
+      within(twoStep).getByRole("link", { name: "See the 27 who haven't" }).getAttribute("href"),
+    ).toBe("/users?twostep=off");
+  });
+
+  it("offers no changes to someone who can only read the policy", async () => {
+    can.write = false;
+    renderPage(<PasswordPage />);
+    await section("Password sign-in");
+    expect(screen.queryByRole("button", { name: /turn off|^edit/i })).toBeNull();
   });
 });

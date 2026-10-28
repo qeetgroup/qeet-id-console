@@ -42,6 +42,11 @@ export function canAddPasskey(list: PasskeyList | undefined): boolean {
   return list !== undefined && list.enrollment_allowed !== false;
 }
 
+/** Returns the name to show for a passkey, or `unnamed` (a translated label) when it has none. */
+export function passkeyDisplayName(passkey: Passkey, unnamed: string): string {
+  return passkey.name?.trim() || unnamed;
+}
+
 /** The longest passkey name the server accepts, in characters. */
 export const PASSKEY_NAME_MAX_LENGTH = 64;
 

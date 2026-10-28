@@ -1,5 +1,7 @@
 // The tenant's authentication policy: password rules and permitted sign-in methods. PUT replaces
-// the whole object, so each page loads it, edits its slice and saves the merged result.
+// the whole object, so each page loads it, edits its slice and saves the merged result. The server
+// clamps the password length to 8–128 and the magic-link lifetime to 5–1440 minutes, and refuses a
+// policy with no first-factor method on (password, passkey or magic link).
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -20,6 +22,7 @@ export interface AuthPolicy {
   otp_sms_enabled: boolean;
   self_registration_enabled: boolean; // Hosted end-user self-registration (B2C sign-up)
   remember_device_enabled: boolean; // Adaptive MFA: a trusted device may skip the second factor
+  remember_device_days: number; // How long a device stays remembered, 1–90; fixed when it's remembered
   /**
    * Sign-in lockout: this many failed sign-ins to one account from one network, each within the
    * window of the last, lock it for that network for the duration. null: the platform default.

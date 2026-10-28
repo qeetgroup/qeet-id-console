@@ -1,0 +1,123 @@
+/*
+ * Authentication › Sign-in, Social and MFA, and Applications › OAuth grants and Developer ›
+ * Tokens. Everything else is account.css (sections, rows, facts, panels: methods-parts.tsx), the
+ * Users band (people.css) and the library. Placement and token values only (--qx-*).
+ */
+
+/* A value with its marker beside it ("15 minutes [Default]"). */
+.am-value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* A text action in a section's head lines its label up with the facts' actions under it. */
+.account-section-head > .am-head-action {
+  margin-inline-end: calc(-1 * var(--qx-space-inset-sm));
+}
+
+/* A note under a section's facts or rows, a step below them. */
+.account-section > .account-note + .account-note {
+  margin-block-start: calc(-1 * var(--qx-space-gap-sm));
+}
+
+/* A panel whose form holds URLs or a row of fields: wider than a profile form. */
+.account-panel-form.am-panel-wide {
+  max-inline-size: 40rem;
+}
+
+/* The lockout's three numbers side by side; stacked on a phone. */
+.am-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--qx-space-gap-md);
+  align-items: start;
+}
+
+/* A destructive action at the far end of a panel's buttons, apart from Save and Cancel. */
+.am-push {
+  margin-inline-start: auto;
+}
+
+/* A read-only URL to copy, in code type so it can be checked character by character. */
+.am-mono-input input {
+  font: var(--qx-typography-code-sm);
+}
+
+/* "5 more…" tucked against the list above it, its label lined up with the rows' text edge. */
+.am-tuck {
+  margin-block-start: calc(-1 * var(--qx-space-gap-sm));
+  margin-inline-start: calc(-1 * var(--qx-space-inset-sm));
+}
+
+/* A provider's own logo in a row's icon box: its artwork at the icon size. */
+.am-mark {
+  display: inline-grid;
+  place-items: center;
+}
+
+.am-mark img {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+/* A table cell of two lines: what it is, then its kind or address. */
+.am-cell {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.am-cell small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.am-cell small.account-mono {
+  font: var(--qx-typography-code-sm);
+}
+
+.am-nowrap {
+  white-space: nowrap;
+}
+
+/* A legend entry that isn't a way into the list ("3 others"), set as the linked ones are. */
+.am-legend-plain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.am-legend-plain b {
+  color: var(--qx-color-text-default);
+  font-weight: var(--qx-typography-label-sm-font-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A list's page: the table, then its pager and notes, one gap apart. */
+.am-list {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+@media (max-width: 640px) {
+  /* Stacked under its title on a phone: the label lines up with the title's start instead. */
+  .account-section-head > .am-head-action {
+    align-self: flex-start;
+    margin-inline: calc(-1 * var(--qx-space-inset-sm)) 0;
+  }
+
+  .am-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .am-push {
+    margin-inline-start: 0;
+  }
+}
