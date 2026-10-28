@@ -56,6 +56,7 @@ import { Route as DeveloperAuthHooksRouteImport } from './modules/developer/rout
 import { Route as DeveloperBotsRouteImport } from './modules/developer/routes/app/developer/bots'
 import { Route as DeveloperCredentialsRouteImport } from './modules/developer/routes/app/developer/credentials'
 import { Route as DeveloperInfrastructureRouteImport } from './modules/developer/routes/app/developer/infrastructure'
+import { Route as DeveloperMachineAccessRouteImport } from './modules/developer/routes/app/developer/machine-access'
 import { Route as DirectoryIndexRouteImport } from './modules/directory/routes/app/directory/index'
 import { Route as DirectoryAttributeMappingsRouteImport } from './modules/directory/routes/app/directory/attribute-mappings'
 import { Route as DirectorySyncActivityRouteImport } from './modules/directory/routes/app/directory/sync-activity'
@@ -358,6 +359,11 @@ const DeveloperCredentialsRoute = DeveloperCredentialsRouteImport.update({
 const DeveloperInfrastructureRoute = DeveloperInfrastructureRouteImport.update({
   id: '/developer/infrastructure',
   path: '/developer/infrastructure',
+  getParentRoute: () => appRoute,
+} as any)
+const DeveloperMachineAccessRoute = DeveloperMachineAccessRouteImport.update({
+  id: '/developer/machine-access',
+  path: '/developer/machine-access',
   getParentRoute: () => appRoute,
 } as any)
 const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
@@ -770,6 +776,7 @@ export interface FileRoutesByFullPath {
   '/developer/bots': typeof DeveloperBotsRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
   '/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
   '/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/directory/sync-errors': typeof DirectorySyncErrorsRoute
@@ -885,6 +892,7 @@ export interface FileRoutesByTo {
   '/developer/bots': typeof DeveloperBotsRoute
   '/developer/credentials': typeof DeveloperCredentialsRoute
   '/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
   '/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/directory/sync-errors': typeof DirectorySyncErrorsRoute
@@ -1003,6 +1011,7 @@ export interface FileRoutesById {
   '/_app/developer/bots': typeof DeveloperBotsRoute
   '/_app/developer/credentials': typeof DeveloperCredentialsRoute
   '/_app/developer/infrastructure': typeof DeveloperInfrastructureRoute
+  '/_app/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/_app/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
   '/_app/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/_app/directory/sync-errors': typeof DirectorySyncErrorsRoute
@@ -1120,6 +1129,7 @@ export interface FileRouteTypes {
     | '/developer/bots'
     | '/developer/credentials'
     | '/developer/infrastructure'
+    | '/developer/machine-access'
     | '/directory/attribute-mappings'
     | '/directory/sync-activity'
     | '/directory/sync-errors'
@@ -1235,6 +1245,7 @@ export interface FileRouteTypes {
     | '/developer/bots'
     | '/developer/credentials'
     | '/developer/infrastructure'
+    | '/developer/machine-access'
     | '/directory/attribute-mappings'
     | '/directory/sync-activity'
     | '/directory/sync-errors'
@@ -1352,6 +1363,7 @@ export interface FileRouteTypes {
     | '/_app/developer/bots'
     | '/_app/developer/credentials'
     | '/_app/developer/infrastructure'
+    | '/_app/developer/machine-access'
     | '/_app/directory/attribute-mappings'
     | '/_app/directory/sync-activity'
     | '/_app/directory/sync-errors'
@@ -1764,6 +1776,13 @@ declare module '@tanstack/react-router' {
       path: '/developer/infrastructure'
       fullPath: '/developer/infrastructure'
       preLoaderRoute: typeof DeveloperInfrastructureRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/developer/machine-access': {
+      id: '/_app/developer/machine-access'
+      path: '/developer/machine-access'
+      fullPath: '/developer/machine-access'
+      preLoaderRoute: typeof DeveloperMachineAccessRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/directory/': {
@@ -2292,6 +2311,7 @@ interface appRouteChildren {
   DeveloperBotsRoute: typeof DeveloperBotsRoute
   DeveloperCredentialsRoute: typeof DeveloperCredentialsRoute
   DeveloperInfrastructureRoute: typeof DeveloperInfrastructureRoute
+  DeveloperMachineAccessRoute: typeof DeveloperMachineAccessRoute
   DirectoryAttributeMappingsRoute: typeof DirectoryAttributeMappingsRoute
   DirectorySyncActivityRoute: typeof DirectorySyncActivityRoute
   DirectorySyncErrorsRoute: typeof DirectorySyncErrorsRoute
@@ -2392,6 +2412,7 @@ const appRouteChildren: appRouteChildren = {
   DeveloperBotsRoute: DeveloperBotsRoute,
   DeveloperCredentialsRoute: DeveloperCredentialsRoute,
   DeveloperInfrastructureRoute: DeveloperInfrastructureRoute,
+  DeveloperMachineAccessRoute: DeveloperMachineAccessRoute,
   DirectoryAttributeMappingsRoute: DirectoryAttributeMappingsRoute,
   DirectorySyncActivityRoute: DirectorySyncActivityRoute,
   DirectorySyncErrorsRoute: DirectorySyncErrorsRoute,

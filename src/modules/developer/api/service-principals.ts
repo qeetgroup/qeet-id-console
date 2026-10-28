@@ -1,7 +1,7 @@
 // Machine identities (service principals). The client secret is returned once, on create, and
 // stored hashed, so show it immediately: it can't be read again.
 
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
@@ -21,7 +21,7 @@ export type ServicePrincipal = z.infer<typeof servicePrincipalSchema>;
 
 const servicePrincipalListSchema = z.object({ items: z.array(servicePrincipalSchema) });
 
-const createdServicePrincipalSchema = z.object({
+export const createdServicePrincipalSchema = z.object({
   service_principal: servicePrincipalSchema,
   client_id: z.string(),
   client_secret: z.string().min(1), // Shown this once
@@ -36,17 +36,6 @@ export type CreateServicePrincipalInput = {
   scopes?: string[];
 };
 
-/** Creates a machine identity and resolves with it and its client secret, returned this once. */
-export function createServicePrincipal(
-  input: CreateServicePrincipalInput,
-): Promise<CreatedServicePrincipal> {
-  return api("/v1/service-principals", {
-    method: "POST",
-    body: input,
-    schema: createdServicePrincipalSchema,
-  });
-}
-
 export const servicePrincipalQueries = {
   list: (tenantId: string | null) =>
     queryOptions({
@@ -59,25 +48,4 @@ export const servicePrincipalQueries = {
 
 export function useServicePrincipals() {
   return useQuery(servicePrincipalQueries.list(useTenantId()));
-}
-
-export function useCreateServicePrincipal() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: createServicePrincipal,
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.servicePrincipals(tenantId) }),
-    gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
-    meta: { successMessage: "developer:toast.machineIdentityCreated", silentError: true }, // the sheet shows it
-  });
-}
-
-export function useDisableServicePrincipal() {
-  const tenantId = useTenantId();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/service-principals/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.servicePrincipals(tenantId) }),
-    meta: { successMessage: "developer:toast.machineIdentityDisabled" },
-  });
 }

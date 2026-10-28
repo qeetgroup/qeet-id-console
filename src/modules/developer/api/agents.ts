@@ -4,6 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
+import { authKeys, type ShadowAICandidate } from "@/modules/authentication";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { developerKeys } from "./keys";
@@ -112,5 +113,20 @@ export function useTransferSponsor() {
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
     meta: { successMessage: "developer:toast.sponsorTransferred" },
+  });
+}
+
+/**
+ * OAuth clients with a token-exchange grant that nobody registered or reviewed ("shadow AI"). The
+ * same entry the authentication module's review mutation refreshes; `enabled` keeps the call from
+ * people who can't read connections.
+ */
+export function useUnmanagedClients(enabled: boolean) {
+  const tenantId = useTenantId();
+  return useQuery({
+    queryKey: authKeys.shadowAi(tenantId),
+    enabled: enabled && !!tenantId,
+    queryFn: () =>
+      api<{ items: ShadowAICandidate[] }>(`/v1/tenants/${tenantId}/oidc/clients/shadow-ai`),
   });
 }

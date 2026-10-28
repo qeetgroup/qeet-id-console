@@ -110,6 +110,9 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.DOMAIN_EXISTS]: "errors:code.domainExists",
   [ERROR_CODES.DOMAIN_RECORD_MISSING]: "errors:code.domainRecordMissing",
   [ERROR_CODES.DOMAIN_CLAIMED_BY_OTHER]: "errors:code.domainClaimedByOther",
+  [ERROR_CODES.SECRET_NAME_EXISTS]: "errors:code.secretNameExists",
+  [ERROR_CODES.AGENT_SPONSOR_NOT_MEMBER]: "errors:code.agentSponsorNotMember",
+  [ERROR_CODES.AUTHHOOK_URL_INVALID]: "errors:code.authHookUrlInvalid",
   [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 

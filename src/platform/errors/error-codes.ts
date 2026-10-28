@@ -81,7 +81,7 @@ export const ERROR_CODES = {
   REBAC_SUBJECT_INVALID: "rebac.subject_invalid", // "user:<id>", "type:id" or "type:id#relation"
   REBAC_RELATION_REQUIRED: "rebac.relation_required",
   RBAC_ROLE_NAME_EXISTS: "rbac.role_name_exists", // 409: a role's name is unique, ignoring case
-  RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: names the permission in metadata
+  RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: a permission or key scope the caller lacks; metadata names it
   RBAC_SYSTEM_ROLE_FIXED: "rbac.system_role_fixed", // 403: the owner role's permissions are fixed
   BILLING_PLAN_LIMIT: "billing.plan_limit", // billing entitlements
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
@@ -120,6 +120,10 @@ export const ERROR_CODES = {
   DOMAIN_EXISTS: "domainverify.exists",
   DOMAIN_RECORD_MISSING: "domainverify.dns_record_missing", // retryable: DNS can lag
   DOMAIN_CLAIMED_BY_OTHER: "domainverify.claimed_by_other",
+  // Machine access, secrets and auth hooks (the developer pages).
+  SECRET_NAME_EXISTS: "secret.name_exists", // 409: names are unique in an organisation
+  AGENT_SPONSOR_NOT_MEMBER: "agent.sponsor_not_member", // 422: the sponsor isn't in the organisation
+  AUTHHOOK_URL_INVALID: "authhook.url_invalid", // 422: not a public https address
   TOO_MANY_REQUESTS: "too_many_requests", // throttling
   HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
   NETWORK: "network_error", // client-synthesised
