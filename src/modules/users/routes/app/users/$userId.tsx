@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { USER360_TABS } from "@/modules/users";
+import { USER360_TABS, user360Tab } from "@/modules/users";
 import { UserDetailPage } from "@/modules/users/pages";
-import { searchEnum } from "@/shared/utils/search-params";
 
+// Rebuilt on @qeetrix/react: the page draws its own header, with the person's views as its tabs.
+// No tab opens Overview; an old `?tab=identities` opens Security, which holds it now.
 export const Route = createFileRoute("/_app/users/$userId")({
-  staticData: { capability: "user.read" },
-  validateSearch: z.object({ tab: searchEnum(USER360_TABS) }), // no tab opens Overview
+  staticData: { capability: "user.read", pageHeader: true },
+  validateSearch: z.object({ tab: z.preprocess(user360Tab, z.enum(USER360_TABS).optional()) }),
   component: UserDetailRoute,
 });
 
@@ -20,7 +21,7 @@ function UserDetailRoute() {
       userId={userId}
       tab={tab}
       onTabChange={(next) =>
-        navigate({ search: (prev) => ({ ...prev, tab: next }), replace: true })
+        navigate({ search: { tab: next === "overview" ? undefined : next }, replace: true })
       }
     />
   );
