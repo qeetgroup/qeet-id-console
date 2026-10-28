@@ -1,35 +1,30 @@
-// Enterprise contact-sales form: submits a lead the server stores and emails to sales, so nothing
-// is lost to an unopened mail client. The caller owns the open state.
+// Enterprise contact-sales form: submits a lead the server stores and, best effort, emails to the
+// sales inbox, so nothing is lost to an unopened mail client. The caller owns the open state.
 
+import { SendIcon } from "@qeetrix/icons";
 import {
   Button,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
   Field,
-  FieldGroup,
-  FieldLabel,
-  Input,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
   Textarea,
-} from "@qeetrix/ui";
+  TextField,
+} from "@qeetrix/react";
+import { Alert } from "@qeetrix/react/experimental";
 import { useMutation } from "@tanstack/react-query";
-import { LoaderCircleIcon } from "@qeetrix/icons";
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useMe } from "@/platform/auth/session";
+import { errorMessage } from "@/platform/errors/user-message";
 import { TEAM_SIZES } from "@/shared/data/team-sizes";
 
 import { type SalesLead, submitSalesLead } from "../api/billing";
 
+/** Talk to sales, in a drawer: the person's name and email start filled in; only the email is needed. */
 export function ContactSalesDialog({
   open,
   onOpenChange,
@@ -39,101 +34,120 @@ export function ContactSalesDialog({
   onOpenChange: (o: boolean) => void;
   source: string; // where the form opened, recorded on the lead, e.g. "onboarding"
 }) {
-  const { t, i18n } = useTranslation(["billing", "common"]);
-  const [teamSize, setTeamSize] = useState("");
-  const submitM = useMutation({
+  const { t } = useTranslation("billing");
+  const send = useMutation({
     mutationFn: (lead: SalesLead) => submitSalesLead(lead),
-    meta: { successMessage: "billing:toast.thanksOurTeamWill" },
+    meta: { successMessage: "billing:toast.thanksOurTeamWill", silentError: true },
     onSuccess: () => onOpenChange(false),
   });
+  return (
+    <Drawer open={open} onOpenChange={(next) => (!send.isPending || next) && onOpenChange(next)}>
+      <DrawerContent
+        title={t("contactSalesDialog.talkToSales")}
+        description={t("contactSalesDialog.tellUsAboutYour")}
+        size="md"
+      >
+        {/* Mounted while open, so each opening starts from the person's own details. */}
+        {open && (
+          <SalesForm
+            pending={send.isPending}
+            failure={send.isError ? send.error : null}
+            onSend={(lead) => send.mutate({ ...lead, source })}
+          />
+        )}
+        <DrawerFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={send.isPending}>
+            {t("contactSalesDialog.cancel")}
+          </Button>
+          <Button type="submit" form="contact-sales" icon={SendIcon} loading={send.isPending}>
+            {t(send.isPending ? "contactSalesDialog.sending" : "contactSalesDialog.send")}
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
 
-  const str = (d: FormData, k: string) => String(d.get(k) ?? "").trim();
+function SalesForm({
+  pending,
+  failure,
+  onSend,
+}: {
+  pending: boolean;
+  failure: unknown;
+  onSend: (lead: Omit<SalesLead, "source">) => void;
+}) {
+  const { t, i18n } = useTranslation("billing");
+  const me = useMe().data;
+  const [name, setName] = useState(me?.display_name?.trim() ?? "");
+  const [email, setEmail] = useState(me?.email ?? "");
+  const [teamSize, setTeamSize] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending) return;
+    setChecked(true);
+    if (!email.trim()) return;
+    const form = new FormData(event.currentTarget);
+    const text = (key: string) => String(form.get(key) ?? "").trim();
+    onSend({
+      name: name.trim(),
+      email: email.trim(),
+      company: text("company"),
+      team_size: teamSize ?? "",
+      message: text("message"),
+    });
+  }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <form
-          className="flex h-full flex-col"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const d = new FormData(e.currentTarget);
-            submitM.mutate({
-              name: str(d, "name"),
-              email: str(d, "email"),
-              company: str(d, "company"),
-              team_size: teamSize,
-              message: str(d, "message"),
-              source,
-            });
-          }}
-        >
-          <SheetHeader>
-            <SheetTitle>{t("contactSalesDialog.talkToSales")}</SheetTitle>
-            <SheetDescription>{t("contactSalesDialog.tellUsAboutYour")}</SheetDescription>
-          </SheetHeader>
-          <div className="flex-1 overflow-y-auto p-4">
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="cs-name">{t("contactSalesDialog.yourName")}</FieldLabel>
-                <Input id="cs-name" name="name" placeholder={t("contactSalesDialog.janeDoe")} />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="cs-email">{t("contactSalesDialog.workEmail")}</FieldLabel>
-                <Input
-                  id="cs-email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="jane@acme.com"
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="cs-company">{t("contactSalesDialog.company")}</FieldLabel>
-                <Input
-                  id="cs-company"
-                  name="company"
-                  placeholder={t("contactSalesDialog.acmeCorp")}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>{t("contactSalesDialog.teamSize")}</FieldLabel>
-                <Select value={teamSize || undefined} onValueChange={(v) => setTeamSize(v ?? "")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("contactSalesDialog.select")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TEAM_SIZES.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {i18n.t(o.label)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="cs-message">
-                  {t("contactSalesDialog.whatAreYouLookingFor")}
-                </FieldLabel>
-                <Textarea
-                  id="cs-message"
-                  name="message"
-                  rows={4}
-                  placeholder={t("contactSalesDialog.aFewWordsOn")}
-                />
-              </Field>
-            </FieldGroup>
-          </div>
-          <SheetFooter className="flex-row justify-end gap-2 border-t">
-            <SheetClose render={<Button type="button" variant="outline" />}>
-              {t("common:actions.cancel")}
-            </SheetClose>
-            <Button type="submit" disabled={submitM.isPending}>
-              {submitM.isPending && <LoaderCircleIcon className="animate-spin" />}
-              {submitM.isPending ? t("contactSalesDialog.sending") : t("contactSalesDialog.send")}
-            </Button>
-          </SheetFooter>
-        </form>
-      </SheetContent>
-    </Sheet>
+    <DrawerBody>
+      <form id="contact-sales" className="sub-form" noValidate onSubmit={submit}>
+        {failure ? (
+          <Alert tone="danger" title={t("contactSalesDialog.failed")} announce="urgent">
+            {errorMessage(failure)}
+          </Alert>
+        ) : null}
+        <TextField
+          label={t("contactSalesDialog.yourName")}
+          autoComplete="name"
+          value={name}
+          onValueChange={setName}
+          disabled={pending}
+        />
+        <TextField
+          label={t("contactSalesDialog.workEmail")}
+          type="email"
+          autoComplete="email"
+          value={email}
+          onValueChange={setEmail}
+          error={checked && !email.trim() ? t("contactSalesDialog.emailRequired") : undefined}
+          disabled={pending}
+        />
+        <TextField
+          label={t("contactSalesDialog.company")}
+          name="company"
+          autoComplete="organization"
+          disabled={pending}
+        />
+        <Field label={t("contactSalesDialog.teamSize")} optional>
+          <Select
+            items={TEAM_SIZES.map((size) => ({ value: size.value, label: i18n.t(size.label) }))}
+            value={teamSize}
+            onValueChange={setTeamSize}
+            placeholder={t("contactSalesDialog.select")}
+            disabled={pending}
+          />
+        </Field>
+        <Field label={t("contactSalesDialog.whatAreYouLookingFor")} optional>
+          <Textarea
+            name="message"
+            rows={4}
+            placeholder={t("contactSalesDialog.aFewWordsOn")}
+            disabled={pending}
+          />
+        </Field>
+      </form>
+    </DrawerBody>
   );
 }

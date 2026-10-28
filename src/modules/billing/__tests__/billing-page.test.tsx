@@ -9,7 +9,8 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ComponentProps, ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 const context = vi.hoisted(() => ({
@@ -18,7 +19,10 @@ const context = vi.hoisted(() => ({
   canWrite: true,
 }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({
+  useTenantId: () => context.tenantId,
+  useMe: () => ({ data: { id: "u1", email: "priya@example.test", display_name: "Priya" } }),
+}));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
     state: "ready",
@@ -26,166 +30,55 @@ vi.mock("@/platform/security/capability-provider", () => ({
       capability === "billing.read" ? context.canRead : context.canWrite,
   }),
 }));
+vi.mock("@/modules/dashboard", () => ({ PageBreadcrumb: () => null }));
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    to,
+    children,
+    ...props
+  }: ComponentProps<"a"> & { to: string; children?: ReactNode }) => (
+    <a {...props} href={to}>
+      {children}
+    </a>
+  ),
+}));
 
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import * as dataExport from "@/shared/utils/data-export";
 import {
   type BillingProfile,
+  type Entitlements,
   formatMoney,
   type Invoice,
   type Plan,
   type Subscription,
   usePlanName,
 } from "../api/billing";
+import { billingDay, billingPeriod, taxLines } from "../billing-format";
 import {
-  billingPlanChoices,
-  billingSavings,
   billingTaxIdValid,
   billingUsage,
   checkoutCountry,
   EMPTY_BILLING_PROFILE,
-  isCurrentBillingChoice,
+  isCurrentOffer,
   normalizeBillingProfile,
+  overFreeLimits,
+  planState,
 } from "../billing-model";
-import { BillingDetails, type BillingDetailsProps } from "../components/billing-details";
-import { BillingInvoices } from "../components/billing-invoices";
-import {
-  BillingSettingsPage,
-  BillingSettingsView,
-  type BillingSettingsViewProps,
-} from "../components/billing-page";
-import { billingKeys } from "../api/keys";
+import { BillingSettingsPage } from "../components/billing-page";
+import { planOffers } from "../plan-offers";
 
-beforeEach(() => {
-  context.tenantId = "tenant-a";
-  context.canRead = true;
-  context.canWrite = true;
-  vi.mocked(api).mockReset();
-  vi.mocked(api).mockImplementation(async (path, options) => {
-    if (path === "/v1/billing/plans") return { items: catalogue() };
-    if (path.endsWith("/checkout")) return { status: "active" };
-    if (path.endsWith("/subscription/cancel")) return { cancel_at_period_end: true };
-    if (path.endsWith("/trial")) return { ...subscription(), status: "trialing" };
-    if (path.endsWith("/subscription")) return subscription();
-    if (path.endsWith("/entitlements")) return viewProps().entitlements;
-    if (path.endsWith("/entitlements/usage")) return { usage: viewProps().usage };
-    if (path.endsWith("/profile"))
-      return options?.method === "PUT"
-        ? options.body
-        : {
-            ...profileFixture(),
-            legal_name: path.includes("tenant-b") ? "Other organization" : "Example Ltd",
-          };
-    if (path.endsWith("/invoices")) return { items: invoiceFixtures() };
-    throw new Error(`Unexpected mocked request ${path}`);
-  });
-});
-
-afterEach(() => {
-  cleanup();
-  vi.restoreAllMocks();
-  document.documentElement.classList.remove("dark");
-});
-
-function profileFixture(): BillingProfile {
-  return {
-    ...EMPTY_BILLING_PROFILE,
-    legal_name: "Example Ltd",
-    billing_email: "billing@example.test",
-    country: "IN",
-    tax_id_type: "gstin",
-    tax_id: "29ABCDE1234F1Z5",
-  };
-}
-
-function invoiceFixtures(): Invoice[] {
-  return ["paid", "open"].map((status, index) => ({
-    id: `invoice-${status}-fixture`,
-    plan_code: "pro",
-    currency: "INR",
-    amount_minor: 944000,
-    taxable_amount_minor: 800000,
-    tax_amount_minor: 144000,
-    tax_rate_bps: 1800,
-    tax_type: "gst_igst",
-    place_of_supply: "IN",
-    status,
-    period_start: `2026-0${8 + index}-01T00:00:00Z`,
-    period_end: `2026-0${8 + index}-28T00:00:00Z`,
-    issued_at: `2026-0${8 + index}-01T00:00:00Z`,
-  }));
-}
-
-function detailsProps(): BillingDetailsProps {
-  return {
-    profile: profileFixture(),
-    canWrite: true,
-    loading: false,
-    error: false,
-    fetching: false,
-    onRetry: vi.fn(),
-    onSave: vi.fn().mockImplementation(async (profile) => profile),
-  };
-}
-
-async function selectOption(label: string, option: string) {
-  fireEvent.mouseDown(screen.getByRole("combobox", { name: label }), { button: 0 });
-  const choice = await screen.findByRole("option", { name: option });
-  fireEvent.pointerDown(choice, { pointerType: "mouse", button: 0 });
-  fireEvent.click(choice);
-}
-
-function renderPage(
-  client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  }),
-) {
-  const tree = () => (
-    <QueryClientProvider client={client}>
-      <SensitiveActionProvider>
-        <BillingSettingsPage />
-      </SensitiveActionProvider>
-    </QueryClientProvider>
-  );
-  return { ...render(tree()), client, tree };
-}
-
-function viewProps(): BillingSettingsViewProps {
-  return {
-    plans: catalogue(),
-    subscription: subscription(),
-    entitlements: {
-      plan: "pro",
-      features: {},
-      limits: { seats: -1, apps: -1, api_keys: -1, custom_roles: -1 },
-    },
-    usage: { seats: 12, apps: 4, api_keys: 3, custom_roles: 5 },
-    loading: false,
-    subscriptionError: false,
-    plansError: false,
-    usageLoading: false,
-    usageError: false,
-    canRead: true,
-    canWrite: true,
-    fetching: false,
-    onRetry: vi.fn(),
-    onChangePlan: vi.fn().mockResolvedValue({ status: "active" }),
-    onCancel: vi.fn().mockResolvedValue({ cancel_at_period_end: true }),
-    onStartTrial: vi.fn().mockResolvedValue(subscription()),
-  };
-}
-
-function renderView(props = viewProps()) {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-  return render(
-    <QueryClientProvider client={client}>
-      <BillingSettingsView {...props} />
-    </QueryClientProvider>,
-  );
-}
+type Fixtures = {
+  subscription: Subscription;
+  entitlements: Entitlements;
+  usage: Record<string, number>;
+  profile: BillingProfile;
+  invoices: Invoice[];
+};
+let fixtures: Fixtures;
+// The period end, as the page writes it in the test's locale.
+const END = billingDay("2026-11-18T09:00:00Z");
 
 function catalogue(): Plan[] {
   return [
@@ -194,11 +87,11 @@ function catalogue(): Plan[] {
     { code: "starter_year", amount: 2400000 },
     { code: "pro", amount: 800000 },
     { code: "pro_year", amount: 8000000 },
-    { code: "enterprise", amount: 0 },
+    { code: "enterprise", amount: 2490000 },
   ].map(({ code, amount }) => ({
     id: code,
     code,
-    name: code.charAt(0).toUpperCase() + (code.split("_")[0] ?? "").slice(1),
+    name: (code.split("_")[0] ?? "").replace(/^./, (c) => c.toUpperCase()),
     description: `Catalogue description for ${code}`,
     interval: code.endsWith("_year") ? "year" : "month",
     prices: { INR: amount, USD: amount / 100 },
@@ -206,7 +99,7 @@ function catalogue(): Plan[] {
   }));
 }
 
-function subscription(): Subscription {
+function subscription(overrides: Partial<Subscription> = {}): Subscription {
   return {
     plan_code: "pro",
     plan_name: "Pro",
@@ -214,80 +107,212 @@ function subscription(): Subscription {
     amount_minor: 800000,
     interval: "month",
     status: "active",
-    current_period_start: "2026-09-01T00:00:00Z",
-    current_period_end: "2026-10-01T00:00:00Z",
+    current_period_start: "2026-10-18T09:00:00Z",
+    current_period_end: "2026-11-18T09:00:00Z",
     cancel_at_period_end: false,
     trial_end: null,
+    ...overrides,
   };
+}
+
+function invoice(index: number, overrides: Partial<Invoice> = {}): Invoice {
+  return {
+    id: `${index}c10217f-bfce-4023-9da3-ccd45b62ae2c`,
+    plan_code: "pro",
+    currency: "INR",
+    amount_minor: 944000,
+    taxable_amount_minor: 800000,
+    tax_amount_minor: 144000,
+    tax_rate_bps: 1800,
+    tax_type: "gst_igst",
+    place_of_supply: "Maharashtra",
+    status: "paid",
+    period_start: `2026-0${9 - index}-18T09:00:00Z`,
+    period_end: `2026-${String(10 - index).padStart(2, "0")}-18T09:00:00Z`,
+    issued_at: `2026-0${9 - index}-18T09:00:00Z`,
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  context.tenantId = "tenant-a";
+  context.canRead = true;
+  context.canWrite = true;
+  fixtures = {
+    subscription: subscription(),
+    entitlements: {
+      plan: "pro",
+      features: {},
+      limits: { seats: -1, apps: -1, api_keys: -1, custom_roles: -1 },
+    },
+    usage: { seats: 12, apps: 4, api_keys: 3, custom_roles: 5 },
+    profile: {
+      ...EMPTY_BILLING_PROFILE,
+      legal_name: "Example Ltd",
+      billing_email: "billing@example.test",
+      address_line1: "4th Floor, 80 Feet Road",
+      city: "Bengaluru",
+      state: "Karnataka",
+      postal_code: "560034",
+      country: "IN",
+      tax_id_type: "gstin",
+      tax_id: "29ABCDE1234F1Z5",
+    },
+    invoices: [invoice(1), invoice(2, { status: "open" })],
+  };
+  vi.mocked(api).mockReset();
+  vi.mocked(api).mockImplementation(async (path, options) => {
+    if (path === "/v1/billing/plans") return { items: catalogue() };
+    if (path === "/v1/tenants")
+      return {
+        items: [
+          { id: "tenant-a", name: "Example Org" },
+          { id: "tenant-b", name: "Other Org" },
+        ],
+      };
+    if (path.endsWith("/checkout")) return { status: "active" };
+    if (path.endsWith("/subscription/cancel")) return { cancel_at_period_end: true };
+    if (path.endsWith("/trial")) return { ...fixtures.subscription, status: "trialing" };
+    if (path.endsWith("/subscription")) return fixtures.subscription;
+    if (path.endsWith("/entitlements")) return fixtures.entitlements;
+    if (path.endsWith("/entitlements/usage")) return { usage: fixtures.usage };
+    if (path.endsWith("/profile"))
+      return options?.method === "PUT"
+        ? options.body
+        : {
+            ...fixtures.profile,
+            legal_name: path.includes("tenant-b") ? "Other Ltd" : fixtures.profile.legal_name,
+          };
+    if (path.endsWith("/invoices")) return { items: fixtures.invoices };
+    throw new Error(`Unexpected mocked request ${path}`);
+  });
+});
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+function renderPage(props: ComponentProps<typeof BillingSettingsPage> = {}) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  const tree = () => (
+    <QueryClientProvider client={client}>
+      <SensitiveActionProvider>
+        <BillingSettingsPage {...props} />
+      </SensitiveActionProvider>
+    </QueryClientProvider>
+  );
+  return { ...render(tree()), client, tree };
+}
+
+const calls = (suffix: string) =>
+  vi.mocked(api).mock.calls.filter(([path]) => String(path).endsWith(suffix));
+const button = (name: string | RegExp) => screen.getByRole("button", { name });
+const dialog = () => screen.getByRole("alertdialog");
+
+async function openChangePlan() {
+  fireEvent.click(await screen.findByRole("button", { name: "Change plan" }));
+  await screen.findByRole("radiogroup", { name: "Plan" });
 }
 
 describe("Billing catalogue", () => {
   it("formats zero-, two- and three-decimal currencies without assuming cents", () => {
-    expect(formatMoney(2400, "JPY")).toMatch(/2,400/);
-    expect(formatMoney(2400, "USD")).toMatch(/24\.00/);
-    expect(formatMoney(2400, "BHD")).toMatch(/2\.400/);
-  });
-  it("uses exact monthly and yearly variants, with computed savings", () => {
-    const plans = catalogue();
-    expect(billingSavings(plans, "INR")).toBe(17);
-    const choices = billingPlanChoices(plans, "year", "INR");
-    expect(choices.map((choice) => choice.code)).toEqual([
-      "free",
-      "starter_year",
-      "pro_year",
-      "enterprise",
-    ]);
-    expect(choices[2]?.amount).toBe(8000000);
-    expect(choices[2]?.plan.features).toEqual(["Catalogue feature for pro_year"]);
-    expect(choices[3]?.contactSales).toBe(true);
+    expect(formatMoney(1234, "JPY")).toContain("1,234");
+    expect(formatMoney(1234, "USD")).toContain("12.34");
+    expect(formatMoney(1234, "BHD")).toContain("1.234");
   });
 
-  it("never bills a monthly fallback under an annual code or missing currency", () => {
-    const plans = catalogue().filter((plan) => plan.code !== "pro_year");
-    const choice = billingPlanChoices(plans, "year", "INR")[2];
-    expect(choice?.amount).toBeNull();
-    expect(choice?.plan.features).toEqual(["Catalogue feature for pro"]);
-    expect(billingPlanChoices(plans, "month", "EUR")[1]?.amount).toBeNull();
-    expect(billingSavings(plans, "INR")).toBe(0);
-  });
-
-  it("allows interval and currency changes without marking them as the current subscription", () => {
-    const current = subscription();
-    const month = billingPlanChoices(catalogue(), "month", "INR")[2];
-    const year = billingPlanChoices(catalogue(), "year", "INR")[2];
-    assert(month && year, "expected a third monthly and yearly plan choice");
-    expect(isCurrentBillingChoice(month, current, "INR")).toBe(true);
-    expect(isCurrentBillingChoice(year, current, "INR")).toBe(false);
-    expect(isCurrentBillingChoice(month, current, "USD")).toBe(false);
-    expect(isCurrentBillingChoice(month, { ...current, status: "trialing" }, "INR")).toBe(false);
-    expect(isCurrentBillingChoice(month, { ...current, cancel_at_period_end: true }, "INR")).toBe(
-      false,
-    );
-    expect(isCurrentBillingChoice(month, { ...current, status: "cancelled" }, "INR")).toBe(false);
-    expect(current.amount_minor).toBe(800000);
-  });
-
-  it("uses the saved billing country for payment routing", () => {
-    expect(checkoutCountry("USD", { ...EMPTY_BILLING_PROFILE, country: " in " })).toBe("IN");
-    expect(checkoutCountry("INR")).toBe("IN");
-  });
-
-  it("normalizes tax profile data without claiming tax verification", () => {
-    const profile = {
-      ...EMPTY_BILLING_PROFILE,
-      legal_name: " Example Ltd ",
-      tax_id_type: "gstin" as const,
-      tax_id: " 29abcde1234f1z5 ",
-      country: "in",
-    };
-    expect(billingTaxIdValid(profile)).toBe(true);
-    expect(normalizeBillingProfile(profile)).toMatchObject({
-      legal_name: "Example Ltd",
-      tax_id: "29ABCDE1234F1Z5",
-      country: "IN",
+  it("prices each cycle from its own plan and never bills a monthly price under an annual code", () => {
+    const yearly = planOffers(catalogue(), "year", "INR");
+    expect(yearly.find((offer) => offer.tier === "pro")).toMatchObject({
+      planCode: "pro_year",
+      price: 8000000,
+      yearly: { percent: 17 },
     });
-    expect(billingTaxIdValid({ ...profile, tax_id: "invalid" })).toBe(false);
+    expect(yearly.find((offer) => offer.tier === "enterprise")).toMatchObject({
+      contactSales: true,
+      price: undefined,
+    });
+    const noAnnual = catalogue().filter((plan) => plan.code !== "starter_year");
+    expect(planOffers(noAnnual, "year", "INR").find((o) => o.tier === "starter")).toMatchObject({
+      unavailable: true,
+      price: undefined,
+    });
+  });
+
+  it("counts only the same plan, currency and live subscription as the current choice", () => {
+    const pro = planOffers(catalogue(), "month", "INR").find((offer) => offer.tier === "pro");
+    const proYear = planOffers(catalogue(), "year", "INR").find((offer) => offer.tier === "pro");
+    assertDefined(pro);
+    assertDefined(proYear);
+    expect(isCurrentOffer(pro, subscription(), "INR")).toBe(true);
+    expect(isCurrentOffer(pro, subscription(), "USD")).toBe(false);
+    expect(isCurrentOffer(proYear, subscription(), "INR")).toBe(false);
+    expect(isCurrentOffer(pro, subscription({ cancel_at_period_end: true }), "INR")).toBe(false);
+    expect(isCurrentOffer(pro, subscription({ status: "trialing" }), "INR")).toBe(false);
+  });
+
+  it("names the subscription's state from the server and the clock", () => {
+    expect(planState(subscription())).toBe("active");
+    expect(planState(subscription({ cancel_at_period_end: true }))).toBe("ending");
+    expect(planState(subscription({ plan_code: "free", amount_minor: 0 }))).toBe("free");
+    expect(planState({ ...subscription(), status: "none" })).toBe("none");
+    const trial = subscription({ status: "trialing", trial_end: "2026-11-01T00:00:00Z" });
+    expect(planState(trial, Date.parse("2026-10-30T00:00:00Z"))).toBe("trial");
+    expect(planState(trial, Date.parse("2026-11-02T00:00:00Z"))).toBe("trialEnded");
+    expect(planState(subscription({ status: "past_due" }))).toBe("other");
+  });
+
+  it("uses the saved billing country for payment routing, else the currency's", () => {
+    expect(checkoutCountry("USD", { ...EMPTY_BILLING_PROFILE, country: "in" })).toBe("IN");
+    expect(checkoutCountry("GBP")).toBe("GB");
+  });
+
+  it("normalizes tax details without claiming they're verified", () => {
+    const profile = { ...EMPTY_BILLING_PROFILE, tax_id_type: "gstin" as const, tax_id: " 29abc " };
+    expect(billingTaxIdValid(profile)).toBe(false);
+    expect(billingTaxIdValid({ ...profile, tax_id: "29ABCDE1234F1Z5" })).toBe(true);
+    expect(normalizeBillingProfile({ ...profile, tax_id: " 29abcde1234f1z5 " }).tax_id).toBe(
+      "29ABCDE1234F1Z5",
+    );
     expect(normalizeBillingProfile({ ...profile, tax_id_type: "none" }).tax_id).toBe("");
+  });
+
+  it("splits intra-state GST into CGST and SGST halves, and keeps IGST whole", () => {
+    expect(taxLines(invoice(1, { tax_type: "gst_cgst_sgst", tax_amount_minor: 448201 }))).toEqual([
+      { kind: "cgst", rate: 9, amount: 224100 },
+      { kind: "sgst", rate: 9, amount: 224101 },
+    ]);
+    expect(taxLines(invoice(1))).toEqual([{ kind: "igst", rate: 18, amount: 144000 }]);
+    expect(taxLines(invoice(1, { tax_type: "gst_zero_rated", tax_amount_minor: 0 }))).toEqual([]);
+  });
+
+  it("writes a period with its year once", () => {
+    expect(
+      billingPeriod("2026-10-18T09:00:00Z", "2026-11-18T09:00:00Z", "en-IN").replace(/\s/g, " "),
+    ).toBe("18 Oct – 18 Nov 2026");
+  });
+});
+
+describe("Billing usage", () => {
+  it("doesn't turn unavailable counts or caps into zero usage or unlimited access", () => {
+    expect(billingUsage(undefined, 5)).toMatchObject({ used: null, percent: null });
+    expect(billingUsage(3, undefined)).toMatchObject({ limit: null, unlimited: false });
+    expect(billingUsage(-1, 5).used).toBeNull();
+  });
+
+  it("handles zero caps, unlimited plans, a full cap and an exceeded one", () => {
+    expect(billingUsage(0, 0)).toMatchObject({ percent: 0, exceeded: false });
+    expect(billingUsage(2, 0)).toMatchObject({ percent: 100, exceeded: true });
+    expect(billingUsage(99, -1)).toMatchObject({ unlimited: true, percent: null });
+    expect(billingUsage(2, 2)).toMatchObject({ atLimit: true, exceeded: false });
+    expect(billingUsage(6, 5)).toMatchObject({ exceeded: true, percent: 100 });
+    expect(overFreeLimits({ seats: 12, apps: 3, api_keys: 2, custom_roles: 1 })).toEqual([
+      { resource: "seats", used: 12, limit: 5 },
+      { resource: "custom_roles", used: 1, limit: 0 },
+    ]);
   });
 });
 
@@ -305,238 +330,54 @@ describe("Plan names", () => {
   });
 });
 
-describe("Billing profile and invoices", () => {
-  it.each(["light", "dark"])("uses explicit invoice chip and dot colors in %s mode", (theme) => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    const cases = [
-      { status: "paid", label: "Paid", dot: "bg-success", surface: "bg-success-subtle" },
-      { status: "PAID", label: "Paid", dot: "bg-success", surface: "bg-success-subtle" },
-      { status: "open", label: "Open", dot: "bg-warning", surface: "bg-warning-subtle" },
-      { status: "pending", label: "Pending", dot: "bg-warning", surface: "bg-warning-subtle" },
-      {
-        status: "failed",
-        label: "Failed",
-        dot: "bg-destructive",
-        surface: "bg-destructive-subtle",
-      },
-      {
-        status: "uncollectible",
-        label: "Uncollectible",
-        dot: "bg-destructive",
-        surface: "bg-destructive-subtle",
-      },
-      { status: "refunded", label: "Refunded", dot: "bg-info", surface: "bg-info/10" },
-      { status: "draft", label: "Draft", dot: "bg-muted-foreground", surface: "bg-muted" },
-      { status: "void", label: "Void", dot: "bg-muted-foreground", surface: "bg-muted" },
-      {
-        status: "unknown",
-        label: "Status unavailable",
-        dot: "bg-muted-foreground",
-        surface: "text-foreground",
-      },
-    ];
-    const [baseInvoice] = invoiceFixtures();
-    assert(baseInvoice, "expected an invoice fixture");
-    const invoices = cases.map(({ status }, index) => ({
-      ...baseInvoice,
-      id: `invoice-status-${index}`,
-      status,
-    }));
-    render(
-      <BillingInvoices
-        invoices={invoices}
-        plans={catalogue()}
-        loading={false}
-        error={false}
-        fetching={false}
-        onRetry={vi.fn()}
-      />,
-    );
-
-    for (const [index, expected] of cases.entries()) {
-      const row = screen
-        .getByRole("button", { name: `View invoice invoice-status-${index}` })
-        .closest("tr");
-      if (!row) throw new Error("Invoice row not found");
-      const chip = within(row).getByText(expected.label, { exact: true });
-      const dot = chip.querySelector('[data-slot="status-pill-dot"]');
-      expect(dot?.classList.contains(expected.dot)).toBe(true);
-      expect(chip.classList.contains(expected.surface)).toBe(true);
-      expect(dot?.getAttribute("aria-hidden")).toBe("true");
-    }
-
-    fireEvent.click(screen.getByRole("button", { name: "View invoice invoice-status-0" }));
-    const paid = within(screen.getByRole("dialog")).getByText("Paid", { exact: true });
-    expect(
-      paid.querySelector('[data-slot="status-pill-dot"]')?.classList.contains("bg-success"),
-    ).toBe(true);
-  });
-
-  it.each(["light", "dark"])(
-    "keeps lower sections in the same order in %s mode without invented cards or verification",
-    (theme) => {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      const { container } = render(
-        <>
-          <BillingDetails {...detailsProps()} />
-          <BillingInvoices
-            invoices={invoiceFixtures()}
-            plans={catalogue()}
-            loading={false}
-            error={false}
-            fetching={false}
-            onRetry={vi.fn()}
-          />
-        </>,
-      );
-      expect(
-        screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
-      ).toEqual(["Billing profile", "Payment method", "Tax & compliance", "Invoices"]);
-      expect(screen.getByText("No payment method information available.")).toBeTruthy();
-      expect(screen.queryByText(/4242|4589|Verified|Download PDF/)).toBeNull();
-      expect(screen.getByText("Tax ID provided")).toBeTruthy();
-      for (const element of container.querySelectorAll("[class]"))
-        expect(element.getAttribute("class")).not.toMatch(
-          /\bdark:(hidden|block|grid|flex|order-|p[xy]-|m[xy]-)/,
-        );
-    },
-  );
-
-  it("validates GSTIN and saves the normalized profile exactly once", async () => {
-    const props = detailsProps();
-    render(<BillingDetails {...props} />);
-    fireEvent.change(screen.getByLabelText("GSTIN"), { target: { value: "bad" } });
-    fireEvent.submit(screen.getByRole("form"));
-    expect(screen.getByText("Enter a valid 15-character GSTIN.")).toBeTruthy();
-    expect(props.onSave).not.toHaveBeenCalled();
-    fireEvent.change(screen.getByLabelText("GSTIN"), { target: { value: "29abcde1234f1z5" } });
-    fireEvent.change(screen.getByLabelText("Legal / business name"), {
-      target: { value: " Updated Ltd " },
-    });
-    fireEvent.submit(screen.getByRole("form"));
-    fireEvent.submit(screen.getByRole("form"));
-    await screen.findByText("Billing details saved");
-    expect(props.onSave).toHaveBeenCalledTimes(1);
-    expect(props.onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ legal_name: "Updated Ltd", tax_id: "29ABCDE1234F1Z5" }),
-    );
-    expect(screen.getByRole("button", { name: "Save changes" }).hasAttribute("disabled")).toBe(
-      true,
-    );
-  });
-
-  it("retains dirty profile edits on refetch and resets to the latest saved values", () => {
-    const props = detailsProps();
-    const view = render(<BillingDetails {...props} />);
-    fireEvent.change(screen.getByLabelText("Legal / business name"), {
-      target: { value: "Unsaved edit" },
-    });
-    view.rerender(
-      <BillingDetails
-        {...props}
-        profile={{ ...profileFixture(), legal_name: "New server value" }}
-      />,
-    );
-    expect((screen.getByLabelText("Legal / business name") as HTMLInputElement).value).toBe(
-      "Unsaved edit",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
-    expect((screen.getByLabelText("Legal / business name") as HTMLInputElement).value).toBe(
-      "New server value",
-    );
-  });
-
-  it("clears a removed tax ID and disables all read-only fields", async () => {
-    const props = detailsProps();
-    const view = render(<BillingDetails {...props} />);
-    await selectOption("Tax ID type", "None");
-    fireEvent.submit(screen.getByRole("form"));
-    await waitFor(() =>
-      expect(props.onSave).toHaveBeenCalledWith(
-        expect.objectContaining({ tax_id_type: "none", tax_id: "" }),
-      ),
-    );
-    view.unmount();
-    render(<BillingDetails {...props} canWrite={false} />);
-    expect(screen.getByLabelText("Legal / business name").matches(":disabled")).toBe(true);
-    fireEvent.change(screen.getByLabelText("Legal / business name"), {
-      target: { value: "Blocked" },
-    });
-    fireEvent.submit(screen.getByRole("form"));
-    expect(props.onSave).toHaveBeenCalledTimes(1);
-  });
-
-  it("retains unsaved data on a failed save without exposing server messages", async () => {
-    const props = detailsProps();
-    props.onSave = vi.fn().mockRejectedValue(new Error("database connection string private"));
-    render(<BillingDetails {...props} />);
-    fireEvent.change(screen.getByLabelText("City"), { target: { value: "Bengaluru" } });
-    fireEvent.submit(screen.getByRole("form"));
-    await screen.findByRole("alert");
-    expect(screen.queryByText(/database connection string private/)).toBeNull();
-    expect((screen.getByLabelText("City") as HTMLInputElement).value).toBe("Bengaluru");
-  });
-
-  it("filters invoices, opens real details and exports the filtered records", async () => {
-    const exportSpy = vi.spyOn(dataExport, "exportToCsv").mockImplementation(() => {});
-    render(
-      <BillingInvoices
-        invoices={invoiceFixtures()}
-        plans={catalogue()}
-        loading={false}
-        error={false}
-        fetching={false}
-        onRetry={vi.fn()}
-      />,
-    );
-    await selectOption("Invoice status", "Paid");
-    expect(screen.queryByRole("button", { name: "View invoice invoice-open-fixture" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Export CSV" }));
-    expect(exportSpy).toHaveBeenCalledWith(
-      "billing-invoices",
-      [invoiceFixtures()[0]],
-      expect.any(Array),
-    );
-    fireEvent.click(screen.getByRole("button", { name: "View invoice invoice-paid-fixture" }));
-    const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByText("invoice-paid-fixture")).toBeTruthy();
-    expect(within(dialog).getByText("IN")).toBeTruthy();
-    fireEvent.click(within(dialog).getByRole("button", { name: "Download CSV" }));
-    expect(exportSpy).toHaveBeenCalledTimes(2);
-  });
-
-  it("keeps failed invoices and profile data hidden instead of displaying cached details", () => {
-    render(
-      <>
-        <BillingDetails {...detailsProps()} error />
-        <BillingInvoices
-          invoices={invoiceFixtures()}
-          plans={catalogue()}
-          loading={false}
-          error
-          fetching={false}
-          onRetry={vi.fn()}
-        />
-      </>,
-    );
-    expect(screen.queryByRole("form")).toBeNull();
-    expect(screen.queryByRole("button", { name: "View invoice invoice-paid-fixture" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Export CSV" }).hasAttribute("disabled")).toBe(true);
-  });
-});
-
-describe("Billing API orchestration", () => {
-  it("confirms the exact plan and preserves checkout return URLs and saved country routing", async () => {
+describe("Billing page", () => {
+  it("says what the organisation pays and until when, with usage and its details", async () => {
     renderPage();
-    await screen.findByDisplayValue("Example Ltd");
-    fireEvent.click(screen.getByRole("button", { name: /Yearly/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Switch to Starter" }));
-    expect(vi.mocked(api).mock.calls.filter(([path]) => path.endsWith("/checkout"))).toHaveLength(
-      0,
-    );
-    fireEvent.click(
-      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Switch to Starter" }),
-    );
+    expect(
+      await screen.findByText("What Example Org pays for Qeet ID, and the invoices for it."),
+    ).toBeTruthy();
+    expect(
+      await screen.findByText(new RegExp(`₹8,000 a month, before GST · paid until ${END}`)),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Pro has no limits on these. Seats are people with a role, plus pending invitations.",
+      ),
+    ).toBeTruthy();
+    expect(await screen.findByText("Example Ltd")).toBeTruthy();
+    expect(screen.getByText("29ABCDE1234F1Z5")).toBeTruthy();
+    expect(screen.getByText("Collected at checkout")).toBeTruthy();
+  });
+
+  it("meters each capped resource and marks the ones at their cap", async () => {
+    fixtures.subscription = subscription({ plan_code: "free", plan_name: "Free", amount_minor: 0 });
+    fixtures.entitlements = {
+      plan: "free",
+      features: {},
+      limits: { seats: 5, apps: 3, api_keys: 2, custom_roles: 0 },
+    };
+    fixtures.usage = { seats: 3, apps: 1, api_keys: 2, custom_roles: 0 };
+    renderPage();
+    expect(await screen.findByText("No charge · free for as long as you like")).toBeTruthy();
+    expect(await screen.findByRole("meter", { name: "API keys: 2 of 2" })).toBeTruthy();
+    expect(screen.getByText("At limit")).toBeTruthy();
+    expect(screen.getByText("Not included on Free")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Cancel subscription" })).toBeNull();
+  });
+
+  it("confirms the exact plan and keeps checkout's return URLs and the saved country", async () => {
+    renderPage();
+    await screen.findByText("Example Ltd");
+    await openChangePlan();
+    expect(screen.getByText("Current plan")).toBeTruthy();
+    expect(button("You're on Pro").getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(button(/^Yearly/));
+    fireEvent.click(screen.getByRole("radio", { name: "Starter" }));
+    fireEvent.click(button("Switch to Starter"));
+    expect(within(dialog()).getByText(/₹24,000 a year before tax/)).toBeTruthy();
+    expect(within(dialog()).getByText(/nothing is credited for what's left of Pro/)).toBeTruthy();
+    expect(calls("/checkout")).toHaveLength(0);
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Switch to Starter" }));
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith(
         "/v1/tenants/tenant-a/billing/checkout",
@@ -554,243 +395,188 @@ describe("Billing API orchestration", () => {
     );
   });
 
-  it("warns about actual resource overages before a Free downgrade", async () => {
+  it("warns about the actual overages before a switch to Free", async () => {
     renderPage();
-    await screen.findByDisplayValue("Example Ltd");
-    fireEvent.click(screen.getByRole("button", { name: "Switch to Free" }));
-    const dialog = screen.getByRole("alertdialog");
-    expect(within(dialog).getByText(/Members \(12\/5\)/)).toBeTruthy();
-    expect(within(dialog).getByText(/Custom roles \(5\/0\)/)).toBeTruthy();
-    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-    expect(vi.mocked(api).mock.calls.filter(([path]) => path.endsWith("/checkout"))).toHaveLength(
-      0,
-    );
-  });
-
-  it("confirms cancellation and sends it only after confirmation", async () => {
-    renderPage();
-    await screen.findByDisplayValue("Example Ltd");
-    fireEvent.click(screen.getByRole("button", { name: "Cancel plan" }));
+    await screen.findByText("Example Ltd");
+    await openChangePlan();
+    fireEvent.click(screen.getByRole("radio", { name: "Free" }));
+    fireEvent.click(button("Switch to Free"));
+    expect(within(dialog()).getByText("Switch to Free with more than it allows?")).toBeTruthy();
     expect(
-      vi.mocked(api).mock.calls.filter(([path]) => path.endsWith("/subscription/cancel")),
-    ).toHaveLength(0);
-    fireEvent.click(
-      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Cancel subscription" }),
-    );
-    await waitFor(() =>
-      expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/billing/subscription/cancel", {
-        method: "POST",
-      }),
+      within(dialog()).getByText(/You have 12 seats \(Free allows 5\), 4 applications/),
+    ).toBeTruthy();
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    expect(calls("/checkout")).toHaveLength(0);
+  });
+
+  it("opens the sales form for Enterprise instead of a checkout", async () => {
+    renderPage();
+    await screen.findByText("Example Ltd");
+    await openChangePlan();
+    fireEvent.click(screen.getByRole("radio", { name: "Enterprise" }));
+    fireEvent.click(button("Talk to sales"));
+    const drawer = await screen.findByRole("dialog", { name: "Talk to sales" });
+    expect(
+      within(drawer).getByRole<HTMLInputElement>("textbox", { name: "Work email" }).value,
+    ).toBe("priya@example.test");
+    expect(calls("/checkout")).toHaveLength(0);
+  });
+
+  it("opens Change plan on a linked plan", async () => {
+    renderPage({ recommendedPlan: "starter" });
+    await screen.findByRole("radiogroup", { name: "Plan" });
+    expect(screen.getByRole("radio", { name: "Starter" }).getAttribute("aria-checked")).toBe(
+      "true",
     );
   });
 
-  it("cancels a pending checkout confirmation after an organization switch", async () => {
+  it("cancels only after the confirmation, saying what happens", async () => {
+    renderPage();
+    await screen.findByText("Example Ltd");
+    fireEvent.click(button("Cancel subscription"));
+    expect(
+      within(dialog()).getByText(
+        new RegExp(`Pro stays until ${END}, the end of the period paid for`),
+      ),
+    ).toBeTruthy();
+    expect(calls("/subscription/cancel")).toHaveLength(0);
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Cancel subscription" }));
+    await waitFor(() => expect(calls("/subscription/cancel")).toHaveLength(1));
+  });
+
+  it("marks an ending plan and offers no second cancellation", async () => {
+    fixtures.subscription = subscription({ cancel_at_period_end: true });
+    renderPage();
+    expect(await screen.findByText(new RegExp(`· ends ${END}`))).toBeTruthy();
+    expect(screen.getByText("Ending")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Cancel subscription" })).toBeNull();
+  });
+
+  it("drops a pending plan confirmation after an organisation switch", async () => {
     const view = renderPage();
-    await screen.findByDisplayValue("Example Ltd");
-    fireEvent.click(screen.getByRole("button", { name: "Switch to Starter" }));
+    await screen.findByText("Example Ltd");
+    await openChangePlan();
+    fireEvent.click(screen.getByRole("radio", { name: "Starter" }));
+    fireEvent.click(button("Switch to Starter"));
     context.tenantId = "tenant-b";
     view.rerender(view.tree());
-    await screen.findByDisplayValue("Other organization");
-    fireEvent.click(
-      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Switch to Starter" }),
-    );
+    await screen.findByText("Other Ltd");
+    fireEvent.click(within(dialog()).getByRole("button", { name: "Switch to Starter" }));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
-    expect(vi.mocked(api).mock.calls.filter(([path]) => path.endsWith("/checkout"))).toHaveLength(
-      0,
-    );
+    expect(calls("/checkout")).toHaveLength(0);
   });
 
-  it("does not request or render tenant billing data without read permission", async () => {
-    context.canRead = false;
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(billingKeys.profile("tenant-a"), profileFixture());
-    client.setQueryData(billingKeys.subscription("tenant-a"), subscription());
-    renderPage(client);
-    expect(await screen.findByText("You don't have access to billing.")).toBeTruthy();
-    expect(screen.queryByDisplayValue("Example Ltd")).toBeNull();
-    expect(vi.mocked(api).mock.calls.filter(([path]) => path.includes("/tenants/"))).toHaveLength(
-      0,
-    );
-  });
-
-  it("persists the profile through the authorized scoped endpoint", async () => {
+  it("offers the Pro trial only to an organisation that never had a subscription", async () => {
+    fixtures.subscription = { ...subscription(), status: "none" };
+    fixtures.entitlements = { ...fixtures.entitlements, plan: "free" };
     renderPage();
-    await screen.findByDisplayValue("Example Ltd");
-    fireEvent.change(screen.getByLabelText("City"), { target: { value: " Bengaluru " } });
-    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-    await screen.findByText("Billing details saved");
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/billing/profile", {
-      method: "PUT",
-      body: { ...profileFixture(), city: "Bengaluru" },
-    });
+    fireEvent.click(await screen.findByRole("button", { name: "Start trial" }));
+    await waitFor(() =>
+      expect(api).toHaveBeenCalledWith(
+        "/v1/tenants/tenant-a/billing/trial",
+        expect.objectContaining({ method: "POST", body: { plan_code: "pro", currency: "INR" } }),
+      ),
+    );
+  });
+
+  it("doesn't request or show tenant billing data without read access", async () => {
+    context.canRead = false;
+    context.canWrite = false;
+    renderPage();
+    await screen.findByText("Billing couldn't be loaded");
+    expect(
+      vi.mocked(api).mock.calls.filter(([path]) => String(path).includes("/v1/tenants/tenant-a")),
+    ).toHaveLength(0);
+  });
+
+  it("shows the facts but no changes with read access only", async () => {
+    context.canWrite = false;
+    renderPage();
+    await screen.findByText("Example Ltd");
+    for (const name of ["Change plan", "Edit", "Cancel subscription"])
+      expect(screen.queryByRole("button", { name })).toBeNull();
   });
 });
 
-describe("Billing usage", () => {
-  it("does not turn unavailable counts or caps into zero usage or unlimited access", () => {
-    expect(billingUsage()).toEqual({
-      used: null,
-      limit: null,
-      unlimited: false,
-      percent: null,
-      exceeded: false,
+describe("Billing details", () => {
+  it("checks the GSTIN, then saves the normalized details once", async () => {
+    renderPage();
+    await screen.findByText("Example Ltd");
+    fireEvent.click(button("Edit"));
+    const gstin = await screen.findByRole("textbox", { name: "GSTIN" });
+    fireEvent.change(gstin, { target: { value: "29abc" } });
+    fireEvent.click(button("Save details"));
+    expect(await screen.findByText(/Enter a 15-character GSTIN/)).toBeTruthy();
+    const puts = () => calls("/profile").filter(([, options]) => options?.method === "PUT");
+    expect(puts()).toHaveLength(0);
+    fireEvent.change(gstin, { target: { value: " 27abcde1234f1z5 " } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Legal name" }), {
+      target: { value: "  Example Private Ltd " },
     });
-    expect(billingUsage(2).percent).toBeNull();
-    expect(billingUsage(undefined, 10).used).toBeNull();
-    expect(billingUsage(Number.NaN, -2).limit).toBeNull();
-  });
-
-  it("handles zero usage, zero caps, unlimited plans and exceeded limits", () => {
-    expect(billingUsage(0, 0)).toMatchObject({ percent: 0, exceeded: false });
-    expect(billingUsage(1, 0)).toMatchObject({ percent: 100, exceeded: true });
-    expect(billingUsage(20, -1)).toMatchObject({ unlimited: true, percent: null });
-    expect(billingUsage(3, 5)).toMatchObject({ percent: 60, exceeded: false });
-    expect(billingUsage(6, 5)).toMatchObject({ percent: 100, exceeded: true });
-  });
-});
-
-describe("Billing layout", () => {
-  it("does not mark a cancelled subscription as current or show a future renewal", () => {
-    renderView({ ...viewProps(), subscription: { ...subscription(), status: "cancelled" } });
-    expect(screen.queryByText("Current", { exact: true })).toBeNull();
-    expect(screen.queryByText(/Renews on/)).toBeNull();
-    expect(screen.queryByRole("button", { name: "Current plan" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Cancel plan" })).toBeNull();
-  });
-
-  it("blocks a Free downgrade when resource counts are incomplete", () => {
-    const props = { ...viewProps(), usage: { seats: 12 } };
-    renderView(props);
-    const downgrade = screen.getByRole("button", { name: "Switch to Free" });
-    expect(downgrade.hasAttribute("disabled")).toBe(true);
-    fireEvent.click(downgrade);
-    expect(props.onChangePlan).not.toHaveBeenCalled();
-  });
-
-  it.each(["light", "dark"])(
-    "keeps subscription, usage and plans identical in %s mode",
-    (theme) => {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      const { container } = renderView();
-      expect(screen.getByRole("heading", { name: "Billing", level: 1 })).toBeTruthy();
-      expect(
-        screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
-      ).toEqual(["Current plan", "Usage", "Choose your plan"]);
-      expect(screen.getByRole("button", { name: "Current plan" }).hasAttribute("disabled")).toBe(
-        true,
-      );
-      expect(screen.getAllByText("/ Unlimited")).toHaveLength(4);
-      expect(screen.queryByText("Active users")).toBeNull();
-      expect(screen.getAllByText("Catalogue feature for pro")).toHaveLength(2);
-      for (const element of container.querySelectorAll("[class]")) {
-        expect(element.getAttribute("class")).not.toMatch(
-          /\bdark:(hidden|block|grid|flex|order-|p[xy]-|m[xy]-)/,
-        );
-      }
-    },
-  );
-
-  it("browses and submits exact yearly pricing without altering the current-plan amount", async () => {
-    const props = viewProps();
-    renderView(props);
-    const current = screen.getByRole("region", { name: "Current plan" });
-    const currentText = current.textContent;
-    fireEvent.click(screen.getByRole("button", { name: /Yearly/ }));
-    expect(current.textContent).toBe(currentText);
-    expect(screen.getByText("Catalogue feature for pro_year")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Switch to Pro" }));
-    await waitFor(() => expect(props.onChangePlan).toHaveBeenCalledTimes(1));
-    expect(props.onChangePlan).toHaveBeenCalledWith(
-      expect.objectContaining({ code: "pro_year", amount: 8000000 }),
-      "INR",
-    );
-  });
-
-  it("disables checkout when the yearly variant is missing", () => {
-    const props = viewProps();
-    props.initialInterval = "year";
-    props.plans = props.plans.filter((plan) => plan.code !== "starter_year");
-    renderView(props);
-    expect(screen.getByRole("button", { name: "Price unavailable" }).hasAttribute("disabled")).toBe(
-      true,
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Price unavailable" }));
-    expect(props.onChangePlan).not.toHaveBeenCalled();
-  });
-
-  it("keeps denied data hidden and read-only mutations disabled", () => {
-    const props = viewProps();
-    const view = renderView({ ...props, canRead: false });
-    expect(screen.queryByRole("heading", { name: "Current plan" })).toBeNull();
-    expect(screen.queryByText(/Catalogue feature/)).toBeNull();
-    view.unmount();
-    renderView({ ...props, canWrite: false });
-    expect(screen.getByRole("button", { name: "Switch to Starter" }).hasAttribute("disabled")).toBe(
-      true,
-    );
-    expect(screen.getByRole("button", { name: "Cancel plan" }).hasAttribute("disabled")).toBe(true);
-  });
-
-  it("does not present failed subscription or usage queries as Free or unlimited", () => {
-    renderView({ ...viewProps(), subscriptionError: true, usageError: true });
-    expect(screen.queryByText("Active")).toBeNull();
-    expect(screen.queryByText("Free plan")).toBeNull();
-    expect(screen.queryByText("/ Unlimited")).toBeNull();
-    expect(screen.getAllByText("Usage or limit not reported")).toHaveLength(4);
-    expect(screen.queryByRole("button", { name: "Start free trial" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Switch to Starter" }).hasAttribute("disabled")).toBe(
-      true,
-    );
-  });
-
-  it("shows a Free plan and trial only for a loaded, eligible subscription", () => {
-    renderView({
-      ...viewProps(),
-      subscription: {
-        ...subscription(),
-        status: "none",
-        plan_name: "Free",
-        plan_code: "free",
-        amount_minor: 0,
-        currency: "",
-      },
-      entitlements: {
-        plan: "free",
-        features: {},
-        limits: { seats: 5, apps: 3, api_keys: 2, custom_roles: 0 },
-      },
-    });
-    expect(screen.getByText("Free plan")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Start free trial" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Cancel plan" })).toBeNull();
-  });
-
-  it("holds plan controls while a request is pending and maps errors safely", async () => {
-    const props = viewProps();
-    let rejectAction: (error: Error) => void = () => {};
-    props.onChangePlan = vi.fn(
-      () =>
-        new Promise((_, reject) => {
-          rejectAction = reject;
+    fireEvent.click(button("Save details"));
+    await waitFor(() =>
+      expect(api).toHaveBeenCalledWith(
+        "/v1/tenants/tenant-a/billing/profile",
+        expect.objectContaining({
+          method: "PUT",
+          body: expect.objectContaining({
+            legal_name: "Example Private Ltd",
+            tax_id: "27ABCDE1234F1Z5",
+            tax_id_type: "gstin",
+          }),
         }),
+      ),
     );
-    renderView(props);
-    const button = screen.getByRole("button", { name: "Switch to Starter" });
-    fireEvent.click(button);
-    fireEvent.click(button);
-    expect(props.onChangePlan).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("button", { name: /Yearly/ }).hasAttribute("disabled")).toBe(true);
-    rejectAction(new Error("private backend stack trace"));
-    await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
-    expect(screen.queryByText("private backend stack trace")).toBeNull();
-    await waitFor(() => expect(button.hasAttribute("disabled")).toBe(false));
+    expect(puts()).toHaveLength(1);
+    expect(await screen.findByText("Example Private Ltd")).toBeTruthy();
   });
 
-  it("opens the existing sales form without starting checkout", () => {
-    const props = viewProps();
-    renderView(props);
-    fireEvent.click(screen.getByRole("button", { name: "Contact sales" }));
-    expect(within(screen.getByRole("dialog")).getByText("Talk to sales")).toBeTruthy();
-    expect(props.onChangePlan).not.toHaveBeenCalled();
+  it("offers to add details when none are saved", async () => {
+    fixtures.profile = EMPTY_BILLING_PROFILE;
+    renderPage();
+    expect(await screen.findByText("No billing details yet")).toBeTruthy();
+    fireEvent.click(button("Add details"));
+    expect(await screen.findByRole("heading", { name: "Add billing details" })).toBeTruthy();
   });
 });
+
+describe("Invoices", () => {
+  it("lists them newest first and opens one as the tax invoice reads", async () => {
+    renderPage();
+    const table = await screen.findByRole("table", { name: "Invoices" });
+    await within(table).findByText("1c10217f");
+    const rows = within(table).getAllByRole("row");
+    expect(rows[1]?.textContent).toContain("1c10217f");
+    expect(within(table).getByText("Open")).toBeTruthy();
+    // The row's button is named by its whole primary cell (QTRX-21).
+    fireEvent.click(within(table).getByRole("button", { name: /^1c10217f/ }));
+    const drawer = await screen.findByRole("dialog", { name: "Invoice 1c10217f" });
+    expect(within(drawer).getByText("IGST 18%")).toBeTruthy();
+    expect(within(drawer).getByText("₹9,440.00")).toBeTruthy();
+    expect(within(drawer).getByText("Maharashtra")).toBeTruthy();
+  });
+
+  it("exports every invoice", async () => {
+    const exportToCsv = vi.spyOn(dataExport, "exportToCsv").mockImplementation(() => {});
+    renderPage();
+    await screen.findByRole("table", { name: "Invoices" });
+    fireEvent.click(await screen.findByRole("button", { name: "Export CSV" }));
+    expect(exportToCsv).toHaveBeenCalledWith(
+      "billing-invoices",
+      expect.arrayContaining(fixtures.invoices),
+      expect.any(Array),
+    );
+  });
+
+  it("says when there are none", async () => {
+    fixtures.invoices = [];
+    renderPage();
+    expect(await screen.findByText("No invoices yet")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Export CSV" })).toBeNull();
+  });
+});
+
+function assertDefined<T>(value: T | undefined): asserts value is T {
+  if (value === undefined) throw new Error("expected a value");
+}

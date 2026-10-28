@@ -1,48 +1,42 @@
-import { buttonVariants, Card, CardContent } from "@qeetrix/ui";
+import { LockIcon } from "@qeetrix/icons";
+import { Button } from "@qeetrix/react";
+import { EmptyState } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
-import { type IconProps, LockIcon } from "@qeetrix/icons";
-import type { ComponentType } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useEntitlements } from "../api/billing";
 
-/** Renders the placeholder for a feature the plan lacks: a dashed card linking to billing. */
+/** In place of a feature the plan lacks: what it is, and the plans that include it. */
 export function UpgradeGate({
-  icon: Icon = LockIcon,
   title,
   description,
   plan,
 }: {
-  icon?: ComponentType<IconProps<"outline">>;
   title: string;
   description: string;
   plan?: string; // tier to preselect on the billing page
 }) {
   const { t } = useTranslation("billing");
   return (
-    <Card className="border-dashed">
-      <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-        <div className="rounded-full bg-muted p-3">
-          <Icon className="size-6 text-muted-foreground" aria-hidden />
-        </div>
-        <div className="space-y-1">
-          <p className="text-sm font-medium">{title}</p>
-          <p className="mx-auto max-w-md text-sm text-muted-foreground">{description}</p>
-        </div>
-        <Link
-          to="/settings/billing"
-          search={plan ? { plan } : {}}
-          className={buttonVariants({ size: "sm" })}
+    <EmptyState
+      icon={LockIcon}
+      title={title}
+      description={description}
+      actions={
+        <Button
+          variant="soft"
+          render={<Link to="/settings/billing" search={plan ? { plan } : {}} />}
         >
           {t("upgradeGate.upgradePlan")}
-        </Link>
-      </CardContent>
-    </Card>
+        </Button>
+      }
+    />
   );
 }
 
-// The tier that first unlocks each feature, so Upgrade deep-links to the right plan. Mirrors the
-// server's entitlements catalog.
+// The tier that first unlocks each feature, so the link opens Change plan on it. Mirrors the
+// server's entitlements catalogue.
 const FEATURE_PLAN: Record<string, string> = {
   sms_mfa: "starter",
   custom_branding: "starter",
@@ -69,7 +63,7 @@ export function FeatureGate({
   feature: string;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const { data, isPending } = useEntitlements();
   if (!isPending && data && data.features[feature] === false) {
