@@ -26,7 +26,7 @@ import {
   whoDid,
 } from "@/modules/timeline/timeline-model";
 import { formatIp } from "@/shared/utils/ip-format";
-import { iconOf, type Names, titleText, toneOf, whoText } from "./timeline-words";
+import { iconOf, type Names, toneOf, useEventWords } from "./timeline-words";
 
 const ANY = "";
 
@@ -237,17 +237,17 @@ function Event({
   person: string;
   names: Names;
 }) {
-  const { t } = useTranslation("timeline");
+  const words = useEventWords(person, names);
+  const { t } = words;
   const locale = formatLocale();
   const title = eventTitle(e, userId);
   const who = whoDid(e, userId);
   const app = linkApp(e);
-  const name = whoText(who, person, t);
   return (
     <TimelineItem
       title={
         <Link className="tl-event-link" to="/activity" search={activityRecord(e)}>
-          {titleText(title, e, t, names)}
+          {words.title(title, e)}
         </Link>
       }
       description={
@@ -255,7 +255,7 @@ function Event({
           {who.kind === "person" && who.name ? (
             <Avatar name={who.name} size="sm" decorative />
           ) : null}
-          <span>{name}</span>
+          <span>{words.who(who)}</span>
           {app ? <span>· {t(`app.${app}`)}</span> : null}
           {e.browser ? <span>· {e.browser}</span> : null}
           {e.ip ? (

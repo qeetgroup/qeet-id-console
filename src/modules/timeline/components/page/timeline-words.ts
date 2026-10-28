@@ -27,6 +27,7 @@ import {
 import type { QeetrixIcon } from "@qeetrix/react";
 import type { TimelineTone } from "@qeetrix/react/experimental";
 import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 
 import { type ActivityEvent, formatEventTitle, humanizeEventType } from "@/modules/activity";
 import type { EventTitle, Who } from "@/modules/timeline/timeline-model";
@@ -37,8 +38,18 @@ export type Names = {
   person: (id?: string) => string | undefined;
 };
 
+/** The timeline's words for one event: its sentence, and who did it. */
+export function useEventWords(person: string, names: Names) {
+  const { t } = useTranslation("timeline");
+  return {
+    title: (title: EventTitle, e: ActivityEvent) => titleText(title, e, t, names),
+    who: (who: Who) => whoText(who, person, t),
+    t,
+  };
+}
+
 /** An event's sentence on the person's timeline. */
-export function titleText(
+function titleText(
   title: EventTitle,
   e: ActivityEvent,
   t: TFunction<"timeline">,
@@ -91,7 +102,7 @@ export function titleText(
 }
 
 /** Who did it, in words: the person's own name for their own events. */
-export function whoText(who: Who, person: string, t: TFunction<"timeline">): string {
+function whoText(who: Who, person: string, t: TFunction<"timeline">): string {
   if (who.kind === "self") return person;
   if (who.kind === "service") return t(`who.${who.service}`);
   return who.name ?? t("who.someone");
