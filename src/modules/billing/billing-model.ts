@@ -1,15 +1,12 @@
-import {
-  type BillingInterval,
-  type BillingProfile,
-  type Plan,
-  planCodeForTier,
-  type Subscription,
-} from "./api/billing";
+import type { BillingProfile, Entitlements, Subscription } from "./api/billing";
+import { type PlanOffer, type Tier, tierOfCode } from "./plan-offers";
 
+/** The plan-limited resources the server counts (GET …/entitlements/usage). */
 export const BILLING_RESOURCES = ["seats", "apps", "api_keys", "custom_roles"] as const;
+export type BillingResource = (typeof BILLING_RESOURCES)[number];
 
-export const BILLING_TIERS = ["free", "starter", "pro", "enterprise"] as const;
-export const FREE_DOWNGRADE_LIMITS: Record<string, number> = {
+// Free's caps, as the server's entitlements catalogue sets them, to warn before a downgrade.
+export const FREE_DOWNGRADE_LIMITS: Record<BillingResource, number> = {
   seats: 5,
   apps: 3,
   api_keys: 2,
@@ -49,59 +46,60 @@ export const EMPTY_BILLING_PROFILE: BillingProfile = {
   tax_id: "",
 };
 
-export type BillingPlanChoice = {
-  tier: string;
-  code: string;
-  plan: Plan;
-  amount: number | null;
-  interval: BillingInterval;
-  contactSales: boolean;
-};
+/** The subscription's state as the page words it, from what the server returns and the clock. */
+export type PlanState =
+  | "free" // on Free
+  | "active" // a paid plan, paid for up to current_period_end
+  | "ending" // cancelled: marked to end with the period
+  | "trial" // a no-card trial that hasn't ended
+  | "trialEnded" // a trial past its end: the server treats the organisation as Free
+  | "none" // no subscription on record
+  | "other"; // past_due, unpaid, canceled or an unknown status
 
-export function billingPlanChoices(plans: Plan[], interval: BillingInterval, currency: string) {
-  return BILLING_TIERS.flatMap((tier): BillingPlanChoice[] => {
-    const code = planCodeForTier(tier, interval);
-    const priced = plans.find((plan) => plan.code === code);
-    const plan = priced ?? plans.find((plan) => plan.code === tier);
-    if (!plan) return [];
-    const amount = priced?.prices?.[currency];
-    return [
-      {
-        tier,
-        code,
-        plan,
-        amount: amount !== undefined && Number.isSafeInteger(amount) && amount >= 0 ? amount : null,
-        interval: tier === "free" || tier === "enterprise" ? "month" : interval,
-        contactSales: tier === "enterprise",
-      },
-    ];
-  });
-}
-
-export function billingCurrencies(plans: Plan[]): string[] {
-  return [...new Set(plans.flatMap((plan) => Object.keys(plan.prices ?? {})))].sort();
-}
-
-export function billingSavings(plans: Plan[], currency: string): number {
-  const monthly = plans.find((plan) => plan.code === "pro")?.prices?.[currency];
-  const yearly = plans.find((plan) => plan.code === "pro_year")?.prices?.[currency];
-  if (!monthly || monthly < 0 || yearly === undefined || yearly < 0) return 0;
-  return Math.max(0, Math.round((1 - yearly / (monthly * 12)) * 100));
-}
-
-export function billingCurrencyLabel(currency: string): string {
-  try {
-    const symbol = new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      currencyDisplay: "narrowSymbol",
-    })
-      .formatToParts(0)
-      .find((part) => part.type === "currency")?.value;
-    return symbol && symbol !== currency ? `${currency} (${symbol})` : currency;
-  } catch {
-    return currency;
+export function planState(subscription: Subscription | undefined, now = Date.now()): PlanState {
+  if (!subscription) return "other";
+  if (subscription.status === "none") return "none";
+  if (subscription.status === "trialing") {
+    const end = subscription.trial_end ? Date.parse(subscription.trial_end) : Number.NaN;
+    return Number.isFinite(end) && end <= now ? "trialEnded" : "trial";
   }
+  if (subscription.status !== "active") return "other";
+  if (tierOfCode(subscription.plan_code) === "free") return "free";
+  return subscription.cancel_at_period_end ? "ending" : "active";
+}
+
+/** The tier the organisation is on today: its subscription's, else its plan label's, else Free. */
+export function currentTier(subscription?: Subscription, entitlements?: Entitlements): Tier {
+  if (!subscription || subscription.status === "none") return tierOfCode(entitlements?.plan);
+  if (planState(subscription) === "trialEnded") return "free";
+  return tierOfCode(subscription.plan_code);
+}
+
+/**
+ * Whether choosing this offer would change nothing: the same plan code, in the same currency, on
+ * a subscription that is active and not ending. A trial, an ending plan or another cycle can be
+ * chosen again.
+ */
+export function isCurrentOffer(
+  offer: PlanOffer,
+  subscription: Subscription | undefined,
+  currency: string,
+  entitlementPlan?: string,
+): boolean {
+  if (!subscription) return false;
+  if (subscription.status === "none") return offer.planCode === (entitlementPlan || "free");
+  const state = planState(subscription);
+  if (state !== "active" && state !== "free") return false;
+  return subscription.plan_code === offer.planCode && subscription.currency === currency;
+}
+
+/** The resources over Free's caps, with their counts, for the downgrade warning. */
+export function overFreeLimits(usage?: Record<string, number>) {
+  return BILLING_RESOURCES.flatMap((resource) => {
+    const used = usage?.[resource] ?? 0;
+    const limit = FREE_DOWNGRADE_LIMITS[resource];
+    return used > limit ? [{ resource, used, limit }] : [];
+  });
 }
 
 export function checkoutCountry(currency: string, profile?: BillingProfile): string {
@@ -119,20 +117,6 @@ export function checkoutCountry(currency: string, profile?: BillingProfile): str
   return defaults[currency] ?? "US";
 }
 
-export function isCurrentBillingChoice(
-  choice: BillingPlanChoice,
-  subscription: Subscription | undefined,
-  currency: string,
-  entitlementPlan?: string,
-): boolean {
-  if (!subscription || subscription.status === "trialing" || subscription.cancel_at_period_end) {
-    return false;
-  }
-  if (subscription.status === "none") return choice.code === (entitlementPlan || "free");
-  if (!["active", "past_due", "unpaid"].includes(subscription.status)) return false;
-  return subscription.plan_code === choice.code && subscription.currency === currency;
-}
-
 export function normalizeBillingProfile(profile: BillingProfile): BillingProfile {
   return {
     ...Object.fromEntries(Object.entries(profile).map(([key, value]) => [key, value.trim()])),
@@ -148,12 +132,20 @@ export function billingTaxIdValid(profile: BillingProfile): boolean {
   return profile.tax_id_type === "gstin" ? /^[0-9A-Z]{15}$/.test(value) : value.length > 0;
 }
 
+/** Whether a profile has anything saved (the server returns an empty one until the first save). */
+export function hasBillingProfile(profile?: BillingProfile): boolean {
+  return (
+    !!profile && Object.entries(profile).some(([key, value]) => key !== "tax_id_type" && !!value)
+  );
+}
+
 export type BillingUsage = {
   used: number | null;
   limit: number | null;
   unlimited: boolean;
   percent: number | null;
   exceeded: boolean;
+  atLimit: boolean;
 };
 
 export function hasBillingUsage(usage?: Record<string, number>): boolean {
@@ -178,5 +170,6 @@ export function billingUsage(used?: number, limit?: number): BillingUsage {
           ? Number(usage > 0) * 100
           : Math.min(100, Math.round((usage / cap) * 100)),
     exceeded: usage !== null && cap !== null && cap >= 0 && usage > cap,
+    atLimit: usage !== null && cap !== null && cap > 0 && usage === cap,
   };
 }

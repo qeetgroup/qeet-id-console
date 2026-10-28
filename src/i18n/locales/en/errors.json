@@ -67,7 +67,16 @@
     "inviteEmailNotVerified": "Verify your email address to accept invitations.",
     "samlLoginCodeInvalid": "That sign-in code is invalid. Please sign in again.",
     "samlLoginCodeUsed": "That sign-in code has already been used. Please sign in again.",
-    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again."
+    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again.",
+    "qeetaiUnconfigured": "Qeet AI is off: no AI provider is connected for this organisation.",
+    "qeetaiProviderUnreachable": "Qeet ID couldn't reach the provider. Check the base URL, and that it's on the public internet.",
+    "qeetaiProviderKeyInvalid": "The provider turned this API key down. Check it, or create a new one in your provider account.",
+    "qeetaiProviderModelInvalid": "The key works, but the provider turned the model down. Check the model ID.",
+    "qeetaiProviderError": "The provider returned an error. Try again, or check your provider account.",
+    "domainInvalid": "Enter a domain, such as qeet.co.in.",
+    "domainExists": "That domain has already been added.",
+    "domainRecordMissing": "The TXT record wasn't found yet. DNS changes can take a while to show: check again once it's published.",
+    "domainClaimedByOther": "Another organisation has already verified this domain, so it manages the accounts on it."
   },
   "kind": {
     "auth": "Please sign in again to continue.",

@@ -167,7 +167,7 @@ export function useCreateOidcClient() {
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: (input: CreateOidcInput) => createOidcClient(tenantId, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "authentication:toast.applicationRegistered", silentError: true }, // the sheet shows it
+    meta: { successMessage: "oidc:toast.registered", silentError: true }, // the drawer shows it
   });
 }
 
@@ -183,7 +183,7 @@ export function useUpdateOidcClient(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) });
     },
-    meta: { successMessage: "authentication:toast.applicationUpdated", silentError: true },
+    meta: { silentError: true }, // the drawer says what happened
   });
 }
 
@@ -193,7 +193,7 @@ export function useDeleteOidcClient() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/v1/oidc/clients/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "authentication:toast.applicationDeleted" },
+    meta: { successMessage: "oidc:toast.deleted" },
   });
 }
 
@@ -204,7 +204,7 @@ export function useRotateClientSecret(id: string) {
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: () => rotateOidcClientSecret(tenantId, id),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.oidcClients(tenantId) }),
-    meta: { successMessage: "authentication:toast.clientSecretRotated" },
+    meta: { successMessage: "oidc:toast.secretRotated" },
   });
 }
 

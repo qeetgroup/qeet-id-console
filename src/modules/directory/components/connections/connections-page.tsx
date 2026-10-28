@@ -1,5 +1,5 @@
 import { EyeIcon, NetworkIcon, PlusIcon, ServerIcon, WorkflowIcon } from "@qeetrix/icons";
-import { Button, Menu, MenuContent, MenuItem, MenuTrigger, Skeleton, Table } from "@qeetrix/react";
+import { Button, Menu, MenuContent, MenuItem, MenuTrigger, Table } from "@qeetrix/react";
 import {
   Alert,
   DataState,
@@ -18,8 +18,8 @@ import {
   DEFAULT_EVENT_FILTERS,
   useDirectoryConnections,
   useDirectoryErrors,
-  useDirectoryEvents,
 } from "@/modules/directory/api/directory";
+import { useDirectoryEvents } from "@/modules/directory/api/events";
 import {
   DAYS,
   latestProblems,
@@ -31,6 +31,7 @@ import type { DirectoryConnection } from "@/modules/directory/directory-model";
 import { useConnectionActions } from "@/modules/directory/use-connection-actions";
 import { useUserStats } from "@/modules/users";
 import { useCapabilities } from "@/platform/security/capability-provider";
+import { BandPlaceholder } from "../band-placeholder";
 import { ConnectionsBand } from "./connections-band";
 import { ConnectionOffers, ConnectionRowMenu, useConnectionColumns } from "./connections-table";
 import "./connections.css";
@@ -105,7 +106,12 @@ export function ConnectionsPage({ filters, onFiltersChange }: ConnectionsPagePro
                 </MenuItem>
                 <MenuItem
                   icon={ServerIcon}
-                  onClick={() => void navigate({ to: "/directory/connections/ldap" })}
+                  onClick={() =>
+                    void navigate({
+                      to: "/directory/connections/ldap",
+                      search: { action: "create" },
+                    })
+                  }
                 >
                   {t("connections.kinds.ldap")}
                 </MenuItem>
@@ -200,20 +206,5 @@ export function ConnectionsPage({ filters, onFiltersChange }: ConnectionsPagePro
         </div>
       </PageContent>
     </>
-  );
-}
-
-/** The band's place while its numbers load, so the header doesn't jump when they arrive. */
-function BandPlaceholder() {
-  return (
-    <div className="ppl-band" aria-hidden="true">
-      {[0, 1, 2, 3].map((cell) => (
-        <div key={cell} className="ppl-cell">
-          <Skeleton className="ppl-skeleton-label" />
-          <Skeleton className="ppl-skeleton-value" />
-          <Skeleton lines={2} />
-        </div>
-      ))}
-    </div>
   );
 }

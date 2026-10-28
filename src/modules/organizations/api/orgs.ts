@@ -116,11 +116,15 @@ export interface OrgAuditEvent {
   created_at: string;
 }
 
+/**
+ * What Settings › General changes. No status: the server always refuses suspending the
+ * organisation you're in. No region: it's read-only after creation. `metadata` replaces the whole
+ * object, so send every key you keep.
+ */
 export interface UpdateOrgBody {
   name?: string;
-  status?: "active" | "suspended";
-  region?: string;
   logo_url?: string;
+  metadata?: Record<string, unknown>;
 }
 
 /** Updates an org. `silentError` drops the error toast, for a form that shows it itself. */

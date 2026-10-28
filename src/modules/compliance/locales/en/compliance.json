@@ -1,126 +1,317 @@
 {
-  "gdpr": {
-    "description": "GDPR Article 17 (right-to-erasure) requests. Each request enters a 30-day grace window before the background purge job redacts PII while preserving audit references.",
-    "refresh": "Refresh",
-    "fileRequest": "File erasure request",
-    "infoBanner": {
-      "title": "Right-to-erasure runs an async background purge.",
-      "description": "Requests are recorded with a 30-day grace window; the purge job then redacts PII while preserving the tamper-evident audit trail."
+  "page": {
+    "title": "Compliance",
+    "description": "Evidence from this organisation's settings, erasure requests and how long deleted people are kept."
+  },
+  "frameworks": {
+    "soc2": {
+      "name": "SOC 2",
+      "scope": "AICPA Trust Services Criteria CC6 and CC7",
+      "note": "Checks of this organisation's Qeet ID settings and audit log, mapped to the SOC 2 Trust Services Criteria. Evidence for an auditor: not an audit, a report or a certification.",
+      "emptyTitle": "No SOC 2 evidence yet",
+      "emptyDescription": "Generate evidence to check this organisation's settings against the SOC 2 Trust Services Criteria. Every run is kept, so an auditor can see how things changed."
     },
-    "list": {
-      "title": "Erasure requests",
-      "count_one": "{{count}} request",
-      "count_other": "{{count}} requests",
-      "empty": "No GDPR erasure requests on file.",
-      "columns": {
-        "user": "User",
-        "reason": "Reason",
-        "status": "Status",
-        "graceUntil": "Grace until",
-        "filed": "Filed",
-        "actions": "Actions"
-      },
-      "cancelRequest": "Cancel"
-    },
-    "create": {
-      "title": "File erasure request",
-      "description": "Starts the 30-day grace window. The user is not deleted yet — cancel before grace expires to abort.",
-      "userId": "User ID",
-      "userIdHelp": "UUID of the user to erase. Copy from the Users page.",
-      "reason": "Reason",
-      "reasonPlaceholder": "The person asked for their account to be deleted (support ticket #1234).",
-      "reasonHelp": "Optional but strongly recommended for audit-trail purposes.",
-      "cancel": "Cancel",
-      "submit": "File request",
-      "submitting": "Filing…",
-      "submitAction": "File an erasure request",
-      "validation": {
-        "userId": "Enter the person's user ID (a UUID)."
-      }
-    },
-    "confirm": {
-      "cancelTitle": "Cancel this erasure request?",
-      "cancelLabel": "Cancel request"
+    "iso27001": {
+      "name": "ISO 27001",
+      "scope": "ISO/IEC 27001 Annex A, 2013 numbering",
+      "note": "Checks of this organisation's Qeet ID settings and audit log, mapped to the ISO/IEC 27001 Annex A controls (2013 numbering). Evidence for an auditor: not an audit, a report or a certification.",
+      "emptyTitle": "No ISO 27001 evidence yet",
+      "emptyDescription": "Generate evidence to check this organisation's settings against the ISO/IEC 27001 Annex A controls. Every run is kept, so an auditor can see how things changed."
     }
   },
   "evidence": {
     "generate": "Generate evidence",
-    "generating": "Generating...",
-    "emptyTitle": "No evidence runs yet",
-    "emptyDescription": "Click \"Generate evidence\" to run a live control check against this organization's configuration and audit trail.",
-    "stats": {
-      "passing": "Controls passing",
-      "failing": "Failing",
-      "notDeterminable": "Not determinable",
-      "lastGenerated": "Last generated"
-    },
-    "controls": {
-      "title": "Controls",
-      "count_one": "{{count}} control checked in this run",
-      "count_other": "{{count}} controls checked in this run",
-      "download": "Download JSON",
-      "empty": "No controls in this evidence run.",
-      "columns": {
-        "criteria": "Criteria",
-        "control": "Control",
-        "category": "Category",
-        "status": "Status",
-        "evidence": "Evidence"
-      }
-    },
-    "history": {
-      "title": "Report history",
-      "count_one": "{{count}} run — select a row to load its controls above.",
-      "count_other": "{{count}} runs — select a row to load its controls above.",
-      "columns": {
-        "generated": "Generated",
-        "passing": "Passing",
-        "failing": "Failing",
-        "na": "N/A"
-      }
+    "download": "Download evidence",
+    "runMissing": "That run isn't one of this organisation's, so the latest is shown.",
+    "viewingOlder": "You're viewing the run of {{date}}. The latest is from {{latest}}.",
+    "showLatest": "Show the latest",
+    "facts": {
+      "result": "Result",
+      "failing_one": "{{n}} failing",
+      "failing_other": "{{n}} failing",
+      "noneFailing": "None failing",
+      "passOf": "{{pass}} of {{total}} pass",
+      "passOfWithNa": "{{pass}} of {{total}} pass · {{na}} no evidence",
+      "lastRun": "Last run",
+      "thisRun": "This run",
+      "runBy": "Run by",
+      "scope": "Scope",
+      "checks_one": "{{n}} check",
+      "checks_other": "{{n}} checks",
+      "byQeetId": "Qeet ID",
+      "byMember": "Someone in this organisation",
+      "byFormer": "Someone no longer here"
     },
     "status": {
-      "pass": "pass",
-      "na": "n/a",
-      "fail": "fail"
+      "pass": "Pass",
+      "fail": "Fail",
+      "na": "No evidence"
+    },
+    "missing": {
+      "title": "What's missing",
+      "titleOlder": "What was missing",
+      "summary": "{{parts}}.",
+      "failingIn": "{{failing}}, fixed in {{places}}",
+      "failing_one": "{{n}} failing check",
+      "failing_other": "{{n}} failing checks",
+      "places_one": "{{n}} place",
+      "places_other": "{{n}} places",
+      "noEvidence_one": "{{n}} without evidence yet",
+      "noEvidence_other": "{{n}} without evidence yet"
+    },
+    "since": {
+      "before": {
+        "pass": "passed in the run before",
+        "fail": "failed in the run before",
+        "na": "no evidence in the run before"
+      },
+      "fail": {
+        "new": "Failing since this run; {{before}}.",
+        "every_one": "Failing in every run since {{date}} ({{n}} run)",
+        "every_other": "Failing in every run since {{date}} ({{n}} runs)",
+        "capped_one": "Failing in each of the last {{n}} run, since {{date}}",
+        "capped_other": "Failing in each of the last {{n}} runs, since {{date}}",
+        "since_one": "Failing since {{date}} ({{n}} run)",
+        "since_other": "Failing since {{date}} ({{n}} runs)"
+      },
+      "na": {
+        "new": "No evidence since this run; {{before}}.",
+        "every_one": "No evidence in any run since {{date}} ({{n}} run)",
+        "every_other": "No evidence in any run since {{date}} ({{n}} runs)",
+        "capped_one": "No evidence in each of the last {{n}} run, since {{date}}",
+        "capped_other": "No evidence in each of the last {{n}} runs, since {{date}}",
+        "since_one": "No evidence since {{date}} ({{n}} run)",
+        "since_other": "No evidence since {{date}} ({{n}} runs)"
+      }
+    },
+    "latest": {
+      "still": {
+        "fail": "Still failing in the latest run, {{date}}",
+        "na": "Still no evidence in the latest run, {{date}}"
+      },
+      "now": {
+        "pass": "Passes in the latest run, {{date}}",
+        "fail": "Fails in the latest run, {{date}}",
+        "na": "No evidence in the latest run, {{date}}"
+      }
+    },
+    "fix": {
+      "open": "{{place}}, to fix {{name}}",
+      "securitySettings": "Security settings",
+      "password": "Password rules",
+      "risk": "Risk settings",
+      "roles": "Roles",
+      "ipRules": "IP rules",
+      "secrets": "Secrets",
+      "logStreams": "Log streams",
+      "retention": "Retention",
+      "gdpr": "Erasure requests",
+      "auditLogs": "Audit logs"
+    },
+    "controls": {
+      "label": "{{framework}} checks",
+      "title": "Controls",
+      "description_one": "{{n}} check in the run of {{date}}.",
+      "description_other": "{{n}} checks in the run of {{date}}.",
+      "show": "Show",
+      "all": "All",
+      "criteria": "Criteria",
+      "control": "Control",
+      "status": "Status",
+      "evidence": "Evidence"
+    },
+    "runs": {
+      "label": "{{framework}} evidence runs",
+      "title": "Evidence runs",
+      "description": "Every run since {{date}} is kept as it was generated. Open one to see its checks.",
+      "descriptionCapped": "The 100 newest runs, since {{date}}, each kept as it was generated. Open one to see its checks.",
+      "rowLabel": "Run of {{date}}",
+      "view": "View checks",
+      "generated": "Generated",
+      "viewing": "Viewing",
+      "by": "Run by"
+    }
+  },
+  "gdpr": {
+    "fileRequest": "File erasure request",
+    "note": "A request waits {{days}} days and can be withdrawn until then. Then the person's sessions end, their name, email, phone and profile details are redacted, and their password, authenticator app and recovery codes are deleted. Their audit events are kept.",
+    "facts": {
+      "requests": "Requests",
+      "pending_one": "{{n}} pending",
+      "pending_other": "{{n}} pending",
+      "nonePending": "None pending",
+      "onRecord_one": "{{n}} on record",
+      "onRecord_other": "{{n}} on record",
+      "next": "Next erasure",
+      "nextOn": "{{date}} · {{name}}",
+      "noneScheduled": "None scheduled",
+      "grace": "Grace period",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "setByQeetId": "Set by Qeet ID",
+      "check": "Related check",
+      "checkRun": "ISO 27001 run of {{date}}",
+      "checkBefore": "ISO 27001 run of {{date}}, before the latest request",
+      "checkNoRun": "No ISO 27001 run yet"
+    },
+    "list": {
+      "title": "Erasure requests",
+      "description": "Requests to erase a person's personal data (GDPR Art. 17), newest first.",
+      "person": "Person",
+      "reason": "Reason",
+      "noReason": "No reason given",
+      "status": "Status",
+      "erasure": "Erased on",
+      "filed": "Filed",
+      "filedBy": "by {{name}}",
+      "emptyTitle": "No erasure requests",
+      "emptyDescription": "When someone asks for their personal data to be erased, file a request. It's carried out {{days}} days later.",
+      "erasedPerson": "Erased person",
+      "someone": "Someone",
+      "notErased": "Not erased",
+      "quarantined": "Not erased: the account no longer belongs here"
+    },
+    "status": {
+      "pending": "Pending",
+      "completed": "Erased",
+      "cancelled": "Withdrawn",
+      "quarantined": "Stopped"
+    },
+    "withdraw": {
+      "menu": "Withdraw request",
+      "title": "Withdraw the request to erase {{name}}?",
+      "description": "{{name}}'s personal data won't be erased on {{date}}. Withdrawing is recorded in the audit log; to erase them later, file a new request, which waits another {{days}} days.",
+      "confirm": "Withdraw request",
+      "action": "Withdraw an erasure request"
+    },
+    "file": {
+      "title": "File an erasure request",
+      "description": "The person's personal data is erased on {{date}}, {{days}} days from today. You can withdraw the request until then.",
+      "person": "Person",
+      "personHelp": "Search people in this organisation, deleted people included.",
+      "personPlaceholder": "Name or email",
+      "groupPeople": "People",
+      "groupDeleted": "Deleted",
+      "pendingNote": "{{base}} · request pending",
+      "elsewhereNote": "{{base}} · account held by another organisation",
+      "deletedNote": "{{email}} · deleted {{date}}",
+      "personRequired": "Choose the person whose data is to be erased.",
+      "userId": "User ID",
+      "userIdHelp": "The person's ID, as on their page in Directory › Users.",
+      "userIdInvalid": "Enter the person's user ID: 36 letters, numbers and dashes.",
+      "notHere": "Only an account held by this organisation can be erased here.",
+      "reason": "Reason",
+      "reasonHelp": "Kept with the request.",
+      "reasonPlaceholder": "e.g. Asked by email, ticket #4821",
+      "untilTerm": "Until {{date}}",
+      "until": "The request can be withdrawn; nothing is erased.",
+      "onTerm": "On {{date}}",
+      "on": "Their sessions end and they move to Directory › Deleted; name, email, phone and profile details are redacted; password, authenticator app and recovery codes are deleted.",
+      "auditTerm": "Audit events",
+      "audit": "Kept, so the audit log stays verifiable.",
+      "cancel": "Cancel",
+      "submit": "File request",
+      "action": "File an erasure request"
     }
   },
   "retention": {
-    "description": "How long deleted data is kept before it's permanently purged. Retention runs automatically once enabled; you can also preview or run it on demand.",
-    "deletedUsers": {
-      "title": "Soft-deleted users",
-      "description": "Permanently purge users that have been in the recycle bin longer than the window.",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "automaticPurge": "Automatic purge",
-      "automaticPurgeHelp": "A background job purges ripe users hourly when enabled.",
-      "windowLabel": "Retention window: {{days}} days",
-      "windowHelp": "Users soft-deleted longer ago than this are purged. 1–3650 days.",
-      "preview": "Preview",
-      "runPurge": "Run purge now",
-      "saving": "Saving…",
-      "save": "Save policy",
-      "purgeConfirmTitle": "Permanently purge soft-deleted users?",
-      "purgeConfirmDescription": "This purges all soft-deleted users older than the retention window. This cannot be undone.",
-      "purgeConfirmLabel": "Run purge now",
-      "previewResult_one": "{{count}} user would be purged at the current {{days}}-day window.",
-      "previewResult_other": "{{count}} users would be purged at the current {{days}}-day window.",
-      "runResult_one": "Purged {{count}} user.",
-      "runResult_other": "Purged {{count}} users.",
-      "purgeAction": "Purge soft-deleted users",
-      "saveAction": "Change the retention policy"
+    "on": "On",
+    "off": "Off",
+    "saveAction": "Change the retention policy",
+    "deleted": {
+      "title": "Deleted people",
+      "description": "People in Directory › Deleted are removed for good once they've been deleted this long."
     },
-    "otherDataClasses": {
-      "title": "Other data classes",
-      "description": "Audit logs are append-only and retained for the compliance window; session and event retention are managed by the platform. Per-class policies aren't configurable yet."
+    "auto": {
+      "label": "Automatic removal",
+      "onHint": "Checked every hour.",
+      "offHint": "Deleted people stay until someone deletes them for good.",
+      "turnOff": "Turn off",
+      "turnOn": "Turn on"
+    },
+    "turnOff": {
+      "title": "Turn off automatic removal?",
+      "description": "Deleted people stay in Directory › Deleted until someone deletes them for good. The SOC 2 and ISO 27001 retention checks (CC6.5, A.8.3) fail from the next evidence run.",
+      "confirm": "Turn off"
+    },
+    "turnOn": {
+      "title": "Turn on automatic removal?",
+      "description": "Each deleted person is removed for good {{days}} days after they were deleted, and can't be restored after that. It's checked every hour.",
+      "descriptionDue_one": "{{n}} person deleted more than {{days}} days ago is removed for good within the hour and can't be restored. After that, each deleted person is removed {{days}} days after they were deleted.",
+      "descriptionDue_other": "{{n}} people deleted more than {{days}} days ago are removed for good within the hour and can't be restored. After that, each deleted person is removed {{days}} days after they were deleted.",
+      "confirm": "Turn on"
+    },
+    "keep": {
+      "label": "Keep for",
+      "hint": "After a person is deleted. {{min}} to {{max}} days.",
+      "change": "Change",
+      "days_one": "{{n}} day",
+      "days_other": "{{n}} days",
+      "cancel": "Cancel",
+      "save": "Save",
+      "fieldLabel": "Keep for, in days",
+      "unit": "days",
+      "range": "{{min}} to {{max}} days.",
+      "wouldBeDue_zero": "At {{days}} days, no one in Deleted would be due now.",
+      "wouldBeDue_one": "At {{days}} days, {{n}} person in Deleted would be due now.",
+      "wouldBeDue_other": "At {{days}} days, {{n}} people in Deleted would be due now."
+    },
+    "shorten": {
+      "title": "Keep deleted people for {{days}} days?",
+      "description_one": "{{n}} more person, deleted more than {{days}} days ago, is removed for good within the hour and can't be restored.",
+      "description_other": "{{n}} more people, deleted more than {{days}} days ago, are removed for good within the hour and can't be restored.",
+      "descriptionUncounted": "Everyone deleted more than {{days}} days ago is removed for good within the hour and can't be restored.",
+      "confirm": "Save and remove"
+    },
+    "removeNow": {
+      "button": "Remove now",
+      "title_one": "Remove {{n}} deleted person for good?",
+      "title_other": "Remove {{n}} deleted people for good?",
+      "description_one": "The person deleted more than {{days}} days ago is removed now and can't be restored. Their audit events are kept.",
+      "description_other": "The {{n}} people deleted more than {{days}} days ago are removed now and can't be restored. Their audit events are kept.",
+      "confirm": "Remove for good",
+      "action": "Remove deleted people"
+    },
+    "due": {
+      "label": "Due now",
+      "noOne": "No one",
+      "people_one": "{{n}} person",
+      "people_other": "{{n}} people",
+      "empty": "Directory › Deleted is empty.",
+      "next_one": "{{n}} person in Deleted. Next: {{name}}, deleted {{deleted}}, due {{date}}.",
+      "next_other": "{{n}} people in Deleted. Next: {{name}}, deleted {{deleted}}, due {{date}}.",
+      "inDeleted_one": "{{n}} person in Deleted.",
+      "inDeleted_other": "{{n}} people in Deleted.",
+      "offNote": "Nothing is removed while automatic removal is off."
+    },
+    "evidence": {
+      "label": "Evidence",
+      "soc2": "SOC 2 run of {{date}}",
+      "iso": "ISO 27001 run of {{date}}",
+      "none": "No evidence runs yet."
+    },
+    "other": {
+      "title": "Other data",
+      "description": "Kept by Qeet ID's own rules; not set here.",
+      "audit": "Audit log",
+      "auditKept": "Never removed",
+      "auditLine": "Kept whole, so its hash chain can be checked, an erased person's events included.",
+      "auditOpen": "Audit logs",
+      "erasure": "Erasure requests",
+      "erasureKept": "{{days}} days",
+      "erasureLine": "A request waits {{days}} days, then the person's personal data is redacted.",
+      "erasureOpen": "GDPR",
+      "sessions": "Sessions",
+      "sessionsKept": "7 days after they end",
+      "sessionsLine": "Ended sessions are deleted a week after they end; erasing a person ends theirs."
     }
   },
   "toast": {
     "evidenceGenerated": "Evidence generated",
     "retentionPolicySaved": "Retention policy saved",
-    "retentionPurgeComplete": "Retention purge complete",
-    "erasureRequestSubmitted": "Erasure request submitted",
-    "erasureRequestCancelled": "Erasure request cancelled"
+    "retentionPurgeComplete": "Deleted people removed",
+    "erasureRequestSubmitted": "Erasure request filed",
+    "erasureRequestCancelled": "Erasure request withdrawn"
   },
   "nav": {
     "security": {
@@ -140,13 +331,5 @@
         "title": "Retention"
       }
     }
-  },
-  "soc2": {
-    "title": "SOC 2",
-    "description": "AICPA Trust Service Criteria — evidence generated from this organization's live configuration and audit trail."
-  },
-  "iso27001": {
-    "title": "ISO 27001",
-    "description": "ISO/IEC 27001:2022 Annex A controls — evidence generated from this organization's live configuration and audit trail."
   }
 }

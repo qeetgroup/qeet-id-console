@@ -1,5 +1,5 @@
 import { CircleCheckIcon, CircleDashedIcon, CircleXIcon } from "@qeetrix/icons";
-import { formatDate, formatNumber } from "@qeetrix/react";
+import { formatNumber } from "@qeetrix/react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -13,6 +13,7 @@ import {
   peopleSources,
 } from "@/modules/directory/connections-model";
 import type { DirectoryConnection } from "@/modules/directory/directory-model";
+import { DayColumns } from "./day-columns";
 
 export const HEALTH_ICONS = {
   healthy: CircleCheckIcon,
@@ -54,7 +55,6 @@ export function ConnectionsBand({
   const sources = peopleSources(connections, people ?? 0);
   const health = healthCounts(connections);
   const days = dailyColumns(volume, failed, now);
-  const top = Math.max(1, ...days.map((d) => d.changes + d.failed));
   const failures = failed.length;
   const drafts = connections.filter((c) => c.status === "draft").length;
   const scim = connections.find((c) => c.type === "scim");
@@ -144,41 +144,14 @@ export function ConnectionsBand({
           {t("connections.band.events", { count: totalEvents, n: n(failures) })}
         </dd>
         <dd className="dir-days-cell">
-          {/* The picture is a span inside the dd: a dd with an image role isn't a dd any more. */}
-          <span
-            className="dir-days"
-            role="img"
-            aria-label={t("connections.band.daysLabel", { days: DAYS, n: n(failures) })}
-          >
-            {days.map((d) => (
-              <span
-                key={d.date}
-                className="dir-day"
-                title={t("connections.band.dayTitle", {
-                  date: formatDate(d.date, locale, { dateStyle: "medium" }),
-                  changes: n(d.changes),
-                  failed: n(d.failed),
-                })}
-              >
-                {d.failed ? (
-                  <span
-                    className="dir-day-failed"
-                    style={{ blockSize: `${Math.max(4, (d.failed / top) * 100)}%` }}
-                  />
-                ) : null}
-                {d.changes ? (
-                  <span
-                    className="dir-day-ok"
-                    style={{ blockSize: `${(d.changes / top) * 100}%` }}
-                  />
-                ) : null}
-              </span>
-            ))}
-          </span>
+          <DayColumns
+            days={days}
+            label={t("connections.band.daysLabel", { days: DAYS, n: n(failures) })}
+          />
         </dd>
         {failures ? (
           <dd className="ppl-link">
-            <Link to="/directory/sync-activity">
+            <Link to="/directory/sync-activity" search={{ result: "failed" }}>
               {t("connections.band.failedLink", { n: n(failures) })}
             </Link>
           </dd>

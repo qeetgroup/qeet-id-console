@@ -97,6 +97,15 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.WEBHOOK_EVENT_UNKNOWN]: "errors:code.webhookEventUnknown",
   // 400 -> `validation`, which doesn't say which value or what to use instead.
   [ERROR_CODES.OIDC_GRANT_TYPE_UNSUPPORTED]: "errors:code.oidcGrantTypeUnsupported",
+  [ERROR_CODES.QEETAI_UNCONFIGURED]: "errors:code.qeetaiUnconfigured",
+  [ERROR_CODES.QEETAI_PROVIDER_UNREACHABLE]: "errors:code.qeetaiProviderUnreachable",
+  [ERROR_CODES.QEETAI_PROVIDER_KEY_INVALID]: "errors:code.qeetaiProviderKeyInvalid",
+  [ERROR_CODES.QEETAI_PROVIDER_MODEL_INVALID]: "errors:code.qeetaiProviderModelInvalid",
+  [ERROR_CODES.QEETAI_PROVIDER_ERROR]: "errors:code.qeetaiProviderError",
+  [ERROR_CODES.DOMAIN_INVALID]: "errors:code.domainInvalid",
+  [ERROR_CODES.DOMAIN_EXISTS]: "errors:code.domainExists",
+  [ERROR_CODES.DOMAIN_RECORD_MISSING]: "errors:code.domainRecordMissing",
+  [ERROR_CODES.DOMAIN_CLAIMED_BY_OTHER]: "errors:code.domainClaimedByOther",
   [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 

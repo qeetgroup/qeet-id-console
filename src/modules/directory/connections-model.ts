@@ -50,13 +50,14 @@ export const problemText = (event: Pick<DirectoryEvent, "message">) =>
   event.message.split(": ").pop() ?? event.message;
 
 /**
- * The last DAYS days, oldest first: the people and groups synced each day (the server's volume)
- * and the events that failed.
+ * The last `days` days (DAYS unless given), oldest first: the people and groups synced each day
+ * (the server's volume) and the events that failed.
  */
 export function dailyColumns(
   volume: readonly { date: string; users: number; groups: number }[],
   failed: readonly Pick<DirectoryEvent, "started_at">[],
   now: number,
+  days: number = DAYS,
 ): { date: string; changes: number; failed: number }[] {
   const byDate = new Map(volume.map((v) => [v.date, v.users + v.groups]));
   const failures = new Map<string, number>();
@@ -64,8 +65,8 @@ export function dailyColumns(
     const date = new Date(e.started_at).toISOString().slice(0, 10);
     failures.set(date, (failures.get(date) ?? 0) + 1);
   }
-  return Array.from({ length: DAYS }, (_, i) => {
-    const date = new Date(now - (DAYS - 1 - i) * DAY).toISOString().slice(0, 10);
+  return Array.from({ length: days }, (_, i) => {
+    const date = new Date(now - (days - 1 - i) * DAY).toISOString().slice(0, 10);
     return { date, changes: byDate.get(date) ?? 0, failed: failures.get(date) ?? 0 };
   });
 }

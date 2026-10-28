@@ -5,7 +5,7 @@ import i18n from "@/i18n";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
 import type { SendInput, ToolResultInput } from "../ai/ai-provider";
-import { useActiveProvider } from "../ai/use-active-provider";
+import { backendProvider } from "../ai/backend-provider";
 import { useConsoleContext } from "../context/use-console-context";
 import { useQeetAIRuntime } from "../qeetai-provider";
 import { redactPII } from "../redact";
@@ -79,7 +79,6 @@ function recordExecution(conversationId: string, messageId: string, exec: ToolEx
  * at most MAX_TOOL_LEGS times. `stop` aborts both the stream and any running tool.
  */
 export function useQeetAIChat(): UseQeetAIChat {
-  const provider = useActiveProvider();
   const context = useConsoleContext();
   const access = useCapabilities();
   const queryClient = useQueryClient();
@@ -128,7 +127,9 @@ export function useQeetAIChat(): UseQeetAIChat {
       ): Promise<{ calls: PendingToolCall[]; reason: DoneReason }> => {
         const calls: PendingToolCall[] = [];
         let reason: DoneReason = "end_turn";
-        for await (const event of provider.send(input, { signal: controller.signal })) {
+        // The panel offers the composer only while the server says Qeet AI is on, so every turn
+        // goes to the backend; a refusal there (no key, the plan) ends the turn with its own copy.
+        for await (const event of backendProvider.send(input, { signal: controller.signal })) {
           switch (event.type) {
             case "thinking":
               setThinking(true);
@@ -228,7 +229,7 @@ export function useQeetAIChat(): UseQeetAIChat {
         }
       })();
     },
-    [provider, context, access.can, queryClient, confirm, stepUp],
+    [context, access.can, queryClient, confirm, stepUp],
   );
 
   const send = useCallback(
