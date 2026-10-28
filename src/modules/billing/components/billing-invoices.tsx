@@ -1,7 +1,7 @@
 import { CopyIcon, DownloadIcon, EyeIcon, ReceiptTextIcon } from "@qeetrix/icons";
 import { Button, MenuItem, Table, type TableColumn } from "@qeetrix/react";
 import { Alert, EmptyState, Pagination } from "@qeetrix/react/experimental";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -15,6 +15,21 @@ import { InvoiceDrawer } from "./invoice-drawer";
 import { InvoiceStatus } from "./invoice-status";
 
 const PAGE_SIZE = 10;
+const NARROW = "(max-width: 640px)";
+
+// Library gap (new): Table column priority on narrow screens. Until the Table can drop columns
+// itself, a phone gets two: the invoice with its period, and the total with its status.
+function useNarrow() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia(NARROW);
+      query.addEventListener("change", onChange);
+      return () => query.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(NARROW).matches,
+    () => false,
+  );
+}
 // Column headers are part of the file format, so they stay English.
 const INVOICE_COLUMNS: CsvColumn<Invoice>[] = [
   { header: "Invoice ID", value: (invoice) => invoice.id },
@@ -66,6 +81,31 @@ export function BillingInvoices({
     }
   }
 
+  const narrow = useNarrow();
+  const phoneColumns: TableColumn<Invoice>[] = [
+    {
+      id: "invoice",
+      header: t("invoices.column.invoice"),
+      primary: true,
+      cell: (invoice) => (
+        <span className="ppl-two">
+          <span className="account-mono">{shortInvoiceId(invoice.id)}</span>
+          <small>{billingPeriod(invoice.period_start, invoice.period_end, locale)}</small>
+        </span>
+      ),
+    },
+    {
+      id: "total",
+      header: t("invoices.column.total"),
+      numeric: true,
+      cell: (invoice) => (
+        <span className="ppl-two bill-end">
+          <span className="bill-total">{formatMoney(invoice.amount_minor, invoice.currency)}</span>
+          <InvoiceStatus status={invoice.status} />
+        </span>
+      ),
+    },
+  ];
   const columns: TableColumn<Invoice>[] = [
     {
       id: "invoice",
@@ -141,7 +181,7 @@ export function BillingInvoices({
           rows={page}
           rowId={(invoice) => invoice.id}
           rowLabel={(invoice) => t("invoices.row", { id: shortInvoiceId(invoice.id) })}
-          columns={columns}
+          columns={narrow ? phoneColumns : columns}
           loading={loading}
           loadingRows={3}
           onRowClick={setOpen}
