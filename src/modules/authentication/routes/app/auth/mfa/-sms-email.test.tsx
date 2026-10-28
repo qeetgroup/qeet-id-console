@@ -1,20 +1,26 @@
 // @vitest-environment jsdom
 // Lives beside the route with a "-" prefix so the router generator ignores it.
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
-vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/components/page-header", () => ({
-  PageHeader: ({ actions }: { actions?: ReactNode }) => <div>{actions}</div>,
-}));
+vi.mock("@/platform/api/client", async () => {
+  const { ApiError } = await import("@/platform/errors/api-error");
+  return { api: vi.fn(), ApiError };
+});
+vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
+}));
+vi.mock("@/modules/dashboard", async () =>
+  (await import("@/modules/authentication/components/methods/__tests__/stubs")).dashboardStub(),
+);
+vi.mock("@tanstack/react-router", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-router")>()),
+  Link: (await import("@/modules/authentication/components/methods/__tests__/stubs")).RouterLink,
 }));
 // Records what each action asks the shared sensitive-action runner for, then runs it for real.
 const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
@@ -33,86 +39,116 @@ vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) 
   };
 });
 
+import { renderPage } from "@/modules/authentication/components/methods/__tests__/kit";
 import { api } from "@/platform/api/client";
-import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./sms-email";
 
-const SmsEmailPage = Route.options.component as () => React.JSX.Element;
+const OtpFactorsPage = Route.options.component as () => React.JSX.Element;
+const added = new Date(Date.now() - 2 * 86_400_000).toISOString();
+
+let calls: { method: string; path: string; body?: unknown }[];
 
 beforeEach(() => {
+  calls = [];
   sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/mfa/otp/factors" && method === "GET") {
+    calls.push({ method, path, body: options?.body });
+    if (path === "/v1/mfa/otp/factors" && method === "GET")
       return {
-        items: [{ id: "f1", channel: "email", destination: "j***@example.com", verified: true }],
+        items: [
+          {
+            id: "f1",
+            channel: "sms",
+            destination: "+91 •••• 3210",
+            verified: true,
+            created_at: added,
+          },
+          {
+            id: "f2",
+            channel: "email",
+            destination: "a•••@qeet.in",
+            verified: false,
+            created_at: added,
+          },
+        ],
       };
-    }
-    if (path === "/v1/mfa/otp/factors" && method === "POST") {
-      return { factor_id: "f2", message: "sent" };
-    }
-    if (path === "/v1/mfa/otp/factors/f1" && method === "DELETE") return undefined;
+    if (path === "/v1/mfa/otp/factors" && method === "POST")
+      return { factor_id: "f3", message: "" };
+    if (path.endsWith("/challenge")) return { message: "" };
+    if (path.endsWith("/confirm")) return { verified: true };
+    if (method === "DELETE") return undefined;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
 
 afterEach(cleanup);
 
-function renderPage() {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-  render(
-    <QueryClientProvider client={client}>
-      <SensitiveActionProvider>
-        <SmsEmailPage />
-      </SensitiveActionProvider>
-    </QueryClientProvider>,
-  );
-}
-
-function writes() {
-  return vi
-    .mocked(api)
-    .mock.calls.map(([path, options]) => `${options?.method ?? "GET"} ${path}`)
-    .filter((r) => !r.startsWith("GET "));
-}
-
-describe("MFA › Email and SMS factors", () => {
-  it("removes a factor only once the confirmation is accepted", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Remove" }));
-    const dialog = await screen.findByRole("alertdialog");
-    expect(within(dialog).getByText("Remove this email factor?")).toBeTruthy();
-    expect(writes()).toEqual([]);
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Remove" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/mfa/otp/factors/f1"]));
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Remove this factor" });
+describe("MFA › SMS / email (your own)", () => {
+  it("lists each number and address, marking the one not confirmed", async () => {
+    renderPage(<OtpFactorsPage />);
+    expect(await screen.findByText(/\+91 •••• 3210 · added 2 days ago/)).toBeTruthy();
+    expect(screen.getByText("Not confirmed")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Send a test code to +91 •••• 3210" })).toBeTruthy();
   });
 
-  it("keeps the factor when the confirmation is cancelled", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Remove" }));
-    const dialog = await screen.findByRole("alertdialog");
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
-    expect(writes()).toEqual([]);
+  it("sends a test code to a confirmed one", async () => {
+    renderPage(<OtpFactorsPage />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Send a test code to +91 •••• 3210" }),
+    );
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: "POST",
+        path: "/v1/mfa/otp/factors/f1/challenge",
+        body: undefined,
+      }),
+    );
   });
 
-  it("adds a factor through the step-up path without a confirmation, then asks for the code", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Add factor" }));
-    fireEvent.change(await screen.findByLabelText(/^Email address/), {
-      target: { value: "jo@example.com" },
+  it("adds a number: where to send codes, behind the step-up, then the code", async () => {
+    renderPage(<OtpFactorsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Add a number or email" }));
+    fireEvent.click(screen.getByRole("button", { name: "Send code" }));
+    expect(await screen.findByText("Enter a phone number.")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Phone number"), {
+      target: { value: "+91 98765 43210" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Send code" }));
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: "POST",
+        path: "/v1/mfa/otp/factors",
+        body: { channel: "sms", destination: "+91 98765 43210" },
+      }),
+    );
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Add a number or email" });
+    expect(await screen.findByText(/we sent a 6-digit code to \+91 98765 43210/i)).toBeTruthy();
+    const first = screen.getAllByRole("textbox", { name: /^code/i })[0] as HTMLElement;
+    fireEvent.paste(first, { clipboardData: { getData: () => "654321" } });
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: "POST",
+        path: "/v1/mfa/otp/factors/f3/confirm",
+        body: { code: "654321" },
+      }),
+    );
+  });
 
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/mfa/otp/factors"]));
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Add a one-time code factor" });
-    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
-    expect(await screen.findByLabelText(/^Verification code/)).toBeTruthy();
+  it("confirms removing one with what happens", async () => {
+    renderPage(<OtpFactorsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove +91 •••• 3210" }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText(/your other ways to sign in keep working/i)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Remove" }));
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: "DELETE",
+        path: "/v1/mfa/otp/factors/f1",
+        body: undefined,
+      }),
+    );
   });
 });

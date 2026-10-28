@@ -54,13 +54,15 @@ export interface ServerConversation {
 }
 
 /**
- * Returns whether Qeet AI is configured. Cached for minutes, never retried and silent: an
- * unconfigured deployment is a normal state, not an error to toast.
+ * Returns whether Qeet AI is on for the organisation. Cached for minutes, never retried and
+ * silent: Qeet AI off is a normal state, not an error to toast.
  */
-export function useQeetAIStatus() {
+export function useQeetAIStatus(enabled = true) {
+  const tenantId = useTenantId();
   return useQuery({
-    queryKey: qeetaiKeys.status(),
+    queryKey: qeetaiKeys.status(tenantId),
     queryFn: ({ signal }) => api<QeetAIStatus>("/v1/qeetai/status", { signal }),
+    enabled: !!tenantId && enabled,
     staleTime: 5 * 60_000,
     retry: false,
     meta: { silent: true },
@@ -75,9 +77,9 @@ export function createQeetAIConversation(title?: string): Promise<ServerConversa
   });
 }
 
-// The tenant's own provider key (BYOK): the server requires secret.write.
+// The organisation's own provider key (BYOK): reading its settings needs secret.read.
 
-/** Returns the tenant's effective provider config, with the key masked. */
+/** Returns the organisation's effective provider settings, with the key masked. */
 export function useQeetAIProviderConfig(enabled = true) {
   const tenantId = useTenantId();
   return useQuery({
@@ -89,19 +91,4 @@ export function useQeetAIProviderConfig(enabled = true) {
   });
 }
 
-/** Sets or rotates the tenant's own provider key. */
-export function setQeetAIProviderConfig(
-  input: SetQeetAIProviderInput,
-): Promise<QeetAIProviderConfig> {
-  return api<QeetAIProviderConfig>("/v1/qeetai/provider-config", { method: "PUT", body: input });
-}
-
-/** Checks a provider key and endpoint with a live call, without saving them. */
-export function testQeetAIProviderConfig(input: SetQeetAIProviderInput): Promise<{ ok: boolean }> {
-  return api<{ ok: boolean }>("/v1/qeetai/provider-config/test", { method: "POST", body: input });
-}
-
-/** Removes the tenant's own key, falling back to the platform key, if any. */
-export function deleteQeetAIProviderConfig(): Promise<void> {
-  return api<void>("/v1/qeetai/provider-config", { method: "DELETE" });
-}
+// Saving, testing and removing a key are in provider-config.ts: only the settings page uses them.

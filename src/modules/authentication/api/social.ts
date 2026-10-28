@@ -1,5 +1,5 @@
-// Tenant social-provider configuration (Authentication → Social). The provider catalogue (logos,
-// discovery URLs) is presentation and lives in components/social-provider-catalogue.tsx.
+// Tenant social-provider configuration (Authentication › Social). The provider catalogue (logos,
+// discovery URLs) is presentation and lives in components/methods/social-catalogue.tsx.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -7,13 +7,15 @@ import { api, getApiBaseUrl } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
 
+/** One of the organisation's providers, as the server returns it: never its secret. */
 export interface SocialProvider {
+  id: string;
   tenant_id: string;
   provider: string;
   client_id: string;
-  discovery_url: string;
+  discovery_url: string | null;
   enabled: boolean;
-  updated_at: string;
+  created_at: string;
 }
 
 /**

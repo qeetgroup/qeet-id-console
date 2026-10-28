@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -31,7 +31,7 @@ describe("ToolCallCard retry", () => {
   it("offers a retry for a failure that may pass next time", () => {
     render(<ToolCallCard execution={failed("execution_error")} onRetry={vi.fn()} />);
 
-    expect(screen.getByRole("button", { name: /Retry/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Try again/ })).toBeTruthy();
   });
 
   it.each(["capability_denied", "validation_error"])(
@@ -39,7 +39,7 @@ describe("ToolCallCard retry", () => {
     (code) => {
       render(<ToolCallCard execution={failed(code)} onRetry={vi.fn()} />);
 
-      expect(screen.queryByRole("button", { name: /Retry/ })).toBeNull();
+      expect(screen.queryByRole("button", { name: /Try again/ })).toBeNull();
     },
   );
 });
@@ -52,7 +52,7 @@ describe("ToolCallCard copy", () => {
 
     expect(screen.getByText("Search users")).toBeTruthy();
     expect(screen.getByRole("alert").textContent).toBe(
-      'This action requires the "user.read" capability, which is not granted to your account.',
+      "This needs the user.read permission, which your account doesn't have.",
     );
     expect(screen.queryByText(/written for the model/)).toBeNull();
   });
@@ -83,5 +83,19 @@ describe("ToolCallCard result", () => {
 
     expect(screen.getByText("Done.")).toBeTruthy();
     expect(screen.queryByText("Model-only text.")).toBeNull();
+  });
+});
+
+describe("ToolCallCard status and input", () => {
+  it("says its status in words, and folds the input it sent until asked", () => {
+    render(<ToolCallCard execution={failed("execution_error")} />);
+
+    expect(screen.getByText("Failed")).toBeTruthy();
+    expect(screen.queryByText(/"q": "alice"/)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Show what it sent" }));
+    expect(
+      screen.getByRole("button", { name: "Hide what it sent" }).getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(screen.getByText(/alice/)).toBeTruthy();
   });
 });
