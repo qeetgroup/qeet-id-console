@@ -69,13 +69,7 @@ function OwnPasskeys() {
   return (
     <Section
       title={t("ownPasskeys.title")}
-      description={
-        <>
-          {t("ownPasskeys.descriptionBefore")}{" "}
-          <Link to="/account/security">{t("ownPasskeys.descriptionLink")}</Link>
-          {t("ownPasskeys.descriptionAfter")}
-        </>
-      }
+      description={t("ownPasskeys.description")}
       action={
         canAdd &&
         !adding && (
@@ -153,6 +147,11 @@ function OwnPasskeys() {
           {items.length > 0 && lastMethod && (
             <p className="account-note">{t("ownPasskeys.lastMethod")}</p>
           )}
+          <p className="account-note">
+            {t("ownPasskeys.sameBefore")}{" "}
+            <Link to="/account/security">{t("ownPasskeys.sameLink")}</Link>
+            {t("ownPasskeys.sameAfter")}
+          </p>
         </>
       )}
     </Section>

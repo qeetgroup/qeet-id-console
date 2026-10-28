@@ -588,9 +588,10 @@
   },
   "ownPasskeys": {
     "title": "Your passkeys",
-    "descriptionBefore": "The passkeys on your own account: the same list as",
-    "descriptionLink": "My account › Security",
-    "descriptionAfter": ".",
+    "description": "The passkeys on your own account: face, fingerprint, device PIN or a security key.",
+    "sameBefore": "The same list as",
+    "sameLink": "My account › Security",
+    "sameAfter": "; changes made here show there too.",
     "add": "Add a passkey",
     "addTitle": "Add a passkey",
     "addDescription": "Your browser will ask you to confirm with your face, fingerprint or device PIN.",

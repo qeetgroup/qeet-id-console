@@ -107,6 +107,12 @@
 }
 
 @media (max-width: 640px) {
+  /* The band's three cells stacked, as the Users band's four are (people.css's three-cell rule
+     outweighs its phone rule). */
+  .ppl-band.is-three.am-band {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   /* Stacked under its title on a phone: the label lines up with the title's start instead. */
   .account-section-head > .am-head-action {
     align-self: flex-start;

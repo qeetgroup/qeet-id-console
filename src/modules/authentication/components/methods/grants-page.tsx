@@ -35,6 +35,7 @@ import { When } from "./methods-parts";
 import { GrantsBand } from "./grants-band";
 import { GrantsToolbar } from "./grants-toolbar";
 import { useGrantRows } from "./use-grant-rows";
+import { useNarrow } from "./use-narrow";
 import { useRevokeGrants } from "./use-revoke-grants";
 import "./methods.css";
 
@@ -62,6 +63,7 @@ export function ConsentGrantsPage({ filters, onFiltersChange }: ConsentGrantsPag
   const { grants, rows: all } = useGrantRows();
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
+  const narrow = useNarrow();
 
   const [sort, setSort] = useState<TableSort | null>({
     column: "renewed",
@@ -120,7 +122,7 @@ export function ConsentGrantsPage({ filters, onFiltersChange }: ConsentGrantsPag
       .catch(settleSensitiveAction);
   };
 
-  const columns: TableColumn<GrantRow>[] = [
+  const allColumns: TableColumn<GrantRow>[] = [
     {
       id: "person",
       header: t("columns.person"),
@@ -168,6 +170,12 @@ export function ConsentGrantsPage({ filters, onFiltersChange }: ConsentGrantsPag
       ),
     },
   ];
+  // A phone keeps who and which application; the rest is a tap away in the row's menu.
+  const columns = narrow
+    ? allColumns.filter(
+        (c) => ["person", "app"].includes(c.id) || (filters.app && c.id === "renewed"),
+      )
+    : allColumns;
 
   return (
     <>

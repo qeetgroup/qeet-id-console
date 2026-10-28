@@ -32,7 +32,7 @@ export function GrantsBand({ rows }: { rows: GrantRow[] }) {
   const other = ranked.slice(SHADES.length).reduce((sum, [, app]) => sum + app.count, 0);
 
   return (
-    <dl className="ppl-band is-three">
+    <dl className="ppl-band is-three am-band">
       <div className="ppl-cell">
         <dt className="ppl-label">{t("band.grants")}</dt>
         <dd className="ppl-value">{n(rows.length)}</dd>

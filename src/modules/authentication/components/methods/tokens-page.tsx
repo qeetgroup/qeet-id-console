@@ -23,6 +23,7 @@ import {
 import { type AppTokens, byApplication, sortApplications } from "./grants-model";
 import { useGrantRows } from "./use-grant-rows";
 import { When } from "./methods-parts";
+import { useNarrow } from "./use-narrow";
 import { useRevokeGrants } from "./use-revoke-grants";
 import "./methods.css";
 
@@ -40,6 +41,7 @@ export function TokensPage() {
   const { grants, rows, clients } = useGrantRows({ withPeople: false });
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
+  const narrow = useNarrow();
   const [sort, setSort] = useState<TableSort | null>(null);
   const apps = useMemo(() => sortApplications(byApplication(rows), sort), [rows, sort]);
   // Applications people haven't been kept signed in to hold none.
@@ -65,7 +67,7 @@ export function TokensPage() {
       })
       .catch(settleSensitiveAction);
 
-  const columns: TableColumn<AppTokens>[] = [
+  const allColumns: TableColumn<AppTokens>[] = [
     {
       id: "app",
       header: t("tokens.columns.app"),
@@ -122,6 +124,10 @@ export function TokensPage() {
       ),
     },
   ];
+  // A phone keeps the application and how many tokens it holds.
+  const columns = narrow
+    ? allColumns.filter((c) => c.id === "app" || c.id === "tokens")
+    : allColumns;
 
   return (
     <>
