@@ -63,25 +63,6 @@
     "emptyTitle": "No activity yet",
     "emptyDescription": "Events will appear here as users interact with your organization."
   },
-  "analytics": {
-    "description": "Product analytics across organizations, applications, and authentication methods.",
-    "kpiHintVs30d": "vs last 30 days",
-    "kpiHintStickiness": "stickiness",
-    "kpiHintLast30d": "last 30 days",
-    "kpiHintVs30dAgo": "vs 30 days ago",
-    "activeUsersTitle": "Active users",
-    "activeUsersDesc": "Weekly WAU and average DAU · last 8 weeks",
-    "emptyActivity": "No session activity recorded in the last 8 weeks.",
-    "geoTitle": "Geography",
-    "geoDesc": "Users by region",
-    "emptyGeo": "Requires GeoIP enrichment.",
-    "apiTitle": "API volume",
-    "apiDesc": "Requests per day",
-    "emptyApi": "Requires request-volume instrumentation.",
-    "appsTitle": "Top applications",
-    "appsDesc": "Ranked by logins in the selected period",
-    "emptyApps": "Requires per-application login tagging on auth events."
-  },
   "insights": {
     "attentionRequired": "Attention required",
     "signalsFromLiveTelemetry": "Signals from live telemetry that need an operator's eyes",
@@ -159,11 +140,6 @@
       "apiKeys": "API keys",
       "customRoles": "Custom roles"
     }
-  },
-  "analyticsPage": {
-    "avgSessionsUser": "Avg sessions / user",
-    "totalUsers": "Total users",
-    "dauAvg": "DAU (avg)"
   },
   "dashboardActivity": {
     "testAnAccessDecision": "Test an access decision",
@@ -660,6 +636,65 @@
       "cityPeople_other": "{{city}}, {{count}} people",
       "cityShare": "{{share}} of people work in {{city}}",
       "elsewhere": "Elsewhere"
+    }
+  },
+  "analyticsReport": {
+    "title": "Analytics",
+    "description": "Sign-in trends for this organisation, {{from}} to {{to}}, against the {{days}} days before.",
+    "range": "Range",
+    "ranges": {
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days"
+    },
+    "band": {
+      "signIns": "Sign-ins",
+      "people": "People who signed in",
+      "failed": "Failed sign-ins",
+      "perPerson": "Sign-ins per person"
+    },
+    "change": {
+      "up_one": "Up {{pct}}% on the {{count}} day before",
+      "up_other": "Up {{pct}}% on the {{count}} days before",
+      "down_one": "Down {{pct}}% on the {{count}} day before",
+      "down_other": "Down {{pct}}% on the {{count}} days before",
+      "same_one": "Same as the {{count}} day before",
+      "same_other": "Same as the {{count}} days before",
+      "new_one": "None in the {{count}} day before",
+      "new_other": "None in the {{count}} days before",
+      "none_one": "None in the {{count}} day before either",
+      "none_other": "None in the {{count}} days before either"
+    },
+    "noAccessTitle": "These trends come from the audit log",
+    "noAccessDescription": "Your role can read analytics but not audit events, which sign-in trends are counted from. Ask an administrator for access to audit events.",
+    "emptyTitle_one": "No sign-ins in the last {{count}} day",
+    "emptyTitle_other": "No sign-ins in the last {{count}} days",
+    "emptyDescription": "Sign-ins and failed sign-ins show here, day by day, once people use Qeet ID.",
+    "signIns": {
+      "title": "Sign-ins by day",
+      "note": "Each day against the same day of the {{days}} days before. Days run midnight to midnight UTC; switching organisation isn't counted."
+    },
+    "failed": {
+      "title": "Failed sign-ins by day",
+      "note": "Wrong passwords and codes, unknown accounts, locks and throttles. In a burst only the first are recorded, so a spike reads low."
+    },
+    "signInsLower": "sign-ins",
+    "failedLower": "failed",
+    "thisPeriod": "This period",
+    "before_one": "The {{count}} day before",
+    "before_other": "The {{count}} days before",
+    "view": "{{title}}: chart or table",
+    "day": "Day",
+    "dayBefore": "Day, period before",
+    "tipToday": "{{unit}} so far today",
+    "tipOn": "on {{day}}",
+    "endToday": "{{n}} today",
+    "weekday": {
+      "title": "By day of the week",
+      "note_one": "Average sign-ins on each day, over {{n}} full day.",
+      "note_other": "Average sign-ins on each day, over {{n}} full days.",
+      "tip_one": "sign-ins on average, over {{n}} day",
+      "tip_other": "sign-ins on average, over {{n}} days"
     }
   }
 }
