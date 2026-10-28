@@ -1,12 +1,4 @@
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  Button,
-} from "@qeetrix/ui";
+import { Button, Dialog, DialogContent, DialogFooter } from "@qeetrix/react";
 import { useBlocker } from "@tanstack/react-router";
 
 type UnsavedChangesGuardProps = {
@@ -19,7 +11,8 @@ type UnsavedChangesGuardProps = {
 
 /**
  * Asks before navigating away from unsaved changes, in the app and on a reload or tab close. The
- * dialog is open exactly while the router holds the navigation.
+ * dialog is open exactly while the router holds the navigation. Leaving loses the changes, so it's
+ * a danger alert dialog: only its buttons close it, and Stay comes first.
  */
 export function UnsavedChangesGuard({
   when,
@@ -34,26 +27,23 @@ export function UnsavedChangesGuard({
     withResolver: true,
   });
   return (
-    <AlertDialog
+    <Dialog
       open={blocker.status === "blocked"}
+      intent="danger"
       onOpenChange={(open) => {
         if (!open) blocker.reset?.();
       }}
     >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <Button variant="outline" onClick={() => blocker.reset?.()}>
+      <DialogContent title={title} description={description} size="md">
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => blocker.reset?.()}>
             {stayLabel}
           </Button>
-          <Button variant="destructive" onClick={() => blocker.proceed?.()}>
+          <Button tone="danger" onClick={() => blocker.proceed?.()}>
             {leaveLabel}
           </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

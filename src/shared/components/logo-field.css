@@ -1,0 +1,215 @@
+/*
+ * The logo picker (logo-field.tsx): a dashed drop zone over a hidden file input, the logo set
+ * (thumbnail, source, actions), and the split layout's URL pane beside the drop zone once the
+ * `branding` container is wide enough. Token values only.
+ */
+
+.logo-field {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+}
+
+.logo-field[data-layout="split"] {
+  gap: var(--qx-space-gap-lg);
+}
+
+@container branding (min-width: 650px) {
+  .logo-field[data-layout="split"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .logo-field[data-layout="split"] > [data-slot="logo-url"] {
+    padding-inline-start: var(--qx-space-gap-lg);
+    border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  }
+}
+
+.logo-field-pane {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+}
+
+.logo-field-label {
+  margin: 0;
+  font: var(--qx-typography-label-sm);
+  color: var(--qx-color-text-subtle);
+}
+
+/* The browser's own file control, kept for the keyboard and screen readers but not shown. */
+.logo-field-file {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.logo-field-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--qx-space-gap-xs);
+  inline-size: 100%;
+  min-block-size: 6.5rem;
+  padding: var(--qx-space-inset-lg);
+  border: var(--qx-border-width-default) dashed var(--qx-color-border-strong);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-bg-neutral-subtle);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--qx-motion-duration-fast) var(--qx-motion-easing-standard);
+}
+
+.logo-field-drop:hover:not(:disabled) {
+  background: var(--qx-color-bg-neutral-subtle-hover);
+}
+
+.logo-field-drop[data-drag-over] {
+  border-color: var(--qx-color-border-brand);
+  background: var(--qx-color-bg-brand-subtle);
+}
+
+.logo-field-drop:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(-1 * var(--qx-focus-ring-width));
+}
+
+.logo-field-drop:disabled {
+  border-color: var(--qx-color-border-disabled);
+  background: var(--qx-color-bg-disabled);
+  color: var(--qx-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.logo-field-drop-icon {
+  color: var(--qx-color-icon-subtle);
+}
+
+.logo-field-drop-hint,
+.logo-field-hint,
+.logo-field-status,
+.logo-field-set-source {
+  margin: 0;
+  font: var(--qx-typography-body-sm);
+  color: var(--qx-color-text-subtle);
+}
+
+.logo-field-status {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+.logo-field-status[data-ready] {
+  color: var(--qx-color-text-success);
+}
+
+.logo-field-spin {
+  animation: logo-field-spin 1s linear infinite;
+}
+
+@keyframes logo-field-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-field-spin {
+    animation: none;
+  }
+}
+
+.logo-field-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  min-block-size: var(--qx-size-control-lg);
+  min-inline-size: 0;
+}
+
+.logo-field-preview-img {
+  block-size: 2.25rem;
+  inline-size: auto;
+  max-inline-size: 10rem;
+  object-fit: contain;
+}
+
+.logo-field-set {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.logo-field-thumb {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 4rem;
+  block-size: 4rem;
+  overflow: hidden;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-default);
+}
+
+.logo-field-thumb img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+.logo-field-set-text {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.logo-field-set-title {
+  margin: 0;
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+  color: var(--qx-color-text-default);
+}
+
+.logo-field-set-source {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.logo-field-set-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-sm);
+  margin-block-start: var(--qx-space-gap-xs);
+}
+
+.logo-field-url {
+  display: grid;
+  justify-items: start;
+  gap: var(--qx-space-gap-sm);
+}
+
+.logo-field-url > [data-slot="input"] {
+  justify-self: stretch;
+}
+
+.logo-field-error {
+  margin: 0;
+  font: var(--qx-typography-body-sm);
+  color: var(--qx-color-text-danger);
+}
