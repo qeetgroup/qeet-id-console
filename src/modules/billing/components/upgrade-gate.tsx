@@ -1,39 +1,9 @@
-import { LockIcon } from "@qeetrix/icons";
-import { Button } from "@qeetrix/react";
-import { EmptyState } from "@qeetrix/react/experimental";
-import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { lazy, type ReactNode, Suspense } from "react";
 
 import { useEntitlements } from "../api/billing";
 
-/** In place of a feature the plan lacks: what it is, and the plans that include it. */
-export function UpgradeGate({
-  title,
-  description,
-  plan,
-}: {
-  title: string;
-  description: string;
-  plan?: string; // tier to preselect on the billing page
-}) {
-  const { t } = useTranslation("billing");
-  return (
-    <EmptyState
-      icon={LockIcon}
-      title={title}
-      description={description}
-      actions={
-        <Button
-          variant="soft"
-          render={<Link to="/settings/billing" search={plan ? { plan } : {}} />}
-        >
-          {t("upgradeGate.upgradePlan")}
-        </Button>
-      }
-    />
-  );
-}
+// Loaded only once a plan lacks the feature, so pages that gate on it don't carry the prompt.
+const UpgradeGate = lazy(() => import("./upgrade-prompt"));
 
 // The tier that first unlocks each feature, so the link opens Change plan on it. Mirrors the
 // server's entitlements catalogue.
@@ -67,7 +37,11 @@ export function FeatureGate({
 }) {
   const { data, isPending } = useEntitlements();
   if (!isPending && data && data.features[feature] === false) {
-    return <UpgradeGate title={title} description={description} plan={FEATURE_PLAN[feature]} />;
+    return (
+      <Suspense fallback={null}>
+        <UpgradeGate title={title} description={description} plan={FEATURE_PLAN[feature]} />
+      </Suspense>
+    );
   }
   return <>{children}</>;
 }
