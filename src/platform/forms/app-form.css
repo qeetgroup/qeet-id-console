@@ -15,3 +15,14 @@
   margin-block-start: calc((1lh - var(--qx-size-icon-sm)) / 2);
   color: var(--qx-color-icon-danger);
 }
+
+/*
+ * Migration bridge: Tailwind's preflight, loaded for the @qeetrix/ui screens, makes every svg a
+ * block, which drops an icon an old page puts in a field's label onto a line of its own. Goes with
+ * Tailwind at the cut-over.
+ */
+.qx-field-label > svg {
+  display: inline-block;
+  margin-inline-end: var(--qx-space-gap-xs);
+  vertical-align: -0.125em;
+}

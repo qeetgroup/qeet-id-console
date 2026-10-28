@@ -192,8 +192,9 @@ export function StepUpDialog({
                 <Trans
                   t={t}
                   i18nKey="stepUpDialog.noFactor"
+                  // Not `link`: the parser takes <link> for the void HTML element and drops its words.
                   components={{
-                    link: (
+                    security: (
                       <Link
                         render={<RouterLink to="/account/security" />}
                         onClick={() => onOpenChange(false)}

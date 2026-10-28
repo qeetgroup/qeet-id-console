@@ -39,8 +39,9 @@
   justify-self: stretch;
 }
 
-/* A text button that reads as a link: Use a recovery code instead. */
+/* A text button that reads as a link, at the row's end as on the sign-in's second step. */
 .step-up-text-button {
+  justify-self: end;
   padding: 0;
   border: 0;
   background: none;

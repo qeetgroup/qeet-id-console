@@ -38,13 +38,19 @@ vi.mock("@/platform/api/client", () => ({
 
 import { StepUpDialog } from "../step-up-dialog";
 
-function mount(onVerified = vi.fn()) {
+function mount(onVerified = vi.fn(), allowedMethods: string[] | null = null) {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   render(
     <QueryClientProvider client={qc}>
-      <StepUpDialog open onOpenChange={vi.fn()} onVerified={onVerified} actionLabel="Delete user" />
+      <StepUpDialog
+        open
+        onOpenChange={vi.fn()}
+        onVerified={onVerified}
+        actionLabel="Delete user"
+        allowedMethods={allowedMethods}
+      />
     </QueryClientProvider>,
   );
   return onVerified;
@@ -115,5 +121,12 @@ describe("StepUpDialog", () => {
     pasteCode("654321");
     await waitFor(() => expect(onVerified).toHaveBeenCalledTimes(1));
     expect(calls).toContainEqual({ path: "/v1/mfa/otp/verify", body: { code: "654321" } });
+  });
+
+  it("sends someone with no factor the organisation counts to account security", async () => {
+    mount(vi.fn(), ["webauthn"]); // only passkeys count, and this person has none
+    const link = await screen.findByRole("link", { name: "account security" });
+    expect(link.getAttribute("href")).toBe("/account/security");
+    expect(screen.queryByRole("button", { name: "Verify" })).toBeNull();
   });
 });

@@ -114,7 +114,7 @@
     "title": "Confirm it's you",
     "confirm": "This action needs a fresh check: confirm with one of your second factors.",
     "needFactor": "This action needs a fresh check: you need a second factor first.",
-    "noFactor": "None of your factors can confirm this. Set up a passkey or an authenticator app in <link>account security</link>, then try again.",
+    "noFactor": "None of your factors can confirm this. Set up a passkey or an authenticator app in <security>account security</security>, then try again.",
     "codeSentTo": "Code sent to {{destination}}",
     "recoveryCode": "Recovery code",
     "recoveryPlaceholder": "e.g. 7KQ2-M9XD",
