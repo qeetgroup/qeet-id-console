@@ -47,23 +47,8 @@
     "submit": "Crear usuario",
     "submitting": "Creando…"
   },
-  "edit": {
-    "title": "Editar usuario",
-    "description": "El email es inmutable. Para cambiar una contraseña, use la acción Establecer contraseña.",
-    "email": "Email",
-    "displayName": "Nombre para mostrar",
-    "phone": "Teléfono",
-    "phoneHelp": "Formato E.164. Deje en blanco para borrar.",
-    "status": "Estado",
-    "statusActive": "Activo",
-    "statusSuspended": "Suspendido",
-    "statusSelfHelp": "No puede suspender su propia cuenta desde esta pantalla.",
-    "statusHelp": "Suspender impide el inicio de sesión pero conserva la cuenta."
-  },
   "setPassword": {
-    "title": "Establecer nueva contraseña",
     "newPassword": "Nueva contraseña",
-    "newPasswordHelp": "Mínimo 8 caracteres.",
     "confirmPassword": "Confirmar nueva contraseña",
     "mismatch": "Las contraseñas no coinciden",
     "submit": "Actualizar contraseña"

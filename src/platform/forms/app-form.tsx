@@ -1,42 +1,44 @@
-// The console's one way to build a form: TanStack Form bound to the @qeetrix/ui field family.
+// The console's one way to build a form: TanStack Form bound to the @qeetrix/react fields.
 // Validate with a Zod schema (`validators: { onSubmit: schema }`), submit through a mutation, and
 // hand a refusal to applyServerErrors so a 422 marks the fields it names.
+import { CircleAlertIcon } from "@qeetrix/icons";
 import {
   Button,
+  type ButtonTone,
+  type ButtonVariant,
+  type ControlSize,
   Field,
-  FieldContent,
-  FieldControl,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
   Input,
-  PasswordInput,
+  type InputProps,
+  type QeetrixIcon,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Switch,
   Textarea,
-} from "@qeetrix/ui";
-import { LoaderCircleIcon } from "@qeetrix/icons";
+  type TextareaProps,
+} from "@qeetrix/react";
+import { Alert, PasswordInput, type PasswordInputProps } from "@qeetrix/react/experimental";
 import { type AnyFormApi, createFormHook, createFormHookContexts } from "@tanstack/react-form";
-import type { ComponentProps, ReactNode } from "react";
+import { isValidElement, type ReactNode } from "react";
 
 import { ErrorReference } from "@/platform/components/error-reference";
 import { errorMessage, fieldErrorMessages } from "@/platform/errors/user-message";
 
+import "./app-form.css";
+
 const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts();
 
-type Message = { message?: string };
-
-// Schema validators yield Standard Schema issues ({ message }); a server error is a string.
-function messagesOf(errors: readonly unknown[]): Message[] {
-  return errors.flat().flatMap((error): Message[] => {
-    if (typeof error === "string") return [{ message: error }];
-    if (error && typeof error === "object" && "message" in error) return [error as Message];
+// Schema validators yield Standard Schema issues ({ message }); a server error is a string. The
+// same message from two validators shows once.
+function errorText(errors: readonly unknown[]): string | undefined {
+  const messages = errors.flat().flatMap((error): string[] => {
+    if (typeof error === "string") return [error];
+    if (error && typeof error === "object" && "message" in error) {
+      const { message } = error as { message?: unknown };
+      return typeof message === "string" && message ? [message] : [];
+    }
     return [];
   });
+  return messages.length ? [...new Set(messages)].join(" ") : undefined;
 }
 
 /** Returns a change handler that also drops the server's error once the person edits the value. */
@@ -53,59 +55,58 @@ export function useFieldChange<T>() {
 type FieldFrameProps = {
   label: ReactNode;
   description?: ReactNode;
-  required?: boolean; // marks the label; the schema enforces it
+  // The field components set aria-required from it; nothing shows, as Qeetrix marks optional
+  // fields, never required ones. The schema enforces it.
+  required?: boolean;
 };
 
 /**
  * Renders the label, description and errors of the enclosing `form.AppField` around custom
- * controls, for a composite the field components don't cover. Wrap its input in FieldControl.
+ * controls, for a composite the field components don't cover. A @qeetrix/react control inside
+ * is labelled by it; anything else names itself (checkboxes, each with its own label).
  */
 export function FieldFrame({
   label,
   description,
-  required,
   children,
 }: FieldFrameProps & { children: ReactNode }) {
   const field = useFieldContext<unknown>();
-  const errors = messagesOf(field.state.meta.errors);
   return (
-    <Field invalid={errors.length > 0}>
-      <FieldLabel>
-        {label}
-        {required && (
-          <span aria-hidden="true" className="text-destructive">
-            *
-          </span>
-        )}
-      </FieldLabel>
+    <Field
+      label={label}
+      description={description}
+      error={errorText(field.state.meta.errors)}
+      name={field.name}
+    >
       {children}
-      {description && <FieldDescription>{description}</FieldDescription>}
-      <FieldError errors={errors} />
     </Field>
   );
 }
 
-// The form owns these; the rest pass through to the control.
-type BoundProps = "name" | "value" | "defaultValue" | "onChange" | "onBlur" | "required";
-type InputProps = Omit<ComponentProps<typeof Input>, BoundProps>;
+// The form owns these; the rest pass through to the control. `className` places the control's
+// box, so a width or a monospace font given to it still applies.
+type BoundProps =
+  | "name"
+  | "value"
+  | "defaultValue"
+  | "onChange"
+  | "onValueChange"
+  | "onBlur"
+  | "required";
+type TextInputProps = Omit<InputProps, BoundProps>;
 
 /** Renders a labelled text input bound to the enclosing `form.AppField`. */
-function TextField({ label, description, required, ...input }: FieldFrameProps & InputProps) {
+function TextField({ label, description, required, ...input }: FieldFrameProps & TextInputProps) {
   const field = useFieldContext<string>();
   const change = useFieldChange<string>();
   return (
-    <FieldFrame label={label} description={description} required={required}>
-      <FieldControl
-        render={
-          <Input
-            {...input}
-            name={field.name}
-            value={field.state.value}
-            onBlur={field.handleBlur}
-            onChange={(e) => change(e.target.value)}
-            aria-required={required || undefined}
-          />
-        }
+    <FieldFrame label={label} description={description}>
+      <Input
+        {...input}
+        value={field.state.value}
+        onBlur={field.handleBlur}
+        onValueChange={(value) => change(value)}
+        aria-required={required || undefined}
       />
     </FieldFrame>
   );
@@ -117,22 +118,17 @@ function PasswordField({
   description,
   required,
   ...input
-}: FieldFrameProps & Omit<ComponentProps<typeof PasswordInput>, BoundProps>) {
+}: FieldFrameProps & Omit<PasswordInputProps, BoundProps>) {
   const field = useFieldContext<string>();
   const change = useFieldChange<string>();
   return (
-    <FieldFrame label={label} description={description} required={required}>
-      <FieldControl
-        render={
-          <PasswordInput
-            {...input}
-            name={field.name}
-            value={field.state.value}
-            onBlur={field.handleBlur}
-            onChange={(e) => change(e.target.value)}
-            aria-required={required || undefined}
-          />
-        }
+    <FieldFrame label={label} description={description}>
+      <PasswordInput
+        {...input}
+        value={field.state.value}
+        onBlur={field.handleBlur}
+        onValueChange={(value) => change(value)}
+        aria-required={required || undefined}
       />
     </FieldFrame>
   );
@@ -142,23 +138,18 @@ function PasswordField({
  * Renders a labelled number input bound to the enclosing `form.AppField`. An empty input is
  * `null`, for an optional number.
  */
-function NumberField({ label, description, required, ...input }: FieldFrameProps & InputProps) {
+function NumberField({ label, description, required, ...input }: FieldFrameProps & TextInputProps) {
   const field = useFieldContext<number | null>();
   const change = useFieldChange<number | null>();
   return (
-    <FieldFrame label={label} description={description} required={required}>
-      <FieldControl
-        render={
-          <Input
-            {...input}
-            type="number"
-            name={field.name}
-            value={field.state.value ?? ""}
-            onBlur={field.handleBlur}
-            onChange={(e) => change(e.target.value === "" ? null : e.target.valueAsNumber)}
-            aria-required={required || undefined}
-          />
-        }
+    <FieldFrame label={label} description={description}>
+      <Input
+        {...input}
+        type="number"
+        value={field.state.value ?? ""}
+        onBlur={field.handleBlur}
+        onChange={(e) => change(e.target.value === "" ? null : e.target.valueAsNumber)}
+        aria-required={required || undefined}
       />
     </FieldFrame>
   );
@@ -170,28 +161,26 @@ function TextareaField({
   description,
   required,
   ...textarea
-}: FieldFrameProps & Omit<ComponentProps<typeof Textarea>, BoundProps>) {
+}: FieldFrameProps & Omit<TextareaProps, BoundProps>) {
   const field = useFieldContext<string>();
   const change = useFieldChange<string>();
   return (
-    <FieldFrame label={label} description={description} required={required}>
-      <FieldControl
-        render={
-          <Textarea
-            {...textarea}
-            name={field.name}
-            value={field.state.value}
-            onBlur={field.handleBlur}
-            onChange={(e) => change(e.target.value)}
-            aria-required={required || undefined}
-          />
-        }
+    <FieldFrame label={label} description={description}>
+      <Textarea
+        {...textarea}
+        value={field.state.value}
+        onBlur={field.handleBlur}
+        onValueChange={(value) => change(value)}
+        aria-required={required || undefined}
       />
     </FieldFrame>
   );
 }
 
-/** Renders an on/off setting, its label and description beside the switch. */
+/**
+ * Renders an on/off setting: the switch, then its label and description. An error takes the
+ * description's place, so the switch is described by it.
+ */
 function SwitchField({
   label,
   description,
@@ -199,25 +188,27 @@ function SwitchField({
 }: Omit<FieldFrameProps, "required"> & { disabled?: boolean }) {
   const field = useFieldContext<boolean>();
   const change = useFieldChange<boolean>();
-  const errors = messagesOf(field.state.meta.errors);
+  const error = errorText(field.state.meta.errors);
   return (
-    <Field orientation="horizontal" invalid={errors.length > 0} className="justify-between gap-4">
-      <FieldContent>
-        <FieldLabel>{label}</FieldLabel>
-        {description && <FieldDescription>{description}</FieldDescription>}
-        <FieldError errors={errors} />
-      </FieldContent>
-      <FieldControl
-        render={
-          <Switch
-            checked={field.state.value}
-            onCheckedChange={change}
-            onBlur={field.handleBlur}
-            disabled={disabled}
-          />
-        }
-      />
-    </Field>
+    <Switch
+      label={label}
+      description={
+        error ? (
+          <span className="app-form-error" data-slot="field-error">
+            <CircleAlertIcon shape="sharp" size={16} aria-hidden className="app-form-error-icon" />
+            <span>{error}</span>
+          </span>
+        ) : (
+          description
+        )
+      }
+      name={field.name}
+      checked={field.state.value}
+      onCheckedChange={(checked) => change(checked)}
+      onBlur={field.handleBlur}
+      disabled={disabled}
+      aria-invalid={error ? true : undefined}
+    />
   );
 }
 
@@ -234,32 +225,51 @@ function SelectField({ options, placeholder, disabled, ...frame }: SelectFieldPr
   return (
     <FieldFrame {...frame}>
       <Select
+        items={options}
         value={field.state.value}
         onValueChange={(value) => value != null && change(value)}
+        onOpenChange={(open) => {
+          if (!open) field.handleBlur();
+        }}
+        placeholder={placeholder}
         disabled={disabled}
-      >
-        <FieldControl
-          render={
-            <SelectTrigger onBlur={field.handleBlur}>
-              <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
-          }
-        />
-        <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
     </FieldFrame>
   );
 }
 
+// The old kit's variants that forms still pass map onto Qeetrix's actions: an outline or
+// secondary button is the graphite one, a destructive one the danger tone.
+type LegacyVariant = "default" | "outline" | "secondary" | "destructive" | "link";
+type SubmitVariant = ButtonVariant | LegacyVariant;
+
+function look(variant: SubmitVariant | undefined): { variant: ButtonVariant; tone?: ButtonTone } {
+  switch (variant) {
+    case "outline":
+    case "secondary":
+    case "soft":
+      return { variant: "soft" };
+    case "ghost":
+    case "link":
+      return { variant: "ghost" };
+    case "destructive":
+      return { variant: "solid", tone: "danger" };
+    default:
+      return { variant: "solid" };
+  }
+}
+
+// A trailing icon given as a component (`PlayIcon`) or an element (`<PlayIcon />`): the button
+// draws it sharp at its own size, so only the component is kept.
+function iconOf(icon: ReactNode | QeetrixIcon): QeetrixIcon | undefined {
+  if (typeof icon === "function") return icon;
+  if (isValidElement(icon) && typeof icon.type === "function") return icon.type as QeetrixIcon;
+  return undefined;
+}
+
 /**
- * Renders the form's submit button, disabled with a spinner while the submission runs and, with
- * `requireChanges`, until a value differs from the form's defaults.
+ * Renders the form's submit button, busy while the submission runs and, with `requireChanges`,
+ * off until a value differs from the form's defaults. `lg` by default, to line up with the fields.
  */
 function SubmitButton({
   children,
@@ -267,13 +277,15 @@ function SubmitButton({
   icon,
   disabled,
   variant,
+  size = "lg",
   requireChanges,
 }: {
   children: ReactNode;
   pendingLabel?: ReactNode;
-  icon?: ReactNode;
+  icon?: ReactNode | QeetrixIcon;
   disabled?: boolean;
-  variant?: ComponentProps<typeof Button>["variant"];
+  variant?: SubmitVariant;
+  size?: ControlSize;
   requireChanges?: boolean;
 }) {
   const form = useFormContext();
@@ -282,10 +294,12 @@ function SubmitButton({
       {([isSubmitting, isDefaultValue]) => (
         <Button
           type="submit"
-          variant={variant}
-          disabled={isSubmitting || disabled || (requireChanges && isDefaultValue)}
+          {...look(variant)}
+          size={size}
+          icon={iconOf(icon)}
+          loading={isSubmitting}
+          disabled={disabled || (requireChanges && isDefaultValue)}
         >
-          {isSubmitting ? <LoaderCircleIcon className="animate-spin" /> : icon}
           {isSubmitting && pendingLabel ? pendingLabel : children}
         </Button>
       )}
@@ -294,14 +308,15 @@ function SubmitButton({
 }
 
 /** Renders a button that puts every field back to the form's defaults; off until one differs. */
-function ResetButton({ children }: { children: ReactNode }) {
+function ResetButton({ children, size = "lg" }: { children: ReactNode; size?: ControlSize }) {
   const form = useFormContext();
   return (
     <form.Subscribe selector={(state) => [state.isSubmitting, state.isDefaultValue] as const}>
       {([isSubmitting, isDefaultValue]) => (
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
+          size={size}
           disabled={isSubmitting || isDefaultValue}
           onClick={() => form.reset()}
         >
@@ -349,11 +364,8 @@ export function applyServerErrors(
 export function FormError({ error }: { error: unknown }) {
   if (!error) return null;
   return (
-    <Field>
-      <FieldError>
-        {errorMessage(error)}
-        <ErrorReference error={error} />
-      </FieldError>
-    </Field>
+    <Alert tone="danger" title={errorMessage(error)} announce="urgent">
+      <ErrorReference error={error} />
+    </Alert>
   );
 }

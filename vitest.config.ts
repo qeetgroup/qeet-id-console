@@ -25,16 +25,25 @@ export default defineConfig({
       ],
       reporter: ["text-summary", "json-summary"],
       // Floors at the measured coverage, so it can only go up; the security-critical platform
-      // folders carry higher ones.
-      thresholds: {
-        lines: 41,
-        statements: 41,
-        branches: 40,
-        functions: 34,
-        "src/platform/api/**": { lines: 80, statements: 77, branches: 76, functions: 70 },
-        "src/platform/auth/**": { lines: 65, statements: 62, branches: 67, functions: 60 },
-        "src/platform/security/**": { lines: 64, statements: 64, branches: 61, functions: 61 },
-      },
+      // folders carry higher ones. CI runs the tests in shards (COVERAGE_SHARD=1), each covering a
+      // slice, so the floors hold on the merged report (`vitest --merge-reports --coverage`).
+      thresholds:
+        process.env.COVERAGE_SHARD === "1"
+          ? undefined
+          : {
+              lines: 41,
+              statements: 41,
+              branches: 40,
+              functions: 34,
+              "src/platform/api/**": { lines: 80, statements: 77, branches: 76, functions: 70 },
+              "src/platform/auth/**": { lines: 65, statements: 62, branches: 67, functions: 60 },
+              "src/platform/security/**": {
+                lines: 64,
+                statements: 64,
+                branches: 61,
+                functions: 61,
+              },
+            },
     },
   },
 });

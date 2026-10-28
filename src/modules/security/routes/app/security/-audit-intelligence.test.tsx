@@ -80,7 +80,7 @@ describe("Security › Audit intelligence › detection settings", () => {
     renderPage();
     // Save stays off until something changes.
     const save = (await screen.findByRole("button", { name: "Save" })) as HTMLButtonElement;
-    expect(save.disabled).toBe(true);
+    expect(save.getAttribute("aria-disabled")).toBe("true");
     fireEvent.change(screen.getByLabelText("Score threshold"), { target: { value: "0.7" } });
     fireEvent.click(save);
 
