@@ -30,11 +30,11 @@ import type { DirectoryConnection } from "@/modules/directory/directory-model";
 import { getApiBaseUrl } from "@/platform/api/client";
 import { HEALTH_ICONS } from "./connections-band";
 
-/** A connection's own page: SCIM's, or (until each has its own) the LDAP connections'. */
-export const connectionPage = (c: Pick<DirectoryConnection, "type">) =>
+/** A connection's own page: SCIM's, or the LDAP connection's (`/ldap/$id`). */
+export const connectionPage = (c: Pick<DirectoryConnection, "type" | "id">) =>
   c.type === "scim"
-    ? ("/directory/connections/scim" as const)
-    : ("/directory/connections/ldap" as const);
+    ? ({ to: "/directory/connections/scim" } as const)
+    : ({ to: "/directory/connections/ldap/$id", params: { id: c.id } } as const);
 
 /**
  * The list's columns: the connection (its kind, its name over its address), its kind in a word, its
@@ -66,7 +66,7 @@ export function useConnectionColumns({
               <Icon size={16} />
             </span>
             <span className="dir-two">
-              <Link className="dir-name" to={connectionPage(c)}>
+              <Link className="dir-name" {...connectionPage(c)}>
                 {c.type === "scim" ? t("connections.kinds.scim") : c.name}
               </Link>
               <small>
@@ -176,7 +176,7 @@ export function ConnectionRowMenu({
 }) {
   const { t } = useTranslation("directory");
   const navigate = useNavigate();
-  const open = () => void navigate({ to: connectionPage(c) });
+  const open = () => void navigate(connectionPage(c));
   if (c.type === "scim")
     return (
       <>
@@ -254,7 +254,13 @@ export function ConnectionOffers({
                 tone="neutral"
                 size="sm"
                 icon={PlugIcon}
-                render={<Link to={connectionPage({ type: kind })} />}
+                render={
+                  kind === "scim" ? (
+                    <Link to="/directory/connections/scim" />
+                  ) : (
+                    <Link to="/directory/connections/ldap" search={{ action: "create" }} />
+                  )
+                }
               >
                 {t(`connections.offers.${kind}.action`)}
               </Button>

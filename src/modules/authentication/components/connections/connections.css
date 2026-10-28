@@ -1,0 +1,445 @@
+/*
+ * Connections (Authentication › Connections, SSO, Applications, and the SCIM and LDAP pages under
+ * Directories): the setup layout (steps beside ruled sections), a test's checks, values to copy,
+ * the list's cells and setup links, and the small pictures that say how a connection works.
+ * Sections, facts and rows are My account's (account.css, loaded with the console's styles).
+ * Placement and token values only (--qx-*).
+ */
+
+/* ── Setup pages: the steps column, then the step sections ─────────────────────────────────── */
+
+.cx-setup {
+  display: grid;
+  grid-template-columns: 15.5rem minmax(0, 50rem);
+  align-items: start;
+  gap: var(--qx-space-layout-sm);
+}
+
+.cx-setup-steps {
+  position: sticky;
+  inset-block-start: var(--qx-space-layout-sm);
+  padding: var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.cx-setup-body,
+.cx-detail {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.cx-detail {
+  max-inline-size: 50rem;
+}
+
+.cx-setup-body > .cx-alert,
+.cx-detail > .cx-alert {
+  margin-block-end: var(--qx-space-layout-sm);
+}
+
+/* ── A test's checks ──────────────────────────────────────────────────────────────────────── */
+
+.cx-checks {
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.cx-checks ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cx-checks li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+}
+
+.cx-checks li + li {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.cx-checks li[data-state="ok"] > svg {
+  color: var(--qx-color-icon-success);
+}
+
+.cx-checks li[data-state="fail"] > svg {
+  color: var(--qx-color-icon-danger);
+}
+
+.cx-checks li[data-state="todo"] > svg,
+.cx-checks li[data-state="running"] > svg {
+  color: var(--qx-color-icon-subtle);
+}
+
+.cx-check-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.cx-check-text strong {
+  font: var(--qx-typography-label-md);
+}
+
+.cx-check-text small {
+  overflow-wrap: anywhere;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.cx-check-word {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+
+li[data-state="fail"] .cx-check-word {
+  color: var(--qx-color-text-danger);
+}
+
+li[data-state="ok"] .cx-check-word {
+  color: var(--qx-color-text-success);
+}
+
+.cx-checks-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-xs) var(--qx-space-inset-xs)
+    var(--qx-space-inset-md);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.cx-checks + .account-details {
+  margin-block-start: var(--qx-space-gap-sm);
+}
+
+/* ── Values ───────────────────────────────────────────────────────────────────────────────── */
+
+.cx-break {
+  overflow-wrap: anywhere;
+}
+
+.cx-inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.cx-list {
+  display: grid;
+  gap: 2px;
+}
+
+.cx-none {
+  color: var(--qx-color-text-subtle);
+}
+
+.cx-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* ── List pages ───────────────────────────────────────────────────────────────────────────── */
+
+.cx-name {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.cx-name a,
+.cx-name strong {
+  overflow: hidden;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cx-name a:hover {
+  text-decoration: underline;
+}
+
+.cx-name a:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+.cx-name small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cx-name small.account-mono,
+.cx-name small code {
+  font: var(--qx-typography-code-sm);
+}
+
+.cx-nowrap {
+  white-space: nowrap;
+}
+
+/* The list's setup links, under the table. */
+.cx-links {
+  margin-block-start: var(--qx-space-layout-sm);
+  padding-block-start: var(--qx-space-layout-sm);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.cx-links .account-panel {
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.cx-empty {
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+/* A form opened under its row, with long URLs: wider than a profile field. */
+.cx-panel-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+  max-inline-size: 40rem;
+}
+
+.cx-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--qx-space-gap-md);
+}
+
+/* ── How a connection works: a row of ruled steps, each with the connection's own value ────── */
+/* Library gap (new): a how-it-works strip. */
+
+.cx-flow {
+  display: grid;
+  grid-template-columns: repeat(var(--cx-flow-steps, 4), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  counter-reset: cx-flow;
+}
+
+.cx-flow-step {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+  padding: var(--qx-space-inset-md);
+  counter-increment: cx-flow;
+}
+
+.cx-flow-step + .cx-flow-step {
+  padding-inline-start: calc(var(--qx-space-inset-md) + 0.5rem);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+/* The arrow on the rule between two steps: the order they run in. */
+.cx-flow-step + .cx-flow-step::before {
+  position: absolute;
+  inset-block-start: calc(var(--qx-space-inset-md) + 0.25rem);
+  inset-inline-start: -0.4rem;
+  inline-size: 0.8rem;
+  block-size: 0.8rem;
+  border-block-start: var(--qx-border-width-strong) solid var(--qx-color-border-strong);
+  border-inline-end: var(--qx-border-width-strong) solid var(--qx-color-border-strong);
+  background: var(--qx-color-surface-raised);
+  content: "";
+  transform: rotate(45deg);
+}
+
+[dir="rtl"] .cx-flow-step + .cx-flow-step::before {
+  transform: rotate(-135deg);
+}
+
+.cx-flow-cap {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.cx-flow-cap::before {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-strong);
+  border-radius: var(--qx-radius-control);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+  content: counter(cx-flow);
+}
+
+.cx-flow-value {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-sm);
+}
+
+.cx-flow-value.is-text {
+  font: var(--qx-typography-body-md);
+}
+
+.cx-flow-note {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── A connection's three states, the one it's in marked ─────────────────────────────────── */
+/* Library gap (new): a state ruler. */
+
+.cx-states {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.cx-state {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+  padding: var(--qx-space-inset-md) var(--qx-space-inset-md) var(--qx-space-inset-md) 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.cx-state + .cx-state {
+  padding-inline-start: var(--qx-space-inset-md);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.cx-states strong {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-md);
+}
+
+/* The state it's in: its word in full colour, an Ember rule over it. */
+.cx-state[aria-current="true"] {
+  box-shadow: inset 0 var(--qx-border-width-accent) 0 var(--qx-color-border-brand);
+  color: var(--qx-color-text-default);
+}
+
+.cx-state[aria-current="true"] strong {
+  color: var(--qx-color-text-default);
+}
+
+/* ── Sign-ins a day: a column a day, failures on top in the danger colour ─────────────────── */
+/* Library gap (new): daily columns (QTRX-13 has sparklines and share bars only). */
+
+.cx-days {
+  display: grid;
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+  align-items: end;
+  gap: 2px;
+  block-size: 3rem;
+  padding-block-end: 1px;
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.cx-day {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1px;
+  block-size: 100%;
+}
+
+.cx-day-ok {
+  display: block;
+  background: var(--qx-color-bg-neutral-bold);
+}
+
+.cx-day-failed {
+  display: block;
+  background: var(--qx-color-bg-danger-bold);
+}
+
+.cx-days-axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Narrow: the steps become a strip above the sections; a flow, a column ───────────────── */
+
+@media (max-width: 900px) {
+  .cx-setup {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cx-setup-steps {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .cx-flow,
+  .cx-states {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cx-flow-step + .cx-flow-step {
+    padding-inline-start: var(--qx-space-inset-md);
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+
+  .cx-flow-step + .cx-flow-step::before {
+    inset-block-start: -0.4rem;
+    inset-inline-start: var(--qx-space-inset-md);
+    transform: rotate(135deg);
+  }
+
+  .cx-state + .cx-state {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  }
+
+  .cx-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A drawer's form holds its body and its footer, so the footer's submit button is inside it; the
+   drawer still lays them out. */
+.cx-drawer-form {
+  display: contents;
+}

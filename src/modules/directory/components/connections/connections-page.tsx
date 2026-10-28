@@ -105,7 +105,12 @@ export function ConnectionsPage({ filters, onFiltersChange }: ConnectionsPagePro
                 </MenuItem>
                 <MenuItem
                   icon={ServerIcon}
-                  onClick={() => void navigate({ to: "/directory/connections/ldap" })}
+                  onClick={() =>
+                    void navigate({
+                      to: "/directory/connections/ldap",
+                      search: { action: "create" },
+                    })
+                  }
                 >
                   {t("connections.kinds.ldap")}
                 </MenuItem>

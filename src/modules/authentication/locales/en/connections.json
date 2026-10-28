@@ -1,0 +1,476 @@
+{
+  "status": {
+    "connected": "Connected",
+    "attention": "Needs attention",
+    "setup": "In setup",
+    "off": "Turned off",
+    "none": "Not set up"
+  },
+  "parts": {
+    "copy": "Copy",
+    "cancel": "Cancel",
+    "moreActions": "More actions",
+    "check": {
+      "ok": "Passed",
+      "fail": "Failed",
+      "todo": "Not run",
+      "running": "Running"
+    },
+    "readOnly": {
+      "title": "You can see this connection, not change it",
+      "description": "Changing a connection needs the connection.write permission."
+    }
+  },
+  "kinds": {
+    "saml": "SAML sign-in",
+    "ldap": "LDAP or Active Directory",
+    "scim": "SCIM provisioning",
+    "scimSet": "SCIM provisioning · already set up",
+    "app": "SAML app"
+  },
+  "kind": {
+    "saml": "SAML sign-in",
+    "ldap": "LDAP sign-in",
+    "scim": "Provisioning",
+    "app": "SAML app"
+  },
+  "list": {
+    "title": "Connections",
+    "description": "How people sign in from other systems, how they're kept in sync, and the apps Qeet ID signs them in to.",
+    "new": "New connection",
+    "search": "Search connections",
+    "searchPlaceholder": "Name or address",
+    "anyKind": "All kinds",
+    "groups": {
+      "signin": "Sign-in",
+      "provisioning": "Provisioning",
+      "apps": "SAML apps"
+    },
+    "columns": {
+      "name": "Connection",
+      "kind": "Kind",
+      "status": "Status",
+      "used": "Last used"
+    },
+    "problem": {
+      "certificate": "Its certificate ends within 30 days",
+      "check": "Its latest check failed"
+    },
+    "show": {
+      "attention": "Needs attention",
+      "setup": "In setup"
+    },
+    "shown": "{{n}} of {{total}} connections",
+    "never": "Never",
+    "actions": {
+      "open": "Open",
+      "finish": "Finish setting up"
+    },
+    "empty": {
+      "title": "No connections yet",
+      "description": "Add one below: people can then sign in with it, or be kept in sync by it."
+    },
+    "emptyFiltered": {
+      "title": "No connections match",
+      "description": "Nothing here matches the search or the view.",
+      "clear": "Show every connection"
+    }
+  },
+  "band": {
+    "signIn": "Sign in through",
+    "onSetup": "{{on}} on · {{setup}} in setup",
+    "showSignIn": "Show sign-in connections",
+    "provisioning": "Kept in sync by SCIM",
+    "scimPeople_one": "person its identity provider manages",
+    "scimPeople_other": "people its identity provider manages",
+    "scimNone": "Not set up: your identity provider can add and remove people here",
+    "openScim": "SCIM provisioning",
+    "apps": "SAML apps",
+    "showApps": "Show SAML apps",
+    "needsALook": "Needs a look",
+    "looks": {
+      "attention": "Need attention",
+      "setup": "In setup",
+      "links": "Setup links open"
+    }
+  },
+  "offers": {
+    "label": "Not set up yet",
+    "saml": "People sign in through Okta, Entra ID, Google Workspace or another identity provider.",
+    "samlAction": "Set up SAML",
+    "ldap": "People sign in with their directory password, and are added here the first time they do.",
+    "ldapAction": "Connect a directory",
+    "scim": "Your identity provider adds, updates and removes people here as they change there.",
+    "scimAction": "Set up SCIM",
+    "app": "Qeet ID signs your people in to another app, such as Slack or AWS.",
+    "appAction": "Add an app"
+  },
+  "links": {
+    "title": "Setup links",
+    "note": "Let the IT admin who runs your identity provider set up SAML or SCIM, without a Qeet ID account.",
+    "saml": "SAML sign-in",
+    "samlNote": "Add, change, test and delete SAML connections",
+    "scim": "SCIM provisioning",
+    "scimNote": "Make, replace and revoke the SCIM token",
+    "state": {
+      "active": "Open",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "expires": "Ends {{when}}",
+    "madeOn": "Made {{date}}",
+    "used": "last used {{when}}",
+    "unused": "not used yet",
+    "emptyTitle": "No setup links",
+    "emptyDescription": "A link works until it ends or you revoke it, and every change made with it is in the audit log.",
+    "ttl": {
+      "h1": "1 hour",
+      "h4": "4 hours",
+      "h24": "24 hours"
+    },
+    "create": {
+      "button": "Create setup link",
+      "title": "Create a setup link",
+      "note": "Whoever has the link can make these changes until it ends or you revoke it.",
+      "can": "What they can set up",
+      "pickOne": "Choose at least one.",
+      "expires": "Ends after",
+      "expiresNote": "24 hours at most: Qeet ID ends every link within a day.",
+      "submit": "Create link",
+      "action": "Create a setup link"
+    },
+    "made": {
+      "title": "Copy the setup link now",
+      "description": "You won't see it again. Send it to your IT admin; it works until {{when}}.",
+      "done": "Done"
+    },
+    "revoke": {
+      "button": "Revoke",
+      "title": "Revoke this setup link?",
+      "description": "Whoever has it can't make another change, from their next one. What they've already changed stays.",
+      "confirm": "Revoke link",
+      "action": "Revoke the setup link"
+    }
+  },
+  "scim": {
+    "title": "SCIM provisioning",
+    "description": "Your identity provider adds, updates and removes people in {{org}}.",
+    "yourOrg": "your organisation",
+    "gate": {
+      "title": "SCIM provisioning isn't in your plan",
+      "description": "Upgrade to let your identity provider add and remove people here."
+    },
+    "steps": {
+      "label": "Setting up SCIM",
+      "token": "Make a token",
+      "tokenTodo": "Your identity provider presents it",
+      "tokenMade": "Made {{date}}",
+      "details": "Give your identity provider the details",
+      "detailsNote": "The address and the token",
+      "first": "Its first request",
+      "firstTodo": "Not yet",
+      "firstDone": "Last one {{when}}"
+    },
+    "make": {
+      "button": "Turn on provisioning",
+      "short": "Make a token",
+      "action": "Make a SCIM token"
+    },
+    "how": {
+      "title": "How provisioning works",
+      "note": "Your identity provider sends each change to Qeet ID's SCIM address, with the token. Nothing is read from it: it sends, Qeet ID applies.",
+      "idp": "Your identity provider",
+      "idpNote": "Okta, Entra ID, Google Workspace or OneLogin, holding the token.",
+      "noToken": "No token yet",
+      "endpoint": "Sends changes to Qeet ID",
+      "endpointNote": "People and groups, as they change.",
+      "here": "People in {{org}}",
+      "people_one": "{{n}} person provisioned",
+      "people_other": "{{n}} people provisioned",
+      "hereNote": "New people only with an address on a domain {{org}} has verified."
+    },
+    "details": {
+      "title": "Give your identity provider these details",
+      "note": "Paste them into its SCIM app, then start provisioning there.",
+      "baseUrl": "Base URL",
+      "baseUrlHint": "In Okta: SCIM connector base URL. In Entra ID: Tenant URL.",
+      "copyBaseUrl": "Copy the SCIM base URL",
+      "userName": "Unique identifier",
+      "userNameHint": "Each person's email address, sent as userName (or their primary email)."
+    },
+    "token": {
+      "title": "Token",
+      "note": "Your identity provider presents it with every request. Qeet ID keeps only a hash of it and its first characters, so it's shown once, when it's made.",
+      "state": "Token",
+      "notSet": "Not made yet",
+      "notSetHint": "Make one, then paste it into your identity provider.",
+      "setHint": "Making a new one stops this one at once.",
+      "made": "Made",
+      "used": "Last request",
+      "usedHint": "When your identity provider last sent a change with it.",
+      "never": "No request yet",
+      "links": "Setup links",
+      "linksHint": "An open setup link with SCIM lets your IT admin replace or revoke this token.",
+      "linksActive_one": "{{n}} open link can change it",
+      "linksActive_other": "{{n}} open links can change it",
+      "linksNone": "None open",
+      "linksOpen": "Setup links"
+    },
+    "fresh": {
+      "title": "Copy the token now",
+      "description": "You won't see it again. Paste it into your identity provider; if it's lost, make a new one.",
+      "done": "Done"
+    },
+    "replace": {
+      "button": "Make a new token",
+      "title": "Make a new SCIM token?",
+      "description": "The token your identity provider holds stops working at once. Changes stop arriving until you paste the new one into it.",
+      "confirm": "Make a new token",
+      "action": "Replace the SCIM token"
+    },
+    "revoke": {
+      "button": "Revoke token",
+      "zoneTitle": "Revoke the token",
+      "zoneNote": "Your identity provider can no longer send changes. The people it created stay as they are.",
+      "title": "Revoke the SCIM token?",
+      "description_one": "Your identity provider can no longer send changes here: new people, updates and suspensions stop until you give it a new token. The {{n}} person it created stays as they are.",
+      "description_other": "Your identity provider can no longer send changes here: new people, updates and suspensions stop until you give it a new token. The {{n}} people it created stay as they are.",
+      "confirm": "Revoke token",
+      "action": "Revoke the SCIM token"
+    },
+    "changes": {
+      "title": "When people change in your identity provider",
+      "note": "What each change it sends does here.",
+      "added": "Added",
+      "addedText": "They get an account in {{org}}, or the account already here with that email is linked. Only on a domain {{org}} has verified.",
+      "deactivated": "Deactivated",
+      "deactivatedText": "Suspended here, and every session and sign-in ends at once.",
+      "deactivatedHint": "Turning them back on there lifts only a suspension the identity provider set.",
+      "removed": "Removed",
+      "removedText": "Their account is deleted, and every session and sign-in ends.",
+      "groups": "Groups",
+      "groupsText": "Groups it sends are made here, and their members kept as it says.",
+      "owners": "Owners",
+      "ownersText": "It can't change, suspend or remove an owner of {{org}}."
+    },
+    "people": {
+      "title": "People it provisioned",
+      "note": "Made or linked by your identity provider, newest first.",
+      "latest": "The latest {{n}}, newest first.",
+      "person": "Person",
+      "status": "Status",
+      "active": "Active",
+      "suspended": "Suspended",
+      "externalId": "Its ID for them",
+      "added": "Added",
+      "emptyTitle": "No one provisioned yet",
+      "emptyDescription": "People appear here once your identity provider sends them."
+    }
+  },
+  "ldap": {
+    "gate": {
+      "title": "Directory sign-in isn't in your plan",
+      "description": "Upgrade to let people sign in with their LDAP or Active Directory password."
+    },
+    "index": {
+      "title": "LDAP or Active Directory",
+      "description": "People sign in with their directory name and password, and are added here the first time they do.",
+      "connect": "Connect a directory",
+      "whatTitle": "How sign-in through a directory works",
+      "whatNote": "Nothing is copied from the directory: Qeet ID asks it each time someone signs in.",
+      "steps": {
+        "bind": "Qeet ID connects to your directory server with a read-only service account.",
+        "find": "It looks the person up under a base DN with a filter, by the name they typed.",
+        "check": "It checks their password by signing in to the directory as them.",
+        "signIn": "Their email and name come from directory attributes; the first time, they get an account here."
+      },
+      "emptyTitle": "No directory connected",
+      "emptyDescription": "Connect one: it starts as a draft, so nobody signs in with it until you've tested it and turned it on."
+    },
+    "notFound": {
+      "title": "Connection not found",
+      "description": "It may have been deleted. Directories › Connections lists every connection.",
+      "back": "Back to Connections"
+    },
+    "page": {
+      "description": "LDAP sign-in · added {{date}} · last sign-in {{used}}",
+      "neverUsed": "none yet",
+      "edit": "Edit connection"
+    },
+    "failing": {
+      "title": "Qeet ID can't sign in to {{host}}",
+      "description": "The latest test failed {{when}}: {{reason}}. Check the server address and the service account, then test again."
+    },
+    "how": {
+      "title": "How a sign-in goes through it",
+      "note": "Each time someone signs in, in this order, with this connection's settings.",
+      "label": "A sign-in through this connection, step by step",
+      "bind": "Sign in as the service account",
+      "bindNote": "At {{host}} ({{how}}). Its password is kept encrypted and never shown again.",
+      "find": "Find the person",
+      "findNote": "Under this base DN, with what they typed in place of %s. Exactly one entry must match, or the sign-in fails.",
+      "check": "Check their password",
+      "checkNote": "Qeet ID signs in to the directory as the entry it found, with the password they typed. The password isn't kept.",
+      "signIn": "Sign them in",
+      "maps": "{{email}} → email · {{name}} → name",
+      "signInNote": "The first time, an account is made in {{org}}, only for an address on a domain {{org}} has verified."
+    },
+    "server": {
+      "title": "Server",
+      "note": "Where Qeet ID connects, and how.",
+      "url": "Server URL",
+      "encryption": "Encryption",
+      "encryptionWord": {
+        "ldaps": "LDAPS: TLS from the start",
+        "starttls": "StartTLS",
+        "none": "None"
+      },
+      "encryptionHint": {
+        "ldaps": "The connection is encrypted before anything is sent.",
+        "starttls": "Qeet ID upgrades the connection to TLS before it signs in.",
+        "none": "Passwords cross the network unencrypted. Use ldaps://, or turn on StartTLS."
+      },
+      "unencrypted": "Unencrypted",
+      "certificate": "Server certificate",
+      "checked": "Checked",
+      "verifyHint": "Qeet ID checks the server's certificate against its name.",
+      "notChecked": "Not checked",
+      "skipHint": "Only a developer workstation may skip the check; elsewhere Qeet ID refuses to connect.",
+      "devOnly": "Developer only"
+    },
+    "attributes": {
+      "title": "Attributes",
+      "note": "Which directory attributes become each person's email and name.",
+      "mappings": "Mappings",
+      "email": "Email",
+      "emailHint": "Required: it matches people to their account here. An entry without it can't sign in.",
+      "name": "Display name",
+      "nameHint": "Their display name when their account is made here.",
+      "newPeople": "New people",
+      "newPeopleText": "Added to {{org}} the first time they sign in. An account already here is linked only if its address is verified and it doesn't administer {{org}}."
+    },
+    "status": {
+      "title": "Status",
+      "note": "Only a connection that's on signs anyone in.",
+      "word": {
+        "draft": "Draft",
+        "active": "On",
+        "disabled": "Off"
+      },
+      "means": {
+        "draft": "Being set up: it signs nobody in. Test it, then turn it on.",
+        "active": "People sign in with their directory name and password.",
+        "disabled": "Sign-ins are refused. People who signed in with it keep their accounts."
+      }
+    },
+    "test": {
+      "title": "Test",
+      "note": "The test connects to the server and signs in as the service account. It doesn't look anyone up.",
+      "button": "Test connection",
+      "again": "Test again",
+      "check": "Reach the server and sign in as the service account",
+      "running": "Testing…",
+      "never": "Not tested yet",
+      "passed": "{{where}} · {{when}}",
+      "passedNow": "{{where}} · just now",
+      "failedAt": "{{reason}} · {{when}}",
+      "failed": {
+        "unreachable": "Qeet ID couldn't reach the server. Check its address and that it accepts connections from Qeet ID.",
+        "serviceAccount": "The server refused the service account. Check its bind DN and password.",
+        "certificate": "The server's certificate must be checked. Give it one that can be, and don't skip the check.",
+        "other": "The test didn't pass. Try again, or check the connection's settings."
+      },
+      "recorded_one": "{{n}} test in 90 days, in",
+      "recorded_other": "{{n}} tests in 90 days, in",
+      "activity": "Sync activity"
+    },
+    "signIns": {
+      "title": "Sign-ins",
+      "last": "Last one {{when}} ({{date}}).",
+      "none": "No one has signed in with it yet.",
+      "counts": "{{ok}} signed in, {{failed}} failed, in the last 30 days.",
+      "label": "Sign-ins a day for 30 days: {{ok}} signed in, {{failed}} failed",
+      "day": "{{date}}: {{ok}} signed in, {{failed}} failed",
+      "from": "30 days ago",
+      "today": "Today",
+      "empty": "No sign-in attempts in the last 30 days."
+    },
+    "drawer": {
+      "title": "Connect a directory",
+      "description": "An LDAP or Active Directory server people sign in with. It starts as a draft unless you turn it on.",
+      "editTitle": "Edit {{name}}",
+      "editDescription": "Changes apply to the next sign-in.",
+      "name": "Name",
+      "nameHint": "Only administrators see it.",
+      "namePlaceholder": "Corporate Active Directory",
+      "serverUrl": "Server URL",
+      "serverUrlHint": "ldaps:// for TLS from the start, or ldap://. The port goes after the host.",
+      "startTls": "Use StartTLS",
+      "startTlsHint": "Upgrade an ldap:// connection to TLS before signing in.",
+      "startTlsLdaps": "ldaps:// is already TLS from the start.",
+      "skipVerify": "Skip the server certificate check",
+      "skipVerifyHint": "Only on a developer workstation: elsewhere Qeet ID refuses to save or use it.",
+      "bindDn": "Service account (bind DN)",
+      "bindDnHint": "A read-only account Qeet ID signs in as to look people up.",
+      "bindPassword": "Service account password",
+      "bindPasswordHint": "Kept encrypted, and never shown again.",
+      "bindPasswordKeep": "Leave it empty to keep the one saved.",
+      "baseDn": "Base DN",
+      "baseDnHint": "Where people are in the directory. Qeet ID searches under it.",
+      "filter": "Sign-in filter",
+      "filterHint": "What they type replaces %s. Active Directory often uses (sAMAccountName=%s).",
+      "emailAttribute": "Email attribute",
+      "emailAttributeHint": "Required on each person's entry.",
+      "nameAttribute": "Name attribute",
+      "nameAttributeHint": "Their display name here.",
+      "status": "Start as",
+      "statusDraft": "Draft (recommended)",
+      "statusOn": "On",
+      "statusDraftHint": "Nobody signs in with it until you've tested it and turned it on.",
+      "statusOnHint": "People can sign in with it straight away.",
+      "required": {
+        "name": "Enter a name.",
+        "serverUrl": "Enter an address that starts with ldap:// or ldaps://.",
+        "bindDn": "Enter the service account's DN.",
+        "bindPassword": "Enter the service account's password.",
+        "baseDn": "Enter the base DN.",
+        "filter": "Put %s where the name they type goes."
+      },
+      "create": "Connect",
+      "createAction": "Connect a directory",
+      "save": "Save",
+      "saveAction": "Change the directory connection",
+      "saved": "{{name}} saved"
+    },
+    "on": {
+      "button": "Turn on",
+      "action": "Turn on the directory connection",
+      "done": "{{name}} is on: people can sign in with it"
+    },
+    "off": {
+      "button": "Turn off",
+      "title": "Turn off {{name}}?",
+      "description": "People can't sign in with their password from {{host}} until you turn it back on. Their accounts stay as they are.",
+      "confirm": "Turn off",
+      "action": "Turn off the directory connection",
+      "done": "{{name}} is off"
+    },
+    "delete": {
+      "button": "Delete connection",
+      "zoneTitle": "Delete this connection",
+      "zoneOn": "People who sign in with it will need another way in.",
+      "zoneOff": "It isn't on, so nobody signs in with it now.",
+      "title": "Delete {{name}}?",
+      "description": "People can no longer sign in with their password from {{host}}. Their accounts, groups and roles stay; anyone who signs in only this way needs another way in. Its sync history stays in Activity.",
+      "confirm": "Delete connection",
+      "action": "Delete the LDAP connection",
+      "done": "{{name}} deleted"
+    }
+  },
+  "toast": {
+    "ldapCreated": "Directory connected",
+    "scimRevoked": "SCIM token revoked",
+    "linkMade": "Setup link made",
+    "linkRevoked": "Setup link revoked"
+  }
+}

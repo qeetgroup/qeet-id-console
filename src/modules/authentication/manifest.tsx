@@ -4,6 +4,7 @@ import {
   FingerprintPatternIcon,
   HandshakeIcon,
   LogInIcon,
+  PlugIcon,
   Share2Icon,
   ShieldCheckIcon,
   TicketIcon,
@@ -88,6 +89,17 @@ export const manifest = defineModule({
       description: "authentication:nav.authentication.social.description",
       url: "/auth/social",
       icon: <Share2Icon />,
+      capability: "connection.read",
+    },
+    {
+      // Every connection in one list: SAML and LDAP sign-in, SCIM, SAML apps, and setup links.
+      id: "authentication.connections",
+      group: "authentication",
+      order: 35,
+      title: "authentication:nav.authentication.connections.title",
+      description: "authentication:nav.authentication.connections.description",
+      url: "/auth/connections",
+      icon: <PlugIcon />,
       capability: "connection.read",
     },
     {
@@ -182,6 +194,7 @@ declare module "i18next" {
   interface ResourceNamespaceMap {
     "auth-flow": typeof import("./locales/en/auth-flow.json");
     authentication: typeof import("./locales/en/authentication.json");
+    connections: typeof import("./locales/en/connections.json");
     consent: typeof import("./locales/en/consent.json");
     oidc: typeof import("./locales/en/oidc.json");
     saml: typeof import("./locales/en/saml.json");
