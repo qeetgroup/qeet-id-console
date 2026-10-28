@@ -1,37 +1,520 @@
 {
-  "roles": {
-    "refreshBtn": "Refresh",
-    "newButton": "New role",
-    "list": {
-      "count_one": "{{filtered}} of {{total}} role",
-      "count_other": "{{filtered}} of {{total}} roles",
-      "searchPlaceholder": "Search name or description…",
-      "empty": "No roles defined.",
-      "emptyFiltered": "No roles match your filters."
+  "lists": {
+    "common": {
+      "and": "and",
+      "more": "{{n}} more",
+      "none": "None",
+      "noOne": "No one",
+      "everyone": "Everyone",
+      "system": "System",
+      "builtIn": "Built in",
+      "all": "All",
+      "people_one": "{{n}} person",
+      "people_other": "{{n}} people",
+      "members_one": "{{n}} member",
+      "members_other": "{{n}} members",
+      "moreActions": "More actions",
+      "exportCsv": "Export as CSV",
+      "exportJson": "Export as JSON",
+      "clearFilters": "Clear filters",
+      "noMatchTitle": "Nothing matches",
+      "noMatchDescription": "Try another search, or clear the filters.",
+      "close": "Close",
+      "cancel": "Cancel",
+      "percent": "{{n}}%",
+      "months": "{{months}} months",
+      "needsALook": "Needs a look",
+      "effect": {
+        "allow": "Allow",
+        "deny": "Deny"
+      },
+      "anyResource": "any resource",
+      "anyAction": "any action",
+      "off": "Off"
     },
-    "create": {
-      "title": "New role",
-      "description": "Create a custom role for this organization. Assign permissions afterwards.",
-      "nameLabel": "Name",
-      "descLabel": "Description",
-      "cancelBtn": "Cancel",
-      "createBtn": "Create",
-      "creatingBtn": "Creating…",
-      "validation": {
-        "name": "Enter a name."
+    "resourceNames": {
+      "analytics": "Analytics",
+      "apikey": "API keys",
+      "audit": "Audit log",
+      "billing": "Billing",
+      "branding": "Branding",
+      "connection": "Connections",
+      "gdpr": "Data requests",
+      "group": "Groups",
+      "policy": "Security policy",
+      "role": "Roles",
+      "secret": "Secrets",
+      "tenant": "Organisation",
+      "user": "Users",
+      "webhook": "Webhooks"
+    },
+    "actionNames": {
+      "read": "Read",
+      "write": "Write"
+    },
+    "roles": {
+      "title": "Roles",
+      "description": "What each role lets people in {{org}} do, and who holds it.",
+      "descriptionNoName": "What each role lets people do, and who holds it.",
+      "newRole": "New role",
+      "band": {
+        "roles": "Roles",
+        "rolesNote": "{{custom}} custom · {{builtIn}} built in",
+        "growthLabel": "Roles over the last {{months}} months: from {{from}} to {{to}}",
+        "withRole": "People with a role",
+        "withRoleNote": "{{n}} of {{total}} people, directly or through a group",
+        "withRoleLabel": "{{n}}% of people hold a role",
+        "reach": "What people can do",
+        "reachLegend": {
+          "every": "everything",
+          "changes": "make changes",
+          "reads": "only read",
+          "none": "nothing"
+        },
+        "looks": {
+          "unused": "Roles no one holds",
+          "every": "Roles with every permission",
+          "empty": "Roles that grant nothing"
+        }
+      },
+      "filters": {
+        "search": "Search roles",
+        "searchPlaceholder": "e.g. Helpdesk",
+        "type": "Type",
+        "anyType": "Any type",
+        "custom": "Custom",
+        "builtIn": "Built in",
+        "summary": "{{n}} of {{total}} roles"
+      },
+      "columns": {
+        "role": "Role",
+        "people": "People",
+        "groups": "Groups",
+        "permissions": "Permissions"
+      },
+      "cells": {
+        "throughGroups": "{{n}} through groups",
+        "permissionsOf": "{{n}} of {{total}}"
+      },
+      "rowActions": {
+        "open": "Change permissions",
+        "people": "People with this role",
+        "copyId": "Copy role ID"
+      },
+      "copied": "Role ID copied",
+      "empty": {
+        "title": "No roles yet",
+        "description": "A role is a set of permissions you give to people, or to a group."
       }
     },
-    "permsSheet": {
-      "title": "Permissions — {{name}}",
-      "grantAction": "Grant this permission to the role",
-      "revokeAction": "Revoke this permission from the role"
+    "drawer": {
+      "custom": "Custom role · created {{date}}",
+      "builtIn": "Built in · created {{date}}",
+      "holders": {
+        "title": "Who holds it",
+        "total_one": "{{n}} person",
+        "total_other": "{{n}} people",
+        "directly": "Directly",
+        "directlyNote": "Given to each person on their page in Users.",
+        "seeAll": "See them in Users",
+        "throughGroups": "Through groups",
+        "throughGroupsNote": "A group's role reaches its own members, not the groups inside it.",
+        "nobody": "No one holds it yet. Give it to someone on their page in Users, or to a group.",
+        "noGroups": "No group holds it.",
+        "cantSeePeople": "You can't see people, so who holds it isn't shown.",
+        "cantSeeGroups": "You can't see groups, so roles held through them aren't counted.",
+        "share": "{{n}} of the {{total}} people in the organisation",
+        "shareSplit": "{{n}} of {{total}} people: {{direct}} directly, {{groups}} only through groups",
+        "shareLabel": "{{n}} of {{total}} people hold it: {{direct}} directly, {{groups}} only through groups"
+      },
+      "permissions": {
+        "title": "Permissions",
+        "count": "{{n}} of {{total}}",
+        "tableLabel": "{{role}}'s permissions",
+        "resource": "Resource",
+        "noSuch": "No such permission",
+        "owner": "The owner role always holds every permission; it can't be changed.",
+        "readOnly": "You can see this role's permissions, not change them.",
+        "notHeld": "Greyed out: you can only give or take away permissions you hold yourself.",
+        "pending": "{{gain}} to add, {{lose}} to take away.",
+        "effect_one": "Saving changes what {{n}} person can do, straight away. You'll confirm it's you first.",
+        "effect_other": "Saving changes what {{n}} people can do, straight away. You'll confirm it's you first.",
+        "effectNone": "No one holds it yet, so saving changes no one's access. You'll confirm it's you first."
+      },
+      "save": "Save changes",
+      "saveAction": "Change this role's permissions",
+      "saveFailed": "Not every change was saved. The role's permissions are shown as they are now."
     },
-    "description": "RBAC roles scoped to this organization. Assign permissions per role; users get the union of permissions across all roles they hold."
-  },
-  "permissions": {
-    "empty": "No permissions registered yet.",
-    "noDescription": "No description",
-    "description": "The complete catalogue of permission keys you can grant to roles. These are global to the platform; bindings to roles live under each organization."
+    "newRole": {
+      "title": "New role",
+      "description": "Name it now; choose its permissions next.",
+      "name": "Name",
+      "namePlaceholder": "e.g. Support lead",
+      "nameRequired": "Give the role a name.",
+      "nameTaken": "There's already a role called {{name}}.",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "e.g. Resets sign-in for their team",
+      "note": "It grants nothing until you choose its permissions, so no one's access changes yet.",
+      "create": "Create role"
+    },
+    "rbac": {
+      "title": "Models",
+      "description": "Which permissions each role grants, side by side. Open a role to change it.",
+      "tableLabel": "Permissions by role",
+      "permission": "Permission",
+      "granted": "Granted",
+      "notGranted": "Not granted",
+      "filters": {
+        "search": "Search permissions",
+        "searchPlaceholder": "e.g. user.write",
+        "resource": "Resource",
+        "anyResource": "All resources"
+      },
+      "empty": {
+        "title": "No roles yet",
+        "description": "Make a role on the Roles page, then compare it here."
+      }
+    },
+    "permissions": {
+      "title": "Permissions",
+      "description": "Qeet ID's own permissions. Roles grant them; they can't be added or changed.",
+      "band": {
+        "permissions": "Permissions",
+        "note": "{{read}} read · {{change}} change things · on {{resources}} resources",
+        "spread": "How widely they're held",
+        "spreadLegend": {
+          "everyone": "by everyone",
+          "most": "by most people",
+          "some": "by some",
+          "owners": "only by owners"
+        },
+        "looks": {
+          "wideChanges": "Changes most people can make",
+          "ownersOnly": "Only owners hold"
+        }
+      },
+      "filters": {
+        "search": "Search permissions",
+        "searchPlaceholder": "e.g. secret",
+        "resource": "Resource",
+        "anyResource": "All resources",
+        "role": "Granted by",
+        "anyRole": "Any role",
+        "spread": "Held",
+        "anySpread": "Held by anyone",
+        "spread_everyone": "By everyone",
+        "spread_most": "By most people",
+        "spread_some": "By some",
+        "spread_owners": "Only by owners",
+        "summary": "{{n}} of {{total}} permissions"
+      },
+      "columns": {
+        "permission": "Permission",
+        "allows": "What it allows",
+        "grantedBy": "Granted by",
+        "people": "People"
+      },
+      "cells": {
+        "everyRole": "Every role",
+        "ownerOnly": "Owner only"
+      },
+      "empty": {
+        "title": "No permissions",
+        "description": "Qeet ID's permissions couldn't be listed."
+      }
+    },
+    "resources": {
+      "title": "Resources",
+      "description": "What protects each resource: the roles that grant actions on it, and the policies that name it.",
+      "everyResource_one": "{{count}} policy applies to every resource: {{names}}.",
+      "everyResource_other": "{{count}} policies apply to every resource: {{names}}.",
+      "band": {
+        "resources": "Resources",
+        "note": "{{qeet}} Qeet ID's own · {{policy}} only your policies name",
+        "guarded": "Guarded by",
+        "guardedLegend": {
+          "roles": "roles only",
+          "both": "roles and policies",
+          "policies": "policies only"
+        },
+        "looks": {
+          "off": "Policies turned off",
+          "open": "Allows with no condition"
+        }
+      },
+      "filters": {
+        "search": "Search resources",
+        "searchPlaceholder": "e.g. ledger",
+        "by": "Defined by",
+        "anyBy": "All resources",
+        "qeet": "Qeet ID's own",
+        "policy": "Named in policies",
+        "summary": "{{n}} of {{total}} resources"
+      },
+      "columns": {
+        "resource": "Resource",
+        "actions": "Actions",
+        "roles": "Roles",
+        "policies": "Its own policies",
+        "definedBy": "Defined by"
+      },
+      "cells": {
+        "qeet": "Qeet ID",
+        "yours": "Your policies",
+        "all": "all",
+        "noCondition": "No condition"
+      },
+      "drawer": {
+        "whoCanAct": "Who can act on it",
+        "qeetNote": "Roles decide who can act on it. A matching deny policy still refuses, even when a role allows; an allow policy adds nothing here.",
+        "policyNote": "No role grants actions on it: your policies decide when your apps ask Qeet ID. A matching deny refuses whatever allows it.",
+        "permission": "Permission",
+        "grantedBy": "Granted by",
+        "people": "People",
+        "policies": "Policies",
+        "own": "Its own",
+        "onEvery": "On every resource",
+        "priority": "priority {{n}}",
+        "testAccess": "Test access"
+      },
+      "empty": {
+        "title": "No resources",
+        "description": "Qeet ID's permissions couldn't be listed."
+      }
+    },
+    "templates": {
+      "title": "Policies",
+      "description": "Start a policy from a common pattern. It opens in the builder; nothing is saved until you save it there.",
+      "tableLabel": "Policy templates",
+      "filters": {
+        "search": "Search templates",
+        "searchPlaceholder": "e.g. MFA",
+        "category": "Category",
+        "anyCategory": "All categories",
+        "effect": "Effect",
+        "anyEffect": "Allow and deny",
+        "summary": "{{n}} of {{total}} templates"
+      },
+      "categories": {
+        "saas": "SaaS",
+        "cloud": "Cloud",
+        "regulated": "Regulated",
+        "baseline": "Baseline"
+      },
+      "columns": {
+        "template": "Template",
+        "basedOn": "Based on",
+        "effect": "Effect",
+        "appliesTo": "Applies to",
+        "canSave": "Can be saved"
+      },
+      "cells": {
+        "yes": "Yes",
+        "previewOnly": "Preview only",
+        "needsRole": "Needs a role rule",
+        "needsRelationship": "Needs a relationship rule"
+      },
+      "drawer": {
+        "basedOn": "Based on",
+        "effect": "Effect",
+        "appliesTo": "Applies to",
+        "priority": "Priority",
+        "policy": "Policy",
+        "previewNote": "Qeet ID can't store a policy with a role or relationship rule yet, so this one opens in the builder to try, not to save.",
+        "use": "Use template"
+      }
+    },
+    "versions": {
+      "title": "Policies",
+      "description": "Every saved change to a policy, newest first.",
+      "tableLabel": "Policy versions",
+      "rowLabel": "{{policy}}, version {{n}}",
+      "band": {
+        "policies": "Policies",
+        "policiesNote": "{{changed}} changed since they were made",
+        "changes": "Saved changes",
+        "changesNote": "{{n}} in the last 30 days",
+        "growthLabel": "Saved changes by month over the last {{months}} months: {{counts}}",
+        "looks": {
+          "week": "Changed in the last 7 days",
+          "deleted": "Deleted policies"
+        }
+      },
+      "filters": {
+        "search": "Search versions",
+        "searchPlaceholder": "e.g. Contractors",
+        "policy": "Policy",
+        "anyPolicy": "All policies",
+        "by": "Changed by",
+        "anyone": "Anyone",
+        "change": "Change",
+        "anyChange": "Any change",
+        "summary": "{{n}} of {{total}} versions"
+      },
+      "columns": {
+        "policy": "Policy",
+        "version": "Version",
+        "change": "Change",
+        "by": "By",
+        "when": "When"
+      },
+      "cells": {
+        "version": "v{{n}}",
+        "current": "Current",
+        "created": "Created",
+        "changed": "Changed",
+        "deleted": "Deleted"
+      },
+      "rowActions": {
+        "open": "Show the change",
+        "audit": "Show in audit"
+      },
+      "drawer": {
+        "title": "{{policy}}, version {{n}}",
+        "change": "Change",
+        "by": "By",
+        "when": "When",
+        "from": "From",
+        "whatChanged": "What changed",
+        "field": "Field",
+        "before": "Before",
+        "after": "After",
+        "fields": {
+          "name": "Name",
+          "effect": "Effect",
+          "resource_type": "Resource",
+          "action": "Action"
+        },
+        "kept": "The log keeps a policy's name, effect, resource and action at each save, not its condition, priority or whether it's on, so only those four can be compared.",
+        "first": "The first version: there's nothing before it to compare.",
+        "same": "None of the four fields the log keeps changed, so the condition, priority or on and off must have.",
+        "deleted": "The policy was deleted; nothing of it is kept.",
+        "openAbac": "Open ABAC"
+      },
+      "empty": {
+        "title": "No saved changes",
+        "description": "When a policy is made or changed in ABAC, each save shows here as a version."
+      },
+      "cantRead": "You can't read the audit log, where each save is kept, so versions aren't shown."
+    },
+    "audit": {
+      "title": "Audit",
+      "description": "Changes to roles, policies and relationships, from the audit log.",
+      "tableLabel": "Authorization changes",
+      "band": {
+        "changes": "Changes",
+        "changesNote": "in the last 90 days",
+        "seriesLabel": "Changes over the last 90 days, from {{from}} to {{to}} a day at most",
+        "kinds": "What changed",
+        "people": "Made by",
+        "peopleNote_one": "person in the last 90 days",
+        "peopleNote_other": "people in the last 90 days"
+      },
+      "kinds": {
+        "policies": "Policies",
+        "roles": "Roles",
+        "groupRoles": "Group roles",
+        "relationships": "Relationships"
+      },
+      "titles": {
+        "abac_policy_created": "Policy created",
+        "abac_policy_updated": "Policy changed",
+        "abac_policy_deleted": "Policy deleted",
+        "role_created": "Role created",
+        "role_assigned": "Role given",
+        "role_unassigned": "Role taken away",
+        "role_group_assigned": "Role given to a group",
+        "role_group_unassigned": "Role taken from a group",
+        "rebac_tuple_written": "Relationship added",
+        "rebac_tuple_deleted": "Relationship removed"
+      },
+      "filters": {
+        "search": "Search changes",
+        "searchPlaceholder": "e.g. Contractors",
+        "kind": "Kind",
+        "anyKind": "All changes",
+        "by": "Changed by",
+        "anyone": "Anyone"
+      },
+      "columns": {
+        "when": "When",
+        "change": "Change",
+        "on": "On",
+        "by": "By",
+        "from": "From"
+      },
+      "cells": {
+        "roleTo": "{{role}} to {{to}}",
+        "roleFrom": "{{role}} from {{to}}",
+        "someone": "someone",
+        "relationship": "{{subject}} is {{relation}} of {{object}}"
+      },
+      "drawer": {
+        "when": "When",
+        "by": "By",
+        "from": "From",
+        "event": "Event",
+        "resourceId": "Resource ID",
+        "copyResourceId": "Copy resource ID",
+        "requestId": "Request ID",
+        "openRole": "Open role",
+        "openGroup": "Open group",
+        "openPerson": "Open person"
+      },
+      "empty": {
+        "title": "No changes yet",
+        "description": "When someone changes a role, a policy or a relationship, it shows here."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "decisions": {
+        "title": "How decisions are made",
+        "description": "Set by Qeet ID for every organisation.",
+        "fixed": "Fixed",
+        "nothingLabel": "Nothing allows it",
+        "nothing": "Refused",
+        "nothingHint": "Access is refused unless a role, a relationship or an allow policy allows it.",
+        "denyLabel": "A deny policy matches",
+        "deny": "Refused",
+        "denyHint": "Deny policies are checked first: one match refuses, even when a role allows.",
+        "orderLabel": "Policy priority",
+        "order": "Sets the order",
+        "orderHint": "Higher priority is checked first and named in the answer; any matching deny still refuses.",
+        "orderExample": "{{top}} ({{topPriority}}) is checked before {{last}} ({{lastPriority}}).",
+        "consoleLabel": "Qeet ID itself",
+        "console": "Roles decide",
+        "consoleHint": "In this console and Qeet ID's API, an allow policy adds nothing to what roles give; a deny policy can still refuse.",
+        "missingLabel": "An attribute is missing",
+        "missing": "A deny matches",
+        "missingHint": "A deny that compares a missing attribute matches; an allow never does.",
+        "explainLabel": "Explanations",
+        "explain": "On request",
+        "explainHint": "The simulator and the access tester show what decided each answer.",
+        "openSimulator": "Simulator"
+      },
+      "confirming": {
+        "title": "Confirming access changes",
+        "description": "Changing a role's permissions, who holds a role, relationships or policies asks for a second factor first.",
+        "windowLabel": "Ask again after",
+        "windowHint": "Set in the security policy, for every sensitive action.",
+        "change": "Change",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "hours_one": "{{count}} hour",
+        "hours_other": "{{count}} hours",
+        "methodsLabel": "Counts as a second factor",
+        "anyMethod": "Any second factor",
+        "methods": {
+          "totp": "Authenticator app",
+          "recovery_code": "Recovery code",
+          "otp": "Code by email or text",
+          "webauthn": "Passkey or security key",
+          "push": "Push approval"
+        },
+        "cantRead": "You can't read the security policy, so its values aren't shown."
+      }
+    }
   },
   "policies": {
     "description": "Organization-wide security policy. Applies to every login, every session, every API call against this organization.",
@@ -159,24 +642,6 @@
       "relation": "Enter a relation, such as viewer.",
       "subject": "Enter a subject.",
       "userId": "Enter a user ID."
-    }
-  },
-  "resources": {
-    "description": "The protected resources RBAC permissions are scoped to. Derived from the permission catalogue — each resource exposes a set of actions you can grant to roles.",
-    "stats": {
-      "resources": "Resources",
-      "actions": "Actions",
-      "keys": "Permission keys"
-    },
-    "catalogue": {
-      "title": "Resource catalogue",
-      "description": "One row per resource, with the actions it exposes.",
-      "empty": "No permissions registered, so no resources to show."
-    },
-    "columns": {
-      "resource": "Resource",
-      "actions": "Actions",
-      "count": "Count"
     }
   },
   "check": {
@@ -325,40 +790,6 @@
     "target": "{{resource}}:{{action}} · priority {{priority}}",
     "deleteNamed": "Delete {{name}}"
   },
-  "authorizationAuditPage": {
-    "everyAuthorizationChangeIs": "Every authorization change is recorded in the hash-chained, append-only audit log.",
-    "resourceType": "Resource type",
-    "filterByAction": "Filter by action…",
-    "actionFilter": "Action filter",
-    "search": "Search…",
-    "searchAudit": "Search audit",
-    "noAuthorizationEvents": "No authorization events",
-    "when": "When",
-    "action": "Action",
-    "resource": "Resource",
-    "actor": "Actor",
-    "allResources": "All authz resources"
-  },
-  "authorizationSettingsPage": {
-    "howTheAuthorizationEngine": "How the authorization engine evaluates decisions, and where to configure related controls.",
-    "theOrderAndSemantics": "The order and semantics used to reach a decision.",
-    "denyWins": "Deny wins",
-    "priorityOrdering": "Priority ordering",
-    "composedEngines": "Composed engines",
-    "explainability": "Explainability",
-    "securityPolicy": "Security policy",
-    "accessTester": "Access Tester",
-    "open": "Open →",
-    "evaluationModel": "Evaluation model",
-    "denyWinsDetail": "An explicit deny from any matching policy overrides every allow.",
-    "priorityOrderingDetail": "ABAC policies evaluate in descending priority; default is deny.",
-    "composedEnginesDetail": "The unified PDP resolves RBAC (permissions) and ReBAC (relationships) together.",
-    "explainabilityDetail": "Every engine returns a grant-path / trace when explain is requested.",
-    "securityPolicyDetail": "IP allow/deny lists, session limits, and MFA enforcement.",
-    "accessTesterDetail": "Run an ad-hoc RBAC check with the full grant path.",
-    "tenantPolicy": "tenant policy",
-    "diagnostics": "diagnostics"
-  },
   "policyCanvas": {
     "unifiedPolicyBuilderCanvas": "Unified policy builder canvas",
     "rolePlaceholder": "(role…)",
@@ -472,16 +903,6 @@
     "permissionCount_one": "{{count}} permission",
     "permissionCount_other": "{{count}} permissions"
   },
-  "permissionsPage": {
-    "thePlatformPermissionCatalogue": "The platform permission catalogue, grouped by resource. Permissions use resource.action keys.",
-    "searchPermissions": "Search permissions…",
-    "searchPermissions2": "Search permissions",
-    "wildcardWarning_one": "<strong>{{count}}</strong> wildcard permission detected — wildcards grant broad access; prefer explicit keys.",
-    "wildcardWarning_other": "<strong>{{count}}</strong> wildcard permissions detected — wildcards grant broad access; prefer explicit keys.",
-    "noMatches": "No permissions match your search",
-    "actionsOn": "Actions available on {{resource}} resources.",
-    "wildcard": "wildcard"
-  },
   "policyBuilderPage": {
     "composeRbacAbacAnd": "Compose RBAC, ABAC and ReBAC blocks into one policy. Wire blocks into the decision and preview the generated policy live.",
     "copiedJson": "Copied JSON",
@@ -517,63 +938,8 @@
       "rebac": "Editing the REBAC block"
     }
   },
-  "policyTemplatesPage": {
-    "startFromABattle": "Start from a battle-tested pattern. Choosing a template pre-fills the Policy Builder with a real, editable policy.",
-    "category": "Category",
-    "all": "All",
-    "useTemplate": "Use template",
-    "categories": {
-      "saas": "SaaS",
-      "cloud": "Cloud",
-      "regulated": "Regulated",
-      "baseline": "Baseline"
-    }
-  },
-  "policyVersionsPage": {
-    "everyPolicyChangeIs": "Every policy change is reconstructed from the audit log. History is read-only — server-side rollback is not available yet.",
-    "oneClickRollbackIsComing": "One-click rollback is coming",
-    "theBackendRecordsEvery": "The backend records every change but has no revert endpoint. For now, re-apply a prior state manually from the ABAC editor; rollback here is disabled.",
-    "policies": "Policies",
-    "selectAPolicyTo": "Select a policy to see its change history.",
-    "noPoliciesToTrack": "No policies to track",
-    "changeHistory": "Change history",
-    "selectAPolicyTo2": "Select a policy to reconstruct its timeline.",
-    "noChangesRecordedFor": "No changes recorded for this policy",
-    "rollbackUnavailable": "Rollback (unavailable)",
-    "serverSideRollbackComingSoon": "Server-side rollback coming soon",
-    "revertNote": "no POST /abac/policies/{id}/revert endpoint yet",
-    "recordedChanges_one": "{{count}} recorded change",
-    "recordedChanges_other": "{{count}} recorded changes",
-    "noPolicySelected": "No policy selected"
-  },
-  "rbacPage": {
-    "visualiseHowRolesGrant": "Visualise how roles grant permissions. Click a role to expand its permission grants; drag to rearrange.",
-    "noRolesToVisualiseYet": "No roles to visualise yet",
-    "rolePermissionGraph": "Role → permission graph",
-    "clearSelection": "Clear selection",
-    "nothingSelected": "Nothing selected",
-    "thisRoleGrantsNoPermissions": "This role grants no permissions",
-    "showingGrantsFor": "Showing grants for “{{name}}”",
-    "selectARole": "Select a role to expand its grants",
-    "roleDetails": "Role details",
-    "clickARoleNode": "Click a role node to inspect the permissions it grants.",
-    "grantedCount_one": "{{count}} permission granted",
-    "grantedCount_other": "{{count}} permissions granted"
-  },
   "rebacPage": {
     "userOrGroupEngMember": "user:… or group:eng#member"
-  },
-  "rolesPage": {
-    "createRolesAndManage": "Create roles and manage the permissions they grant. Role assignments propagate through groups automatically.",
-    "roles": "Roles",
-    "system": "System",
-    "custom": "Custom",
-    "description": "Description",
-    "permissions": "Permissions",
-    "toggleAPermissionTo": "Toggle a permission to grant or revoke it for this role.",
-    "done": "Done",
-    "grantKey": "Grant {{key}}",
-    "revokeKey": "Revoke {{key}}"
   },
   "toast": {
     "policyCreated": "Policy created",
@@ -582,10 +948,9 @@
     "tupleWritten": "Tuple written",
     "relationshipDeleted": "Relationship deleted",
     "roleCreated": "Role created",
-    "permissionGranted": "Permission granted",
-    "permissionRevoked": "Permission revoked",
     "roleGrantedToGroup": "Role granted to group",
-    "roleRevokedFromGroup": "Role revoked from group"
+    "roleRevokedFromGroup": "Role revoked from group",
+    "roleSaved": "Role saved"
   },
   "decisionBadge": {
     "allow": "ALLOW",
@@ -623,16 +988,6 @@
     "comparison": "{{operator}} {{value}}",
     "requireRole": "require role “{{role}}”",
     "relationOf": "{{relation}} of {{object}}"
-  },
-  "resourceTypes": {
-    "abacPolicy": "ABAC policy",
-    "rbacPolicy": "RBAC policy",
-    "policy": "Policy",
-    "role": "Role",
-    "permission": "Permission",
-    "relationTuple": "Relationship",
-    "groupRole": "Group role",
-    "securityPolicy": "Security policy"
   },
   "policyTemplates": {
     "sectors": {
@@ -737,6 +1092,9 @@
       "accessTester": {
         "title": "Access tester"
       },
+      "audit": {
+        "title": "Audit"
+      },
       "settings": {
         "title": "Settings"
       }
@@ -773,11 +1131,6 @@
     "prompts": {
       "explainRoles": "Explain the roles and their assigned permissions in plain English.",
       "summarizePolicies": "List and summarize the active ABAC policies for this tenant."
-    }
-  },
-  "overview": {
-    "changes": {
-      "byActor": "by {{actor}}"
     }
   }
 }

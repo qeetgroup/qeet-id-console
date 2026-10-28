@@ -5,6 +5,7 @@ import {
   FlaskConicalIcon,
   GaugeIcon,
   KeyRoundIcon,
+  ScrollTextIcon,
   Settings2Icon,
   ShapesIcon,
   ShieldCheckIcon,
@@ -149,6 +150,15 @@ export const manifest = defineModule({
       title: "authorization:nav.authorization.accessTester.title",
       url: "/authorization/access-tester",
       capability: "role.read",
+    },
+    {
+      id: "authorization.audit",
+      group: "authorization",
+      order: 75,
+      title: "authorization:nav.authorization.audit.title",
+      url: "/authorization/audit",
+      icon: <ScrollTextIcon />,
+      capability: "audit.read",
     },
     {
       id: "authorization.settings",

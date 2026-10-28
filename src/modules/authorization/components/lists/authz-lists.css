@@ -1,0 +1,268 @@
+/*
+ * Authorization › Roles, Permissions, Resources, Models › RBAC, Policies › Templates and Versions,
+ * Audit and Settings. Placement and token values only (--qx-*). The band, toolbar and filters are
+ * the Users page's (people.css, loaded with the console's styles); ruled settings rows are My
+ * account's (account.css).
+ */
+
+.authz-page {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+/* A cell of two lines: what it is, then one subtle line about it. */
+.authz-two {
+  display: grid;
+  justify-items: start;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.authz-two.is-end {
+  justify-items: end;
+}
+
+.authz-two > * {
+  max-inline-size: 100%;
+}
+
+.authz-two-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.authz-two small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authz-two small.authz-mono {
+  font: var(--qx-typography-code-sm);
+}
+
+.authz-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+}
+
+.authz-mono {
+  font: var(--qx-typography-code-sm);
+}
+
+.authz-num,
+.authz-when {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.authz-none {
+  color: var(--qx-color-text-subtlest);
+}
+
+/* A policy's effect, as a word before its name or in its own column. */
+.authz-effect {
+  font-weight: var(--qx-typography-label-md-font-weight);
+}
+
+/* Words in one cell, two lines at most, so a long one can't widen the table (who grants a
+   permission, a policy's name, what a change is on). */
+.authz-clip {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.authz-nowrap {
+  white-space: nowrap;
+}
+
+/* ── The band ─────────────────────────────────────────────────────────────────────────────── */
+
+/* Without people (no user.read) the Roles band has two measures. */
+.ppl-band.authz-band-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* A legend that isn't a way into the list: the Users legend's look, without the link. */
+.authz-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.authz-legend li.is-zero,
+.authz-legend li.is-zero b,
+.ppl-recency-legend li.is-zero a,
+.ppl-recency-legend li.is-zero b {
+  color: var(--qx-color-text-subtlest);
+}
+
+/* ── Models › RBAC: every role's permissions side by side ─────────────────────────────────── */
+
+/* Library gap (new): Table matrix layout (link column headers, the grid
+   scrolling sideways inside itself). Until then it scrolls in its own frame, not the page. */
+.authz-matrix {
+  overflow-x: auto;
+}
+
+.authz-matrix .qx-table-element {
+  min-inline-size: max-content;
+}
+
+.authz-matrix .qx-table-head {
+  vertical-align: bottom;
+  white-space: normal;
+}
+
+.authz-col-role {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-sm);
+  text-align: center;
+  text-decoration: none;
+}
+
+.authz-col-role:hover span {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.authz-col-role:focus-visible {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-focus);
+  outline-offset: 2px;
+}
+
+.authz-col-role small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  white-space: nowrap;
+}
+
+.authz-yes {
+  display: inline-grid;
+  place-items: center;
+  color: var(--qx-color-icon-default);
+}
+
+/* ── Drawers ──────────────────────────────────────────────────────────────────────────────── */
+
+.authz-drawer {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.authz-drawer-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+}
+
+.authz-drawer-section {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-gap-lg);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.authz-drawer-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.authz-drawer-note {
+  margin: 0;
+}
+
+/* Who holds a role: the direct / through-groups bar, then a block for each. */
+.authz-holders-split {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+.authz-holder-block {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+.authz-holder-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--qx-space-gap-sm);
+}
+
+.authz-holder-list {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  margin: var(--qx-space-gap-xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.authz-holder-group {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+/* The role's permissions: a box per permission, centred in its action's column (the same gap:
+   centred cell controls). */
+.authz-check {
+  display: inline-grid;
+  place-items: center;
+}
+
+/* What a save will do, at the footer's start (until QTRX-23). */
+.authz-footer-note {
+  margin-inline-end: auto;
+}
+
+.authz-form {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.authz-facts {
+  margin: 0;
+}
+
+/* ── Narrow screens: lists scroll sideways inside themselves rather than squeeze ────────────── */
+
+@media (width < 840px) {
+  .authz-page > .qx-table {
+    overflow-x: auto;
+  }
+
+  .authz-page > .qx-table .qx-table-element {
+    min-inline-size: 44rem;
+  }
+
+  .authz-footer-note {
+    flex-basis: 100%;
+  }
+}
+
+/* ── Settings: My account's ruled sections (account.css) ───────────────────────────────────── */
+
+.authz-settings {
+  display: grid;
+}
+
+.authz-settings-skeleton {
+  inline-size: 6rem;
+}

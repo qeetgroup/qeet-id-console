@@ -70,6 +70,9 @@ export const ERROR_CODES = {
   GROUP_NAME_EXISTS: "group.name_exists", // a group's name is unique in its organisation
   GROUP_CYCLE: "group.cycle", // a group can't sit inside itself or its own groups
   GROUP_TEMPLATE_NAME_EXISTS: "group.template_name_exists", // a template's name is unique too
+  RBAC_ROLE_NAME_EXISTS: "rbac.role_name_exists", // 409: a role's name is unique, ignoring case
+  RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: names the permission in metadata
+  RBAC_SYSTEM_ROLE_FIXED: "rbac.system_role_fixed", // 403: the owner role's permissions are fixed
   BILLING_PLAN_LIMIT: "billing.plan_limit", // billing entitlements
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
   MFA_CODE_INVALID: "mfa.code_invalid", // mfa

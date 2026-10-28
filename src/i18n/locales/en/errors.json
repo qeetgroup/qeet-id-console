@@ -63,7 +63,10 @@
     "inviteEmailNotVerified": "Verify your email address to accept invitations.",
     "samlLoginCodeInvalid": "That sign-in code is invalid. Please sign in again.",
     "samlLoginCodeUsed": "That sign-in code has already been used. Please sign in again.",
-    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again."
+    "samlLoginCodeExpired": "That sign-in code has expired. Please sign in again.",
+    "rbacRoleNameExists": "There's already a role with that name.",
+    "rbacGrantExceedsCaller": "You can only give or take away permissions you hold yourself.",
+    "rbacSystemRoleFixed": "The owner role always holds every permission; it can't be changed."
   },
   "kind": {
     "auth": "Please sign in again to continue.",
