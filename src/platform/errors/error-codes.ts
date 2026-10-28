@@ -80,6 +80,9 @@ export const ERROR_CODES = {
   REBAC_OBJECT_INVALID: "rebac.object_invalid", // relationships: an object is "type:id"
   REBAC_SUBJECT_INVALID: "rebac.subject_invalid", // "user:<id>", "type:id" or "type:id#relation"
   REBAC_RELATION_REQUIRED: "rebac.relation_required",
+  RBAC_ROLE_NAME_EXISTS: "rbac.role_name_exists", // 409: a role's name is unique, ignoring case
+  RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: names the permission in metadata
+  RBAC_SYSTEM_ROLE_FIXED: "rbac.system_role_fixed", // 403: the owner role's permissions are fixed
   BILLING_PLAN_LIMIT: "billing.plan_limit", // billing entitlements
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
   MFA_CODE_INVALID: "mfa.code_invalid", // mfa

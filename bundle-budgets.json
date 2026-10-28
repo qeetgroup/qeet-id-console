@@ -37,7 +37,6 @@
     "/_app/authorization/roles": 273.1,
     "/_app/authorization/settings": 273.1,
     "/_app/authorization/templates": 273.1,
-    "/_app/authorization/testing": 273.5,
     "/_app/authorization/versions": 273.1,
     "/_app/developer/agents": 246.2,
     "/_app/developer/auth-hooks": 246.2,
@@ -94,6 +93,7 @@
     "/_app/auth/connections/saml/": 234.8,
     "/_app/auth/connections/saml/$id": 234.7,
     "/_app/directory/connections/ldap/": 234.9,
-    "/_app/directory/connections/ldap/$id": 234.7
+    "/_app/directory/connections/ldap/$id": 234.7,
+    "/_app/authorization/testing": 273.5
   }
 }
