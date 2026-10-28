@@ -112,6 +112,11 @@ export const ERROR_CODES = {
   QEETAI_PROVIDER_KEY_INVALID: "qeetai_provider_key_invalid",
   QEETAI_PROVIDER_MODEL_INVALID: "qeetai_provider_model_invalid",
   QEETAI_PROVIDER_ERROR: "qeetai_provider_error",
+  // Settings › Domains: 400 / 409 / 422s whose fallbacks don't say what to fix.
+  DOMAIN_INVALID: "domainverify.invalid_domain",
+  DOMAIN_EXISTS: "domainverify.exists",
+  DOMAIN_RECORD_MISSING: "domainverify.dns_record_missing", // retryable: DNS can lag
+  DOMAIN_CLAIMED_BY_OTHER: "domainverify.claimed_by_other",
   TOO_MANY_REQUESTS: "too_many_requests", // throttling
   HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
   NETWORK: "network_error", // client-synthesised

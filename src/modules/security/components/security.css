@@ -1,0 +1,307 @@
+/*
+ * Security's pages (Audit log, Log streams, Device sign-ins, Threats, Rate limits, Sessions).
+ * Placement and token values only (--qx-*). The lists' band, toolbar and filters are the Users
+ * page's (people.css); the settings pages' sections, facts and rows are My account's
+ * (account.css); both load with the console's styles.
+ */
+
+/* ── Table cells ─────────────────────────────────────────────────────────────────────────── */
+
+/* A two-line cell: the value, then its context, as tall as an AvatarItem. */
+.sec-two {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.sec-two strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.sec-two small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sec-two small.sec-mono,
+.sec-mono {
+  font: var(--qx-typography-code-sm);
+}
+
+/* A raw user agent: one line, cut, the whole of it on hover. */
+.sec-clip {
+  display: block;
+  max-inline-size: 28rem;
+}
+
+.sec-event {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* A device's code, as the person reads it off the screen. */
+.sec-code {
+  font: var(--qx-typography-code-md);
+  font-weight: 600;
+}
+
+.sec-quiet {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.sec-open {
+  color: var(--qx-color-text-warning);
+  font: var(--qx-typography-label-md);
+}
+
+.sec-link {
+  color: var(--qx-color-text-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sec-inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.sec-stack {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+.sec-wrap {
+  overflow-wrap: anywhere;
+}
+
+/* ── The bands (people.css's) ────────────────────────────────────────────────────────────── */
+
+/* A legend entry that isn't a link reads as the legend's links do. */
+.ppl-recency-legend .sec-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.ppl-recency-legend .sec-legend-item b {
+  color: var(--qx-color-text-default);
+}
+
+/* A ghost button in a cell, its text on the cell's edge like the links beside it. */
+.sec-band-action {
+  margin-inline-start: calc(-1 * var(--qx-space-inset-sm));
+}
+
+.sec-clip-line {
+  overflow: hidden;
+  min-inline-size: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Toolbars ───────────────────────────────────────────────────────────────────────────── */
+
+.sec-toolbar-note {
+  white-space: nowrap;
+}
+
+.sec-toolbar-end {
+  margin-inline-start: auto;
+}
+
+/* ── Drawers ────────────────────────────────────────────────────────────────────────────── */
+
+.sec-drawer {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.sec-drawer-form {
+  gap: var(--qx-space-gap-lg);
+}
+
+.sec-drawer-status,
+.sec-drawer-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.sec-drawer-section {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  padding-block-start: var(--qx-space-gap-lg);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+/* An anomaly's next steps: ruled rows, each with its one action. */
+.sec-steps {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.sec-steps ol {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+}
+
+.sec-steps li {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+}
+
+.sec-steps li + li {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.sec-steps li strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.sec-steps li small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.sec-steps li > :last-child {
+  margin-block-start: var(--qx-space-gap-xs);
+  margin-inline-start: calc(-1 * var(--qx-space-inset-sm));
+}
+
+/* ── Settings pages ─────────────────────────────────────────────────────────────────────── */
+
+/* A section under a list (Bots' Detection), ruled off from it. */
+.sec-after-table {
+  max-inline-size: 50rem;
+  margin-block-start: var(--qx-space-layout-sm);
+  padding-block-start: var(--qx-space-layout-sm);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+/* IP rules: the address check, a field and its button in a fact's row. */
+.account-detail.sec-check {
+  align-items: start;
+}
+
+.account-detail.sec-check dt {
+  padding-block-start: var(--qx-space-inset-sm);
+}
+
+.sec-check-form {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qx-space-gap-sm);
+}
+
+.sec-check-form > :first-child {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.sec-check-result {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin-block-start: var(--qx-space-gap-xs);
+}
+
+.sec-check-line {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.sec-mono-field input {
+  font: var(--qx-typography-code-md);
+}
+
+.sec-level {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.sec-levels-form {
+  max-inline-size: 28rem;
+}
+
+/* Rate limits: rate and burst side by side, where the value was. */
+.sec-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 12rem));
+  gap: var(--qx-space-gap-md);
+}
+
+/* Log streams: the add form at the section's width, its endpoint and token side by side; a
+   destination's failure under its row. */
+.account-panel-form.sec-wide-form {
+  max-inline-size: none;
+}
+
+.sec-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 16rem);
+  align-items: start;
+  gap: var(--qx-space-gap-md);
+}
+
+.account-panel + .account-rows {
+  margin-block-start: var(--qx-space-gap-md);
+}
+
+.sec-sink-failure {
+  padding: 0 var(--qx-space-inset-md) var(--qx-space-inset-md);
+}
+
+.sec-sink-note {
+  padding: 0 var(--qx-space-inset-md) var(--qx-space-inset-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.sec-raw {
+  display: block;
+  margin-block-start: var(--qx-space-gap-xs);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-code-sm);
+  overflow-wrap: anywhere;
+}
+
+/* ── Narrow screens ─────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .sec-pair,
+  .sec-add-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sec-toolbar-end {
+    margin-inline-start: 0;
+  }
+
+  .sec-check-form {
+    flex-wrap: wrap;
+  }
+}

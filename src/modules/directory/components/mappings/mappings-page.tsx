@@ -209,7 +209,7 @@ function ConnectionMappings({
                 : statusHint
             }
             action={
-              <Button variant="ghost" size="sm" render={<Link to={connectionPage(c)} />}>
+              <Button variant="ghost" size="sm" render={<Link {...connectionPage(c)} />}>
                 {t("mappings.connection.open")}
               </Button>
             }

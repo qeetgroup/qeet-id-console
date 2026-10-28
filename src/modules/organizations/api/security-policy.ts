@@ -1,5 +1,7 @@
-// The organization's security policy: password rules, session limits, MFA enforcement and what
-// counts as a step-up.
+// The organisation's security policy (PUT replaces the whole object): session limits, who must use
+// two-step verification, and what counts as a step-up. Its password_min_length and
+// password_complexity are stored but enforced nowhere: the enforced password rules are the
+// auth policy's (Sign-in › Password), so Settings › Security sends them back unchanged.
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

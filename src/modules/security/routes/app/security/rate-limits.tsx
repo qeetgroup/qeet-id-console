@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { DefaultRateLimitsPage } from "@/modules/security/pages";
+import { RateLimitsPage } from "@/modules/security/pages";
 
+// Rebuilt on @qeetrix/react: the one Rate limits page (Threats' old one redirects here). Its
+// header is its own.
 export const Route = createFileRoute("/_app/security/rate-limits")({
-  component: DefaultRateLimitsPage,
+  staticData: { capability: "policy.read", pageHeader: true },
+  component: RateLimitsPage,
 });

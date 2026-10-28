@@ -31,6 +31,14 @@ export function unknownEmailVariables(draft: EmailTemplateDraft, supported: stri
 export const EMAIL_LOCALES = ["en", "de", "es", "fr", "hi", "ja", "pt", "zh"] as const;
 export type EmailBrand = { name: string; logo?: string; primary?: string };
 
+/**
+ * The colour an email is drawn in: the organisation's brand colour, else the server's default
+ * (operations/email appearance). Email content, not console UI, so it isn't a token.
+ */
+export function emailPrimary(brand: EmailBrand): string {
+  return brand.primary && /^#[\da-f]{6}$/i.test(brand.primary) ? brand.primary : "#f97316";
+}
+
 export function emailTemplateInput(template: EmailTemplate): EmailTemplateInput {
   return {
     subject: template.subject,
@@ -284,7 +292,7 @@ export function emailPreviewDocument(
         previewEmailDraft({ subject: "", body: content.body_html }, escapedSamples).body,
       )
     : emailTextHTML(preview.body);
-  const primary = /^#[\da-f]{6}$/i.test(brand.primary ?? "") ? brand.primary : "#f97316";
+  const primary = emailPrimary(brand);
   const name = escapeEmailHTML(brand.name || "Qeet ID");
   const logo =
     draft.options.show_logo !== false && brand.logo && validEmailAssetURL(brand.logo)

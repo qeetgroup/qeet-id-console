@@ -92,7 +92,6 @@ import { Route as AuthApiSigningKeysRouteImport } from './modules/developer/rout
 import { Route as AuthApiTokensRouteImport } from './modules/authentication/routes/app/auth/api/tokens'
 import { Route as AuthConnectionsIndexRouteImport } from './modules/authentication/routes/app/auth/connections/index'
 import { Route as AuthConnectionsLdapRouteImport } from './modules/authentication/routes/app/auth/connections/ldap'
-import { Route as AuthConnectionsSamlRouteImport } from './modules/authentication/routes/app/auth/connections/saml'
 import { Route as AuthConnectionsSamlIdpRouteImport } from './modules/authentication/routes/app/auth/connections/saml-idp'
 import { Route as AuthConnectionsScimRouteImport } from './modules/authentication/routes/app/auth/connections/scim'
 import { Route as AuthLoginMethodsMagicLinksRouteImport } from './modules/authentication/routes/app/auth/login-methods/magic-links'
@@ -104,7 +103,6 @@ import { Route as AuthMfaTotpRouteImport } from './modules/authentication/routes
 import { Route as DeveloperWebhooksIndexRouteImport } from './modules/developer/routes/app/developer/webhooks/index'
 import { Route as DeveloperWebhooksIdRouteImport } from './modules/developer/routes/app/developer/webhooks/$id'
 import { Route as DirectoryConnectionsIndexRouteImport } from './modules/directory/routes/app/directory/connections/index'
-import { Route as DirectoryConnectionsLdapRouteImport } from './modules/authentication/routes/app/directory/connections/ldap'
 import { Route as DirectoryConnectionsScimRouteImport } from './modules/authentication/routes/app/directory/connections/scim'
 import { Route as SecurityComplianceGdprRouteImport } from './modules/compliance/routes/app/security/compliance/gdpr'
 import { Route as SecurityComplianceIso27001RouteImport } from './modules/compliance/routes/app/security/compliance/iso27001'
@@ -122,6 +120,10 @@ import { Route as SettingsOrganizationSecurityPolicyRouteImport } from './module
 import { Route as UsersUserId_DottimelineRouteImport } from './modules/timeline/routes/app/users/$userId_.timeline'
 import { Route as AuthConnectionsOidcIndexRouteImport } from './modules/authentication/routes/app/auth/connections/oidc/index'
 import { Route as AuthConnectionsOidcClientIdRouteImport } from './modules/authentication/routes/app/auth/connections/oidc/$clientId'
+import { Route as AuthConnectionsSamlIndexRouteImport } from './modules/authentication/routes/app/auth/connections/saml/index'
+import { Route as AuthConnectionsSamlIdRouteImport } from './modules/authentication/routes/app/auth/connections/saml/$id'
+import { Route as DirectoryConnectionsLdapIndexRouteImport } from './modules/authentication/routes/app/directory/connections/ldap/index'
+import { Route as DirectoryConnectionsLdapIdRouteImport } from './modules/authentication/routes/app/directory/connections/ldap/$id'
 
 const appRoute = appRouteImport.update({
   id: '/_app',
@@ -542,11 +544,6 @@ const AuthConnectionsLdapRoute = AuthConnectionsLdapRouteImport.update({
   path: '/auth/connections/ldap',
   getParentRoute: () => appRoute,
 } as any)
-const AuthConnectionsSamlRoute = AuthConnectionsSamlRouteImport.update({
-  id: '/auth/connections/saml',
-  path: '/auth/connections/saml',
-  getParentRoute: () => appRoute,
-} as any)
 const AuthConnectionsSamlIdpRoute = AuthConnectionsSamlIdpRouteImport.update({
   id: '/auth/connections/saml-idp',
   path: '/auth/connections/saml-idp',
@@ -605,12 +602,6 @@ const DirectoryConnectionsIndexRoute =
   DirectoryConnectionsIndexRouteImport.update({
     id: '/directory/connections/',
     path: '/directory/connections/',
-    getParentRoute: () => appRoute,
-  } as any)
-const DirectoryConnectionsLdapRoute =
-  DirectoryConnectionsLdapRouteImport.update({
-    id: '/directory/connections/ldap',
-    path: '/directory/connections/ldap',
     getParentRoute: () => appRoute,
   } as any)
 const DirectoryConnectionsScimRoute =
@@ -711,6 +702,29 @@ const AuthConnectionsOidcClientIdRoute =
     path: '/auth/connections/oidc/$clientId',
     getParentRoute: () => appRoute,
   } as any)
+const AuthConnectionsSamlIndexRoute =
+  AuthConnectionsSamlIndexRouteImport.update({
+    id: '/auth/connections/saml/',
+    path: '/auth/connections/saml/',
+    getParentRoute: () => appRoute,
+  } as any)
+const AuthConnectionsSamlIdRoute = AuthConnectionsSamlIdRouteImport.update({
+  id: '/auth/connections/saml/$id',
+  path: '/auth/connections/saml/$id',
+  getParentRoute: () => appRoute,
+} as any)
+const DirectoryConnectionsLdapIndexRoute =
+  DirectoryConnectionsLdapIndexRouteImport.update({
+    id: '/directory/connections/ldap/',
+    path: '/directory/connections/ldap/',
+    getParentRoute: () => appRoute,
+  } as any)
+const DirectoryConnectionsLdapIdRoute =
+  DirectoryConnectionsLdapIdRouteImport.update({
+    id: '/directory/connections/ldap/$id',
+    path: '/directory/connections/ldap/$id',
+    getParentRoute: () => appRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -793,7 +807,6 @@ export interface FileRoutesByFullPath {
   '/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
   '/auth/api/tokens': typeof AuthApiTokensRoute
   '/auth/connections/ldap': typeof AuthConnectionsLdapRoute
-  '/auth/connections/saml': typeof AuthConnectionsSamlRoute
   '/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
   '/auth/connections/scim': typeof AuthConnectionsScimRoute
   '/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
@@ -803,7 +816,6 @@ export interface FileRoutesByFullPath {
   '/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
-  '/directory/connections/ldap': typeof DirectoryConnectionsLdapRoute
   '/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
@@ -823,7 +835,11 @@ export interface FileRoutesByFullPath {
   '/developer/webhooks/': typeof DeveloperWebhooksIndexRoute
   '/directory/connections/': typeof DirectoryConnectionsIndexRoute
   '/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/auth/connections/saml/$id': typeof AuthConnectionsSamlIdRoute
+  '/directory/connections/ldap/$id': typeof DirectoryConnectionsLdapIdRoute
   '/auth/connections/oidc/': typeof AuthConnectionsOidcIndexRoute
+  '/auth/connections/saml/': typeof AuthConnectionsSamlIndexRoute
+  '/directory/connections/ldap/': typeof DirectoryConnectionsLdapIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -906,7 +922,6 @@ export interface FileRoutesByTo {
   '/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
   '/auth/api/tokens': typeof AuthApiTokensRoute
   '/auth/connections/ldap': typeof AuthConnectionsLdapRoute
-  '/auth/connections/saml': typeof AuthConnectionsSamlRoute
   '/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
   '/auth/connections/scim': typeof AuthConnectionsScimRoute
   '/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
@@ -916,7 +931,6 @@ export interface FileRoutesByTo {
   '/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
-  '/directory/connections/ldap': typeof DirectoryConnectionsLdapRoute
   '/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
@@ -936,7 +950,11 @@ export interface FileRoutesByTo {
   '/developer/webhooks': typeof DeveloperWebhooksIndexRoute
   '/directory/connections': typeof DirectoryConnectionsIndexRoute
   '/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/auth/connections/saml/$id': typeof AuthConnectionsSamlIdRoute
+  '/directory/connections/ldap/$id': typeof DirectoryConnectionsLdapIdRoute
   '/auth/connections/oidc': typeof AuthConnectionsOidcIndexRoute
+  '/auth/connections/saml': typeof AuthConnectionsSamlIndexRoute
+  '/directory/connections/ldap': typeof DirectoryConnectionsLdapIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1022,7 +1040,6 @@ export interface FileRoutesById {
   '/_app/auth/api/signing-keys': typeof AuthApiSigningKeysRoute
   '/_app/auth/api/tokens': typeof AuthApiTokensRoute
   '/_app/auth/connections/ldap': typeof AuthConnectionsLdapRoute
-  '/_app/auth/connections/saml': typeof AuthConnectionsSamlRoute
   '/_app/auth/connections/saml-idp': typeof AuthConnectionsSamlIdpRoute
   '/_app/auth/connections/scim': typeof AuthConnectionsScimRoute
   '/_app/auth/login-methods/magic-links': typeof AuthLoginMethodsMagicLinksRoute
@@ -1032,7 +1049,6 @@ export interface FileRoutesById {
   '/_app/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/_app/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/_app/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
-  '/_app/directory/connections/ldap': typeof DirectoryConnectionsLdapRoute
   '/_app/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/_app/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/_app/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
@@ -1052,7 +1068,11 @@ export interface FileRoutesById {
   '/_app/developer/webhooks/': typeof DeveloperWebhooksIndexRoute
   '/_app/directory/connections/': typeof DirectoryConnectionsIndexRoute
   '/_app/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
+  '/_app/auth/connections/saml/$id': typeof AuthConnectionsSamlIdRoute
+  '/_app/directory/connections/ldap/$id': typeof DirectoryConnectionsLdapIdRoute
   '/_app/auth/connections/oidc/': typeof AuthConnectionsOidcIndexRoute
+  '/_app/auth/connections/saml/': typeof AuthConnectionsSamlIndexRoute
+  '/_app/directory/connections/ldap/': typeof DirectoryConnectionsLdapIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1137,7 +1157,6 @@ export interface FileRouteTypes {
     | '/auth/api/signing-keys'
     | '/auth/api/tokens'
     | '/auth/connections/ldap'
-    | '/auth/connections/saml'
     | '/auth/connections/saml-idp'
     | '/auth/connections/scim'
     | '/auth/login-methods/magic-links'
@@ -1147,7 +1166,6 @@ export interface FileRouteTypes {
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
-    | '/directory/connections/ldap'
     | '/directory/connections/scim'
     | '/security/compliance/gdpr'
     | '/security/compliance/iso27001'
@@ -1167,7 +1185,11 @@ export interface FileRouteTypes {
     | '/developer/webhooks/'
     | '/directory/connections/'
     | '/auth/connections/oidc/$clientId'
+    | '/auth/connections/saml/$id'
+    | '/directory/connections/ldap/$id'
     | '/auth/connections/oidc/'
+    | '/auth/connections/saml/'
+    | '/directory/connections/ldap/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1250,7 +1272,6 @@ export interface FileRouteTypes {
     | '/auth/api/signing-keys'
     | '/auth/api/tokens'
     | '/auth/connections/ldap'
-    | '/auth/connections/saml'
     | '/auth/connections/saml-idp'
     | '/auth/connections/scim'
     | '/auth/login-methods/magic-links'
@@ -1260,7 +1281,6 @@ export interface FileRouteTypes {
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
-    | '/directory/connections/ldap'
     | '/directory/connections/scim'
     | '/security/compliance/gdpr'
     | '/security/compliance/iso27001'
@@ -1280,7 +1300,11 @@ export interface FileRouteTypes {
     | '/developer/webhooks'
     | '/directory/connections'
     | '/auth/connections/oidc/$clientId'
+    | '/auth/connections/saml/$id'
+    | '/directory/connections/ldap/$id'
     | '/auth/connections/oidc'
+    | '/auth/connections/saml'
+    | '/directory/connections/ldap'
   id:
     | '__root__'
     | '/_app'
@@ -1365,7 +1389,6 @@ export interface FileRouteTypes {
     | '/_app/auth/api/signing-keys'
     | '/_app/auth/api/tokens'
     | '/_app/auth/connections/ldap'
-    | '/_app/auth/connections/saml'
     | '/_app/auth/connections/saml-idp'
     | '/_app/auth/connections/scim'
     | '/_app/auth/login-methods/magic-links'
@@ -1375,7 +1398,6 @@ export interface FileRouteTypes {
     | '/_app/auth/mfa/sms-email'
     | '/_app/auth/mfa/totp'
     | '/_app/developer/webhooks/$id'
-    | '/_app/directory/connections/ldap'
     | '/_app/directory/connections/scim'
     | '/_app/security/compliance/gdpr'
     | '/_app/security/compliance/iso27001'
@@ -1395,7 +1417,11 @@ export interface FileRouteTypes {
     | '/_app/developer/webhooks/'
     | '/_app/directory/connections/'
     | '/_app/auth/connections/oidc/$clientId'
+    | '/_app/auth/connections/saml/$id'
+    | '/_app/directory/connections/ldap/$id'
     | '/_app/auth/connections/oidc/'
+    | '/_app/auth/connections/saml/'
+    | '/_app/directory/connections/ldap/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1992,13 +2018,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthConnectionsLdapRouteImport
       parentRoute: typeof appRoute
     }
-    '/_app/auth/connections/saml': {
-      id: '/_app/auth/connections/saml'
-      path: '/auth/connections/saml'
-      fullPath: '/auth/connections/saml'
-      preLoaderRoute: typeof AuthConnectionsSamlRouteImport
-      parentRoute: typeof appRoute
-    }
     '/_app/auth/connections/saml-idp': {
       id: '/_app/auth/connections/saml-idp'
       path: '/auth/connections/saml-idp'
@@ -2074,13 +2093,6 @@ declare module '@tanstack/react-router' {
       path: '/directory/connections'
       fullPath: '/directory/connections/'
       preLoaderRoute: typeof DirectoryConnectionsIndexRouteImport
-      parentRoute: typeof appRoute
-    }
-    '/_app/directory/connections/ldap': {
-      id: '/_app/directory/connections/ldap'
-      path: '/directory/connections/ldap'
-      fullPath: '/directory/connections/ldap'
-      preLoaderRoute: typeof DirectoryConnectionsLdapRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/directory/connections/scim': {
@@ -2202,6 +2214,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthConnectionsOidcClientIdRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/auth/connections/saml/': {
+      id: '/_app/auth/connections/saml/'
+      path: '/auth/connections/saml'
+      fullPath: '/auth/connections/saml/'
+      preLoaderRoute: typeof AuthConnectionsSamlIndexRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/auth/connections/saml/$id': {
+      id: '/_app/auth/connections/saml/$id'
+      path: '/auth/connections/saml/$id'
+      fullPath: '/auth/connections/saml/$id'
+      preLoaderRoute: typeof AuthConnectionsSamlIdRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/directory/connections/ldap/': {
+      id: '/_app/directory/connections/ldap/'
+      path: '/directory/connections/ldap'
+      fullPath: '/directory/connections/ldap/'
+      preLoaderRoute: typeof DirectoryConnectionsLdapIndexRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/directory/connections/ldap/$id': {
+      id: '/_app/directory/connections/ldap/$id'
+      path: '/directory/connections/ldap/$id'
+      fullPath: '/directory/connections/ldap/$id'
+      preLoaderRoute: typeof DirectoryConnectionsLdapIdRouteImport
+      parentRoute: typeof appRoute
+    }
   }
 }
 
@@ -2287,7 +2327,6 @@ interface appRouteChildren {
   AuthApiSigningKeysRoute: typeof AuthApiSigningKeysRoute
   AuthApiTokensRoute: typeof AuthApiTokensRoute
   AuthConnectionsLdapRoute: typeof AuthConnectionsLdapRoute
-  AuthConnectionsSamlRoute: typeof AuthConnectionsSamlRoute
   AuthConnectionsSamlIdpRoute: typeof AuthConnectionsSamlIdpRoute
   AuthConnectionsScimRoute: typeof AuthConnectionsScimRoute
   AuthLoginMethodsMagicLinksRoute: typeof AuthLoginMethodsMagicLinksRoute
@@ -2297,7 +2336,6 @@ interface appRouteChildren {
   AuthMfaSmsEmailRoute: typeof AuthMfaSmsEmailRoute
   AuthMfaTotpRoute: typeof AuthMfaTotpRoute
   DeveloperWebhooksIdRoute: typeof DeveloperWebhooksIdRoute
-  DirectoryConnectionsLdapRoute: typeof DirectoryConnectionsLdapRoute
   DirectoryConnectionsScimRoute: typeof DirectoryConnectionsScimRoute
   SecurityComplianceGdprRoute: typeof SecurityComplianceGdprRoute
   SecurityComplianceIso27001Route: typeof SecurityComplianceIso27001Route
@@ -2317,7 +2355,11 @@ interface appRouteChildren {
   DeveloperWebhooksIndexRoute: typeof DeveloperWebhooksIndexRoute
   DirectoryConnectionsIndexRoute: typeof DirectoryConnectionsIndexRoute
   AuthConnectionsOidcClientIdRoute: typeof AuthConnectionsOidcClientIdRoute
+  AuthConnectionsSamlIdRoute: typeof AuthConnectionsSamlIdRoute
+  DirectoryConnectionsLdapIdRoute: typeof DirectoryConnectionsLdapIdRoute
   AuthConnectionsOidcIndexRoute: typeof AuthConnectionsOidcIndexRoute
+  AuthConnectionsSamlIndexRoute: typeof AuthConnectionsSamlIndexRoute
+  DirectoryConnectionsLdapIndexRoute: typeof DirectoryConnectionsLdapIndexRoute
 }
 
 const appRouteChildren: appRouteChildren = {
@@ -2385,7 +2427,6 @@ const appRouteChildren: appRouteChildren = {
   AuthApiSigningKeysRoute: AuthApiSigningKeysRoute,
   AuthApiTokensRoute: AuthApiTokensRoute,
   AuthConnectionsLdapRoute: AuthConnectionsLdapRoute,
-  AuthConnectionsSamlRoute: AuthConnectionsSamlRoute,
   AuthConnectionsSamlIdpRoute: AuthConnectionsSamlIdpRoute,
   AuthConnectionsScimRoute: AuthConnectionsScimRoute,
   AuthLoginMethodsMagicLinksRoute: AuthLoginMethodsMagicLinksRoute,
@@ -2395,7 +2436,6 @@ const appRouteChildren: appRouteChildren = {
   AuthMfaSmsEmailRoute: AuthMfaSmsEmailRoute,
   AuthMfaTotpRoute: AuthMfaTotpRoute,
   DeveloperWebhooksIdRoute: DeveloperWebhooksIdRoute,
-  DirectoryConnectionsLdapRoute: DirectoryConnectionsLdapRoute,
   DirectoryConnectionsScimRoute: DirectoryConnectionsScimRoute,
   SecurityComplianceGdprRoute: SecurityComplianceGdprRoute,
   SecurityComplianceIso27001Route: SecurityComplianceIso27001Route,
@@ -2417,7 +2457,11 @@ const appRouteChildren: appRouteChildren = {
   DeveloperWebhooksIndexRoute: DeveloperWebhooksIndexRoute,
   DirectoryConnectionsIndexRoute: DirectoryConnectionsIndexRoute,
   AuthConnectionsOidcClientIdRoute: AuthConnectionsOidcClientIdRoute,
+  AuthConnectionsSamlIdRoute: AuthConnectionsSamlIdRoute,
+  DirectoryConnectionsLdapIdRoute: DirectoryConnectionsLdapIdRoute,
   AuthConnectionsOidcIndexRoute: AuthConnectionsOidcIndexRoute,
+  AuthConnectionsSamlIndexRoute: AuthConnectionsSamlIndexRoute,
+  DirectoryConnectionsLdapIndexRoute: DirectoryConnectionsLdapIndexRoute,
 }
 
 const appRouteWithChildren = appRoute._addFileChildren(appRouteChildren)
