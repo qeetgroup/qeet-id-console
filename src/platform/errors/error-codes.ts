@@ -70,6 +70,16 @@ export const ERROR_CODES = {
   GROUP_NAME_EXISTS: "group.name_exists", // a group's name is unique in its organisation
   GROUP_CYCLE: "group.cycle", // a group can't sit inside itself or its own groups
   GROUP_TEMPLATE_NAME_EXISTS: "group.template_name_exists", // a template's name is unique too
+  // ABAC policies: the policy editor puts each on the field it names, or says why it can't save
+  ABAC_NAME_REQUIRED: "abac.name_required",
+  ABAC_RESOURCE_TYPE_REQUIRED: "abac.resource_type_required",
+  ABAC_ACTION_REQUIRED: "abac.action_required",
+  ABAC_CONDITION_INVALID: "abac.condition_invalid",
+  ABAC_POLICY_NAME_EXISTS: "abac.policy_name_exists",
+  ABAC_POLICY_LOCKS_OUT: "abac.policy_locks_out", // a deny that would stop its author changing policies
+  REBAC_OBJECT_INVALID: "rebac.object_invalid", // relationships: an object is "type:id"
+  REBAC_SUBJECT_INVALID: "rebac.subject_invalid", // "user:<id>", "type:id" or "type:id#relation"
+  REBAC_RELATION_REQUIRED: "rebac.relation_required",
   BILLING_PLAN_LIMIT: "billing.plan_limit", // billing entitlements
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
   MFA_CODE_INVALID: "mfa.code_invalid", // mfa

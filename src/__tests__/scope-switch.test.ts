@@ -38,7 +38,7 @@ describe("switching organization in another tab", () => {
 
     sessionStore.set(session("tenant-b"), { broadcast: false });
 
-    expect(authzStore.state).toEqual({ history: [], builderDoc: null });
+    expect(authzStore.state).toEqual({ history: [], builderDoc: null, objects: [] });
     expect(activityStore.state.liveEvents).toEqual([]);
     expect(timelineStore.state.selectedEventId).toBeNull();
   });

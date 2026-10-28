@@ -1,0 +1,291 @@
+/*
+ * Models › ABAC (abac-page.tsx): the evaluation order, the policy statement on the canvas, and
+ * the docked test. Token values only (--qx-*); the frame is workspace.css.
+ */
+
+/* ── The statement: APPLIES TO, WHEN, THEN on one spine ───────────────────── */
+
+.rule {
+  position: relative;
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  max-inline-size: 46rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rule::before {
+  content: "";
+  position: absolute;
+  inset-block: 1.5rem;
+  inset-inline-start: calc(4.75rem + var(--qx-space-gap-md) + 1.25rem);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-strong);
+}
+
+.rule-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4.75rem minmax(0, 1fr);
+  align-items: start;
+  gap: var(--qx-space-gap-md);
+}
+
+.rule-step > .ws-group-label {
+  padding-block-start: 0.85rem;
+}
+
+.rule-node {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm) var(--qx-space-gap-md);
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: var(--qx-space-inset-sm) var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+  color: var(--qx-color-text-default);
+  font: inherit;
+  text-align: start;
+}
+
+button.rule-node {
+  cursor: pointer;
+}
+
+button.rule-node:hover {
+  border-color: var(--qx-color-border-strong);
+}
+
+button.rule-node:focus-visible,
+.rule-group-head > button:focus-visible,
+button.rule-group-head:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: calc(-1 * var(--qx-focus-ring-width));
+}
+
+.rule-node[data-current],
+.rule-group[data-current] {
+  border-color: var(--qx-color-border-strong);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.rule code {
+  padding: 1px 6px;
+  border-radius: var(--qx-radius-sm);
+  background: var(--qx-color-bg-neutral-subtle);
+  font: var(--qx-typography-code-sm);
+  overflow-wrap: anywhere;
+}
+
+.rule-pair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--qx-space-gap-sm);
+}
+
+.rule-pair small,
+.rule-priority small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-sm);
+}
+
+.rule-any {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-md);
+}
+
+.rule-when {
+  position: relative;
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.rule-extra-icon {
+  flex: none;
+  color: var(--qx-color-icon-subtle);
+}
+
+.rule-extra-text {
+  flex: 1;
+  font: var(--qx-typography-body-md);
+}
+
+.rule-always {
+  display: grid;
+  gap: 2px;
+}
+
+.rule-always strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.rule-always span {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.rule-group {
+  position: relative;
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-sm);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+}
+
+.rule-branch .rule-group {
+  background: var(--qx-color-surface-sunken);
+}
+
+.rule-group-head {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-block-size: 1.75rem;
+  padding: 0 var(--qx-space-inset-xs);
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-default);
+  font: inherit;
+  text-align: start;
+}
+
+button.rule-group-head,
+.rule-group-select {
+  cursor: pointer;
+}
+
+.rule-group-select {
+  flex: 1;
+  min-block-size: 1.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-align: start;
+}
+
+.rule-group-name {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.rule-group-hint {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.rule-branch {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  margin-inline-start: var(--qx-space-inset-md);
+  padding-inline-start: var(--qx-space-inset-lg);
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.rule-leaf {
+  min-block-size: 2.25rem;
+  padding-block: var(--qx-space-inset-xs);
+  gap: var(--qx-space-gap-sm);
+  border-color: var(--qx-color-border-subtle);
+}
+
+.rule-leaf[data-empty] {
+  border-style: dashed;
+  border-color: var(--qx-color-border-warning);
+}
+
+.rule-missing {
+  color: var(--qx-color-text-warning);
+  font: var(--qx-typography-body-sm);
+}
+
+.rule-op {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-md);
+}
+
+.rule-then-text {
+  flex: 1;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.rule-priority {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--qx-space-gap-sm);
+}
+
+.rule-priority strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rule-adds {
+  position: relative;
+  display: flex;
+  gap: var(--qx-space-gap-xs);
+  margin-inline-start: 1.75rem;
+}
+
+/* ── The docked test ───────────────────────────────────────────────────────── */
+
+.ws-test {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--qx-space-gap-lg);
+}
+
+/* Where the output is narrow, the result goes under the request. */
+.ws-output-body {
+  container-type: inline-size;
+}
+
+@container (max-width: 40rem) {
+  .ws-test {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ws-test-result {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+}
+
+@media (max-width: 839px) {
+  .ws-test {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rule::before {
+    inset-inline-start: 1.25rem;
+  }
+
+  .rule-step {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--qx-space-gap-xs);
+  }
+
+  .rule-step > .ws-group-label {
+    position: relative;
+    justify-self: start;
+    padding-block-start: 0;
+    padding-inline-start: 2.25rem;
+    background: var(--qx-color-surface-canvas);
+  }
+
+  .rule-branch {
+    margin-inline-start: var(--qx-space-inset-xs);
+    padding-inline-start: var(--qx-space-inset-sm);
+  }
+}
