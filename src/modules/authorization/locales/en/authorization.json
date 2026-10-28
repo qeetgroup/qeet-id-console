@@ -112,55 +112,6 @@
       "duration": "Enter a duration, such as 24h or 30m."
     }
   },
-  "relationships": {
-    "description": "Zanzibar-style relationship tuples: object #relation subject. Write relationships, browse them, and expand the identity graph.",
-    "write": {
-      "title": "Write relationship",
-      "objectLabel": "Object",
-      "relationLabel": "Relation",
-      "subjectLabel": "Subject",
-      "subjectHelp": "A user, or a userset such as group:eng#member, which expands recursively.",
-      "writeBtn": "Write tuple",
-      "action": "Write this relationship",
-      "description": "For example object document:readme, relation viewer, subject user:… or group:eng#member."
-    },
-    "check": {
-      "title": "Check relationship",
-      "description": "Resolve whether a user has a relation to an object; the decision is kept in the Decision Explorer.",
-      "objectLabel": "Object",
-      "relationLabel": "Relation",
-      "userLabel": "User ID",
-      "checkBtn": "Check",
-      "hops_one": "{{count}} hop",
-      "hops_other": "{{count}} hops"
-    },
-    "tuples": {
-      "title": "Browse tuples",
-      "description": "List every relationship stored on an object.",
-      "empty": "No tuples on this object.",
-      "deleteBtn": "Delete",
-      "deleteTitle": "Delete this relationship?",
-      "deleteDescription": "{{tuple}} is removed, and any access it granted ends at once.",
-      "deleteAction": "Delete this relationship",
-      "objectLabel": "Object",
-      "showBtn": "Show"
-    },
-    "graph": {
-      "title": "Identity graph",
-      "description": "Expand every subject reachable from an object and relation, with cycle-safe traversal.",
-      "expandBtn": "Expand graph",
-      "empty": "No relationships found from this object+relation.",
-      "objectAriaLabel": "Object",
-      "relationAriaLabel": "Relation",
-      "size": "{{nodes}} nodes · {{edges}} edges"
-    },
-    "validation": {
-      "object": "Enter an object, such as document:readme.",
-      "relation": "Enter a relation, such as viewer.",
-      "subject": "Enter a subject.",
-      "userId": "Enter a user ID."
-    }
-  },
   "resources": {
     "description": "The protected resources RBAC permissions are scoped to. Derived from the permission catalogue — each resource exposes a set of actions you can grant to roles.",
     "stats": {
@@ -180,150 +131,73 @@
     }
   },
   "check": {
-    "title": "Access Tester",
-    "description": "Evaluate a permission for a specific user and see exactly why access is granted or denied — including which role granted it and whether it came directly or through a group.",
-    "runTitle": "Run a check",
-    "runDescription": "Permissions use the resource.action shape, e.g. user.read.",
-    "userIdLabel": "User ID",
-    "userIdHelp": "The UUID of the user to evaluate.",
-    "permissionLabel": "Permission",
-    "evaluate": "Evaluate",
-    "evaluating": "Evaluating…",
-    "resultTitle": "Result",
-    "resultDescription": "The decision and the grant-path trace the authorization engine walked.",
-    "resultPlaceholder": "Run a check to see the allow/deny decision and how it was reached.",
-    "allowed": "Access allowed",
-    "denied": "Access denied",
-    "deniedReason": "No role grants this permission to this person in this organization.",
-    "grantPathsTitle": "Grant paths",
-    "grantPathsHint": "Each path is an independent reason the permission is held.",
-    "noGrantPath": "Allowed, but no explicit grant path was returned.",
-    "directAssignment": "Direct assignment",
-    "viaGroup": "Group · {{group}}",
-    "grantedBy": "granted by",
-    "roleShort": "role {{id}}…",
-    "validation": {
-      "userId": "Enter the person's user ID (a UUID).",
-      "permission": "Enter a permission."
-    }
+    "deniedReason": "No role grants this permission to this person in this organisation."
   },
   "abac": {
+    "title": "Models",
+    "description": "Attribute policies, checked highest priority first. A matching deny always wins.",
+    "toolbar": "Policies",
+    "search": "Search policies",
+    "searchPlaceholder": "e.g. MFA",
+    "versions": "Versions",
+    "newPolicy": "New policy",
+    "discard": "Discard",
+    "saveChanges": "Save changes",
+    "createPolicy": "Create policy",
+    "order": "Evaluation order",
+    "policyCount_one": "{{count}} policy",
+    "policyCount_other": "{{count}} policies",
+    "empty": "No attribute policies yet",
+    "emptyHint": "Without one, roles and relationships decide every request.",
+    "noMatches": "No policies match",
+    "canvas": "Policy",
+    "output": "Policy output",
+    "test": "Test",
+    "policyLanguage": "Policy language",
+    "runTest": "Run test",
+    "export": "Export",
+    "notFound": "This policy isn't here",
+    "notFoundHint": "It may have been deleted. Choose another from the list.",
+    "changed": "Changed",
+    "delete": "Delete",
+    "deleteNamed": "Delete {{name}}",
+    "notSaved": "Not saved",
+    "off": "Off",
+    "always": "always",
+    "noneMatched": "None matched",
+    "noneMatchedHint": "Then roles and relationships decide",
+    "needsAttribute": "Pick an attribute for each condition to save.",
+    "roleBlockTitle": "The role block can't be saved yet",
+    "relationBlockTitle": "The relationship block can't be saved yet",
+    "blockHint": "Qeet ID saves attribute (ABAC) policies only. Remove the block to save this policy, or copy its JSON to keep it as it is.",
+    "removeRoleBlock": "Remove the role block",
+    "removeRelationBlock": "Remove the relationship block",
+    "locked": "Attribute policies are part of the Pro plan",
+    "lockedHint": "Upgrade to write policies on people's attributes, such as their department, network or the time of day.",
     "deleteTitle": "Delete this policy?",
-    "deleteDescription": "“{{name}}” stops applying to access decisions at once. This can’t be undone.",
+    "deleteDescriptionDeny": "“{{name}}” stops refusing access at once. What it refused is then decided by roles, relationships and the other policies. This can't be undone.",
+    "deleteDescriptionAllow": "“{{name}}” stops granting access at once. Anyone it let in keeps access only if a role, a relationship or another policy allows it. This can't be undone.",
     "deleteLabel": "Delete policy",
     "deleteAction": "Delete this policy",
     "createAction": "Create this policy",
     "updateAction": "Save this policy",
-    "editor": {
-      "newTitle": "New policy",
-      "editTitle": "Edit policy",
-      "description": "Define the effect, target and condition.",
-      "create": "Create policy",
-      "name": "Name",
-      "effect": "Effect",
-      "allow": "Allow",
-      "deny": "Deny",
-      "resourceType": "Resource type",
-      "action": "Action",
-      "priority": "Priority",
-      "enabled": "Enabled",
-      "descriptionLabel": "Description",
-      "condition": "Condition",
-      "previewTitle": "Preview",
-      "previewDescription": "Generated representations of this policy."
-    },
-    "test": {
-      "title": "Test against the live engine",
-      "description": "Evaluates a request against every enabled policy and explains the decision.",
-      "run": "Test",
-      "input": "Evaluation input",
-      "invalidJson": "The input isn't valid JSON."
-    },
-    "validation": {
+    "errors": {
       "name": "Enter a name.",
-      "priority": "Enter a whole number."
+      "nameTaken": "A policy already has this name.",
+      "target": "Enter a name, or * for any.",
+      "locksOut": "This deny would stop you changing policies",
+      "locksOutHint": "Nobody could then undo it. Narrow its condition so it doesn't match you, or limit it to other resources or actions."
+    },
+    "unsaved": {
+      "title": "Discard your changes to this policy?",
+      "description": "They aren't saved. If you leave, the policy stays as it was.",
+      "stay": "Keep editing",
+      "leave": "Discard changes"
+    },
+    "editor": {
+      "allow": "Allow",
+      "deny": "Deny"
     }
-  },
-  "simulator": {
-    "description": "Ask a what-if question of any engine and see the exact allow or deny decision, explained.",
-    "engine": "Engine",
-    "engines": {
-      "authzen": {
-        "label": "Unified (AuthZEN)",
-        "description": "Unified policy decision point (RBAC + ReBAC)"
-      },
-      "abac": {
-        "label": "ABAC",
-        "description": "Attribute-based conditions"
-      },
-      "rbac": {
-        "label": "RBAC",
-        "description": "Role and permission check"
-      },
-      "rebac": {
-        "label": "ReBAC",
-        "description": "Relationship and tuple traversal"
-      }
-    },
-    "request": {
-      "title": "Request",
-      "description": "Fill in the subject, resource and action to evaluate."
-    },
-    "decision": {
-      "title": "Decision",
-      "description": "The outcome and its explanation.",
-      "empty": "Run a simulation to see the decision."
-    },
-    "fields": {
-      "subjectType": "Subject type",
-      "subjectId": "Subject ID",
-      "resourceType": "Resource type",
-      "resourceId": "Resource ID",
-      "action": "Action",
-      "userId": "User ID",
-      "permission": "Permission",
-      "object": "Object",
-      "relation": "Relation",
-      "abacInput": "ABAC evaluation input"
-    },
-    "run": "Simulate",
-    "batch": {
-      "title": "Batch simulation",
-      "description": "Evaluate one resource and action for up to {{cap}} subjects, against the live decision point.",
-      "subjects": "Subjects (one per line, type:id)",
-      "run": "Run batch",
-      "progress": "Progress",
-      "allowCount": "{{count}} allow",
-      "denyCount": "{{count}} deny",
-      "failedCount_one": "{{count}} failed",
-      "failedCount_other": "{{count}} failed",
-      "subject": "Subject",
-      "decision": "Decision",
-      "latency": "Latency",
-      "failed": "Failed",
-      "ms": "{{count}} ms"
-    },
-    "validation": {
-      "required": "Fill in this field.",
-      "json": "The input isn't a valid JSON object.",
-      "subjects": "Add at least one subject."
-    }
-  },
-  "abacPoliciesPage": {
-    "authorAttributeBasedPolicies": "Author attribute-based policies with a no-code condition builder. Deny wins; policies are ordered by priority.",
-    "abacIsAProFeature": "ABAC is a Pro feature",
-    "authorAttributeBasedAccess": "Author attribute-based access policies with a no-code condition builder. Upgrade to Pro to use ABAC.",
-    "policies": "Policies",
-    "noAbacPoliciesYet": "No ABAC policies yet",
-    "createYourFirstAttribute": "Create your first attribute-based policy.",
-    "selectAPolicyTo": "Select a policy to edit, or create a new one.",
-    "orDocument": "* or document",
-    "orRead": "* or read",
-    "policyCount_one": "{{count}} attribute policy",
-    "policyCount_other": "{{count}} attribute policies",
-    "disabled": "disabled",
-    "target": "{{resource}}:{{action}} · priority {{priority}}",
-    "deleteNamed": "Delete {{name}}"
   },
   "authorizationAuditPage": {
     "everyAuthorizationChangeIs": "Every authorization change is recorded in the hash-chained, append-only audit log.",
@@ -359,75 +233,7 @@
     "tenantPolicy": "tenant policy",
     "diagnostics": "diagnostics"
   },
-  "policyCanvas": {
-    "unifiedPolicyBuilderCanvas": "Unified policy builder canvas",
-    "rolePlaceholder": "(role…)",
-    "conditionCount_one": "{{count}} condition",
-    "conditionCount_other": "{{count}} conditions",
-    "relationPlaceholder": "rel",
-    "objectPlaceholder": "object",
-    "blocks": {
-      "rbac": "Role check (RBAC)",
-      "abac": "Condition (ABAC)",
-      "rebac": "Relationship (ReBAC)"
-    },
-    "add": {
-      "rbac": "Role",
-      "abac": "Condition",
-      "rebac": "Relationship"
-    }
-  },
-  "codePreview": {
-    "previewFormat": "Preview format",
-    "tree": "Tree",
-    "condition": "condition"
-  },
-  "conditionTree": {
-    "removeNot": "Remove NOT",
-    "removeGroup": "Remove group",
-    "namespace": "Namespace",
-    "attributePath": "Attribute path",
-    "operator": "Operator",
-    "compareWith": "Compare with",
-    "removeCondition": "Remove condition",
-    "not": "NOT",
-    "all": "ALL (AND)",
-    "any": "ANY (OR)",
-    "addCondition": "Condition",
-    "addGroup": "Group",
-    "attributePlaceholder": "attribute",
-    "valuePlaceholder": "value",
-    "otherAttribute": "Attribute to compare with",
-    "value": "Value",
-    "operand": {
-      "value": "value",
-      "attribute": "attribute"
-    }
-  },
-  "decisionExplorerPage": {
-    "inspectAuthorizationDecisionsLike": "Inspect authorization decisions like a network waterfall: the outcome, the engine, latency and the full grant-path or trace.",
-    "noDecisionsCapturedYet": "No decisions captured yet",
-    "runACheckFrom": "Run a check from the Simulator, the ReBAC page, or an ABAC policy test — every decision lands here for inspection.",
-    "openSimulator": "Open Simulator",
-    "recentDecisions": "Recent decisions",
-    "decisionDetail": "Decision detail",
-    "fullEvaluationBreakdown": "Full evaluation breakdown",
-    "clearHistory": "Clear history",
-    "capturedCount_one": "{{count}} captured (latest first)",
-    "capturedCount_other": "{{count}} captured (latest first)"
-  },
   "decisionExplain": {
-    "decisionContext": "Decision context",
-    "request": "Request",
-    "noGrantPathAccess": "No grant path — access is not granted by any role.",
-    "grantPaths": "Grant paths",
-    "grantedBy": "granted by",
-    "evaluationTrace": "Evaluation trace",
-    "noPolicyMatchedDefaultDeny": "No policy matched — default deny.",
-    "noRelationshipPathResolves": "No relationship path resolves this check.",
-    "relationshipPath": "Relationship path",
-    "matchedPolicy": "matched policy {{id}}",
-    "hop": "hop {{depth}}",
     "effect": {
       "allow": "allow",
       "deny": "deny"
@@ -447,7 +253,7 @@
       "relationGrant": "The relationship {{relation}} on {{object}} grants access.",
       "relationGrantUnnamed": "A relationship grants access.",
       "nothingAllows": "Nothing allows this request, so it is denied by default.",
-      "noTenant": "There's no organization to decide in, so the request is refused.",
+      "noTenant": "There's no organisation to decide in, so the request is refused.",
       "engineError": "An authorization engine failed, so the request was refused.",
       "unknown": "The decision point gave a reason the console can't display."
     },
@@ -460,9 +266,6 @@
       "defaultDeny": "No allow policy matched → default deny",
       "unknown": "An evaluation step the console can't display"
     }
-  },
-  "relationshipGraph": {
-    "rebacRelationshipGraph": "ReBAC relationship graph"
   },
   "roleHierarchyGraph": {
     "rbacRoleAndPermissionGraph": "RBAC role and permission graph",
@@ -481,41 +284,6 @@
     "noMatches": "No permissions match your search",
     "actionsOn": "Actions available on {{resource}} resources.",
     "wildcard": "wildcard"
-  },
-  "policyBuilderPage": {
-    "composeRbacAbacAnd": "Compose RBAC, ABAC and ReBAC blocks into one policy. Wire blocks into the decision and preview the generated policy live.",
-    "copiedJson": "Copied JSON",
-    "blueprint": "Blueprint",
-    "addBlocksAndClick": "Add blocks and click a node to edit it in the inspector.",
-    "inspector": "Inspector",
-    "thisPolicyIsnT": "This policy isn't persistable yet",
-    "generatedPolicy": "Generated policy",
-    "jsonYamlDslEvaluationTree": "JSON · YAML · DSL · evaluation tree",
-    "effect": "Effect",
-    "allow": "Allow",
-    "deny": "Deny",
-    "resourceType": "Resource type",
-    "action": "Action",
-    "priority": "Priority",
-    "enabled": "Enabled",
-    "requiredRole": "Required role",
-    "object": "Object",
-    "relation": "Relation",
-    "noConditionBlock": "No condition block.",
-    "copyJson": "Copy JSON",
-    "export": "Export",
-    "saveAsAbac": "Save as ABAC",
-    "selectANode": "Select a node on the canvas",
-    "abacOnlyNote": "POST /abac/policies accepts ABAC-only policies",
-    "persistable": "ABAC-persistable",
-    "previewOnly": "preview only",
-    "removeBlock": "Remove block",
-    "editingBlock": {
-      "decision": "Editing the DECISION block",
-      "rbac": "Editing the RBAC block",
-      "abac": "Editing the ABAC block",
-      "rebac": "Editing the REBAC block"
-    }
   },
   "policyTemplatesPage": {
     "startFromABattle": "Start from a battle-tested pattern. Choosing a template pre-fills the Policy Builder with a real, editable policy.",
@@ -560,9 +328,6 @@
     "grantedCount_one": "{{count}} permission granted",
     "grantedCount_other": "{{count}} permissions granted"
   },
-  "rebacPage": {
-    "userOrGroupEngMember": "user:… or group:eng#member"
-  },
   "rolesPage": {
     "createRolesAndManage": "Create roles and manage the permissions they grant. Role assignments propagate through groups automatically.",
     "roles": "Roles",
@@ -579,7 +344,7 @@
     "policyCreated": "Policy created",
     "policyUpdated": "Policy updated",
     "policyDeleted": "Policy deleted",
-    "tupleWritten": "Tuple written",
+    "tupleWritten": "Relationship added",
     "relationshipDeleted": "Relationship deleted",
     "roleCreated": "Role created",
     "permissionGranted": "Permission granted",
@@ -611,7 +376,7 @@
     "badReference": "The attribute to compare with must be a subject., resource. or context. path.",
     "selfReference": "A condition can't compare an attribute with itself.",
     "needsValue": "“{{operator}}” needs a value.",
-    "mixedEngines": "This policy combines RBAC/ReBAC with ABAC, which has no single backend object. You can export it or simulate it now; remove the RBAC/ReBAC blocks to save it as a real ABAC policy."
+    "mixedEngines": "This policy has a role or relationship block, which Qeet ID can't store. Remove the block to save it."
   },
   "evalTree": {
     "decision": "{{effect}} {{target}}",
@@ -716,9 +481,6 @@
       "policies": {
         "title": "Policies"
       },
-      "builder": {
-        "title": "Builder"
-      },
       "templates": {
         "title": "Templates"
       },
@@ -727,15 +489,6 @@
       },
       "testing": {
         "title": "Testing"
-      },
-      "simulator": {
-        "title": "Simulator"
-      },
-      "explorer": {
-        "title": "Explorer"
-      },
-      "accessTester": {
-        "title": "Access tester"
       },
       "settings": {
         "title": "Settings"
@@ -749,8 +502,8 @@
       "keywords": "add role, new role, rbac"
     },
     "policyBuilder": {
-      "title": "Build policy",
-      "subtitle": "Create and test authorization policies",
+      "title": "New attribute policy",
+      "subtitle": "Write a policy in Models › ABAC",
       "keywords": "policy, abac, rego, cedar, rules"
     }
   },
@@ -778,6 +531,342 @@
   "overview": {
     "changes": {
       "byActor": "by {{actor}}"
+    }
+  },
+  "abacTest": {
+    "request": "Request",
+    "invalidJson": "This isn't a JSON object.",
+    "unsavedHint": "Tests the saved policies: your unsaved changes aren't in it.",
+    "empty": "Run the test to see which policy decides this request, and why.",
+    "savedHint": "Checked against the saved, enabled policies."
+  },
+  "rule": {
+    "label": "Policy",
+    "appliesTo": "Applies to",
+    "when": "When",
+    "then": "Then",
+    "resource": "Resource",
+    "action": "Action",
+    "any": "any",
+    "role": "Subject has role {{role}}",
+    "relation": "Subject is {{relation}} of {{object}}",
+    "previewOnly": "Preview only",
+    "always": "Always",
+    "alwaysHint": "It has no condition, so every request for its target matches.",
+    "addCondition": "Condition",
+    "addGroup": "Group",
+    "allow": "Allow",
+    "deny": "Deny",
+    "allowHint": "Allowed, unless a deny matches",
+    "denyHint": "Refused, whatever else allows it",
+    "priority": "Priority",
+    "pickAttribute": "Pick an attribute",
+    "not": "Not",
+    "notHint": "matches when this doesn't",
+    "combine": "Combine with",
+    "combineAll": "All",
+    "combineAny": "Any",
+    "ofThese_one": "of 1 condition",
+    "ofThese_other": "of these {{count}} match"
+  },
+  "inspector": {
+    "label": "Policy",
+    "roleBlock": "Role block",
+    "relationBlock": "Relationship block",
+    "previewOnlyHint": "It came from the template. Qeet ID stores attribute policies only, so remove the block to save the policy.",
+    "removeRole": "Remove the role block",
+    "removeRelation": "Remove the relationship block",
+    "atTop": "at the top",
+    "insideNot": "inside Not",
+    "insideAll": "inside All",
+    "insideAny": "inside Any",
+    "condition": "Condition",
+    "wrapInNot": "Wrap in Not",
+    "removeCondition": "Remove condition",
+    "not": "Not",
+    "notHint": "Matches when what it holds doesn't.",
+    "unwrapNot": "Keep what it holds",
+    "remove": "Remove",
+    "group": "Group",
+    "groupAllHint": "Matches when every condition in it does.",
+    "groupAnyHint": "Matches when at least one condition in it does.",
+    "addCondition": "Condition",
+    "addGroup": "Group",
+    "removeGroup": "Remove group",
+    "attribute": "Attribute",
+    "attributeHint": "subject., resource. or context., then its name",
+    "operator": "Operator",
+    "compareWith": "Compare with",
+    "aValue": "A value",
+    "anotherAttribute": "Another attribute",
+    "otherAttribute": "Other attribute",
+    "value": "Value",
+    "valueHint": "true, false, a number or text",
+    "valueListHint": "Several values, separated by commas",
+    "valuePatternHint": "A regular expression; one that doesn't compile matches nothing",
+    "valueAffixHint": "Text, not empty",
+    "policy": "Policy",
+    "name": "Name",
+    "namePlaceholder": "e.g. Contractors: business hours only",
+    "description": "Description",
+    "effect": "Effect",
+    "effectAllowHint": "An allow never opens Qeet ID's own admin: roles decide that.",
+    "resourceType": "Resource type",
+    "action": "Action",
+    "starForAny": "* for any",
+    "priority": "Priority",
+    "priorityHint": "Higher is checked first",
+    "enabled": "Enabled",
+    "disabledHint": "Turned off: it isn't checked."
+  },
+  "answer": {
+    "allowed": "Allowed",
+    "denied": "Denied",
+    "noReason": "The decision point gave no reason.",
+    "meta": "{{engine}} · {{ms}} ms",
+    "ms": "{{ms}} ms"
+  },
+  "trace": {
+    "effect": {
+      "allow": "allow",
+      "deny": "deny"
+    },
+    "policyWhere": "ABAC · priority {{priority}} · {{effect}}",
+    "outcome": {
+      "notMatched": "Not matched",
+      "matched": "Matched: {{effect}}",
+      "absentApplies": "Attribute absent: {{effect}}",
+      "absentNotMatched": "Attribute absent: not matched",
+      "conditionError": "Couldn't evaluate: refused",
+      "noDecision": "No decision",
+      "deniedByDefault": "Denied by default",
+      "refused": "Refused",
+      "checked": "Checked",
+      "skipped": "Skipped",
+      "allowed": "Allowed",
+      "notGranted": "Not granted"
+    },
+    "noAllowPolicy": "No allow policy matched",
+    "organisation": "Organisation",
+    "noOrganisation": "No organisation to decide in",
+    "thisOrganisation": "This organisation",
+    "result": "Result",
+    "nothingAllows": "Nothing allows it",
+    "engineError": "The engine failed",
+    "abacSkipped": "No attribute policy can change this",
+    "abacHidden": "Attribute policies checked; you need policy.read to see which",
+    "roleGrants": "A role grants {{permission}}",
+    "noRoleGrants": "No role grants {{permission}}",
+    "relationOn": "{{relation}} on {{object}}",
+    "noRelationOn": "No {{relation}} on {{object}}",
+    "unknown": "A step the console can't display",
+    "none": "The decision point sent no trace."
+  },
+  "grants": {
+    "label": "Grant paths",
+    "role": "Role",
+    "through": "Through",
+    "roleId": "Role ID",
+    "group": "Group · {{group}}",
+    "direct": "Assigned directly"
+  },
+  "hops": {
+    "label": "Relationship path"
+  },
+  "person": {
+    "roles": "Roles",
+    "groups": "Groups",
+    "permissions": "Permissions",
+    "department": "Department",
+    "title": "Title",
+    "noRoles": "None",
+    "noGroups": "None",
+    "permissionCount_one": "{{total}}, {{inherited}} only through groups",
+    "permissionCount_other": "{{total}}, {{inherited}} only through groups",
+    "suspended": "Suspended",
+    "noUserRead": "You need user.read to see who this is.",
+    "notFound": "No one in this organisation has the ID {{id}}."
+  },
+  "rebac": {
+    "title": "Models",
+    "description": "Who reaches an object through its relationships, and the groups and folders in between.",
+    "toolbar": "Relationship graph",
+    "object": "Object",
+    "objectPlaceholder": "e.g. document:readme",
+    "objectFormat": "Type and name, such as document:readme.",
+    "open": "Open",
+    "relation": "Relation",
+    "size_one": "{{people}} person · {{nodes}} nodes",
+    "size_other": "{{people}} people · {{nodes}} nodes",
+    "add": "Add relationship",
+    "objects": "Objects",
+    "objectsEmpty": "Objects you open show here, with what they reach.",
+    "objectsNote": "Qeet ID can't list every object yet: open one by name above.",
+    "graph": "Graph",
+    "output": "Relationships of {{object}}",
+    "tuples": "Tuples",
+    "people": "People",
+    "openTitle": "Open an object",
+    "openHint": "Type an object's type and name above, such as document:readme, to see who reaches it.",
+    "emptyTitle": "No relationships on {{object}}",
+    "emptyHint": "Nothing names it yet. Add a relationship to start.",
+    "graphLabel": "Who reaches {{object}} as {{relation}}",
+    "phoneNote_one": "{{count}} person reaches {{object}} as {{relation}}. The graph needs a wider screen: they're listed under People.",
+    "phoneNote_other": "{{count}} people reach {{object}} as {{relation}}. The graph needs a wider screen: they're listed under People.",
+    "selected": "Selected",
+    "selectHint": "Select a node in the graph.",
+    "tuplesOn": "Tuples on {{object}}",
+    "noTuples": "No tuples on this object.",
+    "subject": "Subject",
+    "openProfile": "Open profile",
+    "openSubject": "Open {{object}}",
+    "deleteRelationship": "Delete relationship",
+    "deleteTitle": "Delete this relationship?",
+    "deleteDescription": "{{subject}} loses {{relation}} on {{object}} at once, and so does anyone who had it only through this. This can't be undone.",
+    "deleteAction": "Delete this relationship",
+    "peopleWho": "People who reach {{object}} as {{relation}}",
+    "person": "Person",
+    "wayIn": "Way in",
+    "status": "Status",
+    "noPeople": "No one reaches it through this relation.",
+    "through": "Through {{path}}",
+    "directly": "Named directly",
+    "thisObject": "This object",
+    "rootFacts": "Tuples on it: {{tuples}}. People who reach it as {{relation}}: {{people}}.",
+    "noImplication": "Relations don't imply each other: an owner isn't a viewer unless a tuple says so.",
+    "howItReaches": "How it reaches {{object}}",
+    "alsoThrough": "Also named through {{objects}}.",
+    "membersCount": "Members · {{count}}",
+    "namedOn": "Also named on",
+    "asRelation": "as {{relation}}",
+    "namedNowhereElse": "Nowhere else.",
+    "openIt": "Open {{object}}"
+  },
+  "graph": {
+    "morePeople_one": "{{count}} more person",
+    "morePeople_other": "{{count}} more people",
+    "directly": "named directly",
+    "person": "person",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "groups_one": "{{count}} group",
+    "groups_other": "{{count}} groups",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit to view"
+  },
+  "addRelationship": {
+    "title": "Add relationship",
+    "description": "Who holds which relation on an object. It counts the moment it's added.",
+    "object": "Object",
+    "objectHint": "Type and name, such as document:readme",
+    "relation": "Relation",
+    "relationHint": "One word, such as viewer, editor or owner. Relations don't imply each other.",
+    "subjectKind": "Who holds it",
+    "aPerson": "A person",
+    "aGroup": "A group or object",
+    "person": "Person",
+    "personPlaceholder": "e.g. Priya Nair",
+    "subject": "Subject",
+    "subjectHint": "Everyone holding a relation on another object, such as group:engineering#member. It expands when access is checked.",
+    "bareHint": "Without #relation this names the object itself, not its members, so no person gets access through it.",
+    "action": "Add this relationship",
+    "cancel": "Cancel",
+    "add": "Add relationship",
+    "errors": {
+      "object": "Type and name, such as document:readme.",
+      "relation": "Enter one word, such as viewer.",
+      "subject": "Use type:id#relation, such as group:engineering#member.",
+      "person": "Choose a person."
+    }
+  },
+  "testing": {
+    "title": "Testing",
+    "description": "Ask a question about access, for one person or many, and see what decides it.",
+    "toolbar": "Question",
+    "questionKind": "What to ask",
+    "modes": {
+      "permission": "Permission",
+      "relationship": "Relationship",
+      "attributes": "Attributes",
+      "authzen": "AuthZEN"
+    },
+    "asks": {
+      "permission": "Can this person use a permission? An attribute deny refuses first; then a role, or an attribute allow, grants it.",
+      "relationship": "Does this person hold a relation on an object? An attribute deny refuses first; a relationship, a role granting type:relation, or an attribute allow grants it.",
+      "attributes": "What do the attribute policies alone say? Only saved, enabled policies are checked, highest priority first, and a matching deny wins.",
+      "authzen": "The question your apps ask through AuthZEN: resource type permission asks for a permission, any other type for a relation on type:id."
+    },
+    "question": {
+      "permission": "Can {{who}} use {{permission}}?",
+      "relationship": "Is {{who}} {{relation}} of {{object}}?",
+      "attributes": "{{asked}}, for {{who}}",
+      "authzen": "{{who}}: {{asked}}"
+    },
+    "history": "This tab",
+    "historyCount_one": "{{count}} decision",
+    "historyCount_other": "{{count}} decisions",
+    "clear": "Clear",
+    "historyNote": "Decisions from here and ABAC's tests, kept in this tab until you reload or sign out.",
+    "historyEmpty": "No decisions yet. Ask a question and its answer shows here.",
+    "noSubject": "No subject attributes",
+    "requestLabel": "Request",
+    "results": "Results",
+    "allowedCount": "{{count}} allowed",
+    "deniedCount": "{{count}} denied",
+    "progress": "{{done}} of {{total}} checked",
+    "answer": "Answer",
+    "decision": "Decision",
+    "trace": "Trace",
+    "response": "Response",
+    "answerEmpty": "Ask a question to see the answer, and the rule that decided it.",
+    "runForMany": "Run for many",
+    "onePerson": "One person",
+    "run": "Run",
+    "runFor_one": "Run for {{count}}",
+    "runFor_other": "Run for {{count}}",
+    "policiesChecked": "Policies checked",
+    "personLabel": "Person",
+    "openProfile": "Open profile",
+    "pickPerson": "Pick a person to see their roles and groups.",
+    "noPolicyRead": "You need policy.read to see the policies.",
+    "forTarget": "For {{target}}",
+    "noPoliciesFor": "No enabled policy targets this request, so the attribute check alone refuses it.",
+    "orderNote": "Checked highest priority first; a matching deny wins over any allow.",
+    "grantPaths": "Grant paths · {{count}}",
+    "grantPathsHint": "Each path grants the permission on its own.",
+    "relationshipPath": "Relationship path",
+    "decidedBy": "Decided by",
+    "thePolicy": "An attribute policy",
+    "batchLabel": "Results for {{asked}}",
+    "batchEmpty": "Choose people and run, to see each one's answer.",
+    "person": "Person",
+    "people": "People",
+    "peopleHint": "Up to {{cap}}, each checked on its own.",
+    "failed": "Failed",
+    "failedHint": "The check didn't run.",
+    "why": "Why",
+    "time": "Time",
+    "userId": "User ID",
+    "userIdHint": "You need user.read to choose by name.",
+    "personPlaceholder": "e.g. Priya Nair",
+    "permission": "Permission",
+    "relation": "Relation",
+    "object": "Object",
+    "objectHint": "Type and name, such as document:readme",
+    "action": "Action",
+    "resourceType": "Resource type",
+    "resourceTypeHint": "permission, or an object's type",
+    "resourceId": "Resource ID",
+    "resourceIdPermission": "Not used for a permission",
+    "request": "Request",
+    "requestHint": "subject, resource (type, id, attrs), action and context, as your app sends them.",
+    "errors": {
+      "required": "Fill this in.",
+      "userId": "Choose a person.",
+      "object": "Type and name, such as document:readme.",
+      "json": "This isn't a JSON object.",
+      "people": "Choose at least one person."
     }
   }
 }
