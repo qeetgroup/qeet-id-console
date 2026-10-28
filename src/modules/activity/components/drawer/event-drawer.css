@@ -1,0 +1,73 @@
+/*
+ * The event drawer (event-drawer.tsx), shared by Activity and Security › Audit logs. Placement and
+ * token values only (--qx-*).
+ */
+
+.act-drawer {
+  display: grid;
+  gap: var(--qx-space-layout-sm);
+}
+
+.act-drawer-head {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.act-drawer-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.act-drawer-why,
+.act-drawer-note {
+  margin: 0;
+}
+
+.act-drawer-section {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-layout-sm);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.act-drawer-title {
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-title-sm);
+}
+
+.act-drawer-skeleton {
+  block-size: 12rem;
+}
+
+/* A value in code type, then its copy button, wrapping inside the drawer's width. */
+.act-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+
+.act-break {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.act-drawer-pair {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+/* A related event's title opens it: a button set as the link it reads as. */
+.act-related-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}

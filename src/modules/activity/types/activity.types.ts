@@ -5,9 +5,6 @@ export type Severity = "info" | "success" | "warning" | "error" | "critical";
 /** Outcome bucket over severity, matching the summary's by_outcome keys. */
 export type Outcome = "success" | "warning" | "failed" | "info";
 
-/** Whether the feed streams live SSE events or shows a pinned historical window. */
-export type ActivityMode = "live" | "history";
-
 export type ConnectionStatus = "connected" | "reconnecting" | "disconnected" | "paused";
 
 export interface ActivityEvent {

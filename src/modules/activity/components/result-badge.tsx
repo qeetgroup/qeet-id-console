@@ -1,17 +1,15 @@
-import { Badge, cn } from "@qeetrix/ui";
+import { Badge, type BadgeTone } from "@qeetrix/react";
 import { useTranslation } from "react-i18next";
 
 import { type EventResult, eventResult } from "../event-labels";
 import type { ActivityEvent } from "../types/activity.types";
 
-type BadgeVariant = "success" | "warning" | "destructive" | "muted";
-
-const RESULT_VARIANT: Record<EventResult, BadgeVariant> = {
+const RESULT_TONE: Record<EventResult, BadgeTone> = {
   success: "success",
   warning: "warning",
   blocked: "warning",
-  failed: "destructive",
-  info: "muted", // info isn't an outcome, so it stays neutral grey rather than the brand colour
+  failed: "danger",
+  info: "neutral", // info isn't an outcome, so it stays neutral rather than the brand colour
 };
 
 /** Renders the event's outcome (Success, Failed, Blocked…), a separate axis from severity. */
@@ -25,10 +23,7 @@ export function ResultBadge({
   const { t } = useTranslation("activity");
   const result = eventResult(event);
   return (
-    <Badge
-      variant={RESULT_VARIANT[result]}
-      className={cn(result === "blocked" && "ring-1 ring-warning/40", className)}
-    >
+    <Badge tone={RESULT_TONE[result]} size="sm" className={className}>
       {t(`result.${result}`)}
     </Badge>
   );
