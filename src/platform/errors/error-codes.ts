@@ -105,6 +105,13 @@ export const ERROR_CODES = {
   WEBHOOK_EVENTS_REQUIRED: "webhook.events_required", // 422
   WEBHOOK_EVENT_UNKNOWN: "webhook.event_unknown", // 422: not in the server's catalogue
   OIDC_GRANT_TYPE_UNSUPPORTED: "oidc.grant_type_unsupported", // 400: client_credentials, or unknown
+  // Qeet AI (they predate the domain.reason form): a turn with no provider, and the answers to a
+  // test of a provider key, whose `api` and `validation` fallbacks don't say what to check.
+  QEETAI_UNCONFIGURED: "qeetai_unconfigured", // 503: no organisation key, no Qeet-managed one
+  QEETAI_PROVIDER_UNREACHABLE: "qeetai_provider_unreachable",
+  QEETAI_PROVIDER_KEY_INVALID: "qeetai_provider_key_invalid",
+  QEETAI_PROVIDER_MODEL_INVALID: "qeetai_provider_model_invalid",
+  QEETAI_PROVIDER_ERROR: "qeetai_provider_error",
   TOO_MANY_REQUESTS: "too_many_requests", // throttling
   HTTP_429: "http_429", // synthesised for a body-less 429, so it still reads as throttling
   NETWORK: "network_error", // client-synthesised

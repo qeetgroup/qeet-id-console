@@ -1,222 +1,252 @@
 {
-  "billing": {
-    "description": "Manage your plan, usage, billing details, and invoices.",
-    "screen": {
-      "title": "Billing",
-      "cycle": "Billing period",
-      "month": "Monthly",
-      "year": "Yearly",
-      "savePercent": "Save {{percent}}%",
-      "loading": "Loading billing",
-      "retry": "Retry",
-      "unavailable": "Not available",
-      "noAccess": "You don't have access to billing.",
-      "readOnly": "Read-only access",
-      "subscriptionError": "Subscription details couldn't be loaded.",
-      "forever": "forever",
-      "duringTrial": "during trial",
-      "perMonth": "/ month",
-      "perYear": "/ year",
-      "noRenewal": "No renewal date",
-      "renewsOn": "Renews on {{date}}",
-      "endsOn": "Access ends on {{date}}",
-      "trialEnds": "Trial ends on {{date}}",
-      "included": "Included in your plan",
-      "featuresUnavailable": "Plan features are not available.",
-      "nextInvoice": "Next invoice",
-      "noneScheduled": "None scheduled",
-      "noRecurringCharge": "No recurring charge on your current plan.",
-      "cancellationScheduled": "Cancellation is scheduled for the end of this period.",
-      "invoiceTotalPending": "The final amount, including tax, is available when issued.",
-      "managePlan": "Manage plan",
-      "viewUsage": "View usage",
-      "status": {
-        "active": "Active",
-        "none": "Free plan",
-        "trialing": "Trial",
-        "trialEnded": "Trial ended",
-        "cancelling": "Cancels at period end",
-        "cancelled": "Cancelled",
-        "canceled": "Cancelled",
-        "past_due": "Past due",
-        "unpaid": "Unpaid",
-        "expired": "Expired",
-        "unknown": "Status unavailable"
-      },
-      "checkout": {
-        "success": "Checkout returned successfully. Your subscription details reflect the latest payment confirmation received.",
-        "cancelled": "Checkout was cancelled. No plan change has been confirmed."
-      },
-      "trial": {
-        "offer": "Try Pro free for 14 days",
-        "description": "No card required. Your organization returns to Free when the trial ends unless you upgrade.",
-        "active": "Your trial is active",
-        "ended": "Your trial has ended",
-        "convert": "Choose a paid plan to continue after your trial.",
-        "start": "Start free trial",
-        "compare": "Compare plans"
-      },
-      "usage": {
-        "title": "Usage",
-        "export": "Export usage",
-        "seats": "Members",
-        "apps": "Applications",
-        "api_keys": "API keys",
-        "custom_roles": "Custom roles",
-        "unlimited": "/ Unlimited",
-        "noCap": "No plan limit",
-        "notIncluded": "Not included in your plan",
-        "exceeded": "Over your plan limit",
-        "count": "{{used}} of {{limit}} used",
-        "percent": "{{percent}}% of plan limit",
-        "loading": "Loading usage",
-        "unavailable": "Usage or limit not reported",
-        "error": "Usage couldn't be loaded.",
-        "limit": "/ {{limit}}"
-      },
-      "profile": {
-        "title": "Billing profile",
-        "form": "Billing profile and tax details",
-        "loading": "Loading billing profile",
-        "error": "Billing profile couldn't be loaded.",
-        "legal_name": "Legal / business name",
-        "billing_email": "Billing email",
-        "address_line1": "Address",
-        "address_line2": "Address line 2 (optional)",
-        "city": "City",
-        "state": "State / region",
-        "postal_code": "Postal code",
-        "selectCountry": "Select country",
-        "saved": "Billing details saved",
-        "unsaved": "Unsaved changes",
-        "invoiceDetails": "Billing and tax details for your invoices.",
-        "reset": "Reset",
-        "saving": "Saving...",
-        "save": "Save changes"
-      },
-      "payment": {
-        "title": "Payment method",
-        "managed": "Managed at checkout",
-        "unavailable": "No payment method information available.",
-        "provider": "Payment details are collected by your payment provider during checkout."
-      },
-      "tax": {
-        "title": "Tax & compliance",
-        "provided": "Tax ID provided",
-        "type": "Tax ID type",
-        "none": "None",
-        "gstin": "GSTIN (India)",
-        "vat": "VAT",
-        "gstinLabel": "GSTIN",
-        "vatLabel": "VAT number",
-        "invalidGstin": "Enter a valid 15-character GSTIN.",
-        "invalidVat": "Enter your VAT number.",
-        "note": "Tax treatment depends on your billing country and tax details. A saved tax ID is not a verification of registration."
-      },
-      "invoices": {
-        "invoice": "Invoice",
-        "loading": "Loading invoices",
-        "error": "Invoices couldn't be loaded.",
-        "filter": "Invoice status",
-        "all": "All statuses",
-        "noMatches": "No invoices match this status.",
-        "export": "Export CSV",
-        "download": "Download CSV",
-        "tax": "Tax",
-        "subtotal": "Subtotal",
-        "supply": "Place of supply",
-        "zeroRated": "Zero-rated",
-        "reverseCharge": "Reverse charge",
-        "actions": "Invoice actions",
-        "rowActions": "Actions for invoice {{id}}",
-        "viewInvoice": "View invoice {{id}}",
-        "view": "View details",
-        "details": "Invoice details",
-        "status": {
-          "paid": "Paid",
-          "open": "Open",
-          "pending": "Pending",
-          "draft": "Draft",
-          "void": "Void",
-          "uncollectible": "Uncollectible",
-          "failed": "Failed",
-          "refunded": "Refunded"
-        }
-      },
-      "plans": {
-        "title": "Choose your plan",
-        "taxNote": "Prices exclude applicable taxes.",
-        "error": "Plans couldn't be loaded.",
-        "recommended": "Recommended",
-        "custom": "Custom",
-        "contactSales": "Contact sales",
-        "unavailable": "Price unavailable",
-        "confirmTitle": "Switch to {{name}}?",
-        "confirmDescription": "{{amount}} {{period}}, before applicable taxes. Your payment provider may require checkout to complete the change.",
-        "downgradeTitle": "Downgrade to Free?",
-        "downgradeDescription": "You're over the Free limits for {{resources}}. Existing items stay, but you won't be able to add more until you're under the limit.",
-        "downgradeConfirm": "Downgrade anyway",
-        "overLimit": "{{resource}} ({{used}}/{{limit}})"
-      }
-    },
-    "country": "Country",
-    "currency": "Currency",
-    "currentPlan": {
-      "title": "Current plan",
-      "cancelPlan": "Cancel plan",
-      "cancelConfirmTitle": "Cancel subscription?",
-      "cancelConfirmDescription": "Access continues until the end of the current period.",
-      "cancelConfirmLabel": "Cancel subscription"
-    },
-    "plan": {
-      "current": "Current",
-      "mostPopular": "Most popular",
-      "switchTo": "Switch to {{name}}",
-      "isCurrent": "Current plan"
-    },
-    "invoices": {
-      "title": "Invoices",
-      "empty": "No invoices yet.",
-      "columns": {
-        "issued": "Issued",
-        "period": "Period",
-        "plan": "Plan",
-        "amount": "Amount",
-        "status": "Status"
-      }
-    },
-    "empty": "No plans configured.",
-    "stepUp": {
-      "switchPlan": "Switch to the {{name}} plan",
-      "cancelPlan": "Cancel your plan",
-      "startTrial": "Start a free trial",
-      "saveProfile": "Save your billing profile"
+  "page": {
+    "title": "Billing",
+    "description": "What {{name}} pays for Qeet ID, and the invoices for it.",
+    "descriptionNoName": "What your organisation pays for Qeet ID, and the invoices for it.",
+    "loading": "Loading billing",
+    "loadFailed": "Billing couldn't be loaded",
+    "retry": "Try again",
+    "actionFailed": "That didn't go through",
+    "checkout": {
+      "successTitle": "Back from your payment provider",
+      "success": "The plan changes once your provider confirms the payment. This page shows the latest the server has.",
+      "cancelledTitle": "Checkout cancelled",
+      "cancelled": "Nothing was paid, and the plan hasn't changed."
     }
+  },
+  "plan": {
+    "title": "Plan",
+    "change": "Change plan",
+    "per": {
+      "month": "a month",
+      "year": "a year"
+    },
+    "tax": {
+      "gst": "GST",
+      "other": "tax"
+    },
+    "status": {
+      "active": "Active",
+      "ending": "Ending",
+      "trial": "Trial",
+      "trialEnded": "Trial ended",
+      "past_due": "Past due",
+      "unpaid": "Unpaid",
+      "canceled": "Cancelled",
+      "unknown": "Unknown status"
+    },
+    "line": {
+      "paid": "{{price}} {{per}}, before {{tax}} · paid until {{date}}, {{relative}}",
+      "ending": "{{price}} {{per}}, before {{tax}} · ends {{date}}, {{relative}}",
+      "free": "No charge · free for as long as you like",
+      "trial": "Free trial · ends {{date}}, {{relative}}",
+      "trialEnded": "The trial ended on {{date}}, so you're on Free until you choose a plan.",
+      "none": "No subscription on record, so nothing is charged here.",
+      "other": "Paid until {{date}}"
+    },
+    "trial": {
+      "title": "Try Pro free for 14 days",
+      "line": "No card needed. You go back to Free when it ends, unless you choose a paid plan.",
+      "start": "Start trial",
+      "stepUp": "Start a free trial"
+    }
+  },
+  "change": {
+    "title": "Change plan",
+    "description": "Prices are before tax. A paid plan is paid with your payment provider, and starts once the payment goes through.",
+    "currency": "Currency",
+    "current": "Current plan",
+    "switch": "Switch to {{name}}",
+    "on": "You're on {{name}}",
+    "talkToSales": "Talk to sales",
+    "unavailable": "Not offered in {{currency}}",
+    "freeBlocked": "Usage couldn't be checked, so Free can't be chosen yet.",
+    "cancel": "Cancel",
+    "stepUp": "Switch to the {{name}} plan",
+    "confirm": {
+      "title": "Switch to {{name}}?",
+      "paid": {
+        "month": "You'll pay {{price}} a month before tax, with your payment provider. {{name}} starts when the payment goes through and runs a month from then; nothing is credited for what's left of {{current}}.",
+        "year": "You'll pay {{price}} a year before tax, with your payment provider. {{name}} starts when the payment goes through and runs a year from then; nothing is credited for what's left of {{current}}."
+      },
+      "start": {
+        "month": "You'll pay {{price}} a month before tax, with your payment provider. {{name}} starts when the payment goes through and runs a month from then.",
+        "year": "You'll pay {{price}} a year before tax, with your payment provider. {{name}} starts when the payment goes through and runs a year from then."
+      },
+      "free": "Free starts now. You keep what you have, but can't add more past Free's limits; nothing is refunded for what's left of {{current}}.",
+      "freeOverTitle": "Switch to Free with more than it allows?",
+      "freeOver": "You have {{resources}}. Free starts now: they stay, but you can't add more until you're under its limits. Nothing is refunded for what's left of {{current}}.",
+      "overLimit": "{{used}} {{resource}} (Free allows {{limit}})"
+    }
+  },
+  "usage": {
+    "title": "Usage",
+    "unlimited": "{{plan}} has no limits on these. Seats are people with a role, plus pending invitations.",
+    "limited": "Against {{plan}}'s limits. Seats are people with a role, plus pending invitations.",
+    "name": {
+      "seats": "Seats",
+      "apps": "Applications",
+      "api_keys": "API keys",
+      "custom_roles": "Custom roles"
+    },
+    "lower": {
+      "seats": "seats",
+      "apps": "applications",
+      "api_keys": "API keys",
+      "custom_roles": "custom roles"
+    },
+    "of": "{{used}} of {{limit}}",
+    "noLimit": "{{used}} · no limit",
+    "notIncluded": "Not included on {{plan}}",
+    "notIncludedUsed": "{{used}}, though {{plan}} doesn't include them",
+    "atLimit": "At limit",
+    "over": "Over the limit",
+    "meter": "{{resource}}: {{used}} of {{limit}}",
+    "unavailable": "Not reported",
+    "failed": "Usage couldn't be loaded"
+  },
+  "details": {
+    "title": "Billing details",
+    "description": "Who your invoices are made out to. The country, state and tax ID set the tax on each new invoice.",
+    "edit": "Edit",
+    "add": "Add details",
+    "emptyTitle": "No billing details yet",
+    "emptyLine": "The legal name, address and tax ID for your invoices.",
+    "legalName": "Legal name",
+    "email": "Billing email",
+    "address": "Address",
+    "taxId": "Tax ID",
+    "noTaxId": "None",
+    "placeOfSupply": "Place of supply on your invoices: {{place}}",
+    "loadFailed": "Billing details couldn't be loaded",
+    "panelEdit": "Edit billing details",
+    "panelAdd": "Add billing details",
+    "panelDescription": "Changes apply to invoices issued from now on.",
+    "emailHint": "Kept with your details. Qeet ID doesn't email invoices to it.",
+    "line1": "Address",
+    "line2": "Address line 2",
+    "city": "City",
+    "state": "State",
+    "stateHint": "On an Indian invoice, the state is the place of supply.",
+    "postalIndia": "PIN code",
+    "postal": "Postal code",
+    "country": "Country",
+    "countryPlaceholder": "Choose a country",
+    "taxType": {
+      "none": "None",
+      "gstin": "GSTIN",
+      "vat": "VAT number"
+    },
+    "gstinHint": "15 characters. Saving it doesn't verify the registration.",
+    "vatHint": "Saving it doesn't verify the registration.",
+    "gstinError": "Enter a 15-character GSTIN: digits and capital letters.",
+    "vatError": "Enter your VAT number.",
+    "save": "Save details",
+    "cancel": "Cancel",
+    "stepUp": "Save your billing details"
+  },
+  "payment": {
+    "title": "Payment method",
+    "name": "Collected at checkout",
+    "line": "Your payment provider holds the payment details, so they don't show here."
+  },
+  "invoices": {
+    "title": "Invoices",
+    "description": "Newest first, up to the last 100.",
+    "export": "Export CSV",
+    "emptyTitle": "No invoices yet",
+    "emptyDescription": "An invoice is issued each time a plan starts, Free included.",
+    "loadFailed": "Invoices couldn't be loaded",
+    "column": {
+      "invoice": "Invoice",
+      "period": "Period",
+      "taxable": "Taxable value",
+      "tax": "Tax",
+      "total": "Total",
+      "status": "Status"
+    },
+    "issued": "Issued {{date}}",
+    "row": "Invoice {{id}}",
+    "view": "View invoice",
+    "copyId": "Copy invoice ID",
+    "copied": "Invoice ID copied",
+    "copyFailed": "The invoice ID couldn't be copied",
+    "tax": {
+      "gst_cgst_sgst": "CGST + SGST · {{rate}}%",
+      "gst_igst": "IGST · {{rate}}%",
+      "gst_zero_rated": "Zero-rated",
+      "vat_reverse_charge": "Reverse charge",
+      "none": "No tax"
+    },
+    "status": {
+      "paid": "Paid",
+      "open": "Open",
+      "pending": "Pending",
+      "draft": "Draft",
+      "void": "Void",
+      "uncollectible": "Uncollectible",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "unknown": "Unknown"
+    }
+  },
+  "invoice": {
+    "title": "Invoice {{id}}",
+    "description": "{{plan}} · {{period}}",
+    "issued": "Issued {{date}}",
+    "amount": "Amount",
+    "taxable": "Taxable value",
+    "line": {
+      "cgst": "CGST {{rate}}%",
+      "sgst": "SGST {{rate}}%",
+      "igst": "IGST {{rate}}%"
+    },
+    "noLine": {
+      "gst_zero_rated": "GST, zero-rated",
+      "vat_reverse_charge": "VAT, reverse charge",
+      "none": "No tax"
+    },
+    "total": "Total",
+    "reference": "Reference",
+    "id": "Invoice ID",
+    "plan": "Plan",
+    "period": "Period",
+    "placeOfSupply": "Place of supply"
+  },
+  "cancel": {
+    "title": "Cancel subscription",
+    "description": "{{plan}} is paid for until {{date}}. Cancelling marks it to end then; nothing is refunded.",
+    "action": "Cancel subscription",
+    "confirmTitle": "Cancel the {{plan}} subscription?",
+    "confirmDescription": "{{plan}} stays until {{date}}, the end of the period paid for, so nothing changes for your people before then. Nothing is refunded.",
+    "confirmLabel": "Cancel subscription",
+    "stepUp": "Cancel your plan"
   },
   "contactSalesDialog": {
     "talkToSales": "Talk to sales",
-    "tellUsAboutYour": "Tell us about your needs and we'll reach out about Enterprise — SSO enforcement, SCIM, data residency, SLAs and more.",
+    "tellUsAboutYour": "About Enterprise: tell us what you need, and our sales team replies to your work email.",
     "yourName": "Your name",
-    "janeDoe": "Jane Doe",
     "workEmail": "Work email",
+    "emailRequired": "Enter your work email, so we can reply.",
     "company": "Company",
-    "acmeCorp": "Acme Corp",
     "teamSize": "Team size",
-    "select": "Select…",
+    "select": "Choose one",
     "whatAreYouLookingFor": "What are you looking for?",
-    "aFewWordsOn": "A few words on your use case, timeline, and requirements.",
+    "aFewWordsOn": "Your use case, timeline and requirements.",
+    "failed": "Your message didn't send",
+    "cancel": "Cancel",
     "sending": "Sending…",
     "send": "Send"
   },
   "upgradeGate": {
-    "upgradePlan": "Upgrade plan"
+    "upgradePlan": "Compare plans"
   },
   "toast": {
-    "thanksOurTeamWill": "Thanks — our team will be in touch shortly.",
+    "thanksOurTeamWill": "Sent. Our sales team will reply to your work email.",
     "trialStarted": "Trial started",
-    "billingProfileSaved": "Billing profile saved",
-    "subscriptionUpdated": "Subscription updated",
-    "subscriptionWillCancelAt": "Subscription will cancel at period end"
+    "billingProfileSaved": "Billing details saved",
+    "subscriptionUpdated": "Plan changed",
+    "subscriptionWillCancelAt": "The subscription is marked to end with its period"
   },
   "nav": {
     "settings": {

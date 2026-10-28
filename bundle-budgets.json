@@ -49,9 +49,6 @@
     "/_app/developer/webhooks/": 246.2,
     "/_app/developer/webhooks/$id": 246.4,
     "/_app/directory/attribute-mappings": 247.8,
-    "/_app/directory/connections/": 247.8,
-    "/_app/directory/connections/ldap": 217.2,
-    "/_app/directory/connections/scim": 217.2,
     "/_app/directory/sync-activity": 247.8,
     "/_app/directory/sync-errors": 247.8,
     "/_app/groups/": 98.7,
@@ -74,8 +71,8 @@
     "/_app/security/threats/ip-allowlist": 137.3,
     "/_app/security/threats/rate-limits": 137.3,
     "/_app/security/threats/risk-settings": 137.3,
-    "/_app/settings/billing": 49.6,
-    "/_app/settings/branding": 44,
+    "/_app/settings/billing": 62.1,
+    "/_app/settings/branding": 51.2,
     "/_app/settings/organization/domains": 196,
     "/_app/settings/organization/email-templates": 198.2,
     "/_app/settings/organization/general": 196,
@@ -95,6 +92,9 @@
     "/_auth/sso/callback": 148.6,
     "/create-organization": 109.1,
     "/select-organization": 280.2,
-    "/verify-email": 280.2
+    "/verify-email": 280.2,
+    "/_app/directory/connections/": 247.8,
+    "/_app/directory/connections/ldap": 217.2,
+    "/_app/directory/connections/scim": 217.2
   }
 }

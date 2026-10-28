@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { api } from "@/platform/api/client";
@@ -44,7 +44,7 @@ export const DEFAULT_EVENT_FILTERS: EventFilters = {
   offset: 0,
 };
 
-const eventSchema = z.object({
+export const eventSchema = z.object({
   id: z.string(),
   connection_id: z.string(),
   operation: z.string(),
@@ -66,23 +66,7 @@ const eventSchema = z.object({
   retry_of: z.string().nullable(),
   retryable: z.boolean(),
 });
-const eventPageSchema = z.object({
-  items: z.array(eventSchema),
-  total: z.number().nonnegative(),
-  limit: z.number(),
-  offset: z.number(),
-  summary: z.object({
-    total: z.number(),
-    successful: z.number(),
-    warnings: z.number(),
-    failed: z.number(),
-    average_duration_ms: z.number().nullable(),
-  }),
-  volume: z.array(z.object({ date: z.string(), users: z.number(), groups: z.number() })),
-});
-
 export type DirectoryEvent = z.infer<typeof eventSchema>;
-export type DirectoryEventPage = z.infer<typeof eventPageSchema>;
 
 export type ErrorFilters = Omit<EventFilters, "status"> & { severity: string; resolution: string };
 export const DEFAULT_ERROR_FILTERS: ErrorFilters = {
@@ -95,7 +79,7 @@ export const DEFAULT_ERROR_FILTERS: ErrorFilters = {
   offset: 0,
 };
 
-const errorPageSchema = z.object({
+export const errorPageSchema = z.object({
   items: z.array(eventSchema),
   total: z.number(),
   limit: z.number(),
@@ -113,100 +97,8 @@ const errorPageSchema = z.object({
 });
 export type DirectoryErrorPage = z.infer<typeof errorPageSchema>;
 
-const mappingSchema = z.object({
-  id: z.string(),
-  source_attribute: z.string(),
-  target_field: z.string(),
-  value_type: z.enum(["string", "array"]),
-  transform: z.enum(["none", "trim", "lowercase", "uppercase", "extract"]),
-  pattern: z.string(),
-  enabled: z.boolean(),
-  required: z.boolean(),
-  version: z.number().int(),
-});
-const mappingsSchema = z.object({
-  items: z.array(mappingSchema),
-  targets: z.record(z.string(), z.enum(["string", "array"])),
-});
-const mappingPreviewSchema = z.object({
-  profile: z.record(z.string(), z.unknown()),
-  values: z.record(z.string(), z.unknown()),
-  // Each issue's `message` is backend text, so the schema drops it; the code carries the meaning.
-  issues: z.array(z.object({ mapping_id: z.string(), field: z.string(), code: z.string() })),
-  valid: z.boolean(),
-});
-export type DirectoryMapping = z.infer<typeof mappingSchema>;
-export type DirectoryMappings = z.infer<typeof mappingsSchema>;
-export type MappingPreview = z.infer<typeof mappingPreviewSchema>;
-export type MappingInput = Omit<DirectoryMapping, "id" | "version"> & {
-  id?: string;
-  version?: number;
-};
-
-function mappingPath(tenantId: string | null, connectionId: string) {
-  return `/v1/tenants/${tenantId}/directory/connections/${encodeURIComponent(connectionId)}/mappings`;
-}
-
-export function useDirectoryMappings(connectionId: string) {
-  const tenantId = useTenantId();
-  const access = useCapabilities();
-  return useQuery({
-    queryKey: directoryKeys.mappings(tenantId, connectionId),
-    queryFn: () => api(mappingPath(tenantId, connectionId), { schema: mappingsSchema }),
-    enabled: !!tenantId && !!connectionId && access.can("connection.read"),
-  });
-}
-
-export function useSaveDirectoryMapping(connectionId: string) {
-  const tenantId = useTenantId();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (mapping: MappingInput) => {
-      const { id, ...body } = mapping;
-      return api(`${mappingPath(tenantId, connectionId)}${id ? `/${id}` : ""}`, {
-        method: id ? "PUT" : "POST",
-        body,
-        schema: mappingSchema,
-      });
-    },
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: directoryKeys.mappings(tenantId, connectionId),
-      }),
-    meta: { successMessage: "directory:toast.mappingSaved", silentError: true }, // the page shows the error
-  });
-}
-
-export function useDeleteDirectoryMappings(connectionId: string) {
-  const tenantId = useTenantId();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (ids: string[]) => {
-      for (const id of ids)
-        await api(`${mappingPath(tenantId, connectionId)}/${id}`, { method: "DELETE" });
-    },
-    onSettled: () =>
-      queryClient.invalidateQueries({
-        queryKey: directoryKeys.mappings(tenantId, connectionId),
-      }),
-    meta: { successMessage: "directory:toast.mappingsDeleted", silentError: true }, // the page shows the error
-  });
-}
-
-export function usePreviewDirectoryMappings(connectionId: string) {
-  const tenantId = useTenantId();
-  return useMutation({
-    mutationFn: ({ source }: { source: Record<string, unknown>; fingerprint: string }) =>
-      api(`${mappingPath(tenantId, connectionId)}/preview`, {
-        method: "POST",
-        body: { source },
-        schema: mappingPreviewSchema,
-      }),
-    meta: { silent: true }, // the page shows the result and any error
-  });
-}
-
-export function useDirectoryErrors(filters: ErrorFilters) {
+/** `keep`: a list's next page or filter keeps the rows on show while it loads. */
+export function useDirectoryErrors(filters: ErrorFilters, { keep = false } = {}) {
   const tenantId = useTenantId();
   const access = useCapabilities();
   return useQuery({
@@ -215,88 +107,7 @@ export function useDirectoryErrors(filters: ErrorFilters) {
       api(`/v1/tenants/${tenantId}/directory/errors`, { query: filters, schema: errorPageSchema }),
     enabled: !!tenantId && access.can("connection.read"),
     staleTime: 15_000,
-  });
-}
-
-export function useDirectoryErrorAction() {
-  const tenantId = useTenantId();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      events,
-      action,
-    }: {
-      events: DirectoryEvent[];
-      action: "retry" | "resolve";
-    }) => {
-      let succeeded = 0;
-      for (const event of events) {
-        const response = await api(
-          `/v1/tenants/${tenantId}/directory/errors/${event.id}/${action}`,
-          {
-            method: "POST",
-            schema: z.object({ succeeded: z.boolean() }),
-          },
-        );
-        if (response.succeeded) succeeded++;
-      }
-      return { succeeded, total: events.length };
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
-  });
-}
-
-export async function fetchDirectoryErrorExport(tenantId: string, filters: ErrorFilters) {
-  const records: DirectoryEvent[] = [];
-  for (let offset = 0; offset < 10000; offset += 100) {
-    const page = await api(`/v1/tenants/${tenantId}/directory/errors`, {
-      query: { ...filters, limit: 100, offset },
-      schema: errorPageSchema,
-    });
-    if (page.total > 10000)
-      throw new Error("Narrow the date range before exporting more than 10,000 records.");
-    records.push(...page.items);
-    if (records.length >= page.total || page.items.length === 0) break;
-  }
-  return records;
-}
-
-export function useDirectoryEvents(filters: EventFilters, enabled = true) {
-  const tenantId = useTenantId();
-  const access = useCapabilities();
-  return useQuery({
-    queryKey: directoryKeys.events(tenantId, filters),
-    queryFn: () =>
-      api(`/v1/tenants/${tenantId}/directory/activity`, {
-        query: filters,
-        schema: eventPageSchema,
-      }),
-    enabled: !!tenantId && access.can("connection.read") && enabled,
-    staleTime: 15_000,
-  });
-}
-
-export async function fetchDirectoryExport(tenantId: string, filters: EventFilters) {
-  const records: DirectoryEvent[] = [];
-  for (let offset = 0; offset < 10000; offset += 100) {
-    const page = await api(`/v1/tenants/${tenantId}/directory/activity`, {
-      query: { ...filters, limit: 100, offset },
-      schema: eventPageSchema,
-    });
-    if (page.total > 10000)
-      throw new Error("Narrow the date range before exporting more than 10,000 records.");
-    records.push(...page.items);
-    if (records.length >= page.total || page.items.length === 0) break;
-  }
-  return records;
-}
-
-export function useCreateDirectoryAlert() {
-  const tenantId = useTenantId();
-  return useMutation({
-    mutationFn: (body: { name: string; connection_id: string | null; threshold: number }) =>
-      api(`/v1/tenants/${tenantId}/directory/alerts`, { method: "POST", body }),
-    meta: { successMessage: "directory:toast.directoryAlertCreated" },
+    placeholderData: keep ? keepPreviousData : undefined,
   });
 }
 

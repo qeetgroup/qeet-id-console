@@ -5,4 +5,7 @@ export const timelineKeys = {
   tenant: (tenantId: string | null) => ["timeline", tenantId] as const,
   person: (tenantId: string | null, userId: string, filters: object) =>
     [...timelineKeys.tenant(tenantId), userId, filters] as const,
+  /** The page's reads of one person's period: its summary, its sign-ins, its events. */
+  period: (tenantId: string | null, userId: string, part: string, query: object) =>
+    [...timelineKeys.tenant(tenantId), userId, part, query] as const,
 };

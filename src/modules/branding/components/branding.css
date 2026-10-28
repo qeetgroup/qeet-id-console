@@ -1,0 +1,335 @@
+/*
+ * Settings › Branding: My account's ruled sections (account.css, loaded with the console's
+ * styles) beside the page's own subject, the sign-in page drawn small. Placement and token values
+ * only; the organisation's colours arrive as custom properties set inline (they're its data), each
+ * falling back to the Qeet look the sign-in page shows without them.
+ */
+
+.brand-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 30rem);
+  align-items: start;
+  gap: var(--qx-space-layout-sm);
+  max-inline-size: 76rem;
+}
+
+.brand-sections {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.brand-sections > .qx-alert {
+  margin-block-end: var(--qx-space-layout-sm);
+}
+
+.brand-preview-col {
+  position: sticky;
+  inset-block-start: var(--qx-space-layout-sm);
+  min-inline-size: 0;
+}
+
+/* The logo in its row, at the row icon's size, on no tile of its own. */
+.brand-logo-thumb {
+  inline-size: 32px;
+  block-size: 32px;
+  object-fit: contain;
+  border-radius: var(--qx-radius-control);
+}
+
+.account-icon:has(.brand-logo-thumb) {
+  background: transparent;
+}
+
+.brand-logo-form {
+  max-inline-size: 30rem;
+}
+
+/* A colour: its swatch and hex. */
+.brand-swatch-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.brand-swatch {
+  display: inline-block;
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-strong);
+  border-radius: var(--qx-radius-sm);
+  background: var(--qx-color-surface-raised);
+}
+
+/* The swatch in the hex field is the native picker, laid over it. */
+.brand-swatch-pick {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.brand-swatch-pick input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.brand-swatch-pick:has(input:focus-visible) {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: var(--qx-focus-ring-offset);
+}
+
+.brand-colour-edit {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+}
+
+.brand-hex {
+  max-inline-size: 12rem;
+}
+
+.brand-hex input {
+  font: var(--qx-typography-code-md);
+  font-variant-ligatures: none;
+  text-transform: uppercase;
+}
+
+.brand-hex input::placeholder {
+  font: var(--qx-typography-body-md);
+  text-transform: none;
+}
+
+.brand-presets {
+  display: flex;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+.brand-preset {
+  inline-size: 24px;
+  block-size: 24px;
+  padding: 0;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-sm);
+  cursor: pointer;
+}
+
+.brand-preset[aria-pressed="true"] {
+  outline: var(--qx-border-width-strong) solid var(--qx-color-border-strong);
+  outline-offset: 1px;
+}
+
+.brand-preset:focus-visible {
+  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
+  outline-offset: var(--qx-focus-ring-offset);
+}
+
+/* ── The sign-in page, drawn small ─────────────────────────────────────────── */
+
+.brand-preview {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.brand-preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.brand-preview-head > span {
+  display: grid;
+  gap: 2px;
+}
+
+.brand-frame {
+  margin: 0;
+  overflow: hidden;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-surface-raised);
+  color: var(--qx-color-text-default);
+}
+
+.brand-frame-bar {
+  display: flex;
+  align-items: center;
+  block-size: 24px;
+  padding-inline: var(--qx-space-inset-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  background: var(--qx-color-bg-neutral-subtle);
+  color: var(--qx-color-text-subtle);
+}
+
+.brand-frame-bar .account-mono {
+  font-size: 10px;
+}
+
+.brand-frame-page {
+  display: grid;
+  grid-template-columns: 0.85fr 1fr;
+  min-block-size: 21rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.brand-frame[data-mode="phone"] .brand-frame-page {
+  grid-template-columns: minmax(0, 1fr);
+  inline-size: 15rem;
+  margin-inline: auto;
+}
+
+/* The brand panel: the theme's sunken surface, a glow in the brand colour, the headline. */
+.brand-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-md);
+  border-inline-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  background-color: var(--qx-color-surface-sunken);
+  background-image: radial-gradient(
+    60% 45% at 88% 10%,
+    color-mix(in oklab, var(--brand-preview, var(--qx-color-bg-brand-bold)) 16%, transparent),
+    transparent 72%
+  );
+}
+
+.brand-panel-line {
+  font: var(--qx-typography-title-md);
+  line-height: 1.1;
+}
+
+/* The headline's last word stays Qeet's colour on the sign-in page, whatever the brand colour. */
+.brand-panel-accent {
+  color: var(--qx-color-text-brand);
+}
+
+.brand-form-side {
+  display: grid;
+  place-items: center;
+  padding: var(--qx-space-inset-md);
+  background: var(--brand-preview-page, var(--qx-color-surface-canvas));
+}
+
+/* A phone shows the form on its own, on the card's surface: no background, no card frame. */
+.brand-frame[data-mode="phone"] .brand-form-side {
+  background: var(--qx-color-surface-raised);
+}
+
+.brand-card {
+  display: grid;
+  gap: 6px;
+  inline-size: 100%;
+  max-inline-size: 13.5rem;
+  padding: var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.brand-frame[data-mode="phone"] .brand-card {
+  padding: 0;
+  border: 0;
+}
+
+.brand-card img,
+.brand-panel img {
+  justify-self: start;
+  max-inline-size: 8rem;
+  object-fit: contain;
+}
+
+.brand-card svg:first-child,
+.brand-panel svg:first-child {
+  justify-self: start;
+}
+
+.brand-card-title {
+  margin-block-start: 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.brand-card-line,
+.brand-field-label {
+  color: var(--qx-color-text-subtle);
+}
+
+.brand-field-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.brand-outline,
+.brand-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  block-size: 24px;
+  padding-inline: 6px;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-strong);
+  border-radius: 3px;
+}
+
+.brand-outline-end {
+  margin-inline-start: auto;
+}
+
+.brand-field {
+  color: var(--qx-color-text-subtlest);
+}
+
+.brand-button {
+  display: grid;
+  place-items: center;
+  block-size: 24px;
+  border-radius: 3px;
+  background: var(--brand-preview, var(--qx-color-bg-brand-bold));
+  color: var(--brand-preview-label, var(--qx-color-text-on-brand));
+  font-weight: 600;
+}
+
+.brand-link {
+  color: var(--brand-preview, var(--qx-color-text-brand));
+}
+
+.brand-quiet {
+  justify-self: center;
+  color: var(--qx-color-text-subtle);
+}
+
+@media (max-width: 1100px) {
+  .brand-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .brand-preview-col {
+    position: static;
+  }
+}
+
+/* A phone shows the preview first: it's what the page is about. */
+@media (max-width: 640px) {
+  .brand-preview-col {
+    order: -1;
+  }
+}
