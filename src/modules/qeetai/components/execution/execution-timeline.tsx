@@ -14,7 +14,7 @@ export function ExecutionTimeline({
 }) {
   if (executions.length === 0) return null;
   return (
-    <div className="flex flex-col gap-2">
+    <div className="qai-tools">
       {executions.map((execution) => (
         <ToolCallCard
           key={execution.id}

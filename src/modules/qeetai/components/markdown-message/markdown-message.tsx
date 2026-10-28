@@ -1,7 +1,7 @@
-import { cn } from "@qeetrix/ui";
+import { Link } from "@qeetrix/react";
+import { CodeBlock, type CodeBlockProps } from "@qeetrix/react/experimental";
+import { Link as RouterLink } from "@tanstack/react-router";
 import { type ReactNode, useMemo } from "react";
-
-import { CodeBlock } from "../conversation/code-block";
 
 // Sentinel origin for resolving relative links with the browser's own URL parser.
 const RELATIVE_BASE = "https://relative.invalid";
@@ -129,7 +129,7 @@ const INLINE_PATTERNS: { re: RegExp; render: (m: RegExpMatchArray, key: string) 
   {
     re: /`([^`]+)`/,
     render: (m, key) => (
-      <code key={key} className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em]">
+      <code key={key} className="qai-code">
         {m[1]}
       </code>
     ),
@@ -150,16 +150,26 @@ const INLINE_PATTERNS: { re: RegExp; render: (m: RegExpMatchArray, key: string) 
       const href = safeHref(capture(m, 2));
       // Unsafe target: render the label as plain text.
       if (!href) return <span key={key}>{m[1]}</span>;
+      // A console page opens in place, beside the panel; a site in a new tab.
+      if (href.startsWith("/")) {
+        const url = new URL(href, RELATIVE_BASE);
+        const to = (
+          <RouterLink
+            to={url.pathname as never}
+            search={Object.fromEntries(url.searchParams) as never}
+            hash={url.hash.slice(1) || undefined}
+          />
+        );
+        return (
+          <Link key={key} render={to}>
+            {m[1]}
+          </Link>
+        );
+      }
       return (
-        <a
-          key={key}
-          href={href}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="text-primary underline underline-offset-2"
-        >
+        <Link key={key} href={href} external={!href.startsWith("mailto:")}>
           {m[1]}
-        </a>
+        </Link>
       );
     },
   },
@@ -195,21 +205,45 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
   return out;
 }
 
-const HEADING_CLASS = "font-heading font-semibold text-foreground";
+// The fence's language, as CodeBlock colours it; anything else (HCL, Go) is plain text.
+const LANGUAGES: Record<string, NonNullable<CodeBlockProps["language"]>> = {
+  sh: "shell",
+  bash: "shell",
+  shell: "shell",
+  zsh: "shell",
+  console: "shell",
+  js: "javascript",
+  javascript: "javascript",
+  jsx: "javascript",
+  ts: "typescript",
+  typescript: "typescript",
+  tsx: "tsx",
+  json: "json",
+  xml: "xml",
+  html: "html",
+};
 
 function BlockView({ block, id }: { block: Block; id: string }) {
   switch (block.kind) {
-    case "code":
-      return <CodeBlock code={block.code} lang={block.lang} />;
-    case "heading": {
-      const Tag = `h${Math.min(block.level + 2, 6)}` as "h3" | "h4" | "h5" | "h6";
+    case "code": {
+      const lang = block.lang?.toLowerCase();
       return (
-        <Tag className={cn(HEADING_CLASS, "mt-1 text-sm")}>{renderInline(block.text, id)}</Tag>
+        <CodeBlock
+          code={block.code}
+          language={(lang && LANGUAGES[lang]) || "text"}
+          title={lang && !LANGUAGES[lang] ? lang : undefined}
+          wrap
+        />
       );
+    }
+    case "heading": {
+      // The panel's title is an h2, so an answer's headings start at h3.
+      const Tag = `h${Math.min(block.level + 2, 6)}` as "h3" | "h4" | "h5" | "h6";
+      return <Tag>{renderInline(block.text, id)}</Tag>;
     }
     case "ul":
       return (
-        <ul className="list-disc space-y-1 ps-5">
+        <ul>
           {block.items.map((item, j) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: re-parsed text; streaming only appends
             <li key={`${id}-${j}`}>{renderInline(item, `${id}-${j}`)}</li>
@@ -218,7 +252,7 @@ function BlockView({ block, id }: { block: Block; id: string }) {
       );
     case "ol":
       return (
-        <ol className="list-decimal space-y-1 ps-5">
+        <ol>
           {block.items.map((item, j) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: re-parsed text; streaming only appends
             <li key={`${id}-${j}`}>{renderInline(item, `${id}-${j}`)}</li>
@@ -227,7 +261,7 @@ function BlockView({ block, id }: { block: Block; id: string }) {
       );
     case "quote":
       return (
-        <blockquote className="border-s-2 ps-3 text-muted-foreground italic">
+        <blockquote>
           {block.lines.map((line, j) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: re-parsed text; streaming only appends
             <p key={`${id}-${j}`}>{renderInline(line, `${id}-${j}`)}</p>
@@ -235,7 +269,7 @@ function BlockView({ block, id }: { block: Block; id: string }) {
         </blockquote>
       );
     default:
-      return <p className="whitespace-pre-wrap">{renderInline(block.text, id)}</p>;
+      return <p>{renderInline(block.text, id)}</p>;
   }
 }
 
@@ -247,7 +281,7 @@ function BlockView({ block, id }: { block: Block; id: string }) {
 export function MarkdownMessage({ content }: { content: string }) {
   const blocks = useMemo(() => parseBlocks(content), [content]);
   return (
-    <div className="flex flex-col gap-2.5 text-sm leading-relaxed text-foreground">
+    <div className="qai-md">
       {blocks.map((block, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: content keys would remount on every token
         <BlockView key={`b-${i}`} block={block} id={`b-${i}`} />

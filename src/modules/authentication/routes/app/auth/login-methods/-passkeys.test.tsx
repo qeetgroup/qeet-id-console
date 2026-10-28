@@ -1,15 +1,14 @@
 // @vitest-environment jsdom
 // Lives beside the route with a "-" prefix so the router generator ignores it.
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
-vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/components/page-header", () => ({
-  PageHeader: ({ actions }: { actions?: ReactNode }) => <div>{actions}</div>,
-}));
+vi.mock("@/platform/api/client", async () => {
+  const { ApiError } = await import("@/platform/errors/api-error");
+  return { api: vi.fn(), ApiError };
+});
+vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -18,6 +17,13 @@ vi.mock("@simplewebauthn/browser", () => ({
 }));
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
+}));
+vi.mock("@/modules/dashboard", async () =>
+  (await import("@/modules/authentication/components/methods/__tests__/stubs")).dashboardStub(),
+);
+vi.mock("@tanstack/react-router", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-router")>()),
+  Link: (await import("@/modules/authentication/components/methods/__tests__/stubs")).RouterLink,
 }));
 // Records what each action asks the shared sensitive-action runner for, then runs it for real.
 const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
@@ -36,123 +42,112 @@ vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) 
   };
 });
 
-import { toast } from "sonner";
+import { startRegistration } from "@simplewebauthn/browser";
+import { renderPage } from "@/modules/authentication/components/methods/__tests__/kit";
 import { api } from "@/platform/api/client";
-import { ApiError } from "@/platform/errors/api-error";
-import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./passkeys";
 
 const PasskeysPage = Route.options.component as () => React.JSX.Element;
 
-let begin: () => Promise<unknown>;
+let list: { items: unknown[]; enrollment_allowed?: boolean };
+let methods: { total: number };
+let finished: Record<string, unknown> | undefined;
+let removed: string | undefined;
+let renamed: unknown;
 
 beforeEach(() => {
-  begin = async () => ({ session_id: "s1", publicKey: {} });
+  list = {
+    items: [
+      {
+        id: "p1",
+        user_id: "u1",
+        name: "MacBook",
+        transports: ["internal"],
+        created_at: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+        last_used_at: null,
+      },
+    ],
+  };
+  methods = { total: 2 };
+  finished = removed = renamed = undefined;
   sensitiveCalls.length = 0;
-  vi.mocked(toast.error).mockReset();
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/passkeys" && method === "GET") {
-      return {
-        items: [
-          {
-            id: "p1",
-            user_id: "u1",
-            name: "MacBook",
-            transports: ["internal"],
-            created_at: new Date().toISOString(),
-            last_used_at: null,
-          },
-        ],
-      };
+    if (path === "/v1/passkeys" && method === "GET") return list;
+    if (path === "/v1/auth/sign-in-methods") return methods;
+    if (path === "/v1/passkeys/register/begin") return { session_id: "s1", publicKey: {} };
+    if (path === "/v1/passkeys/register/finish") {
+      finished = options?.body as Record<string, unknown>;
+      return undefined;
     }
-    if (path === "/v1/passkeys/register/begin") return begin();
-    if (path === "/v1/passkeys/register/finish") return undefined;
-    if (path === "/v1/passkeys/p1" && method === "DELETE") return undefined;
+    if (path === "/v1/passkeys/p1" && method === "DELETE") {
+      removed = "p1";
+      return undefined;
+    }
+    if (path === "/v1/passkeys/p1" && method === "PATCH") {
+      renamed = options?.body;
+      return list.items[0];
+    }
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
 
 afterEach(cleanup);
 
-function renderPage() {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+describe("Sign-in › Passkeys (your own)", () => {
+  it("lists your passkeys with when each was added and used", async () => {
+    renderPage(<PasskeysPage />);
+    expect(await screen.findByText("MacBook")).toBeTruthy();
+    expect(screen.getByText(/added 3 days ago · not used yet/i)).toBeTruthy();
   });
-  render(
-    <QueryClientProvider client={client}>
-      <SensitiveActionProvider>
-        <PasskeysPage />
-      </SensitiveActionProvider>
-    </QueryClientProvider>,
-  );
-}
 
-function writes() {
-  return vi
-    .mocked(api)
-    .mock.calls.map(([path, options]) => `${options?.method ?? "GET"} ${path}`)
-    .filter((r) => !r.startsWith("GET "));
-}
+  it("adds one under the list, with the optional name, behind the step-up", async () => {
+    renderPage(<PasskeysPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Add a passkey" }));
+    fireEvent.change(screen.getByLabelText("Name (optional)"), {
+      target: { value: "Work laptop" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    await waitFor(() => expect(finished).toMatchObject({ name: "Work laptop" }));
+    expect(startRegistration).toHaveBeenCalled();
+    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Add a passkey" });
+  });
 
-describe("Login methods › Passkeys", () => {
-  it("removes a passkey only once the confirmation is accepted", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Remove" }));
+  it("renames one where it's listed", async () => {
+    renderPage(<PasskeysPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Rename MacBook" }));
+    const row = screen.getByRole("listitem");
+    fireEvent.change(within(row).getByRole("textbox"), { target: { value: "Office Mac" } });
+    fireEvent.click(within(row).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(renamed).toEqual({ name: "Office Mac" }));
+  });
+
+  it("confirms removing one with what happens", async () => {
+    renderPage(<PasskeysPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Remove MacBook" }));
     const dialog = await screen.findByRole("alertdialog");
-    expect(within(dialog).getByText('Remove passkey "MacBook"?')).toBeTruthy();
-    expect(writes()).toEqual([]);
-
+    expect(within(dialog).getByText(/you can no longer sign in with it/i)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Remove" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/passkeys/p1"]));
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Remove this passkey" });
+    await waitFor(() => expect(removed).toBe("p1"));
   });
 
-  it("keeps the passkey when the confirmation is cancelled", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: "Remove" }));
-    const dialog = await screen.findByRole("alertdialog");
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
-    expect(writes()).toEqual([]);
-  });
-
-  it("registers a passkey through the step-up path without a confirmation", async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: /register passkey/i }));
-
+  it("won't remove your only way to sign in, and says so", async () => {
+    methods = { total: 1 };
+    renderPage(<PasskeysPage />);
+    await screen.findByText("MacBook");
     await waitFor(() =>
-      expect(writes()).toEqual([
-        "POST /v1/passkeys/register/begin",
-        "POST /v1/passkeys/register/finish",
-      ]),
+      expect(
+        screen.getByRole("button", { name: "Remove MacBook" }).getAttribute("aria-disabled"),
+      ).toBe("true"),
     );
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Register a passkey" });
-    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
+    expect(screen.getByText(/it's your only way to sign in/i)).toBeTruthy();
   });
 
-  it("reports a failed registration once, without the backend's message", async () => {
-    begin = async () => {
-      throw new ApiError(500, "internal", "boom");
-    };
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: /register passkey/i }));
-
-    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
-    expect(JSON.stringify(vi.mocked(toast.error).mock.calls)).not.toContain("boom");
-  });
-
-  it("says nothing more when the person backs out of the step-up", async () => {
-    begin = async () => {
-      throw new ApiError(403, "step_up_required", "step up");
-    };
-    renderPage();
-    fireEvent.click(await screen.findByRole("button", { name: /register passkey/i }));
-
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/passkeys/register/begin"]));
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(toast.error).not.toHaveBeenCalled();
+  it("says when the organisation has passkeys turned off, and offers no Add", async () => {
+    list = { ...list, enrollment_allowed: false };
+    renderPage(<PasskeysPage />);
+    expect(await screen.findByText(/has turned off passkeys/i)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Add a passkey" })).toBeNull();
   });
 });
