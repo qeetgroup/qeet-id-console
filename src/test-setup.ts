@@ -3,7 +3,7 @@
 import "@/i18n";
 import "@/app/register";
 
-// Polyfills the browser APIs jsdom lacks and the @qeetrix/ui primitives touch on mount. Each is
+// Polyfills the browser APIs jsdom lacks and the Base UI primitives touch on mount. Each is
 // guarded, so this is a no-op in the default `node` environment.
 if (typeof window !== "undefined") {
   if (!window.matchMedia) {

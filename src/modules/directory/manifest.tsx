@@ -58,14 +58,14 @@ export const manifest = defineModule({
     {
       id: "cmd.directory.scim",
       text: "directory:commands.scim",
-      icon: <WorkflowIcon className="size-4" />,
+      icon: <WorkflowIcon />,
       to: "/directory/connections/scim",
       capability: "connection.read",
     },
     {
       id: "cmd.directory.ldap",
       text: "directory:commands.ldap",
-      icon: <ServerIcon className="size-4" />,
+      icon: <ServerIcon />,
       to: "/directory/connections/ldap",
       capability: "connection.read",
     },

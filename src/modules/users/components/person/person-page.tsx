@@ -77,20 +77,15 @@ export interface Standing {
  * last active and since when they're here. The views: Overview (how they sign in, what they can
  * do and why, recent activity, their details), Access, Security, Sessions and Activity.
  */
-export function UserDetailPage({
-  userId,
-  tab,
-  onTabChange,
-  activity,
-  onActivityChange,
-}: {
-  userId: string;
+/** The open view, and the Activity view's period and filters: all from the address. */
+interface PersonView {
   tab: User360Tab;
   onTabChange: (tab: User360Tab) => void;
-  /** The Activity view's period and filters, from the address. */
   activity: TimelineSearch;
   onActivityChange: (next: TimelineSearch) => void;
-}) {
+}
+
+export function UserDetailPage({ userId, ...view }: { userId: string } & PersonView) {
   const { t } = useTranslation("users");
   const access = useCapabilities();
   const tenantId = useTenantId();
@@ -156,16 +151,7 @@ export function UserDetailPage({
   const home = user.tenant_id === tenantId;
   const self = user.id === me;
   const standing: Standing = { canWrite, home, self, manage: canWrite && home && !self };
-  return (
-    <Person
-      user={user}
-      standing={standing}
-      tab={tab}
-      onTabChange={onTabChange}
-      activity={activity}
-      onActivityChange={onActivityChange}
-    />
-  );
+  return <Person user={user} standing={standing} {...view} />;
 }
 
 function Person({
@@ -175,14 +161,7 @@ function Person({
   onTabChange,
   activity,
   onActivityChange,
-}: {
-  user: UserDetail;
-  standing: Standing;
-  tab: User360Tab;
-  onTabChange: (tab: User360Tab) => void;
-  activity: TimelineSearch;
-  onActivityChange: (next: TimelineSearch) => void;
-}) {
+}: { user: UserDetail; standing: Standing } & PersonView) {
   const { t } = useTranslation("users");
   const locale = formatLocale();
   const access = useCapabilities();

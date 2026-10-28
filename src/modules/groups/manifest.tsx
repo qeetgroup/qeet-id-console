@@ -21,7 +21,7 @@ export const manifest = defineModule({
     {
       id: "cmd.create.group",
       text: "groups:commands.createGroup",
-      icon: <UsersRoundIcon className="size-4" />,
+      icon: <UsersRoundIcon />,
       to: "/groups",
       capability: "group.write",
     },

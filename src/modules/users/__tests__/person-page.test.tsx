@@ -137,6 +137,16 @@ beforeEach(() => {
           },
         ],
       };
+    if (path === "/v1/activity/summary")
+      return {
+        total: 3,
+        unique_actors: 1,
+        security_alerts: 0,
+        by_severity: {},
+        by_category: { authentication: 3 },
+        by_outcome: { success: 3, warning: 0, failed: 0, info: 0 },
+        series: [],
+      };
     if (path === "/v1/activity")
       return {
         events: [

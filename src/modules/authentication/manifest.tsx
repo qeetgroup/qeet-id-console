@@ -160,7 +160,7 @@ export const manifest = defineModule({
     {
       id: "cmd.navigate.oauth-clients",
       text: "authentication:commands.oauthClients",
-      icon: <LogInIcon className="size-4" />,
+      icon: <LogInIcon />,
       to: "/auth/connections/oidc",
       capability: "connection.write",
     },
@@ -168,20 +168,20 @@ export const manifest = defineModule({
       // Setup links live on the SSO list, a search away.
       id: "cmd.navigate.setup-links",
       text: "authentication:commands.setupLinks",
-      icon: <LinkIcon className="size-4" />,
+      icon: <LinkIcon />,
       to: "/auth/connections/saml",
       capability: "connection.read",
     },
     {
       id: "cmd.navigate.passkeys",
       text: "authentication:commands.passkeys",
-      icon: <FingerprintPatternIcon className="size-4" />,
+      icon: <FingerprintPatternIcon />,
       to: "/auth/login-methods/passkeys",
     },
     {
       id: "cmd.navigate.mfa",
       text: "authentication:commands.mfa",
-      icon: <ShieldCheckIcon className="size-4" />,
+      icon: <ShieldCheckIcon />,
       to: "/auth/mfa/totp",
     },
   ],

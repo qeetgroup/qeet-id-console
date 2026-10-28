@@ -58,9 +58,9 @@ folders, every nav/command/shortcut target is a real route, a fake module shows 
 | `errors/` | Error taxonomy and user-safe copy |
 | `telemetry/` | Redaction, the server's JSON-line log (production, stdout, server-only), path templates, the browser error and Web Vitals reporter and its report endpoint, the DEV console logger, `captureError`, request ids (`tracing.ts`); nothing goes to a third party |
 | `query/` | QueryClient, global 403 recapability handler |
-| `forms/` | The forms kit: TanStack Form + `@qeetrix/ui` fields, server field errors |
-| `components/` | `page-header.tsx`, `theme-toggle.tsx`, `error-reference.tsx`, the leak-safe `data-state.tsx` and `status-pill.tsx` (status words from the catalogue) |
-| `theme/` | Theme provider wiring |
+| `forms/` | The forms kit: TanStack Form + `@qeetrix/react` fields, server field errors |
+| `components/` | `entry-shell.tsx` (the frame outside the console), `state-page.tsx`, `error-reference.tsx` |
+| `theme/` | The colour scheme: its storage and first-paint script (`color-scheme.ts`), `useIsDark` |
 
 **L4 pointers**
 
@@ -84,8 +84,6 @@ telemetry/client-reporter.ts   browser errors + Web Vitals: deduped, ≤10 a pag
 telemetry/client-report.ts     reportClientTelemetry server function: Zod allowlist and bounds
 api/server-proxy-log.ts        api.request / session.refresh lines for proxyApiRequest
 errors/user-message.ts         the leak stop
-components/data-state.tsx      DataState that maps errors through the leak stop (lint-enforced)
-components/status-pill.tsx     StatusPill naming a status from `common:status.*` (lint-enforced)
 config/server-config.ts        production config check, called from src/start.ts
 security/security-headers.ts   response headers, applied by Nitro route rules (vite.config.ts)
 security/content-security-policy.ts  the nonce CSP, set per response by src/start.ts
@@ -187,8 +185,7 @@ ignores; they render the route's component, so they exercise the module page thr
 **Path** `src/shared/` · **May import** only `@/shared`, `@/i18n`, or external packages.
 
 ```text
-components/           confirm-dialog · logo-field · one-time-secret · page-state · qeet-mark ·
-                      unsaved-changes-guard · data-table/{bulk-bar,list-toolbar,selection,sort-header}
+components/           logo-field · one-time-secret · unsaved-changes-guard
 hooks/                use-create-intent · use-list-view
 utils/                data-export · format · initials · ip-format · search-params
 data/                 country-dial-codes · regions · team-sizes

@@ -70,8 +70,6 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | Report endpoint (Zod allowlist) | `src/platform/telemetry/client-report.ts` |
 | Path → template for logs | `src/platform/telemetry/path-template.ts` |
 | **Backend-message leak stop**, field and reference copy | `src/platform/errors/user-message.ts` |
-| Leak-safe `DataState` (lint-enforced) | `src/platform/components/data-state.tsx` |
-| Translated `StatusPill` (lint-enforced) | `src/platform/components/status-pill.tsx` |
 | Error toast with support reference | `src/platform/errors/error-toast.ts` |
 | Support reference (request id) | `src/platform/components/error-reference.tsx` |
 | **CSRF policy** | `src/platform/security/csrf-policy.ts` |
@@ -94,7 +92,7 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | Query client, 403 recapability | `src/platform/query/query-client.ts` |
 | Query devtools plugin (dev only) | `src/platform/query/query-devtools.tsx` |
 | Feature flags (declared in manifests; `CONSOLE_FLAGS_OFF`) | `src/platform/feature-flags/` |
-| Page chrome | `src/platform/components/page-header.tsx` |
+| Page chrome | each page's `PageHeader` (`@qeetrix/react/experimental`), with `PageBreadcrumb` / `PageTabs` (`src/modules/dashboard/components/frame/page-place.tsx`) |
 | Frame of the pages outside the console (sign-in to create-organization) | `src/platform/components/entry-shell.tsx`, `entry-shell.css` |
 | My account: its area (header, column of pages), page parts and the security sections | `src/modules/account/components/account-area.tsx`, `account-parts.tsx`, `account.css`, `security/` |
 
@@ -109,7 +107,7 @@ routes render), `routes/` and an `api/keys.ts` query-key factory. A new one:
 
 ## Shared
 
-`src/shared/components/` (incl. `data-table/`, `confirm-dialog.tsx`, `one-time-secret.tsx`),
+`src/shared/components/` (`logo-field.tsx`, `one-time-secret.tsx`, `unsaved-changes-guard.tsx`),
 `src/shared/hooks/`, `src/shared/utils/` (incl. `search-params.ts`, the route search-schema
 helpers), `src/shared/data/` (`regions.ts`, `team-sizes.ts`).
 

@@ -140,14 +140,14 @@ export const manifest = defineModule({
     {
       id: "cmd.create.role",
       text: "authorization:commands.createRole",
-      icon: <ShieldCheckIcon className="size-4" />,
+      icon: <ShieldCheckIcon />,
       to: "/authorization/roles",
       capability: "role.write",
     },
     {
       id: "cmd.navigate.policy-builder",
       text: "authorization:commands.policyBuilder",
-      icon: <GaugeIcon className="size-4" />,
+      icon: <GaugeIcon />,
       to: "/authorization/builder",
       capability: "policy.write",
     },

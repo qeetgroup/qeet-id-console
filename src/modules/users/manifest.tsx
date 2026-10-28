@@ -48,14 +48,14 @@ export const manifest = defineModule({
     {
       id: "cmd.create.user",
       text: "users:commands.createUser",
-      icon: <UserPlusIcon className="size-4" />,
+      icon: <UserPlusIcon />,
       to: "/users",
       capability: "user.write",
     },
     {
       id: "cmd.navigate.users",
       text: "users:commands.users",
-      icon: <UsersIcon className="size-4" />,
+      icon: <UsersIcon />,
       to: "/users",
       capability: "user.read",
     },
@@ -63,14 +63,14 @@ export const manifest = defineModule({
       // Suspended is a filter on All users; this keeps it one search away.
       id: "cmd.navigate.suspended",
       text: "users:commands.suspended",
-      icon: <UserXIcon className="size-4" />,
+      icon: <UserXIcon />,
       to: "/users/suspended",
       capability: "user.read",
     },
     {
       id: "cmd.navigate.invitations",
       text: "users:commands.invitations",
-      icon: <MailIcon className="size-4" />,
+      icon: <MailIcon />,
       to: "/invitations",
       capability: "user.write",
     },

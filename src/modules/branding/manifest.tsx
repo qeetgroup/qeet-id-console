@@ -21,7 +21,7 @@ export const manifest = defineModule({
     {
       id: "cmd.navigate.branding",
       text: "branding:commands.branding",
-      icon: <PaletteIcon className="size-4" />,
+      icon: <PaletteIcon />,
       to: "/settings/branding",
       capability: "branding.write",
     },

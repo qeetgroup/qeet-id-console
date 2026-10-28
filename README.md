@@ -14,15 +14,15 @@ The console uses an institutional enterprise language rather than stock shadcn s
 - WCAG 2.2 AA contrast targets and semantic status colours;
 - desktop operator efficiency without sacrificing touch and mobile access.
 
-The shared `@qeetrix/ui` package remains the component foundation. Console-specific product character lives in `src/styles.css`; do not fork Qeetrix primitives or add local shadcn copies.
+`@qeetrix/react` is the component foundation, with `@qeetrix/tokens` for every colour, space and type size. Each page has a small token-only CSS file; do not fork Qeetrix primitives or restyle a library component's shape.
 
 ## Stack
 
 - TanStack Start and TanStack Router file-based routes
 - React 19 with React Compiler
 - TanStack Query for server state
-- Tailwind CSS 4 through the Vite plugin
-- Qeetrix UI for accessible primitives and design tokens
+- `@qeetrix/react` (Base UI) for accessible components, `@qeetrix/tokens` for design tokens
+- Plain CSS on `--qx-*` tokens, over a small base reset (`src/base.css`); no Tailwind
 - Recharts through Qeetrix chart wrappers
 - i18next for localization
 - Vitest for unit tests
@@ -69,7 +69,7 @@ app → modules → platform → shared
 2. **Modules own product capability** — a module imports another module only via its public barrel (`@/modules/<name>`), never its internals.
 3. **Platform owns cross-cutting infrastructure** — the HTTP client, session, errors, security, telemetry, feature flags, config. Imports only platform + shared; it reads modules only through the manifest registry.
 4. **Shared owns generic primitives** — no domain-specific imports.
-5. **Qeetrix owns UI primitives** (`@qeetrix/ui`); **console CSS owns identity** (`styles.css`).
+5. **Qeetrix owns UI primitives** (`@qeetrix/react`, `@qeetrix/tokens`); **page CSS owns layout**, with tokens only.
 
 Violations (wrong-direction imports, cross-module internals, import cycles, direct `fetch`) fail CI via Biome and `src/__tests__/module-boundaries.test.ts`.
 
@@ -337,7 +337,7 @@ output.
 4. Add the custom domain **`console.id.qeet.in`** → create the CNAME Vercel provides in GoDaddy
    (`console.id` → `cname.vercel-dns.com`). That host is already in the backend's `ALLOWED_ORIGINS`.
 
-`@qeetrix/ui` resolves from the public npm registry, so a standalone install needs no monorepo.
+`@qeetrix/react`, `@qeetrix/tokens` and `@qeetrix/icons` resolve from the public npm registry, so a standalone install needs no monorepo.
 
 ## Related repositories
 
@@ -348,4 +348,4 @@ output.
 | [`qeet-id-website`](https://github.com/qeetgroup/qeet-id-website) | Marketing site — `id.qeet.in` |
 | `qeet-id-deploy` | Backend infrastructure + CD (Terraform) |
 
-Part of the [Qeet Group](https://github.com/qeetgroup) suite; built on the shared `@qeetrix/ui` design system.
+Part of the [Qeet Group](https://github.com/qeetgroup) suite; built on the shared Qeetrix design system (`@qeetrix/react`).
