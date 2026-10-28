@@ -84,6 +84,13 @@ export const ERROR_CODES = {
   USER_IMPORT_BATCH_TOO_LARGE: "user.import_batch_too_large",
   USER_IMPORT_FILE_TOO_LARGE: "user.import_file_too_large",
   USER_IMPORT_SOURCE_INVALID: "user.import_source_invalid",
+  // Who manages an account: a whole-account change (status, password, two-step, deletion) is the
+  // home organisation's; another one removes the person instead. 403/409s whose fallbacks name
+  // no fix.
+  USER_MANAGED_ELSEWHERE: "user.managed_elsewhere",
+  USER_CREDENTIALS_SHARED: "user.credentials_shared",
+  USER_MANAGED_HERE: "user.managed_here",
+  USER_DOMAIN_MANAGED: "user.domain_managed_elsewhere",
   WEBHOOK_URL_REQUIRED: "webhook.url_required", // 422
   WEBHOOK_EVENTS_REQUIRED: "webhook.events_required", // 422
   WEBHOOK_EVENT_UNKNOWN: "webhook.event_unknown", // 422: not in the server's catalogue

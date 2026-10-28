@@ -47,23 +47,8 @@
     "submit": "Benutzer erstellen",
     "submitting": "Wird erstellt…"
   },
-  "edit": {
-    "title": "Benutzer bearbeiten",
-    "description": "Die E-Mail ist unveränderlich. Um ein Passwort zu ändern, verwenden Sie die Aktion Passwort festlegen.",
-    "email": "E-Mail",
-    "displayName": "Anzeigename",
-    "phone": "Telefon",
-    "phoneHelp": "E.164-Format. Leer lassen zum Löschen.",
-    "status": "Status",
-    "statusActive": "Aktiv",
-    "statusSuspended": "Gesperrt",
-    "statusSelfHelp": "Sie können Ihr eigenes Konto von diesem Bildschirm nicht sperren.",
-    "statusHelp": "Sperren verhindert die Anmeldung, behält aber das Konto."
-  },
   "setPassword": {
-    "title": "Neues Passwort festlegen",
     "newPassword": "Neues Passwort",
-    "newPasswordHelp": "Mindestens 8 Zeichen.",
     "confirmPassword": "Neues Passwort bestätigen",
     "mismatch": "Passwörter stimmen nicht überein",
     "submit": "Passwort aktualisieren"
