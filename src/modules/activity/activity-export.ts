@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import i18n, { formatLocale } from "@/i18n";
 import { toastError } from "@/platform/errors/error-toast";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
+import { applyFilters } from "./activity-filters";
 import { fetchActivityPage } from "./activity-history";
 import type { ActivityEvent, ActivityFilters } from "./types/activity.types";
 
@@ -54,7 +55,9 @@ export function useActivityExport(filters: ActivityFilters) {
         let truncated = false;
         do {
           const page = await fetchActivityPage(filters, cursor, EXPORT_PAGE);
-          all.push(...page.events);
+          // What the server can't filter (an address, a resource, an exact outcome), the browser
+          // does, as the list does, so the file holds what the list shows.
+          all.push(...applyFilters(page.events, filters));
           cursor = page.next_cursor ?? "";
           if (all.length >= EXPORT_ROW_CAP) {
             truncated = true;

@@ -1,55 +1,61 @@
+import { Inline, Select } from "@qeetrix/react";
+import { DateRangePicker } from "@qeetrix/react/experimental";
 import { useTranslation } from "react-i18next";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@qeetrix/ui";
-import { CalendarClockIcon } from "@qeetrix/icons";
-import { lazy, Suspense } from "react";
 
 import { type DateRange, TIME_PRESETS } from "../time-range";
 
-// The picker brings react-day-picker and date-fns, needed only for a custom range, so it loads
-// when first shown: the activity barrel, and so this file, ships in the app's entry.
-const ActivityTimeRangePicker = lazy(() =>
-  import("./activity-time-range-picker").then((m) => ({ default: m.ActivityTimeRangePicker })),
-);
+/** The presets a time-range control can offer, each labelled `activityTimeRange.presets.<value>`. */
+export type TimeRangePreset = "all" | "15m" | "1h" | "24h" | "7d" | "30d" | "90d" | "custom";
+
+const DEFAULT_PRESETS: readonly TimeRangePreset[] = TIME_PRESETS.map((p) => p.value);
 
 interface ActivityTimeRangeProps {
   preset: string;
   customRange: DateRange | undefined;
   onPresetChange: (preset: string) => void;
   onCustomRangeChange: (range: DateRange | undefined) => void;
+  /** The presets offered, in order. Default: TIME_PRESETS (with "all"). */
+  presets?: readonly TimeRangePreset[];
+  /** Placement of the whole control only. */
+  className?: string;
+  /** Placement of the preset select only. */
+  selectClassName?: string;
+  /** Placement of the date-range field only. */
+  pickerClassName?: string;
 }
 
-/** Renders the time-range preset select, plus a date-range picker for "custom". */
+/** The time-range preset select, and the dates of a custom range beside it once it's chosen. */
 export function ActivityTimeRange({
   preset,
   customRange,
   onPresetChange,
   onCustomRangeChange,
+  presets = DEFAULT_PRESETS,
+  className,
+  selectClassName,
+  pickerClassName,
 }: ActivityTimeRangeProps) {
   const { t } = useTranslation("activity");
   return (
-    <div className="flex items-center gap-2">
-      <Select value={preset} onValueChange={(v) => v && onPresetChange(v)}>
-        <SelectTrigger className="w-44 gap-2" aria-label={t("activityTimeRange.timeRange")}>
-          <CalendarClockIcon
-            className="size-3.5 shrink-0 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {TIME_PRESETS.map((p) => (
-            <SelectItem key={p.value} value={p.value}>
-              {t(`activityTimeRange.presets.${p.value}`)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {preset === "custom" && (
-        <Suspense fallback={null}>
-          <ActivityTimeRangePicker value={customRange} onValueChange={onCustomRangeChange} />
-        </Suspense>
-      )}
-    </div>
+    <Inline gap="sm" wrap={false} className={className}>
+      <Select
+        aria-label={t("activityTimeRange.timeRange")}
+        className={selectClassName}
+        value={preset as TimeRangePreset}
+        onValueChange={(value) => value && onPresetChange(String(value))}
+        items={presets.map((value) => ({
+          value,
+          label: t(`activityTimeRange.presets.${value}`),
+        }))}
+      />
+      {preset === "custom" ? (
+        <DateRangePicker
+          aria-label={t("activityTimeRange.pickDates")}
+          className={pickerClassName}
+          value={customRange ?? null}
+          onValueChange={(range) => onCustomRangeChange(range ?? undefined)}
+        />
+      ) : null}
+    </Inline>
   );
 }

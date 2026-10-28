@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { api } from "@/platform/api/client";
 
-import type { ActivityEvent, ActivityFilters } from "./types/activity.types";
+import type { ActivityEvent, ActivityFilters, Severity } from "./types/activity.types";
 import { useTenantId } from "@/platform/auth/session";
 import { activityKeys } from "./api/keys";
 
@@ -12,6 +12,18 @@ export type ActivityHistoryPage = {
 };
 
 const HISTORY_LIMIT = 50;
+/** The Activity page reads the log 100 events at a time (the server allows up to 200). */
+export const ACTIVITY_PAGE_LIMIT = 100;
+
+const SEVERITY_ORDER: Severity[] = ["info", "success", "warning", "error", "critical"];
+
+/**
+ * The server's `severity` is a minimum (info < success < warning < error < critical), not a list:
+ * send the lowest one chosen, and the browser keeps only the chosen ones from what comes back.
+ */
+export function minimumSeverity(severity: Severity[]): Severity | undefined {
+  return SEVERITY_ORDER.find((s) => severity.includes(s));
+}
 
 /** Returns the /v1/activity query for filters and a cursor; exports reuse it to match the view. */
 export function buildActivityQuery(
@@ -23,15 +35,13 @@ export function buildActivityQuery(
     limit,
     cursor: cursor || undefined,
     types: filters.types.join(",") || undefined,
-    severity: filters.severity.join(",") || undefined,
-    category: filters.category.join(",") || undefined,
+    severity: minimumSeverity(filters.severity),
+    // The server matches one category exactly; several are matched in the browser.
+    category: filters.category.length === 1 ? filters.category[0] : undefined,
     actor: filters.actor || undefined,
     q: filters.q || undefined,
     from: filters.from || undefined,
     to: filters.to || undefined,
-    source: filters.source || undefined,
-    status: filters.status || undefined,
-    ip: filters.ip || undefined,
   };
 }
 
@@ -57,16 +67,22 @@ export async function fetchActivityPage(
   }
 }
 
-/** Loads the cursor-paginated activity history for `filters`. */
+/**
+ * Loads the cursor-paginated activity history for `filters`, ACTIVITY_PAGE_LIMIT events a page.
+ * It isn't refetched on focus: the Activity page adds newer events itself, and a refetch would
+ * move the rows under the reader.
+ */
 export function useActivityHistory(filters: ActivityFilters, enabled = true) {
   const tenantId = useTenantId();
   return useInfiniteQuery({
     queryKey: activityKeys.history(tenantId, filters),
-    queryFn: ({ pageParam }: { pageParam: string }) => fetchActivityPage(filters, pageParam),
+    queryFn: ({ pageParam }: { pageParam: string }) =>
+      fetchActivityPage(filters, pageParam, ACTIVITY_PAGE_LIMIT),
     initialPageParam: "",
     getNextPageParam: (page: ActivityHistoryPage) => page.next_cursor ?? undefined,
     enabled,
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
     meta: { silent: true },
   });
 }

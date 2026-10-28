@@ -4,8 +4,11 @@ import { useCallback } from "react";
 import { activitySearchSchema } from "@/modules/activity";
 import { ActivityPage, type ActivityPageProps } from "@/modules/activity/pages";
 
+// Rebuilt on @qeetrix/react: the page draws its own header. Its filters, range and open event live
+// in the address (other pages link to one event with `?range=custom&from=…&to=…&event=<id>`). The
+// schema comes from the barrel, which the shell carries already (the Dashboard reads the feed).
 export const Route = createFileRoute("/_app/activity")({
-  staticData: { capability: "audit.read" },
+  staticData: { capability: "audit.read", pageHeader: true },
   validateSearch: activitySearchSchema,
   component: ActivityRoute,
 });

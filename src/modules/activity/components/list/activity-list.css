@@ -1,0 +1,89 @@
+/*
+ * Overview › Activity (activity-page.tsx). Placement and token values only (--qx-*). The band,
+ * toolbar and filters are the Users page's (people.css, loaded with the console's styles); only
+ * the event cells and the range's dates are new.
+ */
+
+/* The band's "other" categories: a legend entry that isn't a link, set as the links are. */
+.act-band-rest {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* The range's dates sit beside its select, wide enough for "12/10/2026 – 28/10/2026". */
+.act-range {
+  flex: 0 1 auto;
+}
+
+.act-dates {
+  inline-size: 15rem;
+}
+
+/* The saved views close the row, at its end. */
+.act-toolbar-end {
+  margin-inline-start: auto;
+}
+
+/* A cell's two lines: its fact, then a quieter detail. */
+.act .act-two {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.act .act-two small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.act .act-two small.act-mono,
+.act .act-mono {
+  font-family: var(--qx-typography-code-sm-font-family);
+}
+
+.act-title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+}
+
+.act-clip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.act-end {
+  justify-items: end;
+}
+
+/* Who: an avatar, or Qeet ID's mark for what it recorded itself, then the name. */
+.act-who {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+}
+
+.act-system {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--qx-radius-full);
+  background: var(--qx-color-bg-neutral-subtle);
+  color: var(--qx-color-icon-subtle);
+}
+
+.act-system svg {
+  inline-size: 14px;
+  block-size: 14px;
+}

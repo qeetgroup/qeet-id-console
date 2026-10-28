@@ -12,10 +12,20 @@ describe("formatEventTitle", () => {
     // Real server shape: domain.action_with_underscores.
     expect(formatEventTitle({ type: "auth.login_succeeded" })).toBe("Successful sign-in");
     expect(formatEventTitle({ type: "user.mfa_required_set" })).toBe("MFA requirement enabled");
-    expect(formatEventTitle({ type: "tenant.created" })).toBe("Organization created");
+    expect(formatEventTitle({ type: "tenant.created" })).toBe("Organisation created");
     expect(formatEventTitle({ type: "auth.mfa_challenged" })).toBe("MFA challenge issued");
     expect(formatEventTitle({ type: "auth.mfa_enrollment_deferred" })).toBe("MFA setup postponed");
     expect(formatEventTitle({ type: "auth.mfa_verified" })).toBe("MFA verification succeeded");
+  });
+
+  it("words the sign-in and security events the log records most", () => {
+    expect(formatEventTitle({ type: "auth.token_reuse_detected" })).toBe("Refresh token reused");
+    expect(formatEventTitle({ type: "auth.sign_in_failed" })).toBe("Sign-in failed");
+    expect(formatEventTitle({ type: "auth.sign_in_confirmed" })).toBe("Sign-in confirmed by email");
+    expect(formatEventTitle({ type: "mfa.totp_enroll_started" })).toBe(
+      "Authenticator app set-up started",
+    );
+    expect(formatEventTitle({ type: "role.assigned" })).toBe("Role assigned");
   });
 
   it("words invitations and data requests", () => {
