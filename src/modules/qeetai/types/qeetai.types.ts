@@ -1,8 +1,5 @@
 import type { ToolExecution } from "../tools/types/tool.types";
 
-/** How the workspace panel is presented. */
-export type QeetAIMode = "docked" | "floating" | "fullscreen";
-
 /** Who authored a message in a conversation. */
 export type MessageRole = "user" | "assistant" | "system";
 
@@ -38,9 +35,7 @@ export interface Conversation {
   serverId?: string;
 }
 
-/** Persisted UI preferences for the panel (mode, width, collapsed rail). */
+/** The panel's saved preference: its width. */
 export interface WorkspacePrefs {
-  mode: QeetAIMode;
-  dockWidth: number; // Docked-panel width in px. Clamped to [MIN_DOCK_WIDTH, MAX_DOCK_WIDTH]
-  collapsed: boolean; // Collapsed to a slim rail (docked mode only)
+  dockWidth: number; // The panel's width in px, clamped to [MIN_DOCK_WIDTH, MAX_DOCK_WIDTH]
 }

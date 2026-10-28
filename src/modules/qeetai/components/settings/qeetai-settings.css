@@ -1,0 +1,40 @@
+/*
+ * Settings › Qeet AI (qeetai-settings-page.tsx). The sections, rows, facts and the panel that
+ * opens under a row are My account's (account.css, loaded for the whole console); this adds only
+ * the page's column and the provider form's own needs. Token values only (--qx-*).
+ */
+
+.qai-settings {
+  display: grid;
+}
+
+/* Three provider tiles side by side need more than a one-field form's width. */
+.account-panel-form.qai-provider-form {
+  max-inline-size: 44rem;
+}
+
+.qai-provider-fields {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.qai-tile-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* Model IDs, keys and endpoints read as code: exact, ligatures off. */
+.qai-mono input {
+  font: var(--qx-typography-code-sm);
+  font-variant-ligatures: none;
+}
+
+.qai-mono-line {
+  overflow-wrap: anywhere;
+}
