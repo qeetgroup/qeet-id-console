@@ -1,56 +1,51 @@
+import { formatDate } from "@qeetrix/react";
 import { useTranslation } from "react-i18next";
 
+import { formatLocale } from "@/i18n";
 import {
   settleSensitiveAction,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 
-import { type Org, useDeleteOrg, useUpdateOrg } from "./api/orgs";
+import { type Org, useCancelOrgDeletion, useScheduleOrgDeletion } from "./api/orgs";
+import { DELETION_GRACE_DAYS, deletionDue } from "./orgs-model";
 
 /**
- * Returns the actions that suspend, reactivate or delete an organization, confirmed and stepped
- * up the same way on the list and the detail page.
+ * Deleting the organisation you're in, and calling it off. Deleting is the server's: an owner asks,
+ * it's deleted DELETION_GRACE_DAYS later, and any owner can keep it until then. The confirm says
+ * when and what happens; the server then asks the person to confirm it's them, every time.
+ * Suspending isn't offered: the server always refuses it (an organisation can't suspend itself).
  */
 export function useOrgActions() {
   const { t } = useTranslation("organizations");
   const runSensitive = useSensitiveAction();
-  const update = useUpdateOrg();
-  const del = useDeleteOrg();
+  const schedule = useScheduleOrgDeletion();
+  const cancel = useCancelOrgDeletion();
 
   return {
-    pending: update.isPending || del.isPending,
-    // Suspending ends every member's access, so it is confirmed; reactivating restores it.
-    toggleSuspend: (org: Org) =>
-      org.status === "suspended"
-        ? runSensitive({
-            capability: "tenant.write",
-            actionLabel: t("actionLabels.reactivate"),
-            run: () => update.mutateAsync({ id: org.id, body: { status: "active" } }),
-          }).catch(settleSensitiveAction)
-        : runSensitive({
-            capability: "tenant.write",
-            confirm: {
-              title: t("suspend.title"),
-              description: t("suspend.description", { name: org.name }),
-              confirmLabel: t("rowActions.suspend"),
-              tone: "destructive",
-            },
-            actionLabel: t("actionLabels.suspend"),
-            run: () => update.mutateAsync({ id: org.id, body: { status: "suspended" } }),
-          }).catch(settleSensitiveAction),
-    remove: (org: Org, onDeleted?: () => void) =>
+    pending: schedule.isPending || cancel.isPending,
+    remove: (org: Org, members: number) =>
       runSensitive({
         capability: "tenant.write",
         confirm: {
-          title: t("tenants.delete.title"),
-          description: t("delete.description", { name: org.name, slug: org.slug }),
-          confirmLabel: t("tenants.delete.delete"),
+          title: t("page.delete.confirmTitle", { name: org.name }),
+          description: t("page.delete.confirmDescription", {
+            date: formatDate(deletionDue(Date.now()), formatLocale(), { dateStyle: "long" }),
+            days: DELETION_GRACE_DAYS,
+            count: members,
+            n: members,
+          }),
+          confirmLabel: t("page.delete.confirm"),
           tone: "destructive",
         },
-        actionLabel: t("rowActions.delete"),
-        run: () => del.mutateAsync(org.id),
-      })
-        .then(onDeleted)
-        .catch(settleSensitiveAction),
+        actionLabel: t("page.delete.action"),
+        run: () => schedule.mutateAsync(org.id),
+      }).catch(settleSensitiveAction),
+    keep: (org: Org) =>
+      runSensitive({
+        capability: "tenant.write",
+        actionLabel: t("page.delete.keepAction", { name: org.name }),
+        run: () => cancel.mutateAsync(org.id),
+      }).catch(settleSensitiveAction),
   };
 }

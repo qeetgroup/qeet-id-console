@@ -325,6 +325,41 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
       ],
     };
   }
+  // The organisation's own history (audit events on the tenant), and its verified domain.
+  if (path === `${tenantPath}/audit` && query.get("resource_type") === "tenant") {
+    const change = (id, action, actor, daysAgo) => ({
+      id: `cccccccc-cccc-4ccc-8ccc-cccccccccc0${id}`,
+      tenant_id: tenantId,
+      actor_user_id: actor,
+      actor_type: "user",
+      action,
+      resource_type: "tenant",
+      resource_id: tenantId,
+      ip: "203.0.113.34",
+      user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/153.0.0.0 Safari/537.36",
+      created_at: ago(daysAgo * DAY_MS),
+    });
+    return {
+      items: [
+        change(3, "security_policy.updated", people[0]?.id, 12),
+        change(2, "branding.updated", principalId, 200),
+        change(1, "tenant.created", principalId, 300),
+      ],
+      next_cursor: "",
+    };
+  }
+  if (path === `${tenantPath}/domains`) {
+    return {
+      items: [
+        {
+          id: "dddddddd-dddd-4ddd-8ddd-dddddddddd01",
+          domain: `${tenant.slug}.example`,
+          verified_at: CREATED,
+          created_at: CREATED,
+        },
+      ],
+    };
+  }
   if (path === `${tenantPath}/retention`)
     return { deleted_users_enabled: true, deleted_users_days: 90 };
   if (path === "/v1/activity") return { events: activity(query, principalId), next_cursor: "" };
