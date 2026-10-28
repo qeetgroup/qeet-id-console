@@ -225,6 +225,28 @@ belong to (every page of `GET /v1/tenants`), joined with your place in each from
 The filters live in the address (`?q=&role=&plan=&region=&look=`), and the rules are pure functions
 in `orgs-model.ts`. The logo sits in the page title until `PageHeader` has a leading slot (QTRX-48).
 
+## Directories › Connections
+
+Directory › Directories has four tabs: Connections, Sync activity, Sync errors, Mappings. SCIM and
+LDAP / AD are connections, not tabs: each opens from its row or Add connection, at
+`/directory/connections/scim` and `/directory/connections/ldap` (the old `/auth/connections/scim`
+and `/ldap` redirect), and the command palette finds them by their commands. Connections
+(`modules/directory/components/connections/`) is rebuilt on `@qeetrix/react`:
+
+- `connections-page.tsx`: the header, its band (`connections-band.tsx`: where the organisation's
+  people come from, each connection's health, the last 30 days, what needs a look), the table and
+  the offers for a kind not set up; `connections-table.tsx`: the columns and a row's menu.
+- A connection's health is the server's (its latest event; past 24 hours, "not checked"), with its
+  latest open problem under it. The 30 days are the server's volume (people and groups synced a
+  day) with the month's failed events on top.
+- `use-connection-actions.ts`: Test, Turn on/off (turning off is confirmed), Delete and Revoke, each
+  confirm saying what happens to people. Their calls live in `api/directory.ts`; the SCIM and LDAP
+  pages' own copies in the authentication module go when those pages move here.
+
+`?show=failing|draft` narrows the list from the band. The rules are pure functions in
+`connections-model.ts`. LDAP doesn't count its people yet (QTID-964); MenuItem has no description
+line (QTRX-50).
+
 ## Styling rules
 
 - Use semantic tokens such as `bg-card`, `text-muted-foreground`, `text-success`, and `border-border`.

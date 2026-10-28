@@ -1,17 +1,31 @@
-import { Button, cn, Input } from "@qeetrix/ui";
-import { useStore } from "@tanstack/react-store";
 import {
   CheckIcon,
+  EllipsisIcon,
   MessageSquareTextIcon,
   PencilIcon,
   PinIcon,
-  SearchIcon,
+  PinOffIcon,
   TrashIcon,
   XIcon,
 } from "@qeetrix/icons";
-import type { TFunction } from "i18next";
-import { useMemo, useState } from "react";
+import {
+  formatDate,
+  formatDateTime,
+  formatRelativeTime,
+  IconButton,
+  Input,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+  VisuallyHidden,
+} from "@qeetrix/react";
+import { EmptyState, SearchField } from "@qeetrix/react/experimental";
+import { useStore } from "@tanstack/react-store";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import { formatLocale } from "@/i18n";
 import { useQeetAIRuntime } from "@/modules/qeetai/qeetai-provider";
 import {
@@ -23,24 +37,26 @@ import {
 import { workspaceActions } from "@/modules/qeetai/store/workspace-store";
 import type { Conversation } from "@/modules/qeetai/types/qeetai.types";
 
-function formatRelative(ts: number, t: TFunction<["qeetai", "common"]>): string {
-  const diff = Date.now() - ts;
-  const min = Math.floor(diff / 60_000);
-  if (min < 1) return t("qeetai:historyPanel.justNow");
-  if (min < 60) return t("qeetai:historyPanel.minutesAgo", { count: min });
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return t("qeetai:historyPanel.hoursAgo", { count: hr });
-  const day = Math.floor(hr / 24);
-  if (day < 7) return t("qeetai:historyPanel.daysAgo", { count: day });
-  return new Date(ts).toLocaleDateString(formatLocale());
+// Past this, "3 weeks ago" says less than the date itself.
+const RELATIVE_FOR_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** When a conversation was last used: relative within a month, the date after. */
+function when(ts: number, locale: string, now: number): string {
+  return now - ts < RELATIVE_FOR_MS
+    ? formatRelativeTime(ts, locale, now)
+    : formatDate(ts, locale, { dateStyle: "medium" });
 }
 
-/** Renders the conversation history: search, then pin, rename, delete or open. */
+/**
+ * The person's conversations in this browser: search, then open one, or pin, rename or delete it
+ * from its menu. The one that's open carries the Ember bar.
+ */
 export function HistoryPanel() {
   const { t } = useTranslation("qeetai");
   const conversations = useStore(conversationStore, (s) => s.conversations);
   const activeId = useStore(conversationStore, (s) => s.activeId);
   const [query, setQuery] = useState("");
+  const now = Date.now();
 
   const rows = useMemo(
     () => sortConversations(searchConversations(conversations, query)),
@@ -48,181 +64,184 @@ export function HistoryPanel() {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center gap-2 border-b p-3">
-        <div className="relative flex-1">
-          <SearchIcon
-            className="pointer-events-none absolute inset-s-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
+    <section className="qai-history" aria-label={t("historyPanel.label")}>
+      <div className="qai-history-head">
+        {conversations.length > 0 ? (
+          <SearchField
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("historyPanel.searchConversations")}
-            aria-label={t("historyPanel.searchConversations2")}
-            className="ps-8"
+            onValueChange={setQuery}
+            placeholder={t("historyPanel.searchPlaceholder")}
+            aria-label={t("historyPanel.search")}
           />
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t("historyPanel.closeHistory")}
-          title={t("historyPanel.closeHistory")}
-          onClick={() => workspaceActions.closeHistory()}
-        >
-          <XIcon />
-        </Button>
+        ) : null}
+        <p>{t("historyPanel.kept")}</p>
       </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto p-2">
+      <div className="qai-history-body">
         {rows.length === 0 ? (
-          <p className="p-6 text-center text-sm text-muted-foreground">
-            {t(query ? "historyPanel.noMatches" : "historyPanel.empty")}
-          </p>
+          <EmptyState
+            size="section"
+            icon={MessageSquareTextIcon}
+            title={t(query ? "historyPanel.noMatches" : "historyPanel.empty")}
+            description={query ? undefined : t("historyPanel.emptyText")}
+          />
         ) : (
-          <ul className="flex flex-col gap-0.5">
+          <ul className="qai-history-list">
             {rows.map((conversation) => (
               <ConversationRow
                 key={conversation.id}
                 conversation={conversation}
-                active={conversation.id === activeId}
+                current={conversation.id === activeId}
+                now={now}
               />
             ))}
           </ul>
         )}
       </div>
-    </div>
+    </section>
   );
 }
 
 function ConversationRow({
   conversation,
-  active,
+  current,
+  now,
 }: {
   conversation: Conversation;
-  active: boolean;
+  current: boolean;
+  now: number;
 }) {
   const { t } = useTranslation(["qeetai", "common"]);
-  const [renaming, setRenaming] = useState(false);
-  const [draft, setDraft] = useState(conversation.title);
   const { confirm } = useQeetAIRuntime();
+  const [renaming, setRenaming] = useState(false);
+  const locale = formatLocale();
   // A conversation has no title until its first message names it.
   const title = conversation.title || t("historyPanel.untitled");
 
   async function remove() {
     const ok = await confirm({
-      title: t("historyPanel.deleteConversation"),
-      body: t("historyPanel.deleteBody"),
-      affected: [{ label: t("historyPanel.conversation"), value: title }],
+      title: t("historyPanel.deleteTitle"),
+      body: t("historyPanel.deleteBody", { title }),
+      affected: [],
       confirmText: t("common:actions.delete"),
       tone: "destructive",
     });
     if (ok) conversationActions.remove(conversation.id);
   }
 
-  function select() {
-    conversationActions.setActive(conversation.id);
-    workspaceActions.closeHistory();
-  }
-
-  function commitRename() {
-    conversationActions.rename(conversation.id, draft);
-    setRenaming(false);
-  }
-
   if (renaming) {
     return (
-      <li className="flex items-center gap-1 rounded-md bg-accent/50 p-1.5">
-        <Input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commitRename();
-            if (e.key === "Escape") setRenaming(false);
-          }}
-          aria-label={t("historyPanel.conversationTitle")}
-          className="h-8"
-          autoFocus
-        />
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          aria-label={t("historyPanel.saveTitle")}
-          onClick={commitRename}
-        >
-          <CheckIcon className="size-4" />
-        </Button>
+      <li>
+        <RenameRow conversation={conversation} onDone={() => setRenaming(false)} />
       </li>
     );
   }
 
   return (
     <li>
-      <div
-        className={cn(
-          "group flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-accent",
-          active && "bg-accent",
-        )}
-      >
+      <div className="qai-history-row" data-current={current ? "" : undefined}>
         <button
           type="button"
-          onClick={select}
-          className="flex min-w-0 flex-1 items-center gap-2 text-start focus-visible:outline-none"
+          className="qai-history-open"
+          aria-current={current ? "true" : undefined}
+          onClick={() => {
+            conversationActions.setActive(conversation.id);
+            workspaceActions.closeHistory();
+          }}
         >
-          <MessageSquareTextIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-          <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-1">
-              {conversation.pinned ? (
-                <PinIcon
-                  className="size-3 shrink-0 text-primary"
-                  aria-label={t("historyPanel.pinned")}
-                />
-              ) : null}
-              <span className="truncate text-sm font-medium">{title}</span>
-            </span>
-            <span className="block truncate text-xs text-muted-foreground">
-              {t("historyPanel.details", {
-                time: formatRelative(conversation.updatedAt, t),
-                count: conversation.messages.length,
-              })}
-            </span>
+          <span className="qai-history-title">
+            {conversation.pinned ? (
+              <PinIcon shape="sharp" variant="filled" size={14} aria-hidden="true" />
+            ) : null}
+            <span className="qai-history-name">{title}</span>
+            {/* After the title, so the row's name still starts with it. */}
+            {conversation.pinned ? (
+              <VisuallyHidden>{`, ${t("historyPanel.pinned")}`}</VisuallyHidden>
+            ) : null}
           </span>
+          <small>
+            <time
+              dateTime={new Date(conversation.updatedAt).toISOString()}
+              title={formatDateTime(conversation.updatedAt, locale)}
+            >
+              {when(conversation.updatedAt, locale, now)}
+            </time>
+            {" · "}
+            {t("historyPanel.messages", { count: conversation.messages.length })}
+          </small>
         </button>
-
-        <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-          <Button
-            size="icon-xs"
-            variant="ghost"
-            aria-label={t(conversation.pinned ? "historyPanel.unpin" : "historyPanel.pin")}
-            title={t(conversation.pinned ? "historyPanel.unpin" : "historyPanel.pin")}
-            onClick={() => conversationActions.togglePin(conversation.id)}
-            className={conversation.pinned ? "text-primary" : undefined}
-          >
-            <PinIcon className="size-3.5" />
-          </Button>
-          <Button
-            size="icon-xs"
-            variant="ghost"
-            aria-label={t("historyPanel.rename")}
-            title={t("historyPanel.rename")}
-            onClick={() => {
-              setDraft(conversation.title);
-              setRenaming(true);
-            }}
-          >
-            <PencilIcon className="size-3.5" />
-          </Button>
-          <Button
-            size="icon-xs"
-            variant="ghost"
-            aria-label={t("historyPanel.deleteConversation2")}
-            title={t("common:actions.delete")}
-            onClick={remove}
-          >
-            <TrashIcon className="size-3.5" />
-          </Button>
-        </div>
+        <Menu>
+          <MenuTrigger
+            render={
+              <IconButton
+                icon={EllipsisIcon}
+                size="sm"
+                tone="neutral"
+                aria-label={t("historyPanel.actions", { title })}
+              />
+            }
+          />
+          <MenuContent align="end">
+            <MenuItem
+              icon={conversation.pinned ? PinOffIcon : PinIcon}
+              onClick={() => conversationActions.togglePin(conversation.id)}
+            >
+              {t(conversation.pinned ? "historyPanel.unpin" : "historyPanel.pin")}
+            </MenuItem>
+            <MenuItem icon={PencilIcon} onClick={() => setRenaming(true)}>
+              {t("historyPanel.rename")}
+            </MenuItem>
+            <MenuSeparator />
+            <MenuItem icon={TrashIcon} tone="danger" onClick={() => void remove()}>
+              {t("common:actions.delete")}
+            </MenuItem>
+          </MenuContent>
+        </Menu>
       </div>
     </li>
+  );
+}
+
+/** Renaming in place: the title's field where it was, Save and Cancel after it. */
+function RenameRow({ conversation, onDone }: { conversation: Conversation; onDone: () => void }) {
+  const { t } = useTranslation(["qeetai", "common"]);
+  const [draft, setDraft] = useState(conversation.title);
+  const fieldRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fieldRef.current?.focus();
+    fieldRef.current?.select();
+  }, []);
+
+  function save() {
+    conversationActions.rename(conversation.id, draft);
+    onDone();
+  }
+
+  return (
+    <div className="qai-history-rename">
+      <Input
+        ref={fieldRef}
+        value={draft}
+        onValueChange={(value) => setDraft(value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") save();
+          if (e.key === "Escape") onDone();
+        }}
+        aria-label={t("historyPanel.conversationTitle")}
+      />
+      <IconButton
+        icon={CheckIcon}
+        size="sm"
+        aria-label={t("historyPanel.saveTitle")}
+        onClick={save}
+      />
+      <IconButton
+        icon={XIcon}
+        size="sm"
+        tone="neutral"
+        aria-label={t("common:actions.cancel")}
+        onClick={onDone}
+      />
+    </div>
   );
 }

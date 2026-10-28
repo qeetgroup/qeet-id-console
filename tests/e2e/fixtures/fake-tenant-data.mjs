@@ -366,6 +366,60 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
   if (path === `${tenantPath}/analytics/overview`) return analyticsOverview();
   if (path === `${tenantPath}/roles`) return { items: roles(tenantId) };
   if (path === `${tenantPath}/groups`) return { items: groups(tenantId) };
+  // Directories › Connections: a SCIM endpoint and an Active Directory people sign in with, and a
+  // month of activity (the summary and each day's people and groups synced).
+  if (path === `${tenantPath}/directory/connections`) {
+    return {
+      items: [
+        {
+          id: `scim:${tenantId}`,
+          name: "SCIM",
+          reference: "/scim/v2",
+          type: "scim",
+          status: "configured",
+          health: "healthy",
+          environment: null,
+          scope: "users-and-groups",
+          created_at: CREATED,
+          last_activity_at: ago(4 * 60_000),
+          last_sync_at: ago(4 * 60_000),
+          user_count: people.length,
+          group_count: null,
+          server_url: null,
+        },
+        {
+          id: "dddddddd-dddd-4ddd-8ddd-dddddddddd02",
+          name: "Corporate Active Directory",
+          reference: "dddddddd-dddd-4ddd-8ddd-dddddddddd02",
+          type: "ldap",
+          status: "active",
+          health: "healthy",
+          environment: null,
+          scope: "users-on-signin",
+          created_at: CREATED,
+          last_activity_at: ago(12 * 60_000),
+          last_sync_at: ago(12 * 60_000),
+          user_count: null,
+          group_count: null,
+          server_url: `ldaps://ad.${tenant.slug}.example:636`,
+        },
+      ],
+    };
+  }
+  if (path === `${tenantPath}/directory/activity`) {
+    return {
+      items: [],
+      total: 420,
+      limit: Number(query.get("limit") ?? 25),
+      offset: 0,
+      summary: { total: 420, successful: 418, warnings: 0, failed: 2, average_duration_ms: 180 },
+      volume: days(30, (i) => (i * 7) % 11).map((d) => ({
+        date: d.date,
+        users: d.value,
+        groups: 0,
+      })),
+    };
+  }
   if (path === `${tenantPath}/directory/errors`) {
     return {
       items: [],

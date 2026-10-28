@@ -11,5 +11,4 @@ export { growth, type PeopleFilters, TWO_STEP_TARGET, usersListSearch } from "./
 export { parseUserAgent } from "./user-agent";
 export { type InvitationFilters, invitationsSearch } from "./invitations-model";
 export { type DeletedFilters, deletedSearch } from "./deleted-model";
-export { CopyId, CountRow, InfoRow } from "./components/user-detail-fields";
-export { isUser360Tab, USER360_TABS, type User360Tab } from "./tabs";
+export { isUser360Tab, USER360_TABS, type User360Tab, user360Tab } from "./tabs";

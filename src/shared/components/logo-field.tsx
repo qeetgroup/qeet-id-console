@@ -1,4 +1,3 @@
-import { Button, cn, Input } from "@qeetrix/ui";
 import {
   CircleCheckIcon,
   CloudUploadIcon,
@@ -7,8 +6,11 @@ import {
   LoaderCircleIcon,
   TrashIcon,
 } from "@qeetrix/icons";
-import { useEffect, useId, useRef, useState } from "react";
+import { Button, Field, IconButton, Input } from "@qeetrix/react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import "./logo-field.css";
 
 export type LogoStatus = "empty" | "loading" | "ready" | "error";
 
@@ -26,11 +28,6 @@ type LogoFieldProps = {
   onStatusChange?: (status: LogoStatus) => void;
 };
 
-/**
- * Renders a logo picker. Unlike `@qeetrix/ui`'s LogoUploader, clicking the dropzone or Replace
- * always opens the file dialog, as both call the input's `.click()`. A picked file becomes a data
- * URL and a pasted URL passes as typed, both through `value`.
- */
 const INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp|svg\+xml);base64,/i;
 
 // Only an http(s) URL or an uploaded image renders; anything else typed into the URL field (a
@@ -45,6 +42,11 @@ function previewSource(value: string): string | undefined {
   }
 }
 
+/**
+ * Renders a logo picker: a drop zone (clicking it or Replace opens the file dialog), or a URL. A
+ * picked file becomes a data URL and a typed URL passes as typed, both through `value`. `split`
+ * puts the URL beside the drop zone once the `branding` container is wide enough.
+ */
 export function LogoField({
   value,
   onChange,
@@ -59,7 +61,6 @@ export function LogoField({
   onStatusChange,
 }: LogoFieldProps) {
   const { t } = useTranslation("common");
-  const id = useId();
   const [dragOver, setDragOver] = useState(false);
   const [urlOpen, setUrlOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,260 +157,209 @@ export function LogoField({
     if (inputRef.current) inputRef.current.value = "";
   }
 
+  const fileInput = (
+    <input
+      ref={inputRef}
+      type="file"
+      accept={accept}
+      disabled={disabled}
+      aria-label={t("logoField.uploadALogoFile")}
+      className="logo-field-file"
+      onChange={(event) => {
+        const file = event.target.files?.[0];
+        if (file) handleFile(file);
+        event.target.value = "";
+      }}
+    />
+  );
+
+  const dropZone = (title: string, hint: string) => (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={openPicker}
+      onDragOver={(event) => {
+        event.preventDefault();
+        if (!disabled) setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(event) => {
+        event.preventDefault();
+        setDragOver(false);
+        if (!disabled && event.dataTransfer.files[0]) handleFile(event.dataTransfer.files[0]);
+      }}
+      data-slot="logo-dropzone"
+      data-drag-over={dragOver ? "" : undefined}
+      className="logo-field-drop"
+    >
+      <ImageIcon shape="sharp" size={20} aria-hidden="true" className="logo-field-drop-icon" />
+      <span className="logo-field-drop-title">{title}</span>
+      <span className="logo-field-drop-hint">{hint}</span>
+    </button>
+  );
+
+  const errorLine = error ? (
+    <p role="alert" className="logo-field-error">
+      {error}
+    </p>
+  ) : null;
+
   if (layout === "split") {
     return (
-      <div className={cn("grid min-w-0 gap-4 @min-[650px]/branding:grid-cols-2", className)}>
-        <div className="min-w-0">
-          <p className="mb-1.5 text-xs font-medium">{t("logoField.logo")}</p>
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={openPicker}
-            onDragOver={(event) => {
-              event.preventDefault();
-              if (!disabled) setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(event) => {
-              event.preventDefault();
-              setDragOver(false);
-              if (!disabled && event.dataTransfer.files[0]) handleFile(event.dataTransfer.files[0]);
-            }}
-            data-slot="logo-dropzone"
-            className={cn(
-              "flex min-h-26 w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-md border border-dashed px-3 py-3 text-center transition-colors hover:border-primary/60 hover:bg-primary/3 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50",
-              dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/40 bg-muted/10",
-            )}
-          >
-            <ImageIcon className="mb-1 size-5 text-muted-foreground" aria-hidden="true" />
-            <span className="text-xs font-medium">{t("logoField.dropYourLogoHere")}</span>
-            <span className="text-[10px] leading-4 text-muted-foreground">
-              {t("logoField.formatsMax", { size: maxSizeMB })}
-            </span>
-          </button>
-          <input
-            ref={inputRef}
-            type="file"
-            accept={accept}
-            disabled={disabled}
-            aria-label={t("logoField.uploadALogoFile")}
-            className="sr-only"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) handleFile(file);
-              event.target.value = "";
-            }}
-          />
+      <div className={className ? `logo-field ${className}` : "logo-field"} data-layout="split">
+        <div className="logo-field-pane">
+          <p className="logo-field-label">{t("logoField.logo")}</p>
+          {dropZone(
+            t("logoField.dropYourLogoHere"),
+            t("logoField.formatsMax", { size: maxSizeMB }),
+          )}
+          {fileInput}
         </div>
-        <div className="min-w-0 @min-[650px]/branding:border-s @min-[650px]/branding:border-border/60 @min-[650px]/branding:ps-4">
-          <label htmlFor={`${id}-url`} className="mb-1.5 block text-xs font-medium">
-            {t("logoField.orProvideALogoUrl")}
-          </label>
-          <Input
-            id={`${id}-url`}
-            type="url"
-            inputMode="url"
-            placeholder="https://yourdomain.com/logo.png"
-            value={value.startsWith("data:") ? "" : value}
+        <div className="logo-field-pane" data-slot="logo-url">
+          <Field
+            label={t("logoField.orProvideALogoUrl")}
+            description={hint ?? t("logoField.hint")}
             disabled={disabled}
-            onChange={(event) => {
-              readVersion.current += 1;
-              onChange(event.target.value);
-            }}
-            className="h-8 rounded-md bg-muted/15 text-xs pointer-coarse:min-h-11 pointer-coarse:text-base"
-          />
-          <p className="mt-1.5 text-[10px] leading-4 text-muted-foreground">
-            {hint ?? t("logoField.hint")}
-          </p>
+          >
+            <Input
+              type="url"
+              inputMode="url"
+              placeholder="https://yourdomain.com/logo.png"
+              value={value.startsWith("data:") ? "" : value}
+              onChange={(event) => {
+                readVersion.current += 1;
+                onChange(event.target.value);
+              }}
+            />
+          </Field>
           {value && (
             <>
               <p
                 role="status"
-                className={cn(
-                  "mt-2 flex items-center gap-1.5 text-[10px]",
-                  imageReady ? "text-success" : "text-muted-foreground",
-                )}
+                className="logo-field-status"
+                data-ready={imageReady ? "" : undefined}
               >
                 {imageReady ? (
-                  <CircleCheckIcon className="size-3" aria-hidden="true" />
+                  <CircleCheckIcon shape="sharp" size={14} aria-hidden="true" />
                 ) : !error ? (
-                  <LoaderCircleIcon className="size-3 animate-spin" aria-hidden="true" />
+                  <LoaderCircleIcon
+                    shape="sharp"
+                    size={14}
+                    aria-hidden="true"
+                    className="logo-field-spin"
+                  />
                 ) : null}
                 {imageReady ? t("logoField.ready") : !error ? t("logoField.loading") : ""}
               </p>
-              <div className="mt-2 flex min-h-10 min-w-0 items-center justify-between gap-3">
+              <div className="logo-field-preview">
                 <img
                   ref={previewRef}
                   src={previewSource(value)}
                   alt={t("logoField.logoPreview")}
                   referrerPolicy="no-referrer"
-                  className="h-9 w-auto max-w-40 object-contain"
+                  className="logo-field-preview-img"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="size-8 shrink-0 rounded-md pointer-coarse:min-h-11 pointer-coarse:min-w-11"
+                <IconButton
+                  icon={TrashIcon}
+                  tone="neutral"
                   aria-label={t("logoField.removeLogo")}
-                  title={t("logoField.removeLogo")}
                   disabled={disabled}
                   onClick={clearLogo}
-                >
-                  <TrashIcon className="size-3.5" />
-                </Button>
+                />
               </div>
             </>
           )}
-          {error && (
-            <p role="alert" className="mt-2 text-xs text-destructive">
-              {error}
-            </p>
-          )}
+          {errorLine}
         </div>
       </div>
     );
   }
 
+  const urlInput = (
+    <Input
+      type="url"
+      inputMode="url"
+      placeholder="https://example.com/logo.png"
+      value={value && !value.startsWith("data:") ? value : ""}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      aria-label={t("logoField.logoUrl")}
+    />
+  );
+
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
+    <div className={className ? `logo-field ${className}` : "logo-field"} data-layout="stacked">
       {value ? (
-        <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-          <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-background">
-            <img
-              ref={previewRef}
-              src={previewSource(value)}
-              alt={t("logoField.logoPreview")}
-              className="h-full w-full object-contain"
-            />
+        <div className="logo-field-set">
+          <div className="logo-field-thumb">
+            <img ref={previewRef} src={previewSource(value)} alt={t("logoField.logoPreview")} />
           </div>
-          <div className="flex flex-1 flex-col gap-1">
-            <p className="text-sm font-medium">{title ?? t("logoField.title")}</p>
-            <p className="line-clamp-1 text-xs text-muted-foreground">
+          <div className="logo-field-set-text">
+            <p className="logo-field-set-title">{title ?? t("logoField.title")}</p>
+            <p className="logo-field-set-source">
               {subtitle ?? (value.startsWith("data:") ? t("logoField.uploadedPreview") : value)}
             </p>
-            <div className="mt-1 flex gap-2">
+            <div className="logo-field-set-actions">
               <Button
-                type="button"
-                variant="outline"
+                variant="soft"
                 size="sm"
+                icon={CloudUploadIcon}
                 disabled={disabled}
                 onClick={openPicker}
               >
-                <CloudUploadIcon /> {t("logoField.replace")}
+                {t("logoField.replace")}
               </Button>
               <Button
-                type="button"
                 variant="ghost"
                 size="sm"
-                disabled={disabled}
-                onClick={clearLogo}
-              >
-                <TrashIcon /> {t("logoField.remove")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
+                icon={LinkIcon}
                 disabled={disabled}
                 onClick={() => setUrlOpen((v) => !v)}
                 aria-expanded={urlOpen}
               >
-                <LinkIcon /> {t("logoField.uploadViaUrl")}
+                {t("logoField.uploadViaUrl")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={TrashIcon}
+                disabled={disabled}
+                onClick={clearLogo}
+              >
+                {t("logoField.remove")}
               </Button>
             </div>
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={openPicker}
-          onDragOver={(e) => {
-            e.preventDefault();
-            if (!disabled) setDragOver(true);
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragOver(false);
-            if (disabled) return;
-            const file = e.dataTransfer.files[0];
-            if (file) handleFile(file);
-          }}
-          data-slot="logo-dropzone"
-          className={cn(
-            "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors",
-            dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/30",
-            disabled && "pointer-events-none opacity-50",
-          )}
-        >
-          <ImageIcon className="size-6 text-muted-foreground" />
-          <span className="text-sm font-medium">{t("logoField.dropALogoHere")}</span>
-          <span className="text-xs text-muted-foreground">
-            {t("logoField.formatsUpTo", { size: maxSizeMB })}
-          </span>
-        </button>
+        dropZone(t("logoField.dropALogoHere"), t("logoField.formatsUpTo", { size: maxSizeMB }))
       )}
 
       {/* Offered when empty too, so a logo already at a URL needn't be re-uploaded; wrapped to
           read as one control with its input. */}
       {!value ? (
-        <div data-slot="logo-url-toggle" className="flex flex-col gap-2">
-          <button
-            type="button"
+        <div data-slot="logo-url-toggle" className="logo-field-url">
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={LinkIcon}
             disabled={disabled}
             onClick={() => setUrlOpen((v) => !v)}
             aria-expanded={urlOpen}
-            className="inline-flex w-fit items-center gap-1.5 rounded-md text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+            className="logo-field-url-toggle"
           >
-            <LinkIcon className="size-3.5" />
             {t("logoField.uploadViaUrl")}
-          </button>
-          {urlOpen ? (
-            <Input
-              type="url"
-              inputMode="url"
-              placeholder="https://example.com/logo.png"
-              value={value && !value.startsWith("data:") ? value : ""}
-              onChange={(e) => onChange(e.target.value)}
-              disabled={disabled}
-              aria-label={t("logoField.logoUrl")}
-            />
-          ) : null}
+          </Button>
+          {urlOpen ? urlInput : null}
         </div>
       ) : null}
 
-      <input
-        ref={inputRef}
-        type="file"
-        accept={accept}
-        disabled={disabled}
-        aria-label={t("logoField.uploadALogoFile")}
-        className="sr-only"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handleFile(f);
-        }}
-      />
+      {fileInput}
 
-      {value && urlOpen ? (
-        <Input
-          type="url"
-          inputMode="url"
-          placeholder="https://example.com/logo.png"
-          value={value.startsWith("data:") ? "" : value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-          aria-label={t("logoField.logoUrl")}
-        />
-      ) : null}
+      {value && urlOpen ? urlInput : null}
 
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {error && (
-        <p role="alert" className="text-xs text-destructive">
-          {error}
-        </p>
-      )}
+      {hint && !error && <p className="logo-field-hint">{hint}</p>}
+      {errorLine}
     </div>
   );
 }

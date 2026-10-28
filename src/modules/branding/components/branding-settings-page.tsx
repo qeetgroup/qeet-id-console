@@ -1,80 +1,58 @@
-import { Button, buttonVariants, cn, Skeleton } from "@qeetrix/ui";
-import { useQueryClient } from "@tanstack/react-query";
+import { RefreshCwIcon } from "@qeetrix/icons";
+import { Button, Skeleton } from "@qeetrix/react";
+import { Alert, PageContent, PageHeader } from "@qeetrix/react/experimental";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowUpRightIcon,
-  CircleCheckIcon,
-  FileTextIcon,
-  LoaderCircleIcon,
-  PaletteIcon,
-  RefreshCwIcon,
-  RotateCcwIcon,
-  SaveIcon,
-  ShieldCheckIcon,
-} from "@qeetrix/icons";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useEntitlements } from "@/modules/billing";
-import {
-  type LoginDomainStatus,
-  orgKeys,
-  type TenantDomain,
-  useDomains,
-  useLoginDomain,
-} from "@/modules/organizations";
+import { PageBreadcrumb } from "@/modules/dashboard";
+import { orgQueries, useLoginDomain } from "@/modules/organizations";
 import { useTenantId } from "@/platform/auth/session";
-import { errorMessage } from "@/platform/errors/user-message";
+import { ErrorReference, ErrorText } from "@/platform/components/error-reference";
+import { HOSTED_SIGN_IN_HOST } from "@/platform/config/site-urls";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   SensitiveActionCancelled,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
-import type { LogoStatus } from "@/shared/components/logo-field";
+
 import { saveBranding, useBranding } from "../api/branding";
 import { brandingKeys } from "../api/keys";
 import {
   type Branding,
-  type BrandingDraft,
-  brandingDraft,
-  brandingInput,
-  validateBranding,
+  type BrandingChange,
+  brandingBackground,
+  brandingReplyTo,
+  brandingWith,
+  normalizeBrandColor,
 } from "../branding-model";
+import { BrandingColours } from "./branding-colours";
+import { BrandingLogo } from "./branding-logo";
 import { BrandingPreview } from "./branding-preview";
-import { BrandingColorsSection } from "./branding-settings-page-colors";
-import {
-  BrandingDomainSection,
-  BrandingEmailSection,
-  type BrandingFields,
-  BrandingIdentitySection,
-} from "./branding-settings-page-sections";
+import { BrandingAddress, BrandingSender } from "./branding-sender";
+import "./branding.css";
 
-const PANEL =
-  "min-w-0 rounded-lg border border-border/70 bg-card/90 p-3.5 shadow-xs dark:bg-card/70 dark:shadow-none";
-const ACTION =
-  "h-8 rounded-md px-3 text-xs focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11";
+// What an open editor holds, so the preview shows it before it's saved. "" is "back to the
+// default"; undefined is "nothing being changed".
+type Drafts = { logo?: string; brand?: string; background?: string; sender?: boolean };
 
-export type BrandingSettingsViewProps = {
-  branding?: Branding;
-  domains?: TenantDomain[];
-  loginDomain?: LoginDomainStatus;
-  domainsState: "ready" | "loading" | "error" | "denied";
-  loading: boolean;
-  error: boolean;
-  fetching: boolean;
-  canRead: boolean;
-  canWrite: boolean;
-  canManageDomains: boolean;
-  canManageBilling: boolean;
-  entitled: boolean;
-  onRetry: () => unknown;
-  onSave: (branding: Branding) => Promise<Branding>;
-  onDirtyChange?: (changed: boolean) => void;
-};
+/**
+ * Settings › Branding: the sign-in page and emails as the organisation's people see them. Each
+ * value (the logo, a colour, the sender) is changed where it sits and saved on its own; the
+ * sign-in page beside them follows the value being changed. The server's PUT replaces the whole
+ * record, so each save sends everything else back as stored.
+ */
+export function BrandingSettingsPage(props: { onDirtyChange?: (changed: boolean) => void }) {
+  const tenantId = useTenantId();
+  const access = useCapabilities();
+  const writes = access.state === "ready" && access.can("branding.write");
+  // Another organisation, or losing write access, starts the page afresh: nothing open or drafted.
+  return <BrandingPage key={`${tenantId}:${writes}`} {...props} />;
+}
 
-export function BrandingSettingsPage({
-  onDirtyChange,
-}: Pick<BrandingSettingsViewProps, "onDirtyChange">) {
+function BrandingPage({ onDirtyChange }: { onDirtyChange?: (changed: boolean) => void }) {
   const { t } = useTranslation("branding");
   const tenantId = useTenantId();
   const access = useCapabilities();
@@ -82,349 +60,240 @@ export function BrandingSettingsPage({
   const canReadDomains = canRead && access.can("connection.read");
   const canReadBilling = canRead && access.can("billing.read");
   const branding = useBranding(canRead);
-  const domains = useDomains(canReadDomains);
   const loginDomain = useLoginDomain(canReadDomains);
   const entitlements = useEntitlements(canReadBilling);
+  const orgName = useQuery({ ...orgQueries.list(), enabled: !!tenantId }).data?.items.find(
+    (org) => org.id === tenantId,
+  )?.name;
+  // The server refuses a save on a plan without custom branding (402), so the page says so first.
   const entitled = !canReadBilling || entitlements.data?.features.custom_branding !== false;
   const canWrite = canRead && access.can("branding.write") && entitled;
   const sensitive = useSensitiveAction();
   const queryClient = useQueryClient();
+  const [drafts, setDrafts] = useState<Drafts>({});
+  const [failure, setFailure] = useState<unknown>(null);
   const active = useRef<{ tenantId: string | null; canWrite: boolean } | null>(null);
+  const dirty = Object.values(drafts).some((value) => value !== undefined && value !== false);
+
   useEffect(() => {
     active.current = { tenantId, canWrite };
     return () => {
       active.current = null;
     };
   }, [tenantId, canWrite]);
-
-  return (
-    <BrandingSettingsView
-      key={`${tenantId}:${canWrite}`}
-      onDirtyChange={onDirtyChange}
-      branding={canRead && !branding.isError ? branding.data : undefined}
-      domains={canReadDomains && !domains.isError ? domains.data?.items : undefined}
-      loginDomain={canReadDomains && !loginDomain.isError ? loginDomain.data : undefined}
-      domainsState={
-        !canReadDomains
-          ? "denied"
-          : domains.isPending
-            ? "loading"
-            : domains.isError
-              ? "error"
-              : "ready"
-      }
-      loading={
-        access.state === "resolving" ||
-        (canRead && (branding.isPending || (canReadBilling && entitlements.isPending)))
-      }
-      error={branding.isError}
-      fetching={branding.isFetching}
-      canRead={canRead}
-      canWrite={canWrite}
-      canManageDomains={canReadDomains}
-      canManageBilling={canReadBilling}
-      entitled={entitled}
-      onRetry={branding.refetch}
-      onSave={async (input) => {
-        const result = await sensitive({
-          capability: "branding.write",
-          actionLabel: t("branding.footer.save"),
-          run: () => {
-            if (!tenantId || active.current?.tenantId !== tenantId || !active.current.canWrite)
-              throw new SensitiveActionCancelled();
-            return saveBranding(tenantId, { ...input, tenant_id: tenantId });
-          },
-        });
-        if (!result) throw new SensitiveActionCancelled();
-        queryClient.setQueryData(brandingKeys.tenant(tenantId), result);
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: brandingKeys.tenant(tenantId) }),
-          queryClient.invalidateQueries({ queryKey: orgKeys.loginDomain(tenantId) }),
-        ]);
-        return result;
-      }}
-    />
-  );
-}
-
-export function BrandingSettingsView(props: BrandingSettingsViewProps) {
-  const { t } = useTranslation("branding");
-  return (
-    <div className="@container/branding relative isolate flex min-w-0 flex-col gap-4 before:pointer-events-none before:absolute before:-inset-4 before:-z-10 before:bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] before:bg-size-[32px_32px] before:opacity-10 dark:before:opacity-5">
-      <header className="flex flex-wrap items-center justify-between gap-4 py-1">
-        <div className="flex min-w-0 items-start gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-primary/8 text-primary">
-            <PaletteIcon className="size-6" aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="font-heading text-[30px] font-semibold leading-9">
-              {t("branding.workspace.title")}
-            </h1>
-            <p className="mt-1 max-w-2xl text-sm leading-5 text-muted-foreground">
-              {t("branding.description")}
-            </p>
-          </div>
-        </div>
-        <a
-          href="https://docs.id.qeet.in/docs"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: "outline" }), ACTION, "bg-card/80")}
-        >
-          <FileTextIcon aria-hidden="true" />
-          {t("branding.workspace.docs")}
-        </a>
-      </header>
-      {props.loading ? (
-        <div
-          role="status"
-          aria-label={t("branding.workspace.loading")}
-          className="grid gap-4 @min-[880px]/branding:grid-cols-[1.75fr_1fr]"
-        >
-          <div className="space-y-4">
-            {["identity", "colors", "domain"].map((section) => (
-              <Skeleton key={section} className="h-44 rounded-lg" />
-            ))}
-          </div>
-          <Skeleton className="h-96 rounded-lg" />
-        </div>
-      ) : !props.canRead || props.error || !props.branding ? (
-        <section
-          className={cn(
-            PANEL,
-            "grid min-h-80 place-content-center justify-items-center gap-3 p-6 text-center",
-          )}
-        >
-          <ShieldCheckIcon className="size-8 text-muted-foreground" aria-hidden="true" />
-          <h2 className="font-heading text-base font-semibold">
-            {t(props.canRead ? "branding.workspace.loadError" : "branding.workspace.noAccess")}
-          </h2>
-          {props.canRead && (
-            <Button
-              variant="outline"
-              className={ACTION}
-              disabled={props.fetching}
-              onClick={() => void props.onRetry()}
-            >
-              <RefreshCwIcon aria-hidden="true" />
-              {t("branding.workspace.retry")}
-            </Button>
-          )}
-        </section>
-      ) : (
-        <BrandingForm {...props} branding={props.branding} />
-      )}
-    </div>
-  );
-}
-
-function BrandingForm({ branding, ...props }: BrandingSettingsViewProps & { branding: Branding }) {
-  const { t } = useTranslation("branding");
-  const id = useId();
-  const [savedBranding, setSavedBranding] = useState(branding);
-  const [draft, setDraft] = useState(() => brandingDraft(branding));
-  const [touched, setTouched] = useState<Partial<Record<keyof BrandingDraft, boolean>>>({});
-  const [pending, setPending] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [logoStatus, setLogoStatus] = useState<LogoStatus>("empty");
-  const dirty = useRef(false);
-  const busy = useRef(false);
-  const form = useRef<HTMLFormElement>(null);
-  const baseline = brandingDraft(savedBranding);
-  const changed = Object.entries(draft).some(
-    ([key, value]) => value !== baseline[key as keyof BrandingDraft],
-  );
-  const errors = validateBranding(draft);
-  const valid = Object.keys(errors).length === 0;
-
   useEffect(() => {
-    setSavedBranding(branding);
-    if (!dirty.current) setDraft(brandingDraft(branding));
-  }, [branding]);
-  useEffect(() => {
-    props.onDirtyChange?.(changed);
-    return () => props.onDirtyChange?.(false);
-  }, [changed, props.onDirtyChange]);
-  useEffect(() => {
-    if (!changed) return;
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [changed]);
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
-  function update<Key extends keyof BrandingDraft>(key: Key, value: BrandingDraft[Key]) {
-    if (!props.canWrite || busy.current) return;
-    setDraft((previous) => {
-      const next = { ...previous, [key]: value };
-      dirty.current = Object.entries(next).some(
-        ([field, nextValue]) => nextValue !== baseline[field as keyof BrandingDraft],
-      );
-      return next;
-    });
-    setSaved(false);
-    setError(null);
-  }
+  const draft = (key: keyof Drafts) => (value: string | boolean | undefined) =>
+    setDrafts((previous) => ({ ...previous, [key]: value }));
 
-  function reset() {
-    if (busy.current) return;
-    dirty.current = false;
-    setDraft(brandingDraft(savedBranding));
-    setTouched({});
-    setSaved(false);
-    setError(null);
-  }
-
-  async function save() {
-    if (!props.canWrite || busy.current || !changed) return;
-    setTouched(Object.fromEntries(Object.keys(draft).map((key) => [key, true])));
-    if (!valid || logoStatus === "error" || logoStatus === "loading") {
-      form.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
-      return;
-    }
-    busy.current = true;
-    setPending(true);
-    setError(null);
+  /** Saves one change on top of the stored record; true once saved, false if it wasn't. */
+  async function save(
+    change: BrandingChange,
+    confirm?: Parameters<typeof sensitive>[0]["confirm"],
+  ): Promise<boolean> {
+    const current = branding.data;
+    if (!current || !tenantId) return false;
+    setFailure(null);
     try {
-      const result = await props.onSave(brandingInput(draft, savedBranding));
-      dirty.current = false;
-      setSavedBranding(result);
-      setDraft(brandingDraft(result));
-      setSaved(true);
-    } catch (failure) {
-      if (!(failure instanceof SensitiveActionCancelled)) setError(errorMessage(failure));
-    } finally {
-      busy.current = false;
-      setPending(false);
+      const result = await sensitive({
+        capability: "branding.write",
+        actionLabel: t("page.stepUp"),
+        confirm,
+        run: () => {
+          if (active.current?.tenantId !== tenantId || !active.current.canWrite)
+            throw new SensitiveActionCancelled();
+          return saveBranding(tenantId, brandingWith({ ...current, tenant_id: tenantId }, change));
+        },
+      });
+      if (!result) return false;
+      queryClient.setQueryData(brandingKeys.tenant(tenantId), result);
+      return true;
+    } catch (error) {
+      if (!(error instanceof SensitiveActionCancelled)) setFailure(error);
+      return false;
     }
   }
 
-  const fields: BrandingFields = {
-    id,
-    draft,
-    touched,
-    errors,
-    onChange: update,
-    onTouch: (key) => setTouched((previous) => ({ ...previous, [key]: true })),
-  };
+  const removeLogo = () =>
+    save(
+      { logo_url: null },
+      {
+        title: t("logo.removeTitle"),
+        description: t("logo.removeDescription"),
+        confirmLabel: t("logo.removeConfirm"),
+        tone: "destructive",
+      },
+    );
+
+  const loading =
+    access.state === "resolving" ||
+    (canRead && (branding.isPending || (canReadBilling && entitlements.isPending)));
 
   return (
     <>
-      {!props.entitled && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning/20 bg-warning/5 px-4 py-3">
-          <p className="text-xs text-warning">{t("branding.workspace.upgrade")}</p>
-          {props.canManageBilling && (
-            <Link
-              to="/settings/billing"
-              search={{ plan: "starter" }}
-              className={cn(buttonVariants({ variant: "outline" }), ACTION)}
-            >
-              {t("branding.workspace.comparePlans")}
-              <ArrowUpRightIcon />
-            </Link>
-          )}
-        </div>
-      )}
-      <form
-        ref={form}
-        aria-label={t("branding.workspace.form")}
-        onSubmit={(event) => {
-          event.preventDefault();
-          void save();
-        }}
-        className="min-w-0"
-      >
-        <div className="grid min-w-0 items-start gap-4 @min-[880px]/branding:grid-cols-[minmax(0,1.8fr)_minmax(18rem,1fr)]">
-          <fieldset
-            disabled={!props.canWrite || pending}
-            className="min-w-0 space-y-4 **:data-[slot=field]:gap-1.5 **:data-[slot=field-label]:text-[11px]"
-          >
-            <BrandingIdentitySection
-              id={id}
-              logo={draft.logo_url}
-              invalid={!!errors.logo_url}
-              disabled={!props.canWrite || pending}
-              onChange={(value) => update("logo_url", value)}
-              onStatusChange={setLogoStatus}
-            />
-            <BrandingColorsSection fields={fields} />
-            <BrandingDomainSection
-              fields={fields}
-              saved={savedBranding}
-              domains={props.domains}
-              loginDomain={props.loginDomain}
-              domainsState={props.domainsState}
-              canManageDomains={props.canManageDomains}
-            />
-            <BrandingEmailSection fields={fields} />
-          </fieldset>
-          <BrandingPreview draft={draft} logoReady={logoStatus === "ready"} />
-        </div>
-        {error && (
-          <p
-            role="alert"
-            className="mt-4 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-xs text-destructive"
-          >
-            {error}
-          </p>
-        )}
-        <footer className="sticky bottom-0 z-10 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-card/95 px-4 py-3 shadow-sm backdrop-blur-md">
-          <p role="status" className="flex items-center gap-2 text-xs">
-            <span
-              className={cn(
-                "size-1.5 shrink-0 rounded-full",
-                changed ? "bg-primary" : saved ? "bg-success" : "bg-muted-foreground/60",
-              )}
-              aria-hidden="true"
-            />
-            {t(
-              !props.canWrite
-                ? "branding.workspace.readOnly"
-                : changed
-                  ? "branding.workspace.unsaved"
-                  : saved
-                    ? "branding.workspace.saved"
-                    : "branding.workspace.upToDate",
-            )}
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className={ACTION}
-              onClick={reset}
-              disabled={pending || !changed || !props.canWrite}
-            >
-              <RotateCcwIcon aria-hidden="true" />
-              {t("branding.workspace.reset")}
-            </Button>
-            <Button
-              type="submit"
-              className={ACTION}
-              disabled={
-                !props.canWrite ||
-                pending ||
-                !changed ||
-                !valid ||
-                logoStatus === "loading" ||
-                logoStatus === "error"
-              }
-            >
-              {pending ? (
-                <LoaderCircleIcon className="animate-spin" aria-hidden="true" />
-              ) : saved && !changed ? (
-                <CircleCheckIcon aria-hidden="true" />
-              ) : (
-                <SaveIcon aria-hidden="true" />
-              )}
-              {t(pending ? "branding.footer.saving" : "branding.footer.save")}
-            </Button>
+      <PageHeader
+        breadcrumb={<PageBreadcrumb />}
+        title={t("page.title")}
+        description={
+          orgName ? t("page.description", { name: orgName }) : t("page.descriptionNoName")
+        }
+      />
+      <PageContent>
+        {loading ? (
+          <div role="status" aria-label={t("page.loading")}>
+            <Skeleton lines={8} />
           </div>
-        </footer>
-      </form>
+        ) : !canRead || branding.isError || !branding.data ? (
+          <Alert
+            tone="danger"
+            title={t("page.loadFailed")}
+            actions={
+              canRead && (
+                <Button
+                  variant="soft"
+                  size="sm"
+                  icon={RefreshCwIcon}
+                  onClick={() => void branding.refetch()}
+                >
+                  {t("page.retry")}
+                </Button>
+              )
+            }
+          >
+            {branding.error ? <ErrorReference error={branding.error} /> : null}
+          </Alert>
+        ) : (
+          <BrandingLayout
+            branding={branding.data}
+            drafts={drafts}
+            orgName={orgName}
+            entitled={entitled}
+            locked={!canWrite}
+            canManageBilling={canReadBilling}
+            canManageDomains={canReadDomains}
+            loginDomain={canReadDomains && !loginDomain.isError ? loginDomain.data : undefined}
+            failure={failure}
+            onDraft={draft}
+            onSave={save}
+            onRemoveLogo={removeLogo}
+          />
+        )}
+      </PageContent>
     </>
+  );
+}
+
+function BrandingLayout({
+  branding,
+  drafts,
+  orgName,
+  entitled,
+  locked,
+  canManageBilling,
+  canManageDomains,
+  loginDomain,
+  failure,
+  onDraft,
+  onSave,
+  onRemoveLogo,
+}: {
+  branding: Branding;
+  drafts: Drafts;
+  orgName?: string;
+  entitled: boolean;
+  locked: boolean;
+  canManageBilling: boolean;
+  canManageDomains: boolean;
+  loginDomain?: ReturnType<typeof useLoginDomain>["data"];
+  failure: unknown;
+  onDraft: (key: keyof Drafts) => (value: string | boolean | undefined) => void;
+  onSave: (change: BrandingChange) => Promise<boolean>;
+  onRemoveLogo: () => Promise<boolean>;
+}) {
+  const { t } = useTranslation("branding");
+  const brand = normalizeBrandColor(branding.primary_color ?? "");
+  const background = brandingBackground(branding);
+  const customDomain = branding.custom_domain?.trim().toLowerCase() ?? "";
+  const live =
+    !!customDomain &&
+    loginDomain?.login_domain.toLowerCase() === customDomain &&
+    loginDomain.endpoint_state === "live";
+  // A draft of "" is the default: no logo, Qeet Ember, the automatic background.
+  const shown = (value: string | undefined, saved: string | null) =>
+    value === undefined ? saved : value || null;
+
+  return (
+    <div className="brand-layout">
+      <div className="brand-sections">
+        {!entitled && (
+          <Alert
+            tone="info"
+            title={t("page.free.title")}
+            actions={
+              canManageBilling && (
+                <Button
+                  variant="soft"
+                  render={<Link to="/settings/billing" search={{ plan: "starter" }} />}
+                >
+                  {t("page.free.compare")}
+                </Button>
+              )
+            }
+          >
+            {orgName ? t("page.free.body", { name: orgName }) : t("page.free.bodyNoName")}
+          </Alert>
+        )}
+        {failure ? (
+          <Alert tone="danger" title={t("page.saveFailed")} announce="urgent">
+            <ErrorText error={failure} />
+            <ErrorReference error={failure} />
+          </Alert>
+        ) : null}
+        <BrandingLogo
+          logo={branding.logo_url?.trim() || null}
+          orgName={orgName}
+          locked={locked}
+          onDraft={onDraft("logo")}
+          onSave={onSave}
+          onRemove={onRemoveLogo}
+        />
+        <BrandingColours
+          brand={brand}
+          background={background}
+          locked={locked}
+          onDraft={(key, value) => onDraft(key)(value)}
+          onSave={onSave}
+        />
+        <BrandingAddress
+          customDomain={customDomain}
+          loginDomain={loginDomain}
+          canManageDomains={canManageDomains}
+        />
+        <BrandingSender
+          values={{
+            fromName: branding.email_from_name ?? "",
+            replyTo: brandingReplyTo(branding),
+            fromAddress: branding.email_from_address ?? "",
+          }}
+          orgName={orgName}
+          locked={locked}
+          onDirty={(changed) => onDraft("sender")(changed || undefined)}
+          onSave={onSave}
+        />
+      </div>
+      <aside className="brand-preview-col" aria-label={t("preview.title")}>
+        <BrandingPreview
+          values={{
+            logo: shown(drafts.logo, branding.logo_url?.trim() || null),
+            brand: shown(drafts.brand, brand),
+            background: shown(drafts.background, background),
+            host: live ? customDomain : HOSTED_SIGN_IN_HOST,
+          }}
+        />
+      </aside>
+    </div>
   );
 }

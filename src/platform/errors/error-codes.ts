@@ -84,10 +84,24 @@ export const ERROR_CODES = {
   USER_IMPORT_BATCH_TOO_LARGE: "user.import_batch_too_large",
   USER_IMPORT_FILE_TOO_LARGE: "user.import_file_too_large",
   USER_IMPORT_SOURCE_INVALID: "user.import_source_invalid",
+  // Who manages an account: a whole-account change (status, password, two-step, deletion) is the
+  // home organisation's; another one removes the person instead. 403/409s whose fallbacks name
+  // no fix.
+  USER_MANAGED_ELSEWHERE: "user.managed_elsewhere",
+  USER_CREDENTIALS_SHARED: "user.credentials_shared",
+  USER_MANAGED_HERE: "user.managed_here",
+  USER_DOMAIN_MANAGED: "user.domain_managed_elsewhere",
   WEBHOOK_URL_REQUIRED: "webhook.url_required", // 422
   WEBHOOK_EVENTS_REQUIRED: "webhook.events_required", // 422
   WEBHOOK_EVENT_UNKNOWN: "webhook.event_unknown", // 422: not in the server's catalogue
   OIDC_GRANT_TYPE_UNSUPPORTED: "oidc.grant_type_unsupported", // 400: client_credentials, or unknown
+  // Qeet AI (they predate the domain.reason form): a turn with no provider, and the answers to a
+  // test of a provider key, whose `api` and `validation` fallbacks don't say what to check.
+  QEETAI_UNCONFIGURED: "qeetai_unconfigured", // 503: no organisation key, no Qeet-managed one
+  QEETAI_PROVIDER_UNREACHABLE: "qeetai_provider_unreachable",
+  QEETAI_PROVIDER_KEY_INVALID: "qeetai_provider_key_invalid",
+  QEETAI_PROVIDER_MODEL_INVALID: "qeetai_provider_model_invalid",
+  QEETAI_PROVIDER_ERROR: "qeetai_provider_error",
   // Machine access, secrets and auth hooks (the developer pages).
   RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: a scope the caller doesn't hold
   SECRET_NAME_EXISTS: "secret.name_exists", // 409: names are unique in an organisation

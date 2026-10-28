@@ -47,23 +47,8 @@
     "submit": "创建用户",
     "submitting": "创建中…"
   },
-  "edit": {
-    "title": "编辑用户",
-    "description": "邮箱不可更改。要更改密码，请使用设置密码操作。",
-    "email": "邮箱",
-    "displayName": "显示名称",
-    "phone": "电话",
-    "phoneHelp": "E.164 格式。留空以清除。",
-    "status": "状态",
-    "statusActive": "活跃",
-    "statusSuspended": "已停用",
-    "statusSelfHelp": "您无法从此界面停用自己的账户。",
-    "statusHelp": "停用将阻止登录，但保留账户。"
-  },
   "setPassword": {
-    "title": "设置新密码",
     "newPassword": "新密码",
-    "newPasswordHelp": "最少 8 个字符。",
     "confirmPassword": "确认新密码",
     "mismatch": "密码不匹配",
     "submit": "更新密码"

@@ -1,48 +1,12 @@
-import { buttonVariants, Card, CardContent } from "@qeetrix/ui";
-import { Link } from "@tanstack/react-router";
-import { type IconProps, LockIcon } from "@qeetrix/icons";
-import type { ComponentType } from "react";
-import { useTranslation } from "react-i18next";
+import { lazy, type ReactNode, Suspense } from "react";
 
 import { useEntitlements } from "../api/billing";
 
-/** Renders the placeholder for a feature the plan lacks: a dashed card linking to billing. */
-export function UpgradeGate({
-  icon: Icon = LockIcon,
-  title,
-  description,
-  plan,
-}: {
-  icon?: ComponentType<IconProps<"outline">>;
-  title: string;
-  description: string;
-  plan?: string; // tier to preselect on the billing page
-}) {
-  const { t } = useTranslation("billing");
-  return (
-    <Card className="border-dashed">
-      <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-        <div className="rounded-full bg-muted p-3">
-          <Icon className="size-6 text-muted-foreground" aria-hidden />
-        </div>
-        <div className="space-y-1">
-          <p className="text-sm font-medium">{title}</p>
-          <p className="mx-auto max-w-md text-sm text-muted-foreground">{description}</p>
-        </div>
-        <Link
-          to="/settings/billing"
-          search={plan ? { plan } : {}}
-          className={buttonVariants({ size: "sm" })}
-        >
-          {t("upgradeGate.upgradePlan")}
-        </Link>
-      </CardContent>
-    </Card>
-  );
-}
+// Loaded only once a plan lacks the feature, so pages that gate on it don't carry the prompt.
+const UpgradeGate = lazy(() => import("./upgrade-prompt"));
 
-// The tier that first unlocks each feature, so Upgrade deep-links to the right plan. Mirrors the
-// server's entitlements catalog.
+// The tier that first unlocks each feature, so the link opens Change plan on it. Mirrors the
+// server's entitlements catalogue.
 const FEATURE_PLAN: Record<string, string> = {
   sms_mfa: "starter",
   custom_branding: "starter",
@@ -69,11 +33,15 @@ export function FeatureGate({
   feature: string;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const { data, isPending } = useEntitlements();
   if (!isPending && data && data.features[feature] === false) {
-    return <UpgradeGate title={title} description={description} plan={FEATURE_PLAN[feature]} />;
+    return (
+      <Suspense fallback={null}>
+        <UpgradeGate title={title} description={description} plan={FEATURE_PLAN[feature]} />
+      </Suspense>
+    );
   }
   return <>{children}</>;
 }

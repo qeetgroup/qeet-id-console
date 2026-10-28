@@ -58,7 +58,6 @@ import { Route as DeveloperInfrastructureRouteImport } from './modules/developer
 import { Route as DeveloperMachineAccessRouteImport } from './modules/developer/routes/app/developer/machine-access'
 import { Route as DirectoryIndexRouteImport } from './modules/directory/routes/app/directory/index'
 import { Route as DirectoryAttributeMappingsRouteImport } from './modules/directory/routes/app/directory/attribute-mappings'
-import { Route as DirectoryConnectionsRouteImport } from './modules/directory/routes/app/directory/connections'
 import { Route as DirectorySyncActivityRouteImport } from './modules/directory/routes/app/directory/sync-activity'
 import { Route as DirectorySyncErrorsRouteImport } from './modules/directory/routes/app/directory/sync-errors'
 import { Route as GroupsIndexRouteImport } from './modules/groups/routes/app/groups/index'
@@ -104,6 +103,9 @@ import { Route as AuthMfaSmsEmailRouteImport } from './modules/authentication/ro
 import { Route as AuthMfaTotpRouteImport } from './modules/authentication/routes/app/auth/mfa/totp'
 import { Route as DeveloperWebhooksIndexRouteImport } from './modules/developer/routes/app/developer/webhooks/index'
 import { Route as DeveloperWebhooksIdRouteImport } from './modules/developer/routes/app/developer/webhooks/$id'
+import { Route as DirectoryConnectionsIndexRouteImport } from './modules/directory/routes/app/directory/connections/index'
+import { Route as DirectoryConnectionsLdapRouteImport } from './modules/authentication/routes/app/directory/connections/ldap'
+import { Route as DirectoryConnectionsScimRouteImport } from './modules/authentication/routes/app/directory/connections/scim'
 import { Route as SecurityComplianceGdprRouteImport } from './modules/compliance/routes/app/security/compliance/gdpr'
 import { Route as SecurityComplianceIso27001RouteImport } from './modules/compliance/routes/app/security/compliance/iso27001'
 import { Route as SecurityComplianceRetentionRouteImport } from './modules/compliance/routes/app/security/compliance/retention'
@@ -367,11 +369,6 @@ const DirectoryAttributeMappingsRoute =
     path: '/directory/attribute-mappings',
     getParentRoute: () => appRoute,
   } as any)
-const DirectoryConnectionsRoute = DirectoryConnectionsRouteImport.update({
-  id: '/directory/connections',
-  path: '/directory/connections',
-  getParentRoute: () => appRoute,
-} as any)
 const DirectorySyncActivityRoute = DirectorySyncActivityRouteImport.update({
   id: '/directory/sync-activity',
   path: '/directory/sync-activity',
@@ -604,6 +601,24 @@ const DeveloperWebhooksIdRoute = DeveloperWebhooksIdRouteImport.update({
   path: '/developer/webhooks/$id',
   getParentRoute: () => appRoute,
 } as any)
+const DirectoryConnectionsIndexRoute =
+  DirectoryConnectionsIndexRouteImport.update({
+    id: '/directory/connections/',
+    path: '/directory/connections/',
+    getParentRoute: () => appRoute,
+  } as any)
+const DirectoryConnectionsLdapRoute =
+  DirectoryConnectionsLdapRouteImport.update({
+    id: '/directory/connections/ldap',
+    path: '/directory/connections/ldap',
+    getParentRoute: () => appRoute,
+  } as any)
+const DirectoryConnectionsScimRoute =
+  DirectoryConnectionsScimRouteImport.update({
+    id: '/directory/connections/scim',
+    path: '/directory/connections/scim',
+    getParentRoute: () => appRoute,
+  } as any)
 const SecurityComplianceGdprRoute = SecurityComplianceGdprRouteImport.update({
   id: '/security/compliance/gdpr',
   path: '/security/compliance/gdpr',
@@ -742,7 +757,6 @@ export interface FileRoutesByFullPath {
   '/developer/infrastructure': typeof DeveloperInfrastructureRoute
   '/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
-  '/directory/connections': typeof DirectoryConnectionsRoute
   '/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/directory/sync-errors': typeof DirectorySyncErrorsRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
@@ -789,6 +803,8 @@ export interface FileRoutesByFullPath {
   '/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/directory/connections/ldap': typeof DirectoryConnectionsLdapRoute
+  '/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
   '/security/compliance/retention': typeof SecurityComplianceRetentionRoute
@@ -805,6 +821,7 @@ export interface FileRoutesByFullPath {
   '/users/$userId/timeline': typeof UsersUserId_DottimelineRoute
   '/auth/connections/': typeof AuthConnectionsIndexRoute
   '/developer/webhooks/': typeof DeveloperWebhooksIndexRoute
+  '/directory/connections/': typeof DirectoryConnectionsIndexRoute
   '/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
   '/auth/connections/oidc/': typeof AuthConnectionsOidcIndexRoute
 }
@@ -853,7 +870,6 @@ export interface FileRoutesByTo {
   '/developer/infrastructure': typeof DeveloperInfrastructureRoute
   '/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
-  '/directory/connections': typeof DirectoryConnectionsRoute
   '/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/directory/sync-errors': typeof DirectorySyncErrorsRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
@@ -900,6 +916,8 @@ export interface FileRoutesByTo {
   '/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/directory/connections/ldap': typeof DirectoryConnectionsLdapRoute
+  '/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
   '/security/compliance/retention': typeof SecurityComplianceRetentionRoute
@@ -916,6 +934,7 @@ export interface FileRoutesByTo {
   '/users/$userId/timeline': typeof UsersUserId_DottimelineRoute
   '/auth/connections': typeof AuthConnectionsIndexRoute
   '/developer/webhooks': typeof DeveloperWebhooksIndexRoute
+  '/directory/connections': typeof DirectoryConnectionsIndexRoute
   '/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
   '/auth/connections/oidc': typeof AuthConnectionsOidcIndexRoute
 }
@@ -967,7 +986,6 @@ export interface FileRoutesById {
   '/_app/developer/infrastructure': typeof DeveloperInfrastructureRoute
   '/_app/developer/machine-access': typeof DeveloperMachineAccessRoute
   '/_app/directory/attribute-mappings': typeof DirectoryAttributeMappingsRoute
-  '/_app/directory/connections': typeof DirectoryConnectionsRoute
   '/_app/directory/sync-activity': typeof DirectorySyncActivityRoute
   '/_app/directory/sync-errors': typeof DirectorySyncErrorsRoute
   '/_app/groups/$groupId': typeof GroupsGroupIdRoute
@@ -1014,6 +1032,8 @@ export interface FileRoutesById {
   '/_app/auth/mfa/sms-email': typeof AuthMfaSmsEmailRoute
   '/_app/auth/mfa/totp': typeof AuthMfaTotpRoute
   '/_app/developer/webhooks/$id': typeof DeveloperWebhooksIdRoute
+  '/_app/directory/connections/ldap': typeof DirectoryConnectionsLdapRoute
+  '/_app/directory/connections/scim': typeof DirectoryConnectionsScimRoute
   '/_app/security/compliance/gdpr': typeof SecurityComplianceGdprRoute
   '/_app/security/compliance/iso27001': typeof SecurityComplianceIso27001Route
   '/_app/security/compliance/retention': typeof SecurityComplianceRetentionRoute
@@ -1030,6 +1050,7 @@ export interface FileRoutesById {
   '/_app/users/$userId_/timeline': typeof UsersUserId_DottimelineRoute
   '/_app/auth/connections/': typeof AuthConnectionsIndexRoute
   '/_app/developer/webhooks/': typeof DeveloperWebhooksIndexRoute
+  '/_app/directory/connections/': typeof DirectoryConnectionsIndexRoute
   '/_app/auth/connections/oidc/$clientId': typeof AuthConnectionsOidcClientIdRoute
   '/_app/auth/connections/oidc/': typeof AuthConnectionsOidcIndexRoute
 }
@@ -1080,7 +1101,6 @@ export interface FileRouteTypes {
     | '/developer/infrastructure'
     | '/developer/machine-access'
     | '/directory/attribute-mappings'
-    | '/directory/connections'
     | '/directory/sync-activity'
     | '/directory/sync-errors'
     | '/groups/$groupId'
@@ -1127,6 +1147,8 @@ export interface FileRouteTypes {
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
+    | '/directory/connections/ldap'
+    | '/directory/connections/scim'
     | '/security/compliance/gdpr'
     | '/security/compliance/iso27001'
     | '/security/compliance/retention'
@@ -1143,6 +1165,7 @@ export interface FileRouteTypes {
     | '/users/$userId/timeline'
     | '/auth/connections/'
     | '/developer/webhooks/'
+    | '/directory/connections/'
     | '/auth/connections/oidc/$clientId'
     | '/auth/connections/oidc/'
   fileRoutesByTo: FileRoutesByTo
@@ -1191,7 +1214,6 @@ export interface FileRouteTypes {
     | '/developer/infrastructure'
     | '/developer/machine-access'
     | '/directory/attribute-mappings'
-    | '/directory/connections'
     | '/directory/sync-activity'
     | '/directory/sync-errors'
     | '/groups/$groupId'
@@ -1238,6 +1260,8 @@ export interface FileRouteTypes {
     | '/auth/mfa/sms-email'
     | '/auth/mfa/totp'
     | '/developer/webhooks/$id'
+    | '/directory/connections/ldap'
+    | '/directory/connections/scim'
     | '/security/compliance/gdpr'
     | '/security/compliance/iso27001'
     | '/security/compliance/retention'
@@ -1254,6 +1278,7 @@ export interface FileRouteTypes {
     | '/users/$userId/timeline'
     | '/auth/connections'
     | '/developer/webhooks'
+    | '/directory/connections'
     | '/auth/connections/oidc/$clientId'
     | '/auth/connections/oidc'
   id:
@@ -1304,7 +1329,6 @@ export interface FileRouteTypes {
     | '/_app/developer/infrastructure'
     | '/_app/developer/machine-access'
     | '/_app/directory/attribute-mappings'
-    | '/_app/directory/connections'
     | '/_app/directory/sync-activity'
     | '/_app/directory/sync-errors'
     | '/_app/groups/$groupId'
@@ -1351,6 +1375,8 @@ export interface FileRouteTypes {
     | '/_app/auth/mfa/sms-email'
     | '/_app/auth/mfa/totp'
     | '/_app/developer/webhooks/$id'
+    | '/_app/directory/connections/ldap'
+    | '/_app/directory/connections/scim'
     | '/_app/security/compliance/gdpr'
     | '/_app/security/compliance/iso27001'
     | '/_app/security/compliance/retention'
@@ -1367,6 +1393,7 @@ export interface FileRouteTypes {
     | '/_app/users/$userId_/timeline'
     | '/_app/auth/connections/'
     | '/_app/developer/webhooks/'
+    | '/_app/directory/connections/'
     | '/_app/auth/connections/oidc/$clientId'
     | '/_app/auth/connections/oidc/'
   fileRoutesById: FileRoutesById
@@ -1727,13 +1754,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DirectoryAttributeMappingsRouteImport
       parentRoute: typeof appRoute
     }
-    '/_app/directory/connections': {
-      id: '/_app/directory/connections'
-      path: '/directory/connections'
-      fullPath: '/directory/connections'
-      preLoaderRoute: typeof DirectoryConnectionsRouteImport
-      parentRoute: typeof appRoute
-    }
     '/_app/directory/sync-activity': {
       id: '/_app/directory/sync-activity'
       path: '/directory/sync-activity'
@@ -2049,6 +2069,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeveloperWebhooksIdRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/directory/connections/': {
+      id: '/_app/directory/connections/'
+      path: '/directory/connections'
+      fullPath: '/directory/connections/'
+      preLoaderRoute: typeof DirectoryConnectionsIndexRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/directory/connections/ldap': {
+      id: '/_app/directory/connections/ldap'
+      path: '/directory/connections/ldap'
+      fullPath: '/directory/connections/ldap'
+      preLoaderRoute: typeof DirectoryConnectionsLdapRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/directory/connections/scim': {
+      id: '/_app/directory/connections/scim'
+      path: '/directory/connections/scim'
+      fullPath: '/directory/connections/scim'
+      preLoaderRoute: typeof DirectoryConnectionsScimRouteImport
+      parentRoute: typeof appRoute
+    }
     '/_app/security/compliance/gdpr': {
       id: '/_app/security/compliance/gdpr'
       path: '/security/compliance/gdpr'
@@ -2212,7 +2253,6 @@ interface appRouteChildren {
   DeveloperInfrastructureRoute: typeof DeveloperInfrastructureRoute
   DeveloperMachineAccessRoute: typeof DeveloperMachineAccessRoute
   DirectoryAttributeMappingsRoute: typeof DirectoryAttributeMappingsRoute
-  DirectoryConnectionsRoute: typeof DirectoryConnectionsRoute
   DirectorySyncActivityRoute: typeof DirectorySyncActivityRoute
   DirectorySyncErrorsRoute: typeof DirectorySyncErrorsRoute
   GroupsGroupIdRoute: typeof GroupsGroupIdRoute
@@ -2257,6 +2297,8 @@ interface appRouteChildren {
   AuthMfaSmsEmailRoute: typeof AuthMfaSmsEmailRoute
   AuthMfaTotpRoute: typeof AuthMfaTotpRoute
   DeveloperWebhooksIdRoute: typeof DeveloperWebhooksIdRoute
+  DirectoryConnectionsLdapRoute: typeof DirectoryConnectionsLdapRoute
+  DirectoryConnectionsScimRoute: typeof DirectoryConnectionsScimRoute
   SecurityComplianceGdprRoute: typeof SecurityComplianceGdprRoute
   SecurityComplianceIso27001Route: typeof SecurityComplianceIso27001Route
   SecurityComplianceRetentionRoute: typeof SecurityComplianceRetentionRoute
@@ -2273,6 +2315,7 @@ interface appRouteChildren {
   UsersUserId_DottimelineRoute: typeof UsersUserId_DottimelineRoute
   AuthConnectionsIndexRoute: typeof AuthConnectionsIndexRoute
   DeveloperWebhooksIndexRoute: typeof DeveloperWebhooksIndexRoute
+  DirectoryConnectionsIndexRoute: typeof DirectoryConnectionsIndexRoute
   AuthConnectionsOidcClientIdRoute: typeof AuthConnectionsOidcClientIdRoute
   AuthConnectionsOidcIndexRoute: typeof AuthConnectionsOidcIndexRoute
 }
@@ -2308,7 +2351,6 @@ const appRouteChildren: appRouteChildren = {
   DeveloperInfrastructureRoute: DeveloperInfrastructureRoute,
   DeveloperMachineAccessRoute: DeveloperMachineAccessRoute,
   DirectoryAttributeMappingsRoute: DirectoryAttributeMappingsRoute,
-  DirectoryConnectionsRoute: DirectoryConnectionsRoute,
   DirectorySyncActivityRoute: DirectorySyncActivityRoute,
   DirectorySyncErrorsRoute: DirectorySyncErrorsRoute,
   GroupsGroupIdRoute: GroupsGroupIdRoute,
@@ -2353,6 +2395,8 @@ const appRouteChildren: appRouteChildren = {
   AuthMfaSmsEmailRoute: AuthMfaSmsEmailRoute,
   AuthMfaTotpRoute: AuthMfaTotpRoute,
   DeveloperWebhooksIdRoute: DeveloperWebhooksIdRoute,
+  DirectoryConnectionsLdapRoute: DirectoryConnectionsLdapRoute,
+  DirectoryConnectionsScimRoute: DirectoryConnectionsScimRoute,
   SecurityComplianceGdprRoute: SecurityComplianceGdprRoute,
   SecurityComplianceIso27001Route: SecurityComplianceIso27001Route,
   SecurityComplianceRetentionRoute: SecurityComplianceRetentionRoute,
@@ -2371,6 +2415,7 @@ const appRouteChildren: appRouteChildren = {
   UsersUserId_DottimelineRoute: UsersUserId_DottimelineRoute,
   AuthConnectionsIndexRoute: AuthConnectionsIndexRoute,
   DeveloperWebhooksIndexRoute: DeveloperWebhooksIndexRoute,
+  DirectoryConnectionsIndexRoute: DirectoryConnectionsIndexRoute,
   AuthConnectionsOidcClientIdRoute: AuthConnectionsOidcClientIdRoute,
   AuthConnectionsOidcIndexRoute: AuthConnectionsOidcIndexRoute,
 }
