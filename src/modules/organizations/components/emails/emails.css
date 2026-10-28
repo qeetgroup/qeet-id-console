@@ -341,7 +341,8 @@
 /* The Add button lines up with the field, under the label. */
 .mail-add-language > button {
   margin-block-start: calc(
-    var(--qx-typography-label-sm-font-size) * var(--qx-typography-label-sm-line-height) +
+    var(--qx-typography-label-sm-font-size) *
+    var(--qx-typography-label-sm-line-height) +
     var(--qx-space-gap-xs)
   );
 }
