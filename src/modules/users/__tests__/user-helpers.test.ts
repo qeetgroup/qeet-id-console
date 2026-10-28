@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Anomaly } from "@/modules/security";
-import { isUser360Tab, USER360_TABS } from "../tabs";
+import { isUser360Tab, USER360_TABS, user360Tab } from "../tabs";
 import { parseUserAgent } from "../user-agent";
 import { primaryRole, shortId, truncateId } from "../user-display";
 import { deriveUserRisk } from "../user-risk";
@@ -205,20 +205,12 @@ describe("deriveUserRisk", () => {
   });
 });
 
-describe("User 360 tabs", () => {
-  it("lists the workspace tabs in display order", () => {
-    expect(USER360_TABS).toEqual([
-      "overview",
-      "security",
-      "access",
-      "sessions",
-      "activity",
-      "identities",
-      "developer",
-    ]);
+describe("the person's page views", () => {
+  it("lists the views in display order", () => {
+    expect(USER360_TABS).toEqual(["overview", "access", "security", "sessions", "activity"]);
   });
 
-  it("accepts only known tab names from the ?tab= search param", () => {
+  it("accepts only known view names from the ?tab= search param", () => {
     for (const tab of USER360_TABS) expect(isUser360Tab(tab)).toBe(true);
     expect(isUser360Tab("settings")).toBe(false);
     expect(isUser360Tab("Overview")).toBe(false);
@@ -227,5 +219,11 @@ describe("User 360 tabs", () => {
     expect(isUser360Tab(null)).toBe(false);
     expect(isUser360Tab(1)).toBe(false);
     expect(isUser360Tab(["overview"])).toBe(false);
+  });
+
+  it("opens an old link to a merged view on the view that holds it now", () => {
+    expect(user360Tab("identities")).toBe("security");
+    expect(user360Tab("developer")).toBeUndefined();
+    expect(user360Tab("sessions")).toBe("sessions");
   });
 });

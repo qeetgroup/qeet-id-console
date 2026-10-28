@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
+import { CheckIcon } from "@qeetrix/icons";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import { ApiError } from "@/platform/errors/api-error";
 
-import { applyServerErrors, FormError, useAppForm } from "../app-form";
+import { applyServerErrors, FieldFrame, FormError, useAppForm } from "../app-form";
 
 afterEach(cleanup);
 
@@ -108,5 +109,86 @@ describe("useAppForm", () => {
       }),
     ).toBeTruthy();
     expect(screen.getByText("req-42")).toBeTruthy();
+  });
+});
+
+const settingsSchema = z.object({ enabled: z.boolean(), plan: z.string(), tags: z.string() });
+
+function SettingsForm({ refuse }: { refuse?: unknown }) {
+  const form = useAppForm({
+    defaultValues: { enabled: false, plan: "free", tags: "" },
+    validators: { onSubmit: settingsSchema },
+    onSubmit: async ({ formApi }) => {
+      if (refuse) applyServerErrors(formApi, refuse);
+    },
+  });
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
+      <form.AppField name="enabled">
+        {(field) => <field.SwitchField label="Enabled" description="Turns it on." />}
+      </form.AppField>
+      <form.AppField name="plan">
+        {(field) => (
+          <field.SelectField
+            label="Plan"
+            options={[
+              { value: "free", label: "Free" },
+              { value: "pro", label: "Pro" },
+            ]}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="tags">
+        {(field) => (
+          <FieldFrame label="Tags">
+            <span>{field.state.value || "none"}</span>
+          </FieldFrame>
+        )}
+      </form.AppField>
+      <form.AppForm>
+        <form.SubmitButton requireChanges icon={<CheckIcon />}>
+          Save
+        </form.SubmitButton>
+      </form.AppForm>
+    </form>
+  );
+}
+
+describe("the field components", () => {
+  it("labels a switch and a select, and keeps Save off until a value changes", () => {
+    render(<SettingsForm />);
+    const save = screen.getByRole("button", { name: "Save" });
+    expect(save.getAttribute("aria-disabled")).toBe("true");
+    expect(save.querySelector("[data-slot='button-icon']")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Plan" }).textContent).toContain("Free");
+
+    fireEvent.click(screen.getByRole("switch", { name: "Enabled" }));
+    expect(screen.getByRole("switch", { name: "Enabled" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    expect(save.getAttribute("aria-disabled")).toBe("false");
+  });
+
+  it("puts a 422 on a switch and a custom control in place of their descriptions", async () => {
+    const refusal422 = new ApiError(422, "validation_failed", "x", undefined, false, undefined, {
+      fields: [
+        { field: "enabled", code: "too_long" },
+        { field: "tags", code: "too_long" },
+      ],
+    });
+    render(<SettingsForm refuse={refusal422} />);
+    fireEvent.click(screen.getByRole("switch", { name: "Enabled" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findAllByText("This is too long.")).toHaveLength(2);
+    expect(screen.queryByText("Turns it on.")).toBeNull();
+    expect(screen.getByRole("switch", { name: "Enabled" }).getAttribute("aria-invalid")).toBe(
+      "true",
+    );
   });
 });

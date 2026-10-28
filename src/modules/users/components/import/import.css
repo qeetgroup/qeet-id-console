@@ -1,0 +1,15 @@
+/*
+ * Import people (import-page.tsx): the person page's sections (person.css), and a step's buttons
+ * at its foot, the main one last. Placement and token values only (--qx-*).
+ */
+
+.imp-page .qx-steps {
+  max-inline-size: 40rem;
+}
+
+.imp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--qx-space-gap-sm);
+}
