@@ -1,246 +1,275 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { ComponentProps, ReactNode } from "react";
+import { afterEach, assert, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
-vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/api/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/platform/api/client")>()),
+  api: vi.fn(),
+}));
+vi.mock("@/platform/auth/session", () => ({
+  useTenantId: () => "tenant-a",
+  useUserId: () => "u-me",
+}));
+const granted = vi.hoisted(() => ({ except: new Set<string>() }));
+vi.mock("@/platform/security/capability-provider", () => ({
+  useCapabilities: () => {
+    const can = (c: string) => !granted.except.has(c);
+    return { state: "ready", mode: "full", can, canAll: (cs: string[]) => cs.every(can) };
+  },
+}));
 vi.mock("@tanstack/react-router", () => ({
-  useLocation: () => ({ pathname: "/compliance/soc2" }),
+  useLocation: () => ({ pathname: "/security/compliance/soc2", searchStr: "", hash: "" }),
+  useNavigate: () => vi.fn(),
+  Link: ({
+    to,
+    children,
+    ...props
+  }: ComponentProps<"a"> & { to: string; children?: ReactNode }) => (
+    <a {...props} href={to}>
+      {children}
+    </a>
+  ),
 }));
 
-import { api } from "@/platform/api/client";
-import { ApiError } from "@/platform/errors/api-error";
+import { formatDate } from "@qeetrix/react";
+
+import { formatLocale } from "@/i18n";
+import { ApiError, api } from "@/platform/api/client";
 import * as dataExport from "@/shared/utils/data-export";
-import { ComplianceEvidencePage } from "../components/evidence-page";
+import type { ControlResult, EvidenceRun } from "../api/evidence";
+import { EvidencePage } from "../pages";
 
-type Control = {
-  id: string;
-  name: string;
-  category: string;
-  criteria: string;
-  status: "pass" | "fail" | "na";
-  detail: string;
-};
+const control = (
+  id: string,
+  status: ControlResult["status"],
+  name: string,
+  detail = `Found for ${id}`,
+): ControlResult => ({
+  id,
+  name,
+  category: "Logical and Physical Access Controls",
+  criteria: id.split("-")[0] ?? id,
+  status,
+  detail,
+});
 
-type Run = {
-  id: string;
-  tenant_id: string;
-  framework: string;
-  generated_at: string;
-  pass_count: number;
-  fail_count: number;
-  na_count: number;
-  controls?: Control[];
-};
-
-function control(criteria: string, status: Control["status"], name = `Control ${criteria}`) {
+function run(id: string, at: string, controls: ControlResult[], by: string | null = "u-shalini") {
+  const count = (s: ControlResult["status"]) => controls.filter((c) => c.status === s).length;
   return {
-    id: `ctl-${criteria}`,
-    name,
-    category: "Logical access",
-    criteria,
-    status,
-    detail: `Evidence for ${criteria}`,
-  } satisfies Control;
+    id,
+    tenant_id: "tenant-a",
+    framework: "soc2",
+    generated_at: at,
+    generated_by: by,
+    pass_count: count("pass"),
+    fail_count: count("fail"),
+    na_count: count("na"),
+    controls,
+  } satisfies EvidenceRun;
 }
 
-const NEWEST: Run = {
-  id: "run-new",
-  tenant_id: "tenant-a",
-  framework: "soc2",
-  generated_at: "2026-10-20T10:00:00Z",
-  pass_count: 2,
-  fail_count: 1,
-  na_count: 1,
-  controls: [
-    control("CC6.1", "pass", "MFA enforced"),
-    control("CC6.2", "pass"),
-    control("CC7.2", "fail", "Audit log monitored"),
-    control("CC9.9", "na", "Vendor review"),
+// Newest first. MFA has failed in every run; the vault had no evidence only in the newest.
+const NEWEST = run("run-3", "2026-10-07T03:38:00Z", [
+  control("CC6.1-MFA", "fail", "Multi-Factor Authentication Enforcement", "MFA is not enforced"),
+  control("CC6.1-PWD-LEN", "pass", "Password Minimum Length"),
+  control("CC6.7-SECRETS", "na", "Secrets Encryption at Rest"),
+  control("CC7.2-CHAIN", "pass", "Audit Log Tamper-Evidence"),
+]);
+const MIDDLE = run("run-2", "2026-09-07T03:38:00Z", [
+  control("CC6.1-MFA", "fail", "Multi-Factor Authentication Enforcement"),
+  control("CC6.1-PWD-LEN", "fail", "Password Minimum Length"),
+  control("CC6.7-SECRETS", "pass", "Secrets Encryption at Rest"),
+  control("CC7.2-CHAIN", "pass", "Audit Log Tamper-Evidence"),
+]);
+const OLDEST = run(
+  "run-1",
+  "2025-09-12T13:16:00Z",
+  [
+    control("CC6.1-MFA", "fail", "Multi-Factor Authentication Enforcement"),
+    control("CC6.1-PWD-LEN", "fail", "Password Minimum Length"),
+    control("CC6.7-SECRETS", "pass", "Secrets Encryption at Rest"),
+    control("CC7.2-CHAIN", "pass", "Audit Log Tamper-Evidence"),
   ],
-};
+  null,
+);
+const RUNS = [NEWEST, MIDDLE, OLDEST];
+const day = (run: EvidenceRun) => formatDate(run.generated_at, formatLocale());
+const summary = ({ controls: _controls, ...rest }: EvidenceRun) => rest;
 
-const OLDER: Run = {
-  id: "run-old",
+const SHALINI = {
+  id: "u-shalini",
   tenant_id: "tenant-a",
-  framework: "soc2",
-  generated_at: "2026-09-01T10:00:00Z",
-  pass_count: 1,
-  fail_count: 0,
-  na_count: 0,
-  controls: [control("CC1.1", "pass", "Code of conduct")],
+  email: "shalini.goyal@qeet.in",
+  display_name: "Shalini Goyal",
+  status: "active",
+  created_at: "2025-01-01T00:00:00Z",
 };
-
-const GENERATED: Run = {
-  id: "run-generated",
-  tenant_id: "tenant-a",
-  framework: "soc2",
-  generated_at: "2026-10-23T10:00:00Z",
-  pass_count: 1,
-  fail_count: 0,
-  na_count: 0,
-  controls: [control("CC8.1", "pass", "Change management")],
-};
-
-/** Returns the run without its controls, as the list endpoint sends it. */
-function summary({ controls: _controls, ...run }: Run): Run {
-  return run;
-}
-
-type Response = unknown | Error | (() => Promise<unknown>);
-
-/** Mocks api() with responses keyed by "METHOD path"; any other request throws. */
-function serve(routes: Record<string, Response>) {
-  vi.mocked(api).mockImplementation(async (path, opts) => {
-    const route = routes[`${opts?.method ?? "GET"} ${path}`];
-    if (route === undefined) throw new Error(`Unexpected request ${opts?.method ?? "GET"} ${path}`);
-    if (route instanceof Error) throw route;
-    if (typeof route === "function") return route();
-    return route;
-  });
-}
 
 const LIST = "GET /v1/tenants/tenant-a/compliance/soc2/evidence";
 const GENERATE = "POST /v1/tenants/tenant-a/compliance/soc2/evidence";
 const detail = (id: string) => `GET /v1/tenants/tenant-a/compliance/evidence/${id}`;
+const EVERY_RUN = {
+  [LIST]: { items: RUNS.map(summary) },
+  [detail("run-3")]: NEWEST,
+  [detail("run-2")]: MIDDLE,
+  [detail("run-1")]: OLDEST,
+};
 
-function renderPage(framework: "soc2" | "iso27001" = "soc2") {
+type Answer = unknown | Error | (() => Promise<unknown>);
+
+/** Answers by "METHOD path"; the people lists answer for every test; anything else throws. */
+function serve(routes: Record<string, Answer>) {
+  vi.mocked(api).mockImplementation(async (path: string, opts?: { method?: string }) => {
+    const key = `${opts?.method ?? "GET"} ${path}`;
+    if (path === "/v1/users") return { items: [SHALINI] };
+    if (path === "/v1/users/deleted") return { items: [] };
+    const answer = routes[key];
+    if (answer === undefined) throw new Error(`Unexpected request ${key}`);
+    if (answer instanceof Error) throw answer;
+    return typeof answer === "function" ? (answer as () => Promise<unknown>)() : answer;
+  });
+}
+
+function renderPage(props: Partial<ComponentProps<typeof EvidencePage>> = {}) {
+  const onRunChange = vi.fn();
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  return render(
+  render(
     <QueryClientProvider client={client}>
-      <ComplianceEvidencePage framework={framework} />
+      <EvidencePage framework="soc2" onRunChange={onRunChange} {...props} />
     </QueryClientProvider>,
   );
+  return { onRunChange };
 }
 
-/** Returns the selectable history rows, newest first. */
-function historyRows() {
-  return screen.getAllByRole("row").filter((row) => row.hasAttribute("aria-selected"));
+async function section(name: string): Promise<HTMLElement> {
+  const heading = await screen.findByRole("heading", { name });
+  const found = heading.closest("section");
+  assert(found, `expected the "${name}" section`);
+  return found;
 }
 
-/** Returns a stat card's label and value; history column headers reuse the labels. */
-function stat(label: string): string {
-  const [heading] = screen.getAllByText(label).filter((el) => el.closest("table") === null);
-  const card = heading?.parentElement?.parentElement;
-  assert(card, `expected a "${label}" stat card`);
-  return card.textContent ?? "";
-}
-
-beforeEach(() => {
-  context.tenantId = "tenant-a";
-  vi.mocked(api).mockReset();
+// jsdom has no Web Animations; the tables' ScrollArea asks for them after a scroll.
+beforeAll(() => {
+  Element.prototype.getAnimations ??= () => [];
 });
 
+beforeEach(() => {
+  granted.except = new Set();
+});
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.mocked(api).mockReset();
 });
 
-describe("ComplianceEvidencePage", () => {
-  it("lists the framework's evidence runs and opens the newest one", async () => {
-    serve({
-      [LIST]: { items: [summary(NEWEST), summary(OLDER)] },
-      [detail("run-new")]: NEWEST,
-    });
+describe("Compliance › SOC 2", () => {
+  it("opens on the newest run: its result, who ran it and its scope, never as a certification", async () => {
+    serve(EVERY_RUN);
     renderPage();
 
-    expect(screen.getByRole("heading", { name: "SOC 2" })).toBeTruthy();
-    expect(await screen.findByText("MFA enforced")).toBeTruthy();
-
-    const passing = screen.getByText("MFA enforced").closest("tr");
-    assert(passing, "expected the MFA control row");
-    expect(passing.textContent).toBe("CC6.1MFA enforcedLogical accesspassEvidence for CC6.1");
-    expect(screen.getByText("Audit log monitored").closest("tr")?.textContent).toContain("fail");
-    expect(screen.getByText("Vendor review").closest("tr")?.textContent).toContain("n/a");
-
-    expect(stat("Controls passing")).toBe("Controls passing2/4");
-    expect(stat("Failing")).toBe("Failing1");
-    expect(stat("Not determinable")).toBe("Not determinable1");
-    expect(screen.getByText("4 controls checked in this run")).toBeTruthy();
-    expect(screen.getByText("2 runs — select a row to load its controls above.")).toBeTruthy();
-
-    const [newest, older] = historyRows();
-    expect(newest?.getAttribute("aria-selected")).toBe("true");
-    expect(older?.getAttribute("aria-selected")).toBe("false");
+    expect(await screen.findByText("1 failing")).toBeTruthy();
+    expect(screen.getByText("2 of 4 pass · 1 no evidence")).toBeTruthy();
+    expect((await screen.findAllByText("Shalini Goyal")).length).toBeGreaterThan(0);
+    expect(screen.getByText("4 checks")).toBeTruthy();
+    expect(screen.getByText(/not an audit, a report or a certification/)).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1, name: "Compliance" })).toBeTruthy();
   });
 
-  it("loads another run's controls when its history row is picked, by click or keyboard", async () => {
-    serve({
-      [LIST]: { items: [summary(NEWEST), summary(OLDER)] },
-      [detail("run-new")]: NEWEST,
-      [detail("run-old")]: OLDER,
-    });
+  it("lists what's missing, failing first, since when, and where each is fixed", async () => {
+    serve(EVERY_RUN);
     renderPage();
-    await screen.findByText("MFA enforced");
 
-    const [newest, older] = historyRows();
-    assert(newest && older, "expected two history rows");
-    fireEvent.click(older);
-
-    expect(await screen.findByText("Code of conduct")).toBeTruthy();
-    expect(screen.queryByText("MFA enforced")).toBeNull();
-    expect(stat("Controls passing")).toBe("Controls passing1/1");
-    expect(older.getAttribute("aria-selected")).toBe("true");
-
-    fireEvent.keyDown(newest, { key: "Enter" });
-    expect(await screen.findByText("MFA enforced")).toBeTruthy();
-    expect(newest.getAttribute("aria-selected")).toBe("true");
+    const missing = await section("What's missing");
+    const names = within(missing)
+      .getAllByRole("listitem")
+      .map((li) => li.querySelector("strong")?.textContent);
+    expect(names).toEqual([
+      "Multi-Factor Authentication Enforcement",
+      "Secrets Encryption at Rest",
+    ]);
+    expect(
+      await within(missing).findByText(`Failing in every run since ${day(OLDEST)} (3 runs)`),
+    ).toBeTruthy();
+    expect(
+      within(missing).getByText(/No evidence since this run; passed in the run before/),
+    ).toBeTruthy();
+    // MFA is the security policy's: the link says where, and what it fixes.
+    const fix = within(missing).getByRole("link", {
+      name: "Security settings, to fix Multi-Factor Authentication Enforcement",
+    });
+    expect(fix.getAttribute("href")).toBe("/settings/organization/security-policy");
   });
 
-  it("generates evidence and shows the new run's controls from the response straight away", async () => {
-    let finishGenerating: (run: Run) => void = () => {};
-    let generated = false;
-    serve({
-      [LIST]: () =>
-        Promise.resolve({
-          items: generated ? [summary(GENERATED), summary(OLDER)] : [summary(OLDER)],
-        }),
-      [detail("run-old")]: OLDER,
-      // The detail read for the new run never answers: what shows must come from the POST.
-      [detail("run-generated")]: () => new Promise(() => {}),
-      [GENERATE]: () =>
-        new Promise<Run>((resolve) => {
-          finishGenerating = (run) => {
-            generated = true;
-            resolve(run);
-          };
-        }),
-    });
+  it("filters the checks by result", async () => {
+    serve(EVERY_RUN);
     renderPage();
-    await screen.findByText("Code of conduct");
+    const table = await screen.findByRole("table", { name: "SOC 2 checks" });
+    expect(within(table).getAllByRole("row")).toHaveLength(5);
 
-    fireEvent.click(screen.getByRole("button", { name: "Generate evidence" }));
-    const pending = await screen.findByRole("button", { name: "Generating..." });
-    expect((pending as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: /^Fail/ }));
 
-    finishGenerating(GENERATED);
+    await waitFor(() => expect(within(table).getAllByRole("row")).toHaveLength(2));
+    expect(within(table).getByText("MFA is not enforced")).toBeTruthy();
+  });
 
-    expect(await screen.findByText("Change management")).toBeTruthy();
-    await waitFor(() => expect(historyRows()).toHaveLength(2));
-    expect(historyRows()[0]?.getAttribute("aria-selected")).toBe("true");
+  it("opens an older run from the list, and from it goes back to the latest", async () => {
+    serve(EVERY_RUN);
+    const first = renderPage();
+    const runs = await screen.findByRole("table", { name: "SOC 2 evidence runs" });
+    expect(within(runs).getByText("Viewing")).toBeTruthy();
+    fireEvent.click(within(runs).getByRole("button", { name: new RegExp(`^${day(MIDDLE)}`) }));
+    expect(first.onRunChange).toHaveBeenCalledWith("run-2");
+    cleanup();
+
+    const older = renderPage({ runId: "run-1" });
+    expect(
+      await screen.findByText(
+        `You're viewing the run of ${day(OLDEST)}. The latest is from ${day(NEWEST)}.`,
+      ),
+    ).toBeTruthy();
+    const missing = await section("What was missing");
+    expect(
+      await within(missing).findByText(`Still failing in the latest run, ${day(NEWEST)}`),
+    ).toBeTruthy();
+    expect(within(missing).getByText(`Passes in the latest run, ${day(NEWEST)}`)).toBeTruthy();
+    expect(screen.getAllByText("Qeet ID").length).toBeGreaterThan(0); // generated by the system
+    fireEvent.click(screen.getByRole("button", { name: "Show the latest" }));
+    expect(older.onRunChange).toHaveBeenCalledWith(undefined);
+  });
+
+  it("generates evidence, then shows the latest run", async () => {
+    serve({ ...EVERY_RUN, [GENERATE]: NEWEST });
+    const { onRunChange } = renderPage({ runId: "run-2" });
+    fireEvent.click(await screen.findByRole("button", { name: "Generate evidence" }));
+
+    await waitFor(() => expect(onRunChange).toHaveBeenCalledWith(undefined));
     expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/compliance/soc2/evidence", {
       method: "POST",
     });
   });
 
+  it("downloads the run on show, its checks included, as JSON", async () => {
+    const exportSpy = vi.spyOn(dataExport, "exportToJson").mockImplementation(() => {});
+    serve(EVERY_RUN);
+    renderPage();
+    const controls = await section("Controls");
+
+    fireEvent.click(within(controls).getByRole("button", { name: "Download evidence" }));
+
+    expect(exportSpy).toHaveBeenCalledWith("evidence-soc2-2026-10-07", [NEWEST]);
+  });
+
   it("invites a first run when there is no evidence yet", async () => {
-    serve({ [LIST]: { items: [] }, [GENERATE]: GENERATED, [detail("run-generated")]: GENERATED });
+    serve({ [LIST]: { items: [] }, [GENERATE]: NEWEST });
     renderPage();
 
-    expect(await screen.findByText("No evidence runs yet")).toBeTruthy();
-    expect(screen.queryByText("Controls")).toBeNull();
-
-    const buttons = screen.getAllByRole("button", { name: "Generate evidence" });
-    expect(buttons).toHaveLength(2);
-    const [, emptyStateButton] = buttons;
-    assert(emptyStateButton, "expected the empty-state generate button");
-    fireEvent.click(emptyStateButton);
-
+    expect(await screen.findByText("No SOC 2 evidence yet")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Generate evidence" }));
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/compliance/soc2/evidence", {
         method: "POST",
@@ -248,69 +277,23 @@ describe("ComplianceEvidencePage", () => {
     );
   });
 
-  it("shows safe copy, never the backend message, when the run list fails", async () => {
+  it("offers no Generate without audit.write, and names no one without user.read", async () => {
+    granted.except = new Set(["audit.write", "user.read"]);
+    serve(EVERY_RUN);
+    renderPage();
+
+    expect((await screen.findAllByText("Someone in this organisation")).length).toBe(3);
+    expect(screen.queryByRole("button", { name: "Generate evidence" })).toBeNull();
+    expect(vi.mocked(api).mock.calls.map(([path]) => path)).not.toContain("/v1/users");
+  });
+
+  it("shows safe copy, never the server's message, when the runs can't be read", async () => {
     serve({
       [LIST]: new ApiError(500, "internal", 'pq: relation "evidence_runs" does not exist'),
     });
     renderPage();
 
-    expect(await screen.findByText("Something went wrong. Please try again.")).toBeTruthy();
+    expect((await screen.findByRole("alert")).textContent).toContain("Couldn't load this");
     expect(screen.queryByText(/evidence_runs/)).toBeNull();
-    expect(screen.queryByText("No evidence runs yet")).toBeNull();
-  });
-
-  it("shows safe copy, never the backend message, when a run's controls fail to load", async () => {
-    serve({
-      [LIST]: { items: [summary(NEWEST)] },
-      [detail("run-new")]: new ApiError(403, "authz.denied", "role compliance_admin missing"),
-    });
-    renderPage();
-
-    const alert = await screen.findByRole("alert");
-    expect(alert.textContent).toContain("You don't have access to do that.");
-    expect(screen.queryByText(/compliance_admin/)).toBeNull();
-  });
-
-  it("downloads the selected run, controls included, as JSON", async () => {
-    const exportSpy = vi.spyOn(dataExport, "exportToJson").mockImplementation(() => {});
-    serve({ [LIST]: { items: [summary(NEWEST)] }, [detail("run-new")]: NEWEST });
-    renderPage();
-    await screen.findByText("MFA enforced");
-
-    fireEvent.click(screen.getByRole("button", { name: "Download JSON" }));
-
-    expect(exportSpy).toHaveBeenCalledWith("evidence-soc2", [NEWEST]);
-  });
-
-  it("reads the ISO 27001 runs for the ISO page", async () => {
-    vi.mocked(api).mockResolvedValue({ items: [] });
-    renderPage("iso27001");
-
-    expect(screen.getByRole("heading", { name: "ISO 27001" })).toBeTruthy();
-    await screen.findByText("No evidence runs yet");
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/compliance/iso27001/evidence");
-  });
-
-  it("asks for nothing and cannot generate before a tenant is selected", async () => {
-    context.tenantId = null;
-    vi.mocked(api).mockResolvedValue({ items: [] });
-    renderPage();
-
-    const buttons = await screen.findAllByRole("button", { name: "Generate evidence" });
-    for (const button of buttons) expect((button as HTMLButtonElement).disabled).toBe(true);
-    expect(api).not.toHaveBeenCalled();
-  });
-
-  it("does not offer a download until a run has loaded", async () => {
-    serve({
-      [LIST]: { items: [summary(NEWEST)] },
-      [detail("run-new")]: () => new Promise(() => {}),
-    });
-    renderPage();
-
-    const download = await screen.findByRole("button", { name: "Download JSON" });
-    expect((download as HTMLButtonElement).disabled).toBe(true);
-    // The stat cards hold placeholders rather than numbers until the run arrives.
-    expect(stat("Controls passing")).toBe("Controls passing");
   });
 });

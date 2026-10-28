@@ -1,0 +1,152 @@
+/*
+ * Security › Compliance: four views under one header. Each opens with its facts in a ruled strip
+ * (result, when, who, scope or related checks), then ruled sections as My account's (account.css).
+ * Token values only.
+ */
+
+.cmp {
+  display: grid;
+  max-inline-size: 80rem;
+}
+
+/* The facts strip: what the data says, before anything else. */
+.cmp-facts {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block-end: var(--qx-space-layout-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.cmp-facts + .account-section {
+  padding-block-start: var(--qx-space-layout-sm);
+}
+
+.cmp-fact {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.cmp-fact-value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs);
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.cmp-fact small,
+.cmp-cell small,
+.cmp-hint {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.cmp-note,
+.cmp-viewing {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.cmp-note svg,
+.cmp-viewing svg {
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 1px;
+  color: var(--qx-color-icon-subtle);
+}
+
+/* Viewing an older run: marked with the Ember bar, the way back to the latest beside it. */
+.cmp-viewing {
+  align-items: center;
+  padding: var(--qx-space-inset-xs) var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+  color: var(--qx-color-text-default);
+}
+
+.cmp-viewing > span {
+  flex: 1;
+}
+
+.cmp-code {
+  font: var(--qx-typography-code-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.cmp-cell {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.cmp-cell strong {
+  font: var(--qx-typography-label-md);
+  font-weight: 600;
+}
+
+.cmp-evidence {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.cmp-since {
+  display: block;
+  margin-block-start: 2px;
+  color: var(--qx-color-text-default);
+}
+
+/* A count in a filter: the label's own colour (it sits on the pressed fill too), lighter weight. */
+.cmp-count {
+  margin-inline-start: var(--qx-space-gap-xs);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.cmp-run {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.cmp-form {
+  display: grid;
+  gap: var(--qx-space-form-gap);
+}
+
+.cmp-pager {
+  justify-self: end;
+}
+
+/* A number edited in place: the field at a number's width, its buttons beside it. */
+.account-detail.cmp-edit {
+  align-items: start;
+}
+
+.cmp-edit .qx-number-field {
+  max-inline-size: 14rem;
+}
+
+.cmp-edit .cmp-hint {
+  display: block;
+  margin-block-start: var(--qx-space-gap-xs);
+}
+
+@media (max-width: 640px) {
+  .cmp-viewing {
+    flex-wrap: wrap;
+  }
+
+  /* Wide tables scroll sideways inside their section on a phone, rather than squeezing. */
+  .cmp-wide .qx-table-element {
+    min-inline-size: 48rem;
+  }
+}

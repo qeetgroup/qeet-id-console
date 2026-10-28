@@ -1,5 +1,6 @@
 // OAuth device authorization grants (RFC 8628), each keyed by the user_code a person types on a
-// second screen. Revoking a suspicious grant stops it from being redeemed.
+// second screen. Revoking one marks it denied: a device still waiting gets nothing, and the code
+// can't be approved. Tokens a device already collected aren't touched.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -11,9 +12,9 @@ export interface DeviceAuth {
   id: string;
   client_id: string;
   user_code: string;
-  status: string;
-  user_id: string;
-  user_email: string;
+  status: string; // pending, authorized or denied
+  user_id?: string | null; // who approved it; none until someone has
+  user_email: string; // "" until someone has
   scopes: string[];
   created_at: string;
   expires_at: string;

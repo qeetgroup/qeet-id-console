@@ -32,6 +32,10 @@ describe("navigation candidates", () => {
     const commands = new Set(commandContributions().map((c) => c.to));
     expect(commands.has("/directory/connections/scim")).toBe(true);
     expect(commands.has("/directory/connections/ldap")).toBe(true);
+    // The old connections list redirects to SSO, whose setup links have their own command.
+    expect(paths.has("/auth/connections")).toBe(false);
+    expect(paths.has("/auth/connections/saml")).toBe(true);
+    expect(commands.has("/auth/connections/saml")).toBe(true);
     expect(paths.has("/users/deleted")).toBe(true);
     for (const path of [
       "/directory/connections",

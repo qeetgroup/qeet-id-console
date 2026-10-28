@@ -102,6 +102,11 @@ export const ERROR_CODES = {
   QEETAI_PROVIDER_KEY_INVALID: "qeetai_provider_key_invalid",
   QEETAI_PROVIDER_MODEL_INVALID: "qeetai_provider_model_invalid",
   QEETAI_PROVIDER_ERROR: "qeetai_provider_error",
+  // Settings › Domains: 400 / 409 / 422s whose fallbacks don't say what to fix.
+  DOMAIN_INVALID: "domainverify.invalid_domain",
+  DOMAIN_EXISTS: "domainverify.exists",
+  DOMAIN_RECORD_MISSING: "domainverify.dns_record_missing", // retryable: DNS can lag
+  DOMAIN_CLAIMED_BY_OTHER: "domainverify.claimed_by_other",
   // Machine access, secrets and auth hooks (the developer pages).
   RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: a scope the caller doesn't hold
   SECRET_NAME_EXISTS: "secret.name_exists", // 409: names are unique in an organisation

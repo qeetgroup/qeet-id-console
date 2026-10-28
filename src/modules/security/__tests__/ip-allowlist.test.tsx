@@ -193,7 +193,7 @@ describe("toAddressRefusal", () => {
         metadata: {
           address: "203.0.113.7",
           path: "/v1/auth/login",
-          reason: "denied",
+          reason: "deny_rule",
           rule_id: "rule-1",
           cidr: "203.0.113.0/24",
         },
@@ -203,9 +203,10 @@ describe("toAddressRefusal", () => {
       at: "2026-10-01T10:00:00Z",
       address: "203.0.113.7",
       path: "/v1/auth/login",
-      reason: "denied",
+      reason: "deny_rule",
       ruleId: "rule-1",
       cidr: "203.0.113.0/24",
+      actorUserId: null,
     });
   });
 
@@ -222,10 +223,27 @@ describe("toAddressRefusal", () => {
       at: "2026-10-01T10:00:00Z",
       address: "10.0.0.1",
       path: "",
-      reason: "",
+      reason: "not_in_allow_rules",
       ruleId: null,
       cidr: null,
+      actorUserId: null,
     });
+  });
+
+  it("reads the reason from the row when the list leaves metadata out", () => {
+    // The deny rule is the event's resource; the person is its actor (ipallow.refusalEvent).
+    expect(
+      toAddressRefusal({
+        id: "audit-5",
+        created_at: "2026-10-01T10:00:00Z",
+        ip: "192.0.2.10",
+        actor_user_id: "user-1",
+        resource_id: "rule-9",
+      }),
+    ).toMatchObject({ reason: "deny_rule", ruleId: "rule-9", actorUserId: "user-1" });
+    expect(
+      toAddressRefusal({ id: "audit-6", created_at: "2026-10-01T10:00:00Z", ip: "192.0.2.11" }),
+    ).toMatchObject({ reason: "not_in_allow_rules", ruleId: null });
   });
 
   it("copes with a row that has no metadata and no ip", () => {
@@ -236,9 +254,10 @@ describe("toAddressRefusal", () => {
       at: "2026-10-01T10:00:00Z",
       address: "",
       path: "",
-      reason: "",
+      reason: "address_unknown",
       ruleId: null,
       cidr: null,
+      actorUserId: null,
     });
     expect(
       toAddressRefusal({
@@ -259,7 +278,7 @@ describe("useAddressRefusals", () => {
           id: "audit-1",
           created_at: "2026-10-01T10:00:00Z",
           ip: "10.0.0.1",
-          metadata: { reason: "not allowed" },
+          metadata: { reason: "not_in_allow_rules" },
         },
       ],
     });
@@ -275,9 +294,10 @@ describe("useAddressRefusals", () => {
         at: "2026-10-01T10:00:00Z",
         address: "10.0.0.1",
         path: "",
-        reason: "not allowed",
+        reason: "not_in_allow_rules",
         ruleId: null,
         cidr: null,
+        actorUserId: null,
       },
     ]);
   });
