@@ -6,7 +6,7 @@ export {
   type ErrorFilters,
   useDirectoryConnections,
   useDirectoryErrors,
-  useDirectoryEvents,
 } from "./api/directory";
+export { useDirectoryEvents } from "./api/events";
 export { directoryKeys } from "./api/keys";
 export type { DirectoryConnection } from "./directory-model";
