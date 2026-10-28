@@ -1,4 +1,5 @@
-// The organization's audit log, filtered and cursor-paged, and its export.
+// The organisation's audit log, filtered and cursor-paged, and its export. The list leaves each
+// event's metadata out; one event's details come from audit-event.ts.
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
@@ -15,7 +16,9 @@ export interface AuditEvent {
   resource_type: string;
   resource_id?: string | null;
   ip?: string | null;
+  user_agent?: string | null;
   request_id?: string | null;
+  /** Not in the list's answer today; kept for a server that sends it. */
   metadata?: Record<string, unknown>;
   created_at: string;
 }
@@ -33,7 +36,8 @@ export interface AuditLogFilters {
   actor_user_id: string;
 }
 
-const PAGE_SIZE = 50;
+/** Rows a page of the log can hold; the server takes 1 to 200. */
+export const AUDIT_PAGE_SIZES = [25, 50, 100] as const;
 const EXPORT_PAGE_SIZE = 200;
 
 function fetchAuditPage(
@@ -55,11 +59,15 @@ function fetchAuditPage(
 }
 
 /** One page of the log; the previous page stays on screen while the next loads. */
-export function useAuditLog(filters: AuditLogFilters, cursor: string | undefined) {
+export function useAuditLog(
+  filters: AuditLogFilters,
+  cursor: string | undefined,
+  pageSize: number = AUDIT_PAGE_SIZES[0],
+) {
   const tenantId = useTenantId();
   return useQuery({
-    queryKey: securityKeys.auditLog(tenantId, filters, cursor),
-    queryFn: () => fetchAuditPage(tenantId, filters, cursor, PAGE_SIZE),
+    queryKey: securityKeys.auditLog(tenantId, { ...filters, pageSize }, cursor),
+    queryFn: () => fetchAuditPage(tenantId, filters, cursor, pageSize),
     enabled: !!tenantId,
     placeholderData: keepPreviousData,
   });
