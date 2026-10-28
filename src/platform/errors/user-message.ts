@@ -87,6 +87,10 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.USER_IMPORT_BATCH_TOO_LARGE]: "errors:code.userImportBatchTooLarge",
   [ERROR_CODES.USER_IMPORT_FILE_TOO_LARGE]: "errors:code.userImportFileTooLarge",
   [ERROR_CODES.USER_IMPORT_SOURCE_INVALID]: "errors:code.userImportSourceInvalid",
+  [ERROR_CODES.USER_MANAGED_ELSEWHERE]: "errors:code.userManagedElsewhere",
+  [ERROR_CODES.USER_CREDENTIALS_SHARED]: "errors:code.userCredentialsShared",
+  [ERROR_CODES.USER_MANAGED_HERE]: "errors:code.userManagedHere",
+  [ERROR_CODES.USER_DOMAIN_MANAGED]: "errors:code.userDomainManaged",
   [ERROR_CODES.WEBHOOK_URL_REQUIRED]: "errors:code.webhookUrlRequired",
   [ERROR_CODES.WEBHOOK_EVENTS_REQUIRED]: "errors:code.webhookEventsRequired",
   // The list comes from the server's catalogue, so a refusal means it changed since it loaded.

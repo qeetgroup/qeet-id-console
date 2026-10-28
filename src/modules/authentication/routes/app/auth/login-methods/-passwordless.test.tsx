@@ -84,7 +84,7 @@ describe("Login methods › Passwordless", () => {
     renderPage();
     // Save stays off until something changes.
     const save = (await screen.findByRole("button", { name: "Save changes" })) as HTMLButtonElement;
-    expect(save.disabled).toBe(true);
+    expect(save.getAttribute("aria-disabled")).toBe("true");
     fireEvent.click(screen.getByRole("switch", { name: /trusted devices/i }));
     fireEvent.click(save);
 
