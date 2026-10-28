@@ -11,7 +11,7 @@ const botsSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/security/threats/bots")({
-  staticData: { capability: "policy.read", pageHeader: true },
+  staticData: { capability: "policy.read" },
   validateSearch: botsSearch,
   component: BotsRoute,
 });

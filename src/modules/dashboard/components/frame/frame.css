@@ -252,32 +252,55 @@ a.frame-note:focus-visible {
   font: var(--qx-typography-body-sm);
 }
 
-/*
- * The band above a page not yet rebuilt: its breadcrumb, then its sub-page tabs. It lines up with
- * the page's own spacing (.console-content) so the breadcrumb sits over the page's title.
- */
-.frame-page-nav {
+/* The keyboard shortcuts drawer: groups under caps labels, each shortcut a ruled row with its keys. */
+.frame-shortcuts {
   display: grid;
-  inline-size: 100%;
-  max-inline-size: 105rem;
+  gap: var(--qx-space-gap-lg);
+}
+
+.frame-shortcuts-group h3 {
+  margin: 0 0 var(--qx-space-gap-xs);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+}
+
+.frame-shortcuts-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.frame-shortcuts-group li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--qx-space-gap-md);
-  margin-inline: auto;
-  padding: 1.5rem 1.5rem 0;
+  padding-block: var(--qx-space-inset-xs);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
 }
 
-@media (min-width: 1280px) {
-  .frame-page-nav {
-    padding-inline: 2rem;
-  }
+.frame-shortcuts-group li:last-child {
+  border-block-end: 0;
 }
 
-@media (max-width: 639px) {
-  .frame-page-nav {
-    padding: 1rem 1rem 0;
-  }
+.frame-shortcuts-keys {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: var(--qx-space-gap-xs);
 }
 
-/* The page below the band starts right under it, not a full gap further down. */
-.frame-page-nav + .console-content {
-  padding-block-start: var(--qx-space-gap-lg);
+.frame-shortcuts-keys kbd {
+  display: inline-grid;
+  min-inline-size: 1.5rem;
+  place-items: center;
+  padding: 0 var(--qx-space-inset-xs);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-chip);
+  background: var(--qx-color-surface-sunken);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-code-sm);
 }

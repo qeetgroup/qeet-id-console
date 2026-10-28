@@ -5,6 +5,5 @@ import { SessionsPage } from "@/modules/security/pages";
 // The person's own sessions, kept beside My account › Sessions for now (the user's decision).
 // Rebuilt on @qeetrix/react: the page draws its own header.
 export const Route = createFileRoute("/_app/security/sessions")({
-  staticData: { pageHeader: true },
   component: SessionsPage,
 });

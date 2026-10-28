@@ -7,7 +7,7 @@ import { UsersPage } from "@/modules/users/pages";
 // a view of the list can be shared and the header's numbers can link into it. The schema comes
 // from the barrel, not pages: the route's options load with the shell, its component later.
 export const Route = createFileRoute("/_app/users/")({
-  staticData: { capability: "user.read", pageHeader: true },
+  staticData: { capability: "user.read" },
   validateSearch: usersListSearch,
   component: UsersRoute,
 });

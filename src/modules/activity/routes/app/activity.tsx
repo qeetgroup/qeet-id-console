@@ -8,7 +8,7 @@ import { ActivityPage, type ActivityPageProps } from "@/modules/activity/pages";
 // in the address (other pages link to one event with `?range=custom&from=…&to=…&event=<id>`). The
 // schema comes from the barrel, which the shell carries already (the Dashboard reads the feed).
 export const Route = createFileRoute("/_app/activity")({
-  staticData: { capability: "audit.read", pageHeader: true },
+  staticData: { capability: "audit.read" },
   validateSearch: activitySearchSchema,
   component: ActivityRoute,
 });

@@ -7,7 +7,7 @@ import { MachineAccessPage } from "@/modules/developer/pages";
 // its filters live in the address, so the header's numbers link into them. The schema comes from
 // the barrel, not pages: the route's options load with the shell, its component later.
 export const Route = createFileRoute("/_app/auth/api/keys")({
-  staticData: { capability: "apikey.read", pageHeader: true },
+  staticData: { capability: "apikey.read" },
   validateSearch: machineSearch,
   component: function MachineAccessRoute() {
     // `action=create` opens the tab's create drawer; the page reads it itself.

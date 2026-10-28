@@ -9,7 +9,7 @@ import { searchEnum, searchText } from "@/shared/utils/search-params";
 // `?action=create` opens the New SAML connection drawer. /auth/connections redirects here. The
 // schema is here: the route's options load with the shell.
 export const Route = createFileRoute("/_app/auth/connections/saml/")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: z.object({
     action: searchEnum(["create"]),
     q: searchText(),

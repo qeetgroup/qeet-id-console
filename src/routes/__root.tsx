@@ -1,5 +1,4 @@
-import { type ColorScheme, QeetrixProvider } from "@qeetrix/react";
-import { ThemeProvider, useTheme } from "@qeetrix/ui";
+import { QeetrixProvider } from "@qeetrix/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import {
   createRootRouteWithContext,
@@ -8,7 +7,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Toaster } from "sonner";
 
@@ -16,17 +15,16 @@ import { publicConfigScript } from "@/platform/config/api-base-url";
 
 import type { RouterContext } from "@/platform/query/query-client";
 import { queryDevtoolsPlugin } from "@/platform/query/query-devtools";
+import {
+  colorSchemeFlashScript,
+  saveColorScheme,
+  savedColorScheme,
+} from "@/platform/theme/color-scheme";
 
 import appCss from "../styles.css?url";
 import i18n from "@/i18n";
 
-const THEME_STORAGE_KEY = "qeetid-admin-theme";
 const DEVTOOLS_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEVTOOLS === "true";
-
-// Runs while <head> parses and puts the saved (or system) theme on <html>, so the first paint is
-// right; ThemeProvider alone would apply it after hydration, with a visible flash. It sets both
-// switches during the migration: the class @qeetrix/ui reads and the attribute @qeetrix/react reads.
-const themeFlashScript = `(function(){try{var k="${THEME_STORAGE_KEY}";var t=localStorage.getItem(k);if(t!=="dark"&&t!=="light"&&t!=="system")t="system";var resolved=t==="system"?(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;var h=document.documentElement;h.classList.remove("light","dark");h.classList.add(resolved);h.setAttribute("data-qx-color-scheme",resolved);h.style.colorScheme=resolved;}catch(e){}})();`;
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
@@ -68,13 +66,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Server-rendered with the request's CSP nonce; each runs once and removes itself. */}
-        <ScriptOnce>{themeFlashScript}</ScriptOnce>
+        <ScriptOnce>{colorSchemeFlashScript}</ScriptOnce>
         <ScriptOnce>{publicConfigScript()}</ScriptOnce>
         <HeadContent />
       </head>
       <body suppressHydrationWarning>
-        <ThemeProvider defaultTheme="system" storageKey={THEME_STORAGE_KEY}>
-          <QeetrixBridge>{children}</QeetrixBridge>
+        <ConsoleProvider>
+          {children}
           <Toaster position="bottom-right" closeButton richColors />
           {DEVTOOLS_ENABLED ? (
             <TanStackDevtools
@@ -88,7 +86,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               ]}
             />
           ) : null}
-        </ThemeProvider>
+        </ConsoleProvider>
         <HydrationMarker />
         <Scripts />
       </body>
@@ -96,15 +94,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Wraps the app in @qeetrix/react's provider, following @qeetrix/ui's theme so one switch sets
-// both libraries' colour scheme, and the console's language for the library's own strings.
-function QeetrixBridge({ children }: { children: ReactNode }) {
-  const { theme } = useTheme();
+// Wraps the app in @qeetrix/react's provider: it owns the colour scheme (light, dark or the
+// system's, kept on this device) and formats in the console's language.
+function ConsoleProvider({ children }: { children: ReactNode }) {
+  const [colorScheme, setColorScheme] = useState(savedColorScheme);
   const { i18n: i18next } = useTranslation();
   const language = i18next.resolvedLanguage ?? "en";
   return (
     <QeetrixProvider
-      colorScheme={theme satisfies ColorScheme}
+      colorScheme={colorScheme}
+      onColorSchemeChange={(next) => {
+        setColorScheme(next);
+        saveColorScheme(next);
+      }}
       locale={language === "en" ? "en-IN" : language === "hi" ? "hi-IN" : language}
     >
       {children}

@@ -6,7 +6,7 @@ import { searchText } from "@/shared/utils/search-params";
 
 // Rebuilt on @qeetrix/react: the page draws its own header; the run on show is in the address.
 export const Route = createFileRoute("/_app/security/compliance/iso27001")({
-  staticData: { capability: "audit.read", pageHeader: true },
+  staticData: { capability: "audit.read" },
   validateSearch: z.object({ run: searchText() }),
   component: Iso27001Route,
 });

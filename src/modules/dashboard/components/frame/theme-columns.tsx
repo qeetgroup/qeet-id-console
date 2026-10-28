@@ -1,9 +1,7 @@
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { MonitorIcon, MoonIcon, SunIcon } from "@qeetrix/icons";
-import { useTheme } from "@qeetrix/ui";
+import { type ColorScheme, useColorScheme } from "@qeetrix/react";
 import { useTranslation } from "react-i18next";
-
-type Theme = "light" | "dark" | "system";
 
 const THEMES = [
   { value: "light", label: "frame.themeLight", icon: SunIcon },
@@ -14,15 +12,15 @@ const THEMES = [
 /**
  * Light, dark or the system's, as three columns inside the account menu: menu radio items (arrow
  * keys, Enter, "radio, checked"), drawn like ThemeSwitcher's segmented toggles, with no dot. The
- * menu stays open, so the change shows at once. The same choice and storage as the theme provider.
+ * menu stays open, so the change shows at once. The choice is the console provider's (__root.tsx).
  */
 export function ThemeColumns() {
   const { t } = useTranslation("dashboard");
-  const { theme, setTheme } = useTheme();
+  const { colorScheme, setColorScheme } = useColorScheme();
   return (
     <BaseMenu.RadioGroup
-      value={theme}
-      onValueChange={(value) => setTheme(value as Theme)}
+      value={colorScheme}
+      onValueChange={(value) => setColorScheme(value as ColorScheme)}
       className="frame-theme"
     >
       {THEMES.map(({ value, label, icon: Icon }) => (

@@ -15,7 +15,7 @@ const permissionsSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/authorization/permissions")({
-  staticData: { capability: "role.read", pageHeader: true },
+  staticData: { capability: "role.read" },
   validateSearch: permissionsSearch,
   component: PermissionsRoute,
 });

@@ -107,9 +107,9 @@ export function TimelineBand({
         {failed && filters.result !== "failed" ? (
           <dd className="ppl-link">
             <Link
-              to="/users/$userId/timeline"
+              to="/users/$userId"
               params={{ userId }}
-              search={{ ...filters, result: "failed" }}
+              search={{ tab: "activity", ...filters, result: "failed" }}
               replace
             >
               {t("band.showFailed")}

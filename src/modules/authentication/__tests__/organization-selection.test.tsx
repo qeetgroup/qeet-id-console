@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ThemeProvider } from "@qeetrix/ui";
+import { QeetrixProvider } from "@qeetrix/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   act,
@@ -134,9 +134,7 @@ function render(node: ReactNode) {
   const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
   return renderUI(node, {
     wrapper: ({ children }) => (
-      <ThemeProvider defaultTheme={theme} storageKey="organization-selector-test">
-        {children}
-      </ThemeProvider>
+      <QeetrixProvider defaultColorScheme={theme}>{children}</QeetrixProvider>
     ),
   });
 }

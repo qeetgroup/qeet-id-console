@@ -18,7 +18,7 @@ const auditSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/security/audit-logs")({
-  staticData: { capability: "audit.read", pageHeader: true },
+  staticData: { capability: "audit.read" },
   validateSearch: auditSearch,
   component: AuditLogsRoute,
 });

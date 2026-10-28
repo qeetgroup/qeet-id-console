@@ -8,7 +8,7 @@ import { searchEnum, searchText } from "@/shared/utils/search-params";
 // header. Its search, kind and "needs a look" live in the address; `?action=create` opens Register
 // application. The schema is here: the route's options load with the shell.
 export const Route = createFileRoute("/_app/auth/connections/oidc/")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: z.object({
     action: searchEnum(["create"]),
     q: searchText(),

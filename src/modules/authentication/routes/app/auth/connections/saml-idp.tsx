@@ -6,7 +6,7 @@ import { searchEnum } from "@/shared/utils/search-params";
 
 // SSO › SAML IdP: the apps Qeet ID signs people in to. `?action=create` opens Add app.
 export const Route = createFileRoute("/_app/auth/connections/saml-idp")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: z.object({ action: searchEnum(["create"]) }),
   component: SamlAppsRoute,
 });

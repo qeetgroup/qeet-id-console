@@ -6,7 +6,7 @@ import { searchEnum } from "@/shared/utils/search-params";
 
 // One application: its Overview, or `?tab=integrate`.
 export const Route = createFileRoute("/_app/auth/connections/oidc/$clientId")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: z.object({ tab: searchEnum(["integrate"]) }),
   component: function OidcAppRoute() {
     const { tab } = Route.useSearch();

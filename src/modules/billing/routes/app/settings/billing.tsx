@@ -13,7 +13,7 @@ const billingSearch = z.object({
 });
 
 export const Route = createFileRoute("/_app/settings/billing")({
-  staticData: { capability: "billing.read", pageHeader: true },
+  staticData: { capability: "billing.read" },
   component: BillingPage,
   validateSearch: billingSearch,
 });

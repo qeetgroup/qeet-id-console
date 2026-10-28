@@ -8,7 +8,7 @@ import { searchEnum } from "@/shared/utils/search-params";
 // redirects here): the one connection's page, the list for several, or how to connect one.
 // `?action=create` opens the New connection drawer.
 export const Route = createFileRoute("/_app/directory/connections/ldap/")({
-  staticData: { capability: "connection.read", pageHeader: true },
+  staticData: { capability: "connection.read" },
   validateSearch: z.object({ action: searchEnum(["create"]) }),
   component: LdapIndexRoute,
 });

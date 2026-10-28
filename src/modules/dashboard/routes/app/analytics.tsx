@@ -7,7 +7,7 @@ import { searchEnum } from "@/shared/utils/search-params";
 // Rebuilt on @qeetrix/react: the page draws its own header, and the range is in the address. The
 // schema is here (not the model's RANGES): the route's options load with the shell.
 export const Route = createFileRoute("/_app/analytics")({
-  staticData: { capability: "analytics.read", pageHeader: true },
+  staticData: { capability: "analytics.read" },
   validateSearch: z.object({ range: searchEnum(["7d", "30d", "90d"]) }),
   component: AnalyticsRoute,
 });
