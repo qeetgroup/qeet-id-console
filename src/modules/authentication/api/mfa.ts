@@ -79,7 +79,7 @@ export function useConfirmTotpEnrollment() {
       void qc.invalidateQueries({ queryKey: authKeys.totp() });
       void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
     },
-    meta: { successMessage: "authentication:mfa.totp.toastEnabled", silentError: true },
+    meta: { successMessage: "authentication:toast.authenticatorOn", silentError: true },
   });
 }
 
@@ -92,7 +92,7 @@ export function useDisableTotp() {
       void qc.invalidateQueries({ queryKey: authKeys.totp() });
       void qc.invalidateQueries({ queryKey: authKeys.recoveryCodes() });
     },
-    meta: { successMessage: "authentication:mfa.totp.toastDisabled" },
+    meta: { successMessage: "authentication:toast.authenticatorOff" },
   });
 }
 
