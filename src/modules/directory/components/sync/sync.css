@@ -1,0 +1,286 @@
+/*
+ * Directory › Directories › Sync activity and Sync errors (activity-page.tsx, errors-page.tsx).
+ * Placement and token values only (--qx-*). The band and the toolbar are the Users page's
+ * (people.css, loaded with the console's styles), the 30-day columns and the health rows
+ * Connections' (connections.css); these are the cells, the problems with their fix, and the drawers.
+ */
+
+/* A cell's two lines: the thing, then where it's from. */
+.sync-two {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.sync-main {
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.sync-two small {
+  overflow: hidden;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sync-subtle {
+  color: var(--qx-color-text-subtle);
+}
+
+/* How a run ended: its word, then the failure's code. */
+.sync-result {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  white-space: nowrap;
+}
+
+.sync-result code,
+.sync-code {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-code-sm);
+  white-space: nowrap;
+}
+
+/* The band's rows: a connection's or a cause's name, cut short before its count. */
+.sync-name {
+  overflow: hidden;
+  min-inline-size: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sync activity's connections: each one's name over its events and failures, a way into the list. */
+.sync-conns ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sync-conns li + li {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.sync-conns a {
+  display: grid;
+  gap: 1px;
+  padding-block: 6px;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-sm);
+  text-decoration: none;
+}
+
+.sync-conns a:hover .sync-name {
+  text-decoration: underline;
+}
+
+.sync-conns small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.sync-failed {
+  color: var(--qx-color-text-danger);
+}
+
+.sync-conns a[aria-current="true"] .sync-name,
+.ppl-looks a[aria-current="true"] span {
+  font-weight: var(--qx-typography-label-sm-font-weight);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dir-health.sync-counts li {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.ppl-value.sync-danger {
+  color: var(--qx-color-text-danger);
+}
+
+/* A part of Sync errors: its heading, then its content. */
+.sync-block {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+}
+
+.sync-block + .sync-block {
+  padding-block-start: var(--qx-space-layout-sm);
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.sync-block-head {
+  display: flex;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+/* An open problem: a ruled panel, what happened over how to fix it (the Ember bar: it's open). */
+.sync-problems {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sync-problem {
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-raised);
+}
+
+.sync-problem-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-md);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+}
+
+.sync-problem-icon,
+.sync-clear-icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-bg-warning-subtle);
+  color: var(--qx-color-icon-warning);
+}
+
+.sync-problem.is-critical .sync-problem-icon {
+  background: var(--qx-color-bg-danger-subtle);
+  color: var(--qx-color-icon-danger);
+}
+
+.sync-problem-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.sync-problem-text p {
+  margin: 0;
+}
+
+.sync-problem-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.sync-problem-title strong {
+  font-weight: 600;
+}
+
+.sync-problem-line {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.sync-fix {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--qx-space-gap-lg);
+  padding: var(--qx-space-inset-md);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+.sync-fix-text {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 0;
+  max-inline-size: 44rem;
+}
+
+.sync-fix-actions {
+  display: grid;
+  justify-items: stretch;
+  gap: var(--qx-space-gap-sm);
+  min-inline-size: 11rem;
+}
+
+.sync-steps {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  list-style: decimal;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-md);
+}
+
+.sync-steps strong {
+  font-weight: 600;
+}
+
+.sync-steps code {
+  font: var(--qx-typography-code-sm);
+  overflow-wrap: anywhere;
+}
+
+/* The server's own words, for whoever runs the directory: small, in code, free to wrap. */
+.sync-tech {
+  margin: 0;
+}
+
+.sync-tech code {
+  font: var(--qx-typography-code-sm);
+  overflow-wrap: anywhere;
+}
+
+/* Nothing open: one ruled row. */
+.sync-clear {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  padding: var(--qx-space-inset-md);
+  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  border-radius: var(--qx-radius-surface);
+}
+
+.sync-clear-icon {
+  background: var(--qx-color-bg-success-subtle);
+  color: var(--qx-color-icon-success);
+}
+
+.sync-problem-loading {
+  block-size: 9rem;
+  border: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
+  border-radius: var(--qx-radius-surface);
+  background: var(--qx-color-surface-sunken);
+}
+
+/* The drawers: the facts, then the fix, then the server's words. */
+.sync-drawer {
+  display: grid;
+  gap: var(--qx-space-gap-lg);
+}
+
+.sync-drawer-fix {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  padding: var(--qx-space-inset-md);
+  box-shadow: inset var(--qx-border-width-accent) 0 0 var(--qx-color-border-brand);
+}
+
+@media (max-width: 760px) {
+  .sync-fix {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sync-fix-actions {
+    min-inline-size: 0;
+  }
+}

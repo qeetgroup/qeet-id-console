@@ -47,23 +47,8 @@
     "submit": "Criar usuário",
     "submitting": "Criando…"
   },
-  "edit": {
-    "title": "Editar usuário",
-    "description": "O email é imutável. Para alterar uma senha, use a ação Definir senha.",
-    "email": "Email",
-    "displayName": "Nome de exibição",
-    "phone": "Telefone",
-    "phoneHelp": "Formato E.164. Deixe em branco para limpar.",
-    "status": "Status",
-    "statusActive": "Ativo",
-    "statusSuspended": "Suspenso",
-    "statusSelfHelp": "Você não pode suspender sua própria conta nesta tela.",
-    "statusHelp": "Suspender impede o login, mas mantém a conta."
-  },
   "setPassword": {
-    "title": "Definir nova senha",
     "newPassword": "Nova senha",
-    "newPasswordHelp": "Mínimo de 8 caracteres.",
     "confirmPassword": "Confirmar nova senha",
     "mismatch": "As senhas não coincidem",
     "submit": "Atualizar senha"

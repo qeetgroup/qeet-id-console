@@ -132,6 +132,13 @@ Each line: the question, then the options; **(R)** marks the recommended one.
   on Users (one overview).*
 - Directories tabs: keep 6 · **(R)** 4 (Connections, Sync activity, Sync errors, Mappings); SCIM and
   LDAP from Add connection and a connection's row.
+  *Decided and built (2026-10-28):* four tabs; SCIM and LDAP moved under Connections
+  (`/directory/connections/scim|ldap`, old addresses redirect, found by palette commands). The
+  Connections page is rebuilt (mock-ups `directories/`, `compare-connections*.png`): where people
+  come from, health (the server's, "not checked" past 24 h) with the latest open problem, the last
+  30 days, what needs a look, and the kinds not set up offered under the table. QTID-964 (LDAP
+  people count), QTRX-50 (MenuItem description). Next, one page at a time: SCIM, LDAP, Sync
+  activity, Sync errors, Mappings.
 - Group detail: **(R)** one page of ruled sections · tabs.
 - **Groups list, redesigned for scale (2026-10-27, approved and built):** the table is the tree
   (families fold; over 50 groups they start folded; 25/50/100 rows a page; a family past a page

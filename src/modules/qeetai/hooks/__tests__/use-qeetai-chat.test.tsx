@@ -33,7 +33,11 @@ vi.mock("@/modules/qeetai/context/use-console-context", () => ({
 vi.mock("@/modules/qeetai/qeetai-provider", () => ({
   useQeetAIRuntime: () => ({ confirm: runtime.confirm, stepUp: runtime.stepUp }),
 }));
-vi.mock("@/modules/qeetai/ai/use-active-provider", () => ({ useActiveProvider: () => provider }));
+vi.mock("@/modules/qeetai/ai/backend-provider", () => ({
+  get backendProvider() {
+    return provider;
+  },
+}));
 
 import { api } from "@/platform/api/client";
 import { ToolCallCard } from "@/modules/qeetai/components/execution/tool-call-card";
@@ -113,7 +117,8 @@ describe("Qeet AI change requests in 1.0", () => {
     expect(screen.getByText(/Nothing was changed/)).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open Users" }).getAttribute("href")).toBe("/users");
     expect(screen.queryByText("Failed")).toBeNull();
-    expect(screen.queryByRole("button", { name: /Retry/ })).toBeNull();
+    expect(screen.getByText("Not run")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Try again/ })).toBeNull();
   });
 
   it("still answers read-only questions with their tool", async () => {

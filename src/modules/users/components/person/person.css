@@ -1,0 +1,461 @@
+/*
+ * A person's page (person-page.tsx): the facts band in its header (the Users band, people.css),
+ * ruled sections, the fact panels, ruled rows of things they have, and the small pictures (their
+ * sign-in methods, their sessions in time). Placement and token values only (--qx-*).
+ */
+
+/* Words, not big numbers: one size down from a list's band. */
+.prs-band .ppl-value {
+  font: var(--qx-typography-heading-sm);
+}
+
+/* The avatar before the name, in the title, until PageHeader has a leading slot (QTRX-48). */
+.prs-title-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+}
+
+.prs-page {
+  display: grid;
+}
+
+/* What's true of them now (suspended, managed elsewhere, not set up), above the sections. */
+.prs-notices {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  padding-block-start: var(--qx-space-gap-lg);
+}
+
+/* ── Sections ───────────────────────────────────────────────────────────────────────────── */
+
+.prs-section {
+  display: grid;
+  gap: var(--qx-space-gap-md);
+  min-inline-size: 0;
+  padding-block: var(--qx-space-layout-sm);
+}
+
+.prs-section + .prs-section {
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.prs-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--qx-space-gap-md);
+}
+
+.prs-head-text {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  max-inline-size: 44rem;
+}
+
+.prs-title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-lg);
+}
+
+.prs-count {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-md);
+}
+
+.prs-head-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.prs-note {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-note a {
+  color: var(--qx-color-text-default);
+}
+
+.prs-mono {
+  font: var(--qx-typography-code-sm);
+  overflow-wrap: anywhere;
+}
+
+/* ── Fact panels: one thing only this person has, each with what it means ──────────────── */
+
+.prs-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  border-block: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.prs-panel {
+  display: grid;
+  align-content: start;
+  gap: var(--qx-space-gap-xs);
+  min-inline-size: 0;
+  padding: var(--qx-space-gap-lg) var(--qx-space-gap-lg) var(--qx-space-gap-lg);
+}
+
+.prs-panel:first-child {
+  padding-inline-start: 0;
+}
+
+.prs-panel + .prs-panel {
+  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.prs-cap {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+}
+
+.prs-value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  margin: var(--qx-space-gap-xs) 0 0;
+  overflow-wrap: anywhere;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-heading-sm);
+}
+
+.prs-value.is-none {
+  color: var(--qx-color-text-subtle);
+}
+
+.prs-value.is-warning {
+  color: var(--qx-color-text-warning);
+}
+
+.prs-panel-note {
+  margin: 0;
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-panel-note.is-warning {
+  color: var(--qx-color-text-warning);
+}
+
+.prs-panel-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-xs) var(--qx-space-gap-md);
+  margin: var(--qx-space-gap-sm) 0 0;
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-panel .overview-split {
+  margin-block-start: var(--qx-space-gap-sm);
+}
+
+/* ── Ruled rows: the things they have (factors, devices, roles, groups) ─────────────────── */
+
+.prs-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.prs-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3.5rem;
+  padding-block: var(--qx-space-inset-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.prs-icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--qx-radius-control);
+  background: var(--qx-color-bg-neutral-subtle);
+  color: var(--qx-color-icon-default);
+}
+
+.prs-icon svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.prs-row-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.prs-row-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-label-md);
+}
+
+.prs-row-text small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-row-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--qx-space-gap-xs);
+}
+
+/* When it was last active, at a row's end. */
+.prs-when {
+  display: grid;
+  justify-items: end;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-md);
+  white-space: nowrap;
+}
+
+.prs-when small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+/* ── Facts: label, value, and what to do about it ─────────────────────────────────────── */
+
+.prs-facts {
+  margin: 0;
+  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.prs-fact {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  min-block-size: 3rem;
+  padding-block: var(--qx-space-gap-sm);
+  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
+}
+
+.prs-fact dt {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-fact dd {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+  margin: 0;
+  color: var(--qx-color-text-default);
+  font: var(--qx-typography-body-md);
+}
+
+.prs-fact-value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+  overflow-wrap: anywhere;
+}
+
+.prs-fact dd small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-fact dd.prs-fact-action {
+  justify-items: end;
+}
+
+/* Profile and work side by side, each ruled. */
+.prs-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--qx-space-layout-sm);
+}
+
+.prs-pair-cap {
+  margin: 0 0 var(--qx-space-gap-sm);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-label-caps);
+  letter-spacing: var(--qx-typography-label-caps-letter-spacing);
+  text-transform: uppercase;
+}
+
+/* ── How they sign in: a bar per method, longest first ─────────────────────────────────── */
+
+.prs-methods {
+  display: grid;
+  gap: var(--qx-space-gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prs-method {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr) 3rem;
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-method-name {
+  color: var(--qx-color-text-default);
+}
+
+.prs-method-track {
+  display: block;
+  block-size: 8px;
+}
+
+/* One series, slot 1 (the one the palette check passes in both themes). */
+.prs-method-bar {
+  display: block;
+  block-size: 100%;
+  min-inline-size: 2px;
+  border-start-end-radius: 2px;
+  border-end-end-radius: 2px;
+  background: var(--qx-color-dataviz-categorical-1);
+}
+
+.prs-method-count {
+  color: var(--qx-color-text-default);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+/* ── Sessions on a ruler of the last two weeks ────────────────────────────────────────── */
+
+.prs-ruler {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+}
+
+.prs-ruler-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--qx-space-gap-md);
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-ruler-name {
+  overflow: hidden;
+  color: var(--qx-color-text-default);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prs-ruler-track {
+  position: relative;
+  block-size: 16px;
+  border-inline: var(--qx-border-width-default) solid var(--qx-color-dataviz-grid);
+  background:
+    linear-gradient(var(--qx-color-dataviz-grid), var(--qx-color-dataviz-grid)) center / 100% 1px
+    no-repeat;
+}
+
+.prs-ruler-span {
+  position: absolute;
+  inset-block: 4px;
+  min-inline-size: 4px;
+  border-radius: 2px;
+  background: var(--qx-color-dataviz-categorical-1);
+}
+
+/* Opened before the window: it runs off the ruler's start, square there. */
+.prs-ruler-span.is-before {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.prs-ruler-axis {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr);
+  gap: var(--qx-space-gap-md);
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.prs-ruler-axis span:last-child {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── Permissions by area ─────────────────────────────────────────────────────────────── */
+
+.prs-perm-split {
+  display: grid;
+  gap: var(--qx-space-gap-xs);
+  max-inline-size: 32rem;
+}
+
+/* ── Activity ─────────────────────────────────────────────────────────────────────────── */
+
+.prs-event-title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qx-space-gap-sm);
+}
+
+.prs-raw {
+  max-block-size: 60vh;
+}
+
+@media (max-width: 64rem) {
+  .prs-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .prs-panel {
+    padding-inline: 0;
+  }
+
+  .prs-panel + .prs-panel {
+    border-inline-start: 0;
+    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
+  }
+
+  .prs-fact {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .prs-fact dd:not(.prs-fact-action) {
+    grid-column: 1 / -1;
+  }
+
+  .prs-method,
+  .prs-ruler-row,
+  .prs-ruler-axis {
+    grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr) auto;
+  }
+}
+
+/* A section head's picker beside its button: choose a role, choose a group. */
+.prs-pick {
+  inline-size: 14rem;
+}

@@ -1,95 +1,116 @@
 // @vitest-environment jsdom
 // Lives beside the route with a "-" prefix so the router generator ignores it.
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
-vi.mock("@/platform/components/page-header", () => ({ PageHeader: () => null }));
-vi.mock("@/platform/security/capability-provider", () => ({
-  useCapabilities: () => ({ state: "ready", can: () => true }),
-}));
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
-// Records what each action asks the shared sensitive-action runner for, then runs it for real.
-const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
-vi.mock("@/platform/security/sensitive-action-provider", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@/platform/security/sensitive-action-provider")>();
-  return {
-    ...actual,
-    useSensitiveAction: () => {
-      const run = actual.useSensitiveAction();
-      return (o: Parameters<typeof run>[0]) => {
-        sensitiveCalls.push(o);
-        return run(o);
-      };
-    },
-  };
-});
+const can = vi.hoisted(() => ({ emails: true }));
+vi.mock("@/platform/security/capability-provider", () => ({
+  useCapabilities: () => ({
+    state: "ready",
+    can: (c?: string) => (c === "branding.write" ? can.emails : true),
+  }),
+}));
+vi.mock("@/modules/dashboard", async () =>
+  (await import("@/modules/authentication/components/methods/__tests__/stubs")).dashboardStub([
+    { method: "magic_link", value: 9.68 },
+  ]),
+);
+vi.mock("@tanstack/react-router", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-router")>()),
+  Link: (await import("@/modules/authentication/components/methods/__tests__/stubs")).RouterLink,
+}));
 
+import { renderPage } from "@/modules/authentication/components/methods/__tests__/kit";
 import { api } from "@/platform/api/client";
-import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { Route } from "./magic-links";
 
-const Page = Route.options.component as () => React.JSX.Element;
+const MagicLinksPage = Route.options.component as () => React.JSX.Element;
 const POLICY_PATH = "/v1/tenants/tenant-1/auth-policy";
 
+let ttl: number;
 let saved: Record<string, unknown> | undefined;
 
 beforeEach(() => {
+  ttl = 30;
   saved = undefined;
-  sensitiveCalls.length = 0;
+  can.emails = true;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
-    if (path === POLICY_PATH && (options?.method ?? "GET") === "GET") {
-      return {
-        password_enabled: true,
-        magic_link_enabled: true,
-        magic_link_ttl_minutes: 60,
-        passkey_enabled: true,
-        otp_email_enabled: false,
-        otp_sms_enabled: false,
-        remember_device_enabled: false,
-      };
-    }
+    const policy = {
+      password_enabled: true,
+      passkey_enabled: true,
+      magic_link_enabled: true,
+      magic_link_ttl_minutes: ttl,
+      remember_device_days: 30,
+    };
+    if (path === POLICY_PATH && (options?.method ?? "GET") === "GET") return policy;
     if (path === POLICY_PATH && options?.method === "PUT") {
       saved = options.body as Record<string, unknown>;
-      return saved;
+      return { ...policy, ...saved };
     }
+    if (path === "/v1/tenants/tenant-1/email-templates")
+      return { items: [{ key: "magic_link", name: "Magic link", custom: false }] };
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });
 });
 
 afterEach(cleanup);
 
-function renderPage() {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+const section = async (name: string) =>
+  (await screen.findByRole("heading", { name })).closest("section") as HTMLElement;
+
+describe("Sign-in › Magic links", () => {
+  it("owns the magic-link switch, with its use", async () => {
+    renderPage(<MagicLinksPage />);
+    const magic = await section("Magic links");
+    expect(within(magic).getByText(/used for 10% of sign-ins/i)).toBeTruthy();
+    fireEvent.click(within(magic).getByRole("button", { name: "Turn off Magic links" }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText(/links already sent stop working/i)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Turn off" }));
+    await waitFor(() => expect(saved).toMatchObject({ magic_link_enabled: false }));
   });
-  render(
-    <QueryClientProvider client={client}>
-      <SensitiveActionProvider>
-        <Page />
-      </SensitiveActionProvider>
-    </QueryClientProvider>,
-  );
-}
 
-describe("Login methods › Magic links", () => {
-  it("saves the policy through the step-up path, the save being the confirmation", async () => {
-    renderPage();
-    // Switching magic links off is what makes the form savable.
-    fireEvent.click(await screen.findByRole("switch"));
-    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+  it("changes how long a link works, marking the current one", async () => {
+    renderPage(<MagicLinksPage />);
+    const link = await section("The link and its email");
+    expect(within(link).getByText("30 minutes")).toBeTruthy();
+    fireEvent.click(within(link).getByRole("button", { name: "Edit how long a link works" }));
+    expect(within(link).getByText("Current")).toBeTruthy();
+    fireEvent.click(within(link).getByRole("radio", { name: /15 minutes/ }));
+    fireEvent.click(within(link).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(saved).toMatchObject({ magic_link_ttl_minutes: 15 }));
+  });
 
-    await waitFor(() => expect(saved).toBeDefined());
-    expect(saved).toMatchObject({ magic_link_enabled: false });
-    expect(sensitiveCalls).toHaveLength(1);
-    expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Change how people sign in" });
-    expect(sensitiveCalls[0]?.confirm).toBeUndefined();
+  it("offers a lifetime set elsewhere as the current one, in hours", async () => {
+    ttl = 240;
+    renderPage(<MagicLinksPage />);
+    const link = await section("The link and its email");
+    expect(within(link).getByText("4 hours")).toBeTruthy();
+    fireEvent.click(within(link).getByRole("button", { name: "Edit how long a link works" }));
+    expect(within(link).getByRole("radio", { name: /4 hours/ })).toBeTruthy();
+  });
+
+  it("names the email it's sent in and links to where it's edited", async () => {
+    renderPage(<MagicLinksPage />);
+    const link = await section("The link and its email");
+    expect(await within(link).findByText(/Qeet ID's standard wording/)).toBeTruthy();
+    expect(within(link).getByRole("link", { name: "Edit email" }).getAttribute("href")).toBe(
+      "/settings/organization/email-templates",
+    );
+  });
+
+  it("only names the email for someone who can't edit emails", async () => {
+    can.emails = false;
+    renderPage(<MagicLinksPage />);
+    const link = await section("The link and its email");
+    expect(within(link).getByText("Magic link")).toBeTruthy();
+    expect(within(link).queryByRole("link", { name: "Edit email" })).toBeNull();
   });
 });

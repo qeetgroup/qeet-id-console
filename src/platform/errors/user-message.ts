@@ -91,12 +91,21 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.USER_IMPORT_BATCH_TOO_LARGE]: "errors:code.userImportBatchTooLarge",
   [ERROR_CODES.USER_IMPORT_FILE_TOO_LARGE]: "errors:code.userImportFileTooLarge",
   [ERROR_CODES.USER_IMPORT_SOURCE_INVALID]: "errors:code.userImportSourceInvalid",
+  [ERROR_CODES.USER_MANAGED_ELSEWHERE]: "errors:code.userManagedElsewhere",
+  [ERROR_CODES.USER_CREDENTIALS_SHARED]: "errors:code.userCredentialsShared",
+  [ERROR_CODES.USER_MANAGED_HERE]: "errors:code.userManagedHere",
+  [ERROR_CODES.USER_DOMAIN_MANAGED]: "errors:code.userDomainManaged",
   [ERROR_CODES.WEBHOOK_URL_REQUIRED]: "errors:code.webhookUrlRequired",
   [ERROR_CODES.WEBHOOK_EVENTS_REQUIRED]: "errors:code.webhookEventsRequired",
   // The list comes from the server's catalogue, so a refusal means it changed since it loaded.
   [ERROR_CODES.WEBHOOK_EVENT_UNKNOWN]: "errors:code.webhookEventUnknown",
   // 400 -> `validation`, which doesn't say which value or what to use instead.
   [ERROR_CODES.OIDC_GRANT_TYPE_UNSUPPORTED]: "errors:code.oidcGrantTypeUnsupported",
+  [ERROR_CODES.QEETAI_UNCONFIGURED]: "errors:code.qeetaiUnconfigured",
+  [ERROR_CODES.QEETAI_PROVIDER_UNREACHABLE]: "errors:code.qeetaiProviderUnreachable",
+  [ERROR_CODES.QEETAI_PROVIDER_KEY_INVALID]: "errors:code.qeetaiProviderKeyInvalid",
+  [ERROR_CODES.QEETAI_PROVIDER_MODEL_INVALID]: "errors:code.qeetaiProviderModelInvalid",
+  [ERROR_CODES.QEETAI_PROVIDER_ERROR]: "errors:code.qeetaiProviderError",
   [ERROR_CODES.NETWORK]: "errors:kind.network",
 };
 
