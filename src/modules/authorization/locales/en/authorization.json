@@ -207,24 +207,6 @@
       "permission": "Enter a permission."
     }
   },
-  "groupRoles": {
-    "title": "Roles",
-    "description": "Members of this group inherit these roles’ permissions.",
-    "addPlaceholder": "Add a role…",
-    "loadingRoles": "Loading roles…",
-    "allGranted": "All roles already granted",
-    "selectAriaLabel": "Select a role to grant",
-    "addRole": "Add role",
-    "emptyTitle": "No roles granted to this group yet.",
-    "emptyDescription": "Use the selector above to grant a role — every member inherits its permissions.",
-    "roleHeader": "Role",
-    "grantedHeader": "Granted",
-    "actionsHeader": "Actions",
-    "revokeTitle": "Remove this role from the group?",
-    "revokeDescriptionPlain": "Members will lose the permissions granted by {{name}} unless they hold it through another group or a direct assignment.",
-    "grantAction": "Grant this role to the group",
-    "revokeAction": "Remove this role from the group"
-  },
   "abac": {
     "deleteTitle": "Delete this policy?",
     "deleteDescription": "“{{name}}” stops applying to access decisions at once. This can’t be undone.",

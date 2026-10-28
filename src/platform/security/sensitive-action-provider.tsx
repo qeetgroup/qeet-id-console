@@ -1,14 +1,5 @@
+import { Button, Dialog, DialogContent, DialogFooter } from "@qeetrix/react";
 import { useTranslation } from "react-i18next";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  Button,
-} from "@qeetrix/ui";
 import {
   createContext,
   type ReactNode,
@@ -135,8 +126,12 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
     <SensitiveActionContext.Provider value={runSensitive}>
       {children}
 
-      <AlertDialog
+      {/* The console's one confirm, on @qeetrix/react. A confirmation asks for an answer, so it's
+          always an alert dialog: a destructive one with the red intent line (only its buttons close
+          it), any other with the amber one. */}
+      <Dialog
         open={!!confirmState}
+        intent={confirmState?.tone === "default" ? "warning" : "danger"}
         onOpenChange={(o) => {
           if (!o && confirmState) {
             confirmState.resolve(false);
@@ -144,24 +139,25 @@ export function SensitiveActionProvider({ children }: { children: ReactNode }) {
           }
         }}
       >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{confirmState?.title}</AlertDialogTitle>
-            {confirmState?.description && (
-              <AlertDialogDescription>{confirmState.description}</AlertDialogDescription>
-            )}
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("actions.cancel")}</AlertDialogCancel>
+        <DialogContent
+          title={confirmState?.title ?? ""}
+          description={confirmState?.description}
+          // 560px: a confirm that says what changes reads in two or three lines, not four or five.
+          size="md"
+        >
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => confirmState?.resolve(false)}>
+              {t("actions.cancel")}
+            </Button>
             <Button
-              variant={confirmState?.tone ?? "destructive"}
+              tone={confirmState?.tone === "default" ? "brand" : "danger"}
               onClick={() => confirmState?.resolve(true)}
             >
               {confirmState?.confirmLabel ?? t("actions.confirm")}
             </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <StepUpDialog
         open={!!stepUp}

@@ -633,7 +633,9 @@
       "statuses": {
         "active": "Active",
         "suspended": "Suspended"
-      }
+      },
+      "group": "Group",
+      "inNoGroup": "In no group"
     },
     "suspended": {
       "label": "Suspended people",

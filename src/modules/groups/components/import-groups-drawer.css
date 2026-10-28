@@ -1,0 +1,22 @@
+/*
+ * Import groups (import-groups-drawer.tsx): a row's name over where it sits, and the links under the
+ * file field. Placement and token values only (--qx-*); the outline face is the templates drawer's.
+ */
+
+.grp-imp-two {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+}
+
+.grp-imp-two small {
+  color: var(--qx-color-text-subtle);
+  font: var(--qx-typography-body-sm);
+}
+
+.grp-imp-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qx-space-gap-lg);
+  margin: 0;
+}

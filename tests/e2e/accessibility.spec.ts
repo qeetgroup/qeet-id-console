@@ -58,6 +58,11 @@ const CONSOLE_PAGES: Target[] = [
     ready: (page) => page.getByText("Runs the shared infrastructure."),
   },
   {
+    name: "group page",
+    path: "/groups/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+    ready: (page) => page.getByRole("heading", { name: "Where it sits" }),
+  },
+  {
     name: "authorization roles",
     path: "/authorization/roles",
     ready: (page) => page.getByText("Reads members and resets their sign-in."),

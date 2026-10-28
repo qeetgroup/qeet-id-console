@@ -21,20 +21,5 @@
     "viaGroup": "グループ · {{group}}",
     "grantedBy": "付与者",
     "roleShort": "ロール {{id}}…"
-  },
-  "groupRoles": {
-    "title": "ロール",
-    "description": "このグループのメンバーはこれらのロールの権限を継承します。",
-    "addPlaceholder": "ロールを追加…",
-    "loadingRoles": "ロールを読み込み中…",
-    "allGranted": "すべてのロールがすでに付与されています",
-    "selectAriaLabel": "付与するロールを選択",
-    "addRole": "ロールを追加",
-    "emptyTitle": "このグループにはまだロールが付与されていません。",
-    "emptyDescription": "上のセレクターを使用してロールを付与してください — すべてのメンバーがその権限を継承します。",
-    "roleHeader": "ロール",
-    "grantedHeader": "付与日",
-    "actionsHeader": "操作",
-    "revokeTitle": "このロールをグループから削除しますか？"
   }
 }
