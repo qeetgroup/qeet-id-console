@@ -226,7 +226,7 @@ describe("useUserRecentActivity", () => {
 });
 
 describe("useRevokeAllUserSessions", () => {
-  it("revokes every session and refreshes that user's sessions and security posture", async () => {
+  it("revokes every session and refreshes every view of that user, and only theirs", async () => {
     vi.mocked(api).mockResolvedValue({ revoked: 3 });
     const { result, client } = setup(
       () => useRevokeAllUserSessions(),
@@ -247,7 +247,8 @@ describe("useRevokeAllUserSessions", () => {
     expect(response).toEqual({ revoked: 3 });
     expect(invalidated(client, userKeys.view("tenant-a", "user-1", "sessions"))).toBe(true);
     expect(invalidated(client, userKeys.view("tenant-a", "user-1", "security"))).toBe(true);
-    expect(invalidated(client, userKeys.view("tenant-a", "user-1", "access"))).toBe(false);
+    // It also forgets their remembered devices and ends their app sign-ins.
+    expect(invalidated(client, userKeys.view("tenant-a", "user-1", "access"))).toBe(true);
     expect(invalidated(client, userKeys.view("tenant-a", "user-2", "sessions"))).toBe(false);
   });
 });

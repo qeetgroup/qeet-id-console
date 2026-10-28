@@ -288,11 +288,17 @@ export function useResetUserMfa() {
   });
 }
 
-/** Sets a user's password; the person isn't told it changed. */
+/**
+ * Sets someone's password. The server ends every way they're signed in and emails them that an
+ * administrator changed it, so their sessions and devices are read again.
+ */
 export function useSetUserPassword() {
+  const tenantId = useTenantId();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, password }: { userId: string; password: string }) =>
       api<void>(`/v1/users/${userId}/password`, { method: "POST", body: { password } }),
+    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
     meta: { successMessage: "users:toast.passwordUpdated" },
   });
 }

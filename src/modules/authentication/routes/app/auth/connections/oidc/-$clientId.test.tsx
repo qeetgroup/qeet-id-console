@@ -105,7 +105,7 @@ describe("Application detail — sensitive actions", () => {
 
     // Save stays off until something changes.
     const save = (await screen.findByRole("button", { name: "Save changes" })) as HTMLButtonElement;
-    expect(save.disabled).toBe(true);
+    expect(save.getAttribute("aria-disabled")).toBe("true");
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: "Renamed app" } });
     fireEvent.click(save);
 
