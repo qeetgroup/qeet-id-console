@@ -1,5 +1,5 @@
 // What this module adds to the console shell; see src/platform/modules/manifest.ts.
-import { NetworkIcon } from "@qeetrix/icons";
+import { NetworkIcon, ServerIcon, WorkflowIcon } from "@qeetrix/icons";
 
 import { defineModule } from "@/platform/modules/manifest";
 
@@ -50,6 +50,23 @@ export const manifest = defineModule({
       order: 60,
       title: "directory:nav.directory.mappings.title",
       url: "/directory/attribute-mappings",
+      capability: "connection.read",
+    },
+  ],
+  // SCIM and LDAP are connections, not tabs: these keep them a search away.
+  commands: [
+    {
+      id: "cmd.directory.scim",
+      text: "directory:commands.scim",
+      icon: <WorkflowIcon className="size-4" />,
+      to: "/directory/connections/scim",
+      capability: "connection.read",
+    },
+    {
+      id: "cmd.directory.ldap",
+      text: "directory:commands.ldap",
+      icon: <ServerIcon className="size-4" />,
+      to: "/directory/connections/ldap",
       capability: "connection.read",
     },
   ],

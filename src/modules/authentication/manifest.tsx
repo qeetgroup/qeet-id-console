@@ -16,24 +16,6 @@ export const manifest = defineModule({
   id: "authentication",
   nav: [
     {
-      id: "directory.scim",
-      group: "directory",
-      parent: "directory.directories",
-      order: 20,
-      title: "authentication:nav.directory.scim.title",
-      url: "/auth/connections/scim",
-      capability: "connection.read",
-    },
-    {
-      id: "directory.ldapAd",
-      group: "directory",
-      parent: "directory.directories",
-      order: 30,
-      title: "authentication:nav.directory.ldapAd.title",
-      url: "/auth/connections/ldap",
-      capability: "connection.read",
-    },
-    {
       id: "applications.applications",
       group: "applications",
       order: 20,

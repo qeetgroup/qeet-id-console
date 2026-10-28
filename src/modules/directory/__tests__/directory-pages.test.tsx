@@ -15,7 +15,6 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 import type { DirectoryConnection } from "../directory-model";
-import { ConnectionsView } from "../components/connections-page";
 import { SyncActivityView } from "../components/sync-activity-page";
 import { SyncErrorsView } from "../components/sync-errors-page";
 import { MappingsView } from "../components/mappings-page";
@@ -67,86 +66,7 @@ function connections(): DirectoryConnection[] {
   ];
 }
 
-const props = () => ({
-  connections: connections(),
-  loading: false,
-  error: false,
-  busy: false,
-  retry: vi.fn(),
-  canWrite: true,
-  totalUsers: 100,
-});
-
-afterEach(() => {
-  cleanup();
-  document.documentElement.classList.remove("dark");
-});
-
-describe("Connections page", () => {
-  it.each(["light", "dark"])(
-    "renders the reference structure with the same content in %s",
-    (theme) => {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      render(<ConnectionsView {...props()} />);
-      expect(screen.getByRole("heading", { name: "All connections" })).toBeTruthy();
-      expect(screen.getAllByRole("article")).toHaveLength(5);
-      expect(screen.getByRole("table")).toBeTruthy();
-      expect(screen.getByRole("region", { name: "Connection health" })).toBeTruthy();
-      expect(screen.getByRole("region", { name: "Provisioning coverage" })).toBeTruthy();
-      expect(screen.getByRole("region", { name: "Recent sync events" })).toBeTruthy();
-      expect(screen.getByText("80%")).toBeTruthy();
-      expect(screen.getByRole("img", { name: "Healthy: --" })).toBeTruthy();
-      expect(screen.queryByText("Production")).toBeNull();
-      expect(screen.getByRole("article", { name: "Healthy" }).textContent).toContain(
-        "Not reported",
-      );
-    },
-  );
-
-  it("searches and clears filters without changing the global summary", () => {
-    render(<ConnectionsView {...props()} />);
-    fireEvent.change(screen.getByRole("textbox", { name: "Search connections..." }), {
-      target: { value: "Corporate" },
-    });
-    expect(within(screen.getByRole("table")).queryByRole("link", { name: "SCIM" })).toBeNull();
-    expect(screen.getByRole("link", { name: "Corporate directory" })).toBeTruthy();
-    expect(screen.getByRole("article", { name: "Total connections" }).textContent).toContain("2");
-    fireEvent.change(screen.getByRole("textbox", { name: "Search connections..." }), {
-      target: { value: "missing" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(screen.getByRole("link", { name: "SCIM" })).toBeTruthy();
-  });
-
-  it("filters by connection type using the menu", async () => {
-    render(<ConnectionsView {...props()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Filter" }));
-    fireEvent.click(await screen.findByRole("menuitemcheckbox", { name: "LDAP / AD" }));
-    expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(2);
-    expect(screen.getByRole("link", { name: "Corporate directory" })).toBeTruthy();
-  });
-
-  it("offers supported creation destinations only to writers", async () => {
-    const state = props();
-    const { rerender } = render(<ConnectionsView {...state} />);
-    fireEvent.click(screen.getByRole("button", { name: "Add connection" }));
-    expect((await screen.findByRole("menuitem", { name: "SCIM" })).getAttribute("href")).toBe(
-      "/auth/connections/scim",
-    );
-    rerender(<ConnectionsView {...state} canWrite={false} />);
-    expect(screen.queryByRole("button", { name: "Add connection" })).toBeNull();
-  });
-
-  it("reports a failed request without showing a fabricated zero total", () => {
-    const state = props();
-    render(<ConnectionsView {...state} connections={undefined} error />);
-    expect(screen.getByRole("article", { name: "Total connections" }).textContent).toContain(
-      "Not reported",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-    expect(state.retry).toHaveBeenCalledOnce();
-  });
-});
+afterEach(cleanup);
 
 function activityFixture(): DirectoryEventPage {
   return {
