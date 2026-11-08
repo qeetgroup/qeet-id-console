@@ -146,9 +146,9 @@
       "link": "Link a phone",
       "action": "Link a phone",
       "title": "Link a phone",
-      "description": "Open Qeet Auth on your phone, go to Settings and scan this code. It links one phone, once.",
+      "description": "Scan this code with Qeet ID on your phone. It links one phone, once.",
       "preparing": "Getting a code",
-      "qrLabel": "QR code to link a phone with Qeet Auth",
+      "qrLabel": "QR code to link a phone with Qeet ID",
       "orType": "Or type this code in the app:",
       "expiresIn": "Expires in {{time}}",
       "expired": "This code has expired. Get a new one to link your phone.",
@@ -267,7 +267,7 @@
     },
     "phones": {
       "title": "Linked phones",
-      "description": "Phones with the Qeet Auth app approve your sign-ins. Remove any you no longer have; it stops approving at once.",
+      "description": "Phones with Qeet ID approve your sign-ins. Remove any you no longer have; it stops approving at once.",
       "memberDescription": "Phones this person linked to approve their sign-ins. Remove one that may be lost or stolen; their other factors stay.",
       "empty": "No linked phones.",
       "platform": {
@@ -284,13 +284,13 @@
       "removed": "Phone removed",
       "dialog": {
         "close": "Close",
-        "description": "Open Qeet Auth on your phone, go to Settings and scan this code. It links one phone, once.",
+        "description": "Scan this code with Qeet ID on your phone. It links one phone, once.",
         "expired": "This code has expired. Get a new one to link your phone.",
         "expiresIn": "Expires in {{time}}",
         "linked": "Phone linked. It can now approve your sign-ins.",
         "newCode": "Get a new code",
         "orType": "Or type this code in the app:",
-        "scan": "Scan with Qeet Auth",
+        "scan": "Scan with Qeet ID",
         "title": "Link a phone"
       },
       "link": "Link a phone"

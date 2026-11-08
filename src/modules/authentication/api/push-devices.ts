@@ -1,4 +1,4 @@
-// Phones linked for sign-in approval (the Qeet Auth mobile app), and the
+// Phones linked for sign-in approval (Qeet ID on the phone), and the
 // one-time pairing code that links one without copying an access token.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -69,7 +69,7 @@ export interface PushPairing {
 }
 
 /**
- * Returns what the pairing QR code holds: a link that opens Qeet Auth on the phone with the code
+ * Returns what the pairing QR code holds: a link that opens Qeet ID on the phone with the code
  * filled in. The app can also scan it, or the code can be typed.
  */
 export function pairingLink(code: string): string {

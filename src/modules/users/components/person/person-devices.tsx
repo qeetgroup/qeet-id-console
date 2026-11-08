@@ -22,7 +22,7 @@ import {
 import type { Standing } from "./person-page";
 import { Row, Rows, Section } from "./person-parts";
 
-/** The phones that approve the person's sign-ins (Qeet Auth): one can go without a full reset. */
+/** The phones that approve the person's sign-ins (Qeet ID on the phone): one can go without a full reset. */
 export function PhonesSection({ user, standing }: { user: UserDetail; standing: Standing }) {
   const { t } = useTranslation("users");
   const locale = formatLocale();

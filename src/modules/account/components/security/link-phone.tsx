@@ -28,7 +28,7 @@ function clock(seconds: number): string {
 }
 
 /**
- * Linking a phone running Qeet Auth with a one-time pairing code, shown as a QR code beside the
+ * Linking a phone running Qeet ID with a one-time pairing code, shown as a QR code beside the
  * code as text (the sign-in setup's `.entry-qr` card); asking for it needs a step-up. Watches the
  * code until the phone links, offers a new one once it expires, and withdraws an unused code when
  * closed so nobody can scan it later. Its own module, loaded when linking starts.

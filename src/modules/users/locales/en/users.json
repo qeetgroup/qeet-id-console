@@ -526,7 +526,7 @@
       "alwaysOn": "{{name}} is asked for a second step at every sign-in.",
       "alwaysOff": "{{name}} is asked for a second step when the organisation's rule says so.",
       "phonesHeading": "Linked phones",
-      "phonesNote": "Phones with Qeet Auth that approve {{name}}'s sign-ins. Remove a lost one; their other second steps stay.",
+      "phonesNote": "Phones with Qeet ID that approve {{name}}'s sign-ins. Remove a lost one; their other second steps stay.",
       "phoneLine": "{{platform}} · linked {{linked}} · last seen {{seen}}",
       "remove": "Remove",
       "removePhoneLabel": "Remove {{phone}}",
