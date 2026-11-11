@@ -1,18 +1,19 @@
 name: ci
 
-# Checks run once for each change: typecheck, format and lint, and the dependency audit. A pull request into develop,
-# a fix into release, or a hotfix/* into main runs them. The unit tests, the browser tests and the build run locally
-# before a change is pushed (AGENTS.md, "Before you finish"). A promotion (develop into release, release into main) skips them when that code is
-# already tested: every commit passed Verify in a pull request into develop or release, and the last of those was up to
-# date when it merged. Otherwise (a direct push, or the branch moving on after a pull request was tested) it runs them
-# once on the whole promotion.
+# Checks run once for each change: typecheck, format and lint, and the dependency audit. A pull request into develop, a
+# fix into a release/YEAR.MONTH.0 branch, a release or hotfix/YEAR.MONTH.N branch into main, and every candidate image
+# (candidate.yml calls this) run them. The unit tests, the browser tests and the build run locally before a change is
+# pushed (AGENTS.md, "Before you finish"). A release branch into main skips them when that code is already tested:
+# every commit passed Verify in a pull request into develop or the release branch, and the last of those was up to date
+# when it merged. Otherwise (direct pushes, or the branch moving on after a pull request was tested) it runs them once.
 on:
   pull_request:
-    branches: [develop, release, main]
+    branches: [develop, "release/**", main]
     types: [opened, synchronize, reopened, ready_for_review]
+  workflow_call:
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -26,17 +27,16 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      pull-requests: read # the commits of a promotion
+      pull-requests: read # the commits of a release
       checks: read # whether each passed Verify on its way in
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0 # the tags, for the version a release gets
           persist-credentials: false
 
-      - name: Promotion
+      - name: Release
         id: promotion
-        if: github.base_ref != 'develop'
+        if: github.event_name == 'pull_request' && github.base_ref != 'develop'
         env:
           GH_TOKEN: ${{ github.token }}
           BASE: ${{ github.base_ref }}
@@ -47,22 +47,24 @@ jobs:
         run: |
           fail() { echo "::error::$1"; exit 1; }
           [ "$HEAD_REPO" = "$GITHUB_REPOSITORY" ] || fail "$BASE takes branches of this repository only, not $HEAD_REPO."
-          if [ "$BASE" = main ]; then
-            [ "$HEAD" = release ] || [[ $HEAD == hotfix/* ]] || fail "main takes release or a hotfix/* branch, not $HEAD."
-            echo "### Merging $HEAD releases $(scripts/next-version.sh)" >> "$GITHUB_STEP_SUMMARY"
-            from=release
-          else
-            [ "$HEAD" != main ] || fail "release takes develop, or a fix branch; main comes back by itself after a release."
-            echo "### Merging $HEAD into release, which becomes $(scripts/next-version.sh)" >> "$GITHUB_STEP_SUMMARY"
-            from=develop
+          if [ "$BASE" != main ]; then
+            [ "$HEAD" != main ] || fail "$BASE takes fixes; main comes back into develop by itself after a release."
+            echo "### A fix into $BASE" >> "$GITHUB_STEP_SUMMARY"
+            exit 0 # new code: test it
           fi
-          [ "$HEAD" = "$from" ] || exit 0 # a fix or a hotfix is new code: test it
+          case "$HEAD" in
+            release/* | hotfix/*) ;;
+            *) fail "main takes a release/YEAR.MONTH.0 or hotfix/YEAR.MONTH.N branch, not $HEAD." ;;
+          esac
+          release=$(scripts/release/version.sh "$HEAD") || fail "$HEAD can't be released (see above)."
+          echo "### Merging $HEAD releases v$release" >> "$GITHUB_STEP_SUMMARY"
+          [[ $HEAD == release/* ]] || exit 0 # a hotfix is new code: test it
 
           untested=""
           for sha in $(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/commits" --jq '.[].sha'); do
             tested=false
             for head in $(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/pulls" \
-              --jq '.[] | select(.merged_at != null and (.base.ref == "develop" or .base.ref == "release")) | .head.sha'); do
+              --jq '.[] | select(.merged_at != null and (.base.ref == "develop" or (.base.ref | startswith("release/")))) | .head.sha'); do
               verdict=$(gh api "repos/$GITHUB_REPOSITORY/commits/$head/check-runs?check_name=Verify" \
                 --jq '.check_runs | sort_by(.completed_at) | last | .conclusion // ""')
               if [ "$verdict" = success ]; then tested=true; break; fi

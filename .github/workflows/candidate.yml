@@ -1,52 +1,53 @@
 name: candidate
 
-# A merge into release builds the image the Qeet ID Kit runs in TEST and STAGING, once per commit:
-# ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, for linux/amd64 and linux/arm64. Only a merged pull request whose Verify passed builds one; the kit numbers the release candidate.
-# A fix merged into release is merged into develop too, so the next release has it.
+# A push to release/YEAR.MONTH.0 or hotfix/YEAR.MONTH.N builds the image the Qeet ID Kit runs in TEST and STAGING,
+# once per commit and after Verify: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, for linux/amd64 and linux/arm64,
+# labelled with its release and branch. The kit numbers the test copies (YEAR.MONTH.N-rc.K); this workflow never does.
+# A fix is made on develop first and then copied to the release branch, so nothing has to come back from it.
 on:
   push:
-    branches: [release]
+    branches: ["release/**", "hotfix/**"]
 
 concurrency:
-  group: candidate
-  cancel-in-progress: false
+  group: candidate-${{ github.ref }}
+  cancel-in-progress: false # every pushed commit gets its image
 
 permissions:
   contents: read
 
 jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: read
+
   image:
     name: Test image
+    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
-      contents: write # merge a release fix into develop
+      contents: read
       packages: write # push the image
-      pull-requests: read # the merged pull request
-      checks: read # its Verify
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0 # the tags, for the version
           persist-credentials: false
 
-      - name: What it builds
+      - name: Release
         id: plan
         env:
-          GH_TOKEN: ${{ github.token }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          fail() { echo "::error::$1"; exit 1; }
-          pr=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
-            --jq '[.[] | select(.merged_at != null and .base.ref == "release")][0] // empty | "\(.number) \(.head.ref) \(.head.sha)"')
-          [ -n "$pr" ] || fail "release's latest commit didn't come from a merged pull request."
-          read -r number head head_sha <<< "$pr"
-          verify=$(gh api "repos/$GITHUB_REPOSITORY/commits/$head_sha/check-runs?check_name=Verify" \
-            --jq '.check_runs | sort_by(.completed_at) | last | .conclusion // ""')
-          [ "$verify" = success ] || fail "#$number: Verify is ${verify:-missing}; only tested code is built."
+          if ! release=$(scripts/release/version.sh "$REF_NAME"); then
+            echo "::error::$REF_NAME is not a release/YEAR.MONTH.0 or hotfix/YEAR.MONTH.N branch (see above)."
+            exit 1
+          fi
           {
-            echo "version=$(scripts/next-version.sh)"
+            echo "release=$release"
             echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "fix=$([ "$head" = develop ] && echo false || echo true)"
           } >> "$GITHUB_OUTPUT"
 
       # The Dockerfile builds natively for each target, so no QEMU is needed for arm64.
@@ -55,8 +56,9 @@ jobs:
       - name: Build and push the image
         env:
           GHCR_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.plan.outputs.version }}
+          RELEASE: ${{ steps.plan.outputs.release }}
           CREATED: ${{ steps.plan.outputs.created }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           ref="ghcr.io/$GITHUB_REPOSITORY:sha-$GITHUB_SHA"
@@ -68,25 +70,14 @@ jobs:
           labels=(
             "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY"
             "org.opencontainers.image.revision=$GITHUB_SHA"
-            "org.opencontainers.image.version=${VERSION#v}"
+            "org.opencontainers.image.version=$RELEASE"
             "org.opencontainers.image.created=$CREATED"
-            "in.qeet.source-branch=release"
+            "in.qeet.release=$RELEASE"
+            "in.qeet.source-branch=$REF_NAME"
           )
           args=()
           for l in "${labels[@]}"; do args+=(--label "$l" --annotation "index:$l"); done
           docker buildx build . --platform linux/amd64,linux/arm64 \
-            --build-arg VERSION="${VERSION#v}" --build-arg REVISION="$GITHUB_SHA" \
+            --build-arg VERSION="$RELEASE" --build-arg REVISION="$GITHUB_SHA" \
             "${args[@]}" --tag "$ref" --push
-          echo "### Test image $ref (${VERSION})" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Bring the fix into develop
-        if: steps.plan.outputs.fix == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if gh api -X POST "repos/$GITHUB_REPOSITORY/merges" -f base=develop -f head="$GITHUB_SHA" \
-            -f commit_message="Merge the release fix into develop" > /dev/null; then
-            echo "The fix is in develop too." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "::warning::release and develop conflict: merge release into develop by hand."
-          fi
+          echo "### Test image $ref ($RELEASE, from $REF_NAME)" >> "$GITHUB_STEP_SUMMARY"

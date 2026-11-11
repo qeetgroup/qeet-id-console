@@ -260,35 +260,38 @@ bun run audit            # known high/critical vulnerabilities in the dependency
 
 ## What CI enforces
 
-`ci.yml` runs one job, **Verify**, on pull requests into `develop`, into `release`, and from a
-`hotfix/*` branch into `main`; nothing runs on a plain push. Every action is pinned to a commit SHA
+`ci.yml` runs one job, **Verify**, on pull requests into `develop`, into a `release/YEAR.MONTH.0`
+branch and into `main`, and before every candidate image; nothing else runs on a plain push. Every action is pinned to a commit SHA
 and workflows default to read-only permissions. Verify (10 min): typecheck → `check` (Biome:
 formatting, lint, and the layer import rules) → `audit` (high and critical advisories). **The unit
 tests (`test:coverage`, thresholds in `vitest.config.ts`), the build, `size` (the bundle budgets;
 see Conventions, Bundle size) and the Playwright specs in `tests/e2e` (the session boundary, the
 Content-Security-Policy and the WCAG 2.2 AA accessibility scan, rule 12) run locally before a change
-is pushed; CI doesn't repeat them.** A promotion
-(`develop` → `release`, `release` → `main`) runs nothing again when every commit already passed
-Verify on its way in and the branch was up to date; otherwise it runs once.
+is pushed; CI doesn't repeat them.** A release branch
+into `main` runs nothing again when every commit already passed Verify on its way in and the branch
+was up to date; otherwise it runs once.
 
-Branches: `develop` → `release` → `main`. A fix found while a candidate is tested goes into
-`release` by pull request, and is merged back into `develop` automatically.
+Branches: `develop` (where changes land) and `main` (production). Each month `release/YEAR.MONTH.0`
+is cut from `develop` (e.g. `release/2027.1.0`) and takes fixes only; an urgent fix after a release
+is `hotfix/YEAR.MONTH.N` from `main` (e.g. `hotfix/2027.1.1`). No leading zeros:
+`scripts/release/version.sh` is the rule. A fix found while a candidate is tested is made on
+`develop` first, then copied to the release branch.
 
-`candidate.yml`: a merge into `release` publishes `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>`
-(amd64+arm64) once, for the Qeet ID Kit (`qeet-id-kit`), labelled with its version and source
-branch; it never computes an RC number. The image is the `Dockerfile` (Nitro `node-server`),
+`candidate.yml`: a push to a release or hotfix branch runs Verify, then publishes
+`ghcr.io/qeetgroup/qeet-id-console:sha-<commit>` (amd64+arm64) once, for the Qeet ID Kit
+(`qeet-id-kit`), labelled with its release and source branch; it never computes an RC number (the
+kit numbers the test copies, `2027.1.0-rc.1` …). The image is the `Dockerfile` (Nitro `node-server`),
 configured at runtime by `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL`; health `GET /healthz`.
 Vercel production does not use it.
 
-`deploy.yml`: a merge into `main` from `release` (or a `hotfix/*`) whose Verify passed deploys
-production (`vercel build`/`deploy --prod`, pinned Vercel CLI; the token reaches only that step),
-checks `https://console.id.qeet.in/healthz`, then tags `vX.Y.Z` with a GitHub release and brings
-`release` and `develop` level with `main`. The version comes from the pull request titles since the
-last tag (`scripts/next-version.sh`: `feat!:` a major, `feat:` a minor, anything else a patch;
-`package.json`'s `version` wins when higher). Run it by hand on `main` to deploy again, or give it
-a tag to put an earlier release back. Vercel's own Git deployments are off (`vercel.json`).
+`deploy.yml`: a merged release or hotfix branch into `main` whose Verify passed deploys production
+(`vercel build`/`deploy --prod`, pinned Vercel CLI; the token reaches only that step), checks
+`https://console.id.qeet.in/healthz`, then tags `vYEAR.MONTH.N` (from the branch name) with a GitHub
+release, deletes the released branch and brings `develop` level with `main`. Any other push to
+`main` deploys nothing. Run it by hand on `main` to deploy again, or give it a tag to put an earlier
+release back. Vercel's own Git deployments are off (`vercel.json`).
 
-`.github/dependabot.yml` proposes bun, Actions and Docker digest updates weekly into `develop`, each
+`.github/dependabot.yml` proposes bun, Actions and Docker digest updates monthly into `develop`, each
 at least 3 days after release; `bunfig.toml` applies the same 3-day minimum to local
 `bun add`/`bun update`. `package.json` `overrides` hold only security floors for transitive
 packages; never add a version pin there for another reason.
