@@ -1,0 +1,92 @@
+name: candidate
+
+# A merge into release builds the image the Qeet ID Kit runs in TEST and STAGING, once per commit:
+# ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, for linux/amd64 and linux/arm64. Only a merged pull request whose Verify passed builds one; the kit numbers the release candidate.
+# A fix merged into release is merged into develop too, so the next release has it.
+on:
+  push:
+    branches: [release]
+
+concurrency:
+  group: candidate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    name: Test image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # merge a release fix into develop
+      packages: write # push the image
+      pull-requests: read # the merged pull request
+      checks: read # its Verify
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the tags, for the version
+          persist-credentials: false
+
+      - name: What it builds
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null and .base.ref == "release")][0] // empty | "\(.number) \(.head.ref) \(.head.sha)"')
+          [ -n "$pr" ] || fail "release's latest commit didn't come from a merged pull request."
+          read -r number head head_sha <<< "$pr"
+          verify=$(gh api "repos/$GITHUB_REPOSITORY/commits/$head_sha/check-runs?check_name=Verify" \
+            --jq '.check_runs | sort_by(.completed_at) | last | .conclusion // ""')
+          [ "$verify" = success ] || fail "#$number: Verify is ${verify:-missing}; only tested code is built."
+          {
+            echo "version=$(scripts/next-version.sh)"
+            echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "fix=$([ "$head" = develop ] && echo false || echo true)"
+          } >> "$GITHUB_OUTPUT"
+
+      # The Dockerfile builds natively for each target, so no QEMU is needed for arm64.
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build and push the image
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          CREATED: ${{ steps.plan.outputs.created }}
+        run: |
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          ref="ghcr.io/$GITHUB_REPOSITORY:sha-$GITHUB_SHA"
+          # sha-<commit> tags never move: a re-run leaves a published one alone.
+          if docker buildx imagetools inspect "$ref" > /dev/null 2>&1; then
+            echo "### $ref is already published" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          labels=(
+            "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY"
+            "org.opencontainers.image.revision=$GITHUB_SHA"
+            "org.opencontainers.image.version=${VERSION#v}"
+            "org.opencontainers.image.created=$CREATED"
+            "in.qeet.source-branch=release"
+          )
+          args=()
+          for l in "${labels[@]}"; do args+=(--label "$l" --annotation "index:$l"); done
+          docker buildx build . --platform linux/amd64,linux/arm64 \
+            --build-arg VERSION="${VERSION#v}" --build-arg REVISION="$GITHUB_SHA" \
+            "${args[@]}" --tag "$ref" --push
+          echo "### Test image $ref (${VERSION})" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Bring the fix into develop
+        if: steps.plan.outputs.fix == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api -X POST "repos/$GITHUB_REPOSITORY/merges" -f base=develop -f head="$GITHUB_SHA" \
+            -f commit_message="Merge the release fix into develop" > /dev/null; then
+            echo "The fix is in develop too." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::release and develop conflict: merge release into develop by hand."
+          fi

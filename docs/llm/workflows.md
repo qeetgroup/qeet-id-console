@@ -1,6 +1,6 @@
 # Workflows — qeet-id-console
 
-**Level:** L2 · **Last verified:** 2026-10-23
+**Level:** L2 · **Last verified:** 2026-11-11
 **Verification scope:** every command checked against `package.json` and
 `.github/workflows/ci.yml`.
 

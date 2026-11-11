@@ -78,16 +78,16 @@ commands:
   boundaries: bun run lint:boundaries
 
 ci:
-  workflows: [ci.yml, deploy.yml, codeql.yml, dependency-audit.yml, docker.yml]
-  job: verify                 # name "Verify" is the required check on main; typecheck, check, lint:boundaries, test:coverage, build
-  dependency_review: ci.yml job on pull requests (fails on high/critical)
-  dependency_audit: dependency-audit.yml — push, PR and daily; not a required check
-  image_check: docker.yml — builds and smoke-tests the image on PRs that touch it
-  dependency_updates: .github/dependabot.yml (bun, github-actions, docker; 3-day cooldown)
+  workflows: [ci.yml, candidate.yml, deploy.yml]
+  branches: develop -> release -> main   # release fixes go into release and are merged back into develop
+  job: verify                 # name "Verify", on PRs into develop and release and hotfix/* into main; typecheck, check, audit
+  local_before_push: [test:coverage, build, size, test:e2e]   # not repeated in CI
+  promotions: develop -> release and release -> main skip Verify when already tested and up to date
+  dependency_updates: .github/dependabot.yml (bun, github-actions, docker; into develop; 3-day cooldown)
   actions_pinned_to_sha: true
   runner: ubuntu-latest
-  deploy: push main -> gate (same as Verify) -> vercel build/deploy --prod -> tag vX.Y.Z + GitHub release (release/x.y.z merge -> exactly vx.y.z; job runs only on main)
-  release_image: "ci.yml job `image` — push to release/** after verify: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, linux/amd64+arm64 (consumed by the Qeet ID Kit, qeet-id-kit)"
+  release_image: "candidate.yml — each merge into release: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, linux/amd64+arm64 (consumed by the Qeet ID Kit, qeet-id-kit)"
+  deploy: "deploy.yml — merge into main from release or hotfix/* -> vercel build/deploy --prod -> /healthz -> tag vX.Y.Z (scripts/next-version.sh) + GitHub release -> release and develop level with main"
 container:
   dockerfile: Dockerfile      # Nitro node-server; not used by Vercel production
   runtime_env: [SERVER_URL, SESSION_SECRET, PUBLIC_API_URL, PORT, HOST]
