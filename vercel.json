@@ -3,8 +3,6 @@
   "installCommand": "bun install --frozen-lockfile",
   "buildCommand": "bun run build",
   "git": {
-    "deploymentEnabled": {
-      "main": false
-    }
+    "deploymentEnabled": false
   }
 }

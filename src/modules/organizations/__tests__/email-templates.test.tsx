@@ -189,6 +189,9 @@ const saveButton = () => screen.getByRole("button", { name: "Save template" });
 const subject = () => screen.getByLabelText(/^Subject/) as HTMLInputElement;
 const frame = () => screen.getByTitle("Email verification email preview");
 
+// The body editor loads lazily; under a full, instrumented test run it can take longer than a second.
+const EDITOR = { timeout: 5000 };
+
 describe("Email template draft preview", () => {
   it("requires the action URL in both email alternatives", () => {
     const draft = emailTemplateInput(templateAt(2));
@@ -288,7 +291,7 @@ describe("Emails workspace", () => {
       "Languages",
       "Advanced",
     ]);
-    await screen.findByRole("textbox", { name: "Body" });
+    await screen.findByRole("textbox", { name: "Body" }, EDITOR);
     expect(frame().getAttribute("sandbox")).toBe("");
     expect(frame().getAttribute("srcdoc")).toContain("#f97316");
     expect(isDisabled(saveButton())).toBe(true);
@@ -349,7 +352,7 @@ describe("Emails workspace", () => {
 
   it("formats body content with the real rich-text editor", async () => {
     render(<EmailTemplatesView {...viewProps()} />);
-    const body = await screen.findByRole("textbox", { name: "Body" });
+    const body = await screen.findByRole("textbox", { name: "Body" }, EDITOR);
     expect(body.getAttribute("contenteditable")).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: "Bold" }));
     expect(screen.getByRole("button", { name: "Bold" }).getAttribute("aria-pressed")).toBe("true");
@@ -514,7 +517,9 @@ describe("Email template API actions", () => {
     render(<EmailTemplatesView {...props} canWrite={false} />);
     expect(subject().disabled).toBe(true);
     expect(
-      (await screen.findByRole("textbox", { name: "Body" })).getAttribute("contenteditable"),
+      (await screen.findByRole("textbox", { name: "Body" }, EDITOR)).getAttribute(
+        "contenteditable",
+      ),
     ).toBe("false");
     fireEvent.click(screen.getByRole("button", { name: "Send test" }));
     expect(props.onTest).not.toHaveBeenCalled();

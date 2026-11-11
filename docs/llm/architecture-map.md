@@ -135,13 +135,12 @@ have 10 (about 5% of the keys), so only English is offered until one is complete
 | **Layering rules** | `biome.json` |
 | Vite plugins, security-header route rules | `vite.config.ts` (dev port 3002 is set in the `dev` script) |
 | Unit tests + coverage thresholds | `vitest.config.ts` — `environment: "node"`, jsdom via per-file pragma |
-| CI (required check **Verify**) | `.github/workflows/ci.yml` |
+| CI (one job, **Verify**: typecheck, Biome, `bun run audit`; tests and the build run locally) | `.github/workflows/ci.yml` |
 | Bundle budgets (gzip: the shell, each route) | `bundle-budgets.json`, checked by `scripts/check-bundle-size.mjs` (`bun run size`, after the build) |
-| Static analysis | `.github/workflows/codeql.yml` |
-| Known-vulnerability audit | `.github/workflows/dependency-audit.yml` (`bun run audit`) |
-| Image build + smoke test on PRs | `.github/workflows/docker.yml` |
+| Test-kit image (each merge into `release`) | `.github/workflows/candidate.yml` |
+| Release version (from pull request titles) | `scripts/next-version.sh` |
 | Dependency updates | `.github/dependabot.yml`, `bunfig.toml` (3-day minimum release age) |
-| Deploy | `.github/workflows/deploy.yml` + `vercel.json` |
+| Deploy (merge into `main`) | `.github/workflows/deploy.yml` + `vercel.json` |
 | Container image | `Dockerfile` (health check on `/healthz`) |
 
 > **`src/app/` is the composition root**, not a provider tree: it lists the modules and wires their

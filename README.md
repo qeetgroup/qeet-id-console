@@ -317,9 +317,9 @@ them: until they are valid, every request fails and the server log names the pro
 Deployed as a **TanStack Start** project on Vercel. It is SSR via Nitro, so the build emits
 Vercel's Build Output API (`.vercel/output`) — the dashboard's "Output Directory" field is
 ignored, and no framework config is needed. [`vercel.json`](vercel.json) pins the Bun
-install/build commands and turns off Vercel's Git deployments for `main`: production is deployed
-by [`deploy.yml`](.github/workflows/deploy.yml) (gate → `vercel build`/`deploy --prod` → version
-tag), while PR and `develop` previews still come from Vercel's Git integration. Security response
+install/build commands and turns off Vercel's Git deployments: production is deployed by
+[`deploy.yml`](.github/workflows/deploy.yml) when a release merges into `main` (`vercel build`/
+`deploy --prod` → health check → version tag). Security response
 headers come from Nitro route rules (`vite.config.ts`), which the build writes into the Vercel
 output.
 
