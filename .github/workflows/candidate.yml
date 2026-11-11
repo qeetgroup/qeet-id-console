@@ -20,8 +20,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
     permissions:
       contents: read
-      pull-requests: read
-      checks: read
+      actions: read
 
   image:
     name: Test image

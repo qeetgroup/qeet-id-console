@@ -1,14 +1,13 @@
 name: ci
 
-# Checks run once for each change: typecheck, format and lint, and the dependency audit. A pull request into develop, a
-# fix into a release/YEAR.MONTH.0 branch, a release or hotfix/YEAR.MONTH.N branch into main, and every candidate image
-# (candidate.yml calls this) run them. The unit tests, the browser tests and the build run locally before a change is
-# pushed (AGENTS.md, "Before you finish"). A release branch into main skips them when that code is already tested:
-# every commit passed Verify in a pull request into develop or the release branch, and the last of those was up to date
-# when it merged. Otherwise (direct pushes, or the branch moving on after a pull request was tested) it runs them once.
+# Checks run once for each change: typecheck, format and lint, and the dependency audit. A pull request into develop or
+# main runs them, and so does every push to a release/YEAR.MONTH.0 or hotfix/YEAR.MONTH.N branch (candidate.yml calls
+# this before building the test image). A release or hotfix branch into main is therefore already tested: when its
+# candidate build passed for that exact commit and the branch holds everything on main, nothing runs again. The unit
+# tests, the browser tests and the build run locally before a change is pushed (AGENTS.md, "Before you finish").
 on:
   pull_request:
-    branches: [develop, "release/**", main]
+    branches: [develop, main]
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_call:
 
@@ -27,8 +26,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      pull-requests: read # the commits of a release
-      checks: read # whether each passed Verify on its way in
+      actions: read # whether the candidate build passed
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -36,57 +34,31 @@ jobs:
 
       - name: Release
         id: promotion
-        if: github.event_name == 'pull_request' && github.base_ref != 'develop'
+        if: github.event_name == 'pull_request' && github.base_ref == 'main'
         env:
           GH_TOKEN: ${{ github.token }}
-          BASE: ${{ github.base_ref }}
           HEAD: ${{ github.head_ref }}
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR: ${{ github.event.pull_request.number }}
         run: |
           fail() { echo "::error::$1"; exit 1; }
-          [ "$HEAD_REPO" = "$GITHUB_REPOSITORY" ] || fail "$BASE takes branches of this repository only, not $HEAD_REPO."
-          if [ "$BASE" != main ]; then
-            [ "$HEAD" != main ] || fail "$BASE takes fixes; main comes back into develop by itself after a release."
-            echo "### A fix into $BASE" >> "$GITHUB_STEP_SUMMARY"
-            exit 0 # new code: test it
-          fi
+          [ "$HEAD_REPO" = "$GITHUB_REPOSITORY" ] || fail "main takes branches of this repository only, not $HEAD_REPO."
           case "$HEAD" in
             release/* | hotfix/*) ;;
-            *) fail "main takes a release/YEAR.MONTH.0 or hotfix/YEAR.MONTH.N branch, not $HEAD." ;;
+            *)
+              echo "### $HEAD into main is not a release: verifying it, and deploy.yml will deploy nothing" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+              ;;
           esac
           release=$(scripts/release/version.sh "$HEAD") || fail "$HEAD can't be released (see above)."
           echo "### Merging $HEAD releases v$release" >> "$GITHUB_STEP_SUMMARY"
-          [[ $HEAD == release/* ]] || exit 0 # a hotfix is new code: test it
-
-          untested=""
-          for sha in $(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/commits" --jq '.[].sha'); do
-            tested=false
-            for head in $(gh api "repos/$GITHUB_REPOSITORY/commits/$sha/pulls" \
-              --jq '.[] | select(.merged_at != null and (.base.ref == "develop" or (.base.ref | startswith("release/")))) | .head.sha'); do
-              verdict=$(gh api "repos/$GITHUB_REPOSITORY/commits/$head/check-runs?check_name=Verify" \
-                --jq '.check_runs | sort_by(.completed_at) | last | .conclusion // ""')
-              if [ "$verdict" = success ]; then tested=true; break; fi
-            done
-            [ "$tested" = true ] || untested="$untested ${sha:0:7}"
-          done
-          if [ -n "$untested" ]; then
-            echo "Not tested on the way in:$untested. Running every check." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          # Each pull request was tested against its base as it was then. $HEAD is that tested state only if the
-          # last one was up to date when it merged: then $HEAD's files are exactly its branch's files.
-          last=$(gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/pulls" \
-            --jq "[.[] | select(.merged_at != null and .base.ref == \"$HEAD\")][0] // empty | \"\(.number) \(.head.sha)\"")
-          read -r number last_head <<< "$last"
-          tree() { gh api "repos/$GITHUB_REPOSITORY/commits/$1" --jq .commit.tree.sha; }
-          if [ -n "$last_head" ] && [ "$(tree "$HEAD_SHA")" = "$(tree "$last_head")" ]; then
+          passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/candidate.yml/runs?head_sha=$HEAD_SHA&status=success" --jq .total_count)
+          behind=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$HEAD_SHA" --jq .behind_by)
+          if [ "$passed" -gt 0 ] && [ "$behind" = 0 ]; then
             echo "tested=true" >> "$GITHUB_OUTPUT"
-            echo "Every commit passed Verify on its way in, so nothing runs again." >> "$GITHUB_STEP_SUMMARY"
+            echo "It passed Verify in its candidate build and holds all of main, so nothing runs again." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "$HEAD changed after #${number:-?} was tested. Running every check once." >> "$GITHUB_STEP_SUMMARY"
+            echo "Verifying it (passed candidate builds of this commit: $passed; commits on main it lacks: $behind)." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0

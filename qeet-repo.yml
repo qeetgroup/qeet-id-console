@@ -80,9 +80,9 @@ commands:
 ci:
   workflows: [ci.yml, candidate.yml, deploy.yml]
   branches: "develop · main (production) · release/YEAR.MONTH.0 (monthly, fixes only) · hotfix/YEAR.MONTH.N — scripts/release/version.sh"
-  job: verify                 # name "Verify", on PRs into develop, release/** and main, and before every candidate image; typecheck, check, audit
+  job: verify                 # name "Verify", on PRs into develop and main, and before every candidate image; typecheck, check, audit
   local_before_push: [test:coverage, build, size, test:e2e]   # not repeated in CI
-  promotions: release/* -> main skips Verify when already tested and up to date
+  promotions: release/* or hotfix/* -> main skips Verify when its candidate build passed for that commit and it holds all of main
   dependency_updates: .github/dependabot.yml (bun, github-actions, docker; monthly into develop; 3-day cooldown)
   actions_pinned_to_sha: true
   runner: ubuntu-latest

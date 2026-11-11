@@ -260,16 +260,16 @@ bun run audit            # known high/critical vulnerabilities in the dependency
 
 ## What CI enforces
 
-`ci.yml` runs one job, **Verify**, on pull requests into `develop`, into a `release/YEAR.MONTH.0`
-branch and into `main`, and before every candidate image; nothing else runs on a plain push. Every action is pinned to a commit SHA
+`ci.yml` runs one job, **Verify**, on pull requests into `develop` and `main`, and before every
+candidate image (each push to a release or hotfix branch); nothing else runs on a plain push. Every action is pinned to a commit SHA
 and workflows default to read-only permissions. Verify (10 min): typecheck → `check` (Biome:
 formatting, lint, and the layer import rules) → `audit` (high and critical advisories). **The unit
 tests (`test:coverage`, thresholds in `vitest.config.ts`), the build, `size` (the bundle budgets;
 see Conventions, Bundle size) and the Playwright specs in `tests/e2e` (the session boundary, the
 Content-Security-Policy and the WCAG 2.2 AA accessibility scan, rule 12) run locally before a change
-is pushed; CI doesn't repeat them.** A release branch
-into `main` runs nothing again when every commit already passed Verify on its way in and the branch
-was up to date; otherwise it runs once.
+is pushed; CI doesn't repeat them.** A release or
+hotfix branch into `main` runs nothing again when its candidate build passed for that commit and it
+holds all of `main`; otherwise it runs once.
 
 Branches: `develop` (where changes land) and `main` (production). Each month `release/YEAR.MONTH.0`
 is cut from `develop` (e.g. `release/2027.1.0`) and takes fixes only; an urgent fix after a release
