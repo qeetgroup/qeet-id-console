@@ -43,8 +43,8 @@
     "i18next-browser-languagedetector": "^8.2.1",
     "monaco-editor": "0.57.0",
     "nitro": "3.0.260429-beta",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "react-i18next": "^17.1.9",
     "recharts": "^3.10.1",
     "sonner": "^2.0.7",
@@ -63,8 +63,8 @@
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^22.19.19",
-    "@types/react": "^19.2.15",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
     "@vitest/coverage-v8": "^5.1.0",
     "babel-plugin-react-compiler": "^1.0.0",
@@ -88,6 +88,6 @@
     "shell-quote": "^1.11.0",
     "source-map-js": "^1.2.2",
     "undici": "^7.29.1",
-    "vite": "^8.3.4"
+    "vite": "^8.3.6"
   }
 }
