@@ -79,15 +79,15 @@ commands:
 
 ci:
   workflows: [ci.yml, candidate.yml, deploy.yml]
-  branches: develop -> release -> main   # release fixes go into release and are merged back into develop
-  job: verify                 # name "Verify", on PRs into develop and release and hotfix/* into main; typecheck, check, audit
+  branches: "develop · main (production) · release/YEAR.MONTH.0 (monthly, fixes only) · hotfix/YEAR.MONTH.N — scripts/release/version.sh"
+  job: verify                 # name "Verify", on PRs into develop, release/** and main, and before every candidate image; typecheck, check, audit
   local_before_push: [test:coverage, build, size, test:e2e]   # not repeated in CI
-  promotions: develop -> release and release -> main skip Verify when already tested and up to date
-  dependency_updates: .github/dependabot.yml (bun, github-actions, docker; into develop; 3-day cooldown)
+  promotions: release/* -> main skips Verify when already tested and up to date
+  dependency_updates: .github/dependabot.yml (bun, github-actions, docker; monthly into develop; 3-day cooldown)
   actions_pinned_to_sha: true
   runner: ubuntu-latest
-  release_image: "candidate.yml — each merge into release: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, linux/amd64+arm64 (consumed by the Qeet ID Kit, qeet-id-kit)"
-  deploy: "deploy.yml — merge into main from release or hotfix/* -> vercel build/deploy --prod -> /healthz -> tag vX.Y.Z (scripts/next-version.sh) + GitHub release -> release and develop level with main"
+  release_image: "candidate.yml — each push to release/** or hotfix/**, after Verify: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, linux/amd64+arm64, in.qeet.release + in.qeet.source-branch labels (consumed by the Qeet ID Kit, qeet-id-kit)"
+  deploy: "deploy.yml — merged release/* or hotfix/* into main -> vercel build/deploy --prod -> /healthz -> tag vYEAR.MONTH.N + GitHub release -> released branch deleted -> develop level with main; any other push deploys nothing"
 container:
   dockerfile: Dockerfile      # Nitro node-server; not used by Vercel production
   runtime_env: [SERVER_URL, SESSION_SECRET, PUBLIC_API_URL, PORT, HOST]

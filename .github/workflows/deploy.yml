@@ -1,9 +1,10 @@
 name: deploy
 
-# Merging into main deploys console.id.qeet.in. Only a merged pull request from release or a hotfix/* branch whose
-# Verify passed ships. After the site answers, the release is tagged (scripts/next-version.sh), and release and
-# develop are brought level with main. Run it by hand on main to deploy main again, or give it a tag to put an earlier
-# release back.
+# A merged release/YEAR.MONTH.0 or hotfix/YEAR.MONTH.N pull request into main whose Verify passed deploys
+# console.id.qeet.in as vYEAR.MONTH.N (scripts/release/version.sh). After the site answers, the release is tagged, the
+# released branch is deleted, and develop is brought level with main. Any other push to main, such as bringing main
+# level with develop, deploys nothing. Run it by hand on main to deploy main's release again, or give it a tag to put an
+# earlier release back.
 #
 # Settings → Secrets and variables → Actions: the VERCEL_TOKEN secret; the VERCEL_ORG_ID and VERCEL_PROJECT_ID
 # variables.
@@ -13,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: An earlier release to put back, for example v0.1.0 (leave empty to deploy main)
+        description: An earlier release to put back, for example v2027.1.0 (leave empty to deploy main)
         type: string
         default: ""
 
@@ -25,15 +26,80 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Deploy to production
+  plan:
+    name: What ships
     if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read # the merged pull request
+      checks: read # its Verify
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      new: ${{ steps.plan.outputs.new }}
+      branch: ${{ steps.plan.outputs.branch }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the tags
+          persist-credentials: false
+
+      - name: What ships
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          if [ -n "$TAG" ]; then
+            [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "The tag must look like v2027.1.0, not $TAG."
+            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null || fail "$TAG never went live."
+            echo "version=$TAG" >> "$GITHUB_OUTPUT"
+            echo "### Putting $TAG back" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null and .base.ref == "main")][0] // empty | "\(.number) \(.head.ref) \(.head.sha)"')
+          read -r number head head_sha <<< "$pr"
+          case "$head" in
+            release/* | hotfix/*) ;;
+            *)
+              echo "### ${head:-A direct push} into main is not a release: nothing is deployed" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+              ;;
+          esac
+          release=$(scripts/release/version.sh "$head") || fail "#$number: $head can't be released (see above)."
+          verify=$(gh api "repos/$GITHUB_REPOSITORY/commits/$head_sha/check-runs?check_name=Verify" \
+            --jq '.check_runs | sort_by(.completed_at) | last | .conclusion // ""')
+          [ "$verify" = success ] || fail "#$number: Verify is ${verify:-missing}; only a tested release ships."
+
+          version="v$release"
+          if git rev-parse -q --verify "refs/tags/$version" > /dev/null; then
+            [ "$(git rev-list -n 1 "$version")" = "$GITHUB_SHA" ] || fail "$version is already a release of another commit."
+            echo "version=$version" >> "$GITHUB_OUTPUT" # deploying the same release again
+          else
+            latest=$(git tag --list 'v*' --sort=-version:refname | head -1)
+            if [ -n "$latest" ] && [ "$(printf '%s\n' "${latest#v}" "$release" | sort -V | tail -1)" != "$release" ]; then
+              fail "$head is not newer than $latest."
+            fi
+            {
+              echo "version=$version"
+              echo "new=true"
+              echo "branch=$head"
+            } >> "$GITHUB_OUTPUT"
+          fi
+          echo "### Shipping $head (#$number) as $version" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy ${{ needs.plan.outputs.version }} to production
+    needs: plan
+    if: needs.plan.outputs.version != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
-      contents: write # tag the release; bring release and develop level with main
-      pull-requests: read # the merged pull request
-      checks: read # its Verify
+      contents: write # tag the release; delete the released branch; bring develop level with main
     environment:
       name: production
       url: https://console.id.qeet.in
@@ -45,41 +111,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.tag || github.sha }}
-          fetch-depth: 0 # the tags, for the version
           persist-credentials: false
-
-      - name: What ships
-        id: plan
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag }}
-        run: |
-          fail() { echo "::error::$1"; exit 1; }
-          if [ -n "$TAG" ]; then
-            [[ $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "The tag must look like v0.1.0, not $TAG."
-            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null || fail "$TAG never went live."
-            echo "version=$TAG" >> "$GITHUB_OUTPUT"
-            echo "### Putting $TAG back" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          pr=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
-            --jq '[.[] | select(.merged_at != null and .base.ref == "main")][0] // empty | "\(.number) \(.head.ref) \(.head.sha)"')
-          [ -n "$pr" ] || fail "main's latest commit didn't come from a merged pull request."
-          read -r number head head_sha <<< "$pr"
-          [ "$head" = release ] || [[ $head == hotfix/* ]] || fail "#$number came from $head; main takes release or hotfix/*."
-          verify=$(gh api "repos/$GITHUB_REPOSITORY/commits/$head_sha/check-runs?check_name=Verify" \
-            --jq '.check_runs | sort_by(.completed_at) | last | .conclusion // ""')
-          [ "$verify" = success ] || fail "#$number: Verify is ${verify:-missing}; only a tested release ships."
-
-          live=$(git tag --points-at HEAD --list 'v*' | head -1)
-          if [ -n "$live" ]; then
-            echo "version=$live" >> "$GITHUB_OUTPUT"
-          else
-            echo "version=$(scripts/next-version.sh)" >> "$GITHUB_OUTPUT"
-            echo "new=true" >> "$GITHUB_OUTPUT"
-          fi
-          echo "### Shipping $head (#$number)" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
@@ -102,28 +134,39 @@ jobs:
 
       # Tagged only after the site answers, so every tag is a release that went live.
       - name: Tag the release
-        if: steps.plan.outputs.new == 'true'
+        if: needs.plan.outputs.new == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.plan.outputs.version }}
+          VERSION: ${{ needs.plan.outputs.version }}
         run: |
           gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "$VERSION" --generate-notes
           echo "### $VERSION is live on https://console.id.qeet.in" >> "$GITHUB_STEP_SUMMARY"
 
-      # Each moves up to main when it has nothing new (the usual case); otherwise main is merged into it.
-      - name: Bring release and develop level with main
-        if: steps.plan.outputs.new == 'true'
+      # The release branch has done its job once it is live; hotfixes start again from main.
+      - name: Delete the released branch
+        if: needs.plan.outputs.new == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ needs.plan.outputs.branch }}
+        run: |
+          if gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" > /dev/null 2>&1; then
+            echo "$BRANCH deleted." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::$BRANCH could not be deleted (already gone?)."
+          fi
+
+      # develop moves up to main when it has nothing new; otherwise main is merged into it.
+      - name: Bring develop level with main
+        if: needs.plan.outputs.new == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for branch in release develop; do
-            if gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch" -f sha="$GITHUB_SHA" -F force=false > /dev/null 2>&1; then
-              echo "$branch moved up to main." >> "$GITHUB_STEP_SUMMARY"
-            elif gh api -X POST "repos/$GITHUB_REPOSITORY/merges" -f base="$branch" -f head="$GITHUB_SHA" \
-              -f commit_message="Merge main into $branch" > /dev/null; then
-              echo "main merged into $branch." >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo "::warning::main and $branch conflict: merge main into $branch by hand."
-            fi
-          done
+          if gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/develop" -f sha="$GITHUB_SHA" -F force=false > /dev/null 2>&1; then
+            echo "develop moved up to main." >> "$GITHUB_STEP_SUMMARY"
+          elif gh api -X POST "repos/$GITHUB_REPOSITORY/merges" -f base=develop -f head="$GITHUB_SHA" \
+            -f commit_message="Merge main into develop" > /dev/null; then
+            echo "main merged into develop." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::main and develop conflict: merge main into develop by hand."
+          fi
