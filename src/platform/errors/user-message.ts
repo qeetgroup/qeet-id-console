@@ -7,6 +7,9 @@ import { normalizeError } from "@/platform/errors/normalize-error";
 // Each value is an `errors` catalogue key.
 const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.STEP_UP_REQUIRED]: "errors:code.stepUpRequired",
+  // 403 -> `authz`, whose fallback sends the person looking for a permission; setting up a second
+  // factor is what lets them in.
+  [ERROR_CODES.MFA_ENROLLMENT_REQUIRED]: "errors:code.mfaEnrollmentRequired",
   [ERROR_CODES.SESSION_EXPIRED]: "errors:code.sessionExpired",
   [ERROR_CODES.SESSION_REFRESH_UNAVAILABLE]: "errors:code.sessionRefreshUnavailable",
   [ERROR_CODES.INVALID_STATE]: "errors:code.invalidState",

@@ -6,6 +6,9 @@ export type ErrorKind = "auth" | "authz" | "validation" | "network" | "api" | "u
 
 export const ERROR_CODES = {
   STEP_UP_REQUIRED: "step_up_required", // auth (session / step-up)
+  // 403 when an organisation that requires two-step verification is entered (switched into, its
+  // invitation accepted) by someone who has set none up.
+  MFA_ENROLLMENT_REQUIRED: "mfa.enrollment_required",
   SESSION_EXPIRED: "auth.session_expired",
   // Client-synthesised: Qeet ID was unreachable or overloaded (timeout, 5xx, 429). The refresh
   // token wasn't rejected, so the person stays signed in and can retry.

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import i18n, { type TranslationKey } from "@/i18n";
 import { ApiError } from "@/platform/errors/api-error";
 import { toastError } from "@/platform/errors/error-toast";
+import { isTwoStepRequired, toastTwoStepRequired } from "@/platform/security/two-step-required";
 
 interface MutationMeta {
   silent?: boolean; // drops both toasts, as for a background poll
@@ -42,6 +43,12 @@ function reportError(error: unknown, meta?: Record<string, unknown>) {
         },
       },
     );
+    return;
+  }
+  // An organisation that requires two-step verification, entered by someone with none set up: say
+  // so and offer the setup, not the generic 403 below.
+  if (isTwoStepRequired(error)) {
+    toastTwoStepRequired();
     return;
   }
   if (error.status === 401 || error.status === 400 || error.status === 422) return;

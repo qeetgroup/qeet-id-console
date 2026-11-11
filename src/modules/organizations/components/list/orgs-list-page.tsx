@@ -21,7 +21,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 
 import { PageBreadcrumb } from "@/modules/dashboard";
 import { orgKeys } from "@/modules/organizations/api/keys";
@@ -36,8 +35,8 @@ import {
 import { TWO_STEP_TARGET } from "@/modules/users";
 import { api } from "@/platform/api/client";
 import { useTenantId } from "@/platform/auth/session";
-import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
+import { toastSwitchFailure } from "@/platform/security/two-step-required";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { OrgsBand } from "./orgs-band";
 import { useOrgColumns } from "./orgs-table";
@@ -124,7 +123,7 @@ export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
       await switchToTenant(row.id);
     } catch (err) {
       setSwitching(null);
-      toast.error(errorMessage(err));
+      toastSwitchFailure(err);
     }
   };
   const columns = useOrgColumns({ reading, switching, onSwitch: (row) => void onSwitch(row) });

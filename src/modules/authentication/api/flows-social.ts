@@ -5,7 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 import { api, getApiBaseUrl } from "@/platform/api/client";
 
-import type { SessionResponse } from "./flows-session";
+import { isMfaChallenge, type LoginResponse } from "./flows-session";
 import { authKeys } from "./keys";
 
 /** Returns which platform-level social providers are configured (e.g. ["google"]). */
@@ -56,12 +56,16 @@ export function useConsumeSocialCode() {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (code: string) =>
-      api<SessionResponse>("/v1/social/exchange", {
+      api<LoginResponse>("/v1/social/exchange", {
         method: "POST",
         body: { code },
         anonymous: true,
       }),
-    onSuccess: () => navigate({ to: "/" }),
+    onSuccess: (res) => {
+      // No session yet: the sign-in page renders the second-factor step from this mutation's data.
+      if (isMfaChallenge(res)) return;
+      navigate({ to: "/" });
+    },
     meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
 }

@@ -21,7 +21,6 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 
 import { formatLocale } from "@/i18n";
 import { useSubscription } from "@/modules/billing";
@@ -40,8 +39,8 @@ import {
 import { useOrgActions } from "@/modules/organizations/use-org-actions";
 import { TWO_STEP_TARGET, userQueries } from "@/modules/users";
 import { useTenantId } from "@/platform/auth/session";
-import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
+import { toastSwitchFailure } from "@/platform/security/two-step-required";
 import { IdentitySection } from "./org-identity";
 import { HistorySection } from "./org-history";
 import { OrgSection } from "./org-section";
@@ -146,7 +145,7 @@ export function OrgPage({ orgId }: { orgId: string }) {
       await switchToTenant(org.id);
     } catch (err) {
       setSwitching(false);
-      toast.error(errorMessage(err));
+      toastSwitchFailure(err);
     }
   };
 

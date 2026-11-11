@@ -4,6 +4,7 @@
     "loading": "Loading your organisations…",
     "loadError": "We couldn’t load your organisations",
     "retry": "Try again",
+    "setUpTwoStep": "Set up two-step verification",
     "search": "Search organisations",
     "searchPlaceholder": "Search by name or domain",
     "clearSearch": "Clear search",
@@ -130,6 +131,9 @@
       "savedCheck": "I’ve saved these codes somewhere safe"
     },
     "noSocialAccount": "No account uses that provider yet. Sign up first, then sign in.",
+    "socialAccountUnverified": "An account already uses this email address, but it hasn’t been verified. Verify it, or reset its password from the link we email you, then sign in with this provider.",
+    "socialAccountInactive": "Your account isn’t active. Contact your administrator.",
+    "socialOtherBrowser": "That sign-in started in a different browser. Start it again here.",
     "socialSigningIn": "Signing you in…",
     "lede": "Enter your work email. We’ll take you to your passkey, password or company sign-in.",
     "emailLabel": "Work email",

@@ -1,6 +1,7 @@
 import { ArrowRightIcon, PlusIcon } from "@qeetrix/icons";
 import { Avatar, Button, formatRelativeTime, Heading, Text } from "@qeetrix/react";
 import { Alert } from "@qeetrix/react/experimental";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
@@ -97,6 +98,8 @@ export function InvitedView(props: {
   user?: Pick<Me, "email" | "display_name" | "avatar_url">;
   pending: InvitationAction;
   joinError?: string | null;
+  /** What the person can do about the join failure, such as setting up two-step verification. */
+  joinActions?: ReactNode;
   disabled: boolean;
   onJoin: (invitation: PickerInvitation) => void;
   onDecline: (invitation: PickerInvitation) => void;
@@ -172,7 +175,12 @@ export function InvitedView(props: {
       )}
 
       {props.joinError && (
-        <Alert tone="danger" title={t("organizationSelection.joinFailedTitle")} announce="urgent">
+        <Alert
+          tone="danger"
+          title={t("organizationSelection.joinFailedTitle")}
+          announce="urgent"
+          actions={props.joinActions}
+        >
           {props.joinError}
         </Alert>
       )}

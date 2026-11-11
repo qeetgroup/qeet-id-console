@@ -12,6 +12,7 @@ import {
 import type { ReactNode } from "react";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
+import { ApiError } from "@/platform/errors/api-error";
 
 const context = vi.hoisted(() => ({
   userId: "user-a" as string | null,
@@ -315,6 +316,29 @@ describe("Organization selector", () => {
     expect(row("Globalsphere").matches(":disabled")).toBe(false);
   });
 
+  it("offers two-step setup when an organisation that requires it refuses entry", async () => {
+    const props = viewProps();
+    props.onContinue = vi.fn().mockRejectedValue(new ApiError(403, "mfa.enrollment_required", "x"));
+    props.onSetUpTwoStep = vi.fn();
+    render(<OrganizationSelectorView {...props} />);
+    await act(async () => fireEvent.click(row("Globalsphere")));
+    expect(screen.getByRole("alert").textContent).toContain(
+      "This organisation requires two-step verification.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Set up two-step verification" }));
+    expect(props.onSetUpTwoStep).toHaveBeenCalledOnce();
+  });
+
+  it("offers no two-step setup for any other refusal", async () => {
+    const props = viewProps();
+    props.onContinue = vi.fn().mockRejectedValue(new ApiError(403, "authz.forbidden", "x"));
+    props.onSetUpTwoStep = vi.fn();
+    render(<OrganizationSelectorView {...props} />);
+    await act(async () => fireEvent.click(row("Globalsphere")));
+    expect(screen.getByRole("alert")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Set up two-step verification" })).toBeNull();
+  });
+
   it("connects create, account and sign-out actions", () => {
     const props = viewProps();
     render(<OrganizationSelectorView {...props} />);
@@ -439,6 +463,18 @@ describe("Organization selection data", () => {
     expect(
       screen.getByRole("button", { name: "Join Globex India" }).getAttribute("aria-disabled"),
     ).not.toBe("true");
+  });
+
+  it("offers two-step setup when joining needs it, and opens the account's security page", async () => {
+    vi.mocked(api).mockResolvedValue({ items: [], next_cursor: "" });
+    invites.items = [invitation("inv-1", "Globex India")];
+    invites.accept.mockImplementation((_id, options) =>
+      options.onError(new ApiError(403, "mfa.enrollment_required", "x")),
+    );
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Join Globex India" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Set up two-step verification" }));
+    expect(context.navigate).toHaveBeenCalledWith({ to: "/account/security" });
   });
 
   it("lists several invitations, each joined or declined on its own row", async () => {

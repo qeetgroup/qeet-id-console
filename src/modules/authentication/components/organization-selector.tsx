@@ -15,6 +15,7 @@ import {
   useUserId,
 } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
+import { isTwoStepRequired, TWO_STEP_SETUP_PATH } from "@/platform/security/two-step-required";
 import { isOneOf } from "@/shared/utils/one-of";
 import { switchToTenant } from "../api/flows";
 import {
@@ -29,6 +30,7 @@ import {
   organizationImage,
 } from "../organization-selection-model";
 import { EntryAccount } from "./entry-shell";
+import { TwoStepSetupButton } from "./two-step-setup-button";
 import {
   type InvitationAction,
   InvitationList,
@@ -51,16 +53,22 @@ export type OrganizationSelectorViewProps = {
   fetching: boolean;
   signingOut?: boolean;
   entryError?: string | null;
+  /** The automatic entry was refused until two-step verification is set up. */
+  entryNeedsTwoStep?: boolean;
   /** Invitations waiting for this email; each can be joined or declined here. */
   invitations?: readonly PickerInvitation[];
   invitationAction?: InvitationAction;
   joinError?: string | null;
+  /** Joining was refused until two-step verification is set up. */
+  joinNeedsTwoStep?: boolean;
   onJoin?: (invitation: PickerInvitation) => void;
   onDecline?: (invitation: PickerInvitation) => void;
   onRetry: () => unknown;
   onContinue: (organizationId: string) => Promise<unknown>;
   onCreate: () => void;
   onAccount: () => void;
+  /** Opens the account page where a second factor is set up. */
+  onSetUpTwoStep?: () => void;
   onSignOut: () => void;
 };
 
@@ -72,6 +80,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
   const logout = useLogout();
   const navigate = useNavigate();
   const [entryError, setEntryError] = useState<string | null>(null);
+  const [entryNeedsTwoStep, setEntryNeedsTwoStep] = useState(false);
   const [retry, setRetry] = useState(0);
   const automaticAttempt = useRef(-1);
   useIdleLogout(10 * 60 * 1000);
@@ -84,6 +93,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
   const decline = useDeclineInvitation();
   const [invitationAction, setInvitationAction] = useState<InvitationAction>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [joinNeedsTwoStep, setJoinNeedsTwoStep] = useState(false);
 
   useEffect(() => {
     if (
@@ -102,7 +112,10 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
       : only.id !== tenantId
         ? switchToTenant(only.id)
         : navigate({ to: "/", replace: true });
-    void Promise.resolve(enter).catch((failure) => setEntryError(errorMessage(failure)));
+    void Promise.resolve(enter).catch((failure) => {
+      setEntryNeedsTwoStep(isTwoStepRequired(failure));
+      setEntryError(errorMessage(failure));
+    });
   }, [
     organizations.data,
     organizations.isSuccess,
@@ -127,16 +140,20 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
       }
       error={organizations.isError}
       entryError={entryError}
+      entryNeedsTwoStep={entryNeedsTwoStep}
       invitations={invitations}
       invitationAction={invitationAction}
       joinError={joinError}
+      joinNeedsTwoStep={joinNeedsTwoStep}
       onJoin={(invitation) => {
         setJoinError(null);
+        setJoinNeedsTwoStep(false);
         setInvitationAction({ id: invitation.id, action: "join" });
         // Success reloads into the organisation, so the action stays on until then.
         accept.mutate(invitation.id, {
           onError: (failure) => {
             setInvitationAction(null);
+            setJoinNeedsTwoStep(isTwoStepRequired(failure));
             setJoinError(errorMessage(failure));
           },
         });
@@ -152,6 +169,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
         const result = await organizations.refetch();
         if (result.isSuccess) {
           setEntryError(null);
+          setEntryNeedsTwoStep(false);
           setRetry((value) => value + 1);
         }
       }}
@@ -162,6 +180,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
       }}
       onCreate={onCreate}
       onAccount={() => void navigate({ to: "/account/profile" })}
+      onSetUpTwoStep={() => void navigate({ to: TWO_STEP_SETUP_PATH })}
       onSignOut={() => logout.mutate()}
     />
   );
@@ -177,6 +196,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
   const [showAll, setShowAll] = useState(false);
   const [opening, setOpening] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsTwoStep, setNeedsTwoStep] = useState(false);
   const busy = useRef(false);
   const organizations = props.error ? [] : props.organizations;
   const recent = mostRecentOrganization(organizations);
@@ -211,9 +231,11 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
     busy.current = true;
     setOpening(organization.id);
     setError(null);
+    setNeedsTwoStep(false);
     try {
       await props.onContinue(organization.id);
     } catch (failure) {
+      setNeedsTwoStep(isTwoStepRequired(failure));
       setError(errorMessage(failure));
     } finally {
       busy.current = false;
@@ -233,6 +255,12 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
     </Button>
   );
 
+  // An organisation that requires two-step verification refused entry: the person can fix that.
+  const setUpTwoStep = props.onSetUpTwoStep && (
+    <TwoStepSetupButton disabled={disabled} onClick={props.onSetUpTwoStep} />
+  );
+  const entryNeedsTwoStep = error ? needsTwoStep : !!props.entryNeedsTwoStep;
+
   // Invited, with no organisation yet: the invitations are the page, creating one the alternative.
   if (!props.loading && !props.error && organizations.length === 0 && invitations.length > 0) {
     return (
@@ -241,6 +269,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
         user={props.user}
         pending={props.invitationAction ?? null}
         joinError={props.joinError}
+        joinActions={props.joinNeedsTwoStep ? setUpTwoStep : undefined}
         disabled={disabled}
         onJoin={(invitation) => props.onJoin?.(invitation)}
         onDecline={(invitation) => props.onDecline?.(invitation)}
@@ -251,7 +280,12 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
   }
 
   const joinFailed = props.joinError && (
-    <Alert tone="danger" title={t("organizationSelection.joinFailedTitle")} announce="urgent">
+    <Alert
+      tone="danger"
+      title={t("organizationSelection.joinFailedTitle")}
+      announce="urgent"
+      actions={props.joinNeedsTwoStep ? setUpTwoStep : undefined}
+    >
       {props.joinError}
     </Alert>
   );
@@ -426,7 +460,14 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
           tone="danger"
           title={t("organizationSelection.entryFailedTitle")}
           announce="urgent"
-          actions={props.entryError ? retry : undefined}
+          actions={
+            entryNeedsTwoStep || props.entryError ? (
+              <>
+                {entryNeedsTwoStep && setUpTwoStep}
+                {props.entryError && retry}
+              </>
+            ) : undefined
+          }
         >
           {error || props.entryError}
         </Alert>

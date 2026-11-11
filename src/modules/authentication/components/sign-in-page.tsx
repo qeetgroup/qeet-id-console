@@ -11,6 +11,21 @@ import { LazyMfaChallengeStep, preloadMfaChallengeStep } from "./lazy-mfa-challe
 import { LoginForm } from "./signin-form";
 import { isMfaChallenge, useConsumeSocialCode, useLogin } from "@/modules/authentication";
 import { errorMessage } from "@/platform/errors/user-message";
+import { isOneOf } from "@/shared/utils/one-of";
+
+// Why a social sign-in came back refused (`?social_error=…`), and what to say about it.
+const SOCIAL_ERRORS = {
+  // Sign-in never creates an account: sign up first.
+  no_account: "signIn.noSocialAccount",
+  // An account uses the address, but nobody has proved owning it, so the provider's word
+  // doesn't hand it over.
+  account_unverified: "signIn.socialAccountUnverified",
+  // A suspended or deleted account isn't signed in by any method.
+  account_inactive: "signIn.socialAccountInactive",
+  // Begun in another browser: start again here.
+  other_browser: "signIn.socialOtherBrowser",
+} as const;
+const SOCIAL_ERROR_REASONS = Object.keys(SOCIAL_ERRORS) as (keyof typeof SOCIAL_ERRORS)[];
 
 /** Renders sign-in: email first, then SSO, password or passkey (with autofill), and social return. */
 export function SignInPage() {
@@ -46,12 +61,13 @@ export function SignInPage() {
     social.mutate(code);
   }, [social]);
 
-  // Back from a social sign-in with no matching account: sign-in never creates one, so say to
-  // sign up first, then strip the param so a reload won't toast again.
+  // Back from a social sign-in the provider completed but we refused: say why, then strip the
+  // param so a reload won't toast again.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("social_error") !== "no_account") return;
-    toast.error(t("signIn.noSocialAccount"));
+    const reason = params.get("social_error") ?? "";
+    if (!isOneOf(SOCIAL_ERROR_REASONS, reason)) return;
+    toast.error(t(SOCIAL_ERRORS[reason]));
     window.history.replaceState({}, "", window.location.pathname);
   }, [t]);
 
@@ -63,9 +79,12 @@ export function SignInPage() {
     window.history.replaceState({}, "", window.location.pathname);
   }, []);
 
-  // After a correct password, an account that holds or must have a second factor gets a
-  // challenge instead of tokens: the second-factor step, or setting up an authenticator app.
-  const challenge = login.data && isMfaChallenge(login.data) ? login.data : null;
+  // After a correct password, or a social sign-in, an account that holds or must have a second
+  // factor gets a challenge instead of tokens: the second-factor step, or setting up an
+  // authenticator app.
+  const challenge =
+    (login.data && isMfaChallenge(login.data) ? login.data : null) ??
+    (social.data && isMfaChallenge(social.data) ? social.data : null);
   if (challenge) {
     return <LazyMfaChallengeStep challenge={challenge} />;
   }

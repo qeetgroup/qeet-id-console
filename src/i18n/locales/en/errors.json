@@ -1,6 +1,7 @@
 {
   "code": {
     "stepUpRequired": "This action needs a fresh identity check.",
+    "mfaEnrollmentRequired": "This organisation requires two-step verification. Set it up on your account, then try again.",
     "sessionExpired": "Your session has expired. Please sign in again.",
     "sessionRefreshUnavailable": "Qeet ID can't be reached right now. You're still signed in; please try again in a moment.",
     "invalidState": "That sign-in link is no longer valid. Please start again.",
@@ -109,6 +110,7 @@
     "upgradeRequiredTitle": "Upgrade to unlock this",
     "upgradeRequiredDescription": "This feature isn't included in your plan. Upgrade to unlock it.",
     "upgrade": "Upgrade",
+    "setUpTwoStep": "Set up",
     "accessChangedTitle": "This action is no longer available",
     "accessChangedDescription": "Your organization access may have changed. The console is refreshing it now.",
     "reference": "Reference: {{id}}"
