@@ -309,9 +309,9 @@ file holds it inert on the server.
 ## CI/CD
 
 `ci.yml` has one job, **Verify**, run on pull requests into `develop` and `release` and on a
-`hotfix/*` pull request into `main` (30-minute timeout): checkout → bun 1.3.14 →
-`install --frozen-lockfile` → `typecheck` → `check` → **`lint:boundaries`** → `audit` →
-`test:coverage` → `build` → **`size`** → the Playwright specs against that build. `size`
+`hotfix/*` pull request into `main` (10-minute timeout): checkout → bun 1.3.14 →
+`install --frozen-lockfile` → `typecheck` → `check` → `audit`. The unit tests with coverage, the
+build, **`size`** and the Playwright specs run locally before a push, not in CI. `size`
 (`scripts/check-bundle-size.mjs`) reads TanStack Start's route manifest from the server build,
 follows each route's static imports through `.output/public/assets`, and fails when the signed-in
 shell's initial JS (the root plus `/_app`) or a route's own JS beyond its parent's exceeds its gzip

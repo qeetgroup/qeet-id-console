@@ -80,7 +80,8 @@ commands:
 ci:
   workflows: [ci.yml, candidate.yml, deploy.yml]
   branches: develop -> release -> main   # release fixes go into release and are merged back into develop
-  job: verify                 # name "Verify", on PRs into develop and release and hotfix/* into main; typecheck, check, lint:boundaries, audit, test:coverage, build, size, Playwright
+  job: verify                 # name "Verify", on PRs into develop and release and hotfix/* into main; typecheck, check, audit
+  local_before_push: [test:coverage, build, size, test:e2e]   # not repeated in CI
   promotions: develop -> release and release -> main skip Verify when already tested and up to date
   dependency_updates: .github/dependabot.yml (bun, github-actions, docker; into develop; 3-day cooldown)
   actions_pinned_to_sha: true

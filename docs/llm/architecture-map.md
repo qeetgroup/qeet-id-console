@@ -135,7 +135,7 @@ have 10 (about 5% of the keys), so only English is offered until one is complete
 | **Layering rules** | `biome.json` |
 | Vite plugins, security-header route rules | `vite.config.ts` (dev port 3002 is set in the `dev` script) |
 | Unit tests + coverage thresholds | `vitest.config.ts` — `environment: "node"`, jsdom via per-file pragma |
-| CI (one job, **Verify**, incl. `bun run audit` and the browser tests) | `.github/workflows/ci.yml` |
+| CI (one job, **Verify**: typecheck, Biome, `bun run audit`; tests and the build run locally) | `.github/workflows/ci.yml` |
 | Bundle budgets (gzip: the shell, each route) | `bundle-budgets.json`, checked by `scripts/check-bundle-size.mjs` (`bun run size`, after the build) |
 | Test-kit image (each merge into `release`) | `.github/workflows/candidate.yml` |
 | Release version (from pull request titles) | `scripts/next-version.sh` |

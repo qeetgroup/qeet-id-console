@@ -262,11 +262,12 @@ bun run audit            # known high/critical vulnerabilities in the dependency
 
 `ci.yml` runs one job, **Verify**, on pull requests into `develop`, into `release`, and from a
 `hotfix/*` branch into `main`; nothing runs on a plain push. Every action is pinned to a commit SHA
-and workflows default to read-only permissions. Verify (30 min): typecheck → `check` →
-**`lint:boundaries`** → `audit` (high and critical advisories) → `test:coverage` (thresholds in
-`vitest.config.ts`) → build → **`size`** (the bundle budgets; see Conventions, Bundle size) → every
-Playwright spec in `tests/e2e` against that build: the session boundary, the
-Content-Security-Policy and the WCAG 2.2 AA accessibility scan (rule 12). A promotion
+and workflows default to read-only permissions. Verify (10 min): typecheck → `check` (Biome:
+formatting, lint, and the layer import rules) → `audit` (high and critical advisories). **The unit
+tests (`test:coverage`, thresholds in `vitest.config.ts`), the build, `size` (the bundle budgets;
+see Conventions, Bundle size) and the Playwright specs in `tests/e2e` (the session boundary, the
+Content-Security-Policy and the WCAG 2.2 AA accessibility scan, rule 12) run locally before a change
+is pushed; CI doesn't repeat them.** A promotion
 (`develop` → `release`, `release` → `main`) runs nothing again when every commit already passed
 Verify on its way in and the branch was up to date; otherwise it runs once.
 
@@ -337,14 +338,16 @@ repository must make. Types: `feat`, `fix`, `refactor`,
 
 ## Before you finish
 
+CI checks only types, formatting, lint and the dependency audit, so run the rest before pushing:
+
 ```bash
-bun run typecheck && bun run check && bun run lint:boundaries && bun run test
+bun run typecheck && bun run check && bun run test:coverage && bun run build && bun run size
+bun run test:e2e   # the session boundary, the CSP and the accessibility scan, in a real browser
 git diff
 ```
 
-After changing `src/platform/{api,auth}` (the session boundary) or anything a page renders, also
-run `bun run test:e2e`: it builds, then runs the Playwright suites in `tests/e2e`, including the
-accessibility scan. Its ports default to 43173 (app) and 43101 (fake backend); set `E2E_APP_PORT`
+`test:e2e` builds, then runs the Playwright suites in `tests/e2e`, including the accessibility
+scan. Its ports default to 43173 (app) and 43101 (fake backend); set `E2E_APP_PORT`
 and `E2E_BACKEND_PORT` to run two copies side by side.
 
 ## Escalate rather than proceed

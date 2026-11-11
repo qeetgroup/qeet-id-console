@@ -1,7 +1,8 @@
 name: ci
 
-# Tests run once for each change. A pull request into develop, a fix into release, or a hotfix/* into main runs every
-# check, the browser tests included. A promotion (develop into release, release into main) skips them when that code is
+# Checks run once for each change: typecheck, format and lint, and the dependency audit. A pull request into develop,
+# a fix into release, or a hotfix/* into main runs them. The unit tests, the browser tests and the build run locally
+# before a change is pushed (AGENTS.md, "Before you finish"). A promotion (develop into release, release into main) skips them when that code is
 # already tested: every commit passed Verify in a pull request into develop or release, and the last of those was up to
 # date when it merged. Otherwise (a direct push, or the branch moving on after a pull request was tested) it runs them
 # once on the whole promotion.
@@ -22,7 +23,7 @@ jobs:
     name: Verify
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: read # the commits of a promotion
@@ -99,36 +100,12 @@ jobs:
         if: steps.promotion.outputs.tested != 'true'
         run: bun run typecheck
 
+      # Biome: formatting, lint, and the import rules that keep each layer to its own.
       - name: Format and lint
         if: steps.promotion.outputs.tested != 'true'
         run: bun run check
-
-      - name: Architecture boundaries
-        if: steps.promotion.outputs.tested != 'true'
-        run: bun run lint:boundaries
 
       # Known high and critical advisories in the installed dependencies.
       - name: Dependency audit
         if: steps.promotion.outputs.tested != 'true'
         run: bun run audit
-
-      - name: Tests with coverage floors
-        if: steps.promotion.outputs.tested != 'true'
-        run: bun run test:coverage
-
-      - name: Build
-        if: steps.promotion.outputs.tested != 'true'
-        run: bun run build
-
-      # The signed-in shell's and each route's JavaScript against bundle-budgets.json.
-      - name: Bundle budgets
-        if: steps.promotion.outputs.tested != 'true'
-        run: bun run size
-
-      # That build under its Content-Security-Policy, the session boundary and the WCAG 2.2 AA scan, in a
-      # real browser against the fake backend.
-      - name: Browser tests
-        if: steps.promotion.outputs.tested != 'true'
-        run: |
-          bunx playwright install --with-deps chromium
-          bunx playwright test
