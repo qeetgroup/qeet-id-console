@@ -260,54 +260,37 @@ bun run audit            # known high/critical vulnerabilities in the dependency
 
 ## What CI enforces
 
-`ci.yml` (push to `main`/`develop`/`release/**`, every PR). Every action is pinned to a commit SHA
-and workflows default to read-only permissions.
+`ci.yml` runs one job, **Verify**, on pull requests into `develop`, into `release`, and from a
+`hotfix/*` branch into `main`; nothing runs on a plain push. Every action is pinned to a commit SHA
+and workflows default to read-only permissions. Verify (30 min): typecheck → `check` →
+**`lint:boundaries`** → `audit` (high and critical advisories) → `test:coverage` (thresholds in
+`vitest.config.ts`) → build → **`size`** (the bundle budgets; see Conventions, Bundle size) → every
+Playwright spec in `tests/e2e` against that build: the session boundary, the
+Content-Security-Policy and the WCAG 2.2 AA accessibility scan (rule 12). A promotion
+(`develop` → `release`, `release` → `main`) runs nothing again when every commit already passed
+Verify on its way in and the branch was up to date; otherwise it runs once.
 
-- `verify` (job name **Verify**, the required status check on `main`; 20 min): typecheck → `check`
-  → **`lint:boundaries`** → `test:coverage` (thresholds in `vitest.config.ts`) → build →
-  **`size`** (the bundle budgets; see Conventions, Bundle size).
-- `e2e` (job name **Session E2E**): every Playwright spec in `tests/e2e` against the production
-  build: the session boundary, the Content-Security-Policy and the WCAG 2.2 AA accessibility scan
-  (rule 12).
-- `dependency-review` (PRs only): fails on a new dependency with a high or critical advisory.
-- `image` — push to `release/**` only, after `verify`: publishes
-  `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>` (amd64+arm64) for the Qeet ID Kit (`qeet-id-kit`).
-  It never computes an RC number. The image is the `Dockerfile` (Nitro `node-server`), configured at
-  runtime by `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL`; health `GET /healthz`. Vercel
-  production does not use it.
-- `image-sbom` and `image-attest` — with `image`: attach SLSA build provenance and the CycloneDX
-  SBOM to the image's digest.
+Branches: `develop` → `release` → `main`. A fix found while a candidate is tested goes into
+`release` by pull request, and is merged back into `develop` automatically.
 
-`codeql.yml` scans the TypeScript and the workflow files (pushes, PRs, weekly).
-`dependency-audit.yml` runs `bun run audit` on pushes, PRs and daily (not a required check).
-`docker.yml` builds and smoke-tests the image, and generates the SBOM, on PRs that touch them.
-`sbom.yml` (reusable) writes the SBOM: a CycloneDX file of the production dependency tree
-(`--omit dev`), read from the installed `node_modules` by a pinned `@cyclonedx/cyclonedx-npm`, as
-the `sbom` artifact. `package.json` `overrides`
-hold only security floors for transitive packages; never add a version pin there for another reason.
-`.github/dependabot.yml` proposes bun, Actions and Docker digest updates weekly, each at least 3
-days after release; `bunfig.toml` applies the same 3-day minimum to local `bun add`/`bun update`.
+`candidate.yml`: a merge into `release` publishes `ghcr.io/qeetgroup/qeet-id-console:sha-<commit>`
+(amd64+arm64) once, for the Qeet ID Kit (`qeet-id-kit`), labelled with its version and source
+branch; it never computes an RC number. The image is the `Dockerfile` (Nitro `node-server`),
+configured at runtime by `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL`; health `GET /healthz`.
+Vercel production does not use it.
 
-`deploy.yml` runs on every push to `main`: the same gate as Verify, then `vercel build`/`deploy
---prod` (pinned Vercel CLI; the token reaches only the Vercel steps), then it creates the `vX.Y.Z`
-tag and GitHub release through the API. Vercel's own Git integration is disabled for
-`main` (`vercel.json`) so the two cannot double-deploy; PR and `develop` previews still come
-from Vercel. Its `attest` job signs build provenance and the SBOM for `vercel-output.sha256`, the
-checksums of every file in `.vercel/output` (the `vercel-output-checksums` artifact; the output
-itself is never uploaded, as it was built with the production environment).
+`deploy.yml`: a merge into `main` from `release` (or a `hotfix/*`) whose Verify passed deploys
+production (`vercel build`/`deploy --prod`, pinned Vercel CLI; the token reaches only that step),
+checks `https://console.id.qeet.in/healthz`, then tags `vX.Y.Z` with a GitHub release and brings
+`release` and `develop` level with `main`. The version comes from the pull request titles since the
+last tag (`scripts/next-version.sh`: `feat!:` a major, `feat:` a minor, anything else a patch;
+`package.json`'s `version` wins when higher). Run it by hand on `main` to deploy again, or give it
+a tag to put an earlier release back. Vercel's own Git deployments are off (`vercel.json`).
 
-**Attestations** use `actions/attest` (`attest-build-provenance` is now a wrapper around it and
-`attest-sbom` is deprecated). Only an attest job holds `id-token: write` and `attestations: write`,
-and it runs no checkout or dependency code: a package that could mint an OIDC token could sign
-anything as this repository. Verify after a run:
-
-```bash
-gh attestation verify oci://ghcr.io/qeetgroup/qeet-id-console:sha-<commit> -R qeetgroup/qeet-id-console
-gh run download <run-id> -R qeetgroup/qeet-id-console -n vercel-output-checksums
-gh attestation verify vercel-output.sha256 -R qeetgroup/qeet-id-console \
-  --signer-workflow qeetgroup/qeet-id-console/.github/workflows/deploy.yml
-# add --predicate-type https://cyclonedx.org/bom to check the SBOM instead of the provenance
-```
+`.github/dependabot.yml` proposes bun, Actions and Docker digest updates weekly into `develop`, each
+at least 3 days after release; `bunfig.toml` applies the same 3-day minimum to local
+`bun add`/`bun update`. `package.json` `overrides` hold only security floors for transitive
+packages; never add a version pin there for another reason.
 
 Production refuses to serve with a missing or malformed `SESSION_SECRET`, backend URL or public API
 URL (`src/platform/config/server-config.ts`, called from `src/start.ts`): every request fails and

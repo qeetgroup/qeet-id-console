@@ -308,47 +308,30 @@ file holds it inert on the server.
 
 ## CI/CD
 
-`ci.yml` job `verify` (name **Verify**, the required check on `main`), 20-minute timeout:
-checkout → bun 1.3.14 → `install --frozen-lockfile` → `typecheck` → `check` →
-**`lint:boundaries`** → `test:coverage` → `build` → **`size`**. `size`
+`ci.yml` has one job, **Verify**, run on pull requests into `develop` and `release` and on a
+`hotfix/*` pull request into `main` (30-minute timeout): checkout → bun 1.3.14 →
+`install --frozen-lockfile` → `typecheck` → `check` → **`lint:boundaries`** → `audit` →
+`test:coverage` → `build` → **`size`** → the Playwright specs against that build. `size`
 (`scripts/check-bundle-size.mjs`) reads TanStack Start's route manifest from the server build,
 follows each route's static imports through `.output/public/assets`, and fails when the signed-in
 shell's initial JS (the root plus `/_app`) or a route's own JS beyond its parent's exceeds its gzip
 budget in `bundle-budgets.json`, or when a budget names a route that no longer exists; an unlisted
-route is held to `newRoute`. A `dependency-review` job runs on pull requests;
-`release/**` pushes also publish the test-kit image. `codeql.yml` scans TypeScript and the
-workflows. Actions are pinned to commit SHAs; workflows default to read-only permissions.
+route is held to `newRoute`. Promotions (`develop` → `release` → `main`) skip it when that code was
+already tested and is up to date. Actions are pinned to commit SHAs; workflows default to
+read-only permissions.
 
-`deploy.yml` deploys production on every push to `main` (same gate, `vercel build`/`deploy --prod`,
-then the version tag and GitHub release). Vercel's Git integration is off for `main` and still builds
-PR and `develop` previews. Dependabot (`.github/dependabot.yml`) and `bunfig.toml` both hold new
-releases back for 3 days. `dependency-audit.yml` runs `bun run audit` (high and critical) on pushes,
-PRs and daily; it is not a required check, so a newly published advisory shows red without blocking
-merges. `docker.yml` builds and smoke-tests the image on PRs that touch it.
+`candidate.yml` publishes the test-kit image once per merge into `release`, and merges a fix made
+there back into `develop`. `deploy.yml` deploys production when `release` (or a `hotfix/*`) merges
+into `main`: `vercel build`/`deploy --prod`, the `/healthz` check, then the `vX.Y.Z` tag and GitHub
+release (version from pull request titles, `scripts/next-version.sh`), and `release` and `develop`
+brought level with `main`. Vercel's Git deployments are off. Dependabot (`.github/dependabot.yml`,
+into `develop`) and `bunfig.toml` both hold new releases back for 3 days.
 
 **TanStack Start is pinned at 1.168.61** (with `@tanstack/react-router` 1.170.42, the version it
 requires): Start 1.169 removed the built-in `useSession` API that `src/platform/auth/server-session.ts`
 seals the session cookie with. Moving past it means choosing a session library and migrating the
 cookie (or signing everyone in again), a security-reviewed change of its own; until then, don't
 bump these two.
-
-**SBOM and provenance.** `sbom.yml` (reusable, read-only) installs with `--ignore-scripts` and runs
-a pinned `npx @cyclonedx/cyclonedx-npm --omit dev`: `npm ls` reads bun's hoisted `node_modules`, so
-the CycloneDX file lists the production dependency tree as `bun.lock` resolves it (artifact
-`sbom`). `deploy.yml` (`sbom`, `attest`), the release-image path of `ci.yml` (`image-sbom`,
-`image-attest`) and `docker.yml` (PRs, generation only) call it. The attest jobs sign with
-`actions/attest`: SLSA build provenance, plus the SBOM as a `https://cyclonedx.org/bom`
-attestation, for the image's index digest and for `vercel-output.sha256`, the checksums of every
-file in `.vercel/output` (that output is built with the production environment, so only its
-hashes are uploaded). Only these two jobs hold `id-token: write` and `attestations: write`, and
-they run no checkout or dependency code. A failed SBOM still leaves the provenance. The SBOM keeps
-its `serialNumber` (no `--output-reproducible`): `actions/attest` recognises CycloneDX by it.
-Verification commands are in `AGENTS.md` ("What CI enforces").
-
-**Dependency overrides** (`package.json` `overrides`) hold only security floors: transitive packages
-pinned at or above their first patched release because a parent still allowed a vulnerable one. Remove
-an entry once every parent requires a fixed version, or the package leaves the tree. `bun run audit`
-ignores no advisory.
 
 ## Security-critical areas
 

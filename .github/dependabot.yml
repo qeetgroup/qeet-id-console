@@ -1,9 +1,19 @@
-# Weekly updates, each held back 3 days after release: a compromised version is
+# Weekly updates into develop, each held back 3 days after release: a compromised version is
 # usually pulled from npm within that window.
 version: 2
 updates:
   - package-ecosystem: bun
     directory: /
+    target-branch: develop
+    commit-message:
+      prefix: chore(deps)
+    # TanStack Start 1.169 removed the session helpers the console's server session is built on, and
+    # Router moves with Start: both stay where they are until the session code moves off them.
+    ignore:
+      - dependency-name: "@tanstack/react-start"
+        versions: [">=1.169.0"]
+      - dependency-name: "@tanstack/react-router"
+        versions: [">=1.170.43"]
     schedule:
       interval: weekly
       day: monday
@@ -22,6 +32,9 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    target-branch: develop
+    commit-message:
+      prefix: ci(deps)
     schedule:
       interval: weekly
       day: monday
@@ -34,6 +47,9 @@ updates:
   # Keeps the Dockerfile's digest-pinned base images current.
   - package-ecosystem: docker
     directory: /
+    target-branch: develop
+    commit-message:
+      prefix: chore(deps)
     schedule:
       interval: weekly
       day: monday
