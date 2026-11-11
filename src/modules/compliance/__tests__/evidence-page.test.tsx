@@ -222,7 +222,7 @@ describe("Compliance › SOC 2", () => {
     const first = renderPage();
     const runs = await screen.findByRole("table", { name: "SOC 2 evidence runs" });
     expect(within(runs).getByText("Viewing")).toBeTruthy();
-    fireEvent.click(within(runs).getByRole("button", { name: new RegExp(`^${day(MIDDLE)}`) }));
+    fireEvent.click(within(runs).getByRole("button", { name: `Run of ${day(MIDDLE)}` }));
     expect(first.onRunChange).toHaveBeenCalledWith("run-2");
     cleanup();
 

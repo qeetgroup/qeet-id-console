@@ -30,7 +30,7 @@ interface QeetAIContextValue {
 const QeetAIContext = createContext<QeetAIContextValue | null>(null);
 
 /** The confirm's description: what happens, then each thing it touches ("User: Asha Rao."). */
-function describe(req: ConfirmRequest): string {
+function describeRequest(req: ConfirmRequest): string {
   return [req.body, ...req.affected.map((item) => `${item.label}: ${item.value}.`)].join(" ");
 }
 
@@ -61,7 +61,7 @@ export function QeetAIRuntimeProvider({ children }: { children: ReactNode }) {
       sensitive({
         confirm: {
           title: req.title,
-          description: describe(req),
+          description: describeRequest(req),
           confirmLabel: req.confirmText,
           tone: req.tone,
         },

@@ -291,7 +291,7 @@ export const pct = (n: number) =>
 
 /** A direct label on a series' last point; text tokens, never the series colour. */
 export function endLabel(lastIndex: number, text: (value: number) => string, dy = 4) {
-  return function EndLabel(p: {
+  return function renderEndLabel(p: {
     index?: number;
     x?: number | string;
     y?: number | string;

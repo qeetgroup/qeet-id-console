@@ -56,7 +56,8 @@ export function FailedHoursPanel({ overview }: { overview: AnalyticsOverview }) 
       ? t("overview.failedHours.burstsNote", { count: bursts.size })
       : t("overview.failedHours.note");
   const ticks = rows.filter((_, i) => i % 6 === 0).map((r) => r.hour);
-  const BurstDot = (p: { cx?: number; cy?: number; index?: number; payload?: HourRow }) =>
+  // Recharts calls this per point; it is a render function, not a component.
+  const renderBurstDot = (p: { cx?: number; cy?: number; index?: number; payload?: HourRow }) =>
     p.payload?.burst ? (
       <g key={p.index}>
         <circle
@@ -123,7 +124,7 @@ export function FailedHoursPanel({ overview }: { overview: AnalyticsOverview }) 
               strokeWidth={2}
               fill={CHART.bad}
               fillOpacity={0.08}
-              dot={BurstDot}
+              dot={renderBurstDot}
               activeDot={ringDot(CHART.bad)}
               isAnimationActive={false}
             />
