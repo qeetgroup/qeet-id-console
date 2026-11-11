@@ -1,9 +1,10 @@
 name: candidate
 
 # A push to release/YEAR.MONTH.0 or hotfix/YEAR.MONTH.N builds the image the Qeet ID Kit runs in TEST and STAGING,
-# once per commit and after Verify: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, for linux/amd64 and linux/arm64,
+# once per commit: ghcr.io/qeetgroup/qeet-id-console:sha-<commit>, for linux/amd64 and linux/arm64,
 # labelled with its release and branch. The kit numbers the test copies (YEAR.MONTH.N-rc.K); this workflow never does.
-# A fix is made on develop first and then copied to the release branch, so nothing has to come back from it.
+# Verify runs once, on the branch's pull request into main. A fix is made on develop first and then copied to the
+# release branch, so nothing has to come back from it.
 on:
   push:
     branches: ["release/**", "hotfix/**"]
@@ -16,15 +17,8 @@ permissions:
   contents: read
 
 jobs:
-  verify:
-    uses: ./.github/workflows/ci.yml
-    permissions:
-      contents: read
-      actions: read
-
   image:
     name: Test image
-    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
