@@ -333,6 +333,12 @@ seals the session cookie with. Moving past it means choosing a session library a
 cookie (or signing everyone in again), a security-reviewed change of its own; until then, don't
 bump these two.
 
+**`@qeetrix/react` stays at 0.1.1** (with `@qeetrix/icons` 1.0.12 and `@qeetrix/tokens` 0.0.9): from
+0.4.0 a table's row link is named by `rowLabel` but wraps the whole primary cell, so the text it
+shows isn't part of its accessible name (WCAG 2.5.3), and the accessibility scan fails on every
+table whose primary cell shows more than its label. Dependabot ignores 0.4.0 and later until
+Qeetrix names the link by its content.
+
 ## Security-critical areas
 
 | Area | Path | Risk | Review |
