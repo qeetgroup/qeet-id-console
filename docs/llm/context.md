@@ -308,24 +308,23 @@ file holds it inert on the server.
 
 ## CI/CD
 
-`ci.yml` has one job, **Verify**, run on pull requests into `develop`, `release/**` and `main`, and
-before every candidate image (10-minute timeout): checkout → bun 1.3.14 →
-`install --frozen-lockfile` → `typecheck` → `check` → `audit`. The unit tests with coverage, the
+`ci.yml` has one job, **Verify**, run on pull requests into `develop` and `main` (10-minute
+timeout): checkout → bun 1.3.14 → `install --frozen-lockfile` → `typecheck` → `check` → `audit` →
+gitleaks. The unit tests with coverage, the
 build, **`size`** and the Playwright specs run locally before a push, not in CI. `size`
 (`scripts/check-bundle-size.mjs`) reads TanStack Start's route manifest from the server build,
 follows each route's static imports through `.output/public/assets`, and fails when the signed-in
 shell's initial JS (the root plus `/_app`) or a route's own JS beyond its parent's exceeds its gzip
 budget in `bundle-budgets.json`, or when a budget names a route that no longer exists; an unlisted
-route is held to `newRoute`. A release branch into `main` skips it when that code was already tested
-and is up to date. Actions are pinned to commit SHAs; workflows default to
+route is held to `newRoute`. Actions are pinned to commit SHAs; workflows default to
 read-only permissions.
 
 Releases are monthly: `release/YEAR.MONTH.0` is cut from `develop` and takes fixes only (made on
 `develop` first, then copied over), and `hotfix/YEAR.MONTH.N` carries an urgent fix from `main`
-(`scripts/release/version.sh`). `candidate.yml` publishes the test-kit image once per push to either,
-after Verify. `deploy.yml` deploys production when one merges into `main`: `vercel build`/`deploy
---prod`, the `/healthz` check, then the `vYEAR.MONTH.N` tag and GitHub release, the released branch
-deleted and `develop` brought level with `main`; any other push to `main` deploys nothing. Vercel's
+(`scripts/release/version.sh`). `candidate.yml` publishes the test-kit image once per push to either. `deploy.yml` deploys production when one merges into `main`: `vercel build`/`deploy
+--prod`, the `/healthz` check, then the `vYEAR.MONTH.N` tag and GitHub release; any other push to
+`main` deploys nothing. After it, the released branch is deleted and `main` merged into `develop` by
+hand. Vercel's
 Git deployments are off. Dependabot (`.github/dependabot.yml`, monthly into `develop`) and
 `bunfig.toml` both hold new releases back for 3 days.
 
