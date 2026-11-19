@@ -82,6 +82,18 @@ describe("deriveOverviewAttention", () => {
     });
   });
 
+  // 10:00 in India is 04:30 UTC, earlier than 05:00 UTC, though its text sorts later.
+  it("says failing webhooks have failed since the earliest of them, by time", () => {
+    const items = deriveOverviewAttention({
+      webhooks: [
+        webhook("notify", { failing_since: "2026-10-28T05:00:00Z" }),
+        webhook("audit", { failing_since: "2026-10-28T10:00:00+05:30" }),
+      ],
+      now: NOW,
+    });
+    expect(items.find((i) => i.id === "webhooks-failing")?.since).toBe("2026-10-28T10:00:00+05:30");
+  });
+
   it("adds the analytics signals past their thresholds, and nothing for missing sources", () => {
     const overview = {
       ...EMPTY_OVERVIEW,

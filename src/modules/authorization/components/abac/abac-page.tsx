@@ -137,7 +137,10 @@ export function AbacPage({ policyId, onPolicyChange }: AbacPageProps) {
   }
 
   const attributes = useMemo(
-    () => [...new Set((policies ?? []).flatMap((p) => conditionAttributes(p.condition)))].sort(),
+    () =>
+      [...new Set((policies ?? []).flatMap((p) => conditionAttributes(p.condition)))].sort((a, b) =>
+        a.localeCompare(b),
+      ),
     [policies],
   );
   const shown = useMemo(

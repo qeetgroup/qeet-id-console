@@ -212,7 +212,7 @@ export function useUpdateOidcClient(id: string) {
         schema: oidcClientSchema,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: authKeys.oidcClients(organizationId) });
+      void qc.invalidateQueries({ queryKey: authKeys.oidcClients(organizationId) });
     },
     meta: { silentError: true }, // the drawer says what happened
   });

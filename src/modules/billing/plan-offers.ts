@@ -45,7 +45,9 @@ export interface PlanOffer {
 
 /** The currencies the catalogue prices in, sorted. */
 export function planCurrencies(plans: readonly Plan[]): string[] {
-  return [...new Set(plans.flatMap((plan) => Object.keys(plan.prices ?? {})))].sort();
+  return [...new Set(plans.flatMap((plan) => Object.keys(plan.prices ?? {})))].sort((a, b) =>
+    a.localeCompare(b),
+  );
 }
 
 /** INR first (India-first), then USD, then whatever the catalogue has. */

@@ -108,7 +108,7 @@ export function brandLogoSource(
 /** One address, as the server accepts for the reply-to and sender. */
 export function validBrandEmail(value: string): boolean {
   const address = value.trim();
-  return !address || /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(address);
+  return !address || /^[^\s@<>,;]+@[^\s@<>,;.]+(?:\.[^\s@<>,;.]+)+$/.test(address);
 }
 
 function colorLuminance(color: string): number {

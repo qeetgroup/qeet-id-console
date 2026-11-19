@@ -20,6 +20,17 @@ describe("telemetry redact", () => {
     expect(out.user_id).toBe("u_123");
   });
 
+  // A log line can carry anything: the longest runs the old patterns retried from every position.
+  it("takes long hostile runs in one pass, and still redacts", () => {
+    const line = `${"a".repeat(100_000)} ${"?".repeat(50_000)} jane@acme.io /x?token=s3cr3t`;
+    const started = performance.now();
+    const out = redact({ line }) as { line: string };
+    expect(performance.now() - started).toBeLessThan(500);
+    expect(out.line).toContain("[redacted-email]");
+    expect(out.line).toContain("?[redacted-query]");
+    expect(out.line).not.toContain("s3cr3t");
+  });
+
   it("masks emails and IPs inside string values", () => {
     const out = redact({ note: "user jane@acme.io from 10.0.0.4 signed in" }) as Record<
       string,

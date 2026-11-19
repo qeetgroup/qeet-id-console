@@ -229,7 +229,7 @@ export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
       body: next,
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: authKeys.policy(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: authKeys.policy(ctx.organizationId) });
     return {
       ok: true,
       summary: input.enabled

@@ -314,6 +314,29 @@ describe("create an organisation", () => {
     expect(screen.queryByRole("img", { name: "Logo preview" })).toBeNull();
   });
 
+  it("says a logo the browser couldn't read is unreadable, though the reader gives no error", async () => {
+    class FailingReader {
+      error = null;
+      onerror: (() => void) | null = null;
+      readAsDataURL() {
+        queueMicrotask(() => this.onerror?.());
+      }
+    }
+    vi.stubGlobal("FileReader", FailingReader);
+    try {
+      mount();
+      toDetails();
+      const file = new File([new Uint8Array([137, 80, 78, 71])], "logo.png", { type: "image/png" });
+      fireEvent.change(screen.getByLabelText(/^Logo/), { target: { files: [file] } });
+      expect(
+        await screen.findByText("That file couldn't be read. Try another image."),
+      ).toBeTruthy();
+      expect(screen.queryByRole("img", { name: "Logo preview" })).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("takes Enterprise to sales in the page: filled in, sent, then Free meanwhile", async () => {
     vi.mocked(submitSalesLead).mockResolvedValue({ status: "ok" });
     mount("select-organization");

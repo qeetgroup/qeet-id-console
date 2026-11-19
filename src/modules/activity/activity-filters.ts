@@ -122,14 +122,14 @@ export function extractFilterOptions(events: ActivityEvent[]): {
   }
 
   return {
-    types: Array.from(types).sort(),
-    categories: Array.from(categories).sort(),
+    types: Array.from(types).sort((a, b) => a.localeCompare(b)),
+    categories: Array.from(categories).sort((a, b) => a.localeCompare(b)),
     severities: Array.from(severities),
-    sources: Array.from(sources).sort(),
-    statuses: Array.from(statuses).sort(),
+    sources: Array.from(sources).sort((a, b) => a.localeCompare(b)),
+    statuses: Array.from(statuses).sort((a, b) => a.localeCompare(b)),
     actors: Array.from(actors, ([value, label]) => ({ value, label })).sort((a, b) =>
       a.label.localeCompare(b.label),
     ),
-    resources: Array.from(resources).sort(),
+    resources: Array.from(resources).sort((a, b) => a.localeCompare(b)),
   };
 }

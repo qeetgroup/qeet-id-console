@@ -26,7 +26,7 @@ type RawOptions = {
 
 /** Returns the path with each `{name}` replaced by its encoded value; throws when one is missing. */
 export function fillPath(template: string, values: Record<string, string | number> = {}): string {
-  return template.replace(/\{([^}]+)\}/g, (_, name: string) => {
+  return template.replace(/\{([^{}]+)\}/g, (_, name: string) => {
     const value = values[name];
     if (value === undefined || value === "") {
       throw new Error(`No value for {${name}} in ${template}`);

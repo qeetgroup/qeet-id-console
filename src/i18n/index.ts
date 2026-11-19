@@ -95,7 +95,7 @@ for (const [path, catalogue] of Object.entries(bundled)) {
   resources[lng][ns] = catalogue;
 }
 /** Every namespace, from the English catalogues, which are complete by definition. */
-export const NAMESPACES = Object.keys(resources.en ?? {}).sort();
+export const NAMESPACES = Object.keys(resources.en ?? {}).sort((a, b) => a.localeCompare(b));
 
 const loaders = new Map<string, () => Promise<Catalogue>>();
 for (const [path, load] of Object.entries(fetchable)) {
@@ -163,7 +163,7 @@ export function translateDynamic(key: string, options?: TOptions): string {
   return isTranslationKey(key, options) ? i18n.t(key, options) : humanizeMissingKey(key);
 }
 
-i18n
+void i18n
   .use(lazyCatalogues)
   .use(initReactI18next)
   .use(LanguageDetector)

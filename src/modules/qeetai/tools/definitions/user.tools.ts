@@ -98,7 +98,7 @@ export const createUserTool: ToolDefinition<CreateUserInput> = {
         signal: ctx.signal,
       });
     }
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `Created user ${input.email} (id: ${user.id ?? ""})${role_id ? " and assigned the requested role" : ""}.`,
@@ -148,7 +148,7 @@ export const updateUserTool: ToolDefinition<UpdateUserInput> = {
       body: { display_name: input.name ?? null },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `Updated display name for user ${input.user_id}.`,
@@ -189,7 +189,7 @@ export const disableUserTool: ToolDefinition<DisableUserInput> = {
       body: { status: "suspended" },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been suspended and can no longer sign in.`,
@@ -229,7 +229,7 @@ export const enableUserTool: ToolDefinition<EnableUserInput> = {
       body: { status: "active" },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been re-activated and can sign in again.`,
@@ -266,7 +266,7 @@ export const deleteUserTool: ToolDefinition<DeleteUserInput> = {
   auditLabel: "qeetai.delete_user",
   async run(ctx, input) {
     await backend.delete("/v1/users/{id}", { path: { id: input.user_id }, signal: ctx.signal });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been deleted.`,
@@ -303,7 +303,7 @@ export const resetUserMfaTool: ToolDefinition<ResetUserMfaInput> = {
   auditLabel: "qeetai.reset_user_mfa",
   async run(ctx, input) {
     await backend.delete("/v1/users/{id}/mfa", { path: { id: input.user_id }, signal: ctx.signal });
-    ctx.queryClient.invalidateQueries({
+    void ctx.queryClient.invalidateQueries({
       queryKey: userKeys.user(ctx.organizationId, input.user_id),
     });
     return {

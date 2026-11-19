@@ -9,8 +9,8 @@ const graphemes =
 
 function firstLetter(word: string): string {
   if (!graphemes) return Array.from(word)[0] ?? "";
-  for (const { segment } of graphemes.segment(word)) return segment;
-  return "";
+  const [first] = graphemes.segment(word);
+  return first?.segment ?? "";
 }
 
 /** "Priya Sharma" is "PS"; "Priya" is "P". */

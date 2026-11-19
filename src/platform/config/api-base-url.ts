@@ -1,5 +1,6 @@
 import { env } from "@/platform/config/env";
 import { publicConfigScript as script, readPublicConfig } from "@/platform/config/public-config";
+import { trimEndChar } from "@/shared/utils/trim-char";
 
 // The public API origin, only for browser-facing federation and metadata URLs (data goes through
 // the BFF). Read at runtime from PUBLIC_API_URL so one image serves every environment, and handed
@@ -10,7 +11,7 @@ const DEFAULT_API_URL = "http://localhost:4001";
 /** Returns the public base URL of the Qeet ID API, without a trailing slash. */
 export function getApiBaseUrl(): string {
   const value = readPublicConfig().apiUrl || env.VITE_API_URL || DEFAULT_API_URL;
-  return value.replace(/\/+$/, "");
+  return trimEndChar(value, "/");
 }
 
 /** Returns the script handing the server-resolved config to the browser. Public values only. */

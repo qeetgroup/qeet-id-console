@@ -5,6 +5,7 @@ import { Store } from "@tanstack/react-store";
 
 import type { TranslationKey } from "@/i18n";
 import { scopedStorage } from "@/platform/auth/scoped-storage";
+import { trimChar } from "@/shared/utils/trim-char";
 
 import type { ActivitySearch } from "./activity-search";
 
@@ -111,10 +112,7 @@ function persist(state: SavedViewsState): void {
 }
 
 function makeId(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  const slug = trimChar(name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), "-");
   return `${slug || "view"}-${Date.now().toString(36)}`;
 }
 

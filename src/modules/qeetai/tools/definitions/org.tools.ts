@@ -38,7 +38,7 @@ export const createOrganizationTool: ToolDefinition<CreateOrgInput> = {
   auditLabel: "qeetai.create_organization",
   async run(ctx, input) {
     const created = await backend.post("/v1/organizations", { body: input, signal: ctx.signal });
-    ctx.queryClient.invalidateQueries({ queryKey: orgKeys.all });
+    void ctx.queryClient.invalidateQueries({ queryKey: orgKeys.all });
     const id = created.organization?.id ?? created.organization_id ?? "";
     return {
       ok: true,

@@ -17,7 +17,7 @@ export function useLogout() {
     onSettled: () => {
       sessionStore.clear();
       qc.clear();
-      navigate({ to: "/sign-in" });
+      void navigate({ to: "/sign-in" });
     },
     meta: { successMessage: "common:toast.signedOutSuccessfully" },
   });

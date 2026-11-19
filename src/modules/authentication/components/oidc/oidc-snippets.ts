@@ -3,6 +3,7 @@
 
 import type { OidcClient } from "@/modules/authentication/api/oidc-clients";
 import { getApiBaseUrl } from "@/platform/api/client";
+import { trimEndChar } from "@/shared/utils/trim-char";
 
 /** The issuer is the API origin, where libraries find /.well-known/openid-configuration. */
 export const issuer = () => new URL(getApiBaseUrl()).origin;
@@ -108,10 +109,12 @@ export function snippet(fw: Framework, client: OidcClient): string {
 }
 
 function base64url(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return trimEndChar(
+    btoa(String.fromCharCode(...bytes))
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_"),
+    "=",
+  );
 }
 
 /**

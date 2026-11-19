@@ -94,7 +94,7 @@ export function CredentialsPage({
 
   const all = useMemo(() => credentialsQ.data?.items ?? [], [credentialsQ.data]);
   const now = credentialsQ.dataUpdatedAt || Date.now();
-  const types = [...new Set(all.map((c) => c.type))].sort();
+  const types = [...new Set(all.map((c) => c.type))].sort((a, b) => a.localeCompare(b));
   const rows = useMemo(() => {
     const q = filters.q?.trim().toLowerCase();
     const out = all.filter(

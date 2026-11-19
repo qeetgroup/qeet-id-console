@@ -12,6 +12,7 @@ import { checkAnswer, type ExplainPath, type ExplainResult } from "./access-chec
 import type { DecidedBy } from "./decision";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
+import { randomHex } from "@/shared/utils/random-hex";
 
 export type Engine = "authzen" | "abac" | "rbac" | "rebac";
 
@@ -54,7 +55,7 @@ function rid(): string {
   } catch {
     // fall back to a time-based id
   }
-  return `d_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  return `d_${Date.now().toString(36)}_${randomHex(4)}`;
 }
 
 async function timed<T>(fn: () => Promise<T>): Promise<{ data: T; durationMs: number }> {

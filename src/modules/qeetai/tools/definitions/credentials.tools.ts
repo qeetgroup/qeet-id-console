@@ -34,7 +34,7 @@ export const createOAuthClientTool: ToolDefinition<CreateOAuthClientInput> = {
   auditLabel: "qeetai.create_oauth_client",
   async run(ctx, input) {
     const res = await createOidcClient(ctx.organizationId, input, ctx.signal);
-    ctx.queryClient.invalidateQueries({ queryKey: authKeys.oidcClients(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: authKeys.oidcClients(ctx.organizationId) });
 
     // The secret goes only to sensitiveArtifact, so it never reaches the model.
     return {
@@ -89,7 +89,7 @@ export const rotateOAuthClientSecretTool: ToolDefinition<RotateOAuthClientSecret
   auditLabel: "qeetai.rotate_oauth_client_secret",
   async run(ctx, input) {
     const res = await rotateOidcClientSecret(ctx.organizationId, input.client_id, ctx.signal);
-    ctx.queryClient.invalidateQueries({ queryKey: authKeys.oidcClients(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: authKeys.oidcClients(ctx.organizationId) });
 
     // The new secret goes only to sensitiveArtifact, so it never reaches the model.
     return {

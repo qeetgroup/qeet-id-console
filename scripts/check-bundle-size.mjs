@@ -15,7 +15,7 @@ const ROOT_ROUTE = "__root__";
 // A static import as Rolldown writes one: `import{a as b}from"./x.js"`, `import"./x.js"` or
 // `export{a}from"./x.js"`. A dynamic import("./x.js") loads later, so it doesn't count.
 const STATIC_IMPORT =
-  /(?:^|[^\w$.])(?:import|export)\s*(?:[\w$*{}\s,]*?\bfrom\s*)?["'](\.\.?\/[^"']+\.js)["']/g;
+  /(?:^|[^\w$.])(?:import|export)(?:[\w$*{}\s,]*?\bfrom)?\s*["'](\.\.?\/[^"']+\.js)["']/g;
 
 /** Returns the URLs a chunk at `url` imports statically, resolved against it. */
 export function staticImports(url, code) {

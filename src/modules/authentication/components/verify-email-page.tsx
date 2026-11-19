@@ -54,7 +54,7 @@ export function VerifyEmailPage({ session }: { session: PublicSession }) {
                 // The guard reads the profile; without invalidating, the redirect below
                 // would bounce straight back here on cached data.
                 await qc.invalidateQueries({ queryKey: meKeys.user(userId) });
-                navigate({ to: "/" });
+                void navigate({ to: "/" });
               },
             },
           );

@@ -39,7 +39,7 @@ export const createRoleTool: ToolDefinition<CreateRoleInput> = {
       body: { name: input.name, description: input.description ?? "" },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: authzKeys.roles(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: authzKeys.roles(ctx.organizationId) });
     const id = role.id ?? "";
     return {
       ok: true,
@@ -82,7 +82,7 @@ export const assignRoleTool: ToolDefinition<AssignRoleInput> = {
       path: { userID: input.user_id, organizationID: ctx.organizationId, roleID: input.role_id },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
+    void ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `Role ${input.role_id} assigned to user ${input.user_id} in tenant ${ctx.organizationId}.`,
@@ -127,7 +127,7 @@ export const grantPermissionTool: ToolDefinition<GrantPermissionInput> = {
       path: { roleID: input.role_id, permID: input.permission_id },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({
+    void ctx.queryClient.invalidateQueries({
       queryKey: authzKeys.rolePermissions(ctx.organizationId, input.role_id),
     });
     return {

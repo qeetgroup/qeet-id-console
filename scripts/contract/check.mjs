@@ -42,7 +42,7 @@ if (problems.length > 0) {
 }
 // What the server sends or accepts beyond its documents, for the server to document.
 const undocumented = readFileSync(join(root, "src/platform/api/contract/undocumented.ts"), "utf8");
-const gaps = [...undocumented.matchAll(/^\s*"(GET|POST|PUT|PATCH|DELETE) \//gm)].length;
+const gaps = [...undocumented.matchAll(/^[ \t]*"(GET|POST|PUT|PATCH|DELETE) \//gm)].length;
 console.log(
   `API contract: documents from qeet-id-server ${source.commit.slice(0, 12)}, types current, ` +
     `${gaps} operations with undocumented fields.`,

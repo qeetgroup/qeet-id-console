@@ -4,11 +4,12 @@
 const DENY_KEY =
   /(token|authorization|secret|password|refresh|client_secret|private_key|api[-_]?key|otp|recovery|cookie|credential|ssn)/i;
 
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+// Starts only where a run of address characters starts, so a long run is tried once.
+const EMAIL = /(?<![\w.%+-])[\w.%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
 const IPV4 = /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
 const JWT = /\beyJ[\w-]+\.[\w-]+(?:\.[\w-]*)*/g; // JWS and JWE compact forms
 const AUTH_SCHEME = /\b(Bearer|Basic)\s+[\w~+/.=-]+/gi;
-const QUERY = /\?[^\s#"'<>)]*=[^\s#"'<>)]*/g; // can hold a one-time token under any key
+const QUERY = /\?[^\s#"'<>)?=]*=[^\s#"'<>)]*/g; // can hold a one-time token under any key
 const OPAQUE_RUN = /[\w-]{32,}/g; // long enough to be a refresh token, API key or hash
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

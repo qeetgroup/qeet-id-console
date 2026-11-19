@@ -99,7 +99,7 @@ export function permissionAreas(permissions: readonly string[]): PermissionArea[
   }
   return [...by.entries()]
     .map(([resource, list]) => {
-      const sorted = [...list].sort();
+      const sorted = [...list].sort((a, b) => a.localeCompare(b));
       const actions = sorted.map((p) => p.slice(resource.length + 1));
       return {
         resource,

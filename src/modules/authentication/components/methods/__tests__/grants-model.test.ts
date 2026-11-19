@@ -66,4 +66,26 @@ describe("grants", () => {
     expect(first?.grants).toHaveLength(2);
     expect(second).toMatchObject({ client_id: "qci_gone", people: 1 });
   });
+
+  // 10:00 in India is 04:30 UTC, earlier than 05:00 UTC, though its text sorts later.
+  it("finds the last renewal and the next end by time, whatever offset each was written in", () => {
+    const at = (id: string, issued: string, expires: string) => ({
+      ...grant(id, "u1", "qci_a", issued),
+      expires_at: expires,
+    });
+    const [app] = byApplication(
+      joinGrants(
+        [
+          at("g1", "2026-10-28T10:00:00+05:30", "2026-12-01T10:00:00+05:30"),
+          at("g2", "2026-10-28T05:00:00Z", "2026-12-01T05:00:00Z"),
+        ],
+        USERS,
+        CLIENTS,
+      ),
+    );
+    expect(app).toMatchObject({
+      renewed: "2026-10-28T05:00:00Z",
+      nextEnd: "2026-12-01T10:00:00+05:30",
+    });
+  });
 });

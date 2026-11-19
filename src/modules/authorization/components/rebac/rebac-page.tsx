@@ -66,7 +66,10 @@ export function RebacPage({ object = "", relation, onOpen }: RebacPageProps) {
 
   const tuplesQ = useRelationTuples(object);
   const tuples = tuplesQ.data?.items ?? NO_TUPLES;
-  const relations = useMemo(() => [...new Set(tuples.map((tu) => tu.relation))].sort(), [tuples]);
+  const relations = useMemo(
+    () => [...new Set(tuples.map((tu) => tu.relation))].sort((a, b) => a.localeCompare(b)),
+    [tuples],
+  );
   const rel = relation || (relations.includes("viewer") ? "viewer" : (relations[0] ?? ""));
   const graphQ = useRelationGraph(object, rel);
   const model = useMemo(

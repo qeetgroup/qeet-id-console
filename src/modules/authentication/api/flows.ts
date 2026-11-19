@@ -39,7 +39,7 @@ export function useLogin() {
       // No session yet: the sign-in page renders the second-factor step from this mutation's data.
       if (isMfaChallenge(res)) return;
 
-      navigate({ to: "/" });
+      void navigate({ to: "/" });
     },
     meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
@@ -61,7 +61,7 @@ export function useCompleteMfaLogin() {
 
     onSuccess: (res) => {
       if (res.recovery_codes?.length) return;
-      navigate({ to: "/" });
+      void navigate({ to: "/" });
     },
     meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });
@@ -100,7 +100,7 @@ export function useConsumeMagicLink() {
       backend.post("/v1/auth/magic-link/consume", { body: { token }, anonymous: true }),
     onSuccess: (res) => {
       if (isMfaChallenge(res)) return;
-      navigate({ to: "/" });
+      void navigate({ to: "/" });
     },
     // The /magic page renders the failure inline, so the global error toast is off.
     meta: { successMessage: "authentication:toast.signedInSuccessfully", silentError: true },

@@ -57,7 +57,7 @@ export function useConsumeSocialCode() {
     onSuccess: (res) => {
       // No session yet: the sign-in page renders the second-factor step from this mutation's data.
       if (isMfaChallenge(res)) return;
-      navigate({ to: "/" });
+      void navigate({ to: "/" });
     },
     meta: { successMessage: "authentication:toast.signedInSuccessfully" },
   });

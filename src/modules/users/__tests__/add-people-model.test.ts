@@ -52,6 +52,13 @@ describe("isEmail and toE164", () => {
   it("accepts an address, and a phone number only with its country code", () => {
     expect(isEmail(" kavya@qeet.in ")).toBe(true);
     expect(isEmail("kavya@qeet")).toBe(false);
+    expect(isEmail("kavya@qeet..in")).toBe(false);
+    expect(isEmail("kavya@.qeet.in")).toBe(false);
+    expect(isEmail("kavya@mail.qeet.in")).toBe(true);
+    // A pasted token with no separator is checked in one pass.
+    const started = performance.now();
+    expect(isEmail(`a@${"b.".repeat(50_000)}`)).toBe(false);
+    expect(performance.now() - started).toBeLessThan(500);
     expect(toE164("+91 98765 43210")).toBe("+919876543210");
     expect(toE164("+1 (555) 555-0100")).toBe("+15555550100");
     expect(toE164("98765 43210")).toBeNull();

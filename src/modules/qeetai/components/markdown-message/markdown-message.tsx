@@ -35,7 +35,7 @@ type Block =
 const RE = {
   fenceOpen: /^```(\w+)?\s*$/,
   fenceClose: /^```\s*$/,
-  heading: /^(#{1,6})\s+(.*)$/,
+  heading: /^(#{1,6})\s+(\S.*|)$/,
   ul: /^\s*[-*+]\s+/,
   ol: /^\s*\d+\.\s+/,
   quote: /^\s*>\s?/,
@@ -145,7 +145,7 @@ const INLINE_PATTERNS: { re: RegExp; render: (m: RegExpMatchArray, key: string) 
   { re: /\*([^*]+)\*/, render: (m, key) => <em key={key}>{renderInline(capture(m, 1), key)}</em> },
   { re: /_([^_]+)_/, render: (m, key) => <em key={key}>{renderInline(capture(m, 1), key)}</em> },
   {
-    re: /\[([^\]]+)\]\(([^)\s]+)\)/,
+    re: /\[([^[\]]+)\]\(([^()\s]+)\)/,
     render: (m, key) => {
       const href = safeHref(capture(m, 2));
       // Unsafe target: render the label as plain text.

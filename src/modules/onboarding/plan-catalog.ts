@@ -1,6 +1,8 @@
 // Presentation-only plan metadata the billing API doesn't carry (featured tier, contact sales).
 // Names, prices and features come from GET /v1/billing/plans.
 
+import { trimChar } from "@/shared/utils/trim-char";
+
 export const TIER_ORDER = ["free", "starter", "pro", "enterprise"] as const;
 export type Tier = (typeof TIER_ORDER)[number];
 
@@ -40,10 +42,11 @@ export const CURRENCY_COUNTRY: Record<string, string> = {
 
 /** Turns a name into a URL-safe org slug (lowercase, hyphenated, a–z0–9 only). */
 export function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 64);
+  return trimChar(
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-"),
+    "-",
+  ).slice(0, 64);
 }

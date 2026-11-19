@@ -5,6 +5,7 @@ import i18n, { type TranslationKey } from "@/i18n";
 import { navContributions, registeredModules } from "@/platform/modules/registry";
 import type { NavContribution } from "@/platform/modules/manifest";
 import type { Capability } from "@/platform/security/capability-model";
+import { trimEndChar } from "@/shared/utils/trim-char";
 
 import { NAV_GROUP_DEFINITIONS } from "./nav-groups";
 
@@ -117,7 +118,7 @@ const SAFE_DESTINATIONS = new Set(["/", "/organizations"]);
 function normalizePathname(pathname: string): string {
   const path = pathname.split(/[?#]/, 1)[0] || "/";
   if (path === "/") return path;
-  return path.replace(/\/+$/, "") || "/";
+  return trimEndChar(path, "/") || "/";
 }
 
 function pathMatchesBranch(pathname: string, destination: string): boolean {

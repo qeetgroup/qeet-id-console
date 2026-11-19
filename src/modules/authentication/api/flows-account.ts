@@ -42,7 +42,7 @@ export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) 
       if (opts?.onSuccess) {
         opts.onSuccess(res);
       } else {
-        navigate({ to: "/" });
+        void navigate({ to: "/" });
       }
     },
     meta: {

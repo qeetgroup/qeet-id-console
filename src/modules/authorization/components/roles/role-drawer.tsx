@@ -99,7 +99,7 @@ function RoleDrawerContent({ access, view }: { access: RoleAccess; view: RoleAcc
   const [draft, setDraft] = useState<Set<string> | null>(null);
   const [failure, setFailure] = useState<unknown>(null);
   // A save refreshes the role: start again from what it grants now.
-  const granted = current ? [...current].sort().join(" ") : "";
+  const granted = current ? [...current].sort((a, b) => a.localeCompare(b)).join(" ") : "";
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset when what it grants changes
   useEffect(() => setDraft(null), [granted]);
   const chosen = draft ?? current ?? new Set<string>();

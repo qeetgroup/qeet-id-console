@@ -288,7 +288,14 @@ bun run test:e2e         # build, then Playwright: session, tenant isolation, CS
 bun run check            # Biome format + lint; warnings fail
 bun run lint:boundaries  # layer rules
 bun run audit            # known high/critical vulnerabilities
+bun run sonar            # SonarQube: tests with coverage, then the scanner (see below)
 ```
+
+`bun run sonar` analyses the console on the local SonarQube that qeet-id-server runs, as its own
+project (`qeet-id-console`). It needs Docker, that SonarQube running (`make sonar-up` in
+../qeet-id-server, http://localhost:9000) and a SonarQube token in `SONAR_TOKEN`;
+`SONAR_HOST_URL` points it elsewhere. VS Code recommends SonarQube for IDE
+(`.vscode/extensions.json`), which shows the same issues while you type.
 
 The TanStack devtools launcher is hidden by default so it never competes with operator UI —
 opt in only when debugging:

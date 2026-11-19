@@ -268,7 +268,11 @@ bun run contract:sync    # copy the server's API documents (../qeet-id-server) a
 bun run contract:check   # the copied contract and its generated types (CI)
 bun run contract:drift   # whether the server's documents (../qeet-id-server) moved on: before a sync or release
 bun run audit            # known high/critical vulnerabilities in the dependency tree
+bun run sonar            # SonarQube: tests with coverage, then the scanner in Docker (local only)
 ```
+
+`bun run sonar` needs Docker, the server's SonarQube running (`make sonar-up` in ../qeet-id-server)
+and `SONAR_TOKEN` in the environment; it is never run in CI.
 
 **There is no Makefile.** `VITE_ENABLE_DEVTOOLS=true bun run dev` opts into the TanStack devtools.
 

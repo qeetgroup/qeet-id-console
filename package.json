@@ -21,7 +21,8 @@
     "size": "node scripts/check-bundle-size.mjs",
     "contract:sync": "node scripts/contract/sync.mjs",
     "contract:check": "node scripts/contract/check.mjs",
-    "contract:drift": "node scripts/contract/drift.mjs"
+    "contract:drift": "node scripts/contract/drift.mjs",
+    "sonar": "node scripts/sonar.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

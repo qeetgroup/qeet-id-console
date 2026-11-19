@@ -1,4 +1,5 @@
 import type { PublicSession } from "@/platform/auth/server-session";
+import { randomHex } from "@/shared/utils/random-hex";
 
 const SESSION_CHANNEL = "qeetid:session";
 const SESSION_EVENT_KEY = "qeetid.session-event";
@@ -83,16 +84,14 @@ type SessionEvent = {
 };
 
 const source =
-  typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
+  typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : randomHex(16);
 
 function publish(type: SessionEvent["type"]) {
   if (typeof window === "undefined") return;
   const event: SessionEvent = {
     type,
     source,
-    nonce: `${Date.now()}:${Math.random()}`,
+    nonce: `${Date.now()}:${randomHex(8)}`,
   };
   try {
     const channel = new BroadcastChannel(SESSION_CHANNEL);

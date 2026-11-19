@@ -71,7 +71,7 @@ export function useCheckout() {
       }
       // Only a plan that took effect is "changed": a checkout hasn't changed anything yet.
       toast.success(i18n.t("billing:toast.subscriptionUpdated"));
-      qc.invalidateQueries({ queryKey: billingKeys.organization(organizationId) });
+      void qc.invalidateQueries({ queryKey: billingKeys.organization(organizationId) });
     },
     meta: { silent: true },
   });
