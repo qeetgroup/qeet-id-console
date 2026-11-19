@@ -362,3 +362,75 @@ test.describe("phone width", () => {
     });
   }
 });
+
+// Longer languages (P2-8): German and Hindi run about 40% longer than English. Each page's words
+// grow by that much, where they are, so a long word stays one word as a German compound does, and
+// then nothing scrolls sideways and no control, label or heading cuts its own words off (an
+// ellipsis is a choice, so it passes). At phone width the pages the library can't yet narrow are
+// expected failures, as above, and so are these two: Qeetrix React 0.1.1 sizes a table's columns to
+// its headers' words with no scroll frame (SSO), and never wraps a step's label (Import). 0.5 does
+// both; the console takes them with the same upgrade.
+const LONGER = 0.4;
+const LIBRARY_LONGER = new Set([...LIBRARY_REFLOW, "sso", "import people"]);
+
+async function lengthened(page: Page) {
+  return page.evaluate((longer) => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const words: Text[] = [];
+    while (walker.nextNode()) words.push(walker.currentNode as Text);
+    for (const node of words) {
+      if (node.parentElement?.closest("script, style, code, pre, svg")) continue;
+      node.textContent = (node.textContent ?? "").replace(
+        /\p{L}+/gu,
+        (word) => word + word.slice(0, Math.ceil(word.length * longer)),
+      );
+    }
+    const width = document.documentElement.clientWidth;
+    const named = (el: Element) =>
+      `${el.tagName.toLowerCase()}${[...el.classList].map((c) => `.${c}`).join("")}`;
+    const past = (el: Element) => el.getBoundingClientRect().right > width + 1;
+    const sideways =
+      document.documentElement.scrollWidth > width + 1
+        ? [...document.querySelectorAll("body *")]
+            .filter((el) => past(el) && !(el.parentElement && past(el.parentElement)))
+            .slice(0, 5)
+            .map(named)
+        : [];
+    const cut = [
+      ...document.querySelectorAll(
+        "button, a, label, th, h1, h2, h3, dt, [role=tab], [role=menuitem], [role=option]",
+      ),
+    ]
+      .filter((el): el is HTMLElement => el instanceof HTMLElement)
+      // Shown, on screen, and not visually hidden (as a skip link is until it has focus).
+      .filter((el) => el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))
+      .filter((el) => el.clientWidth > 1 && el.getBoundingClientRect().right > 0)
+      .filter((el) => el.scrollWidth > el.clientWidth + 1)
+      .filter((el) => getComputedStyle(el).textOverflow !== "ellipsis")
+      .slice(0, 5)
+      .map((el) => `${named(el)}: ${(el.textContent ?? "").trim().slice(0, 40)}`);
+    return { sideways, cut };
+  }, LONGER);
+}
+
+for (const [label, viewport] of [
+  ["desktop", { width: 1280, height: 800 }],
+  ["phone", { width: 320, height: 720 }],
+] as const) {
+  test.describe(`longer languages, ${label}`, () => {
+    test.use({ viewport });
+
+    for (const target of CONSOLE_PAGES) {
+      test(target.name, async ({ page }) => {
+        test.fail(
+          label === "phone" && LIBRARY_LONGER.has(target.name),
+          "Qeetrix React 0.1.1 layout; see LIBRARY_LONGER",
+        );
+        await signIn(page, ADMIN.email);
+        await page.goto(target.path);
+        await settle(page, target.ready(page));
+        expect(await lengthened(page)).toEqual({ sideways: [], cut: [] });
+      });
+    }
+  });
+}

@@ -106,6 +106,11 @@ describe("deriveOverviewAttention", () => {
       mfa_enabled: 18,
       mfa_missing: 27,
       new_last_30d: 2,
+      last_seen: { today: 20, week: 10, month: 5, older: 8, never: 2 },
+      admins_without_mfa: 0,
+      email_unverified: 0,
+      by_role: [],
+      by_department: [],
     };
     const items = deriveOverviewAttention({ overview, userStats, now: NOW });
     expect(items.map((i) => i.id)).toEqual(["two-step"]);
@@ -189,6 +194,11 @@ describe("deriveSetup", () => {
         mfa_enabled: 18,
         mfa_missing: 27,
         new_last_30d: 2,
+        last_seen: { today: 20, week: 10, month: 5, older: 8, never: 2 },
+        admins_without_mfa: 0,
+        email_unverified: 0,
+        by_role: [],
+        by_department: [],
       },
       pendingInvites: 2,
       domains: [{ id: "d", domain: "qeet.in", status: "verified" } as never],

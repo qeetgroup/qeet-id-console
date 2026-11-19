@@ -35,7 +35,6 @@ import type { useUserActions } from "@/modules/users/use-user-actions";
 import { GroupItems, type usePeopleRun } from "./people-bulk";
 import { roleDisplayName } from "@/shared/utils/role-name";
 
-/** A role as the list names it: the built-in `owner` in words, the rest as the organisation named them. */
 /** The list's columns: who, their role, how they sign in, when they were last active, and when they joined. */
 export function usePeopleColumns(currentUserId: string | null, now: number): TableColumn<User>[] {
   const { t } = useTranslation("users");
@@ -65,7 +64,6 @@ export function usePeopleColumns(currentUserId: string | null, now: number): Tab
     {
       id: "role",
       header: t("people.columns.role"),
-      sortable: true,
       cell: (u) =>
         u.roles?.length ? (
           u.roles.map((role) => roleDisplayName(role)).join(", ")

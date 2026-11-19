@@ -413,7 +413,21 @@ const server = createServer(async (request, response) => {
     // A new account has no organisation: nothing tenant-scoped to read.
     if (!tenant) return send(response, 200, { items: [] });
     const context = { tenantId: principal.tenantId, tenant, principalId: user.id };
-    return send(response, 200, tenantRead(path, url.searchParams, context) ?? { items: [] });
+    const answer = tenantRead(path, url.searchParams, context);
+    // The signed-in person is a member too, as the history's names read them.
+    if (!answer && path === `/v1/users/${user.id}`) {
+      return send(response, 200, {
+        id: user.id,
+        organization_id: principal.tenantId,
+        email: principal.email,
+        display_name: user.name,
+        status: "active",
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",
+        email_verified_at: user.unverified ? null : "2026-01-01T00:00:00Z",
+      });
+    }
+    return send(response, 200, answer ?? { items: [] });
   }
   return send(response, 200, {});
 });

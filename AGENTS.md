@@ -287,7 +287,7 @@ formatting, lint, and the layer import rules) → `audit` (high and critical adv
 tests (`test:coverage`, thresholds in `vitest.config.ts`), the build, `size` (the bundle budgets;
 see Conventions, Bundle size) and the Playwright specs in `tests/e2e` (the session boundary, the
 Content-Security-Policy, the WCAG 2.2 AA accessibility scan with label-in-name and reflow at
-320px wide, and keyboard use, rule 12) run locally before a change
+320px wide, the pages with 40% longer words, and keyboard use, rule 12) run locally before a change
 is pushed; CI doesn't repeat them.**
 
 Branches: `develop` (where changes land) and `main` (production). Each month `release/YEAR.MONTH.0`

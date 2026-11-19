@@ -401,11 +401,14 @@
     scrollbar-color: var(--qx-color-border-strong) transparent;
   }
 
+  /* A word longer than its line breaks rather than spilling out of its box: languages longer than
+     English (German's compounds) would otherwise push a label past its tile at phone width. */
   body {
     min-width: 20rem;
     background: var(--qx-color-surface-default);
     color: var(--qx-color-text-default);
     font-family: var(--qx-font-family-sans);
+    overflow-wrap: break-word;
   }
 
   h1,

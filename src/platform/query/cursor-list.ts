@@ -1,5 +1,7 @@
 // A cursor-paged list shown a page at a time: it reads the server's pages as the person pages
 // forward (or jumps to the last page), and slices what it has. The server answers its own total.
+// A read whose order the cursor can't page answers one page, with no next cursor: `loaded` is
+// then all of it the list can reach.
 import { type QueryKey, keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -37,5 +39,8 @@ export function useCursorList<T, P extends Page<T>>(
     refetch: query.refetch,
     isLoading: query.isLoading,
     isPlaceholderData: query.isPlaceholderData || short,
+    dataUpdatedAt: query.dataUpdatedAt,
+    loaded: loaded.length,
+    hasMore: query.hasNextPage,
   };
 }

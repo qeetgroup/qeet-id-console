@@ -8,7 +8,7 @@ import type { Answer } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import type { DirectoryConnection } from "../directory-model";
-import { READ_PAGE, useCursorList } from "./cursor-list";
+import { READ_PAGE, useCursorList } from "@/platform/query/cursor-list";
 import { directoryKeys } from "./keys";
 
 const connectionSchema = z.object({

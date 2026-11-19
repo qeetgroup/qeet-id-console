@@ -84,7 +84,7 @@ export function PersonTimeline({
     ...new Set(titles.flatMap((x) => (x.kind === "toOther" && x.personId ? [x.personId] : []))),
   ].slice(0, NAMED_PEOPLE);
   const othersQ = useQueries({
-    queries: others.map((id) => ({ ...userQueries.detail(organizationId, id), staleTime: 60_000 })),
+    queries: others.map((id) => userQueries.name(organizationId, id)),
   });
   const names: Names = {
     role: (id) => (id ? rolesQ.data?.items.find((r) => r.id === id)?.name : undefined),

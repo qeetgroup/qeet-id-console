@@ -90,7 +90,7 @@ export function OrgPage({ orgId }: { orgId: string }) {
   ];
   const actorsQ = useQueries({
     queries: access.can("user.read")
-      ? actorIds.map((id) => ({ ...userQueries.detail(organizationId, id), staleTime: 60_000 }))
+      ? actorIds.map((id) => userQueries.name(organizationId, id))
       : [],
   });
   const actorNames = new Map(

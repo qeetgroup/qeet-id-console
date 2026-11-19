@@ -100,7 +100,13 @@ beforeEach(() => {
           mfa_enabled: 18,
           mfa_missing: 27,
           new_last_30d: 1,
+          last_seen: { today: 10, week: 20, month: 5, older: 8, never: 2 },
+          admins_without_mfa: 0,
+          email_unverified: 0,
+          by_role: [],
+          by_department: [],
         };
+      if (path === "/v1/users/trends") return { total: [], mfa_enabled: [] };
       if (path === "/v1/organizations/t1/invites") return { items: [] };
     }
     if (path.endsWith("/suspension") && method === "PUT") return undefined;

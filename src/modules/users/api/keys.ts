@@ -1,6 +1,8 @@
 // Every users query key sits under ["users", organizationId], so two organizations never share an entry
 // and one prefix refreshes a tenant's lists, counts or a single person's views together.
 
+import type { UserQuery } from "./users";
+
 /** One page of the members list: it pages by cursor only, in the server's own order. */
 export type UserListParams = { limit: number; cursor?: string };
 
@@ -13,6 +15,8 @@ export const userKeys = {
     [...userKeys.lists(organizationId), params] as const,
   directory: (organizationId: string | null) =>
     [...userKeys.lists(organizationId), "directory"] as const,
+  search: (organizationId: string | null, query: UserQuery) =>
+    [...userKeys.lists(organizationId), "search", query] as const,
   stats: (organizationId: string | null) =>
     [...userKeys.organization(organizationId), "stats"] as const,
   trends: (organizationId: string | null) =>

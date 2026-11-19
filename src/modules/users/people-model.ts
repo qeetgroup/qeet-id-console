@@ -1,13 +1,13 @@
-// What the Users list works out from everyone in the organisation: when each person was last
-// active, what about them needs a look, the filters in the page address, and the counts beside
-// each filter. Pure, so the page and its tests share it.
+// The Users list's model: when each person was last active, what about them needs a look, the
+// filters in the page address and how the list API asks for them, and, for the two filters it
+// doesn't have, how the page works them out itself. Pure, so the page and its tests share it.
 import type { TableSort } from "@qeetrix/react";
 import type { z } from "zod";
 
 import { createIntentSearch } from "@/shared/hooks/use-create-intent";
 import { searchEnum, searchText } from "@/shared/utils/search-params";
 
-import type { User } from "./api/users";
+import type { User, UserQuery } from "./api/users";
 
 export const DAY_MS = 86_400_000;
 
@@ -114,11 +114,46 @@ export function matches(user: User, filters: PeopleFilters, now: number): boolea
   return true;
 }
 
-/** Each value and how many have it, most first, then by name; blanks aren't counted. */
-export function countBy(values: readonly (string | null | undefined)[]): [string, number][] {
-  const counts = new Map<string, number>();
-  for (const value of values) if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
-  return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+/**
+ * Whether the list API can't say these filters, so the page works them out over the people it
+ * loads: admins without two-step (it filters one role at a time) and people in no group
+ * (QTID-1066).
+ */
+export function needsDirectory(filters: PeopleFilters): boolean {
+  return filters.look === "admins-no-two-step" || filters.group === "none";
+}
+
+/**
+ * The filters, search and sort as the list API's query, for every filter but those
+ * `needsDirectory` covers; null when two of them can't both hold, such as a look and a filter that
+ * ask for different last-active times, so no one matches.
+ */
+export function userQuery(filters: PeopleFilters, sort: TableSort | null): UserQuery | null {
+  const query: UserQuery = {};
+  const q = filters.q?.trim();
+  if (q) query.q = q;
+  if (filters.status) query.status = filters.status;
+  if (filters.role) query.role = filters.role;
+  if (filters.dept) query.department = filters.dept;
+  if (filters.twostep) query.mfa = filters.twostep;
+  if (filters.seen) query.last_seen = filters.seen;
+  if (filters.look === "dormant" || filters.look === "never") {
+    const seen = filters.look === "dormant" ? "older" : "never";
+    if (query.last_seen && query.last_seen !== seen) return null;
+    query.last_seen = seen;
+  }
+  if (filters.look === "suspended") {
+    if (query.status && query.status !== "suspended") return null;
+    query.status = "suspended";
+  }
+  if (filters.look === "unverified") query.email_verified = false;
+  const column = sort && SORT_QUERY[sort.column as PeopleSortColumn];
+  if (sort && column) {
+    const order = sort.direction === "ascending" ? "asc" : "desc";
+    // Newest joined first is the server's own order, the one its cursor pages.
+    if (column !== "created" || order !== "desc") Object.assign(query, { sort: column, order });
+  }
+  return query;
 }
 
 /** How many people were in the organisation at the end of each of the last `months` months. */
@@ -133,11 +168,15 @@ export function growth(users: readonly Pick<User, "created_at">[], now: number, 
   });
 }
 
-/** The columns the list sorts by, and what each compares. */
-export type PeopleSortColumn = "person" | "role" | "active" | "joined";
+/** The columns the list sorts by, the list API's order for each, and what each compares. */
+export type PeopleSortColumn = "person" | "active" | "joined";
+const SORT_QUERY: Record<PeopleSortColumn, UserQuery["sort"]> = {
+  person: "name",
+  active: "last_seen",
+  joined: "created",
+};
 const SORT_VALUE: Record<PeopleSortColumn, (user: User) => string | number> = {
   person: (user) => personName(user).toLowerCase(),
-  role: (user) => (user.roles ?? []).join(", ").toLowerCase(),
   // Never signed in sorts as the longest ago.
   active: (user) => (user.last_seen_at ? Date.parse(user.last_seen_at) : 0),
   joined: (user) => Date.parse(user.created_at),

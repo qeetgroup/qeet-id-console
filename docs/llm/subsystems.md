@@ -57,7 +57,7 @@ folders, every nav/command/shortcut target is a real route, a fake module shows 
 | `feature-flags/` | Evaluates the flags modules declare; `CONSOLE_FLAGS_OFF` turns any off at runtime |
 | `errors/` | Error taxonomy and user-safe copy |
 | `telemetry/` | Redaction, the server's JSON-line log (production, stdout, server-only), path templates, the browser error and Web Vitals reporter and its report endpoint, the DEV console logger, `captureError`, request ids (`tracing.ts`); nothing goes to a third party |
-| `query/` | QueryClient, global 403 recapability handler |
+| `query/` | QueryClient, global 403 recapability handler, `useCursorList` (a cursor-paged list shown a page at a time) |
 | `forms/` | The forms kit: TanStack Form + `@qeetrix/react` fields, server field errors |
 | `components/` | `entry-shell.tsx` (the frame outside the console), `state-page.tsx`, `error-reference.tsx` |
 | `theme/` | The colour scheme: its storage and first-paint script (`color-scheme.ts`), `useIsDark` |

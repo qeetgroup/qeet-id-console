@@ -2,6 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
+import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
@@ -62,6 +63,8 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 import { api } from "@/platform/api/client";
+import { ApiError } from "@/platform/errors/api-error";
+import { getContext } from "@/platform/query/query-client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import type { Org } from "../api/orgs";
 import { OrgPage } from "../components/page/org-page";
@@ -148,10 +151,12 @@ afterEach(() => {
   vi.mocked(api).mockReset();
 });
 
-function renderPage(orgId = "g") {
-  const client = new QueryClient({
+function renderPage(
+  orgId = "g",
+  client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
+  }),
+) {
   render(
     <QueryClientProvider client={client}>
       <SensitiveActionProvider>
@@ -197,6 +202,30 @@ describe("an organisation's page, the one you're in", () => {
     expect(await within(history).findByText("Shalini Goyal")).toBeTruthy();
     expect(within(history).getByText("· Chrome on Windows")).toBeTruthy();
     expect(within(history).getByText("2 people")).toBeTruthy();
+  });
+
+  it("leaves a change without a name, and says nothing, when its person can't be read", async () => {
+    const failed = vi.spyOn(toast, "error").mockImplementation(() => "");
+    const base = vi.mocked(api).getMockImplementation();
+    vi.mocked(api).mockImplementation(async (path, options) => {
+      if (path === "/v1/users/u-mareedu")
+        throw new ApiError(404, "user.not_found", "user not found", undefined, false, undefined, {
+          requestId: "req-1",
+        });
+      return base?.(path, options);
+    });
+    // The app's own client, which toasts a failed read.
+    renderPage("g", getContext().queryClient);
+    const history = (await screen.findByRole("heading", { name: "History" })).closest(
+      "section",
+    ) as HTMLElement;
+    expect(await within(history).findByText("Shalini Goyal")).toBeTruthy();
+    await waitFor(() =>
+      expect(vi.mocked(api).mock.calls.some(([path]) => path === "/v1/users/u-mareedu")).toBe(true),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(failed).not.toHaveBeenCalled();
+    failed.mockRestore();
   });
 
   it("offers an admin no Delete: only an owner can", async () => {

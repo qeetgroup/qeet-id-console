@@ -120,6 +120,9 @@ the first client render shows the same copy as the server's.
 - `locale-parity.test.ts`: each namespace lives in one owner's folder, and no other locale holds
   a key `en` no longer has (plural forms aside, which differ by language).
 - `offered-languages.test.ts`: an offered locale translates every `en` key.
+- `tests/e2e/accessibility.spec.ts`, "longer languages": every page's words grow by 40%, as German
+  and Hindi run longer than English, and nothing may then scroll sideways or cut its own words
+  off, at desktop and at phone width.
 
 ## Copy outside components
 

@@ -7,8 +7,10 @@
 
 /* ── Sections and their rows ───────────────────────────────────────────────── */
 
+/* One column no wider than the page, so a long word wraps rather than widening its rows. */
 .account-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--qx-space-gap-md);
   padding-block: var(--qx-space-layout-sm);
 }

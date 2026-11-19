@@ -10,8 +10,9 @@ import type { z } from "zod";
 
 import { assured, assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
-import type { Answer, Body } from "@/platform/api/contract";
+import type { Answer, Body, Operation, QueryParams } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
+import { useCursorList } from "@/platform/query/cursor-list";
 
 import type { ImportRowError } from "../import-errors";
 import type { ImportRow } from "../import-file";
@@ -21,8 +22,12 @@ import { userRecord } from "./user360";
 export type UserStatus = "active" | "invited" | "suspended" | "deleted";
 
 // The members list and the counts: the document leaves their fields optional, the server always
-// sends them (user.go), so each read is held to what the pages use.
+// sends them (user.go, list.go), so each read is held to what the pages use.
 const userPage = assuredItems<Answer<"/v1/users">>()("id", "email", "status", "created_at");
+// A search counts what it found: the server always sends the total (http.go, userPage).
+const userSearchPage = userPage
+  .refine((page) => typeof page.total === "number")
+  .transform((page) => ({ ...page, total: page.total ?? 0 }));
 const userStats = assured<Answer<"/v1/users/stats">>()(
   "total",
   "active",
@@ -31,6 +36,11 @@ const userStats = assured<Answer<"/v1/users/stats">>()(
   "mfa_enabled",
   "mfa_missing",
   "new_last_30d",
+  "last_seen",
+  "admins_without_mfa",
+  "email_unverified",
+  "by_role",
+  "by_department",
 );
 const userTrends = assured<Answer<"/v1/users/trends">>()("total", "mfa_enabled");
 const deletedPage = assuredItems<Answer<"/v1/users/deleted">>()(
@@ -44,9 +54,16 @@ const deletedPage = assuredItems<Answer<"/v1/users/deleted">>()(
 export type User = z.output<typeof userPage>["items"][number];
 export type UserPage = z.output<typeof userPage>;
 
-/** The most people the Users list loads, 200 at a time, to filter, count and sort itself. */
+/** The most people a page loads, 200 at a time, to look people up or filter them itself. */
 export const DIRECTORY_CAP = 2000;
 const DIRECTORY_PAGE = 200;
+
+/** The members list's search, filters and order; every field narrows, and they combine. */
+export type UserQuery = Omit<QueryParams<Operation<"/v1/users", "get">>, "cursor" | "limit">;
+/** The most a read of the list asks for: the server's own limit. */
+export const SEARCH_PAGE = 200;
+/** The most people an export of the list holds. */
+export const EXPORT_CAP = 10_000;
 
 /** Everyone in the organisation, up to DIRECTORY_CAP; `complete` is false when there are more. */
 export type UserDirectory = { items: User[]; complete: boolean };
@@ -66,8 +83,8 @@ export const userQueries = {
       queryFn: () => backend.get("/v1/users", { query: params, schema: userPage }),
       enabled: !!organizationId,
     }),
-  // The list API has no filters or counts of its own yet, so the Users list walks it with the
-  // cursor and works over everyone it got.
+  // Everyone, for the pages that look people up by id or email, and for the Users list's filters
+  // the list API doesn't have.
   directory: (organizationId: string | null) =>
     queryOptions({
       queryKey: userKeys.directory(organizationId),
@@ -93,6 +110,16 @@ export const userQueries = {
       queryKey: userKeys.detail(organizationId, userId),
       queryFn: () => backend.get("/v1/users/{id}", { path: { id: userId }, schema: userRecord }),
       enabled: !!organizationId && !!userId,
+    }),
+  // A person's name beside something they did. Without it the change shows no name, so a failed
+  // read, such as someone since deleted, says nothing.
+  name: (organizationId: string | null, userId: string) =>
+    queryOptions({
+      queryKey: userKeys.detail(organizationId, userId),
+      queryFn: () => backend.get("/v1/users/{id}", { path: { id: userId }, schema: userRecord }),
+      enabled: !!organizationId && !!userId,
+      staleTime: 60_000,
+      meta: { silent: true },
     }),
   stats: (organizationId: string | null) =>
     queryOptions({
@@ -129,8 +156,45 @@ function refreshUser(qc: QueryClient, organizationId: string | null, userId: str
   void qc.invalidateQueries({ queryKey: userKeys.user(organizationId, userId) });
 }
 
-export function useUserDirectory() {
-  return useQuery(userQueries.directory(useOrganizationId()));
+export function useUserDirectory(enabled = true) {
+  const options = userQueries.directory(useOrganizationId());
+  return useQuery({ ...options, enabled: options.enabled && enabled });
+}
+
+function readUsers(query: UserQuery, cursor: string | undefined, signal?: AbortSignal) {
+  return backend.get("/v1/users", {
+    query: { ...query, limit: SEARCH_PAGE, cursor },
+    signal,
+    schema: userSearchPage,
+  });
+}
+
+/**
+ * The members the server finds for `query`, a page at a time, with how many it found. Only the
+ * default order (newest first) pages on; any other answers its first SEARCH_PAGE people.
+ */
+export function useUserSearch(
+  query: UserQuery,
+  view: { offset: number; pageSize: number; enabled: boolean },
+) {
+  const organizationId = useOrganizationId();
+  return useCursorList(
+    userKeys.search(organizationId, query),
+    (cursor, signal) => readUsers(query, cursor, signal),
+    { ...view, enabled: view.enabled && !!organizationId },
+  );
+}
+
+/** Everyone the server finds for `query`, for an export, up to EXPORT_CAP. */
+export async function searchAllUsers(query: UserQuery): Promise<User[]> {
+  const items: User[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await readUsers(query, cursor);
+    items.push(...page.items);
+    cursor = page.next_cursor || undefined;
+  } while (cursor && items.length < EXPORT_CAP);
+  return items.slice(0, EXPORT_CAP);
 }
 
 export function useUser(userId: string) {

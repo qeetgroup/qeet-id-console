@@ -36,7 +36,7 @@ import {
   useReviewSuspension,
   useSuspendedUsers,
 } from "@/modules/users/api/suspended";
-import type { User } from "@/modules/users/api/users";
+import type { UserStats } from "@/modules/users/api/users";
 import { type PeopleFilters, RISKS } from "@/modules/users/people-model";
 import { errorMessage } from "@/platform/errors/user-message";
 import {
@@ -227,12 +227,12 @@ function useSuspendedColumns(now: number): TableColumn<SuspendedDirectoryUser>[]
 export function SuspendedPeople({
   filters,
   onFiltersChange,
-  users,
+  stats,
   canWrite,
 }: {
   filters: PeopleFilters;
   onFiltersChange: (next: PeopleFilters) => void;
-  users: User[];
+  stats?: UserStats;
   canWrite: boolean;
 }) {
   const { t } = useTranslation("users");
@@ -297,7 +297,7 @@ export function SuspendedPeople({
           <PeopleToolbar
             filters={filters}
             onFiltersChange={onFiltersChange}
-            users={users}
+            stats={stats}
             shown={page.data?.total ?? 0}
             suspended={page.data}
           />

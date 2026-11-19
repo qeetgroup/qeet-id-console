@@ -479,22 +479,24 @@ b.is-danger {
 
 /* ── Narrow screens ───────────────────────────────────────────────────────────────────────── */
 
+/* Four cells go two by two; three stay in a row until a phone stacks them all. */
 @media (max-width: 1180px) {
   .ppl-band {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .ppl-cell:nth-child(3) {
+  .ppl-band:not(.is-three) > .ppl-cell:nth-child(3) {
     border-inline-start: 0;
   }
 
-  .ppl-cell:nth-child(n + 3) {
+  .ppl-band:not(.is-three) > .ppl-cell:nth-child(n + 3) {
     border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
   }
 }
 
 @media (max-width: 640px) {
-  .ppl-band {
+  .ppl-band,
+  .ppl-band.is-three {
     grid-template-columns: minmax(0, 1fr);
   }
 

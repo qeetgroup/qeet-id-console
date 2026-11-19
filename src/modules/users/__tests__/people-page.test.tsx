@@ -53,9 +53,9 @@ vi.mock("@/modules/organizations", () => ({
 
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
-import type { User } from "../api/users";
+import type { User, UserQuery } from "../api/users";
 import { UsersPage, type UsersPageProps } from "../pages";
-import type { PeopleFilters } from "../people-model";
+import { type PeopleFilters, recency } from "../people-model";
 
 const DAY = 86_400_000;
 const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString();
@@ -97,24 +97,68 @@ const STATS = {
   mfa_enabled: 2,
   mfa_missing: 2,
   new_last_30d: 1,
+  last_seen: { today: 1, week: 1, month: 0, older: 1, never: 1 },
+  admins_without_mfa: 1,
+  email_unverified: 1,
+  by_role: [
+    { role: "Developer", count: 2 },
+    { role: "Admin", count: 1 },
+    { role: "owner", count: 1 },
+  ],
+  by_department: [
+    { department: "Engineering", count: 3 },
+    { department: "Design", count: 1 },
+  ],
 };
 
-type Pages = Record<string, { items: User[]; next_cursor?: string }>;
-let pages: Pages;
+// The list API, as the server answers it: each filter narrows, and the total counts them all. The
+// query arrives as the transport sends it, a boolean as its word.
+type Sent = Omit<UserQuery, "email_verified"> & { email_verified?: string; limit?: number };
+function find(query: Sent) {
+  const found = PEOPLE.filter(
+    (u) =>
+      (!query.q || personMatches(u, query.q)) &&
+      (!query.status || u.status === query.status) &&
+      (!query.role || (u.roles ?? []).some((r) => r.toLowerCase() === query.role?.toLowerCase())) &&
+      (!query.department || u.metadata?.department === query.department) &&
+      (!query.mfa || u.mfa_enabled === (query.mfa === "on")) &&
+      (!query.email_verified || String(!!u.email_verified_at) === query.email_verified) &&
+      (!query.last_seen || recency(u, Date.now()) === query.last_seen),
+  );
+  return { items: found.slice(0, query.limit), total: found.length };
+}
+const personMatches = (u: User, q: string) =>
+  [u.display_name, u.email].some((f) => f?.toLowerCase().includes(q.toLowerCase()));
+
+type Pages = Record<string, { items: User[]; next_cursor?: string; total?: number }>;
+// Set to answer the list's reads by cursor instead.
+let pages: Pages | null;
 let stats: typeof STATS;
+
+const listReads = () =>
+  vi
+    .mocked(api)
+    .mock.calls.filter(([path]) => path === "/v1/users")
+    .map(([, opts]) => (opts as { query?: unknown } | undefined)?.query);
 
 beforeEach(() => {
   granted.except = new Set();
-  pages = { "": { items: PEOPLE } };
+  pages = null;
   stats = STATS;
   vi.mocked(api).mockImplementation(
-    async (path: string, opts?: { query?: { cursor?: string } }) => {
+    async (path: string, opts?: { query?: Sent & { cursor?: string } }) => {
       if (path === "/v1/users") {
+        if (!pages) return find(opts?.query ?? {});
         const page = pages[opts?.query?.cursor ?? ""];
         if (!page) throw new Error(`unexpected cursor ${opts?.query?.cursor}`);
-        return page;
+        return { total: PEOPLE.length, ...page };
       }
       if (path === "/v1/users/stats") return stats;
+      if (path === "/v1/users/trends")
+        return {
+          total: Array.from({ length: 30 }, (_, i) => (i < 20 ? 3 : 4)),
+          mfa_enabled: Array.from({ length: 30 }, () => 2),
+        };
       if (path === "/v1/organizations/t1/invites")
         return {
           items: [
@@ -181,6 +225,25 @@ describe("the Users list", () => {
     expect(admins.getAttribute("href")).toBe("/users?look=admins-no-two-step");
     expect(screen.getByRole("link", { name: /Not seen for 30 days/ }).textContent).toContain("1");
     expect(screen.getByRole("link", { name: /Email not verified/ }).textContent).toContain("1");
+    expect(
+      screen.getByRole("img", { name: "People each day: 3 to 4 over the last 30 days" }),
+    ).toBeTruthy();
+  });
+
+  it("counts from the server's figures for the whole organisation, not the rows it has read", async () => {
+    stats = {
+      ...STATS,
+      total: 5400,
+      active: 5000,
+      last_seen: { today: 1200, week: 2000, month: 1000, older: 900, never: 300 },
+      admins_without_mfa: 7,
+    };
+    renderPage();
+    expect(await screen.findByRole("link", { name: "1,200 today" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Admins without two-step/ }).textContent).toContain(
+      "7",
+    );
+    expect(listReads()).toEqual([{ limit: 200 }]);
   });
 
   it("shows each person on one row: their role, how they sign in, and when they were last active", async () => {
@@ -202,13 +265,22 @@ describe("the Users list", () => {
     ).toBe("/users/u-me");
   });
 
-  it("filters from the address, shows what's applied and how many it leaves", async () => {
+  it("asks the server for the address's filters, shows what's applied and how many it leaves", async () => {
     renderPage({ twostep: "off", dept: "Engineering" });
     const table = await screen.findByRole("table", { name: "Users" });
     expect(await within(table).findByText("Arjun")).toBeTruthy();
     expect(within(table).queryByText("Meera")).toBeNull();
     expect(within(table).queryByText("Priya Sharma")).toBeNull();
     expect(screen.getByText("1 of 4 people")).toBeTruthy();
+    expect(listReads()).toEqual([{ mfa: "off", department: "Engineering", limit: 200 }]);
+  });
+
+  it("asks for a look as the server's filter", async () => {
+    renderPage({ look: "unverified" });
+    const table = await screen.findByRole("table", { name: "Users" });
+    expect(await within(table).findByText("Meera")).toBeTruthy();
+    expect(within(table).queryByText("Arjun")).toBeNull();
+    expect(listReads()).toEqual([{ email_verified: "false", limit: 200 }]);
   });
 
   it("puts a removed filter's change in the address", async () => {
@@ -228,7 +300,31 @@ describe("the Users list", () => {
     expect(onFiltersChange).toHaveBeenCalledWith({});
   });
 
-  it("walks the whole list with its cursor, 200 at a time", async () => {
+  it("doesn't ask when two filters can't both hold", async () => {
+    renderPage({ look: "dormant", seen: "today" });
+    expect(await screen.findByText("No one matches")).toBeTruthy();
+    expect(listReads()).toEqual([]);
+  });
+
+  it("drops the last list's pager when the filters change to ones that can't both hold", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const page = (filters: PeopleFilters) => (
+      <QueryClientProvider client={client}>
+        <SensitiveActionProvider>
+          <UsersPage filters={filters} onFiltersChange={vi.fn()} />
+        </SensitiveActionProvider>
+      </QueryClientProvider>
+    );
+    const { rerender } = render(page({ look: "dormant" }));
+    const table = await screen.findByRole("table", { name: "Users" });
+    expect(await within(table).findByText("Kiran")).toBeTruthy();
+    expect(screen.getByRole("navigation", { name: "Pagination" })).toBeTruthy();
+    rerender(page({ look: "dormant", seen: "today" }));
+    expect(await screen.findByText("No one matches")).toBeTruthy();
+    expect(screen.queryByRole("navigation", { name: "Pagination" })).toBeNull();
+  });
+
+  it("reads the next page with the server's cursor once the table reaches it", async () => {
     pages = {
       "": { items: PEOPLE.slice(0, 2), next_cursor: "c2" },
       c2: { items: PEOPLE.slice(2) },
@@ -236,24 +332,42 @@ describe("the Users list", () => {
     renderPage();
     const table = await screen.findByRole("table", { name: "Users" });
     expect(await within(table).findByText("Kiran")).toBeTruthy();
-    const reads = vi.mocked(api).mock.calls.filter(([path]) => path === "/v1/users");
-    expect(reads.map(([, opts]) => opts?.query)).toEqual([
-      { limit: 200, cursor: undefined },
-      { limit: 200, cursor: "c2" },
-    ]);
+    expect(listReads()).toEqual([{ limit: 200 }, { limit: 200, cursor: "c2" }]);
   });
 
-  it("says when the organisation has more people than the list loads", async () => {
+  it("works out admins without two-step over the people it loads, and says when that's capped", async () => {
     pages = {};
     for (let i = 0; i < 10; i++)
       pages[i ? `c${i}` : ""] = {
-        items: Array.from({ length: 200 }, (_, j) => person(`p${i}-${j}`)),
+        items: Array.from({ length: 200 }, (_, j) =>
+          person(`p${i}-${j}`, j ? {} : { roles: ["admin"], mfa_enabled: false }),
+        ),
         next_cursor: `c${i + 1}`,
       };
     stats = { ...STATS, total: 2400, active: 2400 };
-    renderPage();
+    renderPage({ look: "admins-no-two-step" });
     expect(await screen.findByText("Showing the first 2,000 of 2,400 people")).toBeTruthy();
-    expect(vi.mocked(api).mock.calls.filter(([path]) => path === "/v1/users")).toHaveLength(10);
+    expect(listReads()).toHaveLength(10);
+    expect(screen.getByText("10 of 2,400 people")).toBeTruthy();
+  });
+
+  it("says a sorted list reaches only the server's first page", async () => {
+    pages = {
+      "": { items: Array.from({ length: 200 }, (_, j) => person(`p${j}`)), total: 900 },
+    };
+    renderPage();
+    const table = await screen.findByRole("table", { name: "Users" });
+    await within(table).findByText("p0");
+    expect(screen.queryByText(/Sorted, the list shows/)).toBeNull();
+    fireEvent.click(within(table).getByRole("button", { name: /Person/ }));
+    expect(
+      await screen.findByText("Sorted, the list shows the first 200 of 900 people"),
+    ).toBeTruthy();
+    expect(listReads().at(-1)).toEqual({
+      sort: "name",
+      order: "asc",
+      limit: 200,
+    });
   });
 
   it("changes nothing on load", async () => {

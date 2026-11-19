@@ -98,7 +98,7 @@ describe("Authentication › Social", () => {
     expect(within(add).queryByText("Google")).toBeNull();
     expect(within(add).getByText("Apple")).toBeTruthy();
     expect(within(add).queryByText("GitHub")).toBeNull();
-    fireEvent.click(within(add).getByRole("button", { name: "5 more that need a discovery URL" }));
+    fireEvent.click(within(add).getByRole("button", { name: "Show 5 more" }));
     expect(within(add).getByText("GitHub")).toBeTruthy();
     expect(within(add).getByText(/Bitbucket, Spotify,? and Reddit can't be added/)).toBeTruthy();
   });

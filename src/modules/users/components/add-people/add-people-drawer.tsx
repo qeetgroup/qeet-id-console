@@ -117,7 +117,7 @@ export function AddPeopleDrawer({
   const organizationId = useOrganizationId();
   const org = useOrgs().data?.items.find((item) => item.id === organizationId);
   const roles = useRoles().data?.items ?? [];
-  const members = useUserDirectory().data?.items ?? [];
+  const members = useUserDirectory(open).data?.items ?? [];
   const invites = useInvitations(open).data?.items ?? [];
   const createUser = useCreateUser();
   const runSensitive = useSensitiveAction();

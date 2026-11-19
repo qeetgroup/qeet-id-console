@@ -9,7 +9,7 @@ import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
-import { READ_PAGE, useCursorList } from "./cursor-list";
+import { READ_PAGE, useCursorList } from "@/platform/query/cursor-list";
 import { type EventFilters, eventSchema, filterQuery } from "./directory";
 import { directoryKeys } from "./keys";
 

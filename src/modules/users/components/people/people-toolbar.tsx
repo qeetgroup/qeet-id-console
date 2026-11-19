@@ -5,15 +5,8 @@ import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import { SUSPENSION_REASONS, type SuspendedUsersPage } from "@/modules/users/api/suspended";
-import type { User } from "@/modules/users/api/users";
-import {
-  countBy,
-  department,
-  type PeopleFilters,
-  RECENCY,
-  REVIEWS,
-  RISKS,
-} from "@/modules/users/people-model";
+import type { UserStats } from "@/modules/users/api/users";
+import { type PeopleFilters, RECENCY, REVIEWS, RISKS } from "@/modules/users/people-model";
 import { roleDisplayName } from "@/shared/utils/role-name";
 
 const ANY = "";
@@ -33,19 +26,21 @@ const SUSPENDED_ONLY = { reason: undefined, risk: undefined, review: undefined }
 
 /**
  * One row above the table: search, status, then role, department, two-step and last active, each
- * with its counts; with Suspended chosen, reason, risk and review instead. Under it, what's
- * applied, as tags, with how many people that leaves.
+ * with the organisation's counts; with Suspended chosen, reason, risk and review instead. Under it,
+ * what's applied, as tags, with how many people that leaves.
  */
 export function PeopleToolbar({
   filters,
   onFiltersChange,
-  users,
+  stats,
   shown,
   suspended,
 }: {
   filters: PeopleFilters;
   onFiltersChange: (next: PeopleFilters) => void;
-  users: User[];
+  /** The organisation's counts, for each option's; none until they arrive. */
+  stats?: UserStats;
+  /** How many people the filters leave. */
   shown: number;
   /** The suspended list's page, for its counts, while Suspended is chosen. */
   suspended?: SuspendedUsersPage;
@@ -62,9 +57,13 @@ export function PeopleToolbar({
     set({ [key]: value ? String(value) : undefined });
   const isSuspended = filters.status === "suspended";
 
-  const statusCount = (status: User["status"]) => users.filter((u) => u.status === status).length;
-  const roles = countBy(users.flatMap((u) => u.roles ?? []));
-  const departments = countBy(users.map(department));
+  const count = (value: number | undefined) => (stats ? ` · ${n(value ?? 0)}` : "");
+  const roles = (stats?.by_role ?? []).flatMap(({ role, count }) =>
+    role ? [{ role, count }] : [],
+  );
+  const departments = (stats?.by_department ?? []).flatMap(({ department, count }) =>
+    department ? [{ department, count }] : [],
+  );
   const reasonCount = (key: string) => suspended?.reasons.find((r) => r.key === key)?.count ?? 0;
   const riskCount = (key: string) => suspended?.risks.find((r) => r.key === key)?.count ?? 0;
 
@@ -137,7 +136,7 @@ export function PeopleToolbar({
         manual: n(suspended?.summary.manual ?? 0),
         policy: n(suspended?.summary.policy ?? 0),
       })
-    : t("people.filters.summary", { n: n(shown), total: n(users.length) });
+    : t("people.filters.summary", { n: n(shown), total: n(stats?.total ?? 0) });
 
   return (
     <div className="ppl-toolbar">
@@ -166,11 +165,11 @@ export function PeopleToolbar({
             { value: ANY, label: t("people.filters.anyStatus") },
             {
               value: "active",
-              label: `${t("people.filters.statuses.active")} · ${n(statusCount("active"))}`,
+              label: `${t("people.filters.statuses.active")}${count(stats?.active)}`,
             },
             {
               value: "suspended",
-              label: `${t("people.filters.statuses.suspended")} · ${n(statusCount("suspended"))}`,
+              label: `${t("people.filters.statuses.suspended")}${count(stats?.suspended)}`,
             },
           ]}
         />
@@ -225,9 +224,9 @@ export function PeopleToolbar({
               onValueChange={pick("role")}
               items={[
                 { value: ANY, label: t("people.filters.anyRole") },
-                ...roles.map(([role, count]) => ({
+                ...roles.map(({ role, count: held }) => ({
                   value: role,
-                  label: `${roleDisplayName(role)} · ${n(count)}`,
+                  label: `${roleDisplayName(role)}${count(held)}`,
                 })),
               ]}
             />
@@ -238,9 +237,9 @@ export function PeopleToolbar({
               onValueChange={pick("dept")}
               items={[
                 { value: ANY, label: t("people.filters.anyDepartment") },
-                ...departments.map(([name, count]) => ({
-                  value: name,
-                  label: `${name} · ${n(count)}`,
+                ...departments.map(({ department, count: members }) => ({
+                  value: department,
+                  label: `${department}${count(members)}`,
                 })),
               ]}
             />

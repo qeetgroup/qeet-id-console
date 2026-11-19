@@ -95,6 +95,7 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 | **Forms kit** (TanStack Form + `@qeetrix/react` fields, server field errors) | `src/platform/forms/app-form.tsx` |
 | Query client, 403 recapability | `src/platform/query/query-client.ts` |
 | Query devtools plugin (dev only) | `src/platform/query/query-devtools.tsx` |
+| A cursor-paged list, a page at a time (Users, Sync errors, Sync activity) | `src/platform/query/cursor-list.ts` |
 | Feature flags (declared in manifests; `CONSOLE_FLAGS_OFF`) | `src/platform/feature-flags/` |
 | Page chrome | each page's `PageHeader` (`@qeetrix/react/experimental`), with `PageBreadcrumb` / `PageTabs` (`src/modules/dashboard/components/frame/page-place.tsx`) |
 | Frame of the pages outside the console (sign-in to create-organization) | `src/platform/components/entry-shell.tsx`, `entry-shell.css` |

@@ -2,15 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import type { User } from "../api/users";
 import {
-  countBy,
   DAY_MS,
   department,
   growth,
   isAdmin,
   matches,
+  needsDirectory,
   needsLook,
   recency,
   sortPeople,
+  userQuery,
   usersListSearch,
 } from "../people-model";
 
@@ -113,13 +114,65 @@ describe("matches", () => {
   });
 });
 
-describe("countBy", () => {
-  it("counts each value, most first and then by name, leaving out blanks", () => {
-    expect(countBy(["Design", "Engineering", null, "Engineering", "Admin", undefined])).toEqual([
-      ["Engineering", 2],
-      ["Admin", 1],
-      ["Design", 1],
-    ]);
+describe("userQuery", () => {
+  it("asks the list API for each filter and the search", () => {
+    expect(
+      userQuery(
+        {
+          q: " priya ",
+          status: "active",
+          role: "Admin",
+          dept: "Design",
+          twostep: "off",
+          seen: "week",
+        },
+        null,
+      ),
+    ).toEqual({
+      q: "priya",
+      status: "active",
+      role: "Admin",
+      department: "Design",
+      mfa: "off",
+      last_seen: "week",
+    });
+  });
+
+  it("asks for each look the list API can say", () => {
+    expect(userQuery({ look: "dormant" }, null)).toEqual({ last_seen: "older" });
+    expect(userQuery({ look: "never" }, null)).toEqual({ last_seen: "never" });
+    expect(userQuery({ look: "unverified" }, null)).toEqual({ email_verified: false });
+    expect(userQuery({ look: "suspended" }, null)).toEqual({ status: "suspended" });
+  });
+
+  it("is null when a look and a filter can't both hold, so no one matches", () => {
+    expect(userQuery({ look: "dormant", seen: "today" }, null)).toBeNull();
+    expect(userQuery({ look: "suspended", status: "active" }, null)).toBeNull();
+    expect(userQuery({ look: "never", seen: "never" }, null)).toEqual({ last_seen: "never" });
+  });
+
+  it("asks for the table's order, leaving out the server's own, newest joined first", () => {
+    expect(userQuery({}, { column: "person", direction: "ascending" })).toEqual({
+      sort: "name",
+      order: "asc",
+    });
+    expect(userQuery({}, { column: "active", direction: "descending" })).toEqual({
+      sort: "last_seen",
+      order: "desc",
+    });
+    expect(userQuery({}, { column: "joined", direction: "ascending" })).toEqual({
+      sort: "created",
+      order: "asc",
+    });
+    expect(userQuery({}, { column: "joined", direction: "descending" })).toEqual({});
+  });
+});
+
+describe("needsDirectory", () => {
+  it("is for the two filters the list API doesn't have", () => {
+    expect(needsDirectory({ look: "admins-no-two-step" })).toBe(true);
+    expect(needsDirectory({ group: "none" })).toBe(true);
+    expect(needsDirectory({ look: "dormant", twostep: "off", q: "a" })).toBe(false);
   });
 });
 

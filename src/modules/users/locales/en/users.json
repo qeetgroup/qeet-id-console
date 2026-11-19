@@ -809,7 +809,7 @@
     "addUser": "Add user",
     "capped": {
       "title": "Showing the first {{n}} of {{total}} people",
-      "description": "Search, the filters and the counts above cover these people only."
+      "description": "The server doesn't filter by this yet, so the list works it out from the people it loaded."
     },
     "empty": {
       "filteredTitle": "No one matches",
@@ -849,8 +849,8 @@
       "people": "People",
       "activeAndNew": "{{active}} active · +{{n}} in the last 30 days",
       "activeNoneNew": "{{active}} active · no one new in 30 days",
-      "growthLabel": "People at the end of each month: {{from}} to {{to}} over {{months}} months",
-      "months": "{{months}} months",
+      "growthLabel": "People each day: {{from}} to {{to}} over the last {{days}} days",
+      "days": "{{days}} days",
       "twoStep": "Two-step verification",
       "percent": "{{n}}%",
       "twoStepNote": "{{n}} of {{total}} people · target {{target}}%",
@@ -953,7 +953,12 @@
       "retry": "Try again",
       "emptyTitle": "No one is suspended",
       "emptyDescription": "Everyone in this organisation can sign in."
-    }
+    },
+    "sortCapped": {
+      "title": "Sorted, the list shows the first {{n}} of {{total}} people",
+      "description": "Search or filter to narrow it, or sort by date joined, newest first, to page through everyone."
+    },
+    "exportCapped": "The export holds the first {{n}} people."
   },
   "invites": {
     "title": "Invitations",

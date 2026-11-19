@@ -226,6 +226,37 @@ function userViews(user, tenantId, tenant, view) {
   return undefined;
 }
 
+const LAST_SEEN = ["today", "week", "month", "older", "never"];
+
+/** Which of the list's last-seen buckets someone is in, with the server's edges. */
+function lastSeen(user) {
+  if (!user.last_seen_at) return "never";
+  const age = Date.now() - Date.parse(user.last_seen_at);
+  return age < DAY_MS ? "today" : age < 7 * DAY_MS ? "week" : age < 30 * DAY_MS ? "month" : "older";
+}
+
+const nameOf = (u) => (u.display_name || u.email).toLowerCase();
+const byName = (a, b) => nameOf(a).localeCompare(nameOf(b));
+const byLastSeen = (a, b) => Date.parse(a.last_seen_at ?? 0) - Date.parse(b.last_seen_at ?? 0);
+
+/** Whether a member is in what the members list's filters ask for, as the server reads them. */
+function listMatches(user, query) {
+  const get = (name) => query.get?.(name) || "";
+  const q = get("q").toLowerCase();
+  if (q && ![user.display_name, user.email, user.phone].some((f) => f?.toLowerCase().includes(q)))
+    return false;
+  if (get("status") && user.status !== get("status")) return false;
+  const role = get("role").toLowerCase();
+  if (role && !(user.roles ?? []).some((r) => r.toLowerCase() === role)) return false;
+  const dept = get("department").toLowerCase();
+  if (dept && (user.metadata?.department ?? "").toLowerCase() !== dept) return false;
+  if (get("mfa") && user.mfa_enabled !== (get("mfa") === "on")) return false;
+  if (get("email_verified") && !!user.email_verified_at !== (get("email_verified") === "true"))
+    return false;
+  if (get("last_seen") && lastSeen(user) !== get("last_seen")) return false;
+  return true;
+}
+
 /**
  * Returns the body for an organization read the pages make, or undefined to fall through to the
  * fake backend's generic answers. `principal` is the signed-in person.
@@ -234,16 +265,37 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
   const orgPath = `/v1/organizations/${tenantId}`;
   const people = members(tenantId, tenant);
 
-  if (path === "/v1/users") return { items: people, total: people.length };
+  if (path === "/v1/users") {
+    const found = people.filter((u) => listMatches(u, query));
+    const order = { name: byName, last_seen: byLastSeen }[query.get?.("sort") ?? ""];
+    if (order) found.sort((a, b) => order(a, b) * (query.get("order") === "desc" ? -1 : 1));
+    return { items: found, total: found.length };
+  }
   if (path === "/v1/users/stats") {
+    const count = (pick) => people.filter(pick).length;
+    const tally = (values) =>
+      [...values.reduce((m, v) => m.set(v, (m.get(v) ?? 0) + 1), new Map())].sort(
+        (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+      );
     return {
       total: people.length,
-      active: people.filter((u) => u.status === "active").length,
-      suspended: people.filter((u) => u.status === "suspended").length,
-      invited: people.filter((u) => u.status === "invited").length,
-      mfa_enabled: people.filter((u) => u.mfa_enabled).length,
-      mfa_missing: people.filter((u) => !u.mfa_enabled).length,
+      active: count((u) => u.status === "active"),
+      suspended: count((u) => u.status === "suspended"),
+      invited: count((u) => u.status === "invited"),
+      mfa_enabled: count((u) => u.mfa_enabled),
+      mfa_missing: count((u) => !u.mfa_enabled),
       new_last_30d: 2,
+      last_seen: Object.fromEntries(
+        LAST_SEEN.map((bucket) => [bucket, count((u) => lastSeen(u) === bucket)]),
+      ),
+      admins_without_mfa: count(
+        (u) => !u.mfa_enabled && (u.roles ?? []).some((r) => /^(owner|admin)$/i.test(r)),
+      ),
+      email_unverified: count((u) => !u.email_verified_at),
+      by_role: tally(people.flatMap((u) => u.roles ?? [])).map(([role, n]) => ({ role, count: n })),
+      by_department: tally(people.flatMap((u) => u.metadata?.department ?? [])).map(
+        ([department, n]) => ({ department, count: n }),
+      ),
     };
   }
   if (path === "/v1/users/trends") {
