@@ -22,9 +22,6 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      # A step's `if` can't read a secret, only whether it is set.
-      HAS_SERVER_TOKEN: ${{ secrets.QEET_ID_SERVER_READ_TOKEN != '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -42,23 +39,6 @@ jobs:
       # lint refuses an untyped one); this checks the copied documents and their generated types.
       - name: API contract
         run: bun run contract:check
-
-      # Whether the server's documents (its develop branch) moved on since the copy: a warning, never
-      # a failure, so a server change doesn't block this pull request. Runs once the repository has
-      # a read-only QEET_ID_SERVER_READ_TOKEN (contents: read on qeetgroup/qeet-id-server).
-      - name: Server contract drift
-        if: ${{ env.HAS_SERVER_TOKEN == 'true' }}
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: qeetgroup/qeet-id-server
-          ref: develop
-          token: ${{ secrets.QEET_ID_SERVER_READ_TOKEN }}
-          path: .server
-          sparse-checkout: api/openapi
-          persist-credentials: false
-      - name: Compare with the server's documents
-        if: ${{ env.HAS_SERVER_TOKEN == 'true' }}
-        run: bun run contract:drift .server
 
       - name: Compile (typecheck)
         run: bun run typecheck

@@ -266,7 +266,7 @@ bun run lint:boundaries  # the layering gate
 bun run size             # after a build: the gzip budgets in bundle-budgets.json
 bun run contract:sync    # copy the server's API documents (../qeet-id-server) and regenerate types
 bun run contract:check   # the copied contract and its generated types (CI)
-bun run contract:drift   # whether the server's documents (../qeet-id-server) moved on since the copy
+bun run contract:drift   # whether the server's documents (../qeet-id-server) moved on: before a sync or release
 bun run audit            # known high/critical vulnerabilities in the dependency tree
 ```
 
@@ -280,10 +280,10 @@ bun run audit            # known high/critical vulnerabilities in the dependency
 
 `ci.yml` runs one job, **Verify**, on pull requests into `develop` and `main` (a release reaches
 `main` by one); nothing runs on a plain push. Every action is pinned to a commit SHA
-and workflows default to read-only permissions. Verify (10 min): `contract:check` → (with a read-only `QEET_ID_SERVER_READ_TOKEN`) a warning
-when the server's documents moved on → typecheck → `check` (Biome:
+and workflows default to read-only permissions. Verify (10 min): `contract:check` → typecheck → `check` (Biome:
 formatting, lint, and the layer import rules) → `audit` (high and critical advisories) → gitleaks
-(secrets in the pull request's commits). **The unit
+(secrets in the pull request's commits; `.gitleaks.toml` allows only the copied API documents'
+sample values and their generated types). **The unit
 tests (`test:coverage`, thresholds in `vitest.config.ts`), the build, `size` (the bundle budgets;
 see Conventions, Bundle size) and the Playwright specs in `tests/e2e` (the session boundary, the
 Content-Security-Policy, the WCAG 2.2 AA accessibility scan with label-in-name and reflow at

@@ -3,7 +3,7 @@
 
 schema_version: 1
 
-context: {type: repository, level: L2, canonical: true, last_verified: "2026-10-23"}
+context: {type: repository, level: L2, canonical: true, last_verified: "2026-11-19"}
 
 inheritance:
   organization: {repository: qeetgroup/qeet-context, level: L0}
@@ -24,11 +24,11 @@ repository:
 runtime:
   language: TypeScript
   framework: TanStack Start   # ^1.168 + TanStack Router ^1.170
-  react: "^19.2.6"
+  react: "^19.3.1"
   bundler: vite ^8            # + nitro (Vercel Build Output)
   package_manager: bun@1.3.14
-  styling: tailwindcss ^4.3
-  design_system: "@qeetrix/ui 2.1.6 + @qeetrix/icons 1.0.12"   # pinned exactly
+  styling: token-only CSS (--qx-* from @qeetrix/tokens)   # Tailwind removed 2026-10-28
+  design_system: "@qeetrix/react 0.1.1 + @qeetrix/tokens 0.0.9 + @qeetrix/icons 1.0.12"   # pinned exactly; @qeetrix/ui banned
 
 architecture:
   style: layered-with-enforced-boundaries
@@ -71,16 +71,16 @@ commands:
   dev:   bun run dev          # vite dev on port 3002 (matches qeet-id-server APP_BASE_URL)
   build: bun run build
   test:  bun run test
-  coverage: bun run test:coverage   # thresholds in vitest.config.ts; CI runs this
-  e2e: bun run test:e2e             # build + Playwright: session, tenant isolation, CSP, accessibility (tests/e2e); CI job "Session E2E"
-  audit: bun run audit              # known high/critical vulnerabilities; one documented ignore (QTRX-4)
+  coverage: bun run test:coverage   # thresholds in vitest.config.ts; run locally, not in CI
+  e2e: bun run test:e2e             # build + Playwright: session, tenant isolation, CSP, accessibility (WCAG 2.2 AA, reflow at 320px, 40% longer words), keyboard (tests/e2e); run locally, not in CI
+  audit: bun run audit              # known high/critical vulnerabilities; no ignores
   check: bun run check
   boundaries: bun run lint:boundaries
 
 ci:
   workflows: [ci.yml, candidate.yml, deploy.yml]
   branches: "develop · main (production) · release/YEAR.MONTH.0 (monthly, fixes only) · hotfix/YEAR.MONTH.N — scripts/release/version.sh"
-  job: verify                 # name "Verify", on PRs into develop and main: typecheck, check, audit, gitleaks
+  job: verify                 # name "Verify", on PRs into develop and main: contract:check, typecheck, check, audit, gitleaks
   local_before_push: [test:coverage, build, size, test:e2e]   # not repeated in CI
   dependency_updates: .github/dependabot.yml (bun, github-actions, docker; monthly into develop; 3-day cooldown)
   actions_pinned_to_sha: true
