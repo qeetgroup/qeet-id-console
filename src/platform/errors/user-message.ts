@@ -82,6 +82,9 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.MFA_FACTOR_LIMIT]: "errors:code.mfaFactorLimit",
   [ERROR_CODES.MFA_DELIVERY_UNAVAILABLE]: "errors:code.mfaDeliveryUnavailable",
   [ERROR_CODES.MFA_DELIVERY_FAILED]: "errors:code.mfaDeliveryFailed",
+  // 429 and 502 -> `api`, whose "Something went wrong" doesn't say that another way still works.
+  [ERROR_CODES.MFA_PUSH_LIMITED]: "errors:code.mfaPushLimited",
+  [ERROR_CODES.MFA_PUSH_DELIVERY_FAILED]: "errors:code.mfaPushDeliveryFailed",
   [ERROR_CODES.AUTH_RISK_VERIFICATION_UNAVAILABLE]: "errors:code.authRiskVerificationUnavailable",
   [ERROR_CODES.RBAC_ROLE_NAME_EXISTS]: "errors:code.rbacRoleNameExists",
   // 403 -> `authz`, whose fallback says a permission is missing; the rule is about giving one.

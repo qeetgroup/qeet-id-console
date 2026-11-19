@@ -25,7 +25,7 @@ import {
   useRegenerateRecoveryCodes,
   useTotpStatus,
 } from "../mfa";
-import { startMfaEnrollment } from "../mfa-sign-in";
+import { sendPushRequest, startMfaEnrollment } from "../mfa-sign-in";
 import { listPasskeys, usePasskeys } from "../passkeys";
 import { listSessions, useSessions } from "../sessions";
 import { createOidcClient, rotateOidcClientSecret, useCreateOidcClient } from "../oidc-clients";
@@ -164,6 +164,18 @@ describe("MFA", () => {
 
     respond({ secret: "JBSWY3DPEHPK3PXP" });
     await expect(startMfaEnrollment("mfa-token")).rejects.toMatchObject(MISMATCH);
+  });
+
+  it("sends a push request with the number the phone asks for, and refuses one without it", async () => {
+    const expiresAt = "2026-11-20T10:02:00Z";
+    respond({ expires_at: expiresAt, number: 47 });
+    await expect(sendPushRequest("mfa-token")).resolves.toEqual({
+      expires_at: expiresAt,
+      number: 47,
+    });
+
+    respond({ expires_at: expiresAt });
+    await expect(sendPushRequest("mfa-token")).rejects.toMatchObject(MISMATCH);
   });
 });
 

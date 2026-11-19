@@ -99,6 +99,10 @@ export const ERROR_CODES = {
   MFA_FACTOR_LIMIT: "mfa.factor_limit",
   MFA_DELIVERY_UNAVAILABLE: "mfa.delivery_unavailable",
   MFA_DELIVERY_FAILED: "mfa.delivery_failed",
+  MFA_PUSH_PENDING: "mfa.push_pending", // 409 while the phone hasn't answered; costs no attempt
+  MFA_PUSH_CHALLENGE_EXPIRED: "mfa.push_challenge_expired", // 410: the phone didn't answer in time
+  MFA_PUSH_LIMITED: "mfa.push_limited", // 429: too many requests, or denials, in a row
+  MFA_PUSH_DELIVERY_FAILED: "mfa.push_delivery_failed", // 502: it reached none of the phones
   // a risky sign-in that cannot be confirmed (no second factor, no verified email)
   AUTH_RISK_VERIFICATION_UNAVAILABLE: "auth.risk_verification_unavailable",
   // Bulk user import: a whole batch refused. 422s, whose `validation` fallback names no fix.

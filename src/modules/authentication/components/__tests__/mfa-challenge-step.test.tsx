@@ -8,10 +8,12 @@ import "@/i18n";
 
 import { type MfaChallenge, useCompleteMfaLogin } from "@/modules/authentication/api/flows";
 import {
-  completeWithPush,
+  awaitPushApproval,
   mfaPasskeyProof,
   sendMfaCode,
+  sendPushRequest,
 } from "@/modules/authentication/api/mfa-sign-in";
+import { ApiError } from "@/platform/errors/api-error";
 import { MfaChallengeStep } from "../mfa-challenge-step";
 
 const navigate = vi.fn();
@@ -22,10 +24,12 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 vi.mock("@/modules/authentication/api/flows", () => ({ useCompleteMfaLogin: vi.fn() }));
-vi.mock("@/modules/authentication/api/mfa-sign-in", () => ({
-  completeWithPush: vi.fn(),
+vi.mock("@/modules/authentication/api/mfa-sign-in", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/authentication/api/mfa-sign-in")>()),
+  awaitPushApproval: vi.fn(),
   mfaPasskeyProof: vi.fn(),
   sendMfaCode: vi.fn(),
+  sendPushRequest: vi.fn(),
   startMfaEnrollment: vi.fn(),
 }));
 
@@ -55,6 +59,16 @@ function challenge(factors: { type: string; id?: string; destination?: string }[
     methods: factors.map((f) => f.type) as MfaChallenge["methods"],
     factors: factors as never,
   };
+}
+
+/** A push request the server sent: its number, ending this many seconds from now. */
+function pushRequest(number: number, seconds = 110) {
+  return { number, expires_at: new Date(Date.now() + seconds * 1000).toISOString() };
+}
+
+/** Opens Approve on your phone from the other ways to confirm. */
+function approveOnPhone() {
+  fireEvent.click(screen.getByRole("button", { name: /Approve on your phone/ }));
 }
 
 /** Pastes a code into the first of the six slots, as from the app. */
@@ -112,20 +126,80 @@ describe("a sign-in's second-factor challenge", () => {
     await waitFor(() => expect(mutate).toHaveBeenCalledWith({ mfa_token: "tok", ...proof }));
   });
 
-  it("waits for a phone approval, and stops waiting on Cancel", async () => {
-    vi.mocked(completeWithPush).mockImplementation(
-      (_token: string, signal?: AbortSignal) =>
-        new Promise((_, reject) =>
-          signal?.addEventListener("abort", () =>
-            reject(Object.assign(new Error("aborted"), { name: "AbortError" })),
-          ),
-        ),
+  it("shows the number for the phone as soon as the request is sent, then signs in on approval", async () => {
+    vi.mocked(sendPushRequest).mockResolvedValue(pushRequest(47));
+    let approve!: (approved: boolean) => void;
+    vi.mocked(awaitPushApproval).mockReturnValue(new Promise((resolve) => (approve = resolve)));
+    render(<MfaChallengeStep challenge={challenge([{ type: "push" }])} />);
+    approveOnPhone();
+
+    const number = await screen.findByRole("img", { name: "Number to type: 47" });
+    expect(number.textContent).toContain("47");
+    expect(screen.getByText(/^Waiting for your phone · ends in 1:(4\d|50)$/)).toBeTruthy();
+    expect(sendPushRequest).toHaveBeenCalledWith("tok");
+    expect(navigate).not.toHaveBeenCalled();
+
+    approve(true);
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/" }));
+  });
+
+  it("says when the request ended unanswered, and sends a new one", async () => {
+    vi.mocked(sendPushRequest)
+      .mockResolvedValueOnce(pushRequest(47))
+      .mockResolvedValueOnce(pushRequest(82));
+    vi.mocked(awaitPushApproval)
+      .mockRejectedValueOnce(new ApiError(410, "mfa.push_challenge_expired", ""))
+      .mockReturnValueOnce(new Promise(() => {}));
+    render(<MfaChallengeStep challenge={challenge([{ type: "push" }])} />);
+    approveOnPhone();
+
+    await screen.findByRole("heading", { level: 1, name: "The request ended" });
+    expect(screen.getByText(/didn’t answer in time/)).toBeTruthy();
+    expect(screen.queryByRole("img", { name: /Number to type/ })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Send a new request" }));
+    await screen.findByRole("img", { name: "Number to type: 82" });
+    expect(sendPushRequest).toHaveBeenCalledTimes(2);
+  });
+
+  it("says when the request was denied on the phone", async () => {
+    vi.mocked(sendPushRequest).mockResolvedValue(pushRequest(47));
+    vi.mocked(awaitPushApproval).mockRejectedValue(new ApiError(401, "mfa.code_invalid", ""));
+    render(<MfaChallengeStep challenge={challenge([{ type: "push" }])} />);
+    approveOnPhone();
+
+    await screen.findByRole("heading", { level: 1, name: "You denied this sign-in" });
+    expect(screen.getByRole("button", { name: "Send a new request" })).toBeTruthy();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("explains a request that couldn't be sent in its own words, never the server's", async () => {
+    vi.mocked(sendPushRequest).mockRejectedValue(
+      new ApiError(429, "mfa.push_limited", "internal detail"),
     );
     render(<MfaChallengeStep challenge={challenge([{ type: "push" }])} />);
-    fireEvent.click(screen.getByRole("button", { name: /Approve on your phone/ }));
-    await screen.findByText("Approve the sign-in on your phone");
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    approveOnPhone();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("Too many requests were sent to your phone.");
+    expect(alert.textContent).not.toContain("internal detail");
+    expect(awaitPushApproval).not.toHaveBeenCalled();
+  });
+
+  it("stops waiting for the phone on Try another way", async () => {
+    vi.mocked(sendPushRequest).mockResolvedValue(pushRequest(47));
+    let signal: AbortSignal | undefined;
+    vi.mocked(awaitPushApproval).mockImplementation((_token, s) => {
+      signal = s;
+      return new Promise(() => {});
+    });
+    render(<MfaChallengeStep challenge={challenge([{ type: "push" }])} />);
+    approveOnPhone();
+    await screen.findByRole("img", { name: "Number to type: 47" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Try another way" }));
     await screen.findByRole("button", { name: /Approve on your phone/ });
+    expect(signal?.aborted).toBe(true);
     expect(screen.queryByRole("alert")).toBeNull();
   });
 

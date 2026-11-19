@@ -44,6 +44,8 @@
     "mfaFactorLimit": "You've set up as many email and SMS codes as an account can have. Remove one to add another.",
     "mfaDeliveryUnavailable": "Codes can't be sent this way right now. Use another way to verify.",
     "mfaDeliveryFailed": "We couldn't send your code. Try again in a moment, or use another way to verify.",
+    "mfaPushLimited": "Too many requests were sent to your phone. Wait a while, or use another way to verify.",
+    "mfaPushDeliveryFailed": "We couldn't reach your phone. Try again, or use another way to verify.",
     "authRiskVerificationUnavailable": "We couldn't confirm this sign-in. Ask your administrator for help.",
     "rbacTargetIsOwner": "Only an owner of the organisation can change an owner's account.",
     "rbacTargetOutranksCaller": "This person holds permissions you don't, so you can't change their account. Ask someone who holds them.",
