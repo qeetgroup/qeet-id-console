@@ -12,7 +12,7 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 vi.mock("@/modules/dashboard", () => ({ PageBreadcrumb: () => null }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
@@ -38,11 +38,11 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
 
 import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
-import type { LoginDomainStatus, TenantDomain } from "../api/domains";
+import type { LoginDomainStatus, OrganizationDomain } from "../api/domains";
 import { DomainsPage } from "../components/settings/domains-page";
 import { checkDomain, loginRecords } from "../components/settings/domains-model";
 
-const verified: TenantDomain = {
+const verified: OrganizationDomain = {
   id: "d-1",
   domain: "acme.test",
   verification_token: "qeet-verify-1",
@@ -53,16 +53,15 @@ const verified: TenantDomain = {
   created_at: "2026-09-01T00:00:00Z",
   sso_enabled: true,
   jit_enabled: false,
-  is_default: true,
   status: "verified",
 };
-const pending: TenantDomain = {
-  ...verified,
+const { verified_at: _verifiedAt, ...unverified } = verified;
+const pending: OrganizationDomain = {
+  ...unverified,
   id: "d-2",
   domain: "acme.dev",
   dns_record_name: "_qeet-verification.acme.dev",
   dns_record_value: "qeet-verify-2",
-  verified_at: null,
   last_checked_at: "2026-10-01T00:00:00Z",
   last_error: "DNS TXT record not found",
   status: "attention",
@@ -85,15 +84,16 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1") return { id: "t-1", name: "Acme" };
-    if (path === "/v1/tenants/t-1/domains" && method === "GET")
+    if (path === "/v1/organizations/t-1") return { id: "t-1", name: "Acme" };
+    if (path === "/v1/organizations/t-1/domains" && method === "GET")
       return { items: [verified, pending] };
-    if (path === "/v1/tenants/t-1/domains" && method === "POST")
+    if (path === "/v1/organizations/t-1/domains" && method === "POST")
       return { ...pending, id: "d-3", domain: "acme.io", status: "pending", last_error: "" };
-    if (path === "/v1/tenants/t-1/domains/d-1" && method === "DELETE") return undefined;
-    if (path === "/v1/tenants/t-1/domains/d-2/verify") return { ...pending, status: "verified" };
-    if (path === "/v1/tenants/t-1/login-domain") return state.login;
-    if (path === "/v1/tenants/t-1/branding")
+    if (path === "/v1/organizations/t-1/domains/d-1" && method === "DELETE") return undefined;
+    if (path === "/v1/organizations/t-1/domains/d-2/verify")
+      return { ...pending, status: "verified" };
+    if (path === "/v1/organizations/t-1/login-domain") return state.login;
+    if (path === "/v1/organizations/t-1/branding")
       return method === "PUT" ? options?.body : state.branding;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
@@ -140,7 +140,7 @@ describe("Settings › Domains › email domains", () => {
     fireEvent.click(screen.getByRole("button", { name: "Check now" }));
     await waitFor(() =>
       expect(writes()).toEqual([
-        { path: "/v1/tenants/t-1/domains/d-2/verify", method: "POST", body: undefined },
+        { path: "/v1/organizations/t-1/domains/d-2/verify", method: "POST", body: undefined },
       ]),
     );
     expect(sensitiveCalls).toEqual([]);
@@ -155,7 +155,7 @@ describe("Settings › Domains › email domains", () => {
 
     await waitFor(() =>
       expect(writes()).toEqual([
-        { path: "/v1/tenants/t-1/domains", method: "POST", body: { domain: "acme.io" } },
+        { path: "/v1/organizations/t-1/domains", method: "POST", body: { domain: "acme.io" } },
       ]),
     );
     expect(sensitiveCalls[0]).toMatchObject({ actionLabel: "Add a domain" });
@@ -186,7 +186,7 @@ describe("Settings › Domains › email domains", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Remove domain" }));
     await waitFor(() =>
       expect(writes()).toEqual([
-        { path: "/v1/tenants/t-1/domains/d-1", method: "DELETE", body: undefined },
+        { path: "/v1/organizations/t-1/domains/d-1", method: "DELETE", body: undefined },
       ]),
     );
   });
@@ -212,7 +212,7 @@ describe("Settings › Domains › sign-in address", () => {
     await waitFor(() =>
       expect(writes()).toEqual([
         {
-          path: "/v1/tenants/t-1/branding",
+          path: "/v1/organizations/t-1/branding",
           method: "PUT",
           body: { tenant_id: "t-1", primary_color: "#112233", custom_domain: "auth.acme.test" },
         },

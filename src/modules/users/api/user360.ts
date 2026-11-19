@@ -2,96 +2,78 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import type { ActivityEvent } from "@/modules/activity";
-import { ApiError, api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { assured, strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import { ApiError } from "@/platform/api/client";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { userKeys } from "./keys";
 
+// The user record and its views: the document leaves their fields optional, the server always
+// sends them (user.go, user360.go), so each view is held to the fields its page reads.
+export const userRecord = assured<Answer<"/v1/users/{id}">>()(
+  "id",
+  "email",
+  "status",
+  "created_at",
+  "updated_at",
+);
+const securitySummary = assured<Answer<"/v1/users/{id}/security">>()(
+  "mfa_required",
+  "mfa_enabled",
+  "totp_enabled",
+  "otp_factors",
+  "push_devices",
+  "passkeys",
+  "recovery_codes_remaining",
+  "password_set",
+  "active_sessions",
+  "distinct_devices",
+);
+const named = z.object({ id: z.string(), name: z.string(), description: z.string() });
+const accessSummary = strictly<Answer<"/v1/users/{id}/access">>()(
+  z.object({
+    organization: z.object({ id: z.string(), name: z.string(), slug: z.string() }).optional(),
+    roles: z.array(named),
+    groups: z.array(named),
+    applications_count: z.number(),
+    policies_count: z.number(),
+    permissions_direct: z.number(), // distinct, from directly assigned roles
+    permissions_inherited: z.number(), // only through group membership: total − direct
+    permissions_total: z.number(), // distinct effective permissions: direct ∪ inherited
+  }),
+);
+const userSessions = strictly<Answer<"/v1/users/{id}/sessions">>()(
+  z.object({
+    items: z.array(
+      z.object({
+        id: z.string(),
+        ip: z.string().nullable(),
+        user_agent: z.string().nullable(),
+        created_at: z.string(),
+        last_seen_at: z.string(),
+      }),
+    ),
+  }),
+);
+
 /** The full user record from GET /v1/users/{id}. */
-export interface UserDetail {
-  id: string;
-  tenant_id: string;
-  email: string;
-  email_verified_at?: string | null;
-  phone?: string | null;
-  phone_verified_at?: string | null;
-  display_name?: string | null;
-  avatar_url?: string | null;
-  status: "active" | "invited" | "suspended" | "deleted";
-  metadata?: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface SecuritySummary {
-  mfa_required: boolean;
-  mfa_enabled: boolean;
-  totp_enabled: boolean;
-  otp_factors: number;
-  push_devices: number;
-  passkeys: number;
-  passkey_last_used_at?: string | null;
-  recovery_codes_remaining: number;
-  password_set: boolean;
-  password_changed_at?: string | null;
-  active_sessions: number;
-  distinct_devices: number;
-}
-
-const userSessionSchema = z.object({
-  id: z.string(),
-  ip: z.string().nullable(),
-  user_agent: z.string().nullable(),
-  created_at: z.string(),
-  last_seen_at: z.string(),
-});
-export type UserSession = z.infer<typeof userSessionSchema>;
-
-const userSessionsSchema = z.object({ items: z.array(userSessionSchema) });
-
-export interface RoleInfo {
-  id: string;
-  name: string;
-  description: string;
-}
-
-export interface GroupInfo {
-  id: string;
-  name: string;
-  description: string;
-}
-
-export interface OrganizationInfo {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-export interface AccessSummary {
-  organization: OrganizationInfo | null;
-  roles: RoleInfo[];
-  groups: GroupInfo[];
-  applications_count: number;
-  policies_count: number;
-  permissions_direct: number; // distinct, from directly assigned roles
-  permissions_inherited: number; // only through group membership: total − direct
-  permissions_total: number; // distinct effective permissions: direct ∪ inherited
-}
-
-export interface SocialIdentity {
-  id: string;
-  user_id: string;
-  tenant_id: string;
-  provider: string;
-  subject: string;
-  email?: string | null;
-  linked_at: string;
-}
+export type UserDetail = z.output<typeof userRecord>;
+/** How the person signs in: factors, passkeys, recovery codes, password and sessions. */
+export type SecuritySummary = z.output<typeof securitySummary>;
+export type UserSession = z.output<typeof userSessions>["items"][number];
+/** What the person can reach: their organisation, roles, groups and the counts beneath. */
+export type AccessSummary = z.output<typeof accessSummary>;
+export type RoleInfo = AccessSummary["roles"][number];
+export type GroupInfo = AccessSummary["groups"][number];
+export type SocialIdentity = Answer<"/v1/users/{userID}/social/identities">["items"][number];
 
 export function useUserSecurity(userId: string, enabled = true) {
   return useQuery({
-    queryKey: userKeys.view(useTenantId(), userId, "security"),
-    queryFn: () => api<SecuritySummary>(`/v1/users/${userId}/security`),
+    queryKey: userKeys.view(useOrganizationId(), userId, "security"),
+    queryFn: () =>
+      backend.get("/v1/users/{id}/security", { path: { id: userId }, schema: securitySummary }),
     enabled: enabled && !!userId,
     staleTime: 30_000,
   });
@@ -99,8 +81,9 @@ export function useUserSecurity(userId: string, enabled = true) {
 
 export function useUserSessions(userId: string, enabled = true) {
   return useQuery({
-    queryKey: userKeys.view(useTenantId(), userId, "sessions"),
-    queryFn: () => api(`/v1/users/${userId}/sessions`, { schema: userSessionsSchema }),
+    queryKey: userKeys.view(useOrganizationId(), userId, "sessions"),
+    queryFn: () =>
+      backend.get("/v1/users/{id}/sessions", { path: { id: userId }, schema: userSessions }),
     enabled: enabled && !!userId,
     staleTime: 15_000,
   });
@@ -108,8 +91,9 @@ export function useUserSessions(userId: string, enabled = true) {
 
 export function useUserAccess(userId: string, enabled = true) {
   return useQuery({
-    queryKey: userKeys.view(useTenantId(), userId, "access"),
-    queryFn: () => api<AccessSummary>(`/v1/users/${userId}/access`),
+    queryKey: userKeys.view(useOrganizationId(), userId, "access"),
+    queryFn: () =>
+      backend.get("/v1/users/{id}/access", { path: { id: userId }, schema: accessSummary }),
     enabled: enabled && !!userId,
     staleTime: 30_000,
   });
@@ -120,14 +104,16 @@ export function useUserAccess(userId: string, enabled = true) {
  * through groups. A 403 (no role.read) or 404 yields an empty list rather than an error.
  */
 export function useUserPermissions(userId: string) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: userKeys.view(tenantId, userId, "permissions"),
+    queryKey: userKeys.view(organizationId, userId, "permissions"),
     queryFn: async (): Promise<{ permissions: string[] }> => {
       try {
-        return await api<{ permissions: string[] }>(
-          `/v1/users/${userId}/tenants/${tenantId}/permissions`,
+        const answer = await backend.get(
+          "/v1/users/{userID}/organizations/{organizationID}/permissions",
+          { path: { userID: userId, organizationID: organizationId ?? "" } },
         );
+        return { permissions: answer.permissions ?? [] };
       } catch (err) {
         if (err instanceof ApiError && (err.status === 403 || err.status === 404)) {
           return { permissions: [] };
@@ -135,7 +121,7 @@ export function useUserPermissions(userId: string) {
         throw err;
       }
     },
-    enabled: !!tenantId && !!userId,
+    enabled: !!organizationId && !!userId,
     staleTime: 30_000,
   });
 }
@@ -143,10 +129,12 @@ export function useUserPermissions(userId: string) {
 /** Fetches the user's linked social identities; a 403 or 404 yields an empty list. */
 export function useUserSocialIdentities(userId: string) {
   return useQuery({
-    queryKey: userKeys.view(useTenantId(), userId, "identities"),
+    queryKey: userKeys.view(useOrganizationId(), userId, "identities"),
     queryFn: async (): Promise<{ items: SocialIdentity[] }> => {
       try {
-        return await api<{ items: SocialIdentity[] }>(`/v1/users/${userId}/social/identities`);
+        return await backend.get("/v1/users/{userID}/social/identities", {
+          path: { userID: userId },
+        });
       } catch (err) {
         if (err instanceof ApiError && (err.status === 403 || err.status === 404)) {
           return { items: [] };
@@ -165,12 +153,10 @@ export function useUserSocialIdentities(userId: string) {
  */
 export function useUserRecentActivity(userId: string, limit = 6, enabled = true) {
   return useQuery({
-    queryKey: [...userKeys.view(useTenantId(), userId, "recent-activity"), limit],
+    queryKey: [...userKeys.view(useOrganizationId(), userId, "recent-activity"), limit],
     queryFn: async (): Promise<{ events: ActivityEvent[] }> => {
       try {
-        return await api<{ events: ActivityEvent[] }>("/v1/activity", {
-          query: { subject: userId, limit },
-        });
+        return await backend.get("/v1/activity", { query: { subject: userId, limit } });
       } catch (err) {
         if (err instanceof ApiError && (err.status === 404 || err.status === 503)) {
           return { events: [] };
@@ -185,30 +171,27 @@ export function useUserRecentActivity(userId: string, limit = 6, enabled = true)
 
 /** Signs the user out everywhere by revoking all their live sessions; needs user.write. */
 export function useRevokeAllUserSessions() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) =>
-      api<{ revoked: number }>(`/v1/users/${userId}/sessions/revoke-all`, { method: "POST" }),
+      backend.post("/v1/users/{id}/sessions/revoke-all", { path: { id: userId } }),
     // It also forgets their remembered devices and ends their app sign-ins: every view of them.
     onSuccess: (_res, userId) =>
-      void qc.invalidateQueries({ queryKey: userKeys.user(tenantId, userId) }),
+      void qc.invalidateQueries({ queryKey: userKeys.user(organizationId, userId) }),
     meta: { successMessage: "users:toast.allSessionsRevoked" },
   });
 }
 
 /** Sets whether this user must use MFA; needs user.write. */
 export function useSetMfaRequired() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, required }: { userId: string; required: boolean }) =>
-      api<{ mfa_required: boolean }>(`/v1/users/${userId}/mfa-required`, {
-        method: "PUT",
-        body: { required },
-      }),
+      backend.put("/v1/users/{id}/mfa-required", { path: { id: userId }, body: { required } }),
     onSuccess: (_res, { userId }) => {
-      void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "security") });
+      void qc.invalidateQueries({ queryKey: userKeys.view(organizationId, userId, "security") });
     },
     meta: { successMessage: "users:toast.mfaRequirementUpdated" },
   });
@@ -221,11 +204,7 @@ export function useSetMfaRequired() {
 export function useSendPasswordReset() {
   return useMutation({
     mutationFn: (email: string) =>
-      api<void>("/v1/auth/forgot-password", {
-        method: "POST",
-        body: { email },
-        anonymous: true,
-      }),
+      backend.post("/v1/auth/forgot-password", { body: { email }, anonymous: true }),
     meta: { successMessage: "users:toast.passwordResetEmailSent" },
   });
 }

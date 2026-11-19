@@ -4,56 +4,78 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { userKeys } from "@/modules/users";
-import { api } from "@/platform/api/client";
-import { useTenantId, useUserId } from "@/platform/auth/session";
+import { assuredItems } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer, Schemas } from "@/platform/api/contract";
+import { useOrganizationId, useUserId } from "@/platform/auth/session";
+import { isOneOf } from "@/shared/utils/one-of";
 import { authKeys } from "./keys";
 
-/** A phone that can approve sign-ins. */
-export interface PushDevice {
-  id: string;
-  name: string;
-  platform: "ios" | "android";
-  created_at: string; // When it was linked (or last linked again)
-  last_seen_at: string;
-}
+/** A phone that can approve sign-ins: when it was linked (or last linked again), and last seen. */
+export type PushDevice = Schemas<"access">["PushDevice"];
+
+const PLATFORMS = ["ios", "android"] as const;
+
+/** A phone's platform as the console knows it; the document leaves it a free string. */
+export const pushPlatform = (platform: string): (typeof PLATFORMS)[number] | "other" =>
+  isOneOf(PLATFORMS, platform) ? platform : "other";
 
 /** Whose phones: the caller's own, or a member's (an administrator's view). */
 export type PushDeviceScope = { kind: "self" } | { kind: "member"; userId: string };
 
-function devicesPath(scope: PushDeviceScope): string {
-  return scope.kind === "self" ? "/v1/mfa/push/devices" : `/v1/users/${scope.userId}/push-devices`;
+// The server always sends these (internal/access/mfa); the member list's document marks them
+// optional (QTID-1063).
+const memberDevices = assuredItems<Answer<"/v1/users/{id}/push-devices">>()(
+  "id",
+  "name",
+  "platform",
+  "created_at",
+  "last_seen_at",
+);
+
+function readDevices(scope: PushDeviceScope): Promise<{ items: PushDevice[] }> {
+  return scope.kind === "self"
+    ? backend.get("/v1/mfa/push/devices")
+    : backend.get("/v1/users/{id}/push-devices", {
+        path: { id: scope.userId },
+        schema: memberDevices,
+      });
 }
 
 // A member's phones sit with the rest of that person's views.
-function devicesKey(tenantId: string | null, scope: PushDeviceScope) {
+function devicesKey(organizationId: string | null, scope: PushDeviceScope) {
   return scope.kind === "self"
     ? authKeys.pushDevices()
-    : [...userKeys.user(tenantId, scope.userId), "push-devices"];
+    : [...userKeys.user(organizationId, scope.userId), "push-devices"];
 }
 
 /** The linked phones in scope. */
 export function usePushDevices(scope: PushDeviceScope) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: devicesKey(tenantId, scope),
-    queryFn: () => api<{ items: PushDevice[] }>(devicesPath(scope)),
+    queryKey: devicesKey(organizationId, scope),
+    queryFn: () => readDevices(scope),
   });
 }
 
 /** Removes a linked phone: it stops approving sign-ins at once. */
 export function useRemovePushDevice(scope: PushDeviceScope) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const ownId = useUserId();
   const qc = useQueryClient();
   const userId = scope.kind === "member" ? scope.userId : ownId;
   return useMutation({
     mutationFn: (deviceId: string) =>
-      api<void>(`${devicesPath(scope)}/${deviceId}`, { method: "DELETE" }),
+      scope.kind === "self"
+        ? backend.delete("/v1/mfa/push/devices/{id}", { path: { id: deviceId } })
+        : backend.delete("/v1/users/{id}/push-devices/{deviceID}", {
+            path: { id: scope.userId, deviceID: deviceId },
+          }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: devicesKey(tenantId, scope) });
+      void qc.invalidateQueries({ queryKey: devicesKey(organizationId, scope) });
       // The member page counts linked phones in its security summary.
       if (userId)
-        void qc.invalidateQueries({ queryKey: userKeys.view(tenantId, userId, "security") });
+        void qc.invalidateQueries({ queryKey: userKeys.view(organizationId, userId, "security") });
     },
     meta: { silent: true },
   });
@@ -79,8 +101,7 @@ export function pairingLink(code: string): string {
 /** Asks for a pairing code for the caller's own account (needs a step-up). */
 export function useStartPairing() {
   return useMutation({
-    mutationFn: () =>
-      api<PushPairing & { code: string }>("/v1/mfa/push/pairing", { method: "POST" }),
+    mutationFn: () => backend.post("/v1/mfa/push/pairing"),
     meta: { silent: true },
   });
 }
@@ -90,7 +111,7 @@ export function usePairingStatus(id: string | null) {
   return useQuery({
     queryKey: authKeys.pushPairing(id),
     enabled: id !== null,
-    queryFn: () => api<PushPairing>(`/v1/mfa/push/pairing/${id}`),
+    queryFn: () => backend.get("/v1/mfa/push/pairing/{id}", { path: { id: id ?? "" } }),
     refetchInterval: (query) => (query.state.data?.status === "pending" ? 2000 : false),
     meta: { silent: true },
   });
@@ -99,7 +120,7 @@ export function usePairingStatus(id: string | null) {
 /** Stops an unused pairing code working, as when its dialog closes. */
 export function useWithdrawPairing() {
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/mfa/push/pairing/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => backend.delete("/v1/mfa/push/pairing/{id}", { path: { id } }),
     meta: { silent: true },
   });
 }

@@ -25,11 +25,11 @@ export function useConsoleContext(): ConsoleContext {
     );
     return {
       route: { pathname, title: nav.title, group: nav.group },
-      tenantId: access.tenantId,
+      organizationId: access.organizationId,
       userId: access.userId,
       capabilities,
       selection: published.selection,
       filters: published.filters,
     };
-  }, [pathname, navGroups, access.permissions, access.tenantId, access.userId, published]);
+  }, [pathname, navGroups, access.permissions, access.organizationId, access.userId, published]);
 }

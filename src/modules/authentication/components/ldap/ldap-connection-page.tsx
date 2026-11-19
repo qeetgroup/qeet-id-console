@@ -54,7 +54,7 @@ import {
   useDirectoryEvents,
 } from "@/modules/directory";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { LdapDrawer } from "./ldap-drawer";
 import { LdapHowItWorks } from "./ldap-how-it-works";
@@ -124,8 +124,8 @@ function LdapRecord({
   const { t } = useTranslation("connections");
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((o) => o.id === tenantId)?.name ?? t("scim.yourOrg");
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((o) => o.id === organizationId)?.name ?? t("scim.yourOrg");
   const actions = useLdapActions();
   const [editing, setEditing] = useState(false);
 

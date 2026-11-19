@@ -10,18 +10,18 @@ const SIGNED_OUT: PublicSession = {
   expiresAt: null,
   sessionId: null,
   userId: null,
-  tenantId: null,
+  organizationId: null,
   version: 0,
   impersonationActor: null,
 };
 
-function session(userId: string, tenantId = "tenant-1"): PublicSession {
+function session(userId: string, organizationId = "tenant-1"): PublicSession {
   return {
     isAuthenticated: true,
     expiresAt: "2030-01-01T00:00:00Z",
     sessionId: `session-${userId}`,
     userId,
-    tenantId,
+    organizationId,
     version: 1,
     impersonationActor: null,
   };

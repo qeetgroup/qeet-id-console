@@ -11,14 +11,14 @@ vi.mock("@/platform/api/server-proxy", () => ({
   refreshServerSessionNow: vi.fn(),
 }));
 
-import { switchToTenant } from "../flows";
+import { switchToOrganization } from "../flows";
 
 const SWITCHED: PublicSession = {
   isAuthenticated: true,
   expiresAt: "2026-10-23T09:15:00Z",
   sessionId: "7a6b5c4d-3e2f-4a1b-9c8d-7e6f5a4b3c2d",
   userId: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
-  tenantId: "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+  organizationId: "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
   version: 1,
   impersonationActor: null,
 };
@@ -34,26 +34,26 @@ function respond(data: unknown) {
 
 beforeEach(() => proxyApiRequest.mockReset());
 
-describe("switchToTenant", () => {
+describe("switchToOrganization", () => {
   it("accepts the session metadata the BFF passes on once it has kept the tokens", async () => {
     respond({
       token_type: "Bearer",
       expires_at: "2026-10-23T09:15:00Z",
       session_id: SWITCHED.sessionId,
       user_id: SWITCHED.userId,
-      tenant_id: SWITCHED.tenantId,
+      organization_id: SWITCHED.organizationId,
     });
-    await expect(switchToTenant(SWITCHED.tenantId as string)).resolves.toBeUndefined();
+    await expect(switchToOrganization(SWITCHED.organizationId as string)).resolves.toBeUndefined();
     expect(proxyApiRequest.mock.calls[0]?.[0].data).toMatchObject({
-      path: "/v1/auth/switch-tenant",
+      path: "/v1/auth/switch-organization",
       method: "POST",
-      body: { tenant_id: SWITCHED.tenantId },
+      body: { organization_id: SWITCHED.organizationId },
     });
   });
 
   it("fails closed when the response names no organization", async () => {
     respond({ session_id: SWITCHED.sessionId, user_id: SWITCHED.userId });
-    await expect(switchToTenant(SWITCHED.tenantId as string)).rejects.toMatchObject({
+    await expect(switchToOrganization(SWITCHED.organizationId as string)).rejects.toMatchObject({
       code: "client.schema_mismatch",
     });
   });

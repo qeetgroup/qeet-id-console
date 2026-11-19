@@ -8,11 +8,6 @@
     "search": "Search organisations",
     "searchPlaceholder": "Search by name or domain",
     "clearSearch": "Clear search",
-    "roles": {
-      "owner": "Owner",
-      "admin": "Admin",
-      "member": "Member"
-    },
     "plans": {
       "free": "Free",
       "starter": "Starter",
@@ -187,9 +182,6 @@
     "successText": "If an account exists for <email>{{email}}</email>, we’ve sent a link to set a new password. It expires in 60 minutes.",
     "successResend": "Didn't get it? Check spam, or",
     "successResendLink": "send it again",
-    "devLinkTitle": "Dev mode — reset link",
-    "devLinkText": "Email isn't sent locally. Use this link to set a new password.",
-    "devLinkButton": "Open reset link",
     "reset": {
       "title": "Set a new password",
       "subtitle": "Choose a new password for your account. Saving it signs you out on every other device.",

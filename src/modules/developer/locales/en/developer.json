@@ -1109,11 +1109,7 @@
       },
       "token": {
         "label": "Machine tokens",
-        "what": "Where machine identities trade a client secret for a token."
-      },
-      "agentToken": {
-        "label": "Agent tokens",
-        "what": "Where agents trade their secret for a token."
+        "what": "Where service principals and agents trade their secret for a token."
       },
       "verify": {
         "label": "Credential check",

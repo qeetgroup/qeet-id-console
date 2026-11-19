@@ -236,7 +236,7 @@ export function emailPreviewLinks(
 ): { text: string; href: string }[] {
   const content = emailLocaleContent(draft, locale);
   const samples = Object.fromEntries(
-    variables.map((name) => [name, name === "tenant_name" ? brand.name : sampleVar(name)]),
+    variables.map((name) => [name, name === "organization_name" ? brand.name : sampleVar(name)]),
   );
   const source = content.body_html
     ? sanitizeEmailHTML(previewEmailDraft({ subject: "", body: content.body_html }, samples).body)
@@ -265,7 +265,7 @@ export function emailPreviewHeader(
 ): { subject: string; preheader: string } {
   const content = emailLocaleContent(draft, locale);
   const samples = Object.fromEntries(
-    variables.map((name) => [name, name === "tenant_name" ? brand.name : sampleVar(name)]),
+    variables.map((name) => [name, name === "organization_name" ? brand.name : sampleVar(name)]),
   );
   return {
     subject: previewEmailDraft(content, samples).subject,
@@ -281,7 +281,7 @@ export function emailPreviewDocument(
 ): string {
   const content = emailLocaleContent(draft, locale);
   const samples = Object.fromEntries(
-    variables.map((name) => [name, name === "tenant_name" ? brand.name : sampleVar(name)]),
+    variables.map((name) => [name, name === "organization_name" ? brand.name : sampleVar(name)]),
   );
   const preview = previewEmailDraft(content, samples);
   const escapedSamples = Object.fromEntries(

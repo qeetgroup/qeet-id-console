@@ -14,7 +14,7 @@ import {
   REVIEWS,
   RISKS,
 } from "@/modules/users/people-model";
-import { roleLabel } from "./people-table";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 const ANY = "";
 // Each option's count is part of its label until Select items have a count of their own (QTRX-20).
@@ -76,7 +76,11 @@ export function PeopleToolbar({
       value: t(`people.filters.statuses.${filters.status}`),
     });
   if (filters.role)
-    tags.push({ id: "role", label: t("people.columns.role"), value: roleLabel(t, filters.role) });
+    tags.push({
+      id: "role",
+      label: t("people.columns.role"),
+      value: roleDisplayName(filters.role),
+    });
   if (filters.dept)
     tags.push({ id: "dept", label: t("people.filters.department"), value: filters.dept });
   if (filters.group)
@@ -223,7 +227,7 @@ export function PeopleToolbar({
                 { value: ANY, label: t("people.filters.anyRole") },
                 ...roles.map(([role, count]) => ({
                   value: role,
-                  label: `${roleLabel(t, role)} · ${n(count)}`,
+                  label: `${roleDisplayName(role)} · ${n(count)}`,
                 })),
               ]}
             />

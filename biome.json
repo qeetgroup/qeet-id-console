@@ -58,7 +58,7 @@
           "level": "error",
           "options": {
             "deniedGlobals": {
-              "fetch": "Backend traffic goes through api() (src/platform/api/client.ts) and the BFF; never fetch from a module or component.",
+              "fetch": "Backend traffic goes through backend (src/platform/api/backend.ts), typed against the API contract, and the BFF; never fetch from a module or component.",
               "EventSource": "Streams go through the BFF stream routes (src/platform/api/server-stream.ts).",
               "WebSocket": "Backend traffic goes through the BFF (src/platform/api).",
               "XMLHttpRequest": "Backend traffic goes through api() (src/platform/api/client.ts)."
@@ -155,6 +155,38 @@
                   }
                 ],
                 "paths": {
+                  "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28).",
+                  "@/platform/api/client": {
+                    "importNames": ["api"],
+                    "message": "Call the server through the typed client, backend.get/post/put/patch/delete (@/platform/api/backend): the contract types its path, method, parameters, body and answer."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/platform/api/backend.ts",
+        "src/platform/**/__tests__/**",
+        "src/platform/**/*.test.ts",
+        "src/platform/**/*.test.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/modules/**", "@/routes/**", "@/app/**", "@/lib/**"],
+                    "message": "platform/ may depend only on @/platform, @/shared, @/i18n (never modules, routes, app, or the retired @/lib)."
+                  }
+                ],
+                "paths": {
                   "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28)."
                 }
               }
@@ -165,6 +197,41 @@
     },
     {
       "includes": ["src/modules/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/routes/**", "@/app/**"],
+                    "message": "modules/ must not import routes or app."
+                  },
+                  {
+                    "group": ["@/lib/**"],
+                    "message": "@/lib is retired — import from the module/platform/shared home."
+                  }
+                ],
+                "paths": {
+                  "@qeetrix/ui": "The console is on @qeetrix/react: @qeetrix/ui was removed at the cut-over (2026-10-28).",
+                  "@/platform/api/client": {
+                    "importNames": ["api"],
+                    "message": "Call the server through the typed client, backend.get/post/put/patch/delete (@/platform/api/backend): the contract types its path, method, parameters, body and answer."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/modules/**/__tests__/**",
+        "src/modules/**/*.test.ts",
+        "src/modules/**/*.test.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -204,7 +271,8 @@
                   "@/platform/api/client": {
                     "importNames": ["api"],
                     "message": "Routes don't call the API. Move the request into the owning module's api/ and use its hook."
-                  }
+                  },
+                  "@/platform/api/backend": "Routes don't call the API. Move the request into the owning module's api/ and use its hook."
                 },
                 "patterns": [
                   {
@@ -265,6 +333,7 @@
       "!**/playwright-report",
       "!**/test-results",
       "!**/routeTree.gen.ts",
+      "!**/*.gen.ts",
       "!.claude",
       "!bun.lock",
       "!**/*.md",

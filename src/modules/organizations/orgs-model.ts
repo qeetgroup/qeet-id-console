@@ -1,5 +1,5 @@
 // The Organisations list's and an organisation's page's rules, pure so the pages and their tests
-// share them. The list is the caller's organisations (GET /v1/tenants) joined with their place in
+// share them. The list is the caller's organisations (GET /v1/organizations) joined with their place in
 // each (GET /v1/me/organizations: roles, last opened, domain); an organisation's history is the
 // audit events on the organisation itself.
 
@@ -30,6 +30,8 @@ export type OrgRow = Org & {
   roles: string[];
   /** Its verified domain, if any. */
   domain: string;
+  /** Its logo, from the caller's membership: a data URL, or "" for none. */
+  logo_url: string;
   /** When the caller last opened it. */
   lastUsedAt: string | null;
   /** The organisation the caller is in now. */
@@ -69,6 +71,7 @@ export function orgRows(
       ...(current && record ? { deletion_due_at: record.deletion_due_at } : {}),
       roles: byRank(m?.roles ?? []),
       domain: m?.domain ?? "",
+      logo_url: m?.logo_url ?? "",
       lastUsedAt: m?.last_used_at ?? null,
       current,
     };
@@ -156,12 +159,12 @@ export function roleCounts(rows: readonly OrgRow[]): { role: string; count: numb
 
 /** The changes to the organisation itself that History names, and the events it leaves out. */
 export const CHANGE_KINDS = [
-  "tenant.created",
-  "tenant.updated",
-  "tenant.deletion_scheduled",
-  "tenant.deletion_cancelled",
-  "tenant.suspended",
-  "tenant.reactivated",
+  "organization.created",
+  "organization.updated",
+  "organization.deletion_scheduled",
+  "organization.deletion_cancelled",
+  "organization.suspended",
+  "organization.reactivated",
   "branding.updated",
   "security_policy.updated",
   "rate_limits.updated",
@@ -218,7 +221,12 @@ export function activityAt(event: Pick<OrgAuditEvent, "id" | "created_at">) {
 
 /** The Activity page at every change to the organisation since it was made. */
 export function activitySince(created: string, now: number) {
-  return { range: "custom", from: created, to: new Date(now).toISOString(), resource: "tenant" };
+  return {
+    range: "custom",
+    from: created,
+    to: new Date(now).toISOString(),
+    resource: "organization",
+  };
 }
 
 /** When a deletion asked for now takes effect. */

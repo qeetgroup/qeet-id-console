@@ -2,8 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import i18n from "@/i18n";
-import { api } from "@/platform/api/client";
 import { authKeys } from "./keys";
+import { strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
 const sessionStatusSchema = z.enum(["active", "revoked", "expired"]);
 
@@ -16,7 +18,7 @@ export type SessionStatus = z.infer<typeof sessionStatusSchema>;
 const sessionSchema = z.object({
   id: z.string(),
   user_id: z.string(),
-  tenant_id: z.string(),
+  organization_id: z.string(),
   ip: z.string().nullish(),
   user_agent: z.string().nullish(),
   created_at: z.string(),
@@ -33,12 +35,14 @@ const sessionSchema = z.object({
 /** A sign-in session as GET /v1/auth/sessions returns it; every session view renders this shape. */
 export type Session = z.infer<typeof sessionSchema>;
 
-const sessionListSchema = z.object({ items: z.array(sessionSchema) });
+const sessionListSchema = strictly<Answer<"/v1/auth/sessions">>()(
+  z.object({ items: z.array(sessionSchema) }),
+);
 export type SessionList = z.infer<typeof sessionListSchema>;
 
 /** Returns the caller's own sessions, rejecting a response that isn't a session list. */
 export function listSessions(signal?: AbortSignal): Promise<SessionList> {
-  return api("/v1/auth/sessions", { schema: sessionListSchema, signal });
+  return backend.get("/v1/auth/sessions", { schema: sessionListSchema, signal });
 }
 
 /** Returns the session's device in words, as the server describes it (never the browser). */
@@ -71,7 +75,7 @@ export function useSessions() {
 export function useRevokeSession() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/auth/sessions/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => backend.delete("/v1/auth/sessions/{id}", { path: { id } }),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: authKeys.sessions() });
       const previous = qc.getQueryData<SessionList>(authKeys.sessions());
@@ -103,10 +107,7 @@ export type RevokeOtherSessionsResult = z.infer<typeof revokeOtherSessionsSchema
  * Resolves with how many ended (0 when there were none).
  */
 export function revokeOtherSessions(): Promise<RevokeOtherSessionsResult> {
-  return api("/v1/auth/sessions/revoke-others", {
-    method: "POST",
-    schema: revokeOtherSessionsSchema,
-  });
+  return backend.post("/v1/auth/sessions/revoke-others", { schema: revokeOtherSessionsSchema });
 }
 
 const signOutEverywhereSchema = z.object({
@@ -124,10 +125,7 @@ export type SignOutEverywhereResult = z.infer<typeof signOutEverywhereSchema>;
  * they are still signed in here.
  */
 export function signOutEverywhere(): Promise<SignOutEverywhereResult> {
-  return api("/v1/auth/sessions/revoke-all", {
-    method: "POST",
-    schema: signOutEverywhereSchema,
-  });
+  return backend.post("/v1/auth/sessions/revoke-all", { schema: signOutEverywhereSchema });
 }
 
 /** Ends every other session; the caller reports the outcome. */

@@ -3,107 +3,77 @@
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ApiError, api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import { ApiError } from "@/platform/api/client";
+import type { Answer, Body } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { groupKeys } from "./keys";
 
-export interface Group {
-  id: string;
-  tenant_id: string;
-  parent_id?: string | null;
-  name: string;
-  description: string;
-  created_at: string;
-  member_count: number; // set by the list endpoint only; create and update return 0
-}
-
-export interface GroupTemplateNode {
-  name: string;
-  description?: string;
-  children?: GroupTemplateNode[];
-}
-
-export interface GroupTemplate {
-  id: string;
-  tenant_id: string;
-  name: string;
-  description: string;
-  nodes: GroupTemplateNode[];
-  created_at: string;
-  group_count: number; // groups that applying the template would create
-}
-
-export interface ImportRow {
-  name: string;
-  description?: string;
-  parent?: string; // parent group name, resolved against existing and imported rows
-}
-
-export interface ImportResult {
-  created: number;
-  skipped: number;
-  failed: number;
-  // Each row's `reason` is the server's own text and isn't shown; its `code` picks the wording.
-  rows: { name: string; status: "created" | "skipped" | "failed"; code?: string; field?: string }[];
-}
-
+/** A group; `member_count` is set by the list only, create and update answer 0. */
+export type Group = Answer<"/v1/organizations/{organizationID}/groups">["items"][number];
+/** A reusable tree of groups; `group_count` is how many applying it would create. */
+export type GroupTemplate = Answer<"/v1/groups/templates">["items"][number];
+export type GroupTemplateNode = GroupTemplate["nodes"][number];
+/** One row of an import; `parent` names a group, existing or imported earlier in the file. */
+export type ImportRow = Body<"/v1/groups/import", "post">["groups"][number];
+/** What an import did, row by row; a row's `reason` is the server's text and isn't shown. */
+export type ImportResult = Answer<"/v1/groups/import", "post">;
 /** A user in a group, as the members endpoint lists them. */
-export interface GroupMember {
-  user_id: string;
-  email: string;
-  display_name: string | null;
-}
+export type GroupMember = Answer<"/v1/groups/{id}/members">["items"][number];
 
 /** Query definitions for the groups reads, shared by hooks and other modules' summaries. */
 export const groupQueries = {
-  list: (tenantId: string | null) =>
+  list: (organizationId: string | null) =>
     queryOptions({
-      queryKey: groupKeys.list(tenantId),
-      queryFn: () => api<{ items: Group[] }>(`/v1/tenants/${tenantId}/groups`),
-      enabled: !!tenantId,
+      queryKey: groupKeys.list(organizationId),
+      queryFn: () =>
+        backend.get("/v1/organizations/{organizationID}/groups", {
+          path: { organizationID: organizationId ?? "" },
+        }),
+      enabled: !!organizationId,
     }),
-  members: (tenantId: string | null, groupId: string) =>
+  members: (organizationId: string | null, groupId: string) =>
     queryOptions({
-      queryKey: groupKeys.members(tenantId, groupId),
+      queryKey: groupKeys.members(organizationId, groupId),
       queryFn: async (): Promise<{ items: GroupMember[] }> => {
         try {
-          return await api<{ items: GroupMember[] }>(`/v1/groups/${groupId}/members`);
+          return await backend.get("/v1/groups/{id}/members", { path: { id: groupId } });
         } catch (err) {
           // A group created empty may have no membership rows yet: no members, not an error.
           if (err instanceof ApiError && err.status === 404) return { items: [] };
           throw err;
         }
       },
-      enabled: !!tenantId && !!groupId,
+      enabled: !!organizationId && !!groupId,
     }),
-  templates: (tenantId: string | null) =>
+  templates: (organizationId: string | null) =>
     queryOptions({
-      queryKey: groupKeys.templates(tenantId),
-      queryFn: () => api<{ items: GroupTemplate[] }>("/v1/groups/templates"),
-      enabled: !!tenantId,
+      queryKey: groupKeys.templates(organizationId),
+      queryFn: () => backend.get("/v1/groups/templates"),
+      enabled: !!organizationId,
     }),
 };
 
 export function useGroups() {
-  return useQuery(groupQueries.list(useTenantId()));
+  return useQuery(groupQueries.list(useOrganizationId()));
 }
 
 export function useGroupMembers(groupId: string) {
-  return useQuery(groupQueries.members(useTenantId(), groupId));
+  return useQuery(groupQueries.members(useOrganizationId(), groupId));
 }
 
 export function useGroupTemplates() {
-  return useQuery(groupQueries.templates(useTenantId()));
+  return useQuery(groupQueries.templates(useOrganizationId()));
 }
 
 export function useCreateGroup() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { name: string; description?: string; parent_id?: string | null }) =>
-      api<Group>("/v1/groups", { method: "POST", body: { tenant_id: tenantId, ...in_ } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }),
+      backend.post("/v1/groups", { body: in_ }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(organizationId) }),
     meta: { successMessage: "groups:toast.created" },
   });
 }
@@ -115,23 +85,23 @@ export interface UpdateGroupInput {
 }
 
 export function useUpdateGroup() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ groupId, body }: { groupId: string; body: UpdateGroupInput }) =>
-      api<Group>(`/v1/groups/${groupId}`, { method: "PATCH", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }),
+      backend.patch("/v1/groups/{id}", { path: { id: groupId }, body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(organizationId) }),
     meta: { successMessage: "groups:toast.updated", silentError: true }, // the sheet shows the error
   });
 }
 
 /** Deletes a group, dropping it from the list at once and restoring it if the call fails. */
 export function useDeleteGroup() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
-  const listKey = groupKeys.list(tenantId);
+  const listKey = groupKeys.list(organizationId);
   return useMutation({
-    mutationFn: (groupId: string) => api<void>(`/v1/groups/${groupId}`, { method: "DELETE" }),
+    mutationFn: (groupId: string) => backend.delete("/v1/groups/{id}", { path: { id: groupId } }),
     onMutate: async (groupId) => {
       await qc.cancelQueries({ queryKey: listKey });
       const previous = qc.getQueryData<{ items: Group[] }>(listKey);
@@ -151,14 +121,16 @@ export function useDeleteGroup() {
  * member would bury "Group created".
  */
 export function useAddGroupMember({ silent = false }: { silent?: boolean } = {}) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { groupId: string; userId: string }) =>
-      api<void>(`/v1/groups/${in_.groupId}/members/${in_.userId}`, { method: "POST" }),
+      backend.post("/v1/groups/{id}/members/{userID}", {
+        path: { id: in_.groupId, userID: in_.userId },
+      }),
     onSuccess: (_, { groupId }) => {
-      void qc.invalidateQueries({ queryKey: groupKeys.members(tenantId, groupId) });
-      void qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }); // member counts
+      void qc.invalidateQueries({ queryKey: groupKeys.members(organizationId, groupId) });
+      void qc.invalidateQueries({ queryKey: groupKeys.list(organizationId) }); // member counts
     },
     meta: silent
       ? { silent: true }
@@ -167,14 +139,16 @@ export function useAddGroupMember({ silent = false }: { silent?: boolean } = {})
 }
 
 export function useRemoveGroupMember() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { groupId: string; userId: string }) =>
-      api<void>(`/v1/groups/${in_.groupId}/members/${in_.userId}`, { method: "DELETE" }),
+      backend.delete("/v1/groups/{id}/members/{userID}", {
+        path: { id: in_.groupId, userID: in_.userId },
+      }),
     onSuccess: (_, { groupId }) => {
-      void qc.invalidateQueries({ queryKey: groupKeys.members(tenantId, groupId) });
-      void qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) });
+      void qc.invalidateQueries({ queryKey: groupKeys.members(organizationId, groupId) });
+      void qc.invalidateQueries({ queryKey: groupKeys.list(organizationId) });
     },
     meta: { successMessage: "groups:toast.memberRemoved" },
   });
@@ -185,65 +159,64 @@ export function useRemoveGroupMember() {
  * it takes the group id per call: the create flow learns the id only after creating.
  */
 export function useAssignGroupRole() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { groupId: string; roleId: string }) =>
-      api<void>(`/v1/tenants/${tenantId}/groups/${in_.groupId}/roles/${in_.roleId}`, {
-        method: "POST",
+      backend.post("/v1/organizations/{organizationID}/groups/{groupID}/roles/{roleID}", {
+        path: { organizationID: organizationId ?? "", groupID: in_.groupId, roleID: in_.roleId },
       }),
     // The authorization module loads only now: this file is in the groups barrel, which the shell
     // imports (the list's route reads its search schema from it), so it stays light.
     onSuccess: async (_, in_) => {
       const { authzKeys } = await import("@/modules/authorization");
-      await qc.invalidateQueries({ queryKey: authzKeys.groupRoles(tenantId, in_.groupId) });
+      await qc.invalidateQueries({ queryKey: authzKeys.groupRoles(organizationId, in_.groupId) });
     },
     meta: { silent: true }, // part of the create flow, which toasts "Group created"
   });
 }
 
 export function useCreateGroupTemplate() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { name: string; description?: string; nodes: GroupTemplateNode[] }) =>
-      api<GroupTemplate>("/v1/groups/templates", { method: "POST", body: in_ }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.templates(tenantId) }),
+      backend.post("/v1/groups/templates", { body: in_ }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.templates(organizationId) }),
     meta: { successMessage: "groups:toast.templateSaved" },
   });
 }
 
 export function useDeleteGroupTemplate() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/groups/templates/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.templates(tenantId) }),
+    mutationFn: (id: string) => backend.delete("/v1/groups/templates/{id}", { path: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.templates(organizationId) }),
     meta: { successMessage: "groups:toast.templateDeleted" },
   });
 }
 
 export function useApplyGroupTemplate() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { id: string; parent_id?: string | null }) =>
-      api<{ items: Group[] }>(`/v1/groups/templates/${in_.id}/apply`, {
-        method: "POST",
+      backend.post("/v1/groups/templates/{id}/apply", {
+        path: { id: in_.id },
         body: { parent_id: in_.parent_id ?? null },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(organizationId) }),
     meta: { successMessage: "groups:toast.templateApplied" },
   });
 }
 
 export function useImportGroups() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (groups: ImportRow[]) =>
-      api<ImportResult>("/v1/groups/import", { method: "POST", body: { groups } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(tenantId) }),
+    mutationFn: (groups: ImportRow[]) => backend.post("/v1/groups/import", { body: { groups } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: groupKeys.list(organizationId) }),
     meta: { silent: true }, // the dialog shows a per-row breakdown instead
   });
 }

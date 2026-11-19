@@ -6,28 +6,27 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import type { ActivitySummary, RelatedEventsResponse } from "@/modules/activity";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { securityKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export function useAuditEvent(id: string | undefined) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.auditEvent(tenantId, id ?? ""),
-    queryFn: () => api<RelatedEventsResponse>(`/v1/activity/${id}/related`),
-    enabled: !!tenantId && !!id,
+    queryKey: securityKeys.auditEvent(organizationId, id ?? ""),
+    queryFn: () => backend.get("/v1/activity/{id}/related", { path: { id: id ?? "" } }),
+    enabled: !!organizationId && !!id,
     staleTime: 60_000,
     meta: { silent: true },
   });
 }
 
 export function useAuditPulse() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.auditPulse(tenantId),
-    queryFn: () => api<ActivitySummary>("/v1/activity/summary"),
-    enabled: !!tenantId,
+    queryKey: securityKeys.auditPulse(organizationId),
+    queryFn: () => backend.get("/v1/activity/summary"),
+    enabled: !!organizationId,
     staleTime: 60_000,
     meta: { silent: true },
   });

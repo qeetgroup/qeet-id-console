@@ -144,7 +144,6 @@ function anomaly(overrides: Partial<Anomaly> = {}): Anomaly {
     status: "open",
     user_id: "user-1",
     created_at: "2026-10-01T10:00:00Z",
-    resolved_at: null,
     ...overrides,
   };
 }
@@ -190,7 +189,7 @@ describe("deriveUserRisk", () => {
         resolved_at: "2026-10-02T10:00:00Z",
       }),
       anomaly({ id: "other-user", severity: "critical", user_id: "user-2" }),
-      anomaly({ id: "unattributed", severity: "critical", user_id: null }),
+      anomaly({ id: "unattributed", severity: "critical", user_id: undefined }),
     ];
     expect(deriveUserRisk(feed, "user-1")).toEqual({ level: "low", openCount: 0 });
     expect(deriveUserRisk(feed, "user-2")).toEqual({ level: "high", openCount: 1 });

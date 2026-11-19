@@ -12,7 +12,7 @@ vi.mock("@/platform/api/client", async () => {
 });
 vi.mock("@/platform/auth/session", () => ({
   useMe: () => ({ data: { email: "ada@example.com" } }),
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-1",
 }));
 vi.mock("@simplewebauthn/browser", () => ({ startRegistration: vi.fn() }));
@@ -224,7 +224,11 @@ describe("Account › Security: passkeys", () => {
     renderPage();
     await addPasskey();
     await waitFor(() => expect(finishBodies).toHaveLength(1));
-    expect(finishBodies[0]).toEqual({ session_id: "ceremony-1", credential: { id: "cred-1" } });
+    expect(finishBodies[0]).toEqual({
+      session_id: "ceremony-1",
+      credential: { id: "cred-1" },
+      name: "", // blank: the server's own name
+    });
     expect(startRegistration).toHaveBeenCalledWith({ optionsJSON: { challenge: "abc" } });
     // Adding one is step-up gated: it runs as a sensitive action, without a confirmation.
     expect(sensitiveCalls).toEqual([expect.objectContaining({ actionLabel: "Add a passkey" })]);

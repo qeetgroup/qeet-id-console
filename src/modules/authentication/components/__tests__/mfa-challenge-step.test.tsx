@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "@/i18n";
 
-import { useCompleteMfaLogin } from "@/modules/authentication/api/flows";
+import { type MfaChallenge, useCompleteMfaLogin } from "@/modules/authentication/api/flows";
 import {
   completeWithPush,
   mfaPasskeyProof,
@@ -52,7 +52,7 @@ function challenge(factors: { type: string; id?: string; destination?: string }[
   return {
     mfa_required: true as const,
     mfa_token: "tok",
-    methods: factors.map((f) => f.type),
+    methods: factors.map((f) => f.type) as MfaChallenge["methods"],
     factors: factors as never,
   };
 }

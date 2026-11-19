@@ -20,7 +20,7 @@ const ago = (days: number) => new Date(NOW - days * DAY_MS).toISOString();
 function person(overrides: Partial<User> = {}): User {
   return {
     id: "u1",
-    tenant_id: "t1",
+    organization_id: "t1",
     email: "priya@qeet.in",
     display_name: "Priya Sharma",
     status: "active",
@@ -50,7 +50,7 @@ describe("isAdmin and department", () => {
     expect(isAdmin(person({ roles: ["owner"] }))).toBe(true);
     expect(isAdmin(person({ roles: ["Member", "Admin"] }))).toBe(true);
     expect(isAdmin(person({ roles: ["Billing Admin"] }))).toBe(false);
-    expect(isAdmin(person({ roles: null }))).toBe(false);
+    expect(isAdmin(person({ roles: undefined }))).toBe(false);
   });
 
   it("reads the department from the person's metadata, ignoring blanks and non-text", () => {

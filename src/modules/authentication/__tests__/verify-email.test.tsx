@@ -32,7 +32,7 @@ const session: PublicSession = {
   expiresAt: "2099-01-01T00:00:00Z",
   sessionId: "session-1",
   userId: "user-1",
-  tenantId: null,
+  organizationId: null,
   version: 1,
   impersonationActor: null,
 };
@@ -117,7 +117,6 @@ describe("VerifyEmailPage", () => {
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith("/v1/users/user-1/verify/email/start", {
         method: "POST",
-        body: {},
       }),
     );
   });

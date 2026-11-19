@@ -5,14 +5,14 @@ import type { ComponentProps } from "react";
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null, canRead: true }));
+const context = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null, canRead: true }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/modules/dashboard", () => ({ PageBreadcrumb: () => null }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, ...props }: ComponentProps<"a"> & { to: string }) => <a {...props} href={to} />,
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => context.tenantId,
+  useOrganizationId: () => context.organizationId,
   useMe: () => ({
     data: { email: "operator@example.test", email_verified_at: "2026-09-01T00:00:00Z" },
   }),
@@ -93,9 +93,9 @@ function templates(): EmailTemplate[] {
       key: "invite",
       name: "Invitation",
       description: "Organization invitation.",
-      subject: "Join {{tenant_name}}",
+      subject: "Join {{organization_name}}",
       body: "{{invite_url}}",
-      variables: ["tenant_name", "invite_url"],
+      variables: ["organization_name", "invite_url"],
     },
     {
       key: "mfa_otp",
@@ -105,7 +105,7 @@ function templates(): EmailTemplate[] {
       body: "{{code}} expires in {{ttl}}",
       variables: ["code", "ttl"],
     },
-  ].map((item) => ({ ...item, custom: false, options: {} }));
+  ].map((item) => ({ ...item, custom: false }));
 }
 
 function viewProps(): EmailTemplatesViewProps {
@@ -144,14 +144,19 @@ if (!Range.prototype.getClientRects) {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   context.canRead = true;
   sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
-    if (/^\/v1\/tenants\/[^/]+$/.test(path)) return { id: context.tenantId, name: "Acme" };
+    if (/^\/v1\/organizations\/[^/]+$/.test(path))
+      return { id: context.organizationId, name: "Acme" };
     if (path.endsWith("/branding"))
-      return { tenant_id: context.tenantId, primary_color: "#f97316", email_from_name: "Qeet ID" };
+      return {
+        organization_id: context.organizationId,
+        primary_color: "#f97316",
+        email_from_name: "Qeet ID",
+      };
     if (path.endsWith("/email-templates"))
       return { items: templates(), capabilities: viewProps().capabilities };
     if (path.endsWith("/test")) return { status: "accepted" };
@@ -249,16 +254,20 @@ describe("Email template draft preview", () => {
   });
   it("previews current edits with the backend's variable syntax", () => {
     const draft = {
-      subject: "Welcome to {{ tenant_name }}",
+      subject: "Welcome to {{ organization_name }}",
       body: "Your new code is {{code}}. It expires in {{ttl}}.",
     };
     expect(
-      previewEmailDraft(draft, { tenant_name: "Qeet Group", code: "482913", ttl: "10 minutes" }),
+      previewEmailDraft(draft, {
+        organization_name: "Qeet Group",
+        code: "482913",
+        ttl: "10 minutes",
+      }),
     ).toEqual({
       subject: "Welcome to Qeet Group",
       body: "Your new code is 482913. It expires in 10 minutes.",
     });
-    expect(draft.subject).toBe("Welcome to {{ tenant_name }}");
+    expect(draft.subject).toBe("Welcome to {{ organization_name }}");
   });
 
   it("substitutes values literally and leaves missing variables visible", () => {
@@ -506,9 +515,10 @@ describe("Email template API actions", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Reset to default" }));
     await screen.findByText("Template reset to the default.");
     expect(subject().value).toBe("Verify your email");
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/email-templates/verify_email", {
-      method: "DELETE",
-    });
+    expect(api).toHaveBeenCalledWith(
+      "/v1/organizations/tenant-a/email-templates/verify_email",
+      expect.objectContaining({ method: "DELETE" }),
+    );
     expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Reset to default");
   });
 
@@ -535,10 +545,13 @@ describe("Email template API actions", () => {
     expect(vi.mocked(api).mock.calls.some(([path]) => path.endsWith("/test"))).toBe(false);
     fireEvent.click(within(dialog).getByRole("button", { name: "Send test email" }));
     await screen.findByText("Test email handed to the mail provider.");
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/email-templates/verify_email/test", {
-      method: "POST",
-      body: { draft: expect.objectContaining({ subject: "Current draft" }), locale: "en" },
-    });
+    expect(api).toHaveBeenCalledWith(
+      "/v1/organizations/tenant-a/email-templates/verify_email/test",
+      {
+        method: "POST",
+        body: { draft: expect.objectContaining({ subject: "Current draft" }), locale: "en" },
+      },
+    );
     expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Send test");
   });
 
@@ -547,9 +560,14 @@ describe("Email template API actions", () => {
     await screen.findByLabelText(/^Subject/);
     fireEvent.click(screen.getByRole("button", { name: "Send test" }));
     await screen.findByRole("alertdialog");
-    context.tenantId = "tenant-b";
+    context.organizationId = "tenant-b";
     view.rerender(view.tree());
-    await waitFor(() => expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-b/email-templates"));
+    await waitFor(() =>
+      expect(api).toHaveBeenCalledWith(
+        "/v1/organizations/tenant-b/email-templates",
+        expect.objectContaining({ schema: expect.anything() }),
+      ),
+    );
     fireEvent.click(
       within(screen.getByRole("alertdialog")).getByRole("button", { name: "Send test email" }),
     );

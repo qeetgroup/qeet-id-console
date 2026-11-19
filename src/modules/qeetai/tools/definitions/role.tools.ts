@@ -5,8 +5,8 @@ import { authzKeys } from "@/modules/authorization";
 import { userKeys } from "@/modules/users";
 
 import i18n from "@/i18n";
-import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
+import { backend } from "@/platform/api/backend";
 
 const createRoleInput = z.object({
   name: z.string(),
@@ -34,20 +34,18 @@ export const createRoleTool: ToolDefinition<CreateRoleInput> = {
   }),
   auditLabel: "qeetai.create_role",
   async run(ctx, input) {
-    const role = await api<{ id: string; name: string; description: string }>(
-      `/v1/tenants/${ctx.tenantId}/roles`,
-      {
-        method: "POST",
-        body: { name: input.name, description: input.description ?? "" },
-        signal: ctx.signal,
-      },
-    );
-    ctx.queryClient.invalidateQueries({ queryKey: authzKeys.roles(ctx.tenantId) });
+    const role = await backend.post("/v1/organizations/{organizationID}/roles", {
+      path: { organizationID: ctx.organizationId },
+      body: { name: input.name, description: input.description ?? "" },
+      signal: ctx.signal,
+    });
+    ctx.queryClient.invalidateQueries({ queryKey: authzKeys.roles(ctx.organizationId) });
+    const id = role.id ?? "";
     return {
       ok: true,
-      summary: `Role "${role.name}" created (id: ${role.id}).`,
-      display: { key: "qeetai:toolCallCard.results.roleCreated", values: { name: role.name } },
-      data: { id: role.id, name: role.name, description: role.description },
+      summary: `Role "${input.name}" created (id: ${id}).`,
+      display: { key: "qeetai:toolCallCard.results.roleCreated", values: { name: input.name } },
+      data: { id, name: input.name, description: input.description ?? "" },
     };
   },
 };
@@ -80,19 +78,19 @@ export const assignRoleTool: ToolDefinition<AssignRoleInput> = {
   }),
   auditLabel: "qeetai.assign_role",
   async run(ctx, input) {
-    await api<void>(`/v1/users/${input.user_id}/tenants/${ctx.tenantId}/roles/${input.role_id}`, {
-      method: "POST",
+    await backend.post("/v1/users/{userID}/organizations/{organizationID}/roles/{roleID}", {
+      path: { userID: input.user_id, organizationID: ctx.organizationId, roleID: input.role_id },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
-      summary: `Role ${input.role_id} assigned to user ${input.user_id} in tenant ${ctx.tenantId}.`,
+      summary: `Role ${input.role_id} assigned to user ${input.user_id} in tenant ${ctx.organizationId}.`,
       display: {
         key: "qeetai:toolCallCard.results.roleAssigned",
         values: { roleId: input.role_id, userId: input.user_id },
       },
-      data: { user_id: input.user_id, role_id: input.role_id, tenant_id: ctx.tenantId },
+      data: { user_id: input.user_id, role_id: input.role_id, organization_id: ctx.organizationId },
     };
   },
 };
@@ -125,12 +123,12 @@ export const grantPermissionTool: ToolDefinition<GrantPermissionInput> = {
   }),
   auditLabel: "qeetai.grant_permission",
   async run(ctx, input) {
-    await api<void>(`/v1/roles/${input.role_id}/permissions/${input.permission_id}`, {
-      method: "POST",
+    await backend.post("/v1/roles/{roleID}/permissions/{permID}", {
+      path: { roleID: input.role_id, permID: input.permission_id },
       signal: ctx.signal,
     });
     ctx.queryClient.invalidateQueries({
-      queryKey: authzKeys.rolePermissions(ctx.tenantId, input.role_id),
+      queryKey: authzKeys.rolePermissions(ctx.organizationId, input.role_id),
     });
     return {
       ok: true,

@@ -6,10 +6,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { directoryKeys } from "@/modules/directory";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
 import { scimConfigSchema } from "./scim";
+import { backend } from "@/platform/api/backend";
 
 const scimTokenSchema = z.object({
   token: z.string().min(1), // shown this once
@@ -17,14 +17,14 @@ const scimTokenSchema = z.object({
 });
 
 function useRefresh() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return {
-    tenantId,
+    organizationId,
     refresh: () =>
       Promise.all([
-        qc.invalidateQueries({ queryKey: authKeys.scim(tenantId) }),
-        qc.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
+        qc.invalidateQueries({ queryKey: authKeys.scim(organizationId) }),
+        qc.invalidateQueries({ queryKey: directoryKeys.organization(organizationId) }),
       ]),
   };
 }
@@ -34,20 +34,26 @@ function useRefresh() {
  * response this once and stored only hashed, so it is shown straight away and never again.
  */
 export function useRotateScimToken() {
-  const { tenantId, refresh } = useRefresh();
+  const { organizationId, refresh } = useRefresh();
   return useMutation({
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
     mutationFn: () =>
-      api(`/v1/tenants/${tenantId}/scim/token`, { method: "POST", schema: scimTokenSchema }),
+      backend.post("/v1/organizations/{organizationID}/scim/token", {
+        path: { organizationID: organizationId ?? "" },
+        schema: scimTokenSchema,
+      }),
     onSuccess: () => refresh(),
   });
 }
 
 /** Revokes the token: the identity provider can no longer send changes. */
 export function useRevokeScimToken() {
-  const { tenantId, refresh } = useRefresh();
+  const { organizationId, refresh } = useRefresh();
   return useMutation({
-    mutationFn: () => api<void>(`/v1/tenants/${tenantId}/scim/token`, { method: "DELETE" }),
+    mutationFn: () =>
+      backend.delete("/v1/organizations/{organizationID}/scim/token", {
+        path: { organizationID: organizationId ?? "" },
+      }),
     onSuccess: () => refresh(),
     meta: { successMessage: "connections:toast.scimRevoked" },
   });

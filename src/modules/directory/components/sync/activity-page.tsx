@@ -22,7 +22,7 @@ import {
   useDirectoryConnections,
   useDirectoryErrors,
 } from "@/modules/directory/api/directory";
-import { useDirectoryEvents } from "@/modules/directory/api/events";
+import { useDirectoryEventList, useDirectoryEvents } from "@/modules/directory/api/events";
 import {
   ExportTooLargeError,
   fetchActivityExport,
@@ -31,7 +31,7 @@ import {
 import type { DirectoryConnection } from "@/modules/directory/directory-model";
 import { runKey } from "@/modules/directory/sync-model";
 import { type ActivityFilters, periodDays } from "@/modules/directory/sync-search";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { exportToCsv } from "@/shared/utils/data-export";
@@ -63,7 +63,7 @@ export type SyncActivityPageProps = {
 export function SyncActivityPage({ filters, onFiltersChange }: SyncActivityPageProps) {
   const { t } = useTranslation("directory");
   const navigate = useNavigate();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const canWrite = useCapabilities().can("connection.write");
   const days = periodDays(filters.period ?? "30d");
 
@@ -93,9 +93,7 @@ export function SyncActivityPage({ filters, onFiltersChange }: SyncActivityPageP
   };
   const monthQ = useDirectoryEvents({ ...period, limit: 1 });
   const failedQ = useDirectoryEvents({ ...period, status: "failed", limit: 100 });
-  const listQ = useDirectoryEvents({ ...listFilters, limit: pageSize, offset }, true, {
-    keep: true,
-  });
+  const listQ = useDirectoryEventList(listFilters, offset, pageSize);
   const openQ = useDirectoryErrors({
     ...DEFAULT_ERROR_FILTERS,
     days: 90,
@@ -117,8 +115,8 @@ export function SyncActivityPage({ filters, onFiltersChange }: SyncActivityPageP
 
   const exporting = useMutation({
     mutationFn: async () => {
-      if (!tenantId) return;
-      const records = await fetchActivityExport(tenantId, listFilters);
+      if (!organizationId) return;
+      const records = await fetchActivityExport(organizationId, listFilters);
       exportToCsv("directory-sync-activity", records, [
         { header: "started_at", value: (e) => e.started_at },
         { header: "connection", value: (e) => nameOf(e.connection_id) },

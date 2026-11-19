@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { type Group, type GroupMember, useRemoveGroupMember } from "@/modules/groups/api/groups";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import {
   settleSensitiveAction,
   useSensitiveAction,
@@ -16,8 +16,8 @@ export function useRemoveMember(group: Group | null, grants: readonly string[] |
   const { t } = useTranslation("groups");
   const runSensitive = useSensitiveAction();
   const removeM = useRemoveGroupMember();
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
 
   return (member: GroupMember) => {
     if (!group) return;

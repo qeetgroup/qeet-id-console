@@ -11,7 +11,7 @@ import {
   safeNavigation,
   useNavGroups,
 } from "@/platform/config/navigation";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { AccessModeIndicator } from "@/platform/security/access-mode-indicator";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { currentNavItemUrl } from "./current-page";
@@ -34,7 +34,7 @@ export function ConsoleSidebar() {
   const { t } = useTranslation("dashboard");
   const { pathname } = useLocation();
   const access = useCapabilities();
-  const hasOrg = !!useTenantId();
+  const hasOrg = !!useOrganizationId();
   const all = useNavGroups();
   const groups: NavGroup[] =
     access.state === "ready" ? filterNavigation(all, access.can) : safeNavigation(all);

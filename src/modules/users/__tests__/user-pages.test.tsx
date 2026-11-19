@@ -9,7 +9,7 @@ vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-a" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-a" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -76,7 +76,10 @@ describe("ImportUsersPage", () => {
     await waitFor(() =>
       expect(bulkCall()?.[1]).toEqual({
         method: "POST",
-        body: { tenant_id: "tenant-a", users: [{ email: "a@example.test", display_name: "Asha" }] },
+        body: {
+          organization_id: "tenant-a",
+          users: [{ email: "a@example.test", display_name: "Asha" }],
+        },
       }),
     );
     expect(await screen.findByText("1 person added to Acme")).toBeTruthy();

@@ -12,10 +12,29 @@ function classifyApiError(err: ApiError): ErrorKind {
   return "api";
 }
 
+// What browsers (and the server's own fetch) say of a request that never completed: offline, DNS,
+// a refused connection. Any other TypeError is a fault in the page, not the connection.
+const FETCH_FAILURE =
+  /^(failed to fetch|load failed|fetch failed|network ?error when attempting to fetch resource\.?|network request failed)$/i;
+
+/** True for a request that never reached the server, as opposed to one it answered. */
+export function isFetchFailure(err: unknown): err is TypeError {
+  return err instanceof TypeError && FETCH_FAILURE.test(err.message.trim());
+}
+
 /**
- * Coerces any thrown value into a classified AppError: an ApiError by code and status, a fetch
- * TypeError as network, anything else as unknown. `message` is kept for logs only; user-facing
- * copy comes from userMessageForCode().
+ * True for a failure that may pass on its own: the connection, or a server error. A refusal, a
+ * missing record or an answer that isn't what the contract says won't change by asking again.
+ */
+export function isTransientFailure(err: unknown): boolean {
+  if (isFetchFailure(err)) return true;
+  return err instanceof ApiError && (err.retryable || err.status >= 500);
+}
+
+/**
+ * Coerces any thrown value into a classified AppError: an ApiError by code and status, a failed
+ * fetch as network, anything else (a fault in the page included) as unknown. `message` is kept
+ * for logs only; user-facing copy comes from userMessageForCode().
  */
 export function normalizeError(err: unknown): AppError {
   if (err instanceof AppError) return err;
@@ -31,9 +50,9 @@ export function normalizeError(err: unknown): AppError {
     });
   }
 
-  // A fetch that never completed (offline, DNS, CORS preflight) rejects with a TypeError and no
-  // Response: a network error, not an API one.
-  if (err instanceof TypeError) {
+  // A fetch that never completed rejects with a TypeError and no Response: a network error, not an
+  // API one. A TypeError from the page's own code reads as unknown, not as the person's connection.
+  if (isFetchFailure(err)) {
     return new AppError("network", ERROR_CODES.NETWORK, err.message, {
       retryable: true,
       cause: err,

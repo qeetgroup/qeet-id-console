@@ -16,6 +16,7 @@ import { formatLocale } from "@/i18n";
 import {
   type Notification,
   type NotificationKind,
+  notificationKind,
   useMarkAllRead,
   useNotifications,
 } from "@/modules/developer";
@@ -124,7 +125,8 @@ export function NotificationsPanel() {
 /** One notification: its status icon in the status colour, title, two lines, the time, "New". */
 function NotificationRow({ item }: { item: Notification }) {
   const { t } = useTranslation("dashboard");
-  const Icon = KIND_ICON[item.kind] ?? InfoIcon;
+  const kind = notificationKind(item.kind);
+  const Icon = KIND_ICON[kind];
   const content = (
     <>
       <Icon shape="sharp" size={16} aria-hidden="true" className="frame-note-icon" />
@@ -142,7 +144,7 @@ function NotificationRow({ item }: { item: Notification }) {
   );
   const attrs = {
     className: "frame-note",
-    "data-kind": item.kind,
+    "data-kind": kind,
     "data-unread": item.read_at ? undefined : "",
   };
   // The link comes from the server: only a path in the console opens; anything else is text.

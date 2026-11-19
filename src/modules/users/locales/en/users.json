@@ -480,11 +480,11 @@
       "branding": "Branding",
       "connection": "Connections",
       "group": "Groups",
+      "organization": "Organisation",
       "policy": "Policies",
       "role": "Roles",
       "secret": "Secrets",
       "session": "Sessions",
-      "tenant": "Organisation",
       "user": "Users",
       "webhook": "Webhooks"
     },
@@ -793,7 +793,7 @@
       "userAuditEvents": "Search the audit log filtered to this user"
     },
     "prompts": {
-      "suspendedUsers": "List all suspended users in this tenant.",
+      "suspendedUsers": "List all suspended users in this organisation.",
       "userActivity": "Summarize recent user activity and any anomalies in the audit log.",
       "userRecentActivity": "Summarize the most recent audit events for the currently selected user."
     }
@@ -816,9 +816,6 @@
       "filteredDescription": "No one has all of these at once. Remove a filter, or clear them all.",
       "clear": "Clear filters",
       "description": "Add the first person, or import a file of them."
-    },
-    "roles": {
-      "owner": "Owner"
     },
     "noRole": "No role",
     "columns": {
@@ -998,7 +995,8 @@
       "accepted": "Joined",
       "expired": "Expired",
       "revoked": "Revoked",
-      "declined": "Declined"
+      "declined": "Declined",
+      "unknown": "Unknown"
     },
     "outcome": {
       "expiresToday": "Expires today",

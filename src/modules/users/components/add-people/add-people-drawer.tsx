@@ -39,10 +39,9 @@ import {
 } from "@/modules/users/add-people-model";
 import { inviteCalls, useInvitations } from "@/modules/users/api/invitations";
 import { useCreateUser, useUserDirectory } from "@/modules/users/api/users";
-import { roleLabel } from "@/modules/users/components/people/people-table";
 import { usePeopleRun } from "@/modules/users/components/people/people-bulk";
 import "@/modules/users/components/people/people.css";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { ErrorReference } from "@/platform/components/error-reference";
 import { errorMessage, fieldErrorMessages } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -50,6 +49,7 @@ import {
   SensitiveActionCancelled,
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 type Mode = "invite" | "create";
 type Errors = {
@@ -114,8 +114,8 @@ export function AddPeopleDrawer({
   const { t } = useTranslation("users");
   const access = useCapabilities();
   const canCreate = access.canAll(["user.write", "role.read", "role.write"]);
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
   const roles = useRoles().data?.items ?? [];
   const members = useUserDirectory().data?.items ?? [];
   const invites = useInvitations(open).data?.items ?? [];
@@ -158,7 +158,7 @@ export function AddPeopleDrawer({
   const busy = !!running || createUser.isPending;
 
   function sendInvitations() {
-    if (!tenantId) return;
+    if (!organizationId) return;
     if (targets.length === 0) return setErrors({ addresses: t("addPeople.errors.noAddresses") });
     if (targets.length > MAX_INVITES)
       return setErrors({ addresses: t("addPeople.errors.tooMany", { n: MAX_INVITES }) });
@@ -171,13 +171,17 @@ export function AddPeopleDrawer({
         const target = byEmail.get(address);
         return target?.kind === "invited"
           ? inviteCalls.resend(target.invite.id)
-          : inviteCalls.create({ tenant_id: tenantId, email: address, role_id: role || undefined });
+          : inviteCalls.create({
+              organization_id: organizationId,
+              email: address,
+              role_id: role || undefined,
+            });
       },
     );
   }
 
   function createAccount() {
-    if (!tenantId) return;
+    if (!organizationId) return;
     const address = email.trim();
     const e164 = phone.trim() ? toE164(phone) : undefined;
     const next: Errors = {};
@@ -192,7 +196,7 @@ export function AddPeopleDrawer({
       actionLabel: t("create.actionLabel"),
       run: () =>
         createUser.mutateAsync({
-          tenant_id: tenantId,
+          organization_id: organizationId,
           email: address,
           password,
           display_name: name.trim() || undefined,
@@ -218,7 +222,7 @@ export function AddPeopleDrawer({
     <Field
       label={t("create.role")}
       description={
-        chosen?.description ? `${roleLabel(t, chosen.name)}: ${chosen.description}` : undefined
+        chosen?.description ? `${roleDisplayName(chosen.name)}: ${chosen.description}` : undefined
       }
     >
       <Select
@@ -226,7 +230,7 @@ export function AddPeopleDrawer({
         onValueChange={(value) => setRoleId(String(value ?? ""))}
         items={roles.map((r): { value: string; label: string } => ({
           value: r.id,
-          label: roleLabel(t, r.name),
+          label: roleDisplayName(r.name),
         }))}
       />
     </Field>

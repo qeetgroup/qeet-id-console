@@ -11,7 +11,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -69,7 +69,7 @@ beforeEach(() => {
     const method = opts?.method ?? "GET";
     if (method === "GET") {
       if (path === "/v1/users/deleted") return { items: BIN };
-      if (path === "/v1/tenants/t1/retention")
+      if (path === "/v1/organizations/t1/retention")
         return { deleted_users_enabled: true, deleted_users_days: 90 };
       if (path === "/v1/users")
         return {
@@ -84,7 +84,7 @@ beforeEach(() => {
             },
           ],
         };
-      if (path === "/v1/tenants/t1/invites") return { items: [] };
+      if (path === "/v1/organizations/t1/invites") return { items: [] };
     }
     if (path.endsWith("/restore") && method === "POST") return undefined;
     if (path.endsWith("/purge") && method === "DELETE") return undefined;
@@ -162,6 +162,8 @@ describe("the Deleted tab", () => {
     await rowOf("Anil Bhatia");
     expect(screen.getByText("Set in Compliance › Retention")).toBeTruthy();
     expect(screen.queryByRole("columnheader", { name: "Purged" })).toBeNull();
-    expect(vi.mocked(api).mock.calls.some(([p]) => p === "/v1/tenants/t1/retention")).toBe(false);
+    expect(vi.mocked(api).mock.calls.some(([p]) => p === "/v1/organizations/t1/retention")).toBe(
+      false,
+    );
   });
 });

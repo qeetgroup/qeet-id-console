@@ -37,7 +37,7 @@ import {
 import { userQueries } from "@/modules/users/api/users";
 import { activityAt, isWorkKey, personNames, workAttributes } from "@/modules/users/person-model";
 import { useUserActions } from "@/modules/users/use-user-actions";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import {
   settleSensitiveAction,
   useSensitiveAction,
@@ -174,10 +174,10 @@ function DetailsSection({
 }) {
   const { t } = useTranslation("users");
   const locale = formatLocale();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const work = workAttributes(user.metadata);
   const managerEmail = work.find((w) => w.key === "manager_email")?.value;
-  const directory = useQuery({ ...userQueries.directory(tenantId), enabled: !!managerEmail });
+  const directory = useQuery({ ...userQueries.directory(organizationId), enabled: !!managerEmail });
   const manager = managerEmail
     ? directory.data?.items.find((u) => u.email.toLowerCase() === managerEmail.toLowerCase())
     : undefined;
@@ -243,7 +243,9 @@ function DetailsSection({
             </Fact>
             {standing.home ? null : (
               <Fact label={t("person.details.managedBy")}>
-                <span className="prs-mono">{user.tenant_id}</span>
+                {user.home_organization_name ?? (
+                  <span className="prs-mono">{user.organization_id}</span>
+                )}
               </Fact>
             )}
             <Fact label={t("person.details.updated")}>

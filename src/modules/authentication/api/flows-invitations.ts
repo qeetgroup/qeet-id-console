@@ -2,29 +2,41 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 
-import { ApiError, api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
+import { ApiError } from "@/platform/api/client";
+import { strictly } from "@/platform/api/assured";
+import type { Answer } from "@/platform/api/contract";
 
-import type { SessionResponse } from "./flows-session";
+import { isMfaChallenge, type LoginResponse, type SessionResponse } from "./flows-session";
 import { authKeys } from "./keys";
 
 /**
  * Accepts an organization invite anonymously: exchanges the emailed token and a chosen password
  * for a session (the backend creates the user and grants the invited role), then opens the
- * dashboard.
+ * dashboard. An organization that asks for a second factor answers a challenge instead, which
+ * the page carries on with.
  */
 export function useAcceptInvite() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (in_: { token: string; password: string; display_name?: string }) =>
-      api<SessionResponse>("/v1/invites/accept", {
-        method: "POST",
-        body: in_,
+    mutationFn: async (in_: {
+      token: string;
+      password: string;
+      display_name?: string;
+    }): Promise<LoginResponse> =>
+      backend.post("/v1/invites/accept", {
+        // The server takes an empty name as none.
+        body: { ...in_, display_name: in_.display_name ?? "" },
         anonymous: true,
       }),
 
-    onSuccess: () => navigate({ to: "/" }),
+    onSuccess: (res) => {
+      if (isMfaChallenge(res)) return;
+      void navigate({ to: "/" });
+    },
     // The invitation page shows the failure itself, so the global error toast is off.
     meta: { successMessage: "authentication:toast.invitationAccepted", silentError: true },
   });
@@ -36,8 +48,8 @@ export function useAcceptInvite() {
  */
 export function useAcceptInviteAsMe() {
   return useMutation({
-    mutationFn: (token: string) =>
-      api<SessionResponse>("/v1/me/invites/accept", { method: "POST", body: { token } }),
+    mutationFn: async (token: string): Promise<SessionResponse> =>
+      backend.post("/v1/me/invites/accept", { body: { token } }),
     onSuccess: () => {
       if (typeof window !== "undefined") window.location.assign("/");
     },
@@ -45,24 +57,31 @@ export function useAcceptInviteAsMe() {
   });
 }
 
-/** What an invitation link names, before the invitee chooses how to accept. */
-export interface InvitePreview {
-  organization: { name: string; slug: string };
-  email: string;
-  expires_at: string;
-  account_exists: boolean; // An account already holds the address: sign in and accept as yourself
-  methods: { password: boolean; passkey: boolean }; // The ways a new account may accept
-}
+/**
+ * What an invitation link names, before the invitee chooses how to accept: `account_exists` when
+ * the address has an account (sign in and accept as yourself), and the `methods` a new one may use.
+ */
+// The server always sends each of these; the document marks them optional (QTID-1063).
+const invitePreview = strictly<Answer<"/v1/invites/lookup", "post">>()(
+  z.object({
+    organization: z.object({ name: z.string(), slug: z.string() }),
+    email: z.string(),
+    expires_at: z.string(),
+    account_exists: z.boolean(),
+    methods: z.object({ password: z.boolean(), passkey: z.boolean() }),
+  }),
+);
+export type InvitePreview = z.infer<typeof invitePreview>;
 
 /** Looks up an invitation by its emailed token, sent in the body rather than the URL. */
 export function useInvitePreview(token: string) {
   return useQuery({
     queryKey: authKeys.invitePreview(token),
     queryFn: () =>
-      api<InvitePreview>("/v1/invites/lookup", {
-        method: "POST",
+      backend.post("/v1/invites/lookup", {
         body: { token },
         anonymous: true,
+        schema: invitePreview,
       }),
     enabled: !!token,
     retry: false,
@@ -71,16 +90,7 @@ export function useInvitePreview(token: string) {
 }
 
 /** A pending invitation addressed to the signed-in user's email. */
-export interface ReceivedInvite {
-  id: string;
-  tenant_id: string;
-  tenant_name: string;
-  tenant_slug: string;
-  email: string;
-  role_id?: string | null;
-  expires_at: string;
-  created_at: string;
-}
+export type ReceivedInvite = Answer<"/v1/me/invites">["items"][number];
 
 /**
  * Returns pending invitations addressed to the current user's email, so the organisation picker
@@ -93,7 +103,7 @@ export function useMyInvitations() {
     // every visit, where an error toast would be noise.
     queryFn: async (): Promise<{ items: ReceivedInvite[] }> => {
       try {
-        return await api<{ items: ReceivedInvite[] }>("/v1/me/invites");
+        return await backend.get("/v1/me/invites");
       } catch (err) {
         if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
           return { items: [] };
@@ -111,7 +121,7 @@ export function useDeclineInvitation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (inviteId: string) =>
-      api<{ message: string }>(`/v1/me/invites/${inviteId}/decline`, { method: "POST", body: {} }),
+      backend.post("/v1/me/invites/{id}/decline", { path: { id: inviteId } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.invitations() }),
     meta: { successMessage: "authentication:toast.invitationDeclined" },
   });
@@ -123,11 +133,8 @@ export function useDeclineInvitation() {
  */
 export function useAcceptInvitation() {
   return useMutation({
-    mutationFn: (inviteId: string) =>
-      api<SessionResponse>(`/v1/me/invites/${inviteId}/accept`, {
-        method: "POST",
-        body: {},
-      }),
+    mutationFn: async (inviteId: string): Promise<SessionResponse> =>
+      backend.post("/v1/me/invites/{id}/accept", { path: { id: inviteId } }),
     onSuccess: () => {
       if (typeof window !== "undefined") window.location.assign("/");
     },

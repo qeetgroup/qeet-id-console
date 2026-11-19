@@ -48,7 +48,7 @@ import {
 import { FeatureGate } from "@/modules/billing";
 import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   settleSensitiveAction,
@@ -73,8 +73,9 @@ export function SamlAppsPage({ adding, onAddingChange }: SamlAppsPageProps) {
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
   const canWrite = useCapabilities().can("connection.write");
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((o) => o.id === tenantId)?.name ?? t("signIn.yourOrg");
+  const organizationId = useOrganizationId();
+  const org =
+    useOrgs().data?.items.find((o) => o.id === organizationId)?.name ?? t("signIn.yourOrg");
   const listQ = useSamlProviders();
   const [editing, setEditing] = useState<SamlProvider | null>(null);
 
@@ -114,7 +115,7 @@ export function SamlAppsPage({ adding, onAddingChange }: SamlAppsPageProps) {
         >
           {listQ.isError ? (
             <DataState error={listQ.error} onRetry={() => listQ.refetch()} />
-          ) : !listQ.data || !tenantId ? (
+          ) : !listQ.data || !organizationId ? (
             <Skeleton lines={8} />
           ) : (
             <SetupLayout
@@ -148,19 +149,19 @@ export function SamlAppsPage({ adding, onAddingChange }: SamlAppsPageProps) {
                 <dl className="account-details">
                   <CopyRow
                     label={t("apps.ours.metadata")}
-                    value={idpMetadataUrl(tenantId)}
+                    value={idpMetadataUrl(organizationId)}
                     hint={t("apps.ours.metadataHint")}
                     copyLabel={t("apps.ours.copyMetadata")}
                   />
                   <CopyRow
                     label={t("apps.ours.entity")}
-                    value={idpEntityId(tenantId)}
+                    value={idpEntityId(organizationId)}
                     hint={t("apps.ours.entityHint")}
                     copyLabel={t("apps.ours.copyEntity")}
                   />
                   <CopyRow
                     label={t("apps.ours.sso")}
-                    value={idpSsoUrl(tenantId)}
+                    value={idpSsoUrl(organizationId)}
                     hint={t("apps.ours.ssoHint")}
                     copyLabel={t("apps.ours.copySso")}
                   />
@@ -181,7 +182,7 @@ export function SamlAppsPage({ adding, onAddingChange }: SamlAppsPageProps) {
                       <AppRow
                         key={app.id}
                         app={app}
-                        tenantId={tenantId}
+                        organizationId={organizationId}
                         canWrite={canWrite}
                         onEdit={() => setEditing(app)}
                       />
@@ -227,12 +228,12 @@ export function SamlAppsPage({ adding, onAddingChange }: SamlAppsPageProps) {
 /** One app: its status, where it takes sign-ins and when someone last signed in, its actions. */
 function AppRow({
   app,
-  tenantId,
+  organizationId,
   canWrite,
   onEdit,
 }: {
   app: SamlProvider;
-  tenantId: string;
+  organizationId: string;
   canWrite: boolean;
   onEdit: () => void;
 }) {
@@ -309,7 +310,9 @@ function AppRow({
           <Button
             variant="ghost"
             icon={ExternalLinkIcon}
-            render={<a href={idpSignInUrl(tenantId, app.id)} target="_blank" rel="noreferrer" />}
+            render={
+              <a href={idpSignInUrl(organizationId, app.id)} target="_blank" rel="noreferrer" />
+            }
           >
             {t("apps.list.test")}
           </Button>

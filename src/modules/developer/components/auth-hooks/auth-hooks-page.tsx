@@ -306,7 +306,7 @@ export function AuthHooksPage() {
                   code={JSON.stringify(
                     {
                       trigger: "post_login",
-                      tenant_id: "…",
+                      organization_id: "…",
                       user_id: "…",
                       email: "priya@example.com",
                       timestamp: "2026-10-28T09:30:00Z",

@@ -4,43 +4,42 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { userKeys } from "@/modules/users";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { complianceKeys } from "./keys";
 import type { RetentionPolicy } from "./retention";
+import { backend } from "@/platform/api/backend";
 
 /**
  * How many deleted people the saved window makes due now. The server's preview is a POST that only
  * counts (policy.read), so it's read like any query.
  */
 export function useRetentionDue(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: complianceKeys.retentionDue(tenantId),
-    enabled: !!tenantId && enabled,
+    queryKey: complianceKeys.retentionDue(organizationId),
+    enabled: !!organizationId && enabled,
     queryFn: () =>
-      api<{ ripe_deleted_users: number; deleted_users_days: number }>(
-        `/v1/tenants/${tenantId}/retention/preview`,
-        { method: "POST" },
-      ),
+      backend.post("/v1/organizations/{organizationID}/retention/preview", {
+        path: { organizationID: organizationId ?? "" },
+      }),
     meta: { silent: true },
   });
 }
 
 export function useUpdateRetentionPolicy() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: RetentionPolicy) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<RetentionPolicy>(`/v1/tenants/${tenantId}/retention`, {
-        method: "PUT",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.put("/v1/organizations/{organizationID}/retention", {
+        path: { organizationID: organizationId },
         body,
       });
     },
     onSuccess: (data) => {
-      qc.setQueryData(complianceKeys.retention(tenantId), data);
-      void qc.invalidateQueries({ queryKey: complianceKeys.retentionDue(tenantId) });
+      qc.setQueryData(complianceKeys.retention(organizationId), data);
+      void qc.invalidateQueries({ queryKey: complianceKeys.retentionDue(organizationId) });
     },
     meta: { successMessage: "compliance:toast.retentionPolicySaved" },
   });
@@ -48,18 +47,18 @@ export function useUpdateRetentionPolicy() {
 
 /** Removes, now, every deleted person past the saved window, whether automatic removal is on or not. */
 export function useRunRetention() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<{ purged: number }>(`/v1/tenants/${tenantId}/retention/run`, {
-        method: "POST",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post("/v1/organizations/{organizationID}/retention/run", {
+        path: { organizationID: organizationId },
       });
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
-      void qc.invalidateQueries({ queryKey: complianceKeys.retentionDue(tenantId) });
+      void qc.invalidateQueries({ queryKey: userKeys.deleted(organizationId) });
+      void qc.invalidateQueries({ queryKey: complianceKeys.retentionDue(organizationId) });
     },
     meta: { successMessage: "compliance:toast.retentionPurgeComplete" },
   });

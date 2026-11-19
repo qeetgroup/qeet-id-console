@@ -14,6 +14,7 @@ import {
   type EmailTemplateTranslation,
   resetEmailTemplate,
   saveEmailTemplate,
+  sentByOrganization,
   testEmailTemplate,
   useEmailTemplates,
 } from "@/modules/organizations/api/email-templates";
@@ -27,7 +28,7 @@ import {
   emailTemplateInput,
   updateEmailLocale,
 } from "@/modules/organizations/email-template-model";
-import { useMe, useTenantId } from "@/platform/auth/session";
+import { useMe, useOrganizationId } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
@@ -59,7 +60,7 @@ export type EmailTemplatesViewProps = {
     key: string,
     draft: EmailTemplateInput,
     locale: string,
-  ) => Promise<{ status: "accepted" }>;
+  ) => Promise<{ status?: "accepted" }>;
   onDirtyChange?: (dirty: boolean) => void;
 };
 
@@ -72,31 +73,35 @@ export function EmailTemplatesPage({
   onDirtyChange,
 }: Pick<EmailTemplatesViewProps, "onDirtyChange">) {
   const { t } = useTranslation("organizations");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const name = useOrgName();
   const access = useCapabilities();
-  const canRead = !!tenantId && access.state === "ready" && access.can("branding.write");
+  const canRead = !!organizationId && access.state === "ready" && access.can("branding.write");
   const list = useEmailTemplates(canRead);
-  const branding = useBranding(canRead && access.can("tenant.read"));
+  const branding = useBranding(canRead && access.can("organization.read"));
   const me = useMe();
   const sensitive = useSensitiveAction();
   const queryClient = useQueryClient();
-  const active = useRef<{ tenantId: string | null; canWrite: boolean } | null>(null);
+  const active = useRef<{ organizationId: string | null; canWrite: boolean } | null>(null);
   useEffect(() => {
-    active.current = { tenantId, canWrite: canRead };
+    active.current = { organizationId, canWrite: canRead };
     return () => {
       active.current = null;
     };
-  }, [tenantId, canRead]);
+  }, [organizationId, canRead]);
   // A confirm still open when the organisation changes must not send to the new one.
   function requireScope() {
-    if (!tenantId || active.current?.tenantId !== tenantId || !active.current.canWrite)
+    if (
+      !organizationId ||
+      active.current?.organizationId !== organizationId ||
+      !active.current.canWrite
+    )
       throw new SensitiveActionCancelled();
-    return tenantId;
+    return organizationId;
   }
   function cache(template: EmailTemplate) {
     queryClient.setQueryData<{ items: EmailTemplate[]; capabilities?: EmailTemplateCapabilities }>(
-      orgKeys.emailTemplates(tenantId),
+      orgKeys.emailTemplates(organizationId),
       (previous) =>
         previous
           ? {
@@ -108,7 +113,7 @@ export function EmailTemplatesPage({
   }
   return (
     <EmailTemplatesView
-      key={`${tenantId}:${canRead}`}
+      key={`${organizationId}:${canRead}`}
       name={name}
       templates={canRead && !list.isError ? (list.data?.items ?? []) : []}
       capabilities={list.data?.capabilities}
@@ -142,8 +147,8 @@ export function EmailTemplatesPage({
           confirm: {
             title: t("emails.resetTitle", { template: template.name }),
             description: t(
-              template.delivery_scope === "tenant"
-                ? "emails.resetDescriptionTenant"
+              sentByOrganization(template)
+                ? "emails.resetDescriptionOrganization"
                 : "emails.resetDescriptionPlatform",
               { name },
             ),

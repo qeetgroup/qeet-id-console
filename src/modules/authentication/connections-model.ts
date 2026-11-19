@@ -127,7 +127,7 @@ export function connectionRows({
       on: c.status === "active",
       draft: c.status === "draft",
       problem: ending ? "certificate" : undefined,
-      lastUsed: c.last_login_at,
+      lastUsed: c.last_login_at ?? null,
     });
   }
   for (const a of apps)
@@ -139,7 +139,7 @@ export function connectionRows({
       status: connectionStatus(a.status),
       on: a.status === "active",
       draft: a.status === "draft",
-      lastUsed: a.last_login_at,
+      lastUsed: a.last_login_at ?? null,
     });
   return rows;
 }
@@ -172,7 +172,7 @@ export const DEFAULT_SETUP_LINK_TTL = 24 * 3_600;
 
 export type SetupLinkState = "active" | "expired" | "revoked";
 export function setupLinkState(
-  link: { revoked_at: string | null; expires_at: string },
+  link: { revoked_at?: string | null; expires_at: string },
   now: number,
 ): SetupLinkState {
   if (link.revoked_at) return "revoked";

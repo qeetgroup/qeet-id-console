@@ -1,24 +1,32 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import type { Branding } from "../branding-model";
 import { brandingKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export const brandingQueries = {
-  detail: (tenantId: string | null) =>
+  detail: (organizationId: string | null) =>
     queryOptions({
-      queryKey: brandingKeys.tenant(tenantId),
-      queryFn: () => api<Branding>(`/v1/tenants/${tenantId}/branding`),
-      enabled: !!tenantId,
+      queryKey: brandingKeys.organization(organizationId),
+      queryFn: () =>
+        backend.get("/v1/organizations/{organizationID}/branding", {
+          path: { organizationID: organizationId ?? "" },
+        }),
+      enabled: !!organizationId,
     }),
 };
 
 export function useBranding(enabled = true) {
-  const tenantId = useTenantId();
-  return useQuery({ ...brandingQueries.detail(tenantId), enabled: !!tenantId && enabled });
+  const organizationId = useOrganizationId();
+  return useQuery({
+    ...brandingQueries.detail(organizationId),
+    enabled: !!organizationId && enabled,
+  });
 }
 
-export function saveBranding(tenantId: string, branding: Branding) {
-  return api<Branding>(`/v1/tenants/${tenantId}/branding`, { method: "PUT", body: branding });
+export function saveBranding(organizationId: string, branding: Branding) {
+  return backend.put("/v1/organizations/{organizationID}/branding", {
+    path: { organizationID: organizationId },
+    body: branding,
+  });
 }

@@ -27,7 +27,8 @@ import { useTranslation } from "react-i18next";
 
 import { LANGUAGE_LABELS, OFFERED_LANGUAGES } from "@/i18n";
 import { orgQueries } from "@/modules/organizations";
-import { useLogout, useMe, useTenantId } from "@/platform/auth/session";
+import { useLogout, useMe, useOrganizationId } from "@/platform/auth/session";
+import { initialsOf } from "@/shared/utils/initials";
 import { ThemeColumns } from "./theme-columns";
 
 /**
@@ -38,9 +39,9 @@ export function AccountMenu({ onShortcuts }: { onShortcuts: () => void }) {
   const { t, i18n } = useTranslation("dashboard");
   const me = useMe();
   const logout = useLogout();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const orgs = useQuery(orgQueries.list()).data?.items ?? [];
-  const current = orgs.find((org) => org.id === tenantId);
+  const current = orgs.find((org) => org.id === organizationId);
   const name = me.data?.display_name?.trim() || me.data?.email?.split("@")[0] || "";
   const language =
     OFFERED_LANGUAGES.find((lng) => lng === i18n.resolvedLanguage) ?? OFFERED_LANGUAGES[0];
@@ -48,7 +49,12 @@ export function AccountMenu({ onShortcuts }: { onShortcuts: () => void }) {
   return (
     <Menu>
       <MenuTrigger
-        aria-label={t("frame.accountMenu")}
+        // Named from the initials it shows, so a voice command for what's seen finds it.
+        aria-label={
+          name
+            ? t("frame.accountMenuFor", { initials: initialsOf(name), name })
+            : t("frame.accountMenu")
+        }
         render={<button type="button" className="frame-account-trigger" />}
       >
         <Avatar name={name || "?"} src={me.data?.avatar_url ?? undefined} size="sm" decorative />

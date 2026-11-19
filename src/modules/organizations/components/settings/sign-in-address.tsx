@@ -14,7 +14,7 @@ import {
   useSensitiveAction,
 } from "@/platform/security/sensitive-action-provider";
 import { DnsRecord } from "./dns-record";
-import { checkDomain, loginRecords, loginStep } from "./domains-model";
+import { checkDomain, loginRecords, loginState, loginStep } from "./domains-model";
 import { Failure, Item, LoadFailed, Loading, Panel, Section } from "./settings-parts";
 
 const STEPS = ["records", "certificate", "live"] as const;
@@ -31,7 +31,7 @@ export function SignInAddress({ name, example }: { name: string; example: string
   const canRead = access.can("connection.read");
   const canWrite = access.can("branding.write");
   const statusQ = useLoginDomain(canRead);
-  const brandingQ = useBranding(access.can("tenant.read"));
+  const brandingQ = useBranding(access.can("organization.read"));
   const [open, setOpen] = useState(false);
   const status = statusQ.data;
   const host = status?.login_domain ?? brandingQ.data?.custom_domain ?? "";
@@ -83,7 +83,7 @@ export function SignInAddress({ name, example }: { name: string; example: string
             <Item
               icon={<LinkIcon />}
               name={host || t("settings.domains.address.yours")}
-              line={t(`settings.domains.address.line.${status.status}`)}
+              line={t(`settings.domains.address.line.${loginState(status)}`)}
               actions={
                 host || canWrite ? (
                   <Button variant="ghost" onClick={() => setOpen(true)}>
@@ -179,7 +179,7 @@ function AddressPanel({
       title={host || t("settings.domains.address.setUpTitle")}
       description={
         host
-          ? t(`settings.domains.address.panel.${status.status}`, { host, name })
+          ? t(`settings.domains.address.panel.${loginState(status)}`, { host, name })
           : t("settings.domains.address.panel.new")
       }
     >

@@ -2,30 +2,33 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { ApiError, api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import { ApiError } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
 import type { SearchResponse } from "../registry/types/registry.types";
 
 const MAX_RESOURCE_RESULTS = 10;
 const MIN_QUERY_LENGTH = 2;
 
-// Every search query key sits under ["search", tenantId]; see src/modules/users/api/keys.ts.
+// Every search query key sits under ["search", organizationId]; see src/modules/users/api/keys.ts.
 export const searchKeys = {
   all: ["search"] as const,
-  results: (tenantId: string | null, query: string) => ["search", tenantId, query] as const,
+  results: (organizationId: string | null, query: string) =>
+    ["search", organizationId, query] as const,
 };
 
 /** Searches resources for `query` once it is long enough; a failure yields no results. */
 export function useResourceSearch(query: string, enabled: boolean) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: searchKeys.results(tenantId, query),
+    queryKey: searchKeys.results(organizationId, query),
     queryFn: async ({ signal }) => {
       try {
-        return await api<SearchResponse>("/v1/search", {
+        const page: SearchResponse = await backend.get("/v1/search", {
           query: { q: query, limit: MAX_RESOURCE_RESULTS },
           signal,
         });
+        return page;
       } catch (err) {
         // An abort must propagate so TanStack Query treats the request as cancelled.
         if (err instanceof Error && err.name === "AbortError") throw err;

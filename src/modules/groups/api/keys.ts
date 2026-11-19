@@ -1,10 +1,12 @@
-// Every groups query key sits under ["groups", tenantId]; see src/modules/users/api/keys.ts.
+// Every groups query key sits under ["groups", organizationId]; see src/modules/users/api/keys.ts.
 
 export const groupKeys = {
   all: ["groups"] as const, // every tenant
-  tenant: (tenantId: string | null) => ["groups", tenantId] as const,
-  list: (tenantId: string | null) => [...groupKeys.tenant(tenantId), "list"] as const,
-  members: (tenantId: string | null, groupId: string) =>
-    [...groupKeys.tenant(tenantId), "group", groupId, "members"] as const,
-  templates: (tenantId: string | null) => [...groupKeys.tenant(tenantId), "templates"] as const,
+  organization: (organizationId: string | null) => ["groups", organizationId] as const,
+  list: (organizationId: string | null) =>
+    [...groupKeys.organization(organizationId), "list"] as const,
+  members: (organizationId: string | null, groupId: string) =>
+    [...groupKeys.organization(organizationId), "group", groupId, "members"] as const,
+  templates: (organizationId: string | null) =>
+    [...groupKeys.organization(organizationId), "templates"] as const,
 };

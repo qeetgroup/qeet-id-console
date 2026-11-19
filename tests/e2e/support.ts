@@ -16,7 +16,7 @@ export const INVITED = { email: "invited@example.com", name: "Ivan Invited" }; /
 export const MEMBER = { id: "88888888-8888-4888-8888-888888888888", name: "Member of Org One" };
 export const ORG_ONE = { id: "22222222-2222-4222-8222-222222222222", name: "Org One" };
 export const ORG_TWO = { id: "33333333-3333-4333-8333-333333333333", name: "Org Two" };
-const PASSWORD = "Password123!";
+export const PASSWORD = "Password123!";
 
 /** Waits until React owns the server-rendered page (HydrationMarker in __root.tsx). */
 export async function hydrated(page: Page) {

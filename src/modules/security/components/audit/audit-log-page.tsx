@@ -50,7 +50,7 @@ import {
 } from "@/modules/security/api/audit-log";
 import { useLogSinks } from "@/modules/security/api/log-sinks";
 import { type AuditSearch, auditFilters, isFiltered } from "@/modules/security/audit-model";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { toastError } from "@/platform/errors/error-toast";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
@@ -102,7 +102,7 @@ export type AuditLogPageProps = {
  */
 export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
   const { t } = useTranslation("security");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
   const people = usePeople();
   const runSensitive = useSensitiveAction();
@@ -186,11 +186,11 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
     }).catch(settleSensitiveAction);
 
   async function exportAll(format: ExportFormat) {
-    if (!tenantId || exporting) return;
+    if (!organizationId || exporting) return;
     setExporting(format);
     try {
       // Starts at the newest matching event, not at the page on screen.
-      const { items, truncated } = await fetchAuditExport(tenantId, filters, EXPORT_ROW_CAP);
+      const { items, truncated } = await fetchAuditExport(organizationId, filters, EXPORT_ROW_CAP);
       const stamp = new Date().toISOString().replace(/[:.]/g, "-");
       if (format === "csv") {
         downloadBlob(rowsToCsv(items, CSV_COLUMNS), "text/csv;charset=utf-8", `audit-${stamp}.csv`);

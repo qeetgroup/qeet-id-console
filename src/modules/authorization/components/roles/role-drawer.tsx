@@ -42,6 +42,7 @@ import {
   resourcesOf,
 } from "@/modules/authorization/role-model";
 import { personLabel, ResourceName, useActionName, useCount } from "../lists/authz-parts";
+import { roleDescription, roleDisplayName } from "@/shared/utils/role-name";
 
 const SHOW_PEOPLE = 6;
 const isCapability = (key: string): key is Capability =>
@@ -136,7 +137,11 @@ function RoleDrawerContent({ access, view }: { access: RoleAccess; view: RoleAcc
   };
 
   return (
-    <DrawerContent title={role.name} description={role.description || undefined} size="md">
+    <DrawerContent
+      title={roleDisplayName(role.name)}
+      description={roleDescription(role) || undefined}
+      size="md"
+    >
       <DrawerBody>
         <div className="ppl authz-drawer">
           <p className="authz-drawer-kind">

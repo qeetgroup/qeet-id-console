@@ -1,14 +1,13 @@
-import {
-  type PublicKeyCredentialCreationOptionsJSON,
-  startRegistration,
-} from "@simplewebauthn/browser";
+import { startRegistration } from "@simplewebauthn/browser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { ApiError, api } from "@/platform/api/client";
+import { ApiError } from "@/platform/api/client";
 
 import { refreshSignInMethods } from "./sign-in-methods";
 import { authKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
+import { creationOptions } from "./webauthn";
 
 const passkeySchema = z.object({
   id: z.string(),
@@ -34,7 +33,7 @@ export type PasskeyList = z.infer<typeof passkeyListSchema>;
 
 /** Returns the signed-in user's passkeys, rejecting a response that isn't a passkey list. */
 export function listPasskeys(): Promise<PasskeyList> {
-  return api("/v1/passkeys", { schema: passkeyListSchema });
+  return backend.get("/v1/passkeys", { schema: passkeyListSchema });
 }
 
 /** Whether to offer adding a passkey, once the list has loaded. */
@@ -79,7 +78,7 @@ export function useRenamePasskey() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) =>
-      api<Passkey>(`/v1/passkeys/${encodeURIComponent(id)}`, { method: "PATCH", body: { name } }),
+      backend.patch("/v1/passkeys/{id}", { path: { id }, body: { name } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.passkeys() }),
     meta: { successMessage: "authentication:toast.passkeyRenamed", silentError: true },
   });
@@ -95,15 +94,14 @@ export function useRegisterPasskey() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { name?: string } | undefined) => {
-      const begin = await api<{
-        session_id: string;
-        publicKey: PublicKeyCredentialCreationOptionsJSON;
-      }>("/v1/passkeys/register/begin", { method: "POST" });
-      const credential = await startRegistration({ optionsJSON: begin.publicKey });
-      const name = input?.name?.trim();
-      await api<void>("/v1/passkeys/register/finish", {
-        method: "POST",
-        body: { session_id: begin.session_id, credential, ...(name ? { name } : {}) },
+      const begin = await backend.post("/v1/passkeys/register/begin");
+      const credential = await startRegistration({ optionsJSON: creationOptions(begin.publicKey) });
+      await backend.post("/v1/passkeys/register/finish", {
+        body: {
+          session_id: begin.session_id,
+          credential: { ...credential },
+          name: input?.name?.trim() ?? "",
+        },
       });
     },
     onSuccess: () => {
@@ -118,8 +116,7 @@ export function useRegisterPasskey() {
 export function useRemovePasskey() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/v1/passkeys/${encodeURIComponent(id)}`, { method: "DELETE" }),
+    mutationFn: (id: string) => backend.delete("/v1/passkeys/{id}", { path: { id } }),
     onSuccess: () => {
       void refreshSignInMethods(qc);
       return qc.invalidateQueries({ queryKey: authKeys.passkeys() });

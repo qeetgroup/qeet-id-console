@@ -19,7 +19,7 @@ import {
   useQeetAIProviderConfig,
   useQeetAIStatus,
 } from "@/modules/qeetai/api/qeetai";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
@@ -53,37 +53,38 @@ export type ProviderSettingsViewProps = ProviderActions & {
  */
 export function QeetAISettingsPage() {
   const { t } = useTranslation("qeetai");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
-  const canRead = !!tenantId && access.state === "ready" && access.can("secret.read");
+  const canRead = !!organizationId && access.state === "ready" && access.can("secret.read");
   const canWrite = canRead && access.can("secret.write");
   const configQuery = useQeetAIProviderConfig(canRead);
   const statusQuery = useQeetAIStatus(canRead);
   const queryClient = useQueryClient();
   const sensitive = useSensitiveAction();
-  const activeTenant = useRef(tenantId);
+  const activeOrganization = useRef(organizationId);
 
   useEffect(() => {
-    activeTenant.current = tenantId;
+    activeOrganization.current = organizationId;
     return () => {
-      activeTenant.current = null;
+      activeOrganization.current = null;
     };
-  }, [tenantId]);
+  }, [organizationId]);
 
   // A write started for one organisation never lands in another.
-  function requireCurrentTenant() {
-    if (!tenantId || activeTenant.current !== tenantId) throw new SensitiveActionCancelled();
+  function requireCurrentOrganization() {
+    if (!organizationId || activeOrganization.current !== organizationId)
+      throw new SensitiveActionCancelled();
   }
 
   const refresh = () =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: qeetaiKeys.providerConfig(tenantId) }),
-      queryClient.invalidateQueries({ queryKey: qeetaiKeys.status(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: qeetaiKeys.providerConfig(organizationId) }),
+      queryClient.invalidateQueries({ queryKey: qeetaiKeys.status(organizationId) }),
     ]);
 
   return (
     <ProviderSettingsView
-      key={`${tenantId}:${canWrite}`}
+      key={`${organizationId}:${canWrite}`}
       config={canRead ? configQuery.data : undefined}
       status={canRead ? statusQuery.data : undefined}
       loading={access.state === "resolving" || (canRead && configQuery.isPending)}
@@ -97,12 +98,12 @@ export function QeetAISettingsPage() {
           capability: "secret.write",
           actionLabel: t("form.saveAction"),
           run: () => {
-            requireCurrentTenant();
+            requireCurrentOrganization();
             return setQeetAIProviderConfig(input);
           },
         });
         if (!result) throw new SensitiveActionCancelled();
-        queryClient.setQueryData(qeetaiKeys.providerConfig(tenantId), result);
+        queryClient.setQueryData(qeetaiKeys.providerConfig(organizationId), result);
         await refresh();
         return result;
       }}
@@ -111,7 +112,7 @@ export function QeetAISettingsPage() {
           capability: "secret.write",
           actionLabel: t("form.testAction"),
           run: () => {
-            requireCurrentTenant();
+            requireCurrentOrganization();
             return testQeetAIProviderConfig(input);
           },
         });
@@ -131,7 +132,7 @@ export function QeetAISettingsPage() {
             tone: "destructive",
           },
           run: () => {
-            requireCurrentTenant();
+            requireCurrentOrganization();
             return deleteQeetAIProviderConfig();
           },
         })

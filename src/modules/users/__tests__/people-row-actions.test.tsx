@@ -32,7 +32,7 @@ import { PeopleRowActions, type PeopleRowHandlers } from "../components/people/p
 function user(overrides: Partial<User> = {}): User {
   return {
     id: "user-1",
-    tenant_id: "tenant-a",
+    organization_id: "tenant-a",
     email: "asha@example.test",
     status: "active",
     created_at: "2026-09-01T00:00:00Z",

@@ -14,7 +14,7 @@ import {
 
 const group = (name: string): Group => ({
   id: name,
-  tenant_id: "t1",
+  organization_id: "t1",
   parent_id: null,
   name,
   description: "",

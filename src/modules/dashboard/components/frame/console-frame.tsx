@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { QeetAI } from "@/modules/qeetai";
 import { scopedStorage } from "@/platform/auth/scoped-storage";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useFeatureFlag } from "@/platform/feature-flags/provider";
 import { useGlobalShortcuts } from "@/platform/keyboard/shortcuts";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -30,7 +30,7 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const access = useCapabilities();
   // Without an organisation only My account is open: no panels, no Qeet AI.
-  const hasOrg = !!useTenantId();
+  const hasOrg = !!useOrganizationId();
   const qeetaiEnabled = useFeatureFlag("qeetai") && hasOrg;
   const hasUnread = useHasUnreadNotifications(hasOrg);
   const [paletteOpen, setPaletteOpen] = useState(false);

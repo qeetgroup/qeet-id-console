@@ -57,13 +57,13 @@ const options = Route.options as unknown as Options;
 const enter = (pathname: string) =>
   options.beforeLoad({ context: { queryClient: {} }, location: { pathname, search: {} } });
 
-function session(tenantId: string | null): PublicSession {
+function session(organizationId: string | null): PublicSession {
   return {
     isAuthenticated: true,
     expiresAt: "2030-01-01T00:00:00Z",
     sessionId: "session-1",
     userId: "user-1",
-    tenantId,
+    organizationId,
     version: 1,
     impersonationActor: null,
   } as PublicSession;

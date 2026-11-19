@@ -63,7 +63,7 @@ export function EntryAccount({
   onSignOut: () => void;
 }) {
   const { t } = useTranslation("auth-flow");
-  const name = user.display_name?.trim() || user.email;
+  const name = user.display_name?.trim() || user.email || "";
   return (
     <div className="entry-account">
       <Avatar name={name} src={organizationImage(user.avatar_url)} size="md" decorative />

@@ -16,6 +16,7 @@ import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
 import {
   type LogSink,
   type SinkType,
+  sinkType,
   useCreateLogSink,
   useDeleteLogSink,
   useLogSinks,
@@ -42,7 +43,7 @@ const SAMPLE = JSON.stringify(
     events: [
       {
         id: "bc3a1fb3-a59b-4397-9cea-d0f72c5ef43c",
-        tenant_id: "6fa0b6d7-fef5-47ca-ae95-92b3bde8c366",
+        organization_id: "6fa0b6d7-fef5-47ca-ae95-92b3bde8c366",
         action: "auth.login_succeeded",
         actor_type: "user",
         actor_user_id: "bfb60e00-3d33-403d-ba9b-6ac00696a9c8",
@@ -160,9 +161,10 @@ function Destination({ sink, canWrite }: { sink: LogSink; canWrite: boolean }) {
   const runSensitive = useSensitiveAction();
   const toggle = useToggleLogSink();
   const remove = useDeleteLogSink();
-  const Icon = TYPE_ICON[sink.type] ?? CodeXmlIcon;
+  const known = sinkType(sink.type);
+  const Icon = known ? TYPE_ICON[known] : CodeXmlIcon;
   const failing = !!sink.last_error && sink.enabled;
-  const name = TYPES.includes(sink.type) ? t(`logStreams.type.${sink.type}.name`) : sink.type;
+  const name = known ? t(`logStreams.type.${known}.name`) : sink.type;
 
   const setEnabled = (enabled: boolean) =>
     runSensitive({

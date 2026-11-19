@@ -21,14 +21,14 @@ vi.mock("@/platform/api/client", () => ({
     return env.status;
   }),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-a" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-a" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: (c?: string) => !c || env.permissions.has(c) }),
 }));
 vi.mock("@/modules/qeetai/context/use-console-context", () => ({
   useConsoleContext: () => ({
     route: { pathname: "/users", title: "Users" },
-    tenantId: "tenant-a",
+    organizationId: "tenant-a",
     userId: "operator-1",
     capabilities: [],
   }),

@@ -4,10 +4,9 @@
 // only. Page-only, so the shell doesn't carry it.
 
 import { keepPreviousData, useQueries } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { dashboardKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 type Summary = {
   total: number;
@@ -41,7 +40,7 @@ export function useRangeReport(
   period: { from: string; previousFrom: string; previousTo: string },
   enabled = true,
 ) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const reads = [
     { ...SIGN_INS, from: period.from },
     { ...PEOPLE, from: period.from },
@@ -52,9 +51,9 @@ export function useRangeReport(
   ];
   return useQueries({
     queries: reads.map((query) => ({
-      queryKey: [...dashboardKeys.tenant(tenantId), "range", query],
-      queryFn: () => api<Summary>("/v1/activity/summary", { query: { ...query, bucket: 86_400 } }),
-      enabled: !!tenantId && enabled,
+      queryKey: [...dashboardKeys.organization(organizationId), "range", query],
+      queryFn: () => backend.get("/v1/activity/summary", { query: { ...query, bucket: 86_400 } }),
+      enabled: !!organizationId && enabled,
       staleTime: 60_000,
       placeholderData: keepPreviousData,
       meta: { silent: true },

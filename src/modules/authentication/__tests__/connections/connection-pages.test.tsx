@@ -15,7 +15,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   getApiBaseUrl: () => "https://id.example.com",
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -97,13 +97,13 @@ import { SamlConnectionPage } from "@/modules/authentication/components/saml/sam
 import { ScimPage } from "@/modules/authentication/components/scim/scim-page";
 import { OKTA_CERT } from "./fixtures";
 
-const T = "/v1/tenants/t1";
+const T = "/v1/organizations/t1";
 const DAY = 86_400_000;
 const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString();
 
 const SAML = {
   id: "s1",
-  tenant_id: "t1",
+  organization_id: "t1",
   name: "Okta",
   idp_entity_id: "http://www.okta.com/exk1",
   idp_sso_url: "https://acme.okta.com/app/sso/saml",
@@ -118,7 +118,7 @@ const SAML = {
 };
 const LDAP = {
   id: "l1",
-  tenant_id: "t1",
+  organization_id: "t1",
   name: "Staging Directory (test)",
   server_url: "ldaps://ldap.staging.qeet.in:636",
   start_tls: false,
@@ -135,7 +135,7 @@ const LDAP = {
 };
 const APP = {
   id: "a1",
-  tenant_id: "t1",
+  organization_id: "t1",
   name: "Slack",
   entity_id: "https://slack.com",
   acs_url: "https://acme.slack.com/sso/saml",
@@ -149,7 +149,7 @@ const APP = {
 };
 const CLIENT = {
   id: "c1",
-  tenant_id: "t1",
+  organization_id: "t1",
   client_id: "qci_support",
   name: "Support Desk",
   type: "confidential",
@@ -291,7 +291,7 @@ beforeEach(() => {
             items: [
               {
                 id: "k1",
-                tenant_id: "t1",
+                organization_id: "t1",
                 capabilities: ["scim"],
                 created_by: "u-me",
                 expires_at: new Date(Date.now() + DAY).toISOString(),
@@ -304,7 +304,7 @@ beforeEach(() => {
         : {
             link: {
               id: "k2",
-              tenant_id: "t1",
+              organization_id: "t1",
               capabilities: ["saml", "scim"],
               created_by: "u-me",
               expires_at: new Date(Date.now() + DAY).toISOString(),
@@ -747,7 +747,7 @@ describe("Applications", () => {
     fireEvent.click(within(drawer).getByRole("button", { name: "Register application" }));
     expect(await screen.findByText(/shown-once-secret/)).toBeTruthy();
     expect(bodyOf("POST", "/v1/oidc/clients")).toMatchObject({
-      tenant_id: "t1",
+      organization_id: "t1",
       name: "Billing",
       type: "confidential",
       redirect_uris: ["https://billing.qeet.in/callback"],

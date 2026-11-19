@@ -9,7 +9,7 @@ import { postureFindings, useAbacPolicies, usePermissions } from "@/modules/auth
 import { useDirectoryConnections, useDirectoryErrors } from "@/modules/directory";
 import { groupQueries } from "@/modules/groups";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   directoryAttention,
@@ -21,7 +21,7 @@ import {
 
 export function useDirectoryInsights() {
   const access = useCapabilities();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const can = {
     users: access.can("user.read"),
     groups: access.can("group.read"),
@@ -31,12 +31,15 @@ export function useDirectoryInsights() {
 
   const errors = useDirectoryErrors(FAILING_FILTERS); // connection.read, checked in the hook
   const connections = useDirectoryConnections();
-  const groups = useQuery({ ...groupQueries.list(tenantId), enabled: can.groups && !!tenantId });
+  const groups = useQuery({
+    ...groupQueries.list(organizationId),
+    enabled: can.groups && !!organizationId,
+  });
   const perms = usePermissions(can.roles);
   const policies = useAbacPolicies(can.policies);
   const people = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: can.users && !!tenantId,
+    ...userQueries.directory(organizationId),
+    enabled: can.users && !!organizationId,
   });
 
   const failing = useMemo(() => failingConnections(errors.data), [errors.data]);

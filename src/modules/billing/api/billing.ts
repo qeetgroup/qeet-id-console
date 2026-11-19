@@ -1,9 +1,12 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 
 import { formatLocale, humanizeMissingKey } from "@/i18n";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { billingKeys } from "./keys";
+import { strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
 export interface Plan {
   id: string;
@@ -55,11 +58,14 @@ export interface Entitlements {
 }
 
 export function useEntitlements(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: billingKeys.entitlements(tenantId),
-    enabled: !!tenantId && enabled,
-    queryFn: () => api<Entitlements>(`/v1/tenants/${tenantId}/entitlements`),
+    queryKey: billingKeys.entitlements(organizationId),
+    enabled: !!organizationId && enabled,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/entitlements", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }
 
@@ -68,35 +74,47 @@ export function useEntitlements(enabled = true) {
  * useEntitlements so the counts run only where usage is shown, not on every gated page.
  */
 export function useUsage(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: billingKeys.usage(tenantId),
-    enabled: !!tenantId && enabled,
+    queryKey: billingKeys.usage(organizationId),
+    enabled: !!organizationId && enabled,
     queryFn: () =>
-      api<{ usage: Record<string, number> }>(`/v1/tenants/${tenantId}/entitlements/usage`),
+      backend.get("/v1/organizations/{organizationID}/entitlements/usage", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }
 
-/** A tenant's billing & tax details, carried onto invoices. */
-export interface BillingProfile {
-  legal_name: string;
-  billing_email: string;
-  address_line1: string;
-  address_line2: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-  tax_id_type: "none" | "gstin" | "vat";
-  tax_id: string;
-}
+// An organisation's billing & tax details, carried onto invoices. A tax ID type other than these
+// fails the read, rather than show a form that can't hold it.
+export const billingProfileSchema = strictly<
+  Answer<"/v1/organizations/{organizationID}/billing/profile">
+>()(
+  z.object({
+    legal_name: z.string(),
+    billing_email: z.string(),
+    address_line1: z.string(),
+    address_line2: z.string(),
+    city: z.string(),
+    state: z.string(),
+    postal_code: z.string(),
+    country: z.string(),
+    tax_id_type: z.enum(["none", "gstin", "vat"]),
+    tax_id: z.string(),
+  }),
+);
+export type BillingProfile = z.infer<typeof billingProfileSchema>;
 
 export function useBillingProfile(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: billingKeys.profile(tenantId),
-    enabled: !!tenantId && enabled,
-    queryFn: () => api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`),
+    queryKey: billingKeys.profile(organizationId),
+    enabled: !!organizationId && enabled,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/billing/profile", {
+        path: { organizationID: organizationId ?? "" },
+        schema: billingProfileSchema,
+      }),
   });
 }
 
@@ -119,7 +137,7 @@ export function formatMoney(amountMinor: number, currency: string): string {
 
 const plansQuery = queryOptions({
   queryKey: billingKeys.plans(),
-  queryFn: () => api<{ items: Plan[] }>("/v1/billing/plans"),
+  queryFn: () => backend.get("/v1/billing/plans"),
 });
 
 export function usePlans() {
@@ -138,28 +156,31 @@ export function usePlanName(): (code: string) => string {
 }
 
 export function useSubscription(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: billingKeys.subscription(tenantId),
-    enabled: !!tenantId && enabled,
-    queryFn: () => api<Subscription>(`/v1/tenants/${tenantId}/billing/subscription`),
+    queryKey: billingKeys.subscription(organizationId),
+    enabled: !!organizationId && enabled,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/billing/subscription", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }
 
 export function useInvoices(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: billingKeys.invoices(tenantId),
-    enabled: !!tenantId && enabled,
-    queryFn: () => api<{ items: Invoice[] }>(`/v1/tenants/${tenantId}/billing/invoices`),
+    queryKey: billingKeys.invoices(organizationId),
+    enabled: !!organizationId && enabled,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/billing/invoices", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }
 
-export interface CheckoutResult {
-  status: "active" | "checkout";
-  checkout_url?: string;
-  provider?: string;
-}
+/** "active": the plan took effect at once; "checkout": pay at `checkout_url` first. */
+export type CheckoutResult = Answer<"/v1/organizations/{organizationID}/billing/checkout", "post">;
 
 export type BillingInterval = "month" | "year";
 
@@ -186,8 +207,7 @@ export function startSignupCheckout(input: {
   successUrl: string;
   cancelUrl: string;
 }): Promise<CheckoutResult> {
-  return api<CheckoutResult>("/v1/signup/checkout", {
-    method: "POST",
+  return backend.post("/v1/signup/checkout", {
     body: {
       org_name: input.orgName,
       org_slug: input.orgSlug,
@@ -212,6 +232,6 @@ export interface SalesLead {
 }
 
 /** Sends an enquiry the server stores and emails to sales, so none is lost to a mail client. */
-export function submitSalesLead(lead: SalesLead): Promise<{ status: string }> {
-  return api<{ status: string }>("/v1/sales/leads", { method: "POST", body: lead });
+export function submitSalesLead(lead: SalesLead): Promise<unknown> {
+  return backend.post("/v1/sales/leads", { body: lead });
 }

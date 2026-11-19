@@ -18,7 +18,6 @@ import { Link as RouterLink } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import type { RelatedEventsResponse } from "@/modules/activity";
 import {
   type ActivityEvent,
   CHANGE_KINDS,
@@ -27,10 +26,10 @@ import {
 } from "@/modules/authorization/api/authz-activity";
 import { authzKeys } from "@/modules/authorization/api/keys";
 import { Sparkline, SplitBar } from "@/modules/dashboard";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCount } from "../lists/authz-parts";
 import { actorName, type ChangeContext, changeTarget, titleText } from "./change-model";
+import { backend } from "@/platform/api/backend";
 
 // The Users band's ordinal ramp (people.css), a step per kind.
 const SWATCH: Record<ChangeKind, string> = {
@@ -118,11 +117,11 @@ export function ChangeDrawer({
   ctx: ChangeContext;
   onClose: () => void;
 }) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const fetched = useQuery({
-    queryKey: [...authzKeys.tenant(tenantId), "change", eventId],
+    queryKey: [...authzKeys.organization(organizationId), "change", eventId],
     enabled: !!eventId && !loaded,
-    queryFn: () => api<RelatedEventsResponse>(`/v1/activity/${eventId}/related`),
+    queryFn: () => backend.get("/v1/activity/{id}/related", { path: { id: eventId ?? "" } }),
     meta: { silent: true },
   });
   const event = loaded ?? fetched.data?.event;

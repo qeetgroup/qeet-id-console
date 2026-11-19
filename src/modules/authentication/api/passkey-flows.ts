@@ -1,8 +1,6 @@
 import {
   browserSupportsWebAuthn,
   browserSupportsWebAuthnAutofill,
-  type PublicKeyCredentialCreationOptionsJSON,
-  type PublicKeyCredentialRequestOptionsJSON,
   startAuthentication,
   startRegistration,
   WebAuthnAbortService,
@@ -11,8 +9,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
 import i18n from "@/i18n";
-import { api, ApiError } from "@/platform/api/client";
+import { ApiError } from "@/platform/api/client";
 import { errorMessage } from "@/platform/errors/user-message";
+import { backend } from "@/platform/api/backend";
+import { creationOptions, requestOptions } from "./webauthn";
 
 type PasskeySession = { user_id: string; session_id: string; expires_at: string };
 
@@ -37,29 +37,21 @@ export function passkeyErrorMessage(error: unknown): string {
 export async function signInWithPasskey(): Promise<PasskeySession> {
   requirePasskeySupport();
   // Discoverable login lets the device choose the account without requiring email.
-  const begin = await api<{
-    session_id: string;
-    publicKey: PublicKeyCredentialRequestOptionsJSON;
-  }>("/v1/passkeys/login/begin", { method: "POST", body: {}, anonymous: true });
-  const credential = await startAuthentication({ optionsJSON: begin.publicKey });
+  const begin = await backend.post("/v1/passkeys/login/begin", { body: {}, anonymous: true });
+  const credential = await startAuthentication({ optionsJSON: requestOptions(begin.publicKey) });
   // api() consumes the token response in the BFF, returning safe metadata only.
-  return api<PasskeySession>("/v1/passkeys/login/finish", {
-    method: "POST",
-    body: { session_id: begin.session_id, credential },
+  return backend.post("/v1/passkeys/login/finish", {
+    body: { session_id: begin.session_id, credential: { ...credential } },
     anonymous: true,
   });
 }
 
 export async function signUpWithPasskey(input: PasskeySignupInput): Promise<PasskeySession> {
   requirePasskeySupport();
-  const begin = await api<{
-    session_id: string;
-    publicKey: PublicKeyCredentialCreationOptionsJSON;
-  }>("/v1/signup/passkey/begin", { method: "POST", body: input, anonymous: true });
-  const credential = await startRegistration({ optionsJSON: begin.publicKey });
-  return api<PasskeySession>("/v1/signup/passkey/finish", {
-    method: "POST",
-    body: { session_id: begin.session_id, credential },
+  const begin = await backend.post("/v1/signup/passkey/begin", { body: input, anonymous: true });
+  const credential = await startRegistration({ optionsJSON: creationOptions(begin.publicKey) });
+  return backend.post("/v1/signup/passkey/finish", {
+    body: { session_id: begin.session_id, credential: { ...credential } },
     anonymous: true,
   });
 }
@@ -72,14 +64,13 @@ export type InvitePasskeyInput = { token: string; display_name?: string };
  */
 export async function acceptInviteWithPasskey(input: InvitePasskeyInput): Promise<PasskeySession> {
   requirePasskeySupport();
-  const begin = await api<{
-    session_id: string;
-    publicKey: PublicKeyCredentialCreationOptionsJSON;
-  }>("/v1/invites/accept/passkey/begin", { method: "POST", body: input, anonymous: true });
-  const credential = await startRegistration({ optionsJSON: begin.publicKey });
-  return api<PasskeySession>("/v1/invites/accept/passkey/finish", {
-    method: "POST",
-    body: { session_id: begin.session_id, credential },
+  const begin = await backend.post("/v1/invites/accept/passkey/begin", {
+    body: input,
+    anonymous: true,
+  });
+  const credential = await startRegistration({ optionsJSON: creationOptions(begin.publicKey) });
+  return backend.post("/v1/invites/accept/passkey/finish", {
+    body: { session_id: begin.session_id, credential: { ...credential } },
     anonymous: true,
   });
 }
@@ -118,17 +109,14 @@ export function startPasskeyAutofill({
       let sessionId: string;
       let credential: Awaited<ReturnType<typeof startAuthentication>>;
       try {
-        const begin = await api<{
-          session_id: string;
-          publicKey: PublicKeyCredentialRequestOptionsJSON;
-        }>("/v1/passkeys/login/begin", { method: "POST", body: {}, anonymous: true });
+        const begin = await backend.post("/v1/passkeys/login/begin", { body: {}, anonymous: true });
         sessionId = begin.session_id;
         renew = setTimeout(() => {
           renewed = true;
           WebAuthnAbortService.cancelCeremony();
         }, AUTOFILL_RENEW_AFTER_MS);
         credential = await startAuthentication({
-          optionsJSON: begin.publicKey,
+          optionsJSON: requestOptions(begin.publicKey),
           useBrowserAutofill: true,
         });
       } catch {
@@ -139,8 +127,7 @@ export function startPasskeyAutofill({
       clearTimeout(renew);
       if (stopped) return;
       try {
-        const session = await api<PasskeySession>("/v1/passkeys/login/finish", {
-          method: "POST",
+        const session = await backend.post("/v1/passkeys/login/finish", {
           body: { session_id: sessionId, credential },
           anonymous: true,
         });

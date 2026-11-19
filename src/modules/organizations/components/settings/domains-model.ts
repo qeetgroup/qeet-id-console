@@ -1,5 +1,14 @@
 // Settings › Domains: names checked as the server checks them, and its words for a failed check.
 import type { DNSRecord, LoginDomainStatus } from "@/modules/organizations/api/domains";
+import { isOneOf } from "@/shared/utils/one-of";
+
+const LOGIN_STATES = ["not_configured", "pending", "active"] as const;
+export type LoginState = (typeof LOGIN_STATES)[number];
+
+/** The sign-in address's state in words the page has; one the server adds later reads as pending. */
+export function loginState(status: LoginDomainStatus): LoginState {
+  return isOneOf(LOGIN_STATES, status.status) ? status.status : "pending";
+}
 
 /**
  * A domain as the server keeps it (domainverify.normalizeDomain, validDomain): lower case, without

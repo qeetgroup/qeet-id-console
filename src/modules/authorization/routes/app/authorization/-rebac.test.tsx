@@ -13,7 +13,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -64,7 +64,7 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
     const query = (options?.query ?? {}) as Record<string, unknown>;
-    if (path === "/v1/tenants/t-1/relation-tuples/graph")
+    if (path === "/v1/organizations/t-1/relation-tuples/graph")
       return {
         nodes: [
           { id: "document:readme", type: "document", label: "readme" },
@@ -76,11 +76,12 @@ beforeEach(() => {
           { from: "document:readme", to: "group:pm", relation: "viewer → member" },
         ],
       };
-    if (path === "/v1/tenants/t-1/relation-tuples" && method === "GET")
+    if (path === "/v1/organizations/t-1/relation-tuples" && method === "GET")
       return { items: query.object ? tuples : [] };
-    if (path === "/v1/tenants/t-1/relation-tuples" && method === "POST")
+    if (path === "/v1/organizations/t-1/relation-tuples" && method === "POST")
       return { id: "tu-3", ...(options?.body as object) };
-    if (path === "/v1/tenants/t-1/relation-tuples/tu-1" && method === "DELETE") return undefined;
+    if (path === "/v1/organizations/t-1/relation-tuples/tu-1" && method === "DELETE")
+      return undefined;
     if (path === "/v1/users")
       return {
         items: [
@@ -141,7 +142,9 @@ describe("ReBAC › the object's relationships", () => {
     expect(within(dialog).getByText(/Grace Okafor loses viewer on document:readme/)).toBeTruthy();
     expect(writes()).toEqual([]);
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete relationship" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/tenants/t-1/relation-tuples/tu-1"]));
+    await waitFor(() =>
+      expect(writes()).toEqual(["DELETE /v1/organizations/t-1/relation-tuples/tu-1"]),
+    );
     expect(sensitiveCalls[0]?.actionLabel).toBe("Delete this relationship");
   });
 });
@@ -157,7 +160,7 @@ describe("ReBAC › add a relationship", () => {
     });
     fireEvent.click(within(drawer).getByRole("button", { name: "Add relationship" }));
 
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/tenants/t-1/relation-tuples"]));
+    await waitFor(() => expect(writes()).toEqual(["POST /v1/organizations/t-1/relation-tuples"]));
     const post = vi.mocked(api).mock.calls.find(([, o]) => o?.method === "POST");
     expect(post?.[1]?.body).toEqual({
       object: "document:readme",

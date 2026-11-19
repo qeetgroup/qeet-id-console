@@ -1,13 +1,16 @@
-// AI agents exchange their secret at POST /v1/agents/token for a short-lived, scoped token marked
-// actor_type="agent". The secret is returned only once, on create.
+// AI agents trade their secret at the token endpoint (POST /v1/oauth/token, client_credentials,
+// the agent's id as client_id) for a short-lived, scoped token marked actor_type "agent". The
+// secret is returned only once, on create.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { authKeys, type ShadowAICandidate } from "@/modules/authentication";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { authKeys } from "@/modules/authentication";
+import { useOrganizationId } from "@/platform/auth/session";
 import { developerKeys } from "./keys";
+import { strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
 const agentSchema = z.object({
   id: z.string(),
@@ -22,19 +25,28 @@ const agentSchema = z.object({
 });
 export type Agent = z.infer<typeof agentSchema>;
 
-const createdAgentSchema = agentSchema.extend({ secret: z.string().min(1) });
+const agentList = strictly<Answer<"/v1/organizations/{organizationID}/agents">>()(
+  z.object({ items: z.array(agentSchema) }),
+);
+const createdAgentSchema = strictly<Answer<"/v1/organizations/{organizationID}/agents", "post">>()(
+  agentSchema.extend({ secret: z.string().min(1) }),
+);
 
 export function useAgents() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: developerKeys.agents(tenantId),
-    queryFn: () => api<{ items: Agent[] }>(`/v1/tenants/${tenantId}/agents`),
-    enabled: !!tenantId,
+    queryKey: developerKeys.agents(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/agents", {
+        path: { organizationID: organizationId ?? "" },
+        schema: agentList,
+      }),
+    enabled: !!organizationId,
   });
 }
 
 export function useCreateAgent() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     gcTime: 0, // the response holds a secret shown once; drop it once nothing shows it
@@ -44,57 +56,66 @@ export function useCreateAgent() {
       token_ttl_seconds: number;
       sponsor_user_id: string;
     }) =>
-      api(`/v1/tenants/${tenantId}/agents`, { method: "POST", body, schema: createdAgentSchema }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+      backend.post("/v1/organizations/{organizationID}/agents", {
+        path: { organizationID: organizationId ?? "" },
+        body,
+        schema: createdAgentSchema,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(organizationId) }),
     meta: { successMessage: "developer:toast.agentCreated", silentError: true }, // the form shows the error
   });
 }
 
 export function useDeleteAgent() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/agents/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+      backend.delete("/v1/organizations/{organizationID}/agents/{id}", {
+        path: { organizationID: organizationId ?? "", id },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(organizationId) }),
     meta: { successMessage: "developer:toast.agentDeleted" },
   });
 }
 
 export function useSetAgentDisabled() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, disabled }: { id: string; disabled: boolean }) =>
-      api<void>(`/v1/tenants/${tenantId}/agents/${id}`, {
-        method: "PATCH",
+      backend.patch("/v1/organizations/{organizationID}/agents/{id}", {
+        path: { organizationID: organizationId ?? "", id },
         body: { disabled },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(organizationId) }),
     meta: { successMessage: "developer:toast.agentStatusUpdated" },
   });
 }
 
 export function useKillAllAgents() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      api<{ suspended: number }>(`/v1/tenants/${tenantId}/agents/kill-all`, {
-        method: "POST",
+      backend.post("/v1/organizations/{organizationID}/agents/kill-all", {
+        path: { organizationID: organizationId ?? "" },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(organizationId) }),
     meta: { successMessage: "developer:toast.allAgentAccessRevoked" },
   });
 }
 
 /** Lists the agents a user sponsors, e.g. to preview a sponsor transfer. */
 export function useAgentsSponsoredBy(userId: string | null) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: developerKeys.sponsoredAgents(tenantId, userId),
-    queryFn: () => api<{ items: Agent[] }>(`/v1/tenants/${tenantId}/agents/sponsored-by/${userId}`),
-    enabled: !!tenantId && !!userId,
+    queryKey: developerKeys.sponsoredAgents(organizationId, userId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/agents/sponsored-by/{userID}", {
+        path: { organizationID: organizationId ?? "", userID: userId ?? "" },
+      }),
+    enabled: !!organizationId && !!userId,
   });
 }
 
@@ -103,15 +124,15 @@ export function useAgentsSponsoredBy(userId: string | null) {
  * sponsor leaves no orphaned agents.
  */
 export function useTransferSponsor() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ fromUserId, toUserId }: { fromUserId: string; toUserId: string }) =>
-      api<{ transferred: number }>(
-        `/v1/tenants/${tenantId}/agents/sponsored-by/${fromUserId}/transfer`,
-        { method: "POST", body: { to_user_id: toUserId } },
-      ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(tenantId) }),
+      backend.post("/v1/organizations/{organizationID}/agents/sponsored-by/{userID}/transfer", {
+        path: { organizationID: organizationId ?? "", userID: fromUserId },
+        body: { to_user_id: toUserId },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.agents(organizationId) }),
     meta: { successMessage: "developer:toast.sponsorTransferred" },
   });
 }
@@ -122,11 +143,13 @@ export function useTransferSponsor() {
  * people who can't read connections.
  */
 export function useUnmanagedClients(enabled: boolean) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: authKeys.shadowAi(tenantId),
-    enabled: enabled && !!tenantId,
+    queryKey: authKeys.shadowAi(organizationId),
+    enabled: enabled && !!organizationId,
     queryFn: () =>
-      api<{ items: ShadowAICandidate[] }>(`/v1/tenants/${tenantId}/oidc/clients/shadow-ai`),
+      backend.get("/v1/organizations/{organizationID}/oidc/clients/shadow-ai", {
+        path: { organizationID: organizationId ?? "" },
+      }),
   });
 }

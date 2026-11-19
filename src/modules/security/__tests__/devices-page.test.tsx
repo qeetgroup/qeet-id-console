@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -74,7 +74,7 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/oauth/devices" && method === "GET")
+    if (path === "/v1/organizations/t-1/oauth/devices" && method === "GET")
       return {
         items: [
           device("d-wait", "WAIT-CODE", "pending", 5),
@@ -82,9 +82,24 @@ beforeEach(() => {
           device("d-ok", "GOOD-CODE", "authorized", -2, true),
         ],
       };
-    if (path === "/v1/tenants/t-1/oidc/clients")
-      return { items: [{ id: "c1", client_id: "qci_cli", name: "Qeet CLI" }] };
-    if (path === "/v1/tenants/t-1/oauth/devices/d-wait" && method === "DELETE") return undefined;
+    if (path === "/v1/organizations/t-1/oidc/clients")
+      return {
+        items: [
+          {
+            id: "c1",
+            organization_id: "t-1",
+            client_id: "qci_cli",
+            name: "Qeet CLI",
+            type: "public",
+            redirect_uris: [],
+            grant_types: ["urn:ietf:params:oauth:grant-type:device_code"],
+            scopes: ["openid"],
+            created_at: "2026-10-01T00:00:00Z",
+          },
+        ],
+      };
+    if (path === "/v1/organizations/t-1/oauth/devices/d-wait" && method === "DELETE")
+      return undefined;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
@@ -130,6 +145,8 @@ describe("Authentication › Device sign-ins", () => {
     const dialog = await screen.findByRole("alertdialog");
     expect(within(dialog).getByText(/for Qeet CLI gets no access/)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Deny" }));
-    await waitFor(() => expect(changes()).toEqual(["DELETE /v1/tenants/t-1/oauth/devices/d-wait"]));
+    await waitFor(() =>
+      expect(changes()).toEqual(["DELETE /v1/organizations/t-1/oauth/devices/d-wait"]),
+    );
   });
 });

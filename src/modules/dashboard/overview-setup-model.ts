@@ -14,7 +14,7 @@ import type {
 import type { Subscription } from "@/modules/billing";
 import type { ApiKey, Webhook } from "@/modules/developer";
 import type { Group } from "@/modules/groups";
-import type { TenantDomain } from "@/modules/organizations";
+import type { OrganizationDomain } from "@/modules/organizations";
 import type { UserStats } from "@/modules/users";
 import { type Failure, groupsItem, ldapItem } from "./overview-directory-model";
 import { DAY_MS, KEY_EXPIRY_SOON_DAYS } from "./overview-model";
@@ -51,7 +51,7 @@ export interface SetupSources {
   pendingInvites?: number;
   /** How many departments people are in, from their profiles. */
   departments?: number;
-  domains?: TenantDomain[];
+  domains?: OrganizationDomain[];
   scim?: ScimConfig;
   ldap?: LdapConnection[];
   /** Directory connections whose connection check is failing, by id. */
@@ -136,7 +136,7 @@ function samlAppsItem(apps: SamlProvider[]): SetupItem {
   };
 }
 
-function domainItem(domains: TenantDomain[]): SetupItem {
+function domainItem(domains: OrganizationDomain[]): SetupItem {
   const base = { id: "domain", name: "dashboard:overview.setup.items.domain" as const };
   const to = "/settings/organization/domains";
   const verified = domains.filter((d) => d.status === "verified");

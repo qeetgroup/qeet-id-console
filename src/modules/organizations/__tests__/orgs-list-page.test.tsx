@@ -10,15 +10,15 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "g",
+  useOrganizationId: () => "g",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", mode: "full", can: () => true, canAll: () => true }),
 }));
-const switchToTenant = vi.hoisted(() => vi.fn(async () => {}));
-vi.mock("@/modules/authentication", () => ({ switchToTenant }));
+const switchToOrganization = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock("@/modules/authentication", () => ({ switchToOrganization }));
 vi.mock("@tanstack/react-router", () => ({
   useLocation: () => ({ pathname: "/organizations", searchStr: "", hash: "" }),
   useNavigate: () => vi.fn(),
@@ -59,7 +59,6 @@ const org = (id: string, name: string, patch: Partial<Org> = {}): Org => ({
   status: "active",
   plan: "free",
   region: "ap-south-1",
-  logo_url: "",
   created_at: "2025-08-18T09:00:00Z",
   member_count: 10,
   mfa_enabled_count: 9,
@@ -76,7 +75,7 @@ const mine = (id: string, roles: string[], daysAgo: number, domain = "") => ({
   roles,
   last_used_at: new Date(Date.now() - daysAgo * DAY).toISOString(),
 });
-// Two pages from the server, as /v1/tenants pages them.
+// Two pages from the server, as /v1/organizations pages them.
 const PAGE_ONE = [
   org("g", "Qeet Group", { plan: "enterprise", member_count: 46, mfa_enabled_count: 18 }),
   org("s", "Qeet Sandbox", { member_count: 3, mfa_enabled_count: 0 }),
@@ -89,15 +88,15 @@ const MINE = [
 ];
 
 beforeEach(() => {
-  switchToTenant.mockClear();
+  switchToOrganization.mockClear();
   vi.mocked(api).mockImplementation(async (path: string, options) => {
     const cursor = (options?.query?.cursor as string | undefined) ?? "";
-    if (path === "/v1/tenants")
+    if (path === "/v1/organizations")
       return cursor === ""
         ? { items: PAGE_ONE, next_cursor: "p2" }
         : { items: PAGE_TWO, next_cursor: "" };
     if (path === "/v1/me/organizations") return { items: MINE, next_cursor: "" };
-    if (path === "/v1/tenants/g") return { ...PAGE_ONE[0], deletion_due_at: null };
+    if (path === "/v1/organizations/g") return { ...PAGE_ONE[0], deletion_due_at: null };
     if (path === "/v1/me/invites") return { items: [{ id: "i1" }] };
     throw new Error(`unexpected request: ${path}`);
   });
@@ -162,7 +161,7 @@ describe("the Organisations list", () => {
     fireEvent.click(
       within(rowOf("Qeet Sandbox")).getByRole("button", { name: "Switch to Qeet Sandbox" }),
     );
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith("s"));
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith("s"));
   });
 
   it("offers no edit, suspend or delete on a row", async () => {

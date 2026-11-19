@@ -11,35 +11,32 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   DEFAULT_EVENT_FILTERS,
   type DirectoryEvent,
   type ErrorFilters,
   type EventFilters,
-  errorPageSchema,
+  readDirectoryErrors,
 } from "./directory";
-import { eventPageSchema } from "./events";
+import { readDirectoryEvents } from "./events";
 import { directoryKeys } from "./keys";
 
 /** Each connection's events over `days`: one short read a connection, for its total and failures. */
 export function useEventsByConnection(connectionIds: readonly string[], days: number) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
   return useQueries({
     queries: connectionIds.map((id) => {
       // The same shape as useDirectoryEvents' filters, so a matching read shares its cache.
       const filters: EventFilters = { ...DEFAULT_EVENT_FILTERS, days, connection_id: id, limit: 1 };
       return {
-        queryKey: directoryKeys.events(tenantId, filters),
-        queryFn: () =>
-          api(`/v1/tenants/${tenantId}/directory/activity`, {
-            query: filters,
-            schema: eventPageSchema,
-          }),
-        enabled: !!tenantId && access.can("connection.read"),
+        queryKey: directoryKeys.events(organizationId, filters),
+        queryFn: ({ signal }: { signal: AbortSignal }) =>
+          readDirectoryEvents(organizationId ?? "", filters, undefined, signal),
+        enabled: !!organizationId && access.can("connection.read"),
         staleTime: 15_000,
       };
     }),
@@ -47,6 +44,8 @@ export function useEventsByConnection(connectionIds: readonly string[], days: nu
 }
 
 export type ErrorAction = "retry" | "resolve";
+// An answer that doesn't say it succeeded counts as still open.
+const outcome = z.object({ succeeded: z.boolean().optional() });
 
 /** How a run of retries or resolves went: closed (passed or marked), still open, refused. */
 export type ErrorActionResult = { closed: number; stillOpen: number; refused: number };
@@ -56,7 +55,7 @@ export type ErrorActionResult = { closed: number; stillOpen: number; refused: nu
  * open; one the server refuses (already closed, not retryable) is counted, not thrown.
  */
 export function useDirectoryErrorAction() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -69,10 +68,20 @@ export function useDirectoryErrorAction() {
       const result: ErrorActionResult = { closed: 0, stillOpen: 0, refused: 0 };
       for (const event of events) {
         try {
-          const response = await api(
-            `/v1/tenants/${tenantId}/directory/errors/${encodeURIComponent(event.id)}/${action}`,
-            { method: "POST", schema: z.object({ succeeded: z.boolean() }) },
-          );
+          const path = { organizationID: organizationId ?? "", eventID: event.id };
+          const response =
+            action === "retry"
+              ? await backend.post(
+                  "/v1/organizations/{organizationID}/directory/errors/{eventID}/retry",
+                  {
+                    path,
+                    schema: outcome,
+                  },
+                )
+              : await backend.post(
+                  "/v1/organizations/{organizationID}/directory/errors/{eventID}/resolve",
+                  { path, schema: outcome },
+                );
           if (response.succeeded) result.closed++;
           else result.stillOpen++;
         } catch (err) {
@@ -83,17 +92,21 @@ export function useDirectoryErrorAction() {
       }
       return result;
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: directoryKeys.organization(organizationId) }),
     meta: { silent: true }, // the page says how it went
   });
 }
 
 /** An alert for the person making it, on one connection or any; see the file's comment. */
 export function useCreateDirectoryAlert() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useMutation({
     mutationFn: (body: { name: string; connection_id: string | null; threshold: number }) =>
-      api(`/v1/tenants/${tenantId}/directory/alerts`, { method: "POST", body }),
+      backend.post("/v1/organizations/{organizationID}/directory/alerts", {
+        path: { organizationID: organizationId ?? "" },
+        body,
+      }),
     meta: { successMessage: "directory:toast.alertCreated", silentError: true }, // the dialog shows an error
   });
 }
@@ -109,31 +122,27 @@ export class ExportTooLargeError extends Error {
 const EXPORT_CAP = 10_000;
 
 /** Every event on the list's filters, a hundred at a time, for a CSV. */
-export async function fetchActivityExport(tenantId: string, filters: EventFilters) {
+export async function fetchActivityExport(organizationId: string, filters: EventFilters) {
   const records: DirectoryEvent[] = [];
-  for (let offset = 0; offset < EXPORT_CAP; offset += 100) {
-    const page = await api(`/v1/tenants/${tenantId}/directory/activity`, {
-      query: { ...filters, limit: 100, offset },
-      schema: eventPageSchema,
-    });
+  let cursor: string | undefined;
+  do {
+    const page = await readDirectoryEvents(organizationId, { ...filters, limit: 100 }, cursor);
     if (page.total > EXPORT_CAP) throw new ExportTooLargeError();
     records.push(...page.items);
-    if (records.length >= page.total || page.items.length === 0) break;
-  }
+    cursor = page.next_cursor || undefined;
+  } while (cursor);
   return records;
 }
 
 /** Every failure on the list's filters, a hundred at a time, for a CSV. */
-export async function fetchErrorsExport(tenantId: string, filters: ErrorFilters) {
+export async function fetchErrorsExport(organizationId: string, filters: ErrorFilters) {
   const records: DirectoryEvent[] = [];
-  for (let offset = 0; offset < EXPORT_CAP; offset += 100) {
-    const page = await api(`/v1/tenants/${tenantId}/directory/errors`, {
-      query: { ...filters, limit: 100, offset },
-      schema: errorPageSchema,
-    });
+  let cursor: string | undefined;
+  do {
+    const page = await readDirectoryErrors(organizationId, { ...filters, limit: 100 }, cursor);
     if (page.total > EXPORT_CAP) throw new ExportTooLargeError();
     records.push(...page.items);
-    if (records.length >= page.total || page.items.length === 0) break;
-  }
+    cursor = page.next_cursor || undefined;
+  } while (cursor);
   return records;
 }

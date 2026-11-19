@@ -1,10 +1,13 @@
 import { z } from "zod";
-import { authKeys } from "@/modules/authentication";
 
 import i18n from "@/i18n";
-import { api } from "@/platform/api/client";
-import type { AuthPolicy } from "@/modules/authentication";
+import { type AuthPolicy, authKeys, authPolicyQueries } from "@/modules/authentication";
+import { backend } from "@/platform/api/backend";
+import type { Body } from "@/platform/api/contract";
 import type { ToolDefinition } from "../types/tool.types";
+
+type AuthzenBody = Body<"/v1/organizations/{organizationID}/access/v1/evaluation", "post">;
+type AbacBody = Body<"/v1/organizations/{organizationID}/abac/evaluate", "post">;
 
 const simulateAuthorizationInput = z.object({
   engine: z.enum(["authzen", "abac", "rbac", "rebac"]),
@@ -23,56 +26,55 @@ type SimulateResult = {
 };
 
 async function runAuthzenEval(
-  tenantId: string,
+  organizationId: string,
   input: SimulateAuthorizationInput,
   signal: AbortSignal,
 ): Promise<SimulateResult> {
   const t0 = Date.now();
-  const data = await api<{ decision: boolean; context?: unknown }>(
-    `/v1/tenants/${tenantId}/access/v1/evaluation`,
-    {
-      method: "POST",
-      body: {
-        subject: input.subject,
-        resource: input.resource,
-        action: { name: input.action },
-        context: { explain: true, ...(input.context ?? {}) },
-      },
-      signal,
+  const data = await backend.post("/v1/organizations/{organizationID}/access/v1/evaluation", {
+    path: { organizationID: organizationId },
+    // The assistant's subject and resource go as it gave them; the server checks their shape.
+    body: {
+      subject: input.subject as AuthzenBody["subject"],
+      resource: input.resource as AuthzenBody["resource"],
+      action: { name: input.action },
+      context: { explain: true, ...(input.context ?? {}) },
     },
-  );
+    signal,
+  });
   return {
-    allowed: data.decision,
+    allowed: data.decision === true, // no decision is a refusal
     explain: data.context,
     durationMs: Date.now() - t0,
   };
 }
 
 async function runAbacEval(
-  tenantId: string,
+  organizationId: string,
   input: SimulateAuthorizationInput,
   signal: AbortSignal,
 ): Promise<SimulateResult> {
   const t0 = Date.now();
-  const data = await api<{ allow: boolean; reason?: string; explain?: unknown }>(
-    `/v1/tenants/${tenantId}/abac/evaluate`,
-    {
-      method: "POST",
-      body: { subject: input.subject, resource: input.resource, action: input.action },
-      query: { explain: "true" },
-      signal,
+  const data = await backend.post("/v1/organizations/{organizationID}/abac/evaluate", {
+    path: { organizationID: organizationId },
+    body: {
+      subject: input.subject as AbacBody["subject"],
+      resource: input.resource as AbacBody["resource"],
+      action: input.action,
     },
-  );
+    query: { explain: true },
+    signal,
+  });
   return {
-    allowed: data.allow,
+    allowed: data.allow === true,
     reason: data.reason,
-    explain: data.explain,
+    explain: data.trace,
     durationMs: Date.now() - t0,
   };
 }
 
 async function runRbacCheck(
-  tenantId: string,
+  organizationId: string,
   input: SimulateAuthorizationInput,
   signal: AbortSignal,
 ): Promise<SimulateResult> {
@@ -82,17 +84,17 @@ async function runRbacCheck(
     typeof input.subject === "string"
       ? input.subject
       : (((input.subject as Record<string, unknown>)?.id as string) ?? "");
-  const data = await api<{ allowed: boolean; reason?: string; paths?: unknown }>("/v1/check", {
+  const data = await backend.get("/v1/check", {
     query: {
       user_id: userId,
-      tenant_id: tenantId,
+      organization_id: organizationId,
       permission: input.action,
       explain: "true",
     },
     signal,
   });
   return {
-    allowed: data.allowed,
+    allowed: data.allowed === true,
     reason: data.reason,
     explain: data.paths,
     durationMs: Date.now() - t0,
@@ -100,7 +102,7 @@ async function runRbacCheck(
 }
 
 async function runRebacCheck(
-  tenantId: string,
+  organizationId: string,
   input: SimulateAuthorizationInput,
   signal: AbortSignal,
 ): Promise<SimulateResult> {
@@ -114,17 +116,14 @@ async function runRebacCheck(
     typeof input.resource === "string"
       ? input.resource
       : `${resourceObj?.type ?? ""}:${resourceObj?.id ?? ""}`;
-  const data = await api<{ allowed: boolean; path?: unknown }>(
-    `/v1/tenants/${tenantId}/relation-tuples/check`,
-    {
-      method: "POST",
-      body: { object: objectStr, relation: input.action, user_id: userId },
-      query: { explain: "true" },
-      signal,
-    },
-  );
+  const data = await backend.post("/v1/organizations/{organizationID}/relation-tuples/check", {
+    path: { organizationID: organizationId },
+    body: { object: objectStr, relation: input.action, user_id: userId },
+    query: { explain: "true" },
+    signal,
+  });
   return {
-    allowed: data.allowed,
+    allowed: data.allowed === true,
     explain: data.path,
     durationMs: Date.now() - t0,
   };
@@ -145,16 +144,16 @@ export const simulateAuthorizationTool: ToolDefinition<SimulateAuthorizationInpu
     let result: SimulateResult;
     switch (input.engine) {
       case "authzen":
-        result = await runAuthzenEval(ctx.tenantId, input, ctx.signal);
+        result = await runAuthzenEval(ctx.organizationId, input, ctx.signal);
         break;
       case "abac":
-        result = await runAbacEval(ctx.tenantId, input, ctx.signal);
+        result = await runAbacEval(ctx.organizationId, input, ctx.signal);
         break;
       case "rbac":
-        result = await runRbacCheck(ctx.tenantId, input, ctx.signal);
+        result = await runRbacCheck(ctx.organizationId, input, ctx.signal);
         break;
       case "rebac":
-        result = await runRebacCheck(ctx.tenantId, input, ctx.signal);
+        result = await runRebacCheck(ctx.organizationId, input, ctx.signal);
         break;
     }
     const verdict = result.allowed ? "ALLOW" : "DENY";
@@ -219,16 +218,18 @@ export const setStrictMfaTool: ToolDefinition<SetStrictMfaInput> = {
   auditLabel: "qeetai.set_strict_mfa",
   async run(ctx, input) {
     // The PUT replaces the whole policy, so read it first. Strict MFA = no remembered devices.
-    const current = await api<AuthPolicy>(`/v1/tenants/${ctx.tenantId}/auth-policy`, {
-      signal: ctx.signal,
+    // Read fresh and checked: a field missing here would be reset by the PUT.
+    const current = await ctx.queryClient.fetchQuery({
+      ...authPolicyQueries.detail(ctx.organizationId),
+      staleTime: 0,
     });
     const next: AuthPolicy = { ...current, remember_device_enabled: !input.enabled };
-    await api<AuthPolicy>(`/v1/tenants/${ctx.tenantId}/auth-policy`, {
-      method: "PUT",
+    await backend.put("/v1/organizations/{organizationID}/auth-policy", {
+      path: { organizationID: ctx.organizationId },
       body: next,
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: authKeys.policy(ctx.tenantId) });
+    ctx.queryClient.invalidateQueries({ queryKey: authKeys.policy(ctx.organizationId) });
     return {
       ok: true,
       summary: input.enabled

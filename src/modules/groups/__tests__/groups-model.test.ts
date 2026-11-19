@@ -22,7 +22,7 @@ const group = (
   description = "",
 ): Group => ({
   id,
-  tenant_id: "t1",
+  organization_id: "t1",
   parent_id,
   name,
   description,

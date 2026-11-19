@@ -29,7 +29,7 @@ const AUTHENTICATED_SESSION: PublicSession = {
   expiresAt: "2030-01-01T00:00:00Z",
   sessionId: "session-1",
   userId: "user-1",
-  tenantId: "tenant-1",
+  organizationId: "tenant-1",
   version: 1,
   impersonationActor: null,
 };
@@ -39,7 +39,7 @@ const EMPTY_SESSION: PublicSession = {
   expiresAt: null,
   sessionId: null,
   userId: null,
-  tenantId: null,
+  organizationId: null,
   version: 0,
   impersonationActor: null,
 };
@@ -208,7 +208,11 @@ describe("api() BFF request", () => {
 
     const pending = api<{ items: Array<{ id: string }> }>("/v1/users");
     await vi.waitFor(() => expect(proxyApiRequest).toHaveBeenCalledOnce());
-    sessionStore.set({ ...AUTHENTICATED_SESSION, tenantId: "tenant-2", sessionId: "session-2" });
+    sessionStore.set({
+      ...AUTHENTICATED_SESSION,
+      organizationId: "tenant-2",
+      sessionId: "session-2",
+    });
     resolveRequest({
       status: 200,
       data: { items: [{ id: "tenant-1-user" }] },
@@ -217,7 +221,7 @@ describe("api() BFF request", () => {
     });
 
     await expect(pending).rejects.toMatchObject({ code: "client.stale_scope" });
-    expect(sessionStore.getSnapshot().tenantId).toBe("tenant-2");
+    expect(sessionStore.getSnapshot().organizationId).toBe("tenant-2");
   });
 });
 

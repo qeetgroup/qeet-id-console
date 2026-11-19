@@ -5,30 +5,37 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import i18n from "@/i18n";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
-import type { BillingProfile, CheckoutResult, Subscription } from "./billing";
+import { useOrganizationId } from "@/platform/auth/session";
+import { type BillingProfile, billingProfileSchema, type CheckoutResult } from "./billing";
 import { billingKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 /** Starts a no-card trial of a paid tier; only an organisation with no subscription yet may. */
 export function useStartTrial() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { plan_code: string; currency: string }) =>
-      api<Subscription>(`/v1/tenants/${tenantId}/billing/trial`, { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
+      backend.post("/v1/organizations/{organizationID}/billing/trial", {
+        path: { organizationID: organizationId ?? "" },
+        body,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.organization(organizationId) }),
     meta: { successMessage: "billing:toast.trialStarted", silentError: true },
   });
 }
 
 export function useSaveBillingProfile() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: BillingProfile) =>
-      api<BillingProfile>(`/v1/tenants/${tenantId}/billing/profile`, { method: "PUT", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.profile(tenantId) }),
+      backend.put("/v1/organizations/{organizationID}/billing/profile", {
+        path: { organizationID: organizationId ?? "" },
+        body,
+        schema: billingProfileSchema,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.profile(organizationId) }),
     meta: { successMessage: "billing:toast.billingProfileSaved", silentError: true },
   });
 }
@@ -39,7 +46,7 @@ export function useSaveBillingProfile() {
  * the provider then returns the administrator to the billing page.
  */
 export function useCheckout() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (body: {
@@ -48,8 +55,8 @@ export function useCheckout() {
       country?: string;
     }): Promise<CheckoutResult> => {
       const base = `${window.location.origin}/settings/billing`;
-      return api<CheckoutResult>(`/v1/tenants/${tenantId}/billing/checkout`, {
-        method: "POST",
+      return backend.post("/v1/organizations/{organizationID}/billing/checkout", {
+        path: { organizationID: organizationId ?? "" },
         body: {
           ...body,
           success_url: `${base}?checkout=success`,
@@ -64,22 +71,21 @@ export function useCheckout() {
       }
       // Only a plan that took effect is "changed": a checkout hasn't changed anything yet.
       toast.success(i18n.t("billing:toast.subscriptionUpdated"));
-      qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) });
+      qc.invalidateQueries({ queryKey: billingKeys.organization(organizationId) });
     },
     meta: { silent: true },
   });
 }
 
 export function useCancelSubscription() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      api<{ cancel_at_period_end: boolean }>(
-        `/v1/tenants/${tenantId}/billing/subscription/cancel`,
-        { method: "POST" },
-      ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.tenant(tenantId) }),
+      backend.post("/v1/organizations/{organizationID}/billing/subscription/cancel", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: billingKeys.organization(organizationId) }),
     meta: { successMessage: "billing:toast.subscriptionWillCancelAt", silentError: true },
   });
 }

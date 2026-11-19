@@ -81,6 +81,10 @@
 }
 
 .org-bar-name {
+  /* A target at least the minimum size (WCAG 2.5.8): the names stack closely. */
+  display: block;
+  min-block-size: var(--qx-size-target-min);
+  line-height: var(--qx-size-target-min);
   overflow: hidden;
   color: var(--qx-color-text-default);
   text-decoration: none;

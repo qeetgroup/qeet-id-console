@@ -203,7 +203,7 @@ confirm, from the list or the page. The console's one confirm (`SensitiveActionP
 
 Directory › Organisations (`/organizations`) is rebuilt on `@qeetrix/react`:
 `modules/organizations/components/list/` and `components/page/`. It lists the organisations you
-belong to (every page of `GET /v1/tenants`), joined with your place in each from
+belong to (every page of `GET /v1/organizations`), joined with your place in each from
 `GET /v1/me/organizations`: your roles, when you last opened it, its domain.
 
 - `orgs-list-page.tsx`: the header and its band (`orgs-band.tsx`, the Users band's parts: people

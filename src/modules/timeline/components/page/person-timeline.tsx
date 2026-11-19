@@ -17,7 +17,7 @@ import {
   type TimelineSearch,
 } from "@/modules/timeline/timeline-model";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { TimelineBand, TimelineBandPlaceholder } from "./timeline-band";
 import { TimelineEvents } from "./timeline-events";
@@ -45,8 +45,8 @@ export function PersonTimeline({
   const { t } = useTranslation("timeline");
   const access = useCapabilities();
   const canRead = access.can("audit.read");
-  const tenantId = useTenantId();
-  const enabled = canRead && !!tenantId;
+  const organizationId = useOrganizationId();
+  const enabled = canRead && !!organizationId;
   // The period counts back from when the view opened, so its queries keep one window.
   const [now] = useState(() => Date.now());
   const period = filters.period ?? DEFAULT_PERIOD;
@@ -54,10 +54,16 @@ export function PersonTimeline({
   const from = start.toISOString();
   const query: EventsQuery = { from, kind: filters.kind, failed: filters.result === "failed" };
 
-  const personQ = useQuery({ ...userQueries.detail(tenantId, userId), meta: { silent: true } });
-  const summaryQ = useQuery({ ...timelineQueries.summary(tenantId, userId, from), enabled });
-  const signInsQ = useQuery({ ...timelineQueries.signIns(tenantId, userId, from), enabled });
-  const eventsQ = useInfiniteQuery({ ...timelineQueries.events(tenantId, userId, query), enabled });
+  const personQ = useQuery({
+    ...userQueries.detail(organizationId, userId),
+    meta: { silent: true },
+  });
+  const summaryQ = useQuery({ ...timelineQueries.summary(organizationId, userId, from), enabled });
+  const signInsQ = useQuery({ ...timelineQueries.signIns(organizationId, userId, from), enabled });
+  const eventsQ = useInfiniteQuery({
+    ...timelineQueries.events(organizationId, userId, query),
+    enabled,
+  });
   const exporter = useTimelineExport(userId, query);
 
   const events = useMemo(() => eventsQ.data?.pages.flatMap((p) => p.events) ?? [], [eventsQ.data]);
@@ -71,14 +77,14 @@ export function PersonTimeline({
   const titles = events.map((e) => eventTitle(e, userId));
   const hasRoles = titles.some((x) => (x.kind === "about" || x.kind === "toOther") && x.roleId);
   const rolesQ = useQuery({
-    ...roleQueries.list(tenantId),
-    enabled: !!tenantId && hasRoles && access.can("role.read"),
+    ...roleQueries.list(organizationId),
+    enabled: !!organizationId && hasRoles && access.can("role.read"),
   });
   const others = [
     ...new Set(titles.flatMap((x) => (x.kind === "toOther" && x.personId ? [x.personId] : []))),
   ].slice(0, NAMED_PEOPLE);
   const othersQ = useQueries({
-    queries: others.map((id) => ({ ...userQueries.detail(tenantId, id), staleTime: 60_000 })),
+    queries: others.map((id) => ({ ...userQueries.detail(organizationId, id), staleTime: 60_000 })),
   });
   const names: Names = {
     role: (id) => (id ? rolesQ.data?.items.find((r) => r.id === id)?.name : undefined),

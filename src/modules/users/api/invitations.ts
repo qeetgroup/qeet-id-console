@@ -3,80 +3,76 @@
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { userKeys } from "./keys";
 
-export interface Invitation {
-  id: string;
-  tenant_id: string;
-  email: string;
-  role_id?: string | null;
-  status: "pending" | "accepted" | "declined" | "expired" | "revoked";
-  expires_at: string;
-  accepted_at?: string | null;
-  created_at: string;
-}
+/** An invitation as the organisation's list has it; never its token. */
+export type Invitation = Answer<"/v1/organizations/{organizationID}/invites">["items"][number];
 
 export const invitationQueries = {
-  list: (tenantId: string | null) =>
+  list: (organizationId: string | null) =>
     queryOptions({
-      queryKey: userKeys.invitations(tenantId),
-      queryFn: () => api<{ items: Invitation[] }>(`/v1/tenants/${tenantId}/invites`),
-      enabled: !!tenantId,
+      queryKey: userKeys.invitations(organizationId),
+      queryFn: () =>
+        backend.get("/v1/organizations/{organizationID}/invites", {
+          path: { organizationID: organizationId ?? "" },
+        }),
+      enabled: !!organizationId,
     }),
 };
 
 export function useInvitations(enabled = true) {
-  const options = invitationQueries.list(useTenantId());
+  const options = invitationQueries.list(useOrganizationId());
   return useQuery({ ...options, enabled: options.enabled && enabled });
 }
 
 export interface CreateInvitationInput {
-  tenant_id: string; // the organization the invitee joins; any the caller belongs to
+  organization_id: string; // the organization the invitee joins; any the caller belongs to
   email: string;
   role_id?: string;
 }
 
+// The server takes role_id always, null for none; the answer never carries the token.
+const createInvite = ({ role_id, ...rest }: CreateInvitationInput) =>
+  backend.post("/v1/invites", { body: { ...rest, role_id: role_id ?? null } });
+
 /** One call per invitation, for bulk actions and several addresses at once to fan out. */
 export const inviteCalls = {
-  create: (body: CreateInvitationInput) =>
-    api<{ invite: Invitation }>("/v1/invites", { method: "POST", body }), // never the token
-  resend: (id: string) =>
-    api<{ invite: Invitation }>(`/v1/invites/${id}/resend`, { method: "POST" }),
-  revoke: (id: string) => api<void>(`/v1/invites/${id}`, { method: "DELETE" }),
+  create: createInvite,
+  resend: (id: string) => backend.post("/v1/invites/{id}/resend", { path: { id } }),
+  revoke: (id: string) => backend.delete("/v1/invites/{id}", { path: { id } }),
 };
 
 export function useCreateInvitation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: CreateInvitationInput) =>
-      api<{ invite: Invitation }>("/v1/invites", { method: "POST", body }), // never the token
-    onSuccess: (_, { tenant_id }) =>
-      qc.invalidateQueries({ queryKey: userKeys.invitations(tenant_id) }),
+    mutationFn: createInvite,
+    onSuccess: (_, { organization_id }) =>
+      qc.invalidateQueries({ queryKey: userKeys.invitations(organization_id) }),
     meta: { successMessage: "users:toast.invitationSent", silentError: true }, // the sheet shows the error
   });
 }
 
 /** Re-sends an invitation with a fresh link and expiry, returning it to pending; only email has the link. */
 export function useResendInvitation() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<{ invite: Invitation }>(`/v1/invites/${id}/resend`, { method: "POST" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.invitations(tenantId) }),
+    mutationFn: (id: string) => backend.post("/v1/invites/{id}/resend", { path: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.invitations(organizationId) }),
     meta: { successMessage: "users:toast.invitationReSent" },
   });
 }
 
 export function useRevokeInvitation() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/invites/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.invitations(tenantId) }),
+    mutationFn: (id: string) => backend.delete("/v1/invites/{id}", { path: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: userKeys.invitations(organizationId) }),
     meta: { successMessage: "users:toast.invitationRevoked" },
   });
 }

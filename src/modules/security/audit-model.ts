@@ -87,7 +87,7 @@ export const RESOURCE_TYPES = [
   "session",
   "group",
   "invite",
-  "tenant",
+  "organization",
   "oidc_client",
   "api_key",
   "webhook_subscription",

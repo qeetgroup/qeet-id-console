@@ -3,59 +3,75 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import type { z } from "zod";
+
 import i18n from "@/i18n";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { assured, assuredItems } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer, Body } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { orgKeys } from "./keys";
 
-export interface EmailTemplate {
-  key: string;
-  name: string;
-  description: string;
-  subject: string;
-  body: string;
-  variables: string[];
-  custom: boolean;
-  options?: EmailTemplateOptions;
-  delivery_scope?: "tenant" | "platform";
-}
+// The catalogue's own fields, always sent (email.go) though the document leaves them optional.
+const templateList = assuredItems<Answer<"/v1/organizations/{organizationID}/email-templates">>()(
+  "key",
+  "name",
+  "description",
+  "variables",
+  "custom",
+);
 
-export type EmailTemplateTranslation = {
-  subject: string;
-  body: string;
-  preheader?: string;
-  body_html?: string;
-};
-export type EmailTemplateOptions = {
-  preheader?: string;
-  body_html?: string;
-  default_locale?: string;
-  translations?: Record<string, EmailTemplateTranslation>;
-  show_logo?: boolean;
-  alignment?: "left" | "center";
-};
-export type EmailTemplateInput = { subject: string; body: string; options: EmailTemplateOptions };
-export type EmailTemplateCapabilities = {
-  rich_text: boolean;
-  localization: boolean;
-  test_email: boolean;
-};
+// A saved or reset template answers the same record, held to the same fields.
+const TEMPLATE_PATH = "/v1/organizations/{organizationID}/email-templates/{key}" as const;
+const savedTemplate = assured<Answer<typeof TEMPLATE_PATH, "put">>()(
+  "key",
+  "name",
+  "description",
+  "variables",
+  "custom",
+);
+const resetTemplate = assured<Answer<typeof TEMPLATE_PATH, "delete">>()(
+  "key",
+  "name",
+  "description",
+  "variables",
+  "custom",
+);
+
+/** One email template: the catalogue's entry with the organisation's override, if any. */
+export type EmailTemplate = z.output<typeof templateList>["items"][number];
+export type EmailTemplateInput = Body<
+  "/v1/organizations/{organizationID}/email-templates/{key}",
+  "put"
+> & { options: EmailTemplateOptions };
+export type EmailTemplateOptions = NonNullable<
+  Body<"/v1/organizations/{organizationID}/email-templates/{key}", "put">["options"]
+>;
+export type EmailTemplateTranslation = NonNullable<EmailTemplateOptions["translations"]>[string];
+export type EmailTemplateCapabilities = NonNullable<
+  Answer<"/v1/organizations/{organizationID}/email-templates">["capabilities"]
+>;
+
+/** True for a template the organisation's own sender delivers (invite, magic link). */
+export const sentByOrganization = (template: EmailTemplate) =>
+  template.delivery_scope === "organization";
 
 export function useEmailTemplates(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: orgKeys.emailTemplates(tenantId),
-    enabled: !!tenantId && enabled,
+    queryKey: orgKeys.emailTemplates(organizationId),
+    enabled: !!organizationId && enabled,
     queryFn: () =>
-      api<{ items: EmailTemplate[]; capabilities?: EmailTemplateCapabilities }>(
-        `/v1/tenants/${tenantId}/email-templates`,
-      ),
+      backend.get("/v1/organizations/{organizationID}/email-templates", {
+        path: { organizationID: organizationId ?? "" },
+        schema: templateList,
+      }),
   });
 }
 
 export function useUpsertEmailTemplate() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -69,36 +85,36 @@ export function useUpsertEmailTemplate() {
       body: string;
       options?: EmailTemplateOptions;
     }) =>
-      api<EmailTemplate>(`/v1/tenants/${tenantId}/email-templates/${key}`, {
-        method: "PUT",
+      backend.put("/v1/organizations/{organizationID}/email-templates/{key}", {
+        path: { organizationID: organizationId ?? "", key },
         body: { subject, body, options },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(organizationId) }),
     meta: { successMessage: "organizations:toast.templateSaved" },
   });
 }
 
 export function useResetEmailTemplate() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (key: string) =>
-      api<EmailTemplate>(`/v1/tenants/${tenantId}/email-templates/${key}`, {
-        method: "DELETE",
+      backend.delete("/v1/organizations/{organizationID}/email-templates/{key}", {
+        path: { organizationID: organizationId ?? "", key },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: orgKeys.emailTemplates(organizationId) }),
     meta: { successMessage: "organizations:toast.revertedToDefault" },
   });
 }
 
 export function usePreviewEmailTemplate() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useMutation({
     mutationFn: ({ key, vars }: { key: string; vars: Record<string, string> }) =>
-      api<{ subject: string; body: string }>(
-        `/v1/tenants/${tenantId}/email-templates/${key}/preview`,
-        { method: "POST", body: { vars } },
-      ),
+      backend.post("/v1/organizations/{organizationID}/email-templates/{key}/preview", {
+        path: { organizationID: organizationId ?? "", key },
+        body: { vars },
+      }),
     meta: { silent: true },
   });
 }
@@ -108,31 +124,33 @@ export function sampleVar(name: string): string {
   if (name.endsWith("_url")) return "https://example.invalid/test/preview";
   if (name === "code") return "482913";
   if (name === "ttl") return i18n.t("organizations:emails.sample.ttl");
-  if (name === "tenant_name") return i18n.t("organizations:emails.sample.tenantName");
+  if (name === "organization_name") return i18n.t("organizations:emails.sample.organizationName");
   return name;
 }
 
-export function saveEmailTemplate(tenantId: string, key: string, draft: EmailTemplateInput) {
-  return api<EmailTemplate>(`/v1/tenants/${tenantId}/email-templates/${encodeURIComponent(key)}`, {
-    method: "PUT",
+export function saveEmailTemplate(organizationId: string, key: string, draft: EmailTemplateInput) {
+  return backend.put(TEMPLATE_PATH, {
+    path: { organizationID: organizationId, key },
     body: draft,
+    schema: savedTemplate,
   });
 }
 
-export function resetEmailTemplate(tenantId: string, key: string) {
-  return api<EmailTemplate>(`/v1/tenants/${tenantId}/email-templates/${encodeURIComponent(key)}`, {
-    method: "DELETE",
+export function resetEmailTemplate(organizationId: string, key: string) {
+  return backend.delete(TEMPLATE_PATH, {
+    path: { organizationID: organizationId, key },
+    schema: resetTemplate,
   });
 }
 
 export function testEmailTemplate(
-  tenantId: string,
+  organizationId: string,
   key: string,
   draft: EmailTemplateInput,
   locale: string,
 ) {
-  return api<{ status: "accepted" }>(
-    `/v1/tenants/${tenantId}/email-templates/${encodeURIComponent(key)}/test`,
-    { method: "POST", body: { draft, locale } },
-  );
+  return backend.post("/v1/organizations/{organizationID}/email-templates/{key}/test", {
+    path: { organizationID: organizationId, key },
+    body: { draft, locale },
+  });
 }

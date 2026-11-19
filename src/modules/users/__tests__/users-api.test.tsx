@@ -4,9 +4,9 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
+const context = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 
 import { api } from "@/platform/api/client";
 import { userKeys } from "../api/keys";
@@ -26,10 +26,10 @@ import {
 } from "../api/users";
 
 // Cache entries a mutation should, or should not, refresh.
-const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25, offset: 0 });
+const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25 });
 const USER_ONE: QueryKey = userKeys.detail("tenant-a", "user-1");
 const USER_TWO: QueryKey = userKeys.detail("tenant-a", "user-2");
-const OTHER_TENANT: QueryKey = userKeys.list("tenant-b", { limit: 25, offset: 0 });
+const OTHER_TENANT: QueryKey = userKeys.list("tenant-b", { limit: 25 });
 
 function setup<T>(hook: () => T) {
   const client = new QueryClient({
@@ -49,7 +49,7 @@ function invalidated(client: QueryClient, key: QueryKey) {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue(undefined);
 });
@@ -71,7 +71,10 @@ describe("useUserStats", () => {
     const { result } = setup(() => useUserStats());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/users/stats");
+    expect(api).toHaveBeenCalledWith(
+      "/v1/users/stats",
+      expect.objectContaining({ schema: expect.anything() }),
+    );
     expect(result.current.data).toEqual(stats);
   });
 
@@ -80,18 +83,18 @@ describe("useUserStats", () => {
     const { result, rerender } = setup(() => useUserStats());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    context.tenantId = "tenant-b";
+    context.organizationId = "tenant-b";
     rerender();
 
     await waitFor(() => expect(api).toHaveBeenCalledTimes(2));
   });
 
   it("does not ask before a tenant is selected, or when the caller opts out", () => {
-    context.tenantId = null;
+    context.organizationId = null;
     const noTenant = setup(() => useUserStats());
     expect(noTenant.result.current.fetchStatus).toBe("idle");
 
-    context.tenantId = "tenant-a";
+    context.organizationId = "tenant-a";
     const optedOut = setup(() => useUserStats(false));
     expect(optedOut.result.current.fetchStatus).toBe("idle");
 
@@ -105,12 +108,15 @@ describe("useUserTrends", () => {
     const { result } = setup(() => useUserTrends());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/users/trends");
+    expect(api).toHaveBeenCalledWith(
+      "/v1/users/trends",
+      expect.objectContaining({ schema: expect.anything() }),
+    );
     expect(result.current.data).toEqual({ total: [1, 2], mfa_enabled: [0, 1] });
   });
 
   it("does not ask before a tenant is selected", () => {
-    context.tenantId = null;
+    context.organizationId = null;
     const { result } = setup(() => useUserTrends());
     expect(result.current.fetchStatus).toBe("idle");
     expect(api).not.toHaveBeenCalled();
@@ -126,16 +132,19 @@ describe("useCreateUser", () => {
     await act(async () => {
       created = await result.current.mutateAsync({
         email: "asha@example.test",
-        tenant_id: "tenant-a",
+        organization_id: "tenant-a",
         display_name: "Asha",
       });
     });
 
     expect(api).toHaveBeenCalledTimes(1);
-    expect(api).toHaveBeenCalledWith("/v1/users", {
-      method: "POST",
-      body: { email: "asha@example.test", tenant_id: "tenant-a", display_name: "Asha" },
-    });
+    expect(api).toHaveBeenCalledWith(
+      "/v1/users",
+      expect.objectContaining({
+        method: "POST",
+        body: { email: "asha@example.test", organization_id: "tenant-a", display_name: "Asha" },
+      }),
+    );
     expect(created).toEqual({ id: "new-user", email: "asha@example.test" });
     expect(invalidated(client, USERS_LIST)).toBe(true);
   });
@@ -149,7 +158,7 @@ describe("useCreateUser", () => {
     await act(async () => {
       await result.current.mutateAsync({
         email: "asha@example.test",
-        tenant_id: "tenant-z",
+        organization_id: "tenant-z",
         role_id: "role-admin",
       });
     });
@@ -157,9 +166,12 @@ describe("useCreateUser", () => {
     expect(vi.mocked(api).mock.calls).toEqual([
       [
         "/v1/users",
-        { method: "POST", body: { email: "asha@example.test", tenant_id: "tenant-z" } },
+        expect.objectContaining({
+          method: "POST",
+          body: { email: "asha@example.test", organization_id: "tenant-z" },
+        }),
       ],
-      ["/v1/users/new-user/tenants/tenant-z/roles/role-admin", { method: "POST" }],
+      ["/v1/users/new-user/organizations/tenant-z/roles/role-admin", { method: "POST" }],
     ]);
   });
 
@@ -174,7 +186,7 @@ describe("useCreateUser", () => {
       await expect(
         result.current.mutateAsync({
           email: "asha@example.test",
-          tenant_id: "tenant-a",
+          organization_id: "tenant-a",
           role_id: "role-admin",
         }),
       ).rejects.toThrow("role refused");
@@ -191,7 +203,7 @@ describe("useCreateUser", () => {
       await expect(
         result.current.mutateAsync({
           email: "asha@example.test",
-          tenant_id: "tenant-a",
+          organization_id: "tenant-a",
           role_id: "role-admin",
         }),
       ).rejects.toThrow("refused");
@@ -297,14 +309,14 @@ describe("useAssignRole", () => {
       await result.current.mutateAsync({ userId: "user-1", roleId: "role-viewer" });
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/users/user-1/tenants/tenant-a/roles/role-viewer", {
+    expect(api).toHaveBeenCalledWith("/v1/users/user-1/organizations/tenant-a/roles/role-viewer", {
       method: "POST",
     });
     expect(invalidated(client, USERS_LIST)).toBe(true);
   });
 
   it("refuses without a selected tenant and sends nothing", async () => {
-    context.tenantId = null;
+    context.organizationId = null;
     const { result, client } = setup(() => useAssignRole());
 
     await act(async () => {
@@ -404,7 +416,7 @@ describe("useBulkImportUsers", () => {
     expect(api).toHaveBeenCalledWith("/v1/users/bulk", {
       method: "POST",
       body: {
-        tenant_id: "tenant-a",
+        organization_id: "tenant-a",
         users: [{ email: "a@example.test" }, { email: "b@example.test", display_name: "Bea" }],
       },
     });

@@ -4,9 +4,9 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
+const context = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 
 import { userKeys } from "@/modules/users";
 import { api } from "@/platform/api/client";
@@ -40,7 +40,7 @@ function invalidated(client: QueryClient, key: QueryKey) {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue(undefined);
 });
@@ -49,18 +49,18 @@ afterEach(cleanup);
 
 describe("useRetentionPolicy", () => {
   it("reads the current tenant's retention policy", async () => {
-    context.tenantId = "tenant-b";
+    context.organizationId = "tenant-b";
     const policy: RetentionPolicy = { deleted_users_enabled: true, deleted_users_days: 30 };
     vi.mocked(api).mockResolvedValue(policy);
     const { result } = setup(() => useRetentionPolicy());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-b/retention");
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-b/retention");
     expect(result.current.data).toEqual(policy);
   });
 
   it("does not ask before a tenant is selected", () => {
-    context.tenantId = null;
+    context.organizationId = null;
     expect(setup(() => useRetentionPolicy()).result.current.fetchStatus).toBe("idle");
     expect(api).not.toHaveBeenCalled();
   });
@@ -86,7 +86,7 @@ describe("useUpdateRetentionPolicy", () => {
       });
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/retention", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/retention", {
       method: "PUT",
       body: { deleted_users_enabled: true, deleted_users_days: 30 },
     });
@@ -127,7 +127,7 @@ describe("useRetentionDue", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     // The server's preview only counts: a POST read like any query.
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/retention/preview", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/retention/preview", {
       method: "POST",
     });
     expect(result.current.data).toEqual({ ripe_deleted_users: 4, deleted_users_days: 30 });
@@ -151,7 +151,9 @@ describe("useRunRetention", () => {
       outcome = await result.current.mutateAsync();
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/retention/run", { method: "POST" });
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/retention/run", {
+      method: "POST",
+    });
     expect(outcome).toEqual({ purged: 4 });
     expect(invalidated(client, DELETED_USERS)).toBe(true);
     expect(invalidated(client, DUE)).toBe(true);
@@ -161,7 +163,7 @@ describe("useRunRetention", () => {
 
 describe("retention changes without a tenant", () => {
   it("refuses to save or run, and reads nothing, before a tenant is selected", async () => {
-    context.tenantId = null;
+    context.organizationId = null;
     const { result } = setup(() => ({
       update: useUpdateRetentionPolicy(),
       due: useRetentionDue(),

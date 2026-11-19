@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { getApiBaseUrl } from "@/platform/config/api-base-url";
 import { applyServerErrors, useAppForm } from "@/platform/forms/app-form";
 import {
@@ -47,7 +47,7 @@ export function KeyDrawer({
 }) {
   const { t } = useTranslation("developer");
   const { locale } = useNumbers();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const runSensitive = useSensitiveAction();
   const createM = useCreateApiKey();
   const [made, setMade] = useState<{
@@ -79,7 +79,7 @@ export function KeyDrawer({
     defaultValues: defaults,
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
-      if (!tenantId) return;
+      if (!organizationId) return;
       setFailure(null);
       const expiresAt =
         value.expiry === "never"
@@ -89,7 +89,7 @@ export function KeyDrawer({
         actionLabel: t("keyDrawer.stepUp"),
         run: () =>
           createM.mutateAsync({
-            tenant_id: tenantId,
+            organization_id: organizationId,
             name: value.name.trim(),
             scopes: value.scopes,
             expires_at: expiresAt,

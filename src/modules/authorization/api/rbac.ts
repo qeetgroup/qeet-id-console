@@ -1,70 +1,92 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { z } from "zod";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { assured, assuredItems } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
 
-export interface Permission {
-  id: string;
-  key: string;
-  description: string;
-}
-
-export interface Role {
-  id: string;
-  tenant_id: string;
-  name: string;
-  description: string;
-  is_system: boolean; // a built-in role, which can't be deleted
-  created_at: string;
-}
+// The server always sends these (internal/access/authorization/rbac/rbac.go); the document marks
+// them optional (QTID-1063). A system role is built in and can't be deleted.
+const ROLE_FIELDS = [
+  "id",
+  "organization_id",
+  "name",
+  "description",
+  "is_system",
+  "created_at",
+] as const;
+const PERMISSION_FIELDS = ["id", "key", "description"] as const;
+const roleList = assuredItems<Answer<"/v1/organizations/{organizationID}/roles">>()(...ROLE_FIELDS);
+const createdRole = assured<Answer<"/v1/organizations/{organizationID}/roles", "post">>()(
+  ...ROLE_FIELDS,
+);
+const catalogue = assuredItems<Answer<"/v1/permissions">>()(...PERMISSION_FIELDS);
+const rolePermissions = assuredItems<Answer<"/v1/roles/{roleID}/permissions">>()(
+  ...PERMISSION_FIELDS,
+);
+export type Role = z.infer<typeof roleList>["items"][number];
+export type Permission = z.infer<typeof catalogue>["items"][number];
 
 /** Query definitions for role reads; `list` takes any tenant the caller belongs to. */
 export const roleQueries = {
-  list: (tenantId: string | null) =>
+  list: (organizationId: string | null) =>
     queryOptions({
-      queryKey: authzKeys.roles(tenantId),
-      queryFn: () => api<{ items: Role[] }>(`/v1/tenants/${tenantId}/roles`),
-      enabled: !!tenantId,
+      queryKey: authzKeys.roles(organizationId),
+      queryFn: () =>
+        backend.get("/v1/organizations/{organizationID}/roles", {
+          path: { organizationID: organizationId ?? "" },
+          schema: roleList,
+        }),
+      enabled: !!organizationId,
     }),
   /** A role's permissions; a list reads every role's at once. */
-  permissions: (tenantId: string | null, roleId: string | null) =>
+  permissions: (organizationId: string | null, roleId: string | null) =>
     queryOptions({
-      queryKey: authzKeys.rolePermissions(tenantId, roleId),
-      enabled: !!tenantId && !!roleId,
-      queryFn: () => api<{ items: Permission[] }>(`/v1/roles/${roleId}/permissions`),
+      queryKey: authzKeys.rolePermissions(organizationId, roleId),
+      enabled: !!organizationId && !!roleId,
+      queryFn: () =>
+        backend.get("/v1/roles/{roleID}/permissions", {
+          path: { roleID: roleId ?? "" },
+          schema: rolePermissions,
+        }),
     }),
 };
 
 export function useRoles() {
-  return useQuery(roleQueries.list(useTenantId()));
+  return useQuery(roleQueries.list(useOrganizationId()));
 }
 
 /** The permissions a role can be granted. */
 export function usePermissions(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: authzKeys.permissions(tenantId),
-    queryFn: () => api<{ items: Permission[] }>("/v1/permissions"),
+    queryKey: authzKeys.permissions(organizationId),
+    queryFn: () => backend.get("/v1/permissions", { schema: catalogue }),
     enabled,
   });
 }
 
 export function useCreateRole() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { name: string; description: string }) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<Role>(`/v1/tenants/${tenantId}/roles`, { method: "POST", body });
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post("/v1/organizations/{organizationID}/roles", {
+        path: { organizationID: organizationId },
+        body,
+        schema: createdRole,
+      });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.roles(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.roles(organizationId) }),
     meta: { successMessage: "authorization:toast.roleCreated", silentError: true }, // the sheet shows it
   });
 }
 
 export function useRolePermissions(roleId: string | null) {
-  return useQuery(roleQueries.permissions(useTenantId(), roleId));
+  return useQuery(roleQueries.permissions(useOrganizationId(), roleId));
 }
 
 export { useEffectivePermissions } from "@/platform/security/effective-permissions";

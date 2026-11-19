@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -97,12 +97,12 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/security/anomalies") return { items: ANOMALIES };
-    if (path === "/v1/tenants/t-1/security/anomalies/summary")
+    if (path === "/v1/organizations/t-1/security/anomalies") return { items: ANOMALIES };
+    if (path === "/v1/organizations/t-1/security/anomalies/summary")
       return { open: 1, resolved_24h: 1, affected_accounts: 0, high_severity_24h: 1 };
-    if (path === "/v1/tenants/t-1/security/bots")
+    if (path === "/v1/organizations/t-1/security/bots")
       return { recent: [], stats: { blocked_24h: 0, challenged_24h: 0, threshold: 0.7 } };
-    if (path === "/v1/tenants/t-1/ip-rules") return { enabled: false, items: [] };
+    if (path === "/v1/organizations/t-1/ip-rules") return { enabled: false, items: [] };
     if (path === "/v1/users/stats")
       return {
         total: 45,
@@ -113,7 +113,7 @@ beforeEach(() => {
         mfa_missing: 27,
         new_last_30d: 0,
       };
-    if (path === "/v1/tenants/t-1/security/anomalies/an-1/resolve" && method === "POST")
+    if (path === "/v1/organizations/t-1/security/anomalies/an-1/resolve" && method === "POST")
       return undefined;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
@@ -164,7 +164,7 @@ describe("Threats › Anomalies", () => {
     expect(within(drawer).getByText(/doesn't lift a lock/)).toBeTruthy();
     fireEvent.click(within(drawer).getByRole("button", { name: "Resolve" }));
     await waitFor(() =>
-      expect(changes()).toEqual(["POST /v1/tenants/t-1/security/anomalies/an-1/resolve"]),
+      expect(changes()).toEqual(["POST /v1/organizations/t-1/security/anomalies/an-1/resolve"]),
     );
     expect(sensitiveCalls.at(-1)?.confirm).toBeUndefined();
   });

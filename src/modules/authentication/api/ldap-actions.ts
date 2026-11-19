@@ -10,29 +10,32 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { directoryKeys } from "@/modules/directory";
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
-import type { CreateLdapInput, LdapConnection } from "./ldap";
+import type { CreateLdapInput } from "./ldap";
+import { backend } from "@/platform/api/backend";
 
 function useRefresh() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return {
-    tenantId,
+    organizationId,
     refresh: () =>
       Promise.all([
-        qc.invalidateQueries({ queryKey: authKeys.ldap(tenantId) }),
-        qc.invalidateQueries({ queryKey: directoryKeys.tenant(tenantId) }),
+        qc.invalidateQueries({ queryKey: authKeys.ldap(organizationId) }),
+        qc.invalidateQueries({ queryKey: directoryKeys.organization(organizationId) }),
       ]),
   };
 }
 
 export function useCreateLdapConnection() {
-  const { tenantId, refresh } = useRefresh();
+  const { organizationId, refresh } = useRefresh();
   return useMutation({
     mutationFn: (body: CreateLdapInput) =>
-      api<LdapConnection>(`/v1/tenants/${tenantId}/ldap`, { method: "POST", body }),
+      backend.post("/v1/organizations/{organizationID}/ldap", {
+        path: { organizationID: organizationId ?? "" },
+        body,
+      }),
     onSuccess: () => refresh(),
     meta: { successMessage: "connections:toast.ldapCreated", silentError: true }, // the drawer shows it
   });
@@ -40,20 +43,25 @@ export function useCreateLdapConnection() {
 
 /** `inline`: the caller shows a failure itself (a drawer), so it isn't toasted. */
 export function useUpdateLdapConnection({ inline = false }: { inline?: boolean } = {}) {
-  const { tenantId, refresh } = useRefresh();
+  const { organizationId, refresh } = useRefresh();
   return useMutation({
     mutationFn: ({ id, ...body }: Partial<CreateLdapInput> & { id: string }) =>
-      api<LdapConnection>(`/v1/tenants/${tenantId}/ldap/${id}`, { method: "PATCH", body }),
+      backend.patch("/v1/organizations/{organizationID}/ldap/{id}", {
+        path: { organizationID: organizationId ?? "", id },
+        body,
+      }),
     onSuccess: () => refresh(),
     meta: { silentError: inline },
   });
 }
 
 export function useDeleteLdapConnection() {
-  const { tenantId, refresh } = useRefresh();
+  const { organizationId, refresh } = useRefresh();
   return useMutation({
     mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/ldap/${id}`, { method: "DELETE" }),
+      backend.delete("/v1/organizations/{organizationID}/ldap/{id}", {
+        path: { organizationID: organizationId ?? "", id },
+      }),
     onSuccess: () => refresh(),
   });
 }
@@ -63,10 +71,12 @@ export function useDeleteLdapConnection() {
  * (no person is looked up). The server records the result as the connection's latest test.
  */
 export function useTestLdapConnection() {
-  const { tenantId, refresh } = useRefresh();
+  const { organizationId, refresh } = useRefresh();
   return useMutation({
     mutationFn: (id: string) =>
-      api<{ ok: boolean }>(`/v1/tenants/${tenantId}/ldap/${id}/test`, { method: "POST" }),
+      backend.post("/v1/organizations/{organizationID}/ldap/{id}/test", {
+        path: { organizationID: organizationId ?? "", id },
+      }),
     onSettled: () => refresh(),
     meta: { silentError: true }, // the page shows the result
   });

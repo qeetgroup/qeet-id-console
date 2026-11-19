@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { getApiBaseUrl } from "@/platform/config/api-base-url";
 import { applyServerErrors, useAppForm } from "@/platform/forms/app-form";
 import {
@@ -36,7 +36,7 @@ export function IdentityDrawer({
   onOpenChange: (open: boolean) => void;
 }) {
   const { t } = useTranslation("developer");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const runSensitive = useSensitiveAction();
   const createM = useCreateServicePrincipal();
   const [made, setMade] = useState<{ name: string; clientId: string; secret: string } | null>(null);
@@ -53,13 +53,13 @@ export function IdentityDrawer({
     defaultValues: { name: "", scopes: [] as string[] },
     validators: { onSubmit: schema },
     onSubmit: async ({ value, formApi }) => {
-      if (!tenantId) return;
+      if (!organizationId) return;
       setFailure(null);
       await runSensitive({
         actionLabel: t("identityDrawer.stepUp"),
         run: () =>
           createM.mutateAsync({
-            tenant_id: tenantId,
+            organization_id: organizationId,
             name: value.name.trim(),
             scopes: value.scopes,
           }),

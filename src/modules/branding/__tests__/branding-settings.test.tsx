@@ -8,7 +8,7 @@ import "@/i18n";
 import type { LoginDomainStatus } from "@/modules/organizations";
 
 const context = vi.hoisted(() => ({
-  tenantId: "tenant-a" as string | null,
+  organizationId: "tenant-a" as string | null,
   canRead: true,
   canWrite: true,
   canReadDomains: true,
@@ -17,13 +17,13 @@ const context = vi.hoisted(() => ({
   loginDomain: undefined as LoginDomainStatus | undefined,
 }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
     state: "ready",
     can: (permission: string) =>
       ({
-        "tenant.read": context.canRead,
+        "organization.read": context.canRead,
         "branding.write": context.canWrite,
         "connection.read": context.canReadDomains,
         "billing.read": context.canReadBilling,
@@ -78,7 +78,7 @@ const LOGO = "data:image/svg+xml;base64,PHN2Zy8+";
 
 function brandingFixture(): Branding {
   return {
-    tenant_id: "tenant-a",
+    organization_id: "tenant-a",
     logo_url: LOGO,
     primary_color: "#f26d0e",
     secondary_color: "#d85301",
@@ -97,7 +97,7 @@ let stored: Branding;
 
 beforeEach(() => {
   Object.assign(context, {
-    tenantId: "tenant-a",
+    organizationId: "tenant-a",
     canRead: true,
     canWrite: true,
     canReadDomains: true,
@@ -110,7 +110,7 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path, options) => {
     if (path.endsWith("/branding")) {
       if (options?.method === "PUT") stored = options.body as Branding;
-      return { ...stored, tenant_id: context.tenantId };
+      return { ...stored, tenant_id: context.organizationId };
     }
     throw new Error(`Unexpected mocked request ${path}`);
   });
@@ -219,7 +219,7 @@ describe("Branding page", () => {
     expect(puts()).toHaveLength(0);
     fireEvent.click(button("Save"));
     await waitFor(() => expect(puts()).toHaveLength(1));
-    expect(puts()[0]?.[0]).toBe("/v1/tenants/tenant-a/branding");
+    expect(puts()[0]?.[0]).toBe("/v1/organizations/tenant-a/branding");
     expect(puts()[0]?.[1]?.body).toEqual({ ...brandingFixture(), primary_color: "#c2410c" });
     expect(await screen.findByText("#C2410C")).toBeTruthy();
     expect(dirty).toHaveBeenLastCalledWith(false);

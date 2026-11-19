@@ -1,7 +1,7 @@
-// OAuth grants as the two pages show them. GET /v1/tenants/{id}/oauth/grants lists each person's
-// live refresh token per application (one per client and person: the server returns the current
-// link of each rotation chain), with the person's email and the client ID only; names come from
-// the Users directory and the applications list where this person may read them.
+// OAuth grants as the two pages show them. GET /v1/organizations/{organizationID}/oauth/grants
+// lists each person's live refresh token per application (one per client and person: the server
+// returns the current link of each rotation chain), with the person's email and the client ID;
+// names come from the Users directory and the applications list where this person may read them.
 
 import type { TableSort } from "@qeetrix/react";
 

@@ -4,12 +4,12 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
+const context = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 
 import { api } from "@/platform/api/client";
 import { ApiError } from "@/platform/errors/api-error";
@@ -55,7 +55,7 @@ function invalidated(client: QueryClient, key: QueryKey) {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue(undefined);
 });
@@ -67,29 +67,37 @@ describe("tenant-scoped reads", () => {
     [
       "security anomaly summary",
       useAnomalySummary,
-      "/v1/tenants/tenant-b/security/anomalies/summary",
+      "/v1/organizations/tenant-b/security/anomalies/summary",
     ],
     [
       "audit anomaly summary",
       useAuditAnomalySummary,
-      "/v1/tenants/tenant-b/audit/anomalies/summary",
+      "/v1/organizations/tenant-b/audit/anomalies/summary",
     ],
     [
       "audit anomaly settings",
       useAuditAnomalySettings,
-      "/v1/tenants/tenant-b/audit/anomaly-settings",
+      "/v1/organizations/tenant-b/audit/anomaly-settings",
+      // Checked against the fields the server always sends.
+      { organization_id: "tenant-b", enabled: true, score_threshold: 0.8, min_baseline_events: 50 },
     ],
-    ["bot settings", useBotSettings, "/v1/tenants/tenant-b/security/bots/settings"],
-    ["log sinks", useLogSinks, "/v1/tenants/tenant-b/log-sinks"],
-    ["device authorizations", useDeviceAuthorizations, "/v1/tenants/tenant-b/oauth/devices"],
-  ] as const)("reads the current tenant's %s", async (_name, useHook, path) => {
-    context.tenantId = "tenant-b";
-    vi.mocked(api).mockResolvedValue({ from: path });
+    ["bot settings", useBotSettings, "/v1/organizations/tenant-b/security/bots/settings"],
+    ["log sinks", useLogSinks, "/v1/organizations/tenant-b/log-sinks"],
+    [
+      "device authorizations",
+      useDeviceAuthorizations,
+      "/v1/organizations/tenant-b/oauth/devices",
+      { items: [] },
+    ],
+  ] as const)("reads the current tenant's %s", async (_name, useHook, path, answer?: object) => {
+    context.organizationId = "tenant-b";
+    const sent = answer ?? { from: path };
+    vi.mocked(api).mockResolvedValue(sent);
     const { result } = setup(() => useHook());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith(path);
-    expect(result.current.data).toEqual({ from: path });
+    expect(vi.mocked(api).mock.calls[0]?.[0]).toBe(path);
+    expect(result.current.data).toEqual(sent);
   });
 
   it.each([
@@ -103,7 +111,7 @@ describe("tenant-scoped reads", () => {
     ["log sinks", useLogSinks],
     ["device authorizations", useDeviceAuthorizations],
   ] as const)("does not read %s before a tenant is selected", (_name, useHook) => {
-    context.tenantId = null;
+    context.organizationId = null;
     expect(setup(() => useHook()).result.current.fetchStatus).toBe("idle");
     expect(api).not.toHaveBeenCalled();
   });
@@ -111,7 +119,7 @@ describe("tenant-scoped reads", () => {
 
 describe("tenant-scoped changes", () => {
   it("refuses every change before a tenant is selected, sending nothing", async () => {
-    context.tenantId = null;
+    context.organizationId = null;
     const settings: BotSettings = {
       ua_check: true,
       honeypot: false,
@@ -176,7 +184,11 @@ describe("useAnomalies", () => {
     const { result } = setup(() => useAnomalies());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/security/anomalies");
+    // The newest page, the most the server sends at once.
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/security/anomalies", {
+      query: { limit: 200 },
+      schema: expect.anything(),
+    });
     expect(result.current.data).toEqual({ items });
   });
 
@@ -207,7 +219,7 @@ describe("useResolveAnomaly", () => {
       await result.current.mutateAsync("an-1");
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/security/anomalies/an-1/resolve", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/security/anomalies/an-1/resolve", {
       method: "POST",
     });
     expect(invalidated(client, list)).toBe(true);
@@ -222,7 +234,10 @@ describe("useAuditAnomalies", () => {
     const { result } = setup(() => useAuditAnomalies());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit/anomalies", { query: undefined });
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit/anomalies", {
+      query: undefined,
+      schema: expect.anything(),
+    });
   });
 
   it("filters by status when one is given", async () => {
@@ -230,7 +245,8 @@ describe("useAuditAnomalies", () => {
     const { result } = setup(() => useAuditAnomalies("open"));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit/anomalies", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit/anomalies", {
+      schema: expect.anything(),
       query: { status: "open" },
     });
   });
@@ -252,7 +268,7 @@ describe("audit anomaly mutations", () => {
       await result.current.mutateAsync("aa-1");
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit/anomalies/aa-1/resolve", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit/anomalies/aa-1/resolve", {
       method: "POST",
     });
     for (const key of [all, open, summary]) expect(invalidated(client, key)).toBe(true);
@@ -270,7 +286,7 @@ describe("audit anomaly mutations", () => {
       await result.current.mutateAsync(body);
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit/anomaly-settings", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit/anomaly-settings", {
       method: "PUT",
       body,
     });
@@ -289,31 +305,33 @@ describe("audit anomaly mutations", () => {
       response = await result.current.mutateAsync();
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit/verify");
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit/verify");
     expect(response).toEqual(verdict);
   });
 });
 
 describe("useBotOverview", () => {
-  it("reads the recent verdicts and 24h stats", async () => {
-    const overview = {
-      recent: [
-        {
-          id: "bot-1",
-          user_agent: "curl/8",
-          score: 0.9,
-          verdict: "blocked",
-          created_at: "2026-10-01T00:00:00Z",
-        },
-      ],
-      stats: { blocked_24h: 3, challenged_24h: 1, threshold: 0.6 },
-    };
-    vi.mocked(api).mockResolvedValue(overview);
+  it("reads the newest verdicts and 24h stats", async () => {
+    const recent = [
+      {
+        id: "bot-1",
+        user_agent: "curl/8",
+        score: 0.9,
+        verdict: "blocked",
+        outcome: "unknown",
+        created_at: "2026-10-01T00:00:00Z",
+      },
+    ];
+    const stats = { blocked_24h: 3, challenged_24h: 1, threshold: 0.6 };
+    vi.mocked(api).mockResolvedValue({ items: recent, total: 1, stats });
     const { result } = setup(() => useBotOverview());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/security/bots");
-    expect(result.current.data).toEqual(overview);
+    // The newest page, the most the server sends at once.
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/security/bots", {
+      query: { limit: 200 },
+    });
+    expect(result.current.data).toEqual({ recent, stats });
   });
 
   it("shows an empty overview with the default 0.7 threshold when bot detection is absent (404)", async () => {
@@ -353,7 +371,7 @@ describe("useUpdateBotSettings", () => {
       await result.current.mutateAsync(settings);
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/security/bots/settings", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/security/bots/settings", {
       method: "PUT",
       body: settings,
     });
@@ -373,7 +391,10 @@ describe("log sink mutations", () => {
       await result.current.mutateAsync(body);
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/log-sinks", { method: "POST", body });
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/log-sinks", {
+      method: "POST",
+      body,
+    });
     expect(invalidated(client, sinks)).toBe(true);
   });
 
@@ -384,7 +405,7 @@ describe("log sink mutations", () => {
       await result.current.mutateAsync({ id: "sink-1", enabled: false });
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/log-sinks/sink-1", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/log-sinks/sink-1", {
       method: "PATCH",
       body: { enabled: false },
     });
@@ -398,7 +419,7 @@ describe("log sink mutations", () => {
       await result.current.mutateAsync("sink-1");
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/log-sinks/sink-1", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/log-sinks/sink-1", {
       method: "DELETE",
     });
     expect(invalidated(client, sinks)).toBe(true);
@@ -414,7 +435,7 @@ describe("useRevokeDeviceAuth", () => {
       await result.current.mutateAsync("dev-1");
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/oauth/devices/dev-1", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/oauth/devices/dev-1", {
       method: "DELETE",
     });
     expect(invalidated(client, devices)).toBe(true);

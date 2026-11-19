@@ -9,7 +9,7 @@ const SESSION: PublicSession = {
   expiresAt: "2030-01-01T00:00:00Z",
   sessionId: "session-a",
   userId: "user-a",
-  tenantId: "tenant-a",
+  organizationId: "tenant-a",
   version: 1,
   impersonationActor: null,
 };
@@ -21,7 +21,7 @@ describe("session store on the server", () => {
 
     expect(sessionStore.getSnapshot().isAuthenticated).toBe(false);
     expect(sessionStore.getUserId()).toBeNull();
-    expect(sessionStore.getTenantId()).toBeNull();
+    expect(sessionStore.getOrganizationId()).toBeNull();
   });
 
   it("never moves the scope generation", () => {

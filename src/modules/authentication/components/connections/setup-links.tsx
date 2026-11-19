@@ -179,7 +179,15 @@ export function SetupLinks({ canWrite }: { canWrite: boolean }) {
                     <span className="account-row-name">
                       <strong>
                         {link.capabilities
-                          .map((c) => (c === "saml" ? t("links.saml") : t("links.scim")))
+                          .map((c) =>
+                            t(
+                              c === "saml"
+                                ? "links.saml"
+                                : c === "scim"
+                                  ? "links.scim"
+                                  : "links.domainVerification",
+                            ),
+                          )
                           .join(" · ")}
                       </strong>
                       <Badge size="sm" tone={STATE_TONE[state]}>

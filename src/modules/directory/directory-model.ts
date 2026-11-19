@@ -1,5 +1,5 @@
 import { formatLocale } from "@/i18n";
-import type { LdapConnection, ScimConfig } from "@/modules/authentication";
+import { type LdapConnection, ldapStatus, type ScimConfig } from "@/modules/authentication";
 
 export type ConnectionHealth = "healthy" | "warning" | "failed" | "unknown";
 
@@ -21,7 +21,7 @@ export type DirectoryConnection = {
 };
 
 export function buildDirectoryConnections(
-  tenantId: string,
+  organizationId: string,
   scim: ScimConfig | undefined,
   ldap: LdapConnection[],
 ): DirectoryConnection[] {
@@ -30,7 +30,7 @@ export function buildDirectoryConnections(
     name: connection.name,
     reference: connection.id,
     type: "ldap",
-    status: connection.status,
+    status: ldapStatus(connection.status),
     health: "unknown",
     environment: null,
     scope: "users-on-signin",
@@ -44,7 +44,7 @@ export function buildDirectoryConnections(
 
   if (scim?.token_set) {
     records.unshift({
-      id: `scim:${tenantId}`,
+      id: `scim:${organizationId}`,
       name: "SCIM",
       reference: "/scim/v2",
       type: "scim",

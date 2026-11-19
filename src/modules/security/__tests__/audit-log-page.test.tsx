@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -78,14 +78,15 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/audit") return { items: [EVENT], next_cursor: "" };
-    if (path === "/v1/tenants/t-1/audit/anomalies") return { items: [] };
-    if (path === "/v1/tenants/t-1/audit/anomalies/summary")
+    if (path === "/v1/organizations/t-1/audit") return { items: [EVENT], next_cursor: "" };
+    if (path === "/v1/organizations/t-1/audit/anomalies") return { items: [] };
+    if (path === "/v1/organizations/t-1/audit/anomalies/summary")
       return { open: 0, resolved_7d: 0, high_score_open: 0 };
-    if (path === "/v1/tenants/t-1/audit/anomaly-settings" && method === "GET")
+    if (path === "/v1/organizations/t-1/audit/anomaly-settings" && method === "GET")
       return { tenant_id: "t-1", enabled: true, score_threshold: 0.6, min_baseline_events: 20 };
-    if (path === "/v1/tenants/t-1/audit/anomaly-settings" && method === "PUT") return options?.body;
-    if (path === "/v1/tenants/t-1/log-sinks") return { items: [] };
+    if (path === "/v1/organizations/t-1/audit/anomaly-settings" && method === "PUT")
+      return options?.body;
+    if (path === "/v1/organizations/t-1/log-sinks") return { items: [] };
     if (path === "/v1/activity/summary")
       return {
         total: 12,
@@ -180,7 +181,9 @@ describe("Monitoring › Audit log", () => {
     fireEvent.change(threshold, { target: { value: "0.8" } });
     fireEvent.blur(threshold);
     fireEvent.click(within(drawer).getByRole("button", { name: "Save" }));
-    await waitFor(() => expect(changes()).toEqual(["PUT /v1/tenants/t-1/audit/anomaly-settings"]));
+    await waitFor(() =>
+      expect(changes()).toEqual(["PUT /v1/organizations/t-1/audit/anomaly-settings"]),
+    );
     expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Change flagging settings");
   });
 });

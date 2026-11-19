@@ -13,7 +13,6 @@ export const ERROR_CODES = {
   // Client-synthesised: Qeet ID was unreachable or overloaded (timeout, 5xx, 429). The refresh
   // token wasn't rejected, so the person stays signed in and can retry.
   SESSION_REFRESH_UNAVAILABLE: "client.session_refresh_unavailable",
-  INVALID_STATE: "auth.invalid_state",
   EMAIL_EXISTS: "auth.email_exists", // sign-up
   // password reset links: each answers the reset page with a "send a new link" step
   RESET_LINK_INVALID: "recovery.reset_link_invalid",
@@ -44,7 +43,7 @@ export const ERROR_CODES = {
   ADDRESS_NOT_ALLOWED: "auth.address_not_allowed", // 403: the address rules refuse this network
   RULES_LOCK_OUT_CALLER: "risk.rules_lock_out_caller", // 409: the change would block the caller
   SOCIAL_PROVIDER_IN_USE: "social.provider_in_use", // 409: some people sign in only through it
-  NOT_TENANT_MEMBER: "auth.not_tenant_member",
+  NOT_ORGANIZATION_MEMBER: "auth.not_organization_member",
   SELF_REGISTRATION_DISABLED: "auth.self_registration_disabled",
   PASSWORD_WEAK: "auth.password_weak",
   PASSWORD_BREACHED: "auth.password_breached",
@@ -65,11 +64,11 @@ export const ERROR_CODES = {
   VERIFY_NO_EMAIL: "verification.no_email",
   VERIFY_EMAIL_TAKEN: "verification.email_taken",
   VERIFY_EMAIL_NOT_VERIFIED: "verification.email_not_verified",
-  FORBIDDEN: "auth.forbidden", // authz
-  ORG_SLUG_TAKEN: "tenant.slug_taken", // a reused name derives a slug already taken
-  TENANT_OWNER_ONLY: "tenant.owner_only", // deleting an organisation, or calling it off
-  TENANT_DELETION_SCHEDULED: "tenant.deletion_scheduled", // its deletion is already scheduled
-  TENANT_DELETION_NOT_SCHEDULED: "tenant.deletion_not_scheduled", // nothing to call off
+  FORBIDDEN: "forbidden", // authz
+  ORG_SLUG_TAKEN: "organization.slug_taken", // a reused name derives a slug already taken
+  ORG_OWNER_ONLY: "organization.owner_only", // deleting an organisation, or calling it off
+  ORG_DELETION_SCHEDULED: "organization.deletion_scheduled", // its deletion is already scheduled
+  ORG_DELETION_NOT_SCHEDULED: "organization.deletion_not_scheduled", // nothing to call off
   GROUP_NAME_EXISTS: "group.name_exists", // a group's name is unique in its organisation
   GROUP_CYCLE: "group.cycle", // a group can't sit inside itself or its own groups
   GROUP_TEMPLATE_NAME_EXISTS: "group.template_name_exists", // a template's name is unique too
@@ -86,6 +85,13 @@ export const ERROR_CODES = {
   RBAC_ROLE_NAME_EXISTS: "rbac.role_name_exists", // 409: a role's name is unique, ignoring case
   RBAC_GRANT_EXCEEDS_CALLER: "rbac.grant_exceeds_caller", // 403: a permission or key scope the caller lacks; metadata names it
   RBAC_SYSTEM_ROLE_FIXED: "rbac.system_role_fixed", // 403: the owner role's permissions are fixed
+  // 403s on changing a person or what a connection trusts: the target outranks the caller.
+  RBAC_TARGET_IS_OWNER: "rbac.target_is_owner",
+  RBAC_TARGET_OUTRANKS_CALLER: "rbac.target_outranks_caller",
+  RBAC_TRUST_CHANGE_OUTRANKS_CALLER: "rbac.trust_change_outranks_caller",
+  REBAC_CHECK_TOO_COMPLEX: "rebac.check_too_complex", // 422: past 1,000 pairs or 5,000 sets
+  VERIFICATION_EMAIL_MANAGED: "verification.email_managed", // 403: SSO, SCIM or a managed domain
+  VERIFICATION_CODE_SEND_LIMITED: "verification.code_send_limited", // 429, with retry_after
   BILLING_PLAN_LIMIT: "billing.plan_limit", // billing entitlements
   BILLING_UPGRADE_REQUIRED: "billing.upgrade_required",
   MFA_CODE_INVALID: "mfa.code_invalid", // mfa

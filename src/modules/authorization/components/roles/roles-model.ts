@@ -3,6 +3,7 @@
 import type { TableSort } from "@qeetrix/react";
 
 import { isOwnerRole, type RoleAccess } from "@/modules/authorization/role-model";
+import { roleDescription, roleDisplayName } from "@/shared/utils/role-name";
 
 export const ROLE_TYPES = ["custom", "builtin"] as const;
 export const ROLE_LOOKS = ["unused", "every", "empty"] as const;
@@ -35,7 +36,9 @@ export function matchesRole(a: RoleAccess, filters: RoleFilters, catalogue: numb
   if (filters.type === "builtin" && !a.role.is_system) return false;
   if (filters.look && !roleLook(a, filters.look, catalogue)) return false;
   const q = filters.q?.trim().toLowerCase();
-  if (q && !`${a.role.name} ${a.role.description}`.toLowerCase().includes(q)) return false;
+  // The words on screen count too: "Administrator" finds admin.
+  const words = `${a.role.name} ${roleDisplayName(a.role.name)} ${a.role.description} ${roleDescription(a.role)}`;
+  if (q && !words.toLowerCase().includes(q)) return false;
   return true;
 }
 

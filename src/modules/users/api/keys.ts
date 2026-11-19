@@ -1,27 +1,35 @@
-// Every users query key sits under ["users", tenantId], so two organizations never share an entry
+// Every users query key sits under ["users", organizationId], so two organizations never share an entry
 // and one prefix refreshes a tenant's lists, counts or a single person's views together.
 
-export type UserListParams = { limit: number; offset: number };
+/** One page of the members list: it pages by cursor only, in the server's own order. */
+export type UserListParams = { limit: number; cursor?: string };
 
 export const userKeys = {
   all: ["users"] as const, // every tenant
-  tenant: (tenantId: string | null) => ["users", tenantId] as const,
-  lists: (tenantId: string | null) => [...userKeys.tenant(tenantId), "list"] as const,
-  list: (tenantId: string | null, params: UserListParams) =>
-    [...userKeys.lists(tenantId), params] as const,
-  directory: (tenantId: string | null) => [...userKeys.lists(tenantId), "directory"] as const,
-  stats: (tenantId: string | null) => [...userKeys.tenant(tenantId), "stats"] as const,
-  trends: (tenantId: string | null) => [...userKeys.tenant(tenantId), "trends"] as const,
-  deleted: (tenantId: string | null) => [...userKeys.tenant(tenantId), "deleted"] as const,
-  suspended: (tenantId: string | null) => [...userKeys.tenant(tenantId), "suspended"] as const,
-  invitations: (tenantId: string | null) => [...userKeys.tenant(tenantId), "invitations"] as const,
+  organization: (organizationId: string | null) => ["users", organizationId] as const,
+  lists: (organizationId: string | null) =>
+    [...userKeys.organization(organizationId), "list"] as const,
+  list: (organizationId: string | null, params: UserListParams) =>
+    [...userKeys.lists(organizationId), params] as const,
+  directory: (organizationId: string | null) =>
+    [...userKeys.lists(organizationId), "directory"] as const,
+  stats: (organizationId: string | null) =>
+    [...userKeys.organization(organizationId), "stats"] as const,
+  trends: (organizationId: string | null) =>
+    [...userKeys.organization(organizationId), "trends"] as const,
+  deleted: (organizationId: string | null) =>
+    [...userKeys.organization(organizationId), "deleted"] as const,
+  suspended: (organizationId: string | null) =>
+    [...userKeys.organization(organizationId), "suspended"] as const,
+  invitations: (organizationId: string | null) =>
+    [...userKeys.organization(organizationId), "invitations"] as const,
   // One person: their record and every User 360 view of them.
-  user: (tenantId: string | null, userId: string) =>
-    [...userKeys.tenant(tenantId), "user", userId] as const,
-  detail: (tenantId: string | null, userId: string) =>
-    [...userKeys.user(tenantId, userId), "detail"] as const,
-  view: (tenantId: string | null, userId: string, view: User360View) =>
-    [...userKeys.user(tenantId, userId), view] as const,
+  user: (organizationId: string | null, userId: string) =>
+    [...userKeys.organization(organizationId), "user", userId] as const,
+  detail: (organizationId: string | null, userId: string) =>
+    [...userKeys.user(organizationId, userId), "detail"] as const,
+  view: (organizationId: string | null, userId: string, view: User360View) =>
+    [...userKeys.user(organizationId, userId), view] as const,
 };
 
 export type User360View =

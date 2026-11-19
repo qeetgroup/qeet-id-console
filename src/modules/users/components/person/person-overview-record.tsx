@@ -17,12 +17,12 @@ import {
   type UserDetail,
   useUserSocialIdentities,
 } from "@/modules/users/api/user360";
-import { roleLabel } from "@/modules/users/components/people/people-table";
 import { personNames, providerName, type SignInMix, signInMix } from "@/modules/users/person-model";
 import type { User360Tab } from "@/modules/users/tabs";
 import { useUserActions } from "@/modules/users/use-user-actions";
 import type { Standing } from "./person-page";
 import { Panel, Panels, Section } from "./person-parts";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 /**
  * A view of the person's page, as a link: what the section heads open. A Button rendered as a link
@@ -371,7 +371,7 @@ export function AccessSection({
             cap={t("person.can.roles")}
             value={
               roles.length
-                ? roles.map((r) => roleLabel(t, r.name)).join(", ")
+                ? roles.map((r) => roleDisplayName(r.name)).join(", ")
                 : t("person.signIn.none")
             }
             tone={roles.length ? undefined : "none"}

@@ -1,8 +1,8 @@
 import i18n from "@/i18n";
 
 export const CONSOLE_CAPABILITIES = [
-  "tenant.read",
-  "tenant.write",
+  "organization.read",
+  "organization.write",
   "user.read",
   "user.write",
   "role.read",

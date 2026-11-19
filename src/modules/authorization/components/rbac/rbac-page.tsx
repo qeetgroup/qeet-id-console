@@ -18,6 +18,7 @@ import { resourcesOf, splitPermission } from "@/modules/authorization/role-model
 import { Two, useCount, useResourceName } from "../lists/authz-parts";
 import { RoleDrawer } from "../roles/role-drawer";
 import "../lists/authz-lists.css";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 const ANY = "";
 
@@ -81,7 +82,7 @@ export function RbacPage({ filters, onFiltersChange, roleId, onRoleChange }: Rba
             search={{ ...filters, role: a.role.id }}
             className="authz-col-role"
           >
-            <span>{a.role.name}</span>
+            <span>{roleDisplayName(a.role.name)}</span>
             {view.peopleKnown ? (
               <small>
                 {a.holders.size

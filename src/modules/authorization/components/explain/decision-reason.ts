@@ -63,7 +63,7 @@ const REASON_CODES: Record<
     without: "authorization:decisionExplain.reason.relationGrantUnnamed",
   },
   "authz.nothing_allows": { key: "authorization:decisionExplain.reason.nothingAllows" },
-  "authz.no_tenant": { key: "authorization:decisionExplain.reason.noTenant" },
+  "authz.no_organization": { key: "authorization:decisionExplain.reason.noOrganization" },
   "authz.engine_error": { key: "authorization:decisionExplain.reason.engineError" },
 };
 
@@ -113,7 +113,7 @@ function policyStep(key: TranslationKey): (m: RegExpMatchArray) => ExplainedText
 // The sentences an older server sends in place of a code.
 const REASONS: Rule[] = [
   [
-    /^no role grants this permission for this user in this tenant$/,
+    /^no role grants this permission for this user in this (organization|tenant)$/,
     () => ({ key: "authorization:check.deniedReason" }),
   ],
   [

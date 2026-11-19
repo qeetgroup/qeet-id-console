@@ -28,6 +28,7 @@ import { useEvidenceRun, useEvidenceRuns } from "@/modules/compliance/api/eviden
 import {
   ERASURE_GRACE_DAYS,
   type PurgeRequest,
+  purgeStatus,
   useCancelGdprPurge,
   useGdprPurges,
 } from "@/modules/compliance/api/gdpr";
@@ -223,11 +224,14 @@ export function GdprPage() {
                   id: "status",
                   header: t("gdpr.list.status"),
                   width: 120,
-                  cell: (r) => (
-                    <Badge tone={PURGE_LOOK[r.status]} size="sm">
-                      {t(`gdpr.status.${r.status}`)}
-                    </Badge>
-                  ),
+                  cell: (r) => {
+                    const status = purgeStatus(r.status);
+                    return (
+                      <Badge tone={status ? PURGE_LOOK[status] : "neutral"} size="sm">
+                        {status ? t(`gdpr.status.${status}`) : r.status}
+                      </Badge>
+                    );
+                  },
                 },
                 {
                   id: "erasure",

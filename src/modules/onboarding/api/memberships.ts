@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
 import { organizationSelectionPageSchema } from "@/platform/auth/organization-selection";
 
 /**
@@ -12,8 +12,8 @@ export function useHasOrganization(userId: string | null) {
   return useQuery({
     queryKey: ["onboarding", "has-organization", userId],
     queryFn: async ({ signal }) => {
-      const page = await api("/v1/me/organizations", {
-        query: { limit: 1, cursor: "" },
+      const page = await backend.get("/v1/me/organizations", {
+        query: { limit: 1 },
         signal,
         schema: organizationSelectionPageSchema,
       });

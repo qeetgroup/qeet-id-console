@@ -16,7 +16,7 @@ import { ApiError } from "@/platform/errors/api-error";
 
 const context = vi.hoisted(() => ({
   userId: "user-a" as string | null,
-  tenantId: "11111111-1111-4111-8111-111111111111",
+  organizationId: "11111111-1111-4111-8111-111111111111",
   navigate: vi.fn(),
   logout: vi.fn(),
 }));
@@ -24,7 +24,7 @@ vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => context.navigate }));
 vi.mock("@/platform/auth/session", () => ({
   useUserId: () => context.userId,
-  useTenantId: () => context.tenantId,
+  useOrganizationId: () => context.organizationId,
   useMe: () => ({
     data: { id: "user-a", email: "operator@example.test", display_name: "Mina Shah" },
     isError: false,
@@ -32,10 +32,10 @@ vi.mock("@/platform/auth/session", () => ({
   useLogout: () => ({ mutate: context.logout }),
   useIdleLogout: vi.fn(),
 }));
-vi.mock("../api/flows", () => ({ switchToTenant: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("../api/flows", () => ({ switchToOrganization: vi.fn().mockResolvedValue(undefined) }));
 // Invitations waiting for this email: none, unless a test adds some.
 const invites = vi.hoisted(() => ({
-  items: [] as { id: string; tenant_name: string; email: string; expires_at: string }[],
+  items: [] as { id: string; organization_name: string; email: string; expires_at: string }[],
   accept: vi.fn(),
   decline: vi.fn(),
 }));
@@ -47,7 +47,7 @@ vi.mock("../api/flows-invitations", () => ({
 
 import { api } from "@/platform/api/client";
 import type { EligibleOrganization } from "@/platform/auth/organization-selection";
-import { switchToTenant } from "../api/flows";
+import { switchToOrganization } from "../api/flows";
 import { loadEligibleOrganizations } from "../api/organization-selection";
 import {
   OrganizationSelectionPage,
@@ -152,21 +152,21 @@ function renderPage(onCreate = vi.fn()) {
   };
 }
 
-const invitation = (id: string, tenant_name: string) => ({
+const invitation = (id: string, organization_name: string) => ({
   id,
-  tenant_name,
+  organization_name,
   email: "operator@example.test",
   expires_at: new Date(Date.now() + 6 * 86_400_000).toISOString(),
 });
 
 beforeEach(() => {
   context.userId = "user-a";
-  context.tenantId = fixture(0).id;
+  context.organizationId = fixture(0).id;
   context.navigate.mockReset();
   context.logout.mockReset();
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue({ items: fixtures(), next_cursor: "" });
-  vi.mocked(switchToTenant).mockReset().mockResolvedValue(undefined);
+  vi.mocked(switchToOrganization).mockReset().mockResolvedValue(undefined);
   invites.items = [];
   invites.accept.mockReset();
   invites.decline.mockReset();
@@ -360,11 +360,11 @@ describe("Organization selector", () => {
 describe("Organization selection data", () => {
   it("retries a failed automatic switch after refreshing the single membership", async () => {
     vi.mocked(api).mockResolvedValue({ items: [fixture(1)], next_cursor: "" });
-    vi.mocked(switchToTenant).mockRejectedValueOnce(new Error("offline"));
+    vi.mocked(switchToOrganization).mockRejectedValueOnce(new Error("offline"));
     renderPage();
     await screen.findByRole("alert");
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledTimes(2));
     expect(api).toHaveBeenCalledTimes(2);
   });
 
@@ -401,22 +401,22 @@ describe("Organization selection data", () => {
     renderPage();
     await screen.findByRole("button", { name: /^Globalsphere/ });
     expect(context.navigate).not.toHaveBeenCalled();
-    expect(switchToTenant).not.toHaveBeenCalled();
+    expect(switchToOrganization).not.toHaveBeenCalled();
     fireEvent.click(row("Globalsphere"));
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixture(1).id));
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith(fixture(1).id));
   });
 
   it("continues automatically when there is only one current organization", async () => {
     vi.mocked(api).mockResolvedValue({ items: [fixture(0)], next_cursor: "" });
     renderPage();
     await waitFor(() => expect(context.navigate).toHaveBeenCalledWith({ to: "/", replace: true }));
-    expect(switchToTenant).not.toHaveBeenCalled();
+    expect(switchToOrganization).not.toHaveBeenCalled();
   });
 
   it("switches automatically when the only remaining membership is not the current tenant", async () => {
     vi.mocked(api).mockResolvedValue({ items: [fixture(1)], next_cursor: "" });
     renderPage();
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith(fixture(1).id));
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith(fixture(1).id));
   });
 
   it("takes an account with no organisation and no invitation on to create its first", async () => {
@@ -425,7 +425,7 @@ describe("Organization selection data", () => {
     await waitFor(() =>
       expect(context.navigate).toHaveBeenCalledWith({ to: "/create-organization", replace: true }),
     );
-    expect(switchToTenant).not.toHaveBeenCalled();
+    expect(switchToOrganization).not.toHaveBeenCalled();
   });
 
   it("shows a new account its invitation instead: join it, decline it, or create one", async () => {
@@ -500,7 +500,7 @@ describe("Organization selection data", () => {
     expect(screen.getByRole("list", { name: "Your organisations" }).textContent).toContain(
       "Globalsphere",
     );
-    expect(switchToTenant).not.toHaveBeenCalled();
+    expect(switchToOrganization).not.toHaveBeenCalled();
     expect(context.navigate).not.toHaveBeenCalled();
   });
 

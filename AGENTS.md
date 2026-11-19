@@ -71,6 +71,7 @@ Biome `noRestrictedImports` overrides in `biome.json` fail the build:
   come from `@qeetrix/react` (stable and `/experimental`), styling from `--qx-*` tokens.
 
 ### 4. All API traffic goes through one path
+`backend` (`src/platform/api/backend.ts`, typed against the API contract) → `api()` in
 `src/platform/api/client.ts` → server function `proxyApiRequest` → backend. **This is the only place
 requests leave the app.** Correlation IDs, schema parsing and telemetry are added there so every
 caller inherits them. Server-sent events go through `openEventStream` / `readServerSentEvents`
@@ -104,10 +105,11 @@ delete, purge, disable SSO). Run it as a mutation, pass an `actionLabel`, `confi
 destructive, and end the chain with `.catch(settleSensitiveAction)`.
 
 ### 8. Runtime schemas guard the critical boundaries
-Pass `schema` to `api()` where wrong data would do harm: MFA, credentials and secrets, sessions,
-the tenant switch. Derive the type from the schema (`z.infer`), and match the server's Go struct:
-`omitempty` is optional. A mismatch throws `client.schema_mismatch` — **fail closed rather than
-hand garbage to the UI.**
+Pass `schema` to a `backend` call where wrong data would do harm: MFA, credentials and secrets,
+sessions, the organization switch. The compiler holds the schema to the contract: it may narrow a
+value (a literal, an enum) but must accept every field the contract leaves optional or nullable;
+to require one anyway, say so with `.refine()`. A mismatch throws `client.schema_mismatch` —
+**fail closed rather than hand garbage to the UI.**
 
 ### 9. `routeTree.gen.ts` is generated
 Committed, and marked read-only in `.vscode/settings.json`. **Never hand-edit it.**
@@ -175,8 +177,8 @@ One way to do each thing. `src/modules/users` is the reference implementation.
   `searchEnum()` (`src/shared/utils/search-params.ts`), so a blank, stale or unknown value
   becomes undefined instead of failing the route.
 - **Query keys** — one factory per module (`userKeys` in `src/modules/users/api/keys.ts`). Every key
-  starts `[module, tenantId, …]`, so one organization's entries never mix with another's and a
-  prefix refreshes a tenant's lists or one record's views together. Define reads with
+  starts `[module, organizationId, …]`, so one organization's entries never mix with another's and a
+  prefix refreshes an organization's lists or one record's views together. Define reads with
   `queryOptions` (`userQueries`) so hooks, prefetches and other modules share one cache entry. A
   mutation refreshes what it changed; its callers don't.
 - **Forms** — `useAppForm` from `src/platform/forms/app-form.tsx` (TanStack Form bound to the
@@ -231,9 +233,22 @@ One way to do each thing. `src/modules/users` is the reference implementation.
   that grows the bundle, by hand, to what the check suggests, and give the reason in the commit
   message**; never re-baseline the file to make room. A route without a budget is held to
   `newRoute` until it gets one; a removed route's budget fails the check until deleted.
-- **API contract** — no generated client. Each module types the endpoints it calls by hand from
-  the server's Go structs and OpenAPI, and parses with a Zod `schema` where a wrong shape would
-  mislead (a one-time secret, a status). A server contract change is a cross-repository change
+- **API contract** — the server's five OpenAPI documents are copied into `contract/qeet-id-server/`
+  (with the commit they came from) and generated into types (`src/platform/api/contract/`), by
+  `bun run contract:sync`; never edit either. Call the server with `backend.get/post/put/patch/delete`
+  (`src/platform/api/backend.ts`), naming the path as the contract writes it and filling its
+  placeholders from `path`: the typecheck then refuses a path, method, parameter or body field the
+  server doesn't have, a field the answer doesn't carry, and an optional field read as always
+  there. Take a module's types from the contract (`Answer<"/v1/me">`, `Schemas<"identity">`), not
+  by hand. Where the document leaves a field optional that the server always sends (its Go struct
+  has no `omitempty`), say which fields the page relies on with `assured`/`assuredItems` (or
+  `assuredList` for a list under another key), or a stricter Zod schema with `strictly`
+  (`src/platform/api/assured.ts`): checked at runtime, failing closed. A field the server sends or
+  takes that the document lacks goes in `src/platform/api/contract/undocumented.ts`, with the
+  server code that shows it (`partial: true` when the server takes any part of a body the document
+  lists in full); never one the server lacks. A server value the console words (a status, a
+  reason) is matched to a known set (`isOneOf`) before it picks copy. Never call `api()`
+  directly: lint refuses it outside the typed client. A server contract change is a cross-repository change
   (see "Escalate rather than proceed").
 
 ## Commands
@@ -249,6 +264,9 @@ bun run typecheck
 bun run check            # biome format + lint + assist
 bun run lint:boundaries  # the layering gate
 bun run size             # after a build: the gzip budgets in bundle-budgets.json
+bun run contract:sync    # copy the server's API documents (../qeet-id-server) and regenerate types
+bun run contract:check   # the copied contract and its generated types (CI)
+bun run contract:drift   # whether the server's documents (../qeet-id-server) moved on since the copy
 bun run audit            # known high/critical vulnerabilities in the dependency tree
 ```
 
@@ -262,12 +280,14 @@ bun run audit            # known high/critical vulnerabilities in the dependency
 
 `ci.yml` runs one job, **Verify**, on pull requests into `develop` and `main` (a release reaches
 `main` by one); nothing runs on a plain push. Every action is pinned to a commit SHA
-and workflows default to read-only permissions. Verify (10 min): typecheck → `check` (Biome:
+and workflows default to read-only permissions. Verify (10 min): `contract:check` → (with a read-only `QEET_ID_SERVER_READ_TOKEN`) a warning
+when the server's documents moved on → typecheck → `check` (Biome:
 formatting, lint, and the layer import rules) → `audit` (high and critical advisories) → gitleaks
 (secrets in the pull request's commits). **The unit
 tests (`test:coverage`, thresholds in `vitest.config.ts`), the build, `size` (the bundle budgets;
 see Conventions, Bundle size) and the Playwright specs in `tests/e2e` (the session boundary, the
-Content-Security-Policy and the WCAG 2.2 AA accessibility scan, rule 12) run locally before a change
+Content-Security-Policy, the WCAG 2.2 AA accessibility scan with label-in-name and reflow at
+320px wide, and keyboard use, rule 12) run locally before a change
 is pushed; CI doesn't repeat them.**
 
 Branches: `develop` (where changes land) and `main` (production). Each month `release/YEAR.MONTH.0`

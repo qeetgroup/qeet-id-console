@@ -11,7 +11,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -76,7 +76,7 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
     if (method === "GET") {
-      if (path === "/v1/tenants/t-1/groups")
+      if (path === "/v1/organizations/t-1/groups")
         return {
           items: [
             group("g-1", "Engineering", null, 1),
@@ -86,9 +86,9 @@ beforeEach(() => {
         };
       if (path === "/v1/groups/g-1/members")
         return { items: [{ user_id: "u-1", email: "aarav@qeet.in", display_name: "Aarav Mehta" }] };
-      if (path === "/v1/tenants/t-1/groups/g-1/roles")
+      if (path === "/v1/organizations/t-1/groups/g-1/roles")
         return { items: [{ role_id: "r-1", name: "editor", granted_at: "2026-10-01T00:00:00Z" }] };
-      if (path === "/v1/tenants/t-1/roles")
+      if (path === "/v1/organizations/t-1/roles")
         return {
           items: [
             { id: "r-1", name: "editor", description: "Edits the content" },
@@ -111,7 +111,7 @@ beforeEach(() => {
           ],
         };
     }
-    if (path.startsWith("/v1/tenants/t-1/groups/g-1/roles/")) return undefined;
+    if (path.startsWith("/v1/organizations/t-1/groups/g-1/roles/")) return undefined;
     if (path === "/v1/groups/g-1" && method === "DELETE") return undefined;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
@@ -162,7 +162,9 @@ describe("a group's page", () => {
     fireEvent.click(option);
     fireEvent.click(screen.getByRole("button", { name: "Grant" }));
 
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/tenants/t-1/groups/g-1/roles/r-2"]));
+    await waitFor(() =>
+      expect(writes()).toEqual(["POST /v1/organizations/t-1/groups/g-1/roles/r-2"]),
+    );
     expect(sensitiveCalls).toEqual([
       expect.objectContaining({ actionLabel: "Grant a role to the group" }),
     ]);
@@ -181,7 +183,9 @@ describe("a group's page", () => {
     ).toBeTruthy();
     expect(writes()).toEqual([]);
     fireEvent.click(within(dialog).getByRole("button", { name: "Stop granting" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/tenants/t-1/groups/g-1/roles/r-1"]));
+    await waitFor(() =>
+      expect(writes()).toEqual(["DELETE /v1/organizations/t-1/groups/g-1/roles/r-1"]),
+    );
   });
 
   it("sends nothing when the confirmation is cancelled", async () => {

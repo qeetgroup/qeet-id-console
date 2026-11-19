@@ -49,7 +49,7 @@ export function ProviderSection({
 }) {
   const { t, i18n } = useTranslation("qeetai");
   const [editing, setEditing] = useState(false);
-  const own = config.source === "tenant";
+  const own = config.source === "organization";
   const locale = formatLocale();
   const name = i18n.t(PROVIDER_NAME[config.provider ?? ""] ?? "qeetai:providers.other");
   const facts = [

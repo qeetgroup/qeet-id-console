@@ -3,7 +3,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
-import { api, getApiBaseUrl } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
+import { getApiBaseUrl } from "@/platform/api/client";
 
 import { isMfaChallenge, type LoginResponse } from "./flows-session";
 import { authKeys } from "./keys";
@@ -12,8 +13,7 @@ import { authKeys } from "./keys";
 export function usePlatformSocialProviders() {
   return useQuery({
     queryKey: authKeys.platformSocialProviders(),
-    queryFn: () =>
-      api<{ providers: string[] }>("/v1/social/platform/providers", { anonymous: true }),
+    queryFn: () => backend.get("/v1/social/platform/providers", { anonymous: true }),
     staleTime: 5 * 60_000,
   });
 }
@@ -35,10 +35,7 @@ export function socialStartUrl(provider: string, intent: "login" | "signup" = "l
 export function useStartSocialLink() {
   return useMutation({
     mutationFn: (provider: string) =>
-      api<{ authorize_url: string }>(`/v1/social/${provider}/link/start`, {
-        method: "POST",
-        body: {},
-      }),
+      backend.post("/v1/social/{provider}/link/start", { path: { provider } }),
     onSuccess: (res) => {
       if (typeof window !== "undefined" && res.authorize_url) {
         window.location.href = res.authorize_url;
@@ -55,12 +52,8 @@ export function useStartSocialLink() {
 export function useConsumeSocialCode() {
   const navigate = useNavigate();
   return useMutation({
-    mutationFn: (code: string) =>
-      api<LoginResponse>("/v1/social/exchange", {
-        method: "POST",
-        body: { code },
-        anonymous: true,
-      }),
+    mutationFn: async (code: string): Promise<LoginResponse> =>
+      backend.post("/v1/social/exchange", { body: { code }, anonymous: true }),
     onSuccess: (res) => {
       // No session yet: the sign-in page renders the second-factor step from this mutation's data.
       if (isMfaChallenge(res)) return;

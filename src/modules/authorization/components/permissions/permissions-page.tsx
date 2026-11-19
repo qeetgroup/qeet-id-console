@@ -28,6 +28,7 @@ import {
 } from "@/modules/authorization/role-model";
 import { BandPlaceholder, useCount, useResourceName } from "../lists/authz-parts";
 import "../lists/authz-lists.css";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 const ANY = "";
 // The Users band's ordinal ramp (people.css): held more widely, darker.
@@ -179,8 +180,10 @@ export function PermissionsPage({
         if (r.roles.length === access.length && access.length > 1)
           return <Text>{t("lists.permissions.cells.everyRole")}</Text>;
         return (
-          <span className="authz-clip" title={r.roles.join(", ")}>
-            {r.ownerOnly ? t("lists.permissions.cells.ownerOnly") : shortList(r.roles, and)}
+          <span className="authz-clip" title={r.roles.map(roleDisplayName).join(", ")}>
+            {r.ownerOnly
+              ? t("lists.permissions.cells.ownerOnly")
+              : shortList(r.roles.map(roleDisplayName), and)}
           </span>
         );
       },
@@ -263,7 +266,7 @@ export function PermissionsPage({
                         { value: ANY, label: t("lists.permissions.filters.anyRole") },
                         ...access.map((a) => ({
                           value: a.role.name,
-                          label: `${a.role.name} · ${n(a.permissions?.size ?? 0)}`,
+                          label: `${roleDisplayName(a.role.name)} · ${n(a.permissions?.size ?? 0)}`,
                         })),
                       ]}
                     />

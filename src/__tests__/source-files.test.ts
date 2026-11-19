@@ -1,13 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-// Every hand-written source file, as text. Tests and the generated route tree are exempt.
+// Every hand-written source file, as text. Tests and generated files (*.gen.ts) are exempt.
 const sources = import.meta.glob<string>(
-  [
-    "/src/**/*.{ts,tsx}",
-    "!/src/**/__tests__/**",
-    "!/src/**/*.test.{ts,tsx}",
-    "!/src/routeTree.gen.ts",
-  ],
+  ["/src/**/*.{ts,tsx}", "!/src/**/__tests__/**", "!/src/**/*.test.{ts,tsx}", "!/src/**/*.gen.ts"],
   { query: "?raw", import: "default", eager: true },
 );
 

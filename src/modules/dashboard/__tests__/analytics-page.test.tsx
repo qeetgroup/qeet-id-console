@@ -9,7 +9,10 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1", useUserId: () => "u-me" }));
+vi.mock("@/platform/auth/session", () => ({
+  useOrganizationId: () => "t-1",
+  useUserId: () => "u-me",
+}));
 const granted = vi.hoisted(() => ({ except: new Set<string>() }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => {

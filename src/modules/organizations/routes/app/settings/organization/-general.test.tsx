@@ -10,7 +10,7 @@ const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: 
 const access = vi.hoisted(() => ({ write: true }));
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 vi.mock("@/modules/dashboard", () => ({ PageBreadcrumb: () => null }));
 vi.mock("@/modules/billing", () => ({ useSubscription: () => ({ data: undefined }) }));
 vi.mock("@/platform/security/capability-provider", () => ({
@@ -61,7 +61,7 @@ beforeEach(() => {
   access.write = true;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
-    if (path === "/v1/tenants/t-1")
+    if (path === "/v1/organizations/t-1")
       return options?.method === "PATCH" ? { ...tenant, ...(options.body as object) } : tenant;
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });
@@ -160,7 +160,7 @@ describe("Settings › General", () => {
     await waitFor(() => expect(patches()).toEqual([{ metadata: { source: "import" } }]));
   });
 
-  it("offers no changes without tenant.write", async () => {
+  it("offers no changes without organization.write", async () => {
     access.write = false;
     renderPage();
     const details = (await screen.findByRole("heading", { name: "Details" })).closest("section");

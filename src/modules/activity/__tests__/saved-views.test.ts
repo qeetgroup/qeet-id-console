@@ -19,7 +19,7 @@ beforeEach(() => {
     expiresAt: "2030-01-01T00:00:00Z",
     sessionId: "session-a",
     userId: "user-a",
-    tenantId: "tenant-1",
+    organizationId: "tenant-1",
     version: 1,
     impersonationActor: null,
   });

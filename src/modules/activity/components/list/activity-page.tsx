@@ -32,7 +32,7 @@ import { formatLocale } from "@/i18n";
 import { useEntitlements } from "@/modules/billing";
 import { PageBreadcrumb } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useActivityExport } from "@/modules/activity/activity-export";
 import { applyFilters } from "@/modules/activity/activity-filters";
 import { useActivityHistory } from "@/modules/activity/activity-history";
@@ -78,8 +78,8 @@ export function ActivityPage({ search, onSearchChange }: ActivityPageProps) {
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
   const queryClient = useQueryClient();
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
 
   // The filters, without the open event or the applied view: opening an event mustn't move a
   // relative range's start, or the list would load again.
@@ -109,7 +109,7 @@ export function ActivityPage({ search, onSearchChange }: ActivityPageProps) {
     enabled: true,
     onFirstPage: offset === 0,
     onGap: () =>
-      void queryClient.resetQueries({ queryKey: activityKeys.history(tenantId, filters) }),
+      void queryClient.resetQueries({ queryKey: activityKeys.history(organizationId, filters) }),
   });
   const summaryQ = useActivitySummary(filters, { live: live.status === "live" });
   const summary = summaryQ.data;

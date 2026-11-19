@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import type { Answer } from "@/platform/api/contract";
 import type { Capability } from "@/platform/security/capability-model";
 
 export type SearchItemKind = "navigation" | "command" | "resource" | "recent" | "favorite";
@@ -16,14 +17,14 @@ export interface SearchItem {
   capability?: Capability;
   status?: string; // A well-known status, rendered by StatusPill
   updatedAt?: string; // ISO 8601
-  metadata?: Record<string, string>;
+  metadata?: Record<string, unknown>;
   /** Runs the item; without it, selecting the item navigates to `url`. */
   run?(ctx: SearchContext): void;
 }
 
 export interface SearchContext {
   pathname: string;
-  tenantId: string | null;
+  organizationId: string | null;
   capabilities: ReadonlySet<string>; // The person's current permission strings
   navigate(url: string): void;
   language: string | undefined; // the items' language: a change rebuilds them
@@ -39,20 +40,6 @@ export type SearchResultGroup = {
   items: SearchItem[];
 };
 
-/** One hit from GET /v1/search. */
-export type SearchHit = {
-  type: string;
-  id: string;
-  title: string;
-  subtitle?: string;
-  url: string;
-  status?: string;
-  updated_at?: string;
-  score: number;
-  metadata?: Record<string, string>;
-};
-
-export type SearchResponse = {
-  results: SearchHit[];
-  next_cursor?: string;
-};
+/** What GET /v1/search answers, and one hit in it. */
+export type SearchResponse = Answer<"/v1/search">;
+export type SearchHit = SearchResponse["results"][number];

@@ -283,6 +283,7 @@
     "searchUnavailable": "Search is available once your access has loaded",
     "qeetAi": "Qeet AI",
     "accountMenu": "Account menu",
+    "accountMenuFor": "{{initials}}, {{name}}, account menu",
     "switchOrganization": "Switch organisation",
     "youAreIn": "You're in {{name}}",
     "myAccount": "My account",

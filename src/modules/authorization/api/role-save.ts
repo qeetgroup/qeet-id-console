@@ -3,10 +3,9 @@
 // the first of them asks for, and refreshes the role once at the end, whatever got through.
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export type RolePermissionChange = {
   /** Permission IDs to give the role. */
@@ -16,20 +15,24 @@ export type RolePermissionChange = {
 };
 
 export function useSaveRolePermissions(roleId: string) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ grant, revoke }: RolePermissionChange) => {
       // In turn, not at once: the first call's step-up covers the rest.
       for (const id of grant) {
-        await api<void>(`/v1/roles/${roleId}/permissions/${id}`, { method: "POST" });
+        await backend.post("/v1/roles/{roleID}/permissions/{permID}", {
+          path: { roleID: roleId, permID: id },
+        });
       }
       for (const id of revoke) {
-        await api<void>(`/v1/roles/${roleId}/permissions/${id}`, { method: "DELETE" });
+        await backend.delete("/v1/roles/{roleID}/permissions/{permID}", {
+          path: { roleID: roleId, permID: id },
+        });
       }
     },
     onSettled: () =>
-      qc.invalidateQueries({ queryKey: authzKeys.rolePermissions(tenantId, roleId) }),
+      qc.invalidateQueries({ queryKey: authzKeys.rolePermissions(organizationId, roleId) }),
     meta: { successMessage: "authorization:toast.roleSaved", silentError: true }, // the drawer shows it
   });
 }

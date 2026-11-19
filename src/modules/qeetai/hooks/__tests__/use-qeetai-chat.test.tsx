@@ -14,7 +14,7 @@ const runtime = vi.hoisted(() => ({
   sent: [] as SendInput[],
   context: {
     route: { pathname: "/users", title: "Users" },
-    tenantId: "tenant-a",
+    organizationId: "tenant-a",
     userId: "operator-1",
     capabilities: [],
   } as ConsoleContext,

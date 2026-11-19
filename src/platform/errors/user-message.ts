@@ -12,7 +12,6 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.MFA_ENROLLMENT_REQUIRED]: "errors:code.mfaEnrollmentRequired",
   [ERROR_CODES.SESSION_EXPIRED]: "errors:code.sessionExpired",
   [ERROR_CODES.SESSION_REFRESH_UNAVAILABLE]: "errors:code.sessionRefreshUnavailable",
-  [ERROR_CODES.INVALID_STATE]: "errors:code.invalidState",
   // 409 -> `api`, whose generic fallback is useless on a sign-up form: the fix is to sign in.
   [ERROR_CODES.EMAIL_EXISTS]: "errors:code.emailExists",
   // All three are 400 -> `validation`, whose fallback doesn't say whether to retype the code or
@@ -60,7 +59,7 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   [ERROR_CODES.RULES_LOCK_OUT_CALLER]: "errors:code.rulesLockOutCaller",
   [ERROR_CODES.LAST_SIGN_IN_METHOD]: "errors:code.lastSignInMethod",
   [ERROR_CODES.SOCIAL_PROVIDER_IN_USE]: "errors:code.socialProviderInUse",
-  [ERROR_CODES.NOT_TENANT_MEMBER]: "errors:code.notTenantMember",
+  [ERROR_CODES.NOT_ORGANIZATION_MEMBER]: "errors:code.notOrganizationMember",
   [ERROR_CODES.SELF_REGISTRATION_DISABLED]: "errors:code.selfRegistrationDisabled",
   [ERROR_CODES.PASSWORD_WEAK]: "errors:code.passwordWeak",
   [ERROR_CODES.PASSWORD_BREACHED]: "errors:code.passwordBreached",
@@ -75,9 +74,9 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   // 409 -> `api`, and a retry resubmits the same slug, so point at the field that fixes it: the
   // slug, not the name (names aren't unique).
   [ERROR_CODES.ORG_SLUG_TAKEN]: "errors:code.orgSlugTaken",
-  [ERROR_CODES.TENANT_OWNER_ONLY]: "errors:code.tenantOwnerOnly",
-  [ERROR_CODES.TENANT_DELETION_SCHEDULED]: "errors:code.tenantDeletionScheduled",
-  [ERROR_CODES.TENANT_DELETION_NOT_SCHEDULED]: "errors:code.tenantDeletionNotScheduled",
+  [ERROR_CODES.ORG_OWNER_ONLY]: "errors:code.orgOwnerOnly",
+  [ERROR_CODES.ORG_DELETION_SCHEDULED]: "errors:code.orgDeletionScheduled",
+  [ERROR_CODES.ORG_DELETION_NOT_SCHEDULED]: "errors:code.orgDeletionNotScheduled",
   [ERROR_CODES.MFA_CODE_INVALID]: "errors:code.mfaCodeInvalid",
   [ERROR_CODES.MFA_CODE_SEND_LIMITED]: "errors:code.mfaCodeSendLimited",
   [ERROR_CODES.MFA_FACTOR_LIMIT]: "errors:code.mfaFactorLimit",
@@ -88,6 +87,16 @@ const CODE_MESSAGES: Record<string, TranslationKey> = {
   // 403 -> `authz`, whose fallback says a permission is missing; the rule is about giving one.
   [ERROR_CODES.RBAC_GRANT_EXCEEDS_CALLER]: "errors:code.rbacGrantExceedsCaller",
   [ERROR_CODES.RBAC_SYSTEM_ROLE_FIXED]: "errors:code.rbacSystemRoleFixed",
+  // 403 -> `authz`, whose fallback says a permission is missing; here the person or connection
+  // changed outranks the caller, so the fix is who asks, not what they hold.
+  [ERROR_CODES.RBAC_TARGET_IS_OWNER]: "errors:code.rbacTargetIsOwner",
+  [ERROR_CODES.RBAC_TARGET_OUTRANKS_CALLER]: "errors:code.rbacTargetOutranksCaller",
+  [ERROR_CODES.RBAC_TRUST_CHANGE_OUTRANKS_CALLER]: "errors:code.rbacTrustChangeOutranksCaller",
+  // 422 -> `validation`, whose fallback points at a field; the check itself is too large.
+  [ERROR_CODES.REBAC_CHECK_TOO_COMPLEX]: "errors:code.rebacCheckTooComplex",
+  // 403 -> `authz`; the organisation, not a permission, decides the address.
+  [ERROR_CODES.VERIFICATION_EMAIL_MANAGED]: "errors:code.verificationEmailManaged",
+  [ERROR_CODES.VERIFICATION_CODE_SEND_LIMITED]: "errors:code.verificationCodeSendLimited",
   [ERROR_CODES.BILLING_PLAN_LIMIT]: "errors:code.billingPlanLimit",
   [ERROR_CODES.BILLING_UPGRADE_REQUIRED]: "errors:code.billingUpgradeRequired",
   [ERROR_CODES.USER_IMPORT_EMPTY]: "errors:code.userImportEmpty",

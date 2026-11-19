@@ -6,14 +6,14 @@ import type { User } from "../api/users";
 
 const member = {
   id: "u1",
-  tenant_id: "t1",
+  organization_id: "t1",
   email: "Priya@qeet.in",
   status: "active",
   created_at: "2025-01-01T00:00:00Z",
 } as User;
 const pending = {
   id: "i1",
-  tenant_id: "t1",
+  organization_id: "t1",
   email: "sai.sharma@qeet.in",
   status: "pending",
   expires_at: "",

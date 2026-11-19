@@ -16,7 +16,7 @@ sensitive-action/step-up primitive.
 |---|---|
 | **Every authorization decision** | `qeet-id-server` |
 | Tenant scoping, token validation, business rules | `qeet-id-server` |
-| The API contract | `qeet-id-server` — see its OpenAPI documents; the console types what it calls by hand (no generated client) |
+| The API contract | `qeet-id-server` — its OpenAPI documents, copied into `contract/qeet-id-server/` and generated into types the console's calls are checked against (`bun run contract:sync`) |
 | End-user sign-in UI | `qeet-id-hosted` (`accounts.id.qeet.in`) |
 | Marketing | `qeet-id-website` |
 | SDKs | `qeet-id-{go,node,react}` |

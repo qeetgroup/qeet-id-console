@@ -5,11 +5,11 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const context = vi.hoisted(() => ({
-  tenantId: "tenant-a" as string | null,
+  organizationId: "tenant-a" as string | null,
   allowed: new Set<string>(["user.read"]),
 }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
     state: "ready",
@@ -29,7 +29,7 @@ import {
 } from "../api/suspended";
 
 const SUSPENDED_LIST: QueryKey = [...userKeys.suspended("tenant-a"), DEFAULT_SUSPENDED_FILTERS];
-const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25, offset: 0 });
+const USERS_LIST: QueryKey = userKeys.list("tenant-a", { limit: 25 });
 const USER_STATS: QueryKey = userKeys.stats("tenant-a");
 
 function member(id: string, overrides: Partial<SuspendedDirectoryUser> = {}) {
@@ -54,8 +54,7 @@ function page(items: SuspendedDirectoryUser[], total = items.length): SuspendedU
   return {
     items,
     total,
-    limit: 100,
-    offset: 0,
+    complete: true,
     summary: { total, high_risk: 0, policy: 0, manual: 0, pending: 0 },
     reasons: [],
     risks: [],
@@ -92,7 +91,7 @@ function respondWith(raw: unknown) {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   context.allowed = new Set(["user.read"]);
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue(undefined);
@@ -104,13 +103,14 @@ describe("useSuspendedUsers", () => {
   it("sends the filters as the query and returns the validated page", async () => {
     const response = page([member("user-1", { display_name: "Asha" })]);
     respondWith(response);
-    const filters = { ...DEFAULT_SUSPENDED_FILTERS, q: "asha", risk: "high", offset: 25 };
+    const filters = { ...DEFAULT_SUSPENDED_FILTERS, q: "asha", risk: "high" };
     const { result } = setup(() => useSuspendedUsers(filters));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    // Filters left empty aren't sent, and it pages by cursor: no offset.
     expect(api).toHaveBeenCalledWith(
       "/v1/users/suspended",
-      expect.objectContaining({ query: filters }),
+      expect.objectContaining({ query: { q: "asha", risk: "high", limit: 200 } }),
     );
     expect(result.current.data).toEqual(response);
   });
@@ -124,12 +124,12 @@ describe("useSuspendedUsers", () => {
   });
 
   it("does not ask without a tenant or without user.read", () => {
-    context.tenantId = null;
+    context.organizationId = null;
     expect(
       setup(() => useSuspendedUsers(DEFAULT_SUSPENDED_FILTERS)).result.current.fetchStatus,
     ).toBe("idle");
 
-    context.tenantId = "tenant-a";
+    context.organizationId = "tenant-a";
     context.allowed = new Set();
     expect(
       setup(() => useSuspendedUsers(DEFAULT_SUSPENDED_FILTERS)).result.current.fetchStatus,
@@ -181,7 +181,7 @@ describe("useReactivateUsers", () => {
 describe("useReviewSuspension", () => {
   it("PUTs the review and refreshes only the suspended-users views", async () => {
     const { result, client } = setup(() => useReviewSuspension(), { seed: true });
-    const review = { reason: "offboarding", risk: "low", review: "reviewed" as const };
+    const review = { reason: "offboarding", risk: "low", review: "reviewed" } as const;
 
     await act(async () => {
       await result.current.mutateAsync({ id: "user-1", review });

@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
@@ -63,7 +63,7 @@ const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString();
 function person(id: string, overrides: Partial<User> = {}): User {
   return {
     id,
-    tenant_id: "t1",
+    organization_id: "t1",
     email: `${id}@qeet.in`,
     display_name: id,
     status: "active",
@@ -115,12 +115,12 @@ beforeEach(() => {
         return page;
       }
       if (path === "/v1/users/stats") return stats;
-      if (path === "/v1/tenants/t1/invites")
+      if (path === "/v1/organizations/t1/invites")
         return {
           items: [
             {
               id: "i1",
-              tenant_id: "t1",
+              organization_id: "t1",
               email: "a@qeet.in",
               status: "pending",
               expires_at: ago(-5),
@@ -128,8 +128,9 @@ beforeEach(() => {
             },
           ],
         };
-      if (path === "/v1/tenants/t1/roles") return { items: [{ id: "r-admin", name: "Admin" }] };
-      if (path === "/v1/tenants/t1/groups") return { items: [] };
+      if (path === "/v1/organizations/t1/roles")
+        return { items: [{ id: "r-admin", name: "Admin" }] };
+      if (path === "/v1/organizations/t1/groups") return { items: [] };
       throw new Error(`unexpected request: ${path}`);
     },
   );

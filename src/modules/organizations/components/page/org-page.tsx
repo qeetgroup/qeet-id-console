@@ -38,7 +38,7 @@ import {
 } from "@/modules/organizations/orgs-model";
 import { useOrgActions } from "@/modules/organizations/use-org-actions";
 import { TWO_STEP_TARGET, userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { toastSwitchFailure } from "@/platform/security/two-step-required";
 import { IdentitySection } from "./org-identity";
@@ -58,9 +58,9 @@ export function OrgPage({ orgId }: { orgId: string }) {
   const n = (value: number) => formatNumber(value, locale);
   const names = useOrgLabels();
   const access = useCapabilities();
-  const tenantId = useTenantId();
-  const current = orgId === tenantId;
-  const canWrite = access.can("tenant.write");
+  const organizationId = useOrganizationId();
+  const current = orgId === organizationId;
+  const canWrite = access.can("organization.write");
   const actions = useOrgActions();
   const [switching, setSwitching] = useState(false);
 
@@ -68,7 +68,7 @@ export function OrgPage({ orgId }: { orgId: string }) {
   const mineQ = useQuery(orgQueries.memberships());
   const recordQ = useQuery({
     ...orgQueries.record(orgId),
-    enabled: current && access.can("tenant.read"),
+    enabled: current && access.can("organization.read"),
   });
   const historyQ = useQuery({
     ...orgQueries.history(orgId),
@@ -79,10 +79,10 @@ export function OrgPage({ orgId }: { orgId: string }) {
 
   const org = useMemo(
     () =>
-      orgRows(listQ.data?.items ?? [], mineQ.data, tenantId, recordQ.data).find(
+      orgRows(listQ.data?.items ?? [], mineQ.data, organizationId, recordQ.data).find(
         (row) => row.id === orgId,
       ),
-    [listQ.data, mineQ.data, tenantId, recordQ.data, orgId],
+    [listQ.data, mineQ.data, organizationId, recordQ.data, orgId],
   );
   const changes = useMemo(() => changesOf(historyQ.data?.items ?? []), [historyQ.data]);
   const actorIds = [
@@ -90,7 +90,7 @@ export function OrgPage({ orgId }: { orgId: string }) {
   ];
   const actorsQ = useQueries({
     queries: access.can("user.read")
-      ? actorIds.map((id) => ({ ...userQueries.detail(tenantId, id), staleTime: 60_000 }))
+      ? actorIds.map((id) => ({ ...userQueries.detail(organizationId, id), staleTime: 60_000 }))
       : [],
   });
   const actorNames = new Map(
@@ -128,10 +128,10 @@ export function OrgPage({ orgId }: { orgId: string }) {
   const members = org.member_count ?? 0;
   const share = twoStepShare(org);
   const without = members - (org.mfa_enabled_count ?? 0);
-  const created = changes.find((c) => c.action === "tenant.created");
+  const created = changes.find((c) => c.action === "organization.created");
   const createdBy = created?.actor_user_id ? actorNames.get(created.actor_user_id) : undefined;
   const due = org.deletion_due_at;
-  const inName = listQ.data?.items.find((item) => item.id === tenantId)?.name;
+  const inName = listQ.data?.items.find((item) => item.id === organizationId)?.name;
   const sub = subscriptionQ.data;
   const about = [org.metadata?.industry, org.metadata?.headquarters].filter(
     (v): v is string => typeof v === "string" && !!v.trim(),
@@ -141,8 +141,8 @@ export function OrgPage({ orgId }: { orgId: string }) {
   const onSwitch = async () => {
     setSwitching(true);
     try {
-      const { switchToTenant } = await import("@/modules/authentication");
-      await switchToTenant(org.id);
+      const { switchToOrganization } = await import("@/modules/authentication");
+      await switchToOrganization(org.id);
     } catch (err) {
       setSwitching(false);
       toastSwitchFailure(err);

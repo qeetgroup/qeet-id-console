@@ -8,7 +8,7 @@ vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-1" }));
 const can = vi.hoisted(() => ({ write: true }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
@@ -65,8 +65,8 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/tenant-1/oauth/grants") return { items: GRANTS };
-    if (path === "/v1/tenants/tenant-1/oidc/clients")
+    if (path === "/v1/organizations/tenant-1/oauth/grants") return { items: GRANTS };
+    if (path === "/v1/organizations/tenant-1/oidc/clients")
       return {
         items: [
           { client_id: "qci_pay", name: "Qeet Pay Dashboard", type: "confidential" },

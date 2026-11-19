@@ -55,7 +55,7 @@ session:
 authorization:
   model: UX-only                                # the backend is authoritative
   capabilities: 25
-  source: GET /v1/users/{userId}/tenants/{tenantId}/permissions
+  source: GET /v1/users/{userId}/organizations/{organizationId}/permissions
   fails: closed                                 # malformed payload throws
   step_up_prompt: SensitiveActionProvider        # mounted in _app and /account
   step_up: RequireRecentMFA on the backend      # prompt: SensitiveActionProvider

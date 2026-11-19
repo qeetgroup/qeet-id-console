@@ -4,9 +4,9 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
+const context = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 
 import { api } from "@/platform/api/client";
 import {
@@ -40,7 +40,7 @@ function invalidated(client: QueryClient, key: QueryKey) {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue(undefined);
 });
@@ -49,13 +49,13 @@ afterEach(cleanup);
 
 describe("useIpRules", () => {
   it("reads the current tenant's rules and enforcement flag", async () => {
-    context.tenantId = "tenant-b";
+    context.organizationId = "tenant-b";
     const response = {
       enabled: true,
       items: [
         {
           id: "rule-1",
-          tenant_id: "tenant-b",
+          organization_id: "tenant-b",
           cidr: "10.0.0.0/8",
           label: "Office",
           action: "allow",
@@ -67,12 +67,14 @@ describe("useIpRules", () => {
     const { result } = setup(() => useIpRules());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-b/ip-rules");
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-b/ip-rules", {
+      schema: expect.anything(),
+    });
     expect(result.current.data).toEqual(response);
   });
 
   it("does not ask before a tenant is selected", () => {
-    context.tenantId = null;
+    context.organizationId = null;
     expect(setup(() => useIpRules()).result.current.fetchStatus).toBe("idle");
     expect(api).not.toHaveBeenCalled();
   });
@@ -87,7 +89,7 @@ describe("rule mutations", () => {
       await result.current.mutateAsync(true);
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/ip-rules/config", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/ip-rules/config", {
       method: "PUT",
       body: { enabled: true },
     });
@@ -103,7 +105,7 @@ describe("rule mutations", () => {
       await result.current.mutateAsync(rule);
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/ip-rules", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/ip-rules", {
       method: "POST",
       body: rule,
     });
@@ -117,7 +119,7 @@ describe("rule mutations", () => {
       await result.current.mutateAsync("rule-1");
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/ip-rules/rule-1", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/ip-rules/rule-1", {
       method: "DELETE",
     });
     expect(invalidated(client, RULES)).toBe(true);
@@ -135,7 +137,7 @@ describe("rule mutations", () => {
   });
 
   it("refuses every rule change and address check before a tenant is selected, sending nothing", async () => {
-    context.tenantId = null;
+    context.organizationId = null;
     const { result } = setup(() => ({
       enforce: useSetIpEnforcement(),
       add: useAddIpRule(),
@@ -174,7 +176,7 @@ describe("useCheckIp", () => {
       response = await result.current.mutateAsync("198.51.100.4");
     });
 
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/ip-rules/check", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/ip-rules/check", {
       method: "POST",
       body: { ip: "198.51.100.4" },
     });
@@ -285,7 +287,7 @@ describe("useAddressRefusals", () => {
     const { result } = setup(() => useAddressRefusals());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit", {
       query: { action: "auth.address_refused", limit: 20 },
     });
     expect(result.current.data).toEqual([
@@ -307,14 +309,14 @@ describe("useAddressRefusals", () => {
     const { result } = setup(() => useAddressRefusals(5));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/audit", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit", {
       query: { action: "auth.address_refused", limit: 5 },
     });
     expect(result.current.data).toEqual([]);
   });
 
   it("does not ask before a tenant is selected", () => {
-    context.tenantId = null;
+    context.organizationId = null;
     expect(setup(() => useAddressRefusals()).result.current.fetchStatus).toBe("idle");
     expect(api).not.toHaveBeenCalled();
   });

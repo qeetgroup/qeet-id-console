@@ -11,7 +11,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "user-1",
   useSessionId: () => "session-1",
 }));
@@ -103,7 +103,7 @@ const overview = {
 };
 
 const RESPONSES: Record<string, unknown> = {
-  "/v1/tenants/t1/analytics/overview": overview,
+  "/v1/organizations/t1/analytics/overview": overview,
   "/v1/users/stats": {
     total: 45,
     active: 44,
@@ -113,7 +113,7 @@ const RESPONSES: Record<string, unknown> = {
     mfa_missing: 27,
     new_last_30d: 2,
   },
-  "/v1/tenants/t1/invites": {
+  "/v1/organizations/t1/invites": {
     items: [
       {
         id: "i1",
@@ -126,21 +126,23 @@ const RESPONSES: Record<string, unknown> = {
     ],
   },
   "/v1/auth/trusted-devices/count": { devices: 5, users: 4 },
-  "/v1/tenants/t1/auth-policy": {
+  "/v1/organizations/t1/auth-policy": {
     password_enabled: true,
     passkey_enabled: true,
     magic_link_enabled: true,
   },
-  "/v1/tenants/t1/social/providers": { items: [{ provider: "google", enabled: true }] },
-  "/v1/tenants/t1/saml": { items: [{ id: "s1", name: "Google Workspace", status: "active" }] },
-  "/v1/tenants/t1/saml-providers": { items: [{ id: "p1", name: "Slack", status: "active" }] },
-  "/v1/tenants/t1/scim": {
+  "/v1/organizations/t1/social/providers": { items: [{ provider: "google", enabled: true }] },
+  "/v1/organizations/t1/saml": {
+    items: [{ id: "s1", name: "Google Workspace", status: "active" }],
+  },
+  "/v1/organizations/t1/saml-providers": { items: [{ id: "p1", name: "Slack", status: "active" }] },
+  "/v1/organizations/t1/scim": {
     token_set: false,
     created_at: null,
     last_used_at: null,
     provisioned_count: 0,
   },
-  "/v1/tenants/t1/ldap": {
+  "/v1/organizations/t1/ldap": {
     items: [
       {
         id: "l1",
@@ -151,7 +153,7 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/directory/connections": {
+  "/v1/organizations/t1/directory/connections": {
     items: [
       {
         id: "l1",
@@ -171,7 +173,7 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/directory/errors": {
+  "/v1/organizations/t1/directory/errors": {
     items: [
       {
         id: "e1",
@@ -192,15 +194,15 @@ const RESPONSES: Record<string, unknown> = {
     connections: [],
     remediations: [],
   },
-  "/v1/tenants/t1/groups": {
+  "/v1/organizations/t1/groups": {
     items: [
       { id: "g1", tenant_id: "t1", name: "Engineering", description: "", member_count: 3 },
       { id: "g2", tenant_id: "t1", name: "Partnerships", description: "", member_count: 0 },
     ],
   },
   "/v1/permissions": { items: [{ id: "p1", key: "users.*", description: "" }] },
-  "/v1/tenants/t1/abac/policies": { items: [] },
-  "/v1/tenants": { items: [{ id: "t1", name: "Qeet Group" }] },
+  "/v1/organizations/t1/abac/policies": { items: [] },
+  "/v1/organizations": { items: [{ id: "t1", name: "Qeet Group" }] },
   "/v1/users": {
     items: [
       {
@@ -215,7 +217,7 @@ const RESPONSES: Record<string, unknown> = {
       { id: "u4", metadata: {} },
     ],
   },
-  "/v1/tenants/t1/oidc/clients": {
+  "/v1/organizations/t1/oidc/clients": {
     items: [
       {
         id: "c1",
@@ -229,7 +231,7 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/oauth/grants": {
+  "/v1/organizations/t1/oauth/grants": {
     items: [
       {
         id: "g1",
@@ -242,8 +244,8 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/domains": { items: [{ id: "d1", domain: "qeet.in", status: "verified" }] },
-  "/v1/tenants/t1/api-keys": {
+  "/v1/organizations/t1/domains": { items: [{ id: "d1", domain: "qeet.in", status: "verified" }] },
+  "/v1/organizations/t1/api-keys": {
     items: [
       {
         id: "k1",
@@ -256,7 +258,7 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/webhooks": {
+  "/v1/organizations/t1/webhooks": {
     items: [
       {
         id: "w1",
@@ -269,8 +271,8 @@ const RESPONSES: Record<string, unknown> = {
       },
     ],
   },
-  "/v1/tenants/t1/security/anomalies": { items: [] },
-  "/v1/tenants/t1/billing/subscription": {
+  "/v1/organizations/t1/security/anomalies": { items: [] },
+  "/v1/organizations/t1/billing/subscription": {
     plan_code: "enterprise",
     plan_name: "Enterprise",
     currency: "INR",

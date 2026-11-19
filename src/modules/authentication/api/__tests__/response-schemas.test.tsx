@@ -16,7 +16,7 @@ vi.mock("@/platform/api/server-proxy", () => ({
   proxyApiRequest,
   refreshServerSessionNow: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-a" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-a" }));
 
 import {
   confirmTotpEnrollment,
@@ -36,7 +36,7 @@ const SIGNED_OUT: PublicSession = {
   expiresAt: null,
   sessionId: null,
   userId: null,
-  tenantId: null,
+  organizationId: null,
   version: 0,
   impersonationActor: null,
 };
@@ -197,7 +197,7 @@ describe("sessions", () => {
   const session = {
     id: "5d2e1f0a-9b8c-4d7e-a6f5-e4d3c2b1a090",
     user_id: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
-    tenant_id: "00000000-0000-0000-0000-000000000000",
+    organization_id: "00000000-0000-0000-0000-000000000000",
     ip: "203.0.113.7",
     user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/130.0 Safari/537.36",
     created_at: "2026-10-22T09:00:00Z",
@@ -225,7 +225,7 @@ describe("sessions", () => {
 describe("OIDC client secrets", () => {
   const client = {
     id: "3e4f5a6b-7c8d-4e9f-a0b1-c2d3e4f5a6b7",
-    tenant_id: "tenant-a",
+    organization_id: "tenant-a",
     client_id: "qci_8c1d2e3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f",
     type: "confidential",
     name: "Billing portal",
@@ -251,7 +251,7 @@ describe("OIDC client secrets", () => {
     });
     expect(proxyApiRequest.mock.calls[0]?.[0].data).toMatchObject({
       path: "/v1/oidc/clients",
-      body: { tenant_id: "tenant-a", name: "Billing portal", type: "confidential" },
+      body: { organization_id: "tenant-a", name: "Billing portal", type: "confidential" },
     });
   });
 
@@ -280,7 +280,7 @@ describe("OIDC client secrets", () => {
       warning: "secret shown once",
     });
     expect(proxyApiRequest.mock.calls[0]?.[0].data.path).toBe(
-      `/v1/tenants/tenant-a/oidc/clients/${client.id}/rotate-secret`,
+      `/v1/organizations/tenant-a/oidc/clients/${client.id}/rotate-secret`,
     );
 
     respond({ client_secret: "", warning: "secret shown once" });

@@ -2,20 +2,19 @@
 // delivery. Only those pages use them, so the shell (which carries the barrel) doesn't.
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { developerKeys } from "./keys";
-import type { RotatedWebhookSecret, Webhook } from "./webhooks";
+import type { Webhook } from "./webhooks";
+import { backend } from "@/platform/api/backend";
 
 export function useCreateWebhook() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { tenant_id: string; url: string; events: string[] }) =>
-      api<Webhook>("/v1/webhooks", { method: "POST", body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.webhooks(tenantId) }),
+    // The organization is the caller's.
+    mutationFn: (body: { url: string; events: string[] }) => backend.post("/v1/webhooks", { body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: developerKeys.webhooks(organizationId) }),
     gcTime: 0, // the response holds the signing secret, shown once
     meta: { successMessage: "developer:toast.webhookCreated", silentError: true }, // the sheet shows the error
   });
@@ -26,11 +25,11 @@ export function useCreateWebhook() {
  * once and restores it if the call fails.
  */
 export function useDisableWebhook() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
-  const listKey = developerKeys.webhooks(tenantId);
+  const listKey = developerKeys.webhooks(organizationId);
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/webhooks/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => backend.delete("/v1/webhooks/{id}", { path: { id } }),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: listKey, exact: true });
       const previous = qc.getQueryData<{ items: Webhook[] }>(listKey);
@@ -55,26 +54,28 @@ export function useDisableWebhook() {
 
 /** Turns a disabled webhook back on, forgetting its failures. */
 export function useEnableWebhook() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<Webhook>(`/v1/tenants/${tenantId}/webhooks/${id}/enable`, { method: "POST" }),
-    onSettled: () => qc.invalidateQueries({ queryKey: developerKeys.webhooks(tenantId) }),
+      backend.post("/v1/organizations/{organizationID}/webhooks/{id}/enable", {
+        path: { organizationID: organizationId ?? "", id },
+      }),
+    onSettled: () => qc.invalidateQueries({ queryKey: developerKeys.webhooks(organizationId) }),
     meta: { successMessage: "developer:toast.webhookEnabled" },
   });
 }
 
 /** Issues a new signing secret; the response holds it, shown once. */
 export function useRotateWebhookSecret() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<RotatedWebhookSecret>(`/v1/tenants/${tenantId}/webhooks/${id}/rotate-secret`, {
-        method: "POST",
+      backend.post("/v1/organizations/{organizationID}/webhooks/{id}/rotate-secret", {
+        path: { organizationID: organizationId ?? "", id },
       }),
-    onSettled: () => qc.invalidateQueries({ queryKey: developerKeys.webhooks(tenantId) }),
+    onSettled: () => qc.invalidateQueries({ queryKey: developerKeys.webhooks(organizationId) }),
     gcTime: 0, // the response holds the new secret
     meta: { successMessage: "developer:toast.webhookSecretRotated" },
   });
@@ -82,26 +83,27 @@ export function useRotateWebhookSecret() {
 
 /** Queues a test event to the endpoint (the server answers 202 once it's queued). */
 export function useTestWebhook() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      api<{ queued: boolean }>(`/v1/webhooks/${id}/test`, { method: "POST" }),
+    mutationFn: (id: string) => backend.post("/v1/webhooks/{id}/test", { path: { id } }),
     onSettled: (_, __, id) =>
-      qc.invalidateQueries({ queryKey: developerKeys.webhook(tenantId, id) }),
+      qc.invalidateQueries({ queryKey: developerKeys.webhook(organizationId, id) }),
     meta: { successMessage: "developer:toast.testEventQueued" },
   });
 }
 
 /** Re-queues a delivery that was already attempted. */
 export function useRetryWebhookDelivery() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ webhookId, deliveryId }: { webhookId: string; deliveryId: string }) =>
-      api<void>(`/v1/webhooks/${webhookId}/deliveries/${deliveryId}/retry`, { method: "POST" }),
+      backend.post("/v1/webhooks/{id}/deliveries/{deliveryID}/retry", {
+        path: { id: webhookId, deliveryID: deliveryId },
+      }),
     onSettled: (_, __, { webhookId }) =>
-      qc.invalidateQueries({ queryKey: developerKeys.webhook(tenantId, webhookId) }),
+      qc.invalidateQueries({ queryKey: developerKeys.webhook(organizationId, webhookId) }),
     meta: { successMessage: "developer:toast.deliveryReQueued" },
   });
 }

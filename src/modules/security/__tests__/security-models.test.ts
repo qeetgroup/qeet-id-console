@@ -79,6 +79,7 @@ describe("bots", () => {
         user_agent: "curl/8.7.1",
         score: 0.95,
         verdict: "blocked",
+        outcome: "unknown",
         created_at: "2026-10-28T10:00:00Z",
       },
       {
@@ -87,6 +88,7 @@ describe("bots", () => {
         user_agent: "curl/8.7.1",
         score: 0.95,
         verdict: "blocked",
+        outcome: "unknown",
         created_at: "2026-10-28T09:00:00Z",
       },
       {
@@ -95,6 +97,7 @@ describe("bots", () => {
         user_agent: "curl/8.7.1",
         score: 0.95,
         verdict: "blocked",
+        outcome: "unknown",
         created_at: "2026-10-28T08:00:00Z",
       },
     ]);

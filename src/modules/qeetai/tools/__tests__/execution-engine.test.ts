@@ -8,7 +8,7 @@ import type { ToolContext, ToolDefinition, ToolResult } from "../types/tool.type
 
 function makeCtx(overrides: Partial<ToolContext> = {}): ToolContext {
   return {
-    tenantId: "t_1",
+    organizationId: "t_1",
     userId: "u_1",
     console: {} as ToolContext["console"],
     can: () => true,

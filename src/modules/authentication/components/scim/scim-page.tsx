@@ -38,7 +38,7 @@ import {
 import { FeatureGate } from "@/modules/billing";
 import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   settleSensitiveAction,
@@ -63,8 +63,8 @@ export function ScimPage() {
   const n = (value: number) => formatNumber(value, locale);
   const access = useCapabilities();
   const canWrite = access.can("connection.write");
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((o) => o.id === tenantId)?.name;
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((o) => o.id === organizationId)?.name;
   const runSensitive = useSensitiveAction();
 
   const configQ = useScimConfig();

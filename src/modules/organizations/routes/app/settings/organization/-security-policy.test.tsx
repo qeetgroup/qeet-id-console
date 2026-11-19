@@ -9,7 +9,7 @@ import "@/i18n";
 const sensitiveCalls = vi.hoisted(() => [] as { actionLabel?: string; confirm?: unknown }[]);
 
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 vi.mock("@/modules/dashboard", () => ({ PageBreadcrumb: () => null }));
 vi.mock("@/modules/users", () => ({
   useUserStats: () => ({ data: { total: 45, mfa_enabled: 18 } }),
@@ -73,8 +73,9 @@ beforeEach(() => {
   sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
-    if (path === "/v1/tenants/t-1/policy") return options?.method === "PUT" ? options.body : policy;
-    if (path === "/v1/tenants/t-1") return { id: "t-1", name: "Acme" };
+    if (path === "/v1/organizations/t-1/policy")
+      return options?.method === "PUT" ? options.body : policy;
+    if (path === "/v1/organizations/t-1") return { id: "t-1", name: "Acme" };
     throw new Error(`Unexpected request ${options?.method ?? "GET"} ${path}`);
   });
 });

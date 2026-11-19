@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { api } from "@/platform/api/client";
-import { useTenantId, useUserId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import { useOrganizationId, useUserId } from "@/platform/auth/session";
 
 import { loadPage } from "./load-page";
 import { type PendingOnboarding, readPendingOnboarding } from "./onboarding-profile";
 
-type TenantListItem = { id: string; slug: string };
+type OrganizationListItem = { id: string; slug: string };
 
 /** What a hosted checkout adds to the create page's address when it sends the person back. */
 export interface CheckoutParams {
@@ -42,7 +42,7 @@ const ATTEMPTS = 30; // ~50s with the ramp below: provisioning can lag past 10s
  */
 export function useCheckoutReturn(params: CheckoutParams, clearParams: () => void): CheckoutReturn {
   const userId = useUserId();
-  const currentTenantId = useTenantId();
+  const currentOrganizationId = useOrganizationId();
   const [result, setResult] = useState<CheckoutReturn>({ state: "none" });
   const started = useRef(false);
   const known = useRef<Set<string> | null>(null);
@@ -52,8 +52,9 @@ export function useCheckoutReturn(params: CheckoutParams, clearParams: () => voi
       // The paid organisation is the one with the stashed slug. Without a stash, it is one that
       // wasn't there at the first look: "the newest" could be another of the person's.
       for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
-        const items = (await api<{ items: TenantListItem[] }>("/v1/tenants").catch(() => null))
-          ?.items;
+        const items: OrganizationListItem[] | undefined = (
+          await backend.get("/v1/organizations", { query: { limit: 200 } }).catch(() => null)
+        )?.items?.filter((org): org is OrganizationListItem => !!org.id && !!org.slug);
         if (items) {
           const seen = known.current;
           const paid = pending
@@ -61,11 +62,11 @@ export function useCheckoutReturn(params: CheckoutParams, clearParams: () => voi
             : seen && items.find((tenant) => !seen.has(tenant.id));
           known.current ??= new Set(items.map((tenant) => tenant.id));
           if (paid) {
-            if (paid.id === currentTenantId) loadPage("/");
+            if (paid.id === currentOrganizationId) loadPage("/");
             else {
               // Only a checkout return switches, so authentication loads here, not with the page.
-              const { switchToTenant } = await import("@/modules/authentication");
-              await switchToTenant(paid.id); // moves the session and reloads into it
+              const { switchToOrganization } = await import("@/modules/authentication");
+              await switchToOrganization(paid.id); // moves the session and reloads into it
             }
             return;
           }
@@ -82,7 +83,7 @@ export function useCheckoutReturn(params: CheckoutParams, clearParams: () => voi
         },
       });
     },
-    [currentTenantId],
+    [currentOrganizationId],
   );
 
   useEffect(() => {
@@ -103,12 +104,21 @@ export function useCheckoutReturn(params: CheckoutParams, clearParams: () => voi
       // Sending the signed Razorpay fields lets the server verify the payment and create the
       // organisation where its webhook can't reach (a local server); it is idempotent with it.
       if (linkId) {
-        const body: Record<string, string> = {};
-        for (const field of RAZORPAY_FIELDS) {
-          const value = params[field];
-          if (value) body[field] = value;
+        const [paymentId, , referenceId, , signature] = RAZORPAY_FIELDS.map((f) => params[f]);
+        // The server verifies the signature over all five; without them it has nothing to check.
+        if (paymentId && referenceId && signature && status) {
+          await backend
+            .post("/v1/billing/razorpay/verify", {
+              body: {
+                razorpay_payment_id: paymentId,
+                razorpay_payment_link_id: linkId,
+                razorpay_payment_link_reference_id: referenceId,
+                razorpay_payment_link_status: status,
+                razorpay_signature: signature,
+              },
+            })
+            .catch(() => null);
         }
-        await api("/v1/billing/razorpay/verify", { method: "POST", body }).catch(() => null);
       }
       await wait(pending);
     })();

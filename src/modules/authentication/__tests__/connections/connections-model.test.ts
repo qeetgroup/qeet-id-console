@@ -35,7 +35,7 @@ const NOW = Date.parse("2026-10-28T12:00:00Z");
 
 const saml = (over: Partial<SamlConnection> = {}): SamlConnection => ({
   id: "s1",
-  tenant_id: "t1",
+  organization_id: "t1",
   name: "Okta",
   idp_entity_id: "http://www.okta.com/exk1",
   idp_sso_url: "https://acme.okta.com/app/sso/saml",
@@ -43,6 +43,7 @@ const saml = (over: Partial<SamlConnection> = {}): SamlConnection => ({
   email_attribute: "email",
   name_attribute: "name",
   status: "active",
+  allow_idp_initiated: false,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
   last_login_at: "2026-10-27T12:00:00Z",
@@ -50,7 +51,7 @@ const saml = (over: Partial<SamlConnection> = {}): SamlConnection => ({
 });
 const ldap = (over: Partial<LdapConnection> = {}): LdapConnection => ({
   id: "l1",
-  tenant_id: "t1",
+  organization_id: "t1",
   name: "Staging Directory",
   server_url: "ldaps://ldap.staging.qeet.in:636",
   start_tls: false,
@@ -68,7 +69,7 @@ const ldap = (over: Partial<LdapConnection> = {}): LdapConnection => ({
 });
 const app = (over: Partial<SamlProvider> = {}): SamlProvider => ({
   id: "a1",
-  tenant_id: "t1",
+  organization_id: "t1",
   name: "Slack",
   entity_id: "https://slack.com",
   acs_url: "https://acme.slack.com/sso/saml",
@@ -83,7 +84,7 @@ const app = (over: Partial<SamlProvider> = {}): SamlProvider => ({
 });
 const client = (over: Partial<OidcClient> = {}): OidcClient => ({
   id: "c1",
-  tenant_id: "t1",
+  organization_id: "t1",
   client_id: "qci_support",
   name: "Support Desk",
   type: "confidential",
@@ -277,6 +278,11 @@ describe("applications", () => {
       client_id,
       user_id,
       user_email: "",
+      user_name: null,
+      client_name: "App",
+      authorized_at: "",
+      last_used_at: "",
+      consented_at: null,
       scopes: [],
       issued_at: "",
       expires_at: "",

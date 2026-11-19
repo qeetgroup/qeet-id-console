@@ -4,8 +4,8 @@
 import { z } from "zod";
 
 import { listSessions } from "@/modules/authentication";
-import { api } from "@/platform/api/client";
 import type { ToolDefinition } from "../types/tool.types";
+import { backend } from "@/platform/api/backend";
 
 const searchAuditLogsInput = z.object({
   q: z.string().optional(),
@@ -15,16 +15,6 @@ const searchAuditLogsInput = z.object({
   limit: z.number().int().min(1).max(100).optional(),
 });
 type SearchAuditLogsInput = z.infer<typeof searchAuditLogsInput>;
-
-interface AuditEvent {
-  id: string;
-  action: string;
-  resource_type: string;
-  resource_id?: string | null;
-  actor_user_id?: string | null;
-  ip?: string | null;
-  created_at: string;
-}
 
 export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
   name: "search_audit_logs",
@@ -38,7 +28,8 @@ export const searchAuditLogsTool: ToolDefinition<SearchAuditLogsInput> = {
   mutates: false,
   auditLabel: "qeetai.search_audit_logs",
   async run(ctx, input) {
-    const data = await api<{ items: AuditEvent[] }>(`/v1/tenants/${ctx.tenantId}/audit`, {
+    const data = await backend.get("/v1/organizations/{organizationID}/audit", {
+      path: { organizationID: ctx.organizationId },
       query: {
         q: input.q,
         action: input.action,

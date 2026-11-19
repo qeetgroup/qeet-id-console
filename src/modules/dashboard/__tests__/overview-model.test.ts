@@ -18,16 +18,17 @@ const days = (n: number) => new Date(NOW.getTime() + n * 86_400_000).toISOString
 
 const webhook = (id: string, over: Partial<Webhook> = {}): Webhook => ({
   id,
-  tenant_id: "t1",
+  organization_id: "t1",
   url: `https://${id}.qeet.in/hook`,
   events: ["user.created"],
   created_at: days(-90),
+  disabled_at: null,
   ...over,
 });
 
 const apiKey = (id: string, over: Partial<ApiKey> = {}): ApiKey => ({
   id,
-  tenant_id: "t1",
+  organization_id: "t1",
   name: `Key ${id}`,
   prefix: "qk_",
   scopes: null,
@@ -131,7 +132,7 @@ describe("the last 24 hours", () => {
 describe("appsInUse", () => {
   const client = (id: string, name: string): OidcClient => ({
     id,
-    tenant_id: "t1",
+    organization_id: "t1",
     client_id: `qci_${id}`,
     name,
     type: "confidential",
@@ -145,6 +146,11 @@ describe("appsInUse", () => {
     client_id: clientId,
     user_id: userId,
     user_email: `${userId}@qeet.in`,
+    user_name: null,
+    client_name: "App",
+    authorized_at: "",
+    last_used_at: "",
+    consented_at: null,
     scopes: [],
     issued_at: days(-1),
     expires_at: days(expiresIn),

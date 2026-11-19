@@ -2,60 +2,58 @@
 // then it can be withdrawn. Filing needs a step-up; the server keeps the 200 newest.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
+import { isOneOf } from "@/shared/utils/one-of";
 import { complianceKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+
+const PURGE_STATUSES = ["pending", "completed", "cancelled", "quarantined"] as const;
 
 /** `quarantined`: the sweeper found the account no longer belongs here, so it erased nothing. */
-export type PurgeStatus = "pending" | "completed" | "cancelled" | "quarantined";
+export type PurgeStatus = (typeof PURGE_STATUSES)[number];
 
-export interface PurgeRequest {
-  id: string;
-  tenant_id: string;
-  user_id: string;
-  requested_by?: string | null;
-  reason?: string | null;
-  status: PurgeStatus;
-  grace_until: string;
-  completed_at?: string | null;
-  created_at: string;
-}
+/** A request's status as the console knows it; the document leaves it a free string. */
+export const purgeStatus = (status: string): PurgeStatus | undefined =>
+  isOneOf(PURGE_STATUSES, status) ? status : undefined;
+
+/** One erasure request: who asked, why, until when it can be withdrawn, and who it is about. */
+export type PurgeRequest = Answer<"/v1/organizations/{organizationID}/gdpr/purge">["items"][number];
 
 /** How long a request waits (gdpr.NewService in the server's bootstrap; not configurable). */
 export const ERASURE_GRACE_DAYS = 30;
 
 export function useGdprPurges() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: complianceKeys.gdprPurges(tenantId),
-    queryFn: () => api<{ items: PurgeRequest[] }>(`/v1/tenants/${tenantId}/gdpr/purge`),
-    enabled: !!tenantId,
+    queryKey: complianceKeys.gdprPurges(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/gdpr/purge", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId,
   });
 }
 
 export function useCreateGdprPurge() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { user_id: string; reason: string }) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<PurgeRequest>("/v1/gdpr/purge", {
-        method: "POST",
-        body: { tenant_id: tenantId, ...body },
-      });
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.post("/v1/gdpr/purge", { body: { organization_id: organizationId, ...body } });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: complianceKeys.gdprPurges(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: complianceKeys.gdprPurges(organizationId) }),
     meta: { successMessage: "compliance:toast.erasureRequestSubmitted", silentError: true }, // the drawer shows it
   });
 }
 
 export function useCancelGdprPurge() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api<void>(`/v1/gdpr/purge/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: complianceKeys.gdprPurges(tenantId) }),
+    mutationFn: (id: string) => backend.delete("/v1/gdpr/purge/{id}", { path: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: complianceKeys.gdprPurges(organizationId) }),
     meta: { successMessage: "compliance:toast.erasureRequestCancelled" },
   });
 }

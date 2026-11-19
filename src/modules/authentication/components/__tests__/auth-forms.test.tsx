@@ -116,7 +116,7 @@ describe("sign-in, email first", () => {
 
   it("preserves the SSO branch rather than offering a password, passkey or social bypass", () => {
     vi.mocked(useSSODiscovery).mockReturnValue({
-      data: { kind: "saml", provider_name: "Team SSO", redirect_url: "https://sso.example.com" },
+      data: { provider_name: "Team SSO", redirect_url: "https://sso.example.com" },
       isFetching: false,
     } as unknown as ReturnType<typeof useSSODiscovery>);
     render(<LoginForm onPasskeyLogin={vi.fn()} />);

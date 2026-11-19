@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -54,26 +54,26 @@ import { api } from "@/platform/api/client";
 import { SensitiveActionProvider } from "@/platform/security/sensitive-action-provider";
 import { RateLimitsPage } from "../components/rate-limits-page";
 
-let limits = {
-  tenant: { rate: 100, capacity: 500 },
+// The platform's limits, which are also the ceiling, as the server sends them with each answer.
+const PLATFORM = {
+  organization: { rate: 100, capacity: 500 },
   user: { rate: 30, capacity: 100 },
   api_key: { rate: 50, capacity: 200 },
 };
+const BOUNDS = { defaults: PLATFORM, ceiling: PLATFORM, min_rate: 0.01, built_in: [] };
+
+let limits = { ...PLATFORM, ...BOUNDS };
 
 beforeEach(() => {
-  limits = {
-    tenant: { rate: 100, capacity: 500 },
-    user: { rate: 30, capacity: 100 },
-    api_key: { rate: 50, capacity: 200 },
-  };
+  limits = { ...PLATFORM, ...BOUNDS };
   sensitiveCalls.length = 0;
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/rate-limits" && method === "GET") return limits;
-    if (path === "/v1/tenants/t-1/rate-limits" && method === "PUT")
+    if (path === "/v1/organizations/t-1/rate-limits" && method === "GET") return limits;
+    if (path === "/v1/organizations/t-1/rate-limits" && method === "PUT")
       return { ...limits, ...(options?.body as object) };
-    if (path === "/v1/tenants/t-1/rate-limits" && method === "DELETE") return undefined;
+    if (path === "/v1/organizations/t-1/rate-limits" && method === "DELETE") return undefined;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
@@ -120,7 +120,7 @@ describe("Security › Rate limits", () => {
     fireEvent.change(rate, { target: { value: "10" } });
     fireEvent.blur(rate);
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    await waitFor(() => expect(changes()).toEqual(["PUT /v1/tenants/t-1/rate-limits"]));
+    await waitFor(() => expect(changes()).toEqual(["PUT /v1/organizations/t-1/rate-limits"]));
     const put = vi.mocked(api).mock.calls.find(([, o]) => o?.method === "PUT");
     expect(put?.[1]?.body).toEqual({ user: { rate: 10, capacity: 100 } });
     expect(sensitiveCalls.at(-1)?.actionLabel).toBe("Change a rate limit");

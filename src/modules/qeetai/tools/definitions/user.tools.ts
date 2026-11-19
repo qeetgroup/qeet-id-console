@@ -3,13 +3,14 @@
 import { z } from "zod";
 
 import i18n from "@/i18n";
-import { api } from "@/platform/api/client";
-import { type User, userKeys } from "@/modules/users";
+import { userKeys } from "@/modules/users";
 import type { ToolDefinition } from "../types/tool.types";
+import { backend } from "@/platform/api/backend";
 
 const searchUsersInput = z.object({
   q: z.string().optional(),
-  status: z.enum(["active", "suspended", "invited", "deleted"]).optional(),
+  // Deleted people are a list of their own, which the search doesn't cover.
+  status: z.enum(["active", "suspended", "invited"]).optional(),
   limit: z.number().int().min(1).max(100).optional(),
 });
 type SearchUsersInput = z.infer<typeof searchUsersInput>;
@@ -26,7 +27,7 @@ export const searchUsersTool: ToolDefinition<SearchUsersInput> = {
   mutates: false,
   auditLabel: "qeetai.search_users",
   async run(ctx, input) {
-    const data = await api<{ items: User[] }>("/v1/users", {
+    const data = await backend.get("/v1/users", {
       query: {
         q: input.q,
         status: input.status,
@@ -55,7 +56,7 @@ const createUserInput = z.object({
   email: z.string().email(),
   name: z.string().optional(),
   password: z.string().min(8).optional(),
-  tenant_id: z.string(),
+  organization_id: z.string(),
   role_id: z.string().optional(),
 });
 type CreateUserInput = z.infer<typeof createUserInput>;
@@ -65,7 +66,7 @@ export const createUserTool: ToolDefinition<CreateUserInput> = {
   category: "directory",
   title: "qeetai:tools.titles.createUser",
   description:
-    "Create a new user in a tenant. Optionally assign an initial role. If no password is given, the user is created for invitation/passwordless onboarding.",
+    "Create a new user in an organization. Optionally assign an initial role. If no password is given, the user is created for invitation/passwordless onboarding.",
   input: createUserInput,
   requiredCapability: "user.write",
   destructive: false,
@@ -76,7 +77,7 @@ export const createUserTool: ToolDefinition<CreateUserInput> = {
     body: i18n.t("qeetai:tools.confirm.createUser.body"),
     affected: [
       { label: i18n.t("qeetai:tools.fields.email"), value: input.email },
-      { label: i18n.t("qeetai:tools.fields.tenant"), value: input.tenant_id },
+      { label: i18n.t("qeetai:tools.fields.organization"), value: input.organization_id },
       ...(input.role_id
         ? [{ label: i18n.t("qeetai:tools.fields.initialRole"), value: input.role_id }]
         : []),
@@ -87,26 +88,25 @@ export const createUserTool: ToolDefinition<CreateUserInput> = {
   auditLabel: "qeetai.create_user",
   async run(ctx, input) {
     const { role_id, name, ...rest } = input;
-    const user = await api<User>("/v1/users", {
-      method: "POST",
+    const user = await backend.post("/v1/users", {
       body: { ...rest, display_name: name },
       signal: ctx.signal,
     });
     if (role_id) {
-      await api<void>(`/v1/users/${user.id}/tenants/${input.tenant_id}/roles/${role_id}`, {
-        method: "POST",
+      await backend.post("/v1/users/{userID}/organizations/{organizationID}/roles/{roleID}", {
+        path: { userID: user.id ?? "", organizationID: input.organization_id, roleID: role_id },
         signal: ctx.signal,
       });
     }
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
-      summary: `Created user ${user.email} (id: ${user.id})${role_id ? " and assigned the requested role" : ""}.`,
+      summary: `Created user ${input.email} (id: ${user.id ?? ""})${role_id ? " and assigned the requested role" : ""}.`,
       display: {
         key: role_id
           ? "qeetai:toolCallCard.results.userCreatedWithRole"
           : "qeetai:toolCallCard.results.userCreated",
-        values: { email: user.email },
+        values: { email: input.email },
       },
       data: { id: user.id, email: user.email, status: user.status },
     };
@@ -143,12 +143,12 @@ export const updateUserTool: ToolDefinition<UpdateUserInput> = {
   }),
   auditLabel: "qeetai.update_user",
   async run(ctx, input) {
-    await api<User>(`/v1/users/${input.user_id}`, {
-      method: "PATCH",
+    await backend.patch("/v1/users/{id}", {
+      path: { id: input.user_id },
       body: { display_name: input.name ?? null },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `Updated display name for user ${input.user_id}.`,
@@ -184,12 +184,12 @@ export const disableUserTool: ToolDefinition<DisableUserInput> = {
   }),
   auditLabel: "qeetai.disable_user",
   async run(ctx, input) {
-    await api<User>(`/v1/users/${input.user_id}`, {
-      method: "PATCH",
+    await backend.patch("/v1/users/{id}", {
+      path: { id: input.user_id },
       body: { status: "suspended" },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been suspended and can no longer sign in.`,
@@ -224,12 +224,12 @@ export const enableUserTool: ToolDefinition<EnableUserInput> = {
   }),
   auditLabel: "qeetai.enable_user",
   async run(ctx, input) {
-    await api<User>(`/v1/users/${input.user_id}`, {
-      method: "PATCH",
+    await backend.patch("/v1/users/{id}", {
+      path: { id: input.user_id },
       body: { status: "active" },
       signal: ctx.signal,
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been re-activated and can sign in again.`,
@@ -265,11 +265,8 @@ export const deleteUserTool: ToolDefinition<DeleteUserInput> = {
   }),
   auditLabel: "qeetai.delete_user",
   async run(ctx, input) {
-    await api<void>(`/v1/users/${input.user_id}`, {
-      method: "DELETE",
-      signal: ctx.signal,
-    });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.tenant(ctx.tenantId) });
+    await backend.delete("/v1/users/{id}", { path: { id: input.user_id }, signal: ctx.signal });
+    ctx.queryClient.invalidateQueries({ queryKey: userKeys.organization(ctx.organizationId) });
     return {
       ok: true,
       summary: `User ${input.user_id} has been deleted.`,
@@ -305,11 +302,10 @@ export const resetUserMfaTool: ToolDefinition<ResetUserMfaInput> = {
   }),
   auditLabel: "qeetai.reset_user_mfa",
   async run(ctx, input) {
-    await api<{ message: string }>(`/v1/users/${input.user_id}/mfa`, {
-      method: "DELETE",
-      signal: ctx.signal,
+    await backend.delete("/v1/users/{id}/mfa", { path: { id: input.user_id }, signal: ctx.signal });
+    ctx.queryClient.invalidateQueries({
+      queryKey: userKeys.user(ctx.organizationId, input.user_id),
     });
-    ctx.queryClient.invalidateQueries({ queryKey: userKeys.user(ctx.tenantId, input.user_id) });
     return {
       ok: true,
       summary: `MFA has been reset for user ${input.user_id}. They will be prompted to re-enroll.`,

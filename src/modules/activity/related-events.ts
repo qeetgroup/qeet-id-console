@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-
 import type { RelatedEventsResponse } from "./types/activity.types";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { activityKeys } from "./api/keys";
+import { backend } from "@/platform/api/backend";
 
 /**
  * Loads one event by its ID, with the events related to it: those sharing its request ID, and the
@@ -13,15 +11,15 @@ import { activityKeys } from "./api/keys";
  * when there's no such event in this organisation (a 404); other errors throw.
  */
 export function useRelatedEvents(eventId: string | null | undefined) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: activityKeys.related(tenantId, eventId),
+    queryKey: activityKeys.related(organizationId, eventId),
     queryFn: async ({ signal }): Promise<RelatedEventsResponse | null> => {
       try {
-        const res = await api<RelatedEventsResponse>(
-          `/v1/activity/${encodeURIComponent(eventId ?? "")}/related`,
-          { signal },
-        );
+        const res = await backend.get("/v1/activity/{id}/related", {
+          path: { id: eventId ?? "" },
+          signal,
+        });
         return {
           event: res.event,
           related: {

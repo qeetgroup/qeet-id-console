@@ -53,7 +53,7 @@ const ldap = (over: Partial<LdapConnection> = {}) =>
 const group = (name: string, member_count: number) =>
   ({
     id: name,
-    tenant_id: "t1",
+    organization_id: "t1",
     name,
     description: "",
     created_at: days(-30),

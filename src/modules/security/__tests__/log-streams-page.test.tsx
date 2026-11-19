@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t-1",
+  useOrganizationId: () => "t-1",
   useUserId: () => "u-me",
   useSessionId: () => "s-1",
 }));
@@ -69,9 +69,10 @@ beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/log-sinks" && method === "GET") return { items: [SINK] };
-    if (path === "/v1/tenants/t-1/log-sinks" && method === "POST") return { ...SINK, id: "sink-2" };
-    if (path === "/v1/tenants/t-1/log-sinks/sink-1") return undefined;
+    if (path === "/v1/organizations/t-1/log-sinks" && method === "GET") return { items: [SINK] };
+    if (path === "/v1/organizations/t-1/log-sinks" && method === "POST")
+      return { ...SINK, id: "sink-2" };
+    if (path === "/v1/organizations/t-1/log-sinks/sink-1") return undefined;
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
@@ -115,20 +116,22 @@ describe("Monitoring › Log streams", () => {
 
     fireEvent.change(endpoint, { target: { value: "https://logs.example.com/qeet-id" } });
     fireEvent.submit(endpoint.closest("form") as HTMLFormElement);
-    await waitFor(() => expect(changes()).toEqual(["POST /v1/tenants/t-1/log-sinks"]));
+    await waitFor(() => expect(changes()).toEqual(["POST /v1/organizations/t-1/log-sinks"]));
     expect(sensitiveCalls.at(-1)?.confirm).toBeUndefined();
   });
 
   it("pauses without asking, and asks before removing, saying what is lost", async () => {
     renderWith(<LogStreamsPage />);
     fireEvent.click(await screen.findByRole("button", { name: "Pause" }));
-    await waitFor(() => expect(changes()).toEqual(["PATCH /v1/tenants/t-1/log-sinks/sink-1"]));
+    await waitFor(() =>
+      expect(changes()).toEqual(["PATCH /v1/organizations/t-1/log-sinks/sink-1"]),
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Remove ingest.logs.example.com" }));
     const dialog = await screen.findByRole("alertdialog");
     expect(within(dialog).getByText(/the events in between aren't sent/)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
-    expect(changes()).toEqual(["PATCH /v1/tenants/t-1/log-sinks/sink-1"]);
+    expect(changes()).toEqual(["PATCH /v1/organizations/t-1/log-sinks/sink-1"]);
   });
 });

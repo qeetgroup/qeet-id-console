@@ -56,13 +56,13 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const searchCtx = useMemo<SearchContext>(
     () => ({
       pathname,
-      tenantId: access.tenantId,
+      organizationId: access.organizationId,
       capabilities: access.permissions,
       navigate: (url: string) => navigate({ to: url }),
       language,
     }),
     // useNavigate returns a stable callback, so listing it never recomputes the context.
-    [pathname, access.tenantId, access.permissions, navigate, language],
+    [pathname, access.organizationId, access.permissions, navigate, language],
   );
 
   // Until capabilities load there is nothing to filter against, so no items are offered.

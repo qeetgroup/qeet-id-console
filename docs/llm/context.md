@@ -130,7 +130,7 @@ authoritative.
 ### Token containment
 
 ```ts
-PublicSession = { isAuthenticated, expiresAt, sessionId, userId, tenantId,
+PublicSession = { isAuthenticated, expiresAt, sessionId, userId, organizationId,
                   version, impersonationActor }
 ```
 
@@ -151,7 +151,7 @@ browser-held-token model the BFF replaced. Do not reintroduce them.
 **Evidence:** `src/platform/security/`
 
 ```text
-GET /v1/users/{userId}/tenants/{tenantId}/permissions
+GET /v1/users/{userId}/organizations/{organizationId}/permissions
    ↓  Zod-validated — "Parsing fails CLOSED"
 25 CONSOLE_CAPABILITIES  →  classifyAccessMode
    ↓

@@ -138,7 +138,7 @@ Every module has an `index.ts` barrel (named exports, what other modules use), a
 suggestions; and the type declaration of its translation namespaces) and its own
 `locales/<lng>/<namespace>.json`. A module with screens has a `pages.ts`
 (what routes render) and an `api/keys.ts` query-key factory, each key starting
-`[module, tenantId]`. The few reads that aren't a tenant's say so in their factory: the person's
+`[module, organizationId]`. The few reads that aren't an organization's say so in their factory: the person's
 own sign-in data and the pre-sign-in flows (`authentication`), Qeet AI's status (`qeetai`) and the
 plan catalogue (`billing`). The profile is the platform's `meKeys`.
 

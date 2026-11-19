@@ -7,7 +7,7 @@ import { formatLocale } from "@/i18n";
 import { PageBreadcrumb } from "@/modules/dashboard";
 import {
   type LimitConfig,
-  type TenantLimits,
+  type Bucket,
   useRateLimits,
   useResetRateLimits,
   useUpdateRateLimits,
@@ -22,18 +22,7 @@ import {
 import { Detail, EditingDetail, Failure, Section } from "./security-parts";
 import "./security.css";
 
-type Bucket = keyof TenantLimits;
-const BUCKETS = ["tenant", "user", "api_key"] as const satisfies readonly Bucket[];
-
-// The platform's limits, which are also the most an organisation may set (the server refuses
-// more: ratelimits.LimitConfig.check). Not in the API yet (a QTID gap), so the server's values
-// are here: internal/bootstrap/infra.go, newTenantLim.
-const PLATFORM: Record<Bucket, LimitConfig> = {
-  tenant: { rate: 100, capacity: 500 },
-  user: { rate: 30, capacity: 100 },
-  api_key: { rate: 50, capacity: 200 },
-};
-const MIN_RATE = 0.01; // ratelimits.MinRate: one request every 100 seconds
+const BUCKETS = ["organization", "user", "api_key"] as const satisfies readonly Bucket[];
 
 // The server's fixed limits (internal/bootstrap/router.go; the sign-in link and reset limits in
 // infra.go), by what they protect. Read-only: no organisation changes them.
@@ -63,7 +52,7 @@ export function RateLimitsPage() {
   const reset = useResetRateLimits();
   const [editing, setEditing] = useState<Bucket | null>(null);
   const data = limits.data;
-  const atDefaults = !!data && BUCKETS.every((b) => same(data[b], PLATFORM[b]));
+  const atDefaults = !!data && BUCKETS.every((b) => same(data[b], data.defaults[b]));
 
   const onReset = () =>
     runSensitive({
@@ -118,6 +107,8 @@ export function RateLimitsPage() {
                         key={bucket}
                         bucket={bucket}
                         current={data[bucket]}
+                        ceiling={data.ceiling[bucket]}
+                        minRate={data.min_rate}
                         onDone={() => setEditing(null)}
                       />
                     ) : (
@@ -180,28 +171,34 @@ function LimitValue({ limit }: { limit: LimitConfig }) {
     : t("rateLimits.value.every", { seconds: n(1 / limit.rate), burst });
 }
 
-/** One bucket changed in place: its rate and burst, each up to the platform's. */
+/**
+ * One bucket changed in place: its rate and burst, each up to the platform's (the server refuses
+ * more, and a rate under its minimum).
+ */
 function EditBucket({
   bucket,
   current,
+  ceiling,
+  minRate,
   onDone,
 }: {
   bucket: Bucket;
   current: LimitConfig;
+  ceiling: LimitConfig;
+  minRate: number;
   onDone: () => void;
 }) {
   const { t } = useTranslation("security");
   const runSensitive = useSensitiveAction();
   const update = useUpdateRateLimits();
-  const ceiling = PLATFORM[bucket];
   const [rate, setRate] = useState<number | null>(current.rate);
   const [capacity, setCapacity] = useState<number | null>(current.capacity);
   const [touched, setTouched] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const n = (value: number) => formatNumber(value, formatLocale());
   const rateError =
-    rate === null || rate < MIN_RATE || rate > ceiling.rate
-      ? t("rateLimits.edit.rateRange", { min: n(MIN_RATE), max: n(ceiling.rate) })
+    rate === null || rate < minRate || rate > ceiling.rate
+      ? t("rateLimits.edit.rateRange", { min: n(minRate), max: n(ceiling.rate) })
       : undefined;
   const capacityError =
     capacity === null || !Number.isInteger(capacity) || capacity < 1 || capacity > ceiling.capacity
@@ -248,7 +245,7 @@ function EditBucket({
           <NumberField
             value={rate}
             onValueChange={setRate}
-            min={MIN_RATE}
+            min={minRate}
             max={ceiling.rate}
             step={1}
           />

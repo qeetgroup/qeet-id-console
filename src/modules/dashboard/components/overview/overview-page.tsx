@@ -30,7 +30,7 @@ import { apiKeyQueries, webhookQueries } from "@/modules/developer";
 import { orgQueries, useDomains } from "@/modules/organizations";
 import { useAnomalies } from "@/modules/security";
 import { invitationQueries, useUserStats } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
 import { loginMethodLabel } from "@/modules/dashboard/dashboard-model";
@@ -53,14 +53,14 @@ const providerName = (p: string) => p.charAt(0).toUpperCase() + p.slice(1);
 export function OverviewPage() {
   const { t } = useTranslation("dashboard");
   const access = useCapabilities();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const can = {
     analytics: access.can("analytics.read"),
     users: access.can("user.read"),
     audit: access.can("audit.read"),
     connections: access.can("connection.read"),
     policy: access.can("policy.read"),
-    tenant: access.can("tenant.read"),
+    tenant: access.can("organization.read"),
     keys: access.can("apikey.read"),
     webhooks: access.can("webhook.read"),
     billing: access.can("billing.read"),
@@ -70,13 +70,13 @@ export function OverviewPage() {
   const analytics = useAnalyticsOverview(can.analytics);
   const stats = useUserStats(can.users);
   const invites = useQuery({
-    ...invitationQueries.list(tenantId),
-    enabled: can.users && !!tenantId,
+    ...invitationQueries.list(organizationId),
+    enabled: can.users && !!organizationId,
   });
   const devices = useTrustedDeviceSummary(can.policy);
   const policy = useQuery({
-    ...authPolicyQueries.detail(tenantId),
-    enabled: can.policy && !!tenantId,
+    ...authPolicyQueries.detail(organizationId),
+    enabled: can.policy && !!organizationId,
   });
   const social = useSocialProviders(can.connections);
   const saml = useSamlConnections(can.connections);
@@ -84,21 +84,24 @@ export function OverviewPage() {
   const scim = useScimConfig(can.connections);
   const ldap = useLdapConnections(can.connections);
   const clients = useQuery({
-    ...oidcClientQueries.list(tenantId),
-    enabled: can.connections && !!tenantId,
+    ...oidcClientQueries.list(organizationId),
+    enabled: can.connections && !!organizationId,
   });
   const grants = useOAuthGrants(can.connections);
   const domains = useDomains(can.tenant);
-  const keys = useQuery({ ...apiKeyQueries.list(tenantId), enabled: can.keys && !!tenantId });
+  const keys = useQuery({
+    ...apiKeyQueries.list(organizationId),
+    enabled: can.keys && !!organizationId,
+  });
   const webhooks = useQuery({
-    ...webhookQueries.list(tenantId),
-    enabled: can.webhooks && !!tenantId,
+    ...webhookQueries.list(organizationId),
+    enabled: can.webhooks && !!organizationId,
   });
   const anomalies = useAnomalies(can.audit);
   const subscription = useSubscription(can.billing);
   const directory = useDirectoryInsights();
-  const orgName = useQuery({ ...orgQueries.list(), enabled: !!tenantId }).data?.items.find(
-    (item) => item.id === tenantId,
+  const orgName = useQuery({ ...orgQueries.list(), enabled: !!organizationId }).data?.items.find(
+    (item) => item.id === organizationId,
   )?.name;
 
   // A backend without the analytics endpoint answers with an empty overview: nothing to chart.

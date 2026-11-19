@@ -35,7 +35,7 @@ export interface ToolResult {
 }
 
 export interface ToolContext {
-  tenantId: string;
+  organizationId: string;
   userId: string;
   console: ConsoleContext;
   /** Client-side capability hint for UX; the backend makes the authorization decision. */

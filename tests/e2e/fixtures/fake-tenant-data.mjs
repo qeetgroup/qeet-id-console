@@ -20,7 +20,7 @@ const days = (n, value) =>
 export function members(tenantId, tenant) {
   const first = {
     id: tenant.slug === "org-one" ? MEMBER_ID : `${MEMBER_ID.slice(0, -4)}0002`,
-    tenant_id: tenantId,
+    organization_id: tenantId,
     email: `member@${tenant.slug}.example`,
     display_name: `Member of ${tenant.name}`,
     status: "active",
@@ -40,7 +40,7 @@ export function members(tenantId, tenant) {
     { ...first, ...at("Engineering", "Platform", "Bengaluru, IN") },
     {
       id: INVITED_ID,
-      tenant_id: tenantId,
+      organization_id: tenantId,
       email: "priya@org-one.example",
       display_name: "Priya Patel",
       ...at("Engineering", "Payments", "Bengaluru, IN"),
@@ -52,7 +52,7 @@ export function members(tenantId, tenant) {
     },
     {
       id: SUSPENDED_ID,
-      tenant_id: tenantId,
+      organization_id: tenantId,
       email: "sam@org-one.example",
       display_name: "Sam Lee",
       ...at("Support", undefined, "Berlin, DE"),
@@ -74,7 +74,7 @@ const roles = (tenantId) =>
     ["Support", "Reads members and resets their sign-in.", false],
   ].map(([name, description, isSystem], i) => ({
     id: `99999999-9999-4999-8999-99999999999${i}`,
-    tenant_id: tenantId,
+    organization_id: tenantId,
     name,
     description,
     is_system: isSystem,
@@ -84,7 +84,7 @@ const roles = (tenantId) =>
 const groups = (tenantId) => [
   {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
-    tenant_id: tenantId,
+    organization_id: tenantId,
     parent_id: null,
     name: "Engineering",
     description: "Everyone who builds the product.",
@@ -93,7 +93,7 @@ const groups = (tenantId) => [
   },
   {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2",
-    tenant_id: tenantId,
+    organization_id: tenantId,
     parent_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
     name: "Platform",
     description: "Runs the shared infrastructure.",
@@ -231,10 +231,10 @@ function userViews(user, tenantId, tenant, view) {
  * fake backend's generic answers. `principal` is the signed-in person.
  */
 export function tenantRead(path, query, { tenantId, tenant, principalId }) {
-  const tenantPath = `/v1/tenants/${tenantId}`;
+  const orgPath = `/v1/organizations/${tenantId}`;
   const people = members(tenantId, tenant);
 
-  if (path === "/v1/users") return { items: people, next_cursor: "" };
+  if (path === "/v1/users") return { items: people, total: people.length };
   if (path === "/v1/users/stats") {
     return {
       total: people.length,
@@ -276,8 +276,7 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
     return {
       items,
       total: items.length,
-      limit: 50,
-      offset: 0,
+      limit: 200,
       summary: {
         total: items.length,
         high_risk: 0,
@@ -305,10 +304,10 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
       ],
     };
   }
-  if (path === `${tenantPath}/invites`) {
+  if (path === `${orgPath}/invites`) {
     const invite = (n, status, sentDaysAgo, acceptedDaysAgo) => ({
       id: `aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa${String(n).padStart(2, "0")}`,
-      tenant_id: tenantId,
+      organization_id: tenantId,
       email: `${["kavya", "ravi", "omar", "imran"][n - 1]}@${tenant.slug}.example`,
       role_id: null,
       status,
@@ -325,50 +324,72 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
       ],
     };
   }
-  // The organisation's own history (audit events on the tenant), and its verified domain.
-  if (path === `${tenantPath}/audit` && query.get("resource_type") === "tenant") {
+  // The organisation's own history (audit events on it), and its verified domain.
+  if (path === `${orgPath}/audit` && query.get("resource_type") === "organization") {
     const change = (id, action, actor, daysAgo) => ({
       id: `cccccccc-cccc-4ccc-8ccc-cccccccccc0${id}`,
-      tenant_id: tenantId,
+      organization_id: tenantId,
       actor_user_id: actor,
       actor_type: "user",
       action,
-      resource_type: "tenant",
+      resource_type: "organization",
       resource_id: tenantId,
       ip: "203.0.113.34",
       user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/153.0.0.0 Safari/537.36",
+      request_id: `req-history-${id}`,
       created_at: ago(daysAgo * DAY_MS),
     });
     return {
       items: [
         change(3, "security_policy.updated", people[0]?.id, 12),
         change(2, "branding.updated", principalId, 200),
-        change(1, "tenant.created", principalId, 300),
+        change(1, "organization.created", principalId, 300),
       ],
-      next_cursor: "",
+      total: 3,
+      total_capped: false,
     };
   }
-  if (path === `${tenantPath}/domains`) {
+  if (path === `${orgPath}/domains`) {
     return {
       items: [
         {
           id: "dddddddd-dddd-4ddd-8ddd-dddddddddd01",
           domain: `${tenant.slug}.example`,
+          verification_token: "qeet-verify-1",
+          dns_record_name: `_qeet-verification.${tenant.slug}.example`,
+          dns_record_type: "TXT",
+          dns_record_value: "qeet-verify-1",
           verified_at: CREATED,
           created_at: CREATED,
+          sso_enabled: false,
+          jit_enabled: false,
+          status: "verified",
         },
       ],
     };
   }
-  if (path === `${tenantPath}/retention`)
+  // Its own sign-in address isn't set up: Qeet ID's own hosts it.
+  if (path === `${orgPath}/login-domain`) {
+    return {
+      login_domain: "",
+      status: "not_configured",
+      dns_verified: false,
+      dns_detail: "",
+      tls_state: "not_started",
+      tls_detail: "",
+      endpoint_state: "not_available",
+      records: [],
+    };
+  }
+  if (path === `${orgPath}/retention`)
     return { deleted_users_enabled: true, deleted_users_days: 90 };
   if (path === "/v1/activity") return { events: activity(query, principalId), next_cursor: "" };
-  if (path === `${tenantPath}/analytics/overview`) return analyticsOverview();
-  if (path === `${tenantPath}/roles`) return { items: roles(tenantId) };
-  if (path === `${tenantPath}/groups`) return { items: groups(tenantId) };
+  if (path === `${orgPath}/analytics/overview`) return analyticsOverview();
+  if (path === `${orgPath}/roles`) return { items: roles(tenantId) };
+  if (path === `${orgPath}/groups`) return { items: groups(tenantId) };
   // Directories › Connections: a SCIM endpoint and an Active Directory people sign in with, and a
   // month of activity (the summary and each day's people and groups synced).
-  if (path === `${tenantPath}/directory/connections`) {
+  if (path === `${orgPath}/directory/connections`) {
     return {
       items: [
         {
@@ -406,12 +427,10 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
       ],
     };
   }
-  if (path === `${tenantPath}/directory/activity`) {
+  if (path === `${orgPath}/directory/activity`) {
     return {
       items: [],
       total: 420,
-      limit: Number(query.get("limit") ?? 25),
-      offset: 0,
       summary: { total: 420, successful: 418, warnings: 0, failed: 2, average_duration_ms: 180 },
       volume: days(30, (i) => (i * 7) % 11).map((d) => ({
         date: d.date,
@@ -420,24 +439,22 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
       })),
     };
   }
-  if (path === `${tenantPath}/directory/errors`) {
+  if (path === `${orgPath}/directory/errors`) {
     return {
       items: [],
       total: 0,
-      limit: Number(query.get("limit") ?? 25),
-      offset: 0,
       summary: { open: 0, critical: 0, warning: 0, retried: 0, impacted_users: 0 },
       categories: [],
       connections: [],
       remediations: [],
     };
   }
-  if (path === `${tenantPath}/api-keys`) {
+  if (path === `${orgPath}/api-keys`) {
     return {
       items: [
         {
           id: "dddddddd-dddd-4ddd-8ddd-ddddddddddd1",
-          tenant_id: tenantId,
+          organization_id: tenantId,
           name: "CI deploys",
           prefix: "qk_live_ab12",
           scopes: ["user.read"],
@@ -448,12 +465,12 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
       ],
     };
   }
-  if (path === `${tenantPath}/webhooks`) {
+  if (path === `${orgPath}/webhooks`) {
     return {
       items: [
         {
           id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1",
-          tenant_id: tenantId,
+          organization_id: tenantId,
           url: "https://hooks.example.com/qeet",
           events: ["user.created"],
           disabled_at: null,

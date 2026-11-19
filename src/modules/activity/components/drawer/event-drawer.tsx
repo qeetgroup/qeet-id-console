@@ -152,7 +152,8 @@ function resourceLink(
       return <RouterLink to="/users/$userId" params={{ userId: id }} />;
     case "group":
       return <RouterLink to="/groups/$groupId" params={{ groupId: id }} />;
-    case "tenant":
+    case "organization":
+    case "tenant": // events recorded before the server's rename
       return <RouterLink to="/organizations/$orgId" params={{ orgId: id }} />;
     case "webhook":
     case "webhook_subscription":

@@ -8,7 +8,7 @@ import { rotateSigningKeysTool } from "../definitions/credentials.tools";
 import type { ToolContext } from "../types/tool.types";
 
 const ctx = {
-  tenantId: "tenant-a",
+  organizationId: "tenant-a",
   userId: "operator-1",
   queryClient: new QueryClient(),
   signal: new AbortController().signal,

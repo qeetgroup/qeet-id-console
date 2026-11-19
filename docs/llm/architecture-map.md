@@ -39,7 +39,11 @@ A module's routes live in `src/modules/<id>/routes/`: `app/` mounts inside the `
 
 | Concern | Path |
 |---|---|
-| **Browser entry — the ONLY request path** | `src/platform/api/client.ts` |
+| **Browser entry — the ONLY request path** | `src/platform/api/backend.ts` (typed calls) → `src/platform/api/client.ts` |
+| The server's API contract (copied, never edited) | `contract/qeet-id-server/*.yaml`, `source.json` |
+| Types generated from it, and the helpers over them | `src/platform/api/contract/` (`generated/*.gen.ts`, `index.ts`) |
+| Sync and check the contract | `scripts/contract/` (`bun run contract:sync`, `contract:check`) |
+| What the server sends or takes beyond its documents | `src/platform/api/contract/undocumented.ts` |
 | **Server proxy, bearer attachment, refresh** | `src/platform/api/server-proxy.ts` |
 | **SSRF guard** | `src/platform/api/server-request-policy.ts` |
 | SSE proxying (server side) | `src/platform/api/server-stream.ts` |
@@ -113,7 +117,7 @@ helpers), `src/shared/data/` (`regions.ts`, `team-sizes.ts`).
 
 ## Conventions — reference implementation
 
-`src/modules/users`: `api/keys.ts` (tenant-scoped key factory), `api/users.ts` (`userQueries`
+`src/modules/users`: `api/keys.ts` (organization-scoped key factory), `api/users.ts` (`userQueries`
 built with `queryOptions`, hooks, mutations), `components/` (pages, sheets built on the forms kit),
 `use-user-actions.ts` (the sensitive user actions), `pages.ts` (the pages, for routes only),
 `manifest.tsx` (its sidebar entries, commands, shortcut, Qeet AI suggestions). Its routes under

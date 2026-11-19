@@ -2,31 +2,13 @@
 // event's metadata out; one event's details come from audit-event.ts.
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 import { securityKeys } from "./keys";
 
-export interface AuditEvent {
-  id: string;
-  tenant_id: string;
-  actor_user_id?: string | null;
-  actor_type: string;
-  action: string;
-  resource_type: string;
-  resource_id?: string | null;
-  ip?: string | null;
-  user_agent?: string | null;
-  request_id?: string | null;
-  /** Not in the list's answer today; kept for a server that sends it. */
-  metadata?: Record<string, unknown>;
-  created_at: string;
-}
-
-export interface AuditPage {
-  items: AuditEvent[];
-  next_cursor?: string;
-}
+export type AuditPage = Answer<"/v1/organizations/{organizationID}/audit">;
+export type AuditEvent = AuditPage["items"][number];
 
 /** The filters the log takes; an empty string means unfiltered. */
 export interface AuditLogFilters {
@@ -41,12 +23,13 @@ export const AUDIT_PAGE_SIZES = [25, 50, 100] as const;
 const EXPORT_PAGE_SIZE = 200;
 
 function fetchAuditPage(
-  tenantId: string | null,
+  organizationId: string | null,
   filters: AuditLogFilters,
   cursor: string | undefined,
   limit: number,
 ) {
-  return api<AuditPage>(`/v1/tenants/${tenantId}/audit`, {
+  return backend.get("/v1/organizations/{organizationID}/audit", {
+    path: { organizationID: organizationId ?? "" },
     query: {
       limit,
       cursor,
@@ -64,11 +47,11 @@ export function useAuditLog(
   cursor: string | undefined,
   pageSize: number = AUDIT_PAGE_SIZES[0],
 ) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.auditLog(tenantId, { ...filters, pageSize }, cursor),
-    queryFn: () => fetchAuditPage(tenantId, filters, cursor, pageSize),
-    enabled: !!tenantId,
+    queryKey: securityKeys.auditLog(organizationId, { ...filters, pageSize }, cursor),
+    queryFn: () => fetchAuditPage(organizationId, filters, cursor, pageSize),
+    enabled: !!organizationId,
     placeholderData: keepPreviousData,
   });
 }
@@ -78,14 +61,14 @@ export function useAuditLog(
  * `truncated` says the cap cut it short.
  */
 export async function fetchAuditExport(
-  tenantId: string,
+  organizationId: string,
   filters: AuditLogFilters,
   cap: number,
 ): Promise<{ items: AuditEvent[]; truncated: boolean }> {
   const items: AuditEvent[] = [];
   let cursor: string | undefined;
   do {
-    const page = await fetchAuditPage(tenantId, filters, cursor, EXPORT_PAGE_SIZE);
+    const page = await fetchAuditPage(organizationId, filters, cursor, EXPORT_PAGE_SIZE);
     items.push(...page.items);
     cursor = page.next_cursor;
     if (items.length >= cap) return { items, truncated: true };

@@ -108,7 +108,7 @@ export function useQeetAIChat(): UseQeetAIChat {
       setThinking(true);
 
       const toolCtx: ToolContext = {
-        tenantId: context.tenantId ?? "",
+        organizationId: context.organizationId ?? "",
         userId: context.userId ?? "",
         console: context,
         can: access.can,

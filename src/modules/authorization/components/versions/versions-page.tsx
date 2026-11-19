@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 
 import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useAbacPolicies } from "@/modules/authorization/api/abac";
 import { useAuthzChanges } from "@/modules/authorization/api/authz-activity";
@@ -63,15 +63,15 @@ export function PolicyVersionsPage({
 }) {
   const { t } = useTranslation("authorization");
   const n = useCount();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const can = useCapabilities().can;
   const navigate = useNavigate();
   const canAudit = can("audit.read");
   const changes = useAuthzChanges({ kind: "policies" }, canAudit);
   const policiesQ = useAbacPolicies();
   const people = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: can("user.read") && !!tenantId,
+    ...userQueries.directory(organizationId),
+    enabled: can("user.read") && !!organizationId,
   }).data?.items;
   const searchRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState(filters.q ?? "");

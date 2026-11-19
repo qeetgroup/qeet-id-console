@@ -3,15 +3,16 @@
 
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import { developerKeys } from "./keys";
+import { strictly } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer, Body } from "@/platform/api/contract";
 
 const apiKeySchema = z.object({
   id: z.string(),
-  tenant_id: z.string(),
+  organization_id: z.string(),
   user_id: z.string().nullish(),
   name: z.string(),
   prefix: z.string(),
@@ -23,38 +24,41 @@ const apiKeySchema = z.object({
 });
 export type ApiKey = z.infer<typeof apiKeySchema>;
 
-const apiKeyListSchema = z.object({ items: z.array(apiKeySchema) });
+const apiKeyListSchema = strictly<Answer<"/v1/organizations/{organizationID}/api-keys">>()(
+  z.object({ items: z.array(apiKeySchema) }),
+);
 export type ApiKeyList = z.infer<typeof apiKeyListSchema>;
 
-export const createdApiKeySchema = z.object({
-  api_key: apiKeySchema,
-  // Shown this once. Absent only if the server failed to return it, which the keys page reports.
-  secret: z.string().optional(),
-  warning: z.string().optional(),
-});
+export const createdApiKeySchema = strictly<Answer<"/v1/api-keys", "post">>()(
+  z.object({
+    api_key: apiKeySchema,
+    // Shown this once. Absent only if the server failed to return it, which the keys page reports.
+    secret: z.string().optional(),
+    warning: z.string().optional(),
+  }),
+);
 export type CreatedApiKey = z.infer<typeof createdApiKeySchema>;
 
-export type CreateApiKeyInput = {
-  tenant_id: string;
-  name: string;
-  scopes?: string[];
-  expires_at?: string;
-};
+// The document requires organization_id; the server takes the caller's in any case.
+export type CreateApiKeyInput = Body<"/v1/api-keys", "post">;
 
 /** Returns a tenant's API keys, rejecting a response that isn't a key list. */
-export function listApiKeys(tenantId: string | null): Promise<ApiKeyList> {
-  return api(`/v1/tenants/${tenantId}/api-keys`, { schema: apiKeyListSchema });
+export function listApiKeys(organizationId: string | null): Promise<ApiKeyList> {
+  return backend.get("/v1/organizations/{organizationID}/api-keys", {
+    path: { organizationID: organizationId ?? "" },
+    schema: apiKeyListSchema,
+  });
 }
 
 export const apiKeyQueries = {
-  list: (tenantId: string | null) =>
+  list: (organizationId: string | null) =>
     queryOptions({
-      queryKey: developerKeys.apiKeys(tenantId),
-      queryFn: () => listApiKeys(tenantId),
-      enabled: !!tenantId,
+      queryKey: developerKeys.apiKeys(organizationId),
+      queryFn: () => listApiKeys(organizationId),
+      enabled: !!organizationId,
     }),
 };
 
 export function useApiKeys() {
-  return useQuery(apiKeyQueries.list(useTenantId()));
+  return useQuery(apiKeyQueries.list(useOrganizationId()));
 }

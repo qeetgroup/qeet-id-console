@@ -193,7 +193,7 @@
     },
     "fields": {
       "email": "Email",
-      "tenant": "Tenant",
+      "organization": "Organisation",
       "initialRole": "Initial role",
       "user": "User",
       "userId": "User ID",
@@ -215,7 +215,7 @@
     },
     "confirm": {
       "createUser": {
-        "body": "Qeet AI will create a new user account in this tenant."
+        "body": "Qeet AI will create a new user account in the organisation you name."
       },
       "updateUser": {
         "body": "Qeet AI will change this user's profile."
@@ -253,7 +253,7 @@
         "enforceBody": "Every member will be required to complete MFA on each sign-in.",
         "enforceAction": "Enforce",
         "disableTitle": "Disable strict MFA",
-        "disableBody": "This weakens tenant security: members will be able to skip MFA on trusted devices."
+        "disableBody": "This weakens the organisation's security: members will be able to skip MFA on trusted devices."
       },
       "createOAuthClient": {
         "body": "This registers a new OAuth/OIDC client. Confidential clients mint a client secret shown once.",

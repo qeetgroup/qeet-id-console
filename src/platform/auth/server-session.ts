@@ -15,7 +15,7 @@ export type ServerSessionData = {
   expiresAt?: string;
   sessionId?: string;
   userId?: string;
-  tenantId?: string;
+  organizationId?: string;
   version?: number;
   organizationSelectionRequired?: boolean;
 };
@@ -25,7 +25,7 @@ export type PublicSession = {
   expiresAt: string | null;
   sessionId: string | null;
   userId: string | null;
-  tenantId: string | null;
+  organizationId: string | null;
   version: number;
   organizationSelectionRequired?: boolean;
   impersonationActor: {
@@ -138,7 +138,7 @@ export function toPublicSession(data: ServerSessionData): PublicSession {
     expiresAt: data.expiresAt ?? null,
     sessionId: data.sessionId ?? null,
     userId: data.userId ?? null,
-    tenantId: data.tenantId ?? null,
+    organizationId: data.organizationId ?? null,
     version: data.version ?? 0,
     organizationSelectionRequired: data.organizationSelectionRequired === true,
     impersonationActor,

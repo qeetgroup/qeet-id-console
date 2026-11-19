@@ -6,7 +6,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { api } from "@/platform/api/client";
+import { backend } from "@/platform/api/backend";
 import { ApiError } from "@/platform/errors/api-error";
 
 // Step-up re-verification. A sensitive action answers 403 `step_up_required` until the session
@@ -56,9 +56,13 @@ export function useStepUpOptions(open: boolean, allowed: string[] | null) {
     staleTime: 0,
     queryFn: async (): Promise<StepUpOptions> => {
       const [totp, otp, passkeys] = await Promise.all([
-        api("/v1/mfa/totp", { schema: totpStatusSchema }).catch(() => ({ enrolled: false })),
-        api("/v1/mfa/otp/factors", { schema: codeFactorsSchema }).catch(() => ({ items: [] })),
-        api("/v1/passkeys", { schema: passkeysSchema }).catch(() => ({ items: [] })),
+        backend
+          .get("/v1/mfa/totp", { schema: totpStatusSchema })
+          .catch(() => ({ enrolled: false })),
+        backend
+          .get("/v1/mfa/otp/factors", { schema: codeFactorsSchema })
+          .catch(() => ({ items: [] })),
+        backend.get("/v1/passkeys", { schema: passkeysSchema }).catch(() => ({ items: [] })),
       ]);
       return {
         passkey:
@@ -89,11 +93,9 @@ export function useStepUpVerify() {
       code: string;
       kind?: "authenticator" | "otp";
     }) =>
-      api(kind === "otp" ? "/v1/mfa/otp/verify" : "/v1/mfa/totp/verify", {
-        method: "POST",
-        body: { code },
-        schema: verifiedSchema,
-      }),
+      kind === "otp"
+        ? backend.post("/v1/mfa/otp/verify", { body: { code }, schema: verifiedSchema })
+        : backend.post("/v1/mfa/totp/verify", { body: { code }, schema: verifiedSchema }),
     meta: { silent: true },
   });
 }
@@ -102,10 +104,7 @@ export function useStepUpVerify() {
 export function useStepUpSendCode() {
   return useMutation({
     mutationFn: (factorId: string) =>
-      api<{ message: string }>(`/v1/mfa/otp/factors/${factorId}/challenge`, {
-        method: "POST",
-        body: {},
-      }),
+      backend.post("/v1/mfa/otp/factors/{id}/challenge", { path: { id: factorId } }),
     meta: { silent: true },
   });
 }
@@ -114,13 +113,12 @@ export function useStepUpSendCode() {
 export function useStepUpPasskey() {
   return useMutation({
     mutationFn: async () => {
-      const begin = await api<{
-        session_id: string;
-        publicKey: PublicKeyCredentialRequestOptionsJSON;
-      }>("/v1/mfa/webauthn/challenge", { method: "POST", body: {} });
-      const credential = await startAuthentication({ optionsJSON: begin.publicKey });
-      return api("/v1/mfa/webauthn/verify", {
-        method: "POST",
+      const begin = await backend.post("/v1/mfa/webauthn/challenge");
+      // The contract types the WebAuthn options loosely (its challenge is `unknown`); they are the
+      // server's go-webauthn output, made for this browser call.
+      const optionsJSON = begin.publicKey as PublicKeyCredentialRequestOptionsJSON;
+      const credential = await startAuthentication({ optionsJSON });
+      return backend.post("/v1/mfa/webauthn/verify", {
         body: { session_id: begin.session_id, credential },
         schema: verifiedSchema,
       });

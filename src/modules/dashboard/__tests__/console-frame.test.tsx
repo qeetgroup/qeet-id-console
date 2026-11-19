@@ -25,18 +25,18 @@ vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({
     state: "ready",
     mode: "full",
-    tenantId: "t1",
+    organizationId: "t1",
     permissions: new Set(["users:read"]),
     can: () => true,
     canAccessPath: () => true,
     retry: vi.fn(),
   }),
 }));
-const session = vi.hoisted(() => ({ logout: vi.fn(), tenantId: "t1" as string | null }));
+const session = vi.hoisted(() => ({ logout: vi.fn(), organizationId: "t1" as string | null }));
 vi.mock("@/platform/auth/session", () => ({
   useMe: () => ({ data: { id: "u1", email: "alan@example.com", display_name: "Alan Admin" } }),
   useLogout: () => ({ mutate: session.logout, isPending: false }),
-  useTenantId: () => session.tenantId,
+  useOrganizationId: () => session.organizationId,
 }));
 const orgs = vi.hoisted(() => ({ items: [] as { id: string; name: string }[] }));
 vi.mock("@/modules/organizations", () => ({
@@ -48,7 +48,8 @@ const notes = vi.hoisted(() => ({
   data: { unread_count: 0, items: [] as Record<string, unknown>[] },
   markAll: vi.fn(),
 }));
-vi.mock("@/modules/developer", () => ({
+vi.mock("@/modules/developer", async (importOriginal) => ({
+  notificationKind: (await importOriginal<typeof import("@/modules/developer")>()).notificationKind,
   useNotifications: () => ({ isPending: false, isError: false, data: notes.data }),
   useMarkAllRead: () => ({ mutate: notes.markAll, isPending: false }),
 }));
@@ -70,7 +71,7 @@ function renderInApp(node: ReactNode) {
 
 beforeEach(() => {
   route.pathname = "/users";
-  session.tenantId = "t1";
+  session.organizationId = "t1";
   orgs.items = [];
   notes.data = { unread_count: 0, items: [] };
 });
@@ -107,7 +108,7 @@ describe("the navigation", () => {
   });
 
   it("without an organisation, lists only My account and the way to choose one", () => {
-    session.tenantId = null;
+    session.organizationId = null;
     route.pathname = "/account/profile";
     renderInApp(<ConsoleSidebar />);
     const nav = screen.getByRole("navigation", { name: "Qeet ID" });
@@ -155,9 +156,14 @@ describe("a page's breadcrumb and sub-page tabs", () => {
 });
 
 describe("the account menu", () => {
+  it("is named starting with the initials it shows (label in name)", () => {
+    renderInApp(<AccountMenu onShortcuts={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "AA, Alan Admin, account menu" })).toBeTruthy();
+  });
+
   it("holds only what's personal, and signs out", async () => {
     renderInApp(<AccountMenu onShortcuts={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
     const menu = await screen.findByRole("menu");
     expect(within(menu).getByText("alan@example.com")).toBeTruthy();
     expect(within(menu).getByRole("menuitem", { name: "My account" })).toBeTruthy();
@@ -173,7 +179,7 @@ describe("the account menu", () => {
       { id: "t2", name: "Org Two" },
     ];
     renderInApp(<AccountMenu onShortcuts={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
     const item = await screen.findByRole("menuitem", { name: /Switch organisation/ });
     expect(item.textContent).toContain("You're in Org One");
     expect(item.getAttribute("href")).toBe("/select-organization");
@@ -221,7 +227,7 @@ describe("the Notifications panel", () => {
 describe("the account menu's theme", () => {
   it("chooses a theme without closing the menu", async () => {
     renderInApp(<AccountMenu onShortcuts={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
     const dark = await screen.findByRole("menuitemradio", { name: "Dark" });
     fireEvent.click(dark);
     await waitFor(() => expect(dark.getAttribute("aria-checked")).toBe("true"));

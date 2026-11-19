@@ -9,7 +9,7 @@ vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "tenant-a" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "tenant-a" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -51,7 +51,7 @@ function renderWithProviders(ui: ReactNode) {
 
 const asha: User = {
   id: "user-1",
-  tenant_id: "tenant-a",
+  organization_id: "tenant-a",
   email: "asha@example.test",
   display_name: "Asha",
   status: "active",

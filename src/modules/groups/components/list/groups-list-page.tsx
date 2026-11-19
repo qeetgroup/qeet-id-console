@@ -52,7 +52,7 @@ import {
 import { useDeleteGroupFlow } from "@/modules/groups/use-delete-group";
 import { useOrgs } from "@/modules/organizations";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
@@ -96,7 +96,7 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
   const canWrite = access.can("group.write");
   const canReadRoles = access.can("role.read");
   const canReadPeople = access.can("user.read");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
 
   const [creating, setCreating] = useCreateIntent(canWrite);
   const [inside, setInside] = useState<Group | null>(null);
@@ -113,10 +113,10 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
   const groupsQ = useGroups();
   const groups = groupsQ.data?.items ?? NO_GROUPS;
   const directory = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: canReadPeople && !!tenantId,
+    ...userQueries.directory(organizationId),
+    enabled: canReadPeople && !!organizationId,
   });
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
   const now = groupsQ.dataUpdatedAt || Date.now();
 
   const roots = useMemo(() => groupTree(groups), [groups]);
@@ -137,7 +137,7 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
       : pageIds
     : [];
   const roleResults = useQueries({
-    queries: roleIds.map((id) => groupRoleQueries.list(tenantId, id)),
+    queries: roleIds.map((id) => groupRoleQueries.list(organizationId, id)),
   });
   const roles = useMemo(() => {
     const out = new Map<string, string[]>();

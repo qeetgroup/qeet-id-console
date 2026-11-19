@@ -12,13 +12,12 @@ import { useSigningKeys } from "../api/signing-keys";
 import { DevSection } from "./parts";
 import "./developer.css";
 
-const ENDPOINTS = ["issuer", "discovery", "jwks", "token", "agentToken", "verify"] as const;
+const ENDPOINTS = ["issuer", "discovery", "jwks", "token", "verify"] as const;
 const PATH: Record<(typeof ENDPOINTS)[number], string> = {
   issuer: "",
   discovery: "/.well-known/openid-configuration",
   jwks: "/.well-known/jwks.json",
   token: "/v1/oauth/token",
-  agentToken: "/v1/agents/token",
   verify: "/v1/credentials/verify",
 };
 

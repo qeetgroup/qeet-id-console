@@ -182,7 +182,12 @@ async function expectAccessible(page: Page) {
       background-image: none !important;
     }`,
   });
-  const { violations } = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
+  // axe ships label-in-name (WCAG 2.5.3, level A) as experimental, off unless asked for. The tags
+  // come after: options() replaces whatever was set before it.
+  const { violations } = await new AxeBuilder({ page })
+    .options({ rules: { "label-content-name-mismatch": { enabled: true } } })
+    .withTags(WCAG_22_AA)
+    .analyze();
   const found = [];
   for (const violation of violations) {
     const known = DESIGN_SYSTEM_ISSUES.filter((issue) => issue.rule === violation.id);
@@ -308,3 +313,52 @@ for (const theme of THEMES) {
     });
   });
 }
+
+// WCAG 1.4.10 (reflow): at 320 CSS pixels nothing scrolls sideways, save content that needs two
+// dimensions, which scrolls inside its own frame (a data table). A failure names what sticks out.
+//
+// These fail for the library alone: Qeetrix React 0.1.1 gives a table, a tab list and a page
+// header's actions no way to narrow or scroll, so the page scrolls. Later versions do (a table's
+// scroll frame and column priorities); the console takes them with the upgrade, which waits on
+// QTRX-284. Each is an expected failure, so the upgrade that fixes one also fails here until it's
+// taken off the list.
+const LIBRARY_REFLOW = new Set([
+  "users",
+  "users, suspended",
+  "invitations",
+  "deleted users",
+  "user detail",
+  "groups",
+  "group page",
+  "organisations",
+  "directory connections",
+  "anomalies",
+  "machine access",
+  "webhooks",
+  "sync errors",
+]);
+
+test.describe("phone width", () => {
+  test.use({ viewport: { width: 320, height: 720 } });
+
+  for (const target of CONSOLE_PAGES) {
+    test(target.name, async ({ page }) => {
+      test.fail(LIBRARY_REFLOW.has(target.name), "Qeetrix React 0.1.1 layout; see LIBRARY_REFLOW");
+      await signIn(page, ADMIN.email);
+      await page.goto(target.path);
+      await settle(page, target.ready(page));
+      const sticksOut = await page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        if (document.documentElement.scrollWidth <= width + 1) return [];
+        const past = (el: Element) => el.getBoundingClientRect().right > width + 1;
+        return [...document.querySelectorAll("body *")]
+          .filter((el) => past(el) && !(el.parentElement && past(el.parentElement)))
+          .slice(0, 5)
+          .map(
+            (el) => `${el.tagName.toLowerCase()}${[...el.classList].map((c) => `.${c}`).join("")}`,
+          );
+      });
+      expect(sticksOut).toEqual([]);
+    });
+  }
+});

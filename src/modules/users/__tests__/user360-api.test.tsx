@@ -4,12 +4,12 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const context = vi.hoisted(() => ({ tenantId: "tenant-a" as string | null }));
+const context = vi.hoisted(() => ({ organizationId: "tenant-a" as string | null }));
 vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => context.tenantId }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => context.organizationId }));
 
 import { api } from "@/platform/api/client";
 import { userKeys } from "../api/keys";
@@ -43,7 +43,7 @@ function invalidated(client: QueryClient, key: QueryKey) {
 }
 
 beforeEach(() => {
-  context.tenantId = "tenant-a";
+  context.organizationId = "tenant-a";
   vi.mocked(api).mockReset();
   vi.mocked(api).mockResolvedValue(undefined);
 });
@@ -59,7 +59,7 @@ describe("per-user read surfaces", () => {
     const { result } = setup(() => useHook("user-1"));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith(path);
+    expect(api).toHaveBeenCalledWith(path, expect.objectContaining({ schema: expect.anything() }));
     expect(result.current.data).toEqual({ from: path });
   });
 
@@ -106,7 +106,7 @@ describe("useUserPermissions", () => {
     const { result } = setup(() => useUserPermissions("user-1"));
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/users/user-1/tenants/tenant-a/permissions");
+    expect(api).toHaveBeenCalledWith("/v1/users/user-1/organizations/tenant-a/permissions");
     expect(result.current.data).toEqual({ permissions: ["user.read", "role.read"] });
   });
 
@@ -128,7 +128,7 @@ describe("useUserPermissions", () => {
   });
 
   it("does not ask without a tenant", () => {
-    context.tenantId = null;
+    context.organizationId = null;
     const { result } = setup(() => useUserPermissions("user-1"));
     expect(result.current.fetchStatus).toBe("idle");
     expect(api).not.toHaveBeenCalled();

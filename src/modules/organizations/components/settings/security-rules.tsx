@@ -256,8 +256,8 @@ export function SessionLimitEditor({
   onClose: () => void;
 }) {
   const { t } = useTranslation("organizations");
-  const [limit, setLimit] = useState<number | null>(saved.max_sessions);
-  const [action, setAction] = useState(
+  const [limit, setLimit] = useState<number | null>(saved.max_sessions ?? null);
+  const [action, setAction] = useState<"refuse" | "evict_oldest">(
     saved.session_limit_action === "refuse" ? "refuse" : "evict_oldest",
   );
   const rule = useRuleSave(save, ["max_sessions", "session_limit_action"], onClose);

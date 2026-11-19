@@ -15,7 +15,7 @@ const scim: ScimConfig = {
 };
 const ldap: LdapConnection = {
   id: "ldap-a",
-  tenant_id: "tenant-a",
+  organization_id: "tenant-a",
   name: "Corporate directory",
   server_url: "ldaps://directory.example.test",
   start_tls: false,

@@ -10,7 +10,10 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1", useUserId: () => "u-me" }));
+vi.mock("@/platform/auth/session", () => ({
+  useOrganizationId: () => "t-1",
+  useUserId: () => "u-me",
+}));
 const granted = vi.hoisted(() => ({ except: new Set<string>() }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => {
@@ -104,12 +107,12 @@ beforeEach(() => {
   requests = [REQUEST];
   vi.mocked(api).mockImplementation(async (path: string, options?: { method?: string }) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants/t-1/gdpr/purge" && method === "GET") return { items: requests };
+    if (path === "/v1/organizations/t-1/gdpr/purge" && method === "GET") return { items: requests };
     if (path === "/v1/gdpr/purge" && method === "POST") return REQUEST;
     if (path === "/v1/gdpr/purge/purge-1" && method === "DELETE") return undefined;
     if (path === "/v1/users") return { items: PEOPLE };
     if (path === "/v1/users/deleted") return { items: DELETED };
-    if (path === "/v1/tenants/t-1/compliance/iso27001/evidence") return { items: [] };
+    if (path === "/v1/organizations/t-1/compliance/iso27001/evidence") return { items: [] };
     throw new Error(`Unexpected request ${method} ${path}`);
   });
 });
@@ -185,7 +188,7 @@ describe("Compliance › GDPR erasure", () => {
     await waitFor(() => expect(changes()).toEqual(["POST /v1/gdpr/purge"]));
     expect(vi.mocked(api)).toHaveBeenCalledWith("/v1/gdpr/purge", {
       method: "POST",
-      body: { tenant_id: "t-1", user_id: ANIL, reason: "" },
+      body: { organization_id: "t-1", user_id: ANIL, reason: "" },
     });
     expect(sensitiveCalls[0]?.actionLabel).toBe("File an erasure request");
     expect(sensitiveCalls[0]?.confirm).toBeUndefined();

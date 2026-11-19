@@ -21,7 +21,7 @@ import { userQueries } from "@/modules/users";
 import { type Anomaly, isAnomalyResolved } from "@/modules/security/api/anomalies";
 import { useBotOverview } from "@/modules/security/api/bots";
 import { anomalyFacts, sourceAddress } from "@/modules/security/anomaly-model";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { AnomalySeverityBadge } from "../anomaly-badges";
 import { When } from "../when";
@@ -102,15 +102,15 @@ function AnomalyBody({
   const text = useAnomalyText();
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
   const f = anomalyFacts(a);
   const ip = sourceAddress(a);
   const denial = useDenyAddress();
   const bots = useBotOverview();
   const stats = useQuery({
-    ...userQueries.stats(tenantId),
-    enabled: !!tenantId && access.can("user.read"),
+    ...userQueries.stats(organizationId),
+    enabled: !!organizationId && access.can("user.read"),
     meta: { silent: true },
   });
 

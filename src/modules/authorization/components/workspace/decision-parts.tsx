@@ -15,6 +15,7 @@ import { usePersonAccess } from "@/modules/authorization/api/people";
 import type { RbacExplainPath, RebacPathStep } from "@/modules/authorization/api/simulate";
 import type { TraceStep } from "@/modules/authorization/components/explain/decision-trace";
 import { nameOf, usePeople, userIdOf } from "@/modules/authorization/components/shared/use-people";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 /**
  * The answer to a check: allowed or denied, in words, and why. `compact` puts the verdict on one
@@ -205,7 +206,7 @@ export function PersonFacts({ userId }: { userId: string }) {
             <span className="ws-tags">
               {a.roles.map((r) => (
                 <Badge key={r.id} size="sm">
-                  {r.name}
+                  {roleDisplayName(r.name)}
                 </Badge>
               ))}
             </span>

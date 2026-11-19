@@ -27,10 +27,10 @@ const RESOURCE_NAMES = [
   "connection",
   "gdpr",
   "group",
+  "organization",
   "policy",
   "role",
   "secret",
-  "tenant",
   "user",
   "webhook",
 ] as const;

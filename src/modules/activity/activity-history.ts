@@ -1,10 +1,8 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-
-import { api } from "@/platform/api/client";
-
 import type { ActivityEvent, ActivityFilters, Severity } from "./types/activity.types";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { activityKeys } from "./api/keys";
+import { backend } from "@/platform/api/backend";
 
 export type ActivityHistoryPage = {
   events: ActivityEvent[];
@@ -55,9 +53,7 @@ export async function fetchActivityPage(
   limit = HISTORY_LIMIT,
 ): Promise<ActivityHistoryPage> {
   try {
-    return await api<ActivityHistoryPage>("/v1/activity", {
-      query: buildActivityQuery(filters, cursor, limit),
-    });
+    return await backend.get("/v1/activity", { query: buildActivityQuery(filters, cursor, limit) });
   } catch (err) {
     const status = (err as { status?: number }).status;
     if (!status || status === 404 || status === 503) {
@@ -73,9 +69,9 @@ export async function fetchActivityPage(
  * move the rows under the reader.
  */
 export function useActivityHistory(filters: ActivityFilters, enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useInfiniteQuery({
-    queryKey: activityKeys.history(tenantId, filters),
+    queryKey: activityKeys.history(organizationId, filters),
     queryFn: ({ pageParam }: { pageParam: string }) =>
       fetchActivityPage(filters, pageParam, ACTIVITY_PAGE_LIMIT),
     initialPageParam: "",

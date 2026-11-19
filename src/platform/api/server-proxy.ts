@@ -326,11 +326,7 @@ export const proxyApiRequest = createServerFn({ method: "POST" })
       isSessionIssuingRequest(pathname, input.method) &&
       isBackendTokenResponse(responseData)
     ) {
-      if (
-        sessionData.accessToken &&
-        pathname !== "/v1/admin/impersonate" &&
-        pathname !== "/v1/admin/impersonate/exit"
-      ) {
+      if (sessionData.accessToken) {
         await fetch(`${getServerApiBaseUrl()}/v1/auth/logout`, {
           method: "POST",
           headers: {

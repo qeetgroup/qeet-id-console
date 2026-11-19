@@ -11,13 +11,13 @@ import {
   useIdleLogout,
   useLogout,
   useMe,
-  useTenantId,
+  useOrganizationId,
   useUserId,
 } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
 import { isTwoStepRequired, TWO_STEP_SETUP_PATH } from "@/platform/security/two-step-required";
 import { isOneOf } from "@/shared/utils/one-of";
-import { switchToTenant } from "../api/flows";
+import { switchToOrganization } from "../api/flows";
 import {
   useAcceptInvitation,
   useDeclineInvitation,
@@ -37,9 +37,9 @@ import {
   InvitedView,
   type PickerInvitation,
 } from "./invitation-list";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 // The roles and plans with their own copy; any other shows as the server names it.
-const KNOWN_ROLES = ["owner", "admin", "member"] as const;
 const KNOWN_PLANS = ["free", "starter", "pro", "enterprise"] as const;
 // A short list shows whole. Past this many, the most recently used show first, with search and
 // a way to see them all.
@@ -74,7 +74,7 @@ export type OrganizationSelectorViewProps = {
 
 export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }) {
   const userId = useUserId();
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const organizations = useEligibleOrganizations(userId);
   const me = useMe();
   const logout = useLogout();
@@ -109,8 +109,8 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
     const only = organizations.data[0];
     const enter = !only
       ? navigate({ to: "/create-organization", replace: true })
-      : only.id !== tenantId
-        ? switchToTenant(only.id)
+      : only.id !== organizationId
+        ? switchToOrganization(only.id)
         : navigate({ to: "/", replace: true });
     void Promise.resolve(enter).catch((failure) => {
       setEntryNeedsTwoStep(isTwoStepRequired(failure));
@@ -121,7 +121,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
     organizations.isSuccess,
     invitationsKnown,
     invitations.length,
-    tenantId,
+    organizationId,
     navigate,
     retry,
   ]);
@@ -176,7 +176,7 @@ export function OrganizationSelectionPage({ onCreate }: { onCreate: () => void }
       onContinue={async (id) => {
         if (!organizations.data?.some((organization) => organization.id === id))
           throw new Error("Organization is no longer available");
-        await switchToTenant(id);
+        await switchToOrganization(id);
       }}
       onCreate={onCreate}
       onAccount={() => void navigate({ to: "/account/profile" })}
@@ -215,10 +215,6 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
   const disabled = opening !== null || !!props.signingOut || !!props.invitationAction;
   const invitations = props.invitations ?? [];
 
-  const roleLabel = (name: string) => {
-    const role = name.toLowerCase();
-    return isOneOf(KNOWN_ROLES, role) ? t(`organizationSelection.roles.${role}`) : name;
-  };
   const planLabel = (code: string) => {
     const plan = code.replace(/_year$/, "");
     return isOneOf(KNOWN_PLANS, plan)
@@ -412,7 +408,7 @@ export function OrganizationSelectorView(props: OrganizationSelectorViewProps) {
                         )}
                         {organization.roles.map((role) => (
                           <Badge key={role} tone="neutral">
-                            {roleLabel(role)}
+                            {roleDisplayName(role)}
                           </Badge>
                         ))}
                       </span>

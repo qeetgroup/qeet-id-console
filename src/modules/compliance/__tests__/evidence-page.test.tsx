@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "tenant-a",
+  useOrganizationId: () => "tenant-a",
   useUserId: () => "u-me",
 }));
 const granted = vi.hoisted(() => ({ except: new Set<string>() }));
@@ -60,7 +60,7 @@ function run(id: string, at: string, controls: ControlResult[], by: string | nul
   const count = (s: ControlResult["status"]) => controls.filter((c) => c.status === s).length;
   return {
     id,
-    tenant_id: "tenant-a",
+    organization_id: "tenant-a",
     framework: "soc2",
     generated_at: at,
     generated_by: by,
@@ -108,9 +108,9 @@ const SHALINI = {
   created_at: "2025-01-01T00:00:00Z",
 };
 
-const LIST = "GET /v1/tenants/tenant-a/compliance/soc2/evidence";
-const GENERATE = "POST /v1/tenants/tenant-a/compliance/soc2/evidence";
-const detail = (id: string) => `GET /v1/tenants/tenant-a/compliance/evidence/${id}`;
+const LIST = "GET /v1/organizations/tenant-a/compliance/soc2/evidence";
+const GENERATE = "POST /v1/organizations/tenant-a/compliance/soc2/evidence";
+const detail = (id: string) => `GET /v1/organizations/tenant-a/compliance/evidence/${id}`;
 const EVERY_RUN = {
   [LIST]: { items: RUNS.map(summary) },
   [detail("run-3")]: NEWEST,
@@ -248,8 +248,9 @@ describe("Compliance › SOC 2", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Generate evidence" }));
 
     await waitFor(() => expect(onRunChange).toHaveBeenCalledWith(undefined));
-    expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/compliance/soc2/evidence", {
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/compliance/soc2/evidence", {
       method: "POST",
+      schema: expect.anything(),
     });
   });
 
@@ -271,8 +272,9 @@ describe("Compliance › SOC 2", () => {
     expect(await screen.findByText("No SOC 2 evidence yet")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Generate evidence" }));
     await waitFor(() =>
-      expect(api).toHaveBeenCalledWith("/v1/tenants/tenant-a/compliance/soc2/evidence", {
+      expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/compliance/soc2/evidence", {
         method: "POST",
+        schema: expect.anything(),
       }),
     );
   });

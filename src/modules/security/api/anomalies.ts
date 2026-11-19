@@ -2,29 +2,31 @@
 // one change, resolving one, is in anomaly-actions.ts: only its page uses it.
 
 import { useQuery } from "@tanstack/react-query";
+import type { z } from "zod";
 
-import { ApiError, api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { ApiError } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
 import { securityKeys } from "./keys";
+import { assuredItems } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
-export interface Anomaly {
-  id: string;
-  type: string;
-  severity: string;
-  detail: string;
-  status: string;
-  user_id?: string | null;
-  user_email?: string | null;
-  ip?: string | null;
-  /**
-   * The detection's own facts: `counter` (which count tripped: "source", "account" or
-   * "account_network"), `failures`, `distinct_accounts`, `window_minutes`, `network`,
-   * `locked_until` or `throttled_until`. Any may be missing.
-   */
-  metadata?: Record<string, unknown> | null;
-  created_at: string;
-  resolved_at?: string | null;
-}
+// The server always sends these (internal/access/threat/threat.go, Anomaly); the document marks
+// them optional (QTID-1063). `metadata` holds the detection's own facts: `counter` (which count
+// tripped: "source", "account" or "account_network"), `failures`, `distinct_accounts`,
+// `window_minutes`, `network`, `locked_until` or `throttled_until`. Any may be missing.
+const anomalyPage = assuredItems<Answer<"/v1/organizations/{organizationID}/security/anomalies">>()(
+  "id",
+  "type",
+  "severity",
+  "detail",
+  "status",
+  "created_at",
+);
+export type Anomaly = z.infer<typeof anomalyPage>["items"][number];
+
+// The pages show the newest detections: one page, the most the server sends at once.
+const RECENT = 200;
 
 /**
  * Whether an anomaly is resolved. Until then it is open, whatever its status says: the sign-in
@@ -42,28 +44,35 @@ export interface AnomalySummary {
 }
 
 export function useAnomalies(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.anomalyList(tenantId),
+    queryKey: securityKeys.anomalyList(organizationId),
     queryFn: async (): Promise<{ items: Anomaly[] }> => {
       try {
-        return await api<{ items: Anomaly[] }>(`/v1/tenants/${tenantId}/security/anomalies`);
+        return await backend.get("/v1/organizations/{organizationID}/security/anomalies", {
+          path: { organizationID: organizationId ?? "" },
+          query: { limit: RECENT },
+          schema: anomalyPage,
+        });
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) return { items: [] };
         throw err;
       }
     },
-    enabled: enabled && !!tenantId,
+    enabled: enabled && !!organizationId,
     staleTime: 30_000,
   });
 }
 
 export function useAnomalySummary() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.anomalySummary(tenantId),
-    queryFn: () => api<AnomalySummary>(`/v1/tenants/${tenantId}/security/anomalies/summary`),
-    enabled: !!tenantId,
+    queryKey: securityKeys.anomalySummary(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/security/anomalies/summary", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId,
     staleTime: 30_000,
   });
 }

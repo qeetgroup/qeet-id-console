@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { formatLocale, humanizeMissingKey } from "@/i18n";
 import { PageBreadcrumb } from "@/modules/dashboard";
 import { orgQueries } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { ErrorReference, ErrorText } from "@/platform/components/error-reference";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
@@ -64,9 +64,9 @@ type BillingPageSelection = {
  */
 export function BillingSettingsPage(selection: BillingPageSelection) {
   const { t, i18n } = useTranslation("billing");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
-  const canRead = !!tenantId && access.state === "ready" && access.can("billing.read");
+  const canRead = !!organizationId && access.state === "ready" && access.can("billing.read");
   const canWrite = canRead && access.can("billing.write");
   const plans = usePlans();
   const subscription = useSubscription(canRead);
@@ -74,8 +74,8 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
   const usage = useUsage(canRead);
   const profile = useBillingProfile(canRead);
   const invoices = useInvoices(canRead);
-  const orgName = useQuery({ ...orgQueries.list(), enabled: !!tenantId }).data?.items.find(
-    (org) => org.id === tenantId,
+  const orgName = useQuery({ ...orgQueries.list(), enabled: !!organizationId }).data?.items.find(
+    (org) => org.id === organizationId,
   )?.name;
   const checkout = useCheckout();
   const cancel = useCancelSubscription();
@@ -87,19 +87,23 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
   const [failure, setFailure] = useState<unknown>(null);
   const [salesOpen, setSalesOpen] = useState(false);
   const busy = useRef(false);
-  const active = useRef<{ tenantId: string | null; canWrite: boolean } | null>(null);
+  const active = useRef<{ organizationId: string | null; canWrite: boolean } | null>(null);
 
   useEffect(() => {
-    active.current = { tenantId, canWrite };
+    active.current = { organizationId, canWrite };
     return () => {
       active.current = null;
     };
-  }, [tenantId, canWrite]);
+  }, [organizationId, canWrite]);
 
   // An action confirmed after the organisation changed (or write access went) would act on the
   // wrong one, so it stops.
   function requireCurrentContext() {
-    if (!tenantId || active.current?.tenantId !== tenantId || !active.current.canWrite) {
+    if (
+      !organizationId ||
+      active.current?.organizationId !== organizationId ||
+      !active.current.canWrite
+    ) {
       throw new SensitiveActionCancelled();
     }
   }
@@ -211,7 +215,7 @@ export function BillingSettingsPage(selection: BillingPageSelection) {
       },
     });
     if (!result) throw new SensitiveActionCancelled();
-    queryClient.setQueryData(billingKeys.profile(tenantId), result);
+    queryClient.setQueryData(billingKeys.profile(organizationId), result);
     return result;
   }
 

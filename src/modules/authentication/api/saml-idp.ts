@@ -2,25 +2,33 @@
 // assertions (the inverse of saml.ts). Each organisation is its own IdP, with its own URLs.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { z } from "zod";
 
-import { api, getApiBaseUrl } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { getApiBaseUrl } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
+import { assuredItems } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
-export interface SamlProvider {
-  id: string;
-  tenant_id: string;
-  name: string;
-  entity_id: string;
-  acs_url: string;
-  name_id_format: string;
-  name_id_attribute: string;
-  certificate: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  last_login_at: string | null;
-}
+// The server always sends these (internal/federation/saml/idp.go, ServiceProvider); the document
+// marks them optional (QTID-1063).
+const samlProviderPage = assuredItems<
+  Answer<"/v1/organizations/{organizationID}/saml-providers">
+>()(
+  "id",
+  "organization_id",
+  "name",
+  "entity_id",
+  "acs_url",
+  "name_id_format",
+  "name_id_attribute",
+  "certificate",
+  "status",
+  "created_at",
+  "updated_at",
+);
+export type SamlProvider = z.infer<typeof samlProviderPage>["items"][number];
 
 export interface CreateSamlProviderInput {
   name: string;
@@ -33,65 +41,70 @@ export interface CreateSamlProviderInput {
 }
 
 /** The organisation's IdP entity ID, which its metadata and assertions carry. */
-export const idpEntityId = (tenantId: string) => `${getApiBaseUrl()}/saml/idp/${tenantId}`;
+export const idpEntityId = (organizationId: string) =>
+  `${getApiBaseUrl()}/saml/idp/${organizationId}`;
 
 /** The organisation's IdP metadata document, which an SP imports to trust it. */
-export const idpMetadataUrl = (tenantId: string) => `${idpEntityId(tenantId)}/metadata`;
+export const idpMetadataUrl = (organizationId: string) => `${idpEntityId(organizationId)}/metadata`;
 
 /** The organisation's SingleSignOnService URL, for an SP configured by hand. */
-export const idpSsoUrl = (tenantId: string) => `${idpEntityId(tenantId)}/sso`;
+export const idpSsoUrl = (organizationId: string) => `${idpEntityId(organizationId)}/sso`;
 
 /** A sign-in to one app that starts at Qeet ID (IdP-initiated): the app's id names it. */
-export const idpSignInUrl = (tenantId: string, appId: string) =>
-  `${idpSsoUrl(tenantId)}?sp=${encodeURIComponent(appId)}`;
+export const idpSignInUrl = (organizationId: string, appId: string) =>
+  `${idpSsoUrl(organizationId)}?sp=${encodeURIComponent(appId)}`;
 
 export function useSamlProviders(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: authKeys.samlProviders(tenantId),
-    enabled: enabled && !!tenantId,
-    queryFn: () => api<{ items: SamlProvider[] }>(`/v1/tenants/${tenantId}/saml-providers`),
+    queryKey: authKeys.samlProviders(organizationId),
+    enabled: enabled && !!organizationId,
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/saml-providers", {
+        path: { organizationID: organizationId ?? "" },
+        schema: samlProviderPage,
+      }),
   });
 }
 
 export function useCreateSamlProvider() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: CreateSamlProviderInput) =>
-      api<SamlProvider>(`/v1/tenants/${tenantId}/saml-providers`, {
-        method: "POST",
+      backend.post("/v1/organizations/{organizationID}/saml-providers", {
+        path: { organizationID: organizationId ?? "" },
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(organizationId) }),
     meta: { successMessage: "saml:toast.appAdded", silentError: true }, // the drawer shows it
   });
 }
 
 /** `inline`: the caller shows a failure itself (a drawer), so it isn't toasted. */
 export function useUpdateSamlProvider({ inline = false }: { inline?: boolean } = {}) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...body }: Partial<CreateSamlProviderInput> & { id: string }) =>
-      api<SamlProvider>(`/v1/tenants/${tenantId}/saml-providers/${id}`, {
-        method: "PATCH",
+      backend.patch("/v1/organizations/{organizationID}/saml-providers/{id}", {
+        path: { organizationID: organizationId ?? "", id },
         body,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(organizationId) }),
     meta: { silentError: inline },
   });
 }
 
 export function useDeleteSamlProvider() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      api<void>(`/v1/tenants/${tenantId}/saml-providers/${id}`, {
-        method: "DELETE",
+      backend.delete("/v1/organizations/{organizationID}/saml-providers/{id}", {
+        path: { organizationID: organizationId ?? "", id },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.samlProviders(organizationId) }),
     meta: { successMessage: "saml:toast.appRemoved" },
   });
 }

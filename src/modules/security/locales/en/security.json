@@ -355,7 +355,7 @@
       "lowered": "Lowered"
     },
     "bucket": {
-      "tenant": {
+      "organization": {
         "label": "Organisation",
         "hint": "All signed-in requests in this organisation, from people, applications and keys"
       },
@@ -616,7 +616,7 @@
       "session": "Session",
       "group": "Group",
       "invite": "Invitation",
-      "tenant": "Organisation",
+      "organization": "Organisation",
       "oidc_client": "Application",
       "api_key": "API key",
       "webhook_subscription": "Webhook",

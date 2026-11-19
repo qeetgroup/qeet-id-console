@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@tanstack/react-store";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { fetchActivityPage } from "./activity-history";
 import { applyFilters } from "./activity-filters";
 import { activityStore } from "./activity-store";
@@ -60,7 +60,7 @@ export function useLiveActivity({
   onFirstPage: boolean;
   onGap: () => void;
 }): LiveActivity {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   // A range that ends in the past gets nothing new.
   const open = !filters.to || Date.parse(filters.to) > Date.now();
   const active = enabled && open && history !== undefined;
@@ -80,7 +80,7 @@ export function useLiveActivity({
   }, [filterKey]);
 
   const head = useQuery({
-    queryKey: activityKeys.head(tenantId, filters),
+    queryKey: activityKeys.head(organizationId, filters),
     queryFn: () => fetchActivityPage(filters, "", HEAD_LIMIT),
     enabled: active,
     refetchInterval: active ? LIVE_INTERVAL_MS : false,

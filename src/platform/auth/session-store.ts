@@ -23,7 +23,7 @@ const EMPTY_SESSION: PublicSession = {
   expiresAt: null,
   sessionId: null,
   userId: null,
-  tenantId: null,
+  organizationId: null,
   version: 0,
   organizationSelectionRequired: false,
   impersonationActor: null,
@@ -65,7 +65,7 @@ function securityScopeChanged(left: PublicSession, right: PublicSession): boolea
     left.isAuthenticated !== right.isAuthenticated ||
     left.sessionId !== right.sessionId ||
     left.userId !== right.userId ||
-    left.tenantId !== right.tenantId ||
+    left.organizationId !== right.organizationId ||
     JSON.stringify(left.impersonationActor) !== JSON.stringify(right.impersonationActor)
   );
 }
@@ -115,7 +115,7 @@ function sameSession(left: PublicSession, right: PublicSession): boolean {
     left.expiresAt === right.expiresAt &&
     left.sessionId === right.sessionId &&
     left.userId === right.userId &&
-    left.tenantId === right.tenantId &&
+    left.organizationId === right.organizationId &&
     left.version === right.version &&
     !!left.organizationSelectionRequired === !!right.organizationSelectionRequired &&
     JSON.stringify(left.impersonationActor) === JSON.stringify(right.impersonationActor)
@@ -186,7 +186,7 @@ export const sessionStore = {
     notifySubscribers();
     publish("cleared");
   },
-  getTenantId: () => currentSession.tenantId,
+  getOrganizationId: () => currentSession.organizationId,
   getUserId: () => currentSession.userId,
   getSessionId: () => currentSession.sessionId,
   getImpersonationActor: () => currentSession.impersonationActor,

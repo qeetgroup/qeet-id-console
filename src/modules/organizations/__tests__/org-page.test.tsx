@@ -10,15 +10,15 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "g",
+  useOrganizationId: () => "g",
   useUserId: () => "u-me",
   useSessionId: () => "session-1",
 }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", mode: "full", can: () => true, canAll: () => true }),
 }));
-const switchToTenant = vi.hoisted(() => vi.fn(async () => {}));
-vi.mock("@/modules/authentication", () => ({ switchToTenant }));
+const switchToOrganization = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock("@/modules/authentication", () => ({ switchToOrganization }));
 vi.mock("@/modules/billing", () => ({
   useSubscription: () => ({
     data: {
@@ -73,7 +73,6 @@ const GROUP: Org = {
   status: "active",
   plan: "enterprise",
   region: "ap-south-1",
-  logo_url: "",
   created_at: "2025-08-18T09:00:00Z",
   member_count: 46,
   mfa_enabled_count: 18,
@@ -101,7 +100,7 @@ const HISTORY = [
   {
     id: "e2",
     action: "security_policy.updated",
-    resource_type: "tenant",
+    resource_type: "organization",
     actor_user_id: "u-shalini",
     ip: "203.0.113.34",
     user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/153.0.0.0 Safari/537.36",
@@ -109,8 +108,8 @@ const HISTORY = [
   },
   {
     id: "e1",
-    action: "tenant.created",
-    resource_type: "tenant",
+    action: "organization.created",
+    resource_type: "organization",
     actor_user_id: "u-mareedu",
     created_at: "2025-08-18T09:00:00Z",
   },
@@ -120,22 +119,22 @@ const state = vi.hoisted(() => ({ roles: ["Admin"], due: null as string | null }
 beforeEach(() => {
   state.roles = ["Admin"];
   state.due = null;
-  switchToTenant.mockClear();
+  switchToOrganization.mockClear();
   vi.mocked(api).mockImplementation(async (path: string, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/tenants") return { items: [GROUP, SANDBOX], next_cursor: "" };
+    if (path === "/v1/organizations") return { items: [GROUP, SANDBOX] };
     if (path === "/v1/me/organizations")
       return {
         items: [membership("g", state.roles, "qeet.in"), membership("s", ["owner"])],
         next_cursor: "",
       };
-    if (path === "/v1/tenants/g" && method === "GET")
+    if (path === "/v1/organizations/g" && method === "GET")
       return { ...GROUP, deletion_due_at: state.due };
-    if (path === "/v1/tenants/g" && method === "DELETE")
-      return { tenant_id: "g", deletion_due_at: "2026-11-04T09:00:00Z" };
-    if (path === "/v1/tenants/g/deletion/cancel") return GROUP;
-    if (path === "/v1/tenants/g/audit") return { items: HISTORY };
-    if (path === "/v1/tenants/g/domains")
+    if (path === "/v1/organizations/g" && method === "DELETE")
+      return { organization_id: "g", deletion_due_at: "2026-11-04T09:00:00Z" };
+    if (path === "/v1/organizations/g/deletion/cancel") return GROUP;
+    if (path === "/v1/organizations/g/audit") return { items: HISTORY };
+    if (path === "/v1/organizations/g/domains")
       return { items: [{ domain: "qeet.in", verified_at: "2025-08-19T06:00:00Z" }] };
     if (path === "/v1/users/u-shalini")
       return { id: "u-shalini", email: "s@qeet.in", display_name: "Shalini Goyal" };
@@ -221,7 +220,7 @@ describe("an organisation's page, the one you're in", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete organisation" }));
     dialog = await screen.findByRole("alertdialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete organisation" }));
-    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/tenants/g"]));
+    await waitFor(() => expect(writes()).toEqual(["DELETE /v1/organizations/g"]));
   });
 
   it("while a deletion is scheduled, says when and lets an owner keep it", async () => {
@@ -231,7 +230,7 @@ describe("an organisation's page, the one you're in", () => {
     expect(await screen.findByText(/Qeet Group will be deleted on .*2026/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Delete organisation" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Keep Qeet Group" }));
-    await waitFor(() => expect(writes()).toEqual(["POST /v1/tenants/g/deletion/cancel"]));
+    await waitFor(() => expect(writes()).toEqual(["POST /v1/organizations/g/deletion/cancel"]));
   });
 });
 
@@ -244,9 +243,9 @@ describe("another organisation's page", () => {
     expect(screen.getByText("After switching, you can delete it")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "History" })).toBeNull();
     const asked = vi.mocked(api).mock.calls.map(([path]) => path);
-    expect(asked.some((p) => p.startsWith("/v1/tenants/s"))).toBe(false);
+    expect(asked.some((p) => p.startsWith("/v1/organizations/s"))).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: "Switch to Qeet Sandbox" }));
-    await waitFor(() => expect(switchToTenant).toHaveBeenCalledWith("s"));
+    await waitFor(() => expect(switchToOrganization).toHaveBeenCalledWith("s"));
   });
 
   it("says so when it isn't one you belong to", async () => {

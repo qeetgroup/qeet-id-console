@@ -18,7 +18,10 @@
     "check": "biome check --error-on-warnings .",
     "audit": "bun audit --audit-level=high",
     "new-module": "node scripts/new-module.mjs",
-    "size": "node scripts/check-bundle-size.mjs"
+    "size": "node scripts/check-bundle-size.mjs",
+    "contract:sync": "node scripts/contract/sync.mjs",
+    "contract:check": "node scripts/contract/check.mjs",
+    "contract:drift": "node scripts/contract/drift.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -69,6 +72,7 @@
     "@vitest/coverage-v8": "^5.1.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "jsdom": "^30.1.3",
+    "openapi-typescript": "7.13.0",
     "typescript": "^5.9.3",
     "vite": "^8.3.6",
     "vitest": "^5.1.0"

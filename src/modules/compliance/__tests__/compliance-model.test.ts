@@ -14,7 +14,7 @@ const c = (id: string, status: ControlResult["status"]): ControlResult => ({
 });
 const run = (at: string, controls: ControlResult[]): EvidenceRun => ({
   id: at,
-  tenant_id: "t",
+  organization_id: "t",
   framework: "soc2",
   generated_at: at,
   pass_count: 0,

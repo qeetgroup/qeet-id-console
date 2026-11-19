@@ -8,7 +8,7 @@ import { formatLocale } from "@/i18n";
 import { type Group, useDeleteGroup } from "@/modules/groups/api/groups";
 import { everyGroup, groupTree } from "@/modules/groups/groups-model";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import {
   settleSensitiveAction,
   useSensitiveAction,
@@ -19,8 +19,8 @@ export function useDeleteGroupFlow(groups: readonly Group[]) {
   const { t } = useTranslation("groups");
   const runSensitive = useSensitiveAction();
   const deleteM = useDeleteGroup();
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const organizationId = useOrganizationId();
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
   const n = (value: number) => formatNumber(value, formatLocale());
 
   return (group: Group, onDeleted?: () => void) => {

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 
 export type Person = { id: string; name: string; email: string };
@@ -13,9 +13,9 @@ export type Person = { id: string; name: string; email: string };
  * cache; empty without user.read, and the lists fall back to the ID.
  */
 export function usePeople(): ReadonlyMap<string, Person> {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
-  const options = userQueries.directory(tenantId);
+  const options = userQueries.directory(organizationId);
   const directory = useQuery({
     ...options,
     enabled: options.enabled && access.can("user.read"),

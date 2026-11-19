@@ -21,7 +21,6 @@ export const FAILING_FILTERS: ErrorFilters = {
   resolution: "open",
   q: "",
   limit: 100,
-  offset: 0,
 };
 
 export type Failure = { at: string; message: string; code: string };

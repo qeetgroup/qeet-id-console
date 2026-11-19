@@ -10,7 +10,10 @@ vi.mock("@/platform/api/client", async () => {
   const { ApiError } = await import("@/platform/errors/api-error");
   return { api: vi.fn(), ApiError };
 });
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t1", useUserId: () => "u-me" }));
+vi.mock("@/platform/auth/session", () => ({
+  useOrganizationId: () => "t1",
+  useUserId: () => "u-me",
+}));
 const granted = vi.hoisted(() => ({ except: new Set<string>() }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => {
@@ -49,19 +52,19 @@ beforeEach(() => {
           items: [
             {
               id: "u-priya",
-              tenant_id: "t1",
+              organization_id: "t1",
               email: "priya@qeet.in",
               status: "active",
               created_at: "2025-01-01T00:00:00Z",
             },
           ],
         };
-      if (path === "/v1/tenants/t1/invites")
+      if (path === "/v1/organizations/t1/invites")
         return {
           items: [
             {
               id: "i-sai",
-              tenant_id: "t1",
+              organization_id: "t1",
               email: "sai@qeet.in",
               status: "pending",
               expires_at: "2026-11-09T00:00:00Z",
@@ -69,7 +72,7 @@ beforeEach(() => {
             },
           ],
         };
-      if (path === "/v1/tenants/t1/roles")
+      if (path === "/v1/organizations/t1/roles")
         return {
           items: [
             {
@@ -88,7 +91,7 @@ beforeEach(() => {
     if (path === "/v1/invites" && method === "POST") return { invite: {} };
     if (path === "/v1/invites/i-sai/resend" && method === "POST") return { invite: {} };
     if (path === "/v1/users" && method === "POST") return { id: "new-user" };
-    if (path === "/v1/users/new-user/tenants/t1/roles/role-member" && method === "POST")
+    if (path === "/v1/users/new-user/organizations/t1/roles/role-member" && method === "POST")
       return undefined;
     throw new Error(`unexpected request: ${method} ${path}`);
   });
@@ -140,7 +143,7 @@ describe("Add people › invite by email", () => {
     const body = vi
       .mocked(api)
       .mock.calls.find(([p, o]) => p === "/v1/invites" && o?.method === "POST")?.[1]?.body;
-    expect(body).toEqual({ tenant_id: "t1", email: "kavya@qeet.in", role_id: "role-member" });
+    expect(body).toEqual({ organization_id: "t1", email: "kavya@qeet.in", role_id: "role-member" });
     expect(toast.success).toHaveBeenCalledWith("Sent 2 invitations");
   });
 
@@ -189,13 +192,13 @@ describe("Add people › create the account now", () => {
       vi.mocked(api).mock.calls.find(([p, o]) => p === "/v1/users" && o?.method === "POST")?.[1]
         ?.body,
     ).toEqual({
-      tenant_id: "t1",
+      organization_id: "t1",
       email: "bea@qeet.in",
       password: "correct horse",
       display_name: "Bea Kapoor",
       phone: "+919876543210",
     });
-    expect(writes()).toContain("POST /v1/users/new-user/tenants/t1/roles/role-member");
+    expect(writes()).toContain("POST /v1/users/new-user/organizations/t1/roles/role-member");
   });
 
   it("marks the field a 422 names, in the console's words, with the request's reference", async () => {
@@ -205,7 +208,7 @@ describe("Add people › create the account now", () => {
           requestId: "req-7",
           fields: [{ field: "email", code: "invalid_email" }],
         });
-      if (path === "/v1/tenants/t1/roles")
+      if (path === "/v1/organizations/t1/roles")
         return { items: [{ id: "role-member", name: "Member", description: "" }] };
       return { items: [] };
     });

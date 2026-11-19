@@ -3,24 +3,18 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ApiError, api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { ApiError } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
 import { securityKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
+import type { Answer } from "@/platform/api/contract";
 
-export interface BotEvent {
-  id: string;
-  ip?: string | null;
-  user_agent: string;
-  score: number;
-  verdict: string;
-  created_at: string;
-}
+type BotPage = Answer<"/v1/organizations/{organizationID}/security/bots">;
+export type BotEvent = BotPage["items"][number];
+export type BotStats = BotPage["stats"];
 
-export interface BotStats {
-  blocked_24h: number;
-  challenged_24h: number;
-  threshold: number;
-}
+// The pages show the newest verdicts: one page, the most the server sends at once.
+const RECENT = 200;
 
 export interface BotSettings {
   ua_check: boolean;
@@ -31,14 +25,16 @@ export interface BotSettings {
 }
 
 export function useBotOverview() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.botOverview(tenantId),
+    queryKey: securityKeys.botOverview(organizationId),
     queryFn: async (): Promise<{ recent: BotEvent[]; stats: BotStats }> => {
       try {
-        return await api<{ recent: BotEvent[]; stats: BotStats }>(
-          `/v1/tenants/${tenantId}/security/bots`,
-        );
+        const page = await backend.get("/v1/organizations/{organizationID}/security/bots", {
+          path: { organizationID: organizationId ?? "" },
+          query: { limit: RECENT },
+        });
+        return { recent: page.items, stats: page.stats };
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
           return {
@@ -49,33 +45,36 @@ export function useBotOverview() {
         throw err;
       }
     },
-    enabled: !!tenantId,
+    enabled: !!organizationId,
     staleTime: 30_000,
   });
 }
 
 export function useBotSettings() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: securityKeys.botSettings(tenantId),
-    queryFn: () => api<BotSettings>(`/v1/tenants/${tenantId}/security/bots/settings`),
-    enabled: !!tenantId,
+    queryKey: securityKeys.botSettings(organizationId),
+    queryFn: () =>
+      backend.get("/v1/organizations/{organizationID}/security/bots/settings", {
+        path: { organizationID: organizationId ?? "" },
+      }),
+    enabled: !!organizationId,
     staleTime: 30_000,
   });
 }
 
 export function useUpdateBotSettings() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (settings: BotSettings) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<BotSettings>(`/v1/tenants/${tenantId}/security/bots/settings`, {
-        method: "PUT",
+      if (!organizationId) throw new Error("No tenant selected");
+      return backend.put("/v1/organizations/{organizationID}/security/bots/settings", {
+        path: { organizationID: organizationId },
         body: settings,
       });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.bots(tenantId) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: securityKeys.bots(organizationId) }),
     meta: { successMessage: "security:toast.botProtectionSettingsSaved" },
   });
 }

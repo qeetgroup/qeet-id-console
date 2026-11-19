@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useEntitlements } from "@/modules/billing";
 import { PageBreadcrumb } from "@/modules/dashboard";
 import { orgQueries, useLoginDomain } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { ErrorReference, ErrorText } from "@/platform/components/error-reference";
 import { HOSTED_SIGN_IN_HOST } from "@/platform/config/site-urls";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -45,25 +45,25 @@ type Drafts = { logo?: string; brand?: string; background?: string; sender?: boo
  * record, so each save sends everything else back as stored.
  */
 export function BrandingSettingsPage(props: { onDirtyChange?: (changed: boolean) => void }) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
   const writes = access.state === "ready" && access.can("branding.write");
   // Another organisation, or losing write access, starts the page afresh: nothing open or drafted.
-  return <BrandingPage key={`${tenantId}:${writes}`} {...props} />;
+  return <BrandingPage key={`${organizationId}:${writes}`} {...props} />;
 }
 
 function BrandingPage({ onDirtyChange }: { onDirtyChange?: (changed: boolean) => void }) {
   const { t } = useTranslation("branding");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const access = useCapabilities();
-  const canRead = !!tenantId && access.state === "ready" && access.can("tenant.read");
+  const canRead = !!organizationId && access.state === "ready" && access.can("organization.read");
   const canReadDomains = canRead && access.can("connection.read");
   const canReadBilling = canRead && access.can("billing.read");
   const branding = useBranding(canRead);
   const loginDomain = useLoginDomain(canReadDomains);
   const entitlements = useEntitlements(canReadBilling);
-  const orgName = useQuery({ ...orgQueries.list(), enabled: !!tenantId }).data?.items.find(
-    (org) => org.id === tenantId,
+  const orgName = useQuery({ ...orgQueries.list(), enabled: !!organizationId }).data?.items.find(
+    (org) => org.id === organizationId,
   )?.name;
   // The server refuses a save on a plan without custom branding (402), so the page says so first.
   const entitled = !canReadBilling || entitlements.data?.features.custom_branding !== false;
@@ -72,15 +72,15 @@ function BrandingPage({ onDirtyChange }: { onDirtyChange?: (changed: boolean) =>
   const queryClient = useQueryClient();
   const [drafts, setDrafts] = useState<Drafts>({});
   const [failure, setFailure] = useState<unknown>(null);
-  const active = useRef<{ tenantId: string | null; canWrite: boolean } | null>(null);
+  const active = useRef<{ organizationId: string | null; canWrite: boolean } | null>(null);
   const dirty = Object.values(drafts).some((value) => value !== undefined && value !== false);
 
   useEffect(() => {
-    active.current = { tenantId, canWrite };
+    active.current = { organizationId, canWrite };
     return () => {
       active.current = null;
     };
-  }, [tenantId, canWrite]);
+  }, [organizationId, canWrite]);
   useEffect(() => {
     onDirtyChange?.(dirty);
   }, [dirty, onDirtyChange]);
@@ -95,7 +95,7 @@ function BrandingPage({ onDirtyChange }: { onDirtyChange?: (changed: boolean) =>
     confirm?: Parameters<typeof sensitive>[0]["confirm"],
   ): Promise<boolean> {
     const current = branding.data;
-    if (!current || !tenantId) return false;
+    if (!current || !organizationId) return false;
     setFailure(null);
     try {
       const result = await sensitive({
@@ -103,13 +103,16 @@ function BrandingPage({ onDirtyChange }: { onDirtyChange?: (changed: boolean) =>
         actionLabel: t("page.stepUp"),
         confirm,
         run: () => {
-          if (active.current?.tenantId !== tenantId || !active.current.canWrite)
+          if (active.current?.organizationId !== organizationId || !active.current.canWrite)
             throw new SensitiveActionCancelled();
-          return saveBranding(tenantId, brandingWith({ ...current, tenant_id: tenantId }, change));
+          return saveBranding(
+            organizationId,
+            brandingWith({ ...current, organization_id: organizationId }, change),
+          );
         },
       });
       if (!result) return false;
-      queryClient.setQueryData(brandingKeys.tenant(tenantId), result);
+      queryClient.setQueryData(brandingKeys.organization(organizationId), result);
       return true;
     } catch (error) {
       if (!(error instanceof SensitiveActionCancelled)) setFailure(error);

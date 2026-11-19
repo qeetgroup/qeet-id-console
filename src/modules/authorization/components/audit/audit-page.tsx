@@ -28,28 +28,29 @@ import { useRoles } from "@/modules/authorization/api/rbac";
 import { PageBreadcrumb } from "@/modules/dashboard";
 import { groupQueries } from "@/modules/groups";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { BandPlaceholder, When } from "../lists/authz-parts";
 import { AuditBand, ChangeDrawer } from "./audit-parts";
 import { actorName, type ChangeContext, changeTarget, titleText } from "./change-model";
 import "../lists/authz-lists.css";
+import { roleDisplayName } from "@/shared/utils/role-name";
 
 const PAGE_SIZE = 25;
 const ANY = "";
 
 /** Names for what the log keeps as IDs: roles, people, groups and policies the caller may read. */
 function useChangeContext(): ChangeContext {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const can = useCapabilities().can;
   const roles = useRoles().data?.items;
   const people = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: can("user.read") && !!tenantId,
+    ...userQueries.directory(organizationId),
+    enabled: can("user.read") && !!organizationId,
   }).data?.items;
   const groups = useQuery({
-    ...groupQueries.list(tenantId),
-    enabled: can("group.read") && !!tenantId,
+    ...groupQueries.list(organizationId),
+    enabled: can("group.read") && !!organizationId,
   }).data?.items;
   const policies = useAbacPolicies(can("policy.read")).data?.items;
   return useMemo(() => {
@@ -61,7 +62,7 @@ function useChangeContext(): ChangeContext {
       roleName: index(
         roles,
         (r) => r.id,
-        (r) => r.name,
+        (r) => roleDisplayName(r.name),
       ),
       personName: index(
         people,

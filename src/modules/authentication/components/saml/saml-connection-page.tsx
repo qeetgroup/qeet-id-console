@@ -35,6 +35,7 @@ import {
   samlAcsUrl,
   samlLoginUrl,
   samlMetadataUrl,
+  samlStatus,
   useSamlConnections,
   useTestSamlConnection,
 } from "@/modules/authentication/api/saml";
@@ -58,7 +59,7 @@ import { SAML_IDP_VENDOR_LABELS, samlIdpVendor } from "@/modules/authentication/
 import { FeatureGate } from "@/modules/billing";
 import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { SamlDrawer } from "./saml-drawer";
 import { SamlTurnOn } from "./saml-turn-on";
@@ -127,8 +128,9 @@ function SamlRecord({
   const { t } = useTranslation("saml");
   const locale = formatLocale();
   const navigate = useNavigate();
-  const tenantId = useTenantId();
-  const org = useOrgs().data?.items.find((o) => o.id === tenantId)?.name ?? t("signIn.yourOrg");
+  const organizationId = useOrganizationId();
+  const org =
+    useOrgs().data?.items.find((o) => o.id === organizationId)?.name ?? t("signIn.yourOrg");
   const actions = useSamlActions();
   const testM = useTestSamlConnection();
   const [editing, setEditing] = useState(false);
@@ -263,7 +265,7 @@ function SamlRecord({
                     ? c.last_login_at
                       ? t("signIn.steps.onUsed", { when: ago(c.last_login_at) })
                       : t("signIn.steps.on")
-                    : t(`signIn.status.word.${c.status}`),
+                    : t(`signIn.status.word.${samlStatus(c.status)}`),
               },
             ]}
           >

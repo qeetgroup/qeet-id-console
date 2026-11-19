@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { formatLocale } from "@/i18n";
-import { ApiError, api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { ApiError } from "@/platform/api/client";
+import { useOrganizationId } from "@/platform/auth/session";
 import { dashboardKeys } from "./keys";
+import { backend } from "@/platform/api/backend";
 
 export interface Metric {
   value: number;
@@ -101,17 +102,19 @@ export const EMPTY_OVERVIEW: AnalyticsOverview = {
  * so it refetches on mount, on focus and every minute to show changes made elsewhere.
  */
 export function useAnalyticsOverview(enabled = true) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: dashboardKeys.analytics(tenantId),
-    enabled: !!tenantId && enabled,
+    queryKey: dashboardKeys.analytics(organizationId),
+    enabled: !!organizationId && enabled,
     staleTime: 15_000,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
     refetchInterval: 60_000,
     queryFn: async (): Promise<AnalyticsOverview> => {
       try {
-        return await api<AnalyticsOverview>(`/v1/tenants/${tenantId}/analytics/overview`);
+        return await backend.get("/v1/organizations/{organizationID}/analytics/overview", {
+          path: { organizationID: organizationId ?? "" },
+        });
       } catch (err) {
         // A backend without the endpoint renders empty skeletons; auth and server errors still
         // surface so the user sees the real problem.

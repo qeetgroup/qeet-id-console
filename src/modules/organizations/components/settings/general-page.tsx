@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { formatLocale } from "@/i18n";
 import { useSubscription } from "@/modules/billing";
 import { PageBreadcrumb } from "@/modules/dashboard";
-import { type Org, orgQueries, useUpdateOrg } from "@/modules/organizations/api/orgs";
+import { type OrgRecord, orgQueries, useUpdateOrg } from "@/modules/organizations/api/orgs";
 import { useOrgLabels } from "@/modules/organizations/components/org-labels";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useSensitiveAction } from "@/platform/security/sensitive-action-provider";
 import { LogoActions } from "./general-logo";
@@ -32,8 +32,8 @@ import "./settings.css";
  */
 export function OrgGeneralPage() {
   const { t } = useTranslation("organizations");
-  const tenantId = useTenantId();
-  const orgQ = useQuery(orgQueries.record(tenantId));
+  const organizationId = useOrganizationId();
+  const orgQ = useQuery(orgQueries.record(organizationId));
   return (
     <>
       <PageHeader
@@ -58,18 +58,18 @@ export function OrgGeneralPage() {
   );
 }
 
-function GeneralSettings({ org }: { org: Org }) {
+function GeneralSettings({ org }: { org: OrgRecord }) {
   const { t } = useTranslation("organizations");
   const access = useCapabilities();
-  const canEdit = access.can("tenant.write");
+  const canEdit = access.can("organization.write");
   const names = useOrgLabels();
   const runSensitive = useSensitiveAction();
   const update = useUpdateOrg({ silentError: true });
 
-  // PATCH /v1/tenants/{id} needs a recent second step; the Save that sent it is the confirmation.
+  // PATCH /v1/organizations/{id} needs a recent second step; the Save that sent it is the confirmation.
   const save = (body: Parameters<typeof update.mutateAsync>[0]["body"]) =>
     runSensitive({
-      capability: "tenant.write",
+      capability: "organization.write",
       actionLabel: t("settings.general.actionLabel"),
       run: () => update.mutateAsync({ id: org.id, body }),
     });
@@ -173,7 +173,7 @@ function GeneralSettings({ org }: { org: Org }) {
 }
 
 /** What was set when it was created, its plan, and its ID: facts, with where to change the plan. */
-function AboutOrganisation({ org }: { org: Org }) {
+function AboutOrganisation({ org }: { org: OrgRecord }) {
   const { t } = useTranslation("organizations");
   const locale = formatLocale();
   const access = useCapabilities();

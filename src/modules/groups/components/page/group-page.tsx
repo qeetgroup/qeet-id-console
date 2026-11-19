@@ -39,7 +39,7 @@ import { describedAs, everyGroup, groupTree } from "@/modules/groups/groups-mode
 import { useDeleteGroupFlow } from "@/modules/groups/use-delete-group";
 import { useRemoveMember } from "@/modules/groups/use-remove-member";
 import { userQueries } from "@/modules/users";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { GroupFamily } from "./group-family";
 import {
@@ -65,7 +65,7 @@ export function GroupPage({ groupId }: { groupId: string }) {
   const canWrite = access.can("group.write");
   const canReadRoles = access.can("role.read");
   const canGrant = canReadRoles && access.can("role.write");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const navigate = useNavigate();
 
   const groupsQ = useGroups();
@@ -88,8 +88,8 @@ export function GroupPage({ groupId }: { groupId: string }) {
   const rolesQ = useGroupRoles(canReadRoles ? groupId : "");
   const allRoles = useRoles().data?.items ?? [];
   const directory = useQuery({
-    ...userQueries.directory(tenantId),
-    enabled: access.can("user.read") && !!tenantId,
+    ...userQueries.directory(organizationId),
+    enabled: access.can("user.read") && !!organizationId,
   });
   const people = useMemo(
     () => new Map((directory.data?.items ?? []).map((u) => [u.id, u])),

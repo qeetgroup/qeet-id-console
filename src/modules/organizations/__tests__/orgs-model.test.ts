@@ -29,7 +29,6 @@ const org = (id: string, name: string, patch: Partial<Org> = {}): Org => ({
   status: "active",
   plan: "free",
   region: "ap-south-1",
-  logo_url: "",
   created_at: "2025-08-18T09:00:00Z",
   member_count: 10,
   mfa_enabled_count: 9,
@@ -165,11 +164,18 @@ describe("history", () => {
   const event = (action: string, at: string, id = action): OrgAuditEvent => ({
     id,
     action,
-    resource_type: "tenant",
+    resource_type: "organization",
+    resource_id: "g",
+    organization_id: "g",
+    actor_type: "user",
+    actor_user_id: null,
+    ip: null,
+    user_agent: null,
+    request_id: null,
     created_at: at,
   });
   const events = [
-    event("tenant.created", "2025-08-18T09:00:00Z"),
+    event("organization.created", "2025-08-18T09:00:00Z"),
     event("security_policy.updated", "2026-09-15T09:00:00Z"),
     event("social.signup_refused", "2026-10-01T09:00:00Z"),
     event("branding.updated", "2025-08-20T09:00:00Z"),
@@ -179,7 +185,7 @@ describe("history", () => {
     expect(changesOf(events).map((e) => e.action)).toEqual([
       "security_policy.updated",
       "branding.updated",
-      "tenant.created",
+      "organization.created",
     ]);
   });
 

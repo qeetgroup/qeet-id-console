@@ -17,7 +17,7 @@ const navigate = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", () => ({ useNavigate: () => navigate }));
 vi.mock("@/platform/api/client", () => ({ api: vi.fn() }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => null,
+  useOrganizationId: () => null,
   useUserId: () => "user-1",
   useMe: () => ({ data: { id: "user-1", email: "mira@example.com", display_name: "Mira Menon" } }),
   useLogout: () => ({ mutate: vi.fn(), isPending: false }),
@@ -53,7 +53,7 @@ const catalogue = [
   plan("starter_year", "Starter", { INR: 2_400_000, USD: 29_000 }),
   plan("pro_year", "Pro", { INR: 8_000_000, USD: 99_000 }),
 ];
-const session = { isAuthenticated: true, userId: "user-1", tenantId: null } as PublicSession;
+const session = { isAuthenticated: true, userId: "user-1", organizationId: null } as PublicSession;
 const refetch = vi.fn();
 
 function mount(from?: CreateOrganizationFrom, checkout?: CheckoutParams) {
@@ -89,7 +89,7 @@ beforeEach(() => {
     isError: false,
     refetch,
   } as unknown as ReturnType<typeof usePlans>);
-  vi.mocked(api).mockResolvedValue({ tenant_id: "org-1", tenant: { id: "org-1" } });
+  vi.mocked(api).mockResolvedValue({ organization_id: "org-1", organization: { id: "org-1" } });
 });
 afterEach(() => cleanup());
 
@@ -130,7 +130,7 @@ describe("create an organisation", () => {
     expect(screen.getByText("It's created straight away, and you're taken into it.")).toBeTruthy();
     click("Create organisation");
     await waitFor(() => expect(loadPage).toHaveBeenCalledWith("/"));
-    expect(api).toHaveBeenCalledExactlyOnceWith("/v1/tenants", {
+    expect(api).toHaveBeenCalledExactlyOnceWith("/v1/organizations", {
       method: "POST",
       body: {
         slug: "acme-payments",
@@ -230,7 +230,7 @@ describe("create an organisation", () => {
 
   it("says a taken URL on its field, and the form stays usable", async () => {
     vi.mocked(api).mockRejectedValue(
-      new ApiError(409, "tenant.slug_taken", "slug taken", "uq_tenants_slug"),
+      new ApiError(409, "organization.slug_taken", "slug taken", "uq_organizations_slug"),
     );
     mount();
     toDetails();

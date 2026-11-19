@@ -77,14 +77,21 @@ describe("signInMix", () => {
 
 describe("permissionAreas", () => {
   it("groups permissions by what they reach, and says whether they can change it", () => {
-    expect(permissionAreas(["user.read", "apikey.write", "apikey.read", "tenant.read"])).toEqual([
+    expect(
+      permissionAreas(["user.read", "apikey.write", "apikey.read", "organization.read"]),
+    ).toEqual([
       {
         resource: "apikey",
         permissions: ["apikey.read", "apikey.write"],
         changes: true,
         everything: false,
       },
-      { resource: "tenant", permissions: ["tenant.read"], changes: false, everything: false },
+      {
+        resource: "organization",
+        permissions: ["organization.read"],
+        changes: false,
+        everything: false,
+      },
       { resource: "user", permissions: ["user.read"], changes: false, everything: false },
     ]);
   });

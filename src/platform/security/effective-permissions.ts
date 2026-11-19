@@ -1,13 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import { backend } from "@/platform/api/backend";
+import { useOrganizationId } from "@/platform/auth/session";
 
 // Fails closed: a malformed payload throws rather than become a capability set that mis-gates
 // the whole UI.
+// No permissions listed means none: the narrowest reading.
 const effectivePermissionsSchema = z.object({
-  permissions: z.array(z.string()),
+  permissions: z
+    .array(z.string())
+    .optional()
+    .transform((permissions) => permissions ?? []),
 });
 
 /**
@@ -15,15 +19,16 @@ const effectivePermissionsSchema = z.object({
  * the query client invalidates this key on any 403. UX only: the backend authorizes.
  */
 export function useEffectivePermissions(userId: string | null) {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   return useQuery({
-    queryKey: ["effective-permissions", tenantId, userId],
-    enabled: !!tenantId && !!userId,
+    queryKey: ["effective-permissions", organizationId, userId],
+    enabled: !!organizationId && !!userId,
     staleTime: 60_000,
     retry: false,
     meta: { silent: true },
     queryFn: () =>
-      api(`/v1/users/${userId}/tenants/${tenantId}/permissions`, {
+      backend.get("/v1/users/{userID}/organizations/{organizationID}/permissions", {
+        path: { userID: userId ?? "", organizationID: organizationId ?? "" },
         schema: effectivePermissionsSchema,
       }),
   });

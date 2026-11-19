@@ -44,7 +44,7 @@ import { EditUserSheet } from "@/modules/users/components/edit-user-sheet";
 import { SetPasswordSheet } from "@/modules/users/components/set-password-sheet";
 import { matches, type PeopleFilters, personName, sortPeople } from "@/modules/users/people-model";
 import { useUserActions } from "@/modules/users/use-user-actions";
-import { useTenantId, useUserId } from "@/platform/auth/session";
+import { useOrganizationId, useUserId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useCreateIntent } from "@/shared/hooks/use-create-intent";
 import { exportToCsv, exportToJson } from "@/shared/utils/data-export";
@@ -76,7 +76,7 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
   const { t } = useTranslation(["users", "common"]);
   const access = useCapabilities();
   const canWrite = access.can("user.write");
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const currentUserId = useUserId();
   const actions = useUserActions();
 
@@ -98,7 +98,7 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
   const directory = useUserDirectory();
   const stats = useUserStats();
   const invitations = useInvitations(canWrite);
-  const org = useOrgs().data?.items.find((item) => item.id === tenantId);
+  const org = useOrgs().data?.items.find((item) => item.id === organizationId);
 
   // One moment for the whole page, when the people arrived, so every count agrees.
   const now = directory.dataUpdatedAt || Date.now();

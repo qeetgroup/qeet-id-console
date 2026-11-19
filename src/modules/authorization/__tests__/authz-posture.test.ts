@@ -11,7 +11,7 @@ function perm(key: string): Permission {
 function policy(overrides: Partial<AbacPolicy> = {}): AbacPolicy {
   return {
     id: crypto.randomUUID(),
-    tenant_id: "t",
+    organization_id: "t",
     name: "policy",
     description: "",
     effect: "allow",

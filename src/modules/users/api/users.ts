@@ -6,38 +6,43 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { api } from "@/platform/api/client";
-import { useTenantId } from "@/platform/auth/session";
+import type { z } from "zod";
+
+import { assured, assuredItems } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import type { Answer, Body } from "@/platform/api/contract";
+import { useOrganizationId } from "@/platform/auth/session";
 
 import type { ImportRowError } from "../import-errors";
 import type { ImportRow } from "../import-file";
 import { type UserListParams, userKeys } from "./keys";
-import type { UserDetail } from "./user360";
+import { userRecord } from "./user360";
 
 export type UserStatus = "active" | "invited" | "suspended" | "deleted";
 
-export interface User {
-  id: string;
-  tenant_id: string;
-  email: string;
-  display_name?: string | null;
-  avatar_url?: string | null;
-  phone?: string | null;
-  status: UserStatus;
-  email_verified_at?: string | null;
-  phone_verified_at?: string | null;
-  roles?: string[] | null;
-  /** What the organisation records about them: department, title, location and the like. */
-  metadata?: Record<string, unknown> | null;
-  created_at: string;
-  updated_at?: string;
-  mfa_enabled?: boolean; // Only the list endpoint fills these; a single-user read omits them
-  groups_count?: number;
-  last_seen_at?: string | null;
-  last_seen_ip?: string | null;
-}
+// The members list and the counts: the document leaves their fields optional, the server always
+// sends them (user.go), so each read is held to what the pages use.
+const userPage = assuredItems<Answer<"/v1/users">>()("id", "email", "status", "created_at");
+const userStats = assured<Answer<"/v1/users/stats">>()(
+  "total",
+  "active",
+  "suspended",
+  "invited",
+  "mfa_enabled",
+  "mfa_missing",
+  "new_last_30d",
+);
+const userTrends = assured<Answer<"/v1/users/trends">>()("total", "mfa_enabled");
+const deletedPage = assuredItems<Answer<"/v1/users/deleted">>()(
+  "id",
+  "email",
+  "deleted_at",
+  "created_at",
+);
 
-export type UserPage = { items: User[]; next_cursor?: string };
+/** A member of the organisation, as the list has them (with roles, two-step and last seen). */
+export type User = z.output<typeof userPage>["items"][number];
+export type UserPage = z.output<typeof userPage>;
 
 /** The most people the Users list loads, 200 at a time, to filter, count and sort itself. */
 export const DIRECTORY_CAP = 2000;
@@ -47,188 +52,157 @@ const DIRECTORY_PAGE = 200;
 export type UserDirectory = { items: User[]; complete: boolean };
 
 /** Tenant-wide member counts. */
-export interface UserStats {
-  total: number;
-  active: number;
-  suspended: number;
-  invited: number;
-  mfa_enabled: number;
-  mfa_missing: number;
-  new_last_30d: number;
-}
-
+export type UserStats = z.output<typeof userStats>;
 /** Daily counts over the last 30 days, oldest first. */
-export interface UserTrends {
-  total: number[];
-  mfa_enabled: number[];
-}
-
-/** A soft-deleted user, restorable until purged. */
-export interface DeletedUser {
-  id: string;
-  email: string;
-  display_name: string | null;
-  deleted_at: string;
-  /** Who deleted them, when the server knows. */
-  deleted_by?: string | null;
-  created_at: string;
-}
+export type UserTrends = z.output<typeof userTrends>;
+/** A soft-deleted user, restorable until purged; `deleted_by` when the server knows. */
+export type DeletedUser = z.output<typeof deletedPage>["items"][number];
 
 /** Query definitions for the users reads, shared by hooks, prefetches and cache reads. */
 export const userQueries = {
-  list: (tenantId: string | null, params: UserListParams) =>
+  list: (organizationId: string | null, params: UserListParams) =>
     queryOptions({
-      queryKey: userKeys.list(tenantId, params),
-      queryFn: () => api<UserPage>("/v1/users", { query: params }),
-      enabled: !!tenantId,
+      queryKey: userKeys.list(organizationId, params),
+      queryFn: () => backend.get("/v1/users", { query: params, schema: userPage }),
+      enabled: !!organizationId,
     }),
   // The list API has no filters or counts of its own yet, so the Users list walks it with the
   // cursor and works over everyone it got.
-  directory: (tenantId: string | null) =>
+  directory: (organizationId: string | null) =>
     queryOptions({
-      queryKey: userKeys.directory(tenantId),
+      queryKey: userKeys.directory(organizationId),
       queryFn: async ({ signal }): Promise<UserDirectory> => {
         const items: User[] = [];
         let cursor: string | undefined;
         do {
-          const page: UserPage = await api<UserPage>("/v1/users", {
+          const page: UserPage = await backend.get("/v1/users", {
             query: { limit: DIRECTORY_PAGE, cursor },
             signal,
+            schema: userPage,
           });
           items.push(...page.items);
           cursor = page.next_cursor || undefined;
         } while (cursor && items.length < DIRECTORY_CAP);
         return { items, complete: !cursor };
       },
-      enabled: !!tenantId,
+      enabled: !!organizationId,
       staleTime: 30_000,
     }),
-  detail: (tenantId: string | null, userId: string) =>
+  detail: (organizationId: string | null, userId: string) =>
     queryOptions({
-      queryKey: userKeys.detail(tenantId, userId),
-      queryFn: () => api<UserDetail>(`/v1/users/${userId}`),
-      enabled: !!tenantId && !!userId,
+      queryKey: userKeys.detail(organizationId, userId),
+      queryFn: () => backend.get("/v1/users/{id}", { path: { id: userId }, schema: userRecord }),
+      enabled: !!organizationId && !!userId,
     }),
-  stats: (tenantId: string | null) =>
+  stats: (organizationId: string | null) =>
     queryOptions({
-      queryKey: userKeys.stats(tenantId),
-      queryFn: () => api<UserStats>("/v1/users/stats"),
-      enabled: !!tenantId,
+      queryKey: userKeys.stats(organizationId),
+      queryFn: () => backend.get("/v1/users/stats", { schema: userStats }),
+      enabled: !!organizationId,
       staleTime: 30_000,
     }),
-  trends: (tenantId: string | null) =>
+  trends: (organizationId: string | null) =>
     queryOptions({
-      queryKey: userKeys.trends(tenantId),
-      queryFn: () => api<UserTrends>("/v1/users/trends"),
-      enabled: !!tenantId,
+      queryKey: userKeys.trends(organizationId),
+      queryFn: () => backend.get("/v1/users/trends", { schema: userTrends }),
+      enabled: !!organizationId,
       staleTime: 60_000,
     }),
-  deleted: (tenantId: string | null) =>
+  deleted: (organizationId: string | null) =>
     queryOptions({
-      queryKey: userKeys.deleted(tenantId),
-      queryFn: () => api<{ items: DeletedUser[] }>("/v1/users/deleted"),
-      enabled: !!tenantId,
+      queryKey: userKeys.deleted(organizationId),
+      queryFn: () => backend.get("/v1/users/deleted", { schema: deletedPage }),
+      enabled: !!organizationId,
     }),
 };
 
 /** Refreshes what a change to who's in the tenant can move: the lists and the counts. */
-function refreshMembership(qc: QueryClient, tenantId: string | null) {
-  void qc.invalidateQueries({ queryKey: userKeys.lists(tenantId) });
-  void qc.invalidateQueries({ queryKey: userKeys.stats(tenantId) });
-  void qc.invalidateQueries({ queryKey: userKeys.trends(tenantId) });
+function refreshMembership(qc: QueryClient, organizationId: string | null) {
+  void qc.invalidateQueries({ queryKey: userKeys.lists(organizationId) });
+  void qc.invalidateQueries({ queryKey: userKeys.stats(organizationId) });
+  void qc.invalidateQueries({ queryKey: userKeys.trends(organizationId) });
 }
 
 /** Refreshes the membership views and every view of one user. */
-function refreshUser(qc: QueryClient, tenantId: string | null, userId: string) {
-  refreshMembership(qc, tenantId);
-  void qc.invalidateQueries({ queryKey: userKeys.user(tenantId, userId) });
+function refreshUser(qc: QueryClient, organizationId: string | null, userId: string) {
+  refreshMembership(qc, organizationId);
+  void qc.invalidateQueries({ queryKey: userKeys.user(organizationId, userId) });
 }
 
 export function useUserDirectory() {
-  return useQuery(userQueries.directory(useTenantId()));
+  return useQuery(userQueries.directory(useOrganizationId()));
 }
 
 export function useUser(userId: string) {
-  return useQuery(userQueries.detail(useTenantId(), userId));
+  return useQuery(userQueries.detail(useOrganizationId(), userId));
 }
 
 export function useUserStats(enabled = true) {
-  const options = userQueries.stats(useTenantId());
+  const options = userQueries.stats(useOrganizationId());
   return useQuery({ ...options, enabled: options.enabled && enabled });
 }
 
 export function useUserTrends() {
-  return useQuery(userQueries.trends(useTenantId()));
+  return useQuery(userQueries.trends(useOrganizationId()));
 }
 
 export function useDeletedUsers() {
-  return useQuery(userQueries.deleted(useTenantId()));
+  return useQuery(userQueries.deleted(useOrganizationId()));
 }
 
-export interface CreateUserInput {
-  email: string;
-  tenant_id: string;
-  password?: string;
-  display_name?: string;
-  phone?: string;
-  role_id?: string; // assigned straight after the user is created
-}
-
-export interface UpdateUserBody {
-  display_name?: string | null;
-  phone?: string | null;
+/** A new member, in the organisation `organization_id`; `role_id` is assigned straight after. */
+export type CreateUserInput = Body<"/v1/users", "post"> & { role_id?: string };
+export type UpdateUserBody = Pick<Body<"/v1/users/{id}", "patch">, "display_name" | "phone"> & {
   status?: "active" | "suspended";
-}
+};
 
 /**
  * Creates a user, then assigns `role_id` when given. If the assignment fails the mutation
  * rejects, but the user still exists.
  */
 export function useCreateUser() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateUserInput) => {
       const { role_id, ...body } = input;
-      const user = await api<User>("/v1/users", { method: "POST", body });
+      const user = await backend.post("/v1/users", { body, schema: userRecord });
       if (role_id) {
         try {
-          await api<void>(`/v1/users/${user.id}/tenants/${body.tenant_id}/roles/${role_id}`, {
-            method: "POST",
-          });
+          await assignRoleCall(body.organization_id, role_id)(user.id);
         } catch (err) {
           // The user exists even though the role didn't stick, so the list must show it.
-          refreshMembership(qc, tenantId);
+          refreshMembership(qc, organizationId);
           throw err;
         }
       }
       return user;
     },
-    onSuccess: () => refreshMembership(qc, tenantId),
+    onSuccess: () => refreshMembership(qc, organizationId),
     meta: { successMessage: "users:toast.created" },
   });
 }
 
 export function useUpdateUser() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, body }: { userId: string; body: UpdateUserBody }) =>
-      api<User>(`/v1/users/${userId}`, { method: "PATCH", body }),
-    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
+      backend.patch("/v1/users/{id}", { path: { id: userId }, body }),
+    onSuccess: (_, { userId }) => refreshUser(qc, organizationId, userId),
     meta: { successMessage: "users:toast.updated" },
   });
 }
 
 export function useSetUserStatus() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, status }: { userId: string; status: "active" | "suspended" }) =>
-      api<User>(`/v1/users/${userId}`, { method: "PATCH", body: { status } }),
+      backend.patch("/v1/users/{id}", { path: { id: userId }, body: { status } }),
     onSuccess: (_, { userId }) => {
-      refreshUser(qc, tenantId, userId);
-      void qc.invalidateQueries({ queryKey: userKeys.suspended(tenantId) });
+      refreshUser(qc, organizationId, userId);
+      void qc.invalidateQueries({ queryKey: userKeys.suspended(organizationId) });
     },
     meta: { successMessage: "users:toast.userStatusUpdated" },
   });
@@ -236,13 +210,13 @@ export function useSetUserStatus() {
 
 /** Soft-deletes a user; it stays restorable until purged. */
 export function useDeleteUser() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (userId: string) => api<void>(`/v1/users/${userId}`, { method: "DELETE" }),
+    mutationFn: (userId: string) => perUserCalls.remove(userId),
     onSuccess: (_, userId) => {
-      refreshUser(qc, tenantId, userId);
-      void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
+      refreshUser(qc, organizationId, userId);
+      void qc.invalidateQueries({ queryKey: userKeys.deleted(organizationId) });
     },
     meta: { successMessage: "users:toast.deleted" },
   });
@@ -250,13 +224,13 @@ export function useDeleteUser() {
 
 /** Restores a soft-deleted user. */
 export function useRestoreUser() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (userId: string) => api<void>(`/v1/users/${userId}/restore`, { method: "POST" }),
+    mutationFn: (userId: string) => perUserCalls.restore(userId),
     onSuccess: () => {
-      refreshMembership(qc, tenantId);
-      void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) });
+      refreshMembership(qc, organizationId);
+      void qc.invalidateQueries({ queryKey: userKeys.deleted(organizationId) });
     },
     meta: { successMessage: "users:toast.userRestored" },
   });
@@ -264,11 +238,11 @@ export function useRestoreUser() {
 
 /** Erases a soft-deleted user for good. */
 export function usePurgeUser() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (userId: string) => api<void>(`/v1/users/${userId}/purge`, { method: "DELETE" }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: userKeys.deleted(tenantId) }),
+    mutationFn: (userId: string) => perUserCalls.purge(userId),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: userKeys.deleted(organizationId) }),
     meta: { successMessage: "users:toast.userPermanentlyDeleted" },
   });
 }
@@ -278,12 +252,11 @@ export function usePurgeUser() {
  * requires user.write and audits the reset.
  */
 export function useResetUserMfa() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (userId: string) =>
-      api<{ message: string }>(`/v1/users/${userId}/mfa`, { method: "DELETE" }),
-    onSuccess: (_, userId) => refreshUser(qc, tenantId, userId),
+    mutationFn: (userId: string) => backend.delete("/v1/users/{id}/mfa", { path: { id: userId } }),
+    onSuccess: (_, userId) => refreshUser(qc, organizationId, userId),
     meta: { successMessage: "users:toast.mfaReset" },
   });
 }
@@ -293,49 +266,44 @@ export function useResetUserMfa() {
  * administrator changed it, so their sessions and devices are read again.
  */
 export function useSetUserPassword() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, password }: { userId: string; password: string }) =>
-      api<void>(`/v1/users/${userId}/password`, { method: "POST", body: { password } }),
-    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
+      backend.post("/v1/users/{id}/password", { path: { id: userId }, body: { password } }),
+    onSuccess: (_, { userId }) => refreshUser(qc, organizationId, userId),
     meta: { successMessage: "users:toast.passwordUpdated" },
   });
 }
 
 /** Assigns a role to a user in the current tenant. */
 export function useAssignRole() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, roleId }: { userId: string; roleId: string }) => {
-      if (!tenantId) throw new Error("No tenant selected");
-      return api<void>(`/v1/users/${userId}/tenants/${tenantId}/roles/${roleId}`, {
-        method: "POST",
-      });
+      if (!organizationId) throw new Error("No tenant selected");
+      return assignRoleCall(organizationId, roleId)(userId);
     },
-    onSuccess: (_, { userId }) => refreshUser(qc, tenantId, userId),
+    onSuccess: (_, { userId }) => refreshUser(qc, organizationId, userId),
     meta: { successMessage: "users:toast.roleAssigned" },
   });
 }
 
-/** The per-row outcome of a bulk import. */
-export interface BulkImportResult {
-  succeeded: number;
-  failed: number;
+/** The per-row outcome of a bulk import, each error on the file's own line. */
+export type BulkImportResult = Omit<Answer<"/v1/users/bulk", "post">, "errors"> & {
   errors?: ImportRowError[];
-}
+};
 
 /** Creates the rows' users in one request; each row succeeds or fails on its own. */
 export function useBulkImportUsers() {
-  const tenantId = useTenantId();
+  const organizationId = useOrganizationId();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (rows: ImportRow[]): Promise<BulkImportResult> => {
-      const res = await api<BulkImportResult>("/v1/users/bulk", {
-        method: "POST",
+      const res = await backend.post("/v1/users/bulk", {
         body: {
-          tenant_id: tenantId,
+          organization_id: organizationId,
           users: rows.map(({ email, password, display_name, phone }) => ({
             email,
             password,
@@ -353,9 +321,16 @@ export function useBulkImportUsers() {
       }));
       return { ...res, errors };
     },
-    onSuccess: () => refreshMembership(qc, tenantId),
+    onSuccess: () => refreshMembership(qc, organizationId),
     meta: { silent: true }, // the page shows the outcome, and any error, itself
   });
+}
+
+function assignRoleCall(organizationId: string, roleId: string) {
+  return (userId: string) =>
+    backend.post("/v1/users/{userID}/organizations/{organizationID}/roles/{roleID}", {
+      path: { userID: userId, organizationID: organizationId, roleID: roleId },
+    });
 }
 
 /**
@@ -363,17 +338,16 @@ export function useBulkImportUsers() {
  * The caller refreshes the users views once the batch is done.
  */
 export const perUserCalls = {
-  assignRole: (tenantId: string, roleId: string) => (userId: string) =>
-    api<void>(`/v1/users/${userId}/tenants/${tenantId}/roles/${roleId}`, { method: "POST" }),
+  assignRole: assignRoleCall,
   addToGroup: (groupId: string) => (userId: string) =>
-    api<void>(`/v1/groups/${groupId}/members/${userId}`, { method: "POST" }),
+    backend.post("/v1/groups/{id}/members/{userID}", { path: { id: groupId, userID: userId } }),
   requireMfa: (userId: string) =>
-    api<void>(`/v1/users/${userId}/mfa-required`, { method: "PUT", body: { required: true } }),
+    backend.put("/v1/users/{id}/mfa-required", { path: { id: userId }, body: { required: true } }),
   revokeSessions: (userId: string) =>
-    api<void>(`/v1/users/${userId}/sessions/revoke-all`, { method: "POST" }),
+    backend.post("/v1/users/{id}/sessions/revoke-all", { path: { id: userId } }),
   suspend: (userId: string) =>
-    api<void>(`/v1/users/${userId}`, { method: "PATCH", body: { status: "suspended" } }),
-  remove: (userId: string) => api<void>(`/v1/users/${userId}`, { method: "DELETE" }),
-  restore: (userId: string) => api<void>(`/v1/users/${userId}/restore`, { method: "POST" }),
-  purge: (userId: string) => api<void>(`/v1/users/${userId}/purge`, { method: "DELETE" }),
+    backend.patch("/v1/users/{id}", { path: { id: userId }, body: { status: "suspended" } }),
+  remove: (userId: string) => backend.delete("/v1/users/{id}", { path: { id: userId } }),
+  restore: (userId: string) => backend.post("/v1/users/{id}/restore", { path: { id: userId } }),
+  purge: (userId: string) => backend.delete("/v1/users/{id}/purge", { path: { id: userId } }),
 };

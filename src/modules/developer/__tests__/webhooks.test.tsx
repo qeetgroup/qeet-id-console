@@ -10,7 +10,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   api: vi.fn(),
 }));
 vi.mock("@/platform/auth/session", () => ({
-  useTenantId: () => "t1",
+  useOrganizationId: () => "t1",
   useUserId: () => "u-me",
   useSessionId: () => "s1",
 }));
@@ -100,10 +100,10 @@ beforeEach(() => {
       const method = options?.method ?? "GET";
       calls.push({ method, path, body: options?.body });
       if (method === "GET") {
-        if (path === "/v1/tenants/t1/webhooks") return { items: [OFF, FAILING] };
+        if (path === "/v1/organizations/t1/webhooks") return { items: [OFF, FAILING] };
         if (path === "/v1/webhooks/w-off") return OFF;
         if (path === "/v1/webhooks/w-off/deliveries") return { items: DELIVERIES };
-        if (path === "/v1/tenants/t1/webhooks/events")
+        if (path === "/v1/organizations/t1/webhooks/events")
           return {
             items: [
               { name: "user.created", description: "" },

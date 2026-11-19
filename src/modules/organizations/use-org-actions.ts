@@ -26,7 +26,7 @@ export function useOrgActions() {
     pending: schedule.isPending || cancel.isPending,
     remove: (org: Org, members: number) =>
       runSensitive({
-        capability: "tenant.write",
+        capability: "organization.write",
         confirm: {
           title: t("page.delete.confirmTitle", { name: org.name }),
           description: t("page.delete.confirmDescription", {
@@ -43,7 +43,7 @@ export function useOrgActions() {
       }).catch(settleSensitiveAction),
     keep: (org: Org) =>
       runSensitive({
-        capability: "tenant.write",
+        capability: "organization.write",
         actionLabel: t("page.delete.keepAction", { name: org.name }),
         run: () => cancel.mutateAsync(org.id),
       }).catch(settleSensitiveAction),

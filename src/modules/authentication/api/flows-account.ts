@@ -3,9 +3,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
-import { ApiError, api } from "@/platform/api/client";
+import { assured } from "@/platform/api/assured";
+import { backend } from "@/platform/api/backend";
+import { ApiError } from "@/platform/api/client";
+import type { Answer } from "@/platform/api/contract";
 
-import type { SessionResponse, User } from "./flows-session";
 import { authKeys } from "./keys";
 import { refreshSignInMethods } from "./sign-in-methods";
 
@@ -15,13 +17,17 @@ type SignupInput = {
   display_name?: string;
 };
 
+// The ids the verification step needs, always sent though the document leaves them optional.
+const signedUp = assured<Answer<"/v1/auth/signup", "post">>()("user_id", "session_id");
+
 /**
  * A tenant-less sign-up's result. The BFF keeps the tokens; the user and safe session ids remain
  * for the email verification step.
  */
-export type SignupResponse = SessionResponse & {
-  user: User;
-};
+export type SignupResponse = Omit<
+  import("zod").output<typeof signedUp>,
+  "access_token" | "refresh_token"
+>;
 
 /**
  * Signs up into a new tenant-less server session, then runs `opts.onSuccess` if given (e.g. to
@@ -30,12 +36,8 @@ export type SignupResponse = SessionResponse & {
 export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) {
   const navigate = useNavigate();
   return useMutation({
-    mutationFn: (in_: SignupInput) =>
-      api<SignupResponse>("/v1/auth/signup", {
-        method: "POST",
-        body: in_,
-        anonymous: true,
-      }),
+    mutationFn: async (in_: SignupInput): Promise<SignupResponse> =>
+      backend.post("/v1/auth/signup", { body: in_, anonymous: true, schema: signedUp }),
     onSuccess: (res) => {
       if (opts?.onSuccess) {
         opts.onSuccess(res);
@@ -54,10 +56,7 @@ export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) 
 export function useStartEmailVerification() {
   return useMutation({
     mutationFn: (userId: string) =>
-      api<{ message: string }>(`/v1/users/${userId}/verify/email/start`, {
-        method: "POST",
-        body: {},
-      }),
+      backend.post("/v1/users/{id}/verify/email/start", { path: { id: userId } }),
     meta: { successMessage: "authentication:toast.codeSentToEmail", silentError: true },
   });
 }
@@ -68,19 +67,14 @@ export function useStartEmailVerification() {
  */
 export function useStartEmailChange() {
   return useMutation({
-    mutationFn: (email: string) =>
-      api<{ message: string }>("/v1/me/email/change/start", { method: "POST", body: { email } }),
+    mutationFn: (email: string) => backend.post("/v1/me/email/change/start", { body: { email } }),
     meta: { successMessage: "authentication:toast.codeSentToNewAddress", silentError: true },
   });
 }
 
 export function useConfirmEmailChange() {
   return useMutation({
-    mutationFn: (code: string) =>
-      api<{ message: string; email: string }>("/v1/me/email/change/confirm", {
-        method: "POST",
-        body: { code },
-      }),
+    mutationFn: (code: string) => backend.post("/v1/me/email/change/confirm", { body: { code } }),
     meta: { successMessage: "authentication:toast.emailAddressUpdated", silentError: true },
   });
 }
@@ -91,7 +85,7 @@ export function usePasswordStatus() {
     queryKey: authKeys.passwordStatus(),
     queryFn: async (): Promise<{ has_password: boolean }> => {
       try {
-        return await api<{ has_password: boolean }>("/v1/auth/password");
+        return await backend.get("/v1/auth/password");
       } catch (err) {
         if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
           return { has_password: true }; // assume password until proven otherwise
@@ -112,7 +106,7 @@ export function useChangePassword() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (in_: { current_password: string; new_password: string }) =>
-      api<{ message: string }>("/v1/auth/password", { method: "POST", body: in_ }),
+      backend.post("/v1/auth/password", { body: in_ }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: authKeys.passwordStatus() });
       return refreshSignInMethods(qc); // setting a first password adds a way to sign in
@@ -124,8 +118,8 @@ export function useChangePassword() {
 export function useConfirmEmailVerification() {
   return useMutation({
     mutationFn: (in_: { userId: string; code: string }) =>
-      api<{ message: string }>(`/v1/users/${in_.userId}/verify/email/confirm`, {
-        method: "POST",
+      backend.post("/v1/users/{id}/verify/email/confirm", {
+        path: { id: in_.userId },
         body: { code: in_.code },
       }),
     meta: { successMessage: "authentication:toast.emailVerified", silentError: true },

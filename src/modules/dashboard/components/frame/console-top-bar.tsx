@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { QeetAITrigger } from "@/modules/qeetai";
-import { useTenantId } from "@/platform/auth/session";
+import { useOrganizationId } from "@/platform/auth/session";
 import { AccountMenu } from "./account-menu";
 import { ScopeName } from "./scope-name";
 
@@ -23,7 +23,7 @@ export function ConsoleTopBar({
   onShortcuts: () => void;
 }) {
   const { t } = useTranslation("dashboard");
-  const hasOrg = !!useTenantId();
+  const hasOrg = !!useOrganizationId();
   return (
     <TopBar
       logo={<QeetLogo variant="dark" height={20} alt="" />}

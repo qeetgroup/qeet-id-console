@@ -12,7 +12,7 @@ vi.mock("@/platform/api/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/platform/api/client")>()),
   api: vi.fn(),
 }));
-vi.mock("@/platform/auth/session", () => ({ useTenantId: () => "t-1" }));
+vi.mock("@/platform/auth/session", () => ({ useOrganizationId: () => "t-1" }));
 vi.mock("@/platform/security/capability-provider", () => ({
   useCapabilities: () => ({ state: "ready", can: () => true }),
 }));
@@ -86,7 +86,7 @@ const role = (id: string, name: string, description: string, isSystem = false) =
 const perm = (key: string) => ({ id: `p-${key}`, key, description: `Can ${key}` });
 const CATALOGUE = [perm("user.read"), perm("user.write"), perm("role.read")];
 const ROLES = [
-  role("r-owner", "owner", "Tenant owner", true),
+  role("r-owner", "owner", "Organization owner — full access", true),
   role("r-help", "Helpdesk", "Reads members and resets their sign-in."),
 ];
 const GRANTS: Record<string, string[]> = {
@@ -111,7 +111,7 @@ beforeEach(() => {
   vi.mocked(api).mockImplementation(async (path, options) => {
     const method = options?.method ?? "GET";
     if (method !== "GET") return undefined;
-    if (path === "/v1/tenants/t-1/roles") return { items: ROLES };
+    if (path === "/v1/organizations/t-1/roles") return { items: ROLES };
     if (path === "/v1/permissions") return { items: CATALOGUE };
     const rolePerms = /^\/v1\/roles\/([^/]+)\/permissions$/.exec(path);
     if (rolePerms)
@@ -125,7 +125,7 @@ beforeEach(() => {
         ],
         next_cursor: "",
       };
-    if (path === "/v1/tenants/t-1/groups")
+    if (path === "/v1/organizations/t-1/groups")
       return {
         items: [
           {
@@ -139,7 +139,7 @@ beforeEach(() => {
           },
         ],
       };
-    if (path === "/v1/tenants/t-1/groups/g-support/roles")
+    if (path === "/v1/organizations/t-1/groups/g-support/roles")
       return {
         items: [{ role_id: "r-help", name: "Helpdesk", granted_at: "2025-08-18T10:00:00Z" }],
       };
@@ -215,7 +215,8 @@ describe("Roles", () => {
   it("keeps the owner role's permissions fixed", async () => {
     router.search = { role: "r-owner" };
     renderRoles();
-    const drawer = await screen.findByRole("dialog", { name: "owner" });
+    // A built-in role is shown by its worded name.
+    const drawer = await screen.findByRole("dialog", { name: "Owner" });
     const box = await within(drawer).findByRole("checkbox", { name: "role.read: Can role.read" });
     expect(box.getAttribute("aria-disabled") ?? box.getAttribute("data-disabled")).not.toBeNull();
     expect(
