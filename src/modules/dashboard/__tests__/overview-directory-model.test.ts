@@ -59,9 +59,6 @@ const group = (name: string, member_count: number) =>
     created_at: days(-30),
     member_count,
   }) as Group;
-const person = (department?: string, team?: string, location?: string) => ({
-  metadata: { department, team, location } as Record<string, unknown>,
-});
 
 describe("failingConnections", () => {
   it("keeps open critical connection failures, the newest per connection", () => {
@@ -178,15 +175,21 @@ describe("directoryAttention", () => {
 });
 
 describe("orgShape", () => {
-  it("groups people into departments and teams, biggest first, with no department last", () => {
-    const shape = orgShape([
-      person("Engineering", "Payments"),
-      person("Engineering", "Payments"),
-      person("Engineering"),
-      person("Sales", "Field"),
-      person(),
-      person("  ", "Ignored"),
-    ]);
+  it("groups the counts into departments and teams, biggest first, with no department last", () => {
+    // As the server counts them: a department names no one with none, a team names its department
+    // ("" for none), and the total counts everyone.
+    const shape = orgShape({
+      total: 6,
+      by_department: [
+        { department: "Engineering", count: 3 },
+        { department: "Sales", count: 1 },
+      ],
+      by_team: [
+        { department: "Engineering", team: "Payments", count: 2 },
+        { department: "Sales", team: "Field", count: 1 },
+        { department: "", team: "Ignored", count: 1 },
+      ],
+    });
     expect(shape.departments).toEqual([
       {
         name: "Engineering",
@@ -201,18 +204,28 @@ describe("orgShape", () => {
     ]);
     expect(shape).toMatchObject({ named: 2, noTeam: 1, noDepartment: 2 });
   });
+
+  it("has no department tile when everyone is in one", () => {
+    const shape = orgShape({
+      total: 2,
+      by_department: [{ department: "Design", count: 2 }],
+      by_team: [],
+    });
+    expect(shape.departments).toEqual([
+      { name: "Design", count: 2, teams: [{ team: null, count: 2 }] },
+    ]);
+    expect(shape.noDepartment).toBe(0);
+  });
 });
 
 describe("placesByCountry", () => {
   it("reads 'City, CC' into countries and their cities, biggest first", () => {
     expect(
       placesByCountry([
-        person(undefined, undefined, "Berlin, DE"),
-        person(undefined, undefined, "Bengaluru, IN"),
-        person(undefined, undefined, "Bengaluru, IN"),
-        person(undefined, undefined, "Pune, IN"),
-        person(undefined, undefined, "Remote"),
-        person(),
+        { location: "Bengaluru, IN", count: 2 },
+        { location: "Berlin, DE", count: 1 },
+        { location: "Pune, IN", count: 1 },
+        { location: "Remote", count: 1 },
       ]),
     ).toEqual([
       {

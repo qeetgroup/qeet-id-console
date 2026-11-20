@@ -112,6 +112,15 @@ const RESPONSES: Record<string, unknown> = {
     mfa_enabled: 18,
     mfa_missing: 27,
     new_last_30d: 2,
+    by_department: [
+      { department: "Engineering", count: 2 },
+      { department: "Sales", count: 1 },
+    ],
+    by_team: [{ department: "Engineering", team: "Payments", count: 2 }],
+    by_location: [
+      { location: "Bengaluru, IN", count: 2 },
+      { location: "Berlin, DE", count: 1 },
+    ],
   },
   "/v1/organizations/t1/invites": {
     items: [
@@ -203,20 +212,6 @@ const RESPONSES: Record<string, unknown> = {
   "/v1/permissions": { items: [{ id: "p1", key: "users.*", description: "" }] },
   "/v1/organizations/t1/abac/policies": { items: [] },
   "/v1/organizations": { items: [{ id: "t1", name: "Qeet Group" }] },
-  "/v1/users": {
-    items: [
-      {
-        id: "u1",
-        metadata: { department: "Engineering", team: "Payments", location: "Bengaluru, IN" },
-      },
-      {
-        id: "u2",
-        metadata: { department: "Engineering", team: "Payments", location: "Bengaluru, IN" },
-      },
-      { id: "u3", metadata: { department: "Sales", location: "Berlin, DE" } },
-      { id: "u4", metadata: {} },
-    ],
-  },
   "/v1/organizations/t1/oidc/clients": {
     items: [
       {
@@ -367,14 +362,16 @@ describe("the Dashboard", () => {
         .getByRole("link", { name: "Engineering, 2 people: Payments 2" })
         .getAttribute("href"),
     ).toBe("/users");
-    expect(within(map).getByText("No department, 1 person")).toBeTruthy();
+    expect(within(map).getByText("No department, 42 people")).toBeTruthy();
     expect(
-      screen.getByText("1 person is in a department but no team · 1 person has no department"),
+      screen.getByText("1 person is in a department but no team · 42 people have no department"),
     ).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Where people work" })).toBeTruthy();
     expect(screen.getByText("2 cities in 2 countries, sized by people")).toBeTruthy();
     expect(screen.getByText("Bengaluru, 2 people")).toBeTruthy();
-    expect(screen.getByText("50% of people work in Bengaluru")).toBeTruthy();
+    expect(screen.getByText("4% of people work in Bengaluru")).toBeTruthy();
+    // From the members' counts: the Dashboard never reads the members themselves.
+    expect(vi.mocked(api).mock.calls.some(([path]) => path === "/v1/users")).toBe(false);
   });
 
   it("shows the set-up as a checklist, with an action only where something's needed", async () => {

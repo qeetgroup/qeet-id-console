@@ -217,7 +217,7 @@ export function OverviewPage() {
     organisation.push(<OrgMapPanel key="map" shape={directory.shape} orgName={orgName} />);
   if (directory.places?.length)
     organisation.push(
-      <PlacesPanel key="places" places={directory.places} people={directory.people?.length ?? 0} />,
+      <PlacesPanel key="places" places={directory.places} people={directory.people ?? 0} />,
     );
 
   return (
