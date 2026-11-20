@@ -7,7 +7,7 @@ architecture.
 
 The **operator console for Qeet ID** (`console.id.qeet.in`). TanStack Start + Router, React 19, Vite 8 + Nitro, Tailwind v4, `@qeetrix/ui`, bun. It has a **server side**: TanStack Start is a same-origin BFF that holds the session, so backend tokens never reach the browser.
 
-Context: **L0** `qeet-context` (organization) → **L1** `qeet-id-context` (product) → **L2** this
+Context: **L0** `qeet-context` (organization) → **L1** `qeet-id-files` (product) → **L2** this
 repository → source.
 
 ## Structure

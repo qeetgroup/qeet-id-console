@@ -19,7 +19,7 @@ CLAUDE.md  →  AGENTS.md  →  docs/llm/*
 | [docs/llm/workflows.md](docs/llm/workflows.md) | Step-by-step for common changes |
 | [docs/llm/architecture-map.md](docs/llm/architecture-map.md) | "Where is X?" — fastest path to a file |
 
-Parent context: **L0** `qeetgroup/qeet-context` · **L1** `qeetgroup/qeet-id-context`.
+Parent context: **L0** `qeetgroup/qeet-context` · **L1** `qeetgroup/qeet-id-files`.
 Read them when a task needs organization or product understanding; this repository does not restate them.
 
 ## The things most likely to trip you up here
@@ -51,4 +51,4 @@ git diff
 ## Escalate rather than proceed
 
 Stop and report if a task would weaken a security control, change a published contract, or require
-modifying another repository. Cross-repository impact: `qeet-id-context/CHANGE-MATRIX.md`.
+modifying another repository. Cross-repository impact: `qeet-id-files/TAD.md` §15.
