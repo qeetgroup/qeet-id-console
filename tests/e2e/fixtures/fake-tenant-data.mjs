@@ -296,6 +296,18 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
       by_department: tally(people.flatMap((u) => u.metadata?.department ?? [])).map(
         ([department, n]) => ({ department, count: n }),
       ),
+      // As the server counts them: a team within its department ("" for none), and each location.
+      by_team: tally(
+        people.flatMap((u) =>
+          u.metadata?.team ? [`${u.metadata.department ?? ""}\u0000${u.metadata.team}`] : [],
+        ),
+      ).map(([key, n]) => {
+        const [department, team] = key.split("\u0000");
+        return { department, team, count: n };
+      }),
+      by_location: tally(people.flatMap((u) => u.metadata?.location ?? [])).map(
+        ([location, n]) => ({ location, count: n }),
+      ),
     };
   }
   if (path === "/v1/users/trends") {
