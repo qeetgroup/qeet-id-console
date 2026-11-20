@@ -15,7 +15,6 @@ import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import {
-  authPolicyQueries,
   oidcClientQueries,
   useLdapConnections,
   useOAuthGrants,
@@ -23,16 +22,16 @@ import {
   useSamlProviders,
   useScimConfig,
   useSocialProviders,
-  useTrustedDeviceSummary,
 } from "@/modules/authentication";
 import { useSubscription } from "@/modules/billing";
 import { apiKeyQueries, webhookQueries } from "@/modules/developer";
 import { orgQueries, useDomains } from "@/modules/organizations";
 import { useAnomalies } from "@/modules/security";
-import { invitationQueries, useUserStats } from "@/modules/users";
+import { useUserStats } from "@/modules/users";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useAnalyticsOverview } from "@/modules/dashboard/api/analytics";
+import { useOrganizationOverview } from "@/modules/dashboard/api/organization-overview";
 import { loginMethodLabel } from "@/modules/dashboard/dashboard-model";
 import { appsInUse, deriveOverviewAttention } from "@/modules/dashboard/overview-model";
 import { deriveSetup } from "@/modules/dashboard/overview-setup-model";
@@ -69,15 +68,12 @@ export function OverviewPage() {
 
   const analytics = useAnalyticsOverview(can.analytics);
   const stats = useUserStats(can.users);
-  const invites = useQuery({
-    ...invitationQueries.list(organizationId),
-    enabled: can.users && !!organizationId,
-  });
-  const devices = useTrustedDeviceSummary(can.policy);
-  const policy = useQuery({
-    ...authPolicyQueries.detail(organizationId),
-    enabled: can.policy && !!organizationId,
-  });
+  // The set-up flags and counts the overview answers, each area only where the person may read it.
+  const summary = useOrganizationOverview(can.tenant);
+  const remembered = summary.data?.remembered_devices;
+  const devices = remembered
+    ? { devices: remembered.devices, users: remembered.people }
+    : undefined;
   const social = useSocialProviders(can.connections);
   const saml = useSamlConnections(can.connections);
   const samlApps = useSamlProviders(can.connections);
@@ -134,12 +130,12 @@ export function OverviewPage() {
     directory.attentionLoading ||
     (can.analytics && analytics.isLoading);
 
-  const p = policy.data;
-  const methods = p
+  const signIn = summary.data?.sign_in;
+  const methods = signIn
     ? [
-        ...(p.passkey_enabled ? [loginMethodLabel("passkey")] : []),
-        ...(p.password_enabled ? [loginMethodLabel("password")] : []),
-        ...(p.magic_link_enabled ? [loginMethodLabel("magic_link")] : []),
+        ...(signIn.passkey ? [loginMethodLabel("passkey")] : []),
+        ...(signIn.password ? [loginMethodLabel("password")] : []),
+        ...(signIn.magic_link ? [loginMethodLabel("magic_link")] : []),
         ...socialNames,
       ]
     : undefined;
@@ -149,7 +145,7 @@ export function OverviewPage() {
     samlApps: samlApps.data?.items,
     methods,
     userStats: stats.data,
-    pendingInvites: invites.data?.items.filter((i) => i.status === "pending").length,
+    pendingInvites: summary.data?.invitations?.pending,
     departments: directory.shape?.named,
     groups: directory.groups,
     domains: domains.data?.items,
@@ -173,8 +169,7 @@ export function OverviewPage() {
   const setupLoading =
     [
       stats,
-      invites,
-      policy,
+      summary,
       social,
       saml,
       samlApps,
@@ -196,7 +191,7 @@ export function OverviewPage() {
     );
   if (stats.data && stats.data.total > 0)
     security.push(
-      <TwoStepPanel key="twoStep" stats={stats.data} overview={overview} devices={devices.data} />,
+      <TwoStepPanel key="twoStep" stats={stats.data} overview={overview} devices={devices} />,
     );
 
   const peopleAndApps: ReactNode[] = [];

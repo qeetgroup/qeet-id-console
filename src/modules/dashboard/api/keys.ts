@@ -8,4 +8,6 @@ export const dashboardKeys = {
     [...dashboardKeys.organization(organizationId), "activity"] as const,
   analytics: (organizationId: string | null) =>
     [...dashboardKeys.organization(organizationId), "analytics"] as const,
+  overview: (organizationId: string | null) =>
+    [...dashboardKeys.organization(organizationId), "overview"] as const,
 };

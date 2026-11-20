@@ -104,6 +104,21 @@ const overview = {
 
 const RESPONSES: Record<string, unknown> = {
   "/v1/organizations/t1/analytics/overview": overview,
+  // The set-up flags and counts, as the overview answers an administrator who may read every area.
+  "/v1/organizations/t1/overview": {
+    organization_id: "t1",
+    generated_at: day(0),
+    invitations: { pending: 1 },
+    remembered_devices: { devices: 5, people: 4 },
+    sign_in: {
+      password: true,
+      passkey: true,
+      magic_link: true,
+      remember_device: true,
+      self_registration: false,
+      mfa_enforcement: "optional",
+    },
+  },
   "/v1/users/stats": {
     total: 45,
     active: 44,
@@ -121,24 +136,6 @@ const RESPONSES: Record<string, unknown> = {
       { location: "Bengaluru, IN", count: 2 },
       { location: "Berlin, DE", count: 1 },
     ],
-  },
-  "/v1/organizations/t1/invites": {
-    items: [
-      {
-        id: "i1",
-        tenant_id: "t1",
-        email: "sai@qeet.in",
-        status: "pending",
-        expires_at: day(10),
-        created_at: day(-3),
-      },
-    ],
-  },
-  "/v1/auth/trusted-devices/count": { devices: 5, users: 4 },
-  "/v1/organizations/t1/auth-policy": {
-    password_enabled: true,
-    passkey_enabled: true,
-    magic_link_enabled: true,
   },
   "/v1/organizations/t1/social/providers": { items: [{ provider: "google", enabled: true }] },
   "/v1/organizations/t1/saml": {
@@ -378,6 +375,14 @@ describe("the Dashboard", () => {
     renderPage();
     const progress = await screen.findByText(/of \d+ done$/);
     expect(progress.textContent).toBe("7 of 13 done");
+    // The invitations, remembered devices and sign-in methods come from the one overview read.
+    const asked = vi.mocked(api).mock.calls.map(([path]) => path);
+    for (const list of [
+      "/v1/organizations/t1/invites",
+      "/v1/organizations/t1/auth-policy",
+      "/v1/auth/trusted-devices/count",
+    ])
+      expect(asked).not.toContain(list);
     const sso = screen
       .getByText("Single sign-on", { selector: "strong" })
       .closest("li") as HTMLElement;

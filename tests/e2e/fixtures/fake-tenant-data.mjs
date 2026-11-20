@@ -437,6 +437,23 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
     return { deleted_users_enabled: true, deleted_users_days: 90 };
   if (path === "/v1/activity") return { events: activity(query, principalId), next_cursor: "" };
   if (path === `${orgPath}/analytics/overview`) return analyticsOverview();
+  // The Dashboard's set-up flags and counts, as an administrator who may read every area gets them.
+  if (path === `${orgPath}/overview`) {
+    return {
+      organization_id: tenantId,
+      generated_at: new Date().toISOString(),
+      invitations: { pending: 1 },
+      remembered_devices: { devices: 3, people: 2 },
+      sign_in: {
+        password: true,
+        passkey: true,
+        magic_link: false,
+        remember_device: true,
+        self_registration: false,
+        mfa_enforcement: "optional",
+      },
+    };
+  }
   if (path === `${orgPath}/roles`) return { items: roles(tenantId) };
   if (path === `${orgPath}/groups`) return { items: groups(tenantId) };
   // Directories › Connections: a SCIM endpoint and an Active Directory people sign in with, and a
