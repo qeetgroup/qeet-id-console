@@ -21,7 +21,7 @@ export function sendMfaCode(mfaToken: string, factorId: string): Promise<unknown
   });
 }
 
-// The server always sends both; the document marks them optional (QTID-1063).
+// The server always sends both; the document marks them optional.
 const mfaPasskeyBegin = strictly<Answer<"/v1/auth/mfa/passkey/begin", "post">>()(
   z.object({ session_id: z.string().min(1), publicKey: z.record(z.string(), z.unknown()) }),
 );

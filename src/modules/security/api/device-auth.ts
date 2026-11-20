@@ -12,7 +12,7 @@ import { useOrganizationId } from "@/platform/auth/session";
 import { securityKeys } from "./keys";
 
 // The server always sends these (internal/federation/oidc/device.go, DeviceAuthorization); the
-// document marks them optional (QTID-1063). `status` is pending, authorized or denied; `user_id`
+// document marks them optional. `status` is pending, authorized or denied; `user_id`
 // and `user_email` say who approved it ("" until someone has).
 const devicePage = assuredItems<Answer<"/v1/organizations/{organizationID}/oauth/devices">>()(
   "id",

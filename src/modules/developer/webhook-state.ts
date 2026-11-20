@@ -166,7 +166,7 @@ const AREA_OF: Record<string, EventArea> = {
   rate_limits: "rateLimits",
   credential: "credentials",
   oidc: "applications",
-  tenant: "organisation",
+  organization: "organisation",
   test: "test",
 };
 export const areaOf = (event: string): EventArea =>

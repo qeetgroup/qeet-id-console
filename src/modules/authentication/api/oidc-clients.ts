@@ -11,7 +11,7 @@ import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
 
 // The server always sends these (internal/federation/oidc/clients.go); the document marks them
-// optional (QTID-1063).
+// optional.
 const oidcClientSchema = strictly<Schemas<"federation">["OIDCClient"]>()(
   z.object({
     id: z.string(),

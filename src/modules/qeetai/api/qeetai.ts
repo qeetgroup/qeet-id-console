@@ -10,7 +10,7 @@ import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 
 // configured, available and source are always sent (internal/operations/qeetai/http.go, status);
-// the document has only `configured`, and as optional (QTID-1063). `available`: Qeet AI can be
+// the document has only `configured`, and as optional. `available`: Qeet AI can be
 // used, on the organisation's own key (any plan) or the platform key on a plan that includes it.
 export const qeetaiStatusSchema = assured<Answer<"/v1/qeetai/status">>()(
   "configured",
@@ -42,7 +42,7 @@ export interface SetQeetAIProviderInput {
 
 /** Server conversation shape (the subset the client consumes). */
 // The server always sends these (internal/operations/qeetai/qeetai.go, Conversation); the document
-// marks them optional (QTID-1063).
+// marks them optional.
 const createdConversation = assured<Answer<"/v1/qeetai/conversations", "post">>()(
   "id",
   "title",

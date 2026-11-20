@@ -9,7 +9,7 @@ import { authzKeys } from "./keys";
 
 // GET /v1/users/{id}/access: what a person holds in this organisation (user.read). The server
 // always sends these (internal/identity/user/user360.go, AccessSummary); the document marks them
-// optional (QTID-1063).
+// optional.
 const named = z.object({ id: z.string(), name: z.string() });
 const personAccess = strictly<Answer<"/v1/users/{id}/access">>()(
   z.object({

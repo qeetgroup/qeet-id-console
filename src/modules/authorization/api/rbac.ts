@@ -8,7 +8,7 @@ import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
 
 // The server always sends these (internal/access/authorization/rbac/rbac.go); the document marks
-// them optional (QTID-1063). A system role is built in and can't be deleted.
+// them optional. A system role is built in and can't be deleted.
 const ROLE_FIELDS = [
   "id",
   "organization_id",

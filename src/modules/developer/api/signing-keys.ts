@@ -10,7 +10,7 @@ import type { Answer } from "@/platform/api/contract";
 import { developerKeys } from "./keys";
 
 // The server always sends these (internal/platform/crypto/tokens/keys.go, KeyMeta); the document
-// marks them optional (QTID-1063). `candidate`: published so apps can cache it, signs nothing yet;
+// marks them optional. `candidate`: published so apps can cache it, signs nothing yet;
 // `active`: the one key that signs; `retired`: signs nothing, still verifies, published until
 // `retire_at`.
 const signingKey = z.object({

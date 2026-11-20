@@ -15,7 +15,7 @@ export interface RelationTuple {
   subject: string;
 }
 
-// The server always sends the list; the document marks it optional (QTID-1063).
+// The server always sends the list; the document marks it optional.
 const tuplePage = assuredItems<Answer<"/v1/organizations/{organizationID}/relation-tuples">>()();
 
 /** Fetches the tuples on `object` ("type:id"); idle until an object is set. */
@@ -85,7 +85,7 @@ export function useCheckRelation() {
 }
 
 // The server always sends these (internal/access/authorization/rebac/graph.go); the document marks
-// them optional (QTID-1063). A graph with no edges answers them null.
+// them optional. A graph with no edges answers them null.
 const graphNode = z.object({
   id: z.string(), // "type:id"
   type: z.string(), // the type part

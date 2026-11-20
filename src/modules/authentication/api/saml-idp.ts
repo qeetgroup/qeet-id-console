@@ -12,7 +12,7 @@ import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 
 // The server always sends these (internal/federation/saml/idp.go, ServiceProvider); the document
-// marks them optional (QTID-1063).
+// marks them optional.
 const samlProviderPage = assuredItems<
   Answer<"/v1/organizations/{organizationID}/saml-providers">
 >()(

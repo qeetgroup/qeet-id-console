@@ -13,7 +13,7 @@ import { securityKeys } from "./keys";
 const RISK_PATH = "/v1/organizations/{organizationID}/security/risk-settings";
 
 // The server always sends these (internal/access/threat/risk/risk.go); the document marks them
-// optional (QTID-1063). PUT takes them all.
+// optional. PUT takes them all.
 const riskSchema = assured<Answer<typeof RISK_PATH>>()(
   "medium_threshold",
   "high_threshold",

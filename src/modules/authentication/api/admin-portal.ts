@@ -15,7 +15,7 @@ type LinkRecord = Schemas<"federation">["AdminPortalLink"];
 export type AdminPortalCapability = NonNullable<LinkRecord["capabilities"]>[number];
 
 // The server always sends these (internal/federation/adminportal/adminportal.go, Link); the
-// document marks them optional (QTID-1063).
+// document marks them optional.
 const LINK_FIELDS = ["id", "organization_id", "capabilities", "expires_at", "created_at"] as const;
 const linkPage = assuredItems<Answer<"/v1/organizations/{organizationID}/admin-portal/links">>()(
   ...LINK_FIELDS,

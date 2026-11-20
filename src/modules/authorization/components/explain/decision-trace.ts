@@ -101,14 +101,14 @@ function abacStep(line: string, composed: boolean): TraceStep | null {
 
 /** One line of decide.go's composed trace, each prefixed with the model that wrote it. */
 function composedStep(line: string): TraceStep | null {
-  if (line === "tenant: no organisation, refused")
+  if (line === "organization: no organization, refused")
     return {
       where: t("authorization:trace.organisation"),
       title: t("authorization:trace.noOrganisation"),
       outcome: t("authorization:trace.outcome.refused"),
       tone: "danger",
     };
-  if (line.startsWith("tenant: "))
+  if (line.startsWith("organization: "))
     return {
       where: t("authorization:trace.organisation"),
       title: t("authorization:trace.thisOrganisation"),

@@ -19,7 +19,16 @@ type Summary = {
  * sign-in with no factor of its own; the analytics overview leaves them out of sign-in counts.
  * The summary can't filter on the method, so its search leaves out events that name them.
  */
-const NOT_SIGN_INS = "-tenant_switch -tenant_create -invite_accept";
+const MOVE_METHODS = [
+  "organization_switch",
+  "organization_create",
+  "tenant_switch", // events recorded before the server's rename
+  "tenant_create",
+  "invite_accept",
+];
+// Each excluded as a quoted phrase: the search splits a word at "_", and only a phrase keeps the
+// two halves together, where a bare -tenant_switch would require "switch" on every event.
+const NOT_SIGN_INS = MOVE_METHODS.map((method) => `-"${method}"`).join(" ");
 
 const SIGN_INS = { types: "auth.login_succeeded", q: NOT_SIGN_INS };
 // People are counted from every sign-in event, switching included, as the overview's MAU is.

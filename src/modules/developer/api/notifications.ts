@@ -17,7 +17,7 @@ export const notificationKind = (kind: string): NotificationKind =>
   isOneOf(KINDS, kind) ? kind : "info";
 
 // The server always sends both (internal/operations/notification, inbox); the document marks them
-// optional (QTID-1063). A notification's `href` is the in-app link it opens; `read_at` is set
+// optional. A notification's `href` is the in-app link it opens; `read_at` is set
 // once the person has read it.
 const inbox = assured<Answer<"/v1/notifications">>()("items", "unread_count");
 type NotificationsResponse = z.infer<typeof inbox>;

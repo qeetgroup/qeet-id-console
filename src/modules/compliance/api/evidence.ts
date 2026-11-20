@@ -20,7 +20,7 @@ import { complianceKeys } from "./keys";
 export type Framework = "soc2" | "iso27001";
 
 // The server always sends these (internal/operations/compliance/evidence.go); the document marks
-// them optional (QTID-1063).
+// them optional.
 const control = z.object({
   id: z.string(), // stable across runs, e.g. "CC6.1-MFA"
   name: z.string(),

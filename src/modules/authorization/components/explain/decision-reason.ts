@@ -1,5 +1,5 @@
 // Why a decision came out as it did, in the reader's language. The server states it as a stable
-// reason code (QTID-951) and, for older servers only, as an English sentence; the code wins, and
+// reason code and, for older servers only, as an English sentence; the code wins, and
 // anchored patterns map the sentences the console knows. Server text is never shown as written:
 // it may carry internal detail, such as the evaluation error behind a condition that failed.
 

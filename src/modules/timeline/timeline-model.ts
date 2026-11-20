@@ -101,12 +101,24 @@ export const FAILURE_REASONS = [
 export type FailureReason = (typeof FAILURE_REASONS)[number] | "other";
 
 /** Methods that move a session between organisations: recorded as sign-ins, but not one. */
-const MOVES = ["tenant_switch", "tenant_create"] as const;
+const MOVES = ["organization_switch", "organization_create"] as const;
+type Move = (typeof MOVES)[number];
+// Events recorded before the server's rename name the same moves this way.
+const RENAMED_MOVES = new Map<string, Move>([
+  ["tenant_switch", "organization_switch"],
+  ["tenant_create", "organization_create"],
+]);
 
 const meta = (e: ActivityEvent, key: string): string => {
   const value = e.metadata?.[key];
   return typeof value === "string" ? value : "";
 };
+
+/** The move between organisations a sign-in records, or undefined for a real sign-in. */
+function moveOf(e: ActivityEvent): Move | undefined {
+  const method = meta(e, "method");
+  return isOneOf(MOVES, method) ? method : RENAMED_MOVES.get(method);
+}
 
 /**
  * A sign-in's method and whether it met two-step: a met challenge ("_mfa") or a passkey, as the
@@ -153,7 +165,7 @@ export function sumSignIns(events: ActivityEvent[]): SignInSummary {
 
   for (const e of events) {
     if (e.type === "auth.login_succeeded") {
-      if (isOneOf(MOVES, meta(e, "method"))) {
+      if (moveOf(e)) {
         moves++;
         continue;
       }
@@ -239,7 +251,7 @@ const has = <T extends object>(map: T, key: string): key is Extract<keyof T, str
 /** What an event says, before it is worded: which sentence, and what goes in it. */
 export type EventTitle =
   | { kind: "signedIn"; method: SignInMethod; twoStep: boolean }
-  | { kind: "moved"; method: (typeof MOVES)[number] }
+  | { kind: "moved"; method: Move }
   | { kind: "signInFailed"; reason: FailureReason }
   | { kind: "accountLocked"; failures?: number }
   | { kind: "sessionEnded"; idle: boolean }
@@ -256,8 +268,8 @@ export type EventTitle =
 export function eventTitle(e: ActivityEvent, userId: string): EventTitle {
   const type = e.type;
   if (type === "auth.login_succeeded") {
-    const method = meta(e, "method");
-    if (isOneOf(MOVES, method)) return { kind: "moved", method };
+    const move = moveOf(e);
+    if (move) return { kind: "moved", method: move };
     return { kind: "signedIn", ...signInMethod(e) };
   }
   if (type === "auth.sign_in_failed") return { kind: "signInFailed", reason: failureReason(e) };

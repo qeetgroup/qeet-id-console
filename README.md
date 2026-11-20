@@ -138,7 +138,7 @@ Directory › Users (`/users`) is rebuilt on `@qeetrix/react`: `modules/users/co
   five requests at a time.
 
 The search and filters live in the address (`?q=&role=&dept=&twostep=&seen=&look=`), so a view can
-be shared. `/v1/users` can't filter or count yet (QTID-960), so the page reads everyone, 200 at a
+be shared. `/v1/users` can't filter or count yet, so the page reads everyone, 200 at a
 time, up to 2,000 people (`userQueries.directory`), and works over them in `people-model.ts`.
 Above 2,000 it says the search, filters and counts cover the first 2,000 only. A rebuilt page with
 sub-pages draws them with `PageTabs`, `PageTabList` and `PageBreadcrumb` from `@/modules/dashboard`.
@@ -186,7 +186,7 @@ filter lists the matches flat, each with its path.
 The filters live in the address (`?q=&size=&grants=&role=&inside=&look=`), and the rules are pure
 functions in `groups-model.ts`. A group's size is the people it covers, its groups' included; the
 roles it grants reach only its own members (the server's rule), so a group that grants a role and
-has no members grants it to no one. The server lists groups without their roles (QTID-961), so the
+has no members grants it to no one. The server lists groups without their roles, so the
 page reads each group's roles, all of them up to 100 groups and only the page's past that. The
 library's Table has no tree rows yet (QTRX-25): each group's name is its link, beside its fold
 button. Users takes `?group=none` (people in no group) from the band's link.
@@ -219,8 +219,8 @@ belong to (every page of `GET /v1/organizations`), joined with your place in eac
   opening its record in Activity); and, for an owner, Delete. Another organisation shows what the
   list knows and Switch.
 - Deleting (`use-org-actions.ts`) is the server's: an owner asks, it's deleted 7 days later, and any
-  owner can keep it until then (`POST …/deletion/cancel`). The list doesn't carry the due date yet
-  (QTID-963), so only the organisation you're in shows it.
+  owner can keep it until then (`POST …/deletion/cancel`). The list doesn't carry the due date yet,
+  so only the organisation you're in shows it.
 
 The filters live in the address (`?q=&role=&plan=&region=&look=`), and the rules are pure functions
 in `orgs-model.ts`. The logo sits in the page title until `PageHeader` has a leading slot (QTRX-48).
@@ -244,7 +244,7 @@ and `/ldap` redirect), and the command palette finds them by their commands. Con
   pages' own copies in the authentication module go when those pages move here.
 
 `?show=failing|draft` narrows the list from the band. The rules are pure functions in
-`connections-model.ts`. LDAP doesn't count its people yet (QTID-964); MenuItem has no description
+`connections-model.ts`. LDAP doesn't count its people yet; MenuItem has no description
 line (QTRX-50).
 
 ## Styling rules

@@ -91,7 +91,7 @@ function isAttributeRef(value: unknown): value is AttributeRef {
 
 /** A stored ABAC policy. Deny wins, and policies are evaluated by descending priority. */
 // The server always sends these (internal/access/authorization/abac/policies.go, Policy); the
-// document marks them optional (QTID-1063). A policy without a condition answers null.
+// document marks them optional. A policy without a condition answers null.
 const policySchema = z.object({
   id: z.string(),
   organization_id: z.string(),

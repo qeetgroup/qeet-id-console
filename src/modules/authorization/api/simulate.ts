@@ -19,7 +19,7 @@ export type Engine = "authzen" | "abac" | "rbac" | "rebac";
 export type RbacExplain = ExplainResult;
 export type RbacExplainPath = ExplainPath;
 
-// The server always sends each hop's fields; the document marks them optional (QTID-1063).
+// The server always sends each hop's fields; the document marks them optional.
 const relationCheck = assuredList<
   Answer<"/v1/organizations/{organizationID}/relation-tuples/check", "post">
 >()("path", "object", "relation", "subject", "depth");
@@ -27,7 +27,7 @@ export type RebacExplain = z.infer<typeof relationCheck>;
 export type RebacPathStep = NonNullable<RebacExplain["path"]>[number];
 
 // The document gives `context` as an empty object; the server sends decided_by in it, and with
-// explain the grant paths or relation path and the trace (QTID-1063).
+// explain the grant paths or relation path and the trace.
 export type AuthzenResult = Omit<
   Answer<"/v1/organizations/{organizationID}/access/v1/evaluation", "post">,
   "context"

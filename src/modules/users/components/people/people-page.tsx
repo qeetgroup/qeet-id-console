@@ -149,7 +149,7 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
     : {
         rows: (query && search.data?.items) || NO_ONE,
         matched: (query && search.data?.total) || 0,
-        // A sorted read answers its first page only: past it, the list can't reach (QTID-1066).
+        // A sorted read answers its first page only: past it, the list can't reach.
         // With no read to make, nothing is reachable, whatever the last list left behind.
         reachable: !query ? 0 : search.hasMore ? (search.data?.total ?? 0) : search.loaded,
         loading: !!query && search.isLoading,

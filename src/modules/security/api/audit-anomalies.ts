@@ -13,7 +13,7 @@ import { securityKeys } from "./keys";
 export type AnomalyReason = "new_action_type" | "unusual_hour" | "new_ip";
 
 // The server always sends these (internal/operations/audit/anomaly/anomaly.go); the document marks
-// them optional (QTID-1063).
+// them optional.
 const auditAnomalyPage = assuredItems<
   Answer<"/v1/organizations/{organizationID}/audit/anomalies">
 >()(

@@ -8,7 +8,7 @@ import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
 
 // The server always sends these (internal/access/authorization/rbac/rbac.go, GroupRole); the
-// document marks them optional (QTID-1063).
+// document marks them optional.
 const groupRoles = assuredItems<
   Answer<"/v1/organizations/{organizationID}/groups/{groupID}/roles">
 >()("role_id", "name", "granted_at");

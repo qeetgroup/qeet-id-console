@@ -84,8 +84,7 @@ export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
 
   const listQ = useOrgs();
   const mineQ = useQuery(orgQueries.memberships());
-  // The organisation you're in: its record carries a scheduled deletion (the list doesn't yet,
-  // QTID-963).
+  // The organisation you're in: its record carries a scheduled deletion (the list doesn't yet).
   const recordQ = useQuery({
     ...orgQueries.record(organizationId),
     enabled: !!organizationId && access.can("organization.read"),

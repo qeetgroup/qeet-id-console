@@ -54,13 +54,20 @@ export interface SignInMix {
   last?: ActivityEvent;
 }
 
+const MOVE_METHODS = new Set([
+  "organization_switch",
+  "organization_create",
+  "tenant_switch", // events recorded before the server's rename
+  "tenant_create",
+]);
+
 /**
  * True for a recorded sign-in that is really a move between organisations: the server records
  * switching into one, or creating one, as `auth.login_succeeded` too.
  */
 export function isOrganisationMove(event: ActivityEvent): boolean {
   const method = event.metadata?.method;
-  return method === "tenant_switch" || method === "tenant_create";
+  return typeof method === "string" && MOVE_METHODS.has(method);
 }
 
 /** How the person's sign-ins went: each method's share, and how many met a second step. */

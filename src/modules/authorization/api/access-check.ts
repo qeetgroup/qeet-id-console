@@ -8,7 +8,7 @@ import type { Answer } from "@/platform/api/contract";
 
 // GET /v1/check?explain=true: the grant paths behind an allow, the reason fields on a denial. The
 // server always sends each step's fields (internal/access/authorization/rbac/rbac.go, GrantStep);
-// the document marks them optional (QTID-1063).
+// the document marks them optional.
 export const checkAnswer = assuredList<Answer<"/v1/check">>()(
   "paths",
   "permission",

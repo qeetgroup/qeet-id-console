@@ -42,7 +42,7 @@ export function useTrustedDeviceSummary(enabled = true) {
 }
 
 // The server always sends these (internal/access/authentication/trusteddevice.go); the document
-// marks them optional (QTID-1063).
+// marks them optional.
 const DEVICE_FIELDS = [
   "id",
   "device",

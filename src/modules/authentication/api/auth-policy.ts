@@ -20,7 +20,7 @@ const lockoutSettings = z.object({
 export type LockoutSettings = z.infer<typeof lockoutSettings>;
 
 // The server always sends every field (internal/access/authpolicy/authpolicy.go); the document
-// marks them optional (QTID-1063). PUT replaces the whole policy, so a page saves only one it holds
+// marks them optional. PUT replaces the whole policy, so a page saves only one it holds
 // in full.
 const policySchema = strictly<Answer<"/v1/organizations/{organizationID}/auth-policy">>()(
   z.object({

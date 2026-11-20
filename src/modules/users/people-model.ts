@@ -116,8 +116,7 @@ export function matches(user: User, filters: PeopleFilters, now: number): boolea
 
 /**
  * Whether the list API can't say these filters, so the page works them out over the people it
- * loads: admins without two-step (it filters one role at a time) and people in no group
- * (QTID-1066).
+ * loads: admins without two-step (it filters one role at a time) and people in no group.
  */
 export function needsDirectory(filters: PeopleFilters): boolean {
   return filters.look === "admins-no-two-step" || filters.group === "none";

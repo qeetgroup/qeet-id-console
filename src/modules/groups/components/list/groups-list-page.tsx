@@ -62,7 +62,7 @@ import { GroupsToolbar } from "./groups-toolbar";
 import "./groups-list.css";
 
 const PAGE_SIZES = [25, 50, 100] as const;
-// Every group's roles are read one group at a time (no list endpoint, QTID-961): all of them up to
+// Every group's roles are read one group at a time (no list endpoint): all of them up to
 // this many groups, so the roles filter and "grant roles to no one" are whole; past it, only the
 // groups on the page, and those two wait for the server.
 const ROLES_FOR_ALL_UP_TO = 100;

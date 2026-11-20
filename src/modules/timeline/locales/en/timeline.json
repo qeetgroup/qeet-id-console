@@ -120,8 +120,8 @@
       "other": "Signed in with a second step"
     },
     "moved": {
-      "tenant_switch": "Switched into this organisation",
-      "tenant_create": "Entered this organisation after creating it"
+      "organization_switch": "Switched into this organisation",
+      "organization_create": "Entered this organisation after creating it"
     },
     "signInFailed": {
       "wrong_password": "Sign-in failed: wrong password",

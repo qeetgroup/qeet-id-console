@@ -1,4 +1,4 @@
-// The decision vocabulary the engines share (QTID-951): a stable reason code with what it names,
+// The decision vocabulary the engines share: a stable reason code with what it names,
 // and the `decided_by` summary every check response carries. All optional: an older server sends
 // only English sentences, which the console never shows as written.
 

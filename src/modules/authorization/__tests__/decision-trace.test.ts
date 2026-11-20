@@ -8,7 +8,7 @@ describe("a composed decision's trace", () => {
   it("reads each engine's step, in order, and never the organisation's id", () => {
     const steps = traceSteps(
       [
-        "tenant: 9b1c3d4e-0000-0000-0000-000000000000",
+        "organization: 9b1c3d4e-0000-0000-0000-000000000000",
         'abac: policy "Block sanctioned countries" (effect=deny, priority=1000): condition not matched',
         "abac: no matching allow policy found → default deny",
         "rbac: a role grants role.write, allowed",
@@ -23,6 +23,13 @@ describe("a composed decision's trace", () => {
       ["RBAC", "A role grants role.write", "Allowed", "success"],
     ]);
     expect(steps[1]?.policyName).toBe("Block sanctioned countries");
+  });
+
+  it("reads a question asked with no organisation as refused", () => {
+    const steps = traceSteps(["organization: no organization, refused"], true);
+    expect(steps.map((s) => [s.where, s.title, s.outcome, s.tone])).toEqual([
+      ["Organisation", "No organisation to decide in", "Refused", "danger"],
+    ]);
   });
 
   it("reads a deny, a relationship and the default refusal", () => {

@@ -14,6 +14,7 @@ import {
   usedOf,
 } from "../machine-model";
 import {
+  areaOf,
   countOutcomes,
   deliveriesOverTime,
   endpointParts,
@@ -182,5 +183,7 @@ describe("webhooks", () => {
       { area: "signIn", count: 1 },
       { area: "groups", count: 1 },
     ]);
+    expect(areaOf("organization.suspended")).toBe("organisation");
+    expect(areaOf("test.ping")).toBe("test");
   });
 });

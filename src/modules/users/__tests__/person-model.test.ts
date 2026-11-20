@@ -58,6 +58,12 @@ describe("signInMethod", () => {
 
 describe("signInMix", () => {
   it("leaves out moves between organisations, which the server records as sign-ins too", () => {
+    const mix = signInMix(["organization_switch", "password", "organization_create"].map(event));
+    expect(mix.total).toBe(1);
+    expect(mix.methods).toEqual([{ method: "password", count: 1 }]);
+  });
+
+  it("leaves out moves recorded before the server named them organization_*", () => {
     const mix = signInMix(["tenant_switch", "password", "tenant_create"].map(event));
     expect(mix.total).toBe(1);
     expect(mix.methods).toEqual([{ method: "password", count: 1 }]);

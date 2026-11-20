@@ -12,7 +12,7 @@ import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 
 // The server always sends these (internal/access/threat/threat.go, Anomaly); the document marks
-// them optional (QTID-1063). `metadata` holds the detection's own facts: `counter` (which count
+// them optional. `metadata` holds the detection's own facts: `counter` (which count
 // tripped: "source", "account" or "account_network"), `failures`, `distinct_accounts`,
 // `window_minutes`, `network`, `locked_until` or `throttled_until`. Any may be missing.
 const anomalyPage = assuredItems<Answer<"/v1/organizations/{organizationID}/security/anomalies">>()(

@@ -20,7 +20,7 @@ export const samlStatus = (status: string): SamlStatus =>
   isOneOf(SAML_STATUSES, status) ? status : "disabled";
 
 // The server always sends these (internal/federation/saml/saml.go, Connection); the document
-// marks them optional (QTID-1063).
+// marks them optional.
 const SAML_FIELDS = [
   "id",
   "organization_id",

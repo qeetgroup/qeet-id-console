@@ -18,7 +18,7 @@ const bucket = z.object({
 const buckets = z.object({ organization: bucket, user: bucket, api_key: bucket });
 
 // The server always sends the effective limits and their bounds (internal/operations/ratelimits,
-// limitsView); the document marks them optional (QTID-1063). `ceiling` is the most an
+// limitsView); the document marks them optional. `ceiling` is the most an
 // organisation may set, `defaults` what a reset returns to, `min_rate` the lowest rate it may set.
 const limitsSchema = strictly<Answer<"/v1/organizations/{organizationID}/rate-limits">>()(
   buckets.extend({ defaults: buckets, ceiling: buckets, min_rate: z.number() }),

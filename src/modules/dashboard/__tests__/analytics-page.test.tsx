@@ -89,7 +89,9 @@ describe("Analytics", () => {
     expect(queries).toHaveLength(6);
     const signIns = queries.filter((q) => q.q);
     expect(signIns.every((q) => q.types === "auth.login_succeeded")).toBe(true);
-    expect(signIns[0]?.q).toBe("-tenant_switch -tenant_create -invite_accept");
+    expect(signIns[0]?.q).toBe(
+      '-"organization_switch" -"organization_create" -"tenant_switch" -"tenant_create" -"invite_accept"',
+    );
     expect(queries.filter((q) => q.types === "auth.sign_in_failed")).toHaveLength(2);
     expect(queries.every((q) => q.bucket === 86_400)).toBe(true);
     // The range is open-ended; the period before ends where it starts.

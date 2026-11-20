@@ -24,7 +24,7 @@ export const pushPlatform = (platform: string): (typeof PLATFORMS)[number] | "ot
 export type PushDeviceScope = { kind: "self" } | { kind: "member"; userId: string };
 
 // The server always sends these (internal/access/mfa); the member list's document marks them
-// optional (QTID-1063).
+// optional.
 const memberDevices = assuredItems<Answer<"/v1/users/{id}/push-devices">>()(
   "id",
   "name",

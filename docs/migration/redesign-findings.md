@@ -136,8 +136,8 @@ Each line: the question, then the options; **(R)** marks the recommended one.
   (`/directory/connections/scim|ldap`, old addresses redirect, found by palette commands). The
   Connections page is rebuilt (mock-ups `directories/`, `compare-connections*.png`): where people
   come from, health (the server's, "not checked" past 24 h) with the latest open problem, the last
-  30 days, what needs a look, and the kinds not set up offered under the table. QTID-964 (LDAP
-  people count), QTRX-50 (MenuItem description). Next, one page at a time: SCIM, LDAP, Sync
+  30 days, what needs a look, and the kinds not set up offered under the table. Server gap: the LDAP
+  people count. QTRX-50 (MenuItem description). Next, one page at a time: SCIM, LDAP, Sync
   activity, Sync errors, Mappings.
 - Group detail: **(R)** one page of ruled sections · tabs.
 - **Groups list, redesigned for scale (2026-10-27, approved and built):** the table is the tree
@@ -145,7 +145,7 @@ Each line: the question, then the options; **(R)** marks the recommended one.
   break carries its path), search and filters list matches flat with their path, and the Users
   band's parts sit above it. The node-link groups tree stays off the list (unreadable past ~50
   groups); a group's own family picture goes on its page. Mock-ups: `groups/` (sample of 261
-  groups for scale). QTID-961 (roles in the list), QTRX-25 (Table tree rows); Users gained
+  groups for scale). Server gap: roles in the list. QTRX-25 (Table tree rows); Users gained
   `?group=none`.
 - **The rest of Groups (2026-10-27, approved and built):** New/Edit group drawer (name checked as
   typed, "Inside" by path, members as pills, the role's reach said plainly); Members drawer; New
@@ -169,7 +169,7 @@ Each line: the question, then the options; **(R)** marks the recommended one.
   verifier manages the accounts on it; data region on a ruler) and History (audit events on the
   tenant, by month, each opening its record in Activity), Delete for owners. The edit sheet and the
   preview drawer are gone (Settings › General edits). The sidebar says "Organisations".
-  QTID-962 (template prefix), QTID-963 (`deletion_due_at` in the list), QTRX-48 (PageHeader leading
+  Server gaps: the template prefix, and `deletion_due_at` in the list. QTRX-48 (PageHeader leading
   slot); QTRX-8 commented (Button as a link).
 - Detail tabs for the current organisation: **(R)** read-only summaries linking out · drop Members,
   Security, Billing. *Built as the record above, without the summaries (Dashboard-only overview).*
@@ -355,7 +355,7 @@ prop for Billing ("Current plan").
   a `next_cursor`); the summary ignores the chosen range; events have no location.
 
 **Users and directory**
-- `GET /v1/users`: search, filters, sort and total, and the Users list counts in `/v1/users/stats` — **QTID-960**. Until then the rebuilt list reads up to 2,000 people and works over them in the browser.
+- `GET /v1/users`: search, filters, sort and total, and the Users list counts in `/v1/users/stats`. Until then the rebuilt list reads up to 2,000 people and works over them in the browser.
 - `POST /v1/users/bulk`: `role_id` and metadata; a role for an import.
 - Per-user risk endpoint; per-user sign-in method summary; which role or group grants each permission.
 - Admin ending one member session (only revoke-all exists); member passkeys list and removal;
@@ -376,7 +376,7 @@ prop for Billing ("Current plan").
 - Member count 46 vs 45 users (a deleted account counted?); MFA share 39% vs 38.6%.
 - `PATCH /v1/tenants` takes `metadata` now (headquarters, industry, website); General doesn't edit it.
 - `/v1/tenants` is cursor-paged; per-organisation details locked to the active one. Its items lack
-  `deletion_due_at` (QTID-963).
+  `deletion_due_at`.
 - Branding logo is a `data:` URL, which emails reject, so "Show logo" has no effect.
 - The policy saves as one whole-object `PUT` (doesn't suit per-row saves with step-up).
 - The default hosted sign-in address isn't in any API.
