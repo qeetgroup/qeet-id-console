@@ -2,7 +2,7 @@
 // local-first, so the server one is created on the first turn and its id kept on the local one.
 
 import i18n from "@/i18n";
-import { createQeetAIConversation, qeetaiStatusSchema } from "../api/qeetai";
+import { createQeetAIConversation } from "../api/qeetai";
 
 import { conversationActions, conversationStore } from "../store/conversation-store";
 import type { AIProvider, SendInput, StreamEvent } from "./ai-provider";
@@ -27,7 +27,7 @@ export const backendProvider: AIProvider = {
   id: "backend",
 
   status(signal) {
-    return backend.get("/v1/qeetai/status", { signal, schema: qeetaiStatusSchema });
+    return backend.get("/v1/qeetai/status", { signal });
   },
 
   async *send(input: SendInput, opts: { signal: AbortSignal }): AsyncIterable<StreamEvent> {

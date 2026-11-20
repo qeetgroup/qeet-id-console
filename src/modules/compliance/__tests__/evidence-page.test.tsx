@@ -54,6 +54,7 @@ const control = (
   criteria: id.split("-")[0] ?? id,
   status,
   detail,
+  detail_code: "",
 });
 
 function run(id: string, at: string, controls: ControlResult[], by: string | null = "u-shalini") {
@@ -250,7 +251,6 @@ describe("Compliance › SOC 2", () => {
     await waitFor(() => expect(onRunChange).toHaveBeenCalledWith(undefined));
     expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/compliance/soc2/evidence", {
       method: "POST",
-      schema: expect.anything(),
     });
   });
 
@@ -274,7 +274,6 @@ describe("Compliance › SOC 2", () => {
     await waitFor(() =>
       expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/compliance/soc2/evidence", {
         method: "POST",
-        schema: expect.anything(),
       }),
     );
   });

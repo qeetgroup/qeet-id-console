@@ -123,6 +123,8 @@ describe("deriveOverviewAttention", () => {
       email_unverified: 0,
       by_role: [],
       by_department: [],
+      by_team: [],
+      by_location: [],
     };
     const items = deriveOverviewAttention({ overview, userStats, now: NOW });
     expect(items.map((i) => i.id)).toEqual(["two-step"]);
@@ -211,6 +213,8 @@ describe("deriveSetup", () => {
         email_unverified: 0,
         by_role: [],
         by_department: [],
+        by_team: [],
+        by_location: [],
       },
       pendingInvites: 2,
       domains: [{ id: "d", domain: "qeet.in", status: "verified" } as never],

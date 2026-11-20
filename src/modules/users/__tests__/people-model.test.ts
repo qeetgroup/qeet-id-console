@@ -31,6 +31,10 @@ function person(overrides: Partial<User> = {}): User {
     last_seen_at: ago(0.5),
     created_at: ago(300),
     metadata: { department: "Engineering" },
+    phone: null,
+    avatar_url: null,
+    phone_verified_at: null,
+    updated_at: "2026-09-01T00:00:00Z",
     ...overrides,
   };
 }

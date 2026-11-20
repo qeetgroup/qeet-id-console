@@ -180,7 +180,12 @@ describe("Testing › a permission", () => {
         at: new Date().toISOString(),
         durationMs: 3,
         input: { user_id: AARAV, permission: "user.write" },
-        rbac: { allowed: false, paths: [], reason_code: "authz.no_role_grant" },
+        rbac: {
+          allowed: false,
+          decided_by: { model: "none" },
+          paths: [],
+          reason_code: "authz.no_role_grant",
+        },
       }),
     );
     renderPage();

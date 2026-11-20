@@ -1,33 +1,13 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { z } from "zod";
 
-import { assured, assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
 
-// The server always sends these (internal/access/authorization/rbac/rbac.go); the document marks
-// them optional. A system role is built in and can't be deleted.
-const ROLE_FIELDS = [
-  "id",
-  "organization_id",
-  "name",
-  "description",
-  "is_system",
-  "created_at",
-] as const;
-const PERMISSION_FIELDS = ["id", "key", "description"] as const;
-const roleList = assuredItems<Answer<"/v1/organizations/{organizationID}/roles">>()(...ROLE_FIELDS);
-const createdRole = assured<Answer<"/v1/organizations/{organizationID}/roles", "post">>()(
-  ...ROLE_FIELDS,
-);
-const catalogue = assuredItems<Answer<"/v1/permissions">>()(...PERMISSION_FIELDS);
-const rolePermissions = assuredItems<Answer<"/v1/roles/{roleID}/permissions">>()(
-  ...PERMISSION_FIELDS,
-);
-export type Role = z.infer<typeof roleList>["items"][number];
-export type Permission = z.infer<typeof catalogue>["items"][number];
+/** A role in the organisation; a system role is built in and can't be deleted. */
+export type Role = Answer<"/v1/organizations/{organizationID}/roles">["items"][number];
+export type Permission = Answer<"/v1/permissions">["items"][number];
 
 /** Query definitions for role reads; `list` takes any tenant the caller belongs to. */
 export const roleQueries = {
@@ -37,7 +17,6 @@ export const roleQueries = {
       queryFn: () =>
         backend.get("/v1/organizations/{organizationID}/roles", {
           path: { organizationID: organizationId ?? "" },
-          schema: roleList,
         }),
       enabled: !!organizationId,
     }),
@@ -49,7 +28,6 @@ export const roleQueries = {
       queryFn: () =>
         backend.get("/v1/roles/{roleID}/permissions", {
           path: { roleID: roleId ?? "" },
-          schema: rolePermissions,
         }),
     }),
 };
@@ -63,7 +41,7 @@ export function usePermissions(enabled = true) {
   const organizationId = useOrganizationId();
   return useQuery({
     queryKey: authzKeys.permissions(organizationId),
-    queryFn: () => backend.get("/v1/permissions", { schema: catalogue }),
+    queryFn: () => backend.get("/v1/permissions"),
     enabled,
   });
 }
@@ -77,7 +55,6 @@ export function useCreateRole() {
       return backend.post("/v1/organizations/{organizationID}/roles", {
         path: { organizationID: organizationId },
         body,
-        schema: createdRole,
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: authzKeys.roles(organizationId) }),

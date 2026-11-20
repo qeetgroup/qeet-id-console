@@ -54,6 +54,7 @@ function page(items: SuspendedDirectoryUser[], total = items.length): SuspendedU
   return {
     items,
     total,
+    limit: 200,
     complete: true,
     summary: { total, high_risk: 0, policy: 0, manual: 0, pending: 0 },
     reasons: [],
@@ -113,14 +114,6 @@ describe("useSuspendedUsers", () => {
       expect.objectContaining({ query: { q: "asha", risk: "high", limit: 200 } }),
     );
     expect(result.current.data).toEqual(response);
-  });
-
-  it("rejects a page that breaks the response contract", async () => {
-    respondWith(page([{ ...member("user-1"), risk: "extreme" as "high" }]));
-    const { result } = setup(() => useSuspendedUsers(DEFAULT_SUSPENDED_FILTERS));
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.data).toBeUndefined();
   });
 
   it("does not ask without a tenant or without user.read", () => {

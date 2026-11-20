@@ -5,7 +5,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
-import { assured, assuredItems, strictly } from "@/platform/api/assured";
+import { strictly } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer, Body, Schemas } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
@@ -14,25 +14,19 @@ import { authKeys } from "./keys";
 type LinkRecord = Schemas<"federation">["AdminPortalLink"];
 export type AdminPortalCapability = NonNullable<LinkRecord["capabilities"]>[number];
 
-// The server always sends these (internal/federation/adminportal/adminportal.go, Link); the
-// document marks them optional.
-const LINK_FIELDS = ["id", "organization_id", "capabilities", "expires_at", "created_at"] as const;
-const linkPage = assuredItems<Answer<"/v1/organizations/{organizationID}/admin-portal/links">>()(
-  ...LINK_FIELDS,
-);
-export type AdminPortalLink = z.infer<typeof linkPage>["items"][number];
+export type AdminPortalLink = LinkRecord;
 
 export type GenerateAdminPortalLinkInput = Body<
   "/v1/organizations/{organizationID}/admin-portal/links",
   "post"
 >;
 
-// The token and its URL come back this once.
+// The token and its URL come back this once: a bearer credential, so it is held to being there.
 const generatedLink = strictly<
   Answer<"/v1/organizations/{organizationID}/admin-portal/links", "post">
 >()(
   z.object({
-    link: assured<LinkRecord>()(...LINK_FIELDS),
+    link: z.custom<LinkRecord>((value) => typeof value === "object" && value !== null),
     token: z.string().min(1),
     url: z.string().min(1),
   }),
@@ -47,7 +41,6 @@ export function useAdminPortalLinks() {
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/admin-portal/links", {
         path: { organizationID: organizationId ?? "" },
-        schema: linkPage,
       }),
   });
 }

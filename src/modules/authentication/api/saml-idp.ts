@@ -2,33 +2,15 @@
 // assertions (the inverse of saml.ts). Each organisation is its own IdP, with its own URLs.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { z } from "zod";
 
 import { getApiBaseUrl } from "@/platform/api/client";
 import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
-import { assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 
-// The server always sends these (internal/federation/saml/idp.go, ServiceProvider); the document
-// marks them optional.
-const samlProviderPage = assuredItems<
-  Answer<"/v1/organizations/{organizationID}/saml-providers">
->()(
-  "id",
-  "organization_id",
-  "name",
-  "entity_id",
-  "acs_url",
-  "name_id_format",
-  "name_id_attribute",
-  "certificate",
-  "status",
-  "created_at",
-  "updated_at",
-);
-export type SamlProvider = z.infer<typeof samlProviderPage>["items"][number];
+export type SamlProvider =
+  Answer<"/v1/organizations/{organizationID}/saml-providers">["items"][number];
 
 export interface CreateSamlProviderInput {
   name: string;
@@ -62,7 +44,6 @@ export function useSamlProviders(enabled = true) {
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/saml-providers", {
         path: { organizationID: organizationId ?? "" },
-        schema: samlProviderPage,
       }),
   });
 }

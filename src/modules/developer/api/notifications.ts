@@ -1,11 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { z } from "zod";
 
 import { ApiError } from "@/platform/api/client";
 import { useOrganizationId } from "@/platform/auth/session";
 import { isOneOf } from "@/shared/utils/one-of";
 import { developerKeys } from "./keys";
-import { assured } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 
@@ -16,11 +14,8 @@ export type NotificationKind = (typeof KINDS)[number];
 export const notificationKind = (kind: string): NotificationKind =>
   isOneOf(KINDS, kind) ? kind : "info";
 
-// The server always sends both (internal/operations/notification, inbox); the document marks them
-// optional. A notification's `href` is the in-app link it opens; `read_at` is set
-// once the person has read it.
-const inbox = assured<Answer<"/v1/notifications">>()("items", "unread_count");
-type NotificationsResponse = z.infer<typeof inbox>;
+// A notification's `href` is the in-app link it opens; `read_at` is set once the person has read it.
+type NotificationsResponse = Answer<"/v1/notifications">;
 export type Notification = NotificationsResponse["items"][number];
 
 const EMPTY: NotificationsResponse = { items: [], unread_count: 0 };
@@ -35,7 +30,7 @@ export function useNotifications(enabled = true) {
     enabled,
     queryFn: async (): Promise<NotificationsResponse> => {
       try {
-        return await backend.get("/v1/notifications", { schema: inbox });
+        return await backend.get("/v1/notifications");
       } catch (err) {
         // Only a missing endpoint reads as empty; auth and server errors still surface.
         if (err instanceof ApiError && err.status === 404) return EMPTY;

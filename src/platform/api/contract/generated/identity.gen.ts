@@ -512,7 +512,7 @@ export interface paths {
         put?: never;
         /**
          * Create organization
-         * @description Creates an organization and makes the calling user its owner. A newly registered user has no organization until this succeeds; every organization-scoped endpoint requires one. A verified email is required before an organization can be provisioned. Only the free plan is created here (plan may be left out): pro and enterprise answer 402 billing.checkout_required, since a paid plan starts with checkout. Every organization is created in the region this service is hosted in; asking for another is refused with 422 organization.region_unavailable (metadata.available names the one there is). The response includes a organization-scoped token pair so the client can immediately switch into the new organization; it continues the caller's session (its sign-in, second factor and end), and is left out for a caller without one.
+         * @description Creates an organization and makes the calling user its owner. A newly registered user has no organization until this succeeds; every organization-scoped endpoint requires one. A verified email is required before an organization can be provisioned. Only the free plan is created here (plan may be left out): starter, pro and enterprise answer 402 billing.checkout_required, since a paid plan starts with checkout. Every organization is created in the region this service is hosted in; asking for another is refused with 422 organization.region_unavailable (metadata.available names the one there is). The response includes a organization-scoped token pair so the client can immediately switch into the new organization; it continues the caller's session (its sign-in, second factor and end), and is left out for a caller without one.
          */
         post: operations["createOrganization"];
         delete?: never;
@@ -874,7 +874,7 @@ export interface paths {
         };
         /**
          * List users
-         * @description Returns a page of users in the caller's organization, with total, how many match. Every filter is optional and they combine: q (display name, email or phone, case-insensitive), role (a role name in the organization), department (metadata.department), mfa (on or off: a confirmed second factor), email_verified, status (active, invited or suspended), last_seen (today: under a day; week: 1 to 7 days; month: 7 to 30 days; older: over 30 days; never). sort is created (the default, newest first), name or last_seen, with order asc or desc; a malformed value is refused with 400. Pages by opaque cursor, in the default order only: next_cursor is present while there is another page, and any other order answers its first page. Requires an existing organization; scope comes from the authenticated principal. Members are the organization's own users (their home is this organization) and the people who hold a role in it; a member whose home is another organization is shown with empty metadata, which their home organization keeps; last_seen_at and last_seen_ip come from sessions in this organization only.
+         * @description Returns a page of users in the caller's organization, with total, how many match. Every filter is optional and they combine: q (display name, email or phone, case-insensitive), role (a role name in the organization), department (metadata.department, of the organization's own people), mfa (on or off: a confirmed second factor), email_verified, status (active, invited or suspended), last_seen (today: under a day; week: 1 to 7 days; month: 7 to 30 days; older: over 30 days; never), admins_without_mfa (true: the members holding the built-in owner or admin role with no confirmed second factor, exactly those the summary's admins_without_mfa counts; false: everyone else), in_group (true: in at least one of the organization's groups; false: in none of them, whatever groups they are in elsewhere), id and email (each repeatable, up to 200: exactly the members named, an email in any case; with limit=200 one read puts a name to up to 200 people), include_deleted (true: also the members since deleted, so history can still name them, each marked with deleted_at and status deleted). sort is created (the default, newest first), name (by display name, or the email without one, case-insensitive; A first by default) or last_seen (most recent first by default; a member never seen comes last either way), with order asc or desc; a malformed value is refused with 400. Pages by opaque cursor in every order, stable when sort keys tie: next_cursor is present while there is another page, and a cursor works only with the sort and order of the page that gave it (400 otherwise). Requires an existing organization; scope comes from the authenticated principal. Members are the organization's own users (their home is this organization) and the people who hold a role in it; a member whose home is another organization is shown with empty metadata, which their home organization keeps; last_seen_at and last_seen_ip come from sessions in this organization only.
          */
         get: operations["listUsers"];
         put?: never;
@@ -1390,7 +1390,7 @@ export interface paths {
         };
         /**
          * User directory summary
-         * @description Organization-wide member counts for the Users admin summary: total, active, suspended, invited, with and without a second factor, new in the last 30 days; members by when they were last seen (last_seen: today, week, month, older, never, with the same edges as the list's last_seen filter); owners and admins without a second factor; members whose email isn't verified; and members by role and by department (metadata.department). Each count equals the list's total for the matching filter. Requires `user.read`.
+         * @description Organization-wide member counts for the Users admin summary: total, active, suspended, invited, with and without a second factor, new in the last 30 days; members by when they were last seen (last_seen: today, week, month, older, never, with the same edges as the list's last_seen filter); owners and admins without a second factor; members whose email isn't verified; members by role; and the organization's own people by department (metadata.department), by team within its department (metadata.team) and by location (metadata.location), each up to 200, largest first, and an empty list when there are none. Each count equals the list's total for the matching filter. Requires `user.read`.
          */
         get: operations["getUserStats"];
         put?: never;
@@ -1636,7 +1636,8 @@ export interface components {
             organization_id: string;
             /** Format: uuid */
             role_id: string | null;
-            status: string;
+            /** @enum {string} */
+            status: "pending" | "accepted" | "declined" | "expired" | "revoked";
         };
         InviteCreateInput: {
             email: string;
@@ -1700,31 +1701,33 @@ export interface components {
         NextCursor: string;
         Organization: {
             /** Format: date-time */
-            created_at?: string;
+            created_at: string;
             /**
              * Format: date-time
              * @description When a scheduled deletion takes effect; null when none is.
              */
-            deletion_due_at?: string | null;
+            deletion_due_at: string | null;
             /** Format: uuid */
-            id?: string;
+            id: string;
+            /** @description The organization's logo, a hosted URL or a small inline data URL; empty when none is set, and the console shows the name's initials. */
+            logo_url: string;
             /** @description List-only. Distinct members (rbac.user_roles holders) in this org. */
             member_count?: number;
-            metadata?: {
+            metadata: {
                 [key: string]: unknown;
             } | null;
             /** @description List-only. Members with at least one MFA factor enrolled. */
             mfa_enabled_count?: number;
-            name?: string;
+            name: string;
             /** @enum {string} */
-            plan?: "free" | "pro" | "enterprise";
+            plan: "free" | "starter" | "pro" | "enterprise";
             /** @description The region this service is hosted in, where the organization's data is held. It is the same for every organization of a deployment and isn't a per-organization data-residency choice. */
-            region?: string;
-            slug?: string;
+            region: string;
+            slug: string;
             /** @enum {string} */
-            status?: "active" | "suspended";
+            status: "active" | "suspended";
             /** Format: date-time */
-            updated_at?: string;
+            updated_at: string;
         };
         OrganizationBranding: {
             custom_domain?: string | null;
@@ -1750,12 +1753,14 @@ export interface components {
             };
         };
         OrganizationCreate: {
+            /** @description Optional logo, a hosted URL or a small inline data URL, up to 3,000,000 characters. Left out or empty, the console shows the name's initials. */
+            logo_url?: string | null;
             metadata?: {
                 [key: string]: unknown;
             } | null;
             name: string;
             /** @enum {string|null} */
-            plan?: "free" | "pro" | "enterprise" | null;
+            plan?: "free" | "starter" | "pro" | "enterprise" | null;
             /** @description Optional. Only the region this service is hosted in is accepted (422 organization.region_unavailable, with metadata.available, otherwise); the organization is created there either way. */
             region?: string | null;
             slug: string;
@@ -1764,16 +1769,16 @@ export interface components {
             access_token?: string;
             /** Format: date-time */
             expires_at?: string;
-            organization?: components["schemas"]["Organization"];
+            organization: components["schemas"]["Organization"];
             /** Format: uuid */
-            organization_id?: string;
+            organization_id: string;
             refresh_token?: string;
             /**
              * @example [
              *       "owner"
              *     ]
              */
-            roles?: string[];
+            roles: string[];
             /** Format: uuid */
             session_id?: string;
             token_type?: string;
@@ -1781,16 +1786,16 @@ export interface components {
             user_id?: string;
         };
         OrganizationPage: {
-            items?: components["schemas"]["Organization"][];
+            items: components["schemas"]["Organization"][];
             next_cursor?: components["schemas"]["NextCursor"];
-        } & components["schemas"]["Page"];
+        } & WithRequired<components["schemas"]["Page"], "items">;
         OrganizationUpdate: {
+            /** @description The logo, a hosted URL or a small inline data URL, up to 3,000,000 characters; empty removes it. */
+            logo_url?: string | null;
             metadata?: {
                 [key: string]: unknown;
             } | null;
             name?: string | null;
-            /** @enum {string|null} */
-            plan?: "free" | "pro" | "enterprise" | null;
             /** @description Read-only: the same value is accepted, as a form sends every field back; another is refused with 422 organization.region_read_only. */
             region?: string | null;
             /** @enum {string|null} */
@@ -1835,24 +1840,24 @@ export interface components {
             name: string;
         };
         SuspendedDirectoryUser: {
-            avatar_url?: string | null;
-            can_manage?: boolean;
-            display_name?: string | null;
+            avatar_url: string | null;
+            can_manage: boolean;
+            display_name: string | null;
             /** Format: email */
-            email?: string;
+            email: string;
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: date-time */
-            last_sign_in?: string | null;
-            reason?: string;
+            last_sign_in: string | null;
+            reason: string;
             /** @enum {string} */
-            review?: "pending" | "reviewed" | "external";
+            review: "pending" | "reviewed" | "external";
             /** @enum {string} */
-            risk?: "unknown" | "low" | "medium" | "high";
-            source?: string;
+            risk: "unknown" | "low" | "medium" | "high";
+            source: string;
             /** Format: date-time */
-            suspended_at?: string | null;
-            team?: string;
+            suspended_at: string | null;
+            team: string;
         };
         TemplateNode: {
             children?: components["schemas"]["TemplateNode"][];
@@ -1896,20 +1901,25 @@ export interface components {
                 name?: string;
             }[];
             /** @description The person's picture as a data:image/ URL, or null for none. */
-            avatar_url?: string | null;
+            avatar_url: string | null;
             /** Format: date-time */
-            created_at?: string;
-            display_name?: string | null;
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description When someone since deleted was, on a members list that asked to include them (include_deleted); absent for everyone else.
+             */
+            deleted_at?: string;
+            display_name: string | null;
             /** Format: email */
-            email?: string;
+            email: string;
             /** Format: date-time */
-            email_verified_at?: string | null;
+            email_verified_at: string | null;
             /** @description Number of groups the user belongs to in this organization; on the list and GET /v1/users/{id}. */
             groups_count?: number;
             /** @description The name of the organization that manages the account (organization_id). */
             home_organization_name?: string | null;
             /** Format: uuid */
-            id?: string;
+            id: string;
             /**
              * Format: date-time
              * @description Their most recent session activity or sign-in in this organization, or null; on the list and GET /v1/users/{id}.
@@ -1917,20 +1927,23 @@ export interface components {
             last_seen_at?: string | null;
             /** @description The address of that session or sign-in, or null. */
             last_seen_ip?: string | null;
-            metadata?: {
+            metadata: {
                 [key: string]: unknown;
             } | null;
             /** @description True if the user has a confirmed TOTP, a verified OTP factor, or a push device; on the list and GET /v1/users/{id}. */
             mfa_enabled?: boolean;
             /** Format: uuid */
-            organization_id?: string;
-            phone?: string | null;
+            organization_id: string;
+            phone: string | null;
             /** Format: date-time */
-            phone_verified_at?: string | null;
+            phone_verified_at: string | null;
             /** @description Role names in the organization reading the user, on the list and GET /v1/users/{id}. */
             roles?: string[];
-            /** @enum {string} */
-            status?: "active" | "invited" | "suspended";
+            /**
+             * @description deleted only for someone since deleted, on a members list that asked to include them (include_deleted).
+             * @enum {string}
+             */
+            status: "active" | "invited" | "suspended" | "deleted";
             /** @description On GET /v1/users/{id}, for a suspended person whose home is this organization; absent otherwise. */
             suspension?: {
                 reason?: string;
@@ -1945,7 +1958,7 @@ export interface components {
                 suspended_by_email?: string | null;
             } | null;
             /** Format: date-time */
-            updated_at?: string;
+            updated_at: string;
         };
         UserBulkImport: {
             /**
@@ -2015,44 +2028,55 @@ export interface components {
             name: string;
         };
         UserPage: {
-            items?: components["schemas"]["User"][];
+            items: components["schemas"]["User"][];
             next_cursor?: components["schemas"]["NextCursor"];
             /** @description How many members the filters match. */
-            total?: number;
-        } & components["schemas"]["Page"];
+            total: number;
+        } & WithRequired<components["schemas"]["Page"], "items">;
         UserStats: {
-            active?: number;
+            active: number;
             /** @description Members holding the built-in owner or admin role with no confirmed second factor. */
-            admins_without_mfa?: number;
-            /** @description Up to 200 departments, largest first. */
-            by_department?: {
-                count?: number;
-                department?: string;
+            admins_without_mfa: number;
+            /** @description Up to 200 departments (metadata.department), largest first, counting the organization's own people: another organization's show it no metadata. */
+            by_department: {
+                count: number;
+                department: string;
             }[];
-            by_role?: {
-                count?: number;
-                role?: string;
+            /** @description Up to 200 locations (metadata.location), largest first, counting the organization's own people. */
+            by_location: {
+                count: number;
+                location: string;
             }[];
-            email_unverified?: number;
-            invited?: number;
-            last_seen?: {
-                month?: number;
-                never?: number;
-                older?: number;
-                today?: number;
-                week?: number;
+            by_role: {
+                count: number;
+                role: string;
+            }[];
+            /** @description Up to 200 teams (metadata.team) within their departments (metadata.department, "" when a member names none), largest first, counting the organization's own people. */
+            by_team: {
+                count: number;
+                department: string;
+                team: string;
+            }[];
+            email_unverified: number;
+            invited: number;
+            last_seen: {
+                month: number;
+                never: number;
+                older: number;
+                today: number;
+                week: number;
             };
-            mfa_enabled?: number;
-            mfa_missing?: number;
-            new_last_30d?: number;
-            suspended?: number;
-            total?: number;
+            mfa_enabled: number;
+            mfa_missing: number;
+            new_last_30d: number;
+            suspended: number;
+            total: number;
         };
         UserTrends: {
             /** @description 30-day daily cumulative MFA-enrolled count (oldest first). */
-            mfa_enabled?: number[];
+            mfa_enabled: number[];
             /** @description 30-day daily cumulative member count (oldest first). */
-            total?: number[];
+            total: number[];
         };
         UserUpdate: {
             /** @description A data:image/ URL, or an empty string to clear the picture. */
@@ -2976,17 +3000,17 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        account_exists?: boolean;
-                        email?: string;
+                        account_exists: boolean;
+                        email: string;
                         /** Format: date-time */
-                        expires_at?: string;
-                        methods?: {
-                            passkey?: boolean;
-                            password?: boolean;
+                        expires_at: string;
+                        methods: {
+                            passkey: boolean;
+                            password: boolean;
                         };
-                        organization?: {
-                            name?: string;
-                            slug?: string;
+                        organization: {
+                            name: string;
+                            slug: string;
                         };
                     };
                 };
@@ -3360,12 +3384,16 @@ export interface operations {
                      *         "id": "018f2a6c-9c3d-7e4a-b2f1-3a5c9d8e1f00",
                      *         "slug": "acme",
                      *         "name": "Acme, Inc.",
+                     *         "status": "active",
                      *         "plan": "free",
                      *         "region": "ap-south-1",
+                     *         "logo_url": "",
+                     *         "metadata": {
+                     *           "industry": "fintech"
+                     *         },
                      *         "created_at": "2026-09-24T10:15:00Z",
                      *         "updated_at": "2026-09-24T10:15:00Z",
-                     *         "member_count": 1,
-                     *         "mfa_enabled_count": 0
+                     *         "deletion_due_at": null
                      *       },
                      *       "organization_id": "018f2a6c-9c3d-7e4a-b2f1-3a5c9d8e1f00",
                      *       "roles": [
@@ -3682,7 +3710,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Domain"][];
+                        items: components["schemas"]["Domain"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -4111,10 +4139,20 @@ export interface operations {
     listUsers: {
         parameters: {
             query?: {
+                /** @description true: only the members holding the built-in owner or admin role with no confirmed second factor; false: everyone else. */
+                admins_without_mfa?: boolean;
                 /** @description Opaque pagination cursor from a prior response's next_cursor. */
                 cursor?: components["parameters"]["Cursor"];
                 department?: string;
+                /** @description Only these members, by email, exactly but in any case. Repeat it, up to 200 times. */
+                email?: string[];
                 email_verified?: boolean;
+                /** @description Only these members, by id. Repeat it, up to 200 times (id=a&id=b); another organization's people are never answered. */
+                id?: string[];
+                /** @description true: only the members in at least one of the organization's groups; false: only those in none of them. */
+                in_group?: boolean;
+                /** @description true: the members since deleted too (the organization's own people it deleted, and anyone deleted who still holds one of its roles), each with deleted_at and status deleted. */
+                include_deleted?: boolean;
                 last_seen?: "today" | "week" | "month" | "older" | "never";
                 /** @description Page size, 1 to 200. A larger value is lowered to 200; a smaller or malformed one gets the default. */
                 limit?: components["parameters"]["Limit"];
@@ -4315,28 +4353,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        applications_count?: number;
-                        groups?: {
-                            description?: string;
+                        applications_count: number;
+                        groups: {
+                            description: string;
                             /** Format: uuid */
-                            id?: string;
-                            name?: string;
+                            id: string;
+                            name: string;
                         }[];
-                        organization?: {
+                        organization: {
                             /** Format: uuid */
-                            id?: string;
-                            name?: string;
-                            slug?: string;
+                            id: string;
+                            name: string;
+                            slug: string;
                         } | null;
-                        permissions_direct?: number;
-                        permissions_inherited?: number;
-                        permissions_total?: number;
-                        policies_count?: number;
-                        roles?: {
-                            description?: string;
+                        permissions_direct: number;
+                        permissions_inherited: number;
+                        permissions_total: number;
+                        policies_count: number;
+                        roles: {
+                            description: string;
                             /** Format: uuid */
-                            id?: string;
-                            name?: string;
+                            id: string;
+                            name: string;
                         }[];
                     };
                 };
@@ -4530,16 +4568,16 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: {
+                        items: {
                             /** Format: date-time */
-                            created_at?: string;
+                            created_at: string;
                             /** Format: uuid */
-                            id?: string;
+                            id: string;
                             /** Format: date-time */
-                            last_seen_at?: string;
-                            name?: string;
+                            last_seen_at: string;
+                            name: string;
                             /** @enum {string} */
-                            platform?: "ios" | "android";
+                            platform: "ios" | "android";
                         }[];
                         truncated?: components["schemas"]["Truncated"];
                     };
@@ -4676,20 +4714,20 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        active_sessions?: number;
-                        distinct_devices?: number;
-                        mfa_enabled?: boolean;
-                        mfa_required?: boolean;
-                        otp_factors?: number;
+                        active_sessions: number;
+                        distinct_devices: number;
+                        mfa_enabled: boolean;
+                        mfa_required: boolean;
+                        otp_factors: number;
                         /** Format: date-time */
-                        passkey_last_used_at?: string | null;
-                        passkeys?: number;
+                        passkey_last_used_at: string | null;
+                        passkeys: number;
                         /** Format: date-time */
-                        password_changed_at?: string | null;
-                        password_set?: boolean;
-                        push_devices?: number;
-                        recovery_codes_remaining?: number;
-                        totp_enabled?: boolean;
+                        password_changed_at: string | null;
+                        password_set: boolean;
+                        push_devices: number;
+                        recovery_codes_remaining: number;
+                        totp_enabled: boolean;
                     };
                 };
             };
@@ -4718,23 +4756,23 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: {
+                        items: {
                             /** @description The city it was opened from, when the proxy names one. */
                             city?: string;
                             /** @description Where the session was opened, approximately (ISO 3166-1 alpha-2); omitted when unknown. */
                             country?: string;
                             /** Format: date-time */
-                            created_at?: string;
+                            created_at: string;
                             /** @description The device and browser in words ("Chrome on macOS"), as the person's own session list says. */
-                            device?: string;
+                            device: string;
                             /** @enum {string} */
-                            device_kind?: "desktop" | "mobile" | "tablet" | "unknown";
+                            device_kind: "desktop" | "mobile" | "tablet" | "unknown";
                             /** Format: uuid */
-                            id?: string;
-                            ip?: string | null;
+                            id: string;
+                            ip: string | null;
                             /** Format: date-time */
-                            last_seen_at?: string;
-                            user_agent?: string | null;
+                            last_seen_at: string;
+                            user_agent: string | null;
                         }[];
                         truncated?: components["schemas"]["Truncated"];
                     };
@@ -4873,30 +4911,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: {
+                        items: {
                             /** Format: date-time */
-                            created_at?: string;
+                            created_at: string;
                             /** @description The request came from this device. */
-                            current?: boolean;
+                            current: boolean;
                             /** @description The device and browser in words, such as "Chrome on macOS". */
-                            device?: string;
+                            device: string;
                             /** @enum {string} */
-                            device_kind?: "desktop" | "mobile" | "tablet" | "unknown";
+                            device_kind: "desktop" | "mobile" | "tablet" | "unknown";
                             /** Format: date-time */
-                            expires_at?: string;
+                            expires_at: string;
                             /** Format: uuid */
-                            id?: string;
+                            id: string;
                             /**
                              * Format: date-time
                              * @description When the device last skipped the second factor.
                              */
-                            last_used_at?: string | null;
+                            last_used_at: string | null;
                             /**
                              * Format: uuid
                              * @description The organization the device was remembered in.
                              */
-                            organization_id?: string | null;
-                            user_agent?: string;
+                            organization_id: string | null;
+                            user_agent: string;
                         }[];
                         truncated?: components["schemas"]["Truncated"];
                     };
@@ -5214,20 +5252,20 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: {
+                        items: {
                             /** Format: date-time */
-                            created_at?: string;
+                            created_at: string;
                             /** Format: date-time */
-                            deleted_at?: string;
+                            deleted_at: string;
                             /**
                              * Format: uuid
                              * @description The admin who deleted the user; null when not recorded.
                              */
-                            deleted_by?: string | null;
-                            display_name?: string | null;
-                            email?: string;
+                            deleted_by: string | null;
+                            display_name: string | null;
+                            email: string;
                             /** Format: uuid */
-                            id?: string;
+                            id: string;
                         }[];
                         next_cursor?: components["schemas"]["NextCursor"];
                     };
@@ -5288,27 +5326,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["SuspendedDirectoryUser"][];
-                        limit?: number;
+                        items: components["schemas"]["SuspendedDirectoryUser"][];
+                        limit: number;
                         next_cursor?: components["schemas"]["NextCursor"];
-                        queue?: components["schemas"]["SuspendedDirectoryUser"][];
-                        reasons?: {
-                            count?: number;
-                            key?: string;
+                        queue: components["schemas"]["SuspendedDirectoryUser"][];
+                        reasons: {
+                            count: number;
+                            key: string;
                         }[];
-                        risks?: {
-                            count?: number;
-                            key?: string;
+                        risks: {
+                            count: number;
+                            key: string;
                         }[];
-                        summary?: {
-                            high_risk?: number;
-                            manual?: number;
-                            pending?: number;
-                            policy?: number;
-                            total?: number;
+                        summary: {
+                            high_risk: number;
+                            manual: number;
+                            pending: number;
+                            policy: number;
+                            total: number;
                         };
-                        teams?: string[];
-                        total?: number;
+                        teams: string[];
+                        total: number;
                     };
                 };
             };
@@ -5360,3 +5398,6 @@ export interface operations {
         };
     };
 }
+type WithRequired<T, K extends keyof T> = T & {
+    [P in K]-?: T[P];
+};

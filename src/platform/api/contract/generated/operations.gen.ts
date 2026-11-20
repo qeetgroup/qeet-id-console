@@ -1249,6 +1249,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/organizations/{organizationID}/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Organization overview
+         * @description The dashboard's set-up checklist and counts in one read. Each area is answered only to a caller the area's own list would admit, and left out of the answer otherwise: single_sign_on, applications, domains, directory and remembered_devices need connection.read; api_keys apikey.read; webhooks webhook.read; sign_in, access_policies and threats policy.read; invitations user.read; billing billing.read. A person is judged by their roles, an application's token also by its scopes, and an API key, service principal or agent by its scopes, as the route guard judges them. The read itself needs organization.read. The detailed lists stay at their own reads.
+         */
+        get: operations["getOrganizationOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/organizations/{organizationID}/qeetai/settings": {
         parameters: {
             query?: never;
@@ -1540,7 +1560,7 @@ export interface paths {
         };
         /**
          * Qeet AI configuration status
-         * @description Returns whether the AI qeetai is configured server-side and which provider/model is active. Never returns key material. Used by the console to render the unconfigured setup state.
+         * @description Returns whether Qeet AI is configured for the caller's organization, whose key applies (source), whether the assistant may be used (available) and which provider and model are active. Never returns key material. Used by the console to render the unconfigured setup state.
          */
         get: operations["getQeetAiStatus"];
         put?: never;
@@ -1848,31 +1868,31 @@ export interface components {
             type: string;
         };
         AuditAnomaly: {
-            action?: string;
-            actor_email?: string | null;
+            action: string;
+            actor_email: string | null;
             /** Format: uuid */
-            actor_user_id?: string | null;
+            actor_user_id: string | null;
             /** Format: date-time */
-            created_at?: string;
+            created_at: string;
             /** Format: date-time */
-            event_at?: string;
+            event_at: string;
             /** Format: uuid */
-            event_id?: string;
+            event_id: string;
             /** Format: uuid */
-            id?: string;
-            ip?: string | null;
+            id: string;
+            ip: string | null;
             /** Format: uuid */
-            organization_id?: string;
-            reasons?: ("new_action_type" | "unusual_hour" | "new_ip")[];
+            organization_id: string;
+            reasons: ("new_action_type" | "unusual_hour" | "new_ip")[];
             /** Format: date-time */
-            resolved_at?: string | null;
+            resolved_at: string | null;
             /** Format: uuid */
-            resolved_by?: string | null;
-            resource_type?: string;
+            resolved_by: string | null;
+            resource_type: string;
             /** @description 0..1 weighted-novelty anomaly score. */
-            score?: number;
+            score: number;
             /** @enum {string} */
-            status?: "open" | "resolved";
+            status: "open" | "resolved";
         };
         AuditAnomalySettings: {
             enabled?: boolean;
@@ -1981,13 +2001,13 @@ export interface components {
             updated_at?: string;
         };
         EmailResolvedTemplate: components["schemas"]["EmailEditorInput"] & {
-            custom?: boolean;
+            custom: boolean;
             /** @enum {string} */
-            delivery_scope?: "organization" | "platform";
-            description?: string;
-            key?: string;
-            name?: string;
-            variables?: string[];
+            delivery_scope: "organization" | "platform";
+            description: string;
+            key: string;
+            name: string;
+            variables: string[];
         };
         EmailSuppression: {
             /** @description The address masked (first character and domain). */
@@ -2049,23 +2069,23 @@ export interface components {
         };
         /** @description Outcome of a single compliance control check against live system state. */
         EvidenceControlResult: {
-            category?: string;
+            category: string;
             /** @description Framework reference code (e.g. CC6.1, or A.8.5 in ISO/IEC 27001:2022 Annex A). */
-            criteria?: string;
+            criteria: string;
             /** @description An ISO control's ISO/IEC 27001:2013 Annex A reference (e.g. A.9.4), for audits still on that revision; absent for SOC 2. */
             criteria_2013?: string;
             /** @description Human-readable explanation of what was found, in English; always populated. */
-            detail?: string;
+            detail: string;
             /** @description What was found as a code, such as password_length.too_short, for a console to word itself with params. */
-            detail_code?: string;
+            detail_code: string;
             /**
              * Format: date-time
              * @description On a failing control, when it started failing, carried from run to run while it keeps failing.
              */
             failing_since?: string;
             /** @description Unique control identifier within the framework (e.g. CC6.1-MFA). */
-            id?: string;
-            name?: string;
+            id: string;
+            name: string;
             owner?: components["schemas"]["ControlOwner"];
             /** @description The values the finding is about, such as {min_length, required}. */
             params?: {
@@ -2077,28 +2097,28 @@ export interface components {
              * @description pass — condition positively confirmed; fail — condition not met; na — data not determinable (never a fabricated pass).
              * @enum {string}
              */
-            status?: "pass" | "fail" | "na";
+            status: "pass" | "fail" | "na";
         };
         /** @description Immutable snapshot of one compliance evidence generation pass for a organization+framework pair. Controls are populated on GetRun; omitted on ListRuns. */
         EvidenceRun: {
             /** @description Per-control results; present on GetRun, omitted on ListRuns. */
             controls?: components["schemas"]["EvidenceControlResult"][];
-            fail_count?: number;
+            fail_count: number;
             /** @enum {string} */
-            framework?: "soc2" | "iso27001";
+            framework: "soc2" | "iso27001";
             /** Format: date-time */
-            generated_at?: string;
+            generated_at: string;
             /**
              * Format: uuid
              * @description Actor user ID; null when generated by a system or API-key actor.
              */
             generated_by?: string | null;
             /** Format: uuid */
-            id?: string;
-            na_count?: number;
+            id: string;
+            na_count: number;
             /** Format: uuid */
-            organization_id?: string;
-            pass_count?: number;
+            organization_id: string;
+            pass_count: number;
         };
         ExportInput: {
             /**
@@ -2240,11 +2260,92 @@ export interface components {
             read_at?: string;
             title: string;
         };
+        /** @description An organization's set-up state and counts. An area is present only when the caller may read it, and then carries every one of its fields. */
+        OrganizationOverview: {
+            /** @description The attribute-based access policies (active: turned on). Needs policy.read. */
+            access_policies?: {
+                abac: components["schemas"]["OverviewCount"];
+            };
+            /** @description The API keys still accepted (not revoked, not expired). Needs apikey.read. */
+            api_keys?: {
+                active: number;
+            };
+            /** @description The organization's OpenID Connect applications, the SAML service providers it signs people in to (active: status active), the live grants people gave the applications, and how many people hold one. Needs connection.read. */
+            applications?: {
+                active_grants: number;
+                oidc_clients: number;
+                people_with_grants: number;
+                saml_service_providers: components["schemas"]["OverviewCount"];
+            };
+            /** @description The plan, and the subscription's state when there is one (null fields without). Needs billing.read. */
+            billing?: {
+                cancel_at_period_end: boolean;
+                /** Format: date-time */
+                current_period_end: string | null;
+                /** @enum {string} */
+                plan: "free" | "starter" | "pro" | "enterprise";
+                /** @enum {string|null} */
+                subscription_status: "active" | "trialing" | "canceled" | "past_due" | null;
+                /** Format: date-time */
+                trial_end: string | null;
+            };
+            /** @description The directory errors of the last 7 days still open, as the directory errors page shows them by default. Needs connection.read. */
+            directory?: {
+                open_errors: number;
+            };
+            /** @description The organization's domains: all, verified, and verified with single sign-on required. Needs connection.read. */
+            domains?: {
+                sso_required: number;
+                total: number;
+                verified: number;
+            };
+            /** Format: date-time */
+            generated_at: string;
+            /** @description The invitations still waiting to be answered: pending and not expired. Needs user.read. */
+            invitations?: {
+                pending: number;
+            };
+            /** Format: uuid */
+            organization_id: string;
+            /** @description The devices that still skip the second step, and the people they belong to. Needs connection.read. */
+            remembered_devices?: {
+                devices: number;
+                people: number;
+            };
+            /** @description The first-factor methods allowed, whether people may register themselves and devices be remembered, and who must use a second factor. Needs policy.read. */
+            sign_in?: {
+                magic_link: boolean;
+                /** @enum {string} */
+                mfa_enforcement: "optional" | "required" | "admin_only";
+                passkey: boolean;
+                password: boolean;
+                remember_device: boolean;
+                self_registration: boolean;
+            };
+            /** @description The organization's SAML, LDAP and OpenID Connect connections (active: status active), its social providers (active: turned on) and its SCIM tokens still accepted. Needs connection.read. */
+            single_sign_on?: {
+                ldap: components["schemas"]["OverviewCount"];
+                oidc: components["schemas"]["OverviewCount"];
+                saml: components["schemas"]["OverviewCount"];
+                scim_tokens_active: number;
+                social_providers: components["schemas"]["OverviewCount"];
+            };
+            /** @description The security anomalies still open. Needs policy.read. */
+            threats?: {
+                open_anomalies: number;
+            };
+            /** @description The webhook subscriptions: all, turned on, and turned on with failing deliveries. Needs webhook.read. */
+            webhooks?: {
+                enabled: number;
+                failing: number;
+                total: number;
+            };
+        };
         /** @description Per-bucket rate limits for an organization. On GET these are the effective values (defaults merged with overrides); on PUT, any bucket supplied is upserted as an override. The answer also carries the defaults, the ceiling an override may reach (the defaults themselves: an organization may tighten its limits, never lift them), the lowest rate an override may set, and the built-in limits every organization shares; those are read-only and ignored on PUT. */
         OrganizationRateLimits: {
-            api_key?: components["schemas"]["RateLimitBucket"];
+            api_key: components["schemas"]["RateLimitBucket"];
             /** @description The platform's fixed limits, the same for every organization. */
-            readonly built_in?: {
+            readonly built_in: {
                 /** @description What the limit covers. */
                 applies: string;
                 /** @description The burst. */
@@ -2258,12 +2359,26 @@ export interface components {
                 /** @description Requests a second. */
                 rate: number;
             }[];
-            readonly ceiling?: components["schemas"]["RateLimitBuckets"];
-            readonly defaults?: components["schemas"]["RateLimitBuckets"];
+            readonly ceiling: components["schemas"]["RateLimitBuckets"];
+            readonly defaults: components["schemas"]["RateLimitBuckets"];
             /** @description The lowest rate, in requests a second, an override may set. */
-            readonly min_rate?: number;
-            organization?: components["schemas"]["RateLimitBucket"];
-            user?: components["schemas"]["RateLimitBucket"];
+            readonly min_rate: number;
+            organization: components["schemas"]["RateLimitBucket"];
+            user: components["schemas"]["RateLimitBucket"];
+        };
+        /** @description The overrides PUT stores, per bucket: a bucket given with both rate and capacity is stored as the organization's override, between the lowest rate (min_rate) and the platform's default, which is also its ceiling; one left out, or given without both, is left as it is. The read-only fields a body read back from GET carries (defaults, ceiling, min_rate, built_in) are accepted and ignored. */
+        OrganizationRateLimitsUpdate: {
+            api_key?: components["schemas"]["RateLimitOverride"];
+            /** @description Ignored. */
+            readonly built_in?: unknown;
+            /** @description Ignored. */
+            readonly ceiling?: unknown;
+            /** @description Ignored. */
+            readonly defaults?: unknown;
+            /** @description Ignored. */
+            readonly min_rate?: unknown;
+            organization?: components["schemas"]["RateLimitOverride"];
+            user?: components["schemas"]["RateLimitOverride"];
         };
         /** @description The fixed-window KPIs and trends; with from, to or days, also range, the sign-ins day by day over that range. */
         Overview: {
@@ -2304,6 +2419,11 @@ export interface components {
             user_trend_14d: components["schemas"]["TrendPoint"][];
             weekly_activity_8w: components["schemas"]["WeeklyActivityPoint"][];
         };
+        /** @description How many there are of something, and how many are in use. */
+        OverviewCount: {
+            active: number;
+            total: number;
+        };
         PaymentMethod: {
             /** @description The card network, bank or wallet. */
             brand?: string;
@@ -2332,17 +2452,17 @@ export interface components {
         /** @description A named qeetai conversation thread (organization + user scoped). */
         QeetAIConversation: {
             /** Format: date-time */
-            created_at?: string;
+            created_at: string;
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: uuid */
-            organization_id?: string;
-            pinned?: boolean;
-            title?: string;
+            organization_id: string;
+            pinned: boolean;
+            title: string;
             /** Format: date-time */
-            updated_at?: string;
+            updated_at: string;
             /** Format: uuid */
-            user_id?: string;
+            user_id: string;
         };
         /** @description One turn in a qeetai conversation. `content` is an array of Anthropic content blocks (text / tool_use / tool_result) stored verbatim. */
         QeetAIMessage: {
@@ -2361,26 +2481,40 @@ export interface components {
             /** @enum {string} */
             role?: "user" | "assistant" | "tool";
         };
-        /** @description AI qeetai configuration state. Never contains key material. */
+        /** @description The organization's Qeet AI state. Never contains key material. */
         QeetAIStatus: {
-            /** @description True when QEETAI_PROVIDER and QEETAI_API_KEY are set. */
-            configured?: boolean;
-            /** @description Model identifier (e.g. "claude-sonnet-5"); empty when not configured. */
+            /** @description True when the assistant may be used: always with the organization's own key, and with the platform's only while the organization's plan includes Qeet AI. */
+            available: boolean;
+            /** @description True when a provider key applies: the organization's own, or the platform's. */
+            configured: boolean;
+            /** @description Model identifier (e.g. "claude-sonnet-5"); empty when not configured, and absent as provider is. */
             model?: string;
-            /** @description Provider name (e.g. "anthropic"); empty when not configured. */
+            /** @description Provider name (e.g. "anthropic"); empty when not configured, and absent when the caller has no organization or its settings can't be read. */
             provider?: string;
+            /**
+             * @description Whose key applies: organization (the organization's own provider key), platform (the deployment's), or none.
+             * @enum {string}
+             */
+            source: "organization" | "platform" | "none";
         };
         /** @description A single token-bucket limit (rate tokens/sec, burst capacity). */
         RateLimitBucket: {
             /** @description Maximum burst capacity. */
-            capacity?: number;
+            capacity: number;
             /** @description Sustained tokens per second. */
-            rate?: number;
+            rate: number;
         };
         RateLimitBuckets: {
             api_key: components["schemas"]["RateLimitBucket"];
             organization: components["schemas"]["RateLimitBucket"];
             user: components["schemas"]["RateLimitBucket"];
+        };
+        /** @description A bucket's override: rate (requests a second) and capacity (burst), both needed for it to be stored. */
+        RateLimitOverride: {
+            /** @description Maximum burst capacity. */
+            capacity?: number | null;
+            /** @description Sustained tokens per second. */
+            rate?: number | null;
         };
         Request: {
             /** Format: date-time */
@@ -3350,9 +3484,9 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Notification"][];
+                        items: components["schemas"]["Notification"][];
                         truncated?: components["schemas"]["Truncated"];
-                        unread_count?: number;
+                        unread_count: number;
                     };
                 };
             };
@@ -3561,7 +3695,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["AuditAnomaly"][];
+                        items: components["schemas"]["AuditAnomaly"][];
                         next_cursor?: components["schemas"]["NextCursor"];
                     };
                 };
@@ -4144,7 +4278,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["EvidenceRun"][];
+                        items: components["schemas"]["EvidenceRun"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -4466,12 +4600,12 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        capabilities?: {
-                            localization?: boolean;
-                            rich_text?: boolean;
-                            test_email?: boolean;
+                        capabilities: {
+                            localization: boolean;
+                            rich_text: boolean;
+                            test_email: boolean;
                         };
-                        items?: components["schemas"]["EmailResolvedTemplate"][];
+                        items: components["schemas"]["EmailResolvedTemplate"][];
                     };
                 };
             };
@@ -5190,6 +5324,34 @@ export interface operations {
             429: components["responses"]["TooManyRequests"];
         };
     };
+    getOrganizationOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The organization's ID. On an authenticated route it must be the organization of the caller's credential: another is refused with 403, and a value that is not a UUID with 400. */
+                organizationID: components["parameters"]["OrganizationID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The overview, with the areas the caller may read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationOverview"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
     getQeetAiSettings: {
         parameters: {
             query?: never;
@@ -5359,7 +5521,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrganizationRateLimits"];
+                "application/json": components["schemas"]["OrganizationRateLimitsUpdate"];
             };
         };
         responses: {
@@ -5605,7 +5767,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["QeetAIConversation"][];
+                        items: components["schemas"]["QeetAIConversation"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -5664,8 +5826,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        conversation?: components["schemas"]["QeetAIConversation"];
-                        messages?: components["schemas"]["QeetAIMessage"][];
+                        conversation: components["schemas"]["QeetAIConversation"];
+                        messages: components["schemas"]["QeetAIMessage"][];
                     };
                 };
             };

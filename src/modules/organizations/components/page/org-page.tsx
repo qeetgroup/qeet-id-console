@@ -66,10 +66,6 @@ export function OrgPage({ orgId }: { orgId: string }) {
 
   const listQ = useOrgs();
   const mineQ = useQuery(orgQueries.memberships());
-  const recordQ = useQuery({
-    ...orgQueries.record(orgId),
-    enabled: current && access.can("organization.read"),
-  });
   const historyQ = useQuery({
     ...orgQueries.history(orgId),
     enabled: current && access.can("audit.read"),
@@ -79,10 +75,8 @@ export function OrgPage({ orgId }: { orgId: string }) {
 
   const org = useMemo(
     () =>
-      orgRows(listQ.data?.items ?? [], mineQ.data, organizationId, recordQ.data).find(
-        (row) => row.id === orgId,
-      ),
-    [listQ.data, mineQ.data, organizationId, recordQ.data, orgId],
+      orgRows(listQ.data?.items ?? [], mineQ.data, organizationId).find((row) => row.id === orgId),
+    [listQ.data, mineQ.data, organizationId, orgId],
   );
   const changes = useMemo(() => changesOf(historyQ.data?.items ?? []), [historyQ.data]);
   const actorIds = [

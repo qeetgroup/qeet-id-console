@@ -220,8 +220,8 @@ belong to (every page of `GET /v1/organizations`), joined with your place in eac
   opening its record in Activity); and, for an owner, Delete. Another organisation shows what the
   list knows and Switch.
 - Deleting (`use-org-actions.ts`) is the server's: an owner asks, it's deleted 7 days later, and any
-  owner can keep it until then (`POST …/deletion/cancel`). The list doesn't carry the due date yet,
-  so only the organisation you're in shows it.
+  owner can keep it until then (`POST …/deletion/cancel`). The list carries each organisation's due
+  date.
 
 The filters live in the address (`?q=&role=&plan=&region=&look=`), and the rules are pure functions
 in `orgs-model.ts`. The logo sits in the page title until `PageHeader` has a leading slot.

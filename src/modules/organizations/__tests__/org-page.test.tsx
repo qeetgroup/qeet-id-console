@@ -76,7 +76,10 @@ const GROUP: Org = {
   status: "active",
   plan: "enterprise",
   region: "ap-south-1",
+  logo_url: "",
+  deletion_due_at: null,
   created_at: "2025-08-18T09:00:00Z",
+  updated_at: "2025-08-18T09:00:00Z",
   member_count: 46,
   mfa_enabled_count: 18,
   metadata: { industry: "Software", headquarters: "Bengaluru, IN", website: "https://qeet.in" },
@@ -125,7 +128,8 @@ beforeEach(() => {
   switchToOrganization.mockClear();
   vi.mocked(api).mockImplementation(async (path: string, options) => {
     const method = options?.method ?? "GET";
-    if (path === "/v1/organizations") return { items: [GROUP, SANDBOX] };
+    if (path === "/v1/organizations")
+      return { items: [{ ...GROUP, deletion_due_at: state.due }, SANDBOX] };
     if (path === "/v1/me/organizations")
       return {
         items: [membership("g", state.roles, "qeet.in"), membership("s", ["owner"])],

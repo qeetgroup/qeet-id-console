@@ -3,9 +3,6 @@
 
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { z } from "zod";
-
-import { assured, assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer, Body } from "@/platform/api/contract";
 import {
@@ -15,16 +12,10 @@ import {
 
 import { orgKeys } from "./keys";
 
-// The fields the pages rely on, which the document leaves optional though the server always sends
-// them (organization.go): checked on every read.
-const ORG_FIELDS = ["id", "slug", "name", "status", "plan", "region", "created_at"] as const;
-const orgPage = assuredItems<Answer<"/v1/organizations">>()(...ORG_FIELDS);
-const orgRecord = assured<Answer<"/v1/organizations/{organizationID}">>()(...ORG_FIELDS);
-
 /** One of the caller's organisations, as the list has it (with member and MFA counts). */
-export type Org = z.output<typeof orgPage>["items"][number];
+export type Org = Answer<"/v1/organizations">["items"][number];
 /** The current organisation's own record, with its logo. */
-export type OrgRecord = z.output<typeof orgRecord>;
+export type OrgRecord = Answer<"/v1/organizations/{organizationID}">;
 
 const PAGE = 200; // the server's most per page
 
@@ -51,11 +42,10 @@ export const orgQueries = {
     queryOptions({
       queryKey: orgKeys.list(),
       queryFn: async ({ signal }) => ({
-        items: await everyPage((cursor) =>
+        items: await everyPage<Org>((cursor) =>
           backend.get("/v1/organizations", {
             query: { limit: PAGE, cursor: cursor || undefined },
             signal,
-            schema: orgPage,
           }),
         ),
       }),
@@ -82,7 +72,6 @@ export const orgQueries = {
       queryFn: () =>
         backend.get("/v1/organizations/{organizationID}", {
           path: { organizationID: orgId ?? "" },
-          schema: orgRecord,
         }),
       enabled: !!orgId,
     }),

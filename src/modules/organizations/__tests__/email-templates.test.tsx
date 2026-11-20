@@ -105,7 +105,7 @@ function templates(): EmailTemplate[] {
       body: "{{code}} expires in {{ttl}}",
       variables: ["code", "ttl"],
     },
-  ].map((item) => ({ ...item, custom: false }));
+  ].map((item) => ({ ...item, custom: false, delivery_scope: "organization" as const }));
 }
 
 function viewProps(): EmailTemplatesViewProps {
@@ -563,10 +563,7 @@ describe("Email template API actions", () => {
     context.organizationId = "tenant-b";
     view.rerender(view.tree());
     await waitFor(() =>
-      expect(api).toHaveBeenCalledWith(
-        "/v1/organizations/tenant-b/email-templates",
-        expect.objectContaining({ schema: expect.anything() }),
-      ),
+      expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-b/email-templates"),
     );
     fireEvent.click(
       within(screen.getByRole("alertdialog")).getByRole("button", { name: "Send test email" }),

@@ -2,11 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { z } from "zod";
 
 import { backend } from "@/platform/api/backend";
 import { ApiError } from "@/platform/api/client";
-import { strictly } from "@/platform/api/assured";
 import type { Answer } from "@/platform/api/contract";
 
 import { isMfaChallenge, type LoginResponse, type SessionResponse } from "./flows-session";
@@ -61,17 +59,7 @@ export function useAcceptInviteAsMe() {
  * What an invitation link names, before the invitee chooses how to accept: `account_exists` when
  * the address has an account (sign in and accept as yourself), and the `methods` a new one may use.
  */
-// The server always sends each of these; the document marks them optional.
-const invitePreview = strictly<Answer<"/v1/invites/lookup", "post">>()(
-  z.object({
-    organization: z.object({ name: z.string(), slug: z.string() }),
-    email: z.string(),
-    expires_at: z.string(),
-    account_exists: z.boolean(),
-    methods: z.object({ password: z.boolean(), passkey: z.boolean() }),
-  }),
-);
-export type InvitePreview = z.infer<typeof invitePreview>;
+export type InvitePreview = Answer<"/v1/invites/lookup", "post">;
 
 /** Looks up an invitation by its emailed token, sent in the body rather than the URL. */
 export function useInvitePreview(token: string) {
@@ -81,7 +69,6 @@ export function useInvitePreview(token: string) {
       backend.post("/v1/invites/lookup", {
         body: { token },
         anonymous: true,
-        schema: invitePreview,
       }),
     enabled: !!token,
     retry: false,

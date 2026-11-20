@@ -2,12 +2,11 @@
 // are served at the API origin, so they derive from the API base URL.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { z } from "zod";
 
 import { getApiBaseUrl } from "@/platform/api/client";
 import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
-import { assured, assuredItems } from "@/platform/api/assured";
+import { assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer, Schemas } from "@/platform/api/contract";
 import { isOneOf } from "@/shared/utils/one-of";
@@ -19,25 +18,10 @@ export type SamlStatus = (typeof SAML_STATUSES)[number];
 export const samlStatus = (status: string): SamlStatus =>
   isOneOf(SAML_STATUSES, status) ? status : "disabled";
 
-// The server always sends these (internal/federation/saml/saml.go, Connection); the document
-// marks them optional.
-const SAML_FIELDS = [
-  "id",
-  "organization_id",
-  "name",
-  "idp_entity_id",
-  "idp_sso_url",
-  "idp_certificate",
-  "email_attribute",
-  "name_attribute",
-  "status",
-  "allow_idp_initiated",
-  "created_at",
-  "updated_at",
-] as const;
-const samlPage = assuredItems<Answer<"/v1/organizations/{organizationID}/saml">>()(...SAML_FIELDS);
-const samlConnection = assured<Schemas<"federation">["SAMLConnection"]>()(...SAML_FIELDS);
-export type SamlConnection = z.infer<typeof samlPage>["items"][number];
+// The server always sends the list (an empty one when there are none); its document still leaves
+// it optional.
+const samlPage = assuredItems<Answer<"/v1/organizations/{organizationID}/saml">>()();
+export type SamlConnection = Schemas<"federation">["SAMLConnection"];
 
 export interface CreateSamlInput {
   name: string;
@@ -75,7 +59,6 @@ export function useCreateSamlConnection() {
       backend.post("/v1/organizations/{organizationID}/saml", {
         path: { organizationID: organizationId ?? "" },
         body,
-        schema: samlConnection,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(organizationId) }),
     meta: { successMessage: "saml:toast.signInCreated", silentError: true }, // the drawer shows it
@@ -94,7 +77,6 @@ export function useUpdateSamlConnection({ inline = false }: { inline?: boolean }
       backend.patch("/v1/organizations/{organizationID}/saml/{id}", {
         path: { organizationID: organizationId ?? "", id },
         body,
-        schema: samlConnection,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: authKeys.saml(organizationId) }),
     meta: { silentError: inline },

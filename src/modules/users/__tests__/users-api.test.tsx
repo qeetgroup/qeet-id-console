@@ -71,10 +71,7 @@ describe("useUserStats", () => {
     const { result } = setup(() => useUserStats());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith(
-      "/v1/users/stats",
-      expect.objectContaining({ schema: expect.anything() }),
-    );
+    expect(api).toHaveBeenCalledWith("/v1/users/stats");
     expect(result.current.data).toEqual(stats);
   });
 
@@ -108,10 +105,7 @@ describe("useUserTrends", () => {
     const { result } = setup(() => useUserTrends());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith(
-      "/v1/users/trends",
-      expect.objectContaining({ schema: expect.anything() }),
-    );
+    expect(api).toHaveBeenCalledWith("/v1/users/trends");
     expect(result.current.data).toEqual({ total: [1, 2], mfa_enabled: [0, 1] });
   });
 

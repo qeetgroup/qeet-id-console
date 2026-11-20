@@ -19,9 +19,9 @@ const lockoutSettings = z.object({
 });
 export type LockoutSettings = z.infer<typeof lockoutSettings>;
 
-// The server always sends every field (internal/access/authpolicy/authpolicy.go); the document
-// marks them optional. PUT replaces the whole policy, so a page saves only one it holds
-// in full.
+// The server always sends lockout_limits' defaults and bounds (authpolicy/lockout.go); the document
+// still leaves them optional, so the read is held to them. PUT replaces the whole policy, so a page
+// saves only one it holds in full.
 const policySchema = strictly<Answer<"/v1/organizations/{organizationID}/auth-policy">>()(
   z.object({
     password_enabled: z.boolean(),

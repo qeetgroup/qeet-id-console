@@ -9,9 +9,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { z } from "zod";
 
-import { strictly } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
@@ -19,40 +17,11 @@ import { complianceKeys } from "./keys";
 
 export type Framework = "soc2" | "iso27001";
 
-// The server always sends these (internal/operations/compliance/evidence.go); the document marks
-// them optional.
-const control = z.object({
-  id: z.string(), // stable across runs, e.g. "CC6.1-MFA"
-  name: z.string(),
-  category: z.string(),
-  criteria: z.string(), // the framework's reference, e.g. "CC6.1" or "A.9.4"
-  status: z.enum(["pass", "fail", "na"]),
-  detail: z.string(), // what was found; never empty
-});
-const run = z.object({
-  id: z.string(),
-  organization_id: z.string(),
-  framework: z.string(),
-  generated_at: z.string(),
-  generated_by: z.string().nullish(),
-  pass_count: z.number(),
-  fail_count: z.number(),
-  na_count: z.number(),
-  controls: z.array(control).optional(), // sent by the detail endpoint, not the list
-});
-const oneRun =
-  strictly<Answer<"/v1/organizations/{organizationID}/compliance/evidence/{id}">>()(run);
-const runList = strictly<
-  Answer<"/v1/organizations/{organizationID}/compliance/{framework}/evidence">
->()(z.object({ items: z.array(run), truncated: z.boolean().optional() }));
-const generatedRun =
-  strictly<Answer<"/v1/organizations/{organizationID}/compliance/{framework}/evidence", "post">>()(
-    run,
-  );
-
-export type ControlResult = z.infer<typeof control>;
+/** A run of the framework's checks: `controls` comes with the detail read, not the list. */
+export type EvidenceRun = Answer<"/v1/organizations/{organizationID}/compliance/evidence/{id}">;
+/** One check: its `id` stays the same across runs, and `detail` says what was found. */
+export type ControlResult = NonNullable<EvidenceRun["controls"]>[number];
 export type ControlStatus = ControlResult["status"];
-export type EvidenceRun = z.infer<typeof run>;
 
 /** One run with its checks; shared by the run's view, the "since" lines and a download. */
 export const evidenceRunQuery = (organizationId: string | null, runId: string | null) =>
@@ -61,7 +30,6 @@ export const evidenceRunQuery = (organizationId: string | null, runId: string | 
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/compliance/evidence/{id}", {
         path: { organizationID: organizationId ?? "", id: runId ?? "" },
-        schema: oneRun,
       }),
     enabled: !!organizationId && !!runId,
     // A run never changes once generated.
@@ -76,7 +44,6 @@ export function useEvidenceRuns(framework: Framework, enabled = true) {
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/compliance/{framework}/evidence", {
         path: { organizationID: organizationId ?? "", framework },
-        schema: runList,
       }),
     enabled: !!organizationId && enabled,
   });
@@ -110,7 +77,6 @@ export function useGenerateEvidence(framework: Framework) {
       if (!organizationId) throw new Error("No tenant selected");
       return backend.post("/v1/organizations/{organizationID}/compliance/{framework}/evidence", {
         path: { organizationID: organizationId, framework },
-        schema: generatedRun,
       });
     },
     onSuccess: (run) => {

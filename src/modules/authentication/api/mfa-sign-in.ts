@@ -21,7 +21,7 @@ export function sendMfaCode(mfaToken: string, factorId: string): Promise<unknown
   });
 }
 
-// The server always sends both; the document marks them optional.
+// A second-factor step, held to what it needs: an answer that doesn't match fails closed.
 const mfaPasskeyBegin = strictly<Answer<"/v1/auth/mfa/passkey/begin", "post">>()(
   z.object({ session_id: z.string().min(1), publicKey: z.record(z.string(), z.unknown()) }),
 );
@@ -57,7 +57,7 @@ export function startMfaEnrollment(mfaToken: string): Promise<MfaEnrollment> {
 
 const PUSH_POLL_MS = 2000;
 
-// The server always sends both; the document marks them optional.
+// A second-factor step, held to what it needs: an answer that doesn't match fails closed.
 const pushRequestSchema = strictly<Answer<"/v1/auth/mfa/push", "post">>()(
   z.object({ expires_at: z.string().min(1), number: z.number().int() }),
 );

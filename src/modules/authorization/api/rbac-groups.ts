@@ -1,18 +1,12 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { z } from "zod";
 
-import { assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
 
-// The server always sends these (internal/access/authorization/rbac/rbac.go, GroupRole); the
-// document marks them optional.
-const groupRoles = assuredItems<
-  Answer<"/v1/organizations/{organizationID}/groups/{groupID}/roles">
->()("role_id", "name", "granted_at");
-export type GroupRole = z.infer<typeof groupRoles>["items"][number];
+export type GroupRole =
+  Answer<"/v1/organizations/{organizationID}/groups/{groupID}/roles">["items"][number];
 
 /** A group's roles as query options, so a list can read several groups' at once. */
 export const groupRoleQueries = {
@@ -23,7 +17,6 @@ export const groupRoleQueries = {
       queryFn: () =>
         backend.get("/v1/organizations/{organizationID}/groups/{groupID}/roles", {
           path: { organizationID: organizationId ?? "", groupID: groupId },
-          schema: groupRoles,
         }),
     }),
 };

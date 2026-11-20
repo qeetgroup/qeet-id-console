@@ -187,7 +187,6 @@ describe("useAnomalies", () => {
     // The newest page, the most the server sends at once.
     expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/security/anomalies", {
       query: { limit: 200 },
-      schema: expect.anything(),
     });
     expect(result.current.data).toEqual({ items });
   });
@@ -234,10 +233,7 @@ describe("useAuditAnomalies", () => {
     const { result } = setup(() => useAuditAnomalies());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit/anomalies", {
-      query: undefined,
-      schema: expect.anything(),
-    });
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit/anomalies");
   });
 
   it("filters by status when one is given", async () => {
@@ -246,7 +242,6 @@ describe("useAuditAnomalies", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/audit/anomalies", {
-      schema: expect.anything(),
       query: { status: "open" },
     });
   });

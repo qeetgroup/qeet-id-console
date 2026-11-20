@@ -113,6 +113,8 @@ describe("sessionSpans", () => {
     id,
     ip: null,
     user_agent: null,
+    device: "",
+    device_kind: "unknown" as const,
     created_at: new Date(now - openedDaysAgo * DAY).toISOString(),
     last_seen_at: new Date(now - seenDaysAgo * DAY).toISOString(),
   });

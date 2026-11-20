@@ -4,9 +4,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { userKeys } from "@/modules/users";
-import { assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
-import type { Answer, Schemas } from "@/platform/api/contract";
+import type { Schemas } from "@/platform/api/contract";
 import { useOrganizationId, useUserId } from "@/platform/auth/session";
 import { isOneOf } from "@/shared/utils/one-of";
 import { authKeys } from "./keys";
@@ -23,22 +22,11 @@ export const pushPlatform = (platform: string): (typeof PLATFORMS)[number] | "ot
 /** Whose phones: the caller's own, or a member's (an administrator's view). */
 export type PushDeviceScope = { kind: "self" } | { kind: "member"; userId: string };
 
-// The server always sends these (internal/access/mfa); the member list's document marks them
-// optional.
-const memberDevices = assuredItems<Answer<"/v1/users/{id}/push-devices">>()(
-  "id",
-  "name",
-  "platform",
-  "created_at",
-  "last_seen_at",
-);
-
 function readDevices(scope: PushDeviceScope): Promise<{ items: PushDevice[] }> {
   return scope.kind === "self"
     ? backend.get("/v1/mfa/push/devices")
     : backend.get("/v1/users/{id}/push-devices", {
         path: { id: scope.userId },
-        schema: memberDevices,
       });
 }
 

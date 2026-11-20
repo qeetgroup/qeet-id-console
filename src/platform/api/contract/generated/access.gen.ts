@@ -700,6 +700,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My effective permissions
+         * @description The permission keys the signed-in person holds in the organization their token is for, from the roles assigned to them and those their groups hold, with every grant behind them, as GET /v1/users/{userID}/organizations/{organizationID}/permissions answers for anyone. It needs no permission, so someone holding none (the built-in member role grants none) reads empty lists and an application can show them what they may use. Another person's permissions still need role.read. A token for no organization is refused with 401.
+         */
+        get: operations["listMyEffectivePermissions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/mfa/otp/factors": {
         parameters: {
             query?: never;
@@ -2365,7 +2385,7 @@ export interface paths {
         };
         /**
          * Effective permissions
-         * @description Returns the flattened set of permission keys a user effectively holds in a organization, combining direct role assignments with roles inherited through group membership, and in grants every grant behind them: each permission with the role granting it, held directly or through which group (one entry per role and group, so a permission granted twice appears twice). Use it to explain why a user can or cannot perform an action, complementing the single-permission decision from the permission-check call. It is read-only and reflects the grants in force at call time. Needs role.read.
+         * @description Returns the flattened set of permission keys a user effectively holds in a organization, combining direct role assignments with roles inherited through group membership, and in grants every grant behind them: each permission with the role granting it, held directly or through which group (one entry per role and group, so a permission granted twice appears twice). Use it to explain why a user can or cannot perform an action, complementing the single-permission decision from the permission-check call. It is read-only and reflects the grants in force at call time. Needs role.read, even for the caller's own: a person reads their own without it at GET /v1/me/permissions.
          */
         get: operations["listEffectivePermissions"];
         put?: never;
@@ -2470,35 +2490,35 @@ export interface components {
         /** @description One ABAC policy row. */
         ABACPolicy: {
             /** @description Action matched by this policy; '*' matches any. */
-            action?: string;
+            action: string;
             /** @description Recursive JSON condition tree. An empty object {} means unconditional. Logical nodes: {"all":[...]}, {"any":[...]}, {"not": node}. Comparison leaf: {"attr":"subject.dept","op":"eq","value":"eng"}. A leaf's value may instead reference another attribute, {"attr":"subject.region","op":"eq","value":{"attr":"resource.region"}}, for eq, ne, gt, gte, lt, lte, in, nin and contains (not regex, prefix, suffix or exists). The reference is exactly {"attr":"<subject|resource|action|context>.<path>"}, names an attribute other than the leaf's own, and is the whole value, never an array element. A string value is always a literal, even "resource.region". A comparison with a missing attribute (absent or null), on either side and with any operator, ne and nin included, is unknown; not of unknown is unknown, all is unknown unless a child is false, and any unknown unless a child is true. A condition left unknown fails closed: a deny policy applies (reason authz.attribute_absent) and an allow policy grants nothing. exists alone tests presence and is never unknown, so a deny meant only for requests that carry an attribute guards it with exists in an all (otherwise a deny for "*" on an attribute the platform's own route check doesn't supply refuses every request there). prefix and suffix need a non-empty string value and match only string attributes; any other value is refused with 422 abac.condition_invalid, as is contains or regex with an empty value. Two more leaves combine roles and relationships with attributes: {"role":"<name>"} holds when the subject has the role, by name, in the organization (directly or through a group), as the platform supplies subject.roles when it decides for a person itself; it is unknown when no roles are supplied. {"relation":{"relation":"viewer", "object":"document:1"}} holds when the subject (subject.id, a user) has the relationship on the object in the organization's ReBAC tuples, the object given as type:id or as an attribute reference {"attr":"resource.object"}; it is unknown with no subject id or no object. Like a missing attribute, an unknown role or relation applies a deny and grants nothing. */
-            condition?: {
+            condition: {
                 [key: string]: unknown;
             };
             /** Format: date-time */
-            created_at?: string;
-            description?: string;
+            created_at: string;
+            description: string;
             /** @enum {string} */
-            effect?: "allow" | "deny";
-            enabled?: boolean;
+            effect: "allow" | "deny";
+            enabled: boolean;
             /** Format: uuid */
-            id?: string;
-            name?: string;
+            id: string;
+            name: string;
             /** Format: uuid */
-            organization_id?: string;
+            organization_id: string;
             /** @description Higher priority is evaluated first; deny wins at any priority. */
-            priority?: number;
+            priority: number;
             /** @description Resource type matched by this policy; '*' matches any. */
-            resource_type?: string;
+            resource_type: string;
             /** Format: date-time */
-            updated_at?: string;
+            updated_at: string;
             /**
              * Format: uuid
              * @description The person who made the last save; null for a machine caller, or one from before it was kept.
              */
-            updated_by?: string | null;
+            updated_by: string | null;
             /** @description The policy's saves counted from 1; each create, change or restore adds one. */
-            version?: number;
+            version: number;
         };
         ABACPolicyCreate: {
             /** @description Action to match; '*' matches any action. */
@@ -2571,10 +2591,10 @@ export interface components {
         };
         Anomaly: {
             /** Format: date-time */
-            created_at?: string;
-            detail?: string;
+            created_at: string;
+            detail: string;
             /** Format: uuid */
-            id?: string;
+            id: string;
             ip?: string;
             /** @description The detection's structured context. For a sign-in lock: reason, account, network, counter (account_network or account), failures, threshold, window_minutes, locked_until. For a throttled source: reason, network, counter (source), distinct_accounts, window_minutes, throttled_until. */
             metadata?: {
@@ -2588,10 +2608,10 @@ export interface components {
              */
             resolved_by?: string;
             resolved_by_email?: string;
-            severity?: string;
-            status?: string;
+            severity: string;
+            status: string;
             /** @description e.g. credential_stuffing (an account locked after repeated failed sign-ins) or password_spraying (a source network throttled for failing against many accounts). */
-            type?: string;
+            type: string;
             user_email?: string;
             /** Format: uuid */
             user_id?: string;
@@ -2603,6 +2623,30 @@ export interface components {
             userVerification?: string;
         };
         AuthPolicy: {
+            /** @description How long a lock lasts. null = the platform default. Must lie within lockout_limits (default bounds 15..1440). */
+            lockout_duration_minutes: number | null;
+            lockout_limits: components["schemas"]["LockoutLimits"];
+            /** @description Failed password sign-ins to one account from one network, each within the window of the last, that lock the account for that network. null = the platform default. Must lie within lockout_limits (default bounds 3..5): an organization may make the lockout stricter, never looser. */
+            lockout_threshold: number | null;
+            /** @description A failure is forgotten once this many minutes pass with no new failure. null = the platform default. Must lie within lockout_limits (default bounds 15..1440). */
+            lockout_window_minutes: number | null;
+            magic_link_enabled: boolean;
+            magic_link_ttl_minutes: number;
+            otp_email_enabled: boolean;
+            otp_sms_enabled: boolean;
+            passkey_enabled: boolean;
+            password_enabled: boolean;
+            password_min_length: number;
+            password_require_number: boolean;
+            password_require_symbol: boolean;
+            password_require_uppercase: boolean;
+            /** @description How long a device stays remembered after the sign-in that remembered it, in days (30 by default; 0 on update keeps the default). Applies to devices remembered after it is set. */
+            remember_device_days: number;
+            remember_device_enabled: boolean;
+            self_registration_enabled: boolean;
+        };
+        /** @description The authentication policy PUT stores, whole: a switch left out is off, a lockout setting left out or null is the platform default, and remember_device_days left out is 30; password_min_length and magic_link_ttl_minutes are clamped to their bounds. lockout_limits is read-only and ignored. */
+        AuthPolicyUpdate: {
             /** @description How long a lock lasts. null = the platform default. Must lie within lockout_limits (default bounds 15..1440). */
             lockout_duration_minutes?: number | null;
             lockout_limits?: components["schemas"]["LockoutLimits"];
@@ -2669,7 +2713,7 @@ export interface components {
         /** @description One link in an authorization decision's grant path: a role that confers the requested permission and how that role reaches the user. */
         AuthzGrantStep: {
             /** @description The conferring role, e.g. "role:admin". */
-            granted_by?: string;
+            granted_by: string;
             /**
              * Format: uuid
              * @description Set only when via is a group grant.
@@ -2677,12 +2721,12 @@ export interface components {
             group_id?: string;
             /** @description The group's name, set only when via is a group grant. */
             group_name?: string;
-            permission?: string;
+            permission: string;
             /** Format: uuid */
-            role_id?: string;
-            role_name?: string;
+            role_id: string;
+            role_name: string;
             /** @description "direct" for a user grant, or "group:<name>" for a group-derived grant. */
-            via?: string;
+            via: string;
         };
         BotEvent: {
             /** Format: date-time */
@@ -2768,10 +2812,10 @@ export interface components {
         /** @description A role granted to a group, with the role's name for display. */
         GroupRole: {
             /** Format: date-time */
-            granted_at?: string;
-            name?: string;
+            granted_at: string;
+            name: string;
             /** Format: uuid */
-            role_id?: string;
+            role_id: string;
         };
         /** @description The platform defaults for the lockout settings (threshold 5, window and duration 15 minutes) and the inclusive bounds an organization may choose within. The bounds run from the defaults toward stricter only: a threshold down to 3, a window and lock up to 24 hours. An organization's settings govern the lock on one network; the lock on every network (4 times the platform threshold) always uses the platform defaults. Ignored on update. */
         LockoutLimits: {
@@ -2848,10 +2892,10 @@ export interface components {
             user_id: string;
         };
         Permission: {
-            description?: string;
+            description: string;
             /** Format: uuid */
-            id?: string;
-            key?: string;
+            id: string;
+            key: string;
         };
         PublicKeyCredentialCreationOptions: {
             attestation?: string;
@@ -2934,6 +2978,26 @@ export interface components {
         };
         RiskSettings: {
             /** @description Whether the deployment names a trusted proxy country header (GEO_COUNTRY_HEADER). Without one impossible travel never fires. Ignored on update. */
+            readonly country_header_configured: boolean;
+            /**
+             * Format: date-time
+             * @description When the instance answering last read a country from that header; null if none since it started (no header, or the proxy isn't sending it). Ignored on update.
+             */
+            readonly country_last_seen_at: string | null;
+            /** @description Off by default. Flags a login from a browser+OS combination never seen before for this user. */
+            device_reputation_enabled: boolean;
+            /** @enum {string} */
+            force_mfa_at_level: "medium" | "high";
+            high_threshold: number;
+            /** @description Off by default. Also needs a geo signal to do anything — see GEO_COUNTRY_HEADER. */
+            impossible_travel_enabled: boolean;
+            medium_threshold: number;
+            /** @description A login from a different country than the last one, sooner than this many hours later, is flagged. */
+            min_travel_hours: number;
+        };
+        /** @description The sign-in risk settings PUT stores. A threshold left out or below 0.1 is 0.1, force_mfa_at_level anything but medium is high, and min_travel_hours left out or not above 0 is the default. */
+        RiskSettingsUpdate: {
+            /** @description Whether the deployment names a trusted proxy country header (GEO_COUNTRY_HEADER). Without one impossible travel never fires. Ignored on update. */
             readonly country_header_configured?: boolean;
             /**
              * Format: date-time
@@ -2953,8 +3017,8 @@ export interface components {
         };
         Role: {
             /** Format: date-time */
-            created_at?: string;
-            description?: string;
+            created_at: string;
+            description: string;
             /** @description Who holds the role, in the roles list only. */
             holders?: {
                 /** @description Groups granted the role. */
@@ -2965,12 +3029,12 @@ export interface components {
                 people_through_groups: number;
             };
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** @description A built-in role (owner, admin, member or viewer), whose permissions can't be changed and which doesn't count against the plan's custom roles. */
-            is_system?: boolean;
-            name?: string;
+            is_system: boolean;
+            name: string;
             /** Format: uuid */
-            organization_id?: string;
+            organization_id: string;
         };
         RoleCreate: {
             description?: string | null;
@@ -2992,6 +3056,60 @@ export interface components {
             organization_id: string;
         };
         SecurityPolicy: {
+            /** @description How many live sessions one person may hold in the organization at once; null for no limit (the default). Counted and enforced as a session opens, so simultaneous sign-ins cannot exceed it. */
+            max_sessions: number | null;
+            /**
+             * Format: date-time
+             * @description When the requirement was turned on (from optional); null while optional. Moving between required and admin_only keeps it.
+             */
+            readonly mfa_enforced_since: string | null;
+            /**
+             * @description Who must use a second factor to sign in, enforced at password sign-in: optional (only people who set one up are challenged), required (everyone), admin_only (anyone holding a role, directly or through a group, that grants an administrative permission: one that changes who signs in or with what authority, such as user.write, user.credentials, user.suspend, session.revoke, member.invite or role.write, the same administrators single sign-on never adopts by address). Separately, an account an administrator marks as requiring MFA must, whatever is set here. An account that must and holds no factor sets up an authenticator app before any session is issued.
+             * @enum {string}
+             */
+            mfa_enforcement: "optional" | "required" | "admin_only";
+            /** @description For this many days after the requirement is turned on, the accounts that already existed may put setting up a second factor off (they are prompted at each sign-in). 0, the default: no grace period. */
+            mfa_grace_days: number;
+            /** Format: uuid */
+            organization_id: string;
+            /**
+             * @description How long a session may go without being renewed before it ends: a duration of at least 15m and no longer than session_max_age. Applies to sessions started after it is saved. Omitted or zero on update: the platform default (no longer than session_max_age).
+             * @example 24h
+             */
+            session_idle_timeout: string;
+            /**
+             * @description What a sign-in at max_sessions does: evict_oldest ends the person's least recently used session (renewal stops at once; an access token it already issued lasts out its own lifetime, ACCESS_TOKEN_TTL), announced to session.revoked subscribers as session_limit; refuse refuses the sign-in with 403 auth.session_limit. Both are audited.
+             * @enum {string}
+             */
+            session_limit_action: "evict_oldest" | "refuse";
+            /**
+             * @description How long a session lasts after sign-in however active it is, and an application's grant however often it is renewed: a duration such as "720h" or "90m", between 1h and 8760h. Applies to sessions and grants started after it is saved. Omitted or zero on update: the platform default.
+             * @example 720h
+             */
+            session_max_age: string;
+            settings: {
+                [key: string]: unknown;
+            };
+            /** @description The factor types that count as a step-up (otp: an emailed or text-message code; webauthn: a passkey). Null or empty: every one. A session stepped up by a factor that is not listed is asked again. */
+            step_up_methods: ("totp" | "recovery_code" | "otp" | "webauthn" | "push")[] | null;
+            /**
+             * @description How long a step-up keeps a session's sensitive actions unlocked: a duration between 1m and 60m. A step-up belongs to the session that earned it; it ends with that session, and a changed password or an administrative factor reset clears it. Omitted or zero on update: 5m.
+             * @example 5m
+             */
+            step_up_window: string;
+        };
+        /** @description The security policy as PUT replaces it and PATCH changes it: PUT takes the whole policy, PATCH only the fields to change. */
+        SecurityPolicyUpdate: {
+            /**
+             * @deprecated
+             * @description Retired: accepted only empty, for older consoles; an entry is refused with 422 validation_failed, code retired. Which addresses may sign in is the address rules' (/v1/organizations/{organizationID}/ip-rules).
+             */
+            ip_allowlist?: string[];
+            /**
+             * @deprecated
+             * @description Retired, as ip_allowlist.
+             */
+            ip_denylist?: string[];
             /** @description How many live sessions one person may hold in the organization at once; null for no limit (the default). Counted and enforced as a session opens, so simultaneous sign-ins cannot exceed it. */
             max_sessions?: number | null;
             /**
@@ -3180,20 +3298,25 @@ export interface components {
                 name?: string;
             }[];
             /** @description The person's picture as a data:image/ URL, or null for none. */
-            avatar_url?: string | null;
+            avatar_url: string | null;
             /** Format: date-time */
-            created_at?: string;
-            display_name?: string | null;
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description When someone since deleted was, on a members list that asked to include them (include_deleted); absent for everyone else.
+             */
+            deleted_at?: string;
+            display_name: string | null;
             /** Format: email */
-            email?: string;
+            email: string;
             /** Format: date-time */
-            email_verified_at?: string | null;
+            email_verified_at: string | null;
             /** @description Number of groups the user belongs to in this organization; on the list and GET /v1/users/{id}. */
             groups_count?: number;
             /** @description The name of the organization that manages the account (organization_id). */
             home_organization_name?: string | null;
             /** Format: uuid */
-            id?: string;
+            id: string;
             /**
              * Format: date-time
              * @description Their most recent session activity or sign-in in this organization, or null; on the list and GET /v1/users/{id}.
@@ -3201,20 +3324,23 @@ export interface components {
             last_seen_at?: string | null;
             /** @description The address of that session or sign-in, or null. */
             last_seen_ip?: string | null;
-            metadata?: {
+            metadata: {
                 [key: string]: unknown;
             } | null;
             /** @description True if the user has a confirmed TOTP, a verified OTP factor, or a push device; on the list and GET /v1/users/{id}. */
             mfa_enabled?: boolean;
             /** Format: uuid */
-            organization_id?: string;
-            phone?: string | null;
+            organization_id: string;
+            phone: string | null;
             /** Format: date-time */
-            phone_verified_at?: string | null;
+            phone_verified_at: string | null;
             /** @description Role names in the organization reading the user, on the list and GET /v1/users/{id}. */
             roles?: string[];
-            /** @enum {string} */
-            status?: "active" | "invited" | "suspended";
+            /**
+             * @description deleted only for someone since deleted, on a members list that asked to include them (include_deleted).
+             * @enum {string}
+             */
+            status: "active" | "invited" | "suspended" | "deleted";
             /** @description On GET /v1/users/{id}, for a suspended person whose home is this organization; absent otherwise. */
             suspension?: {
                 reason?: string;
@@ -3229,7 +3355,7 @@ export interface components {
                 suspended_by_email?: string | null;
             } | null;
             /** Format: date-time */
-            updated_at?: string;
+            updated_at: string;
         };
         UserEntity: {
             displayName: string;
@@ -3862,8 +3988,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        provisioning_url?: string;
-                        secret?: string;
+                        provisioning_url: string;
+                        secret: string;
                     };
                 };
             };
@@ -3897,11 +4023,11 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        publicKey?: {
+                        publicKey: {
                             [key: string]: unknown;
                         };
                         /** Format: uuid */
-                        session_id?: string;
+                        session_id: string;
                     };
                 };
             };
@@ -4245,7 +4371,20 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Signed out (or there was no session to end), cookie cleared */
+            /** @description Signed out and the cookie cleared, and applications that registered a front-channel logout URI took part in the session: the hosted login loads each URI, which carries iss and sid, to sign the browser out of that application too. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["NoStoreCacheControl"];
+                    Pragma: components["headers"]["NoStorePragma"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        frontchannel_logout_uris: string[];
+                    };
+                };
+            };
+            /** @description Signed out (or there was no session to end), cookie cleared, and no application to sign out of in the browser */
             204: {
                 headers: {
                     "Cache-Control": components["headers"]["NoStoreCacheControl"];
@@ -4577,30 +4716,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: {
+                        items: {
                             /** Format: date-time */
-                            created_at?: string;
+                            created_at: string;
                             /** @description The request came from this device. */
-                            current?: boolean;
+                            current: boolean;
                             /** @description The device and browser in words, such as "Chrome on macOS". */
-                            device?: string;
+                            device: string;
                             /** @enum {string} */
-                            device_kind?: "desktop" | "mobile" | "tablet" | "unknown";
+                            device_kind: "desktop" | "mobile" | "tablet" | "unknown";
                             /** Format: date-time */
-                            expires_at?: string;
+                            expires_at: string;
                             /** Format: uuid */
-                            id?: string;
+                            id: string;
                             /**
                              * Format: date-time
                              * @description When the device last skipped the second factor.
                              */
-                            last_used_at?: string | null;
+                            last_used_at: string | null;
                             /**
                              * Format: uuid
                              * @description The organization the device was remembered in.
                              */
-                            organization_id?: string | null;
-                            user_agent?: string;
+                            organization_id: string | null;
+                            user_agent: string;
                         }[];
                         truncated?: components["schemas"]["Truncated"];
                     };
@@ -4719,8 +4858,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        allowed?: boolean;
-                        decided_by?: components["schemas"]["AuthzDecidedBy"];
+                        allowed: boolean;
+                        decided_by: components["schemas"]["AuthzDecidedBy"];
                         paths?: components["schemas"]["AuthzGrantStep"][];
                         /** @description Set only on a denial, with explain=true, in English. Show reason_code's meaning instead. */
                         reason?: string;
@@ -4855,6 +4994,34 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            429: components["responses"]["TooManyRequests"];
+        };
+    };
+    listMyEffectivePermissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's effective permissions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Every grant behind them: one entry per permission, role and group (a permission granted twice appears twice). */
+                        grants: components["schemas"]["AuthzGrantStep"][];
+                        /** @description Each permission key once, in order. */
+                        permissions: string[];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             429: components["responses"]["TooManyRequests"];
         };
     };
@@ -5897,7 +6064,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["ABACPolicy"][];
+                        items: components["schemas"]["ABACPolicy"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -6314,8 +6481,23 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        context?: Record<string, never>;
-                        decision?: boolean;
+                        context: {
+                            decided_by: components["schemas"]["AuthzDecidedBy"];
+                            /** @description With explain, for a relation check: the chain of relation tuples that allowed it; null when nothing did. */
+                            path?: {
+                                depth: number;
+                                object: string;
+                                relation: string;
+                                subject: string;
+                            }[] | null;
+                            /** @description With explain, for a permission check: every grant behind an allow. */
+                            paths?: components["schemas"]["AuthzGrantStep"][] | null;
+                            /** @description With explain, the decision's trace. */
+                            trace?: string[] | null;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        decision: boolean;
                     };
                 };
             };
@@ -6428,7 +6610,7 @@ export interface operations {
         /** @description The whole policy (a full replace). `lockout_limits` is read-only and ignored. */
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["AuthPolicy"];
+                "application/json": components["schemas"]["AuthPolicyUpdate"];
             };
         };
         responses: {
@@ -6588,7 +6770,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["GroupRole"][];
+                        items: components["schemas"]["GroupRole"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -6904,7 +7086,7 @@ export interface operations {
         /** @description The whole policy; organization_id is taken from the path. */
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["SecurityPolicy"];
+                "application/json": components["schemas"]["SecurityPolicyUpdate"];
             };
         };
         responses: {
@@ -6939,7 +7121,7 @@ export interface operations {
         /** @description Only the fields to change; a null clears a nullable one, such as max_sessions. */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SecurityPolicy"];
+                "application/json": components["schemas"]["SecurityPolicyUpdate"];
             };
         };
         responses: {
@@ -6984,7 +7166,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Tuple"][];
+                        items: components["schemas"]["Tuple"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -7091,13 +7273,13 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        allowed?: boolean;
-                        decided_by?: components["schemas"]["AuthzDecidedBy"];
+                        allowed: boolean;
+                        decided_by: components["schemas"]["AuthzDecidedBy"];
                         path?: {
-                            depth?: number;
-                            object?: string;
-                            relation?: string;
-                            subject?: string;
+                            depth: number;
+                            object: string;
+                            relation: string;
+                            subject: string;
                         }[];
                         trace?: string[];
                     };
@@ -7137,18 +7319,18 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        edges?: {
-                            from?: string;
-                            relation?: string;
-                            to?: string;
+                        edges: {
+                            from: string;
+                            relation: string;
+                            to: string;
                         }[];
-                        nodes?: {
+                        nodes: {
                             /** @description "type:id" */
-                            id?: string;
-                            label?: string;
+                            id: string;
+                            label: string;
                             /** @description A user node's person, by display name or address, when they belong to the organization. */
                             name?: string;
-                            type?: string;
+                            type: string;
                         }[];
                     };
                 };
@@ -7257,7 +7439,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Role"][];
+                        items: components["schemas"]["Role"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -7689,7 +7871,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RiskSettings"];
+                "application/json": components["schemas"]["RiskSettingsUpdate"];
             };
         };
         responses: {
@@ -8029,7 +8211,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Permission"][];
+                        items: components["schemas"]["Permission"][];
                     };
                 };
             };
@@ -8136,7 +8318,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Permission"][];
+                        items: components["schemas"]["Permission"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -8304,8 +8486,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        grants?: components["schemas"]["AuthzGrantStep"][];
-                        permissions?: string[];
+                        grants: components["schemas"]["AuthzGrantStep"][];
+                        permissions: string[];
                     };
                 };
             };

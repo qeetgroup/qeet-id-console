@@ -1,8 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 
 import type { ActivityEvent } from "@/modules/activity";
-import { assured, strictly } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import { ApiError } from "@/platform/api/client";
 import type { Answer } from "@/platform/api/contract";
@@ -10,61 +8,13 @@ import { useOrganizationId } from "@/platform/auth/session";
 
 import { userKeys } from "./keys";
 
-// The user record and its views: the document leaves their fields optional, the server always
-// sends them (user.go, user360.go), so each view is held to the fields its page reads.
-export const userRecord = assured<Answer<"/v1/users/{id}">>()(
-  "id",
-  "email",
-  "status",
-  "created_at",
-  "updated_at",
-);
-const securitySummary = assured<Answer<"/v1/users/{id}/security">>()(
-  "mfa_required",
-  "mfa_enabled",
-  "totp_enabled",
-  "otp_factors",
-  "push_devices",
-  "passkeys",
-  "recovery_codes_remaining",
-  "password_set",
-  "active_sessions",
-  "distinct_devices",
-);
-const named = z.object({ id: z.string(), name: z.string(), description: z.string() });
-const accessSummary = strictly<Answer<"/v1/users/{id}/access">>()(
-  z.object({
-    organization: z.object({ id: z.string(), name: z.string(), slug: z.string() }).optional(),
-    roles: z.array(named),
-    groups: z.array(named),
-    applications_count: z.number(),
-    policies_count: z.number(),
-    permissions_direct: z.number(), // distinct, from directly assigned roles
-    permissions_inherited: z.number(), // only through group membership: total − direct
-    permissions_total: z.number(), // distinct effective permissions: direct ∪ inherited
-  }),
-);
-const userSessions = strictly<Answer<"/v1/users/{id}/sessions">>()(
-  z.object({
-    items: z.array(
-      z.object({
-        id: z.string(),
-        ip: z.string().nullable(),
-        user_agent: z.string().nullable(),
-        created_at: z.string(),
-        last_seen_at: z.string(),
-      }),
-    ),
-  }),
-);
-
 /** The full user record from GET /v1/users/{id}. */
-export type UserDetail = z.output<typeof userRecord>;
+export type UserDetail = Answer<"/v1/users/{id}">;
 /** How the person signs in: factors, passkeys, recovery codes, password and sessions. */
-export type SecuritySummary = z.output<typeof securitySummary>;
-export type UserSession = z.output<typeof userSessions>["items"][number];
+export type SecuritySummary = Answer<"/v1/users/{id}/security">;
+export type UserSession = Answer<"/v1/users/{id}/sessions">["items"][number];
 /** What the person can reach: their organisation, roles, groups and the counts beneath. */
-export type AccessSummary = z.output<typeof accessSummary>;
+export type AccessSummary = Answer<"/v1/users/{id}/access">;
 export type RoleInfo = AccessSummary["roles"][number];
 export type GroupInfo = AccessSummary["groups"][number];
 export type SocialIdentity = Answer<"/v1/users/{userID}/social/identities">["items"][number];
@@ -72,8 +22,7 @@ export type SocialIdentity = Answer<"/v1/users/{userID}/social/identities">["ite
 export function useUserSecurity(userId: string, enabled = true) {
   return useQuery({
     queryKey: userKeys.view(useOrganizationId(), userId, "security"),
-    queryFn: () =>
-      backend.get("/v1/users/{id}/security", { path: { id: userId }, schema: securitySummary }),
+    queryFn: () => backend.get("/v1/users/{id}/security", { path: { id: userId } }),
     enabled: enabled && !!userId,
     staleTime: 30_000,
   });
@@ -82,8 +31,7 @@ export function useUserSecurity(userId: string, enabled = true) {
 export function useUserSessions(userId: string, enabled = true) {
   return useQuery({
     queryKey: userKeys.view(useOrganizationId(), userId, "sessions"),
-    queryFn: () =>
-      backend.get("/v1/users/{id}/sessions", { path: { id: userId }, schema: userSessions }),
+    queryFn: () => backend.get("/v1/users/{id}/sessions", { path: { id: userId } }),
     enabled: enabled && !!userId,
     staleTime: 15_000,
   });
@@ -92,8 +40,7 @@ export function useUserSessions(userId: string, enabled = true) {
 export function useUserAccess(userId: string, enabled = true) {
   return useQuery({
     queryKey: userKeys.view(useOrganizationId(), userId, "access"),
-    queryFn: () =>
-      backend.get("/v1/users/{id}/access", { path: { id: userId }, schema: accessSummary }),
+    queryFn: () => backend.get("/v1/users/{id}/access", { path: { id: userId } }),
     enabled: enabled && !!userId,
     staleTime: 30_000,
   });

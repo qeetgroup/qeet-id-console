@@ -2550,7 +2550,7 @@ export interface paths {
         };
         /**
          * Social login callback
-         * @description Completes a social sign-in: exchanges the provider's code, then signs in the account linked to that provider identity, adopts the organization's existing account for a verified address, or creates an account. The callback completes only in the browser that began the sign-in, which holds the binding cookie from GET /v1/social/{provider}/start: the same return link opened in another browser, or without the cookie, is refused and nothing is issued — the browser is sent to the hosted login with error=other_browser and the return_to (the console flow gets social_error=other_browser). A link ceremony (POST /v1/social/{provider}/link/start) attaches nothing here: the browser is sent to the account page with a one-time link_code and the provider, which the account that began the link completes at POST /v1/social/link/complete. Creating one is self-registration: when the organization does not allow it, nothing is created, the attempt is audited (social.signup_refused, naming the provider and the address), and the browser is sent to the hosted login with error=registration_closed and the original return_to. Nor is an account created on a domain another organization has verified, or on one whose organization requires single sign-on (error=social). The console's own sign-up (intent=signup) creates no account on a domain an organization has verified either (error=social). An address the organization's address rules refuse is sent there with error=address_not_allowed and the return_to, and no hosted-login session is opened. An existing account whose address has never been verified, unless the organization's directory provisioned it (SCIM), is not adopted by the provider's word (error=account_unverified; the console flow gets social_error=account_unverified): it must verify the address, or reset its password from the emailed link, first. An OpenID Connect provider's word counts as verified only for an address on a domain the organization has verified (see POST /v1/social/providers). A suspended or deleted account gets error=account_inactive (the console flow gets social_error=account_inactive). When the sign-in must meet a second factor first (the account holds one, the organization requires one, or the sign-in is risky; a remembered device may skip it as for a password sign-in), no hosted-login session is opened either: the browser is sent to the hosted login with the return_to, and the challenge in the URL fragment (mfa_token, methods, factors — the JSON list a password sign-in's challenge carries, with an email or SMS factor's id and masked destination — and enrollment_required / enrollment_due_at for one to set up), to complete at POST /v1/auth/session/mfa. Other failures send it there with error=social. An organization's own provider signs in only an account whose home is that organization, whether linked before or adopted by email. Neither it nor the console's own sign-in signs in, adopts or links an account on a domain whose organization requires single sign-on, except its break-glass members (error=social; the console flow gets the same): only that organization's identity provider signs its people in. Nor does any provider adopt by email an account that owns or administers the organization (social.account_administers; the browser gets error=social): it keeps its own credentials and connects the provider from its account.
+         * @description Completes a social sign-in: exchanges the provider's code, then signs in the account linked to that provider identity, adopts the organization's existing account for a verified address, or creates an account. The callback completes only in the browser that began the sign-in, which holds the binding cookie from GET /v1/social/{provider}/start: the same return link opened in another browser, or without the cookie, is refused and nothing is issued — the browser is sent to the hosted login with error=other_browser and the return_to (the console flow gets social_error=other_browser). A link ceremony (POST /v1/social/{provider}/link/start) attaches nothing here: the browser is sent to the account page with a one-time link_code and the provider, which the account that began the link completes at POST /v1/social/link/complete. Creating one is self-registration: when the organization does not allow it, nothing is created, the attempt is audited (social.signup_refused, naming the provider and the address), and the browser is sent to the hosted login with error=registration_closed and the original return_to. Nor is an account created on a domain another organization has verified (error=social), or on one whose organization requires single sign-on (error=sso_required and the original return_to, so the hosted login can send the person to the organization's single sign-on; like the password sign-in's 403 auth.sso_required it depends only on the domain). The console's own sign-up (intent=signup) creates no account on a domain an organization has verified either (error=social). An address the organization's address rules refuse is sent there with error=address_not_allowed and the return_to, and no hosted-login session is opened. An existing account whose address has never been verified, unless the organization's directory provisioned it (SCIM), is not adopted by the provider's word (error=account_unverified; the console flow gets social_error=account_unverified): it must verify the address, or reset its password from the emailed link, first. An OpenID Connect provider's word counts as verified only for an address on a domain the organization has verified (see POST /v1/social/providers). A suspended or deleted account gets error=account_inactive (the console flow gets social_error=account_inactive). When the sign-in must meet a second factor first (the account holds one, the organization requires one, or the sign-in is risky; a remembered device may skip it as for a password sign-in), no hosted-login session is opened either: the browser is sent to the hosted login with the return_to, and the challenge in the URL fragment (mfa_token, methods, factors — the JSON list a password sign-in's challenge carries, with an email or SMS factor's id and masked destination — and enrollment_required / enrollment_due_at for one to set up), to complete at POST /v1/auth/session/mfa. Other failures send it there with error=social. An organization's own provider signs in only an account whose home is that organization, whether linked before or adopted by email. Neither it nor the console's own sign-in signs in, adopts or links an account on a domain whose organization requires single sign-on, except its break-glass members (error=sso_required and the return_to; the console flow is sent to the hosted login with error=sso_required too): only that organization's identity provider signs its people in. Nor does any provider adopt by email an account that owns or administers the organization (social.account_administers; the browser gets error=social): it keeps its own credentials and connects the provider from its account.
          */
         get: operations["completeSocialSignIn"];
         put?: never;
@@ -2773,40 +2773,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        AdminPortalContext: {
-            branding?: {
-                /** @description Optional hosted-login page background from organization branding settings. */
-                background_color?: string;
-                logo_url?: string;
-                primary_color?: string;
-                secondary_color?: string;
-            };
-            capabilities?: ("saml" | "scim" | "domain_verification")[];
-            /** Format: date-time */
-            expires_at?: string;
-            organization_name?: string;
-            /**
-             * Format: uri
-             * @description The SCIM 2.0 base URL the IT admin enters at their IdP. Present only when the link's capabilities include scim.
-             */
-            scim_base_url?: string;
-        };
         AdminPortalLink: {
-            capabilities?: ("saml" | "scim" | "domain_verification")[];
+            capabilities: ("saml" | "scim" | "domain_verification")[];
             /** Format: date-time */
-            created_at?: string;
+            created_at: string;
             /** Format: uuid */
-            created_by?: string | null;
+            created_by: string | null;
             /** Format: date-time */
-            expires_at?: string;
+            expires_at: string;
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: date-time */
-            last_used_at?: string | null;
+            last_used_at: string | null;
             /** Format: uuid */
-            organization_id?: string;
+            organization_id: string;
             /** Format: date-time */
-            revoked_at?: string | null;
+            revoked_at: string | null;
         };
         /** @description A SAML connection as the admin portal shows it, with the service-provider addresses the IT admin enters at their IdP. */
         AdminPortalSAMLConnection: components["schemas"]["SAMLConnection"] & {
@@ -3131,18 +3113,19 @@ export interface components {
             status: string;
             user_filter: string;
         };
+        /** @description The fields to change; every one is optional, and one left out or null keeps its value. */
         LdapUpdateInput: {
-            base_dn: string | null;
-            bind_dn: string | null;
-            bind_password: string | null;
-            email_attribute: string | null;
-            name: string | null;
-            name_attribute: string | null;
-            server_url: string | null;
-            skip_tls_verify: boolean | null;
-            start_tls: boolean | null;
-            status: string | null;
-            user_filter: string | null;
+            base_dn?: string | null;
+            bind_dn?: string | null;
+            bind_password?: string | null;
+            email_attribute?: string | null;
+            name?: string | null;
+            name_attribute?: string | null;
+            server_url?: string | null;
+            skip_tls_verify?: boolean | null;
+            start_tls?: boolean | null;
+            status?: string | null;
+            user_filter?: string | null;
         };
         LoginFactor: {
             /** @description An email or SMS factor's masked address or number. */
@@ -3175,29 +3158,29 @@ export interface components {
         NextCursor: string;
         /** @description Admin view of an RFC 8628 device-authorization row. Never includes the device_code or its hash. */
         OAuthDeviceAuthorization: {
-            client_id?: string;
+            client_id: string;
             /** @description The application's name; empty once the application is deleted. */
-            client_name?: string;
+            client_name: string;
             /**
              * Format: date-time
              * @description When the device redeemed the approval for tokens; null until then.
              */
-            consumed_at?: string | null;
+            consumed_at: string | null;
             /** Format: date-time */
-            created_at?: string;
+            created_at: string;
             /** Format: date-time */
-            expires_at?: string;
+            expires_at: string;
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: date-time */
-            last_polled_at?: string | null;
-            scopes?: string[];
+            last_polled_at: string | null;
+            scopes: string[];
             /** @enum {string} */
-            status?: "pending" | "authorized" | "denied";
-            user_code?: string;
-            user_email?: string;
+            status: "pending" | "authorized" | "denied";
+            user_code: string;
+            user_email: string;
             /** Format: uuid */
-            user_id?: string | null;
+            user_id: string | null;
         };
         /** @description An RFC 6749 §5.2 error, as the token, revocation, device and backchannel endpoints answer. */
         OAuthError: {
@@ -3277,41 +3260,41 @@ export interface components {
              * Format: uri
              * @description Receives a signed logout token (OpenID Connect Back-Channel Logout, with sid) when someone the application signed in signs out; "" for none.
              */
-            backchannel_logout_uri?: string;
-            client_id?: string;
+            backchannel_logout_uri: string;
+            client_id: string;
             /**
              * Format: uri
              * @description The application's home page, an https URL; the hosted sign-in page shows its host. "" for none (set "" to clear).
              */
-            client_uri?: string;
+            client_uri: string;
             /** Format: date-time */
-            created_at?: string;
+            created_at: string;
             /**
              * Format: uri
              * @description Loaded by the hosted signed-out page (with iss and sid) when someone the application signed in signs out; "" for none.
              */
-            frontchannel_logout_uri?: string;
-            grant_types?: string[];
+            frontchannel_logout_uri: string;
+            grant_types: string[];
             /** Format: uuid */
-            id?: string;
+            id: string;
             /**
              * Format: uri
              * @description The application's logo, an https URL, shown on the hosted sign-in page; "" for none (set "" to clear).
              */
-            logo_uri?: string;
-            name?: string;
+            logo_uri: string;
+            name: string;
             /** Format: uuid */
-            organization_id?: string;
+            organization_id: string;
             /**
              * Format: date-time
              * @description When this confidential application's exemption from sending a PKCE code_challenge ends; null for none.
              */
-            pkce_exempt_until?: string | null;
-            post_logout_uris?: string[];
-            redirect_uris?: string[];
-            scopes?: string[];
+            pkce_exempt_until: string | null;
+            post_logout_uris: string[];
+            redirect_uris: string[];
+            scopes: string[];
             /** @enum {string} */
-            type?: "public" | "confidential";
+            type: "public" | "confidential";
             /** @description The origins a browser application calls the token, userinfo, revocation and introspection endpoints from, which CORS then allows (without credentials): those the application set, else the origins of its http(s) redirect URIs. */
             web_origins?: string[];
         };
@@ -3470,7 +3453,8 @@ export interface components {
         };
         PortalContext: {
             branding?: components["schemas"]["PortalBranding"];
-            capabilities: string[];
+            /** @description What the link may set up. */
+            capabilities: ("saml" | "scim" | "domain_verification")[];
             /** Format: date-time */
             expires_at: string;
             organization_name: string;
@@ -3536,52 +3520,53 @@ export interface components {
         };
         SAMLConnection: {
             /** @description Where the IdP posts assertions. */
-            acs_url?: string;
+            acs_url: string;
             /**
              * @description Accept unsolicited assertions that carry no InResponseTo, i.e. IdP-initiated SSO. Off by default. Enabling it relaxes only the AuthnRequest correlation — signature, issuer, audience, destination and time-condition validation are unchanged, and response and assertion IDs are still consumed for replay protection.
              * @default false
              */
             allow_idp_initiated: boolean;
             /** @description Every IdP signing certificate the connection trusts, oldest first. An assertion signed with any of them is accepted, so an IdP can roll its key over without a sign-in outage. */
-            certificates?: components["schemas"]["SAMLCertificate"][];
+            certificates: components["schemas"]["SAMLCertificate"][];
             /** Format: date-time */
-            created_at?: string;
-            email_attribute?: string;
+            created_at: string;
+            email_attribute: string;
             /** @description The attribute carrying the person's groups, matched against the connection's group mappings and the external ids of groups SCIM provisioned. Empty (the default) reads groups, http://schemas.microsoft.com/ws/2008/06/identity/claims/groups and memberOf. When Microsoft Entra ID leaves the groups out for being too many, memberships stay as they are. */
-            groups_attribute?: string;
+            groups_attribute: string;
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** @description The oldest of the signing certificates the connection trusts. */
-            idp_certificate?: string;
-            idp_entity_id?: string;
+            idp_certificate: string;
+            idp_entity_id: string;
             /** Format: uri */
-            idp_sso_url?: string;
+            idp_sso_url: string;
             /** Format: date-time */
-            last_login_at?: string | null;
+            last_login_at: string | null;
             /** @description Why the last refresh from metadata_url failed; null once one succeeds. */
-            metadata_error?: string | null;
+            metadata_error: string | null;
             /**
              * Format: date-time
              * @description When the connection last took its settings from the IdP's metadata.
              */
-            metadata_refreshed_at?: string | null;
+            metadata_refreshed_at: string | null;
             /**
              * Format: uri
              * @description The IdP metadata URL the connection refreshes its SSO URL and certificates from; null when it doesn't refresh.
              */
-            metadata_url?: string | null;
-            name?: string;
+            metadata_url: string | null;
+            name: string;
             /** @description The attribute carrying the person's display name. When it is empty or the assertion lacks it, the common display-name attributes are read, else the given and family names joined. Each sign-in sets the account's display name to what the assertion carries. */
-            name_attribute?: string;
+            name_attribute: string;
             /** Format: uuid */
-            organization_id?: string;
+            organization_id: string;
             /** @description The connection's own entity ID, for the IdP. */
-            sp_entity_id?: string;
+            sp_entity_id: string;
             /** @description The connection's own metadata, for the IdP to import. */
-            sp_metadata_url?: string;
-            status?: string;
+            sp_metadata_url: string;
+            /** @enum {string} */
+            status: "draft" | "active" | "disabled";
             /** Format: date-time */
-            updated_at?: string;
+            updated_at: string;
         };
         /** @description The name, with all of the IdP's entity ID, SSO URL and certificate, or none of them for a draft. */
         SAMLConnectionCreate: {
@@ -3614,17 +3599,40 @@ export interface components {
             name_attribute?: string | null;
             status?: string | null;
         };
+        /** @description The fields to change; every one is optional, and a field left out or null keeps its value. */
+        SAMLConnectionUpdate: {
+            /** @description Accept IdP-initiated sign-ins (unsolicited assertions); see SAMLConnection. */
+            allow_idp_initiated?: boolean | null;
+            email_attribute?: string | null;
+            /** @description The attribute carrying the person's groups; empty reads the common ones (see SAMLConnection). Over 256 characters is refused with 422 validation_failed. */
+            groups_attribute?: string | null;
+            /** @description PEM or base64 DER X.509 signing certificate (422 saml.certificate_invalid otherwise). It becomes the only certificate the connection trusts; add and remove certificates one at a time with the certificates endpoints. */
+            idp_certificate?: string | null;
+            idp_entity_id?: string | null;
+            /**
+             * Format: uri
+             * @description Checked as on create (422 saml.sso_url_invalid).
+             */
+            idp_sso_url?: string | null;
+            name?: string | null;
+            name_attribute?: string | null;
+            /**
+             * @description Turning a connection active needs its IdP's entity ID, SSO URL and a certificate (422 saml.connection_incomplete otherwise).
+             * @enum {string|null}
+             */
+            status?: "draft" | "active" | "disabled" | null;
+        };
         SAMLServiceProvider: {
             /** Format: uri */
-            acs_url?: string;
+            acs_url: string;
             /** @description Only the people assigned to the SP, themselves or through a group, may sign in to it */
-            assignment_required?: boolean;
+            assignment_required: boolean;
             /** @description The attributes each assertion carries beside the NameID, in this order; one the person has no value for is left out */
-            attributes?: components["schemas"]["SAMLAttributeMapping"][];
+            attributes: components["schemas"]["SAMLAttributeMapping"][];
             /** @description The app's own certificate (PEM), kept for require_signed_requests, encrypt_assertions or both. */
-            certificate?: string;
+            certificate: string;
             /** @description What the certificate says about itself; null without one. */
-            certificate_details?: {
+            certificate_details: {
                 fingerprint_sha256?: string;
                 /** Format: date-time */
                 not_after?: string;
@@ -3633,26 +3641,26 @@ export interface components {
                 subject?: string;
             } | null;
             /** Format: date-time */
-            created_at?: string;
+            created_at: string;
             /** @description Each assertion, signed as always, is encrypted to the app's certificate (AES-256-GCM, its key by RSA-OAEP). */
-            encrypt_assertions?: boolean;
-            entity_id?: string;
+            encrypt_assertions: boolean;
+            entity_id: string;
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: date-time */
-            last_login_at?: string | null;
-            name?: string;
+            last_login_at: string | null;
+            name: string;
             /** @description Where the NameID comes from — email, user_id, persistent_id or metadata.<key> */
-            name_id_attribute?: string;
+            name_id_attribute: string;
             /** @description urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress, urn:oasis:names:tc:SAML:2.0:nameid-format:persistent or urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified */
-            name_id_format?: string;
+            name_id_format: string;
             /** Format: uuid */
-            organization_id?: string;
+            organization_id: string;
             /** @description The app's sign-in requests must be signed with its certificate; one that isn't is refused with 403 saml.request_signature_invalid. Sign-in the IdP starts has no request and is unaffected. */
-            require_signed_requests?: boolean;
-            status?: string;
+            require_signed_requests: boolean;
+            status: string;
             /** Format: date-time */
-            updated_at?: string;
+            updated_at: string;
         };
         SAMLServiceProviderAssignments: {
             groups?: {
@@ -3694,6 +3702,37 @@ export interface components {
             name_id_format?: string | null;
             /** @description Refuse sign-in requests not signed with the certificate; off by default */
             require_signed_requests?: boolean | null;
+            /**
+             * @description The SP's state; refused with 422 saml.status_invalid otherwise.
+             * @enum {string|null}
+             */
+            status?: "draft" | "active" | "disabled" | null;
+        };
+        /** @description The fields to change; every one is optional, and one left out or null keeps its value. attributes replaces the whole list. */
+        SAMLServiceProviderUpdate: {
+            /** Format: uri */
+            acs_url?: string | null;
+            /** @description Sign in only the people assigned to the SP; off by default */
+            assignment_required?: boolean | null;
+            /** @description The attributes to send; absent sends the default email (from email) and name (from display_name), an empty list none */
+            attributes?: components["schemas"]["SAMLAttributeMapping"][] | null;
+            /** @description The app's own certificate (PEM). It must be kept for require_signed_requests, encrypt_assertions or both (422 saml.certificate_unused otherwise), and either needs one (422 saml.certificate_required); encryption needs an RSA key (422 saml.encryption_key_unsupported). */
+            certificate?: string | null;
+            /** @description Encrypt each assertion to the certificate; off by default */
+            encrypt_assertions?: boolean | null;
+            entity_id?: string | null;
+            name?: string | null;
+            /** @description Where the NameID comes from — email, user_id, persistent_id or metadata.<key>; by default persistent_id for a persistent NameID and email otherwise */
+            name_id_attribute?: string | null;
+            /** @description urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress (the default), urn:oasis:names:tc:SAML:2.0:nameid-format:persistent or urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified */
+            name_id_format?: string | null;
+            /** @description Refuse sign-in requests not signed with the certificate; off by default */
+            require_signed_requests?: boolean | null;
+            /**
+             * @description The SP's state; refused with 422 saml.status_invalid otherwise.
+             * @enum {string|null}
+             */
+            status?: "draft" | "active" | "disabled" | null;
         };
         SAMLTestAttribute: {
             friendly_name?: string;
@@ -3895,25 +3934,25 @@ export interface components {
              * Format: date-time
              * @description When the key became the active signing key; null for a candidate that never was, or a key the registry doesn't hold.
              */
-            activated_at?: string | null;
+            activated_at: string | null;
             /**
              * @description ES256 for an EC P-256 key, RS256 for an RSA key.
              * @example ES256
              */
-            alg?: string;
+            alg: string;
             /**
              * Format: date-time
              * @description When the key registry first held the key; null for a key it doesn't hold (one only in configuration).
              */
-            created_at?: string | null;
+            created_at: string | null;
             /** @description RFC 7638 JWK thumbprint of the public key. */
-            kid?: string;
+            kid: string;
             /** Format: date-time */
             retire_at?: string | null;
             /** @enum {string} */
-            status?: "candidate" | "active" | "retired";
+            status: "candidate" | "active" | "retired";
             /** @example sig */
-            use?: string;
+            use: string;
         };
         SSOGroupMapping: {
             /** Format: date-time */
@@ -4455,8 +4494,9 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        [key: string]: unknown;
-                    };
+                        /** Format: uuid */
+                        user_id: string;
+                    } | components["schemas"]["MFAChallenge"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -5346,7 +5386,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AdminPortalContext"];
+                    "application/json": components["schemas"]["PortalContext"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -5601,7 +5641,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["SAMLConnectionCreate"];
+                "application/json": components["schemas"]["SAMLConnectionUpdate"];
             };
         };
         responses: {
@@ -6012,9 +6052,9 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        client_id?: string;
-                        request_id?: string;
-                        scope?: string;
+                        client_id: string;
+                        request_id: string;
+                        scope: string;
                     };
                 };
             };
@@ -6146,8 +6186,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        client_name?: string;
-                        scopes?: string[];
+                        client_name: string;
+                        scopes: string[];
                     };
                 };
             };
@@ -6215,7 +6255,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        status?: "authorized" | "denied";
+                        status: "authorized" | "denied";
                     };
                 };
             };
@@ -6246,14 +6286,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        branding?: {
+                        /** @description The organization's brand for the hosted pages, each part present only when set; null when none is (or the plan doesn't include custom_branding). */
+                        branding: {
                             /** @description Optional page background from organization branding settings. */
                             background_color?: string;
                             logo_url?: string;
                             primary_color?: string;
                             secondary_color?: string;
                         } | null;
-                        client_name?: string;
+                        client_name: string;
                         /**
                          * Format: uri
                          * @description The application's registered home page (https); absent when not set. The hosted page shows its host.
@@ -6267,18 +6308,30 @@ export interface operations {
                         /** @description How long a sign-in link the organization sends works, in minutes. */
                         magic_link_ttl_minutes?: number;
                         /** Format: uuid */
-                        organization_id?: string;
+                        organization_id: string;
                         /** @description The name of the organization the application belongs to, so the hosted pages can say whose rules apply. Absent when it can't be read. */
                         organization_name?: string;
                         /** @description The rules the organization's new passwords must meet, so the hosted pages can show them as they are met. The server still checks them when a password is set. Absent when the policy can't be read. */
                         password_policy?: {
-                            min_length?: number;
-                            require_number?: boolean;
-                            require_symbol?: boolean;
-                            require_uppercase?: boolean;
+                            min_length: number;
+                            require_number: boolean;
+                            require_symbol: boolean;
+                            require_uppercase: boolean;
                         };
+                        /** @description The names of the social sign-in providers the organization has turned on, for GET /v1/social/{provider}/start; empty when none is, or they can't be read. */
+                        providers: string[];
                         /** @description How long the organization remembers a device that skipped the second step, in days. Applies only when remember_device_enabled. */
                         remember_device_days?: number;
+                        /** @description Whether a device may skip the second step for remember_device_days; false when the setting can't be read. */
+                        remember_device_enabled: boolean;
+                        /** @description Whether people may create an account here; false when the setting can't be read. */
+                        self_registration_enabled: boolean;
+                        /** @description Which first-factor methods the organization allows. All true when the setting can't be read; each is refused anyway where the credential is accepted. */
+                        sign_in_methods: {
+                            magic_link: boolean;
+                            passkey: boolean;
+                            password: boolean;
+                        };
                     } & {
                         [key: string]: unknown;
                     };
@@ -6698,7 +6751,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        keys?: components["schemas"]["SigningKey"][];
+                        keys: components["schemas"]["SigningKey"][];
                     };
                 };
             };
@@ -6726,7 +6779,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["AdminPortalLink"][];
+                        items: components["schemas"]["AdminPortalLink"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -8070,7 +8123,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["OAuthDeviceAuthorization"][];
+                        items: components["schemas"]["OAuthDeviceAuthorization"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -8853,7 +8906,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["SAMLServiceProvider"][];
+                        items: components["schemas"]["SAMLServiceProvider"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -8967,7 +9020,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["SAMLServiceProviderCreate"];
+                "application/json": components["schemas"]["SAMLServiceProviderUpdate"];
             };
         };
         responses: {
@@ -9199,7 +9252,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["SAMLConnectionCreate"];
+                "application/json": components["schemas"]["SAMLConnectionUpdate"];
             };
         };
         responses: {

@@ -4,7 +4,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
@@ -12,11 +11,8 @@ import { useOrganizationId } from "@/platform/auth/session";
 import { orgKeys } from "./keys";
 
 /** A claimed email domain, with the DNS record that proves it and the latest check. */
-export type OrganizationDomain = NonNullable<
-  Answer<"/v1/organizations/{organizationID}/domains">["items"]
->[number];
-// The list always carries its items, though the document leaves them optional.
-const domainList = assuredItems<Answer<"/v1/organizations/{organizationID}/domains">>()();
+export type OrganizationDomain =
+  Answer<"/v1/organizations/{organizationID}/domains">["items"][number];
 /** The organisation's own sign-in address: its DNS, certificate and endpoint, step by step. */
 export type LoginDomainStatus = Answer<"/v1/organizations/{organizationID}/login-domain">;
 export type DNSRecord = LoginDomainStatus["records"][number];
@@ -28,7 +24,6 @@ export function useDomains(enabled = true) {
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/domains", {
         path: { organizationID: organizationId ?? "" },
-        schema: domainList,
       }),
     enabled: !!organizationId && enabled,
   });

@@ -1,7 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 
-import { strictly } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer, Body } from "@/platform/api/contract";
 import { isOneOf } from "@/shared/utils/one-of";
@@ -10,43 +8,10 @@ import { useCapabilities } from "@/platform/security/capability-provider";
 
 import { userKeys } from "./keys";
 
-const suspendedUserSchema = z.object({
-  id: z.string(),
-  email: z.string(),
-  display_name: z.string().nullable(),
-  avatar_url: z.string().nullable(),
-  team: z.string(),
-  reason: z.string(),
-  source: z.string(),
-  risk: z.enum(["unknown", "low", "medium", "high"]),
-  review: z.enum(["pending", "reviewed", "external"]),
-  suspended_at: z.string().nullable(),
-  last_sign_in: z.string().nullable(),
-  can_manage: z.boolean(),
-});
-// Every field below is always sent (the document leaves most optional), so they're held to it.
-const suspendedPageSchema = z.object({
-  items: z.array(suspendedUserSchema),
-  total: z.number(),
-  next_cursor: z.string().optional(),
-  summary: z.object({
-    total: z.number(),
-    high_risk: z.number(),
-    policy: z.number(),
-    manual: z.number(),
-    pending: z.number(),
-  }),
-  reasons: z.array(z.object({ key: z.string(), count: z.number() })),
-  risks: z.array(z.object({ key: z.string(), count: z.number() })),
-  queue: z.array(suspendedUserSchema),
-  teams: z.array(z.string()),
-});
-
-const suspendedPage = strictly<Answer<"/v1/users/suspended">>()(suspendedPageSchema);
-
-export type SuspendedDirectoryUser = z.infer<typeof suspendedUserSchema>;
+type SuspendedAnswer = Answer<"/v1/users/suspended">;
+export type SuspendedDirectoryUser = SuspendedAnswer["items"][number];
 /** Every suspended person the filters match, up to SUSPENDED_CAP; `complete` is false past it. */
-export type SuspendedUsersPage = Omit<z.infer<typeof suspendedPageSchema>, "next_cursor"> & {
+export type SuspendedUsersPage = Omit<SuspendedAnswer, "next_cursor"> & {
   complete: boolean;
 };
 export type SuspendedFilters = {
@@ -106,7 +71,6 @@ export function useSuspendedUsers(filters: SuspendedFilters) {
         const { next_cursor, ...page } = await backend.get("/v1/users/suspended", {
           query: { ...suspendedQuery(filters), limit: SUSPENDED_PAGE, cursor },
           signal,
-          schema: suspendedPage,
         });
         first = first
           ? { ...first, items: [...first.items, ...page.items] }

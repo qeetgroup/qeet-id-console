@@ -134,7 +134,6 @@ describe("single-engine simulators", () => {
         permission: "users.read",
         explain: "true",
       },
-      schema: expect.anything(),
     });
     assert(record, "record");
     expect(record).toMatchObject({
@@ -164,7 +163,6 @@ describe("single-engine simulators", () => {
       method: "POST",
       body: input,
       query: { explain: "true" },
-      schema: expect.anything(),
     });
     assert(record, "record");
     expect(record).toMatchObject({ engine: "rebac", allowed: true, input, rebac: explain });

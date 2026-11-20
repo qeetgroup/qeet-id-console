@@ -1,9 +1,7 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 
 import { useOrganizationId } from "@/platform/auth/session";
 import { authzKeys } from "./keys";
-import { assuredItems, strictly } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 
@@ -15,9 +13,6 @@ export interface RelationTuple {
   subject: string;
 }
 
-// The server always sends the list; the document marks it optional.
-const tuplePage = assuredItems<Answer<"/v1/organizations/{organizationID}/relation-tuples">>()();
-
 /** Fetches the tuples on `object` ("type:id"); idle until an object is set. */
 export function useRelationTuples(object: string) {
   const organizationId = useOrganizationId();
@@ -28,7 +23,6 @@ export function useRelationTuples(object: string) {
       // As `query`: the console's server refuses a path that carries its own query string.
       backend.get("/v1/organizations/{organizationID}/relation-tuples", {
         path: { organizationID: organizationId ?? "" },
-        schema: tuplePage,
         query: { object },
       }),
   });
@@ -84,33 +78,12 @@ export function useCheckRelation() {
   });
 }
 
-// The server always sends these (internal/access/authorization/rebac/graph.go); the document marks
-// them optional. A graph with no edges answers them null.
-const graphNode = z.object({
-  id: z.string(), // "type:id"
-  type: z.string(), // the type part
-  label: z.string(), // the id part
-  name: z.string().optional(), // a user node's person, when they belong to the organisation
-});
-const graphEdge = z.object({
-  from: z.string(), // "type:id"
-  to: z.string(), // "type:id"
-  relation: z.string(), // named relation (may include "→ userset-rel" suffix)
-});
-const relationGraph = strictly<
-  Answer<"/v1/organizations/{organizationID}/relation-tuples/graph">
->()(
-  z.object({
-    nodes: z.array(graphNode),
-    edges: z
-      .array(graphEdge)
-      .nullable()
-      .transform((edges) => edges ?? []),
-  }),
-);
-export type GraphNode = z.infer<typeof graphNode>;
-export type GraphEdge = z.infer<typeof graphEdge>;
-export type RelationGraph = z.infer<typeof relationGraph>;
+type GraphAnswer = Answer<"/v1/organizations/{organizationID}/relation-tuples/graph">;
+/** A node: `id` "type:id", `label` the id part, and `name` a user node's person, when known. */
+export type GraphNode = GraphAnswer["nodes"][number];
+/** An edge between two "type:id" nodes; `relation` may carry a "→ userset-rel" suffix. */
+export type GraphEdge = GraphAnswer["edges"][number];
+export type RelationGraph = GraphAnswer;
 
 /** Fetches the graph of every subject reachable through `relation` on `object`. */
 export function useRelationGraph(object: string, relation: string, depth?: number) {
@@ -122,7 +95,6 @@ export function useRelationGraph(object: string, relation: string, depth?: numbe
       backend.get("/v1/organizations/{organizationID}/relation-tuples/graph", {
         path: { organizationID: organizationId ?? "" },
         query: { object, relation, depth },
-        schema: relationGraph,
       }),
   });
 }
@@ -136,7 +108,6 @@ export function useSubjectTuples(subject: string) {
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/relation-tuples", {
         path: { organizationID: organizationId ?? "" },
-        schema: tuplePage,
         query: { subject },
       }),
   });

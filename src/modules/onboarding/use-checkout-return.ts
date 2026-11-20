@@ -6,8 +6,6 @@ import { useOrganizationId, useUserId } from "@/platform/auth/session";
 import { loadPage } from "./load-page";
 import { type PendingOnboarding, readPendingOnboarding } from "./onboarding-profile";
 
-type OrganizationListItem = { id: string; slug: string };
-
 /** What a hosted checkout adds to the create page's address when it sends the person back. */
 export interface CheckoutParams {
   checkout?: "success" | "cancelled";
@@ -52,9 +50,9 @@ export function useCheckoutReturn(params: CheckoutParams, clearParams: () => voi
       // The paid organisation is the one with the stashed slug. Without a stash, it is one that
       // wasn't there at the first look: "the newest" could be another of the person's.
       for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
-        const items: OrganizationListItem[] | undefined = (
+        const items = (
           await backend.get("/v1/organizations", { query: { limit: 200 } }).catch(() => null)
-        )?.items?.filter((org): org is OrganizationListItem => !!org.id && !!org.slug);
+        )?.items;
         if (items) {
           const seen = known.current;
           const paid = pending

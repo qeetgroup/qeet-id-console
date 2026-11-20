@@ -4,7 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
 
-import { assured, assuredItems } from "@/platform/api/assured";
+import { assured } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer, Body } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
@@ -12,28 +12,14 @@ import { securityKeys } from "./keys";
 
 export type AnomalyReason = "new_action_type" | "unusual_hour" | "new_ip";
 
-// The server always sends these (internal/operations/audit/anomaly/anomaly.go); the document marks
-// them optional.
-const auditAnomalyPage = assuredItems<
-  Answer<"/v1/organizations/{organizationID}/audit/anomalies">
->()(
-  "id",
-  "organization_id",
-  "event_id",
-  "score",
-  "reasons",
-  "status",
-  "created_at",
-  "action",
-  "resource_type",
-  "event_at",
-);
-export type AuditAnomaly = z.infer<typeof auditAnomalyPage>["items"][number];
+export type AuditAnomaly =
+  Answer<"/v1/organizations/{organizationID}/audit/anomalies">["items"][number];
 
 export type AuditAnomalySummary =
   Answer<"/v1/organizations/{organizationID}/audit/anomalies/summary">;
 
 const SETTINGS_PATH = "/v1/organizations/{organizationID}/audit/anomaly-settings";
+// The server always sends these; the document still leaves them optional.
 const anomalySettings = assured<Answer<typeof SETTINGS_PATH>>()(
   "enabled",
   "score_threshold",
@@ -50,7 +36,6 @@ export function useAuditAnomalies(status?: "open" | "resolved", limit?: number) 
       backend.get("/v1/organizations/{organizationID}/audit/anomalies", {
         path: { organizationID: organizationId ?? "" },
         query: status || limit ? { status, limit } : undefined,
-        schema: auditAnomalyPage,
       }),
     enabled: !!organizationId,
     staleTime: 30_000,

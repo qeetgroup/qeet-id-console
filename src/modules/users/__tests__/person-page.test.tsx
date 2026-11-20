@@ -68,6 +68,9 @@ const ananya: UserDetail = {
   display_name: "Ananya Iyer",
   status: "active",
   metadata: { title: "Senior Software Engineer", team: "Frontend", employee_id: "QEE-1038" },
+  phone: null,
+  phone_verified_at: null,
+  avatar_url: null,
   created_at: "2026-04-08T10:23:58Z",
   updated_at: "2026-04-08T10:23:58Z",
 };

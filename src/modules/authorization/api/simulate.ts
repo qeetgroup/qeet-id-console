@@ -4,12 +4,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useOrganizationId } from "@/platform/auth/session";
-import type { z } from "zod";
 
-import { assuredList } from "@/platform/api/assured";
 import type { AbacDecision } from "./abac";
-import { checkAnswer, type ExplainPath, type ExplainResult } from "./access-check";
-import type { DecidedBy } from "./decision";
+import type { ExplainPath, ExplainResult } from "./access-check";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 import { randomHex } from "@/shared/utils/random-hex";
@@ -19,19 +16,17 @@ export type Engine = "authzen" | "abac" | "rbac" | "rebac";
 export type RbacExplain = ExplainResult;
 export type RbacExplainPath = ExplainPath;
 
-// The server always sends each hop's fields; the document marks them optional.
-const relationCheck = assuredList<
-  Answer<"/v1/organizations/{organizationID}/relation-tuples/check", "post">
->()("path", "object", "relation", "subject", "depth");
-export type RebacExplain = z.infer<typeof relationCheck>;
+export type RebacExplain = Answer<
+  "/v1/organizations/{organizationID}/relation-tuples/check",
+  "post"
+>;
 export type RebacPathStep = NonNullable<RebacExplain["path"]>[number];
 
-// The document gives `context` as an empty object; the server sends decided_by in it, and with
-// explain the grant paths or relation path and the trace.
-export type AuthzenResult = Omit<
-  Answer<"/v1/organizations/{organizationID}/access/v1/evaluation", "post">,
-  "context"
-> & { context?: { decided_by?: DecidedBy } & Record<string, unknown> };
+// `context` carries decided_by and, with explain, the grant paths or relation path and the trace.
+export type AuthzenResult = Answer<
+  "/v1/organizations/{organizationID}/access/v1/evaluation",
+  "post"
+>;
 
 /** One engine's decision in a common shape, with its explain payload and measured latency. */
 export interface DecisionRecord {
@@ -142,7 +137,6 @@ async function callRbac(organizationId: string, input: RbacInput): Promise<Decis
         permission: input.permission,
         explain: "true",
       },
-      schema: checkAnswer,
     }),
   );
   return {
@@ -163,7 +157,6 @@ async function callRebac(organizationId: string, input: RebacInput): Promise<Dec
       path: { organizationID: organizationId },
       body: input,
       query: { explain: "true" },
-      schema: relationCheck,
     }),
   );
   return {

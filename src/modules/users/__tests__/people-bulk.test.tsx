@@ -39,6 +39,13 @@ function user(id: string, overrides: Partial<User> = {}): User {
     email: `${id}@example.test`,
     status: "active",
     created_at: "2026-09-01T00:00:00Z",
+    display_name: null,
+    phone: null,
+    metadata: null,
+    avatar_url: null,
+    email_verified_at: null,
+    phone_verified_at: null,
+    updated_at: "2026-09-01T00:00:00Z",
     ...overrides,
   };
 }

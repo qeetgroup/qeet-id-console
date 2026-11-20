@@ -3,44 +3,18 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { z } from "zod";
-
 import i18n from "@/i18n";
-import { assured, assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer, Body } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
 
 import { orgKeys } from "./keys";
 
-// The catalogue's own fields, always sent (email.go) though the document leaves them optional.
-const templateList = assuredItems<Answer<"/v1/organizations/{organizationID}/email-templates">>()(
-  "key",
-  "name",
-  "description",
-  "variables",
-  "custom",
-);
-
-// A saved or reset template answers the same record, held to the same fields.
 const TEMPLATE_PATH = "/v1/organizations/{organizationID}/email-templates/{key}" as const;
-const savedTemplate = assured<Answer<typeof TEMPLATE_PATH, "put">>()(
-  "key",
-  "name",
-  "description",
-  "variables",
-  "custom",
-);
-const resetTemplate = assured<Answer<typeof TEMPLATE_PATH, "delete">>()(
-  "key",
-  "name",
-  "description",
-  "variables",
-  "custom",
-);
 
 /** One email template: the catalogue's entry with the organisation's override, if any. */
-export type EmailTemplate = z.output<typeof templateList>["items"][number];
+export type EmailTemplate =
+  Answer<"/v1/organizations/{organizationID}/email-templates">["items"][number];
 export type EmailTemplateInput = Body<
   "/v1/organizations/{organizationID}/email-templates/{key}",
   "put"
@@ -65,7 +39,6 @@ export function useEmailTemplates(enabled = true) {
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/email-templates", {
         path: { organizationID: organizationId ?? "" },
-        schema: templateList,
       }),
   });
 }
@@ -132,14 +105,12 @@ export function saveEmailTemplate(organizationId: string, key: string, draft: Em
   return backend.put(TEMPLATE_PATH, {
     path: { organizationID: organizationId, key },
     body: draft,
-    schema: savedTemplate,
   });
 }
 
 export function resetEmailTemplate(organizationId: string, key: string) {
   return backend.delete(TEMPLATE_PATH, {
     path: { organizationID: organizationId, key },
-    schema: resetTemplate,
   });
 }
 

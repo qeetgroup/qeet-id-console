@@ -10,8 +10,8 @@ import type { Answer, Schemas } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
 
-// The server always sends these (internal/federation/oidc/clients.go); the document marks them
-// optional.
+// The app's record, held to one shape wherever it's read: the create answer that carries it also
+// carries the one-time secret, so that read fails closed.
 const oidcClientSchema = strictly<Schemas<"federation">["OIDCClient"]>()(
   z.object({
     id: z.string(),

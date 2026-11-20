@@ -119,7 +119,12 @@ function fixtures(): EligibleOrganization[] {
 function viewProps(): OrganizationSelectorViewProps {
   return {
     organizations: fixtures(),
-    user: { id: "user-a", email: "operator@example.test", display_name: "Mina Shah" },
+    user: {
+      id: "user-a",
+      email: "operator@example.test",
+      display_name: "Mina Shah",
+      avatar_url: null,
+    },
     loading: false,
     error: false,
     fetching: false,

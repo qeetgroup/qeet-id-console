@@ -55,7 +55,13 @@ const asha: User = {
   email: "asha@example.test",
   display_name: "Asha",
   status: "active",
+  phone: null,
+  metadata: null,
+  avatar_url: null,
+  email_verified_at: null,
+  phone_verified_at: null,
   created_at: "2026-09-01T00:00:00Z",
+  updated_at: "2026-09-01T00:00:00Z",
 };
 
 function type(name: RegExp | string, value: string) {

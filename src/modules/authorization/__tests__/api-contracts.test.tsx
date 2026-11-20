@@ -245,7 +245,6 @@ describe("ReBAC relationship tuples", () => {
     const { client } = await runQuery(() => useRelationTuples("doc:a b/c"));
     expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/relation-tuples", {
       query: { object: "doc:a b/c" },
-      schema: expect.anything(),
     });
     expect(client.getQueryData(authzKeys.relationTuples("tenant-a", "doc:a b/c"))).toEqual({
       items: [],
@@ -262,7 +261,6 @@ describe("ReBAC relationship tuples", () => {
     const { client } = await runQuery(() => useSubjectTuples("group:eng#member"));
     expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/relation-tuples", {
       query: { subject: "group:eng#member" },
-      schema: expect.anything(),
     });
     expect(client.getQueryData(authzKeys.subjectTuples("tenant-a", "group:eng#member"))).toEqual({
       items: [],
@@ -277,7 +275,6 @@ describe("ReBAC relationship tuples", () => {
     const withDepth = await runQuery(() => useRelationGraph("doc:1", "viewer", 3));
     expect(api).toHaveBeenLastCalledWith("/v1/organizations/tenant-a/relation-tuples/graph", {
       query: { object: "doc:1", relation: "viewer", depth: 3 },
-      schema: expect.anything(),
     });
     expect(
       withDepth.client.getQueryData(authzKeys.relationGraph("tenant-a", "doc:1", "viewer", 3)),
@@ -286,7 +283,6 @@ describe("ReBAC relationship tuples", () => {
     await runQuery(() => useRelationGraph("doc:1", "viewer"));
     expect(api).toHaveBeenLastCalledWith("/v1/organizations/tenant-a/relation-tuples/graph", {
       query: { object: "doc:1", relation: "viewer", depth: undefined },
-      schema: expect.anything(),
     });
 
     vi.clearAllMocks();
@@ -364,19 +360,13 @@ describe("RBAC roles and permissions", () => {
   it("reads the permission catalogue globally, even before a tenant is chosen", async () => {
     session.organizationId = null;
     const { client } = await runQuery(() => usePermissions());
-    expect(api).toHaveBeenCalledWith(
-      "/v1/permissions",
-      expect.objectContaining({ schema: expect.anything() }),
-    );
+    expect(api).toHaveBeenCalledWith("/v1/permissions");
     expect(client.getQueryData(authzKeys.permissions(null))).toEqual({ items: [] });
   });
 
   it("lists the tenant's roles under the shared roles key", async () => {
     const { client } = await runQuery(() => useRoles());
-    expect(api).toHaveBeenCalledWith(
-      "/v1/organizations/tenant-a/roles",
-      expect.objectContaining({ schema: expect.anything() }),
-    );
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/roles");
     expect(client.getQueryData(authzKeys.roles("tenant-a"))).toEqual({ items: [] });
 
     vi.clearAllMocks();
@@ -397,7 +387,6 @@ describe("RBAC roles and permissions", () => {
     expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/roles", {
       method: "POST",
       body,
-      schema: expect.anything(),
     });
     expect(invalidated).toEqual([authzKeys.roles("tenant-a")]);
     expect(meta).toEqual({ successMessage: "authorization:toast.roleCreated", silentError: true });
@@ -405,10 +394,7 @@ describe("RBAC roles and permissions", () => {
 
   it("reads a role's permissions by role id, and waits until a role is chosen", async () => {
     const { client } = await runQuery(() => useRolePermissions("r1"));
-    expect(api).toHaveBeenCalledWith(
-      "/v1/roles/r1/permissions",
-      expect.objectContaining({ schema: expect.anything() }),
-    );
+    expect(api).toHaveBeenCalledWith("/v1/roles/r1/permissions");
     expect(client.getQueryData(authzKeys.rolePermissions("tenant-a", "r1"))).toEqual({ items: [] });
 
     vi.clearAllMocks();
@@ -448,10 +434,7 @@ describe("RBAC roles and permissions", () => {
 describe("RBAC group grants", () => {
   it("lists a group's roles, and waits for both tenant and group", async () => {
     const { client } = await runQuery(() => useGroupRoles("g1"));
-    expect(api).toHaveBeenCalledWith(
-      "/v1/organizations/tenant-a/groups/g1/roles",
-      expect.objectContaining({ schema: expect.anything() }),
-    );
+    expect(api).toHaveBeenCalledWith("/v1/organizations/tenant-a/groups/g1/roles");
     expect(client.getQueryData(authzKeys.groupRoles("tenant-a", "g1"))).toEqual({ items: [] });
 
     vi.clearAllMocks();
@@ -492,7 +475,6 @@ describe("access explain check", () => {
         permission: "users.read",
         explain: "true",
       },
-      schema: expect.anything(),
     });
     expect(invalidated).toEqual([]);
     expect(meta).toEqual({ silent: true });

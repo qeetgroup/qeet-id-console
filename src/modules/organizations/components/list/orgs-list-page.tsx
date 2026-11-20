@@ -35,7 +35,6 @@ import {
 import { TWO_STEP_TARGET } from "@/modules/users";
 import { backend } from "@/platform/api/backend";
 import { useOrganizationId } from "@/platform/auth/session";
-import { useCapabilities } from "@/platform/security/capability-provider";
 import { toastSwitchFailure } from "@/platform/security/two-step-required";
 import { type CsvColumn, exportToCsv, exportToJson } from "@/shared/utils/data-export";
 import { OrgsBand } from "./orgs-band";
@@ -75,7 +74,6 @@ export type OrgsListPageProps = {
 export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
   const { t } = useTranslation("organizations");
   const navigate = useNavigate();
-  const access = useCapabilities();
   const organizationId = useOrganizationId();
   const [sort, setSort] = useState<TableSort | null>(null);
   const [pageSize, setPageSize] = useState<number>(PAGE_SIZES[0]);
@@ -84,11 +82,6 @@ export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
 
   const listQ = useOrgs();
   const mineQ = useQuery(orgQueries.memberships());
-  // The organisation you're in: its record carries a scheduled deletion (the list doesn't yet).
-  const recordQ = useQuery({
-    ...orgQueries.record(organizationId),
-    enabled: !!organizationId && access.can("organization.read"),
-  });
   const invitesQ = useQuery({
     queryKey: orgKeys.invitations(),
     queryFn: ({ signal }) => backend.get("/v1/me/invites", { signal }),
@@ -99,8 +92,8 @@ export function OrgsListPage({ filters, onFiltersChange }: OrgsListPageProps) {
   const now = listQ.dataUpdatedAt || Date.now();
   const reading = useMemo(() => ({ now, target: TWO_STEP_TARGET }), [now]);
   const rows = useMemo(
-    () => orgRows(listQ.data?.items ?? [], mineQ.data, organizationId, recordQ.data),
-    [listQ.data, mineQ.data, organizationId, recordQ.data],
+    () => orgRows(listQ.data?.items ?? [], mineQ.data, organizationId),
+    [listQ.data, mineQ.data, organizationId],
   );
   const shown = useMemo(
     () => visibleOrgs(rows, filters, sort, reading),

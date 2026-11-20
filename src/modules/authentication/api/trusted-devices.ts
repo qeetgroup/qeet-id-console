@@ -2,10 +2,8 @@
 // approvals (`useDeviceAuthorizations` in the security module).
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { z } from "zod";
 
 import { userKeys } from "@/modules/users";
-import { assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import { ApiError } from "@/platform/api/client";
 import type { Answer } from "@/platform/api/contract";
@@ -41,35 +39,21 @@ export function useTrustedDeviceSummary(enabled = true) {
   });
 }
 
-// The server always sends these (internal/access/authentication/trusteddevice.go); the document
-// marks them optional.
-const DEVICE_FIELDS = [
-  "id",
-  "device",
-  "device_kind",
-  "created_at",
-  "expires_at",
-  "current",
-] as const;
-const ownDevices = assuredItems<Answer<"/v1/auth/trusted-devices">>()(...DEVICE_FIELDS);
-const memberDevices = assuredItems<Answer<"/v1/users/{id}/trusted-devices">>()(...DEVICE_FIELDS);
-
 /**
  * A device remembered so it skips the second factor at sign-in: in words ("Chrome on macOS"), the
  * organization it was remembered in, when it last skipped the second factor, and whether the
  * request came from it.
  */
-export type TrustedDevice = z.infer<typeof ownDevices>["items"][number];
+export type TrustedDevice = Answer<"/v1/auth/trusted-devices">["items"][number];
 
 /** Whose remembered devices: the caller's own, or a member's (an administrator's view). */
 export type TrustedDeviceScope = { kind: "self" } | { kind: "member"; userId: string };
 
 function readDevices(scope: TrustedDeviceScope): Promise<{ items: TrustedDevice[] }> {
   return scope.kind === "self"
-    ? backend.get("/v1/auth/trusted-devices", { schema: ownDevices })
+    ? backend.get("/v1/auth/trusted-devices")
     : backend.get("/v1/users/{id}/trusted-devices", {
         path: { id: scope.userId },
-        schema: memberDevices,
       });
 }
 

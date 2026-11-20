@@ -6,9 +6,6 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import type { z } from "zod";
-
-import { assured, assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer, Body, Operation, QueryParams } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
@@ -17,42 +14,12 @@ import { useCursorList } from "@/platform/query/cursor-list";
 import type { ImportRowError } from "../import-errors";
 import type { ImportRow } from "../import-file";
 import { type UserListParams, userKeys } from "./keys";
-import { userRecord } from "./user360";
 
 export type UserStatus = "active" | "invited" | "suspended" | "deleted";
 
-// The members list and the counts: the document leaves their fields optional, the server always
-// sends them (user.go, list.go), so each read is held to what the pages use.
-const userPage = assuredItems<Answer<"/v1/users">>()("id", "email", "status", "created_at");
-// A search counts what it found: the server always sends the total (http.go, userPage).
-const userSearchPage = userPage
-  .refine((page) => typeof page.total === "number")
-  .transform((page) => ({ ...page, total: page.total ?? 0 }));
-const userStats = assured<Answer<"/v1/users/stats">>()(
-  "total",
-  "active",
-  "suspended",
-  "invited",
-  "mfa_enabled",
-  "mfa_missing",
-  "new_last_30d",
-  "last_seen",
-  "admins_without_mfa",
-  "email_unverified",
-  "by_role",
-  "by_department",
-);
-const userTrends = assured<Answer<"/v1/users/trends">>()("total", "mfa_enabled");
-const deletedPage = assuredItems<Answer<"/v1/users/deleted">>()(
-  "id",
-  "email",
-  "deleted_at",
-  "created_at",
-);
-
 /** A member of the organisation, as the list has them (with roles, two-step and last seen). */
-export type User = z.output<typeof userPage>["items"][number];
-export type UserPage = z.output<typeof userPage>;
+export type User = Answer<"/v1/users">["items"][number];
+export type UserPage = Answer<"/v1/users">;
 
 /** The most people a page loads, 200 at a time, to look people up or filter them itself. */
 export const DIRECTORY_CAP = 2000;
@@ -69,18 +36,18 @@ export const EXPORT_CAP = 10_000;
 export type UserDirectory = { items: User[]; complete: boolean };
 
 /** Tenant-wide member counts. */
-export type UserStats = z.output<typeof userStats>;
+export type UserStats = Answer<"/v1/users/stats">;
 /** Daily counts over the last 30 days, oldest first. */
-export type UserTrends = z.output<typeof userTrends>;
+export type UserTrends = Answer<"/v1/users/trends">;
 /** A soft-deleted user, restorable until purged; `deleted_by` when the server knows. */
-export type DeletedUser = z.output<typeof deletedPage>["items"][number];
+export type DeletedUser = Answer<"/v1/users/deleted">["items"][number];
 
 /** Query definitions for the users reads, shared by hooks, prefetches and cache reads. */
 export const userQueries = {
   list: (organizationId: string | null, params: UserListParams) =>
     queryOptions({
       queryKey: userKeys.list(organizationId, params),
-      queryFn: () => backend.get("/v1/users", { query: params, schema: userPage }),
+      queryFn: () => backend.get("/v1/users", { query: params }),
       enabled: !!organizationId,
     }),
   // Everyone, for the pages that look people up by id or email, and for the Users list's filters
@@ -95,7 +62,6 @@ export const userQueries = {
           const page: UserPage = await backend.get("/v1/users", {
             query: { limit: DIRECTORY_PAGE, cursor },
             signal,
-            schema: userPage,
           });
           items.push(...page.items);
           cursor = page.next_cursor || undefined;
@@ -108,7 +74,7 @@ export const userQueries = {
   detail: (organizationId: string | null, userId: string) =>
     queryOptions({
       queryKey: userKeys.detail(organizationId, userId),
-      queryFn: () => backend.get("/v1/users/{id}", { path: { id: userId }, schema: userRecord }),
+      queryFn: () => backend.get("/v1/users/{id}", { path: { id: userId } }),
       enabled: !!organizationId && !!userId,
     }),
   // A person's name beside something they did. Without it the change shows no name, so a failed
@@ -116,7 +82,7 @@ export const userQueries = {
   name: (organizationId: string | null, userId: string) =>
     queryOptions({
       queryKey: userKeys.detail(organizationId, userId),
-      queryFn: () => backend.get("/v1/users/{id}", { path: { id: userId }, schema: userRecord }),
+      queryFn: () => backend.get("/v1/users/{id}", { path: { id: userId } }),
       enabled: !!organizationId && !!userId,
       staleTime: 60_000,
       meta: { silent: true },
@@ -124,21 +90,21 @@ export const userQueries = {
   stats: (organizationId: string | null) =>
     queryOptions({
       queryKey: userKeys.stats(organizationId),
-      queryFn: () => backend.get("/v1/users/stats", { schema: userStats }),
+      queryFn: () => backend.get("/v1/users/stats"),
       enabled: !!organizationId,
       staleTime: 30_000,
     }),
   trends: (organizationId: string | null) =>
     queryOptions({
       queryKey: userKeys.trends(organizationId),
-      queryFn: () => backend.get("/v1/users/trends", { schema: userTrends }),
+      queryFn: () => backend.get("/v1/users/trends"),
       enabled: !!organizationId,
       staleTime: 60_000,
     }),
   deleted: (organizationId: string | null) =>
     queryOptions({
       queryKey: userKeys.deleted(organizationId),
-      queryFn: () => backend.get("/v1/users/deleted", { schema: deletedPage }),
+      queryFn: () => backend.get("/v1/users/deleted"),
       enabled: !!organizationId,
     }),
 };
@@ -165,7 +131,6 @@ function readUsers(query: UserQuery, cursor: string | undefined, signal?: AbortS
   return backend.get("/v1/users", {
     query: { ...query, limit: SEARCH_PAGE, cursor },
     signal,
-    schema: userSearchPage,
   });
 }
 
@@ -230,7 +195,7 @@ export function useCreateUser() {
   return useMutation({
     mutationFn: async (input: CreateUserInput) => {
       const { role_id, ...body } = input;
-      const user = await backend.post("/v1/users", { body, schema: userRecord });
+      const user = await backend.post("/v1/users", { body });
       if (role_id) {
         try {
           await assignRoleCall(body.organization_id, role_id)(user.id);

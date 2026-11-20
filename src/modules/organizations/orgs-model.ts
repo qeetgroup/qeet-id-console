@@ -55,12 +55,11 @@ export function roleOf(row: Pick<OrgRow, "roles">): string | null {
 export const isOwner = (row: Pick<OrgRow, "roles">) =>
   row.roles.some((r) => r.toLowerCase() === "owner");
 
-/** The caller's organisations, each with their place in it; the current one's record on top. */
+/** The caller's organisations, each with their place in it. */
 export function orgRows(
   tenants: readonly Org[],
   memberships: readonly EligibleOrganization[] | undefined,
   currentId: string | null,
-  record?: Org | null,
 ): OrgRow[] {
   const mine = new Map((memberships ?? []).map((m) => [m.id, m]));
   return tenants.map((org) => {
@@ -68,7 +67,6 @@ export function orgRows(
     const current = org.id === currentId;
     return {
       ...org,
-      ...(current && record ? { deletion_due_at: record.deletion_due_at } : {}),
       roles: byRank(m?.roles ?? []),
       domain: m?.domain ?? "",
       logo_url: m?.logo_url ?? "",
