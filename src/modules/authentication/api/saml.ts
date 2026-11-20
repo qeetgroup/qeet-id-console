@@ -6,9 +6,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApiBaseUrl } from "@/platform/api/client";
 import { useOrganizationId } from "@/platform/auth/session";
 import { authKeys } from "./keys";
-import { assuredItems } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
-import type { Answer, Schemas } from "@/platform/api/contract";
+import type { Schemas } from "@/platform/api/contract";
 import { isOneOf } from "@/shared/utils/one-of";
 
 const SAML_STATUSES = ["draft", "active", "disabled"] as const;
@@ -18,9 +17,6 @@ export type SamlStatus = (typeof SAML_STATUSES)[number];
 export const samlStatus = (status: string): SamlStatus =>
   isOneOf(SAML_STATUSES, status) ? status : "disabled";
 
-// The server always sends the list (an empty one when there are none); its document still leaves
-// it optional.
-const samlPage = assuredItems<Answer<"/v1/organizations/{organizationID}/saml">>()();
 export type SamlConnection = Schemas<"federation">["SAMLConnection"];
 
 export interface CreateSamlInput {
@@ -46,7 +42,6 @@ export function useSamlConnections(enabled = true) {
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/saml", {
         path: { organizationID: organizationId ?? "" },
-        schema: samlPage,
       }),
   });
 }

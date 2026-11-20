@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
-import { assured } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import { ApiError } from "@/platform/api/client";
 import type { Answer } from "@/platform/api/contract";
@@ -17,15 +16,12 @@ type SignupInput = {
   display_name?: string;
 };
 
-// The ids the verification step needs, always sent though the document leaves them optional.
-const signedUp = assured<Answer<"/v1/auth/signup", "post">>()("user_id", "session_id");
-
 /**
  * A tenant-less sign-up's result. The BFF keeps the tokens; the user and safe session ids remain
  * for the email verification step.
  */
 export type SignupResponse = Omit<
-  import("zod").output<typeof signedUp>,
+  Answer<"/v1/auth/signup", "post">,
   "access_token" | "refresh_token"
 >;
 
@@ -37,7 +33,7 @@ export function useSignup(opts?: { onSuccess?: (res: SignupResponse) => void }) 
   const navigate = useNavigate();
   return useMutation({
     mutationFn: async (in_: SignupInput): Promise<SignupResponse> =>
-      backend.post("/v1/auth/signup", { body: in_, anonymous: true, schema: signedUp }),
+      backend.post("/v1/auth/signup", { body: in_, anonymous: true }),
     onSuccess: (res) => {
       if (opts?.onSuccess) {
         opts.onSuccess(res);

@@ -90,25 +90,8 @@ export const DEFAULT_ERROR_FILTERS: ErrorFilters = {
   limit: 25,
 };
 
-// Always sent, though the document leaves them optional.
-const errorPageShape = z.object({
-  items: z.array(eventSchema),
-  total: z.number(),
-  next_cursor: z.string().optional(),
-  summary: z.object({
-    open: z.number(),
-    critical: z.number(),
-    warning: z.number(),
-    retried: z.number(),
-    impacted_users: z.number().nullable(),
-  }),
-  categories: z.array(z.object({ key: z.string(), count: z.number() })),
-  connections: z.array(z.object({ key: z.string(), count: z.number() })),
-  remediations: z.array(eventSchema),
-});
 const ERRORS = "/v1/organizations/{organizationID}/directory/errors" as const;
-export const errorPageSchema = strictly<Answer<typeof ERRORS>>()(errorPageShape);
-export type DirectoryErrorPage = z.infer<typeof errorPageShape>;
+export type DirectoryErrorPage = Answer<typeof ERRORS>;
 
 /** One read of the errors list, from `cursor`. */
 export function readDirectoryErrors(
@@ -121,7 +104,6 @@ export function readDirectoryErrors(
     path: { organizationID: organizationId ?? "" },
     query: { ...errorQuery(filters), cursor },
     signal,
-    schema: errorPageSchema,
   });
 }
 

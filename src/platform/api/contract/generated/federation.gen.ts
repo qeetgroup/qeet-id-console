@@ -2895,15 +2895,15 @@ export interface components {
             user_id: string;
         };
         DirectoryEvent: {
-            category?: string;
+            category: string;
             connection_id: string;
             duration_ms: number;
-            error_code?: string;
+            error_code: string;
             groups_synced: number;
-            http_status?: number;
+            http_status: number;
             /** Format: uuid */
             id: string;
-            message?: string;
+            message: string;
             operation: string;
             /** @description Safe details of the failure: host, the directory server it used. */
             params?: {
@@ -2912,17 +2912,17 @@ export interface components {
             /** @description The failure's own code, such as ldap.dial_failed, ldap.service_bind_failed, ldap.tls_verify_required or ldap.invalid_credentials, or the SCIM error type an answer to the identity provider gave (scim.uniqueness, say). Absent on a success, and on events from before it was kept. */
             reason?: string;
             /** @enum {string} */
-            resolution?: "open" | "resolved" | "retried";
+            resolution: "open" | "resolved" | "retried";
             /** Format: date-time */
-            resolved_at?: string | null;
-            resource_id?: string;
+            resolved_at: string | null;
+            resource_id: string;
             /** @enum {string} */
             resource_type: "user" | "group" | "connection";
             /** Format: uuid */
-            retry_of?: string | null;
+            retry_of: string | null;
             retryable: boolean;
             /** @enum {string} */
-            severity?: "" | "warning" | "critical";
+            severity: "" | "warning" | "critical";
             /** Format: date-time */
             started_at: string;
             /** @enum {string} */
@@ -5409,7 +5409,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Domain"][];
+                        items: components["schemas"]["Domain"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -5531,7 +5531,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["AdminPortalSAMLConnection"][];
+                        items: components["schemas"]["AdminPortalSAMLConnection"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -7600,26 +7600,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        categories?: {
-                            count?: number;
-                            key?: string;
+                        categories: {
+                            count: number;
+                            key: string;
                         }[];
-                        connections?: {
-                            count?: number;
-                            key?: string;
+                        connections: {
+                            count: number;
+                            key: string;
                         }[];
-                        items?: components["schemas"]["DirectoryEvent"][];
-                        limit?: number;
+                        items: components["schemas"]["DirectoryEvent"][];
+                        limit: number;
                         next_cursor?: components["schemas"]["NextCursor"];
-                        remediations?: components["schemas"]["DirectoryEvent"][];
-                        summary?: {
-                            critical?: number;
-                            impacted_users?: number | null;
-                            open?: number;
-                            retried?: number;
-                            warning?: number;
+                        remediations: components["schemas"]["DirectoryEvent"][];
+                        summary: {
+                            critical: number;
+                            impacted_users: number | null;
+                            open: number;
+                            retried: number;
+                            warning: number;
                         };
-                        total?: number;
+                        total: number;
                     };
                 };
             };
@@ -8836,7 +8836,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["SAMLConnection"][];
+                        items: components["schemas"]["SAMLConnection"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };

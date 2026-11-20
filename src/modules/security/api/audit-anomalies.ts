@@ -2,9 +2,7 @@
 // anomalies in anomalies.ts are a separate feed.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { z } from "zod";
 
-import { assured } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer, Body } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
@@ -19,13 +17,7 @@ export type AuditAnomalySummary =
   Answer<"/v1/organizations/{organizationID}/audit/anomalies/summary">;
 
 const SETTINGS_PATH = "/v1/organizations/{organizationID}/audit/anomaly-settings";
-// The server always sends these; the document still leaves them optional.
-const anomalySettings = assured<Answer<typeof SETTINGS_PATH>>()(
-  "enabled",
-  "score_threshold",
-  "min_baseline_events",
-);
-export type AuditAnomalySettings = z.infer<typeof anomalySettings>;
+export type AuditAnomalySettings = Answer<typeof SETTINGS_PATH>;
 
 /** The latest flags, newest first: 50 unless `limit` says otherwise (the server takes up to 200). */
 export function useAuditAnomalies(status?: "open" | "resolved", limit?: number) {
@@ -78,7 +70,6 @@ export function useAuditAnomalySettings() {
     queryFn: () =>
       backend.get(SETTINGS_PATH, {
         path: { organizationID: organizationId ?? "" },
-        schema: anomalySettings,
       }),
     enabled: !!organizationId,
   });

@@ -2819,14 +2819,14 @@ export interface components {
         };
         /** @description The platform defaults for the lockout settings (threshold 5, window and duration 15 minutes) and the inclusive bounds an organization may choose within. The bounds run from the defaults toward stricter only: a threshold down to 3, a window and lock up to 24 hours. An organization's settings govern the lock on one network; the lock on every network (4 times the platform threshold) always uses the platform defaults. Ignored on update. */
         LockoutLimits: {
-            defaults?: components["schemas"]["LockoutSettings"];
-            max?: components["schemas"]["LockoutSettings"];
-            min?: components["schemas"]["LockoutSettings"];
+            defaults: components["schemas"]["LockoutSettings"];
+            max: components["schemas"]["LockoutSettings"];
+            min: components["schemas"]["LockoutSettings"];
         };
         LockoutSettings: {
-            duration_minutes?: number;
-            threshold?: number;
-            window_minutes?: number;
+            duration_minutes: number;
+            threshold: number;
+            window_minutes: number;
         };
         loginBeginInput: {
             email?: string | null;
@@ -3228,17 +3228,18 @@ export interface components {
             password: string;
         };
         SignupResponse: {
-            access_token?: string;
+            access_token: string;
             /** Format: date-time */
-            expires_at?: string;
-            refresh_token?: string;
+            expires_at: string;
+            refresh_token: string;
             /** Format: uuid */
-            session_id?: string;
+            session_id: string;
             /** @example Bearer */
-            token_type?: string;
-            user?: components["schemas"]["User"];
+            token_type: string;
+            /** @description The new account. It belongs to no organization yet, so its organization_id is the nil UUID (all zeros) until it creates or joins one. */
+            user: components["schemas"]["User"];
             /** Format: uuid */
-            user_id?: string;
+            user_id: string;
         };
         Stats: {
             blocked_24h: number;
@@ -4646,6 +4647,20 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "user": {
+                     *         "id": "018f2a70-1a2b-7c3d-9e4f-5a6b7c8d9e0f",
+                     *         "organization_id": "00000000-0000-0000-0000-000000000000",
+                     *         "email": "ananya.rao@brightleaffoods.in",
+                     *         "email_verified_at": null,
+                     *         "phone": null,
+                     *         "phone_verified_at": null,
+                     *         "display_name": "Ananya Rao",
+                     *         "avatar_url": null,
+                     *         "status": "active",
+                     *         "metadata": {},
+                     *         "created_at": "2026-09-24T11:00:00Z",
+                     *         "updated_at": "2026-09-24T11:00:00Z"
+                     *       },
                      *       "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImsxIn0.eyJzdWIiOiIwMThmMmE3MCJ9.FAKE-signature",
                      *       "token_type": "Bearer",
                      *       "expires_at": "2026-09-24T11:15:00Z",

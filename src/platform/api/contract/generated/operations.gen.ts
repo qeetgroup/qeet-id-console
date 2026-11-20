@@ -1895,13 +1895,21 @@ export interface components {
             status: "open" | "resolved";
         };
         AuditAnomalySettings: {
-            enabled?: boolean;
+            enabled: boolean;
             /** @description Cold-start guard — an actor needs this many historical events before anything is flagged for them. */
-            min_baseline_events?: number;
+            min_baseline_events: number;
             /** Format: uuid */
-            organization_id?: string;
+            organization_id: string;
             /** @description 0..1; an event scoring at or above this is flagged. */
-            score_threshold?: number;
+            score_threshold: number;
+        };
+        /** @description The anomaly detection settings PUT stores. It replaces all three, so each is sent: a value left out would be stored as false or 0. */
+        AuditAnomalySettingsUpdate: {
+            enabled: boolean;
+            /** @description Cold-start guard — an actor needs this many historical events before anything is flagged for them. */
+            min_baseline_events: number;
+            /** @description 0..1; an event scoring at or above this is flagged. */
+            score_threshold: number;
         };
         AuditVerifyResult: {
             /** Format: uuid */
@@ -3799,7 +3807,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AuditAnomalySettings"];
+                "application/json": components["schemas"]["AuditAnomalySettingsUpdate"];
             };
         };
         responses: {
