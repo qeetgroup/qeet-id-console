@@ -253,11 +253,16 @@ const server = createServer(async (request, response) => {
   if (path === `/v1/organizations/${principal.tenantId}`) {
     return send(response, 200, organization(principal.tenantId));
   }
-  if (/^\/v1\/users\/[^/]+\/organizations\/[^/]+\/permissions$/.test(path)) {
+  // The caller's own, as /v1/me/permissions answers; anyone's, for a person's page.
+  if (
+    path === "/v1/me/permissions" ||
+    /^\/v1\/users\/[^/]+\/organizations\/[^/]+\/permissions$/.test(path)
+  ) {
     return send(response, 200, {
       permissions: user.admin
         ? ADMIN_PERMISSIONS
         : ["user.read", "organization.read", "role.read", "audit.read", "analytics.read"],
+      grants: [],
     });
   }
   if (path === "/v1/qeetai/status") {
