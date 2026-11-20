@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentProps, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@/i18n";
@@ -117,7 +117,13 @@ const STATS = {
 
 // The list API, as the server answers it: each filter narrows, and the total counts them all. The
 // query arrives as the transport sends it, a boolean as its word.
-type Sent = Omit<UserQuery, "email_verified"> & { email_verified?: string; limit?: number };
+type Sent = Omit<UserQuery, "email_verified" | "admins_without_mfa" | "in_group"> & {
+  email_verified?: string;
+  admins_without_mfa?: string;
+  in_group?: string;
+  limit?: number;
+};
+const ADMINS = ["owner", "admin"];
 function find(query: Sent) {
   const found = PEOPLE.filter(
     (u) =>
@@ -127,6 +133,10 @@ function find(query: Sent) {
       (!query.department || u.metadata?.department === query.department) &&
       (!query.mfa || u.mfa_enabled === (query.mfa === "on")) &&
       (!query.email_verified || String(!!u.email_verified_at) === query.email_verified) &&
+      (!query.admins_without_mfa ||
+        String((u.roles ?? []).some((r) => ADMINS.includes(r.toLowerCase())) && !u.mfa_enabled) ===
+          query.admins_without_mfa) &&
+      (!query.in_group || String((u.groups_count ?? 0) > 0) === query.in_group) &&
       (!query.last_seen || recency(u, Date.now()) === query.last_seen),
   );
   return { items: found.slice(0, query.limit), total: found.length };
@@ -339,39 +349,39 @@ describe("the Users list", () => {
     expect(listReads()).toEqual([{ limit: 200 }, { limit: 200, cursor: "c2" }]);
   });
 
-  it("works out admins without two-step over the people it loads, and says when that's capped", async () => {
-    pages = {};
-    for (let i = 0; i < 10; i++)
-      pages[i ? `c${i}` : ""] = {
-        items: Array.from({ length: 200 }, (_, j) =>
-          person(`p${i}-${j}`, j ? {} : { roles: ["admin"], mfa_enabled: false }),
-        ),
-        next_cursor: `c${i + 1}`,
-      };
-    stats = { ...STATS, total: 2400, active: 2400 };
+  it("asks the server for the admins without two-step", async () => {
     renderPage({ look: "admins-no-two-step" });
-    expect(await screen.findByText("Showing the first 2,000 of 2,400 people")).toBeTruthy();
-    expect(listReads()).toHaveLength(10);
-    expect(screen.getByText("10 of 2,400 people")).toBeTruthy();
+    const table = await screen.findByRole("table", { name: "Users" });
+    expect(await within(table).findByText("Arjun")).toBeTruthy();
+    expect(within(table).queryByText("Meera")).toBeNull();
+    expect(listReads().at(-1)).toEqual({ admins_without_mfa: "true", limit: 200 });
   });
 
-  it("says a sorted list reaches only the server's first page", async () => {
+  it("asks the server for the people in no group", async () => {
+    renderPage({ group: "none" });
+    await screen.findByRole("table", { name: "Users" });
+    await waitFor(() => expect(listReads().at(-1)).toEqual({ in_group: "false", limit: 200 }));
+  });
+
+  it("pages a sorted list on to the end", async () => {
     pages = {
-      "": { items: Array.from({ length: 200 }, (_, j) => person(`p${j}`)), total: 900 },
+      "": {
+        items: Array.from({ length: 200 }, (_, j) => person(`p${j}`)),
+        next_cursor: "c1",
+        total: 250,
+      },
+      c1: { items: Array.from({ length: 50 }, (_, j) => person(`q${j}`)), total: 250 },
     };
     renderPage();
     const table = await screen.findByRole("table", { name: "Users" });
     await within(table).findByText("p0");
-    expect(screen.queryByText(/Sorted, the list shows/)).toBeNull();
     fireEvent.click(within(table).getByRole("button", { name: /Person/ }));
-    expect(
-      await screen.findByText("Sorted, the list shows the first 200 of 900 people"),
-    ).toBeTruthy();
-    expect(listReads().at(-1)).toEqual({
-      sort: "name",
-      order: "asc",
-      limit: 200,
-    });
+    await waitFor(() =>
+      expect(listReads().at(-1)).toEqual({ sort: "name", order: "asc", limit: 200 }),
+    );
+    expect(screen.queryByText(/Sorted, the list shows/)).toBeNull();
+    // Every order pages on, so the pager reaches all 250.
+    await waitFor(() => expect(document.body.textContent).toContain("1–50 of 250"));
   });
 
   it("changes nothing on load", async () => {

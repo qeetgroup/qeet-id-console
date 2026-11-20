@@ -6,11 +6,7 @@ import {
   department,
   growth,
   isAdmin,
-  matches,
-  needsDirectory,
-  needsLook,
   recency,
-  sortPeople,
   userQuery,
   usersListSearch,
 } from "../people-model";
@@ -66,58 +62,6 @@ describe("isAdmin and department", () => {
   });
 });
 
-describe("needsLook", () => {
-  it("flags an admin without two-step, but not a member without it", () => {
-    expect(
-      needsLook(person({ roles: ["Admin"], mfa_enabled: false }), "admins-no-two-step", NOW),
-    ).toBe(true);
-    expect(needsLook(person({ mfa_enabled: false }), "admins-no-two-step", NOW)).toBe(false);
-  });
-
-  it("flags people not seen for 30 days, never signed in, unverified or suspended", () => {
-    expect(needsLook(person({ last_seen_at: ago(45) }), "dormant", NOW)).toBe(true);
-    expect(needsLook(person({ last_seen_at: null }), "dormant", NOW)).toBe(false);
-    expect(needsLook(person({ last_seen_at: null }), "never", NOW)).toBe(true);
-    expect(needsLook(person({ email_verified_at: null }), "unverified", NOW)).toBe(true);
-    expect(needsLook(person({ status: "suspended" }), "suspended", NOW)).toBe(true);
-    expect(needsLook(person(), "suspended", NOW)).toBe(false);
-  });
-});
-
-describe("matches", () => {
-  it("keeps everyone with no filters", () => {
-    expect(matches(person(), {}, NOW)).toBe(true);
-  });
-
-  it("narrows by role, department, two-step, last active and what needs a look, together", () => {
-    const u = person({ roles: ["Admin"], mfa_enabled: false, last_seen_at: ago(3) });
-    expect(matches(u, { role: "Admin" }, NOW)).toBe(true);
-    expect(matches(u, { role: "Developer" }, NOW)).toBe(false);
-    expect(matches(u, { dept: "Design" }, NOW)).toBe(false);
-    expect(matches(u, { twostep: "off" }, NOW)).toBe(true);
-    expect(matches(u, { twostep: "on" }, NOW)).toBe(false);
-    expect(matches(u, { seen: "week" }, NOW)).toBe(true);
-    expect(matches(u, { seen: "today" }, NOW)).toBe(false);
-    expect(matches(u, { look: "admins-no-two-step", dept: "Engineering" }, NOW)).toBe(true);
-    expect(matches(u, { look: "admins-no-two-step", dept: "Design" }, NOW)).toBe(false);
-  });
-
-  it("keeps people in no group, for the Groups page's link", () => {
-    expect(matches(person({ groups_count: 0 }), { group: "none" }, NOW)).toBe(true);
-    expect(matches(person({ groups_count: undefined }), { group: "none" }, NOW)).toBe(true);
-    expect(matches(person({ groups_count: 2 }), { group: "none" }, NOW)).toBe(false);
-  });
-
-  it("searches the name, email, phone and ID, ignoring case", () => {
-    const u = person({ phone: "+91 98450 12345", id: "6607bc8c" });
-    expect(matches(u, { q: "PRIYA" }, NOW)).toBe(true);
-    expect(matches(u, { q: "qeet.in" }, NOW)).toBe(true);
-    expect(matches(u, { q: "98450" }, NOW)).toBe(true);
-    expect(matches(u, { q: "6607" }, NOW)).toBe(true);
-    expect(matches(u, { q: "sowmya" }, NOW)).toBe(false);
-  });
-});
-
 describe("userQuery", () => {
   it("asks the list API for each filter and the search", () => {
     expect(
@@ -147,6 +91,11 @@ describe("userQuery", () => {
     expect(userQuery({ look: "never" }, null)).toEqual({ last_seen: "never" });
     expect(userQuery({ look: "unverified" }, null)).toEqual({ email_verified: false });
     expect(userQuery({ look: "suspended" }, null)).toEqual({ status: "suspended" });
+    expect(userQuery({ look: "admins-no-two-step" }, null)).toEqual({ admins_without_mfa: true });
+  });
+
+  it("asks for the people in no group", () => {
+    expect(userQuery({ group: "none" }, null)).toEqual({ in_group: false });
   });
 
   it("is null when a look and a filter can't both hold, so no one matches", () => {
@@ -172,14 +121,6 @@ describe("userQuery", () => {
   });
 });
 
-describe("needsDirectory", () => {
-  it("is for the two filters the list API doesn't have", () => {
-    expect(needsDirectory({ look: "admins-no-two-step" })).toBe(true);
-    expect(needsDirectory({ group: "none" })).toBe(true);
-    expect(needsDirectory({ look: "dormant", twostep: "off", q: "a" })).toBe(false);
-  });
-});
-
 describe("growth", () => {
   it("counts the people who had joined by the end of each month, ending with this one", () => {
     const users = [
@@ -193,28 +134,6 @@ describe("growth", () => {
     expect(months[0]).toBe(1);
     expect(months[13]).toBe(2);
     expect(months[14]).toBe(3);
-  });
-});
-
-describe("sortPeople", () => {
-  const a = person({ id: "a", display_name: "Ananya", last_seen_at: null, created_at: ago(10) });
-  const b = person({ id: "b", display_name: "bala", last_seen_at: ago(1), created_at: ago(20) });
-  const c = person({ id: "c", display_name: "Chitra", last_seen_at: ago(5), created_at: ago(5) });
-
-  it("keeps the server's order without a sort", () => {
-    expect(sortPeople([c, a, b], null).map((u) => u.id)).toEqual(["c", "a", "b"]);
-  });
-
-  it("sorts by name ignoring case, and by last active with never as the longest ago", () => {
-    expect(
-      sortPeople([c, a, b], { column: "person", direction: "ascending" }).map((u) => u.id),
-    ).toEqual(["a", "b", "c"]);
-    expect(
-      sortPeople([c, a, b], { column: "active", direction: "descending" }).map((u) => u.id),
-    ).toEqual(["b", "c", "a"]);
-    expect(
-      sortPeople([c, a, b], { column: "joined", direction: "ascending" }).map((u) => u.id),
-    ).toEqual(["b", "a", "c"]);
   });
 });
 

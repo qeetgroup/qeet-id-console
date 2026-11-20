@@ -807,10 +807,6 @@
     "exportCsv": "Export to CSV",
     "exportJson": "Export to JSON",
     "addUser": "Add user",
-    "capped": {
-      "title": "Showing the first {{n}} of {{total}} people",
-      "description": "The server doesn't filter by this yet, so the list works it out from the people it loaded."
-    },
     "empty": {
       "filteredTitle": "No one matches",
       "filteredDescription": "No one has all of these at once. Remove a filter, or clear them all.",
@@ -953,10 +949,6 @@
       "retry": "Try again",
       "emptyTitle": "No one is suspended",
       "emptyDescription": "Everyone in this organisation can sign in."
-    },
-    "sortCapped": {
-      "title": "Sorted, the list shows the first {{n}} of {{total}} people",
-      "description": "Search or filter to narrow it, or sort by date joined, newest first, to page through everyone."
     },
     "exportCapped": "The export holds the first {{n}} people."
   },

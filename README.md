@@ -138,9 +138,8 @@ Directory › Users (`/users`) is rebuilt on `@qeetrix/react`: `modules/users/co
   five requests at a time.
 
 The search and filters live in the address (`?q=&role=&dept=&twostep=&seen=&look=`), so a view can
-be shared. `/v1/users` can't filter or count yet, so the page reads everyone, 200 at a
-time, up to 2,000 people (`userQueries.directory`), and works over them in `people-model.ts`.
-Above 2,000 it says the search, filters and counts cover the first 2,000 only. A rebuilt page with
+be shared. `/v1/users` searches, filters, sorts and counts on the server, and pages every order;
+`people-model.ts` turns the filters into its query (`userQuery`). A rebuilt page with
 sub-pages draws them with `PageTabs`, `PageTabList` and `PageBreadcrumb` from `@/modules/dashboard`.
 What the library lacks for this page is raised with Qeetrix as Jira tickets; each local stand-in
 names the Qeetrix component and the issue in a comment (never the ticket's key), to swap once

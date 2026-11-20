@@ -134,10 +134,7 @@ function readUsers(query: UserQuery, cursor: string | undefined, signal?: AbortS
   });
 }
 
-/**
- * The members the server finds for `query`, a page at a time, with how many it found. Only the
- * default order (newest first) pages on; any other answers its first SEARCH_PAGE people.
- */
+/** The members the server finds for `query`, a page at a time in its order, with how many. */
 export function useUserSearch(
   query: UserQuery,
   view: { offset: number; pageSize: number; enabled: boolean },

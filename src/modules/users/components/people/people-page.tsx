@@ -35,11 +35,9 @@ import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
 import { useInvitations } from "@/modules/users/api/invitations";
 import {
-  DIRECTORY_CAP,
   EXPORT_CAP,
   searchAllUsers,
   type User,
-  useUserDirectory,
   useUserSearch,
   useUserStats,
   useUserTrends,
@@ -47,14 +45,7 @@ import {
 import { AddPeopleDrawer } from "@/modules/users/components/add-people/add-people-drawer";
 import { EditUserSheet } from "@/modules/users/components/edit-user-sheet";
 import { SetPasswordSheet } from "@/modules/users/components/set-password-sheet";
-import {
-  matches,
-  needsDirectory,
-  type PeopleFilters,
-  personName,
-  sortPeople,
-  userQuery,
-} from "@/modules/users/people-model";
+import { type PeopleFilters, personName, userQuery } from "@/modules/users/people-model";
 import { useUserActions } from "@/modules/users/use-user-actions";
 import { useOrganizationId, useUserId } from "@/platform/auth/session";
 import { errorMessage } from "@/platform/errors/user-message";
@@ -110,54 +101,28 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
   const { run } = usePeopleRun();
   const [exporting, setExporting] = useState(false);
 
-  const local = needsDirectory(filters);
   const query = useMemo(() => userQuery(filters, sort), [filters, sort]);
   const search = useUserSearch(query ?? {}, {
     offset,
     pageSize,
-    enabled: !local && !!query && filters.status !== "suspended",
+    enabled: !!query && filters.status !== "suspended",
   });
-  const directory = useUserDirectory(local);
   const stats = useUserStats();
   const trends = useUserTrends();
   const invitations = useInvitations(canWrite);
   const org = useOrgs().data?.items.find((item) => item.id === organizationId);
 
   // One moment for the rows, when they arrived, so each one's last active agrees with the filter.
-  const now = (local ? directory.dataUpdatedAt : search.dataUpdatedAt) || Date.now();
+  const now = search.dataUpdatedAt || Date.now();
   const columns = usePeopleColumns(currentUserId, now);
-  const everyone = directory.data?.items ?? NO_ONE;
-  const worked = useMemo(
-    () =>
-      local
-        ? sortPeople(
-            everyone.filter((u) => matches(u, filters, now)),
-            sort,
-          )
-        : NO_ONE,
-    [local, everyone, filters, now, sort],
-  );
-  const list = local
-    ? {
-        rows: worked.slice(offset, offset + pageSize),
-        matched: worked.length,
-        reachable: worked.length,
-        loading: directory.isLoading,
-        failure: directory.isError ? directory.error : null,
-        retry: () => void directory.refetch(),
-      }
-    : {
-        rows: (query && search.data?.items) || NO_ONE,
-        matched: (query && search.data?.total) || 0,
-        // A sorted read answers its first page only: past it, the list can't reach.
-        // With no read to make, nothing is reachable, whatever the last list left behind.
-        reachable: !query ? 0 : search.hasMore ? (search.data?.total ?? 0) : search.loaded,
-        loading: !!query && search.isLoading,
-        failure: query && search.isError ? search.error : null,
-        retry: () => void search.refetch(),
-      };
-  const sortCapped =
-    !local && !!query?.sort && !search.hasMore && list.matched > search.loaded && search.loaded > 0;
+  const list = {
+    rows: (query && search.data?.items) || NO_ONE,
+    // With no read to make, no one matches, whatever the last list left behind.
+    matched: (query && search.data?.total) || 0,
+    loading: !!query && search.isLoading,
+    failure: query && search.isError ? search.error : null,
+    retry: () => void search.refetch(),
+  };
   const filtered = Object.values(filters).some(Boolean);
 
   useEffect(() => {
@@ -175,17 +140,14 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
   const shown = useRef(new Map<string, User>());
   for (const u of list.rows) shown.current.set(u.id, u);
 
-  // Everyone the filters leave, in the table's order: the server's pages walked in its own order,
-  // then sorted, since a sorted read answers its first page only.
+  // Everyone the filters leave, in the table's order: the server pages every order.
   const exportList = async (as: "csv" | "json") => {
     setExporting(true);
     try {
-      const people = local
-        ? worked
-        : sortPeople(await searchAllUsers(userQuery(filters, null) ?? {}), sort);
+      const people = await searchAllUsers(query ?? {});
       if (as === "csv") exportToCsv("users", people, peopleCsvColumns);
       else exportToJson("users", people);
-      if (!local && list.matched > EXPORT_CAP)
+      if (list.matched > EXPORT_CAP)
         toast.info(t("people.exportCapped", { n: formatNumber(EXPORT_CAP, formatLocale()) }));
     } catch (err) {
       toast.error(errorMessage(err));
@@ -263,28 +225,6 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
           {!canWrite ? (
             <Alert tone="info" icon={EyeIcon} title={t("common:readOnlyNotice.title")}>
               {t("common:readOnlyNotice.description")}
-            </Alert>
-          ) : null}
-          {local && directory.data && !directory.data.complete ? (
-            <Alert
-              tone="info"
-              title={t("people.capped.title", {
-                n: formatNumber(DIRECTORY_CAP, formatLocale()),
-                total: formatNumber(total, formatLocale()),
-              })}
-            >
-              {t("people.capped.description")}
-            </Alert>
-          ) : null}
-          {sortCapped && filters.status !== "suspended" ? (
-            <Alert
-              tone="info"
-              title={t("people.sortCapped.title", {
-                n: formatNumber(search.loaded, formatLocale()),
-                total: formatNumber(list.matched, formatLocale()),
-              })}
-            >
-              {t("people.sortCapped.description")}
             </Alert>
           ) : null}
           {filters.status === "suspended" ? (
@@ -365,12 +305,12 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
                   )
                 }
               />
-              {list.reachable > 0 ? (
+              {list.matched > 0 ? (
                 <Pagination
                   offset={offset}
                   pageSize={pageSize}
                   itemsOnPage={list.rows.length}
-                  total={list.reachable}
+                  total={list.matched}
                   onOffsetChange={setOffset}
                   pageSizes={PAGE_SIZES}
                   onPageSizeChange={setPageSize}

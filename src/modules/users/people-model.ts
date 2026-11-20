@@ -51,22 +51,6 @@ export function personName(user: Pick<User, "display_name" | "email">): string {
 export const LOOKS = ["admins-no-two-step", "dormant", "never", "unverified", "suspended"] as const;
 export type Look = (typeof LOOKS)[number];
 
-/** Whether a person is on a "Needs a look" list. */
-export function needsLook(user: User, look: Look, now: number): boolean {
-  switch (look) {
-    case "admins-no-two-step":
-      return isAdmin(user) && !user.mfa_enabled;
-    case "dormant":
-      return recency(user, now) === "older";
-    case "never":
-      return recency(user, now) === "never";
-    case "unverified":
-      return !user.email_verified_at;
-    case "suspended":
-      return user.status === "suspended";
-  }
-}
-
 /** Whether someone can sign in: All users shows everyone, or one status. */
 export const STATUSES = ["active", "suspended"] as const;
 /** A suspension's risk and review, as the suspended list filters them. */
@@ -97,35 +81,9 @@ export type UsersListSearch = z.infer<typeof usersListSearch>;
 export type PeopleFilters = Omit<UsersListSearch, "action">;
 
 /** Whether a person is in the list the filters and search leave. */
-export function matches(user: User, filters: PeopleFilters, now: number): boolean {
-  if (filters.status && user.status !== filters.status) return false;
-  if (filters.role && !(user.roles ?? []).includes(filters.role)) return false;
-  if (filters.dept && department(user) !== filters.dept) return false;
-  if (filters.twostep === "on" && !user.mfa_enabled) return false;
-  if (filters.twostep === "off" && user.mfa_enabled) return false;
-  if (filters.seen && recency(user, now) !== filters.seen) return false;
-  if (filters.look && !needsLook(user, filters.look, now)) return false;
-  if (filters.group === "none" && (user.groups_count ?? 0) > 0) return false;
-  const query = filters.q?.trim().toLowerCase();
-  if (query) {
-    const fields = [user.display_name, user.email, user.phone, user.id];
-    if (!fields.some((field) => field?.toLowerCase().includes(query))) return false;
-  }
-  return true;
-}
-
 /**
- * Whether the list API can't say these filters, so the page works them out over the people it
- * loads: admins without two-step (it filters one role at a time) and people in no group.
- */
-export function needsDirectory(filters: PeopleFilters): boolean {
-  return filters.look === "admins-no-two-step" || filters.group === "none";
-}
-
-/**
- * The filters, search and sort as the list API's query, for every filter but those
- * `needsDirectory` covers; null when two of them can't both hold, such as a look and a filter that
- * ask for different last-active times, so no one matches.
+ * The filters, search and sort as the list API's query; null when two of them can't both hold,
+ * such as a look and a filter that ask for different last-active times, so no one matches.
  */
 export function userQuery(filters: PeopleFilters, sort: TableSort | null): UserQuery | null {
   const query: UserQuery = {};
@@ -146,10 +104,12 @@ export function userQuery(filters: PeopleFilters, sort: TableSort | null): UserQ
     query.status = "suspended";
   }
   if (filters.look === "unverified") query.email_verified = false;
+  if (filters.look === "admins-no-two-step") query.admins_without_mfa = true;
+  if (filters.group === "none") query.in_group = false;
   const column = sort && SORT_QUERY[sort.column as PeopleSortColumn];
   if (sort && column) {
     const order = sort.direction === "ascending" ? "asc" : "desc";
-    // Newest joined first is the server's own order, the one its cursor pages.
+    // Newest joined first is the server's own order.
     if (column !== "created" || order !== "desc") Object.assign(query, { sort: column, order });
   }
   return query;
@@ -167,28 +127,10 @@ export function growth(users: readonly Pick<User, "created_at">[], now: number, 
   });
 }
 
-/** The columns the list sorts by, the list API's order for each, and what each compares. */
+/** The columns the list sorts by, and the list API's order for each. */
 export type PeopleSortColumn = "person" | "active" | "joined";
 const SORT_QUERY: Record<PeopleSortColumn, UserQuery["sort"]> = {
   person: "name",
   active: "last_seen",
   joined: "created",
 };
-const SORT_VALUE: Record<PeopleSortColumn, (user: User) => string | number> = {
-  person: (user) => personName(user).toLowerCase(),
-  // Never signed in sorts as the longest ago.
-  active: (user) => (user.last_seen_at ? Date.parse(user.last_seen_at) : 0),
-  joined: (user) => Date.parse(user.created_at),
-};
-
-/** The rows in the table's sort; `null` keeps the server's order, newest first. */
-export function sortPeople(rows: readonly User[], sort: TableSort | null): User[] {
-  const value = sort && SORT_VALUE[sort.column as PeopleSortColumn];
-  if (!sort || !value) return [...rows];
-  const way = sort.direction === "ascending" ? 1 : -1;
-  return [...rows].sort((a, b) => {
-    const x = value(a);
-    const y = value(b);
-    return (x < y ? -1 : x > y ? 1 : 0) * way;
-  });
-}
