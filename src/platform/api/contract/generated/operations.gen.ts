@@ -4346,7 +4346,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["ExternalAudit"][];
+                        items: components["schemas"]["ExternalAudit"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -4513,7 +4513,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["ControlOwner"][];
+                        items: components["schemas"]["ControlOwner"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -4835,7 +4835,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["EmailMessage"][];
+                        items: components["schemas"]["EmailMessage"][];
                         next_cursor?: components["schemas"]["NextCursor"];
                         suppression?: {
                             /** Format: date-time */
@@ -4881,7 +4881,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["EmailSuppression"][];
+                        items: components["schemas"]["EmailSuppression"][];
                         next_cursor?: components["schemas"]["NextCursor"];
                     };
                 };
@@ -5138,7 +5138,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Sink"][];
+                        items: components["schemas"]["Sink"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };

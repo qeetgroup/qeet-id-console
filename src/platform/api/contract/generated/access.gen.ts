@@ -4484,7 +4484,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         has_more?: boolean;
-                        items?: components["schemas"]["Session"][];
+                        items: components["schemas"]["Session"][];
                         /** @description Opaque owner-scoped cursor for the next page; omitted on the final page. */
                         next_cursor?: string;
                         total?: number;
@@ -7641,7 +7641,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Permission"][];
+                        items: components["schemas"]["Permission"][];
                     };
                 };
             };

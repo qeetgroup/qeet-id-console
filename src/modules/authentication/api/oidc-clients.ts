@@ -133,15 +133,8 @@ export function rotateOidcClientSecret(
  * A confidential application's wrong-secret lockout: the lockout in force, if any, and its recent
  * failed authentications with their time and caller address. No secret material is recorded.
  */
-const clientAuthFailures = strictly<
-  Answer<"/v1/organizations/{organizationID}/oidc/clients/{id}/auth-failures">
->()(
-  z.object({
-    locked_until: z.string().nullable(),
-    items: z.array(z.object({ at: z.string(), ip: z.string(), reason: z.string() })),
-  }),
-);
-export type ClientAuthFailures = z.infer<typeof clientAuthFailures>;
+export type ClientAuthFailures =
+  Answer<"/v1/organizations/{organizationID}/oidc/clients/{id}/auth-failures">;
 
 const oidcClientPage = strictly<Answer<"/v1/organizations/{organizationID}/oidc/clients">>()(
   z.object({ items: z.array(oidcClientSchema), truncated: z.boolean().optional() }),
@@ -155,7 +148,6 @@ export function useClientAuthFailures(clientRowId: string | undefined, enabled =
     queryFn: () =>
       backend.get("/v1/organizations/{organizationID}/oidc/clients/{id}/auth-failures", {
         path: { organizationID: organizationId ?? "", id: clientRowId ?? "" },
-        schema: clientAuthFailures,
       }),
   });
 }

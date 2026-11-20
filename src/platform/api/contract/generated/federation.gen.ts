@@ -6894,18 +6894,18 @@ export interface operations {
                         limit: number;
                         next_cursor?: components["schemas"]["NextCursor"];
                         summary: {
-                            average_duration_ms?: number | null;
-                            failed?: number;
-                            successful?: number;
-                            total?: number;
-                            warnings?: number;
+                            average_duration_ms: number | null;
+                            failed: number;
+                            successful: number;
+                            total: number;
+                            warnings: number;
                         };
                         total: number;
                         volume: {
                             /** Format: date */
-                            date?: string;
-                            groups?: number;
-                            users?: number;
+                            date: string;
+                            groups: number;
+                            users: number;
                         }[];
                     };
                 };
@@ -7245,7 +7245,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["DirectoryMapping"][];
+                        items: components["schemas"]["DirectoryMapping"][];
                         targets?: {
                             [key: string]: string;
                         };
@@ -8286,7 +8286,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["OIDCConnection"][];
+                        items: components["schemas"]["OIDCConnection"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -8449,7 +8449,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["OIDCClient"][];
+                        items: components["schemas"]["OIDCClient"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -8611,14 +8611,14 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: {
+                        items: {
                             /** Format: date-time */
-                            at?: string;
-                            ip?: string;
-                            reason?: string;
+                            at: string;
+                            ip: string;
+                            reason: string;
                         }[];
                         /** Format: date-time */
-                        locked_until?: string | null;
+                        locked_until: string | null;
                     };
                 };
             };
@@ -8740,7 +8740,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["OIDCResource"][];
+                        items: components["schemas"]["OIDCResource"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };

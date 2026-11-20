@@ -1562,7 +1562,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Agent"][];
+                        items: components["schemas"]["Agent"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -1978,7 +1978,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["ApiKey"][];
+                        items: components["schemas"]["ApiKey"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -2052,7 +2052,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["Hook"][];
+                        items: components["schemas"]["Hook"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -2232,7 +2232,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["VcCredential"][];
+                        items: components["schemas"]["VcCredential"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -2680,7 +2680,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["WebhookAttempt"][];
+                        items: components["schemas"]["WebhookAttempt"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -3137,7 +3137,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["WebhookDelivery"][];
+                        items: components["schemas"]["WebhookDelivery"][];
                         /** @description Present when there is another page. */
                         next_cursor?: string;
                     };

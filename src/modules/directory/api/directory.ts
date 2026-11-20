@@ -4,7 +4,7 @@ import { z } from "zod";
 import { strictly } from "@/platform/api/assured";
 import { isOneOf } from "@/shared/utils/one-of";
 import { backend } from "@/platform/api/backend";
-import type { Answer } from "@/platform/api/contract";
+import type { Answer, Schemas } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import type { DirectoryConnection } from "../directory-model";
@@ -56,29 +56,8 @@ export function filterQuery<F extends Record<string, string | number>>(filters: 
   };
 }
 
-export const eventSchema = z.object({
-  id: z.string(),
-  connection_id: z.string(),
-  operation: z.string(),
-  trigger: z.enum(["push", "manual", "sign-in"]),
-  resource_type: z.enum(["user", "group", "connection"]),
-  resource_id: z.string(),
-  started_at: z.string(),
-  duration_ms: z.number().nonnegative(),
-  http_status: z.number(),
-  status: z.enum(["success", "warning", "failed"]),
-  users_synced: z.number().nonnegative(),
-  groups_synced: z.number().nonnegative(),
-  error_code: z.string(),
-  message: z.string(),
-  category: z.string(),
-  severity: z.enum(["", "warning", "critical"]),
-  resolution: z.enum(["open", "resolved", "retried"]),
-  resolved_at: z.string().nullable(),
-  retry_of: z.string().nullable(),
-  retryable: z.boolean(),
-});
-export type DirectoryEvent = z.infer<typeof eventSchema>;
+/** One directory operation: a sync push, a manual run or a sign-in, and how it went. */
+export type DirectoryEvent = Schemas<"federation">["DirectoryEvent"];
 
 export type ErrorFilters = Omit<EventFilters, "status"> & { severity: string; resolution: string };
 export const DEFAULT_ERROR_FILTERS: ErrorFilters = {

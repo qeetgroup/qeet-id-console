@@ -3598,7 +3598,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: components["schemas"]["BreakGlassMember"][];
+                        items: components["schemas"]["BreakGlassMember"][];
                         truncated?: components["schemas"]["Truncated"];
                     };
                 };
@@ -3998,7 +3998,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items?: {
+                        items: {
                             /** Format: date-time */
                             created_at?: string;
                             /** Format: uuid */

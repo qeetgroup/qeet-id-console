@@ -2,34 +2,17 @@
 // shell carries through the Dashboard (directory.ts), so their schemas load with those pages only.
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 
-import { strictly } from "@/platform/api/assured";
 import { backend } from "@/platform/api/backend";
 import type { Answer } from "@/platform/api/contract";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { READ_PAGE, useCursorList } from "@/platform/query/cursor-list";
-import { type EventFilters, eventSchema, filterQuery } from "./directory";
+import { type EventFilters, filterQuery } from "./directory";
 import { directoryKeys } from "./keys";
 
 const ACTIVITY = "/v1/organizations/{organizationID}/directory/activity" as const;
-const eventPageShape = z.object({
-  items: z.array(eventSchema),
-  total: z.number().nonnegative(),
-  next_cursor: z.string().optional(),
-  summary: z.object({
-    total: z.number(),
-    successful: z.number(),
-    warnings: z.number(),
-    failed: z.number(),
-    average_duration_ms: z.number().nullable(),
-  }),
-  volume: z.array(z.object({ date: z.string(), users: z.number(), groups: z.number() })),
-});
-
-export const eventPageSchema = strictly<Answer<typeof ACTIVITY>>()(eventPageShape);
-export type DirectoryEventPage = z.infer<typeof eventPageShape>;
+export type DirectoryEventPage = Answer<typeof ACTIVITY>;
 
 /** One read of the activity list, from `cursor`; a status the server lacks means no filter. */
 export function readDirectoryEvents(
@@ -48,7 +31,6 @@ export function readDirectoryEvents(
       cursor,
     },
     signal,
-    schema: eventPageSchema,
   });
 }
 
