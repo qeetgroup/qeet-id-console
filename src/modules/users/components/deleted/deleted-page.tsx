@@ -35,6 +35,7 @@ import {
   SearchField,
 } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -46,7 +47,7 @@ import {
   type DeletedUser,
   perUserCalls,
   useDeletedUsers,
-  useUserDirectory,
+  userQueries,
 } from "@/modules/users/api/users";
 import { BandPlaceholder } from "@/modules/users/components/people/band-placeholder";
 import { usePeopleRun } from "@/modules/users/components/people/people-bulk";
@@ -60,7 +61,7 @@ import {
   purgeAt,
 } from "@/modules/users/deleted-model";
 import { personName } from "@/modules/users/people-model";
-import { useUserId } from "@/platform/auth/session";
+import { useOrganizationId, useUserId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { type CsvColumn, exportToCsv } from "@/shared/utils/data-export";
 
@@ -93,7 +94,6 @@ export function DeletedUsersPage({ filters, onFiltersChange }: DeletedUsersPageP
   const currentUserId = useUserId();
   const deleted = useDeletedUsers();
   const retention = useRetentionPolicy(canReadRetention);
-  const directory = useUserDirectory();
   const pending = useInvitations(canWrite).data?.items.filter((i) => i.status === "pending").length;
   const { run, running } = usePeopleRun(() => setSelected([]));
   const searchRef = useRef<HTMLInputElement>(null);
@@ -101,12 +101,22 @@ export function DeletedUsersPage({ filters, onFiltersChange }: DeletedUsersPageP
   useEffect(() => setText(filters.q ?? ""), [filters.q]);
 
   const users = deleted.data?.items ?? NONE;
+  // Who deleted each person, looked up by id: someone since deleted names them too.
+  const deletedBy = useQuery({
+    ...userQueries.lookup(useOrganizationId(), {
+      by: "id",
+      values: users.map((u) => u.deleted_by ?? ""),
+      includeDeleted: true,
+    }),
+    placeholderData: keepPreviousData,
+    meta: { silent: true },
+  });
   const now = deleted.dataUpdatedAt || Date.now();
   const locale = formatLocale();
   const n = (value: number) => formatNumber(value, locale);
   // Days kept, or null when nothing purges them automatically (off, or not ours to read).
   const keepDays = retention.data?.deleted_users_enabled ? retention.data.deleted_users_days : null;
-  const names = new Map((directory.data?.items ?? []).map((u) => [u.id, personName(u)]));
+  const names = new Map((deletedBy.data?.items ?? []).map((u) => [u.id, personName(u)]));
   const who = (id?: string | null) =>
     !id
       ? t("deletedPage.someone")

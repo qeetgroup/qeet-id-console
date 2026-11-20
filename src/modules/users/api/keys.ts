@@ -17,6 +17,12 @@ export const userKeys = {
     [...userKeys.lists(organizationId), "directory"] as const,
   search: (organizationId: string | null, query: UserQuery) =>
     [...userKeys.lists(organizationId), "search", query] as const,
+  lookup: (
+    organizationId: string | null,
+    by: "id" | "email",
+    values: readonly string[],
+    deleted: boolean,
+  ) => [...userKeys.lists(organizationId), "lookup", by, values, deleted] as const,
   stats: (organizationId: string | null) =>
     [...userKeys.organization(organizationId), "stats"] as const,
   trends: (organizationId: string | null) =>

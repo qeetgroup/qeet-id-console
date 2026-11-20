@@ -12,6 +12,16 @@ describe("server request policy", () => {
     expect(url.href).toBe("https://api.id.qeet.in/v1/users?page=2");
   });
 
+  it("repeats a parameter for each value of a list, encoding each", () => {
+    const url = buildBackendUrl("https://api.id.qeet.in", "/v1/users", {
+      id: ["a", "b"],
+      email: ["x+1@qeet.in"],
+      limit: 200,
+    });
+    expect(url.search).toBe("?id=a&id=b&email=x%2B1%40qeet.in&limit=200");
+    expect(url.origin).toBe("https://api.id.qeet.in");
+  });
+
   it.each([
     "/https://attacker.example/capture",
     "//attacker.example/capture",

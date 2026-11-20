@@ -13,7 +13,7 @@ import type {
   PathsFor,
 } from "@/platform/api/contract";
 
-type Query = Record<string, string | number | boolean | undefined | null>;
+type Query = Record<string, string | number | boolean | readonly string[] | undefined | null>;
 
 type RawOptions = {
   path?: Record<string, string | number>;
@@ -35,10 +35,13 @@ export function fillPath(template: string, values: Record<string, string | numbe
   });
 }
 
-// The transport takes strings and numbers; a boolean goes as the word the server parses.
-function queryOf(query: Query | undefined): Record<string, string | number> | undefined {
+// The transport takes strings, numbers and lists of strings (a repeated parameter); a boolean goes
+// as the word the server parses.
+function queryOf(
+  query: Query | undefined,
+): Record<string, string | number | readonly string[]> | undefined {
   if (!query) return undefined;
-  const out: Record<string, string | number> = {};
+  const out: Record<string, string | number | readonly string[]> = {};
   for (const [key, value] of Object.entries(query)) {
     if (value === undefined || value === null) continue;
     out[key] = typeof value === "boolean" ? String(value) : value;

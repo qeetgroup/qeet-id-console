@@ -42,8 +42,43 @@ export type UserTrends = Answer<"/v1/users/trends">;
 /** A soft-deleted user, restorable until purged; `deleted_by` when the server knows. */
 export type DeletedUser = Answer<"/v1/users/deleted">["items"][number];
 
+/** The most ids or emails one read of the list takes, as the server takes them. */
+const LOOKUP_MAX = 200;
+
+/** The people to look up: by id or by email (exact, in any case), and whether those since deleted. */
+export type UserLookup = {
+  by: "id" | "email";
+  values: readonly string[];
+  includeDeleted?: boolean;
+};
+
 /** Query definitions for the users reads, shared by hooks, prefetches and cache reads. */
 export const userQueries = {
+  // The people a page names, by id or email, a read for each 200; with includeDeleted, someone
+  // since deleted too (status "deleted", with deleted_at), as history still names them.
+  lookup: (organizationId: string | null, { by, values, includeDeleted = false }: UserLookup) => {
+    const wanted = [...new Set(values.filter(Boolean))].sort();
+    return queryOptions({
+      queryKey: userKeys.lookup(organizationId, by, wanted, includeDeleted),
+      queryFn: async ({ signal }): Promise<{ items: User[] }> => {
+        const items: User[] = [];
+        for (let i = 0; i < wanted.length; i += LOOKUP_MAX) {
+          const page = await backend.get("/v1/users", {
+            query: {
+              [by]: wanted.slice(i, i + LOOKUP_MAX),
+              limit: LOOKUP_MAX,
+              include_deleted: includeDeleted || undefined,
+            },
+            signal,
+          });
+          items.push(...page.items);
+        }
+        return { items };
+      },
+      enabled: !!organizationId && wanted.length > 0,
+      staleTime: 60_000,
+    });
+  },
   list: (organizationId: string | null, params: UserListParams) =>
     queryOptions({
       queryKey: userKeys.list(organizationId, params),

@@ -59,7 +59,7 @@ import {
 } from "@/platform/security/sensitive-action-provider";
 import { type CsvColumn, downloadBlob, rowsToCsv } from "@/shared/utils/data-export";
 import { BandPlaceholder } from "../band-placeholder";
-import { usePeople } from "../use-people";
+import { useEveryone } from "../use-people";
 import { When } from "../when";
 import { AuditBand, type ChainCheck } from "./audit-band";
 import { ActorName, EventCell, ResourceName } from "./audit-cells";
@@ -104,7 +104,7 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
   const { t } = useTranslation("security");
   const organizationId = useOrganizationId();
   const access = useCapabilities();
-  const people = usePeople();
+  const people = useEveryone();
   const runSensitive = useSensitiveAction();
   const flaggedView = search.view === "flagged";
   const flaggedStatus = search.status === "resolved" ? "resolved" : "open";

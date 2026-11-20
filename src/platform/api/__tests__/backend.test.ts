@@ -41,6 +41,13 @@ describe("backend", () => {
     });
   });
 
+  it("sends a repeatable parameter as a list", async () => {
+    await backend.get("/v1/users", { query: { id: ["u-1", "u-2"], include_deleted: true } });
+    expect(api).toHaveBeenLastCalledWith("/v1/users", {
+      query: { id: ["u-1", "u-2"], include_deleted: "true" },
+    });
+  });
+
   it("passes the schema and the signal on", async () => {
     const schema = z.object({ items: z.array(z.unknown()) });
     const signal = new AbortController().signal;

@@ -161,6 +161,14 @@ describe("Threats › IP rules", () => {
     );
     expect(within(refusals).getByText("Not on an allow rule")).toBeTruthy();
     expect(within(refusals).getByText("Priya Nair")).toBeTruthy();
+    // Named by looking up the people it names, someone since deleted included, not by loading
+    // everyone.
+    const reads = vi
+      .mocked(api)
+      .mock.calls.filter(([path]) => path === "/v1/users")
+      .map(([, opts]) => (opts as { query?: Record<string, unknown> } | undefined)?.query);
+    expect(reads).toContainEqual({ id: ["u-priya"], limit: 200, include_deleted: "true" });
+    expect(reads.every((q) => Array.isArray(q?.id))).toBe(true);
   });
 
   it("judges an address against the rules itself while they're off, sending nothing", async () => {
