@@ -137,7 +137,7 @@ Each line: the question, then the options; **(R)** marks the recommended one.
   Connections page is rebuilt (mock-ups `directories/`, `compare-connections*.png`): where people
   come from, health (the server's, "not checked" past 24 h) with the latest open problem, the last
   30 days, what needs a look, and the kinds not set up offered under the table. Server gap: the LDAP
-  people count. QTRX-50 (MenuItem description). Next, one page at a time: SCIM, LDAP, Sync
+  people count. Qeetrix gap: a description line on MenuItem. Next, one page at a time: SCIM, LDAP, Sync
   activity, Sync errors, Mappings.
 - Group detail: **(R)** one page of ruled sections · tabs.
 - **Groups list, redesigned for scale (2026-10-27, approved and built):** the table is the tree
@@ -145,7 +145,7 @@ Each line: the question, then the options; **(R)** marks the recommended one.
   break carries its path), search and filters list matches flat with their path, and the Users
   band's parts sit above it. The node-link groups tree stays off the list (unreadable past ~50
   groups); a group's own family picture goes on its page. Mock-ups: `groups/` (sample of 261
-  groups for scale). Server gap: roles in the list. QTRX-25 (Table tree rows); Users gained
+  groups for scale). Server gap: roles in the list. Qeetrix gap: Table tree rows; Users gained
   `?group=none`.
 - **The rest of Groups (2026-10-27, approved and built):** New/Edit group drawer (name checked as
   typed, "Inside" by path, members as pills, the role's reach said plainly); Members drawer; New
@@ -169,8 +169,8 @@ Each line: the question, then the options; **(R)** marks the recommended one.
   verifier manages the accounts on it; data region on a ruler) and History (audit events on the
   tenant, by month, each opening its record in Activity), Delete for owners. The edit sheet and the
   preview drawer are gone (Settings › General edits). The sidebar says "Organisations".
-  Server gaps: the template prefix, and `deletion_due_at` in the list. QTRX-48 (PageHeader leading
-  slot); QTRX-8 commented (Button as a link).
+  Server gaps: the template prefix, and `deletion_due_at` in the list. Qeetrix gaps: a leading slot
+  on PageHeader; a Button rendered as a link is announced as a button (commented on its ticket).
 - Detail tabs for the current organisation: **(R)** read-only summaries linking out · drop Members,
   Security, Billing. *Built as the record above, without the summaries (Dashboard-only overview).*
 - An organisation you're not in: **(R)** its record and Switch, no tabs · tabs that say "switch".
@@ -300,9 +300,9 @@ Asked for by several modules (most-requested first):
   `dashboard/components/overview/overview-parts.tsx`): `Sparkline` (a line, a 10% wash, a ringed
   end dot; a shared scale across a set), `Gauge` (a semicircle against a target, square ends),
   `DotPlot` (ranked amounts) and `SplitBar` (parts of one whole with a 2px gap).
-- **`Table` tree rows (QTRX-25):** depth, fold and open, the fold control outside the row link, a
+- **`Table` tree rows:** depth, fold and open, the fold control outside the row link, a
   row's path when its parent is off the page; the Groups list draws its own for now.
-- **Part-of-whole charts (QTRX-24):** a nested treemap and proportional circles, drawn in the
+- **Part-of-whole charts:** a nested treemap and proportional circles, drawn in the
   console for the Dashboard's Organisation row (`overview-organisation.tsx`, `squarify()` in
   `overview-directory-model.ts`).
 - **Chart palette (tokens):** the `--qx-color-dataviz-categorical-*` slots fail the dataviz

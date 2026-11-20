@@ -154,7 +154,7 @@ export function OrgPage({ orgId }: { orgId: string }) {
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={
-          // The logo sits in the title, unannounced, until PageHeader has a leading slot (QTRX-48).
+          // The logo sits in the title, unannounced, until Qeetrix's PageHeader has a leading slot.
           <span className="org-title">
             <Avatar
               name={org.name}

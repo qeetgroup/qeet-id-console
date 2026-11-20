@@ -16,7 +16,7 @@ import type { Person } from "../use-people";
 import { resourceLabel } from "./audit-cells";
 
 const ANY = "";
-// Each option's count is part of its label until Select items have a count of their own (QTRX-20).
+// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 
 /**
  * One row above the log: the view, a search, then who did it, what and to what. Under it, once
@@ -152,7 +152,7 @@ export function AuditToolbar({
         />
       </div>
       {/* Only once something narrows the log (FilterTags shows its summary even with none,
-          QTRX-15). */}
+          a Qeetrix issue). */}
       {tags.length || search.q ? (
         <FilterTags
           filters={tags}

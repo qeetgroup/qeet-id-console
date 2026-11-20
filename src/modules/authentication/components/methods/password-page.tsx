@@ -315,7 +315,7 @@ function TwoStepSection() {
           variant="ghost"
           className="am-head-action"
           icon={ArrowRightIcon}
-          // A Button rendered as a link is announced as a button until QTRX-8.
+          // Qeetrix's Button rendered as a link is announced as a button, not a link.
           render={<Link to="/settings/organization/security-policy" />}
         >
           {t("password.twoStep.link")}

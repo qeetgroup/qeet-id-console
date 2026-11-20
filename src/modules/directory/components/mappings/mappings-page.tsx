@@ -177,7 +177,7 @@ function ConnectionMappings({
             }
             action={
               connections.length > 1 ? (
-                // A picker that stays open after a choice is QTRX-42; this one closes on its own.
+                // Qeetrix's MenuRadioItem keeps a picker menu open after a choice; this one closes.
                 <Menu>
                   <MenuTrigger
                     render={

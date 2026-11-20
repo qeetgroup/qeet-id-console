@@ -21,7 +21,7 @@ import { personName, useNumbers } from "../parts";
 import type { MachineTab } from "./machine-tabs";
 
 const ANY = "";
-// Each option's count is in its label until Select items have a count of their own (QTRX-20).
+// Each option's count is in its label until Qeetrix's Select items have a count of their own.
 
 /**
  * One row above the table: search, then the filters this tab has (kind and what they can do on
@@ -188,7 +188,7 @@ export function MachineToolbar({
         ) : null}
       </div>
       {/* Only once something narrows the list (FilterTags shows its summary even with no tags,
-          QTRX-15). */}
+          a Qeetrix issue). */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

@@ -563,7 +563,7 @@
 /*
  * From 1200px up the page makes room for the open panel, as AppShell does for the frame's own
  * panels: its main area (the public `app-shell-main` slot) gives way by the panel's width. Until
- * QTRX-75 lets Qeet AI be an AppShell panel.
+ * Qeetrix's AppShell takes Qeet AI as one of its panels.
  */
 @media (width >= 1200px) {
   :root[data-qai-open] [data-slot="app-shell-main"] {

@@ -11,10 +11,10 @@ import { ACCESS, type GrantRow } from "./grants-model";
 const SHADES = ["today", "week", "month", "older"] as const;
 
 /**
- * The list's key numbers, in its header, on the Users band's parts (until PageHeader has a band of
- * its own, QTRX-18; the share bar is the Dashboard's until QTRX-13): how many grants for how many
- * people, which applications hold them, and what they let the applications read. Each opens the
- * list filtered to it.
+ * The list's key numbers, in its header, on the Users band's parts (until Qeetrix's PageHeader has
+ * a band of its own; the share bar is the Dashboard's until Qeetrix has small charts): how many
+ * grants for how many people, which applications hold them, and what they let the applications
+ * read. Each opens the list filtered to it.
  */
 export function GrantsBand({ rows }: { rows: GrantRow[] }) {
   const { t } = useTranslation("consent");

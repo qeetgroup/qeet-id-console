@@ -169,7 +169,7 @@ export function ActivityToolbar({
           onValueChange={(value) => onChange({ category: value ? String(value) : undefined })}
           items={[
             { value: ANY, label: t("toolbar.anyCategory") },
-            // Each count is part of its label until Select items have one of their own (QTRX-20).
+            // Each count is part of its label until Qeetrix's Select items have one of their own.
             ...ACTIVITY_CATEGORIES.map((value) => ({
               value,
               label: byCategory
@@ -183,7 +183,7 @@ export function ActivityToolbar({
         </span>
       </div>
       {/* Only once something narrows the list (FilterTags shows its summary even with no tags,
-          QTRX-15). */}
+          a Qeetrix issue). */}
       {tags.length || search.q ? (
         <FilterTags
           filters={tags}

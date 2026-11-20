@@ -551,7 +551,7 @@ describe("Invoices", () => {
     const rows = within(table).getAllByRole("row");
     expect(rows[1]?.textContent).toContain("1c10217f");
     expect(within(table).getByText("Open")).toBeTruthy();
-    // The row's button is named by its whole primary cell (QTRX-21).
+    // Qeetrix's Table names the row's button by its whole primary cell.
     fireEvent.click(within(table).getByRole("button", { name: /^1c10217f/ }));
     const drawer = await screen.findByRole("dialog", { name: "Invoice 1c10217f" });
     expect(within(drawer).getByText("IGST 18%")).toBeTruthy();

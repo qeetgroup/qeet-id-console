@@ -1,8 +1,8 @@
 // The organisation's shape, the one thing the Dashboard took from the Directory overview: its
 // departments and their teams as a squarified treemap (each department opens the Users list
 // filtered to it), and where people work as circles sized by people, a row per country. Both come
-// from what each person's profile says. Until QTRX-24: the library has no treemap or proportional
-// circles, so both are drawn here.
+// from what each person's profile says. Qeetrix has no treemap or proportional circles, so both
+// are drawn here.
 
 import { VisuallyHidden } from "@qeetrix/react";
 import { Link } from "@tanstack/react-router";

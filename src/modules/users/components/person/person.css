@@ -9,7 +9,7 @@
   font: var(--qx-typography-heading-sm);
 }
 
-/* The avatar before the name, in the title, until PageHeader has a leading slot (QTRX-48). */
+/* The avatar before the name, in the title, until Qeetrix's PageHeader has a leading slot. */
 .prs-title-name {
   display: inline-flex;
   align-items: center;

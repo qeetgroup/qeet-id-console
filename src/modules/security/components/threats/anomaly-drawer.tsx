@@ -237,7 +237,7 @@ function AnomalyBody({
                 </Button>
               </li>
             ) : null}
-            {/* A Button as a router link is announced as a button until QTRX-8. */}
+            {/* Qeetrix's Button as a router link is announced as a button, not a link. */}
             {a.user_id ? (
               <li>
                 <strong>{t("anomalies.drawer.checkTitle")}</strong>

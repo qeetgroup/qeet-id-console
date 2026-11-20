@@ -143,8 +143,9 @@ confirm dialog, a menu). Any violation fails the "Session E2E" job. Fix it in th
 
 A violation from inside a `@qeetrix/react` component that the console can't fix is excused for
 **that rule on that element only**: an entry in the spec's `DESIGN_SYSTEM_ISSUES` (one rule, one
-element selector, every other rule still applies), with a comment naming it as a qeetrix issue, and
-raised as a QTRX ticket. Never disable a rule for a page, and never excuse a console-owned element.
+element selector, every other rule still applies), with a comment naming the Qeetrix component and
+the issue. The issue is raised as a Jira ticket for Qeetrix, but its key never appears in code,
+comments, tests or docs. Never disable a rule for a page, and never excuse a console-owned element.
 
 ## Conventions
 

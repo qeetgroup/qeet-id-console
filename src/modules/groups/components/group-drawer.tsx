@@ -340,7 +340,7 @@ export function GroupDrawer({
         </DrawerBody>
         <DrawerFooter>
           {!editing && onUseTemplate ? (
-            // A start slot for the footer is QTRX-23; the Users drawer's class places it.
+            // Qeetrix's DrawerFooter has no start slot; the Users drawer's class places it.
             <Link className="add-import" render={<button type="button" onClick={onUseTemplate} />}>
               <LayoutTemplateIcon className="add-import-icon" aria-hidden="true" />
               {t("drawer.useTemplate")}

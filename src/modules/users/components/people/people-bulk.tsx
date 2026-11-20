@@ -196,7 +196,7 @@ export function GroupItems({
 /**
  * The selection's actions, in the table's bar: require two-step, a role, a group, and the rest
  * under More. Signing out, suspending and deleting leave out the person using the console, since
- * the Table can't keep their row out of the selection yet (QTRX-16).
+ * Qeetrix's Table can't keep their row out of the selection.
  */
 export function PeopleBulkActions({
   selected,

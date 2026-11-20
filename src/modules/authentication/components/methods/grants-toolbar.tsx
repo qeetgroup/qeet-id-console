@@ -7,7 +7,7 @@ import { formatLocale } from "@/i18n";
 import { ACCESS, type Access, type GrantFilters, type GrantRow } from "./grants-model";
 
 const ANY = "";
-// Each option's count is part of its label until Select items have a count of their own (QTRX-20).
+// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 
 /** Search, then the application and access filters, in one row; what's applied under them. */
 export function GrantsToolbar({
@@ -81,7 +81,7 @@ export function GrantsToolbar({
         />
       </div>
       {/* Only once something narrows the list: FilterTags shows its summary even with no tags
-          (QTRX-15). */}
+          (a Qeetrix issue). */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

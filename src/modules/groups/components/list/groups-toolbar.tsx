@@ -15,7 +15,7 @@ import {
 } from "@/modules/groups/groups-model";
 
 const ANY = "";
-// Each option's count is part of its label until Select items have a count of their own (QTRX-20).
+// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 
 /**
  * One row above the table: search, size, roles granted and the group to look inside, then Expand
@@ -168,7 +168,7 @@ export function GroupsToolbar({
         ) : null}
       </div>
       {/* Only once something narrows the list (FilterTags shows its summary even with no tags,
-          QTRX-15). */}
+          a Qeetrix issue). */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

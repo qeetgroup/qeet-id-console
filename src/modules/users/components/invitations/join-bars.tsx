@@ -1,4 +1,4 @@
-// A small chart the library doesn't have yet (QTRX-13): how many people joined on each day after
+// A small chart Qeetrix doesn't have: how many people joined on each day after
 // their invitation, from day 0 to the link's expiry, which is marked.
 
 import { LINK_DAYS } from "@/modules/users/invitations-model";

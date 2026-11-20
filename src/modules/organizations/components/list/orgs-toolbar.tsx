@@ -15,7 +15,7 @@ import {
 import { useOrgLabels } from "@/modules/organizations/components/org-labels";
 
 const ANY = "";
-// Each option's count is part of its label until Select items have a count of their own (QTRX-20).
+// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 
 /**
  * One row above the table: search, your role, plan, and data region (only when the organisations
@@ -124,7 +124,7 @@ export function OrgsToolbar({
         ) : null}
       </div>
       {/* Only once something narrows the list (FilterTags shows its summary even with no tags,
-          QTRX-15). */}
+          a Qeetrix issue). */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

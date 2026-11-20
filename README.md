@@ -142,8 +142,9 @@ be shared. `/v1/users` can't filter or count yet, so the page reads everyone, 20
 time, up to 2,000 people (`userQueries.directory`), and works over them in `people-model.ts`.
 Above 2,000 it says the search, filters and counts cover the first 2,000 only. A rebuilt page with
 sub-pages draws them with `PageTabs`, `PageTabList` and `PageBreadcrumb` from `@/modules/dashboard`.
-What the library lacks for this page is tracked as QTRX-13 to QTRX-21; each local stand-in names
-its ticket in a comment, to swap once `@qeetrix/react` has it.
+What the library lacks for this page is raised with Qeetrix as Jira tickets; each local stand-in
+names the Qeetrix component and the issue in a comment (never the ticket's key), to swap once
+`@qeetrix/react` has it.
 
 Users has three tabs: All users, Invitations and Deleted. **Suspended is a filter on All users**
 (`?status=suspended`), not a page: it asks `GET /v1/users/suspended` (searched, filtered and paged on
@@ -188,7 +189,7 @@ functions in `groups-model.ts`. A group's size is the people it covers, its grou
 roles it grants reach only its own members (the server's rule), so a group that grants a role and
 has no members grants it to no one. The server lists groups without their roles, so the
 page reads each group's roles, all of them up to 100 groups and only the page's past that. The
-library's Table has no tree rows yet (QTRX-25): each group's name is its link, beside its fold
+library's Table has no tree rows yet: each group's name is its link, beside its fold
 button. Users takes `?group=none` (people in no group) from the band's link.
 
 A group's page (`/groups/:id`, `components/page/`) has its facts in the header (members, the roles
@@ -223,7 +224,7 @@ belong to (every page of `GET /v1/organizations`), joined with your place in eac
   so only the organisation you're in shows it.
 
 The filters live in the address (`?q=&role=&plan=&region=&look=`), and the rules are pure functions
-in `orgs-model.ts`. The logo sits in the page title until `PageHeader` has a leading slot (QTRX-48).
+in `orgs-model.ts`. The logo sits in the page title until `PageHeader` has a leading slot.
 
 ## Directories › Connections
 
@@ -245,7 +246,7 @@ and `/ldap` redirect), and the command palette finds them by their commands. Con
 
 `?show=failing|draft` narrows the list from the band. The rules are pure functions in
 `connections-model.ts`. LDAP doesn't count its people yet; MenuItem has no description
-line (QTRX-50).
+line.
 
 ## Styling rules
 

@@ -95,7 +95,7 @@ export function ConnectionsPage({ filters, onFiltersChange }: ConnectionsPagePro
             <Menu>
               <MenuTrigger render={<Button icon={PlusIcon}>{t("connections.add")}</Button>} />
               <MenuContent align="end">
-                {/* A second line for each kind waits for MenuItem descriptions (QTRX-50); the
+                {/* A second line for each kind waits for Qeetrix's MenuItem descriptions; the
                     offers under the table say what each does. */}
                 <MenuItem
                   icon={WorkflowIcon}

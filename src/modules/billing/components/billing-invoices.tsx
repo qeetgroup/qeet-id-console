@@ -110,7 +110,7 @@ export function BillingInvoices({
     {
       id: "invoice",
       header: t("invoices.column.invoice"),
-      // The row's button is named by this whole cell, issued date included, until QTRX-21.
+      // Qeetrix's Table names the row's button by this whole cell, issued date included.
       primary: true,
       cell: (invoice) => (
         <span className="ppl-two">

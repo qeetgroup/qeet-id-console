@@ -227,7 +227,7 @@
   place-items: center;
 }
 
-/* What a save will do, at the footer's start (until QTRX-23). */
+/* What a save will do, at the footer's start (until Qeetrix's DrawerFooter has a start slot). */
 .authz-footer-note {
   margin-inline-end: auto;
 }

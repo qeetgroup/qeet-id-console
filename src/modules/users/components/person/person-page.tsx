@@ -203,7 +203,8 @@ function Person({
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={
-          // The avatar sits in the title, unannounced, until PageHeader has a leading slot (QTRX-48).
+          // The avatar sits in the title, unannounced, until Qeetrix's PageHeader has a
+          // leading slot.
           <span className="prs-title-name">
             <Avatar name={full} src={user.avatar_url ?? undefined} size="lg" decorative />
             {full}

@@ -46,7 +46,7 @@
 }
 
 /* In the page header's summary: edge to edge between its rules, inset to the page gutter
-   (until the library has a summary band, QTRX-18). */
+   (until Qeetrix's PageHeader has a summary band of its own). */
 .qx-page-header-summary .ppl-band {
   border: 0;
   border-radius: 0;
@@ -113,7 +113,7 @@
   margin-block-start: var(--qx-space-gap-sm);
 }
 
-/* The Meter's target tick (QTRX-14). */
+/* The Meter's target tick, which Qeetrix's Meter doesn't draw. */
 .ppl-target {
   position: absolute;
   inset-block: -3px;
@@ -245,7 +245,7 @@ b.is-danger {
 /* ── The table's cells ────────────────────────────────────────────────────────────────────── */
 
 /* Fills the table's bar (a flex row), so the filters use its whole width before they wrap
-   (QTRX-17). */
+   (Qeetrix's Table doesn't let its toolbar slot fill the bar). */
 .ppl-toolbar {
   flex: 1 1 auto;
   display: grid;
@@ -403,7 +403,8 @@ b.is-danger {
   gap: var(--qx-space-gap-lg);
 }
 
-/* Add people: what happens to each address, ruled rows under the field (until QTRX-22). */
+/* Add people: each address's outcome, ruled rows under the field (until Qeetrix has a field for
+   several email addresses). */
 .add-checks ul {
   display: grid;
   margin: 0;
@@ -464,7 +465,8 @@ b.is-danger {
   color: var(--qx-color-text-danger);
 }
 
-/* The footer: the import link at the start, the buttons at the end (until QTRX-23). */
+/* The footer: the import link at the start, the buttons at the end (until Qeetrix's DrawerFooter
+   has a start slot). */
 .add-import {
   display: inline-flex;
   align-items: center;

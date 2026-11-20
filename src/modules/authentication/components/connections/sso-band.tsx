@@ -15,7 +15,10 @@ import {
 
 const ANY = "";
 
-/** Search, then the kind, in one row; each kind with its count (until QTRX-20). */
+/**
+ * Search, then the kind, in one row; each kind's count in its label until Qeetrix's Select items
+ * have a count of their own.
+ */
 export function SsoToolbar({
   filters,
   onFiltersChange,

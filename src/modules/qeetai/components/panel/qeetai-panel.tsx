@@ -191,8 +191,8 @@ function ResizeHandle({ width }: { width: number }) {
 
 /**
  * While the panel is open, puts its width on <html> (`data-qai-open`, `--qai-panel-width`), so the
- * page's main area can give way to it (qeetai-panel.css). Until QTRX-75 lets Qeet AI be one of
- * AppShell's own panels, which make room by themselves.
+ * page's main area can give way to it (qeetai-panel.css). Until Qeetrix's AppShell takes Qeet AI
+ * as one of its own panels, which make room by themselves.
  */
 function useRoomForPanel(open: boolean, width: number) {
   useEffect(() => {

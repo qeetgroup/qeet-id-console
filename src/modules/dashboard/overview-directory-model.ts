@@ -309,7 +309,7 @@ export type Rect = { x: number; y: number; w: number; h: number };
 
 /**
  * A squarified treemap (Bruls, Huizing and van Wijk): rectangles near square, in value order.
- * Until QTRX-24 brings a treemap to the library.
+ * Until Qeetrix has a treemap of its own.
  */
 export function squarify(values: readonly number[], rect: Rect): Rect[] {
   const total = values.reduce((a, b) => a + b, 0);

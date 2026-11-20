@@ -404,7 +404,7 @@ export function GroupTemplatesDrawer({ open, onOpenChange, groups }: GroupTempla
             </DrawerBody>
             <DrawerFooter>
               {template ? (
-                // A start slot for the footer is QTRX-23; the Users drawer's class places it.
+                // Qeetrix's DrawerFooter has no start slot; the Users drawer's class places it.
                 <Link
                   className="add-import"
                   render={<button type="button" onClick={() => setView("editor")} />}

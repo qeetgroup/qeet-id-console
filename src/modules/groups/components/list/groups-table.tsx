@@ -24,8 +24,8 @@ import { describedAs, type GroupRow, type RolesByGroup } from "@/modules/groups/
 
 /**
  * The list's columns: the group (its fold button, its name as a link, one line about it), its
- * members, the roles it grants and when it was made. The table has no tree rows of its own yet
- * (QTRX-25), so the name is the row's link and the fold button sits beside it.
+ * members, the roles it grants and when it was made. Qeetrix's Table has no tree rows of its own,
+ * so the name is the row's link and the fold button sits beside it.
  */
 export function useGroupColumns({
   flat,

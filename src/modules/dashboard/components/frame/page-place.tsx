@@ -42,7 +42,7 @@ export function PageBreadcrumb() {
 /**
  * Wraps a rebuilt page that has sub-pages, so its PageHeader's `tabs` can take PageTabList (the
  * header's rule needs the list itself there). Sub-pages are separate routes, so a tab navigates;
- * links in a nav would be right, once the library has them (QTRX-19).
+ * links in a nav would be right, but Qeetrix's routed tabs are announced as tabs, not links.
  */
 export function PageTabs({ children }: { children: ReactNode }) {
   const navigate = useNavigate();

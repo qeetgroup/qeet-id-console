@@ -269,7 +269,7 @@ export function GroupMembersDrawer({
         </DrawerBody>
         <DrawerFooter>
           {group ? (
-            // A start slot for the footer is QTRX-23; the Users drawer's class places it.
+            // Qeetrix's DrawerFooter has no start slot; the Users drawer's class places it.
             <Link
               className="add-import"
               render={<RouterLink to="/groups/$groupId" params={{ groupId: group.id }} />}

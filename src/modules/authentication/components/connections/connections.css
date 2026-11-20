@@ -367,7 +367,7 @@ li[data-state="ok"] .cx-check-word {
 }
 
 /* ── Sign-ins a day: a column a day, failures on top in the danger colour ─────────────────── */
-/* Library gap (new): daily columns (QTRX-13 has sparklines and share bars only). */
+/* Library gap (new): daily columns (Qeetrix's small charts are sparklines and share bars). */
 
 .cx-days {
   display: grid;

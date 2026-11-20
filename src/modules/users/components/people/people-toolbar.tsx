@@ -10,7 +10,7 @@ import { type PeopleFilters, RECENCY, REVIEWS, RISKS } from "@/modules/users/peo
 import { roleDisplayName } from "@/shared/utils/role-name";
 
 const ANY = "";
-// Each option's count is part of its label until Select items have a count of their own (QTRX-20).
+// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 
 // The filters that only make sense for everyone, and those only for suspended people: choosing a
 // status clears the other kind.
@@ -268,7 +268,7 @@ export function PeopleToolbar({
         )}
       </div>
       {/* Only once something narrows the list: with nothing applied, the count is the header's.
-          FilterTags shows its summary even with no tags (QTRX-15). */}
+          FilterTags shows its summary even with no tags (a Qeetrix issue). */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

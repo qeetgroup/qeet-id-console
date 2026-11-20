@@ -112,7 +112,7 @@ function QeetAIOff({ status }: { status: QeetAIStatus }) {
         description={t(status.source === "platform" ? "off.plan" : "off.none")}
         actions={
           canSee ? (
-            // A link drawn as a button; Base UI warns of it in development (QTRX-8).
+            // A link drawn as Qeetrix's Button; Base UI warns of it in development.
             <Button
               render={settings}
               variant={canChange ? "solid" : "soft"}

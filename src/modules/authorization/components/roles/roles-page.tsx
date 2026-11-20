@@ -295,7 +295,8 @@ export function RolesPage({ filters, onFiltersChange, roleId, onRoleChange }: Ro
                         ]}
                       />
                     </div>
-                    {/* Only once something narrows the list (QTRX-15). */}
+                    {/* Only once something narrows the list: Qeetrix's FilterTags shows its
+                        summary even with no tags. */}
                     {filters.type || filters.look || filters.q ? (
                       <FilterTags
                         filters={[

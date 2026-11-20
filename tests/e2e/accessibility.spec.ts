@@ -146,7 +146,8 @@ const CONSOLE_PAGES: Target[] = [
 
 /**
  * Violations from inside the design system that the console can't fix: each excuses one rule on
- * one element, every other rule still applies to it, and each is raised with Qeetrix (QTRX).
+ * one element, every other rule still applies to it, and its comment names the Qeetrix component
+ * and the issue (raised with Qeetrix as a Jira ticket, whose key never appears here).
  * None open since @qeetrix/ui left (2026-10-28).
  */
 const DESIGN_SYSTEM_ISSUES: { rule: string; element: string }[] = [];
@@ -320,8 +321,8 @@ for (const theme of THEMES) {
 // These fail for the library alone: Qeetrix React 0.1.1 gives a table, a tab list and a page
 // header's actions no way to narrow or scroll, so the page scrolls. Later versions do (a table's
 // scroll frame and column priorities); the console takes them with the upgrade, which waits on
-// QTRX-284. Each is an expected failure, so the upgrade that fixes one also fails here until it's
-// taken off the list.
+// Qeetrix's Table naming a row's link by what the row shows. Each is an expected failure, so the
+// upgrade that fixes one also fails here until it's taken off the list.
 const LIBRARY_REFLOW = new Set([
   "users",
   "users, suspended",

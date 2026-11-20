@@ -26,7 +26,7 @@ import { roleDisplayName } from "@/shared/utils/role-name";
 
 /**
  * A view of the person's page, as a link: what the section heads open. A Button rendered as a link
- * is still announced as a button until QTRX-8.
+ * is still announced as a button, not a link (a Qeetrix issue).
  */
 export function TabLink({
   userId,

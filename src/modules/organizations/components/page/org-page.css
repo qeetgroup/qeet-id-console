@@ -9,7 +9,7 @@
   font: var(--qx-typography-heading-sm);
 }
 
-/* The logo before the name, in the title, until PageHeader has a leading slot (QTRX-48). */
+/* The logo before the name, in the title, until Qeetrix's PageHeader has a leading slot. */
 .org-title {
   display: inline-flex;
   align-items: center;

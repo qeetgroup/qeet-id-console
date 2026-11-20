@@ -66,7 +66,10 @@ const CHECK_ICON = {
   invalid: CircleMinusIcon,
 };
 
-/** What happens to each address: a ruled row per address, under the field (until QTRX-22). */
+/**
+ * What happens to each address: a ruled row per address, under the field, until Qeetrix has a
+ * field for several email addresses.
+ */
 function AddressChecks({ checks }: { checks: AddressCheck[] }) {
   const { t } = useTranslation("users");
   if (!checks.length) return null;
