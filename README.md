@@ -1,358 +1,124 @@
-# Qeet ID Console
+<div align="center">
 
-The operator control plane for Qeet ID. It serves identity administrators, security teams, and platform engineers managing tenants, users, authentication, authorization, audit, compliance, and developer integrations.
+# 🖥️ Qeet ID console
 
-## Product direction
+**Where an organisation runs Qeet ID: its people and groups, the applications that sign in with it, how people
+sign in, who may do what, security and audit, and the keys and agents its software uses. At
+[console.id.qeet.in](https://console.id.qeet.in).**
 
-The console uses an institutional enterprise language rather than stock shadcn styling:
+[![TanStack Start](https://img.shields.io/badge/TanStack%20Start-1.168-FF4154)](https://tanstack.com/start)
+[![React](https://img.shields.io/badge/React-19.3-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![Qeetrix](https://img.shields.io/badge/Qeetrix%20React-0.5.2-D04800)](https://ui.qeet.in)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Bun](https://img.shields.io/badge/Bun-1.3.14-000000?logo=bun&logoColor=white)](https://bun.sh)
+[![Vercel](https://img.shields.io/badge/hosted%20on-Vercel-000000?logo=vercel&logoColor=white)](https://console.id.qeet.in)
 
-- high information density with clear operational hierarchy;
-- cool neutral surfaces with Qeet orange reserved for primary intent;
-- a persistent dark control rail in both themes;
-- data-first panels, metric rails, and dividers instead of grids of identical cards;
-- visible loading, empty, error, focus, hover, active, and reduced-motion states;
-- WCAG 2.2 AA contrast targets and semantic status colours;
-- desktop operator efficiency without sacrificing touch and mobile access.
+[🏗️ Architecture](#️-architecture) · [🧭 What's inside](#-whats-inside) · [🚀 Run it](#-run-it-locally) · [⚙️ Configuration](#️-configuration)
 
-`@qeetrix/react` is the component foundation, with `@qeetrix/tokens` for every colour, space and type size. Each page has a small token-only CSS file; do not fork Qeetrix primitives or restyle a library component's shape.
+</div>
 
-## Stack
+## 🏗️ Architecture
 
-- TanStack Start and TanStack Router file-based routes
-- React 19 with React Compiler
-- TanStack Query for server state
-- `@qeetrix/react` (Base UI) for accessible components, `@qeetrix/tokens` for design tokens
-- Plain CSS on `--qx-*` tokens, over a small base reset (`src/base.css`); no Tailwind
-- Recharts through Qeetrix chart wrappers
-- i18next for localization
-- Vitest for unit tests
-- Bun workspaces from the repository root
+A TanStack Start app on Vercel that is its own backend-for-frontend. The browser talks only to the console;
+the console's server calls the Qeet ID API. The API's tokens live in an encrypted HttpOnly session cookie and
+never reach browser code.
 
-## Architecture
-
-Layered, with the dependency direction enforced in CI (`bun run lint:boundaries`).
-Full detail in [`docs/llm/`](docs/llm/) — start with [`context.md`](docs/llm/context.md).
-
-```text
-src/
-├── app/            The composition root: the module list (modules.ts), the route tree
-│                   (routes.ts) and manifest registration (register.ts)
-├── routes/         The shell's routes: __root.tsx, the _app layout, healthz, api/ (SSE)
-├── modules/        One folder per business capability (18): account, activity,
-│                   authentication, authorization, billing, branding, compliance,
-│                   dashboard, developer, directory, groups, onboarding, organizations,
-│                   qeetai, search, security, timeline, users. Each: api/ components/
-│                   routes/ locales/, a manifest.tsx (what it adds to the shell), an
-│                   index.ts barrel and a pages.ts
-├── platform/       Cross-cutting infrastructure: api (the one HTTP client), auth
-│                   (server-session, session-store, scoped-storage), errors, query,
-│                   security (capabilities, route capability, step-up, response headers),
-│                   telemetry, modules (manifest type + registry), feature-flags,
-│                   keyboard, forms, config (env, server config, sidebar), components,
-│                   theme
-├── shared/         Generic, domain-agnostic: components/ hooks/ utils/ data/
-├── i18n/           i18next setup and the platform's common/errors catalogues
-├── router.tsx      Router + query integration
-└── styles.css      Console semantic theme and product-level patterns
+```mermaid
+flowchart LR
+    admin["🧑‍💼 Administrator<br/>browser"] -->|"pages and same-origin calls<br/>session cookie + CSRF"| console["🖥️ console.id.qeet.in<br/>TanStack Start on Vercel"]
+    console -->|"REST and live streams (SSE)<br/>token refreshed on the server"| api["⚙️ Qeet ID API<br/>api.id.qeet.in"]
 ```
 
-`bun run new-module <id>` creates a module from the template and registers it.
+| Part | Where |
+|:--|:--|
+| 🧩 **Modules** | One folder per area (18). Each has its routes, API calls, components and text, and a manifest that adds its pages to the navigation, search and Qeet AI: `src/modules` |
+| 🧱 **Platform** | The one HTTP client, the session, errors, query, feature flags, telemetry and config: `src/platform` |
+| 🛡️ **Security** | CSRF checks on every change, a per-request nonce Content-Security-Policy, step-up before sensitive actions, and each page and action shown only to people with its permission: `src/platform/security` |
+| 🔌 **API contract** | The server's API documents, copied into `contract/`; every call is typed against them |
+| 🎨 **Design** | Qeetrix (`@qeetrix/react` on its `AppShell`, `--qx-*` tokens, `@qeetrix/icons`), light and dark, WCAG 2.2 AA |
+| 🌍 **Text** | i18next catalogues: `src/i18n` and each module's `locales/` |
+| 🩺 **Health** | `GET /healthz` |
 
-### Boundaries (enforced)
+Imports only point down the layers, `app → modules → platform → shared`, and a module reaches another only
+through its public `index.ts`. Biome and a test enforce both. Working on the console? Start with
+[`AGENTS.md`](AGENTS.md) and [`docs/llm/context.md`](docs/llm/context.md).
 
-```text
-app → modules → platform → shared
-```
+## 🧭 What's inside
 
-0. **App composes** — it lists the modules and wires their routes, manifests and catalogues; nothing but the router imports it.
-1. **Routes own URL concerns** — each module's `routes/` validates search params, declares the page's capability, guards and composes the page; no reusable logic. Lint rejects module internals, `api()` and React Query in route files, with no exemptions.
-2. **Modules own product capability** — a module imports another module only via its public barrel (`@/modules/<name>`), never its internals.
-3. **Platform owns cross-cutting infrastructure** — the HTTP client, session, errors, security, telemetry, feature flags, config. Imports only platform + shared; it reads modules only through the manifest registry.
-4. **Shared owns generic primitives** — no domain-specific imports.
-5. **Qeetrix owns UI primitives** (`@qeetrix/react`, `@qeetrix/tokens`); **page CSS owns layout**, with tokens only.
+| Area | What an administrator does there |
+|:--|:--|
+| 📊 **Overview** | The Dashboard: sign-ins, two-step coverage, what needs attention, security, live activity and the organisation's shape |
+| 👥 **Directory** | People (search, filters, bulk actions, invitations, suspended and deleted), groups as a tree, organisations, and directory sync over SCIM and LDAP / AD |
+| 🧩 **Applications** | OpenID Connect and OAuth applications, and the access people granted them |
+| 🔑 **Authentication** | Passkeys, password, passwordless and magic links, social sign-in, SAML single sign-on, two-step (TOTP, SMS, email) and device sign-ins |
+| 🛂 **Authorization** | Roles and permissions (RBAC), attribute rules (ABAC), relationships (ReBAC), templates, versions and a tester |
+| 🛡️ **Security** | The audit log and log streams, anomalies, bots, risk, IP rules and rate limits; SOC 2, ISO 27001, GDPR and data retention |
+| 🛠️ **Developer** | API keys, machine identities and AI agents, tokens, signing keys, secrets, webhooks, auth hooks and verifiable credentials |
+| ⚙️ **Settings** | The organisation's profile, domains, branding, emails, security policy, billing and Qeet AI |
+| 🤖 **Qeet AI** | An assistant in a side drawer that reads and explains the organisation's setup; it makes no changes |
 
-Violations (wrong-direction imports, cross-module internals, import cycles, direct `fetch`) fail CI via Biome and `src/__tests__/module-boundaries.test.ts`.
+**⌘K** finds any page or action, and **?** lists the keyboard shortcuts.
 
-## Enterprise shell
+## 🚀 Run it locally
 
-`routes/_app.tsx` is the authenticated shell boundary. It renders `ConsoleFrame`
-(`modules/dashboard/components/frame`), the `@qeetrix/react` `AppShell`:
-
-- the top bar: Qeet ID, the organisation's name, search (⌘K), Qeet AI and the account menu
-  (switching organisation, account, theme, shortcuts, sign out);
-- the navigation, one entry per area that opens to its pages; a page's sub-pages are its tabs;
-- the Notifications and Help panels on the end edge;
-- one `main` landmark with the shell's skip link, and the search palette and shortcuts dialog.
-
-Pages not yet rebuilt keep their own header and spacing, under a band with their breadcrumb and
-sub-page tabs.
-
-## Session boundary
-
-TanStack Start is the same-origin BFF. Backend access and refresh tokens remain
-inside an encrypted `HttpOnly` cookie and are never returned to browser code.
-Protected layouts resolve the session in `beforeLoad`; JSON requests and SSE
-streams inherit backend bearer authentication, refresh rotation, correlation,
-safe error handling, and CSRF protection from the platform boundary. See
-[`docs/llm/context.md`](docs/llm/context.md#the-bff--how-a-request-reaches-the-backend).
-
-## Dashboard command center
-
-The Dashboard (`/`) is rebuilt on `@qeetrix/react`: `modules/dashboard/components/overview/`. It
-is the console's one overview: the areas have none, and their old overview URLs redirect to each
-area's main page. `overview-page.tsx` reads each source the person may see (the directory, groups,
-authorization and people through `use-directory-insights.ts`), and passes it to the panels:
-
-- `overview-pulse.tsx`: four measures across the top, each with a sparkline; two-step coverage
-  on a meter with its target;
-- `overview-sign-ins.tsx`: sign-ins against failed sign-ins over 14 days (with a table view),
-  and each sign-in method's share and its own 14-day line;
-- `overview-attention.tsx`: what needs attention, most severe first, each with its one action;
-- `overview-security.tsx`: the last 24 hours of failed sign-ins with their bursts marked, and
-  two-step coverage as a gauge;
-- `overview-people.tsx`: weekly active people, and the applications people use;
-- `overview-activity.tsx`: the latest events (`use-dashboard-activity.ts`, refreshed live);
-- `overview-organisation.tsx`: departments and their teams as a treemap, and where people work;
-- `overview-setup.tsx`: the organisation's set-up as a checklist;
-- `overview-parts.tsx`: the ruled panels and four small charts the library doesn't have yet
-  (proposals for `@qeetrix/react`).
-
-The rules behind the numbers are plain functions with their own tests: `overview-model.ts` (what
-needs attention, bursts, axes, app usage), `overview-setup-model.ts` (the checklist) and
-`overview-directory-model.ts` (the directory's and authorization's alerts, the LDAP and Groups items,
-the organisation's shape and the treemap layout). The page only reads: loading it never changes
-the organisation.
-
-## Users list
-
-Directory › Users (`/users`) is rebuilt on `@qeetrix/react`: `modules/users/components/people/`.
-
-- `people-page.tsx`: the header (breadcrumb, actions, the band, the tabs), the table and its
-  pager, and the add, edit and set-password sheets;
-- `people-band.tsx`: the key numbers in the header, above the tabs: people over 15 months, two-step
-  coverage against its target, when people were last active, and what needs a look. Each part
-  links to the list filtered to it;
-- `people-toolbar.tsx`: search, then role, department, two-step and last active, with counts;
-  what's applied shows as tags;
-- `people-table.tsx`: the columns and a row's menu; `people-bulk.tsx`: the selection's actions,
-  five requests at a time.
-
-The search and filters live in the address (`?q=&role=&dept=&twostep=&seen=&look=`), so a view can
-be shared. `/v1/users` searches, filters, sorts and counts on the server, and pages every order;
-`people-model.ts` turns the filters into its query (`userQuery`). A rebuilt page with
-sub-pages draws them with `PageTabs`, `PageTabList` and `PageBreadcrumb` from `@/modules/dashboard`.
-What the library lacks for this page is raised with Qeetrix as Jira tickets; each local stand-in
-names the Qeetrix component and the issue in a comment (never the ticket's key), to swap once
-`@qeetrix/react` has it.
-
-Users has three tabs: All users, Invitations and Deleted. **Suspended is a filter on All users**
-(`?status=suspended`), not a page: it asks `GET /v1/users/suspended` (searched, filtered and paged on
-the server) and shows why, how risky, since when and the review, with Reactivate and Review the
-suspension (`people-suspended.tsx`). The old `/users/suspended` address redirects there.
-
-- `components/invitations/`: the Invitations tab — who's waiting, how fast people join (with the
-  link's 14 days marked), sends over 15 months, outcomes; Resend, Revoke and Invite again;
-- `components/deleted/`: the recycle bin — who's purged next and when, how long people are kept
-  (the retention rule, read only with `policy.read`); Restore and Delete forever;
-- `components/add-people/`: Add people, the one way in from Users and Invitations — invite by
-  email (several addresses, each checked against the directory and pending invitations first) or
-  create the account now. It joins the organisation you're in.
-
-The rules behind them are pure functions with their own tests: `invitations-model.ts`,
-`deleted-model.ts` and `add-people-model.ts`.
-
-## Groups list
-
-Directory › Groups (`/groups`) is rebuilt on `@qeetrix/react`: `modules/groups/components/list/`.
-**The table is the tree.** Families fold; up to 50 groups they start open, past that folded, so the
-list opens at the top level. Pages hold 25, 50 or 100 rows, and a family that runs past a page
-break carries its path onto the next page ("Continued · Engineering › Identity"). A search or a
-filter lists the matches flat, each with its path.
-
-- `groups-list-page.tsx`: the header (breadcrumb, actions, the band), the table and its pager, and
-  the drawers and dialogs it opens. `../group-drawer.tsx` is New group and Edit group in one
-  drawer: the name checked as it's typed (unique in an organisation), "Inside" searched by path,
-  members as pills, and the role's reach said plainly. `../group-members-drawer.tsx` is a group's
-  members: add several at once (one toast), remove one through the confirm, which says what they
-  lose. `../group-templates-drawer.tsx` makes a template's groups inside any group, flagging names
-  already taken first (the server makes all or none); `../import-groups-drawer.tsx` reads a CSV (or
-  pasted rows), checks every row before anything is sent, then shows what wasn't made and why;
-- `groups-band.tsx`: the Users band's parts (`people.css`, loaded with the console's styles): groups
-  over 15 months, the share of people in a group, group sizes, and what needs a look (empty groups,
-  roles granted to no one, people in no group). Each opens the list, or Users, filtered to it;
-- `groups-toolbar.tsx`: search, size, roles granted and the group to look inside, then Expand or
-  Collapse all; `groups-table.tsx`: the tree cell, the columns and a row's menu.
-
-The filters live in the address (`?q=&size=&grants=&role=&inside=&look=`), and the rules are pure
-functions in `groups-model.ts`. A group's size is the people it covers, its groups' included; the
-roles it grants reach only its own members (the server's rule), so a group that grants a role and
-has no members grants it to no one. The server lists groups without their roles, so the
-page reads each group's roles, all of them up to 100 groups and only the page's past that. The
-library's Table has no tree rows yet: each group's name is its link, beside its fold
-button. Users takes `?group=none` (people in no group) from the band's link.
-
-A group's page (`/groups/:id`, `components/page/`) has its facts in the header (members, the roles
-it grants, where it sits, when it was made), then ruled sections: where it sits (`group-family.tsx`,
-its family as a picture, each group sized by people and opening its page), members, the roles it
-grants, the groups inside it, and details. Deleting a group deletes the groups inside it too (their
-parent link cascades), with their memberships and role grants; `use-delete-group.ts` says so in the
-confirm, from the list or the page. The console's one confirm (`SensitiveActionProvider`) is the
-`@qeetrix/react` alert dialog: red intent line for a destructive action, amber otherwise.
-
-## Organisations
-
-Directory › Organisations (`/organizations`) is rebuilt on `@qeetrix/react`:
-`modules/organizations/components/list/` and `components/page/`. It lists the organisations you
-belong to (every page of `GET /v1/organizations`), joined with your place in each from
-`GET /v1/me/organizations`: your roles, when you last opened it, its domain.
-
-- `orgs-list-page.tsx`: the header and its band (`orgs-band.tsx`, the Users band's parts: people
-  across the organisations with the largest as bars, two-step against the Users target, your roles,
-  and what needs a look), the toolbar (search, your role, plan, and data region when there's more
-  than one), and the table (`orgs-table.tsx`). Each row has Switch, which moves the session into it;
-  a name opens its page. There is no edit sheet (Settings › General edits the one you're in, and the
-  server changes no other), no preview drawer, and no Suspend: the server always refuses it.
-- An organisation's page (`/organizations/:id`) is its record, not a second dashboard: its facts in
-  the header; Identity (`org-identity.tsx`: its URL and ID, its domain and what verifying it means,
-  its data region on a ruler of Qeet ID's regions); History (`org-history.tsx`: the audit events on
-  the organisation itself, summed up, by month, then each with who, browser and address, each
-  opening its record in Activity); and, for an owner, Delete. Another organisation shows what the
-  list knows and Switch.
-- Deleting (`use-org-actions.ts`) is the server's: an owner asks, it's deleted 7 days later, and any
-  owner can keep it until then (`POST …/deletion/cancel`). The list carries each organisation's due
-  date.
-
-The filters live in the address (`?q=&role=&plan=&region=&look=`), and the rules are pure functions
-in `orgs-model.ts`. The logo sits in the page title until `PageHeader` has a leading slot.
-
-## Directories › Connections
-
-Directory › Directories has four tabs: Connections, Sync activity, Sync errors, Mappings. SCIM and
-LDAP / AD are connections, not tabs: each opens from its row or Add connection, at
-`/directory/connections/scim` and `/directory/connections/ldap` (the old `/auth/connections/scim`
-and `/ldap` redirect), and the command palette finds them by their commands. Connections
-(`modules/directory/components/connections/`) is rebuilt on `@qeetrix/react`:
-
-- `connections-page.tsx`: the header, its band (`connections-band.tsx`: where the organisation's
-  people come from, each connection's health, the last 30 days, what needs a look), the table and
-  the offers for a kind not set up; `connections-table.tsx`: the columns and a row's menu.
-- A connection's health is the server's (its latest event; past 24 hours, "not checked"), with its
-  latest open problem under it. The 30 days are the server's volume (people and groups synced a
-  day) with the month's failed events on top.
-- `use-connection-actions.ts`: Test, Turn on/off (turning off is confirmed), Delete and Revoke, each
-  confirm saying what happens to people. Their calls live in `api/directory.ts`; the SCIM and LDAP
-  pages' own copies in the authentication module go when those pages move here.
-
-`?show=failing|draft` narrows the list from the band. The rules are pure functions in
-`connections-model.ts`. LDAP doesn't count its people yet; MenuItem has no description
-line.
-
-## Styling rules
-
-- Use semantic tokens such as `bg-card`, `text-muted-foreground`, `text-success`, and `border-border`.
-- Reserve `primary` for the current navigation indicator and primary actions.
-- Use red, amber, green, and blue only for destructive, warning, success, and informational meaning.
-- Use `enterprise-panel`, `dashboard-metric-rail`, and the other named application patterns before inventing one-off surface classes.
-- Keep numbers tabular and use the bundled Fira Code only for identifiers and compact telemetry.
-- Motion must explain state or hierarchy, use transform/opacity where possible, and honor `prefers-reduced-motion`.
-- Do not restore a wall of equal elevated cards. Prefer rails, grouped rows, dividers, or asymmetric data panels.
-
-## Responsive behavior
-
-- Mobile: one-column content, 44-pixel shell targets, off-canvas navigation, and horizontally safe tables.
-- Tablet: two-column metric rails and selectively stacked data panels.
-- Desktop: persistent 280-pixel navigation and a bounded 1680-pixel workspace canvas.
-- Wide desktop: 12-column dashboard composition for primary telemetry and supporting controls.
-
-Validate at 375, 768, 1024, 1440, and 1600 pixels in both themes.
-
-## Development
-
-Prerequisites: [Bun](https://bun.sh) `1.3+` and a running Qeet ID backend
-([`qeet-id-server`](https://github.com/qeetgroup/qeet-id-server), local default `:4001`).
+Needs [Bun](https://bun.sh) 1.3+ and a running [`qeet-id-server`](https://github.com/qeetgroup/qeet-id-server)
+(local default `http://localhost:4001`).
 
 ```bash
-bun install
-cp .env.example .env.local     # set VITE_API_URL if not using the default
-bun run dev                    # Vite dev server on http://localhost:3002
+bun install --frozen-lockfile
+cp .env.example .env.local
+bun run dev            # http://localhost:3002
 ```
 
-Other scripts:
+| Script | For |
+|:--|:--|
+| `bun run dev` | Development server on port 3002 |
+| `bun run build` | Production build (Vite and Nitro) |
+| `bun run typecheck` | Types |
+| `bun run check` | Lint and format (Biome), including the layer rules |
+| `bun run test` | Unit and component tests (Vitest) |
+| `bun run test:e2e` | The production build in Chromium against a fake API: sign-in and session, organisation isolation, Content-Security-Policy, keyboard use and a WCAG 2.2 AA scan, four workers at once |
+| `bun run contract:sync` | Copy the server's API documents and regenerate the types every call is checked against |
+| `bun run contract:check` | The copied documents and generated types are current |
+| `bun run audit` | Known high or critical advisories in the dependencies |
+| `bun run new-module <id>` | Add an area from the module template |
+| `bun run sonar` | SonarQube analysis with coverage (local SonarQube from `qeet-id-server`) |
 
-```bash
-bun run build            # production build (Vite + Nitro)
-bun run typecheck        # tsc --noEmit
-bun run test             # vitest
-bun run test:coverage    # vitest + coverage thresholds (what CI runs)
-bun run test:e2e         # build, then Playwright: session, tenant isolation, CSP, WCAG 2.2 AA
-bun run check            # Biome format + lint; warnings fail
-bun run lint:boundaries  # layer rules
-bun run audit            # known high/critical vulnerabilities
-bun run sonar            # SonarQube: tests with coverage, then the scanner (see below)
-```
+`VITE_ENABLE_DEVTOOLS=true bun run dev` shows the TanStack devtools.
 
-`bun run sonar` analyses the console on the local SonarQube that qeet-id-server runs, as its own
-project (`qeet-id-console`). It needs Docker, that SonarQube running (`make sonar-up` in
-../qeet-id-server, http://localhost:9000) and a SonarQube token in `SONAR_TOKEN`;
-`SONAR_HOST_URL` points it elsewhere. VS Code recommends SonarQube for IDE
-(`.vscode/extensions.json`), which shows the same issues while you type.
+## ⚙️ Configuration
 
-The TanStack devtools launcher is hidden by default so it never competes with operator UI —
-opt in only when debugging:
+| Variable | What it is |
+|:--|:--|
+| `VITE_API_URL` | The Qeet ID API, for example `http://localhost:4001` (public; built into the pages) |
+| `SERVER_URL` | The API as the console's server reaches it; defaults to `VITE_API_URL` |
+| `PUBLIC_API_URL` | Optional. The API address handed to the browser, read on each request, so one image serves any environment |
+| `SESSION_SECRET` | Encrypts and signs the session cookie: 32 or more random characters, server only, required in production |
+| `QEET_ID_RELAY_KEY` | Optional. One of the API's relay keys, so the API sees each person's own address; server only |
+| `CONSOLE_TRUSTED_PROXY_HOPS` | Optional. How many proxies in front of the console add to `X-Forwarded-For` |
+| `VITE_APP_TITLE` | The window title, `Qeet ID Admin` |
 
-```bash
-VITE_ENABLE_DEVTOOLS=true bun run dev
-```
+In production the server checks these as it starts and refuses to run until they are valid; its log names the
+variable at fault, never its value.
 
-## Configuration
+## 🚢 Releasing
 
-`VITE_*` values are exposed to the browser (inlined at build time); their schema is
-`src/platform/config/env.ts`. `SERVER_URL`, `SESSION_SECRET` and `PUBLIC_API_URL` are read from
-the server environment at runtime. In production, `src/platform/config/server-config.ts` checks
-them: until they are valid, every request fails and the server log names the problem.
+Releases are monthly and named after the month they ship.
 
-| Variable | Scope | Dev | Prod |
-|---|---|---|---|
-| `VITE_API_URL` | client (build time) | `http://localhost:4001` | `https://api.id.qeet.in` |
-| `SERVER_URL` | server | falls back to `VITE_API_URL` | required (or `VITE_API_URL`) |
-| `PUBLIC_API_URL` | server → browser | falls back to `VITE_API_URL` | required unless `VITE_API_URL` was set at build |
-| `SESSION_SECRET` | server | development-only fallback | required, random 32+ characters |
-| `VITE_APP_TITLE` | client | `Qeet ID Admin` | `Qeet ID Admin` |
+1. Changes land on `develop`. Run the tests, the build and the browser tests locally before pushing; **Verify** in CI
+   checks the API contract, types, formatting, lint, the dependency audit and that no secret was committed.
+2. Each month `release/2027.1.0` (for example) is cut from `develop`, and testers check it in TEST and STAGING. A fix
+   they need is made on `develop` first, then copied to the release branch.
+3. After sign-off, the pull request from the release branch into `main` deploys
+   [console.id.qeet.in](https://console.id.qeet.in) and tags `v2027.1.0`. An urgent fix afterwards is
+   `hotfix/2027.1.1`.
 
-## Deployment (Vercel)
+## 🧩 Related repositories
 
-Deployed as a **TanStack Start** project on Vercel. It is SSR via Nitro, so the build emits
-Vercel's Build Output API (`.vercel/output`) — the dashboard's "Output Directory" field is
-ignored, and no framework config is needed. [`vercel.json`](vercel.json) pins the Bun
-install/build commands and turns off Vercel's Git deployments: production is deployed by
-[`deploy.yml`](.github/workflows/deploy.yml) when a release merges into `main` (`vercel build`/
-`deploy --prod` → health check → version tag). Security response
-headers come from Nitro route rules (`vite.config.ts`), which the build writes into the Vercel
-output.
-
-**Steps**
-
-1. Import `qeetgroup/qeet-id-console` in Vercel — the Framework Preset auto-detects **TanStack Start**.
-2. Environment variables (Production + Preview):
-   ```
-   VITE_API_URL=https://api.id.qeet.in
-   SERVER_URL=https://api.id.qeet.in
-   SESSION_SECRET=<at-least-32-random-characters>
-   VITE_APP_TITLE=Qeet ID Admin
-   ```
-3. Deploy.
-4. Add the custom domain **`console.id.qeet.in`** → create the CNAME Vercel provides in GoDaddy
-   (`console.id` → `cname.vercel-dns.com`). That host is already in the backend's `ALLOWED_ORIGINS`.
-
-`@qeetrix/react`, `@qeetrix/tokens` and `@qeetrix/icons` resolve from the public npm registry, so a standalone install needs no monorepo.
-
-## Related repositories
-
-| Repo | Role |
-|---|---|
-| [`qeet-id-server`](https://github.com/qeetgroup/qeet-id-server) | Backend API (Go) — auth, OIDC, WebAuthn |
-| [`qeet-id-hosted`](https://github.com/qeetgroup/qeet-id-hosted) | Hosted sign-in — `accounts.id.qeet.in` |
-| [`qeet-id-website`](https://github.com/qeetgroup/qeet-id-website) | Marketing site — `id.qeet.in` |
-| `qeet-id-deploy` | Backend infrastructure + CD (Terraform) |
-
-Part of the [Qeet Group](https://github.com/qeetgroup) suite; built on the shared Qeetrix design system (`@qeetrix/react`).
+| Repository | What it is |
+|:--|:--|
+| [`qeet-id-server`](https://github.com/qeetgroup/qeet-id-server) | The Qeet ID platform and its API |
+| [`qeet-id-hosted`](https://github.com/qeetgroup/qeet-id-hosted) | Hosted sign-in, sign-up, consent and recovery pages, at [accounts.id.qeet.in](https://accounts.id.qeet.in) |
+| [`qeet-id-website`](https://github.com/qeetgroup/qeet-id-website) | The public website, [id.qeet.in](https://id.qeet.in) |
+| [`qeet-id-docs`](https://github.com/qeetgroup/qeet-id-docs) | The developer documentation |
+| [`qeet-id-kit`](https://github.com/qeetgroup/qeet-id-kit) | Runs the whole product locally for testers |
