@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from "@qeetrix/icons";
-import { Badge, formatNumber, LinkButton } from "@qeetrix/react";
+import { formatNumber, LinkButton } from "@qeetrix/react";
 import { CopyButton, PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ import { getApiBaseUrl } from "@/platform/config/api-base-url";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { useSigningKeys } from "../api/signing-keys";
 import { DevSection } from "./parts";
+import { ServiceHealthSection } from "./service-health-section";
 import "./developer.css";
 
 const ENDPOINTS = ["issuer", "discovery", "jwks", "token", "verify"] as const;
@@ -23,8 +24,8 @@ const PATH: Record<(typeof ENDPOINTS)[number], string> = {
 
 /**
  * Developer › Infrastructure: what integrations point at, read-only. The addresses every SDK and
- * machine credential uses, the key set that checks tokens, and an honest line on service health:
- * the server reports none to an organisation (only the deployment's own /readyz and /metrics).
+ * machine credential uses, the key set that checks tokens, and the state of the service for the
+ * organization with the incidents the Qeet ID team posted.
  */
 export function InfrastructurePage() {
   const { t } = useTranslation("developer");
@@ -97,16 +98,7 @@ export function InfrastructurePage() {
             />
           ) : null}
 
-          <DevSection
-            id="infra-health"
-            title={t("infrastructure.health.title")}
-            action={
-              <Badge tone="neutral" size="sm">
-                {t("infrastructure.health.notReported")}
-              </Badge>
-            }
-            note={t("infrastructure.health.note")}
-          />
+          {access.can("organization.read") ? <ServiceHealthSection /> : null}
         </div>
       </PageContent>
     </>

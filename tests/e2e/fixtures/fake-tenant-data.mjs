@@ -466,6 +466,49 @@ export function tenantRead(path, query, { tenantId, tenant, principalId }) {
       },
     };
   }
+  // The deployment's published key set, which Developer › Infrastructure counts.
+  if (path === "/v1/oidc/signing-keys") {
+    return {
+      keys: [
+        { kid: "TC_Kcb75wQrS6789", alg: "ES256", use: "sig", status: "active" },
+        { kid: "b4pa9Bh6XyZ12345", alg: "ES256", use: "sig", status: "candidate" },
+      ],
+    };
+  }
+  // Developer › Infrastructure › Service health: a degraded part with an open incident, and one
+  // resolved lately, so the rows, the alert and the resolved list are all scanned.
+  if (path === `${orgPath}/service-health`) {
+    return {
+      status: "degraded",
+      checked_at: ago(2 * 60_000),
+      components: [
+        { name: "api", state: "operational" },
+        { name: "sign_in", state: "operational" },
+        { name: "email", state: "degraded", reason: "incident" },
+        { name: "webhooks", state: "not_configured" },
+        { name: "directory", state: "operational" },
+      ],
+      incidents: [
+        {
+          id: "99999999-9999-4999-8999-999999999991",
+          component: "email",
+          impact: "degraded",
+          title: "Email delays",
+          detail: "Some emails are arriving late while the provider recovers.",
+          started_at: ago(3_600_000),
+          resolved_at: null,
+        },
+        {
+          id: "99999999-9999-4999-8999-999999999992",
+          component: "directory",
+          impact: "maintenance",
+          title: "Directory maintenance",
+          started_at: ago(4 * DAY_MS),
+          resolved_at: ago(3 * DAY_MS),
+        },
+      ],
+    };
+  }
   if (path === `${orgPath}/roles`) return { items: roles(tenantId) };
   if (path === `${orgPath}/groups`) return { items: groups(tenantId) };
   // Directories › Connections: a SCIM endpoint and an Active Directory people sign in with, and a

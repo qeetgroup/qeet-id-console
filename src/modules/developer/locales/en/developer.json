@@ -1125,8 +1125,61 @@
     },
     "health": {
       "title": "Service health",
-      "notReported": "Not reported",
-      "note": "Qeet ID reports no health to an organisation. Running it yourself? Its /readyz endpoint and its metrics feed your own monitoring."
+      "note": "How each part of Qeet ID that your organization uses is doing, and the incidents the Qeet ID team has posted.",
+      "checked": "Checked <when/>",
+      "state": {
+        "operational": "Operational",
+        "maintenance": "Maintenance",
+        "degraded": "Degraded",
+        "outage": "Outage",
+        "not_configured": "Not in use",
+        "unknown": "Unknown"
+      },
+      "component": {
+        "api": {
+          "label": "API",
+          "what": "Requests to the Qeet ID API."
+        },
+        "sign_in": {
+          "label": "Sign-in",
+          "what": "Signing people in and issuing tokens."
+        },
+        "email": {
+          "label": "Email",
+          "what": "Email Qeet ID sends for your organization."
+        },
+        "webhooks": {
+          "label": "Webhooks",
+          "what": "Deliveries to your webhook endpoints."
+        },
+        "directory": {
+          "label": "Directory sync",
+          "what": "LDAP and SCIM directory operations."
+        },
+        "other": {
+          "label": "Other service",
+          "what": "Another part of Qeet ID."
+        }
+      },
+      "reason": {
+        "databaseUnreachable": "The database can’t be reached.",
+        "keysUnavailable": "Tokens can’t be signed.",
+        "emailFailing": "The email provider refused at least a quarter of your organization’s emails in the last hour.",
+        "webhooksFailing": "Deliveries to a webhook endpoint are failing, or an endpoint was disabled for failing.",
+        "directoryFailing": "A directory operation from the last day failed and is still open.",
+        "incident": "An incident that affects it is open."
+      },
+      "incidents": {
+        "openTitle": "Open incidents",
+        "resolvedTitle": "Resolved in the last 14 days",
+        "noneOpen": "No open incidents.",
+        "openMeta": "Affects {{component}}. Started <when/>.",
+        "resolvedMeta": "Affected {{component}}. Resolved <when/>.",
+        "empty": {
+          "title": "No incidents",
+          "description": "The Qeet ID team hasn’t posted an incident in the last 14 days."
+        }
+      }
     }
   },
   "bots": {

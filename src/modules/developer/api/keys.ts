@@ -29,5 +29,7 @@ export const developerKeys = {
     [...developerKeys.organization(organizationId), "notifications"] as const,
   overview: (organizationId: string | null, source: string) =>
     [...developerKeys.organization(organizationId), "overview", source] as const,
+  serviceHealth: (organizationId: string | null) =>
+    [...developerKeys.organization(organizationId), "service-health"] as const,
   signingKeys: () => [...developerKeys.all, "signing-keys"] as const, // the deployment's, not a tenant's
 };

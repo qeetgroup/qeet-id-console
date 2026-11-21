@@ -123,6 +123,11 @@ const CONSOLE_PAGES: Target[] = [
     ready: (page: Page) => page.locator("#main-content h1").first(),
   })),
   {
+    name: "infrastructure",
+    path: "/developer/infrastructure",
+    ready: (page) => page.getByText("Email delays").first(),
+  },
+  {
     name: "account profile",
     path: "/account/profile",
     ready: (page) => page.getByText("Member of", { exact: false }),
