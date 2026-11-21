@@ -26,6 +26,7 @@ const ldap: LdapConnection = {
   email_attribute: "mail",
   name_attribute: "cn",
   status: "active",
+  sync_interval_minutes: 15,
   created_at: "2026-09-01T10:00:00Z",
   updated_at: "2026-09-01T10:00:00Z",
   last_login_at: "2026-09-12T11:00:00Z",

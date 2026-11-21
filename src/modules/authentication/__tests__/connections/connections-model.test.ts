@@ -70,6 +70,7 @@ const ldap = (over: Partial<LdapConnection> = {}): LdapConnection => ({
   email_attribute: "mail",
   name_attribute: "cn",
   status: "draft",
+  sync_interval_minutes: 15,
   created_at: "2026-10-08T00:00:00Z",
   updated_at: "2026-10-08T00:00:00Z",
   last_login_at: null,

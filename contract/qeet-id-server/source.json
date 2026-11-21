@@ -1,11 +1,11 @@
 {
   "repository": "qeetgroup/qeet-id-server",
-  "commit": "7d51420f6c99aefd3e8fb31468ebe587555fc35e",
+  "commit": "e499d17d917cc3e605ddf7071e70835b551a2604",
   "documents": {
     "access": "e2b122e1aef9705c241002c2af933f1f1f6f9317d4061d37c4e8f309493f93c0",
     "identity": "968cb53d36ede7e12955d128a2e9243ccbf4fba28a575c408a41322a59c1dc1e",
-    "federation": "76869b366099c0fda89bb4d12c56ba4416023dc235108965c2f795accbb12f47",
+    "federation": "412107fc8fa1d31c6c3b4b7cf715f06319e77c45c8bd5f480e920dc79271d577",
     "developer": "24bd88981719efdc7333a0763268c623743f3a8106a7d752af361a5076a9d3e6",
-    "operations": "12372756f70a2c290e70d8ac26318c234d803dcf7a5656565c1d4b6669754c4c"
+    "operations": "9228dbe090f4efda23bfacca6ae8c7bb651656e7883166f2c3ccdfc26b49f1da"
   }
 }

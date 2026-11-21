@@ -171,6 +171,7 @@ function LdapForm({ connection, onDone }: { connection?: LdapConnection; onDone:
         user_filter: trim(value.user_filter),
         email_attribute: trim(value.email_attribute),
         name_attribute: trim(value.name_attribute),
+        sync_interval_minutes: null, // the server's 15 on create, unchanged on update
       };
       await runSensitive({
         capability: "connection.write",

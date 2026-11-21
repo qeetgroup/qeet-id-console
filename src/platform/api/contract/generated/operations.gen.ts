@@ -922,7 +922,7 @@ export interface paths {
         };
         /**
          * List templates
-         * @description Lists the organization-scoped catalogue and overrides. Capabilities indicate rich-text/localization support and whether a mail transport is configured for test delivery. delivery_scope distinguishes organization invitations/magic links from platform-account security email.
+         * @description Lists the organization-scoped catalogue and overrides. Capabilities indicate rich-text/localization support and whether a mail transport is configured for test delivery. Every template is sent with the organization's version (delivery_scope organization): email verification codes to people signed in to the organization, password reset links to accounts whose organization it is, magic links, invitations, and sign-in codes sent by email. A code sent by SMS, and one that confirms a change to an account's security, keeps the platform's wording.
          */
         get: operations["listEmailTemplates"];
         put?: never;
@@ -947,7 +947,7 @@ export interface paths {
         get: operations["getEmailTemplate"];
         /**
          * Override template
-         * @description Saves the template and options atomically with its audit event. Organization invitations and magic links use saved overrides; platform-account recovery, verification and MFA remain platform-managed.
+         * @description Saves the template and options atomically with its audit event. Every template's saved version is the one sent: email verification, password reset, magic link, invitation and emailed sign-in codes. Removing it sends the default again. A template must keep its link variable (a `*_url`) and, for verification and sign-in codes, its `code` variable.
          */
         put: operations["setEmailTemplate"];
         post?: never;
@@ -2010,7 +2010,10 @@ export interface components {
         };
         EmailResolvedTemplate: components["schemas"]["EmailEditorInput"] & {
             custom: boolean;
-            /** @enum {string} */
+            /**
+             * @description Whose version of the template is sent. Every template answers organization: the organization's saved version is sent, else the default. platform stays in the enumeration for compatibility.
+             * @enum {string}
+             */
             delivery_scope: "organization" | "platform";
             description: string;
             key: string;
