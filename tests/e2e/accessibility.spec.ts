@@ -2,16 +2,16 @@
 // screens, creating an organisation and the main console pages in both themes, and the overlays a page scan can't reach
 // (command palette, a create sheet, a confirm dialog, a menu). Any violation fails.
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import {
   ADMIN,
-  BACKEND_URL,
   hydrated,
   INVITED,
   MEMBER,
   ORG_TWO,
-  signIn,
+  signInOnce,
   signInToEntry,
   signInToPicker,
   signInUnverified,
@@ -212,12 +212,10 @@ async function expectAccessible(page: Page) {
   expect(found).toEqual([]);
 }
 
-// Each test signs in, renders a full page and runs axe over all of it.
+// Each test renders a full page and runs axe over all of it. Pages need the admin's session, signed
+// in once per worker and reused (signInOnce); the scans only read, so the backend isn't reset
+// between them. Tests of the sign-in steps themselves sign in each time.
 test.describe.configure({ timeout: 60_000 });
-
-test.beforeEach(async ({ request }) => {
-  await request.post(`${BACKEND_URL}/__test__/reset`);
-});
 
 for (const theme of THEMES) {
   test.describe(`${theme} theme`, () => {
@@ -263,7 +261,7 @@ for (const theme of THEMES) {
     });
 
     test("create-organization", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
       await page.goto("/create-organization?from=organizations");
       await settle(page, page.getByRole("radio", { name: "Pro" }));
       await expectAccessible(page);
@@ -275,7 +273,7 @@ for (const theme of THEMES) {
 
     for (const target of CONSOLE_PAGES) {
       test(target.name, async ({ page }) => {
-        await signIn(page, ADMIN.email);
+        await signInOnce(page, ADMIN.email);
         await page.goto(target.path);
         await settle(page, target.ready(page));
         await expect(page.locator("html")).toHaveAttribute("data-qx-color-scheme", theme);
@@ -284,7 +282,8 @@ for (const theme of THEMES) {
     }
 
     test("command palette", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
+      await page.goto("/");
       await settle(page, page.getByText("1,240"));
       await page.getByRole("button", { name: "Search or jump to…" }).click();
       await settle(page, page.getByRole("dialog"));
@@ -292,7 +291,7 @@ for (const theme of THEMES) {
     });
 
     test("add people drawer", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
       await page.goto("/invitations");
       await settle(page, page.getByRole("button", { name: "Invite people" }));
       await page.getByRole("button", { name: "Invite people" }).click();
@@ -301,7 +300,7 @@ for (const theme of THEMES) {
     });
 
     test("confirm dialog", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
       await page.goto(`/users/${MEMBER.id}`);
       await settle(page, page.getByRole("heading", { name: MEMBER.name }));
       await page.getByRole("button", { name: "Delete user" }).click();
@@ -310,7 +309,8 @@ for (const theme of THEMES) {
     });
 
     test("account menu", async ({ page }) => {
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
+      await page.goto("/");
       await settle(page, page.getByText("1,240"));
       await page.getByLabel("Account menu").click();
       await settle(page, page.getByRole("menu"));
@@ -334,7 +334,7 @@ test.describe("phone width", () => {
   for (const target of CONSOLE_PAGES) {
     test(target.name, async ({ page }) => {
       test.fail(LIBRARY_REFLOW.has(target.name), "Qeetrix React 0.5 layout; see LIBRARY_REFLOW");
-      await signIn(page, ADMIN.email);
+      await signInOnce(page, ADMIN.email);
       await page.goto(target.path);
       await settle(page, target.ready(page));
       const sticksOut = await page.evaluate(() => {
@@ -416,7 +416,7 @@ for (const [label, viewport] of [
           label === "phone" && LIBRARY_LONGER.has(target.name),
           "Qeetrix React 0.5 layout; see LIBRARY_LONGER",
         );
-        await signIn(page, ADMIN.email);
+        await signInOnce(page, ADMIN.email);
         await page.goto(target.path);
         await settle(page, target.ready(page));
         expect(await lengthened(page)).toEqual({ sideways: [], cut: [] });

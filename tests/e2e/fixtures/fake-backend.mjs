@@ -1,7 +1,8 @@
 // A minimal stand-in for qeet-id-server: sign-in, refresh rotation (with the server's reuse grace),
 // organization switch, logout and the reads the console makes (records in fake-tenant-data.mjs), for one
 // operator in each of two tenants, one in both, an admin and an unverified account. Test controls:
-// POST /__test__/reset, POST /__test__/expire (access tokens only), GET /__test__/stats.
+// POST /__test__/reset, POST /__test__/expire (access tokens only), GET /__test__/stats (with the
+// session generation, bumped by both).
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 
@@ -75,6 +76,9 @@ let keptRotations = new Map(); // spent refresh token -> { pair, at }
 let refreshCalls = 0;
 let rotations = 0;
 let logoutCalls = 0;
+// Bumped whenever sessions are wiped (reset, expire), so a test that reuses a sign-in knows when
+// the session it kept no longer exists.
+let generation = 0;
 
 // As REFRESH_TOKEN_REUSE_GRACE on the server: a rotated refresh token sent again within the grace
 // gets the pair its rotation issued, while that pair's refresh token is unused; any other reuse is
@@ -161,10 +165,12 @@ const server = createServer(async (request, response) => {
     refreshCalls = 0;
     rotations = 0;
     logoutCalls = 0;
+    generation += 1;
     return send(response, 200, { ok: true });
   }
   if (path === "/__test__/expire" && method === "POST") {
     accessTokens.clear();
+    generation += 1;
     return send(response, 200, { ok: true });
   }
   if (path === "/__test__/stats") {
@@ -172,6 +178,7 @@ const server = createServer(async (request, response) => {
       refresh_calls: refreshCalls,
       rotations,
       logout_calls: logoutCalls,
+      generation,
     });
   }
 

@@ -294,8 +294,13 @@ fake backend serves the pages' records from `tests/e2e/fixtures/fake-tenant-data
 `admin@example.com` with every capability (so actions render) and an `unverified@example.com`.
 Text over the shell's and sidebar's faint gradients is measured against their solid token (axe
 can't measure over a gradient). A violation from inside `@qeetrix/react` is excused for that rule
-on that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12); none today. Ports default to 43173 and 43101;
-`E2E_APP_PORT` and `E2E_BACKEND_PORT` override them.
+on that element only (`DESIGN_SYSTEM_ISSUES` in the spec, AGENTS.md rule 12). The suites run in
+parallel: each Playwright worker (4 by default, `E2E_WORKERS`) starts its own fake backend and
+production console (`tests/e2e/fixtures.ts`) on the base ports plus its slot, so no two tests share
+sessions or resets. The page scans sign the admin in once per worker and reuse that session
+(`signInOnce` in `support.ts`), again after the backend's sessions are reset or expired (its
+`generation` in `/__test__/stats`) and every 4 minutes, well inside the fake tokens' 10. Base ports
+default to 43173 and 43101; `E2E_APP_PORT` and `E2E_BACKEND_PORT` override them.
 
 Every module has tests; `users`, `security`, `compliance` and `authorization` pin their request
 contracts, cache refreshes and tenant guards.

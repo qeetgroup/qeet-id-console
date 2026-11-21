@@ -1,7 +1,7 @@
 // The BFF session boundary in a real browser: the session lives only in an HttpOnly cookie that
 // scripts can't read, survives a reload, refuses cross-site writes and ends everywhere at once.
-import { expect, test } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import { APP_URL, BACKEND_URL, OPERATOR, hydrated, sessionCookies, signIn } from "./support";
 
 test.beforeEach(async ({ request }) => {

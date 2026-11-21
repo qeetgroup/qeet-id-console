@@ -1,8 +1,9 @@
 // The console by keyboard alone, against the production build: sign-in, the skip link, the
 // command palette, the account menu, a drawer and a table's rows. WCAG 2.1.1 (keyboard), 2.1.2 (no
 // trap), 2.4.1 (bypass blocks), 2.4.3 (focus order) and 2.4.7 (focus visible).
-import { expect, type Page, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import { ADMIN, APP_URL, BACKEND_URL, hydrated, PASSWORD, signIn } from "./support";
 
 test.beforeEach(async ({ request }) => {

@@ -367,8 +367,11 @@ git diff
 ```
 
 `test:e2e` builds, then runs the Playwright suites in `tests/e2e`, including the accessibility
-scan. Its ports default to 43173 (app) and 43101 (fake backend); set `E2E_APP_PORT`
-and `E2E_BACKEND_PORT` to run two copies side by side.
+scan, in parallel: each worker (4 by default, `E2E_WORKERS`) starts its own fake backend and
+console on the base ports plus its slot (`tests/e2e/fixtures.ts`), so import `test` from there.
+The base ports default to 43173 (app) and 43101 (fake backend); set `E2E_APP_PORT` and
+`E2E_BACKEND_PORT` to run two copies side by side. A page scan signs the admin in once per worker
+(`signInOnce`); a test about signing in signs in itself.
 
 ## Escalate rather than proceed
 

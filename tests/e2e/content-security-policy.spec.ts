@@ -1,8 +1,9 @@
 // The Content-Security-Policy in a real browser, against the production build: every page carries
 // a fresh nonce on its policy and on each script, nothing the console needs is blocked, and
 // everything loads from the console itself rather than a CDN.
-import { expect, type Page, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
+import { expect, test } from "./fixtures";
 import { APP_URL, BACKEND_URL, hydrated, signIn } from "./support";
 
 test.beforeEach(async ({ request }) => {
