@@ -27,7 +27,7 @@ export type EmailTemplateCapabilities = NonNullable<
   Answer<"/v1/organizations/{organizationID}/email-templates">["capabilities"]
 >;
 
-/** True for a template the organisation's own sender delivers (invite, magic link). */
+/** True for a template sent in the organization's own version. */
 export const sentByOrganization = (template: EmailTemplate) =>
   template.delivery_scope === "organization";
 
