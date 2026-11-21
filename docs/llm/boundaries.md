@@ -1,7 +1,7 @@
 # Boundaries — qeet-id-console
 
 **Level:** L2 · **Last verified:** 2026-10-23
-**Verification scope:** ownership from `qeet-id-files/TAD.md` §14; layering rules from
+**Verification scope:** ownership from `qeet-id-context/REPOSITORIES.md`; layering rules from
 `biome.json` and `src/__tests__/module-boundaries.test.ts`, verified by grep.
 
 ## Owns
@@ -102,7 +102,7 @@ adding a test · internal refactoring inside one module · i18n strings · featu
 | `@qeetrix/react` / `@qeetrix/tokens` / `@qeetrix/icons` upgrade | `qeetrix-react`, `qeetrix-tokens`, `qeetrix-icons` — pinned exactly (`0.1.1` / `0.0.9` / `1.0.12`); bump deliberately and read the changelog |
 | Hostname change | `qeet-id-deploy`, backend CORS, WebAuthn origins |
 
-Product-level fan-out: `qeet-id-files/TAD.md` §15.
+Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.
 
 ## Hard limits
 

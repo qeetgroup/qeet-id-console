@@ -15,7 +15,7 @@ backend-for-frontend (BFF). **Backend tokens never reach the browser.**
 ## Context hierarchy
 
 ```text
-qeet-context (L0)  →  qeet-id-files (L1)  →  qeet-id-server (the contract + all enforcement)
+qeet-context (L0)  →  qeet-id-context (L1)  →  qeet-id-server (the contract + all enforcement)
                                             →  qeet-id-console (L2 — this repository)
 ```
 

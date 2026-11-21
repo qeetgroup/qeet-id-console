@@ -20,7 +20,7 @@ single most important architectural fact here.
 ```text
 qeet-context (L0)      organization standards
       ↓
-qeet-id-files (L1)   product architecture
+qeet-id-context (L1)   product architecture
       ↓
 qeet-id-server         the API contract AND all enforcement
       ↓
@@ -375,7 +375,7 @@ Qeetrix names the link by its content.
 |---|---|
 | "No Postgres RLS" (QID-002, and this file before 2026-10-24) | **RLS exists** since `qeet-id-server` 1.0.0 (migration 0160, commit ea57c1f): a `tenant_isolation` policy on the organization-owned tables, alongside the application-layer checks |
 
-Product-level changes go into `qeet-id-files` (the PRD or TAD); this table is repository-local.
+Product-level drift lives in `qeet-id-context/DRIFT-REGISTER.md`; this table is repository-local.
 
 ## Documentation authority
 
