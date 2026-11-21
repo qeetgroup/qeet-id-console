@@ -590,3 +590,26 @@
     display: none;
   }
 }
+
+/*
+ * More social providers than fit with their names (provider-buttons.tsx): logos only, at the large
+ * icon size. Each button keeps its full name for screen readers, and its tooltip shows it.
+ * ProviderButtonGroup has no logos-only mode yet (raised with Qeetrix).
+ */
+.entry-providers[data-logos-only] .qx-provider-button {
+  gap: 0;
+}
+
+.entry-providers[data-logos-only] .qx-provider-button-label {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.entry-providers[data-logos-only] .qx-provider-button-logo :is(svg, img) {
+  inline-size: var(--qx-size-icon-lg);
+  block-size: var(--qx-size-icon-lg);
+}

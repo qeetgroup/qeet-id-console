@@ -215,8 +215,11 @@ const server = createServer(async (request, response) => {
     return send(response, 200, pair);
   }
 
-  // Public, as on the server: the sign-in page and the account pages read it.
-  if (path === "/v1/social/platform/providers") return send(response, 200, { providers: [] });
+  // Public, as on the server: the sign-in page and the account pages read it. GitHub makes the
+  // sign-in row's fourth provider, so the browser tests see its logos-only form.
+  if (path === "/v1/social/platform/providers") {
+    return send(response, 200, { providers: ["github"] });
+  }
 
   const authorization = request.headers.authorization ?? "";
   const principal = accessTokens.get(authorization.replace(/^Bearer\s+/i, ""));
