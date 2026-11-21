@@ -4,6 +4,7 @@ import {
   Button,
   Field,
   IconButton,
+  LinkButton,
   Select,
   Switch,
   Textarea,
@@ -100,9 +101,9 @@ export function EmailDesignTab({
           label={t("emails.design.brand")}
           hint={t("emails.design.brandHint")}
           action={
-            <Button variant="ghost" render={<RouterLink to="/settings/branding" />}>
+            <LinkButton variant="ghost" render={<RouterLink to="/settings/branding" />}>
               {t("emails.design.changeInBranding")}
-            </Button>
+            </LinkButton>
           }
         >
           <span className="mail-swatch">
@@ -115,9 +116,9 @@ export function EmailDesignTab({
           label={t("emails.design.sender")}
           hint={t("emails.design.senderHint")}
           action={
-            <Button variant="ghost" render={<RouterLink to="/settings/branding" />}>
+            <LinkButton variant="ghost" render={<RouterLink to="/settings/branding" />}>
               {t("emails.design.changeInBranding")}
-            </Button>
+            </LinkButton>
           }
         >
           {brand.name}

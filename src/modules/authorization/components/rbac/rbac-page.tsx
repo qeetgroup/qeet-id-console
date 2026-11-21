@@ -1,5 +1,12 @@
 import { CheckIcon, KeyRoundIcon, ShieldCheckIcon } from "@qeetrix/icons";
-import { Button, Select, Table, type TableColumn, VisuallyHidden } from "@qeetrix/react";
+import {
+  Button,
+  LinkButton,
+  Select,
+  Table,
+  type TableColumn,
+  VisuallyHidden,
+} from "@qeetrix/react";
 import {
   DataState,
   EmptyState,
@@ -11,7 +18,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import type { Permission } from "@/modules/authorization/api/rbac";
 import { useRoleAccess } from "@/modules/authorization/api/role-access";
 import { resourcesOf, splitPermission } from "@/modules/authorization/role-model";
@@ -107,7 +114,7 @@ export function RbacPage({ filters, onFiltersChange, roleId, onRoleChange }: Rba
 
   const error = rolesQuery.error ?? catalogueQuery.error;
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("lists.rbac.title")}
@@ -131,15 +138,16 @@ export function RbacPage({ filters, onFiltersChange, roleId, onRoleChange }: Rba
               title={t("lists.rbac.empty.title")}
               description={t("lists.rbac.empty.description")}
               actions={
-                <Button variant="soft" render={<Link to="/authorization/roles" />}>
+                <LinkButton variant="soft" render={<Link to="/authorization/roles" />}>
                   {t("lists.roles.title")}
-                </Button>
+                </LinkButton>
               }
             />
           ) : (
             <Table<Permission>
               label={t("lists.rbac.tableLabel")}
               className="authz-matrix"
+              stickyFirstColumn
               rows={rows}
               rowId={(p) => p.id}
               rowLabel={(p) => p.key}
@@ -187,6 +195,6 @@ export function RbacPage({ filters, onFiltersChange, roleId, onRoleChange }: Rba
         </div>
       </PageContent>
       <RoleDrawer roleId={roleId ?? null} view={view} onClose={() => onRoleChange(undefined)} />
-    </PageTabs>
+    </>
   );
 }

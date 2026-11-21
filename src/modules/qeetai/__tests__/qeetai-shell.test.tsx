@@ -11,8 +11,8 @@ vi.mock("../components/qeetai-runtime", () => ({
   QeetAIRuntime: () => <section aria-label="Qeet AI workspace" />,
 }));
 
-import { QeetAI, QeetAITrigger } from "..";
-import { workspaceActions, workspaceStore } from "../store/workspace-store";
+import { QeetAI, useQeetAIDrawer } from "..";
+import { MAX_DOCK_WIDTH, workspaceActions, workspaceStore } from "../store/workspace-store";
 
 afterEach(() => {
   cleanup();
@@ -20,20 +20,44 @@ afterEach(() => {
   flags.qeetai = true;
 });
 
-describe("Qeet AI in the shell", () => {
-  it("shows the header trigger only while Qeet AI is on", () => {
-    flags.qeetai = false;
-    const { rerender } = render(<QeetAITrigger />);
-    expect(screen.queryByRole("button", { name: "Toggle Qeet AI" })).toBeNull();
+/** The frame's side of it: the drawer it hosts, its content shown while it's open. */
+function Frame({ enabled }: { enabled: boolean }) {
+  const qeetai = useQeetAIDrawer(enabled);
+  return (
+    <>
+      <output data-testid="drawer">
+        {qeetai.drawer
+          ? `${qeetai.drawer.label} ${qeetai.drawer.resizable} ${qeetai.drawer.maxWidth}`
+          : "none"}
+      </output>
+      <button type="button" onClick={() => qeetai.setOpen(!qeetai.open)}>
+        {qeetai.open ? "Close it" : "Open it"}
+      </button>
+      {qeetai.open ? qeetai.drawer?.content : null}
+    </>
+  );
+}
 
-    flags.qeetai = true;
-    rerender(<QeetAITrigger />);
-    fireEvent.click(screen.getByRole("button", { name: "Toggle Qeet AI" }));
+describe("Qeet AI in the shell", () => {
+  it("is one of the frame's panels only while Qeet AI is on, resizable to its limits", () => {
+    const { rerender } = render(<Frame enabled={false} />);
+    expect(screen.getByTestId("drawer").textContent).toBe("none");
+
+    rerender(<Frame enabled />);
+    expect(screen.getByTestId("drawer").textContent).toBe(`Qeet AI true ${MAX_DOCK_WIDTH}`);
+    fireEvent.click(screen.getByRole("button", { name: "Open it" }));
     expect(workspaceStore.state.open).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Close it" }));
+    expect(workspaceStore.state.open).toBe(false);
   });
 
   it("answers ⌘J at once and loads the workspace lazily", async () => {
-    render(<QeetAI />);
+    render(
+      <>
+        <QeetAI />
+        <Frame enabled />
+      </>,
+    );
 
     fireEvent.keyDown(window, { key: "j", metaKey: true });
 

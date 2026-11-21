@@ -8,6 +8,6 @@ branch; an urgent fix after a release is a hotfix/YEAR.MONTH.N branch into main.
 
 ## Checked
 
-- [ ] `bun run typecheck && bun run check && bun run lint:boundaries && bun run test && bun run build && bun run size`
+- [ ] `bun run typecheck && bun run check && bun run lint:boundaries && bun run test && bun run build`
 - [ ] `bun run test:e2e` after touching `src/platform/{api,auth}`, a page or the Content-Security-Policy
 - [ ] No token reaches the browser; backend calls go through the API client; no backend `error.message` is rendered

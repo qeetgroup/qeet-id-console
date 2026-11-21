@@ -3,7 +3,6 @@ import { TopBar, TopBarSearch } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { QeetAITrigger } from "@/modules/qeetai";
 import { useOrganizationId } from "@/platform/auth/session";
 import { AccountMenu } from "./account-menu";
 import { ScopeName } from "./scope-name";
@@ -43,7 +42,6 @@ export function ConsoleTopBar({
           />
         )
       }
-      actions={hasOrg && <QeetAITrigger />}
       account={<AccountMenu onShortcuts={onShortcuts} />}
     />
   );

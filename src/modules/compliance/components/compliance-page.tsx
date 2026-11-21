@@ -5,7 +5,7 @@ import { PageContent, PageHeader } from "@qeetrix/react/experimental";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import "./compliance.css";
 
 export function CompliancePage({
@@ -17,7 +17,7 @@ export function CompliancePage({
 }) {
   const { t } = useTranslation("compliance");
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("page.title")}
@@ -28,6 +28,6 @@ export function CompliancePage({
       <PageContent>
         <div className="cmp">{children}</div>
       </PageContent>
-    </PageTabs>
+    </>
   );
 }

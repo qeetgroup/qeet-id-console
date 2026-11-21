@@ -1,9 +1,10 @@
 import { formatNumber, Meter } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { Sparkline, SplitBar } from "@/modules/dashboard";
+import { SplitBar } from "@/modules/dashboard";
 import type { UserStats, UserTrends } from "@/modules/users/api/users";
 import {
   type Look,
@@ -88,13 +89,9 @@ export function PeopleBand({ stats, trends }: { stats: UserStats; trends?: UserT
         <dd className="ppl-meter">
           <Meter
             value={share}
+            target={TWO_STEP_TARGET}
             tone={share < TWO_STEP_TARGET ? "warning" : "success"}
             aria-label={t("people.band.twoStepLabel", { n: share, target: TWO_STEP_TARGET })}
-          />
-          <span
-            className="ppl-target"
-            style={{ insetInlineStart: `${TWO_STEP_TARGET}%` }}
-            aria-hidden="true"
           />
         </dd>
         {stats.mfa_missing ? (

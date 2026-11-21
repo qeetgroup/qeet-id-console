@@ -141,7 +141,6 @@ have 10 (about 5% of the keys), so only English is offered until one is complete
 | Vite plugins, security-header route rules | `vite.config.ts` (dev port 3002 is set in the `dev` script) |
 | Unit tests + coverage thresholds | `vitest.config.ts` — `environment: "node"`, jsdom via per-file pragma |
 | CI (one job, **Verify**: typecheck, Biome, `bun run audit`; tests and the build run locally) | `.github/workflows/ci.yml` |
-| Bundle budgets (gzip: the shell, each route) | `bundle-budgets.json`, checked by `scripts/check-bundle-size.mjs` (`bun run size`, after the build) |
 | Test-kit image (each push to `release/**` or `hotfix/**`) | `.github/workflows/candidate.yml` |
 | Release version (from the branch name, `release/YEAR.MONTH.0`, `hotfix/YEAR.MONTH.N`) | `scripts/release/version.sh` |
 | Dependency updates | `.github/dependabot.yml`, `bunfig.toml` (3-day minimum release age) |

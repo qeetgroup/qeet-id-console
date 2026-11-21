@@ -33,7 +33,7 @@ import { toast } from "sonner";
 import { formatLocale } from "@/i18n";
 import { formatEventTitle } from "@/modules/activity";
 import { useEntitlements } from "@/modules/billing";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { parseUserAgent } from "@/modules/users";
 import {
   type AuditAnomaly,
@@ -110,8 +110,8 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
   const flaggedStatus = search.status === "resolved" ? "resolved" : "open";
   const filters = useMemo(() => auditFilters(search), [search]);
 
-  // Library gap (new): Pagination for cursor paging. The cursors of the pages seen so far stand in
-  // for offsets, the first page's being undefined; the total is known only on the last page.
+  // Cursor paging: the cursors of the pages seen so far, the first page's being undefined, so
+  // Previous can go back without the server; the total is known only on the last page.
   const [pageSize, setPageSize] = useState<number>(AUDIT_PAGE_SIZES[0]);
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [pageKey, setPageKey] = useState("");
@@ -146,8 +146,7 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
   const byActor = (actorUserId: string) =>
     onSearchChange({ actor_user_id: actorUserId }, { replace: false });
 
-  const goTo = (offset: number) => {
-    const target = Math.round(offset / pageSize);
+  const goTo = (target: number) => {
     const base = pageKey === key ? cursors : [undefined];
     if (target > page && log.data?.next_cursor) {
       setCursors([...base.slice(0, page + 1), log.data.next_cursor]);
@@ -275,7 +274,7 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
   const openFlag = search.event ? flaggedByEvent.get(search.event) : undefined;
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("audit.title")}
@@ -433,13 +432,16 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
               />
               {rows.length && (page > 0 || log.data?.next_cursor) ? (
                 <Pagination
+                  hasPrevious={page > 0}
+                  hasNext={!!log.data?.next_cursor}
+                  onPrevious={() => goTo(page - 1)}
+                  onNext={() => goTo(page + 1)}
                   offset={page * pageSize}
                   pageSize={pageSize}
                   itemsOnPage={rows.length}
                   // No total from the server: on the last page, what's been seen is the total.
                   total={log.data?.next_cursor ? undefined : page * pageSize + rows.length}
                   loading={log.isFetching}
-                  onOffsetChange={goTo}
                   pageSizes={AUDIT_PAGE_SIZES}
                   onPageSizeChange={(size) => {
                     setPageSize(size);
@@ -462,6 +464,6 @@ export function AuditLogPage({ search, onSearchChange }: AuditLogPageProps) {
         onResolve={onResolve}
         resolving={resolve.isPending}
       />
-    </PageTabs>
+    </>
   );
 }

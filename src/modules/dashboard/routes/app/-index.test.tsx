@@ -355,17 +355,15 @@ describe("the Dashboard", () => {
     ).toBeTruthy();
     const map = screen.getByRole("list", { name: "Departments and their teams" });
     expect(
-      within(map)
-        .getByRole("link", { name: "Engineering, 2 people: Payments 2" })
-        .getAttribute("href"),
+      within(map).getByRole("link", { name: "Engineering, 2: Payments 2" }).getAttribute("href"),
     ).toBe("/users");
-    expect(within(map).getByText("No department, 42 people")).toBeTruthy();
+    expect(within(map).getByText("No department, 42: No team 42")).toBeTruthy();
     expect(
       screen.getByText("1 person is in a department but no team · 42 people have no department"),
     ).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Where people work" })).toBeTruthy();
     expect(screen.getByText("2 cities in 2 countries, sized by people")).toBeTruthy();
-    expect(screen.getByText("Bengaluru, 2 people")).toBeTruthy();
+    expect(screen.getByText("Bengaluru, 2")).toBeTruthy();
     expect(screen.getByText("4% of people work in Bengaluru")).toBeTruthy();
     // From the members' counts: the Dashboard never reads the members themselves.
     expect(vi.mocked(api).mock.calls.some(([path]) => path === "/v1/users")).toBe(false);

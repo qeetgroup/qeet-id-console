@@ -148,9 +148,13 @@ const CONSOLE_PAGES: Target[] = [
  * Violations from inside the design system that the console can't fix: each excuses one rule on
  * one element, every other rule still applies to it, and its comment names the Qeetrix component
  * and the issue (raised with Qeetrix as a Jira ticket, whose key never appears here).
- * None open since @qeetrix/ui left (2026-10-28).
  */
-const DESIGN_SYSTEM_ISSUES: { rule: string; element: string }[] = [];
+const DESIGN_SYSTEM_ISSUES: { rule: string; element: string }[] = [
+  // Table's row link (Qeetrix React 0.5): named by `rowLabel` ("Priya Patel") but wrapped around the
+  // whole primary cell (the email under the name too), so its visible text isn't all in its name.
+  // Label in name needs Qeetrix to name the link by what the row shows.
+  { rule: "label-content-name-mismatch", element: ".qx-table-row-link" },
+];
 
 /** Waits for the content, every panel's data and finite animations, so axe sees the page still. */
 async function settle(page: Page, content: Locator) {
@@ -318,33 +322,18 @@ for (const theme of THEMES) {
 // WCAG 1.4.10 (reflow): at 320 CSS pixels nothing scrolls sideways, save content that needs two
 // dimensions, which scrolls inside its own frame (a data table). A failure names what sticks out.
 //
-// These fail for the library alone: Qeetrix React 0.1.1 gives a table, a tab list and a page
-// header's actions no way to narrow or scroll, so the page scrolls. Later versions do (a table's
-// scroll frame and column priorities); the console takes them with the upgrade, which waits on
-// Qeetrix's Table naming a row's link by what the row shows. Each is an expected failure, so the
-// upgrade that fixes one also fails here until it's taken off the list.
-const LIBRARY_REFLOW = new Set([
-  "users",
-  "users, suspended",
-  "invitations",
-  "deleted users",
-  "user detail",
-  "groups",
-  "group page",
-  "organisations",
-  "directory connections",
-  "anomalies",
-  "machine access",
-  "webhooks",
-  "sync errors",
-]);
+// These fail for the library alone: on Qeetrix React 0.5 a page header's actions don't wrap and a
+// tab list doesn't scroll at 320px, so a person's page (three actions, five tabs) scrolls sideways.
+// Tables scroll in their own frame since 0.2, which cleared every list page. Each is an expected
+// failure, so the Qeetrix release that fixes one also fails here until it's taken off the list.
+const LIBRARY_REFLOW = new Set(["user detail"]);
 
 test.describe("phone width", () => {
   test.use({ viewport: { width: 320, height: 720 } });
 
   for (const target of CONSOLE_PAGES) {
     test(target.name, async ({ page }) => {
-      test.fail(LIBRARY_REFLOW.has(target.name), "Qeetrix React 0.1.1 layout; see LIBRARY_REFLOW");
+      test.fail(LIBRARY_REFLOW.has(target.name), "Qeetrix React 0.5 layout; see LIBRARY_REFLOW");
       await signIn(page, ADMIN.email);
       await page.goto(target.path);
       await settle(page, target.ready(page));
@@ -368,14 +357,12 @@ test.describe("phone width", () => {
 // grow by that much, where they are, so a long word stays one word as a German compound does, and
 // then nothing scrolls sideways and no control, label or heading cuts its own words off (an
 // ellipsis is a choice, so it passes). At phone width the pages the library can't yet narrow are
-// expected failures, as above, and so are these two: Qeetrix React 0.1.1 sizes a table's columns to
-// its headers' words with no scroll frame (SSO), and never wraps a step's label (Import). 0.5 does
-// both; the console takes them with the same upgrade.
+// expected failures, as above.
 const LONGER = 0.4;
-const LIBRARY_LONGER = new Set([...LIBRARY_REFLOW, "sso", "import people"]);
+const LIBRARY_LONGER = new Set([...LIBRARY_REFLOW]);
 
 async function lengthened(page: Page) {
-  return page.evaluate((longer) => {
+  return page.evaluate(async (longer) => {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const words: Text[] = [];
     while (walker.nextNode()) words.push(walker.currentNode as Text);
@@ -386,6 +373,8 @@ async function lengthened(page: Page) {
         (word) => word + word.slice(0, Math.ceil(word.length * longer)),
       );
     }
+    // Two frames, so what lays itself out by measuring (a table's scroll frame) sees the new words.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const width = document.documentElement.clientWidth;
     const named = (el: Element) =>
       `${el.tagName.toLowerCase()}${[...el.classList].map((c) => `.${c}`).join("")}`;
@@ -425,7 +414,7 @@ for (const [label, viewport] of [
       test(target.name, async ({ page }) => {
         test.fail(
           label === "phone" && LIBRARY_LONGER.has(target.name),
-          "Qeetrix React 0.1.1 layout; see LIBRARY_LONGER",
+          "Qeetrix React 0.5 layout; see LIBRARY_LONGER",
         );
         await signIn(page, ADMIN.email);
         await page.goto(target.path);

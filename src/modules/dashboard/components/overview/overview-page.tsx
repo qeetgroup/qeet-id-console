@@ -6,7 +6,7 @@
 // Nothing here writes: loading the Dashboard never changes the organisation.
 
 import { UserPlusIcon } from "@qeetrix/icons";
-import { Button } from "@qeetrix/react";
+import { LinkButton } from "@qeetrix/react";
 import { Alert, DataState, PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -222,9 +222,9 @@ export function OverviewPage() {
         description={t("overview.description")}
         actions={
           canInvite ? (
-            <Button icon={UserPlusIcon} render={<Link to="/invitations" />}>
+            <LinkButton icon={UserPlusIcon} render={<Link to="/invitations" />}>
               {t("overview.invite")}
-            </Button>
+            </LinkButton>
           ) : undefined
         }
       />

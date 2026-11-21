@@ -47,11 +47,6 @@
   gap: var(--qx-space-gap-lg);
 }
 
-.map-entry textarea,
-textarea.map-entry {
-  font: var(--qx-typography-code-sm);
-}
-
 .map-result {
   display: grid;
   gap: var(--qx-space-gap-sm);

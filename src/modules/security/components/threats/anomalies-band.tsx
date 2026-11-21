@@ -1,9 +1,10 @@
 import { formatNumber } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { Sparkline, SplitBar } from "@/modules/dashboard";
+import { SplitBar } from "@/modules/dashboard";
 import type { Anomaly, AnomalySummary } from "@/modules/security/api/anomalies";
 import {
   ANOMALY_TYPES,

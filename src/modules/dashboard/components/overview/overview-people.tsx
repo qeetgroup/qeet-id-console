@@ -22,7 +22,7 @@ import {
   DotPlot,
   endLabel,
   Keys,
-  LinkButton,
+  PanelLink,
   num,
   Panel,
   ringDot,
@@ -43,7 +43,7 @@ export function ActivePeoplePanel({ overview }: { overview: AnalyticsOverview })
     <Panel
       title={t("overview.activePeople.title")}
       note={t("overview.activePeople.note")}
-      action={<LinkButton to="/analytics">{t("overview.activePeople.action")}</LinkButton>}
+      action={<PanelLink to="/analytics">{t("overview.activePeople.action")}</PanelLink>}
     >
       <Keys
         items={[
@@ -140,7 +140,7 @@ export function AppsPanel({
     <Panel
       title={t("overview.apps.title")}
       note={t("overview.apps.note", { total: num(people) })}
-      action={<LinkButton to="/auth/connections/oidc">{t("overview.apps.action")}</LinkButton>}
+      action={<PanelLink to="/auth/connections/oidc">{t("overview.apps.action")}</PanelLink>}
     >
       {shown.length ? (
         <DotPlot

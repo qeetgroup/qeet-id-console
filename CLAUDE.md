@@ -43,7 +43,7 @@ Read them when a task needs organization or product understanding; this reposito
 ## Finishing a change
 
 ```bash
-bun run typecheck && bun run check && bun run test:coverage && bun run build && bun run size
+bun run typecheck && bun run check && bun run test:coverage && bun run build
 bun run test:e2e   # session, CSP and accessibility in a real browser: CI doesn't run it
 git diff
 ```

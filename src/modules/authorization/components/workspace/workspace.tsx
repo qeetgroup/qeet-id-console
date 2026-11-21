@@ -1,19 +1,24 @@
-// Library gap (new): Workspace layout parts (a toolbar, three ruled panes edge to edge, an output
-// docked under the canvas), which the authorization tools and Emails need; built here from tokens.
-import { formatDateTime, formatRelativeTime, Tab, Tabs, TabsList, TabsPanel } from "@qeetrix/react";
-import { PageHeader } from "@qeetrix/react/experimental";
-import { type ReactNode, useId } from "react";
+import {
+  PageHeader,
+  RelativeTime,
+  Toolbar,
+  Workspace as QeetrixWorkspace,
+  WorkspaceMain,
+  WorkspaceOutput,
+  WorkspacePane,
+} from "@qeetrix/react/experimental";
+import type { ReactNode } from "react";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import "./workspace.css";
 
 /**
- * The authorization tools' one layout (redesign-findings §2, Workspace template). Top to bottom: the
- * PageHeader with the area's sub-pages as tabs; a toolbar (what you're working on at the start, the
- * tool's actions at the end, the primary last); then ruled panes edge to edge: a list, the canvas
- * with its output docked under it, and an inspector. It fills the window under the top bar, and
- * each pane scrolls on its own; on a phone the panes stack.
+ * The authorization tools' one layout, on Qeetrix's Workspace. Top to bottom: the PageHeader with
+ * the area's sub-pages; a Toolbar (what you're working on at the start, the tool's actions at the
+ * end, the primary last); then ruled panes edge to edge: a list, the canvas with its output docked
+ * under it, and an inspector. It fills the window under the top bar, and each pane scrolls on its
+ * own; on a phone the panes stack and the page scrolls.
  */
 export function Workspace({
   title,
@@ -37,23 +42,16 @@ export function Workspace({
 }) {
   return (
     <div className={className ? `ws ${className}` : "ws"}>
-      <PageTabs>
-        <PageHeader
-          breadcrumb={<PageBreadcrumb />}
-          title={title}
-          description={description}
-          tabs={<PageTabList />}
-        />
-      </PageTabs>
-      {start || end ? (
-        <div className="ws-toolbar" role="toolbar" aria-label={toolbarLabel}>
-          <div className="ws-toolbar-start">{start}</div>
-          <div className="ws-toolbar-end">{end}</div>
-        </div>
-      ) : null}
-      <div className="ws-body" data-layout={layout}>
+      <PageHeader
+        breadcrumb={<PageBreadcrumb />}
+        title={title}
+        description={description}
+        tabs={<PageTabList />}
+      />
+      {start || end ? <Toolbar aria-label={toolbarLabel} start={start} end={end} /> : null}
+      <QeetrixWorkspace layout={layout} className="ws-body">
         {children}
-      </div>
+      </QeetrixWorkspace>
     </div>
   );
 }
@@ -76,23 +74,17 @@ export function Pane({
   className?: string;
   children: ReactNode;
 }) {
-  const id = useId();
   return (
-    <section
-      className={className ? `ws-pane ${className}` : "ws-pane"}
-      data-side={side}
-      aria-labelledby={id}
+    <WorkspacePane
+      side={side}
+      label={label}
+      meta={meta}
+      action={action}
+      footer={footer}
+      className={className}
     >
-      <header className="ws-pane-head">
-        <span className="ws-pane-label" id={id}>
-          {label}
-        </span>
-        {meta ? <span className="ws-pane-meta">{meta}</span> : null}
-        {action ? <span className="ws-pane-action">{action}</span> : null}
-      </header>
-      <div className="ws-pane-body">{children}</div>
-      {footer ? <footer className="ws-pane-foot">{footer}</footer> : null}
-    </section>
+      {children}
+    </WorkspacePane>
   );
 }
 
@@ -107,10 +99,9 @@ export function Main({
   children: ReactNode;
 }) {
   return (
-    <section className="ws-main" aria-label={label} data-output={output ? "" : undefined}>
-      <div className="ws-canvas">{children}</div>
-      {output}
-    </section>
+    <WorkspaceMain aria-label={label} output={output}>
+      {children}
+    </WorkspaceMain>
   );
 }
 
@@ -133,21 +124,15 @@ export function Output<V extends string>({
   children: ReactNode;
 }) {
   return (
-    <Tabs value={value} onValueChange={(next) => onValueChange(next as V)} className="ws-output">
-      <div className="ws-output-head">
-        <TabsList activateOnFocus={false} aria-label={label}>
-          {tabs.map((tab) => (
-            <Tab key={tab.value} value={tab.value} badge={tab.badge}>
-              {tab.label}
-            </Tab>
-          ))}
-        </TabsList>
-        {end ? <div className="ws-output-end">{end}</div> : null}
-      </div>
-      <TabsPanel value={value} className="ws-output-body">
-        {children}
-      </TabsPanel>
-    </Tabs>
+    <WorkspaceOutput
+      aria-label={label}
+      views={tabs}
+      value={value}
+      onValueChange={onValueChange}
+      end={end}
+    >
+      {children}
+    </WorkspaceOutput>
   );
 }
 
@@ -178,12 +163,13 @@ export function Section({
   );
 }
 
-/** A relative time with the full date on hover. */
-export function When({ at, now = Date.now() }: { at: string; now?: number }) {
-  const locale = formatLocale();
+/** A relative time with the full date on hover (Qeetrix's RelativeTime); it keeps itself current. */
+export function When({ at, now }: { at: string; now?: number }) {
   return (
-    <time dateTime={at} title={formatDateTime(at, locale)}>
-      {formatRelativeTime(Math.min(Date.parse(at), now), locale, now)}
-    </time>
+    <RelativeTime
+      date={Math.min(Date.parse(at), now ?? Date.now())}
+      now={now}
+      locale={formatLocale()}
+    />
   );
 }

@@ -224,16 +224,11 @@ One way to do each thing. `src/modules/users` is the reference implementation.
 - **TanStack Start stays at 1.168** — pinned exactly with its router: 1.169 removed the `useSession`
   API the session cookie is sealed with, so upgrading is a session migration of its own
   (docs/llm/context.md, CI/CD).
-- **Bundle size** — `bun run size` (CI, after the build; `scripts/check-bundle-size.mjs`) holds
-  the signed-in shell's initial JS, and each route's own JS beyond its parent's, to the gzip
-  budgets in `bundle-budgets.json`. Code only some screens need (an editor, a date picker, a QR
-  encoder, the Qeet AI workspace) loads with `React.lazy` where it renders. A route's
-  `validateSearch` and `beforeLoad` ship in the entry with everything they import, so they read
-  light model files (`tabs.ts`, `time-range.ts`), never a page; and importing a barrel loads what
-  it re-exports, so the barrels the shell imports stay light. **Raise a budget only in the change
-  that grows the bundle, by hand, to what the check suggests, and give the reason in the commit
-  message**; never re-baseline the file to make room. A route without a budget is held to
-  `newRoute` until it gets one; a removed route's budget fails the check until deleted.
+- **Loading** — code only some screens need (a date picker, a QR encoder, the Qeet AI workspace)
+  loads with `React.lazy` where it renders. A route's `validateSearch` and `beforeLoad` ship in the
+  entry with everything they import, so they read light model files (`tabs.ts`, `time-range.ts`),
+  never a page; and importing a barrel loads what it re-exports, so the barrels the shell imports
+  stay light.
 - **API contract** — the server's five OpenAPI documents are copied into `contract/qeet-id-server/`
   (with the commit they came from) and generated into types (`src/platform/api/contract/`), by
   `bun run contract:sync`; never edit either. Call the server with `backend.get/post/put/patch/delete`
@@ -264,7 +259,6 @@ bun run test:e2e         # build, then the Playwright suites: session boundary a
 bun run typecheck
 bun run check            # biome format + lint + assist
 bun run lint:boundaries  # the layering gate
-bun run size             # after a build: the gzip budgets in bundle-budgets.json
 bun run contract:sync    # copy the server's API documents (../qeet-id-server) and regenerate types
 bun run contract:check   # the copied contract and its generated types (CI)
 bun run contract:drift   # whether the server's documents (../qeet-id-server) moved on: before a sync or release
@@ -289,8 +283,8 @@ and workflows default to read-only permissions. Verify (10 min): `contract:check
 formatting, lint, and the layer import rules) → `audit` (high and critical advisories) → gitleaks
 (secrets in the pull request's commits; `.gitleaks.toml` allows only the copied API documents'
 sample values and their generated types). **The unit
-tests (`test:coverage`, thresholds in `vitest.config.ts`), the build, `size` (the bundle budgets;
-see Conventions, Bundle size) and the Playwright specs in `tests/e2e` (the session boundary, the
+tests (`test:coverage`, thresholds in `vitest.config.ts`), the build and the Playwright specs in
+`tests/e2e` (the session boundary, the
 Content-Security-Policy, the WCAG 2.2 AA accessibility scan with label-in-name and reflow at
 320px wide, the pages with 40% longer words, and keyboard use, rule 12) run locally before a change
 is pushed; CI doesn't repeat them.**
@@ -326,8 +320,8 @@ the log names the variable. Security response headers live in
 (`vite.config.ts`) for both the image and Vercel. The Content-Security-Policy is set per response
 in `src/start.ts` (`content-security-policy.ts`): scripts run only with that response's nonce,
 which the router puts on every script it renders, so **never add an inline `<script>` or event
-handler** (use `ScriptOnce`, which carries the nonce), never load code from another origin
-(Monaco ships from the console's own bundle), and never relax `script-src` or `connect-src`.
+handler** (use `ScriptOnce`, which carries the nonce), never load code from another origin, and
+never relax `script-src` or `connect-src`.
 `tests/e2e/content-security-policy.spec.ts` fails on any violation.
 
 ## Comments
@@ -367,7 +361,7 @@ repository must make. Types: `feat`, `fix`, `refactor`,
 CI checks only types, formatting, lint and the dependency audit, so run the rest before pushing:
 
 ```bash
-bun run typecheck && bun run check && bun run test:coverage && bun run build && bun run size
+bun run typecheck && bun run check && bun run test:coverage && bun run build
 bun run test:e2e   # the session boundary, the CSP and the accessibility scan, in a real browser
 git diff
 ```

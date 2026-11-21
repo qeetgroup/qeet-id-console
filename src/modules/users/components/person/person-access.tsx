@@ -3,6 +3,7 @@ import {
   Button,
   formatNumber,
   Link,
+  LinkButton,
   Select,
   Skeleton,
   Table,
@@ -148,9 +149,13 @@ export function PersonAccess({
             hint={t("person.access.policiesNote")}
             action={
               can.can("policy.read") ? (
-                <Button variant="ghost" size="sm" render={<RouterLink to="/authorization/abac" />}>
+                <LinkButton
+                  variant="ghost"
+                  size="sm"
+                  render={<RouterLink to="/authorization/abac" />}
+                >
                   {t("person.access.seePolicies")}
-                </Button>
+                </LinkButton>
               ) : undefined
             }
           >

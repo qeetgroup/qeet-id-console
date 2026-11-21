@@ -1,5 +1,14 @@
 import { DownloadIcon, RotateCcwIcon, UploadIcon, UsersIcon } from "@qeetrix/icons";
-import { Badge, Button, Field, formatNumber, Table, type TableColumn, Text } from "@qeetrix/react";
+import {
+  Badge,
+  Button,
+  Field,
+  formatNumber,
+  LinkButton,
+  Table,
+  type TableColumn,
+  Text,
+} from "@qeetrix/react";
 import { Alert, FileUpload, PageContent, PageHeader, Steps } from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -409,9 +418,9 @@ export function ImportUsersPage() {
                 <Button variant="ghost" icon={RotateCcwIcon} onClick={reset}>
                   {t("importPage.another")}
                 </Button>
-                <Button icon={UsersIcon} render={<RouterLink to="/users" />}>
+                <LinkButton icon={UsersIcon} render={<RouterLink to="/users" />}>
                   {t("importPage.viewUsers")}
-                </Button>
+                </LinkButton>
               </div>
             </section>
           ) : null}

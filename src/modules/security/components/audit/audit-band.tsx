@@ -1,9 +1,9 @@
 import { Button, formatNumber } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { Sparkline } from "@/modules/dashboard";
 import type { AuditAnomalySummary } from "@/modules/security/api/audit-anomalies";
 import { useAuditPulse } from "@/modules/security/api/audit-event";
 import type { LogSink } from "@/modules/security/api/log-sinks";

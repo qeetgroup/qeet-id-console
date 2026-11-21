@@ -23,7 +23,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { userQueries } from "@/modules/users";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -210,7 +210,7 @@ export function PolicyVersionsPage({
   const loading = changes.isLoading || policiesQ.isLoading;
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("lists.versions.title")}
@@ -354,6 +354,6 @@ export function PolicyVersionsPage({
           <VersionDrawerContent version={openVersion} by={byName(openVersion)} />
         ) : null}
       </Drawer>
-    </PageTabs>
+    </>
   );
 }

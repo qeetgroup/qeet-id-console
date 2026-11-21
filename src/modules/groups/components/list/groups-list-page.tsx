@@ -158,18 +158,12 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
     [roots, filters, open, roles, sort],
   );
   const start = offset < rows.length ? offset : 0;
-  const onPage: GroupRow[] = pageOf(rows, start, pageSize, flat);
+  const onPage: GroupRow[] = pageOf(rows, start, pageSize);
   const onPageKey = onPage.map((g) => g.id).join(",");
   if (all.length > ROLES_FOR_ALL_UP_TO && onPageKey !== pageIds.join(","))
     setPageIds(onPage.map((g) => g.id));
 
-  const toggle = (id: string) =>
-    setOpened(() => {
-      const next = new Set(open);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  const columns = useGroupColumns({ flat, open, onToggle: toggle, roles });
+  const columns = useGroupColumns({ flat, roles });
   const change = (next: GroupFilters) => {
     setOffset(0);
     onFiltersChange(next);
@@ -264,6 +258,13 @@ export function GroupsListPage({ filters, onFiltersChange }: GroupsListPageProps
                 rowId={(g) => g.id}
                 rowLabel={(g) => g.name}
                 columns={canReadRoles ? columns : columns.filter((c) => c.id !== "roles")}
+                // The tree: the rows come folded and paged; Table indents them, folds them and
+                // names a family that runs on from the page before.
+                rowDepth={flat ? undefined : (g) => g.depth}
+                rowHasChildren={flat ? undefined : (g) => g.children.length > 0}
+                expanded={[...open]}
+                onExpandedChange={(ids) => setOpened(new Set(ids))}
+                rowPath={(g) => g.path.join(" › ")}
                 sort={sort}
                 onSortChange={setSort}
                 loading={groupsQ.isLoading}

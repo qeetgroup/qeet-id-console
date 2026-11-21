@@ -18,6 +18,7 @@ import {
   PageContent,
   PageHeader,
   SearchField,
+  Sparkline,
 } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -25,7 +26,7 @@ import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import { useOidcClients } from "@/modules/authentication";
-import { PageBreadcrumb, Sparkline } from "@/modules/dashboard";
+import { PageBreadcrumb } from "@/modules/dashboard";
 import {
   type DeviceAuth,
   useDeviceAuthorizations,
@@ -49,7 +50,6 @@ import { When, whenText } from "./when";
 import "./security.css";
 
 const ANY = "";
-// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 const DAYS = 14;
 const STATE_TONE = {
   waiting: "info",
@@ -203,8 +203,6 @@ export function DevicesPage({ filters, onFiltersChange }: DevicesPageProps) {
                   appName={appName}
                 />
               }
-              // Library gap (new): Table can't leave a row without its actions menu, so every row
-              // keeps one item (Open the application).
               rowActions={(d) => {
                 const s = deviceState(d, now);
                 return (
@@ -415,7 +413,8 @@ function DevicesToolbar({
             { value: ANY, label: t("devices.filters.anyStatus") },
             ...DEVICE_STATES.map((s) => ({
               value: s,
-              label: `${t(`devices.state.${s}`)} · ${n(items.filter((d) => deviceState(d, now) === s).length)}`,
+              label: t(`devices.state.${s}`),
+              meta: n(items.filter((d) => deviceState(d, now) === s).length),
             })),
           ]}
         />
@@ -429,14 +428,14 @@ function DevicesToolbar({
               { value: ANY, label: t("devices.filters.anyApp") },
               ...apps.map((id) => ({
                 value: id,
-                label: `${appName(id)} · ${n(items.filter((d) => d.client_id === id).length)}`,
+                label: appName(id),
+                meta: n(items.filter((d) => d.client_id === id).length),
               })),
             ]}
           />
         ) : null}
       </div>
-      {/* Only once something narrows the list (FilterTags shows its summary even with none,
-          a Qeetrix issue). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

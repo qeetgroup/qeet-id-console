@@ -1,11 +1,5 @@
-import {
-  formatDate,
-  formatDateTime,
-  formatNumber,
-  formatRelativeTime,
-  Skeleton,
-  Text,
-} from "@qeetrix/react";
+import { formatNumber, Skeleton, Text } from "@qeetrix/react";
+import { RelativeTime } from "@qeetrix/react/experimental";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -87,21 +81,18 @@ export function EffectWord({ effect }: { effect: Effect }) {
   return <span className="authz-effect">{t(`lists.common.effect.${effect}`)}</span>;
 }
 
-const MONTH_MS = 30 * 86_400_000;
-
 /**
- * When something happened: relative within about a month, a plain date after it, and the full
- * date and time on hover (the approved RelativeTime, until the library has it).
+ * When something happened (Qeetrix's RelativeTime): relative within about a month, a plain date
+ * after it, and the full date and time on hover. A moment a little ahead of the clock reads as now.
  */
 export function When({ at, now }: { at: string; now: number }) {
-  const locale = formatLocale();
-  const ms = Math.min(Date.parse(at), now);
   return (
-    <time dateTime={at} title={formatDateTime(at, locale)} className="authz-when">
-      {now - ms > MONTH_MS
-        ? formatDate(at, locale, { dateStyle: "medium" })
-        : formatRelativeTime(ms, locale, now)}
-    </time>
+    <RelativeTime
+      date={Math.min(Date.parse(at), now)}
+      now={now}
+      locale={formatLocale()}
+      className="authz-when"
+    />
   );
 }
 

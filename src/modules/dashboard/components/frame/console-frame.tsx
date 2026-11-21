@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { QeetAI } from "@/modules/qeetai";
+import { QEETAI_DRAWER, QeetAI, useQeetAIDrawer } from "@/modules/qeetai";
 import { scopedStorage } from "@/platform/auth/scoped-storage";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useFeatureFlag } from "@/platform/feature-flags/provider";
@@ -23,7 +23,7 @@ const collapsedPreference = scopedStorage("qeetid.sidebar-collapsed");
 /**
  * The console's frame on @qeetrix/react: the top bar, the navigation, the Notifications and Help
  * panels, search (⌘K) and the keyboard shortcuts. Each page draws its own header (PageHeader, with
- * PageBreadcrumb and PageTabs from page-place.tsx).
+ * PageBreadcrumb and PageTabList from page-place.tsx).
  */
 export function ConsoleFrame({ children }: { children: ReactNode }) {
   const { t } = useTranslation("dashboard");
@@ -36,6 +36,12 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [panel, setPanel] = useState<string | null>(null);
+  // Qeet AI is one of the frame's panels; whether it's open lives in its own store (⌘J, "Ask").
+  const qeetai = useQeetAIDrawer(qeetaiEnabled);
+  // Opening Qeet AI another way closes the frame's own panel, so it doesn't come back after.
+  useEffect(() => {
+    if (qeetai.open) setPanel(null);
+  }, [qeetai.open]);
   // Read after hydration, so the server's expanded navigation and the first client render agree.
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => setCollapsed(collapsedPreference.read() === true), []);
@@ -66,6 +72,7 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
           icon: CircleQuestionMarkIcon,
           content: <HelpPanel onShortcuts={openShortcuts} />,
         },
+        ...(qeetai.drawer ? [qeetai.drawer] : []),
       ];
 
   return (
@@ -80,8 +87,11 @@ export function ConsoleFrame({ children }: { children: ReactNode }) {
         }
         sidebar={<ConsoleSidebar />}
         drawers={drawers}
-        activeDrawer={panel}
-        onActiveDrawerChange={setPanel}
+        activeDrawer={qeetai.open ? QEETAI_DRAWER : panel}
+        onActiveDrawerChange={(id) => {
+          qeetai.setOpen(id === QEETAI_DRAWER);
+          setPanel(id === QEETAI_DRAWER ? null : id);
+        }}
         sidebarCollapsed={collapsed}
         onSidebarCollapsedChange={(next) => {
           setCollapsed(next);

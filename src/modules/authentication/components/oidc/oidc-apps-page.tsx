@@ -442,7 +442,8 @@ function AppsToolbar({
             { value: ANY, label: t("list.anyKind") },
             ...APP_KINDS.filter((k) => clients.some((c) => appKind(c) === k)).map((k) => ({
               value: k,
-              label: `${t(`kinds.${k}`)} · ${n(clients.filter((c) => appKind(c) === k).length)}`,
+              label: t(`kinds.${k}`),
+              meta: n(clients.filter((c) => appKind(c) === k).length),
             })),
           ]}
         />

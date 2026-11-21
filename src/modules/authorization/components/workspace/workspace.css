@@ -1,7 +1,7 @@
 /*
- * The Workspace template (workspace.tsx): the header, a toolbar, three ruled panes edge to edge.
- * Token values only (--qx-*). The canvas is the page's canvas tone; panes sit on the default
- * surface and the canvas's nodes on the raised one. No cards: 1px rules and tone separate them.
+ * The authorization tools' parts inside Qeetrix's Workspace (workspace.tsx): its frame, toolbar,
+ * panes, canvas and output are Qeetrix's; what's here is the page around it and the rows, forms
+ * and small parts inside the panes. Token values only (--qx-*).
  */
 
 .ws {
@@ -11,115 +11,19 @@
   min-block-size: 32rem;
 }
 
-.ws > .qx-tabs {
-  flex: none;
+/* Qeetrix's Workspace takes the height under the header and toolbar. */
+.ws > .ws-body {
+  flex: 1 1 0;
+  block-size: auto;
 }
 
-.ws-toolbar {
-  flex: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--qx-space-gap-sm) var(--qx-space-gap-lg);
-  min-block-size: calc(var(--qx-size-control-lg) + 2 * var(--qx-space-inset-sm));
-  padding: var(--qx-space-inset-sm) var(--qx-space-layout-md);
-  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
-  background: var(--qx-color-surface-default);
-}
-
-.ws-toolbar-start,
-.ws-toolbar-end {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--qx-space-gap-sm);
-  min-inline-size: 0;
-}
-
-.ws-toolbar-end {
-  margin-inline-start: auto;
-}
-
-.ws-body {
-  flex: 1;
-  min-block-size: 0;
-  display: grid;
-  grid-template-columns: 15.5rem minmax(0, 1fr) 21rem;
-}
-
-.ws-body[data-layout="main-inspector"] {
-  grid-template-columns: minmax(0, 1fr) 24rem;
-}
-
-.ws-body[data-layout="list-main"] {
-  grid-template-columns: 15.5rem minmax(0, 1fr);
-}
-
-.ws-body[data-layout="main"] {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-/* ── Panes ─────────────────────────────────────────────────────────────────── */
-
-.ws-pane {
-  display: flex;
-  flex-direction: column;
-  min-block-size: 0;
-  min-inline-size: 0;
-  background: var(--qx-color-surface-default);
-}
-
-.ws-pane[data-side="list"] {
-  border-inline-end: var(--qx-border-width-default) solid var(--qx-color-border-default);
-}
-
-.ws-pane[data-side="inspector"] {
-  border-inline-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
-}
-
-.ws-pane-head {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: var(--qx-space-gap-sm);
-  min-block-size: 2.5rem;
-  padding-inline: var(--qx-space-inset-lg);
-  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
-}
-
-.ws-pane-label,
+/* A group label inside a pane or the canvas, as a pane's own label. */
 .ws-group-label {
   color: var(--qx-color-text-subtlest);
   font: var(--qx-typography-label-caps);
   letter-spacing: var(--qx-typography-label-caps-letter-spacing);
   text-transform: uppercase;
   white-space: nowrap;
-}
-
-.ws-pane-meta {
-  overflow: hidden;
-  color: var(--qx-color-text-subtle);
-  font: var(--qx-typography-body-sm);
-  font-variant-numeric: tabular-nums;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ws-pane-action {
-  margin-inline-start: auto;
-  font: var(--qx-typography-label-md);
-}
-
-.ws-pane-body {
-  flex: 1;
-  min-block-size: 0;
-  overflow: auto;
-}
-
-.ws-pane-foot {
-  flex: none;
-  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
 }
 
 .ws-section {
@@ -129,72 +33,9 @@
   padding: var(--qx-space-inset-lg);
 }
 
-.ws-pane .ws-section + .ws-section,
+.qx-workspace-pane .ws-section + .ws-section,
 .ws-ruled {
   border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
-}
-
-/* ── The centre: the canvas over its output ───────────────────────────────── */
-
-.ws-main {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr);
-  min-inline-size: 0;
-  min-block-size: 0;
-  background: var(--qx-color-surface-canvas);
-}
-
-.ws-main[data-output] {
-  grid-template-rows: minmax(0, 1fr) auto;
-}
-
-.ws-canvas {
-  display: flex;
-  flex-direction: column;
-  gap: var(--qx-space-gap-lg);
-  min-block-size: 0;
-  overflow: auto;
-  padding: var(--qx-space-inset-lg) var(--qx-space-inset-xl);
-}
-
-.ws-output {
-  display: flex;
-  flex-direction: column;
-  block-size: 15rem;
-  min-block-size: 0;
-  border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
-  background: var(--qx-color-surface-default);
-}
-
-.ws-output-head {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--qx-space-gap-md);
-  padding-inline: calc(var(--qx-space-inset-lg) - 12px) var(--qx-space-inset-lg);
-  border-block-end: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
-}
-
-.ws-output-head .qx-tabs-list {
-  border-block-end: 0;
-  box-shadow: none;
-}
-
-.ws-output-end {
-  display: flex;
-  align-items: center;
-  gap: var(--qx-space-gap-md);
-}
-
-.ws-output-body {
-  flex: 1;
-  min-block-size: 0;
-  overflow: auto;
-  display: grid;
-  align-content: start;
-  gap: var(--qx-space-gap-md);
-  padding: var(--qx-space-inset-lg);
 }
 
 /* ── Rows in panes ─────────────────────────────────────────────────────────── */
@@ -209,7 +50,7 @@
   border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-subtle);
 }
 
-.ws-pane .ws-section > .ws-list {
+.qx-workspace-pane .ws-section > .ws-list {
   margin-inline: calc(-1 * var(--qx-space-inset-lg));
 }
 
@@ -443,29 +284,36 @@ small .ws-effect {
     block-size: auto;
   }
 
-  .ws-toolbar {
+  /* One column: Qeetrix's Workspace stacks its panes but keeps its side tracks' widths. */
+  .ws > .ws-body.qx-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The page scrolls, not each pane. */
+  .ws > .ws-body,
+  .ws .qx-workspace-pane-body,
+  .ws .qx-workspace-canvas,
+  .ws .qx-workspace-output-body {
+    overflow: visible;
+  }
+
+  .ws .qx-toolbar {
     padding-inline: var(--qx-space-inset-lg);
   }
 
-  .ws-toolbar-start,
-  .ws-toolbar-end {
+  .ws .qx-toolbar-start,
+  .ws .qx-toolbar-end {
     inline-size: 100%;
   }
 
-  .ws-toolbar-end {
+  .ws .qx-toolbar-end {
     justify-content: flex-end;
   }
 
-  .ws-toolbar-start > *,
+  .ws .qx-toolbar-start > *,
   .ws-search {
     flex: 1 1 100%;
     inline-size: auto;
-  }
-
-  .ws-body,
-  .ws-body[data-layout] {
-    display: flex;
-    flex-direction: column;
   }
 
   .ws-hide-phone {
@@ -476,22 +324,11 @@ small .ws-effect {
     display: grid;
   }
 
-  .ws-pane[data-side] {
-    border-inline: 0;
-    border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
-  }
-
-  .ws-pane-body,
-  .ws-canvas,
-  .ws-output-body {
-    overflow: visible;
-  }
-
-  .ws-canvas {
+  .ws .qx-workspace-canvas {
     padding: var(--qx-space-inset-lg);
   }
 
-  .ws-output {
+  .ws .qx-workspace-output {
     block-size: auto;
   }
 
@@ -652,16 +489,4 @@ small .ws-effect {
 
 .ws-section.ws-flush {
   padding: 0;
-}
-
-/* The JSON request editor (monaco-panel.tsx): a filled field's frame around Monaco. */
-.ws-editor {
-  overflow: hidden;
-  border-block-end: var(--qx-border-width-strong) solid var(--qx-color-border-strong);
-  border-radius: var(--qx-radius-control) var(--qx-radius-control) 0 0;
-  background: var(--qx-color-surface-raised);
-}
-
-.ws-editor-fallback {
-  overflow: auto;
 }

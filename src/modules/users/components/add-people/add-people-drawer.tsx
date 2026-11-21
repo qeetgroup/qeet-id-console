@@ -1,11 +1,4 @@
-import {
-  CircleCheckIcon,
-  CircleMinusIcon,
-  InfoIcon,
-  SendIcon,
-  UploadIcon,
-  UserPlusIcon,
-} from "@qeetrix/icons";
+import { SendIcon, UploadIcon, UserPlusIcon } from "@qeetrix/icons";
 import {
   Badge,
   Button,
@@ -18,10 +11,14 @@ import {
   Radio,
   RadioGroup,
   Select,
-  Textarea,
   TextField,
 } from "@qeetrix/react";
-import { Alert, PasswordInput } from "@qeetrix/react/experimental";
+import {
+  Alert,
+  type EmailEntryState,
+  MultiEmailField,
+  PasswordInput,
+} from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,7 +26,6 @@ import { useTranslation } from "react-i18next";
 import { useRoles } from "@/modules/authorization";
 import { useOrgs } from "@/modules/organizations";
 import {
-  type AddressCheck,
   checkAddresses,
   isEmail,
   MAX_INVITES,
@@ -59,46 +55,6 @@ type Errors = {
   addresses?: string;
   form?: string;
 };
-const CHECK_ICON = {
-  new: CircleCheckIcon,
-  invited: InfoIcon,
-  member: CircleMinusIcon,
-  invalid: CircleMinusIcon,
-};
-
-/**
- * What happens to each address: a ruled row per address, under the field, until Qeetrix has a
- * field for several email addresses.
- */
-function AddressChecks({ checks }: { checks: AddressCheck[] }) {
-  const { t } = useTranslation("users");
-  if (!checks.length) return null;
-  return (
-    <section className="add-checks" aria-label={t("addPeople.checksLabel")}>
-      <ul>
-        {checks.map((c) => {
-          const Icon = CHECK_ICON[c.kind];
-          return (
-            <li key={c.email} className={`add-check is-${c.kind}`}>
-              <Icon className="add-check-icon" aria-hidden="true" />
-              <span className="add-check-email">{c.email}</span>
-              <span className="add-check-note">
-                {c.kind === "invited"
-                  ? t("addPeople.checks.invited")
-                  : c.kind === "member"
-                    ? t("addPeople.checks.member")
-                    : c.kind === "invalid"
-                      ? t("addPeople.checks.invalid")
-                      : t("addPeople.checks.new")}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
 /**
  * Add people, the Users list's one main action: an email invitation (recommended — they choose
  * their own password) or an account created now with a first password. An invitation takes
@@ -131,7 +87,7 @@ export function AddPeopleDrawer({
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [roleId, setRoleId] = useState("");
-  const [text, setText] = useState("");
+  const [addresses, setAddresses] = useState<string[]>([]);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -144,7 +100,7 @@ export function AddPeopleDrawer({
     if (!open) return;
     setMode(canCreate ? initialMode : "invite");
     setRoleId("");
-    setText("");
+    setAddresses([]);
     setEmail("");
     setName("");
     setPhone("");
@@ -156,7 +112,15 @@ export function AddPeopleDrawer({
   // A member-type role by default, else the last (least-privileged) one, so they join as members.
   const role = roleId || roles.find((r) => /member/i.test(r.name))?.id || roles.at(-1)?.id || "";
   const chosen = roles.find((r) => r.id === role);
-  const checks = checkAddresses(parseAddresses(text), members, invites);
+  const checks = checkAddresses(addresses, members, invites);
+  const outcome = (email: string): EmailEntryState | undefined => {
+    const check = checks.find((c) => c.email === email);
+    if (!check) return undefined;
+    if (check.kind === "invited") return { tone: "info", note: t("addPeople.checks.invited") };
+    if (check.kind === "member") return { tone: "skipped", note: t("addPeople.checks.member") };
+    if (check.kind === "invalid") return { tone: "danger", note: t("addPeople.checks.invalid") };
+    return { tone: "success", note: t("addPeople.checks.new") };
+  };
   const targets = sendable(checks);
   const busy = !!running || createUser.isPending;
 
@@ -299,18 +263,19 @@ export function AddPeopleDrawer({
                   description={t("addPeople.addressesHelp", { n: MAX_INVITES })}
                   error={errors.addresses}
                 >
-                  <Textarea
-                    rows={3}
-                    maxRows={8}
-                    value={text}
-                    onValueChange={(value) => {
-                      setText(value);
+                  <MultiEmailField
+                    value={addresses}
+                    onValueChange={(next) => {
+                      // "<name@org.in>" from a mail client reads as the address itself.
+                      setAddresses(parseAddresses(next.join(" ")));
                       if (errors.addresses) setErrors({});
                     }}
+                    check={outcome}
+                    max={MAX_INVITES}
                     placeholder={t("addPeople.addressesPlaceholder")}
+                    messages={{ entries: t("addPeople.checksLabel") }}
                   />
                 </Field>
-                <AddressChecks checks={checks} />
                 {roleField}
               </>
             ) : (
@@ -357,11 +322,14 @@ export function AddPeopleDrawer({
             )}
           </form>
         </DrawerBody>
-        <DrawerFooter>
-          <Link className="add-import" render={<RouterLink to="/users/import" />}>
-            <UploadIcon className="add-import-icon" aria-hidden="true" />
-            {t("addPeople.import")}
-          </Link>
+        <DrawerFooter
+          start={
+            <Link className="add-import" render={<RouterLink to="/users/import" />}>
+              <UploadIcon className="add-import-icon" aria-hidden="true" />
+              {t("addPeople.import")}
+            </Link>
+          }
+        >
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
             {t("addPeople.cancel")}
           </Button>

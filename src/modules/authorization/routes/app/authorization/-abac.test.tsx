@@ -52,9 +52,24 @@ vi.mock("@/modules/billing", () => ({
   useEntitlements: () => ({ data: { features: { abac: true } } }),
   FeatureGate: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
-// Monaco needs a real browser; the request under test isn't typed.
-vi.mock("@/modules/authorization/components/shared/monaco-panel", () => ({
-  MonacoPanel: () => null,
+
+// A text box stands in for the attribute combobox, which jsdom can't drive reliably: what's typed
+// is chosen, as "Use …" chooses it in the real one.
+vi.mock("@qeetrix/react/experimental", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@qeetrix/react/experimental")>()),
+  Combobox: ({
+    value,
+    onValueChange,
+  }: {
+    value: string | null;
+    onValueChange: (value: string | null) => void;
+  }) => (
+    <input
+      data-testid="attribute"
+      value={value ?? ""}
+      onChange={(e) => onValueChange(e.target.value || null)}
+    />
+  ),
 }));
 
 import type { AbacPolicy } from "@/modules/authorization/api/abac";
@@ -174,9 +189,8 @@ describe("ABAC › new policy", () => {
     expect(create.getAttribute("aria-disabled")).toBe("true");
     expect(screen.getByText("Pick an attribute for each condition to save.")).toBeTruthy();
 
-    fireEvent.change(screen.getByLabelText(/^Attribute/), {
-      target: { value: "subject.department" },
-    });
+    // An attribute no policy uses yet, typed and chosen as the text itself.
+    fireEvent.change(screen.getByTestId("attribute"), { target: { value: "subject.department" } });
     fireEvent.change(screen.getByLabelText(/^Value/), { target: { value: "Engineering" } });
     fireEvent.click(screen.getByRole("button", { name: "Create policy" }));
 

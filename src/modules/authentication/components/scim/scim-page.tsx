@@ -6,13 +6,22 @@ import {
   formatDateTime,
   formatNumber,
   formatRelativeTime,
+  LinkButton,
   Skeleton,
   Table,
   Text,
 } from "@qeetrix/react";
-import { Alert, DataState, EmptyState, PageContent, PageHeader } from "@qeetrix/react/experimental";
+import {
+  Alert,
+  DataState,
+  EmptyState,
+  InstructionList,
+  InstructionStep,
+  PageContent,
+  PageHeader,
+} from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
-import { type CSSProperties, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
@@ -36,7 +45,7 @@ import {
   StatusBadge,
 } from "@/modules/authentication/components/connections/connection-parts";
 import { FeatureGate } from "@/modules/billing";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -134,11 +143,7 @@ export function ScimPage() {
             </Button>
           ) : undefined
         }
-        tabs={
-          <PageTabs>
-            <PageTabList />
-          </PageTabs>
-        }
+        tabs={<PageTabList />}
       />
       <PageContent>
         <FeatureGate
@@ -186,29 +191,26 @@ export function ScimPage() {
               ) : null}
 
               <Section id="scim-how" title={t("scim.how.title")} description={t("scim.how.note")}>
-                <ol className="cx-flow" style={{ "--cx-flow-steps": 3 } as CSSProperties}>
-                  <li className="cx-flow-step">
-                    <p className="cx-flow-cap">{t("scim.how.idp")}</p>
-                    {set ? (
-                      <p className="cx-flow-value">{`${config.token_prefix ?? "qf_scim_"}••••••••`}</p>
-                    ) : (
-                      <p className="cx-flow-value is-text">{t("scim.how.noToken")}</p>
-                    )}
-                    <p className="cx-flow-note">{t("scim.how.idpNote")}</p>
-                  </li>
-                  <li className="cx-flow-step">
-                    <p className="cx-flow-cap">{t("scim.how.endpoint")}</p>
-                    <p className="cx-flow-value">{scimBaseUrl()}</p>
-                    <p className="cx-flow-note">{t("scim.how.endpointNote")}</p>
-                  </li>
-                  <li className="cx-flow-step">
-                    <p className="cx-flow-cap">{t("scim.how.here", { org: orgName })}</p>
-                    <p className="cx-flow-value is-text">
-                      {t("scim.how.people", { count: people, n: n(people) })}
-                    </p>
-                    <p className="cx-flow-note">{t("scim.how.hereNote", { org: orgName })}</p>
-                  </li>
-                </ol>
+                <InstructionList orientation="horizontal">
+                  <InstructionStep
+                    title={t("scim.how.idp")}
+                    value={set ? `${config.token_prefix ?? "qf_scim_"}••••••••` : undefined}
+                    note={t("scim.how.idpNote")}
+                  >
+                    {set ? undefined : t("scim.how.noToken")}
+                  </InstructionStep>
+                  <InstructionStep
+                    title={t("scim.how.endpoint")}
+                    value={scimBaseUrl()}
+                    note={t("scim.how.endpointNote")}
+                  />
+                  <InstructionStep
+                    title={t("scim.how.here", { org: orgName })}
+                    note={t("scim.how.hereNote", { org: orgName })}
+                  >
+                    {t("scim.how.people", { count: people, n: n(people) })}
+                  </InstructionStep>
+                </InstructionList>
               </Section>
 
               <Section
@@ -311,12 +313,12 @@ export function ScimPage() {
                     label={t("scim.token.links")}
                     hint={t("scim.token.linksHint")}
                     action={
-                      <Button
+                      <LinkButton
                         variant="ghost"
                         render={<RouterLink to="/auth/connections/saml" hash="setup-links" />}
                       >
                         {t("scim.token.linksOpen")}
-                      </Button>
+                      </LinkButton>
                     }
                   >
                     {linksQ.data ? (

@@ -1,22 +1,12 @@
-import { CheckIcon, MonitorIcon, MoonIcon, QeetLogo, SunIcon } from "@qeetrix/icons";
-import {
-  type ColorScheme,
-  IconButton,
-  Link,
-  Menu,
-  MenuContent,
-  MenuItem,
-  MenuTrigger,
-  SkipLink,
-  useColorScheme,
-} from "@qeetrix/react";
+import { QeetLogo } from "@qeetrix/icons";
+import { Link, SkipLink } from "@qeetrix/react";
+import { ThemeSwitcher } from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { lazy, type ReactNode, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 
 import { OFFERED_LANGUAGES } from "@/i18n";
 import { DOCS_URL, PRIVACY_URL, SECURITY_URL, TERMS_URL } from "@/platform/config/site-urls";
-import { useIsDark } from "@/platform/theme/use-is-dark";
 
 // With only English offered there is nothing to pick, so the picker and its Select load only once
 // a second language is.
@@ -94,49 +84,18 @@ export function EntryShell({
   );
 }
 
-/**
- * Light, dark or the system's, in a menu: each choice with its icon, the current one checked. The
- * same choice, and the same storage, as the console's account menu. To move into @qeetrix/react
- * as a ThemeSwitcher.
- */
+/** Light, dark or the system's (Qeetrix's ThemeSwitcher), in the console's words. */
 function ThemeMenu() {
   const { t } = useTranslation("common");
-  const { colorScheme, setColorScheme } = useColorScheme();
-  const isDark = useIsDark();
-  const options: { value: ColorScheme; label: string; icon: typeof SunIcon }[] = [
-    { value: "light", label: t("themeToggle.light"), icon: SunIcon },
-    { value: "dark", label: t("themeToggle.dark"), icon: MoonIcon },
-    { value: "system", label: t("themeToggle.system"), icon: MonitorIcon },
-  ];
-
   return (
-    <Menu>
-      <MenuTrigger
-        render={
-          <IconButton
-            variant="ghost"
-            tone="neutral"
-            icon={colorScheme === "system" ? MonitorIcon : isDark ? MoonIcon : SunIcon}
-            aria-label={t("themeToggle.toggleTheme")}
-          />
-        }
-      />
-      <MenuContent align="end" className="entry-theme-menu">
-        {options.map((option) => {
-          const current = colorScheme === option.value;
-          return (
-            <MenuItem
-              key={option.value}
-              icon={option.icon}
-              aria-current={current ? "true" : undefined}
-              shortcut={current ? <CheckIcon shape="sharp" size={16} /> : undefined}
-              onClick={() => setColorScheme(option.value)}
-            >
-              {option.label}
-            </MenuItem>
-          );
-        })}
-      </MenuContent>
-    </Menu>
+    <ThemeSwitcher
+      menuSide="top"
+      messages={{
+        label: t("themeToggle.toggleTheme"),
+        light: t("themeToggle.light"),
+        dark: t("themeToggle.dark"),
+        system: t("themeToggle.system"),
+      }}
+    />
   );
 }

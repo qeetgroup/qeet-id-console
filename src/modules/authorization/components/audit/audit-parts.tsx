@@ -6,12 +6,14 @@ import {
   DrawerContent,
   DrawerFooter,
   formatDateTime,
+  LinkButton,
 } from "@qeetrix/react";
 import {
   AvatarItem,
   CopyButton,
   DescriptionItem,
   DescriptionList,
+  Sparkline,
 } from "@qeetrix/react/experimental";
 import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "@tanstack/react-router";
@@ -25,7 +27,7 @@ import {
   type useAuthzSummary,
 } from "@/modules/authorization/api/authz-activity";
 import { authzKeys } from "@/modules/authorization/api/keys";
-import { Sparkline, SplitBar } from "@/modules/dashboard";
+import { SplitBar } from "@/modules/dashboard";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCount } from "../lists/authz-parts";
 import { actorName, type ChangeContext, changeTarget, titleText } from "./change-model";
@@ -183,7 +185,7 @@ function ChangeDrawerContent({ event, ctx }: { event: ActivityEvent; ctx: Change
       <DrawerFooter>
         <DrawerClose render={<Button variant="ghost">{t("lists.common.close")}</Button>} />
         {target.link ? (
-          <Button variant="soft" render={<RouterLink {...target.link} />}>
+          <LinkButton variant="soft" render={<RouterLink {...target.link} />}>
             {t(
               target.link.to === "/groups/$groupId"
                 ? "lists.audit.drawer.openGroup"
@@ -191,11 +193,11 @@ function ChangeDrawerContent({ event, ctx }: { event: ActivityEvent; ctx: Change
                   ? "lists.audit.drawer.openPerson"
                   : "lists.audit.drawer.openRole",
             )}
-          </Button>
+          </LinkButton>
         ) : isPolicy && event.type !== "abac_policy.deleted" ? (
-          <Button variant="soft" render={<RouterLink to="/authorization/abac" />}>
+          <LinkButton variant="soft" render={<RouterLink to="/authorization/abac" />}>
             {t("lists.versions.drawer.openAbac")}
-          </Button>
+          </LinkButton>
         ) : null}
       </DrawerFooter>
     </DrawerContent>

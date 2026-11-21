@@ -1,8 +1,8 @@
 // The Overview's building blocks, composed from tokens on the Qeetrix rules: ruled panels in a
-// shared sheet, and four small charts the library doesn't have yet. To move into @qeetrix/react
-// (library proposals: Sparkline, Gauge, DotPlot, SplitBar; see docs/migration/redesign-findings.md).
+// shared sheet, and three small charts the library doesn't have (Gauge, DotPlot, and SplitBar,
+// whose ordered parts need sequential tones that Qeetrix's ShareBar doesn't take yet).
 
-import { Button } from "@qeetrix/react";
+import { LinkButton } from "@qeetrix/react";
 import { Link } from "@tanstack/react-router";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -107,66 +107,6 @@ export function ChartTip<T>({
       <strong>{label}</strong>
       {rows(point)}
     </div>
-  );
-}
-
-/**
- * A sparkline: a 2px line with a 10% wash under it and a ringed dot on the latest value. `max`
- * shares one scale across a set of sparklines, so they compare honestly. Decorative: the value and
- * its note beside it say what matters.
- */
-export function Sparkline({
-  values,
-  color = CHART.data,
-  max,
-  width = 120,
-  height = 36,
-}: {
-  values: readonly number[];
-  color?: string;
-  max?: number;
-  width?: number;
-  height?: number;
-}) {
-  if (values.length < 2) return null;
-  const top = Math.max(max ?? Math.max(...values), 1);
-  const pad = 4;
-  const x = (i: number) => pad + (i / (values.length - 1)) * (width - pad * 2);
-  const y = (v: number) => height - pad - (v / top) * (height - pad * 2);
-  const line = values
-    .map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`)
-    .join(" ");
-  const last = values.length - 1;
-  return (
-    <svg
-      className="overview-spark"
-      viewBox={`0 0 ${width} ${height}`}
-      width={width}
-      height={height}
-      aria-hidden="true"
-    >
-      <path
-        d={`${line} L${x(last)},${height - pad} L${x(0)},${height - pad} Z`}
-        fill={color}
-        opacity={0.1}
-      />
-      <path
-        d={line}
-        fill="none"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      <circle
-        cx={x(last)}
-        cy={y(values[last] ?? 0)}
-        r={3.5}
-        fill={color}
-        stroke={CHART.surface}
-        strokeWidth={2}
-      />
-    </svg>
   );
 }
 
@@ -306,11 +246,11 @@ export function endLabel(lastIndex: number, text: (value: number) => string, dy 
   };
 }
 
-/** A ghost button that goes somewhere. */
-export function LinkButton({ to, children }: { to: string; children: ReactNode }) {
+/** A panel's way into its list: a small ghost LinkButton, announced as a link. */
+export function PanelLink({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Button variant="ghost" size="sm" render={<Link to={to as never} />}>
+    <LinkButton variant="ghost" size="sm" render={<Link to={to as never} />}>
       {children}
-    </Button>
+    </LinkButton>
   );
 }

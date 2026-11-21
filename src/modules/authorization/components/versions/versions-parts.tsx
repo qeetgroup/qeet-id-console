@@ -6,15 +6,20 @@ import {
   DrawerFooter,
   formatDateTime,
   Heading,
+  LinkButton,
   Table,
   Text,
 } from "@qeetrix/react";
-import { AvatarItem, DescriptionItem, DescriptionList } from "@qeetrix/react/experimental";
+import {
+  AvatarItem,
+  DescriptionItem,
+  DescriptionList,
+  Sparkline,
+} from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { Sparkline } from "@/modules/dashboard";
 import { useCount } from "../lists/authz-parts";
 import {
   DAY_MS,
@@ -179,9 +184,9 @@ export function VersionDrawerContent({ version, by }: { version: PolicyVersion; 
       <DrawerFooter>
         <DrawerClose render={<Button variant="ghost">{t("lists.common.close")}</Button>} />
         {version.current ? (
-          <Button variant="soft" render={<Link to="/authorization/abac" />}>
+          <LinkButton variant="soft" render={<Link to="/authorization/abac" />}>
             {t("lists.versions.drawer.openAbac")}
-          </Button>
+          </LinkButton>
         ) : null}
       </DrawerFooter>
     </DrawerContent>

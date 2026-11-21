@@ -17,6 +17,7 @@ import {
   formatRelativeTime,
   IconButton,
   Link,
+  LinkButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -24,7 +25,15 @@ import {
   MenuTrigger,
   Skeleton,
 } from "@qeetrix/react";
-import { Alert, DataState, EmptyState, PageContent, PageHeader } from "@qeetrix/react/experimental";
+import {
+  Alert,
+  DataState,
+  EmptyState,
+  PageContent,
+  PageHeader,
+  StateRuler,
+  StateRulerItem,
+} from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -47,7 +56,7 @@ import {
   StatusBadge,
 } from "@/modules/authentication/components/connections/connection-parts";
 import { FeatureGate } from "@/modules/billing";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   DEFAULT_EVENT_FILTERS,
   type DirectoryEvent,
@@ -99,13 +108,13 @@ export function LdapConnectionPage({ id }: { id: string }) {
             title={t("ldap.notFound.title")}
             description={t("ldap.notFound.description")}
             actions={
-              <Button
+              <LinkButton
                 variant="soft"
                 tone="neutral"
                 render={<RouterLink to="/directory/connections" />}
               >
                 {t("ldap.notFound.back")}
-              </Button>
+              </LinkButton>
             }
           />
         </PageContent>
@@ -213,11 +222,7 @@ function LdapRecord({
             </>
           ) : undefined
         }
-        tabs={
-          <PageTabs>
-            <PageTabList />
-          </PageTabs>
-        }
+        tabs={<PageTabList />}
       />
       <PageContent>
         <FeatureGate
@@ -326,9 +331,12 @@ function LdapRecord({
               title={t("ldap.attributes.title")}
               description={t("ldap.attributes.note")}
               action={
-                <Button variant="ghost" render={<RouterLink to="/directory/attribute-mappings" />}>
+                <LinkButton
+                  variant="ghost"
+                  render={<RouterLink to="/directory/attribute-mappings" />}
+                >
                   {t("ldap.attributes.mappings")}
-                </Button>
+                </LinkButton>
               }
             >
               <dl className="account-details">
@@ -349,18 +357,16 @@ function LdapRecord({
               title={t("ldap.status.title")}
               description={t("ldap.status.note")}
             >
-              <ol className="cx-states">
+              <StateRuler aria-label={t("ldap.status.title")}>
                 {(["draft", "active", "disabled"] as const).map((s) => (
-                  <li
+                  <StateRulerItem
                     key={s}
-                    className="cx-state"
-                    aria-current={c.status === s ? "true" : undefined}
-                  >
-                    <strong>{t(`ldap.status.word.${s}`)}</strong>
-                    <span>{t(`ldap.status.means.${s}`)}</span>
-                  </li>
+                    label={t(`ldap.status.word.${s}`)}
+                    description={t(`ldap.status.means.${s}`)}
+                    current={c.status === s}
+                  />
                 ))}
-              </ol>
+              </StateRuler>
             </Section>
 
             <Section id="ldap-test" title={t("ldap.test.title")} description={t("ldap.test.note")}>

@@ -31,7 +31,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
 import { useInvitations } from "@/modules/users/api/invitations";
 import {
@@ -157,7 +157,7 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
   };
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("people.title")}
@@ -331,6 +331,6 @@ export function UsersPage({ filters, onFiltersChange }: UsersPageProps) {
           />
         </>
       ) : null}
-    </PageTabs>
+    </>
   );
 }

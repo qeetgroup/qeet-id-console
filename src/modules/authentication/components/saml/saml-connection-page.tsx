@@ -1,6 +1,5 @@
 import {
   CircleAlertIcon,
-  DownloadIcon,
   EllipsisIcon,
   ExternalLinkIcon,
   EyeIcon,
@@ -16,6 +15,7 @@ import {
   formatDate,
   formatRelativeTime,
   IconButton,
+  LinkButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -32,9 +32,7 @@ import { formatLocale } from "@/i18n";
 import {
   type SamlConnection,
   type SamlTestResult,
-  samlAcsUrl,
   samlLoginUrl,
-  samlMetadataUrl,
   samlStatus,
   useSamlConnections,
   useTestSamlConnection,
@@ -46,7 +44,6 @@ import {
 } from "@/modules/authentication/certificate-model";
 import { certificateEnding, connectionStatus } from "@/modules/authentication/connections-model";
 import {
-  CopyRow,
   DangerZone,
   Detail,
   Mono,
@@ -57,11 +54,12 @@ import {
 } from "@/modules/authentication/components/connections/connection-parts";
 import { SAML_IDP_VENDOR_LABELS, samlIdpVendor } from "@/modules/authentication/saml-vendors";
 import { FeatureGate } from "@/modules/billing";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { SamlDrawer } from "./saml-drawer";
+import { SamlOurs } from "./saml-ours";
 import { SamlTurnOn } from "./saml-turn-on";
 import { useSamlActions } from "./use-saml-actions";
 import "@/modules/authentication/components/connections/connections.css";
@@ -103,13 +101,13 @@ export function SamlConnectionPage({ id }: { id: string }) {
             title={t("signIn.notFound.title")}
             description={t("signIn.notFound.description")}
             actions={
-              <Button
+              <LinkButton
                 variant="soft"
                 tone="neutral"
                 render={<RouterLink to="/auth/connections/saml" />}
               >
                 {t("signIn.notFound.back")}
-              </Button>
+              </LinkButton>
             }
           />
         </PageContent>
@@ -210,12 +208,14 @@ function SamlRecord({
               </Menu>
             ) : null}
             {c.status === "active" ? (
-              <Button
+              <LinkButton
                 icon={ExternalLinkIcon}
-                render={<a href={samlLoginUrl(c.id)} target="_blank" rel="noreferrer" />}
+                href={samlLoginUrl(c.id)}
+                target="_blank"
+                rel="noreferrer"
               >
                 {t("signIn.page.test")}
-              </Button>
+              </LinkButton>
             ) : null}
             {canWrite && c.status !== "active" ? (
               <Button
@@ -228,11 +228,7 @@ function SamlRecord({
             ) : null}
           </>
         }
-        tabs={
-          <PageTabs>
-            <PageTabList />
-          </PageTabs>
-        }
+        tabs={<PageTabList />}
       />
       <PageContent>
         <FeatureGate
@@ -333,47 +329,7 @@ function SamlRecord({
               </dl>
             </Section>
 
-            <Section
-              id="saml-ours"
-              title={t("signIn.ours.title", { provider })}
-              description={t("signIn.ours.note", { provider })}
-            >
-              <dl className="account-details">
-                <CopyRow
-                  label={t("signIn.ours.acs")}
-                  value={samlAcsUrl(c.id)}
-                  hint={t("signIn.ours.acsHint", { provider })}
-                  copyLabel={t("signIn.ours.copyAcs")}
-                />
-                <CopyRow
-                  label={t("signIn.ours.entity")}
-                  value={samlMetadataUrl(c.id)}
-                  hint={t("signIn.ours.entityHint", { provider })}
-                  copyLabel={t("signIn.ours.copyEntity")}
-                />
-                <Detail
-                  label={t("signIn.ours.nameId")}
-                  hint={t("signIn.ours.nameIdHint", { attribute: c.email_attribute || "email" })}
-                >
-                  {t("signIn.ours.nameIdValue")}
-                </Detail>
-                <Detail
-                  label={t("signIn.ours.metadata")}
-                  hint={t("signIn.ours.metadataHint")}
-                  action={
-                    <Button
-                      variant="ghost"
-                      icon={DownloadIcon}
-                      render={<a href={samlMetadataUrl(c.id)} target="_blank" rel="noreferrer" />}
-                    >
-                      {t("signIn.ours.open")}
-                    </Button>
-                  }
-                >
-                  <Mono>{t("signIn.ours.metadataFile")}</Mono>
-                </Detail>
-              </dl>
-            </Section>
+            <SamlOurs connection={c} provider={provider} />
 
             <Section
               id="saml-theirs"

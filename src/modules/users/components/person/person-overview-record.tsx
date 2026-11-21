@@ -2,7 +2,14 @@
 // they can do and why. person-overview.tsx composes them.
 
 import { ShieldCheckIcon } from "@qeetrix/icons";
-import { Button, formatDate, formatNumber, formatRelativeTime, Skeleton } from "@qeetrix/react";
+import {
+  Button,
+  formatDate,
+  formatNumber,
+  formatRelativeTime,
+  LinkButton,
+  Skeleton,
+} from "@qeetrix/react";
 import { Alert } from "@qeetrix/react/experimental";
 import { Link as RouterLink } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -24,10 +31,7 @@ import type { Standing } from "./person-page";
 import { Panel, Panels, Section } from "./person-parts";
 import { roleDisplayName } from "@/shared/utils/role-name";
 
-/**
- * A view of the person's page, as a link: what the section heads open. A Button rendered as a link
- * is still announced as a button, not a link (a Qeetrix issue).
- */
+/** A view of the person's page, as a link: what the section heads open. */
 export function TabLink({
   userId,
   tab,
@@ -38,13 +42,13 @@ export function TabLink({
   children: string;
 }) {
   return (
-    <Button
+    <LinkButton
       variant="ghost"
       size="sm"
       render={<RouterLink to="/users/$userId" params={{ userId }} search={{ tab }} />}
     >
       {children}
-    </Button>
+    </LinkButton>
   );
 }
 

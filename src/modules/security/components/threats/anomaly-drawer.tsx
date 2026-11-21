@@ -9,6 +9,7 @@ import {
   formatDateTime,
   formatNumber,
   Heading,
+  LinkButton,
   Text,
 } from "@qeetrix/react";
 import { DescriptionItem, DescriptionList } from "@qeetrix/react/experimental";
@@ -237,19 +238,18 @@ function AnomalyBody({
                 </Button>
               </li>
             ) : null}
-            {/* Qeetrix's Button as a router link is announced as a button, not a link. */}
             {a.user_id ? (
               <li>
                 <strong>{t("anomalies.drawer.checkTitle")}</strong>
                 <small>{t("anomalies.drawer.checkLine")}</small>
-                <Button
+                <LinkButton
                   variant="ghost"
                   size="sm"
                   icon={ArrowRightIcon}
                   render={<Link to="/users/$userId" params={{ userId: a.user_id }} />}
                 >
                   {t("anomalies.actions.account")}
-                </Button>
+                </LinkButton>
               </li>
             ) : null}
             <li>
@@ -258,14 +258,14 @@ function AnomalyBody({
                 {t("anomalies.drawer.twoStepLine")}
                 {twoStep ? ` ${twoStep}` : ""}
               </small>
-              <Button
+              <LinkButton
                 variant="ghost"
                 size="sm"
                 icon={ArrowRightIcon}
                 render={<Link to="/settings/organization/security-policy" />}
               >
                 {t("anomalies.drawer.twoStepLink")}
-              </Button>
+              </LinkButton>
             </li>
           </ol>
         </section>

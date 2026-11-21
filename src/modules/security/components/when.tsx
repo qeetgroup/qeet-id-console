@@ -1,6 +1,5 @@
-// Library gap (new): RelativeTime — relative with the full date on hover, a plain date after about
-// 30 days (redesign-findings §2 "Dates", §5; approved, not yet filed). Drawn here until then.
-import { formatDate, formatDateTime, formatRelativeTime } from "@qeetrix/react";
+import { formatDate, formatRelativeTime } from "@qeetrix/react";
+import { RelativeTime } from "@qeetrix/react/experimental";
 
 import { formatLocale } from "@/i18n";
 
@@ -18,13 +17,10 @@ export function whenText(at: string, now = Date.now(), future = false): string {
   return formatRelativeTime(future ? ms : Math.min(ms, now), locale, now);
 }
 
-/** `whenText` in a `<time>`, with the full date and time on hover. */
+/** The same moment as Qeetrix's RelativeTime: a `<time>`, with the full date and time on hover. */
 export function When({ at, now, future }: { at: string; now?: number; future?: boolean }) {
-  const text = whenText(at, now, future);
-  if (!text) return null;
-  return (
-    <time dateTime={at} title={formatDateTime(at, formatLocale())}>
-      {text}
-    </time>
-  );
+  const ms = Date.parse(at);
+  if (Number.isNaN(ms)) return null;
+  const moment = future ? ms : Math.min(ms, now ?? Date.now());
+  return <RelativeTime date={moment} now={now} locale={formatLocale()} />;
 }

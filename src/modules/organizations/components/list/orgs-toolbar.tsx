@@ -15,7 +15,6 @@ import {
 import { useOrgLabels } from "@/modules/organizations/components/org-labels";
 
 const ANY = "";
-// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 
 /**
  * One row above the table: search, your role, plan, and data region (only when the organisations
@@ -90,7 +89,8 @@ export function OrgsToolbar({
             { value: ANY, label: t("list.filters.anyRole") },
             ...roleCounts(rows).map(({ role, count: c }) => ({
               value: role,
-              label: `${role} · ${n(c)}`,
+              label: role,
+              meta: n(c),
             })),
           ]}
         />
@@ -103,7 +103,8 @@ export function OrgsToolbar({
             { value: ANY, label: t("list.filters.anyPlan") },
             ...plans.map((plan) => ({
               value: plan,
-              label: `${names.plan(plan)} · ${count((r) => r.plan === plan)}`,
+              label: names.plan(plan),
+              meta: count((r) => r.plan === plan),
             })),
           ]}
         />
@@ -117,14 +118,14 @@ export function OrgsToolbar({
               { value: ANY, label: t("list.filters.anyRegion") },
               ...regions.map((region) => ({
                 value: region,
-                label: `${names.region(region)} · ${count((r) => r.region === region)}`,
+                label: names.region(region),
+                meta: count((r) => r.region === region),
               })),
             ]}
           />
         ) : null}
       </div>
-      {/* Only once something narrows the list (FilterTags shows its summary even with no tags,
-          a Qeetrix issue). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

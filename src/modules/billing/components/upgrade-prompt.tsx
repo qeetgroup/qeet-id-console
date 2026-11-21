@@ -1,5 +1,5 @@
 import { LockIcon } from "@qeetrix/icons";
-import { Button } from "@qeetrix/react";
+import { LinkButton } from "@qeetrix/react";
 import { EmptyState } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -21,12 +21,12 @@ export default function UpgradeGate({
       title={title}
       description={description}
       actions={
-        <Button
+        <LinkButton
           variant="soft"
           render={<Link to="/settings/billing" search={plan ? { plan } : {}} />}
         >
           {t("upgradeGate.upgradePlan")}
-        </Button>
+        </LinkButton>
       }
     />
   );

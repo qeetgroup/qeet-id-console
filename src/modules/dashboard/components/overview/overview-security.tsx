@@ -23,16 +23,7 @@ import {
   MFA_TARGET_PCT,
 } from "@/modules/dashboard/overview-model";
 import type { UserStats } from "@/modules/users";
-import {
-  CHART,
-  ChartTip,
-  Gauge,
-  LinkButton,
-  num,
-  Panel,
-  ringDot,
-  SplitBar,
-} from "./overview-parts";
+import { CHART, ChartTip, Gauge, PanelLink, num, Panel, ringDot, SplitBar } from "./overview-parts";
 
 // ── Failed sign-ins, last 24 hours ──────────────────────────────────────────────────────────
 
@@ -79,7 +70,7 @@ export function FailedHoursPanel({ overview }: { overview: AnalyticsOverview }) 
     <Panel
       title={t("overview.failedHours.title")}
       note={note}
-      action={<LinkButton to="/activity">{t("overview.failedHours.action")}</LinkButton>}
+      action={<PanelLink to="/activity">{t("overview.failedHours.action")}</PanelLink>}
     >
       <div className="overview-chart">
         <ResponsiveContainer width="100%" height={188}>
@@ -156,9 +147,9 @@ export function TwoStepPanel({
       note={t("overview.twoStep.note", { target: MFA_TARGET_PCT })}
       action={
         stats.mfa_missing > 0 ? (
-          <LinkButton to="/settings/organization/security-policy">
+          <PanelLink to="/settings/organization/security-policy">
             {t("overview.twoStep.action")}
-          </LinkButton>
+          </PanelLink>
         ) : undefined
       }
     >

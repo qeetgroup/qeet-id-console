@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   type LogSink,
   type SinkType,
@@ -84,7 +84,7 @@ export function LogStreamsPage() {
   const items = sinks.data?.items ?? [];
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("logStreams.title")}
@@ -151,7 +151,7 @@ export function LogStreamsPage() {
           <CodeBlock language="json" title={t("logStreams.sent.sample")} code={SAMPLE} />
         </Section>
       </PageContent>
-    </PageTabs>
+    </>
   );
 }
 

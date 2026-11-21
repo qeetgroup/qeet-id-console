@@ -1,4 +1,12 @@
-import { Avatar, Button, formatCurrency, formatDate, Heading, Link, Text } from "@qeetrix/react";
+import {
+  Avatar,
+  formatCurrency,
+  formatDate,
+  Heading,
+  Link,
+  LinkButton,
+  Text,
+} from "@qeetrix/react";
 import { CopyButton, PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "@tanstack/react-router";
@@ -213,9 +221,9 @@ function AboutOrganisation({ org }: { org: OrgRecord }) {
           }
           action={
             canBill ? (
-              <Button variant="ghost" render={<RouterLink to="/settings/billing" />}>
+              <LinkButton variant="ghost" render={<RouterLink to="/settings/billing" />}>
                 {t("settings.general.about.manageBilling")}
-              </Button>
+              </LinkButton>
             ) : undefined
           }
         >

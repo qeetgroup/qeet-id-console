@@ -41,7 +41,7 @@ import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import { useRetentionPolicy } from "@/modules/compliance";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { useInvitations } from "@/modules/users/api/invitations";
 import {
   type DeletedUser,
@@ -293,7 +293,7 @@ export function DeletedUsersPage({ filters, onFiltersChange }: DeletedUsersPageP
   );
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("deletedPage.title")}
@@ -480,6 +480,6 @@ export function DeletedUsersPage({ filters, onFiltersChange }: DeletedUsersPageP
           )}
         </div>
       </PageContent>
-    </PageTabs>
+    </>
   );
 }

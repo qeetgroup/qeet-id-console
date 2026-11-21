@@ -14,6 +14,7 @@ import {
   formatDateTime,
   formatNumber,
   Link,
+  LinkButton,
   Skeleton,
 } from "@qeetrix/react";
 import { Alert, EmptyState, PageContent, PageHeader } from "@qeetrix/react/experimental";
@@ -110,9 +111,9 @@ export function OrgPage({ orgId }: { orgId: string }) {
           title={t("page.notFound")}
           description={t("page.notFoundDescription")}
           actions={
-            <Button render={<RouterLink to="/organizations" />} variant="soft">
+            <LinkButton render={<RouterLink to="/organizations" />} variant="soft">
               {t("page.backToList")}
-            </Button>
+            </LinkButton>
           }
         />
       </PageContent>
@@ -147,19 +148,16 @@ export function OrgPage({ orgId }: { orgId: string }) {
     <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
-        title={
-          // The logo sits in the title, unannounced, until Qeetrix's PageHeader has a leading slot.
-          <span className="org-title">
-            <Avatar
-              name={org.name}
-              src={org.logo_url || undefined}
-              shape="square"
-              size="lg"
-              decorative
-            />
-            {org.name}
-          </span>
+        leading={
+          <Avatar
+            name={org.name}
+            src={org.logo_url || undefined}
+            shape="square"
+            size="lg"
+            decorative
+          />
         }
+        title={org.name}
         status={
           due ? (
             <Badge tone="warning">
@@ -189,14 +187,14 @@ export function OrgPage({ orgId }: { orgId: string }) {
         actions={
           current ? (
             canWrite ? (
-              <Button
+              <LinkButton
                 variant="soft"
                 tone="neutral"
                 icon={PencilIcon}
                 render={<RouterLink to="/settings/organization/general" />}
               >
                 {t("page.edit")}
-              </Button>
+              </LinkButton>
             ) : undefined
           ) : org.status === "active" ? (
             <Button icon={ArrowLeftRightIcon} loading={switching} onClick={() => void onSwitch()}>

@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from "@qeetrix/icons";
-import { Badge, Button, formatNumber } from "@qeetrix/react";
+import { Badge, formatNumber, LinkButton } from "@qeetrix/react";
 import { CopyButton, PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -85,14 +85,14 @@ export function InfrastructurePage() {
                     })
               }
               action={
-                <Button
+                <LinkButton
                   variant="ghost"
                   size="sm"
                   icon={ArrowRightIcon}
                   render={<Link to="/auth/api/signing-keys" />}
                 >
                   {t("infrastructure.keys.open")}
-                </Button>
+                </LinkButton>
               }
             />
           ) : null}

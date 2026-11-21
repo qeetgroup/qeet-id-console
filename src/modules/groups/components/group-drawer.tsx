@@ -338,14 +338,19 @@ export function GroupDrawer({
             ) : null}
           </form>
         </DrawerBody>
-        <DrawerFooter>
-          {!editing && onUseTemplate ? (
-            // Qeetrix's DrawerFooter has no start slot; the Users drawer's class places it.
-            <Link className="add-import" render={<button type="button" onClick={onUseTemplate} />}>
-              <LayoutTemplateIcon className="add-import-icon" aria-hidden="true" />
-              {t("drawer.useTemplate")}
-            </Link>
-          ) : null}
+        <DrawerFooter
+          start={
+            !editing && onUseTemplate ? (
+              <Link
+                className="add-import"
+                render={<button type="button" onClick={onUseTemplate} />}
+              >
+                <LayoutTemplateIcon className="add-import-icon" aria-hidden="true" />
+                {t("drawer.useTemplate")}
+              </Link>
+            ) : undefined
+          }
+        >
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
             {t("drawer.cancel")}
           </Button>

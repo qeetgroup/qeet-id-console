@@ -14,6 +14,7 @@ import {
   formatNumber,
   formatRelativeTime,
   IconButton,
+  LinkButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -46,7 +47,7 @@ import {
   StatusBadge,
 } from "@/modules/authentication/components/connections/connection-parts";
 import { FeatureGate } from "@/modules/billing";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { useOrgs } from "@/modules/organizations";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -101,11 +102,7 @@ export function SamlAppsPage({ adding, onAddingChange }: SamlAppsPageProps) {
             </Button>
           ) : undefined
         }
-        tabs={
-          <PageTabs>
-            <PageTabList />
-          </PageTabs>
-        }
+        tabs={<PageTabList />}
       />
       <PageContent>
         <FeatureGate
@@ -307,7 +304,7 @@ function AppRow({
       </span>
       <span className="account-row-actions">
         {app.status !== "disabled" ? (
-          <Button
+          <LinkButton
             variant="ghost"
             icon={ExternalLinkIcon}
             render={
@@ -315,7 +312,7 @@ function AppRow({
             }
           >
             {t("apps.list.test")}
-          </Button>
+          </LinkButton>
         ) : null}
         {canWrite ? (
           <Menu>

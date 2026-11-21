@@ -1,37 +1,27 @@
-import { Alert } from "@qeetrix/react/experimental";
-import { Apple, Github, Google, Microsoft } from "@thesvg/react";
+import {
+  Alert,
+  ProviderButton,
+  ProviderButtonGroup,
+  type ProviderLogoInvert,
+} from "@qeetrix/react/experimental";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { socialStartUrl, usePlatformSocialProviders } from "../api/flows";
 
-type Provider = { id: string; label: string; logo: ReactNode };
+import { BrandLogo } from "@/shared/components/brand-logo";
+
+type Provider = { id: string; label: string; logo: ReactNode; invert?: ProviderLogoInvert };
 
 // Google, Microsoft and Apple always show, so the page looks the same whatever the server has set
 // up; GitHub joins them once configured. The logos are the providers' own artwork.
 const ALWAYS: Provider[] = [
-  {
-    id: "apple",
-    label: "Apple",
-    logo: (
-      <span data-invert="light">
-        <Apple aria-hidden="true" />
-      </span>
-    ),
-  },
-  { id: "google", label: "Google", logo: <Google aria-hidden="true" /> },
-  { id: "microsoft", label: "Microsoft", logo: <Microsoft aria-hidden="true" /> },
+  { id: "apple", label: "Apple", logo: <BrandLogo name="apple" />, invert: "light" },
+  { id: "google", label: "Google", logo: <BrandLogo name="google" /> },
+  { id: "microsoft", label: "Microsoft", logo: <BrandLogo name="microsoft" /> },
 ];
 const WHEN_CONFIGURED: Provider[] = [
-  {
-    id: "github",
-    label: "GitHub",
-    logo: (
-      <span data-invert="dark">
-        <Github aria-hidden="true" />
-      </span>
-    ),
-  },
+  { id: "github", label: "GitHub", logo: <BrandLogo name="github" />, invert: "dark" },
 ];
 
 // One whole phrase per action, so no sentence is assembled from a verb and a provider name.
@@ -41,7 +31,7 @@ const ACTION_LABEL = {
 } as const;
 
 /**
- * The social providers as one ruled row. A provider the server hasn't configured still shows; its
+ * The social providers as one ruled row (Qeetrix's ProviderButtonGroup). A provider the server hasn't configured still shows; its
  * button explains that it isn't available yet instead of sending the person to a broken page.
  */
 export function ProviderButtons({
@@ -70,17 +60,16 @@ export function ProviderButtons({
           {t("entry.providers.unavailableText")}
         </Alert>
       )}
-      <fieldset
-        className="entry-providers"
+      <ProviderButtonGroup
         aria-label={t(
           action === "signUp" ? "entry.providers.signUpGroup" : "entry.providers.signInGroup",
         )}
       >
         {providers.map((provider) => (
-          <button
+          <ProviderButton
             key={provider.id}
-            type="button"
-            className="entry-provider"
+            logo={provider.logo}
+            logoInvert={provider.invert}
             disabled={disabled}
             aria-label={t(ACTION_LABEL[action], { provider: provider.label })}
             onClick={() => {
@@ -91,11 +80,10 @@ export function ProviderButtons({
               }
             }}
           >
-            {provider.logo}
-            <span>{provider.label}</span>
-          </button>
+            {provider.label}
+          </ProviderButton>
         ))}
-      </fieldset>
+      </ProviderButtonGroup>
     </>
   );
 }

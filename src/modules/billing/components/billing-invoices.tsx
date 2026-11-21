@@ -17,8 +17,9 @@ import { InvoiceStatus } from "./invoice-status";
 const PAGE_SIZE = 10;
 const NARROW = "(max-width: 640px)";
 
-// Library gap (new): Table column priority on narrow screens. Until the Table can drop columns
-// itself, a phone gets two: the invoice with its period, and the total with its status.
+// A phone gets two columns: the invoice with its period, and the total with its status. Table's
+// column `priority` only hides columns, and these two cells change what they hold, so the page picks
+// the phone's columns itself.
 function useNarrow() {
   return useSyncExternalStore(
     (onChange) => {
@@ -110,7 +111,6 @@ export function BillingInvoices({
     {
       id: "invoice",
       header: t("invoices.column.invoice"),
-      // Qeetrix's Table names the row's button by this whole cell, issued date included.
       primary: true,
       cell: (invoice) => (
         <span className="ppl-two">

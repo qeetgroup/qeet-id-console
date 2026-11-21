@@ -98,13 +98,14 @@ test.describe("signed in", () => {
       });
       expect(behind).toBeUndefined();
     }
-    // From a field, Escape closes it. On its Close button the first Escape dismisses the button's
-    // tooltip (WCAG 1.4.13), and the next closes the drawer.
+    // Its Close button shows no tooltip, so nothing takes the first Escape: it closes the drawer
+    // and focus goes back to what opened it. From a field, Escape closes it too.
     await dialog.getByRole("button", { name: "Close" }).focus();
-    await expect(page.getByRole("tooltip")).toBeVisible();
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("tooltip")).toBeHidden();
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeHidden();
+    await expect(invite).toBeFocused();
+    await page.keyboard.press("Enter");
     await dialog.getByRole("textbox").first().focus();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();

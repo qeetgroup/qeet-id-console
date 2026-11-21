@@ -26,12 +26,13 @@ import {
   PageHeader,
   Pagination,
   SearchField,
+  Sparkline,
 } from "@qeetrix/react/experimental";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { PageBreadcrumb, Sparkline } from "@/modules/dashboard";
+import { PageBreadcrumb } from "@/modules/dashboard";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import {
   settleSensitiveAction,
@@ -335,7 +336,8 @@ export function CredentialsPage({
                               { value: ANY, label: t("credentials.anyType") },
                               ...typeCounts.map((p) => ({
                                 value: p.type,
-                                label: `${p.type} · ${n(p.count)}`,
+                                label: p.type,
+                                meta: n(p.count),
                               })),
                             ]}
                           />
@@ -351,7 +353,8 @@ export function CredentialsPage({
                             { value: ANY, label: t("machine.filters.anyStatus") },
                             ...counts.map((p) => ({
                               value: p.id,
-                              label: `${t(`credentials.status.${p.id}`)} · ${n(p.count)}`,
+                              label: t(`credentials.status.${p.id}`),
+                              meta: n(p.count),
                             })),
                           ]}
                         />

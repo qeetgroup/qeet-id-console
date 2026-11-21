@@ -141,7 +141,7 @@ export function ToolCallCard({
         <div className="qai-tool-section">
           <p className="qai-tool-result">
             {result.display
-              ? i18n.t(result.display.key, result.display.values)
+              ? i18n.t(result.display.key, result.display.values ?? {})
               : i18n.t("qeetai:toolCallCard.results.done")}
           </p>
         </div>

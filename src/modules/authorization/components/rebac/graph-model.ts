@@ -1,14 +1,10 @@
 // The relationship graph as something to read: GET /relation-tuples/graph returns every node and
 // edge reachable from object#relation (rebac.go expand: breadth first, each object#relation once).
-// This draws it as a tree from the object, each node under the one it was first reached through,
+// This makes it a tree from the object, each node under the one it was first reached through,
 // and folds people into the group or folder that names them, so 26 people read as a few groups.
 
 import type { GraphEdge, RelationGraph } from "@/modules/authorization/api/relationships";
 
-export const NODE_W = 136;
-export const NODE_H = 60;
-const GAP_X = 12;
-const GAP_Y = 44;
 /** At most this many people directly on the object are drawn; the rest fold into one node. */
 const DIRECT_PEOPLE = 4;
 
@@ -24,8 +20,6 @@ export interface DrawnNode {
   /** The objects a node names directly that are drawn under it. */
   children: string[];
   depth: number;
-  x: number;
-  y: number;
 }
 
 export interface Hop {
@@ -39,8 +33,6 @@ export interface GraphModel {
   nodes: Map<string, DrawnNode>;
   /** Drawn edges, each parent to child, with the relation expanded on the parent. */
   edges: { from: string; to: string; relation: string }[];
-  width: number;
-  height: number;
   /** Everyone who reaches the root, each with the hops of their first way in. */
   people: Map<string, Hop[]>;
   /** The hops from the root to a node (empty for the root). */
@@ -101,8 +93,6 @@ export function graphModel(graph: RelationGraph, root: string): GraphModel {
       people: [],
       children: [],
       depth: d,
-      x: 0,
-      y: 0,
     };
     nodes.set(id, node);
     return node;
@@ -137,30 +127,6 @@ export function graphModel(graph: RelationGraph, root: string): GraphModel {
   }
 
   // Each subtree as wide as its leaves; a parent centred over its children.
-  const slots = new Map<string, number>();
-  const width = (id: string): number => {
-    const n = nodes.get(id);
-    const w = n?.children.length ? n.children.reduce((s, c) => s + width(c), 0) : 1;
-    slots.set(id, w);
-    return w;
-  };
-  const total = width(root);
-  let maxDepth = 0;
-  const place = (id: string, left: number) => {
-    const n = nodes.get(id);
-    if (!n) return;
-    const w = slots.get(id) ?? 1;
-    n.x = (left + w / 2) * (NODE_W + GAP_X) - (NODE_W + GAP_X) / 2;
-    n.y = n.depth * (NODE_H + GAP_Y);
-    maxDepth = Math.max(maxDepth, n.depth);
-    let at = left;
-    for (const c of n.children) {
-      place(c, at);
-      at += slots.get(c) ?? 1;
-    }
-  };
-  place(root, 0);
-
   const edges: GraphModel["edges"] = [];
   for (const n of nodes.values())
     for (const c of n.children) {
@@ -174,8 +140,6 @@ export function graphModel(graph: RelationGraph, root: string): GraphModel {
     root,
     nodes,
     edges,
-    width: total * (NODE_W + GAP_X) - GAP_X,
-    height: (maxDepth + 1) * (NODE_H + GAP_Y) - GAP_Y,
     people,
     pathTo,
     alsoFrom,

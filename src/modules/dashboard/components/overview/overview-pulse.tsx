@@ -2,13 +2,14 @@
 // coverage on a meter with its target.
 
 import { Meter } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import type { CSSProperties, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { AnalyticsOverview } from "@/modules/dashboard/api/analytics";
 import { MFA_TARGET_PCT } from "@/modules/dashboard/overview-model";
 import type { UserStats } from "@/modules/users";
-import { CHART, num, Sparkline } from "./overview-parts";
+import { num } from "./overview-parts";
 
 // ── The pulse band ──────────────────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ export function PulseBand({
         tone={k.failed_logins_24h.value > 0 ? "danger" : undefined}
       >
         <dd className="overview-pulse-trend">
-          <Sparkline values={failed} color={CHART.bad} />
+          <Sparkline values={failed} tone="negative" />
         </dd>
       </Pulse>,
       <Pulse

@@ -15,10 +15,7 @@ import {
 
 const ANY = "";
 
-/**
- * Search, then the kind, in one row; each kind's count in its label until Qeetrix's Select items
- * have a count of their own.
- */
+/** Search, then the kind, in one row; each kind's count at its option's end. */
 export function SsoToolbar({
   filters,
   onFiltersChange,
@@ -57,7 +54,8 @@ export function SsoToolbar({
             { value: ANY, label: t("list.anyKind") },
             ...CONNECTION_GROUPS.map((group) => ({
               value: group,
-              label: `${t(`list.groups.${group}`)} · ${n(counts[group])}`,
+              label: t(`list.groups.${group}`),
+              meta: n(counts[group]),
             })),
           ]}
         />

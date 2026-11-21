@@ -17,7 +17,7 @@ export interface TraceStep {
   policyName?: string;
 }
 
-const t = (key: TranslationKey, values?: Record<string, unknown>) => i18n.t(key, values);
+const t = (key: TranslationKey, values?: Record<string, unknown>) => i18n.t(key, values ?? {});
 
 // Go %q strings: quotes and backslashes are escaped, which JSON reads the same way.
 const QUOTED = String.raw`"((?:[^"\\]|\\.)*)"`;

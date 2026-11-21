@@ -127,11 +127,12 @@ describe("Add people › invite by email", () => {
   it("checks each address first, then sends the new ones and the waiting one again", async () => {
     const { onOpenChange } = renderDrawer();
     await screen.findByText("Member: Standard access: sees the directory, changes nothing");
-    fireEvent.change(field(/Email addresses/), {
-      target: { value: "kavya@qeet.in, sai@qeet.in\npriya@qeet.in\nnot-an-email" },
+    // Pasted as from a spreadsheet's column: each line becomes an entry.
+    fireEvent.paste(field(/Email addresses/), {
+      clipboardData: { getData: () => "kavya@qeet.in, sai@qeet.in\npriya@qeet.in\nnot-an-email" },
     });
 
-    const checks = within(screen.getByRole("region", { name: "What happens to each address" }));
+    const checks = within(screen.getByRole("list", { name: "What happens to each address" }));
     expect(checks.getByText("New invitation")).toBeTruthy();
     expect(checks.getByText("Already invited · we'll send it again")).toBeTruthy();
     expect(checks.getByText("Already a member · skipped")).toBeTruthy();
@@ -150,7 +151,7 @@ describe("Add people › invite by email", () => {
   it("sends nothing when every address is already a member", async () => {
     renderDrawer();
     await screen.findByText(/Standard access/);
-    fireEvent.change(field(/Email addresses/), { target: { value: "priya@qeet.in" } });
+    fireEvent.change(field(/Email addresses/), { target: { value: "priya@qeet.in," } });
     fireEvent.click(screen.getByRole("button", { name: "Send invitations" }));
     expect(
       await screen.findByText("Add at least one email address that isn't already a member."),

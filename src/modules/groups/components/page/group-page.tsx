@@ -11,6 +11,7 @@ import {
   formatDate,
   formatNumber,
   IconButton,
+  LinkButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -119,9 +120,9 @@ export function GroupPage({ groupId }: { groupId: string }) {
           title={t("page.notFound")}
           description={t("page.notFoundDescription")}
           actions={
-            <Button render={<Link to="/groups" />} variant="soft">
+            <LinkButton render={<Link to="/groups" />} variant="soft">
               {t("page.backToGroups")}
-            </Button>
+            </LinkButton>
           }
         />
       </PageContent>

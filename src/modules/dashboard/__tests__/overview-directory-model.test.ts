@@ -12,7 +12,6 @@ import {
   ldapItem,
   orgShape,
   placesByCountry,
-  squarify,
 } from "../overview-directory-model";
 
 const NOW = new Date("2026-10-27T10:00:00Z");
@@ -239,29 +238,5 @@ describe("placesByCountry", () => {
       { country: "DE", count: 1, cities: [{ city: "Berlin", count: 1 }] },
       { country: "", count: 1, cities: [{ city: "Remote", count: 1 }] },
     ]);
-  });
-});
-
-describe("squarify", () => {
-  const area = (r: { w: number; h: number }) => r.w * r.h;
-
-  it("gives each value its share of the area, inside the rectangle", () => {
-    const rect = { x: 0, y: 0, w: 1000, h: 330 };
-    const values = [19, 6, 6, 5, 3, 3, 2, 1];
-    const rects = squarify(values, rect);
-    const total = values.reduce((a, b) => a + b, 0);
-    rects.forEach((r, i) => {
-      expect(area(r)).toBeCloseTo((area(rect) * (values[i] ?? 0)) / total, 6);
-      expect(r.x).toBeGreaterThanOrEqual(-1e-9);
-      expect(r.y).toBeGreaterThanOrEqual(-1e-9);
-      expect(r.x + r.w).toBeLessThanOrEqual(1000 + 1e-9);
-      expect(r.y + r.h).toBeLessThanOrEqual(330 + 1e-9);
-    });
-    expect(rects.reduce((a, r) => a + area(r), 0)).toBeCloseTo(area(rect), 6);
-  });
-
-  it("draws nothing for nothing", () => {
-    expect(squarify([0, 0], { x: 0, y: 0, w: 10, h: 10 }).map(area)).toEqual([0, 0]);
-    expect(squarify([], { x: 0, y: 0, w: 10, h: 10 })).toEqual([]);
   });
 });

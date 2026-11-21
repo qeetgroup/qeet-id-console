@@ -13,7 +13,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   DEFAULT_ERROR_FILTERS,
   DEFAULT_EVENT_FILTERS,
@@ -186,11 +186,7 @@ export function SyncActivityPage({ filters, onFiltersChange }: SyncActivityPageP
             <BandPlaceholder />
           )
         }
-        tabs={
-          <PageTabs>
-            <PageTabList badges={{ "/directory/sync-errors": openQ.data?.summary.open }} />
-          </PageTabs>
-        }
+        tabs={<PageTabList badges={{ "/directory/sync-errors": openQ.data?.summary.open }} />}
       />
       <PageContent>
         <div className="ppl sync">

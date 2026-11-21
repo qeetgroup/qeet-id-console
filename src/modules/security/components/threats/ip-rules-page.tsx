@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   type AddressRefusal,
   type IpRule,
@@ -46,7 +46,7 @@ export function IpRulesPage() {
   const rules = list.data?.items ?? [];
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("ipRules.title")}
@@ -71,7 +71,7 @@ export function IpRulesPage() {
           </>
         )}
       </PageContent>
-    </PageTabs>
+    </>
   );
 }
 

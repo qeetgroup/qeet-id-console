@@ -1,5 +1,5 @@
-// A small chart Qeetrix doesn't have: how many people joined on each day after
-// their invitation, from day 0 to the link's expiry, which is marked.
+// How many people joined on each day after their invitation, from day 0 to the link's expiry,
+// which is marked: Qeetrix's ColumnChart has no axis ticks or marker line for it yet.
 
 import { LINK_DAYS } from "@/modules/users/invitations-model";
 

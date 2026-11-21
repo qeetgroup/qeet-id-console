@@ -1,9 +1,10 @@
 import { formatNumber } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { Sparkline, SplitBar } from "@/modules/dashboard";
+import { SplitBar } from "@/modules/dashboard";
 import type { ActivitySearch } from "@/modules/activity/activity-search";
 import { bucketWords, fillSeries } from "@/modules/activity/activity-view";
 import { categoryLabel } from "@/modules/activity/event-labels";

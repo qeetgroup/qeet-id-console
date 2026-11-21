@@ -8,12 +8,15 @@
   font: var(--qx-typography-heading-sm);
 }
 
+/* One column that never grows past the page, so a wide table scrolls in its own frame. */
 .grp-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .grp-page-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--qx-space-gap-md);
   padding-block: var(--qx-space-layout-sm);
 }
@@ -22,8 +25,10 @@
   border-block-start: var(--qx-border-width-default) solid var(--qx-color-border-default);
 }
 
+/* A section's heading, its action beside it, or under it where they don't fit. */
 .grp-page-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--qx-space-gap-md);
@@ -47,13 +52,17 @@
   font: var(--qx-typography-body-sm);
 }
 
+/* The role to grant, then Grant: side by side, the button under it where they don't fit. */
 .grp-page-grant {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: var(--qx-space-gap-sm);
+  max-inline-size: 100%;
 }
 
 .grp-page-grant-select {
   inline-size: 14rem;
+  max-inline-size: 100%;
 }
 
 .grp-page-rows {

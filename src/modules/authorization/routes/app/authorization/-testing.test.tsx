@@ -35,9 +35,6 @@ vi.mock("@tanstack/react-router", () => ({
     </a>
   ),
 }));
-vi.mock("@/modules/authorization/components/shared/monaco-panel", () => ({
-  MonacoPanel: () => null,
-}));
 // A native select stands in for the searchable combobox, which jsdom can't drive reliably.
 vi.mock("@qeetrix/react/experimental", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@qeetrix/react/experimental")>()),

@@ -199,17 +199,20 @@ function RoleDrawerContent({ access, view }: { access: RoleAccess; view: RoleAcc
           ) : null}
         </div>
       </DrawerBody>
-      <DrawerFooter>
+      <DrawerFooter
+        start={
+          editable && changed ? (
+            <Text size="sm" tone="subtle">
+              {t("lists.drawer.permissions.pending", {
+                gain: n(gain.length),
+                lose: n(lose.length),
+              })}
+            </Text>
+          ) : undefined
+        }
+      >
         {editable ? (
           <>
-            {changed ? (
-              <Text size="sm" tone="subtle" className="authz-footer-note">
-                {t("lists.drawer.permissions.pending", {
-                  gain: n(gain.length),
-                  lose: n(lose.length),
-                })}
-              </Text>
-            ) : null}
             <DrawerClose render={<Button variant="ghost">{t("common:actions.cancel")}</Button>} />
             <Button disabled={!changed || saveM.isPending} onClick={save}>
               {t("lists.drawer.save")}

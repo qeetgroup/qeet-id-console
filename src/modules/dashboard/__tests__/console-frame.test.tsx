@@ -14,8 +14,9 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     children,
+    activeOptions: _activeOptions,
     ...props
-  }: ComponentProps<"a"> & { to: string; children?: ReactNode }) => (
+  }: ComponentProps<"a"> & { to: string; children?: ReactNode; activeOptions?: unknown }) => (
     <a {...props} href={to}>
       {children}
     </a>
@@ -58,7 +59,7 @@ import { AccountMenu } from "../components/frame/account-menu";
 import { ConsoleSidebar } from "../components/frame/console-sidebar";
 import { currentNavItemUrl } from "../components/frame/current-page";
 import { NotificationsPanel } from "../components/frame/notifications-panel";
-import { PageBreadcrumb, PageTabList, PageTabs } from "../components/frame/page-place";
+import { PageBreadcrumb, PageTabList } from "../components/frame/page-place";
 import { getNavGroups, translateNavigation } from "@/platform/config/navigation";
 
 function renderInApp(node: ReactNode) {
@@ -136,22 +137,25 @@ describe("a page's breadcrumb and sub-page tabs", () => {
     renderInApp(
       <>
         <PageBreadcrumb />
-        <PageTabs>
-          <PageTabList />
-        </PageTabs>
+        <PageTabList />
       </>,
     );
     const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });
     expect(within(crumbs).getByText("Directory")).toBeTruthy();
     expect(within(crumbs).getByRole("link", { name: "Users" }).getAttribute("href")).toBe("/users");
-    const tabs = screen.getByRole("tablist", { name: "Users views" });
+    // Sub-pages are routes, so they're links in a navigation; the current one is marked.
+    const views = screen.getByRole("navigation", { name: "Users views" });
     expect(
-      within(tabs).getByRole("tab", { name: "Invitations" }).getAttribute("aria-selected"),
-    ).toBe("true");
-    // Suspended is a filter on All users, not a tab.
-    expect(within(tabs).queryByRole("tab", { name: "Suspended" })).toBeNull();
-    fireEvent.click(within(tabs).getByRole("tab", { name: "Deleted" }));
-    expect(route.navigate).toHaveBeenCalledWith({ to: "/users/deleted" });
+      within(views).getByRole("link", { name: "Invitations" }).getAttribute("aria-current"),
+    ).toBe("page");
+    expect(
+      within(views).getByRole("link", { name: "All users" }).getAttribute("aria-current"),
+    ).toBe(null);
+    // Suspended is a filter on All users, not a sub-page.
+    expect(within(views).queryByRole("link", { name: "Suspended" })).toBeNull();
+    expect(within(views).getByRole("link", { name: "Deleted" }).getAttribute("href")).toBe(
+      "/users/deleted",
+    );
   });
 });
 

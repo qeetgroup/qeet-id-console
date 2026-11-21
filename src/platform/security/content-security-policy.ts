@@ -15,13 +15,12 @@ export function contentSecurityPolicy(nonce: string): string {
     "default-src 'self'",
     // 'self' is for browsers without 'strict-dynamic', which ignore it otherwise.
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    // Style attributes from React and the design system, and Monaco's injected styles. Unlike
-    // scripts, styles can't run code.
+    // Style attributes from React and the design system. Unlike scripts, styles can't run code.
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:", // organization logos and avatars live on other hosts
     "font-src 'self' data:",
     "connect-src 'self'", // the browser talks only to this console's server
-    "worker-src 'self' blob:",
+    "worker-src 'self'",
     "manifest-src 'self'",
     "frame-src 'none'",
     "frame-ancestors 'none'",

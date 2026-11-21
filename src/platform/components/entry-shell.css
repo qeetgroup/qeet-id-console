@@ -112,11 +112,6 @@
   gap: var(--qx-space-gap-sm);
 }
 
-/* The theme menu holds three short choices: narrower than the library's 200px menu. */
-.entry-theme-menu {
-  min-inline-size: 10rem;
-}
-
 /* ── Small screens: the column only ────────────────────────────────────────── */
 
 @media (max-width: 960px) {

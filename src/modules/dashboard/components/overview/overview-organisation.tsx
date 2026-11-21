@@ -1,63 +1,19 @@
 // The organisation's shape, the one thing the Dashboard took from the Directory overview: its
-// departments and their teams as a squarified treemap (each department opens the Users list
-// filtered to it), and where people work as circles sized by people, a row per country. Both come
-// from what each person's profile says. Qeetrix has no treemap or proportional circles, so both
-// are drawn here.
+// departments and their teams as a treemap (each department opens the Users list filtered to it),
+// and where people work as circles sized by people, a row per country (Qeetrix's Treemap and
+// ProportionalCircles). Both come from what each person's profile says.
 
-import { VisuallyHidden } from "@qeetrix/react";
+import { ProportionalCircles, Treemap } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import {
-  type OrgDepartment,
-  type orgShape,
-  type placesByCountry,
-  type Rect,
-  squarify,
-} from "@/modules/dashboard/overview-directory-model";
-import { num, Panel, pct } from "./overview-parts";
+import type { orgShape, placesByCountry } from "@/modules/dashboard/overview-directory-model";
+import { Panel, pct } from "./overview-parts";
 
-// The map's own units; it draws at its panel's width, about two-thirds of that.
-const W = 1000;
-const H = 330;
-
-const box = (r: Rect, w: number, h: number) => ({
-  left: `${(r.x / w) * 100}%`,
-  top: `${(r.y / h) * 100}%`,
-  width: `${(r.w / w) * 100}%`,
-  height: `${(r.h / h) * 100}%`,
-});
-
-/** A department's teams, squarified inside what's left of its tile under the header. */
-function Teams({ teams, w, h }: { teams: OrgDepartment["teams"]; w: number; h: number }) {
-  const { t } = useTranslation("dashboard");
-  const rects = squarify(
-    teams.map((team) => team.count),
-    { x: 0, y: 0, w, h },
-  );
-  return (
-    <span className="overview-org-teams" aria-hidden="true">
-      {teams.map((team, i) => {
-        const r = rects[i] as Rect;
-        const name = team.team ?? t("overview.organisation.noTeam");
-        return (
-          <span
-            key={team.team ?? ""}
-            className={team.team ? "overview-org-team" : "overview-org-team is-none"}
-            style={box(r, w, h)}
-            title={`${name}: ${num(team.count)}`}
-          >
-            {r.w > 110 && r.h > 56 ? <span className="overview-org-team-name">{name}</span> : null}
-            {r.w > 34 && r.h > 34 ? (
-              <b className="overview-org-team-count">{num(team.count)}</b>
-            ) : null}
-          </span>
-        );
-      })}
-    </span>
-  );
-}
+// The map's shape: wide, about a third as tall as it is wide.
+const ASPECT = 1000 / 330;
+const NONE = "\u0000none"; // the id of "No department" / "No team", which no name can be
 
 export function OrgMapPanel({
   shape,
@@ -68,10 +24,6 @@ export function OrgMapPanel({
 }) {
   const { t } = useTranslation("dashboard");
   const { departments } = shape;
-  const rects = squarify(
-    departments.map((d) => d.count),
-    { x: 0, y: 0, w: W, h: H },
-  );
   const foot = [
     shape.noTeam ? t("overview.organisation.noTeamFoot", { count: shape.noTeam }) : null,
     shape.noDepartment
@@ -87,68 +39,28 @@ export function OrgMapPanel({
       }
       note={t("overview.organisation.mapNote", { count: shape.named })}
     >
-      <ul className="overview-org-map" aria-label={t("overview.organisation.mapLabel")}>
-        {departments.map((d, i) => {
-          const r = rects[i] as Rect;
-          const name = d.name ?? t("overview.organisation.noDepartment");
-          const hasTeams = d.teams.some((team) => team.team);
-          const label = t(
-            hasTeams ? "overview.organisation.tileTeams" : "overview.organisation.tile",
-            {
-              name,
-              count: d.count,
-              teams: d.teams
-                .map((team) =>
-                  t("overview.organisation.teamCount", {
-                    team: team.team ?? t("overview.organisation.noTeam"),
-                    count: num(team.count),
-                  }),
-                )
-                .join(", "),
-            },
-          );
-          // The header is the link's whole visible text, so its name starts with what's seen
-          // (WCAG 2.5.3); the link stretches over the tile, and the teams are drawn under it.
-          const head = (
-            <>
-              <b className="overview-org-dept-name">{name}</b> <span>{num(d.count)}</span>
-            </>
-          );
-          return (
-            <li
-              key={d.name ?? ""}
-              className={d.name ? "overview-org-cell" : "overview-org-cell is-none"}
-              style={box(r, W, H)}
-              title={`${name}: ${num(d.count)}`}
-            >
-              {d.name ? (
-                <Link
-                  to="/users"
-                  search={{ dept: d.name }}
-                  className="overview-org-dept"
-                  aria-label={label}
-                >
-                  {head}
-                </Link>
-              ) : (
-                <>
-                  <span className="overview-org-dept" aria-hidden="true">
-                    {head}
-                  </span>
-                  <VisuallyHidden>{label}</VisuallyHidden>
-                </>
-              )}
-              {r.w > 90 && r.h > 70 ? <Teams teams={d.teams} w={r.w - 8} h={r.h - 30} /> : null}
-            </li>
-          );
-        })}
-      </ul>
+      <Treemap
+        aria-label={t("overview.organisation.mapLabel")}
+        aspectRatio={ASPECT}
+        locale={formatLocale()}
+        nodes={departments.map((d) => ({
+          id: d.name ?? NONE,
+          label: d.name ?? t("overview.organisation.noDepartment"),
+          value: d.count,
+          tone: d.name ? "data" : "none",
+          render: d.name ? <Link to="/users" search={{ dept: d.name }} /> : undefined,
+          children: d.teams.map((team) => ({
+            id: team.team ?? NONE,
+            label: team.team ?? t("overview.organisation.noTeam"),
+            value: team.count,
+            tone: team.team ? "data" : "none",
+          })),
+        }))}
+      />
       {foot.length ? <p className="overview-org-foot">{foot.join(" · ")}</p> : null}
     </Panel>
   );
 }
-
-const R = 40; // the biggest city's radius
 
 export function PlacesPanel({
   places,
@@ -168,8 +80,6 @@ export function PlacesPanel({
     }
   };
   const cities = places.flatMap((p) => p.cities);
-  const max = Math.max(1, ...cities.map((c) => c.count));
-  const radius = (v: number) => Math.max(5, R * Math.sqrt(v / max));
   const top = places[0]?.cities[0];
   const only = places.length === 1 ? places[0] : undefined;
   return (
@@ -188,58 +98,16 @@ export function PlacesPanel({
       }
     >
       <div className="overview-places">
-        {places.map((place, gi) => (
-          <figure key={place.country} className="overview-places-country">
-            <figcaption className="overview-places-caption">
-              <b className="overview-places-name">{countryName(place.country)}</b>
-              <span>{t("overview.organisation.people", { count: place.count })}</span>
-            </figcaption>
-            <ul className="overview-places-cities">
-              {place.cities.map((c) => {
-                const r = radius(c.count);
-                return (
-                  <li
-                    key={c.city}
-                    className="overview-places-city"
-                    title={`${c.city}: ${num(c.count)}`}
-                  >
-                    <svg
-                      width={r * 2}
-                      height={r * 2}
-                      viewBox={`0 0 ${r * 2} ${r * 2}`}
-                      aria-hidden="true"
-                    >
-                      <circle
-                        cx={r}
-                        cy={r}
-                        r={r - 1}
-                        className={
-                          gi === 0 ? "overview-places-dot" : "overview-places-dot is-other"
-                        }
-                      />
-                      {c.count >= 5 ? (
-                        <text
-                          x={r}
-                          y={r + 5}
-                          textAnchor="middle"
-                          className="overview-places-dot-count"
-                        >
-                          {num(c.count)}
-                        </text>
-                      ) : null}
-                    </svg>
-                    <small className="overview-places-label" aria-hidden="true">
-                      {c.count < 5 ? `${c.city} · ${num(c.count)}` : c.city}
-                    </small>
-                    <VisuallyHidden>
-                      {t("overview.organisation.cityPeople", { city: c.city, count: c.count })}
-                    </VisuallyHidden>
-                  </li>
-                );
-              })}
-            </ul>
-          </figure>
-        ))}
+        <ProportionalCircles
+          locale={formatLocale()}
+          groups={places.map((place, gi) => ({
+            id: place.country || NONE,
+            label: countryName(place.country),
+            meta: t("overview.organisation.people", { count: place.count }),
+            tone: gi === 0 ? "data" : "reference",
+            items: place.cities.map((c) => ({ id: c.city, label: c.city, value: c.count })),
+          }))}
+        />
         {top && people ? (
           <p className="overview-places-foot">
             {t("overview.organisation.cityShare", {

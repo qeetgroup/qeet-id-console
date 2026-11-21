@@ -65,7 +65,7 @@ relative-import rules — a violation fails the build. A module's catalogue name
 | Server functions, unsafe server-route requests | CSRF middleware in `src/start.ts`, policy in `src/platform/security/csrf-policy.ts` (tested) |
 | Browser storage | `src/platform/auth/scoped-storage.ts` — per person and tenant, wiped on sign-out |
 | Response headers | `src/platform/security/security-headers.ts` — HSTS, `X-Frame-Options`, nosniff, Referrer-Policy, Permissions-Policy, `X-Robots-Tag` |
-| Scripts the browser runs | `src/platform/security/content-security-policy.ts`, set per response in `src/start.ts` — a nonce on every script, `'strict-dynamic'`, no eval, `connect-src 'self'`, no framing; Monaco is self-hosted |
+| Scripts the browser runs | `src/platform/security/content-security-policy.ts`, set per response in `src/start.ts` — a nonce on every script, `'strict-dynamic'`, no eval, `connect-src 'self'`, no framing |
 | Capability → UI | **UX only.** The backend decides |
 | Backend message → user | `errors/user-message.ts` — the leak stop |
 | Payload → telemetry | `telemetry/redact.ts` — denylist + token/query/email/IP masking; production telemetry goes only to the console's own server log |
@@ -99,7 +99,7 @@ adding a test · internal refactoring inside one module · i18n strings · featu
 | **CSRF cookie/header names** | Must match `qeet-id-server` and `qeet-id-hosted` |
 | A new permission surfaced in the UI | `qeet-id-server` must define it |
 | Error-code handling | `qeet-id-server` owns the codes |
-| `@qeetrix/react` / `@qeetrix/tokens` / `@qeetrix/icons` upgrade | `qeetrix-react`, `qeetrix-tokens`, `qeetrix-icons` — pinned exactly (`0.1.1` / `0.0.9` / `1.0.12`); bump deliberately and read the changelog |
+| `@qeetrix/react` / `@qeetrix/tokens` / `@qeetrix/icons` upgrade | `qeetrix-react`, `qeetrix-tokens`, `qeetrix-icons` — pinned exactly (`0.5.2` / `0.0.15` / `2.1.2`); bump deliberately and read the changelog |
 | Hostname change | `qeet-id-deploy`, backend CORS, WebAuthn origins |
 
 Product-level fan-out: `qeet-id-context/CHANGE-MATRIX.md`.

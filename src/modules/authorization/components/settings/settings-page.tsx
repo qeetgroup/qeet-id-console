@@ -1,5 +1,5 @@
 import { ArrowRightIcon } from "@qeetrix/icons";
-import { Badge, Button, Heading, Skeleton, Text } from "@qeetrix/react";
+import { Badge, Heading, LinkButton, Skeleton, Text } from "@qeetrix/react";
 import { PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -230,8 +230,8 @@ function Go({
   children: ReactNode;
 }) {
   return (
-    <Button variant="ghost" size="sm" icon={ArrowRightIcon} render={<Link to={to} />}>
+    <LinkButton variant="ghost" size="sm" icon={ArrowRightIcon} render={<Link to={to} />}>
       {children}
-    </Button>
+    </LinkButton>
   );
 }

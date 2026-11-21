@@ -208,7 +208,9 @@ describe("A webhook's page", () => {
   it("opens a delivery with its request, and retries one that gave up", async () => {
     renderWith(<WebhookPage id="w-off" />);
     const table = within(await screen.findByRole("table", { name: "Recent deliveries" }));
-    fireEvent.click(table.getByRole("button", { name: /Delivery d-dead-0/ }));
+    fireEvent.click(
+      table.getByRole("button", { name: /^session\.revoked, /, description: /d-dead-0/ }),
+    );
     const drawer = await screen.findByRole("dialog");
     expect(within(drawer).getByText("It used all its attempts")).toBeTruthy();
     expect(within(drawer).getByText("Request body")).toBeTruthy();

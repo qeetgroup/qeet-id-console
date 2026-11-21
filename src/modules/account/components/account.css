@@ -75,7 +75,7 @@
   color: var(--qx-color-icon-default);
 }
 
-.account-icon svg {
+.account-icon :is(svg, img) {
   inline-size: 16px;
   block-size: 16px;
 }
@@ -99,7 +99,7 @@
   block-size: 40px;
 }
 
-.account-icon-lg svg {
+.account-icon-lg :is(svg, img) {
   inline-size: 20px;
   block-size: 20px;
 }

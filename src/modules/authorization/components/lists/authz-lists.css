@@ -109,16 +109,8 @@
 
 /* ── Models › RBAC: every role's permissions side by side ─────────────────────────────────── */
 
-/* Library gap (new): Table matrix layout (link column headers, the grid
-   scrolling sideways inside itself). Until then it scrolls in its own frame, not the page. */
-.authz-matrix {
-  overflow-x: auto;
-}
-
-.authz-matrix .qx-table-element {
-  min-inline-size: max-content;
-}
-
+/* A matrix: Table scrolls it sideways in its own frame, the permissions column staying put; each
+   role's header is a link over two lines (its name, then how many hold it). */
 .authz-matrix .qx-table-head {
   vertical-align: bottom;
   white-space: normal;
@@ -227,11 +219,6 @@
   place-items: center;
 }
 
-/* What a save will do, at the footer's start (until Qeetrix's DrawerFooter has a start slot). */
-.authz-footer-note {
-  margin-inline-end: auto;
-}
-
 .authz-form {
   display: grid;
   gap: var(--qx-space-gap-lg);
@@ -250,10 +237,6 @@
 
   .authz-page > .qx-table .qx-table-element {
     min-inline-size: 44rem;
-  }
-
-  .authz-footer-note {
-    flex-basis: 100%;
   }
 }
 

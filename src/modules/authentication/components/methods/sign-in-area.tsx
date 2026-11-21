@@ -1,7 +1,7 @@
 import { PageContent, PageHeader } from "@qeetrix/react/experimental";
 import type { ReactNode } from "react";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import "./methods.css";
 
 /**
@@ -19,7 +19,7 @@ export function MethodsArea({
   children: ReactNode;
 }) {
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={title}
@@ -27,6 +27,6 @@ export function MethodsArea({
         tabs={<PageTabList />}
       />
       <PageContent width="narrow">{children}</PageContent>
-    </PageTabs>
+    </>
   );
 }

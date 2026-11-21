@@ -61,29 +61,6 @@
   background: var(--qx-color-surface-raised);
 }
 
-/* The swatch in the hex field is the native picker, laid over it. */
-.brand-swatch-pick {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.brand-swatch-pick input {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  padding: 0;
-  border: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.brand-swatch-pick:has(input:focus-visible) {
-  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
-  outline-offset: var(--qx-focus-ring-offset);
-}
-
 .brand-colour-edit {
   display: grid;
   gap: var(--qx-space-gap-sm);
@@ -93,6 +70,7 @@
   max-inline-size: 12rem;
 }
 
+/* A hex colour reads in the code face, in capitals. */
 .brand-hex input {
   font: var(--qx-typography-code-md);
   font-variant-ligatures: none;
@@ -102,36 +80,6 @@
 .brand-hex input::placeholder {
   font: var(--qx-typography-body-md);
   text-transform: none;
-}
-
-.brand-presets {
-  display: flex;
-  min-inline-size: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--qx-space-gap-xs);
-}
-
-.brand-preset {
-  inline-size: 24px;
-  block-size: 24px;
-  padding: 0;
-  border: var(--qx-border-width-default) solid var(--qx-color-border-default);
-  border-radius: var(--qx-radius-sm);
-  cursor: pointer;
-}
-
-.brand-preset[aria-pressed="true"] {
-  outline: var(--qx-border-width-strong) solid var(--qx-color-border-strong);
-  outline-offset: 1px;
-}
-
-.brand-preset:focus-visible {
-  outline: var(--qx-focus-ring-width) solid var(--qx-color-border-focus);
-  outline-offset: var(--qx-focus-ring-offset);
 }
 
 /* ── The sign-in page, drawn small ─────────────────────────────────────────── */

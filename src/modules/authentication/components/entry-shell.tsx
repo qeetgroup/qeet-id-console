@@ -1,9 +1,10 @@
-import { Google, Microsoft } from "@thesvg/react";
 import { Avatar, Link, Text } from "@qeetrix/react";
+import { ProviderButton, ProviderButtonGroup } from "@qeetrix/react/experimental";
 import { Trans, useTranslation } from "react-i18next";
 
 import type { Me } from "@/platform/auth/session";
 import { PRIVACY_URL, TERMS_URL } from "@/platform/config/site-urls";
+import { BrandLogo } from "@/shared/components/brand-logo";
 import { organizationImage } from "../organization-selection-model";
 
 // The frame lives in platform, as onboarding's create-organisation page uses it too.
@@ -29,26 +30,24 @@ export function EntryConsent({ action }: { action: "signIn" | "signUp" }) {
 export function EntryInboxLinks() {
   const { t } = useTranslation("auth-flow");
   return (
-    <nav className="entry-providers" aria-label={t("entry.inbox.group")}>
-      <a
-        className="entry-provider"
-        href="https://mail.google.com"
-        target="_blank"
-        rel="noopener noreferrer"
+    <ProviderButtonGroup aria-label={t("entry.inbox.group")}>
+      <ProviderButton
+        logo={<BrandLogo name="google" />}
+        aria-label={t("entry.inbox.gmail")}
+        render={<a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" />}
       >
-        <Google aria-hidden="true" />
         {t("entry.inbox.gmail")}
-      </a>
-      <a
-        className="entry-provider"
-        href="https://outlook.office.com/mail"
-        target="_blank"
-        rel="noopener noreferrer"
+      </ProviderButton>
+      <ProviderButton
+        logo={<BrandLogo name="microsoft" />}
+        aria-label={t("entry.inbox.outlook")}
+        render={
+          <a href="https://outlook.office.com/mail" target="_blank" rel="noopener noreferrer" />
+        }
       >
-        <Microsoft aria-hidden="true" />
         {t("entry.inbox.outlook")}
-      </a>
-    </nav>
+      </ProviderButton>
+    </ProviderButtonGroup>
   );
 }
 

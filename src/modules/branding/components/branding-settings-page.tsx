@@ -1,5 +1,5 @@
 import { RefreshCwIcon } from "@qeetrix/icons";
-import { Button, Skeleton } from "@qeetrix/react";
+import { Button, LinkButton, Skeleton } from "@qeetrix/react";
 import { Alert, PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -237,12 +237,12 @@ function BrandingLayout({
             title={t("page.free.title")}
             actions={
               canManageBilling && (
-                <Button
+                <LinkButton
                   variant="soft"
                   render={<Link to="/settings/billing" search={{ plan: "starter" }} />}
                 >
                   {t("page.free.compare")}
-                </Button>
+                </LinkButton>
               )
             }
           >

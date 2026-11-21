@@ -120,7 +120,10 @@ function renderPage(filters: GroupFilters = {}, onFiltersChange = vi.fn()) {
   );
   return { onFiltersChange };
 }
-const table = () => screen.getByRole("table", { name: "Groups" });
+// The tree is a tree grid; a search lists the matches flat, as a plain table.
+const table = () =>
+  screen.queryByRole("treegrid", { name: "Groups" }) ??
+  screen.getByRole("table", { name: "Groups" });
 
 describe("the Groups list", () => {
   it("leads with the key numbers, each a filter", async () => {
@@ -157,11 +160,12 @@ describe("the Groups list", () => {
       "/groups/pay",
     );
 
-    const fold = within(eng).getByRole("button", { name: "Hide the groups in Engineering" });
-    expect(fold.getAttribute("aria-expanded")).toBe("true");
-    fireEvent.click(fold);
+    // A tree grid: the row says whether it's open, its fold button says what it does.
+    expect(eng.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.click(within(eng).getByRole("button", { name: "Collapse Engineering" }));
     expect(within(table()).queryByRole("link", { name: "Payments" })).toBeNull();
-    fireEvent.click(within(eng).getByRole("button", { name: "Show the 3 groups in Engineering" }));
+    expect(eng.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(within(eng).getByRole("button", { name: "Expand Engineering" }));
     expect(within(table()).getByRole("link", { name: "Payments" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Collapse all" }));

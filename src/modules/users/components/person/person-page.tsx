@@ -17,6 +17,7 @@ import {
   formatDate,
   formatRelativeTime,
   IconButton,
+  LinkButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -124,9 +125,9 @@ export function UserDetailPage({ userId, ...view }: { userId: string } & PersonV
               title={t("person.notFound.title")}
               description={t("person.notFound.description")}
               actions={
-                <Button render={<RouterLink to="/users" />} variant="soft">
+                <LinkButton render={<RouterLink to="/users" />} variant="soft">
                   {t("person.notFound.back")}
-                </Button>
+                </LinkButton>
               }
             />
           ) : (
@@ -202,14 +203,8 @@ function Person({
     <Tabs value={tab} onValueChange={(next) => onTabChange(next as User360Tab)}>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
-        title={
-          // The avatar sits in the title, unannounced, until Qeetrix's PageHeader has a
-          // leading slot.
-          <span className="prs-title-name">
-            <Avatar name={full} src={user.avatar_url ?? undefined} size="lg" decorative />
-            {full}
-          </span>
-        }
+        leading={<Avatar name={full} src={user.avatar_url ?? undefined} size="lg" decorative />}
+        title={full}
         status={
           suspended ? (
             <Badge tone="warning">{t("status.suspended")}</Badge>

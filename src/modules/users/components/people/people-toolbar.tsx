@@ -10,7 +10,6 @@ import { type PeopleFilters, RECENCY, REVIEWS, RISKS } from "@/modules/users/peo
 import { roleDisplayName } from "@/shared/utils/role-name";
 
 const ANY = "";
-// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 
 // The filters that only make sense for everyone, and those only for suspended people: choosing a
 // status clears the other kind.
@@ -57,7 +56,7 @@ export function PeopleToolbar({
     set({ [key]: value ? String(value) : undefined });
   const isSuspended = filters.status === "suspended";
 
-  const count = (value: number | undefined) => (stats ? ` · ${n(value ?? 0)}` : "");
+  const count = (value: number | undefined) => (stats ? n(value ?? 0) : undefined);
   const roles = (stats?.by_role ?? []).flatMap(({ role, count }) =>
     role ? [{ role, count }] : [],
   );
@@ -165,11 +164,13 @@ export function PeopleToolbar({
             { value: ANY, label: t("people.filters.anyStatus") },
             {
               value: "active",
-              label: `${t("people.filters.statuses.active")}${count(stats?.active)}`,
+              label: t("people.filters.statuses.active"),
+              meta: count(stats?.active),
             },
             {
               value: "suspended",
-              label: `${t("people.filters.statuses.suspended")}${count(stats?.suspended)}`,
+              label: t("people.filters.statuses.suspended"),
+              meta: count(stats?.suspended),
             },
           ]}
         />
@@ -184,7 +185,8 @@ export function PeopleToolbar({
                 { value: ANY, label: t("people.suspended.anyReason") },
                 ...SUSPENSION_REASONS.filter((key) => reasonCount(key) > 0).map((key) => ({
                   value: key,
-                  label: `${t(`people.suspended.reasons.${key}`)} · ${n(reasonCount(key))}`,
+                  label: t(`people.suspended.reasons.${key}`),
+                  meta: n(reasonCount(key)),
                 })),
               ]}
             />
@@ -197,7 +199,8 @@ export function PeopleToolbar({
                 { value: ANY, label: t("people.suspended.anyRisk") },
                 ...RISKS.map((key) => ({
                   value: key,
-                  label: `${t(`people.suspended.risks.${key}`)} · ${n(riskCount(key))}`,
+                  label: t(`people.suspended.risks.${key}`),
+                  meta: n(riskCount(key)),
                 })),
               ]}
             />
@@ -226,7 +229,8 @@ export function PeopleToolbar({
                 { value: ANY, label: t("people.filters.anyRole") },
                 ...roles.map(({ role, count: held }) => ({
                   value: role,
-                  label: `${roleDisplayName(role)}${count(held)}`,
+                  label: roleDisplayName(role),
+                  meta: count(held),
                 })),
               ]}
             />
@@ -239,7 +243,8 @@ export function PeopleToolbar({
                 { value: ANY, label: t("people.filters.anyDepartment") },
                 ...departments.map(({ department, count: members }) => ({
                   value: department,
-                  label: `${department}${count(members)}`,
+                  label: department,
+                  meta: count(members),
                 })),
               ]}
             />
@@ -267,8 +272,7 @@ export function PeopleToolbar({
           </>
         )}
       </div>
-      {/* Only once something narrows the list: with nothing applied, the count is the header's.
-          FilterTags shows its summary even with no tags (a Qeetrix issue). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

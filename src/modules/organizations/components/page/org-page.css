@@ -9,13 +9,6 @@
   font: var(--qx-typography-heading-sm);
 }
 
-/* The logo before the name, in the title, until Qeetrix's PageHeader has a leading slot. */
-.org-title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--qx-space-gap-md);
-}
-
 .org-page {
   display: grid;
 }

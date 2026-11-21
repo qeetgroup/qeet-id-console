@@ -11,8 +11,8 @@ import { ACCESS, type GrantRow } from "./grants-model";
 const SHADES = ["today", "week", "month", "older"] as const;
 
 /**
- * The list's key numbers, in its header, on the Users band's parts (until Qeetrix's PageHeader has
- * a band of its own; the share bar is the Dashboard's until Qeetrix has small charts): how many
+ * The list's key numbers, in its header, on the Users band's parts (Qeetrix's StatGroup can't hold
+ * their "Needs a look" cell yet, nor its ShareBar take the ordered tones the share bar uses): how many
  * grants for how many people, which applications hold them, and what they let the applications
  * read. Each opens the list filtered to it.
  */

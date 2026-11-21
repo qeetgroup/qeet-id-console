@@ -35,7 +35,7 @@ import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
 import { useRoles } from "@/modules/authorization";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { type Invitation, inviteCalls, useInvitations } from "@/modules/users/api/invitations";
 import { useUserDirectory } from "@/modules/users/api/users";
 import {
@@ -251,7 +251,7 @@ export function InvitationsPage({ filters, onFiltersChange }: InvitationsPagePro
   );
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("invites.title")}
@@ -400,6 +400,6 @@ export function InvitationsPage({ filters, onFiltersChange }: InvitationsPagePro
         </div>
       </PageContent>
       {canInvite ? <AddPeopleDrawer open={adding} onOpenChange={setAdding} mode="invite" /> : null}
-    </PageTabs>
+    </>
   );
 }

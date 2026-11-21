@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { userQueries } from "@/modules/users";
 import { useOrganizationId } from "@/platform/auth/session";
 import { useCapabilities } from "@/platform/security/capability-provider";
@@ -266,7 +266,7 @@ export function MachineAccessPage({ tab, filters, onFiltersChange }: MachineAcce
   ];
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t(`machine.title.${tab}`)}
@@ -463,6 +463,6 @@ export function MachineAccessPage({ tab, filters, onFiltersChange }: MachineAcce
           />
         </>
       ) : null}
-    </PageTabs>
+    </>
   );
 }

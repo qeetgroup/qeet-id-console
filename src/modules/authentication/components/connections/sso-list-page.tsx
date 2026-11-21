@@ -44,7 +44,7 @@ import {
   setupLinkState,
   shownRows,
 } from "@/modules/authentication/connections-model";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import { useCapabilities } from "@/platform/security/capability-provider";
 import { StatusBadge } from "./connection-parts";
 import { SetupLinks } from "./setup-links";
@@ -219,11 +219,7 @@ export function SsoListPage({
             </div>
           )
         }
-        tabs={
-          <PageTabs>
-            <PageTabList />
-          </PageTabs>
-        }
+        tabs={<PageTabList />}
       />
       <PageContent>
         <div className="ppl">

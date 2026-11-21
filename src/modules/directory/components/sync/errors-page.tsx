@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   DEFAULT_ERROR_FILTERS,
   type DirectoryEvent,
@@ -173,11 +173,7 @@ export function SyncErrorsPage({ filters, onFiltersChange }: SyncErrorsPageProps
             <BandPlaceholder />
           )
         }
-        tabs={
-          <PageTabs>
-            <PageTabList badges={{ "/directory/sync-errors": openCount }} />
-          </PageTabs>
-        }
+        tabs={<PageTabList badges={{ "/directory/sync-errors": openCount }} />}
       />
       <PageContent>
         <div className="ppl sync">

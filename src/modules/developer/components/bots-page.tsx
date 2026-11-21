@@ -1,5 +1,5 @@
 import { BotIcon, WebhookIcon, ZapIcon } from "@qeetrix/icons";
-import { Button } from "@qeetrix/react";
+import { LinkButton } from "@qeetrix/react";
 import { EmptyState, PageContent, PageHeader } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -27,12 +27,20 @@ export function BotsPage() {
           description={t("bots.empty.description")}
           actions={
             <>
-              <Button variant="soft" icon={WebhookIcon} render={<Link to="/developer/webhooks" />}>
+              <LinkButton
+                variant="soft"
+                icon={WebhookIcon}
+                render={<Link to="/developer/webhooks" />}
+              >
                 {t("bots.empty.webhooks")}
-              </Button>
-              <Button variant="ghost" icon={ZapIcon} render={<Link to="/developer/auth-hooks" />}>
+              </LinkButton>
+              <LinkButton
+                variant="ghost"
+                icon={ZapIcon}
+                render={<Link to="/developer/auth-hooks" />}
+              >
                 {t("bots.empty.authHooks")}
-              </Button>
+              </LinkButton>
             </>
           }
         />

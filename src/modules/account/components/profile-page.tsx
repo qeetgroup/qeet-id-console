@@ -1,5 +1,13 @@
 import { TrashIcon, UploadIcon } from "@qeetrix/icons";
-import { Avatar, Badge, Button, formatRelativeTime, Heading, TextField } from "@qeetrix/react";
+import {
+  Avatar,
+  Badge,
+  Button,
+  formatRelativeTime,
+  Heading,
+  LinkButton,
+  TextField,
+} from "@qeetrix/react";
 import { CopyButton } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
@@ -283,9 +291,9 @@ function AboutAccount({ me }: { me: Me }) {
             label={t("profile.about.organisations")}
             hint={t("profile.about.noneHint")}
             action={
-              <Button variant="ghost" render={<Link to="/select-organization" />}>
+              <LinkButton variant="ghost" render={<Link to="/select-organization" />}>
                 {t("profile.about.choose")}
-              </Button>
+              </LinkButton>
             }
           >
             {t("profile.about.none")}
@@ -297,9 +305,9 @@ function AboutAccount({ me }: { me: Me }) {
             hint={open ? t("profile.about.openNow", { name: open.name }) : undefined}
             action={
               organizations.length > 1 && (
-                <Button variant="ghost" render={<Link to="/select-organization" />}>
+                <LinkButton variant="ghost" render={<Link to="/select-organization" />}>
                   {t("profile.about.switch")}
-                </Button>
+                </LinkButton>
               )
             }
           >
@@ -315,9 +323,9 @@ function AboutAccount({ me }: { me: Me }) {
                 : sessionDevice(here)
             }
             action={
-              <Button variant="ghost" render={<Link to="/account/sessions" />}>
+              <LinkButton variant="ghost" render={<Link to="/account/sessions" />}>
                 {t("profile.about.seeSessions")}
-              </Button>
+              </LinkButton>
             }
           >
             {formatRelativeTime(new Date(here.created_at), locale)}

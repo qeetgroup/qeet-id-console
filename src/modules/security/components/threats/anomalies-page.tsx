@@ -23,7 +23,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { PageBreadcrumb, PageTabList, PageTabs } from "@/modules/dashboard";
+import { PageBreadcrumb, PageTabList } from "@/modules/dashboard";
 import {
   type Anomaly,
   isAnomalyResolved,
@@ -54,7 +54,6 @@ import { useDenyAddress } from "./use-deny-address";
 import "../security.css";
 
 const ANY = "";
-// Each option's count is part of its label until Qeetrix's Select items have a count of their own.
 
 export type AnomaliesPageProps = {
   filters: AnomalyFilters;
@@ -169,7 +168,7 @@ export function AnomaliesPage({ filters, onFiltersChange }: AnomaliesPageProps) 
   ];
 
   return (
-    <PageTabs>
+    <>
       <PageHeader
         breadcrumb={<PageBreadcrumb />}
         title={t("anomalies.title")}
@@ -276,7 +275,7 @@ export function AnomaliesPage({ filters, onFiltersChange }: AnomaliesPageProps) 
         resolving={resolve.isPending}
         onOpenChange={(next) => !next && setOpenId(null)}
       />
-    </PageTabs>
+    </>
   );
 }
 
@@ -335,10 +334,11 @@ function AnomaliesToolbar({
           }
           items={[
             { value: ANY, label: t("anomalies.filters.anyStatus") },
-            { value: "open", label: `${t("anomalies.status.open")} · ${n(openCount)}` },
+            { value: "open", label: t("anomalies.status.open"), meta: n(openCount) },
             {
               value: "resolved",
-              label: `${t("anomalies.status.resolved")} · ${n(items.length - openCount)}`,
+              label: t("anomalies.status.resolved"),
+              meta: n(items.length - openCount),
             },
           ]}
         />
@@ -351,13 +351,13 @@ function AnomaliesToolbar({
             { value: ANY, label: t("anomalies.filters.anyType") },
             ...ANOMALY_TYPES.map((type) => ({
               value: type,
-              label: `${t(`anomalies.type.${type}`)} · ${n(items.filter((a) => a.type === type).length)}`,
+              label: t(`anomalies.type.${type}`),
+              meta: n(items.filter((a) => a.type === type).length),
             })),
           ]}
         />
       </div>
-      {/* Only once something narrows the list (FilterTags shows its summary even with none,
-          a Qeetrix issue). */}
+      {/* Only once something narrows the list: with nothing applied, the count is the header's. */}
       {tags.length || filters.q ? (
         <FilterTags
           filters={tags}

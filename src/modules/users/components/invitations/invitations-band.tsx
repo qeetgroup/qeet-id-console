@@ -1,9 +1,9 @@
 import { formatNumber } from "@qeetrix/react";
+import { Sparkline } from "@qeetrix/react/experimental";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { formatLocale } from "@/i18n";
-import { Sparkline } from "@/modules/dashboard";
 import type { Invitation } from "@/modules/users/api/invitations";
 import {
   daysLeft,
